@@ -13,6 +13,7 @@ const useCLUTableConfig = ({
   table,
   dispatch,
   onSortingByData,
+  tenantId
 }) => {
 
   const { t } = useTranslation()
@@ -30,7 +31,7 @@ const useCLUTableConfig = ({
           const encryptID = encryptId(row.original["applicationId"])
           return (
             <div>
-              <Link to={`${parentRoute}/clu/application-overview/${encryptID}`}>
+              <Link to={tenantId === "pb.punjab" ? `${parentRoute}/clu/application-overview/${encryptID}/${row?.original?.tenantId}`: `${parentRoute}/clu/application-overview/${encryptID}`}>
                 <span className="link">{row.original["applicationId"]}</span>
               </Link>
             </div>

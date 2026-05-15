@@ -18,6 +18,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
 import UploadDrawer from "./ImageUpload/UploadDrawer";
+import CustomBackButton from "../../../../../templates/ApplicationDetails/components/CustomBackButton";
 import { subYears, format, differenceInYears } from "date-fns";
 
 const defaultImage = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
@@ -512,7 +513,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     <div className="user-profile">
       <section className={`user-profile-section-wrapper ${userType === "employee" ? "employee" : ""}`}>
         {userType === "citizen" ? (
-          <BackButton></BackButton>
+          <CustomBackButton></CustomBackButton>
         ) : (
           <BreadCrumb
             crumbs={[

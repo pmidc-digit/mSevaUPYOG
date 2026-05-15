@@ -27,5 +27,17 @@ export const EDCRService = {
       params: { tenantId },
       auth: false,
       multipartFormData: true
+    }),
+    mergeSanctionLetter: (data, tenantId) =>
+    Request({
+      url: Urls.edcr.mergeSanctionLetter,
+      data: data,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId },
+      auth: true,
+      multipartFormData: false,
     })
 };

@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encodeURIComponentCustom } from "../../../utils";
 
-const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
+const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId }) => {
   const { t } = useTranslation();
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
@@ -21,7 +21,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
           console.log('row in inbox', row)
           return (
             <div>
-              <Link to={`${parentRoute}/inbox/application-overview/${encodeURIComponentCustom(row.original["applicationId"])}`}>
+              <Link to={tenantId === "pb.punjab" ? `${parentRoute}/inbox/application-overview/${encodeURIComponentCustom(row.original["applicationId"])}/${row?.original?.tenantId}` :`${parentRoute}/inbox/application-overview/${encodeURIComponentCustom(row.original["applicationId"])}`}>
                 <span className="link">{row.original["applicationId"]}</span>
               </Link>
             </div>

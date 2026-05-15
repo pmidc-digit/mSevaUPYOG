@@ -221,10 +221,14 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
         title: t("Location Type"),
         value: application?.additionalDetails?.propertyDetails?.[0]?.locationType || "NA",
       },
-      {
-        title: t("Security Deposit"),
-        value: `Rs. ${application?.additionalDetails?.propertyDetails?.[0]?.securityDeposit || "NA"}`,
-      },
+      ...(application?.additionalDetails?.applicationType !== "Legacy"
+        ? [
+            {
+              title: t("Security Deposit"),
+              value: `Rs. ${application?.additionalDetails?.propertyDetails?.[0]?.securityDeposit || "NA"}`,
+            },
+          ]
+        : []),
       {
         title: t("Base Rent"),
         value: `Rs. ${application?.additionalDetails?.propertyDetails?.[0]?.baseRent || "NA"}`,
@@ -237,7 +241,9 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
             },
             {
               title: t("Penalty Amount (After Security Deposit)"),
-              value: `Rs. ${Math.abs(Number(application?.additionalDetails?.propertyDetails?.[0]?.securityDeposit) - application?.amountToBeDeducted)  || 0}`,
+              value: `Rs. ${
+                Math.abs(Number(application?.additionalDetails?.propertyDetails?.[0]?.securityDeposit) - application?.amountToBeDeducted) || 0
+              }`,
             },
           ]
         : []),

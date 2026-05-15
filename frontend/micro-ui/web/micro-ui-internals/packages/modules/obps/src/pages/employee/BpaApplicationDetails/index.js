@@ -44,7 +44,8 @@ import {
   getBase64Img,
   getApproveRejectComments,
   fetchUrl,
-  decryptId
+  decryptId,
+  fetchFilestoreAndTenant
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
@@ -1106,10 +1107,33 @@ const BpaApplicationDetail = () => {
       setLoader(true);
 
       const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
+      const uploadedDiagramObject = fetchFilestoreAndTenant(data?.edcrDetails?.updatedDxfFile, tenantId)
       if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
 
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      const receiptUrl = fileStore?.[fileStoreId];
+      const payload = {
+        uploadedDiagram: {
+          ...uploadedDiagramObject
+        },
+        sanctionLetter: {
+          filestoreId: fileStoreId,
+          tenantId: tenantId
+        },
+        details: {
+          ulbName: data?.applicationData?.additionalDetails?.UlbName,
+          dateOfApproval: new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST',
+          fileNumber: data?.applicationData?.applicationNo,
+          buildingCategory: data?.applicationData?.additionalDetails?.categoriesName,
+          professionalName: data?.applicationData?.additionalDetails?.stakeholderName,
+          plotArea: data?.applicationData?.additionalDetails?.area,
+          builtUpArea: data?.applicationData?.additionalDetails?.builtUpArea,
+          isAutoApproved: false
+        }
+      }
+
+      const mergedFilestore = await Digit.EDCRService.mergeSanctionLetter({additionalDetails: payload}, stateId);
+
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: mergedFilestore?.mergedFileStoreId?.fileStoreId || fileStoreId });
+      const receiptUrl = fileStore?.[mergedFilestore?.mergedFileStoreId?.fileStoreId || fileStoreId];
       if (!receiptUrl) throw new Error("Could not resolve filestore URL");
       const urlObj = new URL(receiptUrl);
       const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
@@ -1121,7 +1145,7 @@ const BpaApplicationDetail = () => {
       setShowToast({
         key: "true",
         error: true,
-        message: "Failed to open sanction letter. Please try again.",
+        label: "Failed to open sanction letter. Please try again.",
       });
     } finally {
       setLoader(false);
@@ -1465,13 +1489,36 @@ const BpaApplicationDetail = () => {
       // console.log("🎯 Starting certificate eSign process...");
 
       const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
+      const uploadedDiagramObject = fetchFilestoreAndTenant(data?.edcrDetails?.updatedDxfFile, tenantId)
+      
+      const payload = {
+        uploadedDiagram: {
+          ...uploadedDiagramObject
+        },
+        sanctionLetter: {
+          filestoreId: fileStoreId,
+          tenantId: tenantId
+        },
+        details: {
+          ulbName: data?.applicationData?.additionalDetails?.UlbName,
+          dateOfApproval: new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST',
+          fileNumber: data?.applicationData?.applicationNo,
+          buildingCategory: data?.applicationData?.additionalDetails?.categoriesName,
+          professionalName: data?.applicationData?.additionalDetails?.stakeholderName,
+          plotArea: data?.applicationData?.additionalDetails?.area,
+          builtUpArea: data?.applicationData?.additionalDetails?.builtUpArea,
+          isAutoApproved: false
+        }
+      }
+
+      const mergedFilestore = await Digit.EDCRService.mergeSanctionLetter({additionalDetails: payload}, stateId);
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
       const authToken = localStorage.getItem('token');
 
       // Trigger eSign
       eSignCertificate(
-        { fileStoreId, tenantId, callbackUrl, authToken },
+        { fileStoreId: mergedFilestore?.mergedFileStoreId?.fileStoreId || fileStoreId, tenantId, callbackUrl, authToken },
         {
           onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {
@@ -1479,7 +1526,7 @@ const BpaApplicationDetail = () => {
             setShowToast({
               key: "true",
               error: true,
-              message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
+              label: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
             });
           },
         }
@@ -1489,7 +1536,7 @@ const BpaApplicationDetail = () => {
       setShowToast({
         key: "true",
         error: true,
-        message: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
+        label: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
       });
     }
   };

@@ -72,19 +72,31 @@ const PTSearchFields = {
       placeHolder: "PT_SEARCH_OWNER_NAME_PLACEHOLDER",
       validation: {
         minLength: {
-          value: 10,
-          message: "CORE_COMMON_MOBILE_ERROR",
-        },
-        maxLength: {
-          value: 10,
-          message: "CORE_COMMON_MOBILE_ERROR",
+          value: 3,
+          message: "PT_MIN_3CHAR",
         },
         pattern: {
-          value: /[6789][0-9]{9}/,
-          message: "CORE_COMMON_MOBILE_ERROR",
+          value:  "^[a-zA-Z ]+$",
+          message: "PAYMENT_INVALID_NAME",
         },
       },
     },
+    surveyId: {
+      type: "text",
+      label: "PT_SEARCH_SURVEYID",
+      placeHolder: "PT_SEARCH_SURVEY_ID_PLACEHOLDER",
+      validation: {
+        minLength: {
+          value: 3,
+          message: "PT_MIN_3CHAR",
+        },
+        pattern: {
+          value:  "^[a-zA-Z ]+$",
+          message: "PAYMENT_INVALID_NAME",
+        },
+      },
+    },
+
     // acknowledgementIds: {
     //   type: "text",
     //   label: "PT_PROPERTY_APPLICATION_NO",
@@ -170,6 +182,7 @@ const Search = () => {
   // propertyType:""
 };
   const [payload, setPayload] = useState({});
+  const [searchTenantId, setSearchTenantId] = useState(tenantId);
   const [formData, setFormData] = useState(defaultValues);
   const [searchBy, setSearchBy] = useState("searchId");
   const [showToast, setShowToast] = useState(null);
@@ -208,6 +221,7 @@ const Search = () => {
       setFormData(_data);
       console.log("_data2",payload)
       setPayload({locality:_data.locality.code, propertyType:_data.propertyType.code})
+      setSearchTenantId(selectedTenantId);
       console.log("_data3",payload)
     }
     else {
@@ -252,9 +266,9 @@ setPayload(finalPayload);
 />
       
       {Object.keys(payload).includes("propertyType") ?
-      <SearchPTIDPropComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={tenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
+      <SearchPTIDPropComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={searchTenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
       : Object.keys(payload).length > 0 ? (
-        <SearchResultComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={tenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
+        <SearchResultComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={searchTenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
       ):""}
       {showToast && (
         <Toast

@@ -53,7 +53,7 @@ const Search = ({ path }) => {
 
   const [tableData, setTableData] = useState([{ display: "ES_COMMON_NO_DATA" }]);
   const [count,setCount] = useState(0);
-  const { data, revalidate, isLoading, isSuccess, error } = Digit.Hooks.noc.useNOCSearchApplicationByIdOrMobile(filters,tenantId,{});
+  const { data, revalidate, isLoading, isSuccess, error } = Digit.Hooks.firenoc.useFIRENOCSearchApplication(filters,tenantId,{});
 
   useEffect(()=>{
     if(data == undefined){

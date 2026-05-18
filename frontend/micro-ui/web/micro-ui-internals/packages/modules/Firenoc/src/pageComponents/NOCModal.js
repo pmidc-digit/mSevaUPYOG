@@ -57,18 +57,27 @@ const NOCModal = ({
  
   const checkRole = action?.state?.actions;
 
-  const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles))];
+  const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles || []))];
 
-  const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
+  const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles || []))];
+
+  const rolesFromAction = action?.assigneeRoles?.map?.((e) => ({ code: e })) || [];
+  const rolesFromEmployees = allRolesNew?.map((role) => ({ code: role })) || [];
+  
+  let finalRoles = rolesFromAction.length > 0 ? rolesFromAction : rolesFromEmployees;
+  if (finalRoles.length === 0) {
+    finalRoles = [
+      { code: "FIRENOC_VERIFIER" },
+      { code: "FIRENOC_APPROVER" }
+    ];
+  }
 
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
-       //roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
-      roles: allRolesNew?.map((role) => ({ code: role })),
+      roles: finalRoles,
       isActive: true,
-      zones: applicationData?.[0]?.nocDetails?.additionalDetails?.siteDetails?.zone
-
+      zones: applicationData?.[0]?.fireNOCDetails?.propertyDetails?.address?.locality?.code || undefined
     },
     { enabled: !action?.isTerminateState }
   );
@@ -181,29 +190,33 @@ const NOCModal = ({
 
 
 
-    let workflow = { action: action?.action, comments: data?.comments, businessService, moduleName: moduleCode };
-    applicationData = {
-      ...applicationData,
-      action: action?.action,
-      comment: finalComments,
-      assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
-      // assignee: action?.isTerminateState ? [] : [selectedApprover?.uuid],
-      wfDocuments: uploadedFile
-        ? [
-            {
-              documentType: file?.type,
-              // documentType: action?.action + "_DOC",
-              fileName: file?.name,
-              documentUid: uploadedFile,
-              filestoreId: uploadedFile,
-              documentAttachment: uploadedFile
-            },
-          ]
-        : null,
-    };
+    let singleApp = { ...(applicationData?.[0] || {}) };
+    if (singleApp.fireNOCDetails) {
+      singleApp.fireNOCDetails = {
+        ...singleApp.fireNOCDetails,
+        action: action?.action,
+        comment: finalComments,
+        assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
+        wfDocuments: uploadedFile
+          ? [
+              {
+                documentType: file?.type,
+                fileName: file?.name,
+                documentUid: uploadedFile,
+                filestoreId: uploadedFile,
+                documentAttachment: uploadedFile
+              },
+            ]
+          : null,
+      };
+    } else {
+      singleApp.action = action?.action;
+      singleApp.comment = finalComments;
+      singleApp.assignee = !selectedApprover?.uuid ? null : [selectedApprover?.uuid];
+    }
 
     submitAction({
-      Licenses: [applicationData],
+      FireNOCs: [singleApp],
     });
   }
 

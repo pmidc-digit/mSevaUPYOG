@@ -1,5 +1,6 @@
 import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect } from "react";
-import { InboxComposer, ComplaintIcon, Header, Loader  } from "@mseva/digit-ui-react-components";
+import { InboxComposer, ComplaintIcon, Header, Loader, SubmitBar } from "@mseva/digit-ui-react-components";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
@@ -165,7 +166,7 @@ const Inbox = ({ parentRoute }) => {
     links: [
       {
         text: t("ES_COMMON_APPLICATION_SEARCH"),
-        link: "/digit-ui/employee/noc/search/application",
+        link: "/digit-ui/employee/firenoc/search/application",
       },
     ],
   };
@@ -235,13 +236,18 @@ const Inbox = ({ parentRoute }) => {
     }
   return (
     <>
-      <Header>
-        {employeeData &&
-          !isLoading &&
-          `Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
-        
-        <div> {t("ES_COMMON_INBOX")} {totalCount ? <p className="inbox-count">{totalCount}</p> : null}</div>
-      </Header>
+      <div className="header-container-firenoc" style={{ display: "flex", justifyContent: "space-between" }}>
+        <Header>
+          {employeeData &&
+            !isLoading &&
+            `Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
+          
+          <div> {t("ES_COMMON_INBOX")} {totalCount ? <p className="inbox-count">{totalCount}</p> : null}</div>
+        </Header>
+        <Link to="/digit-ui/employee/firenoc/new-application" style={{ marginTop: "24px" }}>
+          <SubmitBar label={t("NOC_NEW_APPLICATION")} />
+        </Link>
+      </div>
       <InboxComposer
         {...{
           isInboxLoading,

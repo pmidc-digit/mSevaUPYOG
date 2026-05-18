@@ -44,6 +44,16 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     },
   });
 
+  React.useEffect(() => {
+    if (saved && Object.keys(saved).length > 0) {
+      if (saved.applicantType) setValue("applicantType", saved.applicantType);
+      if (saved.applicantSubtype) setValue("applicantSubtype", saved.applicantSubtype);
+      if (saved.owners && saved.owners.length > 0) {
+        setValue("owners", saved.owners);
+      }
+    }
+  }, [saved, setValue]);
+
   let tenantId;
   if (window.location.href.includes("citizen")) tenantId = window.localStorage.getItem("CITIZEN.CITY");
   else tenantId = window.localStorage.getItem("Employee.tenant-id");
@@ -172,7 +182,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
             },
             action: "INITIATE",
             additionalDetail: { documents: [] },
-            channel: "CITIZEN",
+            channel: window.location.href.includes("employee") ? "COUNTER" : "CITIZEN",
             financialYear: "2019-20",
             tenantId,
           },

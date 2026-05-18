@@ -210,17 +210,26 @@ function NOCSummary({ currentStepData: formData, t }) {
       {/* ── Applicant Details ── */}
       <Card>
         <CardSubHeader>{t("Applicant Details")}</CardSubHeader>
-        <StatusTable>
-          <Row label={t("Mobile Number")} text={val(primaryOwner.mobileNumber)} />
-          <Row label={t("Name")} text={val(primaryOwner.ownerOrFirmName || primaryOwner.name)} />
-          <Row label={t("Gender")} text={val(primaryOwner.gender?.code || primaryOwner.gender)} />
-          <Row label={t("Father/Husband's Name")} text={val(primaryOwner.fatherOrHusbandName)} />
-          <Row label={t("Relationship")} text={val(primaryOwner.relationship?.code || primaryOwner.relationship)} />
-          <Row label={t("Date Of Birth")} text={formatDob(primaryOwner.dob || primaryOwner.dateOfBirth)} />
-          <Row label={t("Email")} text={val(primaryOwner.emailId)} />
-          <Row label={t("PAN No.")} text={val(primaryOwner.panNo || primaryOwner.pan)} />
-          <Row label={t("Correspondence Address")} text={val(primaryOwner.address || primaryOwner.correspondenceAddress)} />
-        </StatusTable>
+        {owners.map((owner, index) => (
+          <div key={index} style={index > 0 ? { marginTop: "20px", borderTop: "1px solid #efefef", paddingTop: "16px" } : {}}>
+            {owners.length > 1 && (
+              <div style={{ fontWeight: "600", marginBottom: "12px", color: "#505A5F" }}>
+                {`${t("Applicant")} ${index + 1}`}
+              </div>
+            )}
+            <StatusTable>
+              <Row label={t("Mobile Number")} text={val(owner.mobileNumber)} />
+              <Row label={t("Name")} text={val(owner.ownerOrFirmName || owner.name)} />
+              <Row label={t("Gender")} text={val(owner.gender?.code || owner.gender)} />
+              <Row label={t("Father/Husband's Name")} text={val(owner.fatherOrHusbandName)} />
+              <Row label={t("Relationship")} text={val(owner.relationship?.code || owner.relationship)} />
+              <Row label={t("Date Of Birth")} text={formatDob(owner.dob || owner.dateOfBirth)} />
+              <Row label={t("Email")} text={val(owner.emailId)} />
+              <Row label={t("PAN No.")} text={val(owner.panNo || owner.pan)} />
+              <Row label={t("Correspondence Address")} text={val(owner.address || owner.correspondenceAddress)} />
+            </StatusTable>
+          </div>
+        ))}
       </Card>
 
       {/* ── Documents ── */}

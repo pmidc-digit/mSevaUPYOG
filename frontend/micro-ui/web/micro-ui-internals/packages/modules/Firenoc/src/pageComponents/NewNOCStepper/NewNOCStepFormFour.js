@@ -28,11 +28,15 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       ...(doc.dropdown ? { dropdown: doc.dropdown } : {}),
     }));
 
+    const originalStatus = fireNOCData?.fireNOCDetails?.status || fireNOCData?.status;
+    const hasApplicationNo = fireNOCData?.applicationNumber || fireNOCData?.fireNOCDetails?.applicationNumber;
+    const workflowAction = (originalStatus === "CITIZENACTIONREQUIRED" || originalStatus === "SENDBACKTOCITIZEN" || hasApplicationNo) ? "RESUBMIT" : "APPLY";
+
     const updatedFireNOC = {
       ...fireNOCData,
       fireNOCDetails: {
         ...fireNOCData?.fireNOCDetails,
-        action: "APPLY",
+        action: workflowAction,
         propertyDetails: {
           ...fireNOCData?.fireNOCDetails?.propertyDetails,
           address: {

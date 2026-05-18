@@ -62,6 +62,9 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
     if (currentStepData?.fireNOCType) {
       setValue("fireNOCType", currentStepData.fireNOCType);
     }
+    if (currentStepData?.firestationId) {
+      setValue("firestationId", currentStepData.firestationId);
+    }
     if (currentStepData?.provisionalNocNumber) {
       setValue("provisionalNocNumber", currentStepData.provisionalNocNumber);
     }

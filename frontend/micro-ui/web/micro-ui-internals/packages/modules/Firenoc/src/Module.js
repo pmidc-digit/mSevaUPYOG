@@ -37,7 +37,7 @@ import EditApplication from "./pageComponents/EditApplication/EditApplication";
 import MyApplications from "./pages/citizen/Applications/MyApplications";
 import CitizenApplicationOverview from "./pages/citizen/Applications/ApplicationsOverview";
 import FireNOCMyApplications from "./pages/citizen/Applications/FireNOCMyApplications";
-import FireNOCApplicationOverview from "./pages/citizen/Applications/FireNOCApplicationOverview";
+import FireNOCApplicationOverview from "./pageComponents/FireNOCApplicationOverview";
 import CitizenSearchApplication from "./pageComponents/SearchApplication/index"
 import InspectionReport from "./pageComponents/InsectionReport"
 

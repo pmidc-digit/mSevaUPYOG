@@ -55,7 +55,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const createApplication = async (data) => {
-    // setLoader(true);
+    setLoader(true);
     const applicant = Digit.UserService.getUser()?.info || {};
     const applicantId = applicant?.uuid;
 

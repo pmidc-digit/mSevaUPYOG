@@ -8,11 +8,9 @@ import { useLocation } from "react-router-dom";
 import { Loader } from "../components/Loader";
 
 const getAddress = (address, t) => {
-  return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${
-    address?.landmark ? `${address?.landmark}, ` : ""
-  }${t(Digit.Utils.pt.getMohallaLocale(address?.locality.code, address?.tenantId))}, ${t(Digit.Utils.pt.getCityLocale(address?.tenantId))}${
-    address?.pincode && t(address?.pincode) ? `, ${address.pincode}` : " "
-  }`;
+  return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${address?.landmark ? `${address?.landmark}, ` : ""
+    }${t(Digit.Utils.pt.getMohallaLocale(address?.locality.code, address?.tenantId))}, ${t(Digit.Utils.pt.getCityLocale(address?.tenantId))}${address?.pincode && t(address?.pincode) ? `, ${address.pincode}` : " "
+    }`;
 };
 
 export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
@@ -71,6 +69,8 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       privacy: Digit.Utils.getPrivacyObject(),
     }
   );
+
+
 
   useEffect(() => {
     if (ptFromApi?.consumerCode) {
@@ -188,7 +188,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
     return formData && formData[config.key] ? formData[config.key][input] : undefined;
   }
 
-  async function fetchBill() {
+  const fetchBill = async () => {
     setLoader(true);
     try {
       const result = await Digit.PaymentService.fetchBill(tenantId, {
@@ -223,95 +223,95 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
     }
   }
 
-  function redirectToPayBill(billData, index, isEdit) {
-    const userType = window.location.href.includes("employee") ? "employee" : "citizen";
+function redirectToPayBill(billData, index, isEdit) {
+  const userType = window.location.href.includes("employee") ? "employee" : "citizen";
 
-    const payUrl =
-      "https://sdc-uat.lgpunjab.gov.in" +
-      `/${userType}/egov-common/pay?consumerCode=${formData?.cpt?.id}&tenantId=${formData?.cpt?.details?.tenantId}&businessService=PT`;
+  const payUrl =
+    "https://sdc-uat.lgpunjab.gov.in" +
+    `/${userType}/egov-common/pay?consumerCode=${formData?.cpt?.id}&tenantId=${formData?.cpt?.details?.tenantId}&businessService=PT`;
 
-    window.open(payUrl, "_blank");
-    setPropertyDues({});
+  window.open(payUrl, "_blank");
+  setPropertyDues({});
+}
+
+useEffect(() => {
+  if (showToast) {
+    const timer = setTimeout(() => {
+      setShowToast(null);
+    }, 3000); // auto close after 3 sec
+
+    return () => clearTimeout(timer); // cleanup
   }
+}, [showToast]);
 
-  useEffect(() => {
-    if (showToast) {
-      const timer = setTimeout(() => {
-        setShowToast(null);
-      }, 3000); // auto close after 3 sec
-
-      return () => clearTimeout(timer); // cleanup
-    }
-  }, [showToast]);
-
-  return (
-    <React.Fragment>
-      <div style={{ marginBottom: "16px" }}>
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller ndc_card_labels" style={getInputStyles()}>
-            {`${t(propertyIdInput.label)} *`}
-          </CardLabel>
-          <div className="field ndc_property_search" ref={myElementRef} id="search-property-field">
-            <TextInput
-              key={propertyIdInput.name}
-              value={propertyId} //{propertyId}
-              onChange={handlePropertyChange}
-              disable={false}
-              // maxlength={16}
-              defaultValue={undefined}
-              {...propertyIdInput.validation}
-            />
-
-            {!isSearchClicked && (
-              <button className="submit-bar" type="button" onClick={searchProperty}>
-                {`${t("PT_SEARCH")}`}
-              </button>
-            )}
-
-            {!apiDataCheck?.[0]?.NdcDetails && getCheckStatus && !getPayDuesButton && (
-              <button
-                className="submit-bar"
-                type="button"
-                onClick={() => {
-                  fetchBill("PT", formData?.cpt?.id);
-                }}
-              >
-                {`${t("CHECK_STATUS_PROPERTY")}`}
-                {/* Check Status */}
-              </button>
-            )}
-            {getPayDuesButton && <div className="ndc-pay-due-button">Rs. {formData?.cpt?.dues?.totalAmount} </div>}
-
-            {getPayDuesButton && (
-              <button
-                className="submit-bar"
-                type="button"
-                onClick={() => {
-                  redirectToPayBill(formData?.cpt?.dues?.totalAmount);
-                  setPayDuesButton(false);
-                }}
-              >
-                {`${t("PAY_DUES")} `}
-              </button>
-            )}
-            {getNoDue && <div className="ndc-no-due-button">{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>}
-          </div>
-        </LabelFieldPair>
-
-        {showToast && (
-          <Toast
-            isDleteBtn={true}
-            labelstyle={{ width: "100%" }}
-            error={showToast.error}
-            warning={showToast.warning}
-            label={t(showToast.label)}
-            onClose={() => {
-              setShowToast(null);
-            }}
+return (
+  <React.Fragment>
+    <div style={{ marginBottom: "16px" }}>
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller ndc_card_labels" style={getInputStyles()}>
+          {`${t(propertyIdInput.label)} *`}
+        </CardLabel>
+        <div className="field ndc_property_search" ref={myElementRef} id="search-property-field">
+          <TextInput
+            key={propertyIdInput.name}
+            value={propertyId} //{propertyId}
+            onChange={handlePropertyChange}
+            disable={false}
+            // maxlength={16}
+            defaultValue={undefined}
+            {...propertyIdInput.validation}
           />
-        )}
-      </div>
-      {(isLoading || getLoader) && <Loader page={true} />}
-    </React.Fragment>
-  );
+
+          {!isSearchClicked && (
+            <button className="submit-bar" type="button" onClick={searchProperty}>
+              {`${t("PT_SEARCH")}`}
+            </button>
+          )}
+
+          {!apiDataCheck?.[0]?.NdcDetails && getCheckStatus && !getPayDuesButton && (
+            <button
+              className="submit-bar"
+              type="button"
+              onClick={() => {
+                fetchBill("PT", formData?.cpt?.id);
+              }}
+            >
+              {`${t("CHECK_STATUS_PROPERTY")}`}
+              {/* Check Status */}
+            </button>
+          )}
+          {getPayDuesButton && <div className="ndc-pay-due-button">Rs. {formData?.cpt?.dues?.totalAmount} </div>}
+
+          {getPayDuesButton && (
+            <button
+              className="submit-bar"
+              type="button"
+              onClick={() => {
+                redirectToPayBill(formData?.cpt?.dues?.totalAmount);
+                setPayDuesButton(false);
+              }}
+            >
+              {`${t("PAY_DUES")} `}
+            </button>
+          )}
+          {getNoDue && <div className="ndc-no-due-button">{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>}
+        </div>
+      </LabelFieldPair>
+
+      {showToast && (
+        <Toast
+          isDleteBtn={true}
+          labelstyle={{ width: "100%" }}
+          error={showToast.error}
+          warning={showToast.warning}
+          label={t(showToast.label)}
+          onClose={() => {
+            setShowToast(null);
+          }}
+        />
+      )}
+    </div>
+    {(isLoading || getLoader) && <Loader page={true} />}
+  </React.Fragment>
+);
 };

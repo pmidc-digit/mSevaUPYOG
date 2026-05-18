@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { EmployeeData, downloadPdfFromURL, getNOCSanctionLetter , getNOCAcknowledgementData, amountToWords } from "../../../utils";
+import { EmployeeData, downloadPdfFromURL, amountToWords } from "../../../utils";
 import { Header, Loader, Card, CardSectionHeader, StatusTable, Row, SubmitBar, ActionBar,MultiLink } from "@mseva/digit-ui-react-components";
+import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
+import {getNOCAcknowledgementData} from "../../../utils/getNOCAcknowledgementData";
 
 const formatDate = (epoch) => {
   if (!epoch) return "-";
@@ -48,6 +50,8 @@ const FireNOCApplicationOverview = () => {
   const [showOptions, setShowOptions] = useState(false);
   const queryParams = new URLSearchParams(location.search);
   const tenantId = queryParams.get("tenantId") || Digit.ULBService.getStateId();
+  let EmpData = EmployeeData(tenantId, appNo);
+
 
   const { isLoading, data: fireNOC } = Digit.Hooks.firenoc.useFIRENOCApplicationDetails({
     tenantId,
@@ -60,6 +64,7 @@ const FireNOCApplicationOverview = () => {
 
   useEffect(() => {
     if (!appNo || !tenantId) return;
+    setLoading(true);
     const authToken = Digit.UserService.getUser()?.access_token || "";
     fetch(
       `/collection-services/payments/_search?tenantId=${encodeURIComponent(tenantId)}&consumerCodes=${encodeURIComponent(appNo)}`,
@@ -82,7 +87,8 @@ const FireNOCApplicationOverview = () => {
     )
       .then((r) => r.json())
       .then((data) => setPayment(data?.Payments?.[0] || null))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {setLoading(false)});
   }, [appNo, tenantId]);
 
   useEffect(() => {
@@ -148,23 +154,23 @@ const FireNOCApplicationOverview = () => {
   });
 
   const paymentDetail = payment?.paymentDetails?.[0];
+  console.log('paymentDetail', paymentDetail)
   const isPendingPayment = details?.status === "PENDINGPAYMENT";
   
   const dowloadOptions = [];
-  let EmpData = EmployeeData(tenantId, appNo);
   const handleDownloadPdf = async () => {
     try {
       setLoading(true);
-      const Property = details;
+      const Property = fireNOC;
       const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-
-      const site = Property?.nocDetails?.additionalDetails?.siteDetails;
-      const ulbType = site?.ulbType;
-      const ulbName = site?.ulbName?.city?.name || site?.ulbName;
+      console.log('tenantInfo', tenantInfo)
+      // const site = Property?.nocDetails?.additionalDetails?.siteDetails;
+      const ulbType = tenantInfo?.city?.ulbType;
+      const ulbName = tenantInfo?.city?.name;
 
       const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
       setTimeout(() => {
-        Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+        Digit.Utils.pdf.generateFormattedFireNoc(acknowledgementData);
       }, 0);
     } catch (error) {
       // console.error("Error generating acknowledgement:", error);
@@ -173,239 +179,243 @@ const FireNOCApplicationOverview = () => {
     }
   };
 
-  async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
+  const getRecieptSearch = async ({ tenantId, payments, pdfkey, EmpData, ...params }) => {
     try {
       setLoading(true);
-      if (!details) {
-        throw new Error("fire Noc Application data is missing");
-      }
       const nocSanctionData = await getNOCSanctionLetter(details, t, EmpData, finalComment);
       const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] }, pdfkey);
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-      const receiptUrl = fileStore[response.filestoreIds[0]];
-      await downloadPdfFromURL(receiptUrl);
-    } catch (error) {
-      // console.error("Sanction Letter download error:", error);
+      let filestoreID = payments?.fileStoreId;
+      if (!filestoreID) {
+        try {
+          const response = await Digit.PaymentService.generatePdf(
+            tenantId,
+            { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] },
+            pdfkey
+          );
+          filestoreID = response?.filestoreIds[0];
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+        fileStoreIds: filestoreID,
+      });
+      await downloadPdfFromURL(fileStore[filestoreID]);
     } finally {
       setLoading(false);
     }
-  }
+  };
+
+  const getSanctionLetter = async ({ tenantId, payments, pdfkey, EmpData, ...params }) => {
+    try {
+      setLoading(true);
+      const nocSanctionData = await getNOCSanctionLetter(fireNOC, t, EmpData, finalComment);
+      const fee = payments?.totalAmountPaid;
+      const amountinwords = amountToWords(fee);
+
+      const prevGetLang = Digit.StoreData.getCurrentLanguage;
+      console.log("prevGetLang", prevGetLang);
+      Digit.StoreData.getCurrentLanguage = () => "pn_IN";
+
+      let response = null;
+      try {
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] }, pdfkey);
+      } finally {
+        Digit.StoreData.getCurrentLanguage = prevGetLang;
+        setLoading(false);
+      }
+
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+        fileStoreIds: response?.filestoreIds[0],
+      });
+      await downloadPdfFromURL(fileStore[response?.filestoreIds[0]]);
+    } finally {
+      setLoading(false);
+    }
+  };
   dowloadOptions.push({
     label: t("Application Form"),
     onClick: handleDownloadPdf,
   });
   
-    if (paymentDetail && paymentDetail.length > 0) {
-      dowloadOptions.push({
-        label: t("CHB_FEE_RECEIPT"),
-        onClick: () =>
-          getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: paymentDetail, pdfkey: "firenocreceipt", EmpData }),
-      });
-    }
+  if (payment && !loading) {
+    dowloadOptions.push({
+      label: t("CHB_FEE_RECEIPT"),
+      onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenocreceipt", EmpData }),
+    });
+  }
+
+  if (payment && !loading) {
+    dowloadOptions.push({
+      label: t("SANCTION_LETTER"),
+      onClick: () => getSanctionLetter({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-sanctionletter", EmpData }),
+    });
+  }
   
 
   return (
     <React.Fragment>
-    <div className="cardHeaderWithOptions">
-      <Header>{t("NOC_APPLICATION_DETAILS")}</Header>
-      {loading && <Loader />}
-              {dowloadOptions && dowloadOptions.length > 0 && (
-                <MultiLink
-                  className="multilinkWrapper"
-                  onHeadClick={() => setShowOptions(!showOptions)}
-                  displayOptions={showOptions}
-                  options={dowloadOptions}
-                />
-              )}
-    </div>
-    <div style={{ padding: "24px" }}>
-
-      {/* Application Summary */}
-      <Card>
-        <CardSectionHeader>{t("NOC_APPLICATION_SUMMARY")}</CardSectionHeader>
-        <StatusTable>
-          <Row label={t("NOC_APPLICATION_NUMBER")} text={details?.applicationNumber || "-"} />
-          <Row label={t("NOC_FIRENOC_NUMBER")} text={fireNOC.fireNOCNumber || "-"} />
-          <Row
-            label={t("NOC_APPLICATION_STATUS")}
-            text={<StatusBadge status={details?.status} />}
+      <div className="cardHeaderWithOptions">
+        <Header>{t("NOC_APPLICATION_DETAILS")}</Header>
+        {loading && <Loader />}
+        {dowloadOptions && dowloadOptions.length > 0 && (
+          <MultiLink
+            className="multilinkWrapper"
+            onHeadClick={() => setShowOptions(!showOptions)}
+            displayOptions={showOptions}
+            options={dowloadOptions}
           />
-          <Row label={t("NOC_FIRENOC_TYPE")} text={details?.fireNOCType || "-"} />
-          <Row label={t("NOC_FIRESTATION_ID")} text={details?.firestationId || "-"} />
-          <Row label={t("NOC_APPLICATION_DATE")} text={formatDate(details?.applicationDate)} />
-          {details?.issuedDate && (
-            <Row label={t("NOC_ISSUED_DATE")} text={formatDate(details?.issuedDate)} />
-          )}
-          {details?.validTo && (
-            <Row label={t("NOC_VALID_TILL")} text={formatDate(details?.validTo)} />
-          )}
-        </StatusTable>
-      </Card>
-
-      {/* Applicant Details */}
-      <Card style={{ marginTop: "16px" }}>
-        <CardSectionHeader>{t("NOC_APPLICANT_DETAILS")}</CardSectionHeader>
-        <StatusTable>
-          <Row label={t("NOC_OWNER_NAME")} text={owner?.name || "-"} />
-          <Row label={t("NOC_MOBILE_NUMBER")} text={owner?.mobileNumber || "-"} />
-          <Row
-            label={t("PT_OWNERSHIP_TYPE")}
-            text={details?.applicantDetails?.ownerShipType?.replace("INDIVIDUAL.", "") || "-"}
-          />
-        </StatusTable>
-      </Card>
-
-      {/* Site / Property Details */}
-      <Card style={{ marginTop: "16px" }}>
-        <CardSectionHeader>{t("NOC_SITE_DETAILS")}</CardSectionHeader>
-        <StatusTable>
-          <Row label={t("NOC_CITY")} text={address?.city || address?.tenantId || "-"} />
-          <Row label={t("NOC_AREA_TYPE")} text={address?.areaType || "-"} />
-          <Row label={t("NOC_LOCALITY")} text={address?.locality?.code || "-"} />
-        </StatusTable>
-      </Card>
-
-      {/* Building Details */}
-      {building && (
-        <Card style={{ marginTop: "16px" }}>
-          <CardSectionHeader>{t("NOC_BUILDING_DETAILS")}</CardSectionHeader>
+        )}
+      </div>
+      <div style={{ padding: "24px" }}>
+        {/* Application Summary */}
+        <Card>
+          <CardSectionHeader>{t("NOC_APPLICATION_SUMMARY")}</CardSectionHeader>
           <StatusTable>
-            <Row label={t("NOC_BUILDING_NAME")} text={building.name || "-"} />
-            <Row label={t("NOC_USAGE_TYPE")} text={building.usageType || "-"} />
-            <Row label={t("NOC_USAGE_SUB_TYPE")} text={building.usageSubType || "-"} />
-            {uomMap["NO_OF_FLOORS"] !== undefined && (
-              <Row label={t("NOC_NO_OF_FLOORS")} text={String(uomMap["NO_OF_FLOORS"])} />
-            )}
-            {uomMap["HEIGHT_OF_BUILDING"] !== undefined && (
-              <Row label={t("NOC_HEIGHT_OF_BUILDING")} text={`${uomMap["HEIGHT_OF_BUILDING"]} m`} />
-            )}
-            {building.landArea && (
-              <Row label={t("NOC_PLOT_AREA")} text={`${building.landArea} sq.m`} />
-            )}
-            {building.totalCoveredArea && (
-              <Row label={t("NOC_COVERED_AREA")} text={`${building.totalCoveredArea} sq.m`} />
-            )}
+            <Row label={t("NOC_APPLICATION_NUMBER")} text={details?.applicationNumber || "-"} />
+            <Row label={t("NOC_FIRENOC_NUMBER")} text={fireNOC.fireNOCNumber || "-"} />
+            <Row label={t("NOC_APPLICATION_STATUS")} text={<StatusBadge status={details?.status} />} />
+            <Row label={t("NOC_FIRENOC_TYPE")} text={details?.fireNOCType || "-"} />
+            <Row label={t("NOC_FIRESTATION_ID")} text={details?.firestationId || "-"} />
+            <Row label={t("NOC_APPLICATION_DATE")} text={formatDate(details?.applicationDate)} />
+            {details?.issuedDate && <Row label={t("NOC_ISSUED_DATE")} text={formatDate(details?.issuedDate)} />}
+            {details?.validTo && <Row label={t("NOC_VALID_TILL")} text={formatDate(details?.validTo)} />}
           </StatusTable>
         </Card>
-      )}
 
-      {/* Payment Details */}
-      {payment && (
+        {/* Applicant Details */}
         <Card style={{ marginTop: "16px" }}>
-          <CardSectionHeader>{t("NOC_PAYMENT_DETAILS")}</CardSectionHeader>
+          <CardSectionHeader>{t("NOC_APPLICANT_DETAILS")}</CardSectionHeader>
           <StatusTable>
-            <Row
-              label={t("PAYMENT_AMOUNT_PAID")}
-              text={`₹ ${payment.totalAmountPaid?.toLocaleString("en-IN") || "-"}`}
-            />
-            <Row label={t("PAYMENT_MODE")} text={payment.paymentMode || "-"} />
-            <Row
-              label={t("PAYMENT_RECEIPT_NUMBER")}
-              text={paymentDetail?.receiptNumber || "-"}
-            />
-            <Row
-              label={t("PAYMENT_TRANSACTION_DATE")}
-              text={formatDate(payment.transactionDate)}
-            />
+            <Row label={t("NOC_OWNER_NAME")} text={owner?.name || "-"} />
+            <Row label={t("NOC_MOBILE_NUMBER")} text={owner?.mobileNumber || "-"} />
+            <Row label={t("PT_OWNERSHIP_TYPE")} text={details?.applicantDetails?.ownerShipType?.replace("INDIVIDUAL.", "") || "-"} />
           </StatusTable>
         </Card>
-      )}
 
-      {/* Documents */}
-      {details?.additionalDetail?.documents?.length > 0 && (
+        {/* Site / Property Details */}
         <Card style={{ marginTop: "16px" }}>
-          <CardSectionHeader>{t("NOC_DOCUMENTS")}</CardSectionHeader>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {details.additionalDetail.documents.map((doc, idx) => (
-              <div
-                key={idx}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "10px 12px",
-                  background: "#f5f5f5",
-                  borderRadius: "6px",
-                }}
-              >
-                <span style={{ fontSize: "13px" }}>
-                  {doc.title?.replace(/_/g, " ") || doc.name || "-"}
-                </span>
-                {doc.link && (
-                  <a
-                    href={doc.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#F47738", fontWeight: "600", fontSize: "13px" }}
-                  >
-                    View
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
+          <CardSectionHeader>{t("NOC_SITE_DETAILS")}</CardSectionHeader>
+          <StatusTable>
+            <Row label={t("NOC_CITY")} text={address?.city || address?.tenantId || "-"} />
+            <Row label={t("NOC_AREA_TYPE")} text={address?.areaType || "-"} />
+            <Row label={t("NOC_LOCALITY")} text={address?.locality?.code || "-"} />
+          </StatusTable>
         </Card>
-      )}
-      {/* Application Timeline */}
-      {workflow.length > 0 && (
-        <Card style={{ marginTop: "16px" }}>
-          <CardSectionHeader>{t("NOC_APPLICATION_TIMELINE")}</CardSectionHeader>
-          <div style={{ paddingTop: "8px" }}>
-            {workflow.map((step, idx) => {
-              const stStatus = step.state?.applicationStatus;
-              const dotColor =
-                stStatus === "APPROVED" ? "#00703c" :
-                stStatus === "REJECTED" || stStatus === "CANCELLED" ? "#d4351c" : "#1858b8";
-              return (
-                <div key={step.id || idx} style={{ display: "flex", alignItems: "flex-start" }}>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginRight: "16px" }}>
-                    <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: dotColor, flexShrink: 0 }} />
-                    {idx < workflow.length - 1 && (
-                      <div style={{ width: "2px", background: "#b0bec5", flexGrow: 1, minHeight: "24px", marginTop: "2px" }} />
-                    )}
-                  </div>
-                  <div style={{ flex: 1, paddingBottom: idx === workflow.length - 1 ? 0 : "20px" }}>
-                    <div style={{ fontWeight: "600", fontSize: "14px", color: "#0b0c0c" }}>
-                      {t(`WF_${stStatus || step.action}`) !== `WF_${stStatus || step.action}` ? t(`WF_${stStatus || step.action}`) : (stStatus || step.action || "-")}
-                    </div>
-                    {step.action && (
-                      <div style={{ fontSize: "12px", color: "#505A5F", marginTop: "2px" }}>
-                        {t("NOC_WF_ACTION")}: <strong>{step.action}</strong>
-                      </div>
-                    )}
-                    {step.assigner?.name && (
-                      <div style={{ fontSize: "12px", color: "#505A5F" }}>
-                        {t("NOC_WF_BY")}: {step.assigner.name}
-                      </div>
-                    )}
-                    {step.auditDetails?.createdTime && (
-                      <div style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>
-                        {formatDate(step.auditDetails.createdTime)}
-                      </div>
-                    )}
-                    {step.comment && (
-                      <div style={{ fontSize: "12px", color: "#505A5F", fontStyle: "italic", marginTop: "2px" }}>
-                        "{step.comment}"
-                      </div>
-                    )}
-                  </div>
+
+        {/* Building Details */}
+        {building && (
+          <Card style={{ marginTop: "16px" }}>
+            <CardSectionHeader>{t("NOC_BUILDING_DETAILS")}</CardSectionHeader>
+            <StatusTable>
+              <Row label={t("NOC_BUILDING_NAME")} text={building.name || "-"} />
+              <Row label={t("NOC_USAGE_TYPE")} text={building.usageType || "-"} />
+              <Row label={t("NOC_USAGE_SUB_TYPE")} text={building.usageSubType || "-"} />
+              {uomMap["NO_OF_FLOORS"] !== undefined && <Row label={t("NOC_NO_OF_FLOORS")} text={String(uomMap["NO_OF_FLOORS"])} />}
+              {uomMap["HEIGHT_OF_BUILDING"] !== undefined && <Row label={t("NOC_HEIGHT_OF_BUILDING")} text={`${uomMap["HEIGHT_OF_BUILDING"]} m`} />}
+              {building.landArea && <Row label={t("NOC_PLOT_AREA")} text={`${building.landArea} sq.m`} />}
+              {building.totalCoveredArea && <Row label={t("NOC_COVERED_AREA")} text={`${building.totalCoveredArea} sq.m`} />}
+            </StatusTable>
+          </Card>
+        )}
+
+        {/* Payment Details */}
+        {payment && (
+          <Card style={{ marginTop: "16px" }}>
+            <CardSectionHeader>{t("NOC_PAYMENT_DETAILS")}</CardSectionHeader>
+            <StatusTable>
+              <Row label={t("PAYMENT_AMOUNT_PAID")} text={`₹ ${payment.totalAmountPaid?.toLocaleString("en-IN") || "-"}`} />
+              <Row label={t("PAYMENT_MODE")} text={payment.paymentMode || "-"} />
+              <Row label={t("PAYMENT_RECEIPT_NUMBER")} text={paymentDetail?.receiptNumber || "-"} />
+              <Row label={t("PAYMENT_TRANSACTION_DATE")} text={formatDate(payment.transactionDate)} />
+            </StatusTable>
+          </Card>
+        )}
+
+        {/* Documents */}
+        {details?.additionalDetail?.documents?.length > 0 && (
+          <Card style={{ marginTop: "16px" }}>
+            <CardSectionHeader>{t("NOC_DOCUMENTS")}</CardSectionHeader>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {details.additionalDetail.documents.map((doc, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "10px 12px",
+                    background: "#f5f5f5",
+                    borderRadius: "6px",
+                  }}
+                >
+                  <span style={{ fontSize: "13px" }}>{doc.title?.replace(/_/g, " ") || doc.name || "-"}</span>
+                  {doc.link && (
+                    <a href={doc.link} target="_blank" rel="noopener noreferrer" style={{ color: "#F47738", fontWeight: "600", fontSize: "13px" }}>
+                      View
+                    </a>
+                  )}
                 </div>
-              );
-            })}
-          </div>
-        </Card>
+              ))}
+            </div>
+          </Card>
+        )}
+        {/* Application Timeline */}
+        {workflow.length > 0 && (
+          <Card style={{ marginTop: "16px" }}>
+            <CardSectionHeader>{t("NOC_APPLICATION_TIMELINE")}</CardSectionHeader>
+            <div style={{ paddingTop: "8px" }}>
+              {workflow.map((step, idx) => {
+                const stStatus = step.state?.applicationStatus;
+                const dotColor = stStatus === "APPROVED" ? "#00703c" : stStatus === "REJECTED" || stStatus === "CANCELLED" ? "#d4351c" : "#1858b8";
+                return (
+                  <div key={step.id || idx} style={{ display: "flex", alignItems: "flex-start" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginRight: "16px" }}>
+                      <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: dotColor, flexShrink: 0 }} />
+                      {idx < workflow.length - 1 && (
+                        <div style={{ width: "2px", background: "#b0bec5", flexGrow: 1, minHeight: "24px", marginTop: "2px" }} />
+                      )}
+                    </div>
+                    <div style={{ flex: 1, paddingBottom: idx === workflow.length - 1 ? 0 : "20px" }}>
+                      <div style={{ fontWeight: "600", fontSize: "14px", color: "#0b0c0c" }}>
+                        {t(`WF_${stStatus || step.action}`) !== `WF_${stStatus || step.action}`
+                          ? t(`WF_${stStatus || step.action}`)
+                          : stStatus || step.action || "-"}
+                      </div>
+                      {step.action && (
+                        <div style={{ fontSize: "12px", color: "#505A5F", marginTop: "2px" }}>
+                          {t("NOC_WF_ACTION")}: <strong>{step.action}</strong>
+                        </div>
+                      )}
+                      {step.assigner?.name && (
+                        <div style={{ fontSize: "12px", color: "#505A5F" }}>
+                          {t("NOC_WF_BY")}: {step.assigner.name}
+                        </div>
+                      )}
+                      {step.auditDetails?.createdTime && (
+                        <div style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>{formatDate(step.auditDetails.createdTime)}</div>
+                      )}
+                      {step.comment && (
+                        <div style={{ fontSize: "12px", color: "#505A5F", fontStyle: "italic", marginTop: "2px" }}>"{step.comment}"</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        )}
+      </div>
+      {isPendingPayment && (
+        <ActionBar>
+          <SubmitBar
+            label={t("NOC_PAY_NOW")}
+            onSubmit={() => history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${appNo}?tenantId=${tenantId}`)}
+          />
+        </ActionBar>
       )}
-    </div>
-    {isPendingPayment && (
-      <ActionBar>
-        <SubmitBar
-          label={t("NOC_PAY_NOW")}
-          onSubmit={() => history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${appNo}?tenantId=${tenantId}`)}
-        />
-      </ActionBar>
-    )}
     </React.Fragment>
   );
 };

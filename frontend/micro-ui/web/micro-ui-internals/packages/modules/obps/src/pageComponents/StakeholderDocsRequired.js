@@ -18,8 +18,8 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
   } else formData = formData;
   const userInfo = Digit.UserService.getUser();
   const requestor = userInfo?.info?.mobileNumber;
-  const submittedStates = ["PENDINGPAYMENT", "PENDINGDOCVERIFICATION", "PENDINGAPPROVAL", "APPROVED"];
-  const editableStates = ["INITIATED", "EXPIRED", "INACTIVE", "CITIZEN_ACTION_REQUIRED", "REJECTED"];
+  const submittedStates = ["INITIATED", "PENDINGPAYMENT", "PENDINGDOCVERIFICATION", "PENDINGAPPROVAL", "APPROVED", "CITIZEN_ACTION_REQUIRED", "EXPIRED", ];
+  const editableStates = ["INACTIVE", "REJECTED"];
 
   const { data: BPAREGData, isLoading: BPAREGLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(
     tenantId,
@@ -44,11 +44,13 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
 
       // Second priority: Check for editable states
       const editableLicense = BPAREGData.Licenses.find(license =>
-        editableStates.includes(license?.status)
+        (editableStates.includes(license?.status) && license?.tenantId === tenantId)
       );
 
       if (editableLicense) {
         getBPAREGFormData(editableLicense, true);
+      }else{
+        getBPAREGFormData(editableLicense, false);
       }
     }
   }, [BPAREGData, BPAREGLoading]);

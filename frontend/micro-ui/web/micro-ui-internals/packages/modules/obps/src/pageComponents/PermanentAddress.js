@@ -713,7 +713,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           setErrorMessage(e?.response?.data?.Errors?.[0]?.message || "Something went wrong");
           setShowToast({ error: true, message: e?.response?.data?.Errors?.[0]?.message || "Something went wrong" });
         });
-    } else if(formData?.result && formData?.result?.Licenses?.[0]?.id && formData?.editableFields?.applicationType === "NEW" && (formData?.result?.Licenses?.[0]?.status === "REJECTED" || formData?.result?.Licenses?.[0]?.status === "CANCELLED")) {
+    }else if(formData?.result && formData?.result?.Licenses?.[0]?.id && formData?.editableFields?.applicationType === "NEW" && formData?.result?.Licenses?.[0]?.status === "INACTIVE") {
       setErrorMessage("");
       setShowToast(null); // reset errors
 
@@ -770,14 +770,14 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               ],
               tradeUnits: [
                 {
-                  tradeType: formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
+                  tradeType: formData?.LicneseType?.LicenseType?.tradeType || formData?.formData?.LicneseType?.LicenseType?.tradeType || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
                 },
               ],
               additionalDetail: {
-                // qualificationType: formData?.LicneseType?.qualificationType?.name,
-                // counsilForArchNo: formData?.LicneseType?.ArchitectNo,
                 // isSelfCertificationRequired: formData?.LicneseType?.selfCertification || null,
                 ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),
+                qualificationType: formData?.LicneseType?.qualificationType?.name || formData?.formData?.LicneseType?.qualificationType?.name || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.qualificationType,
+                counsilForArchNo: formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
                 isAddressSame: isAddressSame,                
                 Ulb: tenantToSend,
               },
@@ -807,8 +807,8 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             ...formData,
             result: result,
             editableFields: {
-              "provide-license-type": true,
-              "licensee-details": true,
+              "provide-license-type": false,
+              "licensee-details": false,
               "Permanent-address": true,
               "professional-document-details": true,
               isCreate: false,

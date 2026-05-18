@@ -7,7 +7,7 @@ RUN apk add --no-cache \
     g++ \
     git
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @mseva/digit-ui-libraries@1.1.68-dev.1.29
+RUN yarn add @mseva/digit-ui-libraries@1.1.68-dev.1.30
 RUN yarn add @mseva/digit-ui-module-bills@1.0.8
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.6
 RUN yarn add @mseva/digit-ui-module-dss@1.0.6
@@ -34,7 +34,7 @@ RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.33-dev.1.11
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.29-dev.6
 RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.33-dev.1.6
 RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.51-dev.1.21
-RUN yarn add @mseva/digit-ui-module-ndc@1.0.72-dev.1.14
+RUN yarn add @mseva/digit-ui-module-ndc@1.0.72-dev.1.15
 ARG WORK_DIR
 WORKDIR /app
 # ENV NODE_OPTIONS "--max-old-space-size=8192" 12288 4192

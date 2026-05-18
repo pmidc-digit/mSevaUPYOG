@@ -17,7 +17,7 @@ import {
   usePaymentSearch,
   useBulkPdfDetails,
 } from "./payment";
-import {usePrintBillReceipt} from "./usePrintBillReceipt";
+import { usePrintBillReceipt } from "./usePrintBillReceipt";
 import { useMCollectRecieptSearch } from "./mcollect/mCollect";
 import { useChallanGenerationRecieptSearch } from "./challanGeneration/challanGeneration";
 import { useRentAndLeaseRecieptSearch, useRentAndLeaseProperties } from "./rentAndLease/rentAndLease";
@@ -362,6 +362,8 @@ import useADSAllMDMS from "./ads/useADSAllMDMS";
 
 // ndc
 import useNDCInbox from "./ndc/useInbox";
+import useSearchNDCWS from "./ndc/useSearchWS";
+
 import useCHBInbox from "./chb/useInbox";
 import useSpecialCategory from "./chb/useSpecialCategory";
 import useResidentType from "./chb/useResidentType";
@@ -793,6 +795,7 @@ const ndc = {
   useSearchApplication: useNDCSearchApplication,
   useSearchEmployeeApplication: useNDCSearchApplicationEmployee,
   useNDCDocumentSearch,
+  useSearchWS: useSearchNDCWS
 };
 
 const challangeneration = {

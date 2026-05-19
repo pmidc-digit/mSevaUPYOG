@@ -294,7 +294,10 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                   select={(e) => {
                     props.onChange(e);
                     var selectedCode = e && e.code;
-                    var checkData = getUsageOptionsByCode(selectedCode);
+                    var allUsage = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
+                    var checkData = allUsage ? allUsage.filter(function(item) {
+                      return item && item.code && selectedCode && item.code.split(".").indexOf(selectedCode) !== -1;
+                    }) : [];
                     setSubUsageData(checkData);
                   }}
                   selected={props.value}

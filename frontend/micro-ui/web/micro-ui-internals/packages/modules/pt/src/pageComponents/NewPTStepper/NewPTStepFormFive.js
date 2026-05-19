@@ -117,8 +117,15 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       return {
         // Preserve original owner fields (id, uuid, etc.) in edit mode
         ...(isEditMode && originalOwner ? originalOwner : {}),
-        ...owner,
-        ownerType: "NONE",
+        name: owner?.name,
+        mobileNumber: owner?.mobileNumber,
+        emailId: owner?.emailId,
+        permanentAddress: owner?.address,
+        gender: owner?.gender?.name || owner?.gender,
+        fatherOrHusbandName: owner?.fatherOrHusbandName,
+        relationship: owner?.relationship?.name || owner?.relationship,
+        ownerShipPercentage: owner?.ownershipPercentage,
+        ownerType: owner?.ownerType?.code || owner?.ownerType || "NONE",
         altContactNumber: owner?.mobileNumber,
       };
     });
@@ -129,7 +136,11 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       tenantId: tenantId,
       address: {
         ...(isEditMode ? originalProperty.address : {}),
+        doorNo: propertyAddress?.houseNo,
+        buildingName: propertyAddress?.buildingName,
+        street: propertyAddress?.streetName,
         city: propertyAddress?.city?.name,
+        pincode: propertyAddress?.pincode,
         locality: {
           ...(isEditMode ? originalProperty.address?.locality : {}),
           code: propertyAddress?.locality?.code,
@@ -140,6 +151,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
         ...(isEditMode ? originalProperty.additionalDetails : {}),
         yearConstruction: propertyAddress?.yearOfCreation?.code,
         businessName: propertyDetails?.businessName,
+        remarks: propertyDetails?.remarks,
         remrks: propertyDetails?.remarks,
         inflammable: propertyDetails?.flammable,
         heightAbove36Feet: propertyDetails?.heightOfProperty,
@@ -193,7 +205,9 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       if (isCitizen) {
         history.push("/digit-ui/citizen/pt/property/response/" + id);
       } else {
-        history.push("/digit-ui/employee/garbagecollection/response/" + id);
+        // history.push("/digit-ui/employee/garbagecollection/response/" + id);
+        history.push("/digit-ui/employee/pt/property/response/" + id);
+
       }
     } catch (error) {
       setLoader(false);

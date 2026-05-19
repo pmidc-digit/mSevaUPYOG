@@ -71,6 +71,9 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   // Memoize to prevent new [] reference each render (was causing infinite loop)
   const SubOwnerShipCategory = useMemo(() => SubOwnerShipCategoryRaw || {}, [SubOwnerShipCategoryRaw]);
 
+  const stateId = Digit.ULBService.getStateId();
+  const { data: mdmsData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", ["OwnerType"]);
+
   const {
     control,
     handleSubmit,
@@ -124,6 +127,15 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
 
   const instTypeOptions =
     SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item?.ownerShipCategory == watch("ownerShip")?.code) || [];
+
+  const ownerTypesMenu = useMemo(
+    () =>
+      mdmsData?.PropertyTax?.OwnerType?.map?.((e) => ({
+        i18nKey: `${e.code.replaceAll("PROPERTY", "COMMON_MASTERS").replaceAll(".", "_")}`,
+        code: e.code,
+      })) || [],
+    [mdmsData]
+  );
 
   useEffect(() => {
     if (stateDataCheck) {
@@ -333,25 +345,150 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
               </LabelFieldPair>
               </div>
 
+              {/* Gender + Guardian Name (for individual owners) */}
+              {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (
+                <div style={twoColRow}>
+                  <LabelFieldPair style={colItem}>
+                    <CardLabel className="card-label-smaller">{t("Gender")}*</CardLabel>
+                    <Controller
+                      control={control}
+                      name={`owners.${index}.gender`}
+                      defaultValue={item?.gender || ""}
+                      rules={{ required: "Gender is required" }}
+                      render={(props) => (
+                        <Dropdown
+                          select={props.onChange}
+                          selected={props.value}
+                          option={[
+                            { name: "Male", code: "MALE" },
+                            { name: "Female", code: "FEMALE" },
+                            { name: "Transgender", code: "TRANSGENDER" },
+                            { name: "Others", code: "OTHERS" }
+                          ]}
+                          optionKey="name"
+                          t={t}
+                          disable={isEditMode}
+                        />
+                      )}
+                    />
+                    {errors?.owners?.[index]?.gender && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].gender.message}</p>
+                    )}
+                  </LabelFieldPair>
+                  <LabelFieldPair style={colItem}>
+                    <CardLabel className="card-label-smaller">{t("Guardian Name")}*</CardLabel>
+                    <Controller
+                      control={control}
+                      name={`owners.${index}.fatherOrHusbandName`}
+                      defaultValue={item?.fatherOrHusbandName || ""}
+                      rules={{ required: "Guardian name is required" }}
+                      render={(props) => <TextInput {...props} disable={isEditMode} />}
+                    />
+                    {errors?.owners?.[index]?.fatherOrHusbandName && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].fatherOrHusbandName.message}</p>
+                    )}
+                  </LabelFieldPair>
+                </div>
+              )}
+
+              {/* Relationship (for individual owners) */}
+              {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (
+                <div style={twoColRow}>
+                  <LabelFieldPair style={colItem}>
+                    <CardLabel className="card-label-smaller">{t("Relationship")}*</CardLabel>
+                    <Controller
+                      control={control}
+                      name={`owners.${index}.relationship`}
+                      defaultValue={item?.relationship || ""}
+                      rules={{ required: "Relationship is required" }}
+                      render={(props) => (
+                        <Dropdown
+                          select={props.onChange}
+                          selected={props.value}
+                          option={[
+                            { name: "Father", code: "FATHER" },
+                            { name: "Husband", code: "HUSBAND" }
+                          ]}
+                          optionKey="name"
+                          t={t}
+                          disable={isEditMode}
+                        />
+                      )}
+                    />
+                    {errors?.owners?.[index]?.relationship && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].relationship.message}</p>
+                    )}
+                  </LabelFieldPair>
+                </div>
+              )}
+
+              {/* Special Category (for individual owners) */}
+              {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (
+                <div style={twoColRow}>
+                  <LabelFieldPair style={colItem}>
+                    <CardLabel className="card-label-smaller">{t("Special Category")}*</CardLabel>
+                    <Controller
+                      control={control}
+                      name={`owners.${index}.ownerType`}
+                      defaultValue={item?.ownerType || ""}
+                      rules={{ required: "Special Category is required" }}
+                      render={(props) => (
+                        <Dropdown
+                          select={props.onChange}
+                          selected={props.value}
+                          option={ownerTypesMenu}
+                          optionKey="i18nKey"
+                          t={t}
+                          disable={isEditMode}
+                        />
+                      )}
+                    />
+                    {errors?.owners?.[index]?.ownerType && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].ownerType.message}</p>
+                    )}
+                  </LabelFieldPair>
+                </div>
+              )}
+
+              {/* Ownership Percentage (for individual owners) */}
+              {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (
+                <div style={twoColRow}>
+                  <LabelFieldPair style={colItem}>
+                    <CardLabel className="card-label-smaller">{t("Ownership Percentage")}</CardLabel>
+                    <Controller
+                      control={control}
+                      name={`owners.${index}.ownershipPercentage`}
+                      defaultValue={item?.ownershipPercentage || ""}
+                      render={(props) => <TextInput {...props} disable={isEditMode} placeholder="0-100" />}
+                    />
+                  </LabelFieldPair>
+                </div>
+              )}
+
               {/* checkBoxadress*/}
               <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", marginBottom: " 20px" }}>
                 <Controller
                   control={control}
-                  name={`owners.${index}.checkBoxadress`}
+                  name={`owners.${index}.isSamePropertyAddress`}
                   render={(props) => (
                     <input
-                      id={`flammable-${index}`}
+                      id={`samePropAddr-${index}`}
                       type="checkbox"
                       checked={props.value || false}
                       onChange={(e) => {
                         props.onChange(e.target.checked);
+                        if (e.target.checked) {
+                          // Copy property address to owner address
+                          const propertyAddr = watch("address") || "";
+                          setValue(`owners.${index}.address`, propertyAddr);
+                        }
                       }}
                       style={{ width: "18px", height: "18px", cursor: isEditMode ? "not-allowed" : "pointer" }}
                       disabled={isEditMode}
                     />
                   )}
                 />
-                <label htmlFor={`flammable-${index}`} style={{ cursor: "pointer", color: "#00bcd1", margin: 0 }}>
+                <label htmlFor={`samePropAddr-${index}`} style={{ cursor: "pointer", color: "#00bcd1", margin: 0 }}>
                   {t("Same as property address")}
                 </label>
               </div>
@@ -377,6 +514,11 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
                   mobileNumber: "",
                   emailId: "",
                   address: "",
+                  gender: "",
+                  fatherOrHusbandName: "",
+                  relationship: "",
+                  ownershipPercentage: "",
+                  isSamePropertyAddress: false,
                 })
               }
               style={{ color: "#00bcd1", background: "none", border: "none" }}

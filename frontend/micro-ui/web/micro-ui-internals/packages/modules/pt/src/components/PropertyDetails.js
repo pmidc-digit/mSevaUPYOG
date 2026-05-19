@@ -119,8 +119,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   console.log("location2", location?.state);
 
   useEffect(() => {
-    const major = UsageCategoryData?.PropertyTax?.UsageCategoryMajor || [];
-    const minor = UsageCategoryDataMajor?.PropertyTax?.UsageCategoryMinor || [];
+    // const major = UsageCategoryData?.PropertyTax?.UsageCategoryMajor || [];
+    // const minor = UsageCategoryDataMajor?.PropertyTax?.UsageCategoryMinor || [];
+    const minor = UsageCategoryData?.PropertyTax?.UsageCategoryMinor || [];
+    const major = UsageCategoryDataMajor?.PropertyTax?.UsageCategoryMajor || [];
     const combinedData = [...minor, ...major]?.filter((item) => item?.code != "NONRESIDENTIAL");
     setUsageData(combinedData);
   }, [UsageCategoryData, UsageCategoryDataMajor]);
@@ -182,9 +184,11 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     const getResident = getUsageData?.find((item) => item?.code == stateDataCheck?.propertyUsageType?.code || item?.name == (value?.useType || stateDataCheck?.propertyUsageType?.name));
 
     const getPropertyType = getPropertyTypeData?.find((item) => item?.code == stateDataCheck?.propertyType?.code);
-    const checkData = UsageCategoryNewData?.PropertyTax?.UsageCategory?.filter(
-      (item) => item?.usageCategoryMinor == stateDataCheck?.propertyUsageType?.code
-    );
+    var restoredCode = stateDataCheck && stateDataCheck.propertyUsageType && stateDataCheck.propertyUsageType.code;
+    var allUsageForRestore = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
+    var checkData = allUsageForRestore ? allUsageForRestore.filter(function(item) {
+      return item && item.code && restoredCode && item.code.split(".").indexOf(restoredCode) !== -1;
+    }) : [];
     const checkFloors = floorOptions?.find((f) => f.code == stateDataCheck?.noOfFloors?.code);
 
     setSubUsageData(checkData);
@@ -232,7 +236,11 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     const groundFloor = floorOptions?.find((f) => f.code == "0");
 
     const newUnits = Array.from({ length: floorCount }, (_, index) => ({
-      unitUsageType: watch("propertyUsageType")?.name || "",
+      unitUsageType:
+  (watch("propertyUsageType") && watch("propertyUsageType").name === "Mixed" &&
+   watch("propertyType") && watch("propertyType").code === "BUILTUP.SHAREDPROPERTY")
+    ? ""
+    : (watch("propertyUsageType") && watch("propertyUsageType").name) || "",
       occupancy: null,
       floor: index === 0 ? groundFloor : null, // ✅ First is Ground Floor
     }));
@@ -257,7 +265,11 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 <Dropdown
                   select={(e) => {
                     props.onChange(e);
-                    const checkData = UsageCategoryNewData?.PropertyTax?.UsageCategory?.filter((item) => item?.usageCategoryMinor == e?.code);
+                    var selectedCode = e && e.code;
+                    var allUsage = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
+                    var checkData = allUsage ? allUsage.filter(function(item) {
+                      return item && item.code && selectedCode && item.code.split(".").indexOf(selectedCode) !== -1;
+                    }) : [];
                     setSubUsageData(checkData);
                   }}
                   selected={props.value}
@@ -428,14 +440,52 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
             <LabelFieldPair style={colItem}>
               <CardLabel className="card-label-smaller">{t("Unit Usage Type")}*</CardLabel>
               <div className="form-field">
-                <Controller
-                  control={control}
-                  name={`unitDetails.${index}.unitUsageType`}
-                  defaultValue={item?.unitUsageType || watch("propertyUsageType")?.name || ""}
-                  rules={{ required: t("Unit Usage Type is required") }}
-                  // defaultValue={watch("propertyUsageType")?.name}
-                  render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} disabled={true} />}
-                />
+
+
+                  <Controller
+                    control={control}
+                    name={`unitDetails.${index}.unitUsageType`}
+                    defaultValue={
+                      (watch("propertyUsageType") && watch("propertyUsageType").name === "Mixed" &&
+                        watch("propertyType") && watch("propertyType").code === "BUILTUP.SHAREDPROPERTY")
+                        ? (item && item.unitUsageType) || ""
+                        : (item && item.unitUsageType) || (watch("propertyUsageType") && watch("propertyUsageType").name) || ""
+                    }
+                    rules={{ required: t("Unit Usage Type is required") }}
+                    render={function (props) {
+                      if (
+                        watch("propertyUsageType") &&
+                        watch("propertyUsageType").name === "Mixed" &&
+                        watch("propertyType") &&
+                        watch("propertyType").code === "BUILTUP.SHAREDPROPERTY"
+                      ) {
+                        // Show dropdown
+                        return (
+                          <Dropdown
+                            select={props.onChange}
+                            selected={props.value}
+                            option={getUsageData}
+                            optionKey="name"
+                            t={t}
+                          />
+                        );
+                      } else {
+                        // Show disabled input
+                        return (
+                          <TextInput
+                            value={props.value}
+                            onChange={function (e) { props.onChange(e.target.value); }}
+                            t={t}
+                            disabled={true}
+                          />
+                        );
+                      }
+                    }}
+                  />
+
+
+
+
                 {errors?.unitDetails?.[index]?.unitUsageType && (
                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].unitUsageType.message}</p>
                 )}
@@ -450,7 +500,15 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   name={`unitDetails.${index}.subUsageType`}
                   defaultValue={getSubUsageData?.find((s) => s.code === item?.subUsageType?.code || s.code === item?.subUsageType) || null}
                   rules={{ required: t("Sub Usage Type is required") }}
-                  render={(props) => <Dropdown select={props.onChange} selected={props.value} option={getSubUsageData} optionKey="name" t={t} />}
+                  render={(props) => {
+                    var unitUsageVal = watch("unitDetails." + index + ".unitUsageType");
+                    var unitCode = unitUsageVal && typeof unitUsageVal === "object" ? unitUsageVal.code : null;
+                    var allUsage = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
+                    var rowOptions = (unitCode && allUsage)
+                      ? allUsage.filter(function(opt) { return opt && opt.code && opt.code.split(".").indexOf(unitCode) !== -1; })
+                      : getSubUsageData;
+                    return <Dropdown select={props.onChange} selected={props.value} option={rowOptions} optionKey="name" t={t} />;
+                  }}
                 />
                 {errors?.unitDetails?.[index]?.subUsageType && (
                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].subUsageType.message}</p>

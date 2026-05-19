@@ -10,7 +10,7 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   const history = useHistory();
 
   // Retrieve the entire formData object from the Redux store
-  const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData || {});
+  const formData = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData || {});
   // console.log("state.pt.PTNewApplicationForm Form data in Summary Step: ", useSelector((state) => state.pt.PTNewApplicationForm.formData));
   const goNext = async (data) => {
     console.log("Full form data submitted: ", formData);

@@ -54,7 +54,7 @@ export const mapPropertyToFormData = (property) => {
     propertyUsageType: usageCode ? { code: usageCode } : null,
     propertyType: property.propertyType ? { code: property.propertyType } : null,
     businessName: property.additionalDetails?.businessName || "",
-    remarks: property.additionalDetails?.remrks || "",
+    remarks: property.additionalDetails?.remarks || property.additionalDetails?.remrks || "",
     flammable: property.additionalDetails?.inflammable || false,
     heightOfProperty: property.additionalDetails?.heightAbove36Feet || false,
     plotSize: property.landArea || "",

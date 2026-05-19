@@ -78,6 +78,8 @@ const ChallanApplicationDetails = () => {
   const [getChallanData, setChallanData] = useState();
   const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
   const [printing, setPrinting] = useState(false);
+  
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "garbage-receipt"});
 
   // const { isLoading, data, refetch } = Digit.Hooks.chb.useChbSearch({
   //   tenantId,
@@ -123,6 +125,16 @@ const ChallanApplicationDetails = () => {
 
   // sessionStorage.setItem("chb", JSON.stringify(application));
 
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "GC.ONE_TIME_FEE",
+      consumerCodes: acknowledgementIds,
+      isEmployee: false,
+    },
+    { enabled: acknowledgementIds ? true : false }
+  );
+
   const getAcknowledgement = async () => {
     setLoader(true);
     try {
@@ -155,48 +167,27 @@ const ChallanApplicationDetails = () => {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
-
-  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-    {
-      tenantId: tenantId,
-      businessService: "GC.ONE_TIME_FEE",
-      consumerCodes: acknowledgementIds,
-      isEmployee: false,
-    },
-    { enabled: acknowledgementIds ? true : false }
-  );
+  
   const dowloadOptions = [];
 
   dowloadOptions.push({
     label: t("CHB_DOWNLOAD_ACK_FORM"),
     onClick: () => getAcknowledgement(),
   });
-  async function getRecieptSearch({ tenantId, payments, ...params }) {
-    setLoader(true);
-    try {
-      let response = null;
-      if (payments?.fileStoreId) {
-        response = { filestoreIds: [payments?.fileStoreId] };
-      } else {
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "garbage-receipt");
-      }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-        fileStoreIds: response.filestoreIds[0],
-      });
-      setLoader(false);
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
-    } catch (error) {
-      console.error(error);
-      setLoader(false);
-    }
-  }
 
-  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+  
+  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      onClick: () =>
+        printBillReceipt({
+          businessService: "GC.ONE_TIME_FEE", 
+          receiptNumber: acknowledgementIds,
+          rootKey: "PAYMENTS",
+        }),
     });
   }
+
 
   return (
     <React.Fragment>
@@ -288,7 +279,7 @@ const ChallanApplicationDetails = () => {
 
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
-      {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
+      {(loader || recieptDataLoading || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>
   );
 };

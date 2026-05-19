@@ -150,7 +150,11 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       oldPropertyId: propertyAddress?.existingPropertyId || undefined,
       address: {
         ...(isEditMode ? originalProperty.address : {}),
+        doorNo: propertyAddress?.houseNo,
+        buildingName: propertyAddress?.buildingName,
+        street: propertyAddress?.streetName,
         city: propertyAddress?.city?.name,
+        pincode: propertyAddress?.pincode,
         locality: {
           ...(isEditMode ? originalProperty.address?.locality : {}),
           code: propertyAddress?.locality?.code,
@@ -161,6 +165,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
         ...(isEditMode ? originalProperty.additionalDetails : {}),
         yearConstruction: propertyAddress?.yearOfCreation?.code,
         businessName: propertyDetails?.businessName,
+        remarks: propertyDetails?.remarks,
         remrks: propertyDetails?.remarks,
         inflammable: propertyDetails?.flammable,
         heightAbove36Feet: propesrtyDetails?.heightOfProperty,
@@ -221,7 +226,9 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       if (isCitizen) {
         history.push("/digit-ui/citizen/pt/property/response/" + id);
       } else {
-        history.push("/digit-ui/employee/garbagecollection/response/" + id);
+        // history.push("/digit-ui/employee/garbagecollection/response/" + id);
+        history.push("/digit-ui/employee/pt/property/response/" + id);
+
       }
     } catch (error) {
       setLoader(false);

@@ -122,8 +122,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   console.log("location2", location?.state); 
 
   useEffect(() => {
-    const major = UsageCategoryData?.PropertyTax?.UsageCategoryMajor || [];
-    const minor = UsageCategoryDataMajor?.PropertyTax?.UsageCategoryMinor || [];
+    // const major = UsageCategoryData?.PropertyTax?.UsageCategoryMajor || [];
+    // const minor = UsageCategoryDataMajor?.PropertyTax?.UsageCategoryMinor || [];
+    const minor = UsageCategoryData?.PropertyTax?.UsageCategoryMinor || [];
+    const major = UsageCategoryDataMajor?.PropertyTax?.UsageCategoryMajor || [];
     const combinedData = [...minor, ...major]?.filter((item) => item?.code != "NONRESIDENTIAL");
     setUsageData(combinedData);
   }, [UsageCategoryData, UsageCategoryDataMajor]);
@@ -247,7 +249,11 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
     const groundFloor = floorOptions?.find((f) => f.code == "0");
 
     const newUnits = Array.from({ length: floorCount }, (_, index) => ({
-      unitUsageType: watch("propertyUsageType")?.name || "",
+      unitUsageType:
+  (watch("propertyUsageType") && watch("propertyUsageType").name === "Mixed" &&
+   watch("propertyType") && watch("propertyType").code === "BUILTUP.SHAREDPROPERTY")
+    ? ""
+    : (watch("propertyUsageType") && watch("propertyUsageType").name) || "",
       occupancy: null,
       floor: index === 0 ? groundFloor : null, // ✅ First is Ground Floor
     }));
@@ -272,7 +278,11 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                 <Dropdown
                   select={(e) => {
                     props.onChange(e);
-                    const checkData = UsageCategoryNewData?.PropertyTax?.UsageCategory?.filter((item) => item?.usageCategoryMinor == e?.code);
+                    var selectedCode = e && e.code;
+                    var allUsage = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
+                    var checkData = allUsage ? allUsage.filter(function(item) {
+                      return item && item.code && selectedCode && item.code.split(".").indexOf(selectedCode) !== -1;
+                    }) : [];
                     setSubUsageData(checkData);
                   }}
                   selected={props.value}

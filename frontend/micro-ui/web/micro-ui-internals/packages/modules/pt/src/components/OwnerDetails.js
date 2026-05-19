@@ -180,6 +180,15 @@ useEffect(() => {
   const instTypeOptions =
     SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item?.ownerShipCategory == watch("ownerShip")?.code) || [];
 
+  const ownerTypesMenu = useMemo(
+    () =>
+      mdmsData?.PropertyTax?.OwnerType?.map?.((e) => ({
+        i18nKey: `${e.code.replaceAll("PROPERTY", "COMMON_MASTERS").replaceAll(".", "_")}`,
+        code: e.code,
+      })) || [],
+    [mdmsData]
+  );
+
   useEffect(() => {
     if (stateDataCheck) {
       const checkOwners = owners.find((item) => item.code === stateDataCheck?.ownerShip?.code);
@@ -663,10 +672,10 @@ useEffect(() => {
               <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", marginBottom: " 20px" }}>
                 <Controller
                   control={control}
-                  name={`owners.${index}.checkBoxadress`}
+                  name={`owners.${index}.isSamePropertyAddress`}
                   render={(props) => (
                     <input
-                      id={`flammable-${index}`}
+                      id={`samePropAddr-${index}`}
                       type="checkbox"
                       checked={props.value || false}
                       onChange={(e) => {
@@ -684,7 +693,7 @@ useEffect(() => {
                     />
                   )}
                 />
-                <label htmlFor={`flammable-${index}`} style={{ cursor: "pointer", color: "#00bcd1", margin: 0 }}>
+                <label htmlFor={`samePropAddr-${index}`} style={{ cursor: "pointer", color: "#00bcd1", margin: 0 }}>
                   {t("Same as property address")}
                 </label>
               </div>
@@ -710,6 +719,11 @@ useEffect(() => {
                   mobileNumber: "",
                   emailId: "",
                   address: "",
+                  gender: "",
+                  fatherOrHusbandName: "",
+                  relationship: "",
+                  ownershipPercentage: "",
+                  isSamePropertyAddress: false,
                 })
               }
               style={{ color: "#00bcd1", background: "none", border: "none" }}

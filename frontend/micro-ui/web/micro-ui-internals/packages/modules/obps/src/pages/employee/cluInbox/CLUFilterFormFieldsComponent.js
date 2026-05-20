@@ -1,7 +1,7 @@
 
 
 import React from "react"
-import { FilterFormField, RadioButtons, CheckBox } from "@mseva/digit-ui-react-components"
+import { FilterFormField, RadioButtons, CheckBox, Dropdown } from "@mseva/digit-ui-react-components"
 import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -13,6 +13,7 @@ const CLUFilterFormFieldsComponent = ({
   setFilterFormValue,
   filterFormState,
   getFilterFormValue,
+  cities, selectedTenantIdState, setSelectedTenantIdValue, tenantId
 }) => {
   const { t } = useTranslation()
 
@@ -23,6 +24,19 @@ const CLUFilterFormFieldsComponent = ({
 
   return (
     <React.Fragment>
+      {(window.location.href.includes("/employee") && tenantId === "pb.punjab") ? <FilterFormField>
+        <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
+        {cities && cities.length > 0 ? (
+          <Dropdown
+            option={cities}
+            selected={cities.find((city) => city.code === selectedTenantIdState?.tenantId)}
+            select={(value) => {
+              setSelectedTenantIdValue("tenantId", value.code);
+            }}
+            optionKey="name"
+          />
+        ) : null}
+      </FilterFormField> : null}
       <FilterFormField>
         <Controller
           name="assignee"

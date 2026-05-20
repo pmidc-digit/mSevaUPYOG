@@ -1102,7 +1102,6 @@ const BpaApplicationDetail = () => {
       //   const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, stateId);
       //   requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
       // }
-
       if (requestData?.additionalDetails?.approvedColony == "NO") {
         requestData.additionalDetails.permitData =
           "The plot has been officially regularized under No. " +

@@ -18,7 +18,7 @@ const NOCBreadCrumbs = ({ location }) => {
       content: t("ES_COMMON_INBOX"),
       show: (location.pathname.includes("noc/inbox") || location.pathname.includes("noc/new-application")) ? true : false,
     },
-   
+
     {
       path: "/digit-ui/employee/noc/search/application",
       content: t("ES_COMMON_SEARCH_APPLICATION"),
@@ -56,24 +56,24 @@ const EmployeeApp = ({ path }) => {
   const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
   const NOCEsignResponse = Digit?.ComponentRegistryService?.getComponent("NOCEsignResponse");
 
-    const history = useHistory();
+  const history = useHistory();
 
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
-    useEffect(() => {
-      if (window.location.pathname.endsWith("/complete")) {
-        history.push(`/digit-ui/employee/noc-home`);
-          console.log('useffect called complete')
-  
-      }
-  
-    }, []);
+  useEffect(() => {
+    if (window.location.pathname.endsWith("/complete")) {
+      history.push(`/digit-ui/employee/noc-home`);
+      console.log('useffect called complete')
+
+    }
+
+  }, []);
 
   return (
     <Fragment>
-      {!isResponse ? <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop:"34px" } : {}}>
+      {!isResponse ? <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop: "34px" } : {}}>
         <NOCBreadCrumbs location={location} />
-      </div> : null} 
+      </div> : null}
       <Switch>
         {/* <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} /> */}
         <PrivateRoute path={`${path}/inbox/application-overview/:nocid`} component={NOCEmployeeApplicationOverview} />

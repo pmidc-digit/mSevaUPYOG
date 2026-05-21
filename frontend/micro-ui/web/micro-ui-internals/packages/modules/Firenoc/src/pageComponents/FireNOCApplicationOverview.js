@@ -78,7 +78,7 @@ const FireNOCApplicationOverview = () => {
   const [showToast, setShowToast] = useState(null);
   const [getEmployees, setEmployees] = useState([]);
   const [getWorkflowService, setWorkflowService] = useState([]);
-  
+
   const menuRef = React.useRef();
 
   const isEmployee = window.location.href.includes("/employee/");
@@ -110,11 +110,16 @@ const FireNOCApplicationOverview = () => {
       try {
         const wf = await Digit.WorkflowService.init(tenantId, "FIRENOC");
         setWorkflowService(wf?.BusinessServices?.[0]?.states);
-      } catch (e) {}
+      } catch (e) { }
     })();
   }, [tenantId]);
 
   const onActionSelect = (action) => {
+    if (action?.action === "EDIT") {
+      const basePath = isEmployee ? "/digit-ui/employee/firenoc" : "/digit-ui/citizen/firenoc";
+      history.push(`${basePath}/edit-application/${applicationNo}?tenantId=${tenantId}`);
+      return;
+    }
     const filterNexState = action?.state?.actions?.filter((item) => item.action === action?.action) || [];
     const nextStateUuid = filterNexState?.[0]?.nextState;
     const filterRoles = nextStateUuid ? getWorkflowService?.filter((item) => item?.uuid === nextStateUuid) : [];
@@ -202,9 +207,9 @@ const FireNOCApplicationOverview = () => {
   const paymentDetail = payment?.paymentDetails?.[0];
   const appStatus = details?.status || fireNOC?.status || fireNOC?.applicationStatus || "";
   const isPendingPayment = appStatus === "PENDINGPAYMENT";
-  const isEditable = 
-    appStatus === "CITIZENACTIONREQUIRED" || 
-    appStatus === "SENDBACKTOCITIZEN" || 
+  const isEditable =
+    appStatus === "CITIZENACTIONREQUIRED" ||
+    appStatus === "SENDBACKTOCITIZEN" ||
     appStatus === "CITIZEN_ACTION_REQUIRED" ||
     wfdata?.nextActions?.some(action => action.action === "EDIT" || action.action === "RESUBMIT") ||
     wfdata?.actionState?.nextActions?.some(action => action.action === "EDIT" || action.action === "RESUBMIT");
@@ -481,17 +486,6 @@ const FireNOCApplicationOverview = () => {
           />
         </ActionBar>
       )}
-      {isEditable && !isEmployee && (
-        <ActionBar>
-          <SubmitBar
-            label={t("COMMON_EDIT")}
-            onSubmit={() => {
-              const basePath = "/digit-ui/citizen/firenoc";
-              history.push(`${basePath}/edit-application/${applicationNo}?tenantId=${tenantId}`);
-            }}
-          />
-        </ActionBar>
-      )}
       {isResumable && !isEmployee && (
         <ActionBar>
           <SubmitBar
@@ -504,34 +498,34 @@ const FireNOCApplicationOverview = () => {
         </ActionBar>
       )}
 
-      {isEmployee && (
-        <ActionBar>
-          {isEditable && (
-            <SubmitBar
-              label={t("COMMON_EDIT")}
-              onSubmit={() => {
-                const basePath = "/digit-ui/employee/firenoc";
-                history.push(`${basePath}/edit-application/${applicationNo}?tenantId=${tenantId}`);
-              }}
-              style={{ marginRight: "12px" }}
-            />
-          )}
-          {actions?.length > 0 && (
-            <React.Fragment>
-              {displayMenu && (wfdata?.actionState?.nextActions || wfdata?.nextActions) ? (
-                <Menu
-                  localeKeyPrefix={`WF_EMPLOYEE_${"NOC"}`}
-                  options={actions}
-                  optionKey={"action"}
-                  t={customT}
-                  onSelect={onActionSelect}
-                />
-              ) : null}
-              <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
-            </React.Fragment>
-          )}
-        </ActionBar>
-      )}
+      {(() => {
+        // Only inject EDIT manually as a nav shortcut.
+        // RESUBMIT stays as a native workflow action so it opens the modal as before.
+        const hasEditInWorkflow = (actions || []).some((a) => a.action === "EDIT");
+        const editItem = isEditable && !hasEditInWorkflow ? [{ action: "EDIT", _isNavAction: true }] : [];
+        // Filter EDIT from workflow actions only if we injected it manually (avoid duplicate)
+        const filteredActions = (actions || []).filter((a) => a.action !== "EDIT");
+        const menuActions = [...editItem, ...filteredActions];
+        if (menuActions.length === 0) return null;
+        return (
+          <ActionBar>
+            {displayMenu ? (
+              <Menu
+                localeKeyPrefix={`WF_EMPLOYEE_NOC`}
+                options={menuActions}
+                optionKey={"action"}
+                t={(key) => {
+                  if (key === "WF_EMPLOYEE_NOC_EDIT") return t("COMMON_EDIT") !== "COMMON_EDIT" ? t("COMMON_EDIT") : "Edit";
+                  if (key === "WF_EMPLOYEE_NOC_RESUBMIT") return t("NOC_RESUBMIT") !== "NOC_RESUBMIT" ? t("NOC_RESUBMIT") : "Resubmit";
+                  return customT(key);
+                }}
+                onSelect={onActionSelect}
+              />
+            ) : null}
+            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          </ActionBar>
+        );
+      })()}
 
       {showModal ? (
         <NOCModal
@@ -552,6 +546,7 @@ const FireNOCApplicationOverview = () => {
           closeToast={() => setShowToast(null)}
           businessService={details?.additionalDetails?.businessService || "FIRENOC"}
           moduleCode="FIRENOC"
+          isEmployee={isEmployee}
         />
       ) : null}
 

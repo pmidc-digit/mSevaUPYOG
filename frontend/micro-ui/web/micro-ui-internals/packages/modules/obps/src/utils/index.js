@@ -30,7 +30,7 @@ export const uuidv4 = () => {
   return uuidv4_internal();
 };
 
-export const EmployeeData = async (tenantId, consumerCode , moduleCode = null) => {
+export const EmployeeData = async (tenantId, consumerCode, moduleCode = null) => {
   const wfData = await Digit.WorkflowService.getDetailsById({
     tenantId,
     id: consumerCode,
@@ -50,12 +50,12 @@ export const EmployeeData = async (tenantId, consumerCode , moduleCode = null) =
 
   const officer = officerRaw
     ? {
-        code: officerRaw?.code,
-        id: officerRaw?.id,
-        name: officerRaw?.user?.name,
-        department: officerAssignment?.department,
-        designation: officerAssignment?.designation,
-      }
+      code: officerRaw?.code,
+      id: officerRaw?.id,
+      name: officerRaw?.user?.name,
+      department: officerAssignment?.department,
+      designation: officerAssignment?.designation,
+    }
     : null;
 
   return { officer };
@@ -217,21 +217,21 @@ export const convertToNocObject = (data, datafromflow) => {
   let doc =
     datafromflow?.nocDocuments?.nocDocuments.length > 0
       ? datafromflow?.nocDocuments?.nocDocuments
-          .filter((n) => n.documentType.includes(data?.nocType?.split("_")[0]))
-          .map((noc) => {
-            return {
-              fileName: noc?.fileName || "",
-              name: noc?.name || "",
-              fileStoreId: noc?.fileStoreId,
-              fileUrl: "",
-              isClickable: true,
-              link: "",
-              title: noc?.documentType,
-              documentType: noc?.documentType,
-              id: noc?.id,
-              additionalDetails: {},
-            };
-          }) || []
+        .filter((n) => n.documentType.includes(data?.nocType?.split("_")[0]))
+        .map((noc) => {
+          return {
+            fileName: noc?.fileName || "",
+            name: noc?.name || "",
+            fileStoreId: noc?.fileStoreId,
+            fileUrl: "",
+            isClickable: true,
+            link: "",
+            title: noc?.documentType,
+            documentType: noc?.documentType,
+            id: noc?.id,
+            additionalDetails: {},
+          };
+        }) || []
       : [];
   doc = [
     ...doc,
@@ -657,8 +657,8 @@ export const convertToBPAObject = (data, isOCBPA = false, isSendBackTOCitizen = 
       data?.landInfo?.unit && data?.landInfo?.unit.length > 0
         ? getunitforBPA(data?.landInfo?.unit)
         : data?.subOccupancy
-        ? getBPAUnitsForAPI(data?.subOccupancy)
-        : [];
+          ? getBPAUnitsForAPI(data?.subOccupancy)
+          : [];
   }
 
   let formData = {
@@ -683,11 +683,11 @@ export const convertToBPAObject = (data, isOCBPA = false, isSendBackTOCitizen = 
       landInfo: isOCBPA
         ? data?.landInfo
         : {
-            ...data?.landInfo,
-            ownershipCategory: getOwnerShipCategory(data, isOCBPA)?.code || getOwnerShipCategory(data, isOCBPA),
-            owners: getBPAOwners(data, isOCBPA),
-            unit: getBPAUnit(data),
-          },
+          ...data?.landInfo,
+          ownershipCategory: getOwnerShipCategory(data, isOCBPA)?.code || getOwnerShipCategory(data, isOCBPA),
+          owners: getBPAOwners(data, isOCBPA),
+          unit: getBPAUnit(data),
+        },
 
       assignee: isSendBackTOCitizen ? data.assignee : [],
       workflow: {
@@ -1078,27 +1078,27 @@ export const printPdf = (blob) => {
 export const amountToWords = (num) => {
   if (num == null || num === "") return "Zero Rupees";
   const ones = [
-      "",
-      "One",
-      "Two",
-      "Three",
-      "Four",
-      "Five",
-      "Six",
-      "Seven",
-      "Eight",
-      "Nine",
-      "Ten",
-      "Eleven",
-      "Twelve",
-      "Thirteen",
-      "Fourteen",
-      "Fifteen",
-      "Sixteen",
-      "Seventeen",
-      "Eighteen",
-      "Nineteen",
-    ],
+    "",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Eleven",
+    "Twelve",
+    "Thirteen",
+    "Fourteen",
+    "Fifteen",
+    "Sixteen",
+    "Seventeen",
+    "Eighteen",
+    "Nineteen",
+  ],
     tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"],
     units = ["", "Thousand", "Lakh", "Crore"];
 
@@ -1106,8 +1106,8 @@ export const amountToWords = (num) => {
     n < 20
       ? ones[n]
       : n < 100
-      ? tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "")
-      : ones[Math.floor(n / 100)] + " Hundred" + (n % 100 ? " " + chunk(n % 100) : "");
+        ? tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "")
+        : ones[Math.floor(n / 100)] + " Hundred" + (n % 100 ? " " + chunk(n % 100) : "");
 
   const toWords = (n) => {
     if (!n) return "";
@@ -1451,7 +1451,7 @@ export function getApproveRejectComments(workflowDetails) {
   try {
     const processInstances =
       workflowDetails?.data?.processInstances || [];
-      const delimiter = "[#?..**]";
+    const delimiter = "[#?..**]";
     // ✅ Get latest APPROVE / REJECT
     const decisionInstance =
       processInstances
@@ -1481,7 +1481,7 @@ export function getApproveRejectComments(workflowDetails) {
       : " ";
 
     return finalComment;
-    
+
   } catch (e) {
     console.error("comments error", e);
     return null; // ✅ ALWAYS return something

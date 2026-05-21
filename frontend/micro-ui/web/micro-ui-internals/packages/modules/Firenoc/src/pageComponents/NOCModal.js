@@ -44,6 +44,7 @@ const NOCModal = ({
   showErrorToast,
   errorOne,
   closeToastOne,
+  isEmployee,
 }) => {
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
@@ -54,7 +55,7 @@ const NOCModal = ({
   const [error, setError] = useState(null);
   const [financialYears, setFinancialYears] = useState([]);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
- 
+
   const checkRole = action?.state?.actions;
 
   const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles || []))];
@@ -63,7 +64,7 @@ const NOCModal = ({
 
   const rolesFromAction = action?.assigneeRoles?.map?.((e) => ({ code: e })) || [];
   const rolesFromEmployees = allRolesNew?.map((role) => ({ code: role })) || [];
-  
+
   let finalRoles = rolesFromAction.length > 0 ? rolesFromAction : rolesFromEmployees;
   if (finalRoles.length === 0) {
     finalRoles = [
@@ -110,7 +111,7 @@ const NOCModal = ({
         approverData?.Employees?.map((employee) => {
           const deptCode = employee?.assignments?.[0]?.department;
           const matchedDept = departments?.find((d) => d?.code === deptCode);
-          return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}`  };
+          return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}` };
         })
       );
     }
@@ -143,19 +144,19 @@ const NOCModal = ({
     })();
   }, [file]);
 
-  useEffect(()=>{
-    if(action?.action === "SENDBACKTOCITIZEN"){
-      const uuid= applicationDetails?.Noc?.[0]?.auditDetails?.createdBy || null;
-   
-      setSelectedApprover({uuid});
+  useEffect(() => {
+    if (action?.action === "SENDBACKTOCITIZEN") {
+      const uuid = applicationDetails?.Noc?.[0]?.auditDetails?.createdBy || null;
+
+      setSelectedApprover({ uuid });
     }
-   
-  },[action]);
+
+  }, [action]);
 
 
   function submit(data) {
-    
-    const mandatoryActions = [ "APPROVE","VERIFY","REJECT","SENDBACKTOCITIZEN", "SENDBACKTOVERIFIER","FORWARD"];
+
+    const mandatoryActions = ["APPROVE", "VERIFY", "REJECT", "SENDBACKTOCITIZEN", "SENDBACKTOVERIFIER", "FORWARD"];
 
     let checkCommentsMandatory = mandatoryActions.includes(action?.action);
 
@@ -170,22 +171,22 @@ const NOCModal = ({
       finalComments = `${commentsText}[#?..**]${conditionalText}`;
     }
 
-    if (action?.action !== "APPROVE" && action?.action !== "UPDATE_FEE" && action?.action !== "REJECT" && action?.action !== "SEND_FOR_INSPECTION_REPORT"  && !selectedApprover?.uuid) {
-      setTimeout(()=>{
+    if (action?.action !== "APPROVE" && action?.action !== "UPDATE_FEE" && action?.action !== "REJECT" && action?.action !== "SEND_FOR_INSPECTION_REPORT" && !selectedApprover?.uuid) {
+      setTimeout(() => {
         closeToast();
-      },2000);
+      }, 2000);
 
-      setShowToast({ key: "true", error:true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
+      setShowToast({ key: "true", error: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
       return;
     }
 
     if (checkCommentsMandatory && !commentsText) {
-      setTimeout(()=>{
+      setTimeout(() => {
         closeToast();
-      },2000);
+      }, 2000);
 
-     setShowToast({ key: "true", error:true, message: t("COMMON_COMMENTS_REQUIRED_LABEL") });
-     return;
+      setShowToast({ key: "true", error: true, message: t("COMMON_COMMENTS_REQUIRED_LABEL") });
+      return;
     }
 
 
@@ -199,14 +200,14 @@ const NOCModal = ({
         assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
         wfDocuments: uploadedFile
           ? [
-              {
-                documentType: file?.type,
-                fileName: file?.name,
-                documentUid: uploadedFile,
-                filestoreId: uploadedFile,
-                documentAttachment: uploadedFile
-              },
-            ]
+            {
+              documentType: file?.type,
+              fileName: file?.name,
+              documentUid: uploadedFile,
+              filestoreId: uploadedFile,
+              documentAttachment: uploadedFile
+            },
+          ]
           : null,
       };
     } else {
@@ -233,6 +234,7 @@ const NOCModal = ({
           uploadedFile,
           setUploadedFile,
           businessService,
+          isEmployee,
         })
       );
     }
@@ -245,7 +247,7 @@ const NOCModal = ({
       actionCancelLabel={t(config.label.cancel)}
       actionCancelOnSubmit={closeModal}
       actionSaveLabel={t(config.label.submit)}
-      actionSaveOnSubmit={() => {}}
+      actionSaveOnSubmit={() => { }}
       // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       formId="modal-action"
     >
@@ -261,10 +263,10 @@ const NOCModal = ({
         onSubmit={submit}
         defaultValues={defaultValues}
         formId="modal-action"
-        // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
+      // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       />
       {/* )} */}
-      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={showToast?.message} onClose={closeToast} isDleteBtn={true}/>}
+      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={showToast?.message} onClose={closeToast} isDleteBtn={true} />}
       {showErrorToast && <Toast error={true} label={errorOne} isDleteBtn={true} onClose={closeToastOne} />}
     </Modal>
   ) : (

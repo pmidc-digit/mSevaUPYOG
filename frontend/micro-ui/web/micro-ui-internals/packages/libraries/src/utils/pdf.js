@@ -2,6 +2,7 @@ import { Fonts } from "./fonts";
 import React, { ReactDOM } from "react";
 import QRCode from "qrcode";
 import EXIF from "exif-js";
+import { buildRainmakerCard, buildAttachmentsSection } from "./pdfHelpers";
 const pdfMake = require("pdfmake/build/pdfmake.js");
 // const pdfFonts = require("pdfmake/build/vfs_fonts.js");
 // pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -365,6 +366,170 @@ background: [
   }
 };
 
+const jsPdfGeneratorFormattedFireNOC = async ({
+  breakPageLimit = null,
+  tenantId,
+  logo,
+  name,
+  email,
+  phoneNumber,
+  heading,
+  details,
+  applicationNumber,
+  applicationDate = "", // ADD THIS
+  t = (text) => text,
+  imageURL,
+  ulbType,
+  ulbName,
+  openInNewTab = false,
+}) => {
+  // ... existing imageURL / base64Image logic unchanged ...
+  console.log("details for firenoc [FIRENOC]", details);
+
+  const contentFormatted = await createContentFormattedFireNoc(
+    details,
+    applicationNumber,
+    logo,
+    tenantId,
+    phoneNumber,
+    breakPageLimit
+  );
+  const baseUrl = window.location.origin;
+  
+  const base64Image = await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/ndc/search/application-overview/${applicationNumber}`);
+  console.log(base64Image.slice(0, 50));
+
+
+
+  const dd = {
+    margin: [0, 0, 0, 0],
+    header: {},
+    content: [
+      ...createHeaderFormattedFireNoc(
+        details,
+        name,
+        base64Image, // QR data URL — same as before
+        phoneNumber,
+        email,
+        logo,
+        tenantId,
+        heading,
+        applicationNumber,
+        ulbType,
+        ulbName,
+        applicationDate // NEW
+      ),
+      ...contentFormatted,
+    ],
+    defaultStyle: {
+      font: "Hind",
+      margin: [20, 10, 20, 10],
+    },
+    // ADD pageBreakBefore (optional, from Rainmaker)
+    pageBreakBefore(currentNode, followingNodesOnPage) {
+      let nodeLength = followingNodesOnPage.length;
+      followingNodesOnPage.forEach((node, ind) => {
+        if (node.style === "pdf-table-card") nodeLength = ind;
+      });
+      if (
+        currentNode.startPosition?.verticalRatio > 0.9 &&
+        currentNode.style === "pdf-card-title"
+      ) {
+        return true;
+      }
+      if (
+        currentNode.startPosition?.verticalRatio > 0.75 &&
+        currentNode.style === "pdf-card-title" &&
+        nodeLength > 19
+      ) {
+        return true;
+      }
+      return false;
+    },
+    styles: {
+      // Rainmaker layout styles — ADD/MERGE with your existing styles
+      "pdf-header": {
+        fillColor: "#F2F2F2",
+        margin: [-70, -41, -81, 10],
+      },
+      "pdf-head-qr-code": {
+        fillColor: "#F2F2F2",
+        margin: [-70, -41, -81, 0],
+      },
+      "pdf-header-text": {
+        color: "#484848",
+        fontSize: 20,
+        // bold: true,
+        letterSpacing: 0.74,
+        margin: [0, 0, 0, 2],
+      },
+      "pdf-header-sub-text": {
+        color: "#484848",
+        fontSize: 15,
+        letterSpacing: 0.6,
+      },
+      "pdf-application-no": {
+        fontSize: 12,
+        // bold: true,
+        margin: [-18, 8, 0, 0],
+        color: "#484848",
+      },
+      "pdf-application-no-value": {
+        fontSize: 12,
+        margin: [-18, 6, 0, 0],
+        color: "#484848",
+      },
+      "pdf-card-title": {
+        fontSize: 11,
+        // bold: true,
+        margin: [-18, 5, 2, 8],
+        color: "#484848",
+      },
+      "pdf-table-card": {
+        fillColor: "#F2F2F2",
+        fontSize: 7,
+        color: "#484848",
+        margin: [-20, -2, -8, -8],
+      },
+      "pdf-table-card-white": {
+        fillColor: "white",
+        fontSize: 7,
+        color: "#484848",
+        margin: [-20, -2, -8, -8],
+      },
+      "pdf-card-key": {
+        color: "rgba(0, 0, 0, 0.54)",
+        fontSize: 8,
+        margin: [0, 1, 0, 0],
+      },
+      "pdf-card-value": {
+        fontSize: 10,
+        color: "rgba(0, 0, 0, 0.87)",
+        margin: [0, 0, 0, 1],
+      },
+      // keep any of your old styles (e.g. tableExample, header) if still used by attachments
+      // header: { bold: true },
+      tableExample: {},
+    },
+  };
+
+  pdfMake.vfs = Fonts;
+  let locale = Digit.SessionStorage.get("locale") || "en_IN";
+  let Hind = pdfFonts[locale] || pdfFonts["Hind"];
+  pdfMake.fonts = { Hind: { ...Hind } };
+
+  const generatedPDF = pdfMake.createPdf(dd);
+  if (openInNewTab) {
+    generatedPDF.getBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    });
+  } else {
+    downloadPDFFileUsingBase64(generatedPDF, "FireNoc-Acknowledgement.pdf");
+  }
+  // ... rest unchanged (openInNewTab / download)
+};
+
 
 
 const jsPdfGeneratorNDC = async ({
@@ -482,7 +647,7 @@ const jsPdfGeneratorNDC = async ({
   };
 
   pdfMake.vfs = Fonts;
-  let locale = Digit.SessionStorage.get("locale") || "en_IN";
+  let locale = Digit.SessionStorage.get("locale") || "pn_IN";
   let Hind = pdfFonts[locale] || pdfFonts["Hind"];
   pdfMake.fonts = { Hind: { ...Hind } };
 
@@ -1135,7 +1300,8 @@ export default {
   generateBillAmendPDF,
   generateTimelinePDF,
   generateFormatted: jsPdfGeneratorFormatted,
-  generateFormattedNOC: jsPdfGeneratorFormattedNOC
+  generateFormattedNOC: jsPdfGeneratorFormattedNOC,
+  generateFormattedFireNoc: jsPdfGeneratorFormattedFireNOC
 };
 
 const createBodyContentBillAmend = (table, t) => {
@@ -2093,7 +2259,29 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
 
   return detailsHeaders;
 }
+async function createContentFormattedFireNoc(
+  details,
+  applicationNumber,
+  logo,
+  tenantId,
+  phoneNumber,
+  breakPageLimit = null
+) {
+  const content = [];
 
+  for (const detail of details || []) {
+    if (!detail?.values?.length) continue;
+
+    if (detail?.isAttachments) {
+      content.push(...(await buildAttachmentsSection(detail , buildAttachment)));
+      continue;
+    }
+
+    content.push(...buildRainmakerCard(detail.title, detail.values));
+  }
+
+  return content;
+}
 
 function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName) {
   const ulb = ulbName? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
@@ -2297,6 +2485,97 @@ function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, ema
   return headerData;
 }
 
+function createHeaderFormattedFireNoc(
+  details,
+  name,
+  qrCodeDataUrl,
+  phoneNumber,
+  email,
+  logo,
+  tenantId,
+  heading,
+  applicationNumber,
+  ulbType,
+  ulbName,
+  applicationDate = ""
+) {
+  const ulb =
+    ulbName ||
+    tenantId?.split(".")?.[1]?.replace(/^./, (c) => c.toUpperCase()) ||
+    "";
+
+  const ulbLine =
+    ulbType && ulb ? `${ulbType} ${ulb}` : `Municipal Corporation ${ulb}`;
+
+  return [
+    {
+      style: qrCodeDataUrl ? "pdf-head-qr-code" : "pdf-header",
+      layout: "noBorders",
+      table: {
+        widths: qrCodeDataUrl ? [120, "*", 120] : [120, "*", 40],
+        body: [
+          [
+            
+            {
+              image: localGovLogo,
+              width: 50,
+              height: 51.25,
+              margin: [51, 6, 10, 10],
+            },
+
+            {
+              stack: [
+                { text: ulbLine, style: "pdf-header-text" },
+                { text: heading || "Application", style: "pdf-header-sub-text" },
+              ],
+              alignment: "left",
+              margin: [10, 8, 0, 0],
+            },
+
+            qrCodeDataUrl
+              ? {
+                  image: qrCodeDataUrl,
+                  width: 70,
+                  height: 70,
+                  margin: [50, 8, 8, 8],
+                  alignment: "right",
+                }
+              : { text: "" },
+          ],
+        ],
+      },
+    },
+    {
+      style: "pdf-application-no",
+      columns: [
+        {
+          text: [
+            { text: "Application No. ", //bold: true 
+              
+            },
+            {
+              text: applicationNumber || "",
+              style: "pdf-application-no-value",
+            },
+          ],
+          alignment: "left",
+        },
+        {
+          text: [
+            { text: "Date of Application ", //bold: true 
+              
+            },
+            {
+              text: applicationDate || "",
+              style: "pdf-application-no-value",
+            },
+          ],
+          alignment: "right",
+        },
+      ],
+    },
+  ];
+}
 
 
 

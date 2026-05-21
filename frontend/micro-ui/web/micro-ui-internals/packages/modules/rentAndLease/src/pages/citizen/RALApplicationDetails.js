@@ -29,6 +29,7 @@ const RALApplicationDetails = () => {
   };
 
   console.log('applicationData', applicationData)
+
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
@@ -38,6 +39,9 @@ const RALApplicationDetails = () => {
     },
     { enabled: acknowledgementIds ? true : false }
   );
+
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rentandlease-receipt"});
+
   const getAcknowledgement = async () => {
     setLoader(true);
     try {
@@ -60,37 +64,16 @@ const RALApplicationDetails = () => {
     onClick: () => getAcknowledgement(),
   });
 
-  async function getRecieptSearch({ tenantId, payments, ...params }) {
-    setLoader(true);
-    try {
-      let response = null;
-      
-        response = await Digit.PaymentService.generatePdf(
-          tenantId,
-          { Payments: [
-              {
-                ...(payments || {}),
-                AllotmentDetails: [applicationData],
-              },
-            ], },
-          "rentandlease-receipt"
-        );
-      
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-        fileStoreIds: response.filestoreIds[0],
-      });
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
-      setLoader(false);
-    } catch (error) {
-      console.error(error);
-      setLoader(false);
-    }
-  }
 
-  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      onClick: () =>
+        printBillReceipt({
+          businessService: "rl-services",
+          receiptNumber: acknowledgementIds,
+          rootKey: "PAYMENTS",
+        }),
     });
   }
   useEffect(() => {
@@ -250,7 +233,7 @@ const RALApplicationDetails = () => {
         {/* <ApplicationTimeline workflowDetails={workflowDetails} t={t} /> */}
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
-      {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
+      {(loader || recieptDataLoading || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>
   );
 };

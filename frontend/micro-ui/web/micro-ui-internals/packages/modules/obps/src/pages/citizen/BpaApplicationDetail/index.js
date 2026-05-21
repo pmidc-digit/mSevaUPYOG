@@ -329,7 +329,9 @@ console.log('userInfo', userInfo)
     if (workflowDetails?.data && !workflowDetails?.isLoading && (data?.applicationStatus === "APPROVED" || data?.applicationStatus === "REJECTED")) {
       return getApproveRejectComments(workflowDetails);
     }
-  }, [workflowDetails]);
+    return null;
+  }, [workflowDetails?.data, workflowDetails?.isLoading, data?.applicationStatus]);
+  
 
   useEffect(() => {
       if (!userSelected) {

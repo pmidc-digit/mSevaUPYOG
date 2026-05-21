@@ -119,7 +119,7 @@ public class CalculatorUtil {
 	public MdmsCriteriaReq gettenants(RequestInfo requestInfo) {
 
 		MasterDetail masterDetail = MasterDetail.builder().name(WSCalculationConstant.WS_DEMAND_MODULE)
-				.filter("[?(@.isautodemand=='true')]").build();
+				.filter("[?(@.iswater == true)]").build();
 		ModuleDetail moduleDetail = ModuleDetail.builder().moduleName(WSCalculationConstant.WS_TENANT_SEARCH)
 				.masterDetails(Arrays.asList(masterDetail)).build();
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId("pb")
@@ -155,8 +155,31 @@ public class CalculatorUtil {
 
 		Collections.sort(response.getWaterConnection(), Comparator.comparing(wc -> wc.getAuditDetails().getLastModifiedTime()));
 		
-		return response.getWaterConnection();
-	}
+		//PI-19943 //
+		
+//		 previous Collections.sort() was sorting water connections in ascending order, meaning the oldest connection came first and the newest came 
+//			last. Because of this, code was sometimes picking the old connection instead of the latest one. By changing the sorting to descending order, the latest 
+//			modified connection will always come first
+			
+			
+			// Filter active connections
+			List<WaterConnection> activeConnections = response.getWaterConnection().stream()
+			        .filter(wc -> wc.getStatus() != null
+			                && wc.getStatus().name().equalsIgnoreCase("ACTIVE"))
+			        .collect(Collectors.toList());   
+
+			// If active connections exist → sort them by latestModifiedTime DESC and pick first
+			if (!activeConnections.isEmpty()) {
+			    activeConnections = activeConnections.stream()
+			            .sorted((a, b) -> b.getAuditDetails().getLastModifiedTime()
+			                    .compareTo(a.getAuditDetails().getLastModifiedTime()))   
+			            .collect(Collectors.toList());   
+
+			    return Collections.singletonList(activeConnections.get(0));   
+			}
+			
+			return response.getWaterConnection();
+		}
 
 	public  WaterConnection getWaterConnectionObject(List<WaterConnection> waterConnectionList){
 		int size = waterConnectionList.size();
@@ -600,5 +623,31 @@ public class CalculatorUtil {
 				.append(consumerCode).append(WSCalculationConstant.SEPARATER)
 				.append(WSCalculationConstant.SERVICE_FIELD_FOR_SEARCH_URL)
 				.append(WSCalculationConstant.ONE_TIME_FEE_SERVICE_FIELD);
+	}
+	
+	
+	/*PI-19231
+	 * 
+	 * */
+	
+	public MdmsCriteriaReq getUsageCategoryFromMdms(RequestInfo requestInfo, String tenantId ) {
+
+		String filter = "[?(@.tenantId=='" + tenantId + "' && @.status=='" + WSCalculationConstant.ACTIVE_CONNECTION + "')]";
+		
+		MasterDetail masterDetail = MasterDetail.builder().name(WSCalculationConstant.METER_READING_MAPPING)
+				.filter(filter)
+				.build();
+		ModuleDetail moduleDetail = ModuleDetail.builder()
+		        .moduleName("tenant") // Replace with your actual module name
+		        .masterDetails(Collections.singletonList(masterDetail))
+		        .build();
+		MdmsCriteria mdmsCriteria = MdmsCriteria.builder()
+		        .tenantId(tenantId.split("\\.")[0]) // Extract root tenant like "pb" from "pb.amritsar"
+		        .moduleDetails(Collections.singletonList(moduleDetail))
+		        .build();
+	    return MdmsCriteriaReq.builder()
+		        .requestInfo(requestInfo)
+		        .mdmsCriteria(mdmsCriteria)
+		        .build();
 	}
 }

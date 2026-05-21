@@ -15,8 +15,8 @@ public class BPACalculatorProducer {
 	 * @param topic The kafka topic to push to
 	 * @param value The object to be pushed
 	 */
-	public void push(String topic, Object value) {
-		kafkaTemplate.send(topic, value);
+	public void push(String topic,String Key, Object value) {
+		kafkaTemplate.send(topic,Key, value);
 	}
 
 }

@@ -1,12 +1,15 @@
 package org.egov.tl.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.tl.config.TLConfiguration;
 import org.egov.tl.repository.ServiceRequestRepository;
 import org.egov.tl.repository.TLRepository;
+import org.egov.tl.util.TLConstants;
 import org.egov.tl.util.TradeUtil;
 import org.egov.tl.validator.TLValidator;
 import org.egov.tl.web.models.*;
@@ -16,6 +19,7 @@ import org.egov.tl.web.models.user.UserSearchRequest;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -23,6 +27,7 @@ import static org.egov.tl.util.TLConstants.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -36,18 +41,23 @@ public class UserService{
 
     private TLConfiguration config;
 
+    private final static String BPA_ARCHITECT = "BPA_ARCHITECT";
 
     private TradeUtil tradeUtil;
 
     private TLRepository repository;
+    
+    private TradeLicenseService licenseService;
 
     @Autowired
-    public UserService(ObjectMapper mapper, ServiceRequestRepository serviceRequestRepository, TLConfiguration config,TradeUtil tradeUtil,TLRepository repository) {
+    public UserService(ObjectMapper mapper, ServiceRequestRepository serviceRequestRepository, TLConfiguration config,
+    		TradeUtil tradeUtil,TLRepository repository, @Lazy TradeLicenseService licenseService) {
         this.mapper = mapper;
         this.serviceRequestRepository = serviceRequestRepository;
         this.config = config;
         this.tradeUtil=tradeUtil;
         this.repository=repository;
+        this.licenseService = licenseService;
     }
 
 
@@ -107,9 +117,12 @@ public class UserService{
                     addNonUpdatableFields(user,userDetailResponse.getUser().get(0));
                    if (isBPARoleAddRequired) {
                         List<String> licenseeTyperRole = tradeUtil.getusernewRoleFromMDMS(tradeLicense, requestInfo);
-                        for (String rolename : licenseeTyperRole) {
-                            user.addRolesItem(Role.builder().code(rolename).name(rolename).tenantId(tradeLicense.getTenantId()).build());
-                        }
+                     // Update the professional role
+                        updateProfessionalUserRoles(tradeLicense, user, licenseeTyperRole);
+                        ObjectNode additionalDetails = (ObjectNode)tradeLicense.getTradeLicenseDetail().getAdditionalDetail();
+                        String inactiveType = additionalDetails.get("inactiveType") == null ? "" : additionalDetails.get("inactiveType").asText("");
+                        if(!APPLICATION_TYPE_RENEWAL.equalsIgnoreCase(inactiveType))
+                        	user.setIsRoleUpdatable(true);
                    }
                     userDetailResponse = userCall( new CreateUserRequest(requestInfo,user),uri);
                     switch (businessService)
@@ -157,6 +170,11 @@ public class UserService{
         newowner.setIdentificationMark(getFromOwnerIfNotNull(user.getIdentificationMark(),owner.getIdentificationMark()));
         newowner.setPhoto(getFromOwnerIfNotNull(user.getPhoto(),owner.getPhoto()));
         newowner.setTenantId(getFromOwnerIfNotNull(user.getTenantId(),owner.getTenantId()));
+        newowner.setPermanentDistrict(getFromOwnerIfNotNull(user.getPermanentDistrict(),owner.getPermanentDistrict()));
+        newowner.setPermanentState(getFromOwnerIfNotNull(user.getPermanentState(),owner.getPermanentState()));
+        newowner.setCorrespondenceDistrict(getFromOwnerIfNotNull(user.getCorrespondenceDistrict(),owner.getCorrespondenceDistrict()));
+        newowner.setCorrespondenceState(getFromOwnerIfNotNull(user.getCorrespondenceState(),owner.getCorrespondenceState()));
+        
         return  newowner;
     }
 
@@ -367,7 +385,7 @@ public class UserService{
      */
     public UserDetailResponse getUser(TradeLicenseSearchCriteria criteria,RequestInfo requestInfo){
         UserSearchRequest userSearchRequest = getUserSearchRequest(criteria,requestInfo);
-        StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
+        StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoints());
         UserDetailResponse userDetailResponse = userCall(userSearchRequest,uri);
         return userDetailResponse;
     }
@@ -478,4 +496,83 @@ public class UserService{
         return uuids;
     }
 
+	/**
+	 * 
+	 * Updates the roles assigned to a professional user according to the specified
+	 * application type and its current status.
+	 *
+	 * This method ensures that role changes reflect the business rules associated
+	 * with different application workflows.
+	 * 
+	 * @param tradeLicense Professional Registration application object
+	 * @param user User object on roles will be updated.
+	 * @param licenseeTyperRole List of Roles will be assigned.
+	 * 
+	 * @author Roshan chaudhary
+	 */
+	public void updateProfessionalUserRoles(TradeLicense tradeLicense, OwnerInfo user, List<String> licenseeTyperRole) {
+		String action = tradeLicense.getAction();
+		String applicationStatus = tradeLicense.getStatus();
+		String applicationType = tradeLicense.getApplicationType() != null
+				? tradeLicense.getApplicationType().toString()
+				: "";
+
+		switch (applicationStatus) {
+		case TLConstants.STATUS_BLACKLISTED:
+		case TLConstants.STATUS_INACTIVE:
+		case TLConstants.STATUS_EXPIRED:
+			List<Role> userRoles = user.getRoles();
+			if (licenseeTyperRole.contains(BPA_ARCHITECT)) {
+				userRoles = userRoles.stream().filter(userRole -> !userRole.getCode().equalsIgnoreCase(BPA_ARCHITECT))
+						.collect(Collectors.toList());
+			} else {
+				userRoles = userRoles.stream()
+						.filter(userRole -> !(userRole.getCode().equalsIgnoreCase(licenseeTyperRole.get(0))
+								&& userRole.getTenantId().equalsIgnoreCase(tradeLicense.getTenantId())))
+						.collect(Collectors.toList());
+			}
+			user.setRoles(userRoles);
+			break;
+		case TLConstants.STATUS_APPROVED:
+			for (String rolename : licenseeTyperRole) {
+				// Add BPA_ARCHITECT role with state level tenantId
+				if (rolename.equalsIgnoreCase(BPA_ARCHITECT))
+					user.addRolesItem(
+							Role.builder().code(rolename).name(rolename).tenantId(user.getTenantId()).build());
+				else
+					user.addRolesItem(
+							Role.builder().code(rolename).name(rolename).tenantId(tradeLicense.getTenantId()).build());
+			}
+			
+			//Inactive the previous application in case of Upgrade and Renewal
+			if ((TLConstants.APPLICATION_TYPE_UPGRADE.equalsIgnoreCase(applicationType) || 
+					TLConstants.APPLICATION_TYPE_RENEWAL.equalsIgnoreCase(applicationType))
+					&& TLConstants.ACTION_APPROVE.equalsIgnoreCase(action)) {
+				licenseService.inactivepreviousApplications(tradeLicense);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+    
+	/**
+	 * Retrieves the user record where the username is set to SYSTEM.
+	 * This is typically used for system-level operations or default configurations.
+	 * @return System user
+	 * @author Roshan chaudhary
+	 */
+    public org.egov.common.contract.request.User searchSystemUser(){
+        UserSearchRequest userSearchRequest = new UserSearchRequest();
+        userSearchRequest.setUserType("SYSTEM");
+        userSearchRequest.setUserName("SYSTEM");
+        userSearchRequest.setTenantId("pb");
+        StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
+        UserDetailResponse userDetailResponse = userCall(userSearchRequest,uri);
+        if(CollectionUtils.isEmpty(userDetailResponse.getUser()))
+        	throw new CustomException("SYSTEM_USER_NOT_FOUND", "System User Not Found.");
+        return mapper.convertValue(userDetailResponse.getUser().get(0), org.egov.common.contract.request.User.class);
+
+    }
+    
 }

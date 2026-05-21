@@ -106,6 +106,31 @@ public class CalculatorUtils {
 				return sc1.getAuditDetails().getLastModifiedTime().compareTo(sc2.getAuditDetails().getLastModifiedTime());
 			}
 		});
+		
+		//PI-19943 //
+		
+//		 previous Collections.sort() was sorting sewerage connections in ascending order, meaning the oldest connection came first and the newest came 
+//		last. Because of this,  code was sometimes picking the old connection instead of the latest one. By changing the sorting to descending order, the latest 
+//		modified connection will always come first
+		
+		
+		// Filter active connections
+		List<SewerageConnection> activeConnections = response.getSewerageConnections().stream()
+		        .filter(sc -> sc.getStatus() != null
+		                && sc.getStatus().name().equalsIgnoreCase("ACTIVE"))
+		        .collect(Collectors.toList());
+
+		// If active connections exist → sort them by latestModifiedTime DESC and pick first
+		if (!activeConnections.isEmpty()) {
+
+		    activeConnections = activeConnections.stream()
+		            .sorted((a, b) -> b.getAuditDetails().getLastModifiedTime()
+		                    .compareTo(a.getAuditDetails().getLastModifiedTime()))
+		            .collect(Collectors.toList());
+
+		    return Collections.singletonList(activeConnections.get(0));
+		}
+
 
 		return response.getSewerageConnections();
 	}
@@ -149,7 +174,7 @@ public class CalculatorUtils {
 	public MdmsCriteriaReq getenats(RequestInfo requestInfo) {
 
 		MasterDetail masterDetail = MasterDetail.builder().name(SWCalculationConstant.SW_DEMAND_MODULE)
-				.filter("[?(@.isautodemand=='true')]").build();
+				.filter("[?(@.issewerage==true)]").build();
 		ModuleDetail moduleDetail = ModuleDetail.builder().moduleName(SWCalculationConstant.SW_TENANT_SEARCH)
 				.masterDetails(Arrays.asList(masterDetail)).build();
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId("pb")
@@ -488,19 +513,19 @@ public class CalculatorUtils {
 	public MdmsCriteriaReq prepareWSTaxPeriodMdmsRequest(RequestInfo requestInfo, String serviceName, String tenantId) {
 		
 				String type=null;
-//		if(tenantId.contains("pb.khanna"))
-//		{
-//			type="ANNUAL";
-//		}
-//		
-//		else
-//		{
-//			type="QUATERLY";
-//		}
+		if(tenantId.contains("pb.khanna"))
+		{
+			type="ANNUAL";
+		}
+		
+		else
+		{
+			type="QUATERLY";
+		}
 		
 			MasterDetail masterDetail = MasterDetail.builder().name(SWCalculationConstant.TAXPERIOD_MASTERNAME)
-					 //.filter("[?(@.periodCycle=='"+type+"' && @.service== '"+serviceName+"')]")
-					.filter("[?(@.periodCycle=='QUATERLY' && @.service== '"+serviceName+"')]")
+					 .filter("[?(@.periodCycle=='"+type+"' && @.service== '"+serviceName+"')]")
+					//.filter("[?(@.periodCycle=='QUATERLY' && @.service== '"+serviceName+"')]")
 					.build();
 			ModuleDetail moduleDetail = ModuleDetail.builder().moduleName(SWCalculationConstant.MODULE_NAME_BILLINGSERVICE)
 					.masterDetails(Arrays.asList(masterDetail)).build();

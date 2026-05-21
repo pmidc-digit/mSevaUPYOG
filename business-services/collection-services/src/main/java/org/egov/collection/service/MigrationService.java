@@ -129,7 +129,8 @@ public class MigrationService {
 		}
         
         PaymentResponse paymentResponse = new PaymentResponse(new ResponseInfo(), paymentList);
-        producer.producer(properties.getCollectionMigrationTopicName(), paymentResponse);
+        String key = receipts.get(0).getConsumerCode();
+        producer.producer(properties.getCollectionMigrationTopicName(), key, paymentResponse);
     }
 
 	private Bill convertBillToNew(Bill_v1 bill_v1, AuditDetails_v1 oldAuditDetails) {

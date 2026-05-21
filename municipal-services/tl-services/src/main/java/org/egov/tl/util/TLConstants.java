@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class TLConstants {
@@ -22,7 +24,7 @@ public class TLConstants {
 	public static final String CATEGORY_KEY = "category";
 	public static final String ROLE_CODE_KEY = "rolecode";
 
-    public static  final String businessService_TL = "NewTL";
+    public static  final String businessService_TL = "TL";
 
     public static  final String businessService_DIRECT_RENEWAL = "DIRECTRENEWAL";
     
@@ -268,6 +270,8 @@ public class TLConstants {
 
     public static final String APPLICATION_TYPE_NEW = "NEW";
     
+    public static final String APPLICATION_TYPE_UPGRADE = "UPGRADE";
+    
     // error constants
 
     public static final String INVALID_TENANT_ID_MDMS_KEY = "INVALID TENANTID";
@@ -401,7 +405,7 @@ public class TLConstants {
 
     public static final String JOB_EXPIRY = "EXPIRY";
 
-    public static final String DEFAULT_WORKFLOW = "NewTL";
+    public static final String DEFAULT_WORKFLOW = "TL";
 
     public static final String PAYMENT_LINK_PLACEHOLDER="{PAYMENT_LINK}";
 
@@ -457,5 +461,21 @@ public class TLConstants {
     public TLConstants() {}
 
     public static final String TENANTS_JSONPATH = "$.MdmsRes.tenant.tenants";
+    
+    public static final String STATUS_BLACKLISTED="BLACKLISTED";
+    
+    public static final String STATUS_INACTIVE="INACTIVE";
+    
+    public static final String ACTION_REAPPROVE  = "REAPPROVE";
+    
+	public static final Map<String, String> TRADETYPE_TO_IDGEN_SHORTNAME =
+	    Stream.of(new Object[][] {
+	        {"ARCHITECT", "AR"},
+	        {"ENGINEER", "ER"},
+	        {"TOWNPLANNER", "TP"},
+	        {"SUPERVISOR", "BD"}
+	    }).collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+
+	public static final String SIGNATURE_DOC_TYPE = "APPL.BPAREG_SCANNED_SIGNATURE";
 
 }

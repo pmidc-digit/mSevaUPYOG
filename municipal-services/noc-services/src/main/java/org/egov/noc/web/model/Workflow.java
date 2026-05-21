@@ -30,6 +30,7 @@ public class Workflow   {
 
   @SafeHtml
   @JsonProperty("comment")
+  @Size(max = 5000)
   private String comment = null;
 
   @JsonProperty("documents")
@@ -93,7 +94,7 @@ public class Workflow   {
   **/
   @ApiModelProperty(value = "Comment by actor.")
   
-  @Size(min=1,max=64)   public String getComment() {
+  public String getComment() {
     return comment;
   }
 
@@ -130,7 +131,7 @@ public class Workflow   {
 
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -166,7 +167,7 @@ public class Workflow   {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

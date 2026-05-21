@@ -182,6 +182,8 @@ public class PGRConfiguration {
     @Value("${egov.usr.events.reopen.code}")
     private String reopenCode;
 
+    @Value("${kafka.topics.save.dgr.service}")
+	private String saveForDgrTopic;	
 
 
     //Allowed Search Parameters

@@ -67,7 +67,7 @@ public class TLBatchService {
      */
     public void getLicensesAndPerformAction(String serviceName, String jobName, RequestInfo requestInfo){
     	
-    	List <String> tenantIdsFromRepository = repository.fetchTradeLicenseTenantIds();
+    	List <String> tenantIdsFromRepository = repository.fetchTradeLicenseTenantIds(serviceName);
 
         List <String> workflowCodes = Arrays.asList(config.getTlBusinessServices().split("\\s*,\\s*"));
 
@@ -234,11 +234,19 @@ public class TLBatchService {
             });
 
             workflowIntegrator.callWorkFlow(new TradeLicenseRequest(requestInfo, licenses));
+            TradeLicense license = licenses.get(0);
 
-            producer.push(config.getUpdateWorkflowTopic(), new TradeLicenseRequest(requestInfo, licenses));
+            String key = (license.getLicenseNumber() != null)
+                    ? license.getLicenseNumber() + "-" + UUID.randomUUID()
+                    : UUID.randomUUID().toString();
+
+            producer.push(config.getUpdateWorkflowTopic(), key,new TradeLicenseRequest(requestInfo, licenses));
         }
         catch (Exception e){
-            producer.push(config.getExpiryErrorTopic(), licenses);
+        	
+        	String key = UUID.randomUUID().toString(); // fallback key
+        	
+            producer.push(config.getExpiryErrorTopic(),key, licenses);
         }
 
 

@@ -32,11 +32,13 @@ public class HrmsConsumer {
     @Autowired
     private PropertiesManager propertiesManager;
 
-    @KafkaListener(topics = {"${kafka.topics.hrms.updateData}"})
+    @KafkaListener(topics = {"${kafka.topics.hrms.updateData}"},
+    		concurrency = "${kafka.consumer.config.concurrency.count}")
     public void listenUpdateEmployeeData(final HashMap<String, Object> record,@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         try {
             EmployeeRequest employeeRequest = mapper.convertValue(record, EmployeeRequest.class);
-            hrmsProducer.push(propertiesManager.getUpdateEmployeeTopic(), employeeRequest);
+            String key = employeeRequest.getEmployees().get(0).getUuid();
+            hrmsProducer.push(propertiesManager.getUpdateEmployeeTopic(), key, employeeRequest);
             notificationService.sendReactivationNotification(employeeRequest);
         } catch (final Exception e) {
 

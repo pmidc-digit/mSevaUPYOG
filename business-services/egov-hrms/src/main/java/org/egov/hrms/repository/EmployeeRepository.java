@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.hrms.utils.HRMSUtils;
 import org.egov.hrms.web.contract.EmployeeSearchCriteria;
+import org.egov.hrms.web.contract.ObpasEmployeeRequest;
+import org.egov.hrms.web.contract.ObpasEmployeeSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Repository;
 import lombok.extern.slf4j.Slf4j;
 
 import org.egov.hrms.model.Employee;
+import org.egov.hrms.model.EmployeeWithWard;
+import org.egov.hrms.model.ObpasEmployee;
 import org.springframework.util.CollectionUtils;
 
 @Repository
@@ -30,6 +34,9 @@ public class EmployeeRepository {
 	
 	@Autowired
 	private EmployeeRowMapper rowMapper;
+	
+	@Autowired
+	private ObpasEmployeeRowMapper ObpasMapper;
 
 	@Autowired
 	private EmployeeCountRowMapper countRowMapper;
@@ -67,6 +74,44 @@ public class EmployeeRepository {
 		}
 		return employees;
 	}
+	
+	
+	public List<ObpasEmployee> fetchObpasEmployees(ObpasEmployeeSearchCriteria criteria, RequestInfo requestInfo) {
+
+	    List<ObpasEmployee> employees = new ArrayList<>();
+	    List<Object> preparedStmtList = new ArrayList<>();
+
+	    // 🔥 Assignment search block removed completely
+
+	    // 1️⃣ Build SQL
+	    String query = queryBuilder.getObpasEmployeeSearchQuery(criteria, preparedStmtList);
+
+	    try {
+	        // 2️⃣ Execute query
+	        employees = jdbcTemplate.query(query, preparedStmtList.toArray(), ObpasMapper);
+	    } catch (Exception e) {
+	        log.error("Exception while making the DB call: ", e);
+	        log.error("Query: " + query);
+	    }
+
+	    return employees;
+	}
+
+	
+	public List<EmployeeWithWard> fetchEmployeesward(EmployeeWithWard criteria, RequestInfo requestInfo){
+		List<EmployeeWithWard> employees = new ArrayList<>();
+		List<Object> preparedStmtList = new ArrayList<>();
+
+		String query = queryBuilder.getEmployeewithwardSearchQuery(criteria, preparedStmtList);
+		try {
+			employees = jdbcTemplate.query(query, preparedStmtList.toArray(),new EmployeeWardRowMapper());
+		}catch(Exception e) {
+			log.error("Exception while making the db call: ",e);
+			log.error("query; "+query);
+		}
+		return employees;
+	}
+
 
 	private List<String> fetchEmployeesforAssignment(EmployeeSearchCriteria criteria, RequestInfo requestInfo) {
 		List<String> employeesIds = new ArrayList<>();
@@ -100,6 +145,8 @@ public class EmployeeRepository {
 		return id;
 	}
 
+	
+	
 	/**
 	 * DB Repository that makes jdbc calls to the db and fetches employee count.
 	 *

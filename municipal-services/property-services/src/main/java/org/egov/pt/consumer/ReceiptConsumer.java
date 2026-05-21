@@ -23,7 +23,8 @@ public class ReceiptConsumer {
 	@Autowired
     private PropertyConfiguration config;
 
-    @KafkaListener(topics = {"${kafka.topics.receipt.create}","${kafka.topics.notification.pg.save.txns}"})
+    @KafkaListener(topics = {"${kafka.topics.receipt.create}","${kafka.topics.notification.pg.save.txns}"},
+    		concurrency = "${kafka.consumer.config.concurrency.count}")
     public void listenPayments(final HashMap<String, Object> record,  @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
         if(topic.equalsIgnoreCase(config.getReceiptTopic())){

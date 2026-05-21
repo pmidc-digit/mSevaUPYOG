@@ -2,6 +2,7 @@ package org.egov.pgr.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -232,6 +233,38 @@ public class PGRUtils {
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().tenantId(tenantId).moduleDetails(moduleDetails).build();
 		return MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();
 	}
+	
+	
+	public MdmsCriteriaReq prepareMdMsRequestForDistrict(String tenantId, String masterName, String code, RequestInfo requestInfo) {
+
+	    String filter = null;
+
+	    // Apply filter only when masterName = "District"
+	    if (masterName != null && masterName.equalsIgnoreCase(PGRConstants.MDMS_TENANTS_MASTERS_MASTER_NAME)) {
+	        filter = "[?(@.code == '" + code + "')]";
+	    }
+
+	    MasterDetail masterDetail = MasterDetail.builder()
+	            .name(masterName)
+	            .filter(filter)  // null means no filter applied
+	            .build();
+
+	    ModuleDetail moduleDetail = ModuleDetail.builder()
+	            .moduleName(PGRConstants.MDMS_TENANT_MODULE_NAME)
+	            .masterDetails(Collections.singletonList(masterDetail))
+	            .build();
+
+	    MdmsCriteria mdmsCriteria = MdmsCriteria.builder()
+	            .tenantId(tenantId)
+	            .moduleDetails(Collections.singletonList(moduleDetail))
+	            .build();
+
+	    return MdmsCriteriaReq.builder()
+	            .requestInfo(requestInfo)
+	            .mdmsCriteria(mdmsCriteria)
+	            .build();
+	}
+
 
 	public MdmsCriteriaReq prepareMdMsRequestForDesignation(StringBuilder uri, String tenantId, String code,
 			RequestInfo requestInfo) {

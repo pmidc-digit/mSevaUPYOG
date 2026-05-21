@@ -2,7 +2,10 @@ package org.egov.hrms.repository;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.hrms.config.PropertiesManager;
+import org.egov.hrms.model.EmployeeWithWard;
 import org.egov.hrms.web.contract.EmployeeSearchCriteria;
+import org.egov.hrms.web.contract.ObpasEmployeeRequest;
+import org.egov.hrms.web.contract.ObpasEmployeeSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,11 +31,93 @@ public class EmployeeQueryBuilder {
 	 * @param criteria
 	 * @return
 	 */
-	public String getEmployeeSearchQuery(EmployeeSearchCriteria criteria,List <Object> preparedStmtList ) {
-		StringBuilder builder = new StringBuilder(EmployeeQueries.HRMS_GET_EMPLOYEES);
-		addWhereClause(criteria, builder, preparedStmtList);
-		return paginationClause(criteria, builder);
+	
+	public String getEmployeeSearchQuery(EmployeeSearchCriteria criteria, List<Object> preparedStmtList) {
+
+	    StringBuilder builder;
+
+	    // Check if category, subcategory, or zone are present
+	    boolean hasCatSubZone = (criteria.getCategories() != null && !criteria.getCategories().isEmpty())
+	                            || (criteria.getSubcategories() != null && !criteria.getSubcategories().isEmpty())
+	                            || (criteria.getZones() != null && !criteria.getZones().isEmpty())
+	                            || (criteria.getAssignedtenattids() != null && !criteria.getAssignedtenattids().isEmpty());
+	                            
+
+	    if (hasCatSubZone) {
+	        // Use OBPAS join query if category/subcategory/zone present
+	        builder = new StringBuilder(EmployeeQueries.HRMS_GET_EMPLOYEES_WITH_OBPAS);
+	    } else {
+	        // Default query
+	        builder = new StringBuilder(EmployeeQueries.HRMS_GET_EMPLOYEES);
+	    }
+
+	    addWhereClause(criteria, builder, preparedStmtList);
+	    return paginationClause(criteria, builder);
 	}
+
+	public String getObpasEmployeeSearchQuery(ObpasEmployeeSearchCriteria criteria, List<Object> preparedStmtList) {
+		StringBuilder builder = new StringBuilder(EmployeeQueries.OBPAS_EMPLOYEE_LIST);
+
+	    if (criteria.getTenantId() != null) {
+	        builder.append(" AND tenantid = ? ");
+	        preparedStmtList.add(criteria.getTenantId());
+	    }
+
+	    if (criteria.getUserUUID() != null) {
+	        builder.append(" AND userid = ? "); // keep as userid
+	        preparedStmtList.add(criteria.getUserUUID());
+	    }
+	    
+	    if (criteria.getUuid() != null) {
+	        builder.append(" AND uuid = ?::uuid ");
+	        preparedStmtList.add(criteria.getUuid());
+	    }
+
+
+
+	    if (criteria.getCategory() != null) {
+	        builder.append(" AND category = ? ");
+	        preparedStmtList.add(criteria.getCategory());
+	    }
+
+	    if (criteria.getSubcategory() != null) {
+	        builder.append(" AND subcategory = ? ");
+	        preparedStmtList.add(criteria.getSubcategory());
+	    }
+
+	    if (criteria.getZone() != null) {
+	        builder.append(" AND zone = ? ");
+	        preparedStmtList.add(criteria.getZone());
+	    }
+
+	    if (criteria.getAssignedTenantId() != null) {
+	        builder.append(" AND assigned_tenantid = ? ");
+	        preparedStmtList.add(criteria.getAssignedTenantId());
+	    }
+
+	    return builder.toString();
+	}
+
+
+
+
+	
+	public String getEmployeewithwardSearchQuery(EmployeeWithWard criteria, List<Object> preparedStmtList) {
+	    StringBuilder builder = new StringBuilder(EmployeeQueries.HRMS_GET_WARD); // assume this is base query like "SELECT * FROM employee WHERE 1=1"
+
+	    if (criteria.getTenantId() != null && !criteria.getTenantId().isEmpty()) {
+	        builder.append(" Where employee_tenantid = ?");
+	        preparedStmtList.add(criteria.getTenantId());
+	    }
+
+	    if (criteria.getWardId() != null && !criteria.getWardId().isEmpty()) {
+	        builder.append(" AND employee_wardid = ?");
+	        preparedStmtList.add(criteria.getWardId());
+	    }
+
+	    return builder.toString();
+	}
+
 
 	public String getEmployeeCountQuery(String tenantId, List <Object> preparedStmtList ) {
 		StringBuilder builder = new StringBuilder(EmployeeQueries.HRMS_COUNT_EMP_QUERY);
@@ -91,6 +176,29 @@ public class EmployeeQueryBuilder {
 			builder.append(" and employee.active = ?");
 			preparedStmtList.add(criteria.getIsActive());
 		}
+		
+		  // -------------------------
+	    // OBPAS FIELDS
+	    // -------------------------
+		 if(!CollectionUtils.isEmpty(criteria.getCategories())){
+		        builder.append(" and obpas.category IN (").append(createQuery(criteria.getCategories())).append(")");
+		        addToPreparedStatement(preparedStmtList, criteria.getCategories());
+		    }
+
+		    if(!CollectionUtils.isEmpty(criteria.getSubcategories())){
+		        builder.append(" and obpas.subcategory IN (").append(createQuery(criteria.getSubcategories())).append(")");
+		        addToPreparedStatement(preparedStmtList, criteria.getSubcategories());
+		    }
+
+		    if(!CollectionUtils.isEmpty(criteria.getZones())){
+		        builder.append(" and obpas.zone IN (").append(createQuery(criteria.getZones())).append(")");
+		        addToPreparedStatement(preparedStmtList, criteria.getZones());
+		    }
+
+		    if(!CollectionUtils.isEmpty(criteria.getAssignedtenattids())){
+		        builder.append(" and obpas.assigned_tenantid IN (").append(createQuery(criteria.getAssignedtenattids())).append(")");
+		        addToPreparedStatement(preparedStmtList, criteria.getAssignedtenattids());
+		    }
 	}
 	
 	public String paginationClause(EmployeeSearchCriteria criteria, StringBuilder builder) {

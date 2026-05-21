@@ -6,3 +6,4 @@ index.lock
 municipal-services/firenoc-calculator/package-lock.json
 core-services/xstate-chatbot/nodejs/src/messege.js
 core-services/xstate-chatbot/nodejs/package-lock.json
+/.metadata/

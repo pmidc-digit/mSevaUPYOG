@@ -1,7 +1,10 @@
 package org.egov.wf.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
 import org.egov.common.contract.response.ResponseInfo;
@@ -10,13 +13,17 @@ import org.egov.wf.config.WorkflowConfig;
 import org.egov.wf.repository.ServiceRequestRepository;
 import org.egov.wf.web.models.user.UserDetailResponse;
 import org.egov.wf.web.models.user.UserSearchRequest;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -30,6 +37,11 @@ public class UserService {
 
     private ObjectMapper mapper;
 
+    @Value("${egov.hrms.host}")
+    private String hrmsHost;
+    
+    @Value("${egov.employee.search.endpoint}")
+    private String employeeSearchEndpoint;
 
     @Autowired
     public UserService(WorkflowConfig config, ServiceRequestRepository serviceRequestRepository, ObjectMapper mapper) {
@@ -140,7 +152,43 @@ public class UserService {
         return  d.getTime();
     }
 
+    public List<User> getNextActionUsers(RequestInfo requestInfo, List<String> nextActionRoles, String tenantId){
+    	String roles = nextActionRoles.stream().collect(Collectors.joining(","));
+    	StringBuilder uri = getEmployeeSearchURL(tenantId, roles);
+    	
+    	JSONObject hrmsRequest = new JSONObject();
+    	UserSearchRequest userSearchRequest = new UserSearchRequest();
+    	userSearchRequest.setRequestInfo(requestInfo);
+    	hrmsRequest.put("RequestInfo", requestInfo);
+    	Object response = serviceRequestRepository.fetchResult(uri, userSearchRequest);
+    	
+    	List<User> usersList = JsonPath.read(response, "$.Employees.*.user");
+    	return usersList;
+    }
+    
+    private StringBuilder getEmployeeSearchURL(String tenantId, String roles) {
+    	
+    	StringBuilder uri = new StringBuilder(hrmsHost).append(employeeSearchEndpoint);
+    	uri.append("?tenantId=").append(tenantId)
+    	.append("&isActive=true");
+    	
+    	if(!StringUtils.isEmpty(roles))
+    		uri.append("&roles=").append(roles);
+    	
+    	return uri;
+    }
+    
+    public User searchSystemUser(){
+        UserSearchRequest userSearchRequest = new UserSearchRequest();
+        userSearchRequest.setUserType("SYSTEM");
+        userSearchRequest.setUserName("SYSTEM");
+        userSearchRequest.setTenantId("pb");
+        StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
+        UserDetailResponse userDetailResponse = userCall(userSearchRequest,uri);
+        if(CollectionUtils.isEmpty(userDetailResponse.getUser()))
+        	throw new CustomException("SYSTEM_USER_NOT_FOUND", "System User Not Found.");
+        return userDetailResponse.getUser().get(0);
 
-
+    }
 
 }

@@ -210,7 +210,7 @@ public class DemandService {
                     .build();
             switch (businessService) {
                 case businessService_BPA:
-                    singleDemand.setConsumerType("bpaStakeHolderReg");
+                    singleDemand.setConsumerType("bpaStakeHolderReg-108");
                     singleDemand.setBusinessService(config.getBusinessServiceBPA());
                     break;
             }

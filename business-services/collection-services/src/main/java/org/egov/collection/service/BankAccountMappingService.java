@@ -77,7 +77,9 @@ public class BankAccountMappingService {
 
     public BankAccountServiceMappingReq createBankAccountServiceMappingAsync(
             final BankAccountServiceMappingReq bankAccountServiceMappingReq) {
-        kafkaTemplate.send(applicationProperties.getCreateBankAccountServiceMappingTopicName(), bankAccountServiceMappingReq);
+    	String key = bankAccountServiceMappingReq.getBankAccountServiceMapping().get(0).getBank().toString() 
+    			+ bankAccountServiceMappingReq.getBankAccountServiceMapping().get(0).getBankBranch();
+        kafkaTemplate.send(applicationProperties.getCreateBankAccountServiceMappingTopicName(), key, bankAccountServiceMappingReq);
         return bankAccountServiceMappingReq;
     }
 

@@ -120,7 +120,8 @@ public class PGRNotificationConsumer {
     @Autowired
     private GrievanceService requestService;
 
-    @KafkaListener(topics = {"${kafka.topics.save.service}", "${kafka.topics.update.service}"})
+    @KafkaListener(topics = {"${kafka.topics.save.service}", "${kafka.topics.update.service}"},
+    		concurrency = "${kafka.config.consumer.concurrency.count}")
 
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         ObjectMapper mapper = new ObjectMapper();
@@ -153,7 +154,7 @@ public class PGRNotificationConsumer {
                                 continue;
                             }
                             for (SMSRequest smsRequest : smsRequests) {
-                                pGRProducer.push(smsNotifTopic, smsRequest);
+                                pGRProducer.push(smsNotifTopic, smsRequest.getMobileNumber(),smsRequest);
                             }
                         }
                         // Not enabled for now - email notifications to be part of next version of PGR.
@@ -164,7 +165,7 @@ public class PGRNotificationConsumer {
 
                         if (isUsrEventNotificationEnabled) {
                             EventRequest request = prepareuserEvents(service, actionInfo, serviceReqRequest.getRequestInfo());
-                            pGRProducer.push(saveUserEventsTopic, request);
+                            pGRProducer.push(saveUserEventsTopic, request.getEvents().get(0).getId(),request);
                         }
 
                     } else {

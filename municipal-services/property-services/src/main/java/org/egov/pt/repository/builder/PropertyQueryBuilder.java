@@ -217,6 +217,8 @@ public class PropertyQueryBuilder {
 
 		Boolean isEmpty = CollectionUtils.isEmpty(criteria.getPropertyIds())
 				&& CollectionUtils.isEmpty(criteria.getAcknowledgementIds())
+			     && CollectionUtils.isEmpty(criteria.getVasikaNos())        // ✅ added
+
 				&& CollectionUtils.isEmpty(criteria.getOldpropertyids()) && CollectionUtils.isEmpty(criteria.getUuids())
 				&& null == criteria.getMobileNumber() && null == criteria.getName() && null == criteria.getDoorNo()
 				&& null == criteria.getOldPropertyId() && null == criteria.getDocumentNumbers()
@@ -346,6 +348,21 @@ public class PropertyQueryBuilder {
 			appendAndQuery = true;
 		}
 
+		
+		Set<String> vasikaNos = criteria.getVasikaNos();
+		if (!CollectionUtils.isEmpty(vasikaNos)) {
+
+		    addClauseIfRequired(preparedStmtList, builder);
+
+		    builder.append(
+		        " (property.additionaldetails ->> 'vasikaNo') IN ("
+		    ).append(createQuery(vasikaNos)).append(")");
+
+		    addToPreparedStatementWithUpperCase(preparedStmtList, vasikaNos);
+		    appendAndQuery = true;
+		}
+
+		
 		Set<String> acknowledgementIds = criteria.getAcknowledgementIds();
 		if (!CollectionUtils.isEmpty(acknowledgementIds)) {
 
@@ -516,7 +533,13 @@ public class PropertyQueryBuilder {
 			builder.append("property.id IN (").append(createQuery(uuids)).append(")");
 			addToPreparedStatement(preparedStmtList, uuids);
 		}
-		return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
+
+        if (criteria.getPlainSearchOffset() != null && criteria.getPlainSearchOffset()) {
+            return builder.toString();
+        } else {
+            return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
+        }
+
 	}
 
 	public String getPropertyIdsQuery(Set<String> ownerIds, String tenantId, List<Object> preparedStmtList) {

@@ -83,7 +83,6 @@ public class MDMSService {
         return result;
     }
 
-
     /**
      * Creates MDMSCriteria
      * @param requestInfo The RequestInfo of the request
@@ -123,7 +122,6 @@ public class MDMSService {
                 .requestInfo(requestInfo).build();
         return mdmsCriteriaReq;
     }
-
 
     /**
      * Fetches BusinessServiceMasterConfig from MDMS
@@ -209,10 +207,56 @@ public class MDMSService {
 
     }
 
+	/**
+	 * Calls MDMS service to fetch Auto Skip States master data
+	 * 
+	 * @return
+	 */
+	public List<Map<String, Object>> getAutoSkipStatesMDMS(String moduleName, String businessServiceName) {
+		MdmsCriteriaReq mdmsCriteriaReq = getAutoSkipStatesMDMSRequest(new RequestInfo(),
+				workflowConfig.getStateLevelTenantId(), moduleName, businessServiceName);
+		Object result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
+		List<Map<String, Object>> data = JsonPath.read(result, "$.MdmsRes.Workflow.AutoSkipSteps");
+		return data;
+	}
 
+	/**
+	 * Creates MDMSCriteria
+	 * 
+	 * @param requestInfo The RequestInfo of the request
+	 * @param tenantId    TenantId of the request
+	 * @return MDMSCriteria for search call
+	 */
+	private MdmsCriteriaReq getAutoSkipStatesMDMSRequest(RequestInfo requestInfo, String tenantId, String moduleName,
+			String businessServiceName) {
+		ModuleDetail wfMasterDetails = getAutoSkipStatesMasterConfig(moduleName, businessServiceName);
 
+		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Collections.singletonList(wfMasterDetails))
+				.tenantId(tenantId).build();
 
+		MdmsCriteriaReq mdmsCriteriaReq = MdmsCriteriaReq.builder().mdmsCriteria(mdmsCriteria).requestInfo(requestInfo)
+				.build();
+		return mdmsCriteriaReq;
+	}
 
+	/**
+	 * Fetches BusinessServiceMasterConfig from MDMS
+	 * 
+	 * @return ModuleDetail for workflow
+	 */
+	private ModuleDetail getAutoSkipStatesMasterConfig(String moduleName, String businessServiceName) {
+
+		// master details for WF module
+		List<MasterDetail> wfMasterDetails = new ArrayList<>();
+		String filterPath = String.format(MDMS_AUTO_SKIP_STEPS_FILTE, moduleName, businessServiceName);
+
+		wfMasterDetails.add(MasterDetail.builder().name(MDMS_AUTO_SKIP_STEPS).filter(filterPath).build());
+
+		ModuleDetail wfModuleDtls = ModuleDetail.builder().masterDetails(wfMasterDetails).moduleName(MDMS_WORKFLOW)
+				.build();
+
+		return wfModuleDtls;
+	}
 
 
 }

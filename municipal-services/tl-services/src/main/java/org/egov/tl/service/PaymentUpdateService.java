@@ -87,6 +87,7 @@ public class PaymentUpdateService {
 	 */
 	public void process(HashMap<String, Object> record) {
 
+		log.info("Start PaymentUpdateService.process method.");
 		try {
 			PaymentRequest paymentRequest = mapper.convertValue(record,PaymentRequest.class);
 			RequestInfo requestInfo = paymentRequest.getRequestInfo();
@@ -113,6 +114,8 @@ public class PaymentUpdateService {
 							break;
 					}
 				BusinessService businessService = workflowService.getBusinessService(licenses.get(0).getTenantId(), requestInfo,wfbusinessServiceName);
+				Map<String, BusinessService> businessServiceMap = new HashMap<>();
+				businessServiceMap.put(tenantId, businessService);
 
 
 					if (CollectionUtils.isEmpty(licenses))
@@ -144,18 +147,23 @@ public class PaymentUpdateService {
 							endStates = util.getBPAEndState(updateRequest);
 							break;
 					}
-					enrichmentService.postStatusEnrichment(updateRequest,endStates,null);
+					enrichmentService.postStatusEnrichment(updateRequest,endStates,new HashMap<String, Object>());
 
 					/*
 					 * calling repository to update the object in TL tables
 					 */
-					Map<String,Boolean> idToIsStateUpdatableMap = util.getIdToIsStateUpdatableMap(businessService,licenses);
+					updateRequest.getLicenses()
+					.forEach(obj -> log.info("Request Object" + obj));
+					
+					Map<String,Boolean> idToIsStateUpdatableMap = util.getIdToIsStateUpdatableMap(businessServiceMap,licenses);
 					repository.update(updateRequest,idToIsStateUpdatableMap);
 			}
 		 }
 		} catch (Exception e) {
 			log.error("KAFKA_PROCESS_ERROR", e);
 		}
+		
+		log.info("End PaymentUpdateService.process method.");
 
 	}
 

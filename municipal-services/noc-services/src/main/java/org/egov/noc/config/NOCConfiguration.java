@@ -46,6 +46,19 @@ public class NOCConfiguration {
 	@Value("${notification.sms.enabled}")
 	private Boolean isSMSEnabled;
 
+	// Property Service
+	@Value("${egov.property.service.host}")
+	private String propertyHost;
+
+	@Value("${egov.property.service.context.path}")
+	private String propertyContextPath;
+
+	@Value("${egov.property.searchendpoint}")
+	private String propertySearchEndpoint;
+
+	@Value("${egov.property.createendpoint}")
+	private String propertyCreateEndpoint;
+
 	// Localization
 	@Value("${egov.localization.host}")
 	private String localizationHost;
@@ -55,6 +68,18 @@ public class NOCConfiguration {
 
 	@Value("${egov.localization.search.endpoint}")
 	private String localizationSearchEndpoint;
+
+	@Value("${noc.taxhead.master.code}")
+	private String taxHeadMasterCode;
+
+	@Value("${egov.demand.create.endpoint}")
+	private String demandCreateEndpoint;
+
+	@Value("${egov.noccalculator.host}")
+	private String nocCalculatorHost;
+
+	@Value("${egov.noccalculator.endpoint}")
+	private String nocCalculatorEndpoint;
 
 	@Value("${egov.localization.statelevel}")
 	private Boolean isLocalizationStateLevel;
@@ -88,7 +113,16 @@ public class NOCConfiguration {
 	
 	@Value("${persister.save.noc.topic}")
 	private String saveTopic;
-	
+
+	@Value("${persister.save.checkList.topic}")
+	private String saveCheckListTopic;
+
+	@Value("${persister.update.checkList.topic}")
+	private String updateCheckListTopic;
+
+	@Value("${egov.billingservice.host}")
+	private String billingServiceHost;
+
 	@Value("${persister.update.noc.topic}")
 	private String updateTopic;
 	
@@ -116,5 +150,16 @@ public class NOCConfiguration {
 
     @Value("${egov.bpa.search.endpoint}")
     private String bpaSearchEndpoint;
+
+
+	@Value("${spring.kafka.consumer.group-id}")
+	private String kafkaGroupId;
+
+	//HRMS Config
+	@Value("${egov.hrms.host}")
+	private String hrmsHost;
+
+	@Value("${egov.employee.search.endpoint}")
+	private String employeeSearchEndpoint;
 
 }

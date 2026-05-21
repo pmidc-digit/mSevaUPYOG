@@ -7,6 +7,11 @@ import static org.springframework.util.StringUtils.isEmpty;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,11 +35,12 @@ import org.egov.user.domain.model.enums.Gender;
 import org.egov.user.domain.model.enums.GuardianRelation;
 import org.egov.user.domain.model.enums.UserType;
 import org.egov.user.persistence.dto.FailedLoginAttempt;
+import org.egov.user.persistence.dto.UserSession;
 import org.egov.user.repository.builder.RoleQueryBuilder;
 import org.egov.user.repository.builder.UserTypeQueryBuilder;
 import org.egov.user.repository.rowmapper.UserResultSetExtractor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
+//import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -43,6 +49,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -217,6 +224,39 @@ public class UserRepository {
         savedUser.setCorrespondenceAddress(savedCorrespondenceAddress);
         return savedUser;
     }
+    
+    
+    
+    public void insertUserSession(UserSession session) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", session.getId());
+        params.put("userUuid", session.getUserUuid());
+        params.put("userId", session.getUserId());
+        params.put("username", session.getUserName());
+        params.put("loginTime", session.getLoginTime() != null ? Timestamp.valueOf(session.getLoginTime()) : null);
+        params.put("logoutTime", session.getLogoutTime() != null ? Timestamp.valueOf(session.getLogoutTime()) : null);
+        params.put("ipAddress", session.getIpAddress());
+        params.put("usertype", session.getUserType());
+        params.put("iscurrentlylogin", session.getIsCurrentlyLoggedIn());
+        params.put("isautologout", session.getIsautologout());
+
+        namedParameterJdbcTemplate.update(userTypeQueryBuilder.getInsertUserSessionQuery(), params);
+    }
+
+
+
+    public void updateUserLogoutSession(String userUuid, Boolean isAutoLogout) {
+    	 ZoneId zone = ZoneId.of("Asia/Kolkata");
+    	    LocalDateTime nowIST = LocalDateTime.now(zone);
+    	    Map<String, Object> params = new HashMap<>();
+    	    params.put("userUuid", userUuid);
+    	    params.put("logoutTime", Timestamp.valueOf(nowIST));
+    	    params.put("isautologout", isAutoLogout);
+    	    params.put("iscurrentlylogin", false);
+
+        namedParameterJdbcTemplate.update(userTypeQueryBuilder.getUpdateUserLogoutSessionQuery(), params);
+    }
+
 
     /**
      * api will update the user details.
@@ -349,7 +389,7 @@ public class UserRepository {
         else
             updateuserInputs.put("Password", oldUser.getPassword());
 
-        if (oldUser != null && user.getPhoto() != null && user.getPhoto().contains("http"))
+        if (oldUser != null && ((user.getPhoto() != null && user.getPhoto().contains("http")) || StringUtils.isEmpty(user.getPhoto())))
             updateuserInputs.put("Photo", oldUser.getPhoto());
         else
             updateuserInputs.put("Photo", user.getPhoto());
@@ -359,9 +399,11 @@ public class UserRepository {
         else
             updateuserInputs.put("PasswordExpiryDate", oldUser.getPasswordExpiryDate());
         updateuserInputs.put("Salutation", user.getSalutation());
-        updateuserInputs.put("Signature", user.getSignature());
+        if(!StringUtils.isEmpty(user.getSignature()))
+        	updateuserInputs.put("Signature", user.getSignature());
+        else
+        	updateuserInputs.put("Signature", oldUser.getSignature());
         updateuserInputs.put("Title", user.getTitle());
-
 
         List<Enum> userTypeEnumValues = Arrays.asList(UserType.values());
         if (user.getType() != null) {
@@ -391,7 +433,10 @@ public class UserRepository {
         namedParameterJdbcTemplate.update(userTypeQueryBuilder.getUpdateUserQuery(), updateuserInputs);
         if (user.getRoles() != null && !CollectionUtils.isEmpty(user.getRoles()) && !oldUser.getRoles().equals(user.getRoles())) {
             validateAndEnrichRoles(Collections.singletonList(user));
-            updateRoles(user);
+            if(user.getType() != null && UserType.CITIZEN.toString().equals(user.getType().toString()) && Boolean.TRUE.equals(user.getIsRoleUpdatable()))
+            	updateCitizenRoles(user);
+            else if(user.getType() != null && !UserType.CITIZEN.toString().equals(user.getType().toString()))
+            	updateRoles(user);
         }
         if (user.getPermanentAndCorrespondenceAddresses() != null) {
             addressRepository.update(user.getPermanentAndCorrespondenceAddresses(), user.getId(), user.getTenantId());
@@ -446,7 +491,7 @@ public class UserRepository {
      * @param tenantId  tenant id of the roles
      * @return enriched roles
      */
-	@Cacheable(value = "cRolesByCode", key = "roleCodes", sync = true)
+//	@Cacheable(value = "cRolesByCode", key = "roleCodes", sync = true)
     private Set<Role> fetchRolesByCode(Set<String> roleCodes, String tenantId) {
 
 
@@ -687,6 +732,24 @@ public class UserRepository {
         namedParameterJdbcTemplate.update(RoleQueryBuilder.DELETE_USER_ROLES, roleInputs);
         saveUserRoles(user);
     }
+    
+
+	/**
+	 * Updates the roles assigned to a user.
+	 *
+	 * @param user the user whose roles need to be updated
+	 *
+	 * @author Roshan Chaudhary
+	 */
+	private void updateCitizenRoles(User user) {
+		Map<String, Object> roleInputs = new HashMap<String, Object>();
+		List<String> roleCodesWithTenantid = user.getRoles().stream()
+				.map(role -> role.getCode() + ":" + role.getTenantId()).collect(Collectors.toList());
+		roleInputs.put("user_id", user.getId());
+		roleInputs.put("rolesWithTenantid", roleCodesWithTenantid);
+		namedParameterJdbcTemplate.update(RoleQueryBuilder.DELETE_CITIZEN_USER_ROLES, roleInputs);
+		saveUserRoles(user);
+	}
 
     private String getStateLevelTenant(String tenantId) {
         return tenantId.split("\\.")[0];

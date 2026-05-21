@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC  "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"  "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">  
+
+<tiles-definitions>  
+ 
+   <!-- Base Definition -->
+   <definition name="base-definition" 
+       template="/WEB-INF/views/tiles/layouts/defaultLayout.jsp">  
+       <put-attribute name="title" value="" />  
+     
+       <put-attribute name="header" value="/WEB-INF/views/tiles/template/defaultHeader.jsp" />  
+       <put-attribute name="menu" value="/WEB-INF/views/tiles/template/defaultMenu.jsp" />  
+       <put-attribute name="body" value="" />  
+       <put-attribute name="footer" value="/WEB-INF/views/tiles/template/defaultFooter.jsp" />  
+   </definition>  
+ 
+   <!-- Home Page -->
+   <definition name="dashboard" extends="base-definition">  
+       <put-attribute name="title" value="dashboard" />  
+       <put-attribute name="body" value="/WEB-INF/views/pages/dashboard.jsp" />  
+   </definition>  
+   
+    <!-- Coomon ticket OR Pool -->
+   <definition name="common-ticket" extends="base-definition">  
+       <put-attribute name="title" value="common-ticket" />  
+       <put-attribute name="body" value="/WEB-INF/views/pages/common-ticket.jsp" />  
+   </definition>  
+
+   <!-- Setting Page -->
+  <!--  <definition name="setting" extends="base-definition">  
+       <put-attribute name="title" value="setting" />  
+       <put-attribute name="body" value="/WEB-INF/views/pages/setting.jsp" />  
+   </definition>  --> 
+      
+   <!-- Raise Ticket List -->
+  <!--  <definition name="raise-ticket-list" extends="base-definition">  
+       <put-attribute name="title" value="raise-ticket" />  
+       <put-attribute name="body" value="/WEB-INF/views/pages/raise-ticket-list.jsp" />  
+   </definition>  -->
+   
+    <!-- Assign Ticket List -->
+ <!--   <definition name="assign-ticket-list" extends="base-definition">  
+       <put-attribute name="title" value="raise-ticket" />  
+       <put-attribute name="body" value="/WEB-INF/views/pages/assign-ticket-list.jsp" />  
+   </definition>  -->
+   
+    <!-- genrate-ticket-form -->
+   <!-- <definition name="genrate-ticket-form" extends="base-definition">  
+       <put-attribute name="title" value="ticket:Genrate Ticket" />  
+       <put-attribute name="body" value="/WEB-INF/views/pages/ticket-genrate.jsp" />  
+   </definition> --> 
+   
+   <definition name="loginlogout" 
+       template="/WEB-INF/views/tiles/layouts/loginlogoutLayout.jsp">  
+       <put-attribute name="title" value="" />  
+       <put-attribute name="body" value="" />  
+   </definition> 
+   
+   <definition name="login" extends="loginlogout">  
+       <put-attribute name="title" value="login" />  
+       <put-attribute name="body" value="/WEB-INF/views/pages/login.jsp" />  
+   </definition>   
+
+ 
+</tiles-definitions>

@@ -139,8 +139,8 @@ public class MigrationService {
                 }
 
                 offset = offset + batchSize;
-
-                producer.push(migrationTopic,serviceReqResponse);
+                String key = serviceReqResponse.getServices().get(0).getAccountId();
+                producer.push(migrationTopic, key,serviceReqResponse);
 
             }
 

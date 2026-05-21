@@ -56,8 +56,8 @@ public class BPAValidator {
 	public void validateCreate(BPARequest bpaRequest, Object mdmsData, Map<String, String> values) {
 		mdmsValidator.validateMdmsData(bpaRequest, mdmsData);
 		validateApplicationDocuments(bpaRequest, mdmsData, null, values);
-		if(!bpaRequest.getBPA().getApplicationType().equalsIgnoreCase("BUILDING_OC_PLAN_SCRUTINY"))
-				validateApplication(bpaRequest);
+//		if(!bpaRequest.getBPA().getApplicationType().equalsIgnoreCase("BUILDING_OC_PLAN_SCRUTINY"))
+//				validateApplication(bpaRequest);
 	}
 
 
@@ -130,7 +130,7 @@ public class BPAValidator {
 							documentNs = docType;
 						}
 
-						addedDocTypes.add(documentNs);
+						addedDocTypes.add(docType);
 					});
 					requiredDocTypes.forEach(docType -> {
 						String docType1 = docType.toString();
@@ -192,6 +192,8 @@ public class BPAValidator {
 			allowedParamStr = config.getAllowedCitizenSearchParameters();
 		else if (requestInfo.getUserInfo().getType().equalsIgnoreCase(BPAConstants.EMPLOYEE))
 			allowedParamStr = config.getAllowedEmployeeSearchParameters();
+		else if(requestInfo.getUserInfo().getType().equalsIgnoreCase(BPAConstants.SYSTEM))
+			allowedParamStr = config.getAllowedSystemSearchParameters();
 		else
 			throw new CustomException(BPAErrorConstants.INVALID_SEARCH,
 					"The userType: " + requestInfo.getUserInfo().getType() + " does not have any search config");
@@ -257,7 +259,10 @@ public class BPAValidator {
 	public void validateUpdate(BPARequest bpaRequest, List<BPA> searchResult, Object mdmsData, String currentState, Map<String, String> edcrResponse) {
 
 		BPA bpa = bpaRequest.getBPA();
-		validateApplicationDocuments(bpaRequest, mdmsData, currentState, edcrResponse);
+		// when application is in initiated state and action is save as draft skip the document validation
+		if(!(bpaRequest.getBPA().getStatus().equalsIgnoreCase(BPAConstants.STATUS_CREATE) &&
+				bpaRequest.getBPA().getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_SAVE_AS_DRAFT)))
+			validateApplicationDocuments(bpaRequest, mdmsData, currentState, edcrResponse);
 		validateAllIds(searchResult, bpa);
 		mdmsValidator.validateMdmsData(bpaRequest, mdmsData);
 		validateDuplicateDocuments(bpaRequest);

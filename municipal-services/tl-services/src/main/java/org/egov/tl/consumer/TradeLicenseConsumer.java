@@ -31,8 +31,17 @@ public class TradeLicenseConsumer {
         this.tradeLicenseService = tradeLicenseService;
     }
 
-    @KafkaListener(topics = {"${persister.update.tradelicense.topic}","${persister.save.tradelicense.topic}","${persister.update.tradelicense.workflow.topic}"})
-    public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+    @KafkaListener(
+    groupId = "egov-tl-services",  // isolates this from other services
+    topics = {
+      "${persister.update.tradelicense.topic}",
+      "${persister.save.tradelicense.topic}",
+      "${persister.update.tradelicense.workflow.topic}"
+    },
+    concurrency = "${egov-tl-services.listener.concurrency}"
+            // set "1" if you truly want a single consumer
+)
+  public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         ObjectMapper mapper = new ObjectMapper();
         TradeLicenseRequest tradeLicenseRequest = new TradeLicenseRequest();
         try {

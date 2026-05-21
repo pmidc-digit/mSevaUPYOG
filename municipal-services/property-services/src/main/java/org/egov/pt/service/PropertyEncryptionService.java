@@ -153,7 +153,8 @@ public class PropertyEncryptionService {
                     /* Fix me up
                      *  Duplicate proprtyids getting persisted in eg_pt_id_enc_audit table
                      * */
-                    producer.push(config.getUpdatePropertyEncTopic(), request);
+                    String key = criteria.getMobileNumber();
+                    producer.push(config.getUpdatePropertyEncTopic(), key, request);
                     countPushed++;
                     encryptedPropertyList.add(property);
                     map.put("message", "Encryption successfull till batchOffset : " + criteria.getOffset() + ". Records encrypted in current batch : " + countPushed
@@ -176,7 +177,8 @@ public class PropertyEncryptionService {
                         .encryptiontime(System.currentTimeMillis())
                         .build();
 
-                producer.push(config.getEncryptionStatusTopic(), encryptionCount);
+                String key = criteria.getMobileNumber();
+                producer.push(config.getEncryptionStatusTopic(), key , encryptionCount);
 
                 finalPropertyList.addAll(encryptedPropertyList);
                 return finalPropertyList;
@@ -198,7 +200,8 @@ public class PropertyEncryptionService {
                     .encryptiontime(System.currentTimeMillis())
                     .build();
 
-            producer.push(config.getEncryptionStatusTopic(), encryptionCount);
+            String key = propertyList.get(0).getId();
+            producer.push(config.getEncryptionStatusTopic(), key, encryptionCount);
 
             startBatch = startBatch + batchSizeInput;
             criteria.setOffset(Long.valueOf(startBatch));
@@ -259,7 +262,8 @@ public class PropertyEncryptionService {
         for (PropertyAudit propertyAudit : propertiesInAudit) {
             propertyAudit.setAuditcreatedTime(System.currentTimeMillis());
             propertyAudit.setProperty(encryptionDecryptionUtil.encryptObject(propertyAudit.getProperty(), PTConstants.PROPERTY_MODEL, Property.class));
-            producer.push(config.getUpdatePropertyAuditEncTopic(), propertyAudit);
+            String key = propertyAudit.getPropertyId();
+            producer.push(config.getUpdatePropertyAuditEncTopic(), key, propertyAudit);
         }
     }
 

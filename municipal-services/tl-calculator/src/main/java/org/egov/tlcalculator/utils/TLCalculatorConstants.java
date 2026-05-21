@@ -46,6 +46,8 @@ public class TLCalculatorConstants {
 	public static final String APPLICATION_TYPE_RENEWAL = "RENEWAL";
 
 	public static final String APPLICATION_TYPE_NEW = "NEW";
+	
+	public static final String APPLICATION_TYPE_UPGRADE = "UPGRADE";
 
 	public static final String businessService_BPA = "BPAREG";
 

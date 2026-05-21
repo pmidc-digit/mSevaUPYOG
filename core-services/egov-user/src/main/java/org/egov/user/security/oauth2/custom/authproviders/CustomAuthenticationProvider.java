@@ -23,7 +23,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,6 +44,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     private UserService userService;
 
+ 
+    
     @Autowired
     private EncryptionDecryptionUtil encryptionDecryptionUtil;
 
@@ -60,6 +61,12 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     @Value("${citizen.login.password.otp.fixed.enabled}")
     private boolean fixedOTPEnabled;
 
+    @Value("${otp.bypass.for}")
+    private String thirdPartyCitizen;
+    
+    @Value("${bypass.otp}")
+    private String otpForThirdparty;
+    
     @Autowired
     private HttpServletRequest request;
 
@@ -72,19 +79,27 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) {
         String userName = authentication.getName();
         String password = authentication.getCredentials().toString();
+	
 
         final LinkedHashMap<String, String> details = (LinkedHashMap<String, String>) authentication.getDetails();
 
+        String thirdPartyValue = details.get("thirdPartyName");
         String tenantId = details.get("tenantId");
         String userType = details.get("userType");
 
+		if (!isEmpty(thirdPartyValue) && thirdPartyCitizen.equalsIgnoreCase(thirdPartyValue)
+				&& "CITIZEN".equalsIgnoreCase(userType) && password.equalsIgnoreCase(otpForThirdparty)) {
+			log.debug("Third Party authentication is available for enaksha.");
+		
+        	password=fixedOTPPassword;
+        }
         if (isEmpty(tenantId)) {
             throw new OAuth2Exception("TenantId is mandatory");
         }
         if (isEmpty(userType) || isNull(UserType.fromValue(userType))) {
             throw new OAuth2Exception("User Type is mandatory and has to be a valid type");
         }
-
+        
         User user;
         RequestInfo requestInfo;
         try {
@@ -109,6 +124,14 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             throw new OAuth2Exception("Invalid login credentials");
 
         }
+        
+		/*
+		 * Removal of all existing tokens for the user. This is done to ensure that no active session would be there 
+		 */
+        
+        
+     //   userService.removeTokensByUser(user);
+
 
         if (user.getActive() == null || !user.getActive()) {
             throw new OAuth2Exception("Please activate your account");

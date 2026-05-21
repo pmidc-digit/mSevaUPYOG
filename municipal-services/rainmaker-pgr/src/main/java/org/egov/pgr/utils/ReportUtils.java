@@ -210,6 +210,54 @@ public class ReportUtils {
 	}
 	
 	
+	public Object getDisrict(RequestInfo requestInfo, String masterName, List<String> cityCode, String tenantId) {
+
+	    // Build the MDMS URI
+	    StringBuilder deptUri = new StringBuilder();
+	    deptUri.append(mdmsHost).append(mdmsEndpoint);
+
+	    Object response = null;
+	    MdmsCriteriaReq mdmsCriteriaReq = null;
+
+	    try {
+	        // Prepare MDMS request for the first city code
+	        if (cityCode != null && !cityCode.isEmpty()) {
+	            String code = cityCode.get(0); // First city code
+	            mdmsCriteriaReq = pGRUtils.prepareMdMsRequestForDistrict(tenantId, masterName, code, requestInfo);
+	        } else {
+	            throw new CustomException(
+	                    "CITY_CODE_MISSING",
+	                    "City code list is empty or null"
+	            );
+	        }
+
+	        // Execute MDMS call
+	        response = serviceRequestRepository.fetchResult(deptUri, mdmsCriteriaReq);
+
+	        if (response == null) {
+	            throw new CustomException(
+	                    "NO_DISTRICT_FOUND",
+	                    "No district found for the given tenant and city code"
+	            );
+	        }
+
+	    } catch (CustomException ce) {
+	        throw ce; // rethrow custom exceptions unchanged
+
+	    } catch (Exception e) {
+	        log.error("Exception while fetching districts: ", e);
+	        throw new CustomException(
+	                "INVALID_DISTRICT_TENANT_KEY",
+	                "Error while fetching district for the given tenant and city code"
+	        );
+	    }
+
+	    return response; // return response as-is
+	}
+
+
+	
+	
 	/**
 	 * Splits any camelCase to human readable string
 	 * @param String

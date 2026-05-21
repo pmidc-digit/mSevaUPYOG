@@ -60,7 +60,7 @@ public class ServiceRequestValidator {
         String id = request.getService().getId();
         validateSource(request.getService().getSource());
         validateMDMS(request, mdmsData);
-        validateDepartment(request, mdmsData);
+      //  validateDepartment(request, mdmsData);
         validateReOpen(request);
         RequestSearchCriteria criteria = RequestSearchCriteria.builder().ids(Collections.singleton(id)).build();
         criteria.setIsPlainSearch(false);
@@ -163,8 +163,8 @@ public class ServiceRequestValidator {
 
         Map<String, String> errorMap = new HashMap<>();
 
-        if(!departments.contains(departmentFromMDMS))
-            errorMap.put("INVALID_ASSIGNMENT","The application cannot be assigned to employee of department: "+departments.toString());
+//        if(!departments.contains(departmentFromMDMS))
+//            errorMap.put("INVALID_ASSIGNMENT","The application cannot be assigned to employee of department: "+departments.toString());
 
 
         if(!errorMap.isEmpty())

@@ -28,7 +28,15 @@ public class PGRConstants {
 	public static final String MDMS_PGR_MOD_NAME = "RAINMAKER-PGR";
 	public static final String MDMS_SERVICETYPE_MASTER_NAME = "ServiceDefs";
 	public static final String MDMS_COMMON_MASTERS_MODULE_NAME = "common-masters";
+	public static final String MDMS_TENANT_MODULE_NAME = "tenant";
+
 	public static final String MDMS_DEPT_MASTERS_MASTER_NAME = "Department";
+	public static final String MDMS_DISTRICT_CATEGORY_MASTER_NAME = "dgrIntegration";
+	public static final String MDMS_TENANTS_MASTERS_MASTER_NAME = "tenants";
+	public static final String MDMS_THIRD_PART_MASTERS_MASTER_NAME = "thirdpartydistrictmapping";
+
+
+
 	public static final String MDMS_DESIGNATION_MASTERS_MASTER_NAME = "Designation";
 	public static final String LOCALIZATION_MODULE_NAME = "rainmaker-pgr";
 	
@@ -80,6 +88,8 @@ public class PGRConstants {
 	public static final String LOCATION__BOUNDARY_NAMES_JSONPATH = "$.TenantBoundary.*.boundary.*.name";
 	public static final String LOCATION__BOUNDARY_CODES_JSONPATH = "$.TenantBoundary.*.boundary.*.code";
 	public static final String LOCATION__BOUNDARY_HIERARCHYTYPE_ADMIN = "ADMIN";
+	public static final String LOCATION__BOUNDARY_HIERARCHYTYPE_CHILD = "REVENUE";
+
 	public static final String LOCATION__BOUNDARY_BOUNDARYTYPE_LOCALITY = "Locality";
 
 	
@@ -110,7 +120,30 @@ public class PGRConstants {
 	
 	public static final String  SERVICE_REQID_REGEX = "(^[0-9/]*$)";
 
+	    // =========================
+	    // Citizen defaults
+	    // =========================
+	    public static final String DEFAULT_CITIZEN_NAME = "No Name Is Provided By User in PMIDC";
+	    public static final String DEFAULT_CITIZEN_EMAIL = "temp@example.com";
+	    public static final String DEFAULT_CITIZEN_MOBILE = "0000000000";
+	    public static final String DEFAULT_ADDRESS = "No Address Provided By User in PMIDC";
 
+	    // =========================
+	    // Application info
+	    // =========================
+	    public static final String DEPARTMENT_ID = "178";
+	    public static final String DEPARTMENT_NAME = "Department of Local Government";
+	    public static final String DEPARTMENT_LOCAL_LANG = "ਸਥਾਨਕ ਸਰਕਾਰ ਵਿਭਾਗ";
+	    public static final String STATE_NAME = "PUNJAB";
+	    public static final String STATE_ID = "3";
+	    public static final String CITIZEN_TYPE = "All Other Individuals";
+	    public static final String SYSTEM_TYPE = "EA";
+	    public static final String SERVICE_CODE_DEFAULT = "General";
+	    public static final String FLOW_TYPE = "I";
+	    public static final String SELECTED_LOCALE = "en";
+	    public static final String STATE_LOCAL_LANG = "ਪੰਜਾਬ";
+	    
+	  
 	
 
 

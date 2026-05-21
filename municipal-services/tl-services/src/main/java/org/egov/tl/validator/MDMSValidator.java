@@ -48,22 +48,24 @@ public class MDMSValidator {
      *
      * @param licenseRequest
      */
-    public void validateMdmsData(TradeLicenseRequest licenseRequest,Object mdmsData, Object billingSlabs) {
+    public void validateMdmsData(TradeLicenseRequest licenseRequest,Map<String, Object> mdmsDataMap, Object billingSlabs) {
 
     	Map<String, String> errorMap = new HashMap<>();
 
-        Map<String, List<String>> masterData = getAttributeValues(mdmsData);
-        
-        String[] masterArray = { TLConstants.ACCESSORIES_CATEGORY, TLConstants.TRADE_TYPE,
-                                 TLConstants.OWNERSHIP_CATEGORY, TLConstants.STRUCTURE_TYPE};
-
-        validateIfMasterPresent(masterArray, masterData);
-
-        Map<String,String> tradeTypeUomMap = getTradeTypeUomMap(mdmsData);
-        Map<String,String> accessoryeUomMap = getAccessoryUomMap(mdmsData);
-
         licenseRequest.getLicenses().forEach(license -> {
 
+        	Object mdmsData = mdmsDataMap.get(license.getTenantId());
+        	
+        	Map<String, List<String>> masterData = getAttributeValues(mdmsData);
+            
+            String[] masterArray = { TLConstants.ACCESSORIES_CATEGORY, TLConstants.TRADE_TYPE,
+                                     TLConstants.OWNERSHIP_CATEGORY, TLConstants.STRUCTURE_TYPE};
+
+            validateIfMasterPresent(masterArray, masterData);
+
+            Map<String,String> tradeTypeUomMap = getTradeTypeUomMap(mdmsData);
+            Map<String,String> accessoryeUomMap = getAccessoryUomMap(mdmsData);
+        	
             String businessService = license.getBusinessService();
             if (businessService == null)
                 businessService = businessService_TL;

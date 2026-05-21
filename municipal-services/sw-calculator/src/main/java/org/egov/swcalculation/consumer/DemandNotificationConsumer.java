@@ -32,7 +32,8 @@ public class DemandNotificationConsumer {
 		this.notificationService = notificationService;
 	}
 
-	@KafkaListener(topics = { "${sw.calculator.demand.successful.topic}", "${sw.calculator.demand.failed.topic}" })
+	@KafkaListener(topics = { "${sw.calculator.demand.successful.topic}", "${sw.calculator.demand.failed.topic}"},
+			concurrency = "${egov.sw.calculator.concurrency.count}")
 	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 		try {
 			DemandNotificationObj demandNotificationObj = mapper.convertValue(record, DemandNotificationObj.class);

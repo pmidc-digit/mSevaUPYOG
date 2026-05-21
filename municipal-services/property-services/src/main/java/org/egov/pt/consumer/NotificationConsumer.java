@@ -47,7 +47,8 @@ public class NotificationConsumer {
     @KafkaListener(topics = {"${egov.pt.assessment.create.topic}",
     						 "${egov.pt.assessment.update.topic}",
     						 "${persister.update.property.topic}",
-    						 "${persister.save.property.topic}"})
+    						 "${persister.save.property.topic}"},
+    			concurrency = "${kafka.consumer.config.concurrency.count}")
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		try {

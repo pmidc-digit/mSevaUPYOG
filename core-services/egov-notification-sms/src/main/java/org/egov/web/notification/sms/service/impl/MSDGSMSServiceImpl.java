@@ -82,7 +82,8 @@ public class MSDGSMSServiceImpl extends BaseSMSService {
             finalmessage = finalmessage + sss;
         }
         sms.setMessage(finalmessage);
-        String url = smsProperties.getUrl();
+      //  String url = smsProperties.getUrl();
+        String url = resolveGatewayUrl(sms);
         final MultiValueMap<String, String> requestBody = bodyBuilder.getSmsRequestBody(sms);
         postProcessor(requestBody);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(requestBody, getHttpHeaders());

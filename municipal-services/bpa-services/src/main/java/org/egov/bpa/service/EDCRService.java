@@ -1,5 +1,6 @@
 package org.egov.bpa.service;
 
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -45,7 +46,7 @@ public class EDCRService {
 	BPARepository bpaRepository;
 
 	@Autowired
-	public EDCRService(ServiceRequestRepository serviceRequestRepository, BPAConfiguration config) {
+	public EDCRService(ServiceRequestRepository serviceRequestRepository, BPAConfiguration config, BPAConstants BPAConstants) {
 		this.serviceRequestRepository = serviceRequestRepository;
 		this.config = config;
 	}
@@ -64,7 +65,8 @@ public class EDCRService {
 		String riskType = request.getBPA().getRiskType();
 		StringBuilder uri = new StringBuilder(config.getEdcrHost());
 		BPA bpa = request.getBPA();
-
+		Double maxBuildingHight = 0.0;
+		
 		BPASearchCriteria criteria = new BPASearchCriteria();
 		criteria.setEdcrNumber(bpa.getEdcrNumber());
 		List<BPA> bpas = bpaRepository.getBPAData(criteria, null);
@@ -99,6 +101,8 @@ public class EDCRService {
 		List<String> edcrStatus = context.read("edcrDetail.*.status");
 		List<String> OccupancyTypes = context
 				.read("edcrDetail.*.planDetail.virtualBuilding.occupancyTypes.*.type.code");
+		List<String> subOccupancyTypes = context
+				.read("edcrDetail.*.planDetail.virtualBuilding.occupancyTypes.*.subtype.code");
 		TypeRef<List<Double>> typeRef = new TypeRef<List<Double>>(){};
 		Map<String, String> additionalDetails = bpa.getAdditionalDetails() != null ? (Map)bpa.getAdditionalDetails()
 				: new HashMap<String, String>();
@@ -127,7 +131,7 @@ public class EDCRService {
 		LinkedList<String> permitNumber = context.read("edcrDetail.*.permitNumber");
 		additionalDetails.put(BPAConstants.SERVICETYPE, serviceType.get(0));
 		additionalDetails.put(BPAConstants.APPLICATIONTYPE, applicationType.get(0));
-                if (!permitNumber.isEmpty()) {
+                if (permitNumber !=null &&  !permitNumber.isEmpty() && !permitNumber.get(0).equalsIgnoreCase("null") ) {
                     /*
                      * Validating OC application, with submitted permit number is any OC
                      * submitted without rejection. Using a permit number only one OC
@@ -159,6 +163,29 @@ public class EDCRService {
 		}
 		this.validateOCEdcr(OccupancyTypes, plotAreas, buildingHeights, applicationType, masterData, riskType);
 		
+		Boolean isSelfCertification = (Boolean)((Map<String, Object>)bpa.getAdditionalDetails()).get("isSelfCertification");
+		String ocType = OccupancyTypes.get(0);
+		String subOccupancyType = subOccupancyTypes.get(0);
+		
+		List<Double> buildingHightList = JsonPath.read(mdmsData, "$.MdmsRes.BPA.BuildingHeight.[?( @.name=='SELF_CERTIFICATION' && @.occupancyTypes contains '" + ocType + "' && @.subOccupancyTypes contains '" + subOccupancyType + "' )].value");
+		if(buildingHightList != null && !buildingHightList.isEmpty())
+			maxBuildingHight = buildingHightList.get(0);
+		
+		if(buildingHeights != null && !buildingHeights.isEmpty() && buildingHeights.get(0) <  maxBuildingHight && isSelfCertification) {
+			request.getBPA().setBusinessService(BPAConstants.BPA_LOW_MODULE_CODE);
+		}else {
+			List<String> ulbTypeList = JsonPath.read(mdmsData, "$.MdmsRes.tenant.tenants.[?(@.code == '" + bpa.getTenantId() + "')].city.ulbType");
+			String ulbType = CollectionUtils.isEmpty(ulbTypeList) ? "" : ulbTypeList.get(0);
+			String plotArea = plotAreas.get(0).toString();
+			String filter = "$.MdmsRes.BPA.WorkflowConfig.[?(@.ulbType contains '" + ulbType + "' && @.occupancyTypes contains '" + ocType +  "' && @.subOccupancyTypes contains '" + subOccupancyType +"' && @.minArea < " + plotArea + " && @.maxArea >= " + plotArea + " )].businessService";
+			List<String> businessServices = JsonPath.read(mdmsData, filter);
+			
+			if(CollectionUtils.isEmpty(businessServices))
+				throw new CustomException(BPAErrorConstants.INVALID_CREATE, "Business Services not found for the Occupancy Types: " + OccupancyTypes.get(0) + "and Sub-Occupancy Types: " + subOccupancyTypes.get(0));
+			
+			request.getBPA().setBusinessService(businessServices.get(0));
+		}
+		
 		return additionalDetails;
 	}
 	
@@ -183,12 +210,12 @@ public class EDCRService {
 			Double plotArea = plotAreas.get(0);
 			List jsonOutput = JsonPath.read(masterData, BPAConstants.RISKTYPE_COMPUTATION);
 			String filterExp = "$.[?((@.fromPlotArea < " + plotArea + " && @.toPlotArea >= " + plotArea
-					+ ") || ( @.fromBuildingHeight < " + buildingHeight + "  &&  @.toBuildingHeight >= "
+					+ ") && ( @.fromBuildingHeight < " + buildingHeight + "  &&  @.toBuildingHeight >= "
 					+ buildingHeight + "  ))].riskType";
 
 			List<String> riskTypes = JsonPath.read(jsonOutput, filterExp);
 
-			if (!CollectionUtils.isEmpty(riskTypes) && OccupancyType.equals(BPAConstants.RESIDENTIAL_OCCUPANCY)) {
+			if (!CollectionUtils.isEmpty(riskTypes)) {
 				String expectedRiskType  = riskTypes.get(0);
 
 				if (expectedRiskType == null || !expectedRiskType.equals(riskType)) {

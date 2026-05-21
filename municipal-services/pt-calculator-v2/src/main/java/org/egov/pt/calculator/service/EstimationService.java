@@ -3,20 +3,22 @@ package org.egov.pt.calculator.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.pt.calculator.repository.Repository;
-import org.egov.pt.calculator.util.CalculatorConstants;
-import org.egov.pt.calculator.util.CalculatorUtils;
-import org.egov.pt.calculator.util.Configurations;
-import org.egov.pt.calculator.util.PBFirecessUtils;
+import org.egov.pt.calculator.util.*;
 import org.egov.pt.calculator.validator.CalculationValidator;
 import org.egov.pt.calculator.web.models.*;
 import org.egov.pt.calculator.web.models.BillingSlabSearchCriteria;
@@ -34,6 +36,7 @@ import org.egov.pt.calculator.web.models.propertyV2.AssessmentRequestV2;
 import org.egov.pt.calculator.web.models.propertyV2.AssessmentResponseV2;
 import org.egov.pt.calculator.web.models.propertyV2.PropertyV2;
 import org.egov.tracer.model.CustomException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -108,6 +111,9 @@ public class EstimationService {
 	@Value("${customization.pbfirecesslogic:false}")
 	Boolean usePBFirecessLogic;
 
+	@Autowired
+	private ResponseInfoFactory responseInfoFactory;
+
 
 
 	/**
@@ -160,7 +166,8 @@ public class EstimationService {
         CalculationCriteria criteria = request.getCalculationCriteria().get(0);
         Property property = criteria.getProperty();
         PropertyDetail detail = property.getPropertyDetails().get(0);
-        calcValidator.validatePropertyForCalculation(detail);
+		String assessmentYear = criteria.getProperty().getPropertyDetails().get(0).getFinancialYear();
+		calcValidator.validatePropertyForCalculation(detail);
         Map<String,Object> masterMap = mDataService.getMasterMap(request);
         if(assessmentRequestV2!=null){
         Map<String,Map<String, Object>>finicialYears=(Map<String, Map<String, Object>>) masterMap.get(FINANCIALYEAR_MASTER_KEY);
@@ -171,7 +178,19 @@ public class EstimationService {
         criteria.setToDate(endingDateForFinicialYear);
         }
         Demand demand=utils.getLatestDemandForCurrentFinancialYear(request.getRequestInfo(),request.getCalculationCriteria().get(0));
-        return new CalculationRes(new ResponseInfo(), Collections.singletonList(getCalculation(request.getRequestInfo(), criteria,demand, masterMap)));
+
+		  if ("2013-14".equals(assessmentYear)) {
+			  log.info("Calling 2013-14 special tax calculation...");
+			  JsonNode requestBody = mapper.convertValue(request, JsonNode.class);
+			  JsonNode legacyResponseJson = calculateFor2013(requestBody);
+			  JsonNode calcArray = legacyResponseJson.path("Calculation");
+			  Calculation legacyCalc = mapper.convertValue(calcArray.get(0), Calculation.class);
+			  ResponseInfo info = responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
+			  return new CalculationRes(info, Collections.singletonList(legacyCalc));
+		  }
+
+
+		  return new CalculationRes(new ResponseInfo(), Collections.singletonList(getCalculation(request.getRequestInfo(), criteria,demand, masterMap)));
     }
     public CalculationRes getTaxCalculation(CalculationReq request) {
 
@@ -540,8 +559,10 @@ public class EstimationService {
 				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.1025"));
 			else if (assessmentYear.startsWith("2023-"))
 				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.157625"));
-			else if (assessmentYear.startsWith("2024-")  || assessmentYear.compareTo("2024-") > 0)  // applicable for assessmentyear 2024-25 and onwards
+			else if (assessmentYear.startsWith("2024-")) 
 				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.215506"));
+			else if (assessmentYear.startsWith("2025-")  || assessmentYear.compareTo("2025-") > 0)  // applicable for assessmentyear 2025-26 and onwards
+				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.276281"));
 			
 		}
 		
@@ -1788,8 +1809,10 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 						   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.1025));
 						else if( assessmentYear.startsWith("2023-")) 
 						   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.157625));
-						else if( assessmentYear.startsWith("2024-") || assessmentYear.compareTo("2024-") > 0)  // applicable for assessment year 2024-25 and onwards
+						else if( assessmentYear.startsWith("2024-"))
 							   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.215506));
+						else if( assessmentYear.startsWith("2025-") || assessmentYear.compareTo("2025-") > 0)  // applicable for assessment year 2025-26 and onwards
+							   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.276281));
 						else
 						   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)));
 					}
@@ -1800,8 +1823,10 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 							unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)*1.1025));
 						else if(assessmentYear.startsWith("2023-") )
 							unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)*1.157625));
-						else if(assessmentYear.startsWith("2024-") || assessmentYear.compareTo("2024-") > 0)    // applicable for assessmenrtyear 2024-25 and onwards
+						else if(assessmentYear.startsWith("2024-"))  
 							unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)*1.215506));
+						else if( assessmentYear.startsWith("2025-") || assessmentYear.compareTo("2025-") > 0)  // applicable for assessment year 2025-26 and onwards
+							   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.276281));
 						else
 						    unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)));
 					}
@@ -1812,4 +1837,341 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
       
         return unBuiltRateCalc;
     }
+
+	public JsonNode calculateFor2013(JsonNode requestBody) {
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode responseNode = mapper.createObjectNode();
+		ArrayNode calculationsArray = mapper.createArrayNode();
+		ObjectNode calculation = mapper.createObjectNode();
+		ArrayNode taxHeadEstimates = mapper.createArrayNode();
+		JsonNode calculationCriteriaNode = requestBody.path("CalculationCriteria").get(0);
+		JsonNode requestInfoNode = requestBody.path("RequestInfo");
+
+		RequestInfo requestInfo = mapper.convertValue(requestInfoNode, RequestInfo.class);
+		CalculationCriteria criteria = mapper.convertValue(calculationCriteriaNode, CalculationCriteria.class);
+
+		JSONObject main_jobj = new JSONObject();
+		JSONObject jobj_ResponseInfo = new JSONObject();
+		jobj_ResponseInfo.put("apiId", JSONObject.NULL);
+		jobj_ResponseInfo.put("ver", JSONObject.NULL);
+		jobj_ResponseInfo.put("ts", JSONObject.NULL);
+		jobj_ResponseInfo.put("resMsgId", JSONObject.NULL);
+		jobj_ResponseInfo.put("msgId", JSONObject.NULL);
+		jobj_ResponseInfo.put("status", JSONObject.NULL);
+
+		main_jobj.put("ResponseInfo", jobj_ResponseInfo);
+		double PT_TAX = 0, PT_TAX_NET = 0, exemption = 0, unit_usage_exemption = 0, FireCess = 0;
+
+		try {
+			JsonNode calculationCriteriaArray = requestBody.path("CalculationCriteria");
+			if (calculationCriteriaArray == null || !calculationCriteriaArray.isArray() || calculationCriteriaArray.size() == 0) {
+				throw new IllegalArgumentException("CalculationCriteria is missing or empty");
+			}
+			JsonNode properties = calculationCriteriaArray.get(0).path("property");
+			if (properties == null || properties.isMissingNode()) {
+				throw new IllegalArgumentException("Property is missing in CalculationCriteria");
+			}
+			String tenantId = properties.get("tenantId").asText();
+			JsonNode propertyDetailsArray = properties.path("propertyDetails");
+			if (propertyDetailsArray == null || !propertyDetailsArray.isArray() || propertyDetailsArray.size() == 0) {
+				throw new IllegalArgumentException("PropertyDetails is missing or empty");
+			}
+			JsonNode propertyDetails = propertyDetailsArray.get(0);
+			String assessmentYear = propertyDetails.get("financialYear").asText();
+			JsonNode addressNode = properties.path("address");
+			//JsonNode units = properties.get("unit");
+			JsonNode localityNode = addressNode.path("locality");
+			String TargetlocalityCode = localityNode.path("code").asText("");
+
+			if (!"2013-14".equals(assessmentYear)) {
+				throw new IllegalArgumentException("2013-14 calculation called for " + assessmentYear);
+			}
+
+
+			String propertyType = propertyDetails.get("propertyType").asText();
+			boolean isVacant = "VACANT".equalsIgnoreCase(propertyType);
+
+			double landArea = propertyDetails.has("landArea") ? propertyDetails.get("landArea").asDouble() : 0.0;
+
+			Map<String, JSONArray> propertyTaxMdmsData = mDataService.getAllPropertyTaxMdmsData(requestInfo, tenantId,assessmentYear);
+
+			JSONArray penaltyConfig = propertyTaxMdmsData.get("Penalty");
+			JSONArray rebateConfig = propertyTaxMdmsData.get("Rebate");
+			JSONArray interestConfig = propertyTaxMdmsData.get("Interest");
+			JSONArray FireCessConfig = propertyTaxMdmsData.get("FireCess");
+
+			double penalityRate = 0.0;
+			double interestRate = 0.0;
+			double additionalRebateRate = 0.0;
+
+			if (penaltyConfig != null && !penaltyConfig.isEmpty()) {
+				try {
+					Map<String, Object> record = (Map<String, Object>) penaltyConfig.get(0);
+					Object rateValue = record.getOrDefault("rate", 0);
+					penalityRate = Double.parseDouble(rateValue.toString());
+				} catch (NumberFormatException | ClassCastException e) {
+					log.warn("Error parsing penalty rate, using default 0.0: {}", e.getMessage());
+					penalityRate = 0.0;
+				}
+			}
+			if (rebateConfig != null && !rebateConfig.isEmpty()) {
+				try {
+					Map<String, Object> record = (Map<String, Object>) rebateConfig.get(0);
+					Object rateValue = record.getOrDefault("rate", 0);
+					additionalRebateRate = Double.parseDouble(rateValue.toString());
+				} catch (NumberFormatException | ClassCastException e) {
+					log.warn("Error parsing rebate rate, using default 0.0: {}", e.getMessage());
+					additionalRebateRate = 0.0;
+				}
+			}
+			if (interestConfig != null && !interestConfig.isEmpty()) {
+				try {
+					Map<String, Object> record = (Map<String, Object>) interestConfig.get(0);
+					Object rateValue = record.getOrDefault("rate", 0);
+					interestRate = Double.parseDouble(rateValue.toString());
+				} catch (NumberFormatException | ClassCastException e) {
+					log.warn("Error parsing interest rate, using default 0.0: {}", e.getMessage());
+					interestRate = 0.0;
+				}
+			}
+
+			String usageMajor = propertyDetails.get("usageCategoryMajor").asText("");
+			String usageMinor = propertyDetails.get("usageCategoryMinor").asText("");
+
+			BillingSlabSearchCriteria slabCriteria =
+					BillingSlabSearchCriteria.builder()
+							.tenantId(tenantId)
+							.build();
+
+			List<BillingSlab> billingSlabs = billingSlabService.searchBillingSlabs(requestInfo, slabCriteria).getBillingSlab();
+
+			if (billingSlabs == null || billingSlabs.isEmpty()) {
+				throw new CustomException("BILLING_SLAB_NOT_FOUND",
+						"No billing slab found for tenantId " + tenantId + " and locality " + TargetlocalityCode);
+			}
+			String id="";
+			double collectorRate = 0.0;
+			boolean collectorRateFound = false;
+			for (BillingSlab slab : billingSlabs) {
+				if(TargetlocalityCode.equalsIgnoreCase(slab.getAreaType())) {
+					String st = slab.getAreaType();
+					id = slab.getId();
+					log.info("Matching locality found in BillingSlab: {}, {}", st, id);
+					if (usageMajor.equalsIgnoreCase("RESIDENTIAL")) {
+						collectorRate = slab.getUnitRate();
+						collectorRateFound = true;
+						break;
+					} else if (usageMajor.contains("INDUSTRIAL") || usageMinor.contains("INDUSTRIAL")) {
+						collectorRate = slab.getUnitRate();
+						collectorRateFound = true;
+						break;
+					} else {
+						collectorRate = slab.getUnitRate();
+						collectorRateFound = true;
+						break;
+					}
+				}
+			}
+
+			if (!collectorRateFound || collectorRate <= 0) {
+				throw new CustomException(
+						"COLLECTOR_RATE_NOT_FOUND",
+						"Collector rates for this locality is missing, please contact administrator"
+				);
+			}
+
+
+			log.info("Collector rate (BillingSlab) for locality {} = {}", TargetlocalityCode, collectorRate);
+
+			double landValue = landArea * collectorRate;
+			if (isVacant) {
+				PT_TAX = 0.2 / 100 * (landValue * 5.0 / 100); // 0.2% of 5% of land value
+			}
+
+			JsonNode units = propertyDetails.get("units");
+			//	double floorNo = Double.parseDouble(String.valueOf(units.get("floorNo")));
+			String floorNo = "0";
+			ArrayNode updatedUnits = mapper.createArrayNode();
+
+			if (units != null && units.isArray()) {
+				for (JsonNode unit : units) {
+
+					ObjectNode unitObj = (ObjectNode) unit;
+					floorNo = unit.get("floorNo").asText("");
+
+					String occ = unit.get("occupancyType").asText("");
+					String usage = unit.get("usageCategoryMajor").asText("");
+					String usageSub = unit.path("usageCategorySubMinor").asText("");
+					double unitAreaSqYard = unit.get("unitArea").asDouble(0.0);
+					double unitAreaSqFt = unitAreaSqYard * 9;
+					double unitTax = 0.0;
+
+					if ("RENTED".equalsIgnoreCase(occ)) {
+						double annualRent = 0.0;
+						if (unit.has("arv") && !unit.get("arv").isNull()) {
+							annualRent = unit.path("arv").asDouble(0.0);
+						}
+						if (annualRent <= 0) {
+							log.warn("ARV is missing or zero for RENTED unit. Unit area: {}, Usage: {}", unitAreaSqYard, usage);
+						}
+						if (usage.equalsIgnoreCase("RESIDENTIAL")) {
+							unitTax = annualRent * 3 / 100.0;
+						} else {
+							unitTax = annualRent * 10 / 100.0;
+							FireCess += unitTax * 5 / 100.0;
+						}
+					} else {
+						double constructionCost = unitAreaSqFt * 500;
+						double netConst = constructionCost - constructionCost * 10 / 100;
+						double annualValue = (netConst + landValue) * 5 / 100;
+
+						if (usage.equalsIgnoreCase("RESIDENTIAL")) {
+							if (landArea <= 500) unitTax = annualValue * 0.5 / 100;
+							else unitTax = annualValue * 1 / 100;
+						} else if (usage.contains("INDUSTRIAL") || usageSub.contains("WAREHOUSE")) {
+							unitTax = annualValue * 1.5 / 100;
+							FireCess += unitTax * 5 / 100.0;
+						} else {
+							unitTax = annualValue * 3 / 100;
+							FireCess += unitTax * 5 / 100.0;
+						}
+					}
+
+					PT_TAX += unitTax;
+
+					if (usageSub.equalsIgnoreCase("EDUCATIONALGOVAIDED")
+							|| usageSub.equalsIgnoreCase("RELIGIOUSINSTITUTION")
+							|| usageSub.equalsIgnoreCase("CHARITABLETRUST")) {
+						unit_usage_exemption += unitTax;
+						// Per legacy logic: FireCess is waived for entire property if any unit has usage exemption
+						FireCess = 0;
+					}
+				}
+				((ObjectNode) propertyDetails).set("units", updatedUnits);
+			}
+
+			JsonNode owners = propertyDetails.get("owners");
+			if (owners == null || !owners.isArray() || owners.size() == 0) {
+				log.warn("No owners found for property. Setting exemption to 0.");
+				owners = mapper.createArrayNode(); // Create empty array to avoid NPE
+			}
+			double PT_per_owner = owners.size() > 0 ? PT_TAX / owners.size() : 0.0;
+
+			for (JsonNode owner : owners) {
+				String type = owner.path("ownerType").asText("");
+				if (type.equalsIgnoreCase("WIDOW") || type.equalsIgnoreCase("HANDICAPPED")) {
+					exemption += Math.min(PT_per_owner, 5000);
+				} else if (type.equalsIgnoreCase("FREEDOMFIGHTER") || type.equalsIgnoreCase("BPL") || type.equalsIgnoreCase("DEFENSE")) {
+					exemption += PT_per_owner;
+					// Reset FireCess for owners with full exemption (FREEDOMFIGHTER, BPL, DEFENSE)
+					// This is per the legacy logic - these owner types get full exemption and no FireCess
+					FireCess = 0;
+				}
+			}
+
+			PT_TAX = Math.round(PT_TAX * 100) / 100.0;
+			exemption = Math.round(exemption * 100) / 100.0;
+			unit_usage_exemption = Math.round(unit_usage_exemption * 100) / 100.0;
+			PT_TAX_NET = PT_TAX - exemption - unit_usage_exemption;
+
+			double penality = PT_TAX_NET * penalityRate / 100.0;
+			double interestPerDay = (PT_TAX_NET) * (interestRate / 365 / 100.0);
+			LocalDate currentDate = LocalDate.now();
+			long days = ChronoUnit.DAYS.between(LocalDate.of(2014, 4, 1), currentDate);
+			double totalInterest = interestPerDay * days;
+
+			penality = Math.round(penality * 100) / 100.0;
+			totalInterest = Math.round(totalInterest * 100) / 100.0;
+
+			double rebatable_amount = PT_TAX + penality + totalInterest - unit_usage_exemption - exemption;
+			double additional_rebate = new BigDecimal(rebatable_amount * additionalRebateRate / 100.0)
+					.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+
+			double tax_payable = rebatable_amount + FireCess - additional_rebate;
+			tax_payable = Math.round(tax_payable * 100) / 100.0;
+			double tax_payable_roundoff = Math.round(tax_payable);
+			double round_off = Math.round((tax_payable_roundoff - tax_payable) * 100.0) / 100.0;
+			FireCess=Math.round(FireCess * 100) / 100.0;
+			double totalTax = tax_payable_roundoff;
+
+			taxHeadEstimates.add(buildTaxHead("PT_TAX", PT_TAX));
+			taxHeadEstimates.add(buildTaxHead("PT_OWNER_EXEMPTION", exemption));
+			taxHeadEstimates.add(buildTaxHead("PT_UNIT_USAGE_EXEMPTION", unit_usage_exemption));
+			taxHeadEstimates.add(buildTaxHead("PT_FIRE_CESS", FireCess));
+			taxHeadEstimates.add(buildTaxHead("PT_TIME_PENALTY", penality));
+			taxHeadEstimates.add(buildTaxHead("PT_CANCER_CESS", 0.0));
+			taxHeadEstimates.add(buildTaxHead("PT_TIME_REBATE", additional_rebate));
+			taxHeadEstimates.add(buildTaxHead("PT_TIME_INTEREST", totalInterest));
+			taxHeadEstimates.add(buildTaxHead("PT_ROUNDOFF", round_off));
+
+
+			calculation.put("tenantId", tenantId);
+			calculation.put("exemption", exemption);
+			calculation.put("rebate", additional_rebate);
+			calculation.put("taxAmount", tax_payable_roundoff);
+			calculation.put("totalAmount", tax_payable_roundoff);
+			calculation.put("penalty", penality);
+
+			calculation.set("taxHeadEstimates", taxHeadEstimates);
+
+
+			ArrayNode billingSlabIds = mapper.createArrayNode();
+			if(isVacant){
+				calculation.set("billingSlabIds", mapper.createArrayNode());
+			}else {
+				billingSlabIds.add(id + "|" + floorNo);
+				calculation.set("billingSlabIds", billingSlabIds);
+			}
+
+			calculation.put("serviceNumber", properties.path("acknowldgementNumber").asText(null));
+			calculation.put("fromDate", 1364774400); // epoch for 1-apr-2013 "AC-2025-10-01-2900664"
+			calculation.put("toDate", System.currentTimeMillis() / 1000);
+			calculationsArray.add(calculation);
+
+			responseNode.set("ResponseInfo", mapper.readTree(main_jobj.get("ResponseInfo").toString())); // ✅ add this
+			responseNode.set("Calculation", calculationsArray);
+
+
+		}catch (CustomException ex) {
+			log.error("Business Error in 2013 calculation: {}", ex.getMessage(), ex);
+			throw ex;
+		}  catch (Exception ex) {
+			log.error("Error in 2013 calculation: {}", ex.getMessage(), ex);
+			if (calculationsArray.size() == 0) {
+				ObjectNode errorCalculation = mapper.createObjectNode();
+				errorCalculation.put("tenantId", "");
+				errorCalculation.put("exemption", 0.0);
+				errorCalculation.put("rebate", 0.0);
+				errorCalculation.put("taxAmount", 0.0);
+				errorCalculation.put("totalAmount", 0.0);
+				errorCalculation.put("penalty", 0.0);
+				ArrayNode emptyTaxHeads = mapper.createArrayNode();
+				errorCalculation.set("taxHeadEstimates", emptyTaxHeads);
+				ArrayNode emptyBillingSlabs = mapper.createArrayNode();
+				errorCalculation.set("billingSlabIds", emptyBillingSlabs);
+				calculationsArray.add(errorCalculation);
+			}
+			try {
+				if (!responseNode.has("ResponseInfo")) {
+					responseNode.set("ResponseInfo", mapper.readTree(main_jobj.get("ResponseInfo").toString()));
+				}
+			} catch (Exception e) {
+				log.error("Error setting ResponseInfo: {}", e.getMessage());
+			}
+			responseNode.set("Calculation", calculationsArray);
+		}
+
+		return responseNode;
+	}
+
+	private ObjectNode buildTaxHead(String code, double amount) {
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode node = mapper.createObjectNode();
+		node.put("taxHeadCode", code);
+		node.put("estimateAmount", amount);
+		node.put("category", "TAX");
+		return node;
+	}
+
 }

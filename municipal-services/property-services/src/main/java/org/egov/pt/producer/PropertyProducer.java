@@ -24,6 +24,10 @@ public class PropertyProducer {
 	public void push(String topic, Object value) {
 		kafkaTemplate.send(topic, value);
 	}
+	
+	public void push(String topic, String key, Object value) {
+		kafkaTemplate.send(topic, key, value);
+	}
 
 	public void pushAfterEncrytpion(String topic, PropertyRequest request) {
 		request.setProperty(encryptionDecryptionUtil.encryptObject(request.getProperty(), PTConstants.PROPERTY_MODEL, Property.class));

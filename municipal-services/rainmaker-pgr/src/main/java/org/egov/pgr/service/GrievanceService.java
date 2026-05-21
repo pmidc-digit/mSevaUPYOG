@@ -60,6 +60,9 @@ public class GrievanceService {
 
 	@Value("${kafka.topics.save.service}")
 	private String saveTopic;
+	
+	@Value("${kafka.topics.save.dgr.service}")
+	private String saveForDgrTopic;	
 
 	@Value("${kafka.topics.update.service}")
 	private String updateTopic;
@@ -115,8 +118,10 @@ public class GrievanceService {
 	public ServiceResponse create(ServiceRequest request) {
 		log.info("Service layer for createss");
 		enrichserviceRequestForcreate(request);
-		pGRProducer.push(saveTopic, request);
-		pGRProducer.push(saveIndexTopic, dataTranformationForIndexer(request, true));
+		pGRProducer.push(saveTopic, producerKey(request), request);
+		pGRProducer.push(saveForDgrTopic, producerKey(request), request);
+
+		pGRProducer.push(saveIndexTopic, producerKey(request), dataTranformationForIndexer(request, true));
 		return getServiceResponse(request);
 	}
 
@@ -130,8 +135,8 @@ public class GrievanceService {
 		enrichServiceRequestForUpdate(request);
 		if (null == request.getActionInfo())
 			request.setActionInfo(new ArrayList<ActionInfo>());
-		pGRProducer.push(updateTopic, request);
-		pGRProducer.push(updateIndexTopic, dataTranformationForIndexer(request, false));
+		pGRProducer.push(updateTopic, producerKey(request), request);
+		pGRProducer.push(updateIndexTopic, producerKey(request), dataTranformationForIndexer(request, false));
 		return getServiceResponse(request);
 	}
 	
@@ -881,6 +886,10 @@ public class GrievanceService {
 		}
 		log.info("map: "+map);
 		return map;
+	}
+	
+	public String producerKey(ServiceRequest request) {
+		return request.getServices().get(0).getAccountId();
 	}
 
 }

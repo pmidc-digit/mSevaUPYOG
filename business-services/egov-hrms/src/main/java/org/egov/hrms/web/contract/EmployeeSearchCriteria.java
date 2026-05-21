@@ -55,19 +55,30 @@ public class EmployeeSearchCriteria {
 	public Integer offset;
 	
 	public Integer limit;
-	
-	
-	public boolean isCriteriaEmpty(EmployeeSearchCriteria criteria) {
-		if(CollectionUtils.isEmpty(criteria.getCodes()) && CollectionUtils.isEmpty(criteria.getNames()) 
-				&& CollectionUtils.isEmpty(criteria.getDepartments()) && CollectionUtils.isEmpty(criteria.getDesignations())
-				&& CollectionUtils.isEmpty(criteria.getIds()) && CollectionUtils.isEmpty(criteria.getEmployeestatuses())
-				&& CollectionUtils.isEmpty(criteria.getEmployeetypes()) && CollectionUtils.isEmpty(criteria.getUuids())
-				&& CollectionUtils.isEmpty(criteria.getPositions()) && StringUtils.isEmpty(criteria.getTenantId())
-				&& CollectionUtils.isEmpty(criteria.getRoles()) && null == criteria.getAsOnDate()) {
-			return true;
-		}else {
-			return false;
-		}
-	}
+	 // ----------------------
+    // New fields for OBPAS
+    // ----------------------
+    public List<String> categories;
+    public List<String> subcategories;
+    public List<String> zones;
+    public List<String> assignedtenattids;
+
+
+    public boolean isCriteriaEmpty(EmployeeSearchCriteria criteria) {
+        if (CollectionUtils.isEmpty(criteria.getCodes()) && CollectionUtils.isEmpty(criteria.getNames()) 
+                && CollectionUtils.isEmpty(criteria.getDepartments()) && CollectionUtils.isEmpty(criteria.getDesignations())
+                && CollectionUtils.isEmpty(criteria.getIds()) && CollectionUtils.isEmpty(criteria.getEmployeestatuses())
+                && CollectionUtils.isEmpty(criteria.getEmployeetypes()) && CollectionUtils.isEmpty(criteria.getUuids())
+                && CollectionUtils.isEmpty(criteria.getPositions()) && StringUtils.isEmpty(criteria.getTenantId())
+                && CollectionUtils.isEmpty(criteria.getRoles()) && null == criteria.getAsOnDate()
+                && CollectionUtils.isEmpty(criteria.getCategories())
+                && CollectionUtils.isEmpty(criteria.getSubcategories())
+                && CollectionUtils.isEmpty(criteria.getZones())
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
 }

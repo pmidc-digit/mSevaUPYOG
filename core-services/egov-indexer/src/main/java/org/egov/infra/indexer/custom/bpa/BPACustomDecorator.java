@@ -71,39 +71,36 @@ public class BPACustomDecorator {
 	 * @param bpaRequest
 	 * @return
 	 */
-	public EnrichedBPARequest transformData(BPARequest bpaRequest){
+	public EnrichedBPARequest transformData(BPARequest bpaRequest) {
 		List<EnrichedUnit> enrichedUnitList = new ArrayList<>();
-        Double plotAreaApproved=null;
-		Integer plotArea=null;
+		Double plotAreaApproved = null;
+		Double plotArea = null;
 
 		//fetching plotArea after approval based on approval number
-		if(bpaRequest.getBPA().getStatus().equals("APPROVED"))
-		{
+		if (bpaRequest.getBPA().getStatus().equals("APPROVED")) {
 			log.info("INSIDE APPROVED ");
-		
-			String edcrnumber = fetchPermitNumber(bpaRequest.getRequestInfo(),bpaRequest.getBPA());
-			plotAreaApproved = getEDCRDetails(edcrnumber,bpaRequest.getRequestInfo(),bpaRequest.getBPA());
+
+			String edcrnumber = fetchPermitNumber(bpaRequest.getRequestInfo(), bpaRequest.getBPA());
+			plotAreaApproved = getEDCRDetails(edcrnumber, bpaRequest.getRequestInfo(), bpaRequest.getBPA());
 			log.info("Fetched Approved Plot Area ");
 		}
-	
-		BPA bpaObject =    bpaSearch(bpaRequest.getRequestInfo(),bpaRequest.getBPA());
-	
-		for(Unit unit:bpaObject.getLandInfo().getUnit())
-		{
+
+		BPA bpaObject = bpaSearch(bpaRequest.getRequestInfo(), bpaRequest.getBPA());
+		if (bpaObject.getLandInfo()!=null) {
+		for (Unit unit : bpaObject.getLandInfo().getUnit()) {
 			String[] ocType = unit.getOccupancyType().split(",");
 			Set<String> ocTypeSet = new HashSet<>(Arrays.asList(ocType));
 			Set<String> usageCategorySet = null;
 			//Converting comma separated string value to set
-			if(!StringUtils.isBlank(unit.getUsageCategory())) {
-			String[] usageCategory = unit.getUsageCategory().split(",");
-			usageCategorySet = new HashSet<>(Arrays.asList(usageCategory));
-			}else
-			{
-				 usageCategorySet = new HashSet<String>();
+			if (!StringUtils.isBlank(unit.getUsageCategory())) {
+				String[] usageCategory = unit.getUsageCategory().split(",");
+				usageCategorySet = new HashSet<>(Arrays.asList(usageCategory));
+			} else {
+				usageCategorySet = new HashSet<String>();
 			}
 			//fetching occupancy type based on suboccupancy type
-		//	Set<String> occupancyType = fetchOccupancyCode(bpaRequest.getRequestInfo(),bpaRequest.getBPA().getTenantId(),usageCategory);
-			Set<String>	occupancyType = fetchOccupancyNames(bpaRequest.getRequestInfo(),bpaRequest.getBPA().getTenantId(),ocTypeSet);
+			//	Set<String> occupancyType = fetchOccupancyCode(bpaRequest.getRequestInfo(),bpaRequest.getBPA().getTenantId(),usageCategory);
+			Set<String> occupancyType = fetchOccupancyNames(bpaRequest.getRequestInfo(), bpaRequest.getBPA().getTenantId(), ocTypeSet);
 
 			EnrichedUnit enrichedUnit = EnrichedUnit.builder()
 					.id(unit.getId())
@@ -118,30 +115,32 @@ public class BPACustomDecorator {
 					.build();
 
 			enrichedUnitList.add(enrichedUnit);
-			
+
 		}
-
+	    }
+		EnrichedLandInfo enrichedLandInfo = null;
 		plotArea = getPlotAreafromEdcr(bpaRequest.getBPA().getEdcrNumber(),bpaRequest.getRequestInfo(),bpaRequest.getBPA());
-
-		EnrichedLandInfo enrichedLandInfo = EnrichedLandInfo.builder()
-				.id(bpaObject.getLandInfo().getId())
-				.landUId(bpaObject.getLandInfo().getLandUId())
-				.landUniqueRegNo(bpaObject.getLandInfo().getLandUniqueRegNo())
-				.tenantId(bpaObject.getLandInfo().getTenantId())
-				.status(bpaObject.getLandInfo().getStatus())
-				.address(bpaObject.getLandInfo().getAddress())
-				.ownershipCategory(bpaObject.getLandInfo().getOwnershipCategory())
-				.owners(bpaObject.getLandInfo().getOwners())
-				.institution(bpaObject.getLandInfo().getInstitution())
-				.source(bpaObject.getLandInfo().getSource())
-				.channel(bpaObject.getLandInfo().getChannel())
-				.documents(bpaObject.getLandInfo().getDocuments())
-				.unit(enrichedUnitList)
-				.additionalDetails(bpaObject.getLandInfo().getAdditionalDetails())
-				.auditDetails(bpaObject.getLandInfo().getAuditDetails())
-				.plotAreaApproved(plotAreaApproved)
-				.plotArea(plotArea)
-				.build();
+		if (bpaObject.getLandInfo()!=null) {
+			enrichedLandInfo = EnrichedLandInfo.builder()
+					.id(bpaObject.getLandInfo().getId())
+					.landUId(bpaObject.getLandInfo().getLandUId())
+					.landUniqueRegNo(bpaObject.getLandInfo().getLandUniqueRegNo())
+					.tenantId(bpaObject.getLandInfo().getTenantId())
+					.status(bpaObject.getLandInfo().getStatus())
+					.address(bpaObject.getLandInfo().getAddress())
+					.ownershipCategory(bpaObject.getLandInfo().getOwnershipCategory())
+					.owners(bpaObject.getLandInfo().getOwners())
+					.institution(bpaObject.getLandInfo().getInstitution())
+					.source(bpaObject.getLandInfo().getSource())
+					.channel(bpaObject.getLandInfo().getChannel())
+					.documents(bpaObject.getLandInfo().getDocuments())
+					.unit(enrichedUnitList)
+					.additionalDetails(bpaObject.getLandInfo().getAdditionalDetails())
+					.auditDetails(bpaObject.getLandInfo().getAuditDetails())
+					.plotAreaApproved(plotAreaApproved)
+					.plotArea(plotArea)
+					.build();
+		}
 
 		BPA bpa = bpaRequest.getBPA();
 		EnrichedBPA enrichedBPA = EnrichedBPA.builder()
@@ -207,7 +206,7 @@ public class BPACustomDecorator {
 		}
 
 		String jsonString = new JSONObject(responseMap).toString();
-		log.error("Exception while fetching edcr number from bpa response "+jsonString);
+//		log.error("Exception while fetching edcr number from bpa response "+jsonString);
 		DocumentContext context = JsonPath.using(Configuration.defaultConfiguration()).parse(jsonString);
 		//edcrNumber = context.read("BPA[0].edcrNumber");
 		 edcrNumber = context.read("$.BPA[0].edcrNumber");
@@ -222,9 +221,9 @@ public class BPACustomDecorator {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public Integer getPlotAreafromEdcr(String edcrNo, RequestInfo requestInfo, BPA bpa) {
+	public Double getPlotAreafromEdcr(String edcrNo, RequestInfo requestInfo, BPA bpa) {
 		StringBuilder uri = new StringBuilder(edcrHost);
-		Integer plotArea=null;
+		Double plotArea=null;
 
 		uri.append(getPlanEndPoint);
 		uri.append("?").append("tenantId=").append(bpa.getTenantId());
@@ -245,7 +244,7 @@ public class BPACustomDecorator {
 		}
 		String jsonString = new JSONObject(responseMap).toString();
 		DocumentContext context = JsonPath.using(Configuration.defaultConfiguration()).parse(jsonString);
-		plotArea = context.read("edcrDetail[0].planDetail.planInformation.plotArea");
+		plotArea = Double.valueOf(context.read("edcrDetail[0].planDetail.planInformation.plotArea").toString());
 
 		return plotArea;
 	}
@@ -280,7 +279,7 @@ public class BPACustomDecorator {
 		}
 		String jsonString = new JSONObject(responseMap).toString();
 		DocumentContext context = JsonPath.using(Configuration.defaultConfiguration()).parse(jsonString);
-		plotArea = context.read("edcrDetail[0].planDetail.virtualBuilding.totalBuitUpArea");
+		plotArea = Double.valueOf(context.read("edcrDetail[0].planDetail.virtualBuilding.totalBuitUpArea").toString());
 
 		return plotArea;
 	}

@@ -1,22 +1,38 @@
+# =========================
+# Build Stage
+# =========================
 FROM maven:3.9.6-eclipse-temurin-21-alpine AS build
 
 ARG WORK_DIR
 
 WORKDIR /app
 
+# Copy pom first
 COPY ${WORK_DIR}/pom.xml ./pom.xml
+
+# Copy startup script
 COPY build/maven/start.sh ./start.sh
+
+# Copy source code
 COPY ${WORK_DIR}/src ./src
 
+# Build application
 RUN mvn -B -f /app/pom.xml clean package \
     -Dmaven.test.skip=true \
     -DskipTests
 
-FROM openjdk:21-jdk-alpine
+
+# =========================
+# Runtime Stage
+# =========================
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /opt/egov
 
-COPY --from=build /app/target/*.jar /opt/egov/
+# Copy application jar
+COPY --from=build /app/target/*.jar /opt/egov/app.jar
+
+# Copy startup script
 COPY --from=build /app/start.sh /opt/egov/start.sh
 
 # Copy certificates if available
@@ -38,7 +54,8 @@ RUN if [ -d /tmp/certs ] && [ "$(ls -A /tmp/certs 2>/dev/null)" ]; then \
       echo "No certificates found, skipping import."; \
     fi
 
-
+# Make script executable
 RUN chmod +x /opt/egov/start.sh
 
+# Start application
 CMD ["/opt/egov/start.sh"]

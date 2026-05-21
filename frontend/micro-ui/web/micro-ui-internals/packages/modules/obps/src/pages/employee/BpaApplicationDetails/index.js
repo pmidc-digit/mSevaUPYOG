@@ -41,7 +41,6 @@ import {
   getOrderDocuments,
   getDocsFromFileUrls,
   scrutinyDetailsData,
-  getBase64Img,
   getApproveRejectComments,
   fetchUrl,
   decryptId,
@@ -1050,7 +1049,11 @@ const BpaApplicationDetail = () => {
   async function getPermitOccupancyOrderSearchFilestore({ tenantId }, order, mode = "download") {
       const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
       const newValidityDate = Date.now();
-  
+      const ownersList = data?.applicationData?.landInfo?.owners?.map((item) => item.name);
+      const firmName = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
+      const isFirm = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
+      const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]?.filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
+
             
       const validityDateObj = new Date(newValidityDate);
 
@@ -1060,7 +1063,7 @@ const BpaApplicationDetail = () => {
 
   
       const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-      const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine, fileno, nowIST, newValidityDate : approvalDatePlusThree, designation, approverComment: comments }
+      const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine, fileno, nowIST, newValidityDate : approvalDatePlusThree, designation, combinedOwnersName, approverComment: comments }
       let count = 0
       for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
         if (
@@ -1077,10 +1080,10 @@ const BpaApplicationDetail = () => {
       if (data?.applicationData?.additionalDetails?.stakeholderAddress && requestData && requestData?.additionalDetails) {
         requestData.additionalDetails.stakeholderAddress = data?.applicationData?.additionalDetails?.stakeholderAddress ;
       }
-      if (requestData && requestData?.additionalDetails?.signature?.signURL) {
-        const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, stateId);
-        requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
-      }
+      // if (requestData && requestData?.additionalDetails?.signature?.signURL) {
+      //   const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, stateId);
+      //   requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
+      // }
   
       if (requestData?.additionalDetails?.approvedColony == "NO") {
         requestData.additionalDetails.permitData =

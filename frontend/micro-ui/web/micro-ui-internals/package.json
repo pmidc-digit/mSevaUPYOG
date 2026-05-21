@@ -125,6 +125,7 @@
     "qrcode": "^1.5.3"
   },
   "resolutions": {
+    "node-releases": "2.0.44",
     "**/babel-loader": "8.2.2",
     "**/@babel/core": "7.14.0",
     "**/@babel/preset-env": "7.14.0",

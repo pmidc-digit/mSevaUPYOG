@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { format } from "date-fns";
 import { transformBookingResponseToBookingData } from "../../index";
-import { ChallanData, getLocationName, formatDate } from "../../index";
+import { ChallanData, getLocationName, formatDate, fixAdjustedAmount } from "../../index";
 
 export const convertEpochToDate = (dateEpoch) => {
   // Returning NA in else case because new Date(null) returns Current date from calender
@@ -333,9 +333,10 @@ export const SuccessfulPayment = (props) => {
       const generatePdfKeyForTL = "chb-permissionletter";
       if (!fileStoreId) {
         const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
+        const pdfPayments = fixAdjustedAmount(payments?.Payments?.[0]);
         const response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          { Payments: [{ ...pdfPayments, ...application }] },
           generatePdfKeyForTL
         );
         const updatedApplication = {
@@ -376,10 +377,11 @@ export const SuccessfulPayment = (props) => {
       let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
         const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
+        const pdfPayments = fixAdjustedAmount(payments?.Payments?.[0]);
         let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
         response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          { Payments: [{ ...pdfPayments, ...application }] },
           "chbservice-receipt"
         );
         const updatedApplication = {

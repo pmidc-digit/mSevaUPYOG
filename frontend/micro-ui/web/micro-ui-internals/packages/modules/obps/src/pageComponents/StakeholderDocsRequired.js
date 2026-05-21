@@ -67,17 +67,17 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
     let middleName = "";
     let lastName = "";
 
-    if (nameParts.length === 1) {
+    if (nameParts?.length === 1) {
   // Single name
       name = nameParts[0];
-    } else if (nameParts.length === 2) {
+    } else if (nameParts?.length === 2) {
       // Two names → first is name, second is lastName
       name = nameParts[0];
       lastName = nameParts[1];
-    } else if (nameParts.length > 2) {
+    } else if (nameParts?.length > 2) {
       // More than two names → first = name, last = lastName, middle = rest
       name = nameParts[0];
-      lastName = nameParts[nameParts.length - 1];
+      lastName = nameParts[nameParts?.length - 1];
       middleName = nameParts.slice(1, -1).join(" ");
     }
 

@@ -1,5 +1,5 @@
 const getLabel = (text, type = "key") => ({
-  text: text ?? "NA",
+  text: text || "NA",
   style: type === "value" ? "pdf-card-value" : "pdf-card-key",
   border: [false, false, false, false],
 });

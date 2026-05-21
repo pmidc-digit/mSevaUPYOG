@@ -61,7 +61,8 @@ const CLUEsignResponse = () => {
           }, 1000);
 
           const timeout = setTimeout(() => {
-            history.push(`/digit-ui/employee/obps/clu/application-overview/${applicationNo}`);
+            const encryptedID = encryptId(applicationNo);
+            history.push(`/digit-ui/employee/obps/clu/application-overview/${encryptedID}`);
           }, 10000);
 
           return () => {
@@ -78,7 +79,8 @@ const CLUEsignResponse = () => {
 
           // redirect after showing toast
           const timeout = setTimeout(() => {
-            history.push(`/digit-ui/employee/obpas/clu/inbox/application-overview/${applicationNo}`);
+            const encryptedID = encryptId(applicationNo);
+            history.push(`/digit-ui/employee/obps/clu/inbox/application-overview/${encryptedID}`);
           }, 10000);
 
           return () => clearTimeout(timeout);

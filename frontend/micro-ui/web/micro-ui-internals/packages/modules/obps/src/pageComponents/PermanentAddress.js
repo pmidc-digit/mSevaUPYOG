@@ -476,7 +476,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             ...formData,
             result: result,
             editableFields: {
-              "provide-license-type": false,
+              "provide-license-type": true,
               "licensee-details": false,
               "Permanent-address": true,
               "professional-document-details": true,
@@ -495,7 +495,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       setErrorMessage("");
       setShowToast(null); // reset errors
 
-      const role = formData?.LicneseType?.LicenseType?.role;
+      const role = formData?.LicneseType?.LicenseType?.role || formData?.formData?.LicneseType?.LicenseType?.role
       const isArchitect = Array.isArray(role) && role.includes("BPA_ARCHITECT");
 
       const tenantToSend = isArchitect ? "pb.punjab" : window?.localStorage?.getItem("CITIZEN.CITY");
@@ -524,6 +524,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       const payload = {
         Licenses: [
           {
+            ...formData?.result?.Licenses?.[0],
             validTo: validTo,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
@@ -548,6 +549,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               ],
               tradeUnits: [
                 {
+                  ...formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0],
                   tradeType: formData?.LicneseType?.LicenseType?.tradeType || formData?.formData?.LicneseType?.LicenseType?.tradeType,
                 },
               ],
@@ -563,16 +565,16 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 Ulb: tenantToSend,
               },
               address: {
-                city: "",
-                landmark: "",
+                ...formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.address,
                 pincode: pinCode,
               },
+              applicationDocuments: formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments || [],
             },
             licenseType: "PERMANENT",
             businessService: "BPAREG",
             tenantId: tenantToSend,
             // action: "NOWORKFLOW",
-            action: "APPLY",
+            action: "SAVE_AS_DRAFT",
             assignee: selectedAction?.assignee || null,
             comment: selectedAction?.comment || null,
             wfDocuments: selectedAction?.wfDocuments || null,
@@ -580,7 +582,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
         ],
       };
       setLoader(true);
-      Digit.OBPSService.BPAREGCreate(payload, tenantId)
+      Digit.OBPSService.BPAREGupdate(payload, tenantId)
         .then((result) => {
           setLoader(false);
           let data = {
@@ -1027,7 +1029,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             ...formData,
             result: result,  
             editableFields: {
-              "provide-license-type": false,
+              "provide-license-type": true,
               "licensee-details": false,
               "Permanent-address": true,
               "professional-document-details": true,

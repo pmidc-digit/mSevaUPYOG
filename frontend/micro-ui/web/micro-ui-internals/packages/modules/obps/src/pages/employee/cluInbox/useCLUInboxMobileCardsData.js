@@ -17,7 +17,7 @@ const useCLUInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) =>
             [t("BPA_PRIMARY_OWNER_NAME_LABEL")]: owner,
             [t("BPA_PROFESSIONAL_NAME_LABEL")]: professionalName,
             [t("PT_COMMON_TABLE_COL_STATUS_LABEL")]: t(`BPA_STATUS_${status}`),
-            "Generated ID": encryptId(applicationId)
+            "Vehicle Log": {id: encryptId(applicationId), hidden: true}
             // [t("WF_INBOX_HEADER_CURRENT_OWNER")]: owner,
             // [t("ES_INBOX_SLA_DAYS_REMAINING")]: sla
     }))
@@ -48,7 +48,11 @@ const useCLUInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) =>
         </SearchField>
     }
 
-    return ({ data:dataForMobileInboxCards, linkPrefix:`${parentRoute}/clu/application-overview/`, serviceRequestIdKey:"Generated ID", MobileSortFormValues})
+    const serviceRequestIdKeyFunction = (object) => {
+        return object["Vehicle Log"]?.id
+    }
+
+    return ({ data:dataForMobileInboxCards, linkPrefix:`${parentRoute}/clu/application-overview/`, serviceRequestIdKey: serviceRequestIdKeyFunction, MobileSortFormValues})
 
 }
 

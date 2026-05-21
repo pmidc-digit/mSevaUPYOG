@@ -101,6 +101,9 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData, currentStepData,
 const [ecbcCertificateFileObj, setEcbcCertificateFileObj] = useState(null);
 const [apiLoading, setApiLoading] = useState(false);
 const [loader, setLoader] = useState(false);
+const [isNOCFetched, setIsNOCFetched] = useState({
+  status: false,
+});
 
 useEffect(() => {
     window.scrollTo({
@@ -109,9 +112,34 @@ useEffect(() => {
     });
 }, [])
 
+useEffect(async () => {
+  if(NocNumber){
+    try{
+      const response = await Digit.OBPSService.NOCSearch(tenantId, { applicationNo: NocNumber });
+      if(response && response?.Noc?.length>0 && response?.Noc?.[0]?.applicationStatus === "E-SIGNED"){
+        const nocObject = response?.Noc?.[0];
+        setIsNOCFetched({ 
+          status: true,
+          applicantOwnerOrFirmName: !!nocObject?.owners?.[0]?.name,
+          nocULBName: !!nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbName,
+          nocULBType: !!nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbType,
+          nocApprovedOn: !!nocObject?.nocDetails?.additionalDetails?.approvedOn,
+        });
+      }
+  }catch(err){
+    console.error("Error fetching NOC details:", err);
+  }
+  }
+}, [NocNumber])
+
 useEffect(() => {
-  console.log("loader",loader)
-}, [loader])
+    if (ecbcElectricalLoad?.code === "NO" && ecbcDemandLoad?.code === "NO" && ecbcAirConditioned?.code === "NO"){
+      setEcbcCertificateFile(null);
+    }
+    if(greenbuilding?.code === "NO"){
+      setGreenUploadedFile(null);
+    }
+}, [ecbcElectricalLoad, ecbcDemandLoad, ecbcAirConditioned, greenbuilding])
 
 useEffect(()=>{
   if(UlbName === "" && currentStepData?.LocationDetails?.selectedCity?.city?.name){
@@ -159,8 +187,6 @@ useEffect(()=>{
     }
     if(approvedColony?.code === "NO" && NocNumber && applicantOwnerOrFirmName.trim() === ""){
       newErrors.applicantOwnerOrFirmName = t("Applicant/Owner/Firm Name is Required")
-    }else if(approvedColony?.code === "NO" && NocNumber && applicantOwnerOrFirmName && !nameRegex.test(applicantOwnerOrFirmName.trim())){
-      newErrors.applicantOwnerOrFirmName = t("Applicant/Owner/Firm Name is Invalid")
     }
 
     if(approvedColony?.code === "NO" && NocNumber && nocULBName.trim() === ""){
@@ -784,6 +810,14 @@ console.log("appDate", nocApprovedOn);
   function setnocNumber(e) {
     setNocNumber(e.target.value)
     setErrors((prev) => ({ ...prev, NocNumber: "" }))
+    setApplicantOwnerOrFirmName("")
+    setNocULBName("")
+    setNocULBType("")
+    setNocApprovedOn("")
+    setUploadedFile(null)
+    setIsNOCFetched({
+      status: false,
+    })
   }
 
   function setapplicantOwnerOrFirmName(e) {
@@ -792,11 +826,11 @@ console.log("appDate", nocApprovedOn);
   }
   function setnocULBName(e) {
     setNocULBName(e.target.value)
-    setErrors((prev) => ({ ...prev, applicantOwnerOrFirmName: "" }))
+    setErrors((prev) => ({ ...prev, nocULBName: "" }))
   }
   function setnocULBType(e) {
     setNocULBType(e.target.value)
-    setErrors((prev) => ({ ...prev, applicantOwnerOrFirmName: "" }))
+    setErrors((prev) => ({ ...prev, nocULBType: "" }))
   }
 
   // function handleApproveDateChange(date) {
@@ -890,6 +924,13 @@ console.log("appDate", nocApprovedOn);
             setNocApprovedOn(`${y1}-${m1}-${d1}`)
           }          
         }
+        setIsNOCFetched({ 
+          status: true,
+          applicantOwnerOrFirmName: !!nocObject?.owners?.[0]?.name,
+          nocULBName: !!nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbName,
+          nocULBType: !!nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbType,
+          nocApprovedOn: !!nocObject?.nocDetails?.additionalDetails?.approvedOn,
+        });
         setLoader(true);
         if(nocObject?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId){
           setUploadedFile(nocObject?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId)
@@ -1218,6 +1259,7 @@ console.log("appDate", nocApprovedOn);
                   type: "text",
                   title: t("TL_NAME_ERROR_MESSAGE"),
                 })}
+                disabled={!isNOCFetched?.status || isNOCFetched?.applicantOwnerOrFirmName}
             />
             {errors.applicantOwnerOrFirmName && <ErrorMessage error={errors.applicantOwnerOrFirmName} />}              
             <CardLabel>{`${t("BPA_NOC_ULB_NAME")} `}<span className="requiredField">*</span></CardLabel>
@@ -1234,6 +1276,7 @@ console.log("appDate", nocApprovedOn);
                   type: "text",
                   title: t("TL_NAME_ERROR_MESSAGE"),
                 })}
+                disabled={!isNOCFetched?.status || isNOCFetched?.nocULBName}
             />
             {errors.nocULBName && <ErrorMessage error={errors.nocULBName} />}              
             <CardLabel>{`${t("BPA_NOC_ULB_TYPE")} `}<span className="requiredField">*</span></CardLabel>
@@ -1250,6 +1293,7 @@ console.log("appDate", nocApprovedOn);
                   type: "text",
                   title: t("TL_NAME_ERROR_MESSAGE"),
                 })}
+                disabled={!isNOCFetched?.status || isNOCFetched?.nocULBType}
             />
             {errors.nocULBType && <ErrorMessage error={errors.nocULBType} />}
 
@@ -1261,6 +1305,7 @@ console.log("appDate", nocApprovedOn);
                   min="1900-01-01"
                   max={new Date().toISOString().split("T")[0]}
                   isRequired={true}
+                  disabled={!isNOCFetched?.status || isNOCFetched?.nocApprovedOn}
                 />
                 {errors.nocApprovedOn && <ErrorMessage error={errors.nocApprovedOn} />}
               </div>         
@@ -1278,6 +1323,7 @@ console.log("appDate", nocApprovedOn);
               error={errors.file}
               accept="image/*,.pdf"
               customOpen = {getUrlForDocumentView}
+              disabled={true}
             />
             <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             {errors.NocDocument && <ErrorMessage error={errors.NocDocument} />}

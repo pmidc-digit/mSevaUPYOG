@@ -18,6 +18,8 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
   } else formData = formData;
   const userInfo = Digit.UserService.getUser();
   const requestor = userInfo?.info?.mobileNumber;
+  const submittedStates = ["INITIATED", "PENDINGPAYMENT", "PENDINGDOCVERIFICATION", "PENDINGAPPROVAL", "APPROVED", "CITIZEN_ACTION_REQUIRED", "EXPIRED", ];
+  const editableStates = ["INACTIVE", "REJECTED"];
 
   const { data: BPAREGData, isLoading: BPAREGLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(
     tenantId,
@@ -27,16 +29,33 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
       onlyLatestApplication: true
     },
     // { cacheTime: 0 },
-  )
-
+  )  
   useEffect(() => {
-    if(!formData?.result?.Licenses?.[0]?.applicationNumber && !BPAREGLoading && BPAREGData?.Licenses?.length > 0){
-      getBPAREGFormData(BPAREGData?.Licenses[0]);
-    }
-  } ,[BPAREGData, BPAREGLoading])  
+    if (!formData?.result?.Licenses?.[0]?.applicationNumber && !BPAREGLoading && BPAREGData?.Licenses?.length > 0) {
+      // First priority: Check for submitted states
+      const submittedLicense = BPAREGData.Licenses.find(license =>
+        submittedStates.includes(license?.status)
+      );
 
-  const getBPAREGFormData = (data) => {
-    console.log("data in getBPAREGFormData 2", data);
+      if (submittedLicense) {
+        getBPAREGFormData(submittedLicense, false);
+        return;
+      }
+
+      // Second priority: Check for editable states
+      const editableLicense = BPAREGData.Licenses.find(license =>
+        (editableStates.includes(license?.status) && license?.tenantId === tenantId)
+      );
+
+      if (editableLicense) {
+        getBPAREGFormData(editableLicense, true);
+      }else{
+        getBPAREGFormData(editableLicense, false);
+      }
+    }
+  }, [BPAREGData, BPAREGLoading]);
+
+  const getBPAREGFormData = (data, isEditable = false) => {
     let license = data;
     const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
     const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
@@ -48,17 +67,17 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
     let middleName = "";
     let lastName = "";
 
-    if (nameParts.length === 1) {
+    if (nameParts?.length === 1) {
   // Single name
       name = nameParts[0];
-    } else if (nameParts.length === 2) {
+    } else if (nameParts?.length === 2) {
       // Two names → first is name, second is lastName
       name = nameParts[0];
       lastName = nameParts[1];
-    } else if (nameParts.length > 2) {
+    } else if (nameParts?.length > 2) {
       // More than two names → first = name, last = lastName, middle = rest
       name = nameParts[0];
-      lastName = nameParts[nameParts.length - 1];
+      lastName = nameParts[nameParts?.length - 1];
       middleName = nameParts.slice(1, -1).join(" ");
     }
 
@@ -114,8 +133,8 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
       },
       initiationFlow: true,
       editableFields: {
-        "provide-license-type": false,
-        "licensee-details": false,
+        "provide-license-type": isEditable,
+        "licensee-details": isEditable,
         "Permanent-address": true,
         "professional-document-details": true,
         isCreate: false,

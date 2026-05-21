@@ -1,6 +1,6 @@
 package org.egov.demand.web.contract;
 
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.Pattern;
 
 import org.egov.demand.model.Owner;
 

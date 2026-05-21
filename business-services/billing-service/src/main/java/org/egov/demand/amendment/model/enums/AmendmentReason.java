@@ -1,9 +1,9 @@
 package org.egov.demand.amendment.model.enums;
 
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Gets or Sets amendmentReason

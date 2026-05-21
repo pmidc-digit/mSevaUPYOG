@@ -1,232 +1,462 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
+
+	<!-- ====================================================== -->
+	<!-- Spring Boot 3.3.x + JDK 21 Compatible -->
+	<!-- ====================================================== -->
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.6.RELEASE</version>
-		<relativePath></relativePath>
+		<version>3.3.5</version>
+		<relativePath />
 	</parent>
+
 	<groupId>com.egov.demand</groupId>
 	<artifactId>billing-service</artifactId>
 	<version>1.3.5-SNAPSHOT</version>
+
 	<name>billing-service</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Billing Service - Spring Boot 3 + Java 21</description>
+
+	<!-- ====================================================== -->
+	<!-- Properties -->
+	<!-- ====================================================== -->
+
 	<properties>
-		<log4j2.version>2.17.1</log4j2.version>
-		<maven.test.skip>true</maven.test.skip>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>1.8</java.version>
+
+		<!-- Java -->
+		<java.version>21</java.version>
+
+		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
+
+		<!-- Encoding -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.version>3.3.9</maven.version>
-		<lombok.version>1.18.8</lombok.version>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<!-- Versions -->
+		<log4j2.version>2.23.1</log4j2.version>
+
+		<lombok.version>1.18.34</lombok.version>
+
 		<commons-lang-version>2.6</commons-lang-version>
-		<cache2k-version>1.2.0.Final</cache2k-version>
+
+		<cache2k-version>2.6.1.Final</cache2k-version>
+
+		<typescript-generator.version>3.2.1263</typescript-generator.version>
+
+		<postgresql.version>42.7.4</postgresql.version>
+
+		<hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
+
+		<jsoup.version>1.17.2</jsoup.version>
+
+		<flyway.version>10.13.0</flyway.version>
+
+		<!-- Skip Tests -->
+		<maven.test.skip>true</maven.test.skip>
+
 	</properties>
+
+	<!-- ====================================================== -->
+	<!-- Dependencies -->
+	<!-- ====================================================== -->
+
 	<dependencies>
-		<dependency>
-      <groupId>org.cache2k</groupId>
-      <artifactId>cache2k-api</artifactId>
-      <version>${cache2k-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.cache2k</groupId>
-      <artifactId>cache2k-core</artifactId>
-      <version>${cache2k-version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.cache2k</groupId>
-      <artifactId>cache2k-spring</artifactId>
-      <version>${cache2k-version}</version>
-    </dependency>
+
+		<!-- ========================= -->
+		<!-- Spring Boot -->
+		<!-- ========================= -->
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-beans</artifactId>
-			<version>5.2.20.RELEASE</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
+
+		<!-- ========================= -->
+		<!-- Cache2k -->
+		<!-- ========================= -->
+
+		<dependency>
+			<groupId>org.cache2k</groupId>
+			<artifactId>cache2k-api</artifactId>
+			<version>${cache2k-version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.cache2k</groupId>
+			<artifactId>cache2k-core</artifactId>
+			<version>${cache2k-version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.cache2k</groupId>
+			<artifactId>cache2k-spring</artifactId>
+			<version>${cache2k-version}</version>
+		</dependency>
+
+		<!-- ========================= -->
+		<!-- Commons -->
+		<!-- ========================= -->
+
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>${commons-lang-version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 		</dependency>
+
+		<!-- ========================= -->
+		<!-- PostgreSQL -->
+		<!-- ========================= -->
+
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jdbc</artifactId>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>${postgresql.version}</version>
 		</dependency>
+
+		<!-- ========================= -->
+		<!-- Flyway -->
+		<!-- ========================= -->
+
 		<dependency>
-			<groupId>org.springframework.kafka</groupId>
-			<artifactId>spring-kafka</artifactId>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+			<version>${flyway.version}</version>
 		</dependency>
+
+		<!-- ========================= -->
+		<!-- Validation -->
+		<!-- ========================= -->
+
 		<dependency>
-			<groupId>org.powermock</groupId>
-			<artifactId>powermock-api-mockito</artifactId>
-			<version>1.6.5</version>
-			<scope>test</scope>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>${hibernate-validator.version}</version>
 		</dependency>
+
+		<!-- ========================= -->
+		<!-- Jsoup -->
+		<!-- ========================= -->
+
 		<dependency>
-			<groupId>org.powermock</groupId>
-			<artifactId>powermock-module-junit4</artifactId>
-			<version>1.6.5</version>
-			<scope>test</scope>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>${jsoup.version}</version>
 		</dependency>
+
+		<!-- ========================= -->
+		<!-- Lombok -->
+		<!-- ========================= -->
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- ========================= -->
+		<!-- DevTools -->
+		<!-- ========================= -->
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>42.7.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+
+		<!-- ========================= -->
+		<!-- eGov Dependencies -->
+		<!-- Verify compatibility -->
+		<!-- ========================= -->
+
 		<dependency>
 			<groupId>org.egov</groupId>
 			<artifactId>mdms-client</artifactId>
 			<version>0.0.2-SNAPSHOT</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.egov.services</groupId>
 			<artifactId>services-common</artifactId>
 			<version>1.1.1-SNAPSHOT</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.egov.services</groupId>
 			<artifactId>tracer</artifactId>
 			<version>2.1.2-SNAPSHOT</version>
 		</dependency>
+
+		<!-- ========================= -->
+		<!-- Testing -->
+		<!-- ========================= -->
+
 		<dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-core</artifactId>
-			<version>10.13.0</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 		</dependency>
+
+		<!-- Mockito -->
+		<!-- Replaces PowerMock -->
 		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-validator</artifactId>
-			<version>6.0.16.Final</version>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>5.12.0</version>
+			<scope>test</scope>
 		</dependency>
+
 		<dependency>
-			<groupId>org.jsoup</groupId>
-			<artifactId>jsoup</artifactId>
-			<version>1.10.2</version>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-inline</artifactId>
+			<version>5.2.0</version>
+			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
+
+	<!-- ====================================================== -->
+	<!-- Repositories -->
+	<!-- ====================================================== -->
+
 	<repositories>
+
 		<repository>
 			<id>repo.egovernments.org</id>
 			<name>eGov ERP Releases Repository</name>
-			<url>https://nexus-repo.digit.org/nexus/content/repositories/snapshots/</url>
+			<url>
+				https://nexus-repo.digit.org/nexus/content/repositories/snapshots/
+			</url>
 		</repository>
+
 	</repositories>
+
+	<!-- ====================================================== -->
+	<!-- Build -->
+	<!-- ====================================================== -->
+
 	<build>
+
 		<plugins>
+
+			<!-- ========================= -->
+			<!-- Spring Boot -->
+			<!-- ========================= -->
+
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+
 				<configuration>
+
 					<excludes>
+
 						<exclude>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
 						</exclude>
+
 						<exclude>
 							<groupId>org.springframework.boot</groupId>
 							<artifactId>spring-boot-devtools</artifactId>
 						</exclude>
+
 					</excludes>
+
 				</configuration>
+
 			</plugin>
 
+			<!-- ========================= -->
+			<!-- Maven Compiler -->
+			<!-- ========================= -->
 
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.13.0</version>
+
+				<configuration>
+					<source>21</source>
+					<target>21</target>
+					<release>21</release>
+				</configuration>
+
+			</plugin>
+
+			<!-- ========================= -->
+			<!-- Surefire -->
+			<!-- ========================= -->
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.2.5</version>
+			</plugin>
+
+			<!-- ========================= -->
+			<!-- TypeScript Generator -->
+			<!-- ========================= -->
+
+			<plugin>
+
 				<groupId>cz.habarta.typescript-generator</groupId>
 				<artifactId>typescript-generator-maven-plugin</artifactId>
-				<version>2.22.595</version>
+				<version>${typescript-generator.version}</version>
+
 				<executions>
+
 					<execution>
+
 						<id>generate</id>
+
 						<goals>
 							<goal>generate</goal>
 						</goals>
+
 						<phase>process-classes</phase>
+
 					</execution>
+
 				</executions>
+
 				<configuration>
+
 					<jsonLibrary>jackson2</jsonLibrary>
+
 					<classes>
-						<class>org.egov.demand.web.contract.DemandRequest</class>
-						<class>org.egov.demand.web.contract.DemandResponse</class>
-						<class>org.egov.demand.web.contract.BillRequestV2</class>
-						<class>org.egov.demand.web.contract.BillResponseV2</class>
+
+						<class>
+							org.egov.demand.web.contract.DemandRequest
+						</class>
+
+						<class>
+							org.egov.demand.web.contract.DemandResponse
+						</class>
+
+						<class>
+							org.egov.demand.web.contract.BillRequestV2
+						</class>
+
+						<class>
+							org.egov.demand.web.contract.BillResponseV2
+						</class>
+
 					</classes>
+
 					<customTypeMappings>
-						<customTypeMapping>org.egov.common.contract.request.User:User</customTypeMapping>
-						<customTypeMapping>org.egov.common.contract.request.RequestInfo:RequestInfo</customTypeMapping>
-						<customTypeMapping>org.egov.common.contract.response.ResponseInfo:ResponseInfo</customTypeMapping>
+
+						<customTypeMapping>
+							org.egov.common.contract.request.User:User
+						</customTypeMapping>
+
+						<customTypeMapping>
+							org.egov.common.contract.request.RequestInfo:RequestInfo
+						</customTypeMapping>
+
+						<customTypeMapping>
+							org.egov.common.contract.response.ResponseInfo:ResponseInfo
+						</customTypeMapping>
+
 					</customTypeMappings>
+
 					<namespace>Digit</namespace>
+
 					<debug>true</debug>
+
 					<outputKind>module</outputKind>
+
 				</configuration>
+
 			</plugin>
 
 		</plugins>
+
+		<!-- ====================================================== -->
+		<!-- Plugin Management -->
+		<!-- ====================================================== -->
+
 		<pluginManagement>
+
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
+
 				<plugin>
+
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
 					<version>1.0.0</version>
+
 					<configuration>
+
 						<lifecycleMappingMetadata>
+
 							<pluginExecutions>
+
 								<pluginExecution>
+
 									<pluginExecutionFilter>
+
 										<groupId>
 											cz.habarta.typescript-generator
 										</groupId>
+
 										<artifactId>
 											typescript-generator-maven-plugin
 										</artifactId>
+
 										<versionRange>
-											[2.22.595,)
+											[3.2.1263,)
 										</versionRange>
+
 										<goals>
 											<goal>generate</goal>
 										</goals>
+
 									</pluginExecutionFilter>
+
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
+
 								</pluginExecution>
+
 							</pluginExecutions>
+
 						</lifecycleMappingMetadata>
+
 					</configuration>
+
 				</plugin>
+
 			</plugins>
+
 		</pluginManagement>
+
 	</build>
+
 </project>

@@ -7,7 +7,8 @@ RUN apk add --no-cache \
     g++ \
     git
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @mseva/digit-ui-libraries@1.1.68-dev.1.31
+RUN echo '{"resolutions": {"node-releases": "2.0.44"}}' > package.json
+RUN yarn add @mseva/digit-ui-libraries@1.1.68-UAT.27
 RUN yarn add @mseva/digit-ui-module-bills@1.0.8
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.6
 RUN yarn add @mseva/digit-ui-module-dss@1.0.6

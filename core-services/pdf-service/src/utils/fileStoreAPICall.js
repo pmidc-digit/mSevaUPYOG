@@ -34,7 +34,7 @@ export const fileStoreAPICall = async function(filename, tenantId, fileData) {
   console.log(response.data, "files[0].fileStoreId")
   return get(response.data, "files[0].fileStoreId");
 } catch (error) {
-    const errorMsg = error.response?.data || error.message;
+    const errorMsg = (error.response && error.response.data) || error.message;
     console.error("File upload failed:", errorMsg);
     logger.error(`File upload failed for ${filename}: ${JSON.stringify(errorMsg)}`);
     throw error; // So the outer function can handle it

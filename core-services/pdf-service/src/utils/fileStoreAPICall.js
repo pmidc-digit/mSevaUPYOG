@@ -4,6 +4,7 @@ import get from "lodash/get";
 import axios, { post } from "axios";
 var FormData = require("form-data");
 import envVariables from "../EnvironmentVariables";
+import logger from "../config/logger";
 
 let egovFileHost = envVariables.EGOV_FILESTORE_SERVICE_HOST;
 let externalHost = envVariables.EGOV_EXTERNAL_HOST;
@@ -16,7 +17,7 @@ let externalHost = envVariables.EGOV_EXTERNAL_HOST;
 export const fileStoreAPICall = async function(filename, tenantId, fileData) {
   //console.log("sdgshdshg")
   var url = `${egovFileHost}/filestore/v1/files?tenantId=${tenantId}&module=pdfgen&tag=00040-2017-QR`;
-  var form = new FormData({ maxDataSize: 20 * 1024 * 1024 });
+  var form = new FormData({ maxDataSize: 80 * 1024 * 1024 });
   form.append("file", fileData, {
     filename: filename,
     contentType: "application/pdf"
@@ -33,7 +34,9 @@ export const fileStoreAPICall = async function(filename, tenantId, fileData) {
   console.log(response.data, "files[0].fileStoreId")
   return get(response.data, "files[0].fileStoreId");
 } catch (error) {
-    console.error("File upload failed:", error.response);
+    const errorMsg = error.response?.data || error.message;
+    console.error("File upload failed:", errorMsg);
+    logger.error(`File upload failed for ${filename}: ${JSON.stringify(errorMsg)}`);
     throw error; // So the outer function can handle it
   }
   

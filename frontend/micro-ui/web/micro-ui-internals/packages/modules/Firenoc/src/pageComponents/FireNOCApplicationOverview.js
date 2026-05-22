@@ -3,7 +3,7 @@ import { useParams, useLocation, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Header, Loader, Card, CardSectionHeader, StatusTable, Row, SubmitBar, ActionBar, MultiLink, Menu, Toast } from "@mseva/digit-ui-react-components";
 import { getNOCAcknowledgementData } from "../utils/getNOCAcknowledgementData";
-import getNOCSanctionLetter from "../utils/getNOCSanctionLetter"
+import getNOCSanctionLetter  from "../utils/getNOCSanctionLetter"
 import NOCModal from "./NOCModal";
 import NOCDocumentTableView from "./NOCDocumentTableView";
 
@@ -155,7 +155,7 @@ const FireNOCApplicationOverview = () => {
     if (!applicationNo || !tenantId) return;
     const authToken = Digit.UserService.getUser()?.access_token || "";
     fetch(
-      `/collection-services/payments/FIRENOC/_search?tenantId=${encodeURIComponent(tenantId)}&consumerCodes=${encodeURIComponent(applicationNo)}`,
+      `/collection-services/payments/_search?tenantId=${encodeURIComponent(tenantId)}&consumerCodes=${encodeURIComponent(applicationNo)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json;charset=UTF-8" },
@@ -261,7 +261,7 @@ const FireNOCApplicationOverview = () => {
   const getRecieptSearch = async ({ tenantId, payments, pdfkey, EmpData = null, ...params }) => {
     try {
       setLoading(true);
-      const nocSanctionData = await getNOCSanctionLetter(fireNOC, t, EmpData,);
+      const nocSanctionData = await getNOCSanctionLetter(details, t, EmpData,);
       let filestoreID = payments?.fileStoreId;
       if (!filestoreID) {
         try {

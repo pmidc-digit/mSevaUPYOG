@@ -4,91 +4,140 @@ import org.egov.Resources;
 import org.egov.domain.exception.OtpNumberNotPresentException;
 import org.egov.domain.model.OtpRequest;
 import org.egov.persistence.contract.Otp;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.egov.persistence.contract.OtpResponse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.ExpectedCount.once;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-@RunWith(MockitoJUnitRunner.class)
-public class OtpRepositoryTest {
+class OtpRepositoryTest {
 
     private static final String HOST = "http://host";
     private static final String CREATE_OTP_URL = "/otp/_create";
-    private Resources resources = new Resources();
+
+    private final Resources resources = new Resources();
+
     private MockRestServiceServer server;
+
     private OtpRepository otpRepository;
 
-    @Before
-    public void before() {
+    @BeforeEach
+    void setUp() {
+
         RestTemplate restTemplate = new RestTemplate();
-        otpRepository = new OtpRepository(restTemplate, HOST, CREATE_OTP_URL);
+
+        otpRepository = new OtpRepository(
+                restTemplate,
+                HOST,
+                CREATE_OTP_URL
+        );
+
         server = MockRestServiceServer.bindTo(restTemplate).build();
     }
 
-    @Ignore
+    @Disabled
     @Test
-    public void test_should_return_otp_for_given_request() {
+    void shouldReturnOtpForGivenRequest() {
+
         server.expect(once(), requestTo("http://host/otp/_create"))
                 .andExpect(method(HttpMethod.POST))
-                .andExpect(content().string(resources.getFileContents("otpRequest.json")))
+                .andExpect(content().string(
+                        resources.getFileContents("otpRequest.json")
+                ))
                 .andRespond(
-                        withSuccess(resources.getFileContents("otpSuccessResponse.json"),
-                                MediaType.APPLICATION_JSON_UTF8));
-        final OtpRequest domainOtpRequest = OtpRequest.builder()
+                        withSuccess(
+                                resources.getFileContents("otpSuccessResponse.json"),
+                                MediaType.APPLICATION_JSON
+                        )
+                );
+
+        OtpRequest domainOtpRequest = OtpRequest.builder()
                 .tenantId("tenantId")
                 .mobileNumber("mobileNumber")
                 .build();
 
-        final String otp = otpRepository.fetchOtp(domainOtpRequest);
+        String otp = otpRepository.fetchOtp(domainOtpRequest);
 
         server.verify();
+
         assertEquals("otpNumber", otp);
     }
 
-    @Test(expected = OtpNumberNotPresentException.class)
-    public void test_should_throw_exception_when_otp_response_is_null() {
-        final OtpRequest domainOtpRequest = OtpRequest.builder()
+    @Test
+    void shouldThrowExceptionWhenOtpResponseIsNull() {
+
+        OtpRequest domainOtpRequest = OtpRequest.builder()
                 .tenantId("tenantId")
                 .mobileNumber("mobileNumber")
                 .build();
-        final RestTemplate mockRestTemplate = mock(RestTemplate.class);
-        otpRepository = new OtpRepository(mockRestTemplate, HOST, CREATE_OTP_URL);
-        when(mockRestTemplate.postForObject(eq("http://host/otp/_create"),
-                any(),
-                eq(org.egov.persistence.contract.OtpResponse.class)))
-                .thenReturn(null);
 
-        otpRepository.fetchOtp(domainOtpRequest);
+        RestTemplate mockRestTemplate = mock(RestTemplate.class);
+
+        otpRepository = new OtpRepository(
+                mockRestTemplate,
+                HOST,
+                CREATE_OTP_URL
+        );
+
+        when(mockRestTemplate.postForObject(
+                eq("http://host/otp/_create"),
+                any(),
+                eq(OtpResponse.class)
+        )).thenReturn(null);
+
+        assertThrows(
+                OtpNumberNotPresentException.class,
+                () -> otpRepository.fetchOtp(domainOtpRequest)
+        );
     }
 
-    @Test(expected = OtpNumberNotPresentException.class)
-    public void test_should_throw_exception_when_otp_number_in_response_is_null() {
-        final OtpRequest domainOtpRequest = OtpRequest.builder()
+    @Test
+    void shouldThrowExceptionWhenOtpNumberInResponseIsNull() {
+
+        OtpRequest domainOtpRequest = OtpRequest.builder()
                 .tenantId("tenantId")
                 .mobileNumber("mobileNumber")
                 .build();
-        final RestTemplate mockRestTemplate = mock(RestTemplate.class);
-        otpRepository = new OtpRepository(mockRestTemplate, HOST, CREATE_OTP_URL);
-        when(mockRestTemplate.postForObject(eq("http://host/otp/_create"),
+
+        RestTemplate mockRestTemplate = mock(RestTemplate.class);
+
+        otpRepository = new OtpRepository(
+                mockRestTemplate,
+                HOST,
+                CREATE_OTP_URL
+        );
+
+        when(mockRestTemplate.postForObject(
+                eq("http://host/otp/_create"),
                 any(),
-                eq(org.egov.persistence.contract.OtpResponse.class)))
-                .thenReturn(new org.egov.persistence.contract.OtpResponse(null, Otp.builder().otp(null).build()));
+                eq(OtpResponse.class)
+        )).thenReturn(
+                new OtpResponse(
+                        null,
+                        Otp.builder()
+                                .otp(null)
+                                .build()
+                )
+        );
 
-        otpRepository.fetchOtp(domainOtpRequest);
+        assertThrows(
+                OtpNumberNotPresentException.class,
+                () -> otpRepository.fetchOtp(domainOtpRequest)
+        );
     }
-
 }

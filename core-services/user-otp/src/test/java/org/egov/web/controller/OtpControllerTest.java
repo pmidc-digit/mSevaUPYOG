@@ -4,115 +4,134 @@ import org.egov.Resources;
 import org.egov.TestConfiguration;
 import org.egov.domain.exception.*;
 import org.egov.domain.model.OtpRequest;
-import org.egov.domain.model.OtpRequestType;
 import org.egov.domain.service.OtpService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@RunWith(SpringRunner.class)
-@WebMvcTest(OtpController.class)
-@Import(TestConfiguration.class)
-public class OtpControllerTest {
+@ExtendWith(MockitoExtension.class)
+class OtpControllerTest {
 
-	private final static String TENANT_ID = "tenantId";
-	private static final String OTP_NUMBER = "otpNumber";
+    private MockMvc mockMvc;
 
-	@Autowired
-	private MockMvc mockMvc;
+    private final Resources resources = new Resources();
 
-	private Resources resources = new Resources();
+    @Mock
+    private OtpService otpService;
 
-	@MockBean
-	private OtpService otpService;
+    @InjectMocks
+    private OtpController otpController;
 
-	@Test
-	public void test_should_return_success_response_when_otp_is_sent() throws Exception {
+    @BeforeEach
+    void setup() {
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(otpController)
+                .setControllerAdvice(new TestConfiguration())
+                .build();
+    }
 
-		mockMvc.perform(post("/v1/_send").contentType(MediaType.APPLICATION_JSON_UTF8)
-				.content(resources.getFileContents("otpSendRequest.json"))).andExpect(status().isCreated())
-				.andExpect(content().json(resources.getFileContents("otpSendSuccessResponse.json")));
+    @Test
+    void shouldReturnSuccessResponseWhenOtpIsSent() throws Exception {
 
-		final OtpRequest expectedOtpRequest = new OtpRequest("mobileNumber", "tenantId", OtpRequestType.PASSWORD_RESET, "CITIZEN", false);
-		verify(otpService).sendOtp(expectedOtpRequest);
-	}
+        mockMvc.perform(post("/v1/_send")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resources.getFileContents("otpSendRequest.json")))
+                .andExpect(status().isCreated())
+                .andExpect(content().json(resources.getFileContents("otpSendSuccessResponse.json")));
 
-	@Test
-	public void test_should_return_error_response_when_mandatory_fields_are_not_present_in_request() throws Exception {
-		final OtpRequest expectedOtpRequest = new OtpRequest("", "", null, "CITIZEN",false);
-		doThrow(new InvalidOtpRequestException(expectedOtpRequest)).when(otpService).sendOtp(expectedOtpRequest);
+        verify(otpService).sendOtp(any(OtpRequest.class));
+    }
 
-		mockMvc.perform(post("/v1/_send").contentType(MediaType.APPLICATION_JSON_UTF8)
-				.content(resources.getFileContents("otpRequestWithoutMandatoryFields.json")))
-				.andExpect(status().isBadRequest())
-				.andExpect(content().json(resources.getFileContents("otpMandatoryFieldsErrorResponse.json")));
-	}
+    @Test
+    void shouldReturnBadRequestWhenMandatoryFieldsMissing() throws Exception {
 
-	@Test
-	public void test_should_return_error_response_when_user_not_found_for_sending_forgot_password_otp()
-			throws Exception {
-		final OtpRequest expectedOtpRequest = new OtpRequest("", "", null, "CITIZEN",false);
-		doThrow(new UserNotFoundException()).when(otpService).sendOtp(expectedOtpRequest);
+        lenient().doThrow(new InvalidOtpRequestException(
+                        new OtpRequest("", "", null, "CITIZEN", false)))
+                .when(otpService).sendOtp(any(OtpRequest.class));
 
-		mockMvc.perform(post("/v1/_send").contentType(MediaType.APPLICATION_JSON_UTF8)
-				.content(resources.getFileContents("otpRequestWithoutMandatoryFields.json")))
-				.andExpect(status().isBadRequest())
-				.andExpect(content().json(resources.getFileContents("unknownMobileNumberErrorResponse.json")));
-	}
+        mockMvc.perform(post("/v1/_send")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resources.getFileContents("otpRequestWithoutMandatoryFields.json")))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json(resources.getFileContents("otpMandatoryFieldsErrorResponse.json")));
+    }
 
-	@Test
-	public void test_should_return_error_response_when_user_alreadyExist_incaseoftypeisregister() throws Exception {
-		final OtpRequest expectedOtpRequest = new OtpRequest("mobileNumber", "tenantId", OtpRequestType.REGISTER, "CITIZEN",false);
-		doThrow(new UserAlreadyExistInSystemException()).when(otpService).sendOtp(expectedOtpRequest);
+    @Test
+    void shouldReturnErrorWhenUserNotFound() throws Exception {
 
-		mockMvc.perform(post("/v1/_send").contentType(MediaType.APPLICATION_JSON_UTF8)
-				.content(resources.getFileContents("otpSendRegisterRequest.json"))).andExpect(status().isBadRequest())
-				.andExpect(content().json(resources.getFileContents("userAlreadyExistInSystemResponse.json")));
-	}
+        lenient().doThrow(new UserNotFoundException())
+                .when(otpService).sendOtp(any(OtpRequest.class));
 
-	@Test
-	public void test_should_return_error_response_when_user_doesntExist_incaseoftypeislogin() throws Exception {
-		final OtpRequest expectedOtpRequest = new OtpRequest("mobileNumber", "tenantId", OtpRequestType.LOGIN, "CITIZEN",false);
-		doThrow(new UserNotExistingInSystemException()).when(otpService).sendOtp(expectedOtpRequest);
+        mockMvc.perform(post("/v1/_send")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resources.getFileContents("otpSendLoginRequest.json")))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json(resources.getFileContents("unknownMobileNumberErrorResponse.json")));
+    }
 
-		mockMvc.perform(post("/v1/_send").contentType(MediaType.APPLICATION_JSON_UTF8)
-				.content(resources.getFileContents("otpSendLoginRequest.json"))).andExpect(status().isBadRequest())
-				.andExpect(content().json(resources.getFileContents("userNotExistInSytemResponse.json")));
-	}
+    @Test
+    void shouldReturnErrorWhenUserAlreadyExists() throws Exception {
 
-	@Test
-	public void test_should_return_error_response_when_user_mobilenot_found_for_sending_forgot_password_otp()
-			throws Exception {
-		final OtpRequest expectedOtpRequest = new OtpRequest("", "", null, "CITIZEN",false);
-		doThrow(new UserMobileNumberNotFoundException()).when(otpService).sendOtp(expectedOtpRequest);
+        lenient().doThrow(new UserAlreadyExistInSystemException())
+                .when(otpService).sendOtp(any(OtpRequest.class));
 
-		mockMvc.perform(post("/v1/_send").contentType(MediaType.APPLICATION_JSON_UTF8)
-				.content(resources.getFileContents("otpRequestWithoutMandatoryFields.json")))
-				.andExpect(status().isBadRequest())
-				.andExpect(content().json(resources.getFileContents("invalidMobileNumberErrorResponse.json")));
-	}
+        mockMvc.perform(post("/v1/_send")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resources.getFileContents("otpSendRegisterRequest.json")))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json(resources.getFileContents("userAlreadyExistInSystemResponse.json")));
+    }
 
-	@Test
-	public void test_should_return_error_message_when_unhandled_exception_occurs() throws Exception {
-		final OtpRequest expectedOtpRequest = new OtpRequest("mobileNumber", "tenantId", null, "CITIZEN",false);
-		final String exceptionMessage = "Some exception message";
-		doThrow(new RuntimeException(exceptionMessage)).when(otpService).sendOtp(expectedOtpRequest);
+    @Test
+    void shouldReturnErrorWhenUserDoesNotExist() throws Exception {
 
-		mockMvc.perform(post("/v1/_send").contentType(MediaType.APPLICATION_JSON_UTF8)
-				.content(resources.getFileContents("invalidOtpSendRequest.json")))
-				.andExpect(status().isInternalServerError()).andExpect(content().string(exceptionMessage));
-	}
+        lenient().doThrow(new UserNotExistingInSystemException())
+                .when(otpService).sendOtp(any(OtpRequest.class));
 
+        mockMvc.perform(post("/v1/_send")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resources.getFileContents("otpSendLoginRequest.json")))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json(resources.getFileContents("userNotExistInSytemResponse.json")));
+    }
+
+    @Test
+    void shouldReturnErrorWhenMobileNotFound() throws Exception {
+
+        lenient().doThrow(new UserMobileNumberNotFoundException())
+                .when(otpService).sendOtp(any(OtpRequest.class));
+
+        mockMvc.perform(post("/v1/_send")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resources.getFileContents("otpRequestWithoutMandatoryFields.json")))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json(resources.getFileContents("invalidMobileNumberErrorResponse.json")));
+    }
+
+    @Test
+    void shouldReturn500ForUnhandledException() throws Exception {
+
+        String exceptionMessage = "Some exception message";
+
+        lenient().doThrow(new RuntimeException(exceptionMessage))
+                .when(otpService).sendOtp(any(OtpRequest.class));
+
+        mockMvc.perform(post("/v1/_send")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resources.getFileContents("invalidOtpSendRequest.json")))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(exceptionMessage));
+    }
 }

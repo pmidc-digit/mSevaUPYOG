@@ -1,34 +1,41 @@
 package org.egov.persistence.contract;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class OtpResponseTest {
+class OtpResponseTest {
 
     @Test
-    public void test_should_return_false_when_otp_number_is_present() {
-        final Otp otp = Otp.builder().otp("otpNumber").build();
-        final OtpResponse otpResponse = new OtpResponse(null, otp);
+    void shouldReturnFalseWhenOtpNumberIsPresent() {
+
+        Otp otp = Otp.builder()
+                .otp("otpNumber")
+                .build();
+
+        OtpResponse otpResponse = new OtpResponse(null, otp);
 
         assertFalse(otpResponse.isOtpNumberAbsent());
     }
 
     @Test
-    public void test_should_return_true_when_otp_number_is_not_present() {
-        final Otp otp = Otp.builder().otp(null).build();
-        final OtpResponse otpResponse = new OtpResponse(null, otp);
+    void shouldReturnTrueWhenOtpNumberIsNotPresent() {
+
+        Otp otp = Otp.builder()
+                .otp(null)
+                .build();
+
+        OtpResponse otpResponse = new OtpResponse(null, otp);
 
         assertTrue(otpResponse.isOtpNumberAbsent());
     }
 
     @Test
-    public void test_should_return_true_when_otp_object_is_not_present() {
-        final Otp otp = Otp.builder().otp(null).build();
-        final OtpResponse otpResponse = new OtpResponse(null, otp);
+    void shouldReturnTrueWhenOtpObjectIsNotPresent() {
+
+        OtpResponse otpResponse = new OtpResponse(null, null);
 
         assertTrue(otpResponse.isOtpNumberAbsent());
     }
-
 }

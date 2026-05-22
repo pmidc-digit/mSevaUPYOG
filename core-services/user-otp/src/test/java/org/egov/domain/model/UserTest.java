@@ -1,37 +1,44 @@
 package org.egov.domain.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class UserTest {
+class UserTest {
 
-	@Test
-	public void test_equals_should_return_true_when_both_instances_have_same_field_values() {
-		final User user1 = new User(1L, "foo@bar.com","");
-		final User user2 = new User(1L, "foo@bar.com","");
-		assertTrue(user1.equals(user2));
-	}
+    @Test
+    void equalsShouldReturnTrueWhenBothInstancesHaveSameFieldValues() {
 
-	@Test
-	public void test_hash_code_should_be_same_when_both_instances_have_same_field_values() {
-		final User user1 = new User(1L, "foo@bar.com","");
-		final User user2 = new User(1L, "foo@bar.com","");
-		assertEquals(user1.hashCode(), user2.hashCode());
-	}
+        User user1 = new User(1L, "foo@bar.com", "");
+        User user2 = new User(1L, "foo@bar.com", "");
 
-	@Test
-	public void test_equals_should_return_false_when_both_instances_have_different_field_values() {
-		final User user1 = new User(1L, "foo1@bar.com","");
-		final User user2 = new User(2L, "foo2@bar.com","");
-		assertFalse(user1.equals(user2));
-	}
+        assertEquals(user1, user2);
+    }
 
-	@Test
-	public void test_hash_code_should_be_different_when_both_instances_have_different_field_values() {
-		final User user1 = new User(1L, "foo1@bar.com","");
-		final User user2 = new User(2L, "foo2@bar.com","");
-		assertNotEquals(user1.hashCode(), user2.hashCode());
-	}
+    @Test
+    void hashCodeShouldBeSameWhenBothInstancesHaveSameFieldValues() {
 
+        User user1 = new User(1L, "foo@bar.com", "");
+        User user2 = new User(1L, "foo@bar.com", "");
+
+        assertEquals(user1.hashCode(), user2.hashCode());
+    }
+
+    @Test
+    void equalsShouldReturnFalseWhenBothInstancesHaveDifferentFieldValues() {
+
+        User user1 = new User(1L, "foo1@bar.com", "");
+        User user2 = new User(2L, "foo2@bar.com", "");
+
+        assertNotEquals(user1, user2);
+    }
+
+    @Test
+    void hashCodeShouldBeDifferentWhenBothInstancesHaveDifferentFieldValues() {
+
+        User user1 = new User(1L, "foo1@bar.com", "");
+        User user2 = new User(2L, "foo2@bar.com", "");
+
+        assertNotEquals(user1.hashCode(), user2.hashCode());
+    }
 }

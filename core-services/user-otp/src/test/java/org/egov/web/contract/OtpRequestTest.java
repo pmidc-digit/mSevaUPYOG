@@ -1,84 +1,174 @@
 package org.egov.web.contract;
 
 import org.egov.domain.model.OtpRequestType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class OtpRequestTest {
+class OtpRequestTest {
 
     @Test
-    public void test_should_map_from_contract_to_domain() {
-        final Otp otp = new Otp("mobileNumber", "tenantId", "register", "CITIZEN",false);
-        final OtpRequest request = new OtpRequest(null, otp);
+    void shouldMapFromContractToDomain() {
 
-        final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
+        Otp otp = new Otp(
+                "mobileNumber",
+                "tenantId",
+                "register",
+                "CITIZEN",
+                false
+        );
+
+        OtpRequest request = new OtpRequest(null, otp);
+
+        org.egov.domain.model.OtpRequest domainOtpRequest =
+                request.toDomain();
 
         assertNotNull(domainOtpRequest);
-        assertEquals("mobileNumber", domainOtpRequest.getMobileNumber());
-        assertEquals("tenantId", domainOtpRequest.getTenantId());
-        assertEquals(OtpRequestType.REGISTER, domainOtpRequest.getType());
+
+        assertEquals(
+                "mobileNumber",
+                domainOtpRequest.getMobileNumber()
+        );
+
+        assertEquals(
+                "tenantId",
+                domainOtpRequest.getTenantId()
+        );
+
+        assertEquals(
+                OtpRequestType.REGISTER,
+                domainOtpRequest.getType()
+        );
     }
 
-	@Test
-	public void test_should_set_request_type_to_register_when_type_not_explicitly_specified() {
-		final Otp otp = new Otp("mobileNumber", "tenantId", null, "CITIZEN",false);
-		final OtpRequest request = new OtpRequest(null, otp);
+    @Test
+    void shouldSetRequestTypeToRegisterWhenTypeNotExplicitlySpecified() {
 
-		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
+        Otp otp = new Otp(
+                "mobileNumber",
+                "tenantId",
+                null,
+                "CITIZEN",
+                false
+        );
 
-		assertEquals(OtpRequestType.REGISTER, domainOtpRequest.getType());
-	}
+        OtpRequest request = new OtpRequest(null, otp);
 
-	@Test
-	public void test_should_set_request_type_to_null_when_type_is_unknown() {
-		final Otp otp = new Otp("mobileNumber", "tenantId", "unknown", "CITIZEN",false);
-		final OtpRequest request = new OtpRequest(null, otp);
+        org.egov.domain.model.OtpRequest domainOtpRequest =
+                request.toDomain();
 
-		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
+        assertEquals(
+                OtpRequestType.REGISTER,
+                domainOtpRequest.getType()
+        );
+    }
 
-		assertNull(domainOtpRequest.getType());
-	}
+    @Test
+    void shouldSetRequestTypeToNullWhenTypeIsUnknown() {
 
-	@Test
-	public void test_should_set_request_type_to_register_when_type_is_register() {
-		final Otp otp = new Otp("mobileNumber", "tenantId", "regisTER", "CITIZEN",false);
-		final OtpRequest request = new OtpRequest(null, otp);
+        Otp otp = new Otp(
+                "mobileNumber",
+                "tenantId",
+                "unknown",
+                "CITIZEN",
+                false
+        );
 
-		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
+        OtpRequest request = new OtpRequest(null, otp);
 
-		assertEquals(OtpRequestType.REGISTER, domainOtpRequest.getType());
-	}
+        org.egov.domain.model.OtpRequest domainOtpRequest =
+                request.toDomain();
 
-	@Test
-	public void test_should_set_request_type_to_password_reset_when_type_is_passwordreset() {
-		final Otp otp = new Otp("mobileNumber", "tenantId", "passwordRESET", "CITIZEN",false);
-		final OtpRequest request = new OtpRequest(null, otp);
+        assertNull(domainOtpRequest.getType());
+    }
 
-		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
+    @Test
+    void shouldSetRequestTypeToRegisterWhenTypeIsRegister() {
 
-		assertEquals(OtpRequestType.PASSWORD_RESET, domainOtpRequest.getType());
-	}
-	
-	@Test
-	public void test_should_set_request_type_login_when_type_is_login() {
-		final Otp otp = new Otp("mobileNumber", "tenantId", "LOGIN", "CITIZEN",false);
-		final OtpRequest request = new OtpRequest(null, otp);
+        Otp otp = new Otp(
+                "mobileNumber",
+                "tenantId",
+                "regisTER",
+                "CITIZEN",
+                false
+        );
 
-		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
+        OtpRequest request = new OtpRequest(null, otp);
 
-		assertEquals(OtpRequestType.LOGIN, domainOtpRequest.getType());
-	}
-	
-	@Test
-	public void test_should_set_request_type_to_login_when_type_is_login() {
-		final Otp otp = new Otp("mobileNumber", "tenantId", "login", "CITIZEN",false);
-		final OtpRequest request = new OtpRequest(null, otp);
+        org.egov.domain.model.OtpRequest domainOtpRequest =
+                request.toDomain();
 
-		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
+        assertEquals(
+                OtpRequestType.REGISTER,
+                domainOtpRequest.getType()
+        );
+    }
 
-		assertEquals(OtpRequestType.LOGIN, domainOtpRequest.getType());
-	}
+    @Test
+    void shouldSetRequestTypeToPasswordResetWhenTypeIsPasswordReset() {
+
+        Otp otp = new Otp(
+                "mobileNumber",
+                "tenantId",
+                "passwordRESET",
+                "CITIZEN",
+                false
+        );
+
+        OtpRequest request = new OtpRequest(null, otp);
+
+        org.egov.domain.model.OtpRequest domainOtpRequest =
+                request.toDomain();
+
+        assertEquals(
+                OtpRequestType.PASSWORD_RESET,
+                domainOtpRequest.getType()
+        );
+    }
+
+    @Test
+    void shouldSetRequestTypeToLoginWhenTypeIsLoginUpperCase() {
+
+        Otp otp = new Otp(
+                "mobileNumber",
+                "tenantId",
+                "LOGIN",
+                "CITIZEN",
+                false
+        );
+
+        OtpRequest request = new OtpRequest(null, otp);
+
+        org.egov.domain.model.OtpRequest domainOtpRequest =
+                request.toDomain();
+
+        assertEquals(
+                OtpRequestType.LOGIN,
+                domainOtpRequest.getType()
+        );
+    }
+
+    @Test
+    void shouldSetRequestTypeToLoginWhenTypeIsLoginLowerCase() {
+
+        Otp otp = new Otp(
+                "mobileNumber",
+                "tenantId",
+                "login",
+                "CITIZEN",
+                false
+        );
+
+        OtpRequest request = new OtpRequest(null, otp);
+
+        org.egov.domain.model.OtpRequest domainOtpRequest =
+                request.toDomain();
+
+        assertEquals(
+                OtpRequestType.LOGIN,
+                domainOtpRequest.getType()
+        );
+    }
 }

@@ -52,13 +52,21 @@ public class CalculationService {
 	 * 
 	 * @param request
 	 * 
-	 * If action would be APPROVE_FOR_CONNECTION then
-	 * 
-	 *Estimate the fee for water application and generate the demand
-	 * 
+	 * For NewGC trimmed workflow: demand is generated on SUBMIT_APPLICATION
+	 * (direct transition to PENDING_FOR_PAYMENT, no verifier step).
+	 * For modify/reconnect flows: demand is still generated on APPROVE_FOR_CONNECTION.
+	 *
 	 */
 	public void calculateFeeAndGenerateDemand(GarbageConnectionRequest request, Property property) {
-		if(GCConstants.APPROVE_CONNECTION_CONST.equalsIgnoreCase(request.getGarbageConnection().getProcessInstance().getAction()) && !(request.isReconnectRequest() || request.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION))) {
+		String action = request.getGarbageConnection().getProcessInstance().getAction();
+		boolean isReconnect = request.isReconnectRequest()
+				|| request.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION);
+
+		boolean isNewGcSubmit = GCConstants.SUBMIT_APPLICATION_CONST.equalsIgnoreCase(action)
+				&& request.getGarbageConnection().getApplicationType()
+						.equalsIgnoreCase(GCConstants.NEW_GARBAGE_CONNECTION);
+
+		if ((GCConstants.APPROVE_CONNECTION_CONST.equalsIgnoreCase(action) && !isReconnect) || isNewGcSubmit) {
 			CalculationCriteria criteria = CalculationCriteria.builder()
 					.applicationNo(request.getGarbageConnection().getApplicationNo())
 					.garbageConnection(request.getGarbageConnection())

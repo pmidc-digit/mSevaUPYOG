@@ -208,7 +208,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     const getPropertyType = getPropertyTypeData?.find((item) => item?.code == stateDataCheck?.propertyType?.code);
     // Use the resolved MDMS minor code (e.g. "INDUSTRIAL") so the filter matches segments in sub-usage codes
     var restoredCode = (getResident && getResident.code) || (stateDataCheck && stateDataCheck.propertyUsageType && stateDataCheck.propertyUsageType.code);
-    var checkData = getUsageOptionsByCode(restoredCode);
+    var allUsageForRestore = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
+    var checkData = allUsageForRestore ? allUsageForRestore.filter(function(item) {
+      return item && item.code && restoredCode && item.code.split(".").indexOf(restoredCode) !== -1;
+    }) : [];
     const checkFloors = floorOptions?.find((f) => f.code == stateDataCheck?.noOfFloors?.code);
 
     setSubUsageData(checkData);
@@ -590,14 +593,13 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                   rules={{ required: t("Sub Usage Type is required") }}
                   render={(props) => {
                     var unitUsageVal = watch("unitDetails." + index + ".unitUsageType");
-                    var unitCode = unitUsageVal && typeof unitUsageVal === "object" ? unitUsageVal.code : unitUsageVal;
-                    var rowOptions = unitCode
-                      ? getUsageOptionsByCode(unitCode)
+                    var unitCode = unitUsageVal && typeof unitUsageVal === "object" ? unitUsageVal.code : null;
+                    var allUsage = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
+                    var rowOptions = (unitCode && allUsage)
+                      ? allUsage.filter(function(opt) { return opt && opt.code && opt.code.split(".").indexOf(unitCode) !== -1; })
                       : getSubUsageData;
-                    var selectedCode = props.value?.code || props.value;
-                    var selectedValue = rowOptions?.find((o) => o.code === selectedCode) || props.value;
                     // Look up full MDMS object so Dropdown can display name correctly
-                    return <Dropdown select={props.onChange} selected={selectedValue} option={rowOptions} optionKey="name" t={t} />;
+                    return <Dropdown select={props.onChange} selected={rowOptions?.find((o) => o.code === (props.value?.code || props.value)) || props.value} option={rowOptions} optionKey="name" t={t} />;
                   }}
                 />
                 {errors?.unitDetails?.[index]?.subUsageType && (

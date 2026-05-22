@@ -3,6 +3,7 @@ import { useParams, useLocation, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Header, Loader, Card, CardSectionHeader, StatusTable, Row, SubmitBar, ActionBar, MultiLink, Menu, Toast } from "@mseva/digit-ui-react-components";
 import { getNOCAcknowledgementData } from "../utils/getNOCAcknowledgementData";
+import getNOCSanctionLetter  from "../utils/getNOCSanctionLetter"
 import NOCModal from "./NOCModal";
 import NOCDocumentTableView from "./NOCDocumentTableView";
 
@@ -79,6 +80,7 @@ const FireNOCApplicationOverview = () => {
   const [showToast, setShowToast] = useState(null);
   const [getEmployees, setEmployees] = useState([]);
   const [getWorkflowService, setWorkflowService] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const menuRef = React.useRef();
 
@@ -194,7 +196,7 @@ const FireNOCApplicationOverview = () => {
       .catch(() => { });
   }, [applicationNo, tenantId]);
 
-  if (isLoading) return <Loader />;
+  if (isLoading || loading) return <Loader />;
   if (!fireNOC)
     return (
       <Card style={{ textAlign: "center", marginTop: "40px" }}>
@@ -236,34 +238,77 @@ const FireNOCApplicationOverview = () => {
   const isResumable = appStatus === "INITIATED";
 
   const handleDownloadPdf = async () => {
-    const tenantInfo = tenants.find((tenant) => tenant.code === fireNOC.tenantId);
-    const site = fireNOC.fireNOCDetails?.propertyDetails?.address;
-    const ulbType = site?.areaType || "-";
-    const ulbName = site?.city || "-";
-    const acknowledgementData = await getNOCAcknowledgementData(fireNOC, tenantInfo, ulbType, ulbName, t);
-    Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
-    setShowOptions(false);
-  };
+    try {
+      setLoading(true);
+      const Property = fireNOC;
+      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+      console.log('tenantInfo', tenantInfo)
+      // const site = Property?.nocDetails?.additionalDetails?.siteDetails;
+      const ulbType = tenantInfo?.city?.ulbType;
+      const ulbName = tenantInfo?.city?.name;
 
-  const downloadPaymentReceipt = async () => {
-    const receiptFile = { filestoreIds: [payment?.fileStoreId] };
-    if (receiptFile?.filestoreIds[0]) {
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: receiptFile.filestoreIds[0] });
-      window.open(fileStore[receiptFile.filestoreIds[0]], "_blank");
-      setShowOptions(false);
-    } else {
-      const newResponse = await Digit.PaymentService.generatePdf(tenantId, { Payments: [payment] }, "firenoc-receipt");
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: newResponse.filestoreIds[0] });
-      window.open(fileStore[newResponse.filestoreIds[0]], "_blank");
-      setShowOptions(false);
+      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
+      setTimeout(() => {
+        Digit.Utils.pdf.generateFormattedFireNoc(acknowledgementData);
+      }, 0);
+    } catch (error) {
+      // console.error("Error generating acknowledgement:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const downloadFireNocCertificate = async () => {
-    const fireNocCertificatefile = await Digit.PaymentService.generatePdf(tenantId, { FireNOCs: [fireNOC] }, "firenoc-certificate");
-    const receiptFile = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fireNocCertificatefile.filestoreIds[0] });
-    window.open(receiptFile[fireNocCertificatefile.filestoreIds[0]], "_blank");
-    setShowOptions(false);
+  const getRecieptSearch = async ({ tenantId, payments, pdfkey, EmpData = null, ...params }) => {
+    try {
+      setLoading(true);
+      const nocSanctionData = await getNOCSanctionLetter(details, t, EmpData,);
+      let filestoreID = payments?.fileStoreId;
+      if (!filestoreID) {
+        try {
+          const response = await Digit.PaymentService.generatePdf(
+            tenantId,
+            { Payments: [{ ...payments, Noc: nocSanctionData.Noc }] },
+            pdfkey
+          );
+          filestoreID = response?.filestoreIds[0];
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+        fileStoreIds: filestoreID,
+      });
+      window.open(fileStore[filestoreID], "_blank")
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getSanctionLetter = async ({ tenantId, payments, pdfkey, EmpData, ...params }) => {
+    try {
+      setLoading(true);
+      const nocSanctionData = await getNOCSanctionLetter(fireNOC, t, EmpData);
+
+      const prevGetLang = Digit.StoreData.getCurrentLanguage;
+      console.log("prevGetLang", prevGetLang);
+      Digit.StoreData.getCurrentLanguage = () => "pn_IN";
+
+      let response = null;
+      try {
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc }] }, pdfkey);
+      } finally {
+        Digit.StoreData.getCurrentLanguage = prevGetLang;
+        setLoading(false);
+      }
+
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+        fileStoreIds: response?.filestoreIds[0],
+      });
+      window.open(fileStore[response?.filestoreIds[0]], "_blank")
+    } finally {
+      setLoading(false);
+    }
   };
 
   const dowloadOptions =
@@ -275,13 +320,13 @@ const FireNOCApplicationOverview = () => {
           ? [
             {
               label: t("NOC_CERTIFICATE"),
-              onClick: downloadFireNocCertificate,
+              onClick: () => getSanctionLetter({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-sanctionletter" }),
             },
           ]
           : []),
         {
           label: t("CS_COMMON_PAYMENT_RECEIPT"),
-          onClick: downloadPaymentReceipt,
+          onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenocreceipt" }),
         },
         {
           label: t("NOC_APPLICATION_FORM"),

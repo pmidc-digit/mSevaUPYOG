@@ -18,6 +18,7 @@ import org.egov.common.entity.edcr.Measurement;
 import org.egov.common.entity.edcr.PlanInformation;
 import org.egov.common.entity.edcr.SetBack;
 import org.egov.common.entity.edcr.VirtualBuilding;
+import org.egov.commons.mdms.LayerErrorType;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.entity.blackbox.MeasurementDetail;
 import org.egov.edcr.entity.blackbox.PlanDetail;
@@ -105,6 +106,10 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 						new String[] { s }, null));
 				pl.addErrors(errors);
 			}
+			
+			//Code added for the layername with colorCode match
+			Util.validateLayerColor(s, Util.getColorByPolyLine(polyLinesByLayer), pl);
+			
 			if (!polyLinesByLayer.isEmpty())
 				if (pl.getBlockByName(s.split("_")[1]) == null) {
 					Block block = new Block();
@@ -144,6 +149,12 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			String layerName = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + b.getNumber() + "_"
 					+ layerNames.getLayerName("LAYER_NAME_HEIGHT_OF_BUILDING");
 			BigDecimal height = Util.getSingleDimensionValueByLayer(pl.getDoc(), layerName, pl);
+			
+			Map<String, String> data = Util.getColorByDimensionByLayer(pl, layerName);
+	        String layer = data.get("layerName");
+	        String color = data.get("colorCode");
+			Util.validateLayerColor(layer, Integer.parseInt(color), pl);
+	        
 			b.setHeight(height);
 			b.getBuilding().setBuildingHeight(height);
 			b.getBuilding().setDeclaredBuildingHeight(height);
@@ -153,6 +164,12 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 																								// excluding mumty and
 																								// parapet
 			BigDecimal heightExMP = Util.getSingleDimensionValueByLayer(pl.getDoc(), layerName1, pl);
+			
+			if(heightExMP!=null) {
+				data = Util.getColorByDimensionByLayer(pl, layerName);
+				Util.validateLayerColor(data.get("layerName"), Integer.parseInt(data.get("colorCode")), pl);
+			}			
+			
 			b.getBuilding().setBuildingHeightExcludingMP(heightExMP);
 
 //			if (height.compareTo(BigDecimal.valueOf(15)) > 0)
@@ -171,12 +188,17 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 		List<String> layerNames = Util.getLayerNamesLike(pl.getDoc(), basementFootPrint);
 		for (String s : layerNames) {
 			polyLinesByLayer = Util.getPolyLinesByLayer(pl.getDoc(), s);
+			
 			if (polyLinesByLayer.size() > 1) {
 				HashMap<String, String> errors = new HashMap<>();
 				errors.put(s, getEdcrMessageSource().getMessage(DcrConstants.MORETHANONEPOLYLINEDEFINED,
 						new String[] { s }, null));
 				pl.addErrors(errors);
 			}
+			
+			//Code added for the layername with colorCode match
+			Util.validateLayerColor(s, Util.getColorByPolyLine(polyLinesByLayer), pl);
+			
 			if (!polyLinesByLayer.isEmpty())
 				if (pl.getBlockByName(s.split("_")[1]) == null) {
 					Block block = new Block();
@@ -484,14 +506,14 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 				pi.setNoOfBeds(BigDecimal.valueOf(Integer.valueOf(noOfBeds)));
 		}
 
-		String roadWidth = planInfoProperties.get(DxfFileConstants.ROAD_WIDTH);
-		if (StringUtils.isNotBlank(roadWidth)) {
-			roadWidth = roadWidth.replaceAll(digitsRegex, "");
-			BigDecimal roadWidthValue = getNumericValue(roadWidth, pl, DxfFileConstants.ROAD_WIDTH);
-			pi.setRoadWidth(roadWidthValue);
-		} else
-			pl.addError(DxfFileConstants.ROAD_WIDTH,
-					getLocaleMessage(OBJECTNOTDEFINED, DxfFileConstants.ROAD_WIDTH + " of PLAN_INFO layer"));
+//		String roadWidth = planInfoProperties.get(DxfFileConstants.ROAD_WIDTH);
+//		if (StringUtils.isNotBlank(roadWidth)) {
+//			roadWidth = roadWidth.replaceAll(digitsRegex, "");
+//			BigDecimal roadWidthValue = getNumericValue(roadWidth, pl, DxfFileConstants.ROAD_WIDTH);
+//			pi.setRoadWidth(roadWidthValue);
+//		} else
+//			pl.addError(DxfFileConstants.ROAD_WIDTH,
+//					getLocaleMessage(OBJECTNOTDEFINED, DxfFileConstants.ROAD_WIDTH + " of PLAN_INFO layer"));
 
 		String roadLength = planInfoProperties.get(DxfFileConstants.ROAD_LENGTH);
 		if (StringUtils.isNotBlank(roadLength)) {
@@ -754,7 +776,11 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 		String roadType = planInfoProperties.get(DxfFileConstants.ROAD_TYPE);
 		if (StringUtils.isNotBlank(roadType))
 			pi.setRoadType(roadType);
-
+		else {
+			pl.addError(DxfFileConstants.ROAD_TYPE,
+					getLocaleMessage(OBJECTNOTDEFINED, DxfFileConstants.ROAD_TYPE + " of PLAN_INFO layer"));
+		}
+		
 		String khasraNo = planInfoProperties.get(DxfFileConstants.KHASRA_NO);
 		if (StringUtils.isNotBlank(khasraNo)) {
 			pi.setKhasraNo(khasraNo);

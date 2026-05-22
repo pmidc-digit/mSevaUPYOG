@@ -66,6 +66,7 @@ public class DxfFileConstants {
     public static final int OCCUPANCY_F14_COLOR_CODE = 42;
     public static final int OCCUPANCY_F15_COLOR_CODE = 43;
     public static final int OCCUPANCY_F16_COLOR_CODE = 44;
+    public static final int OCCUPANCY_F17_COLOR_CODE = 17;
     
 // // Color codes for industry as per 2025 byLaws
 //    public static final int OCCUPANCY_G_COLOR_CODE = 7;
@@ -260,13 +261,18 @@ public class DxfFileConstants {
     public static final String CITY = "CITY";
   //  public static final String MAUZA = "MAUZA";
     public static final String RWH_DECLARED = "RWH_DECLARED";
-    public static final int RESIDENTIAL_ROOM_COLOR = 1;
+    //public static final int RESIDENTIAL_ROOM_COLOR = 1;
     public static final int COMMERCIAL_ROOM_COLOR = 2;
     public static final int EDUCATIONAL_ROOM_COLOR = 3;
     public static final int INDUSTRIAL_ROOM_COLOR = 4;
-    public static final int RESIDENTIAL_KITCHEN_ROOM_COLOR = 1;
-    public static final int RESIDENTIAL_KITCHEN_STORE_ROOM_COLOR = 3;
-    public static final int RESIDENTIAL_KITCHEN_DINING_ROOM_COLOR = 5;
+//    public static final int RESIDENTIAL_KITCHEN_ROOM_COLOR = 1;
+//    public static final int RESIDENTIAL_KITCHEN_STORE_ROOM_COLOR = 3;
+//    public static final int RESIDENTIAL_KITCHEN_DINING_ROOM_COLOR = 5;
+    public static final int RESIDENTIAL_ROOM_COLOR = 78;   
+    public static final int RESIDENTIAL_KITCHEN_ROOM_COLOR = 81;
+    public static final int RESIDENTIAL_KITCHEN_STORE_ROOM_COLOR = 82;
+    public static final int RESIDENTIAL_KITCHEN_DINING_ROOM_COLOR = 83;
+    
     public static final int COMMERCIAL_KITCHEN_ROOM_COLOR = 2;
     public static final int COMMERCIAL_KITCHEN_STORE_ROOM_COLOR = 4;
     public static final int COMMERCIAL_KITCHEN_DINING_ROOM_COLOR = 6;

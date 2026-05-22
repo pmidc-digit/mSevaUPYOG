@@ -72,7 +72,7 @@ public class DxfFileConstants {
     public static final String F_PO = "F-PO"; // Private Offices
     public static final String F_B = "F-B"; //Banks
     public static final String F_LB = "F-LB";//Club/ Guest House / Lodging & Boarding / Service Apartments
-    public static final String F_D = "F-D";//Dhaba (F-B)
+    public static final String F_D = "F-D";//Dhaba (F-D)
     public static final String F_CA   = "F-CA";   // Cinemas and Auditoriums
     public static final String F_VGP   = "F-VGP";   // Video Games Parlors
     public static final String F_BU   = "F-BU";   // Boutiques
@@ -81,6 +81,7 @@ public class DxfFileConstants {
     public static final String F_PFSS    = "F-PFSS";    // Petrol Filling Station Service
     public static final String F_PS    = "F-PS";   // Petrol Station
     public static final String F_CNGS  = "F-CNGS";   // Compressed Natural Gas Station
+    public static final String F_MPMT  = "F-MPMT";   // Multiplex - Miniplex
 
 //    // new Occupancy for Industry as per 2025 byLaws
     public static final String G_GTKS   = "G-GTKS";    // Industrial Plotted - General, Textile, Knitwear, Sports
@@ -438,6 +439,8 @@ public class DxfFileConstants {
     public static final String NEWCONSTRUCTION_SERVICE = "New Construction";
     public static final String MAINRIVER = "MainRiver";
     public static final String SUBRIVER = "SubRiver";
+    
+    public static final int RESIDENTIAL_ROOM_COLOR = 78; 
     
     private static final Map<String, String> SERVICE_TYPE = new ConcurrentHashMap<>();
     static {

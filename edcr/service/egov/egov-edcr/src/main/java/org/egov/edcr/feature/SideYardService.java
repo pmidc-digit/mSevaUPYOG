@@ -311,11 +311,19 @@ public class SideYardService extends GeneralRule {
 								/* || F.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode()) */) {
                                 	//Added by Bimal 18-March-2924 to check side yard based on plotarea not on height
                                 	//if (buildingHeight.compareTo(BigDecimal.valueOf(10)) <= 0 && block.getBuilding()
-                                	//if (block.getBuilding().getFloorsAboveGround().compareTo(BigDecimal.valueOf(4)) <= 0) {
-                                		checkSideYardCommon(pl, block.getBuilding(), buildingHeight,
-                                                block.getName(), setback.getLevel(), plot, minlength, max, 
-                                                occupancy.getTypeHelper(),sideYard1Result,sideYard2Result, 
-                                                sideYard1.getMinimumDistance(), sideYard2.getMinimumDistance());
+                                	//if (block.getBuilding().getFloorsAboveGround().compareTo(BigDecimal.valueOf(4)) <= 0) {                                		
+                                		if(sideYard2==null) {
+                                			minlength = sideYard1.getMinimumDistance().doubleValue();
+                                			checkSideYardCommon(pl, block.getBuilding(), buildingHeight,
+                                                    block.getName(), setback.getLevel(), plot, minlength, max, 
+                                                    occupancy.getTypeHelper(),sideYard1Result,sideYard2Result, 
+                                                    sideYard1.getMinimumDistance(), BigDecimal.ZERO);
+                                		}else {
+                                			checkSideYardCommon(pl, block.getBuilding(), buildingHeight,
+                                                    block.getName(), setback.getLevel(), plot, minlength, max, 
+                                                    occupancy.getTypeHelper(),sideYard1Result,sideYard2Result, 
+                                                    sideYard1.getMinimumDistance(), sideYard2.getMinimumDistance());
+                                		}
                                     //}
                                 	
 									/*
@@ -782,8 +790,8 @@ public class SideYardService extends GeneralRule {
             //scrutinyDetail.setKey("Block_" + block.getName() + "_" + "Side Setback");
             scrutinyDetailSideYard1.setKey("Block_" + block.getName() + "_" + "Side Setback");
         	scrutinyDetailSideYard2.setKey("Block_" + block.getName() + "_" + "Side Setback");
-            if (occupancy.getTypeHelper().getType() != null
-                    && A.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode())
+            if (occupancy.getTypeHelper().getType() != null) {
+            	if(A.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode())
                     || F.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode())) {
                 if (pl.getErrors().containsKey(SIDE_YARD_2_NOTDEFINED)) {
                     pl.getErrors().remove(SIDE_YARD_2_NOTDEFINED);
@@ -814,6 +822,7 @@ public class SideYardService extends GeneralRule {
             compareSideYard1Result(block.getName(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
                     BigDecimal.ZERO, occupancy.getTypeHelper(), sideYard1Result, true, RULE_35, SIDE_YARD_DESC,
                     0);
+        }
         }
     }
 

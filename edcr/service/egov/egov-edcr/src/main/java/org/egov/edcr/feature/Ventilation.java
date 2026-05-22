@@ -57,16 +57,9 @@ import java.util.Objects;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.egov.common.entity.edcr.Block;
-import org.egov.common.entity.edcr.Floor;
-import org.egov.common.entity.edcr.Measurement;
-import org.egov.common.entity.edcr.MeasurementWithHeight;
-import org.egov.common.entity.edcr.Occupancy;
-import org.egov.common.entity.edcr.Plan;
-import org.egov.common.entity.edcr.Result;
-import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.springframework.stereotype.Service;
 import org.egov.common.entity.edcr.*;
+import org.egov.edcr.constants.DxfFileConstants;
 
 @Service
 public class Ventilation extends FeatureProcess {
@@ -108,6 +101,8 @@ public class Ventilation extends FeatureProcess {
 
 	        if (b.getBuilding() != null && b.getBuilding().getFloors() != null && !b.getBuilding().getFloors().isEmpty()) {
 	            for (Floor f : b.getBuilding().getFloors()) {
+	            	
+	            	OccupancyTypeHelper mostRestrictiveOccupancyType = pl.getVirtualBuilding().getMostRestrictiveFarHelper();
 
 	                // ----------------------------------------------------
 	                // Common Ventilation
@@ -131,9 +126,25 @@ public class Ventilation extends FeatureProcess {
 	                            details.put(RULE_NO, RULE_LIGHT_VENTILATION);
 	                            details.put(DESCRIPTION, LIGHT_VENTILATION_DESCRIPTION);
 	                            details.put(REQUIRED, REQUIRED_LIGHT_VENTILATION_AREA);
+	                            
 
-	                            if (totalVentilationArea.compareTo(
-	                                    totalCarpetArea.divide(BigDecimal.valueOf(8), 2, BigDecimal.ROUND_HALF_UP)) >= 0) {
+	                            BigDecimal totalFloorArea = f.getOccupancies() != null
+                                        ? f.getOccupancies().stream()
+                                                .map(Occupancy::getFloorArea)
+                                                .filter(Objects::nonNull)
+                                                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                                                .setScale(2, RoundingMode.HALF_UP)
+                                        : BigDecimal.ZERO;
+
+                                // 20% of floor area required
+                                BigDecimal requiredVentilationArea = totalFloorArea
+                                        .multiply(BigDecimal.valueOf(0.20))
+                                        .setScale(2, RoundingMode.HALF_UP);
+	                            
+
+//	                            if (totalVentilationArea.compareTo(
+//	                                    totalCarpetArea.divide(BigDecimal.valueOf(8), 2, BigDecimal.ROUND_HALF_UP)) >= 0) {
+                                if (totalVentilationArea.compareTo(requiredVentilationArea) >= 0) {
 	                                details.put(PROVIDED, "Ventilation area " + totalVentilationArea + " at floor " + f.getNumber());
 	                                details.put(STATUS, Result.Accepted.getResultVal());
 	                            } else {
@@ -146,6 +157,17 @@ public class Ventilation extends FeatureProcess {
 	                        errorMsgs.put("Common Ventilation Error", "Floor " + f.getNumber() + ": " + e.getMessage());
 	                        pl.addErrors(errorMsgs);
 	                    }
+	                }else {
+	                	if (mostRestrictiveOccupancyType != null
+	                	        && mostRestrictiveOccupancyType.getType() != null
+	                	        && mostRestrictiveOccupancyType.getType().getCode() != null
+	                	        && DxfFileConstants.A.equalsIgnoreCase(
+	                	                mostRestrictiveOccupancyType.getType().getCode())) {
+	                		errorMsgs.put("Ventilation is mandatory",
+		                			"Floor ventilation layer not defined in the plan. Kindly refer to the user manual.");	                	
+	                        pl.addErrors(errorMsgs);
+		            	}
+	                	
 	                }
 
 	                // ----------------------------------------------------

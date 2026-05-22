@@ -210,8 +210,12 @@ const PTSummary = ({ formData, t }) => {
             <div style={styles.value}>{propertyDetails?.plotSize || "NA"}</div>
           </LabelFieldPair>
           <LabelFieldPair style={styles.labelFieldPair}>
+            <CardLabel>{t("Plot Size (sq. yards)")}</CardLabel>
+            <div style={styles.value}>{SummaryData?.propertyDetails?.plotSize || "NA"}</div>
+          </LabelFieldPair>
+          <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("No. of Floors")}</CardLabel>
-            <div style={styles.value}>{getFloorCount()}</div>
+            <div style={styles.value}>{SummaryData?.propertyDetails?.noOfFloors?.code || "NA"}</div>
           </LabelFieldPair>
           {propertyDetails?.unitDetails?.map((unit, idx) => (
             <div key={idx} style={{ borderTop: "1px solid #eee", marginTop: "0.5rem", paddingTop: "0.5rem" }}>
@@ -265,11 +269,24 @@ const PTSummary = ({ formData, t }) => {
             <div style={styles.value}>{propertyAddress?.streetName || "NA"}</div>
           </LabelFieldPair>
           <LabelFieldPair style={styles.labelFieldPair}>
+            <CardLabel>{t("Street Name")}</CardLabel>
+            <div style={styles.value}>{SummaryData?.propertyAddress?.streetName || "NA"}</div>
+          </LabelFieldPair>
+          <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Locality")}</CardLabel>
             <div style={styles.value}>{getDisplayValue(propertyAddress?.locality)}</div>
           </LabelFieldPair>
+          <LabelFieldPair style={styles.labelFieldPair}>
+            <CardLabel>{t("Pincode")}</CardLabel>
+            <div style={styles.value}>{SummaryData?.propertyAddress?.pincode || "NA"}</div>
+          </LabelFieldPair>
+          <LabelFieldPair style={styles.labelFieldPair}>
+            <CardLabel>{t("Survey ID")}</CardLabel>
+            <div style={styles.value}>{SummaryData?.propertyAddress?.surveyId || "NA"}</div>
+          </LabelFieldPair>
 
           <LabelFieldPair style={styles.labelFieldPair}>
+            
             <CardLabel>{t("Pincode")}</CardLabel>
             <div style={styles.value}>{propertyAddress?.pincode || "NA"}</div>
           </LabelFieldPair>

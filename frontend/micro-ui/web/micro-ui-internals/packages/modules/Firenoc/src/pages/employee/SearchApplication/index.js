@@ -28,24 +28,35 @@ const Search = ({ path }) => {
 
   function onSubmit(__data, isFromClear = false) {
     let details = cloneDeep(__data);
-    let __filters = defaultFilters;
 
-    const hasApplicationNo = !! details.applicationNo;
-    const hasMobileNumber = !! details.mobileNumber;
-    
-     // If only applicationNo is present, remove mobileNumber
-    if (hasApplicationNo && !hasMobileNumber) {
-     delete details.mobileNumber;
-    }
+    var fromDate = details?.fromDate ? new Date(details?.fromDate) : null;
+    if (fromDate) fromDate.setSeconds(fromDate.getSeconds() - 19800);
+    var toDate = details?.toDate ? new Date(details?.toDate) : null;
+    if (toDate) toDate.setSeconds(toDate.getSeconds() + 86399 - 19800);
 
-    // for (const [key, value] of Object.entries(__data)) {
-    //   if(value != undefined && value != null && value != ""){
+    const transformedData = {
+      ...details,
+      ...(fromDate ? { fromDate: fromDate.getTime() } : {}),
+      ...(toDate ? { toDate: toDate.getTime() } : {}),
+    };
 
-    //     __filters = {...__filters, [key]:value}        
-    //   }
-    // }
-    //setfilters(isFromClear == true ? details : __filters)
-     setfilters(details);
+    let cleanedFilters = Object.keys(transformedData)
+      .filter((k) => transformedData[k] !== undefined && transformedData[k] !== null && transformedData[k] !== "")
+      .reduce((acc, key) => {
+        let val = transformedData[key];
+        if (typeof val === "object" && val !== null && val.code !== undefined) {
+          val = val.code;
+        }
+        return { ...acc, [key]: val };
+      }, {});
+
+    const baseFilters = {
+      offset: defaultFilters.offset,
+      limit: defaultFilters.limit,
+      tenantId: defaultFilters.tenantId,
+    };
+
+    setfilters({ ...baseFilters, ...cleanedFilters });
   }
   
   

@@ -14,7 +14,7 @@ function FeeEstimateCard({ applicationNo, tenantId, t }) {
     if (!applicationNo || !tenantId) return;
     setLoading(true);
     // billing-service requires state-level tenantId (e.g. "pb" not "pb.amritsar")
-    const billingTenantId = tenantId.split(".")[0];
+    const billingTenantId = tenantId;
     Digit.PaymentService.fetchBill(billingTenantId, {
       consumerCode: applicationNo,
       businessService: "FIRENOC",

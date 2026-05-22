@@ -34,7 +34,7 @@ import { EmployeeData } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
-import { convertToDDMMYYYY,formatDuration, amountToWords, downloadPdfFromURL } from "../../../utils/index";
+import { convertToDDMMYYYY, formatDuration, amountToWords, downloadPdfFromURL } from "../../../utils/index";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 
@@ -99,22 +99,22 @@ const CitizenApplicationOverview = () => {
 
   const [displayData, setDisplayData] = useState({});
 
-  const { isLoading, data , refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
-  const [timeObj , setTimeObj] = useState(null);
+  const [timeObj, setTimeObj] = useState(null);
 
   const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
   const [siteImages, setSiteImages] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages ? {
-       documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
-   } : {})
-  
+    documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
+  } : {})
+
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   const [loading, setLoading] = useState(false);
   let user = Digit.UserService.getUser();
 
-  if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
+  if (window.location.href.includes("/obps") || window.location.href.includes("/firenoc")) {
     const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
     const userInfo = userInfos ? JSON.parse(userInfos) : {};
     user = userInfo?.value;
@@ -123,23 +123,23 @@ const CitizenApplicationOverview = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
   const geoLocations = useMemo(() => {
-      if (siteImages?.documents && siteImages?.documents.length > 0) {
-        return siteImages?.documents?.map((img) => {
-          return {
-            latitude: img?.latitude || "",
-            longitude: img?.longitude || "",
-          }
-        })
-      }
-    }, [siteImages]);
+    if (siteImages?.documents && siteImages?.documents.length > 0) {
+      return siteImages?.documents?.map((img) => {
+        return {
+          latitude: img?.latitude || "",
+          longitude: img?.longitude || "",
+        }
+      })
+    }
+  }, [siteImages]);
 
 
-     const documentData = useMemo(() => siteImages?.documents?.map((value, index) => ({
-        title: value?.documentType,
-        fileStoreId: value?.filestoreId,
-        latitude: value?.latitude,
-        longitude: value?.longitude,
-      })), [siteImages])
+  const documentData = useMemo(() => siteImages?.documents?.map((value, index) => ({
+    title: value?.documentType,
+    fileStoreId: value?.filestoreId,
+    latitude: value?.latitude,
+    longitude: value?.longitude,
+  })), [siteImages])
 
   useEffect(() => {
     const nocObject = applicationDetails?.Noc?.[0];
@@ -169,11 +169,11 @@ const CitizenApplicationOverview = () => {
       const endTime = Date.now();
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
       const time = formatDuration(totalTime)
-      
+
       setTimeObj(time);
       const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
 
-      setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+      setSiteImages(siteImagesFromData ? { documents: siteImagesFromData } : {});
 
     }
   }, [applicationDetails?.Noc]);
@@ -183,7 +183,7 @@ const CitizenApplicationOverview = () => {
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
-      businessService: "obpas_noc",
+      businessService: "FIRENOC",
       consumerCodes: id,
       isEmployee: false,
     },
@@ -219,7 +219,7 @@ const CitizenApplicationOverview = () => {
         throw new Error("Noc Application data is missing");
       }
       const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
-       const fee = payments?.totalAmountPaid;
+      const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
       const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] }, pdfkey);
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
@@ -233,66 +233,66 @@ const CitizenApplicationOverview = () => {
   }
 
   async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    let application = applicationDetails?.Noc?.[0]
+      let application = applicationDetails?.Noc?.[0]
 
-    let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
-    
+      let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
 
-    if (!fileStoreId) {
-      const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
 
-      const response = await Digit.PaymentService.generatePdf(
-        tenantId,
-        { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] },
-        pdfkey
-      );
+      if (!fileStoreId) {
+        const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
 
-      const updatedApplication = {
-        ...application,
-        workflow: {
-          action: "ESIGN",
-        },
-        nocDetails: {
-          ...application?.nocDetails,
-          additionalDetails: {
-            ...application?.nocDetails?.additionalDetails,
-            sanctionLetterFilestoreId: response?.filestoreIds[0],
+        const response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] },
+          pdfkey
+        );
+
+        const updatedApplication = {
+          ...application,
+          workflow: {
+            action: "ESIGN",
           },
-        },
-      };
+          nocDetails: {
+            ...application?.nocDetails,
+            additionalDetails: {
+              ...application?.nocDetails?.additionalDetails,
+              sanctionLetterFilestoreId: response?.filestoreIds[0],
+            },
+          },
+        };
 
-      await mutation.mutateAsync({
-        Noc: updatedApplication,
-      });
+        await mutation.mutateAsync({
+          Noc: updatedApplication,
+        });
 
 
-      fileStoreId = response?.filestoreIds[0];
-      refetch();
-    }
+        fileStoreId = response?.filestoreIds[0];
+        refetch();
+      }
 
-    // Print receipt
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    const receiptUrl = fileStore[fileStoreId];
+      // Print receipt
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      const receiptUrl = fileStore[fileStoreId];
       await downloadPdfFromURL(receiptUrl);
 
-  } catch (error) {
-    // console.error("Sanction Letter download error:", error);
-  } finally {
-    setLoading(false);
+    } catch (error) {
+      // console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
   dowloadOptions.push({
-      label: t("Application Form"),
-      onClick: handleDownloadPdf,
-    });
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" ) {
+    label: t("Application Form"),
+    onClick: handleDownloadPdf,
+  });
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
 
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
@@ -302,7 +302,7 @@ const CitizenApplicationOverview = () => {
       });
     }
   }
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED" ) {
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
 
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
@@ -346,7 +346,7 @@ const CitizenApplicationOverview = () => {
   const [selectedAction, setSelectedAction] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
   const [viewTimeline, setViewTimeline] = useState(false);
-  
+
 
   const menuRef = useRef();
 
@@ -394,30 +394,30 @@ const CitizenApplicationOverview = () => {
     });
 
 
-//   useEffect(() => {
-//   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
-//     const commentsobj = workflowDetails?.data?.timeline
-//       ?.filter((item) => item?.performedAction === "APPROVE")
-//       ?.flatMap((item) => item?.wfComment || []);
-    
-//     const approvercomments = commentsobj?.[0];
+  //   useEffect(() => {
+  //   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+  //     const commentsobj = workflowDetails?.data?.timeline
+  //       ?.filter((item) => item?.performedAction === "APPROVE")
+  //       ?.flatMap((item) => item?.wfComment || []);
 
-//     // Extract only the part after [#?..**]
-//     let conditionText = "";
-//     if (approvercomments?.includes("[#?..**]")) {
-//       conditionText = approvercomments.split("[#?..**]")[1] || "";
-//     }
+  //     const approvercomments = commentsobj?.[0];
 
-//     const finalComment = conditionText
-//       ? `The above approval is subjected to the following conditions:\n${conditionText}`
-//       : "";
+  //     // Extract only the part after [#?..**]
+  //     let conditionText = "";
+  //     if (approvercomments?.includes("[#?..**]")) {
+  //       conditionText = approvercomments.split("[#?..**]")[1] || "";
+  //     }
 
-//     setApproverComment(finalComment);
-//   }
-// }, [workflowDetails]);
+  //     const finalComment = conditionText
+  //       ? `The above approval is subjected to the following conditions:\n${conditionText}`
+  //       : "";
+
+  //     setApproverComment(finalComment);
+  //   }
+  // }, [workflowDetails]);
 
 
-const finalComment = useMemo(() => {
+  const finalComment = useMemo(() => {
     if (!workflowDetails || workflowDetails.isLoading || !workflowDetails.data) {
       return "";
     }
@@ -435,9 +435,9 @@ const finalComment = useMemo(() => {
 
     return conditionText
       ? {
-          ConditionLine: "The above approval is subjected to the following conditions:\n",
-          ConditionText: conditionText,
-        }
+        ConditionLine: "The above approval is subjected to the following conditions:\n",
+        ConditionText: conditionText,
+      }
       : "";
   }, [workflowDetails]);
 
@@ -450,7 +450,7 @@ const finalComment = useMemo(() => {
     };
 
     if (action?.action == "EDIT") {
-      history.push(`/digit-ui/citizen/noc/edit-application/${appNo}`);
+      history.push(`/digit-ui/citizen/firenoc/edit-application/${appNo}`);
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
       setTimeout(() => {
@@ -459,7 +459,7 @@ const finalComment = useMemo(() => {
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/citizen/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
+      history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {
       setSelectedAction(action);
     }
@@ -501,7 +501,7 @@ const finalComment = useMemo(() => {
           setSelectedAction(null);
         } else {
           history.replace({
-            pathname: `/digit-ui/citizen/noc/response/${response?.Noc?.[0]?.applicationNo}`,
+            pathname: `/digit-ui/citizen/firenoc/response/${response?.Noc?.[0]?.applicationNo}`,
             state: { data: response },
           });
         }
@@ -552,9 +552,9 @@ const finalComment = useMemo(() => {
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
   const combinedOwnersName = firmName?.trim() || ownersList?.join(", ");
-  
 
-  
+
+
   return (
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
@@ -888,7 +888,7 @@ const finalComment = useMemo(() => {
               optionKey={"action"}
               t={t}
               onSelect={onActionSelect}
-              // style={MenuStyle}
+            // style={MenuStyle}
             />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />

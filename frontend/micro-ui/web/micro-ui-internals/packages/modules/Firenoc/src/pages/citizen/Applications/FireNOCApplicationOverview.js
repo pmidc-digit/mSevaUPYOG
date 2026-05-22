@@ -5,6 +5,7 @@ import { EmployeeData, downloadPdfFromURL, amountToWords } from "../../../utils"
 import { Header, Loader, Card, CardSectionHeader, StatusTable, Row, SubmitBar, ActionBar,MultiLink } from "@mseva/digit-ui-react-components";
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 import {getNOCAcknowledgementData} from "../../../utils/getNOCAcknowledgementData";
+import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 
 const formatDate = (epoch) => {
   if (!epoch) return "-";
@@ -147,6 +148,18 @@ const FireNOCApplicationOverview = () => {
   const owner = details?.applicantDetails?.owners?.[0];
   const building = details?.buildings?.[0];
   const address = details?.propertyDetails?.address;
+
+  const remainingDocs = (fireNOC?.documents || details?.applicantDetails?.additionalDetail?.ownerAuditionalDetail?.documents || [])
+    ?.filter(
+      (doc) =>
+        doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" &&
+        doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO"
+    )
+    ?.map((doc) => ({
+      ...doc,
+      documentUid: doc?.documentUid || doc?.fileStoreId || doc?.filestoreId || doc?.uuid || "",
+      documentAttachment: doc?.documentAttachment || doc?.fileStoreId || doc?.filestoreId || doc?.uuid || "",
+    }));
 
   const uomMap = {};
   building?.uoms?.filter((u) => u.active).forEach((u) => {
@@ -335,31 +348,12 @@ const FireNOCApplicationOverview = () => {
         )}
 
         {/* Documents */}
-        {details?.additionalDetail?.documents?.length > 0 && (
+        {remainingDocs?.length > 0 && (
           <Card style={{ marginTop: "16px" }}>
             <CardSectionHeader>{t("NOC_DOCUMENTS")}</CardSectionHeader>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {details.additionalDetail.documents.map((doc, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "10px 12px",
-                    background: "#f5f5f5",
-                    borderRadius: "6px",
-                  }}
-                >
-                  <span style={{ fontSize: "13px" }}>{doc.title?.replace(/_/g, " ") || doc.name || "-"}</span>
-                  {doc.link && (
-                    <a href={doc.link} target="_blank" rel="noopener noreferrer" style={{ color: "#F47738", fontWeight: "600", fontSize: "13px" }}>
-                      View
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
+            <StatusTable>
+              <NOCDocumentTableView documents={remainingDocs} />
+            </StatusTable>
           </Card>
         )}
         {/* Application Timeline */}

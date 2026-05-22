@@ -30,7 +30,8 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     const originalStatus = fireNOCData?.fireNOCDetails?.status || fireNOCData?.status;
     const hasApplicationNo = fireNOCData?.applicationNumber || fireNOCData?.fireNOCDetails?.applicationNumber;
-    const workflowAction = (originalStatus === "CITIZENACTIONREQUIRED" || originalStatus === "SENDBACKTOCITIZEN" || hasApplicationNo) ? "RESUBMIT" : "APPLY";
+    const isCitizen = window.location.href.includes("citizen");
+    const workflowAction = (isCitizen && (originalStatus === "CITIZENACTIONREQUIRED" || originalStatus === "SENDBACKTOCITIZEN" || originalStatus === "CITIZEN_ACTION_REQUIRED")) ? "RESUBMIT" : "APPLY";
 
     const updatedFireNOC = {
       ...fireNOCData,

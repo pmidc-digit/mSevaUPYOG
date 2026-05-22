@@ -26,7 +26,7 @@ const Inbox = ({ parentRoute }) => {
   const filterFormDefaultValues = {
     moduleName: "noc-service",
     applicationStatus: [],
-    businessService: "obpas_noc",
+    businessService: "FIRENOC",
     locality: [],
     assignee: "ASSIGNED_TO_ME",
     businessServiceArray: businessServiceList(true) || [],

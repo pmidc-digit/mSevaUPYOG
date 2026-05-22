@@ -2,9 +2,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { EmployeeData, downloadPdfFromURL, amountToWords } from "../../../utils";
-import { Header, Loader, Card, CardSectionHeader, StatusTable, Row, SubmitBar, ActionBar,MultiLink } from "@mseva/digit-ui-react-components";
+import { Header, Loader, Card, CardSectionHeader, StatusTable, Row, SubmitBar, ActionBar, MultiLink } from "@mseva/digit-ui-react-components";
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
-import {getNOCAcknowledgementData} from "../../../utils/getNOCAcknowledgementData";
+import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 
 const formatDate = (epoch) => {
@@ -68,7 +68,7 @@ const FireNOCApplicationOverview = () => {
     setLoading(true);
     const authToken = Digit.UserService.getUser()?.access_token || "";
     fetch(
-      `/collection-services/payments/_search?tenantId=${encodeURIComponent(tenantId)}&consumerCodes=${encodeURIComponent(appNo)}`,
+      `/collection-services/payments/FIRENOC/_search?tenantId=${encodeURIComponent(tenantId)}&consumerCodes=${encodeURIComponent(appNo)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json;charset=UTF-8" },
@@ -88,8 +88,8 @@ const FireNOCApplicationOverview = () => {
     )
       .then((r) => r.json())
       .then((data) => setPayment(data?.Payments?.[0] || null))
-      .catch(() => {})
-      .finally(() => {setLoading(false)});
+      .catch(() => { })
+      .finally(() => { setLoading(false) });
   }, [appNo, tenantId]);
 
   useEffect(() => {
@@ -108,7 +108,7 @@ const FireNOCApplicationOverview = () => {
       .then((r) => r.json())
       .then((data) => setWorkflow([...(data?.ProcessInstances || [])].reverse()))
       .then((data) => setWorkflowObj([...(data || [])]))
-      .catch(() => {});
+      .catch(() => { });
   }, [appNo, tenantId]);
 
   const finalComment = useMemo(() => {
@@ -129,9 +129,9 @@ const FireNOCApplicationOverview = () => {
 
     return conditionText
       ? {
-          ConditionLine: "The above approval is subjected to the following conditions:\n",
-          ConditionText: conditionText,
-        }
+        ConditionLine: "The above approval is subjected to the following conditions:\n",
+        ConditionText: conditionText,
+      }
       : "";
   }, [workflowObj]);
 
@@ -169,7 +169,7 @@ const FireNOCApplicationOverview = () => {
   const paymentDetail = payment?.paymentDetails?.[0];
   console.log('paymentDetail', paymentDetail)
   const isPendingPayment = details?.status === "PENDINGPAYMENT";
-  
+
   const dowloadOptions = [];
   const handleDownloadPdf = async () => {
     try {
@@ -195,7 +195,7 @@ const FireNOCApplicationOverview = () => {
   const getRecieptSearch = async ({ tenantId, payments, pdfkey, EmpData, ...params }) => {
     try {
       setLoading(true);
-      const nocSanctionData = await getNOCSanctionLetter(details, t, EmpData, finalComment);
+      const nocSanctionData = await getNOCSanctionLetter(fireNOC, t, EmpData, finalComment);
       const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
       let filestoreID = payments?.fileStoreId;
@@ -252,7 +252,7 @@ const FireNOCApplicationOverview = () => {
     label: t("Application Form"),
     onClick: handleDownloadPdf,
   });
-  
+
   if (payment && !loading) {
     dowloadOptions.push({
       label: t("CHB_FEE_RECEIPT"),
@@ -266,7 +266,7 @@ const FireNOCApplicationOverview = () => {
       onClick: () => getSanctionLetter({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-sanctionletter", EmpData }),
     });
   }
-  
+
 
   return (
     <React.Fragment>

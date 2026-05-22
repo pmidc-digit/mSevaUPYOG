@@ -74,10 +74,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       return newOwner;
     });
 
-    console.log("owners??==", owners);
-
-    console.log("checkData==", data);
-
     // Prepare NdcDetails
     const ndcDetails = [];
 

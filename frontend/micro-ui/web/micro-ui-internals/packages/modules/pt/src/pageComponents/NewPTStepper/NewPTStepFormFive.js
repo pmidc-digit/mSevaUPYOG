@@ -114,6 +114,10 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
 
     const computedOwners = ownerDetails?.owners?.map((owner, index) => {
       const originalOwner = originalProperty?.owners?.[index];
+      const specialCategoryDoc =
+        owner?.docIdType?.code && owner?.docIdNo
+          ? [{ documentUid: owner.docIdNo, documentType: owner.docIdType.code, fileStoreId: owner.docIdNo }]
+          : [];
       return {
         // Preserve original owner fields (id, uuid, etc.) in edit mode
         ...(isEditMode && originalOwner ? originalOwner : {}),
@@ -127,6 +131,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
         ownerShipPercentage: owner?.ownershipPercentage,
         ownerType: owner?.ownerType?.code || owner?.ownerType || "NONE",
         altContactNumber: owner?.mobileNumber,
+        ...(specialCategoryDoc.length > 0 && { documents: specialCategoryDoc }),
       };
     });
 
@@ -134,6 +139,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       // Spread original property to preserve all IDs and audit fields in edit mode
       ...(isEditMode ? originalProperty : {}),
       tenantId: tenantId,
+      surveyId: propertyAddress?.surveyId || undefined,
       address: {
         ...(isEditMode ? originalProperty.address : {}),
         doorNo: propertyAddress?.houseNo,

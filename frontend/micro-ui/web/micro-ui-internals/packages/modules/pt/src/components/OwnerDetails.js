@@ -71,6 +71,15 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   // Memoize to prevent new [] reference each render (was causing infinite loop)
   const SubOwnerShipCategory = useMemo(() => SubOwnerShipCategoryRaw || {}, [SubOwnerShipCategoryRaw]);
 
+  const { data: ownerTypeDocumentRaw } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
+    { name: "OwnerTypeDocument" },
+  ]);
+
+  const ownerTypeDocuments = useMemo(
+    () => ownerTypeDocumentRaw?.PropertyTax?.OwnerTypeDocument?.filter((d) => d.active) || [],
+    [ownerTypeDocumentRaw]
+  );
+
   const stateId = Digit.ULBService.getStateId();
   const { data: mdmsData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", ["OwnerType"]);
 
@@ -165,17 +174,28 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
     }
 
     if (stateDataCheck?.owners?.length > 0) {
+      // If any owner has a code-only docIdType and MDMS hasn't loaded yet, wait
+      const hasUnresolvedDoc = stateDataCheck.owners.some(
+        (o) => o.docIdType?.code && !o.docIdType?.ownerTypeCode
+      );
+      if (hasUnresolvedDoc && ownerTypeDocuments.length === 0) return;
+
       remove([...Array(fields.length).keys()]);
 
       stateDataCheck.owners.forEach((owner) => {
-        append(owner);
+        // Resolve code-only docIdType to the full MDMS object so the dropdown shows the right selection
+        const resolvedDocIdType =
+          owner.docIdType?.code && !owner.docIdType?.ownerTypeCode
+            ? ownerTypeDocuments.find((d) => d.code === owner.docIdType.code) || owner.docIdType
+            : owner.docIdType;
+        append({ ...owner, docIdType: resolvedDocIdType });
       });
 
       trigger();
     }
 
     isRestoredRef.current = true;
-  }, [ownerShip, SubOwnerShipCategory, stateDataCheck]);
+  }, [ownerShip, SubOwnerShipCategory, stateDataCheck, ownerTypeDocuments]);
 
   return (
     <form  onSubmit={handleSubmit(onSubmit)}>
@@ -316,13 +336,12 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
               {/* Email + Address */}
               <div style={twoColRow}>
               <LabelFieldPair style={colItem}>
-                <CardLabel className="card-label-smaller">{t("Email")}*</CardLabel>
+                <CardLabel className="card-label-smaller">{t("Email")}</CardLabel>
                 <Controller
                   control={control}
                   name={`owners.${index}.emailId`}
                   defaultValue={item?.emailId || ""}
                   rules={{
-                    required: "Email required",
                     pattern: {
                       value: /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/,
                       message: "Invalid email",
@@ -422,33 +441,100 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
                 </div>
               )}
 
-              {/* Special Category (for individual owners) */}
-              {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (
-                <div style={twoColRow}>
-                  <LabelFieldPair style={colItem}>
-                    <CardLabel className="card-label-smaller">{t("Special Category")}*</CardLabel>
-                    <Controller
-                      control={control}
-                      name={`owners.${index}.ownerType`}
-                      defaultValue={item?.ownerType || ""}
-                      rules={{ required: "Special Category is required" }}
-                      render={(props) => (
-                        <Dropdown
-                          select={props.onChange}
-                          selected={props.value}
-                          option={ownerTypesMenu}
-                          optionKey="i18nKey"
-                          t={t}
-                          disable={isEditMode}
+              {/* Special Category + conditional Document ID fields (for individual owners) */}
+              {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (() => {
+                const ownerTypeVal = watch(`owners.${index}.ownerType`);
+                const ownerTypeCode = ownerTypeVal?.code;
+                const showDocFields = !!(ownerTypeCode && ownerTypeDocuments.some((d) => d.ownerTypeCode === ownerTypeCode));
+                return (
+                  <React.Fragment>
+                    <div style={twoColRow}>
+                      <LabelFieldPair style={colItem}>
+                        <CardLabel className="card-label-smaller">{t("Special Category")}*</CardLabel>
+                        <Controller
+                          control={control}
+                          name={`owners.${index}.ownerType`}
+                          defaultValue={item?.ownerType || ""}
+                          rules={{ required: "Special Category is required" }}
+                          render={(props) => (
+                            <Dropdown
+                              select={(selectedType) => {
+                                props.onChange(selectedType);
+                                const code = selectedType?.code;
+                                const matched = ownerTypeDocuments.find((d) => d.ownerTypeCode === code);
+                                if (matched) {
+                                  setValue(`owners.${index}.docIdType`, matched);
+                                } else {
+                                  setValue(`owners.${index}.docIdType`, null);
+                                  setValue(`owners.${index}.docIdNo`, "");
+                                }
+                              }}
+                              selected={props.value}
+                              option={ownerTypesMenu}
+                              optionKey="i18nKey"
+                              t={t}
+                              disable={isEditMode}
+                            />
+                          )}
                         />
-                      )}
-                    />
-                    {errors?.owners?.[index]?.ownerType && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].ownerType.message}</p>
+                        {errors?.owners?.[index]?.ownerType && (
+                          <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].ownerType.message}</p>
+                        )}
+                      </LabelFieldPair>
+                    </div>
+                    {showDocFields && (
+                      <div style={twoColRow}>
+                        <LabelFieldPair style={colItem}>
+                          <CardLabel className="card-label-smaller">
+                            {t("Document ID Type")} <span style={{ color: "red" }}>*</span>
+                          </CardLabel>
+                          <Controller
+                            control={control}
+                            name={`owners.${index}.docIdType`}
+                            defaultValue={item?.docIdType || null}
+                            rules={{ required: "Document ID Type is required" }}
+                            render={(props) => (
+                              <Dropdown
+                                select={props.onChange}
+                                selected={props.value}
+                                option={ownerTypeDocuments}
+                                optionKey="name"
+                                t={t}
+                                disable={isEditMode}
+                              />
+                            )}
+                          />
+                          {errors?.owners?.[index]?.docIdType && (
+                            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].docIdType.message}</p>
+                          )}
+                        </LabelFieldPair>
+                        <LabelFieldPair style={colItem}>
+                          <CardLabel className="card-label-smaller">
+                            {t("Document ID no.")} <span style={{ color: "red" }}>*</span>
+                          </CardLabel>
+                          <Controller
+                            control={control}
+                            name={`owners.${index}.docIdNo`}
+                            defaultValue={item?.docIdNo || ""}
+                            rules={{ required: "Document ID no. is required" }}
+                            render={(props) => (
+                              <TextInput
+                                value={props.value}
+                                onChange={(e) => props.onChange(e.target.value)}
+                                placeholder={t("Enter identification no.")}
+                                disable={isEditMode}
+                              />
+                            )}
+                          />
+                          {errors?.owners?.[index]?.docIdNo && (
+                            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].docIdNo.message}</p>
+                          )}
+                        </LabelFieldPair>
+                      </div>
                     )}
-                  </LabelFieldPair>
-                </div>
-              )}
+                  </React.Fragment>
+                );
+              })()}
 
               {/* Ownership Percentage (for individual owners) */}
               {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (
@@ -459,8 +545,25 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
                       control={control}
                       name={`owners.${index}.ownershipPercentage`}
                       defaultValue={item?.ownershipPercentage || ""}
-                      render={(props) => <TextInput {...props} disable={isEditMode} placeholder="0-100" />}
+                      rules={{
+                        validate: {
+                          maxHundred: (v) => !v || Number(v) <= 100 || "Ownership percentage cannot exceed 100%",
+                          minZero: (v) => !v || Number(v) >= 0 || "Ownership percentage cannot be negative",
+                          isNumber: (v) => !v || !isNaN(Number(v)) || "Must be a valid number",
+                        },
+                      }}
+                      render={(props) => (
+                        <TextInput
+                          value={props.value}
+                          onChange={(e) => props.onChange(e.target.value)}
+                          disable={isEditMode}
+                          placeholder="0-100"
+                        />
+                      )}
                     />
+                    {errors?.owners?.[index]?.ownershipPercentage && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].ownershipPercentage.message}</p>
+                    )}
                   </LabelFieldPair>
                 </div>
               )}

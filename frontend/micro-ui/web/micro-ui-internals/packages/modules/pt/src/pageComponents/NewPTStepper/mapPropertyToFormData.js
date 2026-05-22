@@ -15,7 +15,7 @@ export const mapPropertyToFormData = (property) => {
 
   // --- Step 1: Property Address ---
   const propertyAddress = {
-    surveyId: property.additionalDetails?.surveyId || "",
+    surveyId: property.surveyId || property.additionalDetails?.surveyId || "",
     city: { code: property.tenantId, name: property.address?.city || "" },
     houseNo: property.address?.doorNo || "",
     buildingName: property.address?.buildingName || "",
@@ -36,7 +36,12 @@ export const mapPropertyToFormData = (property) => {
   const unitDetails = (property.units || [])
     .filter((u) => u.active !== false)
     .map((unit) => ({
-      unitUsageType: usageCode || "",
+      unitUsageType: (() => {
+        const parts = (unit.usageCategory || "").split(".");
+        // Take minor segment (index 1) if present, else major (index 0)
+        const minorCode = parts[1] || parts[0] || "";
+        return minorCode ? { code: minorCode } : (usageCode ? { code: usageCode } : "");
+      })(),
       subUsageType: unit.usageCategory ? { code: unit.usageCategory } : null,
       occupancy: unit.occupancyType ? { code: unit.occupancyType } : null,
       floor: unit.floorNo != null ? { code: String(unit.floorNo) } : null,
@@ -67,14 +72,49 @@ export const mapPropertyToFormData = (property) => {
   // --- Step 3: Owner Details ---
   const ownerShip = ownershipOptions.find((o) => o.value === property.ownershipCategory) || null;
 
+  const genderOptions = [
+    { name: "Male", code: "MALE" },
+    { name: "Female", code: "FEMALE" },
+    { name: "Transgender", code: "TRANSGENDER" },
+    { name: "Others", code: "OTHERS" },
+  ];
+  const relationshipOptions = [
+    { name: "Father", code: "FATHER" },
+    { name: "Husband", code: "HUSBAND" },
+  ];
+
   const ownersList = (property.owners || [])
     .filter((o) => o.status === "ACTIVE")
-    .map((owner) => ({
-      name: owner.name || "",
-      mobileNumber: owner.mobileNumber || "",
-      emailId: owner.emailId || "",
-      address: owner.permanentAddress || owner.correspondenceAddress || "",
-    }));
+    .map((owner) => {
+      // Pick the first active document for special category pre-fill
+      const activeDoc =
+        owner.documents?.find((d) => d.status === "ACTIVE") || owner.documents?.[0] || null;
+      return {
+        name: owner.name || "",
+        mobileNumber: owner.mobileNumber || "",
+        emailId: owner.emailId || "",
+        address: owner.permanentAddress || owner.correspondenceAddress || "",
+        fatherOrHusbandName: owner.fatherOrHusbandName || "",
+        ownershipPercentage: owner.ownerShipPercentage != null ? String(owner.ownerShipPercentage) : "",
+        ownerType: owner.ownerType
+          ? {
+              code: owner.ownerType,
+              i18nKey: owner.ownerType.replaceAll("PROPERTY", "COMMON_MASTERS").replaceAll(".", "_"),
+            }
+          : null,
+        gender: owner.gender
+          ? genderOptions.find((g) => g.code === owner.gender) || null
+          : null,
+        relationship: owner.relationship
+          ? relationshipOptions.find(
+              (r) => r.code === owner.relationship?.toUpperCase() || r.name?.toLowerCase() === owner.relationship?.toLowerCase()
+            ) || null
+          : null,
+        // docIdType stored as { code } only; resolved to full MDMS object in OwnerDetails.js
+        docIdType: activeDoc ? { code: activeDoc.documentType } : undefined,
+        docIdNo: activeDoc ? activeDoc.documentUid || "" : undefined,
+      };
+    });
 
   const ownerDetails = {
     ownerShip: ownerShip,

@@ -108,6 +108,9 @@ const PropertyAddressDetails = ({ goNext }) => {
       console.log("checkLocality", checkLocality);
       console.log("getLocality", getLocality);
       const checkYearOfCreation = getYearCreation?.find((item) => item?.code == stateDataCheck?.yearOfCreation?.code);
+      const checkCity = tenants?.find((item) => item?.name === stateDataCheck?.city?.name)
+        || tenants?.find((item) => item?.code === stateDataCheck?.city?.code);
+      setValue("city", checkCity);
       setValue("surveyId", checkSurveyId);
       setValue("houseNo", checkHouseNo);
       setValue("buildingName", checkBuildingName);
@@ -116,7 +119,7 @@ const PropertyAddressDetails = ({ goNext }) => {
       setValue("locality", checkLocality);
       setValue("yearOfCreation", checkYearOfCreation);
     }
-  }, [location, stateDataCheck, getLocality, getYearCreation]);
+  }, [location, stateDataCheck, getLocality, getYearCreation, tenants]);
 
   return (
     <form  onSubmit={handleSubmit(onSubmit)}>

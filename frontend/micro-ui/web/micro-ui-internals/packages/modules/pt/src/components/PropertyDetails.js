@@ -108,6 +108,9 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   const { data: UsageCategoryNewData = [], isLoading: UsageCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
     { name: "UsageCategory" },
   ]);
+  
+
+  
 
   useEffect(() => {
     if (PropertyTypeData) {
@@ -116,7 +119,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     }
   }, [PropertyTypeData]);
 
-  console.log("location2", location?.state);
+  console.log("location2", location?.state); 
 
   useEffect(() => {
     // const major = UsageCategoryData?.PropertyTax?.UsageCategoryMajor || [];
@@ -181,10 +184,16 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
     const value = location?.state;
 
-    const getResident = getUsageData?.find((item) => item?.code == stateDataCheck?.propertyUsageType?.code || item?.name == (value?.useType || stateDataCheck?.propertyUsageType?.name));
+    const storedUsageCode = stateDataCheck?.propertyUsageType?.code;
+    const getResident = getUsageData?.find((item) =>
+      item?.code == storedUsageCode
+      || item?.code == storedUsageCode?.split(".")?.[1]
+      || item?.name == (value?.useType || stateDataCheck?.propertyUsageType?.name)
+    );
 
     const getPropertyType = getPropertyTypeData?.find((item) => item?.code == stateDataCheck?.propertyType?.code);
-    var restoredCode = stateDataCheck && stateDataCheck.propertyUsageType && stateDataCheck.propertyUsageType.code;
+    // Use the resolved MDMS minor code (e.g. "INDUSTRIAL") so the filter matches segments in sub-usage codes
+    var restoredCode = (getResident && getResident.code) || (stateDataCheck && stateDataCheck.propertyUsageType && stateDataCheck.propertyUsageType.code);
     var allUsageForRestore = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
     var checkData = allUsageForRestore ? allUsageForRestore.filter(function(item) {
       return item && item.code && restoredCode && item.code.split(".").indexOf(restoredCode) !== -1;
@@ -459,21 +468,21 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                         watch("propertyType") &&
                         watch("propertyType").code === "BUILTUP.SHAREDPROPERTY"
                       ) {
-                        // Show dropdown
+                        // Show dropdown — look up full MDMS object so Dropdown can display name correctly
                         return (
                           <Dropdown
                             select={props.onChange}
-                            selected={props.value}
+                            selected={getUsageData?.find((u) => u.code === (props.value?.code || props.value)) || props.value}
                             option={getUsageData}
                             optionKey="name"
                             t={t}
                           />
                         );
                       } else {
-                        // Show disabled input
+                        // Show disabled input — display the resolved usage name, not the raw stored code
                         return (
                           <TextInput
-                            value={props.value}
+                            value={watch("propertyUsageType")?.name || props.value}
                             onChange={function (e) { props.onChange(e.target.value); }}
                             t={t}
                             disabled={true}
@@ -507,7 +516,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     var rowOptions = (unitCode && allUsage)
                       ? allUsage.filter(function(opt) { return opt && opt.code && opt.code.split(".").indexOf(unitCode) !== -1; })
                       : getSubUsageData;
-                    return <Dropdown select={props.onChange} selected={props.value} option={rowOptions} optionKey="name" t={t} />;
+                    // Look up full MDMS object so Dropdown can display name correctly
+                    return <Dropdown select={props.onChange} selected={rowOptions?.find((o) => o.code === (props.value?.code || props.value)) || props.value} option={rowOptions} optionKey="name" t={t} />;
                   }}
                 />
                 {errors?.unitDetails?.[index]?.subUsageType && (

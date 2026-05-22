@@ -68,7 +68,7 @@ const FireNOCApplicationOverview = () => {
     setLoading(true);
     const authToken = Digit.UserService.getUser()?.access_token || "";
     fetch(
-      `/collection-services/payments/_search?tenantId=${encodeURIComponent(tenantId)}&consumerCodes=${encodeURIComponent(appNo)}`,
+      `/collection-services/payments/FIRENOC/_search?tenantId=${encodeURIComponent(tenantId)}&consumerCodes=${encodeURIComponent(appNo)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json;charset=UTF-8" },
@@ -195,7 +195,7 @@ const FireNOCApplicationOverview = () => {
   const getRecieptSearch = async ({ tenantId, payments, pdfkey, EmpData, ...params }) => {
     try {
       setLoading(true);
-      const nocSanctionData = await getNOCSanctionLetter(details, t, EmpData, finalComment);
+      const nocSanctionData = await getNOCSanctionLetter(fireNOC, t, EmpData, finalComment);
       const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
       let filestoreID = payments?.fileStoreId;

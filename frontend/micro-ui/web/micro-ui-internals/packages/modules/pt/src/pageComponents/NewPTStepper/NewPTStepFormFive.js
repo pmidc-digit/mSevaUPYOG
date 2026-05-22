@@ -115,6 +115,10 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
 
     const computedOwners = ownerDetails?.owners?.map((owner, index) => {
       const originalOwner = originalProperty?.owners?.[index];
+      const specialCategoryDoc =
+        owner?.docIdType?.code && owner?.docIdNo
+          ? [{ documentUid: owner.docIdNo, documentType: owner.docIdType.code, fileStoreId: owner.docIdNo }]
+          : [];
       return {
         // Preserve original owner fields (id, uuid, etc.) in edit mode
         ...(isEditMode && originalOwner ? originalOwner : {}),

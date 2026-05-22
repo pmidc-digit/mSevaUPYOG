@@ -72,19 +72,16 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
       {!props.isSearch && (
         <div className="filters-container">
           <InboxLinks parentRoute={props.parentRoute} businessService={props.moduleCode} />
-          <div>
-            {
-              <FilterComponent
-                defaultSearchParams={props.defaultSearchParams}
-                onFilterChange={props.onFilterChange}
-                searchParams={props.searchParams}
-                type="desktop"
-                useNewInboxAPI={useNewInboxAPI}
-                statusMap={useNewInboxAPI ? data?.[0].statusMap : null}
-                moduleCode={props.moduleCode}
-              />
-            }
-          </div>
+
+          <FilterComponent
+            defaultSearchParams={props.defaultSearchParams}
+            onFilterChange={props.onFilterChange}
+            searchParams={props.searchParams}
+            type="desktop"
+            useNewInboxAPI={useNewInboxAPI}
+            statusMap={useNewInboxAPI ? data?.[0].statusMap : null}
+            moduleCode={props.moduleCode}
+          />
         </div>
       )}
       <div style={{ flex: 1 }}>

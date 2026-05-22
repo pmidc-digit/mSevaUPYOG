@@ -15,7 +15,7 @@ export const mapPropertyToFormData = (property) => {
 
   // --- Step 1: Property Address ---
   const propertyAddress = {
-    surveyId: property.additionalDetails?.surveyId || "",
+    surveyId: property.surveyId || property.additionalDetails?.surveyId || "",
     city: { code: property.tenantId, name: property.address?.city || "" },
     houseNo: property.address?.doorNo || "",
     buildingName: property.address?.buildingName || "",
@@ -78,6 +78,17 @@ export const mapPropertyToFormData = (property) => {
 
   // --- Step 3: Owner Details ---
   const ownerShip = ownershipOptions.find((o) => o.value === property.ownershipCategory) || null;
+
+  const genderOptions = [
+    { name: "Male", code: "MALE" },
+    { name: "Female", code: "FEMALE" },
+    { name: "Transgender", code: "TRANSGENDER" },
+    { name: "Others", code: "OTHERS" },
+  ];
+  const relationshipOptions = [
+    { name: "Father", code: "FATHER" },
+    { name: "Husband", code: "HUSBAND" },
+  ];
 
   const ownersList = (property.owners || [])
   .filter((o) => o.status === "ACTIVE")

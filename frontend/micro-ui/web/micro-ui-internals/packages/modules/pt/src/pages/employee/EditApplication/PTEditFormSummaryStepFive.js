@@ -144,9 +144,15 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
             baseOwner.altContactNumber = owner?.altContactNumber;
           }
 
+          const specialCategoryDoc =
+            owner?.docIdType?.code && owner?.docIdNo
+              ? [{ documentUid: owner.docIdNo, documentType: owner.docIdType.code, fileStoreId: owner.docIdNo }]
+              : [];
+
           baseOwner.documents = [
             allDocuments.find((d) => d.documentType?.includes("IDENTITYPROOF")),
             allDocuments.find((d) => d.documentType?.includes("ADDRESSPROOF")),
+            ...specialCategoryDoc,
           ].filter(Boolean);
 
           return baseOwner;

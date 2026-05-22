@@ -261,9 +261,8 @@ const FireNOCApplicationOverview = () => {
   const getRecieptSearch = async ({ tenantId, payments, pdfkey, EmpData = null, ...params }) => {
     try {
       setLoading(true);
-      const nocSanctionData = await getNOCSanctionLetter(fireNOC, t, EmpData,);
-      let filestoreID = payments?.fileStoreId;
-      if (!filestoreID) {
+      const nocSanctionData = await getNOCSanctionLetter(details, t, EmpData,);
+      let filestoreID = null;
         try {
           const response = await Digit.PaymentService.generatePdf(
             tenantId,
@@ -274,7 +273,6 @@ const FireNOCApplicationOverview = () => {
         } finally {
           setLoading(false);
         }
-      }
 
       const fileStore = await Digit.PaymentService.printReciept(tenantId, {
         fileStoreIds: filestoreID,

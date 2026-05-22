@@ -2265,6 +2265,7 @@ const BpaApplicationDetail = () => {
               waterCharges={waterCharges}
               adjustedAmounts={adjustedAmounts}
               setAdjustedAmounts={setAdjustedAmounts}
+              collectionData={data?.collectionBillDetails}
             />
           )}
         </Card>

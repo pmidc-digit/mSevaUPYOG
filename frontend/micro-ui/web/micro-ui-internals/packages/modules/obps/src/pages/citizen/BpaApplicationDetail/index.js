@@ -2365,6 +2365,7 @@ useEffect(() => {
                       setError={setError}
                       adjustedAmounts={adjustedAmounts}
                       setAdjustedAmounts={setAdjustedAmounts}
+                      collectionData={data?.collectionBillDetails}
                     />
                   </Card>}
 

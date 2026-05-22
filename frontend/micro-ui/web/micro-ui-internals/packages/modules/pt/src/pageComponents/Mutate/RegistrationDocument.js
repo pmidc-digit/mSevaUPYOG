@@ -3,7 +3,7 @@ import { FormStep, TextInput, CardLabel, DatePicker, CardLabelError, LabelFieldP
 import Timeline from "../../components/TLTimeline";
 
 const RegistrationDocument = (props) => {
-  const { t, config, onSelect, userType, formData, setError, clearErrors, errors } = props;
+  const { t, config, onSelect, userType, formData, setError, clearErrors, errors, formState } = props;
 
   const [documentNumber, setDocNo] = useState(formData?.[config.key]?.documentNumber);
   const [documentValue, setDocValue] = useState(formData?.[config.key]?.documentValue);
@@ -31,21 +31,29 @@ const RegistrationDocument = (props) => {
   };
 
   useEffect(() => {
-    if (userType === "employee" && !errors?.[config.key] && error) {
-      setError(config.key, { type: "invalid" });
-    } else if (!error && errors?.[config.key]?.type === "invalid") {
-      clearErrors(config.key);
-    }
-  }, [error]);
-
-  useEffect(() => {
     if (userType === "employee") {
-      if (!documentDate || !documentNumber || !documentValue) {
-        setError(config.key, { type: "Required" });
-      } else if (errors?.[config.key]?.type === "Required") clearErrors(config.key);
+      if (!documentNumber) {
+        setError("additionalDetails.documentNumber", { type: "Required" });
+      } else if (errors?.additionalDetails?.documentNumber) {
+        clearErrors("additionalDetails.documentNumber");
+      }
+
+      if (!documentValue) {
+        setError("additionalDetails.documentValue", { type: "Required" });
+      } else if (errors?.additionalDetails?.documentValue) {
+        clearErrors("additionalDetails.documentValue");
+      }
+
+      if (!documentDate) {
+        setError("additionalDetails.documentDate", { type: "Required" });
+      } else if (error) {
+        setError("additionalDetails.documentDate", { type: "invalid" });
+      } else if (errors?.additionalDetails?.documentDate) {
+        clearErrors("additionalDetails.documentDate");
+      }
       goNext();
     }
-  }, [documentNumber, documentValue, documentDate]);
+  }, [documentNumber, documentValue, documentDate, error]);
 
   const onSkip = () => {};
 
@@ -60,6 +68,11 @@ const RegistrationDocument = (props) => {
             <TextInput type={"number"} min={0} value={documentNumber} onChange={(e) => setDocNo(e.target.value)} />
           </div>
         </LabelFieldPair>
+        {formState?.submitCount > 0 && !documentNumber && (
+          <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+            {t("CORE_COMMON_REQUIRED_ERRMSG")}
+          </CardLabelError>
+        )}
         <LabelFieldPair>
           <CardLabel style={{ fontWeight: "bold" }} className="card-label-smaller">
             {t("PT_MUTATION_DOCUMENT_VALUE") + " *"}
@@ -68,6 +81,11 @@ const RegistrationDocument = (props) => {
             <TextInput type={"number"} min={0} value={documentValue} onChange={(e) => setDocValue(e.target.value)} />
           </div>
         </LabelFieldPair>
+        {formState?.submitCount > 0 && !documentValue && (
+          <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+            {t("CORE_COMMON_REQUIRED_ERRMSG")}
+          </CardLabelError>
+        )}
         <LabelFieldPair>
           <CardLabel style={{ fontWeight: "bold" }} className="card-label-smaller">
             {t("PT_MUTATION_DOCUMENT_ISSUE_DATE") + " *"}
@@ -76,7 +94,16 @@ const RegistrationDocument = (props) => {
             <DatePicker max={new Date().toLocaleDateString()} date={documentDate} onChange={selectDocDate} />
           </div>
         </LabelFieldPair>
-        {error ? <CardLabelError style={{ marginLeft: "30%" }}>{t(error)}</CardLabelError> : null}
+        {formState?.submitCount > 0 && !documentDate && !error && (
+          <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+            {t("CORE_COMMON_REQUIRED_ERRMSG")}
+          </CardLabelError>
+        )}
+        {error && (
+          <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+            {t(error)}
+          </CardLabelError>
+        )}
       </React.Fragment>
     );
   }

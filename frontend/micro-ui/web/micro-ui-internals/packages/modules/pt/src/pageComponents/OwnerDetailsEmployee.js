@@ -333,12 +333,11 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   <Controller
                     control={control}
                     name={"institutionName"}
-                    // defaultValue={isEditScreen ? ( institution?.name ? institution.name : owner?.name) : ( formValue?.institutionName ? formValue?.institutionName : null)}
                     defaultValue={owner?.institutionName ||  null}
                     rules={{
-                      // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                      required: !isIndividualTypeOwner ? t("CORE_COMMON_REQUIRED_ERRMSG") : false,
                       validate: {
-                        pattern: (v) => (/^[a-zA-Z_@./()#&+-\s]*$/.test(v) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
+                        pattern: (v) => (!isIndividualTypeOwner && v ? (/^[a-zA-Z_@./()#&+-\s]*$/.test(v) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) : true),
                       },
                     }}
                     render={(props) => (
@@ -346,11 +345,6 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                         value={props.value}
                         disable={isEditScreen}
                         name={"institutionName"}
-                        // autoFocus={focusIndex.index === owner?.key && focusIndex.type === "institution.name"}
-                        // onChange={(e) => {
-                        //   props.onChange(e.target.value);
-                        //   setFocusIndex({ index: owner.key, type: "institution.name"});
-                        // }}
                         autoFocus={focusIndex.index === owner?.key && focusIndex.type === "institutionName"}
                         onChange={(e) => {
                           props.onChange(e.target.value);
@@ -360,34 +354,28 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                           setFocusIndex({ index: -1 });
                           props.onBlur(e);
                         }}
-                        // isRequired={true}
                       />
                     )}
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>
-                {localFormState.touched?.institution?.name ? errors?.institution?.name?.message : ""}
-              </CardLabelError>
+              {formState?.submitCount > 0 && (errors?.institutionName || (!isIndividualTypeOwner && !formValue?.institutionName)) && (
+                <CardLabelError style={errorStyle}>
+                  {errors?.institutionName?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+                </CardLabelError>
+              )}
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{t("PT_INSTITUTION_TYPE")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
                   name={"institutionType"}
                   defaultValue={owner?.institutionType ||  null}
-                  // defaultValue={isEditScreen ? {
-                  //   active: true,
-                  //   code: institution?.type,
-                  //   i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(institution?.type || "")}`,
-                  //   name: t(`COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(institution?.type || "")}`),
-                  // } : null}
-                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  rules={{ required: !isIndividualTypeOwner ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
                       selected={owner?.institutionType || props.value}
                       name={"institutionType"}
-                      // select={props.onChange}
                       autoFocus={focusIndex.index === owner?.key && focusIndex.type === "institutionType"}
                       select={(e) => {
                         props.onChange(e);
@@ -402,9 +390,11 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   )}
                 />
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>
-                {localFormState.touched?.institution?.type ? errors?.institution?.type?.message : ""}
-              </CardLabelError>
+              {formState?.submitCount > 0 && (errors?.institutionType || (!isIndividualTypeOwner && !formValue?.institutionType)) && (
+                <CardLabelError style={errorStyle}>
+                  {errors?.institutionType?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+                </CardLabelError>
+              )}
             </React.Fragment>
           ) : null}
 
@@ -416,8 +406,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                 name={"name"}
                 defaultValue={owner?.name}
                 rules={{
-                  // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                 
+                  required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                 }}
                 render={(props) => (
                   <TextInput
@@ -432,13 +421,16 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                       setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    // isRequired={true}
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.name ? errors?.name?.message : ""}</CardLabelError>
+          {formState?.submitCount > 0 && (errors?.name || !formValue?.name) && (
+            <CardLabelError style={errorStyle}>
+              {errors?.name?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+            </CardLabelError>
+          )}
 
           {isIndividualTypeOwner ? (
             <React.Fragment>
@@ -448,20 +440,13 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   control={control}
                   name={"gender"}
                   defaultValue={owner?.gender}              
-                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  rules={{ required: isIndividualTypeOwner ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
                       selected={owner?.gender || props.value}
                       select={props.onChange}
-                      // disable={isEditScreen}
                       onBlur={props.onBlur}
-                      /*option={[
-                        { i18nKey: "PT_FORM3_MALE", code: "Male" },
-                        { i18nKey: "PT_FORM3_FEMALE", code: "Female" },
-                        { i18nKey: "PT_FORM3_TRANSGENDER", code: "Transgender" },
-                        { i18nKey: "COMMON_GENDER_OTHERS", code: "OTHERS" },
-                      ]}*/
                       option={menu}
                       optionKey="i18nKey"
                       t={t}
@@ -469,7 +454,11 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   )}
                 />
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
+              {formState?.submitCount > 0 && (errors?.gender || (isIndividualTypeOwner && !formValue?.gender)) && (
+                <CardLabelError style={errorStyle}>
+                  {errors?.gender?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+                </CardLabelError>
+              )}
             </React.Fragment>
           ) : (
             <React.Fragment>
@@ -484,8 +473,8 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                       isIndividualTypeOwner
                         ? {}
                         : {
-                            // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                            validate: { pattern: (e) => (/^[0-9]{11}$/i.test(e) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) },
+                            required: !isIndividualTypeOwner ? t("CORE_COMMON_REQUIRED_ERRMSG") : false,
+                            validate: { pattern: (e) => (!isIndividualTypeOwner && e ? (/^[0-9]{11}$/i.test(e) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) : true) },
                           }
                     }
                     render={(props) => (
@@ -506,7 +495,11 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.altContactNumber ? errors?.altContactNumber?.message : ""}</CardLabelError>
+              {formState?.submitCount > 0 && (errors?.altContactNumber || (!isIndividualTypeOwner && !formValue?.altContactNumber)) && (
+                <CardLabelError style={errorStyle}>
+                  {errors?.altContactNumber?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+                </CardLabelError>
+              )}
             </React.Fragment>
           )}
           <LabelFieldPair>
@@ -517,7 +510,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                 name={"mobileNumber"}
                 defaultValue={owner?.mobileNumber}
                 rules={{
-                  // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                  required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                   validate: (v) => (/^[6789]\d{9}$/.test(v) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
                 }}
                 render={(props) => (
@@ -536,7 +529,11 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
+          {formState?.submitCount > 0 && (errors?.mobileNumber || !formValue?.mobileNumber) && (
+            <CardLabelError style={errorStyle}>
+              {errors?.mobileNumber?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+            </CardLabelError>
+          )}
           {isIndividualTypeOwner ? (
             <React.Fragment>
               <LabelFieldPair>
@@ -547,8 +544,8 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                     name={"fatherOrHusbandName"}
                     defaultValue={owner?.fatherOrHusbandName}
                     rules={{
-                      // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                      validate: { pattern: (val) => (/^[a-zA-Z ]+$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) },
+                      required: isIndividualTypeOwner ? t("CORE_COMMON_REQUIRED_ERRMSG") : false,
+                      validate: { pattern: (val) => (isIndividualTypeOwner && val ? (/^[a-zA-Z ]+$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) : true) },
                     }}
                     render={(props) => (
                       <TextInput
@@ -560,22 +557,23 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                           setFocusIndex({ index: owner.key, type: "fatherOrHusbandName" });
                         }}
                         onBlur={props.onBlur}
-                        // isRequired={true}
                       />
                     )}
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>
-                {localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""}
-              </CardLabelError>
+              {formState?.submitCount > 0 && (errors?.fatherOrHusbandName || (isIndividualTypeOwner && !formValue?.fatherOrHusbandName)) && (
+                <CardLabelError style={errorStyle}>
+                  {errors?.fatherOrHusbandName?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+                </CardLabelError>
+              )}
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{t("PT_FORM3_RELATIONSHIP")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
                   name={"relationship"}
                   defaultValue={owner?.relationship}
-                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  rules={{ required: isIndividualTypeOwner ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
@@ -593,14 +591,18 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   )}
                 />
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
+              {formState?.submitCount > 0 && (errors?.relationship || (isIndividualTypeOwner && !formValue?.relationship)) && (
+                <CardLabelError style={errorStyle}>
+                  {errors?.relationship?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+                </CardLabelError>
+              )}
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{t("PT_FORM3_SPECIAL_CATEGORY")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
                   name={"ownerType"}
                   defaultValue={owner?.ownerType}
-                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  rules={{ required: isIndividualTypeOwner ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
@@ -615,7 +617,11 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   )}
                 />
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.ownerType ? errors?.ownerType?.message : ""}</CardLabelError>
+              {formState?.submitCount > 0 && (errors?.ownerType || (isIndividualTypeOwner && !formValue?.ownerType)) && (
+                <CardLabelError style={errorStyle}>
+                  {errors?.ownerType?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+                </CardLabelError>
+              )}
             </React.Fragment>
           ) : (
             <React.Fragment>
@@ -625,9 +631,8 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   <Controller
                     control={control}
                     name={"designation"}
-                    // defaultValue={isEditScreen ? ( institution?.designation || "") : null}
                     defaultValue={owner?.designation ||  null}
-                    // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                    rules={{ required: !isIndividualTypeOwner ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
                     render={(props) => (
                       <TextInput
                         value={props.value}
@@ -638,13 +643,16 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                           setFocusIndex({ index: owner.key, type: "designation" });
                         }}
                         onBlur={props.onBlur}
-                        // isRequired={true}
                       />
                     )}
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.designation ? errors?.designation?.message : ""}</CardLabelError>
+              {formState?.submitCount > 0 && (errors?.designation || (!isIndividualTypeOwner && !formValue?.designation)) && (
+                <CardLabelError style={errorStyle}>
+                  {errors?.designation?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+                </CardLabelError>
+              )}
             </React.Fragment>
           )}
 
@@ -656,7 +664,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   control={control}
                   name={"documents.documentType"}
                   defaultValue={owner?.documents?.documentType}
-                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  rules={{ required: (isIndividualTypeOwner && formValue.ownerType?.code && formValue.ownerType?.code !== "NONE") ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
@@ -671,9 +679,11 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   )}
                 />
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>
-                {localFormState.touched.documents?.documentType ? errors?.documents?.documentType?.message : ""}
-              </CardLabelError>
+              {formState?.submitCount > 0 && (errors?.documents?.documentType || (isIndividualTypeOwner && formValue.ownerType?.code && formValue.ownerType?.code !== "NONE" && !formValue?.documents?.documentType)) && (
+                <CardLabelError style={errorStyle}>
+                  {errors?.documents?.documentType?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+                </CardLabelError>
+              )}
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_DOCUMENT_ID")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <div className="field">
@@ -681,7 +691,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                     control={control}
                     name={"documents.documentUid"}
                     defaultValue={owner?.documents?.documentUid}
-                    // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                    rules={{ required: (isIndividualTypeOwner && formValue.ownerType?.code && formValue.ownerType?.code !== "NONE") ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
                     render={(props) => (
                       <TextInput
                         value={props.value}
@@ -694,15 +704,16 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                         }}
                         labelStyle={{ marginTop: "unset" }}
                         onBlur={props.onBlur}
-                        // isRequired={true}
                       />
                     )}
                   />
                 </div>
               </LabelFieldPair>
-              <CardLabelError style={errorStyle}>
-                {localFormState.touched.documents?.documentUid ? errors?.documents?.documentUid?.message : ""}
-              </CardLabelError>{" "}
+              {formState?.submitCount > 0 && (errors?.documents?.documentUid || (isIndividualTypeOwner && formValue.ownerType?.code && formValue.ownerType?.code !== "NONE" && !formValue?.documents?.documentUid)) && (
+                <CardLabelError style={errorStyle}>
+                  {errors?.documents?.documentUid?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+                </CardLabelError>
+              )}
             </React.Fragment>
           ) : null}
           <LabelFieldPair>
@@ -738,7 +749,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                 control={control}
                 name={"correspondenceAddress"}
                 defaultValue={owner?.correspondenceAddress}
-                // rules={isIndividualTypeOwner ? {} : { required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                rules={{ required: !isIndividualTypeOwner ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
                 render={(props) => (
                   <TextInput
                     value={props.value}
@@ -749,15 +760,16 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                       setFocusIndex({ index: owner.key, type: "correspondenceAddress" });
                     }}
                     onBlur={props.onBlur}
-                    // isRequired={true}
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>
-            {localFormState.touched.correspondenceAddress ? errors?.correspondenceAddress?.message : ""}
-          </CardLabelError>
+          {formState?.submitCount > 0 && (errors?.correspondenceAddress || (!isIndividualTypeOwner && !formValue?.correspondenceAddress)) && (
+            <CardLabelError style={errorStyle}>
+              {errors?.correspondenceAddress?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+            </CardLabelError>
+          )}
           <Controller
                 control={control}
                 name={"isSamePropAddress"}

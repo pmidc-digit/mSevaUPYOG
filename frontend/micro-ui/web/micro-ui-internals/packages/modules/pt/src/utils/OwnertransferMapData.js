@@ -9,8 +9,12 @@ export const OwnertransferMapData = (applicationData) => {
         fatherOrHusbandName: owner?.fatherOrHusbandName || "",
         emailId: owner?.emailId || "",
         correspondenceAddress: owner?.correspondenceAddress || "",
+        gender: owner?.gender || "",
+        ownerType: owner?.ownerType || "",
+        ownerShipPercentage : owner?.ownerShipPercentage || "",
       })),
     },
+    originalData: applicationData,
   };
 
   // Store the mapped data in session storage

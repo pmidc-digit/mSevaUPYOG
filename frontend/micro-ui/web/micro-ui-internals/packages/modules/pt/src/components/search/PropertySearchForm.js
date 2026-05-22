@@ -16,11 +16,9 @@ const SwitchComponent = (props) => {
   );
 };
 const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, setSearchBy ,payload}) => {
-  const { register, control, handleSubmit, setValue, watch,getValues, reset, formState } = useForm({
-    defaultValues: {
-      ...payload,
-        }
-  });
+  const { register, control, handleSubmit, setValue, watch, getValues, formState } = useForm({
+  defaultValues: payload,
+});
   const stateId = Digit.ULBService.getStateId();
   const { data: usageMenu = {}, isLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", [
     "UsageCategory",
@@ -83,6 +81,7 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
   const fields = PTSearchFields?.[searchBy] || {};
   const allCities = Digit.Hooks.pt.useTenants()?.sort((a, b) => a?.i18nKey?.localeCompare?.(b?.i18nKey));
   sessionStorage.removeItem("revalidateddone");
+  console.log(allCities)
   console.log("payload",payload,formValue)
  const setProptype =(e)=>{
   console.log("e",e.code)
@@ -101,29 +100,36 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
               <SearchField key={key} className={"pt-form-field"}>
                 <label>{t(field?.label)}{`${field?.validation?.required?"*":""}`}</label>
                 {field?.type === "ulb" ?
-                <Controller
-                  name={key}
-                  defaultValue={formValue?.[key]}
-                  rules={field.validation}
-                  control={control}
-                  render={(props) => (
-                    <Dropdown
-                      option={allCities}
-                      optionKey="i18nKey"
-                      selected={formValue?.[key]}
-                      select={(d) => {
-                        Digit.LocalizationService.getLocale({
-                          modules: [`rainmaker-${d?.code}`],
-                          locale: Digit.StoreData.getCurrentLanguage(),
-                          tenantId: d?.code,
-                        });
-                        setValue("locality", null);
-                        props.onChange(d);
-                      }}
-                      t={t}
-                    />
-                  )}
-                />
+ <Controller
+  name={key}
+  control={control}
+  defaultValue={payload?.tenantId}
+  rules={field.validation}
+  render={({ onChange, value }) => {
+    const selectedOption =
+      allCities?.find((city) => city.code === value?.code) || null;
+
+    return (
+      <Dropdown
+        option={allCities}
+        optionKey="i18nKey"
+        selected={selectedOption}
+        disable={true}
+        select={(d) => {
+          Digit.LocalizationService.getLocale({
+            modules: [`rainmaker-${d?.code}`],
+            locale: Digit.StoreData.getCurrentLanguage(),
+            tenantId: d?.code,
+          });
+
+          onChange(d);
+          setValue("locality", null, { shouldDirty: true });
+        }}
+        t={t}
+      />
+    );
+  }}
+/>
                 : field?.type==="custom"?
                 <Controller
                  name= {key}
@@ -135,7 +141,7 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
                     selectLocality={(d) => {
                       props.onChange(d);
                     }}
-                    tenantId={formValue?.ulb?.code || tenantId}
+                    tenantId={formValue?.tenantId?.code || tenantId}
                     selected={formValue?.[key]}
                     {...field.customCompProps}
                   />

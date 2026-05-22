@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 const PTSearchFields = {
   searchId: {
-    ulb: {
+    tenantId: {
       type: "ulb",
       label: "PT_SEARCH_ULB",
       placeHolder: "PT_SEARCH_ULB_PLACEHOLDER",
@@ -14,7 +14,7 @@ const PTSearchFields = {
       },
     },
      mobileNumber: {
-      type: "number",
+      type: "text",
       label: "PT_HOME_SEARCH_RESULTS_OWN_MOB_LABEL",
       placeHolder: "PT_HOME_SEARCH_RESULTS_OWN_MOB_PLACEHOLDER",
       validation: {
@@ -43,7 +43,7 @@ const PTSearchFields = {
         },
       },
     },
-    oldPropertyId: {
+    oldpropertyids: {
       type: "text",
       label: "PT_EXISTING_PROPERTY_ID",
       placeholder: "PT_EXISTING_PROPERTY_ID_PLACEHOLDER",
@@ -58,9 +58,6 @@ const PTSearchFields = {
       type: "custom",
       label: "PT_SEARCH_LOCALITY",
       placeHolder: "PT_SEARCH_LOCALITY_PLACEHOLDER",
-      validation: {
-        required: "PTLOCALITYMANDATORY",
-      },
       customComponent: Localities,
       customCompProps: {
         boundaryType: "revenue",
@@ -128,35 +125,35 @@ const PTSearchFields = {
         disableLoader: true,
       },
     },
-    doorNo: {
-      type: "text",
-      label: "PT_SEARCHPROPERTY_TABEL_DOOR_NO",
-      placeHolder: "PT_SEARCH_DOOR_NO_PLACEHOLDER",
-      validation: {
-        pattern: {
-          value:  "[A-Za-z0-9#,/ -()]{1,63}",
-          message: "ERR_INVALID_DOOR_NO",
-        },
-      },
-    },
+    // doorNo: {
+    //   type: "text",
+    //   label: "PT_SEARCHPROPERTY_TABEL_DOOR_NO",
+    //   placeHolder: "PT_SEARCH_DOOR_NO_PLACEHOLDER",
+    //   validation: {
+    //     pattern: {
+    //       value:  "[A-Za-z0-9#,/ -()]{1,63}",
+    //       message: "ERR_INVALID_DOOR_NO",
+    //     },
+    //   },
+    // },
 
   },
   defaulterNotice:{
 
-    propertyType: {
-      type: "custom",
-      label: "PT_SEARCH_PROPERTY_TYPE",
-      placeHolder: "PT_SEARCH_PROPERTY_TYPE_PLACEHOLDER",
-      validation: {
-        required: "PTPROPERTYTYPEMANDATORY",
-      },
-      customComponent: PropertyType,
-      customCompProps: {
-        keepNull: false,
-        optionCardStyles: { height: "600px", overflow: "auto", zIndex: "10" },
-        disableLoader: true,
-      },
-    }
+    // propertyType: {
+    //   type: "custom",
+    //   label: "PT_SEARCH_PROPERTY_TYPE",
+    //   placeHolder: "PT_SEARCH_PROPERTY_TYPE_PLACEHOLDER",
+    //   validation: {
+    //     required: "PTPROPERTYTYPEMANDATORY",
+    //   },
+    //   customComponent: PropertyType,
+    //   customCompProps: {
+    //     keepNull: false,
+    //     optionCardStyles: { height: "600px", overflow: "auto", zIndex: "10" },
+    //     disableLoader: true,
+    //   },
+    // }
     // propertyType: {
     //   type: "propertyType",
     //   label: "PT_SEARCHPROPERTY_TABEL_PROPERTY_TYPE",
@@ -166,20 +163,24 @@ const PTSearchFields = {
   },
 };
 
-const defaultValues = {
-  ulb: null,
-  propertyIds: "",
-  mobileNumber: "",
-  oldPropertyId: "",
-  locality: "",
-  name: "",
-  doorNo: "",
-  propertyType:""
-};
+
+
+
 
 const Search = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
+    const defaultValues = {
+ tenantId: {
+  code: tenantId,
+},
+  propertyIds: "",
+  mobileNumber: "",
+  oldpropertyids: "",
+  locality: "",
+  name: "",
+  // propertyType:""
+};
   const [payload, setPayload] = useState({});
   const [searchTenantId, setSearchTenantId] = useState(tenantId);
   const [formData, setFormData] = useState(defaultValues);
@@ -193,8 +194,14 @@ const Search = () => {
       return data?.["DIGIT-UI"]?.["HelpText"]?.[0]?.PT;
     },
   });
+
   const onReset = useCallback(() => {
-    setFormData(defaultValues);
+    setFormData({
+  ...defaultValues,
+  tenantId: {
+    code: tenantId,
+  },
+});
     setPayload({});
     setSearchTenantId(tenantId);
     setShowToast(null);
@@ -207,7 +214,7 @@ const Search = () => {
   },[searchBy])
   const onSubmit = useCallback((_data) => {
     console.log("_data",_data)
-    const selectedTenantId = _data?.ulb?.code || tenantId;
+    const selectedTenantId = _data?.tenantId?.code || tenantId;
 
     if(Object.keys(_data).includes("propertyType"))
     {
@@ -221,13 +228,22 @@ const Search = () => {
       setFormData(_data);   
       console.log("_data5",formData)  
       if (Object.keys(_data).filter((k) => _data[k] && typeof _data[k] !== "object")) {
-        setPayload(
-          Object.keys(_data)
-            .filter((k) => _data[k] && k !== "ulb")
-            .reduce((acc, key) => ({ ...acc, [key]: typeof _data[key] === "object" ? _data[key].code : _data[key] }), {})
-        );
+       const finalPayload = Object.keys(_data)
+  .filter((k) => _data[k])
+  .reduce((acc, key) => ({
+    ...acc,
+    [key]:
+      key === "tenantId"
+        ? _data[key]?.code
+        : typeof _data[key] === "object"
+        ? _data[key]?.code
+        : _data[key],
+  }), {});
+
+console.log("FINAL PAYLOAD", finalPayload);
+
+setPayload(finalPayload);
         setSearchTenantId(selectedTenantId);
-        console.log("_data4",payload)
         setShowToast(null);
       } else {
         setShowToast({ warning: true, label: "ERR_PT_FILL_VALID_FIELDS" });
@@ -238,16 +254,16 @@ const Search = () => {
   return (
     <React.Fragment>
       <Header>{t("SEARCH_PROPERTY")}</Header>
-      <SearchComponent
-        t={t}
-        payload={formData}
-        searchBy={searchBy}
-        setSearchBy={setSearchBy}
-        PTSearchFields={PTSearchFields}
-        tenantId={tenantId}
-        onSubmit={onSubmit}
-        onReset={onReset}
-      />
+     <SearchComponent
+  t={t}
+  payload={formData}
+  searchBy={searchBy}
+  setSearchBy={setSearchBy}
+  PTSearchFields={PTSearchFields}
+  tenantId={tenantId}
+  onSubmit={onSubmit}
+  onReset={onReset}
+/>
       
       {Object.keys(payload).includes("propertyType") ?
       <SearchPTIDPropComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={searchTenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />

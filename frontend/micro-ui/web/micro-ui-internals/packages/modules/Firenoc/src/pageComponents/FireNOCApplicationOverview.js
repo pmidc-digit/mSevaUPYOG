@@ -319,13 +319,13 @@ const FireNOCApplicationOverview = () => {
         ...(details?.status === "APPROVED"
           ? [
             {
-              label: t("NOC_CERTIFICATE"),
+              label: t("CS_COMMON_PAYMENT_RECEIPT"),
               onClick: () => getSanctionLetter({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-sanctionletter" }),
             },
           ]
           : []),
         {
-          label: t("CS_COMMON_PAYMENT_RECEIPT"),
+          label: t("NOC_CERTIFICATE"),
           onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenocreceipt" }),
         },
         {

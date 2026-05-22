@@ -32,7 +32,7 @@ const Response = (props) => {
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
   };
   const onViewApplication = () => {
-    history.push(`/digit-ui/citizen/firenoc/search/application-overview/${nocCode}`);
+    history.push(`/digit-ui/employee/firenoc/search/application-overview/${nocCode}`);
   };
 
   // const handleDownloadPdf = async () => {

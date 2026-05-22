@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-//
-import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
+import _ from "lodash";
+import { FormComposer } from "@mseva/digit-ui-react-components";
+// import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
 import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
 
 const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {

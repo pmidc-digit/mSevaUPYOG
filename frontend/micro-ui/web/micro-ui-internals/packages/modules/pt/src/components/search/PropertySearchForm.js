@@ -16,11 +16,9 @@ const SwitchComponent = (props) => {
   );
 };
 const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, setSearchBy ,payload}) => {
-  const { register, control, handleSubmit, setValue, watch,getValues, reset, formState } = useForm({
-    defaultValues: {
-      ...payload,
-        }
-  });
+  const { register, control, handleSubmit, setValue, watch, getValues, formState } = useForm({
+  defaultValues: payload,
+});
   const stateId = Digit.ULBService.getStateId();
   const { data: usageMenu = {}, isLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", [
     "UsageCategory",
@@ -82,6 +80,7 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
   let formValue = watch();
   const fields = PTSearchFields?.[searchBy] || {};
   sessionStorage.removeItem("revalidateddone");
+  console.log(allCities)
   console.log("payload",payload,formValue)
  const setProptype =(e)=>{
   console.log("e",e.code)
@@ -110,7 +109,7 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
                     selectLocality={(d) => {
                       props.onChange(d);
                     }}
-                    tenantId={tenantId}
+                    tenantId={formValue?.tenantId?.code || tenantId}
                     selected={formValue?.[key]}
                     {...field.customCompProps}
                   />

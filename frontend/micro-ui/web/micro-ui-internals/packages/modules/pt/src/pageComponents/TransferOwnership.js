@@ -6,6 +6,9 @@ import { useTranslation } from "react-i18next";
 import { useParams, useHistory, useLocation } from "react-router-dom";
 export const TransferOwnership = ({ property: propProperty }) => {
   const {t} =useTranslation()
+  const { id } = useParams();
+  const history = useHistory();
+  const location = useLocation();
   const printRef = useRef();
   
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -78,7 +81,8 @@ const content = printRef.current.innerHTML;
       history.push(transferOwnershipRoute, { property });
     }
     const closeModalTwo =() =>{
-      setShowToast(false)
+      // Navigate back when closing the modal
+      history.goBack();
     }
     const [showToast, setShowToast] = useState(true);
     

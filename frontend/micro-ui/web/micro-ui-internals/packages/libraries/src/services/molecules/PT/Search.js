@@ -257,6 +257,7 @@ export const PTSearch = {
           { title: "PT_ASSESMENT_INFO_PLOT_SIZE", value: response?.landArea },
           { title: "PT_ASSESMENT_INFO_NO_OF_FLOOR", value: response?.noOfFloors },
 
+
           { title: "Vasika No", value: response?.additionalDetails?.vasikaNo },
           { title: "Vasika Date", value: response?.additionalDetails?.vasikaDate },
           { title: "Allotment No", value: response?.additionalDetails?.allotmentNo },
@@ -337,6 +338,14 @@ export const PTSearch = {
                     isArray: false,
                   }, },
                 },
+                { title: "PT_OWNERSHIP_INFO_GENDER", value: owner?.gender, privacy: { uuid: owner?.uuid, fieldName: "gender", model: "User",showValue: false,
+                  loadData: {
+                    serviceName: "/property-services/property/_search",
+                    requestBody: {},
+                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
+                    jsonPath: "Properties[0].owners[0].gender",
+                    isArray: false,
+                  }, } },
                 { title: "PT_FORM3_OWNERSHIP_TYPE", value: response?.ownershipCategory },
                 {
                   title: "PT_OWNERSHIP_INFO_MOBILE_NO",
@@ -363,14 +372,7 @@ export const PTSearch = {
                   }, },
                 },
                 { title: "Ownership Percentage", value: response?.owners[0]?.ownerShipPercentage},
-                { title: "PT_OWNERSHIP_INFO_GENDER", value: owner?.gender, privacy: { uuid: owner?.uuid, fieldName: "gender", model: "User",showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
-                    jsonPath: "Properties[0].owners[0].gender",
-                    isArray: false,
-                  }, } },
+                
               
                 {
                   title: "PT_OWNERSHIP_INFO_USER_CATEGORY",

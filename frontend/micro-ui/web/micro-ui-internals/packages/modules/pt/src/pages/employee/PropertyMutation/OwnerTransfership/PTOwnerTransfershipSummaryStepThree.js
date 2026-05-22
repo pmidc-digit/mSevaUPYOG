@@ -34,8 +34,8 @@ const PTOwnerTransfershipSummaryStepThree = ({ config, onGoNext, onBackClick, t 
 
   // const currentStepData = useSelector(function (state) {
   //   console.log("state in step three ", state);
-  //   return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
-  //     ? state.pt.PTNewApplicationForm.formData[config.key]
+  //   return state.pt.PTNewApplicationFormReducer.formData && state.pt.PTNewApplicationFormReducer.formData[config.key]
+  //     ? state.pt.PTNewApplicationFormReducer.formData[config.key]
   //     : {};
   // });
 

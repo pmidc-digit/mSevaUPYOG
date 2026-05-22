@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { newConfigMutate } from "../../../../config/Mutate/config";
-import { SET_PTNewApplication_STEP, UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
+import { SET_PTNewApplication_STEP, UPDATE_PTNewApplication_FORM, RESET_PT_NEW_APPLICATION_FORM } from "../../../../redux/action/PTNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 import { OwnertransferMapData } from "../../../../utils/OwnertransferMapData";
@@ -62,9 +62,10 @@ const CreateEmployeeStepForm = ({ applicationData, responsePath = "/digit-ui/emp
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
-  const formState = useSelector((state) => state.pt.PTNewApplicationForm);
-  const formData = formState.formData;
-  const step = formState.step;
+  const formState = useSelector((state) => state.pt.PTNewApplicationFormReducer);
+  console.log("form state",formState)
+  const formData = formState?.formData;
+  const step = formState?.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [, setMutationHappened] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
   const [, , clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_SUCCESS_DATA", {});

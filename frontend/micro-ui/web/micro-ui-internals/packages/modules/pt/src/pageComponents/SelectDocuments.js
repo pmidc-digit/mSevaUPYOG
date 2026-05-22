@@ -98,6 +98,7 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
             config={config}
             formState={formState}
             propertyInitialValues={propertyInitialValues}
+            isMutation={isMutation}
           />
         );
       })}
@@ -123,6 +124,7 @@ function SelectDocument({
   fromRawData,
   id,
   propertyInitialValues,
+  isMutation,
 }) {
   // const filteredDocument = documents?.find((item) => item?.documentType == doc?.code);
   const filteredDocument = documents?.find((item) => {
@@ -215,13 +217,13 @@ function SelectDocument({
         ];
       });
     }
-    if (!isHidden) {
+    if (!isHidden && !isMutation) {
       if (!uploadedFile || !selectedDocument?.code) {
         addError();
       } else if (uploadedFile && selectedDocument?.code) {
         removeError();
       }
-    } else if (isHidden) {
+    } else if (isHidden || isMutation) {
       removeError();
     }
   }, [uploadedFile, selectedDocument, isHidden]);
@@ -380,7 +382,9 @@ function SelectDocument({
     <div style={{ marginBottom: "24px" }}> 
      {(doc?.hasDropdown )? (
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))} <span style={{ color: 'red' }}>*</span></CardLabel>
+          <CardLabel className="card-label-smaller">
+            {t(doc?.code.replaceAll(".", "_"))} {isMutation ? "" : <span style={{ color: 'red' }}>*</span>}
+          </CardLabel>
           <Dropdown
             className="form-field"
             selected={selectedDocument}
@@ -422,7 +426,7 @@ function SelectDocument({
                 : false) || !selectedDocument?.code
             }
             buttonType="button"
-            error={!uploadedFile}
+            error={!uploadedFile && !isMutation}
           />
         </div>
       </LabelFieldPair>

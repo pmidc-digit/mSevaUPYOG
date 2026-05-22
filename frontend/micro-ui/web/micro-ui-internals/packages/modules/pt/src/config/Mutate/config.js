@@ -201,6 +201,7 @@ export const newConfigMutate = [
             keyPath: ["searchResult", "property", "owners", "_index_", "correspondenceAddress"],
             ownershipType: "ALL",
           },
+          
         ],
       },
 
@@ -395,40 +396,47 @@ export const newConfigMutate = [
       },
 
       //Mutation court & govt question details
-      {
-        key: "additionalDetails",
-        texts: {
-          headerCaption: "PT_MUTATION_DETAILS",
-          header: "PT_MUTATION_COURT_PENDING_OR_NOT",
-          cardText: "PT_MUTATION_PENDING_MESSAGE",
-          submitBarLabel: "PT_COMMON_NEXT",
-        },
-        route: "is-mutatation-pending",
-        withoutLabel: true,
-        component: "IsMutationPending",
-        nextStep: "is-under-govt-aquisition",
-        type: "component",
-        // nextStep: "reason",
-      },
-      {
-        key: "additionalDetails",
-        route: "is-under-govt-aquisition",
-        withoutLabel: true,
-        texts: {
-          headerCaption: "PT_MUTATION_DETAILS",
-          header: "PT_MUTATION_STATE_ACQUISITION",
-          cardText: "PT_STATE_AQUISTION_MESSAGE",
-          submitBarLabel: "PT_COMMON_NEXT",
-        },
-        component: "UnderStateAquire",
-        nextStep: "reason",
-        type: "component",
-      },
+      // {
+      //   key: "additionalDetails",
+      //   texts: {
+      //     headerCaption: "PT_MUTATION_DETAILS",
+      //     header: "PT_MUTATION_COURT_PENDING_OR_NOT",
+      //     cardText: "PT_MUTATION_PENDING_MESSAGE",
+      //     submitBarLabel: "PT_COMMON_NEXT",
+      //   },
+      //   route: "is-mutatation-pending",
+      //   withoutLabel: true,
+      //   component: "IsMutationPending",
+      //   nextStep: "is-under-govt-aquisition",
+      //   type: "component",
+      //   // nextStep: "reason",
+      // },
+      // {
+      //   key: "additionalDetails",
+      //   route: "is-under-govt-aquisition",
+      //   withoutLabel: true,
+      //   texts: {
+      //     headerCaption: "PT_MUTATION_DETAILS",
+      //     header: "PT_MUTATION_STATE_ACQUISITION",
+      //     cardText: "PT_STATE_AQUISTION_MESSAGE",
+      //     submitBarLabel: "PT_COMMON_NEXT",
+      //   },
+      //   component: "UnderStateAquire",
+      //   nextStep: "reason",
+      //   type: "component",
+      // },
 
+    ],
+  },
+  {
+    head: "PT_MUTATION_REGISTRATION_DETAILS",
+    stepNumber: 1,
+    body: [
       //Registration Details
       {
         key: "additionalDetails",
         route: "reason",
+         isMandatory: true,
         texts: {
           headerCaption: "PT_MUTATION_DETAILS",
           header: "PT_MUTATION_TRANSFER_REASON",
@@ -443,6 +451,7 @@ export const newConfigMutate = [
       {
         key: "additionalDetails",
         route: "market-value",
+         isMandatory: true,
         texts: {
           headerCaption: "PT_MUTATION_DETAILS",
           header: "PT_MUTATION_MARKET_VALUE",
@@ -457,6 +466,7 @@ export const newConfigMutate = [
       {
         key: "additionalDetails",
         route: "registration-doc",
+         isMandatory: true,
         texts: {
           headerCaption: "PT_MUTATION_DETAILS",
           header: "PT_MUTATION_DOCUMENT_DETAILS",
@@ -829,7 +839,7 @@ export const newConfigMutate = [
     stepNumber: 3,
     body: [
       {
-        component: "PTSummary",
+        component: "PTSummaryEmployee",
         withoutLabel: true,
         key: "PTSummary",
         type: "component",

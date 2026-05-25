@@ -99,7 +99,7 @@ export const ModalConfig = ({
     action?.action == "UPDATE_FEE"
   )
     checkCondtions = false;
-  if (action.isTerminateState) checkCondtions = false;
+  if (action.isTerminateState && action?.action !== "CANCEL") checkCondtions = false;
 
   return {
     label: {
@@ -110,21 +110,32 @@ export const ModalConfig = ({
     form: [
       {
         body: [
-          {
-            label: !checkCondtions ? null : `${t("WF_ASSIGNEE_NAME_LABEL")}*`,
-            placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
-            type: "dropdown",
-            populators: !checkCondtions ? null : (
-              <Dropdown
-                option={approvers}
-                autoComplete="off"
-                optionKey="name"
-                id="fieldInspector"
-                select={setSelectedApprover}
-                selected={selectedApprover}
-              />
-            ),
-          },
+          action?.action === "CANCEL"
+            ? {
+                label: `${t("WF_ASSIGNEE_NAME_LABEL")}*`,
+                type: "text",
+                populators: {
+                  name: "assigneeName",
+                },
+                validation: {
+                  required: true,
+                },
+              }
+            : {
+                label: !checkCondtions ? null : `${t("WF_ASSIGNEE_NAME_LABEL")}*`,
+                placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
+                type: "dropdown",
+                populators: !checkCondtions ? null : (
+                  <Dropdown
+                    option={approvers}
+                    autoComplete="off"
+                    optionKey="name"
+                    id="fieldInspector"
+                    select={setSelectedApprover}
+                    selected={selectedApprover}
+                  />
+                ),
+              },
           {
             label: `${t("WF_COMMON_COMMENTS_LABEL")}*`,
             type: "textarea",

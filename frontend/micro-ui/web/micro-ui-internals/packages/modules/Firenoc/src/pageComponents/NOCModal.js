@@ -171,7 +171,23 @@ const NOCModal = ({
       finalComments = `${commentsText}[#?..**]${conditionalText}`;
     }
 
-    if (action?.action !== "APPROVE" && action?.action !== "UPDATE_FEE" && action?.action !== "REJECT" && action?.action !== "SEND_FOR_INSPECTION_REPORT" && !selectedApprover?.uuid) {
+    if (
+      action?.action !== "APPROVE" &&
+      action?.action !== "UPDATE_FEE" &&
+      action?.action !== "REJECT" &&
+      action?.action !== "SEND_FOR_INSPECTION_REPORT" &&
+      action?.action !== "CANCEL" &&
+      !selectedApprover?.uuid
+    ) {
+      setTimeout(() => {
+        closeToast();
+      }, 2000);
+
+      setShowToast({ key: "true", error: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
+      return;
+    }
+
+    if (action?.action === "CANCEL" && !data?.assigneeName?.trim()) {
       setTimeout(() => {
         closeToast();
       }, 2000);
@@ -189,7 +205,9 @@ const NOCModal = ({
       return;
     }
 
-
+    const finalAssignee = action?.action === "CANCEL"
+      ? []
+      : (!selectedApprover?.uuid ? null : [selectedApprover?.uuid]);
 
     let singleApp = { ...(applicationData?.[0] || {}) };
     if (singleApp.fireNOCDetails) {
@@ -197,7 +215,8 @@ const NOCModal = ({
         ...singleApp.fireNOCDetails,
         action: action?.action,
         comment: finalComments,
-        assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
+        assignee: finalAssignee,
+        name: action?.action === "CANCEL" ? (data?.assigneeName || null) : (singleApp.fireNOCDetails.name || null),
         wfDocuments: uploadedFile
           ? [
             {
@@ -210,10 +229,13 @@ const NOCModal = ({
           ]
           : null,
       };
+      singleApp.assignee = finalAssignee;
+      singleApp.comment = finalComments;
+      singleApp.action = action?.action;
     } else {
       singleApp.action = action?.action;
       singleApp.comment = finalComments;
-      singleApp.assignee = !selectedApprover?.uuid ? null : [selectedApprover?.uuid];
+      singleApp.assignee = finalAssignee;
     }
 
     submitAction({

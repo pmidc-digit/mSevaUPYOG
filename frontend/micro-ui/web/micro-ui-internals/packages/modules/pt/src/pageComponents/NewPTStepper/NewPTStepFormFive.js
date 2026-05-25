@@ -56,7 +56,6 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onSubmit = async (data, selectedAction) => {
-    console.log("data", data);
     setLoader(true);
     // debugger
 
@@ -218,7 +217,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       if (isEditMode) {
         response = await Digit.PTService.update({ Property: formData }, tenantId);
       } else {
-        console.log("PT create payload", formData);
+        console.lo("runningcreateApi")
         response = await Digit.PTService.create({ Property: formData }, tenantId);
       
     

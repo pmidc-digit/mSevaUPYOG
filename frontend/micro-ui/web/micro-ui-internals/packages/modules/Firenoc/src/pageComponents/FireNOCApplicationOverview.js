@@ -226,7 +226,7 @@ const FireNOCApplicationOverview = () => {
 
   const details = fireNOC.fireNOCDetails;
   const owners = details?.applicantDetails?.owners || [];
-  const building = details?.buildings?.[0];
+  const buildings = details?.buildings || [];
   const address = details?.propertyDetails?.address;
 
   const remainingDocs = (fireNOC?.documents || details?.applicantDetails?.additionalDetail?.ownerAuditionalDetail?.documents || [])
@@ -240,11 +240,6 @@ const FireNOCApplicationOverview = () => {
       documentUid: doc?.documentUid || doc?.fileStoreId || doc?.filestoreId || doc?.uuid || "",
       documentAttachment: doc?.documentAttachment || doc?.fileStoreId || doc?.filestoreId || doc?.uuid || "",
     }));
-
-  const uomMap = {};
-  building?.uoms?.filter((u) => u.active).forEach((u) => {
-    uomMap[u.code] = u.value;
-  });
 
   const paymentDetail = payment?.paymentDetails?.[0];
   const appStatus = details?.status || fireNOC?.status || fireNOC?.applicationStatus || "";
@@ -433,26 +428,64 @@ const FireNOCApplicationOverview = () => {
         </Card>
 
         {/* Building Details */}
-        {building && (
+        {/* Building Details */}
+        {buildings.length > 0 && (
           <Card style={{ marginTop: "16px" }}>
             <CardSectionHeader>{t("NOC_BUILDING_DETAILS")}</CardSectionHeader>
-            <StatusTable>
-              <Row label={t("NOC_BUILDING_NAME")} text={building.name || "-"} />
-              <Row label={t("NOC_USAGE_TYPE")} text={building.usageType || "-"} />
-              <Row label={t("NOC_USAGE_SUB_TYPE")} text={building.usageSubType || "-"} />
-              {uomMap["NO_OF_FLOORS"] !== undefined && (
-                <Row label={t("NOC_NO_OF_FLOORS")} text={String(uomMap["NO_OF_FLOORS"])} />
-              )}
-              {uomMap["HEIGHT_OF_BUILDING"] !== undefined && (
-                <Row label={t("NOC_HEIGHT_OF_BUILDING")} text={`${uomMap["HEIGHT_OF_BUILDING"]} m`} />
-              )}
-              {building.landArea && (
-                <Row label={t("NOC_PLOT_AREA")} text={`${building.landArea} sq.m`} />
-              )}
-              {building.totalCoveredArea && (
-                <Row label={t("NOC_COVERED_AREA")} text={`${building.totalCoveredArea} sq.m`} />
-              )}
-            </StatusTable>
+            {buildings.map((b, index) => {
+              const uomMap = {};
+              b?.uoms?.filter((u) => u.active).forEach((u) => {
+                uomMap[u.code] = u.value;
+              });
+
+              return (
+                <div key={b.id || index} style={index > 0 ? { marginTop: "20px", borderTop: "1px solid #efefef", paddingTop: "16px" } : {}}>
+                  {buildings.length > 1 && (
+                    <div style={{ fontWeight: "700", fontSize: "16px", marginBottom: "12px", color: "#505A5F" }}>
+                      {`${t("NOC_BUILDING")} ${index + 1}`}
+                    </div>
+                  )}
+                  <StatusTable>
+                    <Row label={t("NOC_BUILDING_NAME")} text={b.name || "-"} />
+                    <Row label={t("NOC_USAGE_TYPE")} text={b.usageType || "-"} />
+                    <Row label={t("NOC_USAGE_SUB_TYPE")} text={b.usageSubType || "-"} />
+                    {uomMap["NO_OF_FLOORS"] !== undefined && (
+                      <Row label={t("NOC_NO_OF_FLOORS")} text={String(uomMap["NO_OF_FLOORS"])} />
+                    )}
+                    {uomMap["NO_OF_BASEMENTS"] !== undefined && (
+                      <Row label={t("NOC_NO_OF_BASEMENTS")} text={String(uomMap["NO_OF_BASEMENTS"])} />
+                    )}
+                    {uomMap["BUILTUP_AREA"] !== undefined && (
+                      <Row label={t("NOC_GROUND_FLOOR_BUILTUP_AREA")} text={`${uomMap["BUILTUP_AREA"]} sq.m`} />
+                    )}
+                    {uomMap["HEIGHT_OF_BUILDING"] !== undefined && (
+                      <Row label={t("NOC_HEIGHT_OF_BUILDING")} text={`${uomMap["HEIGHT_OF_BUILDING"]} m`} />
+                    )}
+                    {b.landArea && (
+                      <Row label={t("NOC_PLOT_AREA")} text={`${b.landArea} sq.m`} />
+                    )}
+                    {b.totalCoveredArea && (
+                      <Row label={t("NOC_COVERED_AREA")} text={`${b.totalCoveredArea} sq.m`} />
+                    )}
+                    {b.parkingArea && (
+                      <Row label={t("NOC_PARKING_AREA")} text={`${b.parkingArea} sq.m`} />
+                    )}
+                    {b.leftSurrounding && (
+                      <Row label={t("NOC_LEFT_SURROUNDING")} text={b.leftSurrounding} />
+                    )}
+                    {b.rightSurrounding && (
+                      <Row label={t("NOC_RIGHT_SURROUNDING")} text={b.rightSurrounding} />
+                    )}
+                    {b.frontSurrounding && (
+                      <Row label={t("NOC_FRONT_SURROUNDING")} text={b.frontSurrounding} />
+                    )}
+                    {b.backSurrounding && (
+                      <Row label={t("NOC_BACK_SURROUNDING")} text={b.backSurrounding} />
+                    )}
+                  </StatusTable>
+                </div>
+              );
+            })}
           </Card>
         )}
 

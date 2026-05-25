@@ -42,6 +42,7 @@ const CLUResponse = (props) => {
   }
    else{
       history.push(`/digit-ui/employee/obps/clu/inbox`);
+      window.location.reload();
    }
   };
 

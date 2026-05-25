@@ -25,6 +25,7 @@ export const mapPropertyToFormData = (property) => {
     yearOfCreation: property.additionalDetails?.yearConstruction
       ? { code: property.additionalDetails.yearConstruction }
       : null,
+    existingPropertyId: property.oldPropertyId || "",
   };
 
   // --- Step 2: Property Details ---

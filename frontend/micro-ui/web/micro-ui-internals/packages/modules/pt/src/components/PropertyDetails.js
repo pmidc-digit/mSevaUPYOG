@@ -305,6 +305,72 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
         </LabelFieldPair>
       </div>
 
+    {/* Row: Vasika No + Vasika Date */}
+{/* <div style={twoColRow}>
+  <LabelFieldPair style={colItem}>
+    <CardLabel className="card-label-smaller">{t("Vasika No")}</CardLabel>
+    <div className="form-field">
+      <Controller
+        control={control}
+        name="vasikaNo"
+        render={(props) => (
+          <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />
+        )}
+      />
+    </div>
+  </LabelFieldPair>
+  <LabelFieldPair style={colItem}>
+    <CardLabel className="card-label-smaller">{t("Vasika Date")}</CardLabel>
+    <div className="form-field">
+      <Controller
+        control={control}
+        name="vasikaDate"
+        render={(props) => (
+          <TextInput
+            type="date"
+            value={props.value}
+            onChange={(e) => props.onChange(e.target.value)}
+            t={t}
+          />
+        )}
+      />
+    </div>
+  </LabelFieldPair>
+</div> */}
+
+{/* Row: Allotment No + Allotment Date */}
+{/* <div style={twoColRow}>
+  <LabelFieldPair style={colItem}>
+    <CardLabel className="card-label-smaller">{t("Allotment No")}</CardLabel>
+    <div className="form-field">
+      <Controller
+        control={control}
+        name="allotmentNo"
+        render={(props) => (
+          <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />
+        )}
+      />
+    </div>
+  </LabelFieldPair>
+  <LabelFieldPair style={colItem}>
+    <CardLabel className="card-label-smaller">{t("Allotment Date")}</CardLabel>
+    <div className="form-field">
+      <Controller
+        control={control}
+        name="allotmentDate"
+        render={(props) => (
+          <TextInput
+            type="date"
+            value={props.value}
+            onChange={(e) => props.onChange(e.target.value)}
+            t={t}
+          />
+        )}
+      />
+    </div>
+  </LabelFieldPair>
+</div> */}
+
       {/* Row 2: Business Name + Remarks */}
       <div style={twoColRow}>
         <LabelFieldPair style={colItem}>

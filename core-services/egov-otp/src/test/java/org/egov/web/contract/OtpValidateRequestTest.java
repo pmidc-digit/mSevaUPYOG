@@ -2,21 +2,22 @@ package org.egov.web.contract;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.domain.model.ValidateRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class OtpValidateRequestTest {
+class OtpValidateRequestTest {
 
     @Test
-    public void test_should_create_domain_from_contract() {
-        final RequestInfo requestInfo = RequestInfo.builder().build();
-        final Otp otp = new Otp("otp", null, "identity", "tenant", false);
-        final OtpValidateRequest validateRequest =
+    void should_create_domain_from_contract() {
+        RequestInfo requestInfo = RequestInfo.builder().build();
+
+        Otp otp = new Otp("otp", null, "identity", "tenant", false);
+
+        OtpValidateRequest validateRequest =
                 new OtpValidateRequest(requestInfo, otp);
 
-        final ValidateRequest domain = validateRequest.toDomainValidateRequest();
+        ValidateRequest domain = validateRequest.toDomainValidateRequest();
 
         assertNotNull(domain);
         assertEquals("otp", domain.getOtp());

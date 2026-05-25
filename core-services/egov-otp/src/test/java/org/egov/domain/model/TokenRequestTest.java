@@ -1,42 +1,43 @@
 package org.egov.domain.model;
 
 import org.egov.domain.exception.InvalidTokenRequestException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class TokenRequestTest {
+class TokenRequestTest {
 
     @Test
-    public void test_should_not_throw_validation_exception_when_mandatory_fields_are_present() {
-        final TokenRequest token = new TokenRequest("identity", "tenant");
-        token.validate();
+    void should_not_throw_validation_exception_when_mandatory_fields_are_present() {
+        TokenRequest token = new TokenRequest("identity", "tenant");
+        assertDoesNotThrow(token::validate);
     }
 
-    @Test(expected = InvalidTokenRequestException.class)
-    public void test_should_throw_validation_exception_when_identity_not_present() {
-        final TokenRequest token = new TokenRequest(null, "tenant");
+    @Test
+    void should_throw_validation_exception_when_identity_not_present() {
+        TokenRequest token = new TokenRequest(null, "tenant");
 
         assertTrue(token.isIdentityAbsent());
-        token.validate();
-    }
 
-    @Test(expected = InvalidTokenRequestException.class)
-    public void test_should_throw_validation_exception_when_tenant_not_present() {
-        final TokenRequest token = new TokenRequest("identity", null);
-
-        assertTrue(token.isTenantIdAbsent());
-        token.validate();
+        assertThrows(InvalidTokenRequestException.class, token::validate);
     }
 
     @Test
-    public void test_should_generate_5_digit_token() {
-        final TokenRequest token = new TokenRequest("identity", "tenant");
+    void should_throw_validation_exception_when_tenant_not_present() {
+        TokenRequest token = new TokenRequest("identity", null);
 
-        assertNotNull(token.generateToken());
-        assertEquals(5, token.generateToken().length());
+        assertTrue(token.isTenantIdAbsent());
+
+        assertThrows(InvalidTokenRequestException.class, token::validate);
     }
 
+    @Test
+    void should_generate_5_digit_token() {
+        TokenRequest token = new TokenRequest("identity", "tenant");
+
+        String generated = token.generateToken();
+
+        assertNotNull(generated);
+        assertEquals(5, generated.length());
+    }
 }

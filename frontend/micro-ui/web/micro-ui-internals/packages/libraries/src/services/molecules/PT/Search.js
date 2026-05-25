@@ -246,7 +246,7 @@ export const PTSearch = {
           { title: "PT_PROPERTY_ADDRESS_PINCODE", value: response?.address?.pincode },
           { title: "Existing Property ID", value: response?.oldPropertyId},
           { title: "Survey Id/UID", value: response?.surveyId},
-          { title: "Year of creation of Property", value: response?.yearOfCreation},
+          { title: "Year of creation of Property", value: response?.additionalDetails?.yearConstruction},
         ],
       },
       {

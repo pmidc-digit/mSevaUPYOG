@@ -142,6 +142,8 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       // Spread original property to preserve all IDs and audit fields in edit mode
       ...(isEditMode ? originalProperty : {}),
       tenantId: tenantId,
+      surveyId: propertyAddress?.surveyId || undefined,
+      oldPropertyId: propertyAddress?.existingPropertyId || undefined,
       address: {
         ...(isEditMode ? originalProperty.address : {}),
         city: propertyAddress?.city?.name,
@@ -157,7 +159,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
         businessName: propertyDetails?.businessName,
         remrks: propertyDetails?.remarks,
         inflammable: propertyDetails?.flammable,
-        heightAbove36Feet: propertyDetails?.heightOfProperty,
+        heightAbove36Feet: propesrtyDetails?.heightOfProperty,
         vasikaNo: propertyDetails?.vasikaNo,
         vasikaDate: propertyDetails?.vasikaDate,
         allotmentNo: propertyDetails?.allotmentNo,

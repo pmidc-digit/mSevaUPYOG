@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mock;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.context.request.ServletWebRequest;
 
 import java.util.List;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 class GlobalExceptionHandlerTest {
 
-    @Mock
+    @MockitoBean
     private PropertiesManager propertiesManager;
 
     void testUnknownException() {

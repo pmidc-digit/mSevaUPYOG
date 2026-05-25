@@ -260,6 +260,7 @@ const CLUEmployeeApplicationDetails = () => {
         tenantId: reciept_data2?.Payments[0]?.tenantId,
         payments: reciept_data2?.Payments[0],
         pdfkey: "clu-sanctionletter",
+        forcePnLocale: true
       });
 
       if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
@@ -282,7 +283,8 @@ const CLUEmployeeApplicationDetails = () => {
     }
   }
 
-  async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
+  async function getRecieptSearch({ tenantId, payments, pdfkey, forcePnLocale = false, ...params }) {
+    const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       setLoader(true);
       const application = applicationDetails?.Clu;
@@ -321,6 +323,9 @@ const CLUEmployeeApplicationDetails = () => {
       const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
       if (!fileStoreId) {
+        if(forcePnLocale){
+          Digit.StoreData.getCurrentLanguage = () => "pn_IN";
+        }
         const response = await Digit.PaymentService.generatePdf(
           tenantId,
           {
@@ -347,6 +352,9 @@ const CLUEmployeeApplicationDetails = () => {
       console.error("Sanction Letter download error:", error);
     } finally {
       setLoader(false);
+      if(forcePnLocale){
+        Digit.StoreData.getCurrentLanguage = prevGetLang;
+      }
     }
   }
   const printCertificateWithESign = async () => {
@@ -355,6 +363,7 @@ const CLUEmployeeApplicationDetails = () => {
         tenantId: reciept_data2?.Payments[0]?.tenantId,
         payments: reciept_data2?.Payments[0],
         pdfkey: "clu-sanctionletter",
+        forcePnLocale: true
       });
 
       // Update application with sanctionLetterFilestoreId here

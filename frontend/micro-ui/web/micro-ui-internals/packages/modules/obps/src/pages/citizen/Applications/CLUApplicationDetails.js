@@ -208,6 +208,7 @@ const CLUApplicationDetails = () => {
   };
 
   async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "clu-sanctionletter", ...params }) {
+    const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       setLoading(true);
 
@@ -249,6 +250,7 @@ const CLUApplicationDetails = () => {
 
       let fileStoreId = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
       if (!fileStoreId) {
+        Digit.StoreData.getCurrentLanguage = () => "pn_IN";
         const response = await Digit.PaymentService.generatePdf(
           tenantId,
           {
@@ -297,9 +299,11 @@ const CLUApplicationDetails = () => {
       console.error("Sanction Letter download error:", error);
     } finally {
       setLoading(false);
+      Digit.StoreData.getCurrentLanguage = prevGetLang;
     }
   }
   async function getRejectionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "clu-rejectionletter", ...params }) {
+    const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       setLoading(true);
 
@@ -340,6 +344,7 @@ const CLUApplicationDetails = () => {
 
       let fileStoreId = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
       if (!fileStoreId) {
+        Digit.StoreData.getCurrentLanguage = () => "pn_IN";
         const response = await Digit.PaymentService.generatePdf(
           tenantId,
           {
@@ -389,6 +394,7 @@ const CLUApplicationDetails = () => {
       console.error("Sanction Letter download error:", error);
     } finally {
       setLoading(false);
+      Digit.StoreData.getCurrentLanguage = prevGetLang;
     }
   }
   async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {

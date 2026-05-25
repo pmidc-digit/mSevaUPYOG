@@ -228,6 +228,7 @@ const EditApplication = () => {
           const heightVal = b?.uoms?.find((u) => u.code === "HEIGHT_OF_BUILDING")?.value || "";
           const floorsVal = b?.uoms?.find((u) => u.code === "NO_OF_FLOORS")?.value || "";
           const basementsVal = b?.uoms?.find((u) => u.code === "NO_OF_BASEMENTS")?.value || "";
+          const builtUpAreaVal = b?.uoms?.find((u) => u.code === "BUILTUP_AREA")?.value || "";
           return {
             buildingName: b?.name || "",
             buildingUsageType: b?.usageType ? { code: b.usageType, name: b.usageType } : null,
@@ -242,6 +243,7 @@ const EditApplication = () => {
             rightSurrounding: b?.rightSurrounding || "",
             frontSurrounding: b?.frontSurrounding || "",
             backSurrounding: b?.backSurrounding || "",
+            groundFloorBuiltupArea: builtUpAreaVal,
           };
         }) || [];
 
@@ -256,7 +258,7 @@ const EditApplication = () => {
           streetName: address?.street || "",
           landmarkName: address?.landmark || "",
           propertyId: fireNOCDetails?.propertyDetails?.propertyId || "",
-          plotSurveyNo: fireNOCDetails?.propertyDetails?.plotSurveyNo || "",
+          plotSurveyNo: address?.doorNo || "",
           geoLocation: fireNOCDetails?.propertyDetails?.geoLocation || null,
           fireStationId: fireNOCDetails?.firestationId || "",
           noOfBuildings: fireNOCDetails?.noOfBuildings || "SINGLE",

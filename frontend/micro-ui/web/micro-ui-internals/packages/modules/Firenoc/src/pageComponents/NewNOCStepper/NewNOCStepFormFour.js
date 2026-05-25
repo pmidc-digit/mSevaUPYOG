@@ -19,6 +19,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const buildUpdatePayload = (formData) => {
     const fireNOCData = formData?.apiData?.FireNOCs?.[0];
     const site = formData?.siteDetails || {};
+    const noc = formData?.nocDetails || {};
     const docsFromRedux = formData?.uploadedDocuments?.documents || [];
 
     const convertedDocs = docsFromRedux.map((doc) => ({
@@ -33,24 +34,114 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     const isCitizen = window.location.href.includes("citizen");
     const workflowAction = (isCitizen && (originalStatus === "CITIZENACTIONREQUIRED" || originalStatus === "SENDBACKTOCITIZEN" || originalStatus === "CITIZEN_ACTION_REQUIRED")) ? "RESUBMIT" : "APPLY";
 
+    /* ── buildings merging ── */
+    const originalBuildings = fireNOCData?.fireNOCDetails?.buildings || [];
+    const buildings = (site.buildings != null ? site.buildings : []).map((b, idx) => {
+      const originalBuilding = originalBuildings[idx] || {};
+      const floors = Number(b.noOfFloors?.code || b.noOfFloors || 0);
+      const basements = Number(b.noOfBasements?.code || b.noOfBasements || 0);
+      const height = Number(b.heightOfBuilding || 0);
+      const builtUpArea = Number(b.groundFloorBuiltupArea || 0);
+
+      const originalUoms = originalBuilding?.uoms || [];
+      const newUoms = [
+        { code: "HEIGHT_OF_BUILDING", value: height, isActiveUom: true, active: true },
+        { code: "NO_OF_FLOORS", value: floors, isActiveUom: false, active: true },
+        { code: "NO_OF_BASEMENTS", value: basements, isActiveUom: false, active: true },
+        { code: "BUILTUP_AREA", value: builtUpArea, isActiveUom: false, active: true },
+      ].map((uom) => {
+        const match = originalUoms.find((ou) => ou.code === uom.code);
+        return match ? { ...uom, id: match.id } : uom;
+      });
+
+      return {
+        ...originalBuilding,
+        name: b.buildingName || "",
+        usageType: b.buildingUsageType?.code || b.buildingUsageType || "",
+        usageSubType: b.buildingUsageSubType?.code || b.buildingUsageSubType || "",
+        uomsMap: {
+          NO_OF_FLOORS: String(floors),
+          NO_OF_BASEMENTS: String(basements),
+          HEIGHT_OF_BUILDING: String(height),
+          BUILTUP_AREA: String(builtUpArea),
+        },
+        landArea: Number(b.landArea || 0),
+        totalCoveredArea: Number(b.totalCoveredArea || 0),
+        parkingArea: Number(b.parkingArea || 0),
+        rightSurrounding: b.rightSurrounding || "",
+        leftSurrounding: b.leftSurrounding || "",
+        frontSurrounding: b.frontSurrounding || "",
+        backSurrounding: b.backSurrounding || "",
+        uoms: newUoms,
+        applicationDocuments: originalBuilding.applicationDocuments || [],
+      };
+    });
+
+    /* ── owners merging ── */
+    const appDetails = formData?.applicationDetails || {};
+    const ownerShipType = appDetails.applicantSubtype?.code || fireNOCData?.fireNOCDetails?.applicantDetails?.ownerShipType || "INDIVIDUAL.SINGLEOWNER";
+    const majorType = ownerShipType.split(".")[0];
+    const isIndividual = appDetails.applicantType?.code === "INDIVIDUAL" || majorType === "INDIVIDUAL";
+
+    const originalOwners = fireNOCData?.fireNOCDetails?.applicantDetails?.owners || [];
+    const owners = (appDetails.owners != null ? appDetails.owners : []).map((item, idx) => {
+      const originalOwner = originalOwners[idx] || {};
+      if (isIndividual) {
+        return {
+          ...originalOwner,
+          mobileNumber: item.mobileNumber || "",
+          name: item.name || "",
+          dob: Digit.Utils.pt.convertDateToEpoch(item.dateOfBirth || ""),
+          gender: item.gender?.code || item.gender || "",
+          relationship: item.relationship?.i18nKey || item.relationship?.code || item.relationship || "",
+          fatherOrHusbandName: item.fatherOrHusbandName || "",
+          correspondenceAddress: item.address || "",
+          emailId: item.emailId || "",
+          pan: item.panNo || "",
+        };
+      }
+      return {
+        ...originalOwner,
+        mobileNumber: item.mobileNumber || "",
+        name: item.authorizedPersonName || "",
+        emailId: item.emailId || "",
+        correspondenceAddress: item.officialAddress || "",
+        institutionName: item.institutionName || "",
+        officialTelNo: item.officialTelNo || "",
+        designation: item.designation || "",
+      };
+    });
+
     const updatedFireNOC = {
       ...fireNOCData,
       fireNOCDetails: {
         ...fireNOCData?.fireNOCDetails,
+        noOfBuildings: site.noOfBuildings || fireNOCData?.fireNOCDetails?.noOfBuildings || "SINGLE",
+        fireNOCType: noc.fireNOCType?.code || fireNOCData?.fireNOCDetails?.fireNOCType || "NEW",
+        firestationId: site.fireStationId || fireNOCData?.fireNOCDetails?.firestationId || "",
         action: workflowAction,
         propertyDetails: {
           ...fireNOCData?.fireNOCDetails?.propertyDetails,
           address: {
             ...fireNOCData?.fireNOCDetails?.propertyDetails?.address,
-            doorNo: site.doorHouseNo || "",
+            areaType: site.areaType?.name || site.areaType?.code || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.areaType || "",
+            city: site.cityName?.code || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.city || tenantId,
+            subDistrict: site.districtName?.name || site.districtName || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.subDistrict || "",
+            addressLine2: (site.areaType?.code === "RURAL" || site.areaType?.code === "Rural") ? (site.villageName || "") : (site.mohalla?.name || site.mohalla || ""),
+            doorNo: site.plotSurveyNo || "",
             street: site.streetName || "",
             landmark: site.landmarkName || "",
             pincode: site.pincode || "",
           },
           propertyId: site.propertyId || fireNOCData?.fireNOCDetails?.propertyDetails?.propertyId || "",
+          geoLocation: site.geoLocation || fireNOCData?.fireNOCDetails?.propertyDetails?.geoLocation || null,
         },
+        buildings,
         applicantDetails: {
           ...fireNOCData?.fireNOCDetails?.applicantDetails,
+          ownerShipMajorType: majorType,
+          ownerShipType,
+          owners,
           additionalDetail: {
             ...fireNOCData?.fireNOCDetails?.applicantDetails?.additionalDetail,
             ownerAuditionalDetail: {

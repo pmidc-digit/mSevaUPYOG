@@ -109,6 +109,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
       const floors = Number(b.noOfFloors?.code || b.noOfFloors || 0);
       const basements = Number(b.noOfBasements?.code || b.noOfBasements || 0);
       const height = Number(b.heightOfBuilding || 0);
+      const builtUpArea = Number(b.groundFloorBuiltupArea || 0);
       return {
         name: b.buildingName || "",
         usageType: b.buildingUsageType?.code || b.buildingUsageType || "",
@@ -117,14 +118,20 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           NO_OF_FLOORS: String(floors),
           NO_OF_BASEMENTS: String(basements),
           HEIGHT_OF_BUILDING: String(height),
+          BUILTUP_AREA: String(builtUpArea),
         },
         landArea: Number(b.landArea || 0),
         totalCoveredArea: Number(b.totalCoveredArea || 0),
         parkingArea: Number(b.parkingArea || 0),
+        rightSurrounding: b.rightSurrounding || "",
+        leftSurrounding: b.leftSurrounding || "",
+        frontSurrounding: b.frontSurrounding || "",
+        backSurrounding: b.backSurrounding || "",
         uoms: [
           { code: "HEIGHT_OF_BUILDING", value: height, isActiveUom: true, active: true },
           { code: "NO_OF_FLOORS", value: floors, isActiveUom: false, active: true },
           { code: "NO_OF_BASEMENTS", value: basements, isActiveUom: false, active: true },
+          { code: "BUILTUP_AREA", value: builtUpArea, isActiveUom: false, active: true },
         ],
         applicationDocuments: [],
       };
@@ -141,6 +148,8 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           relationship: item.relationship?.i18nKey || item.relationship?.code || "",
           fatherOrHusbandName: item.fatherOrHusbandName || "",
           correspondenceAddress: item.address || "",
+          emailId: item.emailId || "",
+          pan: item.panNo || "",
         };
       }
       return {
@@ -161,6 +170,10 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
       city: site.cityName?.code || tenantId,
       subDistrict: site.districtName?.name || site.districtName || "",
       addressLine2: isRuralSite ? (site.villageName || "") : (site.mohalla?.name || site.mohalla || ""),
+      doorNo: site.plotSurveyNo || "",
+      street: site.streetName || "",
+      landmark: site.landmarkName || "",
+      pincode: site.pincode || "",
     };
 
     const payload = {
@@ -169,7 +182,11 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           fireNOCDetails: {
             noOfBuildings: site.noOfBuildings || "SINGLE",
             fireNOCType: noc.fireNOCType?.code || "NEW",
-            propertyDetails: { address },
+            propertyDetails: { 
+              address,
+              propertyId: site.propertyId || "",
+              geoLocation: site.geoLocation || null,
+            },
             firestationId: resolvedFirestationId,
             buildings,
             applicantDetails: {

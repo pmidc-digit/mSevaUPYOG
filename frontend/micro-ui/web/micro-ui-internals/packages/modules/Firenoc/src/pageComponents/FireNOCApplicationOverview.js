@@ -566,8 +566,12 @@ const FireNOCApplicationOverview = () => {
         // Only inject EDIT manually as a nav shortcut.
         const hasEditInWorkflow = (actions || []).some((a) => a.action === "EDIT");
         const editItem = isEditable && !hasEditInWorkflow ? [{ action: "EDIT", _isNavAction: true }] : [];
-        // Filter to show only EDIT and APPLY actions
-        const filteredActions = (actions || []).filter((a) => a.action === "APPLY");
+        // Filter EDIT from workflow actions only if we injected it manually (avoid duplicate)
+        let filteredActions = (actions || []).filter((a) => a.action !== "EDIT");
+        // If the application is in INITIATED stage, only show the APPLY action
+        if (appStatus === "INITIATED") {
+          filteredActions = filteredActions.filter((a) => a.action === "APPLY");
+        }
         const menuActions = [...editItem, ...filteredActions];
         if (menuActions.length === 0) return null;
         return (

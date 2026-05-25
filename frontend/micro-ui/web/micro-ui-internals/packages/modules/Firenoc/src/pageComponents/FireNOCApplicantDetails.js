@@ -139,7 +139,7 @@ const FireNOCApplicantDetails = (_props) => {
     }
   }, [applicantSubtype?.code]);
 
-  /* ─── Hydrate from redux on mount ─── */
+  /* ─── Hydrate from redux ─── */
   useEffect(() => {
     const saved = currentStepData?.applicationDetails;
     if (!saved) return;
@@ -148,7 +148,7 @@ const FireNOCApplicantDetails = (_props) => {
     if (Array.isArray(saved.owners) && saved.owners.length) {
       setValue("owners", saved.owners);
     }
-  }, []);
+  }, [currentStepData, setValue]);
 
   /* ════════════════  RENDER HELPERS  ════════════════ */
 

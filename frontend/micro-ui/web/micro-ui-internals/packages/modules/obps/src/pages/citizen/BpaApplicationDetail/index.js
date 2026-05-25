@@ -1024,7 +1024,7 @@ useEffect(() => {
        }
        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
        window.open(fileStore[fileStoreId], "_blank");
-       requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType;
+      //  requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType;
      } catch (error) {
        console.log("error", error);
      } finally {
@@ -1691,6 +1691,8 @@ useEffect(() => {
       }
     }
   }
+
+  console.log("loader Data", "isLoading:", isLoading, "isEnableLoader:", isEnableLoader, "LicenseDataLoading:", LicenseDataLoading, "isMdmsLoading:", isMdmsLoading, "isLoadingScrutiny:", isLoadingScrutiny, "isMdmsLoadingFees:", isMdmsLoadingFees, "apiLoading:", apiLoading)
 
   if (isLoading || isEnableLoader ||LicenseDataLoading || isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees || apiLoading) {
     return <Loader />

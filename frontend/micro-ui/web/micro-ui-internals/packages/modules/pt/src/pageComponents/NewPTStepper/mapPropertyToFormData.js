@@ -36,7 +36,14 @@ export const mapPropertyToFormData = (property) => {
   const unitDetails = (property.units || [])
     .filter((u) => u.active !== false)
     .map((unit) => ({
-      unitUsageType: usageCode || "",
+      unitUsageType: (() => {
+        const parts = (unit.usageCategory || "").split(".");
+        // Take minor segment (index 1) if present, else major (index 0)
+        const minorCode = parts[1] || parts[0] || "";
+        return minorCode ? { code: minorCode } : (usageCode ? { code: usageCode } : "");
+      })(),
+
+
       subUsageType: unit.usageCategory ? { code: unit.usageCategory } : null,
       occupancy: unit.occupancyType ? { code: unit.occupancyType } : null,
       floor: unit.floorNo != null ? { code: String(unit.floorNo) } : null,
@@ -54,7 +61,11 @@ export const mapPropertyToFormData = (property) => {
     propertyUsageType: usageCode ? { code: usageCode } : null,
     propertyType: property.propertyType ? { code: property.propertyType } : null,
     businessName: property.additionalDetails?.businessName || "",
-    remarks: property.additionalDetails?.remrks || "",
+    remarks: property.additionalDetails?.remarks || property.additionalDetails?.remrks || "",
+    vasikaNo: property.additionalDetails?.vasikaNo || "",
+   vasikaDate: property.additionalDetails?.vasikaDate || "",
+   allotmentNo: property.additionalDetails?.allotmentNo || "",
+   allotmentDate: property.additionalDetails?.allotmentDate || "",
     flammable: property.additionalDetails?.inflammable || false,
     heightOfProperty: property.additionalDetails?.heightAbove36Feet || false,
     plotSize: property.landArea || "",

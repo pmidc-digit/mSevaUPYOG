@@ -25,6 +25,7 @@ const Response = (props) => {
 
   const onGoToNOC = () => {
     history.push(`/digit-ui/employee/noc/inbox`);
+    window.location.reload();
   };
 
    const handlePayment = () => {

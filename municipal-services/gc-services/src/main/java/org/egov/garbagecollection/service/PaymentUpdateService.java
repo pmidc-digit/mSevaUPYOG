@@ -140,6 +140,9 @@ public class PaymentUpdateService {
 					if(paymentDetail.getBusinessService().equalsIgnoreCase(config.getReconnectBusinessServiceName()))
 						garbageConnectionRequest.setReconnectRequest(true);
 					wfIntegrator.callWorkFlow(garbageConnectionRequest, property);
+					// For trimmed NewGC workflow: PAY → CONNECTION_ACTIVATED directly.
+					// postStatusEnrichment generates the connection number and sets execution date.
+					enrichmentService.postStatusEnrichment(garbageConnectionRequest);
 					enrichmentService.enrichFileStoreIds(garbageConnectionRequest);
 					repo.updateGarbageConnection(garbageConnectionRequest, false);
 				}

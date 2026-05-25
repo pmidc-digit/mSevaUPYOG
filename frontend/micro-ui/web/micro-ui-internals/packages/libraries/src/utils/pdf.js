@@ -1118,8 +1118,8 @@ const generateTimelinePDF = async (data) => {
   };
 
   pdfMake.vfs = Fonts;
-  let locale = Digit.SessionStorage.get('locale') || 'en_IN';
-  let Hind = pdfFonts[locale] || pdfFonts['Hind'];
+  let locale = Digit.SessionStorage.get("locale") || "pn_IN";
+  let Hind = pdfFonts[locale] || pdfFonts["Hind"];
   pdfMake.fonts = { Hind: { ...Hind } };
   const generatedPDF = pdfMake.createPdf(dd);
   downloadPDFFileUsingBase64(generatedPDF, `file_movement_${businessId}.pdf`);

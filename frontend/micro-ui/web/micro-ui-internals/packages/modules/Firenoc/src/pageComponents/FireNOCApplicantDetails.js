@@ -139,17 +139,6 @@ const FireNOCApplicantDetails = (_props) => {
     }
   }, [applicantSubtype?.code]);
 
-  /* ─── Hydrate from redux ─── */
-  useEffect(() => {
-    const saved = currentStepData?.applicationDetails;
-    if (!saved) return;
-    if (saved.applicantType) setValue("applicantType", saved.applicantType);
-    if (saved.applicantSubtype) setValue("applicantSubtype", saved.applicantSubtype);
-    if (Array.isArray(saved.owners) && saved.owners.length) {
-      setValue("owners", saved.owners);
-    }
-  }, [currentStepData, setValue]);
-
   /* ════════════════  RENDER HELPERS  ════════════════ */
 
   /* ─── Individual owner card ─── */

@@ -878,6 +878,19 @@ const generateTimelinePDF = async (data) => {
   
   let moduleNamenew = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
   // Build content for each timeline entry in eOffice style
+  const addSoftBreaks = (text) => {
+    if (!text) return text;
+
+    // Add soft break after normal spaces
+    let result = text.replace(/ /g, '\u200B ');
+
+    // ALSO handle long words (no spaces)
+    result = result.replace(/(\S{10})/g, '$1\u200B'); 
+    // every 10 chars → allow break
+
+    return result;
+ };
+
   
   const buildTimelineEntries = () => {
     const entries = [];
@@ -885,123 +898,138 @@ const generateTimelinePDF = async (data) => {
     timelineRows.forEach((row, index) => {
       // Main content box with light green background (#ccffcc)
       entries.push({
-        margin: [0, 0, 0, 2 ],
+        margin: [0, 0, 0, 2],
         table: {
-          widths: ['*'],
-          margin:[0,0,0,0],
+          widths: ["*"],
+          margin: [0, 0, 0, 0],
           body: [
-            [{
-              stack: [
-                // Header: Action & Status with background pill effect
-                {
-                  table: {
-                    widths: ['auto', '*', 'auto'],
-                    body: [[
-                      { text: [{ text: 'Action: ', bold: true, color: '#555' }, { text: row.action || 'N/A', color: '#000', bold: true }], fontSize: 10, border: [false, false, false, false] },
-                      { text: '', border: [false, false, false, false] },
-                      {
-                      stack: [
-                         { text: 'Date & Time:', fontSize: 8, color: '#777', bold: true },
-                         { text: `${row.date} | ${row.time}`, fontSize: 9, color: '#333', bold: true, margin: [0, 2, 0, 0] }
-                      ],
-                      alignment: 'right'
-                      }, // Spacer add here date and time below
-                    ]]
-                  },
-                  layout: 'noBorders',
-                  margin: [0, 0, 0, 2]
-                },
-                
-                // Divider line
-                { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 485, y2: 0, lineWidth: 0.5, lineColor: '#99cc99' }] },
-                
-                // Comment/Remarks section
-                {
-                  columns: [
-                    // Left column: Note / Comment
-                    {
-                      stack: [
-                        {
-                          text: row.comment && row.comment !== '-'
-                            ? [
-                                { text: 'Note: ', bold: true },
-                                { text: row.comment.split('').join('\u200B') }
-                              ]
-                            : { text: 'No Comments', color: '#777' },
-                          fontSize: 11,
-                          color: row.comment && row.comment !== '-' ? '#222' : '#777',
-                          margin: [0, 5, 0, 0],
-                          lineHeight: 1.5,
-                          width: '*'
-                        },
-
-                        ...(row.hasDocuments ? [
+            [
+              {
+                stack: [
+                  // Header: Action & Status with background pill effect
+                  {
+                    table: {
+                      widths: ["auto", "*", "auto"],
+                      body: [
+                        [
                           {
-                            columns: [
-                              {
-                                text: 'Attachments:',
-                                fontSize: 9,
-                                bold: true,
-                                color: '#555',
-                                margin: [0, 2, 0, 2],
-                                width: 'auto'
-                              },
-                              {
-                                stack: row.documents.map(doc => {
-                                  return {
-                                    columns: [
-                                      { 
-                                        text: doc.name,
-                                        fontSize: 10,
-                                        color: '#555',
-                                        margin: [5, 5, 0, 0],
-                                        decoration: 'underline',
-                                        listType: "none",
-                                        link: doc.link,
-                                        linkTarget: '_blank' 
-                                      }
-                                    ]
-                                  };
-                                }),
-                                margin: [10, 0, 0, 2],
-                                width: '*'
-                              }
-                            ]
-                          }
-                        ] : [])
-                      ]
-                    },
-
-                    // Right column: Signatory details
-                    {
-                      stack: [
-                        { text: row.assignerName?.toUpperCase() || 'N/A', fontSize: 10, bold: true, alignment: 'right', color: '#000' },
-                        { text: row.designation || row.assignerType || 'N/A', fontSize: 9, color: '#444', alignment: 'right' },
-                        { text: row.mobileNumber !== 'N/A' ? `+91 ${row.mobileNumber}` : '', fontSize: 9, color: '#666', alignment: 'right', margin: [0, 2, 0, 0] }
+                            text: [
+                              { text: "Action: ", bold: true, color: "#555" },
+                              { text: row.action || "N/A", color: "#000", bold: true },
+                            ],
+                            fontSize: 10,
+                            border: [false, false, false, false],
+                          },
+                          { text: "", border: [false, false, false, false] },
+                          {
+                            stack: [
+                              { text: "Date & Time:", fontSize: 8, color: "#777", bold: true },
+                              { text: `${row.date} | ${row.time}`, fontSize: 9, color: "#333", bold: true, margin: [0, 2, 0, 0] },
+                            ],
+                            alignment: "right",
+                          }, // Spacer add here date and time below
+                        ],
                       ],
-                      width: '*',
-                      alignment: 'right',
-                      margin: [0, 5, 0, 0]
-                    }
-                  ],
-                  margin: [0, 5, 0, 0]
-                }
+                    },
+                    layout: "noBorders",
+                    margin: [0, 0, 0, 2],
+                  },
 
-              ],
-              fillColor: '#b8ebb8', 
-              margin: [15, 6, 15, 0],
-              border: [true, true, true, true],
-              borderColor: ['#99cc99', '#99cc99', '#99cc99', '#99cc99']
-            }],
+                  // Divider line
+                  { canvas: [{ type: "line", x1: 0, y1: 0, x2: 485, y2: 0, lineWidth: 0.5, lineColor: "#99cc99" }] },
+
+                  // Comment/Remarks section
+                  {
+                    columns: [
+                      // Left column: Note / Comment
+                      {
+                        stack: [
+                          {
+                            text:
+                              row.comment && row.comment !== "-"
+                                ? [{ text: "Note: ", bold: true }, { text: addSoftBreaks(row.comment) }]
+                                : { text: "No Comments", color: "#777" },
+                            fontSize: 11,
+                            color: row.comment && row.comment !== "-" ? "#222" : "#777",
+                            margin: [0, 5, 0, 0],
+                            lineHeight: 1.5,
+                            width: "*",
+                          },
+
+                          ...(row.hasDocuments
+                            ? [
+                                {
+                                  columns: [
+                                    {
+                                      text: "Attachments:",
+                                      fontSize: 9,
+                                      bold: true,
+                                      color: "#555",
+                                      margin: [0, 2, 0, 2],
+                                      width: "auto",
+                                    },
+                                    {
+                                      stack: row.documents.map((doc) => {
+                                        return {
+                                          columns: [
+                                            {
+                                              text: doc.name,
+                                              fontSize: 10,
+                                              color: "#555",
+                                              margin: [5, 5, 0, 0],
+                                              decoration: "underline",
+                                              listType: "none",
+                                              link: doc.link,
+                                              linkTarget: "_blank",
+                                            },
+                                          ],
+                                        };
+                                      }),
+                                      margin: [10, 0, 0, 2],
+                                      width: "*",
+                                    },
+                                  ],
+                                },
+                              ]
+                            : []),
+                        ],
+                      },
+
+                      // Right column: Signatory details
+                      {
+                        stack: [
+                          { text: row.assignerName?.toUpperCase() || "N/A", fontSize: 10, bold: true, alignment: "right", color: "#000" },
+                          { text: row.designation || row.assignerType || "N/A", fontSize: 9, color: "#444", alignment: "right" },
+                          {
+                            text: row.mobileNumber !== "N/A" ? `+91 ${row.mobileNumber}` : "",
+                            fontSize: 9,
+                            color: "#666",
+                            alignment: "right",
+                            margin: [0, 2, 0, 0],
+                          },
+                        ],
+                        width: "*",
+                        alignment: "right",
+                        margin: [0, 5, 0, 0],
+                      },
+                    ],
+                    margin: [0, 5, 0, 0],
+                  },
+                ],
+                fillColor: "#b8ebb8",
+                margin: [15, 6, 15, 0],
+                border: [true, true, true, true],
+                borderColor: ["#99cc99", "#99cc99", "#99cc99", "#99cc99"],
+              },
+            ],
           ],
         },
         layout: {
-      fillColor: function (rowIndex) {
-        // skip header row (rowIndex === 0), shade only data rows
-        return rowIndex > 0 && rowIndex % 2 === 1 ? '#f5f5f5' : null;
-      }
-    },
-
+          fillColor: function (rowIndex) {
+            // skip header row (rowIndex === 0), shade only data rows
+            return rowIndex > 0 && rowIndex % 2 === 1 ? "#f5f5f5" : null;
+          },
+        },
       });
     });
 

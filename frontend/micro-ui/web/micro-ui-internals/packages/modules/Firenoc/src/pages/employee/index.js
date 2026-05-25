@@ -38,7 +38,7 @@ const NOCBreadCrumbs = ({ location }) => {
     {
       path: "/digit-ui/employee/firenoc/search",
       content: t("ES_COMMON_APPLICATION_SEARCH"),
-      show: location.pathname.includes("/digit-ui/employee/firenoc/search") ? true : false,
+      show: (location.pathname.includes("/digit-ui/employee/firenoc/search") && !location.pathname.endsWith("/search/application")) ? true : false,
     },
     {
       path: "/digit-ui/employee/firenoc/search/application-overview/:id",

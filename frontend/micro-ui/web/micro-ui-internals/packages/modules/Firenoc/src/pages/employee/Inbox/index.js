@@ -163,12 +163,7 @@ const Inbox = ({ parentRoute }) => {
   const PropsForInboxLinks = {
     logoIcon: <ComplaintIcon />,
     headerText: "ACTION_TEST_NOC",
-    links: [
-      {
-        text: t("ES_COMMON_APPLICATION_SEARCH"),
-        link: "/digit-ui/employee/firenoc/search/application",
-      },
-    ],
+    links: [],
   };
 
   const SearchFormFields = useCallback(
@@ -244,9 +239,14 @@ const Inbox = ({ parentRoute }) => {
           
           <div> {t("ES_COMMON_INBOX")} {totalCount ? <p className="inbox-count">{totalCount}</p> : null}</div>
         </Header>
-        <Link to="/digit-ui/employee/firenoc/new-application" style={{ marginTop: "24px" }}>
-          <SubmitBar label={t("NOC_NEW_APPLICATION")} />
-        </Link>
+        <div style={{ display: "flex", gap: "10px", marginTop: "24px" }}>
+          <Link to="/digit-ui/employee/firenoc/search/application">
+            <SubmitBar label={t("ES_COMMON_APPLICATION_SEARCH")} />
+          </Link>
+          <Link to="/digit-ui/employee/firenoc/new-application">
+            <SubmitBar label={t("NOC_NEW_APPLICATION")} />
+          </Link>
+        </div>
       </div>
       <InboxComposer
         {...{

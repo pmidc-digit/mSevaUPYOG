@@ -43,6 +43,8 @@ export const mapPropertyToFormData = (property) => {
         const minorCode = parts[1] || parts[0] || "";
         return minorCode ? { code: minorCode } : (usageCode ? { code: usageCode } : "");
       })(),
+
+
       subUsageType: unit.usageCategory ? { code: unit.usageCategory } : null,
       occupancy: unit.occupancyType ? { code: unit.occupancyType } : null,
       floor: unit.floorNo != null ? { code: String(unit.floorNo) } : null,
@@ -61,6 +63,10 @@ export const mapPropertyToFormData = (property) => {
     propertyType: property.propertyType ? { code: property.propertyType } : null,
     businessName: property.additionalDetails?.businessName || "",
     remarks: property.additionalDetails?.remarks || property.additionalDetails?.remrks || "",
+    vasikaNo: property.additionalDetails?.vasikaNo || "",
+   vasikaDate: property.additionalDetails?.vasikaDate || "",
+   allotmentNo: property.additionalDetails?.allotmentNo || "",
+   allotmentDate: property.additionalDetails?.allotmentDate || "",
     flammable: property.additionalDetails?.inflammable || false,
     heightOfProperty: property.additionalDetails?.heightAbove36Feet || false,
     plotSize: property.landArea || "",

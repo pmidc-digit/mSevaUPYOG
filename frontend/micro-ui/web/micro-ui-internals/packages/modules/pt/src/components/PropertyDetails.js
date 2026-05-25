@@ -209,6 +209,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     setValue("heightOfProperty", stateDataCheck?.heightOfProperty);
     setValue("plotSize", stateDataCheck?.plotSize);
     setValue("noOfFloors", checkFloors);
+    setValue("vasikaNo", stateDataCheck?.vasikaNo || "");
+setValue("vasikaDate", stateDataCheck?.vasikaDate || "");
+setValue("allotmentNo", stateDataCheck?.allotmentNo || "");
+setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
 
     if (stateDataCheck?.unitDetails?.length > 0) {
       remove([...Array(fields.length).keys()]);
@@ -306,7 +310,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
       </div>
 
     {/* Row: Vasika No + Vasika Date */}
-{/* <div style={twoColRow}>
+<div style={twoColRow}>
   <LabelFieldPair style={colItem}>
     <CardLabel className="card-label-smaller">{t("Vasika No")}</CardLabel>
     <div className="form-field">
@@ -336,10 +340,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
       />
     </div>
   </LabelFieldPair>
-</div> */}
+</div>
 
 {/* Row: Allotment No + Allotment Date */}
-{/* <div style={twoColRow}>
+<div style={twoColRow}>
   <LabelFieldPair style={colItem}>
     <CardLabel className="card-label-smaller">{t("Allotment No")}</CardLabel>
     <div className="form-field">
@@ -369,7 +373,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
       />
     </div>
   </LabelFieldPair>
-</div> */}
+</div>
 
       {/* Row 2: Business Name + Remarks */}
       <div style={twoColRow}>

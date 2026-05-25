@@ -56,7 +56,6 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onSubmit = async (data, selectedAction) => {
-    console.log("data", data);
     setLoader(true);
     const { propertyDetails, propertyAddress, ownerDetails, documents } = data;
     const originalProperty = data._originalProperty;
@@ -160,7 +159,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
         businessName: propertyDetails?.businessName,
         remrks: propertyDetails?.remarks,
         inflammable: propertyDetails?.flammable,
-        heightAbove36Feet: propesrtyDetails?.heightOfProperty,
+        heightAbove36Feet: propertyDetails?.heightOfProperty,
         vasikaNo: propertyDetails?.vasikaNo,
         vasikaDate: propertyDetails?.vasikaDate,
         allotmentNo: propertyDetails?.allotmentNo,
@@ -207,6 +206,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       if (isEditMode) {
         response = await Digit.PTService.update({ Property: formData }, tenantId);
       } else {
+        console.lo("runningcreateApi")
         response = await Digit.PTService.create({ Property: formData }, tenantId);
       }
       console.log("response====", response);

@@ -56,7 +56,6 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onSubmit = async (data, selectedAction) => {
-    console.log("data", data);
     setLoader(true);
     // debugger
 

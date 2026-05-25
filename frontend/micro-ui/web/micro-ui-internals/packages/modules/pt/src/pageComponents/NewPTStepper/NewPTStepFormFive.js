@@ -168,7 +168,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
         remarks: propertyDetails?.remarks,
         remrks: propertyDetails?.remarks,
         inflammable: propertyDetails?.flammable,
-        heightAbove36Feet: propertyDetails?.heightOfProperty,
+        heightAbove36Feet: propesrtyDetails?.heightOfProperty,
         vasikaNo: propertyDetails?.vasikaNo,
         vasikaDate: propertyDetails?.vasikaDate,
         allotmentNo: propertyDetails?.allotmentNo,

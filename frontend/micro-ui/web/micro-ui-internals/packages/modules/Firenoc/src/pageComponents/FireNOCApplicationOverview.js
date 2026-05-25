@@ -106,6 +106,8 @@ const FireNOCApplicationOverview = () => {
     wfdata?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
+    
+    console.log("actions",actions)
 
   useEffect(() => {
     if (!tenantId) return;
@@ -118,6 +120,8 @@ const FireNOCApplicationOverview = () => {
   }, [tenantId]);
 
   const onActionSelect = (action) => {
+    console.log("Action selected:", action?.action);
+
     if (action?.action === "EDIT") {
       const basePath = isEmployee ? "/digit-ui/employee/firenoc" : "/digit-ui/citizen/firenoc";
       history.push(`${basePath}/edit-application/${applicationNo}?tenantId=${tenantId}`);
@@ -130,6 +134,22 @@ const FireNOCApplicationOverview = () => {
       history.push(redirectPath);
       return;
     }
+    if (action?.action === "APPLY") {
+      console.log("APPLY action selected - submitting directly without modal");
+      const payload = {
+        FireNOCs: [{
+          ...fireNOC,
+          fireNOCDetails: {
+            ...fireNOC?.fireNOCDetails,
+            action: "APPLY"
+          }
+        }]
+      };
+      submitAction(payload);
+      setDisplayMenu(false);
+      return;
+    }
+
     const filterNexState = action?.state?.actions?.filter((item) => item.action === action?.action) || [];
     const nextStateUuid = filterNexState?.[0]?.nextState;
     const filterRoles = nextStateUuid ? getWorkflowService?.filter((item) => item?.uuid === nextStateUuid) : [];
@@ -233,9 +253,11 @@ const FireNOCApplicationOverview = () => {
     appStatus === "CITIZENACTIONREQUIRED" ||
     appStatus === "SENDBACKTOCITIZEN" ||
     appStatus === "CITIZEN_ACTION_REQUIRED" ||
+    appStatus === "INITIATED"  ||
     wfdata?.nextActions?.some(action => action.action === "EDIT" || action.action === "RESUBMIT") ||
     wfdata?.actionState?.nextActions?.some(action => action.action === "EDIT" || action.action === "RESUBMIT");
-  const isResumable = appStatus === "INITIATED";
+  
+    const isResumable = appStatus === "INITIATED";
 
   const handleDownloadPdf = async () => {
     try {
@@ -528,7 +550,7 @@ const FireNOCApplicationOverview = () => {
           />
         </ActionBar>
       )}
-      {isResumable && !isEmployee && (
+      {isResumable && (
         <ActionBar>
           <SubmitBar
             label={t("TL_RESUME_APPLICATION")}
@@ -542,11 +564,10 @@ const FireNOCApplicationOverview = () => {
 
       {(() => {
         // Only inject EDIT manually as a nav shortcut.
-        // RESUBMIT stays as a native workflow action so it opens the modal as before.
         const hasEditInWorkflow = (actions || []).some((a) => a.action === "EDIT");
         const editItem = isEditable && !hasEditInWorkflow ? [{ action: "EDIT", _isNavAction: true }] : [];
-        // Filter EDIT from workflow actions only if we injected it manually (avoid duplicate)
-        const filteredActions = (actions || []).filter((a) => a.action !== "EDIT");
+        // Filter to show only EDIT and APPLY actions
+        const filteredActions = (actions || []).filter((a) => a.action === "APPLY");
         const menuActions = [...editItem, ...filteredActions];
         if (menuActions.length === 0) return null;
         return (

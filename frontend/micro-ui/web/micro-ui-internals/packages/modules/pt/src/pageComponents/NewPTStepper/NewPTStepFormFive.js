@@ -129,7 +129,10 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
         relationship: owner?.relationship?.name || owner?.relationship,
         ownerShipPercentage: owner?.ownershipPercentage,
         ownerType: owner?.ownerType?.code || owner?.ownerType || "NONE",
-        altContactNumber: owner?.mobileNumber,
+        altContactNumber: owner?.altContactNumber,
+        designation: owner?.designation,
+
+
         ...(specialCategoryDoc.length > 0 && { documents: specialCategoryDoc }),
       };
     });
@@ -181,7 +184,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
           type: ownerDetails?.institutionType?.code,
           nameOfAuthorizedPerson: ownerDetails?.owners?.[0]?.name,
           tenantId: null,
-          designation: "no",
+          designation: owner?.designation,
         },
       }),
 

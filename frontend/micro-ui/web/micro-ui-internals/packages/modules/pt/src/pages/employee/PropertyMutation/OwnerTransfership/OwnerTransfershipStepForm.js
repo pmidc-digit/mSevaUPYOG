@@ -27,7 +27,7 @@ const createEmployeeConfig = [
   },
   {
     head: "PT_MUTATION_DOCUMENT_DETAILS",
-    stepLabel: "Docuement Details",
+    stepLabel: "Document Details",
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",

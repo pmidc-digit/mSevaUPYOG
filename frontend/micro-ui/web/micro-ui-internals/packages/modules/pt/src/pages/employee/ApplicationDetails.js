@@ -2,11 +2,10 @@ import { Header, LinkButton, Modal } from "@mseva/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails";
 import { newConfigMutate } from "../../config/Mutate/config";
 import TransfererDetails from "../../pageComponents/Mutate/TransfererDetails";
-import { TransferOwnership } from "../../pageComponents/TransferOwnership";
 import PropertyOwnerHistory from "../citizen/MyProperties/propertyOwnerHistory";
 import MutationApplicationDetails from "./MutationApplicatinDetails";
 import getPTAcknowledgementData from "../../getPTAcknowledgementData";
@@ -35,12 +34,12 @@ const ApplicationDetails = () => {
   const [showToast, setShowToast] = useState(null);
   const [appDetailsToShow, setAppDetailsToShow] = useState({});
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [showOwnershipModal, setShowOwnershipModal] = useState(false);
   const [enableAudit, setEnableAudit] = useState(false);
   const [businessService, setBusinessService] = useState("PT.CREATE");
   sessionStorage.setItem("applicationNoinAppDetails", propertyId);
   const [viewTimeline, setViewTimeline] = useState(false);
   const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, tenantId, propertyId);
+  const history = useHistory();
 
   const {
     isLoading: updatingApplication,
@@ -268,7 +267,6 @@ const ApplicationDetails = () => {
           Component: () => (
             <div style={{ display: "inline-flex", gap: "16px", marginLeft: "25px", alignItems: "center" }}>
               <LinkButton label={t("PT_VIEW_HISTORY")} style={{ color: "#A52A2A" }} onClick={() => setShowHistoryModal(true)}></LinkButton>
-              <LinkButton label={t("PT_OWNERSHIP_TRANSFER")} style={{ color: "#A52A2A" }} onClick={() => setShowOwnershipModal(true)}></LinkButton>
             </div>
           ),
         };
@@ -319,7 +317,6 @@ const ApplicationDetails = () => {
           <PropertyOwnerHistory propertyId={propertyId} userType={"employee"} />
         </Modal>
       ) : null}
-      {showOwnershipModal ? <TransferOwnership /> : null}
     </div>
   );
 };

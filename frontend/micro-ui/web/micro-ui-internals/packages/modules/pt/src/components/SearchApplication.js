@@ -4,7 +4,7 @@ import { TextInput, SubmitBar, LinkLabel, ActionBar, CloseSvg, DatePicker, CardL
 import { Link } from "react-router-dom";
 import MobileSearchApplication from "./MobileSearchApplication";
 
-const PTSearchApplication = ({tenantId, isLoading, t, onSubmit, data, count, setShowToast }) => {
+const PTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, setShowToast }) => {
     const isMobile = window.Digit.Utils.browser.isMobile();
     const { register, control, handleSubmit, setValue, getValues, reset, formState } = useForm({
         defaultValues: {
@@ -15,11 +15,11 @@ const PTSearchApplication = ({tenantId, isLoading, t, onSubmit, data, count, set
         }
     })
     useEffect(() => {
-      register("offset", 0)
-      register("limit", 10)
-      register("sortBy", "commencementDate")
-      register("sortOrder", "DESC")
-    },[register])
+        register("offset", 0)
+        register("limit", 10)
+        register("sortBy", "commencementDate")
+        register("sortOrder", "DESC")
+    }, [register])
     //need to get from workflow
     const applicationTypes = [
         {
@@ -51,55 +51,67 @@ const PTSearchApplication = ({tenantId, isLoading, t, onSubmit, data, count, set
     ]
 
     const getaddress = (address) => {
-        let newaddr = `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${
-            address?.landmark ? `${address?.landmark}, ` : ""
-          }${t(address?.locality.code)}, ${t(address?.city)},${t(address?.pincode) ? `${address.pincode}` : " "}`
+        let newaddr = `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${address?.landmark ? `${address?.landmark}, ` : ""
+            }${t(address?.locality.code)}, ${t(address?.city)},${t(address?.pincode) ? `${address.pincode}` : " "}`
         return newaddr;
     }
     const GetCell = (value) => <span className="cell-text">{value}</span>;
-    const columns = useMemo( () => ([
+    const columns = useMemo(() => ([
         {
             Header: t("PT_SEARCHPROPERTY_TABEL_PID"),
             disableSortBy: true,
-            accessor: (row) => GetCell(row.propertyId || ""),
+            accessor: "propertyId",
+            Cell: ({ row }) => {
+                return (
+                    <div>
+                        <span className="link">
+                            <Link to={`/digit-ui/employee/pt/property-details/${row.original["propertyId"]}`}>
+                                {row.original["propertyId"]}
+                            </Link>
+                        </span>
+                    </div>
+                );
+            },
         },
         {
             Header: t("PT_APPLICATION_NO_LABEL"),
             accessor: "acknowldgementNumber",
             disableSortBy: true,
             Cell: ({ row }) => {
-              return (
-                <div>
-                  <span className="link">
-                    <Link to={`/digit-ui/employee/pt/applicationsearch/application-details/${row.original["propertyId"]}`}>
-                      {row.original["acknowldgementNumber"]}
-                    </Link>
-                  </span>
-                </div>
-              );
+                return (
+                    <div>
+                        <span className="link">
+                            <Link to={`/digit-ui/employee/pt/applicationsearch/application-details/${row.original["propertyId"]}`}>
+                                {row.original["acknowldgementNumber"]}
+                            </Link>
+                        </span>
+                    </div>
+                );
             },
-          },
-          {
+        },
+        {
             Header: t("PT_SEARCHPROPERTY_TABEL_APPLICATIONTYPE"),
             disableSortBy: true,
             accessor: (row) => GetCell(row.creationReason || ""),
-          },
-          {
+        },
+        {
             Header: t("PT_COMMON_TABLE_COL_OWNER_NAME"),
-            accessor: (row) => GetCell(row.owners?.[0]?.additionalDetails?.ownerSequence ? row.owners.sort((a,b)=>a.additionalDetails.ownerSequence-b.additionalDetails.ownerSequence).map( o => o.name ). join(",") || "" : row.owners.map( o => o.name ). join(",") || ""),
+            accessor: (row) => GetCell(row.owners?.[0]?.additionalDetails?.ownerSequence ? row.owners.sort((a, b) => a.additionalDetails.ownerSequence - b.additionalDetails.ownerSequence).map(o => o.name).join(",") || "" : row.owners.map(o => o.name).join(",") || ""),
             disableSortBy: true,
-          },
-          {
+        },
+       
+        {
             Header: t("ES_SEARCH_PROPERTY_STATUS"),
-            accessor: (row) =>GetCell(t( row?.status &&`WF_PT_${row.status}`|| "NA") ),
+            accessor: (row) => GetCell(t(row?.status && `WF_PT_${row.status}` || "NA")),
             disableSortBy: true,
-          },
-          {
+        },
+         {
             Header: t("PT_ADDRESS_LABEL"),
             disableSortBy: true,
             accessor: (row) => GetCell(getaddress(row.address) || ""),
-          },
-      ]), [] )
+        },
+
+    ]), [])
 
     const onSort = useCallback((args) => {
         if (args.length === 0) return
@@ -107,64 +119,64 @@ const PTSearchApplication = ({tenantId, isLoading, t, onSubmit, data, count, set
         setValue("sortOrder", args.desc ? "DESC" : "ASC")
     }, [])
 
-    function onPageSizeChange(e){
-        setValue("limit",Number(e.target.value))
+    function onPageSizeChange(e) {
+        setValue("limit", Number(e.target.value))
         handleSubmit(onSubmit)()
     }
 
-    function nextPage () {
+    function nextPage() {
         setValue("offset", getValues("offset") + getValues("limit"))
         handleSubmit(onSubmit)()
     }
-    function previousPage () {
-        setValue("offset", getValues("offset") - getValues("limit") )
+    function previousPage() {
+        setValue("offset", getValues("offset") - getValues("limit"))
         handleSubmit(onSubmit)()
     }
-    let validation={}
+    let validation = {}
 
     return <React.Fragment>
-                {isMobile ?
-                <MobileSearchApplication {...{ Controller, register, control, t, reset, previousPage, handleSubmit, tenantId, data, onSubmit, formState, setShowToast }}/>
-                 :
-                <div>
+        {isMobile ?
+            <MobileSearchApplication {...{ Controller, register, control, t, reset, previousPage, handleSubmit, tenantId, data, onSubmit, formState, setShowToast }} />
+            :
+            <div>
                 <Header>{t("PT_SEARCH_PROP_APP")}</Header>
                 < Card className={"card-search-heading"}>
-                    <span style={{color:"#505A5F"}}>{t("Provide at least one parameter to search for an application")}</span>
+                    <span style={{ color: "#505A5F" }}>{t("Provide at least one parameter to search for an application")}</span>
                 </Card>
                 <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit}>
-                <SearchField>
-                    <label>{t("PT_APPLICATION_NO_LABEL")}</label>
-                    <TextInput name="acknowledgementIds" inputRef={register({})} />
-                </SearchField>
-                <SearchField>
-                    <label>{t("PT_SEARCHPROPERTY_TABEL_PID")}</label>
-                    <TextInput name="propertyIds" inputRef={register({})} />
-                </SearchField>
-                <SearchField>
-                <label>{t("PT_OWNER_MOBILE_NO")}</label>
-                <TextInput
-                    name="mobileNumber"
-                    inputRef={register({
-                    minLength: {
-                        value: 10,
-                        message: t("CORE_COMMON_MOBILE_ERROR"),
-                    },
-                    maxLength: {
-                        value: 10,
-                        message: t("CORE_COMMON_MOBILE_ERROR"),
-                    },
-                    pattern: {
-                    value: /[6789][0-9]{9}/,
-                    message: t("CORE_COMMON_MOBILE_ERROR"),
-                    },
-                })}
-                type="text"
-                
-                />
-                 <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
-                </SearchField>
-                
-                {/* <SearchField>
+                    <SearchField>
+                        <label>{t("PT_APPLICATION_NO_LABEL")}</label>
+                        <TextInput name="acknowledgementIds" inputRef={register({})} />
+                    </SearchField>
+                    <SearchField>
+                        <label>{t("PT_SEARCHPROPERTY_TABEL_PID")}</label>
+                        <TextInput name="propertyIds" inputRef={register({})} />
+                    </SearchField>
+                    <SearchField>
+                        <label>{t("PT_OWNER_MOBILE_NO")}</label>
+                        <TextInput
+                            name="mobileNumber"
+                            inputRef={register({
+                                minLength: {
+                                    value: 10,
+                                    message: t("CORE_COMMON_MOBILE_ERROR"),
+                                },
+                                maxLength: {
+                                    value: 10,
+                                    message: t("CORE_COMMON_MOBILE_ERROR"),
+                                },
+                                pattern: {
+                                    value: /[6789][0-9]{9}/,
+                                    message: t("CORE_COMMON_MOBILE_ERROR"),
+                                },
+                            })}
+                            type="text"
+
+                        />
+                        <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
+                    </SearchField>
+
+                    {/* <SearchField>
                     <label>{t("PT_SEARCHPROPERTY_TABEL_APPLICATIONTYPE")}</label>
                     <Controller
                             control={control}
@@ -216,64 +228,64 @@ const PTSearchApplication = ({tenantId, isLoading, t, onSubmit, data, count, set
                         control={control}
                         />
                 </SearchField> */}
-                <SearchField className="submit">
-                    <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
-                    <p style={{marginTop:"10px"}}
-                     onClick={() => {
-                        reset({ 
-                            acknowledgementIds: "", 
-                            fromDate: "", 
-                            toDate: "",
-                            propertyIds: "",
-                            mobileNumber:"",
-                            status: "",
-                            creationReason: "",
-                            offset: 0,
-                            limit: 10,
-                            sortBy: "commencementDate",
-                            sortOrder: "DESC"
-                        });
-                        setShowToast(null);
-                        previousPage();
-                    }}>{t(`ES_COMMON_CLEAR_ALL`)}</p>
-                </SearchField>
-            </SearchForm>
-            {!isLoading && data?.display ? <Card style={{ marginTop: 20 }}>
-                {
-                t(data.display)
-                    .split("\\n")
-                    .map((text, index) => (
-                    <p key={index} style={{ textAlign: "center" }}>
-                        {text}
-                    </p>
-                    ))
-                }
-            </Card>
-            :(!isLoading && data !== ""? <Table
-                t={t}
-                data={data}
-                totalRecords={count}
-                columns={columns}
-                getCellProps={(cellInfo) => {
-                return {
-                    style: {
-                    minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-                    padding: "20px 18px",
-                    fontSize: "16px"
-                  },
-                };
-                }}
-                onPageSizeChange={onPageSizeChange}
-                currentPage={getValues("offset")/getValues("limit")}
-                onNextPage={nextPage}
-                onPrevPage={previousPage}
-                pageSizeLimit={getValues("limit")}
-                onSort={onSort}
-                disableSort={false}
-                sortParams={[{id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false}]}
-            />: data !== "" || isLoading && <Loader/>)}
+                    <SearchField className="submit">
+                        <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
+                        <p style={{ marginTop: "10px" }}
+                            onClick={() => {
+                                reset({
+                                    acknowledgementIds: "",
+                                    fromDate: "",
+                                    toDate: "",
+                                    propertyIds: "",
+                                    mobileNumber: "",
+                                    status: "",
+                                    creationReason: "",
+                                    offset: 0,
+                                    limit: 10,
+                                    sortBy: "commencementDate",
+                                    sortOrder: "DESC"
+                                });
+                                setShowToast(null);
+                                previousPage();
+                            }}>{t(`ES_COMMON_CLEAR_ALL`)}</p>
+                    </SearchField>
+                </SearchForm>
+                {!isLoading && data?.display ? <Card style={{ marginTop: 20 }}>
+                    {
+                        t(data.display)
+                            .split("\\n")
+                            .map((text, index) => (
+                                <p key={index} style={{ textAlign: "center" }}>
+                                    {text}
+                                </p>
+                            ))
+                    }
+                </Card>
+                    : (!isLoading && data !== "" ? <Table
+                        t={t}
+                        data={data}
+                        totalRecords={count}
+                        columns={columns}
+                        getCellProps={(cellInfo) => {
+                            return {
+                                style: {
+                                    minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
+                                    padding: "20px 18px",
+                                    fontSize: "16px"
+                                },
+                            };
+                        }}
+                        onPageSizeChange={onPageSizeChange}
+                        currentPage={getValues("offset") / getValues("limit")}
+                        onNextPage={nextPage}
+                        onPrevPage={previousPage}
+                        pageSizeLimit={getValues("limit")}
+                        onSort={onSort}
+                        disableSort={false}
+                        sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
+                    /> : data !== "" || isLoading && <Loader />)}
             </div>}
-        </React.Fragment>
+    </React.Fragment>
 }
 
 export default PTSearchApplication

@@ -413,20 +413,8 @@ useEffect(() => {
                     control={control}
                     name={`owners.${index}.name`}
                     defaultValue={item?.name || ""}
-                    rules={{
-                      required: "Name required",
-                      validate: {
-                        noNumbers: (value) => !/\d/.test(value || "") || "Numeric values are not allowed in name",
-                      },
-                    }}
-                    render={(props) => (
-                      <TextInput
-                        value={props.value}
-                        onChange={(e) => props.onChange(e.target.value.replace(/\d/g, ""))}
-                        onBlur={props.onBlur}
-                        disable={isEditMode}
-                      />
-                    )}
+                    rules={{ required: "Name required" }}
+                    render={(props) => <TextInput {...props} disable={isEditMode} />}
                   />
                   {errors?.owners?.[index]?.name && (
                     <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].name.message}</p>
@@ -458,25 +446,14 @@ useEffect(() => {
                       control={control}
                       name={`owners.${index}.altContactNumber`}
                       defaultValue={item?.altContactNumber || ""}
-                      rules={{
-                        validate: {
-                          validLandline: (v) => !v || /^\d{11}$/.test(v) || "Please enter a valid 11-digit landline number",
-                        }
-                      }}
                       render={(props) => (
                         <TextInput
                           value={props.value}
-                          onChange={(e) => {
-                            const val = e.target.value.replace(/\D/g, "").slice(0, 11);
-                            props.onChange(val);
-                          }}
+                          onChange={(e) => props.onChange(e.target.value)}
                           disable={isEditMode}
                         />
                       )}
                     />
-                    {errors?.owners?.[index]?.altContactNumber && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].altContactNumber.message}</p>
-                    )}
                   </LabelFieldPair>
                 </div>
               )}

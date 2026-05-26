@@ -161,26 +161,31 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
     trigger("ownerShip");
   }, [ownersLength]);
 
-  useEffect(() => {
-    // Don't reset while restoring edit data
-    if (isRestoredRef.current) return;
+useEffect(() => {
+  // Don't reset while restoring edit data
+  if (isRestoredRef.current) return;
 
-    // Reset the field array to exactly 1 empty owner
-    remove([...Array(fields.length).keys()]);
-    append({
-      name: "",
-      mobileNumber: "",
-      emailId: "",
-      address: "",
-      designation: "",
-      altContactNumber: "",
-      gender: "",
-      fatherOrHusbandName: "",
-      relationship: "",
-      ownerType: "",
-      ownershipPercentage: ownerTypeCode === "SINGLEOWNER" ? "100" : "",
-    });
-  }, [ownerTypeCode, remove, append]);
+  const currentOwners = watch("owners") || [];
+
+  // Single owner → keep first owner, don't wipe fields
+  if (!isMultiple) {
+    setValue("owners", [
+      currentOwners[0] || {
+        name: "",
+        mobileNumber: "",
+        emailId: "",
+        address: "",
+        designation: "",
+        altContactNumber: "",
+        gender: "",
+        fatherOrHusbandName: "",
+        relationship: "",
+        ownerType: "",
+        ownershipPercentage: "",
+      },
+    ]);
+  }
+}, [ownerTypeCode]);
 
 
 
@@ -268,7 +273,6 @@ useEffect(() => {
     isRestoredRef.current = true;
   }
 }, [ownerShip, SubOwnerShipCategory, stateDataCheck, ownerTypeDocuments]);
-
   return (
     <form  onSubmit={handleSubmit(onSubmit)}>
       {/* city */}

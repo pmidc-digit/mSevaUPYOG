@@ -2,10 +2,11 @@ import { Header, LinkButton, MultiLink } from "@mseva/digit-ui-react-components"
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails";
 import { newConfigMutate } from "../../config/Mutate/config";
 import TransfererDetails from "../../pageComponents/Mutate/TransfererDetails";
+import PropertyOwnerHistory from "../citizen/MyProperties/propertyOwnerHistory";
 import MutationApplicationDetails from "./MutationApplicatinDetails";
 import getPTAcknowledgementData from "../../getPTAcknowledgementData";
 
@@ -17,12 +18,13 @@ const ApplicationDetails = () => {
   const { id: propertyId } = useParams();
   const [showToast, setShowToast] = useState(null);
   const [appDetailsToShow, setAppDetailsToShow] = useState({});
-  const [showOptions, setShowOptions] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [enableAudit, setEnableAudit] = useState(false);
   const [businessService, setBusinessService] = useState("PT.CREATE");
   sessionStorage.setItem("applicationNoinAppDetails", propertyId);
   const [viewTimeline, setViewTimeline] = useState(false);
   const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, tenantId, propertyId);
+  const history = useHistory();
 
   const {
     isLoading: updatingApplication,
@@ -236,6 +238,23 @@ const ApplicationDetails = () => {
       return appDetailsToShow?.applicationDetails?.[3]?.additionalDetails?.owners;
     });
   }
+
+  if (appDetailsToShow?.applicationDetails) {
+    appDetailsToShow.applicationDetails = appDetailsToShow.applicationDetails.map((detail) => {
+      if (detail.title === "PT_OWNERSHIP_INFO_SUB_HEADER") {
+        return {
+          ...detail,
+          Component: () => (
+            <div style={{ display: "inline-flex", gap: "16px", marginLeft: "25px", alignItems: "center" }}>
+              <LinkButton label={t("PT_VIEW_HISTORY")} style={{ color: "#A52A2A" }} onClick={() => setShowHistoryModal(true)}></LinkButton>
+            </div>
+          ),
+        };
+      }
+      return detail;
+    });
+  }
+
   return (
     <div>
       <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
@@ -276,6 +295,17 @@ const ApplicationDetails = () => {
         statusAttribute={"state"}
         MenuStyle={{ color: "#FFFFFF", fontSize: "18px" }}
       />
+      {showHistoryModal ? (
+        <Modal
+          headerBarMain={<h1 className="heading-m">{t("PT_OWNER_HISTORY")}</h1>}
+          headerBarEnd={<CloseBtn onClick={() => setShowHistoryModal(false)} />}
+          hideSubmit={true}
+          isDisabled={false}
+          popupStyles={{ width: "75%" }}
+        >
+          <PropertyOwnerHistory propertyId={propertyId} userType={"employee"} />
+        </Modal>
+      ) : null}
     </div>
   );
 };

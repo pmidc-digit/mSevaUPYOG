@@ -63,109 +63,55 @@ const ApplicationDetails = (props) => {
     }
   }, [showToast]);
 
- function onActionSelect(action) {
-  console.log("action====", action);
-  console.log("applicationDetails===>", applicationDetails);
-
-  // -----------------------------
-  // TL Specific Renewal Handling
-  // -----------------------------
-  const isTLService =
-    businessService?.toUpperCase()?.includes("TL") ||
-    applicationDetails?.applicationData?.businessService?.toUpperCase()?.includes("TL");
-
-  if (isTLService && action) {
-
-    // Edit & Renewal
-    if (action?.action === "RENEWAL_SUBMIT_BUTTON") {
-      history.push({
-        pathname: `/digit-ui/employee/tl/renew-application-details/${applicationDetails?.applicationData?.applicationNumber}`,
-        state: applicationDetails,
-      });
-
-      setSelectedAction(action);
-      setDisplayMenu(false);
-      return;
-    }
-
-    // Direct Renewal
-    if (action?.action === "DIRECT_RENEWAL_BUTTON") {
-      setSelectedAction(action);
-      setDisplayMenu(false);
-      setShowModal(true);
-      return;
-    }
-  }
-
-  // -----------------------------
-  // Existing Common Logic
-  // -----------------------------
-  if (action) {
-
-    if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
-      window.location.assign(
-        window.location.href.split("bpa")[0] +
-          "editApplication/bpa" +
-          window.location.href.split("bpa")[1]
-      );
-    }
-
-    if (action.action == "PAY" && window.location.href.includes("tl")) {
-      history.push(
-        `/digit-ui/employee/payment/collect/${applicationDetails.applicationData.businessService}/${applicationDetails.applicationData.applicationNumber}`
-      );
-    }
-
-    if (action?.isToast) {
-      setShowToast({
-        key: "error",
-        error: { message: action?.toastMessage },
-      });
-      setTimeout(closeToast, 5000);
-      return;
-    } else if (action?.isWarningPopUp) {
-      setWarningPopUp(true);
-    } else if (action?.redirectionUrll) {
-      if (action?.redirectionUrll?.action === "ACTIVATE_CONNECTION") {
-        history.push(
-          `${action?.redirectionUrll?.pathname}`,
-          JSON.stringify({
-            data: action?.redirectionUrll?.state,
-            url: `${location?.pathname}${location.search}`,
-          })
-        );
-      } else if (
-        action?.redirectionUrll?.action === "RE-SUBMIT-APPLICATION"
-      ) {
-        history.push(`${action?.redirectionUrll?.pathname}`, {
-          data: action?.redirectionUrll?.state,
-        });
-      } else {
-        window.location.assign(
-          `${window.location.origin}/digit-ui/employee/payment/collect/${action?.redirectionUrll?.pathname}`
-        );
+  function onActionSelect(action) {
+    console.log("action====", action);
+    console.log("applicationDetails===>",applicationDetails)
+    if (action) {
+      if (action?.forcedName === "PT_OWNERSHIP_TRANSFER" && typeof action?.customFunctionToExecute === "function") {
+        action.customFunctionToExecute();
+        return;
       }
-    } else if (
-      !action?.redirectionUrl &&
-      action?.action != "EDIT PAY 2"
-    ) {
-      setShowModal(true);
-    } else if (
-      action?.redirectionUrl?.state?.applicationData?.workflowCode ===
-      "DIRECTRENEWAL"
-    ) {
-      setShowModal(true);
-    } else {
-      history.push({
-        pathname: action.redirectionUrl?.pathname,
-        state: { ...action.redirectionUrl?.state },
-      });
-    }
-  }
+      if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
+        window.location.assign(window.location.href.split("bpa")[0] + "editApplication/bpa" + window.location.href.split("bpa")[1]);
+      }
+      if(action.action == "PAY" && window.location.href.includes("tl")){
+        history.push(`/digit-ui/employee/payment/collect/${applicationDetails.applicationData.businessService}/${applicationDetails.applicationData.applicationNumber}`)
+      }
+      if(action?.isToast){
+        console.log("➡️ isToast triggered — blocking action:", action?.action, "message:", action?.toastMessage);
+        setShowToast({ key: "error", error: { message: action?.toastMessage } });
+        setTimeout(closeToast, 5000);
+        return;
+      }
+      else if (action?.isWarningPopUp) {
+        setWarningPopUp(true);
+      } else if (action?.redirectionUrll) {
+        if (action?.redirectionUrll?.action === "ACTIVATE_CONNECTION") {
+          // window.location.assign(`${window.location.origin}digit-ui/employee/ws/${action?.redirectionUrll?.pathname}`, { data: action?.redirectionUrll?.state });
 
-  setSelectedAction(action);
-  setDisplayMenu(false);
-}
+          history.push(
+            `${action?.redirectionUrll?.pathname}`,
+            JSON.stringify({ data: action?.redirectionUrll?.state, url: `${location?.pathname}${location.search}` })
+          );
+        } else if (action?.redirectionUrll?.action === "RE-SUBMIT-APPLICATION") {
+          history.push(`${action?.redirectionUrll?.pathname}`, { data: action?.redirectionUrll?.state });
+        } else {
+          window.location.assign(`${window.location.origin}/digit-ui/employee/payment/collect/${action?.redirectionUrll?.pathname}`);
+        }
+      } else if (!action?.redirectionUrl && action?.action != "EDIT PAY 2") {
+        setShowModal(true);
+      } else if (action?.redirectionUrl?.state?.applicationData?.workflowCode === "DIRECTRENEWAL") {
+        setShowModal(true);
+      } else {
+        history.push({
+          pathname: action.redirectionUrl?.pathname,
+          state: { ...action.redirectionUrl?.state },
+        });
+      }
+    }
+    setSelectedAction(action);
+    setDisplayMenu(false);
+  }
 
   const queryClient = useQueryClient();
 

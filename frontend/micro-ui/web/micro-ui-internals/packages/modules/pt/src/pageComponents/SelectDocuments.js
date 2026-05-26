@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast, Loader, CardHeader, CardSectionHeader } from "@mseva/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
 import { Controller, useFormContext } from "react-hook-form";
@@ -130,6 +131,9 @@ function SelectDocument({
     console.log("In find:", "type:", truncatedDocumentType, "\n doc:", doc, "\n bool: ", truncatedDocumentType === doc?.code);
     return truncatedDocumentType === doc?.code;
   });
+  const reduxFormData = useSelector((state) => state.pt.PTNewApplicationFormReducer?.formData || state.pt.PTNewApplicationForm?.formData || {});
+  const reasonForTransfer = reduxFormData?.additionalDetails?.reasonForTransfer || reduxFormData?.TransferorDetails?.additionalDetails?.reasonForTransfer || formData?.additionalDetails?.reasonForTransfer || formData?.TransferorDetails?.additionalDetails?.reasonForTransfer;
+  const reasonForTransferCode = typeof reasonForTransfer === "object" ? reasonForTransfer?.code : reasonForTransfer;
   const tenantId = Digit.ULBService.getCurrentTenantId();
   console.log("dropdowndata1", doc?.dropdownData);
   console.log("filteredDocument", filteredDocument);
@@ -267,12 +271,12 @@ function SelectDocument({
 
   useEffect(() => {
     if (doc.code === "OWNER.TRANSFERREASONDOCUMENT") {
-      if (selectedDocument?.code?.split(".")[2] !== formData?.additionalDetails?.reasonForTransfer?.code) {
+      if (selectedDocument?.code?.split(".")[2] !== reasonForTransferCode) {
         setSelectedDocument(null);
         setUploadedFile(null);
       }
     }
-  }, [formData?.additionalDetails?.reasonForTransfer?.code]);
+  }, [reasonForTransferCode]);
 
   if (filterCondition) {
     const { filterValue, jsonPath, onArray, arrayAttribute, formDataPath, formArrayAttrPath } = filterCondition;
@@ -355,7 +359,7 @@ function SelectDocument({
   }
 
   if (doc.code === "OWNER.TRANSFERREASONDOCUMENT") {
-    dropDownData = dropDownData.filter((e) => e.code?.split(".")[2] === formData?.additionalDetails?.reasonForTransfer?.code);
+    dropDownData = dropDownData.filter((e) => e.code?.split(".")[2] === reasonForTransferCode);
   }
 
   useEffect(() => {
@@ -381,12 +385,14 @@ function SelectDocument({
             className="form-field"
             selected={selectedDocument}
             disable={
-              dropDownData?.length === 0 ||
-              (propertyInitialValues?.documents &&
-              propertyInitialValues?.documents.length > 0 &&
-              propertyInitialValues?.documents.filter((document) => document.documentType.includes(doc?.code)).length > 0
-                ? enabledActions?.[action].disableDropdown
-                : false)
+              doc.code === "OWNER.TRANSFERREASONDOCUMENT"
+                ? false
+                : (dropDownData?.length === 0 ||
+                  (propertyInitialValues?.documents &&
+                  propertyInitialValues?.documents.length > 0 &&
+                  propertyInitialValues?.documents.filter((document) => document.documentType.includes(doc?.code)).length > 0
+                    ? enabledActions?.[action].disableDropdown
+                    : false))
             }
             option={dropDownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
             select={handleSelectDocument}

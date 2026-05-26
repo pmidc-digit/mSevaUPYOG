@@ -3,15 +3,24 @@ import React, { useEffect, useState,Fragment,useRef } from "react";
 //import { cardBodyStyle, stringReplaceAll } from "../utils";
 import { stringReplaceAll } from "../utils";
 import { useTranslation } from "react-i18next";
-export const TransferOwnership = () => {
+import { useParams, useHistory, useLocation } from "react-router-dom";
+export const TransferOwnership = ({ property: propProperty }) => {
   const {t} =useTranslation()
   const printRef = useRef();
+  
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const { data: propertyData } = Digit.Hooks.pt.usePropertySearch(
+    { tenantId, filters: { propertyIds: id }, auth: true },
+    { enabled: !propProperty && !!id }
+  );
+  const property = propProperty || propertyData?.Properties?.[0];
+
     let { data: mutationDocuments } = Digit.Hooks.useCommonMDMS(Digit.ULBService.getStateId(), "PropertyTax", ["MutationDocuments"], {
     select: (data) => {
       return data?.PropertyTax?.MutationDocuments;
     },
     retry: false,
-    enable: false,
+    enabled: true,
   });
   console.log("mutation docs",mutationDocuments)
 
@@ -77,17 +86,30 @@ const content = printRef.current.innerHTML;
   return (
      <>
     { showToast && 
-     <Modal
-          headerBarMain={<Heading label={"Required Documents - Transfer of Ownership"} />}
-          headerBarEnd={<CloseBtn onClick={closeModalTwo} />}
-          actionCancelLabel={"Print"}
-          actionCancelOnSubmit={closeModal}
-          actionSaveLabel={"Transfer Ownership"}
-          actionSaveOnSubmit={setModal}
-          formId="modal-action"
-          popupStyles={{width:'60%',marginTop:'5px'}}
-        > 
+      <Modal
+           headerBarMain={<Heading label={t("Required Documents - Transfer of Ownership")} />}
+           headerBarEnd={<CloseBtn onClick={closeModalTwo} />}
+           actionCancelLabel={t("Print")}
+           actionCancelOnSubmit={closeModal}
+           actionSaveLabel={t("PT_TRANSFER_OWNERSHIP")}
+           actionSaveOnSubmit={setModal}
+           formId="modal-action"
+           popupStyles={{width:'60%',marginTop:'5px'}}
+         > 
     <React.Fragment>
+      <style>{`
+        .modal-action-save-btn, .submit-bar {
+          background: #003C71 !important;
+          background-color: #003C71 !important;
+        }
+        .modal-action-save-btn:hover, .submit-bar:hover {
+          background: #002554 !important;
+          background-color: #002554 !important;
+        }
+        .card-sub-header {
+          color: #003C71 !important;
+        }
+      `}</style>
       <Card style={{marginLeft:'2px'}} >
         {/* <CardHeader>{!config.isMutation ? t("PT_DOC_REQ_SCREEN_HEADER") : t("PT_REQIURED_DOC_TRANSFER_OWNERSHIP")}</CardHeader> */}
         <div >

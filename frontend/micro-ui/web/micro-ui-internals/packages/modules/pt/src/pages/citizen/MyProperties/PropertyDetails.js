@@ -499,7 +499,7 @@ console.log("workflow details",workflowDetails)
         //   isDisabled={false}
         //   popupStyles={showUpdateNo ? { width: isMobile ? "473px" : "50%"} : { width: "75%"}}
         // >
-        <TransferOwnership/>
+        <TransferOwnership property={appDetailsToShow?.applicationData} />
         // </Modal>
        ):null}
     </div>

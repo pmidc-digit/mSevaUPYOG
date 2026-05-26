@@ -1,14 +1,13 @@
 package org.egov.rl.services.models;
 
-import java.util.List;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import java.util.List;
 
 import org.egov.common.contract.request.Role;
 import org.egov.rl.services.models.enums.Status;
-import org.hibernate.validator.constraints.SafeHtml;
 
+import jakarta.validation.constraints.Pattern;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -26,7 +25,7 @@ import lombok.Setter;
 public class OwnerInfo { 
 
 
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$")
 	@JsonProperty("ownerId")
 	private String ownerId;
 	
@@ -44,15 +43,15 @@ public class OwnerInfo {
 	@JsonProperty("tenantId")
 	private String tenantId;
 	
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$")
 	@JsonProperty("gender")
 	private String gender;
 
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$")
 	@JsonProperty("fatherOrHusbandName")
 	private String fatherOrHusbandName;
 
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$")
 	@JsonProperty("status")
 	private Status status;
 
@@ -63,7 +62,7 @@ public class OwnerInfo {
 	private Double ownerShipPercentage;
 
 	@NotNull
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$")
 	@JsonProperty("ownerType")
 	private String ownerType;
 	
@@ -74,7 +73,7 @@ public class OwnerInfo {
 	
 	@Pattern(regexp = "(^[4-9][0-9]{9}$)", message = "Inavlid mobile number, should start with 4-9 and contain ten digits of 0-9")
     @NotNull
-    @SafeHtml
+    @Pattern(regexp = "^[^<>]*$")
     @JsonProperty("emailId")
 	private String emailId;
 

@@ -328,10 +328,14 @@ public class CycleWorkflowService {
 
 			String baseHost = config.getRlServiceHost();
 			String basePath = config.getRlSearchEndpoint();
-			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseHost).path(basePath)
-					.queryParam("tenantId",tenantId).queryParam("applicationNumbers", consumerCode);
 
-			String url = builder.build().toUriString();
+			String url = UriComponentsBuilder
+			        .fromUriString(baseHost)
+			        .path(basePath)
+			        .queryParam("tenantId", tenantId)
+			        .queryParam("applicationNumbers", consumerCode)
+			        .build()
+			        .toUriString();
 			log.info("ALLOTMENT SEARCH URI1 :" + url);
 			try {
 				Object result = serviceRequestRepository.fetchResult(new StringBuilder(url), requestInfoWrapper).get();

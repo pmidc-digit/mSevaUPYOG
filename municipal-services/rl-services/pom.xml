@@ -7,22 +7,22 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.6.RELEASE</version>
+		<version>4.0.2</version>
 	</parent>
 	<groupId>org.egov.rl.services</groupId>
 	<artifactId>rl-services</artifactId>
 	<version>1.2.1-beta-SNAPSHOT</version>
 	<name>egov-rl-registry</name>
 	<properties>
-		<log4j2.version>2.17.1</log4j2.version>
-		<java.version>1.8</java.version>
+		<log4j2.version>2.21.1</log4j2.version>
+		<java.version>21</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<lombok.version>1.18.16</lombok.version>
-		<cache2k-version>1.2.0.Final</cache2k-version>
+		<lombok.version>1.18.32</lombok.version>
+		<cache2k-version>2.6.1.Final</cache2k-version>
 	</properties>
 	<dependencies>
-	<dependency>
+		<dependency>
 			<groupId>org.cache2k</groupId>
 			<artifactId>cache2k-api</artifactId>
 			<version>${cache2k-version}</version>
@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-			<version>5.2.20.RELEASE</version>
+			<!-- <version>5.2.20.RELEASE</version> -->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -68,7 +68,7 @@
 		<dependency>
 			<groupId>org.javers</groupId>
 			<artifactId>javers-core</artifactId>
-			<version>5.11.2</version>
+			<version>6.14.0</version>
 		</dependency>
 
 		<dependency>
@@ -77,19 +77,19 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>io.swagger</groupId>
-			<artifactId>swagger-core</artifactId>
-			<version>1.5.18</version>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.egov.services</groupId>
 			<artifactId>tracer</artifactId>
-			<version>2.1.2-SNAPSHOT</version>
+			<version>3.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.egov.services</groupId>
 			<artifactId>services-common</artifactId>
-			<version>1.1.1-SNAPSHOT</version>
+			<version>3.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -101,23 +101,19 @@
 			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>javax.validation</groupId>
-			<artifactId>validation-api</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.egov</groupId>
 			<artifactId>mdms-client</artifactId>
-			<version>0.0.4-SNAPSHOT</version>
+			<version>3.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.10.2</version>
+			<version>1.17.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.egov</groupId>
 			<artifactId>enc-client</artifactId>
-			<version>2.0.4-SNAPSHOT</version>
+			<version>3.0.0-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework.kafka</groupId>
@@ -185,7 +181,7 @@
 						<goals>
 							<goal>generate</goal>
 						</goals>
-						<phase>process-classes</phase>
+						<phase>generate-classes</phase>
 					</execution>
 				</executions>
 				<configuration>

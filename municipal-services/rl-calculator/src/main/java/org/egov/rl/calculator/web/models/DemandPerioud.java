@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.egov.rl.calculator.web.models.property.AuditDetails;
 
-import javax.validation.constraints.NotNull;
-
 @ToString
 @Getter
 @Setter

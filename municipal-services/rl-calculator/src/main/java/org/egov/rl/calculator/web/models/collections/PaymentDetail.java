@@ -6,8 +6,8 @@ import lombok.*;
 import org.egov.rl.calculator.web.models.demand.Bill;
 import org.egov.rl.calculator.web.models.property.AuditDetails;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 

@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 
 import org.egov.rl.services.models.AuditDetails;
-import org.hibernate.validator.constraints.SafeHtml;
+import jakarta.validation.constraints.Pattern;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 
@@ -28,7 +28,7 @@ public class PaymentDetail {
     @Size(max=64)
     private String paymentId;
 
-    @SafeHtml
+    @Pattern(regexp = "^[^<>]*$")
     @Size(max=64)
     @JsonProperty("tenantId")
     private String tenantId;
@@ -44,7 +44,7 @@ public class PaymentDetail {
     @JsonProperty("receiptNumber")
     private String receiptNumber;
 
-    @SafeHtml
+    @Pattern(regexp = "^[^<>]*$")
     @Size(max=64)
     @JsonProperty("manualReceiptNumber")
     private String manualReceiptNumber;
@@ -55,11 +55,11 @@ public class PaymentDetail {
     @JsonProperty("receiptDate")
     private Long receiptDate = null;
 
-    @SafeHtml
+    @Pattern(regexp = "^[^<>]*$")
     @JsonProperty("receiptType")
     private String receiptType = null;
 
-    @SafeHtml
+    @Pattern(regexp = "^[^<>]*$")
     @JsonProperty("businessService")
     private String businessService;
 

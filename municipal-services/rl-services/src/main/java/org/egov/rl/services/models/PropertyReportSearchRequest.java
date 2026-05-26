@@ -4,7 +4,7 @@ import java.util.Set;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.services.models.enums.Status;
-import org.hibernate.validator.constraints.SafeHtml;
+import jakarta.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

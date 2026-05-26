@@ -3,7 +3,7 @@ package org.egov.rl.services.models.workflow;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.rl.services.models.ProcessInstance;
@@ -11,16 +11,16 @@ import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@ApiModel(description = "Process Instance Response")
+@Schema(description = "Process Instance Response")
 @Validated
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-12-04T11:26:25.532+05:30")
+@jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-12-04T11:26:25.532+05:30")
 
 @Getter
 @Setter
@@ -53,7 +53,7 @@ public class ProcessInstanceResponse {
 //import java.util.ArrayList;
 //import java.util.List;
 //
-//import javax.validation.Valid;
+//import jakarta.validation.Valid;
 //
 //import org.egov.common.contract.response.ResponseInfo;
 //import org.egov.rl.models.ProcessInstance;
@@ -61,7 +61,7 @@ public class ProcessInstanceResponse {
 //
 //import com.fasterxml.jackson.annotation.JsonProperty;
 //
-//import io.swagger.annotations.ApiModel;
+//import io.swagger.v3.oas.annotations.media.Schema;
 //import lombok.AllArgsConstructor;
 //import lombok.Builder;
 //import lombok.Getter;
@@ -71,9 +71,9 @@ public class ProcessInstanceResponse {
 ///**
 // * Contract class to send response. Array of TradeLicense items are used in case of search results or response for create, whereas single TradeLicense item is used for update
 // */
-//@ApiModel(description = "Contract class to send response. Array of TradeLicense items are used in case of search results or response for create, whereas single TradeLicense item is used for update")
+//@Schema(description = "Contract class to send response. Array of TradeLicense items are used in case of search results or response for create, whereas single TradeLicense item is used for update")
 //@Validated
-//@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-12-04T11:26:25.532+05:30")
+//@jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-12-04T11:26:25.532+05:30")
 //
 //@Getter
 //@Setter

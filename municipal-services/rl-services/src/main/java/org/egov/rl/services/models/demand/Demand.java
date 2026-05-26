@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.rl.services.models.AuditDetails;
 import org.egov.rl.services.models.Owner;

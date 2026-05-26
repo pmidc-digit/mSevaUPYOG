@@ -469,18 +469,26 @@ public class DemandService {
 		String baseHost = config.getRlServiceHost();
 		String basePath = config.getRlSearchEndpoint();
 
-		Set<Status> statusSet = new HashSet<>(Arrays.asList(Status.APPROVED, Status.FORWARD_FOT_SETLEMENT, // verify
-																											// spelling
-				Status.PENDING_FOR_PAYMENT, Status.REQUEST_FOR_DISCONNECTION));
-		StringJoiner joiner = new StringJoiner(",");
-		statusSet.stream().filter(Objects::nonNull).map(Status::name).forEach(joiner::add);
+		Set<Status> statusSet = EnumSet.of(
+		        Status.APPROVED,
+		        Status.FORWARD_FOT_SETLEMENT,
+		        Status.PENDING_FOR_PAYMENT,
+		        Status.REQUEST_FOR_DISCONNECTION
+		);
 
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseHost).path(basePath).queryParam("tenantId",
-				tenantId);
-		builder.queryParam("status", joiner.toString());
-		builder.queryParam("isExpaireFlag", false);
+		String status = statusSet.stream()
+		        .map(Status::name)
+		        .collect(Collectors.joining(","));
+
+		UriComponentsBuilder builder = UriComponentsBuilder
+		        .fromUriString(baseHost)
+		        .path(basePath)
+		        .queryParam("tenantId", tenantId)
+		        .queryParam("status", status)
+		        .queryParam("isExpaireFlag", false);
+
 		if (consumerCode != null) {
-			builder.queryParam("applicationNumbers", consumerCode);
+		    builder.queryParam("applicationNumbers", consumerCode);
 		}
 
 		String url = builder.build().toUriString();

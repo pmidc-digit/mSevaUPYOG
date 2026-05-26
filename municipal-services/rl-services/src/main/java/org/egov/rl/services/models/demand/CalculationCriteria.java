@@ -7,8 +7,8 @@ import lombok.Builder.Default;
 import org.egov.rl.services.models.AllotmentRequest;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * CalulationCriteria

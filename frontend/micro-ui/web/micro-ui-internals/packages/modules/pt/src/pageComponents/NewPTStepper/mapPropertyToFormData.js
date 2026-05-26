@@ -91,44 +91,65 @@ export const mapPropertyToFormData = (property) => {
   ];
 
   const ownersList = (property.owners || [])
-    .filter((o) => o.status === "ACTIVE")
-    .map((owner) => {
-      // Pick the first active document for special category pre-fill
-      const activeDoc =
-        owner.documents?.find((d) => d.status === "ACTIVE") || owner.documents?.[0] || null;
-      return {
-        name: owner.name || "",
-        mobileNumber: owner.mobileNumber || "",
-        emailId: owner.emailId || "",
-        address: owner.permanentAddress || owner.correspondenceAddress || "",
-        fatherOrHusbandName: owner.fatherOrHusbandName || "",
-        ownershipPercentage: owner.ownerShipPercentage != null ? String(owner.ownerShipPercentage) : "",
-        ownerType: owner.ownerType
-          ? {
-              code: owner.ownerType,
-              i18nKey: owner.ownerType.replaceAll("PROPERTY", "COMMON_MASTERS").replaceAll(".", "_"),
-            }
-          : null,
-        gender: owner.gender
-          ? genderOptions.find((g) => g.code === owner.gender) || null
-          : null,
-        relationship: owner.relationship
-          ? relationshipOptions.find(
-              (r) => r.code === owner.relationship?.toUpperCase() || r.name?.toLowerCase() === owner.relationship?.toLowerCase()
-            ) || null
-          : null,
-        // docIdType stored as { code } only; resolved to full MDMS object in OwnerDetails.js
-        docIdType: activeDoc ? { code: activeDoc.documentType } : undefined,
-        docIdNo: activeDoc ? activeDoc.documentUid || "" : undefined,
-      };
-    });
+  .filter((o) => o.status === "ACTIVE")
+  .map((owner) => ({
+    name: owner.name || "",
+    mobileNumber: owner.mobileNumber || "",
+    emailId: owner.emailId || "",
+
+    designation:
+      owner.designation ||
+      property?.institution?.designation ||
+      "",
+    altContactNumber: owner.altContactNumber || "",
+    address:
+      owner.permanentAddress ||
+      owner.correspondenceAddress ||
+      "",
+
+    // Missing fields
+    gender: owner.gender
+      ? { code: owner.gender, name: owner.gender }
+      : "",
+
+    fatherOrHusbandName:
+      owner.fatherOrHusbandName || "",
+
+    relationship: owner.relationship
+      ? {
+          code: owner.relationship.toUpperCase(),
+          name: owner.relationship,
+        }
+      : "",
+
+    ownerType: owner.ownerType
+      ? { code: owner.ownerType }
+      : "",
+
+    ownershipPercentage:
+      owner.ownerShipPercentage || "",
+
+    docIdType: owner.documents?.[0]
+      ? {
+          code:
+            owner.documents[0].documentType,
+        }
+      : "",
+
+    docIdNo:
+      owner.documents?.[0]?.documentUid ||
+      "",
+  }));
+
+
 
   const ownerDetails = {
     ownerShip: ownerShip,
     owners: ownersList.length > 0 ? ownersList : [{ name: "", mobileNumber: "", emailId: "", address: "" }],
     ...(property.institution && {
       institutionName: property.institution.name || "",
-      institutionType: property.institution.type ? { code: property.institution.type } : null,
+      // institutionType: property.institution.type ? { code: property.institution.type } : null,
+      institutionType: property.institution.type || null,
     }),
   };
 

@@ -314,8 +314,7 @@ const CustomUploadFile = (props) => {
 
     {props?.disabled && (
       <div
-        className={`upload-file upload-file-min-height ${user_type === "employee" ? "" : "upload-file-max-width"
-          }`}
+        className={`upload-file upload-file-min-height ${user_type === "employee" ? "" : "upload-file-max-width"} disabled-CustomUpload`}
       >
         {props.uploadedFile ? (
           <SubmitBar

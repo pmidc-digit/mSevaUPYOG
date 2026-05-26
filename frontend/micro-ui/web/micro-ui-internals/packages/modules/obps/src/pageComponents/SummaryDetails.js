@@ -729,6 +729,14 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
               // Store URLs in state (example: object with keys)
               setFileUrls(urls);
             }
+
+            const result_new = await Digit.UploadServices.Filefetch([currentStepData?.createdResponse?.additionalDetails?.uploadedFile], tenantId);
+            if (result_new?.data?.fileStoreIds) {
+                setFileUrls((prev) => ({
+                    ...prev,
+                    uploadedFile: result_new.data?.[currentStepData?.createdResponse?.additionalDetails?.uploadedFile]
+                }));
+            }
           } catch (error) {
             console.error("Error fetching file URLs", error);
           } finally {

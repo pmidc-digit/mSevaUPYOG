@@ -2,6 +2,7 @@ import { Fonts } from "./fonts";
 import React, { ReactDOM } from "react";
 import QRCode from "qrcode";
 import EXIF from "exif-js";
+import { buildRainmakerCard, buildAttachmentsSection } from "./pdfHelpers";
 const pdfMake = require("pdfmake/build/pdfmake.js");
 // const pdfFonts = require("pdfmake/build/vfs_fonts.js");
 // pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -363,6 +364,170 @@ background: [
   } else {
     downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
   }
+};
+
+const jsPdfGeneratorFormattedFireNOC = async ({
+  breakPageLimit = null,
+  tenantId,
+  logo,
+  name,
+  email,
+  phoneNumber,
+  heading,
+  details,
+  applicationNumber,
+  applicationDate = "", // ADD THIS
+  t = (text) => text,
+  imageURL,
+  ulbType,
+  ulbName,
+  openInNewTab = false,
+}) => {
+  // ... existing imageURL / base64Image logic unchanged ...
+  console.log("details for firenoc [FIRENOC]", details);
+
+  const contentFormatted = await createContentFormattedFireNoc(
+    details,
+    applicationNumber,
+    logo,
+    tenantId,
+    phoneNumber,
+    breakPageLimit
+  );
+  const baseUrl = window.location.origin;
+  
+  const base64Image = await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/ndc/search/application-overview/${applicationNumber}`);
+  console.log(base64Image.slice(0, 50));
+
+
+
+  const dd = {
+    margin: [0, 0, 0, 0],
+    header: {},
+    content: [
+      ...createHeaderFormattedFireNoc(
+        details,
+        name,
+        base64Image, // QR data URL — same as before
+        phoneNumber,
+        email,
+        logo,
+        tenantId,
+        heading,
+        applicationNumber,
+        ulbType,
+        ulbName,
+        applicationDate // NEW
+      ),
+      ...contentFormatted,
+    ],
+    defaultStyle: {
+      font: "Hind",
+      margin: [20, 10, 20, 10],
+    },
+    // ADD pageBreakBefore (optional, from Rainmaker)
+    pageBreakBefore(currentNode, followingNodesOnPage) {
+      let nodeLength = followingNodesOnPage.length;
+      followingNodesOnPage.forEach((node, ind) => {
+        if (node.style === "pdf-table-card") nodeLength = ind;
+      });
+      if (
+        currentNode.startPosition?.verticalRatio > 0.9 &&
+        currentNode.style === "pdf-card-title"
+      ) {
+        return true;
+      }
+      if (
+        currentNode.startPosition?.verticalRatio > 0.75 &&
+        currentNode.style === "pdf-card-title" &&
+        nodeLength > 19
+      ) {
+        return true;
+      }
+      return false;
+    },
+    styles: {
+      // Rainmaker layout styles — ADD/MERGE with your existing styles
+      "pdf-header": {
+        fillColor: "#F2F2F2",
+        margin: [-70, -41, -81, 10],
+      },
+      "pdf-head-qr-code": {
+        fillColor: "#F2F2F2",
+        margin: [-70, -41, -81, 0],
+      },
+      "pdf-header-text": {
+        color: "#484848",
+        fontSize: 20,
+        // bold: true,
+        letterSpacing: 0.74,
+        margin: [0, 0, 0, 2],
+      },
+      "pdf-header-sub-text": {
+        color: "#484848",
+        fontSize: 15,
+        letterSpacing: 0.6,
+      },
+      "pdf-application-no": {
+        fontSize: 12,
+        // bold: true,
+        margin: [-18, 8, 0, 0],
+        color: "#484848",
+      },
+      "pdf-application-no-value": {
+        fontSize: 12,
+        margin: [-18, 6, 0, 0],
+        color: "#484848",
+      },
+      "pdf-card-title": {
+        fontSize: 11,
+        // bold: true,
+        margin: [-18, 5, 2, 8],
+        color: "#484848",
+      },
+      "pdf-table-card": {
+        fillColor: "#F2F2F2",
+        fontSize: 7,
+        color: "#484848",
+        margin: [-20, -2, -8, -8],
+      },
+      "pdf-table-card-white": {
+        fillColor: "white",
+        fontSize: 7,
+        color: "#484848",
+        margin: [-20, -2, -8, -8],
+      },
+      "pdf-card-key": {
+        color: "rgba(0, 0, 0, 0.54)",
+        fontSize: 8,
+        margin: [0, 1, 0, 0],
+      },
+      "pdf-card-value": {
+        fontSize: 10,
+        color: "rgba(0, 0, 0, 0.87)",
+        margin: [0, 0, 0, 1],
+      },
+      // keep any of your old styles (e.g. tableExample, header) if still used by attachments
+      // header: { bold: true },
+      tableExample: {},
+    },
+  };
+
+  pdfMake.vfs = Fonts;
+  let locale = Digit.SessionStorage.get("locale") || "en_IN";
+  let Hind = pdfFonts[locale] || pdfFonts["Hind"];
+  pdfMake.fonts = { Hind: { ...Hind } };
+
+  const generatedPDF = pdfMake.createPdf(dd);
+  if (openInNewTab) {
+    generatedPDF.getBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    });
+  } else {
+    downloadPDFFileUsingBase64(generatedPDF, "FireNoc-Acknowledgement.pdf");
+  }
+  // ... rest unchanged (openInNewTab / download)
 };
 
 
@@ -878,6 +1043,19 @@ const generateTimelinePDF = async (data) => {
   
   let moduleNamenew = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
   // Build content for each timeline entry in eOffice style
+  const addSoftBreaks = (text) => {
+    if (!text) return text;
+
+    // Add soft break after normal spaces
+    let result = text.replace(/ /g, '\u200B ');
+
+    // ALSO handle long words (no spaces)
+    result = result.replace(/(\S{10})/g, '$1\u200B'); 
+    // every 10 chars → allow break
+
+    return result;
+ };
+
   
   const buildTimelineEntries = () => {
     const entries = [];
@@ -885,123 +1063,138 @@ const generateTimelinePDF = async (data) => {
     timelineRows.forEach((row, index) => {
       // Main content box with light green background (#ccffcc)
       entries.push({
-        margin: [0, 0, 0, 2 ],
+        margin: [0, 0, 0, 2],
         table: {
-          widths: ['*'],
-          margin:[0,0,0,0],
+          widths: ["*"],
+          margin: [0, 0, 0, 0],
           body: [
-            [{
-              stack: [
-                // Header: Action & Status with background pill effect
-                {
-                  table: {
-                    widths: ['auto', '*', 'auto'],
-                    body: [[
-                      { text: [{ text: 'Action: ', bold: true, color: '#555' }, { text: row.action || 'N/A', color: '#000', bold: true }], fontSize: 10, border: [false, false, false, false] },
-                      { text: '', border: [false, false, false, false] },
-                      {
-                      stack: [
-                         { text: 'Date & Time:', fontSize: 8, color: '#777', bold: true },
-                         { text: `${row.date} | ${row.time}`, fontSize: 9, color: '#333', bold: true, margin: [0, 2, 0, 0] }
-                      ],
-                      alignment: 'right'
-                      }, // Spacer add here date and time below
-                    ]]
-                  },
-                  layout: 'noBorders',
-                  margin: [0, 0, 0, 2]
-                },
-                
-                // Divider line
-                { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 485, y2: 0, lineWidth: 0.5, lineColor: '#99cc99' }] },
-                
-                // Comment/Remarks section
-                {
-                  columns: [
-                    // Left column: Note / Comment
-                    {
-                      stack: [
-                        {
-                          text: row.comment && row.comment !== '-'
-                            ? [
-                                { text: 'Note: ', bold: true },
-                                { text: row.comment.split('').join('\u200B') }
-                              ]
-                            : { text: 'No Comments', color: '#777' },
-                          fontSize: 11,
-                          color: row.comment && row.comment !== '-' ? '#222' : '#777',
-                          margin: [0, 5, 0, 0],
-                          lineHeight: 1.5,
-                          width: '*'
-                        },
-
-                        ...(row.hasDocuments ? [
+            [
+              {
+                stack: [
+                  // Header: Action & Status with background pill effect
+                  {
+                    table: {
+                      widths: ["auto", "*", "auto"],
+                      body: [
+                        [
                           {
-                            columns: [
-                              {
-                                text: 'Attachments:',
-                                fontSize: 9,
-                                bold: true,
-                                color: '#555',
-                                margin: [0, 2, 0, 2],
-                                width: 'auto'
-                              },
-                              {
-                                stack: row.documents.map(doc => {
-                                  return {
-                                    columns: [
-                                      { 
-                                        text: doc.name,
-                                        fontSize: 10,
-                                        color: '#555',
-                                        margin: [5, 5, 0, 0],
-                                        decoration: 'underline',
-                                        listType: "none",
-                                        link: doc.link,
-                                        linkTarget: '_blank' 
-                                      }
-                                    ]
-                                  };
-                                }),
-                                margin: [10, 0, 0, 2],
-                                width: '*'
-                              }
-                            ]
-                          }
-                        ] : [])
-                      ]
-                    },
-
-                    // Right column: Signatory details
-                    {
-                      stack: [
-                        { text: row.assignerName?.toUpperCase() || 'N/A', fontSize: 10, bold: true, alignment: 'right', color: '#000' },
-                        { text: row.designation || row.assignerType || 'N/A', fontSize: 9, color: '#444', alignment: 'right' },
-                        { text: row.mobileNumber !== 'N/A' ? `+91 ${row.mobileNumber}` : '', fontSize: 9, color: '#666', alignment: 'right', margin: [0, 2, 0, 0] }
+                            text: [
+                              { text: "Action: ", bold: true, color: "#555" },
+                              { text: row.action || "N/A", color: "#000", bold: true },
+                            ],
+                            fontSize: 10,
+                            border: [false, false, false, false],
+                          },
+                          { text: "", border: [false, false, false, false] },
+                          {
+                            stack: [
+                              { text: "Date & Time:", fontSize: 8, color: "#777", bold: true },
+                              { text: `${row.date} | ${row.time}`, fontSize: 9, color: "#333", bold: true, margin: [0, 2, 0, 0] },
+                            ],
+                            alignment: "right",
+                          }, // Spacer add here date and time below
+                        ],
                       ],
-                      width: '*',
-                      alignment: 'right',
-                      margin: [0, 5, 0, 0]
-                    }
-                  ],
-                  margin: [0, 5, 0, 0]
-                }
+                    },
+                    layout: "noBorders",
+                    margin: [0, 0, 0, 2],
+                  },
 
-              ],
-              fillColor: '#b8ebb8', 
-              margin: [15, 6, 15, 0],
-              border: [true, true, true, true],
-              borderColor: ['#99cc99', '#99cc99', '#99cc99', '#99cc99']
-            }],
+                  // Divider line
+                  { canvas: [{ type: "line", x1: 0, y1: 0, x2: 485, y2: 0, lineWidth: 0.5, lineColor: "#99cc99" }] },
+
+                  // Comment/Remarks section
+                  {
+                    columns: [
+                      // Left column: Note / Comment
+                      {
+                        stack: [
+                          {
+                            text:
+                              row.comment && row.comment !== "-"
+                                ? [{ text: "Note: ", bold: true }, { text: addSoftBreaks(row.comment) }]
+                                : { text: "No Comments", color: "#777" },
+                            fontSize: 11,
+                            color: row.comment && row.comment !== "-" ? "#222" : "#777",
+                            margin: [0, 5, 0, 0],
+                            lineHeight: 1.5,
+                            width: "*",
+                          },
+
+                          ...(row.hasDocuments
+                            ? [
+                                {
+                                  columns: [
+                                    {
+                                      text: "Attachments:",
+                                      fontSize: 9,
+                                      bold: true,
+                                      color: "#555",
+                                      margin: [0, 2, 0, 2],
+                                      width: "auto",
+                                    },
+                                    {
+                                      stack: row.documents.map((doc) => {
+                                        return {
+                                          columns: [
+                                            {
+                                              text: doc.name,
+                                              fontSize: 10,
+                                              color: "#555",
+                                              margin: [5, 5, 0, 0],
+                                              decoration: "underline",
+                                              listType: "none",
+                                              link: doc.link,
+                                              linkTarget: "_blank",
+                                            },
+                                          ],
+                                        };
+                                      }),
+                                      margin: [10, 0, 0, 2],
+                                      width: "*",
+                                    },
+                                  ],
+                                },
+                              ]
+                            : []),
+                        ],
+                      },
+
+                      // Right column: Signatory details
+                      {
+                        stack: [
+                          { text: row.assignerName?.toUpperCase() || "N/A", fontSize: 10, bold: true, alignment: "right", color: "#000" },
+                          { text: row.designation || row.assignerType || "N/A", fontSize: 9, color: "#444", alignment: "right" },
+                          {
+                            text: row.mobileNumber !== "N/A" ? `+91 ${row.mobileNumber}` : "",
+                            fontSize: 9,
+                            color: "#666",
+                            alignment: "right",
+                            margin: [0, 2, 0, 0],
+                          },
+                        ],
+                        width: "*",
+                        alignment: "right",
+                        margin: [0, 5, 0, 0],
+                      },
+                    ],
+                    margin: [0, 5, 0, 0],
+                  },
+                ],
+                fillColor: "#b8ebb8",
+                margin: [15, 6, 15, 0],
+                border: [true, true, true, true],
+                borderColor: ["#99cc99", "#99cc99", "#99cc99", "#99cc99"],
+              },
+            ],
           ],
         },
         layout: {
-      fillColor: function (rowIndex) {
-        // skip header row (rowIndex === 0), shade only data rows
-        return rowIndex > 0 && rowIndex % 2 === 1 ? '#f5f5f5' : null;
-      }
-    },
-
+          fillColor: function (rowIndex) {
+            // skip header row (rowIndex === 0), shade only data rows
+            return rowIndex > 0 && rowIndex % 2 === 1 ? "#f5f5f5" : null;
+          },
+        },
       });
     });
 
@@ -1118,8 +1311,8 @@ const generateTimelinePDF = async (data) => {
   };
 
   pdfMake.vfs = Fonts;
-  let locale = Digit.SessionStorage.get('locale') || 'en_IN';
-  let Hind = pdfFonts[locale] || pdfFonts['Hind'];
+  let locale = Digit.SessionStorage.get("locale") || "pn_IN";
+  let Hind = pdfFonts[locale] || pdfFonts["Hind"];
   pdfMake.fonts = { Hind: { ...Hind } };
   const generatedPDF = pdfMake.createPdf(dd);
   downloadPDFFileUsingBase64(generatedPDF, `file_movement_${businessId}.pdf`);
@@ -1135,7 +1328,8 @@ export default {
   generateBillAmendPDF,
   generateTimelinePDF,
   generateFormatted: jsPdfGeneratorFormatted,
-  generateFormattedNOC: jsPdfGeneratorFormattedNOC
+  generateFormattedNOC: jsPdfGeneratorFormattedNOC,
+  generateFormattedFireNoc: jsPdfGeneratorFormattedFireNOC
 };
 
 const createBodyContentBillAmend = (table, t) => {
@@ -2093,7 +2287,29 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
 
   return detailsHeaders;
 }
+async function createContentFormattedFireNoc(
+  details,
+  applicationNumber,
+  logo,
+  tenantId,
+  phoneNumber,
+  breakPageLimit = null
+) {
+  const content = [];
 
+  for (const detail of details || []) {
+    if (!detail?.values?.length) continue;
+
+    if (detail?.isAttachments) {
+      content.push(...(await buildAttachmentsSection(detail , buildAttachment)));
+      continue;
+    }
+
+    content.push(...buildRainmakerCard(detail.title, detail.values));
+  }
+
+  return content;
+}
 
 function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName) {
   const ulb = ulbName? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
@@ -2297,6 +2513,97 @@ function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, ema
   return headerData;
 }
 
+function createHeaderFormattedFireNoc(
+  details,
+  name,
+  qrCodeDataUrl,
+  phoneNumber,
+  email,
+  logo,
+  tenantId,
+  heading,
+  applicationNumber,
+  ulbType,
+  ulbName,
+  applicationDate = ""
+) {
+  const ulb =
+    ulbName ||
+    tenantId?.split(".")?.[1]?.replace(/^./, (c) => c.toUpperCase()) ||
+    "";
+
+  const ulbLine =
+    ulbType && ulb ? `${ulbType} ${ulb}` : `Municipal Corporation ${ulb}`;
+
+  return [
+    {
+      style: qrCodeDataUrl ? "pdf-head-qr-code" : "pdf-header",
+      layout: "noBorders",
+      table: {
+        widths: qrCodeDataUrl ? [120, "*", 120] : [120, "*", 40],
+        body: [
+          [
+            
+            {
+              image: localGovLogo,
+              width: 50,
+              height: 51.25,
+              margin: [51, 6, 10, 10],
+            },
+
+            {
+              stack: [
+                { text: ulbLine, style: "pdf-header-text" },
+                { text: heading || "Application", style: "pdf-header-sub-text" },
+              ],
+              alignment: "left",
+              margin: [10, 8, 0, 0],
+            },
+
+            qrCodeDataUrl
+              ? {
+                  image: qrCodeDataUrl,
+                  width: 70,
+                  height: 70,
+                  margin: [50, 8, 8, 8],
+                  alignment: "right",
+                }
+              : { text: "" },
+          ],
+        ],
+      },
+    },
+    {
+      style: "pdf-application-no",
+      columns: [
+        {
+          text: [
+            { text: "Application No. ", //bold: true 
+              
+            },
+            {
+              text: applicationNumber || "",
+              style: "pdf-application-no-value",
+            },
+          ],
+          alignment: "left",
+        },
+        {
+          text: [
+            { text: "Date of Application ", //bold: true 
+              
+            },
+            {
+              text: applicationDate || "",
+              style: "pdf-application-no-value",
+            },
+          ],
+          alignment: "right",
+        },
+      ],
+    },
+  ];
+}
 
 
 

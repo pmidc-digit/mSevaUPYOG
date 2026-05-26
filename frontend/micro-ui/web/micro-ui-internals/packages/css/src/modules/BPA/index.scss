@@ -22,9 +22,10 @@
 
 .center-flex-mobile {
   display: flex;
+  flex-direction: row;
   justify-content: center;
-  width: 80%;
   margin-bottom: 10px;
+  width: 50%
 }
 
 .video-preview {
@@ -272,5 +273,15 @@
   100% {
     transform: rotate(360deg);
   }
+}
+
+.view-button {
+  width: 80%;
+}
+
+.disabled-CustomUpload {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: 5px;
 }
         

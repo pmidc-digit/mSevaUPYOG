@@ -35,6 +35,7 @@ const PropertyDetails = () => {
   const [enableAudit, setEnableAudit] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showOwnershipModal, setShowOwnershipModal] = useState(false);
+  const [showDuesPopup, setShowDuesPopup] = useState(false);
   const [showUpdateNo, setShowUpdateNo] = useState(false);
   const PT_CEMP = Digit.UserService.hasAccess(["PT_CEMP"]) || false;
   const [businessService, setBusinessService] = useState("PT.CREATE");
@@ -210,7 +211,12 @@ console.log("workflowDetails",workflowDetails)
             </LinkLabel>
              <LinkLabel
               onClick={() => {
-                setShowOwnershipModal((prev) => !prev);
+                const amount = fetchBillData?.Bill?.[0]?.totalAmount || 0;
+                if (amount > 0) {
+                  setShowDuesPopup(true);
+                } else {
+                  setShowOwnershipModal((prev) => !prev);
+                }
               }}
               style={{ display: "inline", marginLeft: "25px",border:'1px solid',padding:'8px',minWidth:'150px',borderRadius:'8px',backgroundColor:'#2947a3',color:'white' }}
             >
@@ -480,6 +486,32 @@ console.log("workflow details",workflowDetails)
             ></UpdatePropertyNumberComponent>
           )}
           {!showUpdateNo && <PropertyOwnerHistory propertyId={applicationNumber} userType={"employee"} />}
+        </Modal>
+      ) : null}
+
+      {showDuesPopup ? (
+        <Modal
+          headerBarMain={<h1 className="heading-m">{t("Pending Amount Due")}</h1>}
+          headerBarEnd={<CloseBtn onClick={() => setShowDuesPopup(false)} />}
+          actionCancelLabel={t("CORE_COMMON_CANCEL")}
+          actionCancelOnSubmit={() => setShowDuesPopup(false)}
+          actionSaveLabel={t("PAY NOW")}
+          actionSaveOnSubmit={() => {
+            setShowDuesPopup(false);
+            history.push(`/digit-ui/citizen/payment/collect/PT/${applicationNumber}/${tenantId}`);
+          }}
+          formId="pt-citizen-transfer-dues"
+          popupStyles={{ width: isMobile ? "90%" : "520px" }}
+        >
+          <div style={{ padding: "8px 0 16px" }}>
+            <p style={{ fontSize: "16px", color: "#505a5f", margin: "0 0 20px", lineHeight: "1.5" }}>
+              {t("Inorder to transfer property you must clear all your dues.")}
+            </p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #f0f0f0", paddingTop: "16px" }}>
+              <span style={{ fontSize: "15px", color: "#656565", fontWeight: "500" }}>{t("Property Due")}</span>
+              <span style={{ fontSize: "24px", fontWeight: "700", color: "#0b0c0c" }}>Rs {fetchBillData?.Bill?.[0]?.totalAmount || 0}</span>
+            </div>
+          </div>
         </Modal>
       ) : null}
 

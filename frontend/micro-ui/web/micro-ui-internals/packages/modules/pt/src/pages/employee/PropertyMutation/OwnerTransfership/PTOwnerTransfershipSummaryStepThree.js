@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
@@ -6,7 +6,15 @@ import { FormComposer } from "../../../../../../../react-components/src/hoc/Form
 
 const PTOwnerTransfershipSummaryStepThree = ({ config, onGoNext, onBackClick, t }) => {
   const formData = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData || {});
-  console.log("form data in summary", formData);
+  const storedTransferData = useMemo(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("ownerTransferData") || "{}");
+    } catch (error) {
+      return {};
+    }
+  }, []);
+  const summaryFormData = { ...storedTransferData, ...formData };
+  console.log("form data in summary", summaryFormData);
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     onGoNext();
@@ -36,7 +44,7 @@ const PTOwnerTransfershipSummaryStepThree = ({ config, onGoNext, onBackClick, t 
   return (
     <React.Fragment>
       <FormComposer
-        defaultValues={formData}
+        defaultValues={summaryFormData}
         //heading={t("")}
         config={config.currStepConfig}
         onSubmit={goNext}

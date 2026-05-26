@@ -77,7 +77,7 @@ const content = printRef.current.innerHTML;
       const transferOwnershipRoute = isEmployeeRoute
         ? `/digit-ui/employee/pt/property-mutate/${id}`
         : `/digit-ui/citizen/pt/property/transfer-ownership/${id}`;
-      history.push(transferOwnershipRoute);
+      history.push(transferOwnershipRoute, { property });
     }
     const closeModalTwo =() =>{
       // Navigate back when closing the modal

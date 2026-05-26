@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import _ from "lodash";
 import { FormComposer } from "@mseva/digit-ui-react-components";
@@ -6,6 +6,14 @@ import { FormComposer } from "@mseva/digit-ui-react-components";
 import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
 
 const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
+  const getStoredTransferData = () => {
+    try {
+      return JSON.parse(sessionStorage.getItem("ownerTransferData") || "{}");
+    } catch (error) {
+      return {};
+    }
+  };
+
   function goNext(data) {
     console.log(
       `Data in step ${config.currStepNumber}:`,
@@ -108,6 +116,8 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
       }
     }
 
+    const { originalData, ...stepData } = data || {};
+    dispatch(UPDATE_PTNewApplication_FORM(config.key, stepData));
     onGoNext();
   }
 
@@ -116,12 +126,8 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in Property details step one: ", data, "\n Bool: ", !_.isEqual(data, localStepData));
-    if (!_.isEqual(data, localStepData)) {
-      dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
-      setLocalStepData(data);
-      console.log("Dispatching UPDATE_PTNewApplication_FORM with key:", config.key, "and data:", data);
-    }
+    const { originalData, ...stepData } = data || {};
+    latestStepData.current = stepData;
   };
 
   // const onFormValueChange = (setValue = true, data) => {
@@ -140,23 +146,31 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
   //   }
   // };
 
-  const currentStepData = useSelector(function (state) {
-    console.log("state in step one ", state);
-    return state.pt.PTNewApplicationFormReducer.formData && state.pt.PTNewApplicationFormReducer.formData.TransferorDetails
-      ? state.pt.PTNewApplicationFormReducer.formData.TransferorDetails
-      : {};
-  });
-  const reduxStepData = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData.TransferorDetails);
-  const formData = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData);
+  const formData = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData || {});
+  const reduxStepData = formData?.TransferorDetails || {};
+  const storedTransferData = useMemo(getStoredTransferData, [formData?.originalData?.propertyId]);
+  const defaultStepData = useMemo(() => ({ ...storedTransferData, ...formData, ...reduxStepData }), [storedTransferData, formData, reduxStepData]);
   console.log("Step one formdata +", formData);
-  const [localStepData, setLocalStepData] = useState(reduxStepData);
+  const [localStepData, setLocalStepData] = useState(defaultStepData);
+  const latestStepData = useRef(defaultStepData);
   console.log("reduxStepData in step one: +", localStepData);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!_.isEqual(defaultStepData, localStepData)) {
+      setLocalStepData(defaultStepData);
+    }
+  }, [defaultStepData]);
+
+  if (!defaultStepData?.originalData) {
+    return null;
+  }
 
   return (
     <React.Fragment>
       <FormComposer
-        defaultValues={localStepData}
+        key={defaultStepData?.originalData?.propertyId || defaultStepData?.originalData?.acknowldgementNumber}
+        defaultValues={defaultStepData}
         //heading={t("")}
         config={config.currStepConfig}
         onSubmit={goNext}

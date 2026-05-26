@@ -29,7 +29,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   const formValue = watch();
   const { errors } = localFormState;
      useEffect(() => {
-        if (window.location.href.includes("citizen")) {
+        if (userType !== "employee" && window.location.href.includes("citizen")) {
           let keys = Object.keys(formValue);
           const part = {};
           keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
@@ -45,8 +45,8 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
       }, [formValue]);
     
       useEffect(() => {
-        if (window.location.href.includes("citizen")) {
-          const errorsPresent = !!Object.keys(localFormState.errors).lengtha;
+        if (userType !== "employee" && window.location.href.includes("citizen")) {
+          const errorsPresent = !!Object.keys(localFormState.errors).length;
           if (errorsPresent && !formState.errors?.[config.key]) setError(config.key, { type: "required" });
           else if (!errorsPresent && formState.errors?.[config.key]) clearErrors(config.key);
         }

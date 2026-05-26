@@ -170,65 +170,39 @@ public class UserService {
 				{
 					if (owner.getUuid() == null) {
 						addUserDefaultFields(application.getTenantId(), role, owner);
-						setUserName(owner);
 
 						UserResponse existingUserResponse = userExists(owner, requestInfo);
-						OwnerInfo existingUser = findUserWithMatchingUsernameAndMobile(existingUserResponse, owner);
 
-						if (existingUser != null) {
+						if (!existingUserResponse.getUser().isEmpty()) {
+							OwnerInfo existingUser = existingUserResponse.getUser().get(0);
 							log.info("User already exists with UUID: " + existingUser.getUuid());
-							setOwnerFields(owner, existingUser);
+							owner.setUuid(existingUser.getUuid());
+							setOwnerFields(owner, existingUserResponse, requestInfo);
 						} else {
 //						  UserResponse userResponse = userExists(owner,requestInfo);
 							StringBuilder uri = new StringBuilder(userHost).append(userContextPath).append(userCreateEndpoint);
+							setUserName(owner);
 							UserResponse userResponse = userCall(new CreateUserRequest(requestInfo, owner), uri);
 							if (userResponse.getUser().get(0).getUuid() == null) {
 								throw new CustomException("INVALID USER RESPONSE", "The user created has uuid as null");
 							}
 							log.info("owner created --> " + userResponse.getUser().get(0).getUuid());
-							setOwnerFields(owner, userResponse.getUser().get(0));
+							setOwnerFields(owner, userResponse, requestInfo);
 						}
 					} else {
 						UserResponse userResponse = userExists(owner, requestInfo);
-						OwnerInfo existingUser = getFirstUserSafely(userResponse);
-
-						if (existingUser == null)
+						if (userResponse.getUser().isEmpty())
 							throw new CustomException("INVALID USER", "The uuid " + owner.getUuid() + " does not exists");
-
-						// Override owner safely with values returned from user search response.
-						setOwnerFields(owner, existingUser);
-
 						StringBuilder uri = new StringBuilder(userHost);
 						uri.append(userContextPath).append(userUpdateEndpoint);
 						OwnerInfo ownerInfo = new OwnerInfo();
 						ownerInfo.addUserWithoutAuditDetail(owner);
-						addNonUpdatableFields(ownerInfo, existingUser);
+						addNonUpdatableFields(ownerInfo, userResponse.getUser().get(0));
 						userResponse = userCall(new CreateUserRequest(requestInfo, ownerInfo), uri);
-
-						OwnerInfo updatedUser = getFirstUserSafely(userResponse);
-						if (updatedUser == null)
-							throw new CustomException("INVALID USER RESPONSE", "User update response is empty");
-
-						setOwnerFields(owner, updatedUser);
+						setOwnerFields(owner, userResponse, requestInfo);
 					}
 				});
 
-	}
-
-	private OwnerInfo findUserWithMatchingUsernameAndMobile(UserResponse existingUserResponse, OwnerInfo owner) {
-		if (existingUserResponse == null || CollectionUtils.isEmpty(existingUserResponse.getUser())) {
-			return null;
-		}
-
-		String ownerMobileNumber = owner.getMobileNumber();
-		for (OwnerInfo existingUser : existingUserResponse.getUser()) {
-			if (StringUtils.equals(existingUser.getMobileNumber(), ownerMobileNumber)
-					&& StringUtils.equals(existingUser.getUserName(), ownerMobileNumber)) {
-				return existingUser;
-			}
-		}
-
-		return null;
 	}
 
 	private void addUserDefaultFields(String tenantId,Role role,OwnerInfo owner){
@@ -264,14 +238,14 @@ public class UserService {
 
 	}
 
-	private void setOwnerFields(OwnerInfo owner, OwnerInfo selectedUser){
-		owner.setUuid(selectedUser.getUuid());
-		owner.setId(selectedUser.getId());
-		owner.setUserName(StringUtils.defaultIfBlank(selectedUser.getUserName(), selectedUser.getMobileNumber()));
-		owner.setEmailId(selectedUser.getEmailId());
+	private void setOwnerFields(OwnerInfo owner, UserResponse userResponse,RequestInfo requestInfo){
+		owner.setUuid(userResponse.getUser().get(0).getUuid());
+		owner.setId(userResponse.getUser().get(0).getId());
+		owner.setUserName((userResponse.getUser().get(0).getMobileNumber()));
+		owner.setEmailId(userResponse.getUser().get(0).getEmailId());
 		owner.setCreatedDate(System.currentTimeMillis());
 		owner.setLastModifiedDate(System.currentTimeMillis());
-		owner.setActive(selectedUser.getActive());
+		owner.setActive(userResponse.getUser().get(0).getActive());
 	}
 
 	private UserResponse userExists(OwnerInfo owner,RequestInfo requestInfo){
@@ -280,28 +254,12 @@ public class UserService {
 		userSearchRequest.setRequestInfo(requestInfo);
 		userSearchRequest.setActive(true);
 		userSearchRequest.setUserType(owner.getType());
-
-		String ownerUuid = StringUtils.trimToNull(owner.getUuid());
-		String ownerMobile = StringUtils.trimToNull(owner.getMobileNumber());
-		String ownerUserName = StringUtils.trimToNull(owner.getUserName());
-
-		if (StringUtils.isNotBlank(ownerMobile)) {
-			// For new users, search by mobile/username (username generally mirrors mobile).
-			userSearchRequest.setMobileNumber(ownerMobile);
-			userSearchRequest.setUserName(ownerMobile);
-		}
-		else if (StringUtils.isNotBlank(ownerUuid)) {
-			// UUID is the strongest identifier for existing users.
-			userSearchRequest.setUuid(Collections.singletonList(ownerUuid));
-		}
-		else if (StringUtils.isNotBlank(ownerUserName)) {
-			userSearchRequest.setUserName(ownerUserName);
-		} else {
-			// Avoid 400 from user service when no valid search criteria is present.
-			log.info("Skipping user search since uuid/mobile/userName are all empty for tenant: {}", owner.getTenantId());
-			return new UserResponse(null, Collections.emptyList());
-		}
-
+		if(StringUtils.isBlank(owner.getUuid()) && StringUtils.isNotBlank(owner.getMobileNumber())) {
+			userSearchRequest.setMobileNumber(owner.getMobileNumber());
+            userSearchRequest.setUserName(owner.getMobileNumber());
+        }
+		if(StringUtils.isNotBlank(owner.getUuid()))
+			userSearchRequest.setUuid(Arrays.asList(owner.getUuid()));
 		StringBuilder uri = new StringBuilder(userHost).append(userSearchEndpoint);
 		return userCall(userSearchRequest,uri);
 	}
@@ -313,14 +271,7 @@ public class UserService {
 		user.setPassword(userFromSearchResult.getPassword());
 	}
 
-	private OwnerInfo getFirstUserSafely(UserResponse userResponse) {
-		if (userResponse == null || CollectionUtils.isEmpty(userResponse.getUser())) {
-			return null;
-		}
-		return userResponse.getUser().get(0);
-	}
-
-	/**
+		/**
 	 * Resolves the correct citizen UUID(s) to use as workflow assignees for the
 	 * SENDBACKTOCITIZEN action.
 	 *
@@ -393,5 +344,6 @@ public class UserService {
 
 		return assigneeUuids;
 	}
+
 
 }

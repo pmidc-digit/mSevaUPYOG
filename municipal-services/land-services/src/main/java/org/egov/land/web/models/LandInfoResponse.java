@@ -3,7 +3,7 @@ package org.egov.land.web.models;
 import java.util.List;
 import java.util.Objects;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +21,6 @@ import lombok.NoArgsConstructor;
  */
 @ApiModel(description = "Contains the ResponseHeader and the created/updated property")
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:54:07.373Z[GMT]")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -74,7 +73,7 @@ public class LandInfoResponse   {
 
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -106,7 +105,7 @@ public class LandInfoResponse   {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

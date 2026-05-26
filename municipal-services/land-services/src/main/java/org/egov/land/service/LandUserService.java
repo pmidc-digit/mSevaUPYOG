@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
@@ -222,7 +222,9 @@ public class LandUserService {
 			UserDetailResponse userDetailResponse = mapper.convertValue(responseMap, UserDetailResponse.class);
 			return userDetailResponse;
 		} catch (IllegalArgumentException e) {
-			throw new CustomException(LandConstants.ILLEGAL_ARGUMENT_EXCEPTION, "ObjectMapper not able to convertValue in userCall");
+			log.error("ObjectMapper convertValue failed in userCall. URI: {}, cause: {}", uri, e.getMessage(), e);
+			throw new CustomException(LandConstants.ILLEGAL_ARGUMENT_EXCEPTION,
+					"ObjectMapper not able to convertValue in userCall: " + e.getMessage());
 		}
 	}
 

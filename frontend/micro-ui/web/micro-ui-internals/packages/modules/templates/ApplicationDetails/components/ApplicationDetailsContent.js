@@ -528,11 +528,6 @@ const propertyDocuments = propertyDocumentValues.length
         return;
       }
 
-      updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
-    } else {
-      alert("You are not authorized to change the property status.");
-    }
-  };
 
   const PropertyActive = () => {
     if (window.location.href.includes("employee")) {

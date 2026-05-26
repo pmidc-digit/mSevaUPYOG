@@ -282,7 +282,6 @@ useEffect(() => {
     isRestoredRef.current = true;
   }
 }, [ownerShip, SubOwnerShipCategory, stateDataCheck, ownerTypeDocuments]);
-
   return (
     <form  onSubmit={handleSubmit(onSubmit)}>
       {/* city */}

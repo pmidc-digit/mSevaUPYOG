@@ -29,7 +29,7 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
 
   // const isEditScreen = pathname.includes("/edit-application/");
   
-  const isMutation = pathname.includes("/property-mutate/");
+  const isMutation = pathname.includes("/property-mutate") || pathname.includes("/property-mutation") || pathname.includes("/transfer-ownership");
 
   // if (isEditScreen) action = "update";
 

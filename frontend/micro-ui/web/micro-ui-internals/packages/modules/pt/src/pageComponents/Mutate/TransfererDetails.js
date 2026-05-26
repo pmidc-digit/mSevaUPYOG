@@ -6,13 +6,22 @@ import Timeline from "../../components/TLTimeline";
 
 const TransfererDetails = ({ userType, formData, config, onSelect }) => {
   const { t } = useTranslation();
+  const storedTransferData = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("ownerTransferData") || "{}");
+    } catch (error) {
+      return {};
+    }
+  })();
+  const transferFormData = formData?.originalData ? formData : storedTransferData;
   console.log("TransfererDetails userType:", userType, "formData:", formData);
-  const propertyDetails = userType === "employee" ? formData.originalData : formData?.searchResult?.property;
+  const hasOriginalData = !!transferFormData?.originalData;
+  const propertyDetails = hasOriginalData ? transferFormData.originalData : transferFormData?.searchResult?.property;
   console.log("TransfererDetails propertyDetails:", propertyDetails);
   const ownershipType = propertyDetails?.ownershipCategory?.split?.(".");
   const isActiveOwner = (owner) => owner.status === "ACTIVE" || owner.status === "active" || owner.active === true || (!owner.status && owner.active !== false);
 
-  if (userType === "employee") {
+  if (userType === "employee" || hasOriginalData) {
     return (
       <React.Fragment>
         <StatusTable>

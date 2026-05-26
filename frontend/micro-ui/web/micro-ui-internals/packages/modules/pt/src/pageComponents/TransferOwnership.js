@@ -70,10 +70,12 @@ const content = printRef.current.innerHTML;
     //  onConcent(e)
     }
     const setModal=()=>{
-      console.log("in Apply")
-    
-     // onSelect()
-      
+      // Navigate back to property details after transfer ownership completion
+      const isEmployeeRoute = location.pathname.includes("/employee/");
+      const transferOwnershipRoute = isEmployeeRoute
+        ? `/digit-ui/employee/pt/property-mutate/${id}`
+        : `/digit-ui/citizen/pt/property/transfer-ownership/${id}`;
+      history.push(transferOwnershipRoute, { property });
     }
     const closeModalTwo =() =>{
       setShowToast(false)

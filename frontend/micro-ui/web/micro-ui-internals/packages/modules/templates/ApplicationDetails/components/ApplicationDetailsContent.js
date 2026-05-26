@@ -456,21 +456,68 @@ function ApplicationDetailsContent({
     // }
   };
 
-  const applicationData_pt = applicationDetails?.applicationData;
-  const propertyIds = currentPropertyId || "";
-  const propertyStatus = propertySearchData?.Properties?.[0]?.status || applicationDetails?.applicationData?.status;
-  const PropertyInActive = () => {
-    if (window.location.href.includes("employee")) {
-      if (propertyStatus !== "ACTIVE") {
-        alert("This operation is not allowed as Property is not active.");
-        return;
-      }
+ const applicationData_pt =
+  applicationDetails?.applicationData;
 
-      updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
-    } else {
-      alert("You are not authorized to change the property status.");
-    }
-  };
+const propertyIds =
+  applicationDetails?.applicationData?.propertyId || "";
+
+// FIX: read status from applicationData
+const checkPropertyStatus =
+  applicationDetails?.applicationData?.status;
+
+const PropertyInActive = async () => {
+  console.log("applicationDetails", applicationDetails);
+  console.log(
+    "checkPropertyStatus",
+    checkPropertyStatus
+  );
+
+  // employee check
+  if (!window.location.href.includes("employee")) {
+    alert(
+      "You are not authorized to change the property status."
+    );
+    return;
+  }
+
+  // already inactive
+  if (checkPropertyStatus !== "ACTIVE") {
+    alert("Property is already inactive.");
+    return;
+  }
+
+  try {
+    // Update request payload
+    const updatedPayload = {
+      ...applicationData_pt,
+      status: "INACTIVE", 
+    };
+
+    console.log("Final Payload", {
+      Property: updatedPayload,
+    });
+
+    await updatePropertyStatus(
+      updatedPayload,
+      "INACTIVE",
+      propertyIds
+    );
+
+    alert("Property marked inactive successfully.");
+  } catch (err) {
+    console.error(
+      "Failed to update property status:",
+      err
+    );
+    alert(
+      "Something went wrong while updating property status."
+    );
+  }
+};
+
+
+
 
   const PropertyActive = () => {
     if (window.location.href.includes("employee")) {

@@ -68,20 +68,65 @@ export const mapPropertyToFormData = (property) => {
   const ownerShip = ownershipOptions.find((o) => o.value === property.ownershipCategory) || null;
 
   const ownersList = (property.owners || [])
-    .filter((o) => o.status === "ACTIVE")
-    .map((owner) => ({
-      name: owner.name || "",
-      mobileNumber: owner.mobileNumber || "",
-      emailId: owner.emailId || "",
-      address: owner.permanentAddress || owner.correspondenceAddress || "",
-    }));
+  .filter((o) => o.status === "ACTIVE")
+  .map((owner) => ({
+    name: owner.name || "",
+    mobileNumber: owner.mobileNumber || "",
+    emailId: owner.emailId || "",
+
+    designation:
+      owner.designation ||
+      property?.institution?.designation ||
+      "",
+    altContactNumber: owner.altContactNumber || "",
+    address:
+      owner.permanentAddress ||
+      owner.correspondenceAddress ||
+      "",
+
+    // Missing fields
+    gender: owner.gender
+      ? { code: owner.gender, name: owner.gender }
+      : "",
+
+    fatherOrHusbandName:
+      owner.fatherOrHusbandName || "",
+
+    relationship: owner.relationship
+      ? {
+          code: owner.relationship.toUpperCase(),
+          name: owner.relationship,
+        }
+      : "",
+
+    ownerType: owner.ownerType
+      ? { code: owner.ownerType }
+      : "",
+
+    ownershipPercentage:
+      owner.ownerShipPercentage || "",
+
+    docIdType: owner.documents?.[0]
+      ? {
+          code:
+            owner.documents[0].documentType,
+        }
+      : "",
+
+    docIdNo:
+      owner.documents?.[0]?.documentUid ||
+      "",
+  }));
+
+
 
   const ownerDetails = {
     ownerShip: ownerShip,
     owners: ownersList.length > 0 ? ownersList : [{ name: "", mobileNumber: "", emailId: "", address: "" }],
     ...(property.institution && {
       institutionName: property.institution.name || "",
-      institutionType: property.institution.type ? { code: property.institution.type } : null,
+      // institutionType: property.institution.type ? { code: property.institution.type } : null,
+      institutionType: property.institution.type || null,
     }),
   };
 

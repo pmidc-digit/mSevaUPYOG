@@ -119,9 +119,20 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       return {
         // Preserve original owner fields (id, uuid, etc.) in edit mode
         ...(isEditMode && originalOwner ? originalOwner : {}),
-        ...owner,
-        ownerType: "NONE",
-        altContactNumber: owner?.mobileNumber,
+        name: owner?.name,
+        mobileNumber: owner?.mobileNumber,
+        emailId: owner?.emailId,
+        permanentAddress: owner?.address,
+        gender: owner?.gender?.name || owner?.gender,
+        fatherOrHusbandName: owner?.fatherOrHusbandName,
+        relationship: owner?.relationship?.name || owner?.relationship,
+        ownerShipPercentage: owner?.ownershipPercentage,
+        ownerType: owner?.ownerType?.code || owner?.ownerType || "NONE",
+        altContactNumber: owner?.altContactNumber,
+        designation: owner?.designation,
+
+
+        ...(specialCategoryDoc.length > 0 && { documents: specialCategoryDoc }),
       };
     });
 

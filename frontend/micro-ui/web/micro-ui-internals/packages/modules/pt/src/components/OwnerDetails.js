@@ -116,7 +116,9 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   });
 
   const onSubmit = async (data) => {
-    console.log("check final data", data);
+    
+    console.log("checkFinalData", data);
+    console.log("ownersssss", data.owners);
     goNext(data);
   };
 
@@ -133,13 +135,33 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   const ownerTypeCode = watch("ownerShip")?.code;
   const isMultiple = ownerTypeCode === "INDIVIDUAL.MULTIPLEOWNERS";
 
-  useEffect(() => {
-    // Don't wipe owners when ownerTypeCode changes due to restore from Redux
-    if (isRestoredRef.current) return;
-    if (!isMultiple) {
-      setValue("owners", [{ name: "", mobileNumber: "", emailId: "", address: "" }]);
-    }
-  }, [ownerTypeCode]);
+useEffect(() => {
+  // Don't reset while restoring edit data
+  if (isRestoredRef.current) return;
+
+  const currentOwners = watch("owners") || [];
+
+  // Single owner → keep first owner, don't wipe fields
+  if (!isMultiple) {
+    setValue("owners", [
+      currentOwners[0] || {
+        name: "",
+        mobileNumber: "",
+        emailId: "",
+        address: "",
+        designation: "",
+        altContactNumber: "",
+        gender: "",
+        fatherOrHusbandName: "",
+        relationship: "",
+        ownerType: "",
+        ownershipPercentage: "",
+      },
+    ]);
+  }
+}, [ownerTypeCode]);
+
+
 
   const instTypeOptions =
     SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item?.ownerShipCategory == watch("ownerShip")?.code) || [];
@@ -172,31 +194,50 @@ useEffect(() => {
   if (!ownerShip || !stateDataCheck) return;
   if (isRestoredRef.current) return;
 
-    setValue("institutionName", stateDataCheck?.institutionName || "");
+  setValue("institutionName", stateDataCheck?.institutionName || "");
 
-    const instOptions = SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item.ownerShipCategory === ownerShip?.code) || [];
+  const instOptions =
+    SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter(
+      (item) => item.ownerShipCategory === ownerShip?.code
+    ) || [];
 
-    const checkInstitutionType = instOptions.find(
-      (item) => item.code === stateDataCheck?.institutionType?.code || item.code === stateDataCheck?.institutionType
+  const checkInstitutionType = instOptions.find(
+    (item) =>
+      item.code === stateDataCheck?.institutionType?.code ||
+      item.code === stateDataCheck?.institutionType
+  );
+
+  if (checkInstitutionType) {
+    setValue("institutionType", checkInstitutionType);
+  }
+
+  if (stateDataCheck?.owners?.length > 0) {
+    const hasUnresolvedDoc = stateDataCheck.owners.some(
+      (o) => o.docIdType?.code && !o.docIdType?.ownerTypeCode
     );
 
-    if (checkInstitutionType) {
-      setValue("institutionType", checkInstitutionType);
-    }
+    if (hasUnresolvedDoc && ownerTypeDocuments.length === 0) return;
 
-    if (stateDataCheck?.owners?.length > 0) {
-      remove([...Array(fields.length).keys()]);
+    remove([...Array(fields.length).keys()]);
 
-      stateDataCheck.owners.forEach((owner) => {
-        append(owner);
-      });
+    stateDataCheck.owners.forEach((owner) => {
+      const resolvedDocIdType =
+        owner.docIdType?.code && !owner.docIdType?.ownerTypeCode
+          ? ownerTypeDocuments.find((d) => d.code === owner.docIdType.code) ||
+            owner.docIdType
+          : owner.docIdType;
 
-      trigger();
-    }
+      append({ ...owner, docIdType: resolvedDocIdType });
+    });
 
+    trigger();
+  }
+
+  // FIX
+  if (instOptions.length > 0) {
     isRestoredRef.current = true;
-  }, [ownerShip, SubOwnerShipCategory, stateDataCheck]);
-
+  }
+}, [ownerShip, SubOwnerShipCategory, stateDataCheck, ownerTypeDocuments]);
   return (
     <form  onSubmit={handleSubmit(onSubmit)}>
       {/* city */}

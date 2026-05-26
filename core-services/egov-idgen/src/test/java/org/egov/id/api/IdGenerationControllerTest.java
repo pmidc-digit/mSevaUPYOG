@@ -7,14 +7,12 @@ import java.util.ArrayList;
 import org.egov.id.model.IdGenerationRequest;
 import org.egov.id.model.RequestInfo;
 import org.egov.id.service.IdGenerationService;
-//import org.egov.id.service.IdGenerationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -25,11 +23,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @ContextConfiguration(classes = {IdGenerationController.class})
 @ExtendWith(SpringExtension.class)
 class IdGenerationControllerTest {
-    
-	@MockitoBean
+    @Autowired
     private IdGenerationController idGenerationController;
 
-    @MockitoBean
+    @MockBean
     private IdGenerationService idGenerationService;
 
     @Test

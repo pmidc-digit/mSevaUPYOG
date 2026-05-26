@@ -7,9 +7,8 @@ import org.egov.id.model.ResponseInfoFactory;
 import org.egov.tracer.model.CustomException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-//import org.junit.runner.RunWith;
-//import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -18,12 +17,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-
+@RunWith(SpringJUnit4ClassRunner.class)
 @ExtendWith(SpringExtension.class)
+
 class IdGenerationServiceTest {
 
 
-    @MockitoBean
+    @MockBean
     ResponseInfoFactory responseInfoFactory;
 
     @Test

@@ -15,4 +15,18 @@ public class TestConfiguration {
         return mock(KafkaTemplate.class);
     }
 
+    @Bean
+    public org.egov.tracer.kafka.ErrorQueueProducer errorQueueProducer() {
+        return mock(org.egov.tracer.kafka.ErrorQueueProducer.class);
+    }
+
+    @Bean
+    public org.egov.tracer.config.ObjectMapperFactory objectMapperFactory() {
+        return mock(org.egov.tracer.config.ObjectMapperFactory.class);
+    }
+
+    @Bean
+    public org.egov.tracer.config.TracerProperties tracerProperties() {
+        return mock(org.egov.tracer.config.TracerProperties.class);
+    }
 }

@@ -1,5 +1,12 @@
 package org.egov.egf.instrument.domain.repository;
 
+// TODO: Migrate to new Elasticsearch Java Client (co.elastic.clients:elasticsearch-java)
+// The old Elasticsearch TransportClient has been removed in Elasticsearch 8.x.
+// This entire class needs to be rewritten to use the new Elasticsearch Java Client API.
+// The original implementation used TransportClient, SearchRequestBuilder, SearchResponse,
+// BoolQueryBuilder, SearchHit, and SortOrder from the org.elasticsearch package.
+
+/*
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,17 +58,13 @@ public class InstrumentESRepository extends ESRepository {
         for (SearchHit hit : searchResponse.getHits()) {
 
             ObjectMapper mapper = new ObjectMapper();
-            // JSON from file to Object
             try {
                 instrument = mapper.readValue(hit.getSourceAsString(), Instrument.class);
             } catch (JsonParseException e1) {
-                // TODO Auto-generated catch block
                 logger.error("Error occurred while parsing JSON: " + e1.getMessage());
             } catch (JsonMappingException e1) {
-                // TODO Auto-generated catch block
                 logger.error("JSON Mapping exception occurred: " + e1.getMessage());
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
                 logger.error("IO Exception occurred: " + e1.getMessage());
             }
 
@@ -95,3 +98,4 @@ public class InstrumentESRepository extends ESRepository {
     }
 
 }
+*/

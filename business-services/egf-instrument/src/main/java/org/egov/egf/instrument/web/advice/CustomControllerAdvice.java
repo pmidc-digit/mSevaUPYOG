@@ -48,9 +48,12 @@ public class CustomControllerAdvice {
             error.setFields(new ArrayList<ErrorField>());
             List<org.springframework.validation.FieldError> fieldErrors = errors.getFieldErrors();
             for (org.springframework.validation.FieldError errs : fieldErrors) {
-                ErrorField f = new ErrorField(errs.getCode(), errs.getDefaultMessage(), errs.getField());
+                String message = errs.getDefaultMessage();
+                if (message == null) {
+                    message = errs.getCode() != null ? errs.getCode() : "";
+                }
+                ErrorField f = new ErrorField(errs.getCode(), message, errs.getField());
                 error.getFields().add(f);
-
             }
         }
         errRes.setError(error);

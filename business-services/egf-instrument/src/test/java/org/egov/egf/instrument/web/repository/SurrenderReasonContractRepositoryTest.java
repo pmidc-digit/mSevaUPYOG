@@ -41,7 +41,7 @@ public class SurrenderReasonContractRepositoryTest {
         server.expect(once(), requestTo("http://host/egf-instrument/surrenderreasons/_search?id=1&tenantId=default"))
                 .andExpect(method(HttpMethod.POST))
                 .andRespond(withSuccess(resources.getFileContents("surrenderreason/search_by_id_response.json"),
-                        MediaType.APPLICATION_JSON_UTF8));
+                        MediaType.APPLICATION_JSON));
 
         SurrenderReasonContract surrenderReasonContract = new SurrenderReasonContract();
 

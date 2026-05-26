@@ -1,6 +1,15 @@
 package org.egov.egf.instrument.domain.repository;
 
+// TODO: Migrate to new Elasticsearch Java Client (co.elastic.clients:elasticsearch-java)
+// The old Elasticsearch TransportClient has been removed in Elasticsearch 8.x.
+// This class previously used org.elasticsearch.index.query.BoolQueryBuilder and QueryBuilders.
+// It needs to be rewritten to use the new Elasticsearch Java Client API.
+
+/*
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+
+import org.elasticsearch.index.query.BoolQueryBuilder;
+*/
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +20,6 @@ import org.egov.egf.instrument.web.contract.InstrumentAccountCodeSearchContract;
 import org.egov.egf.instrument.web.contract.InstrumentSearchContract;
 import org.egov.egf.instrument.web.contract.InstrumentTypeSearchContract;
 import org.egov.egf.instrument.web.contract.SurrenderReasonSearchContract;
-import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +29,8 @@ public class ElasticSearchQueryFactory {
     @Autowired
     private ElasticSearchUtils elasticSearchUtils;
 
+    // TODO: Migrate searchInstrument to new Elasticsearch Java Client
+    /*
     public BoolQueryBuilder searchInstrument(InstrumentSearchContract instrumentSearchContract) {
         BoolQueryBuilder boolQueryBuilder = boolQuery();
         if (instrumentSearchContract.getIds() != null && !instrumentSearchContract.getIds().isEmpty())
@@ -54,8 +64,6 @@ public class ElasticSearchQueryFactory {
         elasticSearchUtils.add(instrumentTypeSearchContract.getName(), "name", boolQueryBuilder);
         elasticSearchUtils.add(instrumentTypeSearchContract.getDescription(), "description", boolQueryBuilder);
         elasticSearchUtils.add(instrumentTypeSearchContract.getActive(), "active", boolQueryBuilder);
-        // elasticSearchUtils.add(instrumentTypeSearchContract.getInstrumentTypeProperties(), "instrumentTypeProperties",
-        // boolQueryBuilder);
         return boolQueryBuilder;
     }
 
@@ -76,6 +84,7 @@ public class ElasticSearchQueryFactory {
         elasticSearchUtils.add(surrenderReasonSearchContract.getDescription(), "description", boolQueryBuilder);
         return boolQueryBuilder;
     }
+    */
 
     public List<String> prepareOrderBys(String sortBy) {
         List<String> orderByList = new ArrayList<String>();

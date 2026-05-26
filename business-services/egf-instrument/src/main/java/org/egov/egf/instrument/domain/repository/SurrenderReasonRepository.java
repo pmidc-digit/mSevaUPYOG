@@ -30,19 +30,22 @@ public class SurrenderReasonRepository {
 
     private FinancialConfigurationContractRepository financialConfigurationContractRepository;
 
-    private SurrenderReasonESRepository surrenderReasonESRepository;
+    // TODO: Restore after Elasticsearch migration
+    // private SurrenderReasonESRepository surrenderReasonESRepository;
 
     @Autowired
     public SurrenderReasonRepository(SurrenderReasonJdbcRepository surrenderReasonJdbcRepository,
             SurrenderReasonQueueRepository surrenderReasonQueueRepository,
             @Value("${persist.through.kafka}") String persistThroughKafka,
-            FinancialConfigurationContractRepository financialConfigurationContractRepository,
-            SurrenderReasonESRepository surrenderReasonESRepository) {
+            FinancialConfigurationContractRepository financialConfigurationContractRepository
+            // TODO: Restore after Elasticsearch migration
+            // , SurrenderReasonESRepository surrenderReasonESRepository
+            ) {
         this.surrenderReasonJdbcRepository = surrenderReasonJdbcRepository;
         this.surrenderReasonQueueRepository = surrenderReasonQueueRepository;
         this.persistThroughKafka = persistThroughKafka;
         this.financialConfigurationContractRepository = financialConfigurationContractRepository;
-        this.surrenderReasonESRepository = surrenderReasonESRepository;
+        // this.surrenderReasonESRepository = surrenderReasonESRepository;
 
     }
 
@@ -196,6 +199,8 @@ public class SurrenderReasonRepository {
 
     public Pagination<SurrenderReason> search(SurrenderReasonSearch domain) {
 
+        // TODO: Restore ES search branch after Elasticsearch migration
+        /*
         if (financialConfigurationContractRepository.fetchDataFrom() != null
                 && financialConfigurationContractRepository.fetchDataFrom().equalsIgnoreCase("es")) {
 
@@ -206,6 +211,7 @@ public class SurrenderReasonRepository {
             return surrenderReasonESRepository.search(surrenderReasonSearchContract);
 
         } else
+        */
             return surrenderReasonJdbcRepository.search(domain);
 
     }

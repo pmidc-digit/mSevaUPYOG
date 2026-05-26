@@ -43,6 +43,7 @@ public class SurrenderReasonServiceTest {
 
     @Before
     public void setup() {
+        org.mockito.MockitoAnnotations.openMocks(this);
         surrenderReasonService = new SurrenderReasonService(validator, surrenderReasonRepository);
     }
 

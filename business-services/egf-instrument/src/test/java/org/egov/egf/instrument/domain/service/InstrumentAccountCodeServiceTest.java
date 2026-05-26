@@ -54,6 +54,7 @@ public class InstrumentAccountCodeServiceTest {
 
     @Before
     public void setup() {
+        org.mockito.MockitoAnnotations.openMocks(this);
         instrumentAccountCodeService = new InstrumentAccountCodeService(validator, instrumentAccountCodeRepository,
                 chartOfAccountContractRepository, instrumentTypeRepository);
     }

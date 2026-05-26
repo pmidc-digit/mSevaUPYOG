@@ -206,10 +206,11 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       if (isEditMode) {
         response = await Digit.PTService.update({ Property: formData }, tenantId);
       } else {
-        console.lo("runningcreateApi")
+  
         response = await Digit.PTService.create({ Property: formData }, tenantId);
+      
+    
       }
-      console.log("response====", response);
       const id = response?.Properties[0]?.propertyId;
       setLoader(false);
       if (isCitizen) {

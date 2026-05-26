@@ -9,8 +9,8 @@ import org.egov.tracer.model.CustomException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashMap;
@@ -23,7 +23,8 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(classes = {MdmsService.class})
 @ExtendWith(SpringExtension.class)
 class MdmsServiceTest {
-    @MockBean
+	
+	@MockitoBean
     private MdmsClientService mdmsClientService;
 
     @Autowired

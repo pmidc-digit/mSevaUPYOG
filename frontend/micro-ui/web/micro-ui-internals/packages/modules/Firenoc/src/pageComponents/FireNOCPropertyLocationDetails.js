@@ -37,16 +37,29 @@ const FireNOCPropertyLocationDetails = (_props) => {
 
   // Eligible tenants = those that have a fire station
   const eligibleTenants = useMemo(() => {
-    if (!allCities?.length || !fireStationData?.length) return [];
-    const stationTenantIds = new Set(fireStationData.map((s) => s.baseTenantId));
-    return allCities.filter((t) => stationTenantIds.has(t.code));
+    const fullCitiesList = Digit.SessionStorage.get("initData")?.tenants || allCities || [];
+    if (!fullCitiesList?.length || !fireStationData?.length) return [];
+    
+    const stationTenantIds = new Set();
+    fireStationData.forEach((s) => {
+      if (s.active) {
+        if (s.baseTenantId) stationTenantIds.add(s.baseTenantId);
+        if (Array.isArray(s.ulb)) {
+          s.ulb.forEach((u) => {
+            if (u.code) stationTenantIds.add(u.code);
+          });
+        }
+      }
+    });
+
+    return fullCitiesList.filter((t) => stationTenantIds.has(t.code));
   }, [allCities, fireStationData]);
 
   // District options from eligible tenants
   const districtOptions = useMemo(() => {
     if (!eligibleTenants?.length) return [];
     const seen = new Set();
-    return eligibleTenants.reduce((acc, tenant) => {
+    const list = eligibleTenants.reduce((acc, tenant) => {
       const distCode = tenant?.city?.districtTenantCode;
       const distName = tenant?.city?.districtName;
       if (distCode && !seen.has(distCode)) {
@@ -55,14 +68,16 @@ const FireNOCPropertyLocationDetails = (_props) => {
       }
       return acc;
     }, []);
+    return list.sort((a, b) => a.name.localeCompare(b.name));
   }, [eligibleTenants]);
 
   // City options based on selected district
   const cityOptions = useMemo(() => {
     if (!eligibleTenants?.length || !selectedDistrict?.code) return [];
-    return eligibleTenants
+    const list = eligibleTenants
       .filter((t) => t?.city?.districtTenantCode === selectedDistrict.code)
       .map((t) => ({ code: t.code, name: t.name || t.code }));
+    return list.sort((a, b) => a.name.localeCompare(b.name));
   }, [eligibleTenants, selectedDistrict]);
 
   // Fetch mohalla/localities based on selected city
@@ -98,7 +113,9 @@ const FireNOCPropertyLocationDetails = (_props) => {
     setValue("villageName", "");
     // Auto-set fire station for selected city/tehsil
     if (fireStationData?.length && val?.code) {
-      const station = fireStationData.find((s) => s.baseTenantId === val.code);
+      const station = fireStationData.find(
+        (s) => s.baseTenantId === val.code || (Array.isArray(s.ulb) && s.ulb.some((u) => u.code === val.code))
+      );
       if (station) setValue("fireStationId", station.code);
     }
   };
@@ -125,7 +142,7 @@ const FireNOCPropertyLocationDetails = (_props) => {
           <div className="field">
             <Controller control={control} name="districtName" rules={{ required: t("REQUIRED_FIELD") }}
               render={(props) => (
-                <Dropdown className="form-field" select={(val) => handleDistrictChange(val, props.onChange)} selected={props.value} option={districtOptions} optionKey="name" t={t} placeholder={t("Select District")} />
+                <Dropdown className="form-field" select={(val) => handleDistrictChange(val, props.onChange)} selected={props.value} option={districtOptions} optionKey="name" t={t} placeholder={t("Select District")} disable={!areaType} />
               )}
             />
             {errors?.districtName && <p style={{ color: "red", marginTop: "4px" }}>{errors.districtName.message}</p>}

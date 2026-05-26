@@ -31,7 +31,7 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
   });
 
   const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(filteredDocument?.filestoreId || null);
+  const [uploadedFile, setUploadedFile] = useState(filteredDocument?.filestoreId || filteredDocument?.documentUid || filteredDocument?.documentAttachment || null);
   const [isUploading, setIsUploading] = useState(false);
 
   /* dropdown options */
@@ -161,7 +161,9 @@ const FireNOCDocuments = ({ t, config, onSelect, formData }) => {
 
   /* Seed from Redux so uploads survive back-navigation */
   const persistedDocs = useSelector(
-    (state) => state?.noc?.NOCNewApplicationFormReducer?.formData?.uploadedDocuments?.documents || []
+    (state) => 
+      state?.noc?.NOCNewApplicationFormReducer?.formData?.uploadedDocuments?.documents || 
+      state?.noc?.NOCNewApplicationFormReducer?.formData?.documents?.documents?.documents || []
   );
   const [documents, setDocuments] = useState(persistedDocs);
   const [error, setError] = useState(null);

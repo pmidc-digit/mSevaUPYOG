@@ -87,7 +87,9 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
     /* ── resolve firestationId from selected city ── */
     const cityCode = site.cityName?.code || "";
-    const matchedStation = fireStationData?.find((s) => s.baseTenantId === cityCode);
+    const matchedStation = fireStationData?.find(
+      (s) => s.baseTenantId === cityCode || (Array.isArray(s.ulb) && s.ulb.some((u) => u.code === cityCode))
+    );
     const resolvedFirestationId = site.fireStationId || matchedStation?.code || "";
 
     /* ── ownerShipType mapping ── */

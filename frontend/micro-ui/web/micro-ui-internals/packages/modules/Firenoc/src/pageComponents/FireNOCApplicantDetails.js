@@ -87,13 +87,13 @@ const FireNOCApplicantDetails = (_props) => {
         const isInst = mainCode.startsWith("INSTITUTIONAL");
         typeMap[mainCode] = {
           code: mainCode,
-          name: t(`COMMON_MASTERS_OWNERSHIPCATEGORY_${mainCode}`),
+          name: `COMMON_MASTERS_OWNERSHIPCATEGORY_${mainCode}`,
           group: isInst ? "INSTITUTIONAL" : "INDIVIDUAL",
         };
       }
     });
     return Object.values(typeMap);
-  }, [ownerShipData, t]);
+  }, [ownerShipData]);
 
   /* Derive subtype options based on selected applicant type */
   const subtypeOptions = useMemo(() => {
@@ -102,9 +102,29 @@ const FireNOCApplicantDetails = (_props) => {
       .filter((e) => e.code.split(".")[0] === applicantType.code && e.code.includes("."))
       .map((e) => ({
         code: e.code,
-        name: t(`COMMON_MASTERS_OWNERSHIPCATEGORY_${e.code.replaceAll(".", "_")}`),
+        name: `COMMON_MASTERS_OWNERSHIPCATEGORY_${e.code.replaceAll(".", "_")}`,
       }));
-  }, [ownerShipData, applicantType?.code, t]);
+  }, [ownerShipData, applicantType?.code]);
+
+  /* Pre-select fully populated options for applicantType in Edit Mode */
+  useEffect(() => {
+    if (applicantType?.code && applicantTypeOptions?.length > 0) {
+      const matched = applicantTypeOptions.find((opt) => opt.code === applicantType.code);
+      if (matched && (!applicantType.name || applicantType.name !== matched.name)) {
+        setValue("applicantType", matched);
+      }
+    }
+  }, [applicantType?.code, applicantTypeOptions]);
+
+  /* Pre-select fully populated options for applicantSubtype in Edit Mode */
+  useEffect(() => {
+    if (applicantSubtype?.code && subtypeOptions?.length > 0) {
+      const matched = subtypeOptions.find((opt) => opt.code === applicantSubtype.code);
+      if (matched && (!applicantSubtype.name || applicantSubtype.name !== matched.name)) {
+        setValue("applicantSubtype", matched);
+      }
+    }
+  }, [applicantSubtype?.code, subtypeOptions]);
 
   /* ─── useFieldArray for owners ─── */
   const { fields, append, remove } = useFieldArray({ control, name: "owners" });

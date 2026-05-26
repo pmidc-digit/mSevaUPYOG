@@ -13,23 +13,55 @@ function FeeEstimateCard({ applicationNo, tenantId, t }) {
   useEffect(() => {
     if (!applicationNo || !tenantId) return;
     setLoading(true);
-    // billing-service requires state-level tenantId (e.g. "pb" not "pb.amritsar")
     const billingTenantId = tenantId;
-    Digit.PaymentService.fetchBill(billingTenantId, {
-      consumerCode: applicationNo,
-      businessService: "FIRENOC",
-    })
-      .then((res) => setBill(res?.Bill?.[0] || null))
-      .catch(() => setBill(null))
-      .finally(() => setLoading(false));
+
+    // Search for any existing payment receipts first to see if it was paid
+    Digit.PaymentService.recieptSearch(billingTenantId, "FIRENOC", { consumerCodes: applicationNo })
+      .then((recieptRes) => {
+        if (recieptRes?.Payments?.length > 0) {
+          const payment = recieptRes.Payments[0];
+          const paidBill = payment?.paymentDetails?.[0]?.bill;
+          if (paidBill) {
+            setBill({
+              ...paidBill,
+              status: "PAID",
+              totalAmount: payment.totalAmountPaid != null ? payment.totalAmountPaid : paidBill.totalAmount,
+            });
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Fallback to fetch outstanding bill if unpaid
+        Digit.PaymentService.fetchBill(billingTenantId, {
+          consumerCode: applicationNo,
+          businessService: "FIRENOC",
+        })
+          .then((res) => setBill(res?.Bill?.[0] || null))
+          .catch(() => setBill(null))
+          .finally(() => setLoading(false));
+      })
+      .catch(() => {
+        Digit.PaymentService.fetchBill(billingTenantId, {
+          consumerCode: applicationNo,
+          businessService: "FIRENOC",
+        })
+          .then((res) => setBill(res?.Bill?.[0] || null))
+          .catch(() => setBill(null))
+          .finally(() => setLoading(false));
+      });
   }, [applicationNo, tenantId]);
 
   const _nocFeesVal = bill?.billDetails?.[0]?.billAccountDetails?.find(
     (a) => a.taxHeadCode === "FIRENOC_FEES"
-  )?.amount;
-  const nocFees = _nocFeesVal != null ? _nocFeesVal : 0;
+  );
+  const nocFees = _nocFeesVal
+    ? (_nocFeesVal.amountPaid != null && _nocFeesVal.amountPaid > 0
+        ? _nocFeesVal.amountPaid
+        : (_nocFeesVal.amount != null ? _nocFeesVal.amount : 0))
+    : 0;
   const totalAmount = bill?.totalAmount != null ? bill.totalAmount : 0;
-  const isPaid = bill?.status === "PAID";
+  const isPaid = bill?.status === "PAID" || bill?.status === "paid";
 
   return (
     <Card>

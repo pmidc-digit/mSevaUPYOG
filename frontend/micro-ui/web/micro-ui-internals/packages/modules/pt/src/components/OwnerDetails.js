@@ -105,6 +105,8 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
           mobileNumber: "",
           emailId: "",
           address: "",
+          designation: "",
+          altContactNumber: "",
         },
       ],
     },
@@ -340,39 +342,75 @@ useEffect(() => {
 
               {/* Row: Mobile + Name */}
               <div style={twoColRow}>
-              <LabelFieldPair style={colItem}>
-                <CardLabel className="card-label-smaller">{t("Mobile Number")}*</CardLabel>
-                <Controller
-                  control={control}
-                  name={`owners.${index}.mobileNumber`}
-                  defaultValue={item?.mobileNumber || ""}
-                  rules={{
-                    required: "Mobile number is required",
-                    pattern: {
-                      value: /^[6-9]\d{9}$/,
-                      message: "Enter valid number",
-                    },
-                  }}
-                  render={(props) => <MobileNumber {...props} disable={isEditMode} />}
-                />
-                {errors?.owners?.[index]?.mobileNumber && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].mobileNumber.message}</p>
-                )}
-              </LabelFieldPair>
-              <LabelFieldPair style={colItem}>
-                <CardLabel className="card-label-smaller">{t("Name")}*</CardLabel>
-                <Controller
-                  control={control}
-                  name={`owners.${index}.name`}
-                  defaultValue={item?.name || ""}
-                  rules={{ required: "Name required" }}
-                  render={(props) => <TextInput {...props} disable={isEditMode} />}
-                />
-                {errors?.owners?.[index]?.name && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].name.message}</p>
-                )}
-              </LabelFieldPair>
+                <LabelFieldPair style={colItem}>
+                  <CardLabel className="card-label-smaller">{t("Mobile Number")}*</CardLabel>
+                  <Controller
+                    control={control}
+                    name={`owners.${index}.mobileNumber`}
+                    defaultValue={item?.mobileNumber || ""}
+                    rules={{
+                      required: "Mobile number is required",
+                      pattern: {
+                        value: /^[6-9]\d{9}$/,
+                        message: "Enter valid number",
+                      },
+                    }}
+                    render={(props) => <MobileNumber {...props} disable={isEditMode} />}
+                  />
+                  {errors?.owners?.[index]?.mobileNumber && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].mobileNumber.message}</p>
+                  )}
+                </LabelFieldPair>
+                <LabelFieldPair style={colItem}>
+                  <CardLabel className="card-label-smaller">{t("Name")}*</CardLabel>
+                  <Controller
+                    control={control}
+                    name={`owners.${index}.name`}
+                    defaultValue={item?.name || ""}
+                    rules={{ required: "Name required" }}
+                    render={(props) => <TextInput {...props} disable={isEditMode} />}
+                  />
+                  {errors?.owners?.[index]?.name && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].name.message}</p>
+                  )}
+                </LabelFieldPair>
               </div>
+
+              {/* Designation + Landline Number (Institutional only) */}
+              {(ownerShip?.code === "INSTITUTIONALGOVERNMENT" || ownerShip?.code === "INSTITUTIONALPRIVATE") && (
+                <div style={twoColRow}>
+                  <LabelFieldPair style={colItem}>
+                    <CardLabel className="card-label-smaller">{t("Designation")}</CardLabel>
+                    <Controller
+                      control={control}
+                      name={`owners.${index}.designation`}
+                      defaultValue={item?.designation || ""}
+                      render={(props) => (
+                        <TextInput
+                          value={props.value}
+                          onChange={(e) => props.onChange(e.target.value)}
+                          disable={isEditMode}
+                        />
+                      )}
+                    />
+                  </LabelFieldPair>
+                  <LabelFieldPair style={colItem}>
+                    <CardLabel className="card-label-smaller">{t("Landline Number")}</CardLabel>
+                    <Controller
+                      control={control}
+                      name={`owners.${index}.altContactNumber`}
+                      defaultValue={item?.altContactNumber || ""}
+                      render={(props) => (
+                        <TextInput
+                          value={props.value}
+                          onChange={(e) => props.onChange(e.target.value)}
+                          disable={isEditMode}
+                        />
+                      )}
+                    />
+                  </LabelFieldPair>
+                </div>
+              )}
 
               {/* Email + Address */}
               <div style={twoColRow}>

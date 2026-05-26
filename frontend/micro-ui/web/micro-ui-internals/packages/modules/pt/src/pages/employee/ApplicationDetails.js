@@ -1,4 +1,4 @@
-import { Header, LinkButton, MultiLink } from "@mseva/digit-ui-react-components";
+import { Header, LinkButton, Modal } from "@mseva/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,8 +6,25 @@ import { useParams } from "react-router-dom";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails";
 import { newConfigMutate } from "../../config/Mutate/config";
 import TransfererDetails from "../../pageComponents/Mutate/TransfererDetails";
+import { TransferOwnership } from "../../pageComponents/TransferOwnership";
+import PropertyOwnerHistory from "../citizen/MyProperties/propertyOwnerHistory";
 import MutationApplicationDetails from "./MutationApplicatinDetails";
 import getPTAcknowledgementData from "../../getPTAcknowledgementData";
+
+const Close = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+  </svg>
+);
+
+const CloseBtn = (props) => {
+  return (
+    <div className="icon-bg-secondary" onClick={props.onClick}>
+      <Close />
+    </div>
+  );
+};
 
 const ApplicationDetails = () => {
   const { t } = useTranslation();
@@ -17,7 +34,8 @@ const ApplicationDetails = () => {
   const { id: propertyId } = useParams();
   const [showToast, setShowToast] = useState(null);
   const [appDetailsToShow, setAppDetailsToShow] = useState({});
-  const [showOptions, setShowOptions] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showOwnershipModal, setShowOwnershipModal] = useState(false);
   const [enableAudit, setEnableAudit] = useState(false);
   const [businessService, setBusinessService] = useState("PT.CREATE");
   sessionStorage.setItem("applicationNoinAppDetails", propertyId);
@@ -177,22 +195,27 @@ const ApplicationDetails = () => {
       },
     ];
   }
-  const handleDownloadPdf = async () => {
-    const Property = appDetailsToShow?.applicationData;
-    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+  const handleDownloadPdf = async (e) => {
+    e?.preventDefault?.();
 
-    const data = await getPTAcknowledgementData(Property, tenantInfo, t);
-    Digit.Utils.pdf.generate(data);
-    setShowOptions(false);
+    try {
+      const Property = appDetailsToShow?.applicationData || applicationDetails?.applicationData;
+      const tenantInfo = tenants?.find((tenant) => tenant.code === Property?.tenantId);
+
+      if (!Property || !tenantInfo) {
+        setShowToast({ key: "error", error: { message: t("ERR_PDF_GEN_FAILED") } });
+        setTimeout(closeToast, 5000);
+        return;
+      }
+
+      const data = await getPTAcknowledgementData({ ...Property }, tenantInfo, t);
+      Digit.Utils.pdf.generate(data);
+    } catch (error) {
+      setShowToast({ key: "error", error: { message: error?.message || t("ERR_PDF_GEN_FAILED") } });
+      setTimeout(closeToast, 5000);
+    }
   };
 
-  const propertyDetailsPDF = {
-    order: 1,
-    label: t("PT_APPLICATION"),
-    // onClick: () => handleDownloadPdf(),
-    onClick: handleDownloadPdf,
-  };
-  let dowloadOptions = [propertyDetailsPDF];
   const handleViewTimeline = () => {
     setViewTimeline(true);
     const timelineSection = document.getElementById("timeline");
@@ -236,25 +259,34 @@ const ApplicationDetails = () => {
       return appDetailsToShow?.applicationDetails?.[3]?.additionalDetails?.owners;
     });
   }
+
+  if (appDetailsToShow?.applicationDetails) {
+    appDetailsToShow.applicationDetails = appDetailsToShow.applicationDetails.map((detail) => {
+      if (detail.title === "PT_OWNERSHIP_INFO_SUB_HEADER") {
+        return {
+          ...detail,
+          Component: () => (
+            <div style={{ display: "inline-flex", gap: "16px", marginLeft: "25px", alignItems: "center" }}>
+              <LinkButton label={t("PT_VIEW_HISTORY")} style={{ color: "#A52A2A" }} onClick={() => setShowHistoryModal(true)}></LinkButton>
+              <LinkButton label={t("PT_OWNERSHIP_TRANSFER")} style={{ color: "#A52A2A" }} onClick={() => setShowOwnershipModal(true)}></LinkButton>
+            </div>
+          ),
+        };
+      }
+      return detail;
+    });
+  }
+
   return (
     <div>
       <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
         <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("PT_APPLICATION_TITLE")}</Header>
+
         <div>
-          <div style={{ zIndex: "10", position: "relative" }}>
-            {dowloadOptions && dowloadOptions.length > 0 && (
-              <MultiLink
-                className="multilinkWrapper"
-                onHeadClick={() => setShowOptions(!showOptions)}
-                displayOptions={showOptions}
-                options={dowloadOptions}
-                downloadBtnClassName={"employee-download-btn-className"}
-                optionsClassName={"employee-options-btn-className"}
-                // ref={menuRef}
-              />
-            )}
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", zIndex: "10", position: "relative" }}>
+            <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
+            <LinkButton label={t("PT_DOWNLOAD_ACK_FORM")} style={{ color: "#A52A2A" }} onClick={handleDownloadPdf}></LinkButton>
           </div>
-          <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
         </div>
       </div>
       <ApplicationDetailsTemplate
@@ -276,6 +308,18 @@ const ApplicationDetails = () => {
         statusAttribute={"state"}
         MenuStyle={{ color: "#FFFFFF", fontSize: "18px" }}
       />
+      {showHistoryModal ? (
+        <Modal
+          headerBarMain={<h1 className="heading-m">{t("PT_OWNER_HISTORY")}</h1>}
+          headerBarEnd={<CloseBtn onClick={() => setShowHistoryModal(false)} />}
+          hideSubmit={true}
+          isDisabled={false}
+          popupStyles={{ width: "75%" }}
+        >
+          <PropertyOwnerHistory propertyId={propertyId} userType={"employee"} />
+        </Modal>
+      ) : null}
+      {showOwnershipModal ? <TransferOwnership /> : null}
     </div>
   );
 };

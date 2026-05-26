@@ -63,6 +63,7 @@ const App = () => {
   const PTResponseCitizen = Digit?.ComponentRegistryService?.getComponent("PTResponseCitizen");
   const SubmitResponse = Digit?.ComponentRegistryService?.getComponent("SubmitResponse");
   const GISIntegration = Digit?.ComponentRegistryService?.getComponent("GISIntegration");
+  const PTTransferOwnership = Digit?.ComponentRegistryService?.getComponent("PTTransferOwnership");
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
   const PropertyResponseCitizen = Digit?.ComponentRegistryService?.getComponent("PropertyResponseCitizen");
@@ -103,6 +104,7 @@ const App = () => {
           {/* <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseCitizen {...props} t={t} parentRoute={path} />} /> */}
           <PrivateRoute path={`${path}/property/pt-acknowledgement`} component={SubmitResponse}></PrivateRoute>
           <PrivateRoute path={`${path}/property/gis-values`} component={GISIntegration} />
+           <PrivateRoute path={`${path}/property/transfer-ownership/:id`} component={PTTransferOwnership} />
           <PrivateRoute path={`${path}/property/response/:id`} component={PropertyResponseCitizen} />
           {/* <PrivateRoute path={`${path}/property/create-application`} component={CreateEmployeeStepForm} /> */}
         </AppContainer>

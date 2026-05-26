@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import _ from "lodash";
 import { FormStep, RadioOrSelect, RadioButtons, LabelFieldPair, Dropdown, CardLabel, CardLabelError, Loader } from "@mseva/digit-ui-react-components";
 import { cardBodyStyle } from "../utils";
 import { useLocation } from "react-router-dom";
@@ -236,7 +237,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
               return owners.map((owner, index) => (
                 <React.Fragment key={index}>
                   <div className="row">
-                    <h2>NAME</h2>
+                    <h2>Name</h2>
                     <div className="value">
                       <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.name || "N/A"}</span>
                     </div>
@@ -248,19 +249,37 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
                     </div>
                   </div>
                   <div className="row">
-                    <h2>MOBILE NO</h2>
+                    <h2>Gender</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.gender || "N/A"}</span>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <h2>Type of Ownership</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.ownerType || "N/A"}</span>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <h2>Mobile No</h2>
                     <div className="value">
                       <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.mobileNumber || "N/A"}</span>
                     </div>
                   </div>
                   <div className="row">
-                    <h2>EMAIL ID</h2>
+                    <h2>Email Id</h2>
                     <div className="value">
                       <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.emailId || "N/A"}</span>
                     </div>
                   </div>
+                    <div className="row">
+                    <h2>Owner Percentage</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.ownerShipPercentage || "N/A"}</span>
+                    </div>
+                  </div>
                   <div className="row">
-                    <h2>CATEGORY</h2>
+                    <h2>Category</h2>
                     <div className="value">
                       <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.category || "N/A"}</span>
                     </div>
@@ -317,10 +336,9 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
             {formState.errors[config.key]?.message}
           </CardLabelError>
         ) : null} */}
-                {localFormState?.errors?.SelectOwnerShipDetails
- ? (
+        {(formState?.submitCount > 0 && !ownershipCategory) ? (
           <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
-            {localFormState?.errors?.SelectOwnerShipDetails?.message}
+            {t("CORE_COMMON_REQUIRED_ERRMSG")}
           </CardLabelError>
         ) : null}
       </React.Fragment>

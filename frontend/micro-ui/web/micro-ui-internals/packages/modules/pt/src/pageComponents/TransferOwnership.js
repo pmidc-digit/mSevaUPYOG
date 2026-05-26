@@ -2,8 +2,12 @@ import { Card, CardHeader, CardSubHeader, CardText, Loader, SubmitBar,Modal } fr
 import React, { useEffect, useState,Fragment,useRef } from "react";
 import { cardBodyStyle, stringReplaceAll } from "../utils";
 import { useTranslation } from "react-i18next";
+import { useParams, useHistory, useLocation } from "react-router-dom";
 export const TransferOwnership = () => {
   const {t} =useTranslation()
+  const { id } = useParams();
+  const history = useHistory();
+  const location = useLocation();
   const printRef = useRef();
     let { data: mutationDocuments } = Digit.Hooks.useCommonMDMS(Digit.ULBService.getStateId(), "PropertyTax", ["MutationDocuments"], {
     select: (data) => {
@@ -60,13 +64,16 @@ const content = printRef.current.innerHTML;
     //  onConcent(e)
     }
     const setModal=()=>{
-      console.log("in Apply")
-    
-     // onSelect()
-      
+      // Navigate back to property details after transfer ownership completion
+      const isEmployeeRoute = location.pathname.includes("/employee/");
+      const transferOwnershipRoute = isEmployeeRoute
+        ? `/digit-ui/employee/pt/property-mutate/${id}`
+        : `/digit-ui/citizen/pt/property/transfer-ownership/${id}`;
+      history.push(transferOwnershipRoute);
     }
     const closeModalTwo =() =>{
-      setShowToast(false)
+      // Navigate back when closing the modal
+      history.goBack();
     }
     const [showToast, setShowToast] = useState(true);
     

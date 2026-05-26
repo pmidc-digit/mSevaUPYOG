@@ -5,7 +5,7 @@ import { FormComposer } from "../../../../../../../react-components/src/hoc/Form
 // import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 
 const PTOwnerTransfershipSummaryStepThree = ({ config, onGoNext, onBackClick, t }) => {
-  const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData || {});
+  const formData = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData || {});
   console.log("form data in summary", formData);
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
@@ -26,8 +26,8 @@ const PTOwnerTransfershipSummaryStepThree = ({ config, onGoNext, onBackClick, t 
 
   // const currentStepData = useSelector(function (state) {
   //   console.log("state in step three ", state);
-  //   return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
-  //     ? state.pt.PTNewApplicationForm.formData[config.key]
+  //   return state.pt.PTNewApplicationFormReducer.formData && state.pt.PTNewApplicationFormReducer.formData[config.key]
+  //     ? state.pt.PTNewApplicationFormReducer.formData[config.key]
   //     : {};
   // });
 

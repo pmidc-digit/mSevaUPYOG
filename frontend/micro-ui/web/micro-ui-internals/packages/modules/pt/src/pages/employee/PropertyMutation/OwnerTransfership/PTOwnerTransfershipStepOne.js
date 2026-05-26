@@ -1,12 +1,113 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-//
-import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
+import _ from "lodash";
+import { FormComposer } from "@mseva/digit-ui-react-components";
+// import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
 import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
 
 const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+    console.log(
+      `Data in step ${config.currStepNumber}:`,
+      data
+    );
+
+    // prevent moving if no data
+    if (!data || _.isEmpty(data)) {
+      return;
+    }
+
+    // Block navigation if mandatory registration details fields are missing
+    const additionalDetails = data?.additionalDetails;
+    if (
+      !additionalDetails?.reasonForTransfer ||
+      !additionalDetails?.marketValue ||
+      !additionalDetails?.documentNumber ||
+      !additionalDetails?.documentValue ||
+      !additionalDetails?.documentDate
+    ) {
+      return;
+    }
+
+    if (additionalDetails?.documentDate) {
+      const docDate = new Date(additionalDetails.documentDate);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      if (docDate.getTime() > today.getTime()) {
+        return;
+      }
+    }
+
+    // Block navigation if ownershipCategory or owners are invalid based on selection
+    const ownershipCategory = data?.ownershipCategory;
+    if (!ownershipCategory || !ownershipCategory.code) {
+      return;
+    }
+
+    const owners = data?.owners;
+    if (!owners || !Array.isArray(owners) || owners.length === 0) {
+      return;
+    }
+
+    const isIndividualTypeOwner = ownershipCategory.code.includes("INDIVIDUAL");
+
+    for (const owner of owners) {
+      // Validate common fields first
+      if (!owner.name || (typeof owner.name === "string" && !owner.name.trim())) {
+        return;
+      }
+      
+      const mobilePattern = /^[6-9]\d{9}$/;
+      if (!owner.mobileNumber || !mobilePattern.test(owner.mobileNumber)) {
+        return;
+      }
+
+      if (isIndividualTypeOwner) {
+        // Individual fields validation
+        if (!owner.gender || (typeof owner.gender === "object" && !owner.gender.code)) {
+          return;
+        }
+        if (!owner.fatherOrHusbandName || (typeof owner.fatherOrHusbandName === "string" && !owner.fatherOrHusbandName.trim())) {
+          return;
+        }
+        if (!owner.relationship || (typeof owner.relationship === "object" && !owner.relationship.code)) {
+          return;
+        }
+        if (!owner.ownerType || (typeof owner.ownerType === "object" && !owner.ownerType.code)) {
+          return;
+        }
+
+        const ownerTypeCode = typeof owner.ownerType === "object" ? owner.ownerType.code : owner.ownerType;
+        if (ownerTypeCode && ownerTypeCode !== "NONE") {
+          if (!owner.documents?.documentType || (typeof owner.documents.documentType === "object" && !owner.documents.documentType.code)) {
+            return;
+          }
+          if (!owner.documents?.documentUid || (typeof owner.documents.documentUid === "string" && !owner.documents.documentUid.trim())) {
+            return;
+          }
+        }
+      } else {
+        // Institutional fields validation
+        if (!owner.institutionName || (typeof owner.institutionName === "string" && !owner.institutionName.trim())) {
+          return;
+        }
+        if (!owner.institutionType || (typeof owner.institutionType === "object" && !owner.institutionType.code)) {
+          return;
+        }
+        
+        const landlinePattern = /^\d{11}$/;
+        if (!owner.altContactNumber || !landlinePattern.test(owner.altContactNumber)) {
+          return;
+        }
+        if (!owner.designation || (typeof owner.designation === "string" && !owner.designation.trim())) {
+          return;
+        }
+        if (!owner.correspondenceAddress || (typeof owner.correspondenceAddress === "string" && !owner.correspondenceAddress.trim())) {
+          return;
+        }
+      }
+    }
+
     onGoNext();
   }
 
@@ -41,12 +142,12 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
 
   const currentStepData = useSelector(function (state) {
     console.log("state in step one ", state);
-    return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData.TransferorDetails
-      ? state.pt.PTNewApplicationForm.formData.TransferorDetails
+    return state.pt.PTNewApplicationFormReducer.formData && state.pt.PTNewApplicationFormReducer.formData.TransferorDetails
+      ? state.pt.PTNewApplicationFormReducer.formData.TransferorDetails
       : {};
   });
-  const reduxStepData = useSelector((state) => state.pt.PTNewApplicationForm.formData.TransferorDetails);
-  const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData);
+  const reduxStepData = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData.TransferorDetails);
+  const formData = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData);
   console.log("Step one formdata +", formData);
   const [localStepData, setLocalStepData] = useState(reduxStepData);
   console.log("reduxStepData in step one: +", localStepData);

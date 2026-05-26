@@ -142,7 +142,7 @@ const PTSearchApplication = ({tenantId, isLoading, t, onSubmit, data, count, set
                 </SearchField>
                 <SearchField>
                 <label>{t("PT_OWNER_MOBILE_NO")}</label>
-                <MobileNumber
+                <TextInput
                     name="mobileNumber"
                     inputRef={register({
                     minLength: {
@@ -155,17 +155,16 @@ const PTSearchApplication = ({tenantId, isLoading, t, onSubmit, data, count, set
                     },
                     pattern: {
                     value: /[6789][0-9]{9}/,
-                    //type: "tel",
                     message: t("CORE_COMMON_MOBILE_ERROR"),
                     },
                 })}
-                type="number"
-                componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
-                //maxlength={10}
+                type="text"
+                
                 />
                  <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
                 </SearchField>
-                <SearchField>
+                
+                {/* <SearchField>
                     <label>{t("PT_SEARCHPROPERTY_TABEL_APPLICATIONTYPE")}</label>
                     <Controller
                             control={control}
@@ -216,7 +215,7 @@ const PTSearchApplication = ({tenantId, isLoading, t, onSubmit, data, count, set
                         name="toDate"
                         control={control}
                         />
-                </SearchField>
+                </SearchField> */}
                 <SearchField className="submit">
                     <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
                     <p style={{marginTop:"10px"}}

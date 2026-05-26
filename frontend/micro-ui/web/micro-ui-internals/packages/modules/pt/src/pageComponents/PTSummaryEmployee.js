@@ -18,25 +18,6 @@ function PTSummaryEmployee({ formData, t }) {
   const history = useHistory();
   const dispatch = useDispatch();
   const mutateScreen = url.includes("/property-mutate/") || url.includes("/transfer-ownership/");
-  const getDisplayValue = (value, fallback = "NA") => {
-    if (value === undefined || value === null || value === "") return fallback;
-    if (typeof value === "object") return value?.name || value?.label || value?.value || value?.code || value?.i18nKey || fallback;
-    return value;
-  };
-
-  const getFloorCount = (propertyDetails = {}) => {
-    const directFloorCount = Number(propertyDetails?.noOfFloors?.code || propertyDetails?.noOfFloors?.name || propertyDetails?.noOfFloors);
-    if (!isNaN(directFloorCount) && directFloorCount > 0) return String(directFloorCount);
-
-    const unitFloors = (propertyDetails?.units || [])
-      .map((unit) => Number(unit?.floorNoCitizen?.code || unit?.floorNoCitizen || unit?.floor?.code || unit?.floor || unit?.floorNo))
-      .filter((floor) => !isNaN(floor));
-
-    return unitFloors.length ? String(Math.max(...unitFloors)) : "NA";
-  };
-
-  const isInstitutionalOwnership = formData?.ownerShipDetails?.ownershipCategory?.code?.includes("INSTITUTIONAL");
-  const isIndividualOwnership = formData?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL") || formData?.ownerShipDetails?.ownershipCategory?.code === "SINGLEOWNER";
   return (
     <>
       {mutateScreen ? (

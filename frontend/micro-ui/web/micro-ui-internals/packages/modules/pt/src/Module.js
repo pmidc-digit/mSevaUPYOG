@@ -305,8 +305,7 @@ const componentsToRegister = {
   NewPTStepFormFive,
   PropertySelectDocs,
   PropertyResponseCitizen,
-  PTImportantDates,
-  // PTCitizenTransferOwnership: CitizenTransferOwnership,
+  PTCitizenTransferOwnership: CitizenTransferOwnership,
 };
 
 const addComponentsToRegistry = () => {

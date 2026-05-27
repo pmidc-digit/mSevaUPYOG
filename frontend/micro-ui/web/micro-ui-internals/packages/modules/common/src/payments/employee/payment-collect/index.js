@@ -23,7 +23,14 @@ export const CollectPayment = (props) => {
 
   const { path: currentPath } = useRouteMatch();
   let { consumerCode, businessService } = useParams();
+
+  // Update businessService to uppercase if it's "pt"
+  if (businessService?.toLowerCase() === "pt") {
+    businessService = "PT";
+  }
+
   console.log("businessService", businessService);
+
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const location = useLocation();
   const search = useLocation().search;

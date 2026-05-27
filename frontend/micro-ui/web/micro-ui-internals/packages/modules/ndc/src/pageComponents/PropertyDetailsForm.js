@@ -38,7 +38,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   const [propertyDetails, setPropertyDetails] = useState(formData?.PropertyDetails || {});
   const [selectedRow, setSelectedRow] = useState(null);
 
-
   const { isLoading: waterConnectionLoading, data: waterConnectionData, error: waterConnectionError } = Digit.Hooks.ndc.useSearchWS({
     tenantId,
     filters: {
@@ -100,14 +99,20 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       ?.filter(Boolean)
       ?.join(", ");
 
+    console.log("formData====????", formData);
+
     const ownerObj = selectedRow;
 
     const emailApi = apiDataCheck?.[0]?.owners?.[0]?.emailId;
     const firstName = ownerObj?.name;
 
+    console.log("ownerObj", ownerObj);
+
     const email = ownerObj?.emailId || emailApi || "";
     const mobileNumber = ownerObj?.mobileNumber;
     const address = ownerObj?.permanentAddress;
+    const fatherOrHusbandName = ownerObj?.fatherOrHusbandName;
+    const landArea = formData?.cpt?.details?.landArea;
 
     const combinedObject = {};
     if (firstName) combinedObject.firstName = firstName;
@@ -115,6 +120,8 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     combinedObject.email = email;
     if (mobileNumber) combinedObject.mobileNumber = mobileNumber;
     if (address) combinedObject.address = address;
+    if (landArea) combinedObject.landArea = landArea;
+    if (fatherOrHusbandName) combinedObject.fatherOrHusbandName = fatherOrHusbandName;
     combinedObject.propertyBillData = {
       isLoading: false,
       billData: formData?.PropertyDetails?.propertyBillData?.billData || {},
@@ -341,7 +348,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       }
     } catch (error) {
       console.log("error", error?.response?.data);
-      const checkError = error?.response?.data?.Errors[0]?.code
+      const checkError = error?.response?.data?.Errors[0]?.code;
 
       if (checkError == "EMPTY_DEMANDS") {
         if (bussinessService === "WS") {
@@ -367,7 +374,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           }));
           setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_SW") });
         }
-        return
+        return;
       }
 
       if (bussinessService === "WS") {
@@ -380,9 +387,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           ...prev,
           waterConnection: updated,
         }));
-      }
-
-      else if (bussinessService === "SW") {
+      } else if (bussinessService === "SW") {
         const updated = [...propertyDetails.sewerageConnection];
 
         updated[index].isLoading = false;
@@ -394,11 +399,10 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         }));
       }
 
-
       setPropertyLoader(false);
       setShowToast({ error: true, label: t("NDC_MESSAGE_FETCH_FAILED") });
     }
-  }
+  };
 
   const closeToast = () => {
     setShowToast(null);
@@ -453,6 +457,8 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     }
   }
 
+  console.log("propertyDetails", propertyDetails);
+
   const PayWSBillModal = Digit?.ComponentRegistryService?.getComponent("PayWSBillModal");
 
   useEffect(() => {
@@ -478,6 +484,32 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
   return (
     <div style={{ marginBottom: "16px" }}>
+      {/* land area */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Land Area")} * `}</CardLabel>
+        <div className="form-field">
+          <Controller
+            control={control}
+            name={"landArea"}
+            defaultValue={propertyDetails?.landArea || ""}
+            render={(props) => (
+              <TextInput
+                value={propertyDetails?.landArea}
+                onChange={(e) => {
+                  setPropertyDetails((prev) => ({ ...prev, landArea: e.target.value }));
+                  props.onChange(e.target.value);
+                }}
+                onBlur={(e) => {
+                  // setFocusIndex({ index: -1 });
+                  props.onBlur(e);
+                }}
+                disabled={formData?.cpt?.details?.landArea}
+              />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+
       {(formData?.cpt?.details || apiDataCheck?.[0]?.NdcDetails) && (
         <div>
           <LabelFieldPair style={{ marginTop: "40px" }}>
@@ -768,7 +800,33 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           // setFocusIndex({ index: -1 });
                           props.onBlur(e);
                         }}
-                      // disabled={formData?.cpt?.details?.owners?.[0]?.emailId}
+                        // disabled={formData?.cpt?.details?.owners?.[0]?.emailId}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+
+              {/* father name */}
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Father Name")} * `}</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={"fatherOrHusbandName"}
+                    defaultValue={propertyDetails?.fatherOrHusbandName || ""}
+                    render={(props) => (
+                      <TextInput
+                        value={propertyDetails?.fatherOrHusbandName}
+                        onChange={(e) => {
+                          setPropertyDetails((prev) => ({ ...prev, fatherOrHusbandName: e.target.value }));
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          // setFocusIndex({ index: -1 });
+                          props.onBlur(e);
+                        }}
+                        disabled={formData?.cpt?.details?.owners?.[0]?.fatherOrHusbandName}
                       />
                     )}
                   />
@@ -858,6 +916,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           />
         </div>
       </LabelFieldPair>
+
       {/* tl number */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_TL_NUMBER")}`}</CardLabel>
@@ -882,6 +941,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           />
         </div>
       </LabelFieldPair>
+
       {showToast && <Toast isDleteBtn={true} error={showToast?.error} label={showToast?.label} onClose={closeToast} />}
       {showPayModal && (
         <PayWSBillModal

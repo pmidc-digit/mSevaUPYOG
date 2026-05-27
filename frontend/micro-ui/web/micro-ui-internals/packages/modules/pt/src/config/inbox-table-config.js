@@ -89,7 +89,6 @@ export const TableConfig = (t) => ({
     inboxColumns: (props) => [
 
       {
-          id: "applicationNumberLink",
         Header: t("ES_INBOX_APPLICATION_NO"),
         Cell: ({ row }) => {
           return (
@@ -107,16 +106,6 @@ export const TableConfig = (t) => ({
         },
         mobileCell: (original) => GetMobCell(original?.workflowData?.businessId || "-"),
       },
-
-      // {
-      //   id: "applicationNumberText",
-      //   Header: t("ES_INBOX_APPLICATION_NO"),
-      //   Cell: ({ row }) => {
-      //     return GetCell(row.original?.workflowData?.businessId || "-");
-      //   },
-      //   mobileCell: (original) => GetMobCell(original?.workflowData?.businessId || "-"),
-      // },
-      
       {
         Header: t("ES_INBOX_UNIQUE_PROPERTY_ID"),
         Cell: ({ row }) => {

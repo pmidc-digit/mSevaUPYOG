@@ -1,21 +1,14 @@
 package org.egov.common.persistence.repository;
 
-import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.egov.common.domain.exception.InvalidDataException;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public abstract class ESRepository {
-
-    protected TransportClient esClient;
 
     public void validateSortByOrder(final String sortBy) {
         List<String> sortByList = new ArrayList<String>();
@@ -82,34 +75,6 @@ public abstract class ESRepository {
         }
 
         return orderByList;
-    }
-
-    public void add(Object fieldValue, String field, BoolQueryBuilder boolQueryBuilder) {
-        if (fieldValue != null) {
-            boolQueryBuilder = boolQueryBuilder.filter(termsQuery(field, fieldValue));
-        }
-
-    }
-
-    public void in(List fieldValue, String field, BoolQueryBuilder boolQueryBuilder) {
-        if (fieldValue != null) {
-            boolQueryBuilder.filter(QueryBuilders.termsQuery(field, fieldValue));
-        }
-
-    }
-
-    public void gte(Object fieldValue, String field, BoolQueryBuilder boolQueryBuilder) {
-        if (fieldValue != null) {
-            boolQueryBuilder = boolQueryBuilder.filter(QueryBuilders.rangeQuery(field).from(fieldValue));
-        }
-
-    }
-
-    public void lte(Object fieldValue, String field, BoolQueryBuilder boolQueryBuilder) {
-        if (fieldValue != null) {
-            boolQueryBuilder = boolQueryBuilder.filter(QueryBuilders.rangeQuery(field).to(fieldValue));
-        }
-
     }
 
 }

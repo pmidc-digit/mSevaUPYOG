@@ -1,7 +1,7 @@
 package org.egov.egf.master.web.controller;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,8 +24,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -36,11 +36,15 @@ import org.springframework.validation.BindingResult;
 @WebMvcTest(AccountDetailTypeController.class)
 @Import(TestConfiguration.class)
 public class AccountDetailTypeControllerTest {
+	@org.junit.Before
+	public void setUp() {
+		org.mockito.MockitoAnnotations.openMocks(this);
+	}
 
 	@Autowired
 	private MockMvc mockMvc;
 
-	@MockBean
+	@MockitoBean
 	AccountDetailTypeService accountDetailTypeService;
 
 	@Captor
@@ -54,8 +58,8 @@ public class AccountDetailTypeControllerTest {
 				.thenReturn(getAccountDetailTypes());
 		mockMvc.perform(post("/accountdetailtypes/_create?tenantId=default")
 				.content(resources.readRequest("accountdetailtype/accountdetailtype_create_request.json"))
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(content().json(
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON)).andExpect(content().json(
 						resources.readResponse("accountdetailtype/accountdetailtype_create_response.json")));
 
 		verify(accountDetailTypeService).create(captor.capture(), any(BindingResult.class), any(RequestInfo.class));
@@ -72,7 +76,7 @@ public class AccountDetailTypeControllerTest {
 				.thenReturn(getAccountDetailTypes());
 		mockMvc.perform(post("/accountdetailtypes/_create")
 				.content(resources.readRequest("accountdetailtype/accountdetailtype_create_invalid_fieldvalue.json"))
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is5xxServerError());
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is5xxServerError());
 
 	}
 
@@ -83,8 +87,8 @@ public class AccountDetailTypeControllerTest {
 
 		mockMvc.perform(post("/accountdetailtypes/_update?tenantId=default")
 				.content(resources.readRequest("accountdetailtype/accountdetailtype_update_request.json"))
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(content().json(
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON)).andExpect(content().json(
 						resources.readResponse("accountdetailtype/accountdetailtype_update_response.json")));
 
 		verify(accountDetailTypeService).update(captor.capture(), any(BindingResult.class), any(RequestInfo.class));
@@ -109,8 +113,8 @@ public class AccountDetailTypeControllerTest {
 				.thenReturn(page);
 
 		mockMvc.perform(post("/accountdetailtypes/_search?tenantId=default").content(resources.getRequestInfo())
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(200))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(content().json(
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(200))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON)).andExpect(content().json(
 						resources.readResponse("accountdetailtype/accountdetailtype_search_response.json")));
 
 	}

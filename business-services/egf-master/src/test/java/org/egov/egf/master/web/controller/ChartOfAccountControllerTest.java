@@ -1,7 +1,7 @@
 package org.egov.egf.master.web.controller;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -26,8 +26,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -42,7 +42,7 @@ public class ChartOfAccountControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
-	@MockBean
+	@MockitoBean
 	private ChartOfAccountService chartOfAccountService;
 
 	private RequestJsonReader resources = new RequestJsonReader();
@@ -52,6 +52,7 @@ public class ChartOfAccountControllerTest {
 
 	@Before
 	public void setUp() throws Exception {
+		org.mockito.MockitoAnnotations.openMocks(this);
 	}
 
 	@After
@@ -64,8 +65,8 @@ public class ChartOfAccountControllerTest {
 				.thenReturn((getChartOfAccounts()));
 		
 		mockMvc.perform(post("/chartofaccounts/_create?tenantId=default").content(resources.readRequest("chartofaccount/chartofaccount_create_valid_request.json"))
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(resources.readResponse("chartofaccount/chartofaccount_create_valid_response.json")));
 		
 		verify(chartOfAccountService).addToQue(captor.capture());
@@ -84,8 +85,8 @@ public class ChartOfAccountControllerTest {
 				.thenReturn((getUpdatedChartOfAccounts()));
 
 		mockMvc.perform(post("/chartofaccounts/_update?tenantId=default").content(resources.readRequest("chartofaccount/chartofaccount_update_valid_request.json"))
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(resources.readResponse("chartofaccount/chartofaccount_update_valid_response.json")));
 		
 		verify(chartOfAccountService).addToQue(captor.capture());
@@ -107,8 +108,8 @@ public class ChartOfAccountControllerTest {
 		.thenReturn((getPagination()));
 		
 		mockMvc.perform(
-				post("/chartofaccounts/_search?tenantId=default").content(resources.getRequestInfo()).contentType(MediaType.APPLICATION_JSON_UTF8))
-				.andExpect(status().is(200)).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				post("/chartofaccounts/_search?tenantId=default").content(resources.getRequestInfo()).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().is(200)).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(resources.readResponse("chartofaccount/chartofaccount_search_valid_response.json")));
 		
 

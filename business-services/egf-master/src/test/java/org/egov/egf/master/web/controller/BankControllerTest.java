@@ -1,7 +1,7 @@
 package org.egov.egf.master.web.controller;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -26,8 +26,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -42,7 +42,7 @@ public class BankControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
-	@MockBean
+	@MockitoBean
 	private BankService bankService;
 
 	private RequestJsonReader resources = new RequestJsonReader();
@@ -52,6 +52,7 @@ public class BankControllerTest {
 
 	@Before
 	public void setUp() throws Exception {
+		org.mockito.MockitoAnnotations.openMocks(this);
 	}
 
 	@After
@@ -64,8 +65,8 @@ public class BankControllerTest {
 				.thenReturn(getBanks());
 
 		mockMvc.perform(post("/banks/_create").content(resources.readRequest("bank/bank_create_valid_request.json"))
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(resources.readResponse("bank/bank_create_valid_response.json")));
 
 		verify(bankService).create(captor.capture(), any(BindingResult.class), any(RequestInfo.class));
@@ -81,8 +82,8 @@ public class BankControllerTest {
 		when(bankService.update(captor.capture(), any(BindingResult.class), any(RequestInfo.class))).thenReturn((getUpdateBanks()));
 
 		mockMvc.perform(post("/banks/_update?tenantId=default").content(resources.readRequest("bank/bank_update_valid_request.json"))
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(resources.readResponse("bank/bank_update_valid_response.json")));
 
 		verify(bankService).update(captor.capture(), any(BindingResult.class), any(RequestInfo.class));
@@ -106,8 +107,8 @@ public class BankControllerTest {
 		when(bankService.search(any(BankSearch.class), any(BindingResult.class))).thenReturn(page);
 
 		mockMvc.perform(
-				post("/banks/_search?tenantId=default").content(resources.getRequestInfo()).contentType(MediaType.APPLICATION_JSON_UTF8))
-				.andExpect(status().is(200)).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				post("/banks/_search?tenantId=default").content(resources.getRequestInfo()).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().is(200)).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(resources.readResponse("bank/bank_search_valid_response.json")));
 	}
 
@@ -118,7 +119,7 @@ public class BankControllerTest {
 
 		mockMvc.perform(
 				post("/banks/_create").content(resources.readRequest("bank/bank_create_invalid_field_value.json"))
-						.contentType(MediaType.APPLICATION_JSON_UTF8))
+						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().is5xxServerError());
 
 	}

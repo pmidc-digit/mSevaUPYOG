@@ -4,7 +4,7 @@
 	   "did": "did",
 	   "msgId": "msgId",
 	   "requesterId": "requesterId",
-	   "ts": "01-01-2017 01:01:01",
+	   "ts": 1483232461000,
 	   "authToken": null
    },
 	   "accountEntities":

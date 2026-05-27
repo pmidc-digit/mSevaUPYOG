@@ -4,15 +4,14 @@ package org.egov.wscalculation.web.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.egov.wscalculation.web.models.workflow.ProcessInstance;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -22,14 +21,14 @@ import java.util.Objects;
  * definitions needing property linking. Actual Property Object extends this to
  * include more elaborate attributes of the property.
  */
-@ApiModel(description = "This is lightweight property object that can be used as reference by definitions needing property linking. Actual Property Object extends this to include more elaborate attributes of the property.")
+@Schema(description = "This is lightweight property object that can be used as reference by definitions needing property linking. Actual Property Object extends this to include more elaborate attributes of the property.")
 @Validated
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-03-11T12:10:14.583+05:30[Asia/Kolkata]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-03-11T12:10:14.583+05:30[Asia/Kolkata]")
 public class Connection {
 	@JsonProperty("id")
 	private String id = null;
@@ -145,8 +144,6 @@ public class Connection {
 	 *
 	 * @return id
 	 **/
-	@ApiModelProperty(readOnly = true, value = "Unique Identifier of the connection for internal reference.")
-
 	@Size(min = 1, max = 64)
 	public String getId() {
 		return id;
@@ -166,8 +163,6 @@ public class Connection {
 	 *
 	 * @return tenantId
 	 **/
-	@ApiModelProperty(value = "Unique ULB identifier.")
-
 	@Size(min = 2, max = 256)
 	@NotNull
 	public String getTenantId() {
@@ -188,8 +183,6 @@ public class Connection {
 	 *
 	 * @return propertyId
 	 **/
-	@ApiModelProperty(value = "UUID of the property.")
-
 	public String getPropertyId() {
 		return propertyId;
 	}
@@ -209,8 +202,6 @@ public class Connection {
 	 *
 	 * @return applicationNo
 	 **/
-	@ApiModelProperty(readOnly = true, value = "Formatted application number, which will be generated using ID-Gen at the time .")
-
 	@Size(min = 1, max = 64)
 	public String getApplicationNo() {
 		return applicationNo;
@@ -230,8 +221,6 @@ public class Connection {
 	 *
 	 * @return applicationStatus
 	 **/
-	@ApiModelProperty(value = "")
-
 	public String getApplicationStatus() {
 		return applicationStatus;
 	}
@@ -250,8 +239,6 @@ public class Connection {
 	 *
 	 * @return status
 	 **/
-	@ApiModelProperty(value = "")
-
 	public StatusEnum getStatus() {
 		return status;
 	}
@@ -273,8 +260,6 @@ public class Connection {
 	 *
 	 * @return connectionNo
 	 **/
-	@ApiModelProperty(readOnly = true, value = "Formatted connection number, which will be generated using ID-Gen service after aproval of connection application in case of new application. If the source of data is \"DATA_ENTRY\" then application status will be considered as \"APROVED\" application.")
-
 	@Size(min = 1, max = 64)
 	public String getConnectionNo() {
 		return connectionNo;
@@ -294,8 +279,6 @@ public class Connection {
 	 *
 	 * @return oldConnectionNo
 	 **/
-	@ApiModelProperty(readOnly = true, value = "Mandatory if source is \"DATA_ENTRY\".")
-
 	@Size(min = 1, max = 64)
 	public String getOldConnectionNo() {
 		return oldConnectionNo;
@@ -338,7 +321,6 @@ public class Connection {
 	 *
 	 * @return documents
 	 **/
-	@ApiModelProperty(value = "The documents attached by owner for exemption.")
 	@Valid
 	public List<Document> getDocuments() {
 		return documents;
@@ -348,7 +330,6 @@ public class Connection {
 		this.documents = documents;
 	}
 
-	@ApiModelProperty(value = "The road cutting information given by owner")
 	@Valid
 	public List<RoadCuttingInfo> getRoadCuttingInfo(){ return roadCuttingInfo; }
 
@@ -375,7 +356,6 @@ public class Connection {
 	 *
 	 * @return plumberInfo
 	 **/
-	@ApiModelProperty(value = "The documents attached by owner for exemption.")
 	@Valid
 	public List<PlumberInfo> getPlumberInfo() {
 		return plumberInfo;
@@ -396,8 +376,6 @@ public class Connection {
 	 *
 	 * @return roadType
 	 **/
-	@ApiModelProperty(value = "It is a master data, defined in MDMS. If road cutting is required to established the connection then we need to capture the details of road type.")
-
 	@Size(min = 2, max = 32)
 	public String getRoadType() {
 		return roadType;
@@ -417,8 +395,6 @@ public class Connection {
 	 *
 	 * @return roadCuttingArea
 	 **/
-	@ApiModelProperty(value = "Capture the road cutting area in sqft.")
-
 	public Float getRoadCuttingArea() {
 		return roadCuttingArea;
 	}
@@ -437,8 +413,6 @@ public class Connection {
 	 *
 	 * @return connectionExecutionDate
 	 **/
-	@ApiModelProperty(readOnly = true, value = "")
-
 	@Valid
 	public Long getConnectionExecutionDate() {
 		return connectionExecutionDate;
@@ -458,8 +432,6 @@ public class Connection {
 	 *
 	 * @return connectionCategory
 	 **/
-	@ApiModelProperty(required = true, value = "It is a master data, defined in MDMS")
-
 	@Size(min = 2, max = 32)
 	public String getConnectionCategory() {
 		return connectionCategory;
@@ -479,8 +451,6 @@ public class Connection {
 	 *
 	 * @return connectionType
 	 **/
-	@ApiModelProperty(required = true, value = "It is a master data, defined in MDMS.")
-
 	@Size(min = 2, max = 32)
 	public String getConnectionType() {
 		return connectionType;
@@ -501,8 +471,6 @@ public class Connection {
 	 *
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
 	public Object getAdditionalDetails() {
 		return additionalDetails;
 	}
@@ -521,8 +489,6 @@ public class Connection {
 	 *
 	 * @return auditDetails
 	 **/
-	@ApiModelProperty(value = "")
-
 	@Valid
 	public AuditDetails getAuditDetails() {
 		return auditDetails;
@@ -554,7 +520,6 @@ public class Connection {
 		return this;
 	}
 
-	@ApiModelProperty(value = "The connection holder info will enter by employee or citizen")
 	@Valid
 	public List<OwnerInfo> getConnectionHolders() {
 		return connectionHolders;
@@ -574,7 +539,6 @@ public class Connection {
 	 *
 	 * @return dateEffectiveFrom
 	 **/
-	@ApiModelProperty(readOnly = true, value = "")
 	@Valid
 	public Long getDateEffectiveFrom() {
 		return dateEffectiveFrom;
@@ -594,7 +558,6 @@ public class Connection {
 	 *
 	 * @return applicationType
 	 **/
-	@ApiModelProperty(readOnly = true, value = "")
 	@Valid
 	public String getApplicationType() {
 		return applicationType;

@@ -87,10 +87,22 @@ export const TableConfig = (t) => ({
       },
     ],
     inboxColumns: (props) => [
+
       {
         Header: t("ES_INBOX_APPLICATION_NO"),
         Cell: ({ row }) => {
-          return GetCell(row.original?.workflowData?.businessId || "-");
+          return (
+            <div>
+              <span className="link">
+                <Link
+                  to={`${props.parentRoute}/application-details/${row.original?.searchData?.["propertyId"]
+                    }`}
+                >
+                  {row.original?.workflowData?.businessId || "-"}
+                </Link>
+              </span>
+            </div>
+          );
         },
         mobileCell: (original) => GetMobCell(original?.workflowData?.businessId || "-"),
       },
@@ -100,7 +112,12 @@ export const TableConfig = (t) => ({
           return (
             <div>
               <span className="link">
-                <Link to={`${props.parentRoute}/application-details/` + row.original?.searchData?.["propertyId"]}>
+                <Link
+                  to={`/digit-ui/employee/pt/ptsearch/property-details/${row.original?.searchData?.["propertyId"]
+                    }`}
+                >
+
+
                   {row.original?.searchData?.["propertyId"]}
                 </Link>
               </span>

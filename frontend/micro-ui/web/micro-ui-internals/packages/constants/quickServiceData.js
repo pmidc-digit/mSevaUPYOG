@@ -296,7 +296,7 @@ export const quickServiceModules = {
       bgColor: "#3e4b5b",
       labelKey: "",
       icon: "",
-      routes: "/digit-ui/employee/firenoc/inbox",
+      routes: "/digit-ui/employee/firenoc/search/application",
       isCitizen: false,
       description: "",
       subHeading: "",

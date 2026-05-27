@@ -1,8 +1,8 @@
-import { BreadCrumb, PrivateRoute } from "@mseva/digit-ui-react-components";
+import { BreadCrumb, PrivateRoute, SubmitBar } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import SearchApplication from "./SearchApplication";
-import { Switch, useLocation, useHistory } from "react-router-dom";
+import { Switch, useLocation, useHistory, Link } from "react-router-dom";
 import Response from "./Response";
 
 const NOCBreadCrumbs = ({ location }) => {
@@ -16,7 +16,7 @@ const NOCBreadCrumbs = ({ location }) => {
     {
       path: "/digit-ui/employee/firenoc/inbox",
       content: t("ES_COMMON_INBOX"),
-      show: (location.pathname.includes("firenoc/inbox") || location.pathname.includes("firenoc/new-application") || location.pathname.includes("firenoc/search") || location.pathname.includes("firenoc/inbox/application-overview") || location.pathname.includes("firenoc/application-overview")) ? true : false,
+      show: (location.pathname.includes("firenoc/inbox") || location.pathname.includes("firenoc/new-application") || location.pathname.includes("firenoc/inbox/application-overview") || location.pathname.includes("firenoc/application-overview")) ? true : false,
     },
     {
       path: "/digit-ui/employee/firenoc/inbox",
@@ -73,11 +73,30 @@ const EmployeeApp = ({ path }) => {
 
   }, []);
 
+  const showNewApplicationButton =
+    !location.pathname.includes("new-application") &&
+    !location.pathname.includes("edit-application") &&
+    !location.pathname.includes("firenoc/inbox") &&
+    !isResponse;
+
   return (
     <Fragment>
-      {!isResponse ? <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop: "34px" } : {}}>
-        <NOCBreadCrumbs location={location} />
-      </div> : null}
+      {!isResponse ? (
+        <div
+          style={
+            window.location.href.includes("application-overview") || isMobile
+              ? { marginLeft: "10px", marginTop: "34px", display: "flex", justifyContent: "space-between", alignItems: "center" }
+              : { display: "flex", justifyContent: "space-between", alignItems: "center", marginLeft: "10px", marginTop: "34px", }
+          }
+        >
+          <NOCBreadCrumbs location={location} />
+          {showNewApplicationButton && (
+            <Link style={{ marginRight: "10px" }} to="/digit-ui/employee/firenoc/new-application">
+              <SubmitBar label={t("NOC_NEW_APPLICATION")} />
+            </Link>
+          )}
+        </div>
+      ) : null}
       <Switch>
         <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={FIRENOCCitizenApplicationOverview} />
         <PrivateRoute path={`${path}/search/application-overview/:id`} component={FIRENOCCitizenApplicationOverview} />

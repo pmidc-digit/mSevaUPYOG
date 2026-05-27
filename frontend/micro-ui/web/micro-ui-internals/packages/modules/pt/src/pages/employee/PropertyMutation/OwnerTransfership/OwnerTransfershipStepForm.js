@@ -27,7 +27,7 @@ const createEmployeeConfig = [
   },
   {
     head: "PT_MUTATION_DOCUMENT_DETAILS",
-    stepLabel: "Docuement Details",
+    stepLabel: "Document Details",
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
@@ -57,7 +57,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: newConfigMutate.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
 
-const CreateEmployeeStepForm = ({ applicationData }) => {
+const CreateEmployeeStepForm = ({ applicationData, responsePath = "/digit-ui/employee/pt/response", heading = "ES_TITLE_MUTATE_PROPERTY" }) => {
   const history = useHistory();
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -67,6 +67,8 @@ const CreateEmployeeStepForm = ({ applicationData }) => {
   const formData = formState?.formData;
   const step = formState?.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const [, setMutationHappened] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
+  const [, , clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_SUCCESS_DATA", {});
   // console.log("Form data", formData)
   // console.log("formState: ",formState);
   console.log("applicationData in ownership transefership", applicationData);
@@ -75,7 +77,13 @@ const CreateEmployeeStepForm = ({ applicationData }) => {
   const { data: mutationDocs } = Digit.Hooks.pt.useMDMS(Digit.ULBService.getStateId(), "PropertyTax", "MutationDocuments");
 
   useEffect(() => {
+    setMutationHappened(false);
+    clearSuccessData();
+  }, []);
+
+  useEffect(() => {
     console.log("deafult vaules in useEffect ownerTransfer: ", defaultValues);
+    dispatch(RESET_PT_NEW_APPLICATION_FORM());
     if (defaultValues && Object.keys(defaultValues).length > 0) {
       Object.entries(defaultValues).forEach(([key, value]) => {
         dispatch(UPDATE_PTNewApplication_FORM(key, value));
@@ -205,15 +213,17 @@ const CreateEmployeeStepForm = ({ applicationData }) => {
 
     // Reset Redux stepper form state
     dispatch(RESET_PT_NEW_APPLICATION_FORM());
+    setMutationHappened(false);
+    clearSuccessData();
 
     // Redirect to Response page
-    history.replace("/digit-ui/employee/pt/response", { Property: submitData.Property, key: "UPDATE", action: "SUBMIT" });
+    history.replace(responsePath, { Property: submitData.Property, key: "UPDATE", action: "SUBMIT" });
   };
 
   return (
     <div className="card">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
-        {t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}
+        {t(heading)}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (

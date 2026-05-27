@@ -8,6 +8,7 @@ const PTOwnerTransfershipStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const isFirstRender = useRef(true);
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+    dispatch(UPDATE_PTNewApplication_FORM(config.key, data || {}));
     onGoNext();
   }
 

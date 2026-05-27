@@ -1,14 +1,23 @@
 import React, { Fragment } from "react";
 import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 function PTSummaryEmployee({ formData, t }) {
+  const reduxFormData = useSelector((state) => state.pt.PTNewApplicationFormReducer?.formData || {});
+  const storedTransferData = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("ownerTransferData") || "{}");
+    } catch (error) {
+      return {};
+    }
+  })();
+  const summaryData = { ...storedTransferData, ...reduxFormData, ...formData };
   console.log("form data in summary component", formData);
   const { pathname: url } = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
-  const mutateScreen = url.includes("/property-mutate/");
+  const mutateScreen = url.includes("/property-mutate/") || url.includes("/transfer-ownership/");
   return (
     <>
       {mutateScreen ? (
@@ -28,13 +37,15 @@ function PTSummaryEmployee({ formData, t }) {
               );
             };
 
-            const originalOwners = formData?.originalData?.owners?.filter((e) => e.status === "ACTIVE") || [];
-            const transfereeOwners = formData?.TransferorDetails?.owners || [];
-            const ownershipCategory = formData?.TransferorDetails?.ownershipCategory?.code || "";
+            const transferorDetails = summaryData?.TransferorDetails || summaryData || {};
+            const originalData = summaryData?.originalData || {};
+            const originalOwners = originalData?.owners?.filter((e) => e.status === "ACTIVE" || e.status === "active") || [];
+            const transfereeOwners = transferorDetails?.owners || [];
+            const ownershipCategory = transferorDetails?.ownershipCategory?.code || "";
             const isInstitutional = ownershipCategory.includes("INSTITUTIONAL");
             
-            const additionalDetails = formData?.TransferorDetails?.additionalDetails || {};
-            const remarks = formData?.TransferorDetails?.remarks || additionalDetails?.remarks || "NA";
+            const additionalDetails = transferorDetails?.additionalDetails || {};
+            const remarks = transferorDetails?.remarks || additionalDetails?.remarks || "NA";
 
             // Format Registration Date
             let formattedDate = "NA";
@@ -50,17 +61,17 @@ function PTSummaryEmployee({ formData, t }) {
 
             // Extract uploaded documents safely
             let uploadedDocs = [];
-            if (formData?.DocuementDetails?.documents) {
-              if (Array.isArray(formData.DocuementDetails.documents)) {
-                uploadedDocs = formData.DocuementDetails.documents;
-              } else if (Array.isArray(formData.DocuementDetails.documents.documents)) {
-                uploadedDocs = formData.DocuementDetails.documents.documents;
+            if (summaryData?.DocuementDetails?.documents) {
+              if (Array.isArray(summaryData.DocuementDetails.documents)) {
+                uploadedDocs = summaryData.DocuementDetails.documents;
+              } else if (Array.isArray(summaryData.DocuementDetails.documents.documents)) {
+                uploadedDocs = summaryData.DocuementDetails.documents.documents;
               }
-            } else if (formData?.documents) {
-              if (Array.isArray(formData.documents)) {
-                uploadedDocs = formData.documents;
-              } else if (Array.isArray(formData.documents.documents)) {
-                uploadedDocs = formData.documents.documents;
+            } else if (summaryData?.documents) {
+              if (Array.isArray(summaryData.documents)) {
+                uploadedDocs = summaryData.documents;
+              } else if (Array.isArray(summaryData.documents.documents)) {
+                uploadedDocs = summaryData.documents.documents;
               }
             }
 
@@ -76,7 +87,7 @@ function PTSummaryEmployee({ formData, t }) {
                       {renderGridItem("Name", owner.name)}
                       {renderGridItem("GUARDIAN NAME", owner.fatherOrHusbandName)}
                       {renderGridItem("Gender", owner.gender)}
-                      {renderGridItem("Type of Ownership", t(`PT_OWNERSHIP_CATEGORY_${formData?.originalData?.ownershipCategory}`) || formData?.originalData?.ownershipCategory || "NA")}
+                      {renderGridItem("Type of Ownership", t(`PT_OWNERSHIP_CATEGORY_${originalData?.ownershipCategory}`) || originalData?.ownershipCategory || "NA")}
                       {renderGridItem("MOBILE NO", owner.mobileNumber)}
                       {renderGridItem("EMAIL ID", owner.emailId)}
                       {renderGridItem("Ownership Percentage", owner.ownerShipPercentage)}

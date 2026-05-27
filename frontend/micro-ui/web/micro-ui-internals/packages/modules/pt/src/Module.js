@@ -155,6 +155,7 @@ import PropertySelectDocs from "./components/PropertySelectDocs";
 import PTSummary from "../src/pageComponents/PTSummary";
 import getRootReducer from "./redux/reducer";
 import PropertyResponseCitizen from "./components/PropertyResponseCitizen";
+import CitizenTransferOwnership from "./pages/citizen/TransferOwnership";
 
 export const PTReducers = getRootReducer;
 
@@ -303,6 +304,7 @@ const componentsToRegister = {
   NewPTStepFormFive,
   PropertySelectDocs,
   PropertyResponseCitizen,
+  PTCitizenTransferOwnership: CitizenTransferOwnership,
 };
 
 const addComponentsToRegistry = () => {

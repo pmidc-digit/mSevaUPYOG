@@ -5,6 +5,14 @@ import { UPDATE_NOCNewApplication_FORM } from "../../redux/action/NOCNewApplicat
 import { useTranslation } from "react-i18next";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import FireNOCApplicantDetails from "../FireNOCApplicantDetails";
+const getRelationshipApiValue = (rel) => {
+  if (!rel) return "";
+  const code = (typeof rel === "object" ? rel.code : rel) || "";
+  const upper = code.toUpperCase();
+  if (upper === "FATHER" || upper === "COMMON_RELATION_FATHER") return "Father";
+  if (upper === "HUSBAND" || upper === "COMMON_RELATION_HUSBAND") return "Husband";
+  return typeof rel === "object" ? (rel.code || rel.i18nKey || "") : rel;
+};
 
 const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const dispatch = useDispatch();
@@ -137,11 +145,11 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           name: item.name || "",
           dob: Digit.Utils.pt.convertDateToEpoch(item.dateOfBirth || ""),
           gender: item.gender?.code || "",
-          relationship: item.relationship?.i18nKey || item.relationship?.code || "",
+          relationship: getRelationshipApiValue(item.relationship),
           fatherOrHusbandName: item.fatherOrHusbandName || "",
           correspondenceAddress: item.address || "",
           emailId: item.emailId || "",
-          pan: item.panNo || "",
+          pan: item.panNo || item.pan || "",
         };
       }
       return {
@@ -158,7 +166,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     /* ── propertyDetails.address ── */
     const isRuralSite = site.areaType?.code === "RURAL";
     const address = {
-      areaType: site.areaType?.name || site.areaType?.code || "",
+      areaType: site.areaType?.code?.toUpperCase() || site.areaType?.name?.toUpperCase() || "",
       city: site.cityName?.code || tenantId,
       subDistrict: site.districtName?.name || site.districtName || "",
       addressLine2: isRuralSite ? (site.villageName || "") : (site.mohalla?.name || site.mohalla || ""),
@@ -166,6 +174,9 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
       street: site.streetName || "",
       landmark: site.landmarkName || "",
       pincode: site.pincode || "",
+      locality: site.mohalla ? { code: site.mohalla.code || site.mohalla } : null,
+      latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : null,
+      longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : null,
     };
 
     const payload = {
@@ -178,6 +189,8 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
               address,
               propertyId: site.propertyId || "",
               geoLocation: site.geoLocation || null,
+              latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : null,
+              longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : null,
             },
             firestationId: resolvedFirestationId,
             buildings,
@@ -190,7 +203,9 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
               },
             },
             action: "INITIATE",
-            additionalDetail: { documents: [] },
+            additionalDetail: {
+              documents: [],
+            },
             channel: window.location.href.includes("employee") ? "COUNTER" : "CITIZEN",
             financialYear: "2019-20",
             tenantId,

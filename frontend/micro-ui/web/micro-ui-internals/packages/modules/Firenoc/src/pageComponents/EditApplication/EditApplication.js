@@ -166,6 +166,15 @@ const EditApplication = () => {
     !isFireStationLoading &&
     applicationDetails?.FireNOCs?.length > 0;
   useEffect(() => {
+    if (ready && nocObject?.applicationStatus === "INITIATED") {
+      const basePath = window.location.pathname.includes("employee")
+        ? "/digit-ui/employee/firenoc"
+        : "/digit-ui/citizen/firenoc";
+      history.replace(`${basePath}/new-application/${id}?tenantId=${tenantId}`);
+    }
+  }, [ready, nocObject]);
+
+  useEffect(() => {
     dispatch(RESET_NOC_NEW_APPLICATION_FORM());
     if (ready) {
       const formattedDocuments = {
@@ -197,8 +206,8 @@ const EditApplication = () => {
         dateOfBirth: owner?.dob ? formatDateForInput(new Date(owner.dob)) : "",
         emailId: owner?.emailId || "",
         fatherOrHusbandName: owner?.fatherOrHusbandName || "",
-        relationship: owner?.relationship ? { code: owner.relationship, i18nKey: `COMMON_RELATION_${owner.relationship}` } : null,
-        panNo: owner?.pan || "",
+        relationship: owner?.relationship ? { code: owner.relationship.toUpperCase(), i18nKey: `COMMON_RELATION_${owner.relationship.toUpperCase()}` } : null,
+        panNo: owner?.pan || owner?.panNo || "",
         address: owner?.correspondenceAddress || "",
       })) || [];
 
@@ -225,7 +234,7 @@ const EditApplication = () => {
         name: selectedCity?.city?.districtName || selectedCity?.city?.districtTenantCode
       } : null;
 
-      const mohallaCode = address?.locality?.code || "";
+      const mohallaCode = address?.locality?.code || (typeof address?.locality === "string" ? address?.locality : "") || (address?.areaType?.toUpperCase() !== "RURAL" ? address?.addressLine2 : "") || "";
       const cityNameCode = address?.city || "";
       const i18nkey = cityNameCode && mohallaCode ? `${cityNameCode.toUpperCase().split(".").join("_")}_REVENUE_${mohallaCode}` : "";
       const mohalla = mohallaCode ? {
@@ -257,19 +266,30 @@ const EditApplication = () => {
         };
       }) || [];
 
+      const getAreaTypeObj = (areaTypeStr) => {
+        if (!areaTypeStr) return null;
+        const upper = areaTypeStr.toUpperCase();
+        if (upper === "URBAN") return { code: "URBAN", name: "Urban" };
+        if (upper === "RURAL") return { code: "RURAL", name: "Rural" };
+        return { code: upper, name: areaTypeStr };
+      };
+
       const updatedSiteDetails = {
-        areaType: address?.areaType ? { name: address.areaType === "URBAN" ? "Urban" : "Rural", code: address.areaType } : null,
+        areaType: getAreaTypeObj(address?.areaType),
         districtName: districtName,
         cityName: selectedCity ? { code: selectedCity.code, name: selectedCity.name || selectedCity.code } : null,
-        villageName: address?.areaType === "RURAL" ? address?.addressLine2 : "",
+        villageName: address?.areaType?.toUpperCase() === "RURAL" ? address?.addressLine2 : "",
         mohalla: mohalla,
         pincode: address?.pincode || "",
         doorHouseNo: address?.doorNo || "",
         streetName: address?.street || "",
         landmarkName: address?.landmark || "",
-        propertyId: fireNOCDetails?.propertyDetails?.propertyId || "",
+        propertyId: fireNOCDetails?.propertyDetails?.propertyId || fireNOCDetails?.propertyId || "",
         plotSurveyNo: address?.doorNo || "",
-        geoLocation: fireNOCDetails?.propertyDetails?.geoLocation || null,
+        geoLocation: fireNOCDetails?.propertyDetails?.geoLocation || 
+                     (fireNOCDetails?.propertyDetails?.latitude && fireNOCDetails?.propertyDetails?.longitude ? { latitude: Number(fireNOCDetails.propertyDetails.latitude), longitude: Number(fireNOCDetails.propertyDetails.longitude) } : null) ||
+                     (address?.latitude && address?.longitude ? { latitude: Number(address.latitude), longitude: Number(address.longitude) } : null) ||
+                     (coordinates?.latitude && coordinates?.longitude ? { latitude: Number(coordinates.latitude), longitude: Number(coordinates.longitude) } : null) || null,
         fireStationId: fireNOCDetails?.firestationId || "",
         noOfBuildings: fireNOCDetails?.noOfBuildings || "SINGLE",
         buildings: formattedBuildings,

@@ -18,11 +18,17 @@ const useSearchApplicationTableConfig = () => {
           accessor: "applicationNo",
           disableSortBy: true,
           Cell: ({ row }) => {
+            const status = row.original["applicationStatus"];
+            const appNo = row.original["applicationNo"];
+            const tId = row.original["tenantId"] || window.localStorage.getItem("Employee.tenant-id");
+            const linkPath = status === "INITIATED"
+              ? `/digit-ui/employee/firenoc/new-application/${appNo}?tenantId=${tId}`
+              : `/digit-ui/employee/firenoc/inbox/application-overview/${appNo}`;
             return (
               <div>
                 <span className="link">
-                  <Link to={`/digit-ui/employee/firenoc/inbox/application-overview/${row.original["applicationNo"]}`}>
-                    {row.original["applicationNo"]}
+                  <Link to={linkPath}>
+                    {appNo}
                   </Link>
                 </span>
               </div>

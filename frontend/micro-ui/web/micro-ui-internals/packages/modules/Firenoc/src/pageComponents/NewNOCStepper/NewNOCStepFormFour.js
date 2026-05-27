@@ -3,6 +3,14 @@ import { useSelector } from "react-redux";
 import { ActionBar, Toast, SubmitBar, Loader } from "@mseva/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
 import NOCSummary from "../NOCSummary";
+const getRelationshipApiValue = (rel) => {
+  if (!rel) return "";
+  const code = (typeof rel === "object" ? rel.code : rel) || "";
+  const upper = code.toUpperCase();
+  if (upper === "FATHER" || upper === "COMMON_RELATION_FATHER") return "Father";
+  if (upper === "HUSBAND" || upper === "COMMON_RELATION_HUSBAND") return "Husband";
+  return typeof rel === "object" ? (rel.code || rel.i18nKey || "") : rel;
+};
 
 const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const [showToast, setShowToast] = useState(null);
@@ -93,11 +101,11 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           name: item.name || "",
           dob: Digit.Utils.pt.convertDateToEpoch(item.dateOfBirth || ""),
           gender: item.gender?.code || item.gender || "",
-          relationship: item.relationship?.i18nKey || item.relationship?.code || item.relationship || "",
+          relationship: getRelationshipApiValue(item.relationship),
           fatherOrHusbandName: item.fatherOrHusbandName || "",
           correspondenceAddress: item.address || "",
           emailId: item.emailId || "",
-          pan: item.panNo || "",
+          pan: item.panNo || item.pan || "",
         };
       }
       return {
@@ -132,9 +140,14 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             street: site.streetName || "",
             landmark: site.landmarkName || "",
             pincode: site.pincode || "",
+            locality: site.mohalla ? { code: site.mohalla.code || site.mohalla } : (fireNOCData?.fireNOCDetails?.propertyDetails?.address?.locality || null),
+            latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : (fireNOCData?.fireNOCDetails?.propertyDetails?.address?.latitude || null),
+            longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : (fireNOCData?.fireNOCDetails?.propertyDetails?.address?.longitude || null),
           },
           propertyId: site.propertyId || fireNOCData?.fireNOCDetails?.propertyDetails?.propertyId || "",
           geoLocation: site.geoLocation || fireNOCData?.fireNOCDetails?.propertyDetails?.geoLocation || null,
+          latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : (fireNOCData?.fireNOCDetails?.propertyDetails?.latitude || null),
+          longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : (fireNOCData?.fireNOCDetails?.propertyDetails?.longitude || null),
         },
         buildings,
         applicantDetails: {
@@ -149,6 +162,9 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
               documents: convertedDocs,
             },
           },
+        },
+        additionalDetail: {
+          ...fireNOCData?.fireNOCDetails?.additionalDetail,
         },
       },
     };

@@ -6,7 +6,19 @@ import {
   Dropdown,
   CardSectionHeader,
   LocationSearch,
+  Modal,
 } from "@mseva/digit-ui-react-components";
+
+const CloseBtn = (props) => (
+  <React.Fragment>
+    <div className="icon-bg-secondary" onClick={props.onClick} style={{ cursor: "pointer" }}>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#a82227" width="24" height="24">
+        <path d="M0 0h24v24H0V0z" fill="none" />
+        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+      </svg>
+    </div>
+  </React.Fragment>
+);
 
 const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
 const colItem = { flex: 1, minWidth: "250px" };
@@ -19,6 +31,30 @@ const areaTypeOptions = [
 const FireNOCPropertyLocationDetails = (_props) => {
   const { t, Controller, control, setValue, errors, watch } = _props;
   const [showMap, setShowMap] = useState(false);
+  const [tempGeoLocation, setTempGeoLocation] = useState(null);
+  const [tempPincode, setTempPincode] = useState(null);
+
+  const handleOpenMap = (currentVal) => {
+    setTempGeoLocation(currentVal || null);
+    setTempPincode(null);
+    setShowMap(true);
+  };
+
+  const handleCloseMap = () => {
+    setTempGeoLocation(null);
+    setTempPincode(null);
+    setShowMap(false);
+  };
+
+  const handleApplyMap = () => {
+    if (tempGeoLocation) {
+      setValue("geoLocation", tempGeoLocation, { shouldValidate: true, shouldDirty: true });
+      if (tempPincode) {
+        setValue("pincode", tempPincode, { shouldValidate: true, shouldDirty: true });
+      }
+    }
+    handleCloseMap();
+  };
 
   const stateId = Digit.ULBService.getStateId();
 
@@ -34,6 +70,7 @@ const FireNOCPropertyLocationDetails = (_props) => {
   const areaType = watch("areaType");
   const selectedDistrict = watch("districtName");
   const selectedCity = watch("cityName");
+  const geoLocation = watch("geoLocation");
 
   // Eligible tenants = those that have a fire station
   const eligibleTenants = useMemo(() => {
@@ -256,7 +293,7 @@ const FireNOCPropertyLocationDetails = (_props) => {
         </LabelFieldPair>
       </div>
 
-      {/* Row 4: Pincode */}
+      {/* Row 4: Pincode + Locate on Map */}
       <div style={twoColRow}>
         <LabelFieldPair style={colItem}>
           <CardLabel className="card-label-smaller">{t("Pincode")}</CardLabel>
@@ -270,37 +307,65 @@ const FireNOCPropertyLocationDetails = (_props) => {
             {errors?.pincode && <p style={{ color: "red", marginTop: "4px" }}>{errors.pincode.message}</p>}
           </div>
         </LabelFieldPair>
-        <LabelFieldPair style={colItem} />
+        <LabelFieldPair style={colItem}>
+          <CardLabel className="card-label-smaller">{t("Locate on Map")}</CardLabel>
+          <div className="field">
+            <Controller control={control} name="geoLocation"
+              render={(props) => (
+                <div
+                  onClick={() => handleOpenMap(props.value)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "8px",
+                    cursor: "pointer",
+                    color: geoLocation?.latitude && geoLocation?.longitude ? "#0b0b0b" : "#b1b4b5",
+                    borderBottom: "1px dashed #ccc",
+                    paddingBottom: "8px",
+                    minHeight: "40px",
+                    width: "100%",
+                  }}
+                >
+                  <span style={{ fontSize: "16px", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                    {geoLocation?.latitude && geoLocation?.longitude
+                      ? `${geoLocation.latitude}, ${geoLocation.longitude}`
+                      : t("Select your property location on map")}
+                  </span>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 8C9.79 8 8 9.79 8 12C8 14.21 9.79 16 12 16C14.21 16 16 14.21 16 12C16 9.79 14.21 8 12 8ZM20.94 11C20.48 6.83 17.17 3.52 13 3.06V1H11V3.06C6.83 3.52 3.52 6.83 3.06 11H1V13H3.06C3.52 17.17 6.83 20.48 11 20.94V23H13V20.94C17.17 20.48 20.48 17.17 20.94 13H23V11H20.94ZM12 19C8.13 19 5 15.87 5 12C5 8.13 8.13 5 12 5C15.87 5 19 8.13 19 12C19 15.87 15.87 19 12 19Z" fill="#464646"/>
+                    </svg>
+                  </div>
+                </div>
+              )}
+            />
+          </div>
+        </LabelFieldPair>
       </div>
-
-      {/* Locate on Map */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller" style={{ color: "#a82227" }}>{t("Locate on Map")}</CardLabel>
-        <div className="field">
-          <Controller control={control} name="geoLocation"
-            render={(props) => (
-              <div
-                onClick={() => setShowMap(!showMap)}
-                style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#999", borderBottom: "1px dashed #ccc", paddingBottom: "8px" }}
-              >
-                <span>{props.value ? `${props.value.latitude}, ${props.value.longitude}` : t("Select your property location on map")}</span>
-                <span style={{ fontSize: "20px" }}>&#8982;</span>
-              </div>
-            )}
-          />
-        </div>
-      </LabelFieldPair>
       {showMap && (
-        <div style={{ height: "300px", marginBottom: "16px" }}>
-          <LocationSearch
-            position={{}}
-            onChange={(pincode, location) => {
-              setValue("geoLocation", { latitude: location?.lat, longitude: location?.lng });
-              if (pincode) setValue("pincode", pincode);
-              setShowMap(false);
-            }}
-          />
-        </div>
+        <Modal
+          headerBarMain={t("Locate on Map")}
+          headerBarEnd={<CloseBtn onClick={handleCloseMap} />}
+          actionCancelLabel={t("Close")}
+          actionCancelOnSubmit={handleCloseMap}
+          actionSaveLabel={t("Pick")}
+          actionSaveOnSubmit={handleApplyMap}
+          popupStyles={{ width: "80%", maxWidth: "800px" }}
+        >
+          <div>
+            <LocationSearch
+              position={tempGeoLocation || {}}
+              onChange={(pincode, location) => {
+                setTempGeoLocation({
+                  latitude: location?.latitude || location?.lat,
+                  longitude: location?.longitude || location?.lng,
+                });
+                if (pincode) setTempPincode(pincode);
+              }}
+            />
+          </div>
+        </Modal>
       )}
     </React.Fragment>
   );

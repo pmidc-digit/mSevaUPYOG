@@ -13,8 +13,8 @@ const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
 const colItem = { flex: 1, minWidth: "250px" };
 
 const relationshipOptions = [
-  { code: "FATHER", i18nKey: "Father" },
-  { code: "HUSBAND", i18nKey: "Husband" },
+  { code: "FATHER", i18nKey: "COMMON_RELATION_FATHER" },
+  { code: "HUSBAND", i18nKey: "COMMON_RELATION_HUSBAND" },
 ];
 
 /* ───── empty‑owner templates ───── */

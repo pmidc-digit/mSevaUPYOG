@@ -175,8 +175,8 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
       landmark: site.landmarkName || "",
       pincode: site.pincode || "",
       locality: site.mohalla ? { code: site.mohalla.code || site.mohalla } : null,
-      latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : null,
-      longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : null,
+      latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : 0,
+      longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : 0,
     };
 
     const payload = {
@@ -189,8 +189,8 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
               address,
               propertyId: site.propertyId || "",
               geoLocation: site.geoLocation || null,
-              latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : null,
-              longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : null,
+              latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : 0,
+              longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : 0,
             },
             firestationId: resolvedFirestationId,
             buildings,

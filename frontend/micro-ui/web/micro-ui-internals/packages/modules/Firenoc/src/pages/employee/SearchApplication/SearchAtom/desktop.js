@@ -366,7 +366,7 @@ const SearchApplicationDesktopView = ({ columns, SearchFormFieldsComponent, onSu
                 <div className="no-print">
                   <Table
                     t={t}
-                    data={filteredData}
+                    data={filteredData.slice(currPage * Number(getValues("limit")), (currPage + 1) * Number(getValues("limit")))}
                     columns={filteredColumns}
                     getCellProps={(cellInfo) => {
                       return {

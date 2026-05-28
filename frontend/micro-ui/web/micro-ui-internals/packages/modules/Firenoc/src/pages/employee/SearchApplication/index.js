@@ -51,8 +51,8 @@ const Search = ({ path }) => {
       }, {});
 
     const baseFilters = {
-      offset: defaultFilters.offset,
-      limit: defaultFilters.limit,
+      offset: details.offset !== undefined ? Number(details.offset) : defaultFilters.offset,
+      limit: details.limit !== undefined ? Number(details.limit) : defaultFilters.limit,
       tenantId: defaultFilters.tenantId,
     };
 

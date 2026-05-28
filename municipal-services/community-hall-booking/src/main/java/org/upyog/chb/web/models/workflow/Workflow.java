@@ -1,12 +1,11 @@
 package org.upyog.chb.web.models.workflow;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,9 +16,7 @@ import org.upyog.chb.web.models.DocumentDetail;
 /**
  * Fields related to workflow service
  */
-@ApiModel(description = "Fields related to workflow service")
 @Validated
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2023-08-20T09:30:27.617+05:30")
 
 @Getter
 @Setter

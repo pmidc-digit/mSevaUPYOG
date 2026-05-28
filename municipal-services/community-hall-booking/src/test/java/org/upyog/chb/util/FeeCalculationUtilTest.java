@@ -30,8 +30,13 @@ public class FeeCalculationUtilTest {
         assertNotNull(fy);
         assertTrue(fy.matches("\\d{4}-\\d{2}"));
 
-        // For September 2025, should return 2025-26 (since financial year starts April)
-        assertEquals("2025-26", fy);
+        int currentYear = LocalDate.now().getYear();
+        int currentMonth = LocalDate.now().getMonthValue();
+        String expectedFy = currentMonth >= 4
+                ? String.format("%d-%02d", currentYear, (currentYear + 1) % 100)
+                : String.format("%d-%02d", currentYear - 1, currentYear % 100);
+
+        assertEquals(expectedFy, fy);
     }
 
     @Test

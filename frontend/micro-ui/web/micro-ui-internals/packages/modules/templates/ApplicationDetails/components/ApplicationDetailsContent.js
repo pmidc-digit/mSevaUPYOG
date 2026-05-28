@@ -558,13 +558,10 @@ function ApplicationDetailsContent({
   const handleAccessPropertySubmit = () => {
     if (!selectedFinancialYear) return;
     const pID = applicationDetails?.applicationData?.propertyId || propertyId;
-    setShowAccessModal(false);
-    const isEmployee = window.location.href.includes("employee");
-    const pathname = isEmployee
-      ? `/digit-ui/employee/pt/assessment-details/${pID}`
-      : `/digit-ui/citizen/pt/property/assessment-details/${pID}`;
+    setShowAccessModal(true);
+    const userType = window.location.href.includes("employee") ? "employee" : "citizen";
     history.replace({
-      pathname,
+      pathname: `/digit-ui/${userType}/pt/assessment-details/${pID}`,
       state: {
         Assessment: {
           financialYear: selectedFinancialYear?.name || selectedFinancialYear?.code,

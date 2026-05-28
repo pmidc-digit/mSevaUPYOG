@@ -29,7 +29,7 @@ public class CalculationService {
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
-    
+
 	@Autowired
 	private GcServicesUtil gcServiceUtil;
 
@@ -171,5 +171,63 @@ public class CalculationService {
 				.append(connectionNo).append(GCConstants.SEPARATER)
 				.append(GCConstants.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
 				.append("WSReconnection");
+	}
+
+	/**
+	 * Generates the recurring GC demand (consumer code = connectionNo) for the
+	 * previous calendar month when a new garbage connection is activated.
+	 * <p>
+	 * Called from PaymentUpdateService after PAY → CONNECTION_ACTIVATED transition
+	 * and after postStatusEnrichment() has set the connectionNo on the request.
+	 * <p>
+	 * e.g. Connection activated in May → demand created for April 1–30
+	 */
+	public void generatePreviousMonthConnectionDemand(GarbageConnectionRequest request, Property property) {
+		String connectionNo = request.getGarbageConnection().getConnectionNo();
+		if (connectionNo == null || connectionNo.isEmpty()) {
+			log.warn("generatePreviousMonthConnectionDemand: connectionNo is null/empty, skipping previous month demand.");
+			return;
+		}
+
+		// Tax period convention: fromDate = UTC midnight (1st of month),
+		//                        toDate   = IST 23:59:59 (last day) → UTC epoch ms
+		java.time.YearMonth prevMonth = java.time.YearMonth.now().minusMonths(1);
+		java.time.ZoneId ist = java.time.ZoneId.of("Asia/Kolkata");
+
+		long fromDate = prevMonth.atDay(1)
+				.atStartOfDay(java.time.ZoneOffset.UTC)   // 00:00:00 UTC
+				.toInstant().toEpochMilli();
+
+		long toDate = prevMonth.atEndOfMonth()
+				.atTime(23, 59, 59)
+				.atZone(ist)                               // 23:59:59 IST → UTC
+				.toInstant().toEpochMilli();
+
+		log.info("Generating previous month GC demand for connectionNo: {} [fromDate={}, toDate={}]",
+				connectionNo, fromDate, toDate);
+
+		CalculationCriteria criteria = CalculationCriteria.builder()
+				.connectionNo(connectionNo)
+				.garbageConnection(request.getGarbageConnection())
+				.tenantId(property.getTenantId())
+				.from(fromDate)
+				.to(toDate)
+				.build();
+
+		CalculationReq calRequest = CalculationReq.builder()
+				.calculationCriteria(Arrays.asList(criteria))
+				.requestInfo(request.getRequestInfo())
+				.isconnectionCalculation(true)   // connectionNo as consumer code → GC demand
+				.isDisconnectionRequest(false)
+				.isReconnectionRequest(false)
+				.build();
+		try {
+			Object response = serviceRequestRepository.fetchResult(gcServiceUtil.getCalculatorURL(), calRequest);
+			CalculationRes calResponse = mapper.convertValue(response, CalculationRes.class);
+			log.info("Previous month GC demand generated successfully for connectionNo: {}", connectionNo);
+		} catch (Exception ex) {
+			log.error("Failed to generate previous month GC demand for connectionNo: {}", connectionNo, ex);
+			// Non-fatal: don't block activation if previous month demand generation fails
+		}
 	}
 }

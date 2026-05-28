@@ -74,6 +74,9 @@ public class PaymentUpdateService {
 
 	@Autowired
 	private GcServicesUtil gcServiceUtil;
+
+	@Autowired
+	private CalculationService calculationService;
 	/**
 	 * After payment change the application status
 	 *
@@ -143,6 +146,12 @@ public class PaymentUpdateService {
 					// For trimmed NewGC workflow: PAY → CONNECTION_ACTIVATED directly.
 					// postStatusEnrichment generates the connection number and sets execution date.
 					enrichmentService.postStatusEnrichment(garbageConnectionRequest);
+					// Generate the previous month recurring GC demand (on connectionNo)
+					// only for new connections — this is the GC charge, separate from the one-time fee
+					if (GCConstants.NEW_GARBAGE_CONNECTION.equalsIgnoreCase(
+							garbageConnectionRequest.getGarbageConnection().getApplicationType())) {
+						calculationService.generatePreviousMonthConnectionDemand(garbageConnectionRequest, property);
+					}
 					enrichmentService.enrichFileStoreIds(garbageConnectionRequest);
 					repo.updateGarbageConnection(garbageConnectionRequest, false);
 				}

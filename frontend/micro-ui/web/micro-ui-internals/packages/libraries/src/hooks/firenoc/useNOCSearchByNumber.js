@@ -72,6 +72,10 @@ export const useFIRENOCSearchApplication = (params, tenantId, config = {}) => {
             date: Digit.DateUtils.ConvertEpochToDate(app?.auditDetails?.createdTime),
             locality: app?.fireNOCDetails?.propertyDetails?.address?.locality?.name || `${app?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,
             applicationStatus: app?.fireNOCDetails?.status,
+            fireNOCNumber: app?.fireNOCNumber || "-",
+            fireNOCType: app?.fireNOCDetails?.fireNOCType || "-",
+            applicantName: app?.fireNOCDetails?.applicantDetails?.owners?.[0]?.name || "-",
+            tenantId: app?.tenantId,
           }));
         }
 
@@ -83,7 +87,8 @@ export const useFIRENOCSearchApplication = (params, tenantId, config = {}) => {
     }
   );
 
-  return { ...result, revalidate: () => client.invalidateQueries(["FIRENOC_SEARCH_APPLICATION", apiFilters]) };
+  result.revalidate = () => client.invalidateQueries(["FIRENOC_SEARCH_APPLICATION", apiFilters]);
+  return result;
 };
 
 export default useNOCSearchByNumber;

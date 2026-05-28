@@ -16,7 +16,7 @@ const NOCBreadCrumbs = ({ location }) => {
     {
       path: "/digit-ui/employee/firenoc/inbox",
       content: t("ES_COMMON_INBOX"),
-      show: (location.pathname.includes("firenoc/inbox") || location.pathname.includes("firenoc/new-application") || location.pathname.includes("firenoc/inbox/application-overview") || location.pathname.includes("firenoc/application-overview")) ? true : false,
+      show: (location.pathname.includes("firenoc/inbox") && !location.pathname.includes("application-overview")) ? true : false,
     },
     {
       path: "/digit-ui/employee/firenoc/inbox",

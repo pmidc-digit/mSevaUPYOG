@@ -56,7 +56,12 @@ const Search = ({ path }) => {
       tenantId: defaultFilters.tenantId,
     };
 
-    setfilters({ ...baseFilters, ...cleanedFilters });
+    const newFilters = { ...baseFilters, ...cleanedFilters };
+    if (JSON.stringify(filters) === JSON.stringify(newFilters)) {
+      refetch();
+    } else {
+      setfilters(newFilters);
+    }
   }
   
   
@@ -64,7 +69,7 @@ const Search = ({ path }) => {
 
   const [tableData, setTableData] = useState([{ display: "ES_COMMON_NO_DATA" }]);
   const [count,setCount] = useState(0);
-  const { data, revalidate, isLoading, isSuccess, error } = Digit.Hooks.firenoc.useFIRENOCSearchApplication(filters,tenantId,{});
+  const { data, revalidate, isLoading, isSuccess, error, refetch } = Digit.Hooks.firenoc.useFIRENOCSearchApplication(filters,tenantId,{});
 
   useEffect(()=>{
     if(data == undefined){

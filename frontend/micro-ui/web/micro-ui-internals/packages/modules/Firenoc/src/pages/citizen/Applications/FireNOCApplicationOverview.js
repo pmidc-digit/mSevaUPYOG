@@ -158,31 +158,11 @@ const FireNOCApplicationOverview = () => {
   const isPendingPayment = details?.status === "PENDINGPAYMENT";
   
   const dowloadOptions = [];
-  const handleDownloadPdf = async () => {
-    try {
-      setLoading(true);
-      const Property = fireNOC;
-      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-      console.log('tenantInfo', tenantInfo)
-      // const site = Property?.nocDetails?.additionalDetails?.siteDetails;
-      const ulbType = tenantInfo?.city?.ulbType;
-      const ulbName = tenantInfo?.city?.name;
-
-      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
-      setTimeout(() => {
-        Digit.Utils.pdf.generateFormattedFireNoc(acknowledgementData);
-      }, 0);
-    } catch (error) {
-      // console.error("Error generating acknowledgement:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getRecieptSearch = async ({ tenantId, payments, pdfkey, EmpData, ...params }) => {
     try {
       setLoading(true);
-      const nocSanctionData = await getNOCSanctionLetter(details, t, EmpData, finalComment);
+      const nocSanctionData = await getNOCSanctionLetter(fireNOC, t, EmpData, finalComment);
       const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
       let filestoreID = payments?.fileStoreId;
@@ -237,7 +217,8 @@ const FireNOCApplicationOverview = () => {
   };
   dowloadOptions.push({
     label: t("Application Form"),
-    onClick: handleDownloadPdf,
+    onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-application", EmpData }),
+
   });
   
   if (payment && !loading) {

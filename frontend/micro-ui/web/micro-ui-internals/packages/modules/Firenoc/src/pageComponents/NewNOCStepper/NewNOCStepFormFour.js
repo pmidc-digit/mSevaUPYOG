@@ -112,11 +112,14 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         ...originalOwner,
         mobileNumber: item.mobileNumber || "",
         name: item.authorizedPersonName || "",
+        gender: item.gender?.code || item.gender || "",
         emailId: item.emailId || "",
         correspondenceAddress: item.officialAddress || "",
         institutionName: item.institutionName || "",
         officialTelNo: item.officialTelNo || "",
         designation: item.designation || "",
+        fatherOrHusbandName: item.fatherOrHusbandName || "",
+        relationship: getRelationshipApiValue(item.relationship),
       };
     });
 

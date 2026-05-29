@@ -155,11 +155,14 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
       return {
         mobileNumber: item.mobileNumber || "",
         name: item.authorizedPersonName || "",
+        gender: item.gender?.code || "",
         emailId: item.emailId || "",
         correspondenceAddress: item.officialAddress || "",
         institutionName: item.institutionName || "",
         officialTelNo: item.officialTelNo || "",
         designation: item.designation || "",
+        fatherOrHusbandName: item.fatherOrHusbandName || "",
+        relationship: getRelationshipApiValue(item.relationship),
       };
     });
 

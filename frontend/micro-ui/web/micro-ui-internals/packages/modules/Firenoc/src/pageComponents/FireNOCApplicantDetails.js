@@ -35,6 +35,9 @@ const emptyInstitutionalOwner = () => ({
   officialTelNo: "",
   authorizedPersonName: "",
   designation: "",
+  gender: null,
+  fatherOrHusbandName: "",
+  relationship: null,
   mobileNumber: "",
   emailId: "",
   officialAddress: "",
@@ -515,6 +518,91 @@ const FireNOCApplicantDetails = (_props) => {
               />
               {errors?.owners?.[index]?.designation && (
                 <p style={{ color: "red", marginTop: "4px" }}>{errors.owners[index].designation.message}</p>
+              )}
+            </div>
+          </LabelFieldPair>
+        </div>
+
+        {/* Row 3: Gender + Father/Husband Name */}
+        <div style={twoColRow}>
+          <LabelFieldPair style={colItem}>
+            <CardLabel className="card-label-smaller">
+              {t("Gender")}<span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={`${prefix}.gender`}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <RadioButtons
+                    t={t}
+                    options={genderMenu}
+                    optionsKey="code"
+                    value={props.value}
+                    selectedOption={props.value}
+                    onSelect={(e) => props.onChange(e)}
+                    isDependent={true}
+                    style={{ display: "flex", gap: "16px" }}
+                  />
+                )}
+              />
+              {errors?.owners?.[index]?.gender && (
+                <p style={{ color: "red", marginTop: "4px" }}>{errors.owners[index].gender.message}</p>
+              )}
+            </div>
+          </LabelFieldPair>
+
+          <LabelFieldPair style={colItem}>
+            <CardLabel className="card-label-smaller">
+              {t("Father/Husband's Name")}<span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={`${prefix}.fatherOrHusbandName`}
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: { value: /^[A-Za-z\s]+$/, message: t("ONLY_ENGLISH_LETTERS_ALLOWED") },
+                  maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
+                }}
+                render={(props) => (
+                  <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} placeholder={t("Enter Father/Husband's Name")} />
+                )}
+              />
+              {errors?.owners?.[index]?.fatherOrHusbandName && (
+                <p style={{ color: "red", marginTop: "4px" }}>{errors.owners[index].fatherOrHusbandName.message}</p>
+              )}
+            </div>
+          </LabelFieldPair>
+        </div>
+
+        {/* Row 4: Relationship */}
+        <div style={twoColRow}>
+          <LabelFieldPair style={colItem}>
+            <CardLabel className="card-label-smaller">
+              {t("Relationship")}<span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={`${prefix}.relationship`}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <RadioButtons
+                    t={t}
+                    options={relationshipOptions}
+                    optionsKey="i18nKey"
+                    value={props.value}
+                    selectedOption={props.value}
+                    onSelect={(e) => props.onChange(e)}
+                    isDependent={true}
+                    style={{ display: "flex", gap: "16px" }}
+                  />
+                )}
+              />
+              {errors?.owners?.[index]?.relationship && (
+                <p style={{ color: "red", marginTop: "4px" }}>{errors.owners[index].relationship.message}</p>
               )}
             </div>
           </LabelFieldPair>

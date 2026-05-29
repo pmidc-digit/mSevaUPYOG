@@ -79,7 +79,7 @@ public class UserService {
 	private UserSearchRequest getUserSearchRequest(LayoutSearchCriteria criteria, RequestInfo requestInfo) {
 		UserSearchRequest userSearchRequest = new UserSearchRequest();
 		userSearchRequest.setRequestInfo(requestInfo);
-		userSearchRequest.setTenantId(criteria.getTenantId().split("\\.")[0]);
+		userSearchRequest.setTenantId(criteria.getTenantId().split("\\.")[1]);
 		userSearchRequest.setMobileNumber(criteria.getMobileNumber());
 		userSearchRequest.setUuid(criteria.getAccountId());
 		userSearchRequest.setActive(true);

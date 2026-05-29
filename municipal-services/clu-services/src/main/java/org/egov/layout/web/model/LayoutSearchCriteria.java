@@ -3,8 +3,8 @@ package org.egov.layout.web.model;
 import java.time.LocalDate;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -15,7 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.layout.web.model.SanitizeHtml;
 
 @Getter
 @Setter
@@ -25,34 +25,34 @@ import org.hibernate.validator.constraints.SafeHtml;
 public class LayoutSearchCriteria {
 
     @NotNull
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("tenantId")
     private String tenantId;
 
     @JsonProperty("ids")
     private List<String> ids;
 
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("applicationNo")
     private String applicationNo;
 
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("mobileNumber")
     private String mobileNumber;
 
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("CluNo")
     private String cluNo;
 
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("source")
     private String source;
 
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("cluType")
     private String cluType;
 
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("sourceRefId")
     private String sourceRefId;
 
@@ -74,7 +74,7 @@ public class LayoutSearchCriteria {
     @JsonProperty("status")
     private List<String> status;
 
-    @SafeHtml
+    @SanitizeHtml
     @Size(min = 1, max = 15)
     @JsonProperty("vasikaNumber")
     private String vasikaNumber = null;

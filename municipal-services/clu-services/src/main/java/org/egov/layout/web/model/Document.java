@@ -4,27 +4,27 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.layout.web.model.SanitizeHtml;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 
 /**
  * This object holds list of documents attached during the transaciton for a property
  */
 @ApiModel(description = "This object holds list of documents attached during the transaciton for a property")
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
 public class Document   {
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("uuid")
   private String uuid = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("documentType")
   private String documentType = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("documentAttachment")
   private String documentAttachment = null;
 
@@ -32,7 +32,7 @@ public class Document   {
   @ApiModelProperty(value = "Reference to the NOC application ID")
   private String layoutId;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("documentUid")
   private String documentUid = null;
   

@@ -12,13 +12,13 @@ import org.egov.layout.web.model.bpa.Address;
 import org.egov.layout.web.model.bpa.Institution;
 import org.egov.layout.web.model.bpa.Unit;
 import org.egov.layout.web.model.workflow.ProcessInstance;
-import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.layout.web.model.SanitizeHtml;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,15 +37,15 @@ import java.util.List;
 public class Property extends PropertyInfo {
 
 	@JsonProperty("acknowldgementNumber")
-	@SafeHtml
+	@SanitizeHtml
 	private String acknowldgementNumber;
 
 	@JsonProperty("propertyType")
-	@SafeHtml
+	@SanitizeHtml
 	private String propertyType;
 
 	@JsonProperty("ownershipCategory")
-	@SafeHtml
+	@SanitizeHtml
 	private String ownershipCategory;
 
 	@JsonProperty("owners")
@@ -61,7 +61,7 @@ public class Property extends PropertyInfo {
 	private CreationReason creationReason = CreationReason.CREATE;
 	
 	@JsonProperty("usageCategory")
-	@SafeHtml
+	@SanitizeHtml
 	private String usageCategory;
 
 	@Max(value = 500)

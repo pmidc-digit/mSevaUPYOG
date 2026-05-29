@@ -41,7 +41,7 @@ package org.egov.layout.web.controller;
 
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.layout.config.ResponseInfoFactory;
 import org.egov.layout.service.CLUService;

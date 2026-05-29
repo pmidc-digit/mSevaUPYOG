@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import org.egov.layout.web.model.AuditDetails;
-import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.layout.web.model.SanitizeHtml;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 @Getter
 @Setter
 @Data
@@ -16,21 +16,21 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode(of= {"fileStoreId","documentUid","id"})
 public class Document {
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("id")
   private String id ;
 
   @JsonProperty("documentType")
-  @SafeHtml
+  @SanitizeHtml
   @NotNull
   private String documentType ;
 
   @JsonProperty("fileStoreId")
-  @SafeHtml
+  @SanitizeHtml
   @NotNull
   private String fileStoreId ;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("documentUid")
   private String documentUid ;
 

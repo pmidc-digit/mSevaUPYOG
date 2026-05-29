@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
+import org.egov.layout.repository.CLURepository;
 import org.egov.layout.web.model.*;
 import org.egov.layout.web.model.enums.ApplicationType;
 import org.egov.layout.web.model.enums.Status;
@@ -20,8 +21,10 @@ import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
 
-import static org.reflections.Reflections.log;
+//import static org.reflections.Reflections.log;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class CluRowMapper implements ResultSetExtractor<List<Clu>> {
 	/**

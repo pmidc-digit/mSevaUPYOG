@@ -566,7 +566,7 @@ public class CLUService {
         }
 
 	public List<DocumentCheckList> searchDocumentCheckLists(String applicatioinNo, String tenantId){
-		if(net.logstash.logback.encoder.org.apache.commons.lang.StringUtils.isEmpty(applicatioinNo))
+		if(StringUtils.isEmpty(applicatioinNo))
 			throw new CustomException(CLUConstants.INVALID_REQUEST, "Application number should not be null or Empity.");
 		return nocRepository.getDocumentCheckList(applicatioinNo, tenantId);
 	}

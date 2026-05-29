@@ -278,7 +278,7 @@ background: [
     },
   };
   pdfMake.vfs = Fonts;
-  let locale = Digit.SessionStorage.get("locale") || "en_IN";
+  let locale = Digit.SessionStorage.get("locale") || "pn_IN";
   let Hind = pdfFonts[locale] || pdfFonts["Hind"];
   pdfMake.fonts = { Hind: { ...Hind } };
   const generatedPDF = pdfMake.createPdf(dd);
@@ -352,7 +352,7 @@ background: [
     },
   };
   pdfMake.vfs = Fonts;
-  let locale = Digit.SessionStorage.get("locale") || "en_IN";
+  let locale = Digit.SessionStorage.get("locale") || "pn_IN";
   let Hind = pdfFonts[locale] || pdfFonts["Hind"];
   pdfMake.fonts = { Hind: { ...Hind } };
   const generatedPDF = pdfMake.createPdf(dd);

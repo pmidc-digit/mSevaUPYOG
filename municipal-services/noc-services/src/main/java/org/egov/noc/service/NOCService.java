@@ -164,7 +164,7 @@ public class NOCService {
 
 
 	public List<DocumentCheckList> searchDocumentCheckLists(String applicatioinNo, String tenantId){
-		if(net.logstash.logback.encoder.org.apache.commons.lang.StringUtils.isEmpty(applicatioinNo))
+		if(org.apache.commons.lang3.StringUtils.isEmpty(applicatioinNo))
 			throw new CustomException(NOCConstants.INVALID_REQUEST, "Application number should not be null or Empity.");
 		return nocRepository.getDocumentCheckList(applicatioinNo, tenantId);
 	}

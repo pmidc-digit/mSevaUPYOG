@@ -2,12 +2,13 @@ package org.egov.noc.web.model.bpa;
 
 import java.util.Objects;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import org.egov.noc.web.model.AuditDetails;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.noc.web.model.SanitizeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,64 +24,64 @@ import lombok.NoArgsConstructor;
  */
 @ApiModel(description = "Representation of a address. Indiavidual APIs may choose to extend from this using allOf if more details needed to be added in their case. ")
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:54:07.373Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:54:07.373Z[GMT]")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Address   {
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("tenantId")
   private String tenantId = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("doorNo")
   private String doorNo = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("plotNo")
   private String plotNo = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("id")
   private String id = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("landmark")
   private String landmark = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("city")
   private String city = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("district")
   private String district = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("region")
   private String region = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("state")
   private String state = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("country")
   private String country = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("pincode")
   private String pincode = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("additionDetails")
   private String additionDetails = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("buildingName")
   private String buildingName = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("street")
   private String street = null;
 

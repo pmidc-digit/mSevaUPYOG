@@ -2,7 +2,7 @@ package org.egov.noc.web.model;
 
 import java.util.Objects;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import lombok.Builder;
 import org.egov.common.contract.request.RequestInfo;
@@ -19,7 +19,7 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(description = "A object to bind the metadata contract and main application contract")
 @Validated
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
 public class NocRequest   {
   @JsonProperty("RequestInfo")
   private RequestInfo requestInfo = null;

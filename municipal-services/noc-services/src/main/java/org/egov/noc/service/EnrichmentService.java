@@ -29,7 +29,7 @@ import org.springframework.util.ObjectUtils;
 
 import com.jayway.jsonpath.JsonPath;
 
-import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @Service
 public class EnrichmentService {

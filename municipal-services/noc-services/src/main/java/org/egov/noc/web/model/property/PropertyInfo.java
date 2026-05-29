@@ -6,7 +6,7 @@ import lombok.experimental.SuperBuilder;
 import org.egov.noc.web.model.bpa.Address;
 
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
 /**

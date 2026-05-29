@@ -35,7 +35,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    base: '/',
+    base: '/digit-ui/',
     server: {
       port: 3000,
       proxy: {

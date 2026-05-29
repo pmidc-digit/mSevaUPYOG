@@ -79,7 +79,10 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
 
-    if (currentStepData?.apiData?.FireNOCs?.[0]?.fireNOCDetails?.applicationNumber) {
+    const fireNOC = currentStepData?.apiData?.FireNOCs?.[0];
+    const isDraft = (fireNOC?.fireNOCDetails?.status === "INITIATED" || fireNOC?.status === "INITIATED") && fireNOC?.fireNOCDetails?.applicationNumber;
+
+    if (isDraft) {
       onGoNext();
     } else {
       callCreateAPI({ ...currentStepData, [config.key]: data });
@@ -99,6 +102,13 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
       (s) => s.baseTenantId === cityCode || (Array.isArray(s.ulb) && s.ulb.some((u) => u.code === cityCode))
     );
     const resolvedFirestationId = site.fireStationId || matchedStation?.code || "";
+
+    /* ── resolve applicationTenantId based on resolved firestationId ── */
+    const selectedStationCode = site.fireStationId || resolvedFirestationId;
+    const selectedStationObj = fireStationData?.find(
+      (s) => s.code === selectedStationCode || s.id === selectedStationCode
+    );
+    const applicationTenantId = selectedStationObj?.tenantId || selectedStationObj?.baseTenantId || tenantId;
 
     /* ── ownerShipType mapping ── */
     const ownerShipType = appDetails.applicantSubtype?.code || "INDIVIDUAL.SINGLEOWNER";
@@ -167,17 +177,16 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     });
 
     /* ── propertyDetails.address ── */
-    const isRuralSite = site.areaType?.code === "RURAL";
     const address = {
-      areaType: site.areaType?.code?.toUpperCase() || site.areaType?.name?.toUpperCase() || "",
-      city: site.cityName?.code || tenantId,
-      subDistrict: site.districtName?.name || site.districtName || "",
-      addressLine2: isRuralSite ? (site.villageName || "") : (site.mohalla?.name || site.mohalla || ""),
+      areaType: site.areaType?.name || site.areaType?.code || "",
+      city: site.districtName?.code || site.districtName?.name || site.districtName || tenantId,
+      subDistrict: site.cityName?.code || "",
+      addressLine2: (site.areaType?.code === "RURAL" || site.areaType?.code === "Rural") ? (site.villageName || "") : (site.mohalla?.name || site.mohalla || ""),
       doorNo: site.plotSurveyNo || "",
       street: site.streetName || "",
       landmark: site.landmarkName || "",
       pincode: site.pincode || "",
-      locality: site.mohalla ? { code: site.mohalla.code || site.mohalla } : null,
+      locality: site.mohalla ? { code: site.mohalla.code || site.mohalla } : { code: "UNKNOWN" },
       latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : 0,
       longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : 0,
     };
@@ -188,12 +197,11 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           fireNOCDetails: {
             noOfBuildings: site.noOfBuildings || "SINGLE",
             fireNOCType: noc.fireNOCType?.code || "NEW",
+            provisionalNocNumber: noc.provisionalNocNumber || "",
+            oldFireNocNumber: noc.oldFireNocNumber || "",
             propertyDetails: {
               address,
               propertyId: site.propertyId || "",
-              geoLocation: site.geoLocation || null,
-              latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : 0,
-              longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : 0,
             },
             firestationId: resolvedFirestationId,
             buildings,
@@ -211,16 +219,20 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
             },
             channel: window.location.href.includes("employee") ? "COUNTER" : "CITIZEN",
             financialYear: "2019-20",
-            tenantId,
+            tenantId: applicationTenantId,
           },
-          tenantId,
+          tenantId: applicationTenantId,
           isLegacy: false,
+          ...(noc.fireNOCType?.code === "NEW" && noc.provisionalNocNumber ? {
+            provisionFireNOCNumber: noc.provisionalNocNumber,
+            fireNOCNumber: noc.provisionalNocNumber
+          } : {}),
         },
       ],
     };
 
     try {
-      const response = await Digit.FIRENOCService.create({ tenantId, details: payload });
+      const response = await Digit.FIRENOCService.create({ tenantId: applicationTenantId, details: payload });
       if (response?.ResponseInfo?.status === "successful" && !response?.Errors?.length) {
         dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
         onGoNext();

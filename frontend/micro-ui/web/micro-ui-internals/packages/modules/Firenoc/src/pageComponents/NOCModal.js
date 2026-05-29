@@ -78,7 +78,6 @@ const NOCModal = ({
     {
       roles: finalRoles,
       isActive: true,
-      zones: applicationData?.[0]?.fireNOCDetails?.propertyDetails?.address?.locality?.code || undefined
     },
     { enabled: !action?.isTerminateState }
   );

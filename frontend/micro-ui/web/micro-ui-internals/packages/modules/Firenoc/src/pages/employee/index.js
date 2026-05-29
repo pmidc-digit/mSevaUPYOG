@@ -14,12 +14,12 @@ const NOCBreadCrumbs = ({ location }) => {
       show: true,
     },
     {
-      path: "/digit-ui/employee/firenoc/inbox",
+      path: "/digit-ui/employee/firenoc/search",
       content: t("ES_COMMON_INBOX"),
       show: (location.pathname.includes("firenoc/inbox") && !location.pathname.includes("application-overview")) ? true : false,
     },
     {
-      path: "/digit-ui/employee/firenoc/inbox",
+      path: "/digit-ui/employee/firenoc/search/",
       content: `NOC Home`,
       show: location.pathname.includes("firenoc/new-application") ? true : false,
     },

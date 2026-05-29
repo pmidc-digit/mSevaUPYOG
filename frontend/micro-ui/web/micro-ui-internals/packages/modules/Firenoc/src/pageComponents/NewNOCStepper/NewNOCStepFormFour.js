@@ -16,6 +16,11 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const [showToast, setShowToast] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const stateId = Digit.ULBService.getStateId();
+  const { data: fireStationData } = Digit.Hooks.useCustomMDMS(stateId, "firenoc", [{ name: "FireStations" }], {
+    select: (d) => d?.firenoc?.FireStations?.filter((s) => s.active) || [],
+  });
+
   const currentStepData = useSelector((state) => state?.noc?.NOCNewApplicationFormReducer?.formData || {});
 
   const history = useHistory();
@@ -30,8 +35,15 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     const noc = formData?.nocDetails || {};
     const docsFromRedux = formData?.uploadedDocuments?.documents || [];
 
+    /* ── resolve applicationTenantId based on selected/original firestationId ── */
+    const selectedStationCode = site.fireStationId || fireNOCData?.fireNOCDetails?.firestationId || "";
+    const selectedStationObj = fireStationData?.find(
+      (s) => s.code === selectedStationCode || s.id === selectedStationCode
+    );
+    const applicationTenantId = selectedStationObj?.tenantId || selectedStationObj?.baseTenantId || tenantId;
+
     const convertedDocs = docsFromRedux.map((doc) => ({
-      tenantId,
+      tenantId: applicationTenantId,
       documentType: doc.documentType,
       fileStoreId: doc.filestoreId || doc.fileStoreId,
       ...(doc.dropdown ? { dropdown: doc.dropdown } : {}),
@@ -125,10 +137,17 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     const updatedFireNOC = {
       ...fireNOCData,
+      tenantId: applicationTenantId,
+      ...(noc.fireNOCType?.code === "NEW" && (noc.provisionalNocNumber || fireNOCData?.provisionFireNOCNumber) ? {
+        provisionFireNOCNumber: noc.provisionalNocNumber || fireNOCData?.provisionFireNOCNumber,
+        fireNOCNumber: noc.provisionalNocNumber || fireNOCData?.fireNOCNumber
+      } : {}),
       fireNOCDetails: {
         ...fireNOCData?.fireNOCDetails,
         noOfBuildings: site.noOfBuildings || fireNOCData?.fireNOCDetails?.noOfBuildings || "SINGLE",
         fireNOCType: noc.fireNOCType?.code || fireNOCData?.fireNOCDetails?.fireNOCType || "NEW",
+        provisionalNocNumber: noc.provisionalNocNumber || fireNOCData?.fireNOCDetails?.provisionalNocNumber || "",
+        oldFireNocNumber: noc.oldFireNocNumber || fireNOCData?.fireNOCDetails?.oldFireNocNumber || "",
         firestationId: site.fireStationId || fireNOCData?.fireNOCDetails?.firestationId || "",
         action: workflowAction,
         propertyDetails: {
@@ -136,21 +155,18 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           address: {
             ...fireNOCData?.fireNOCDetails?.propertyDetails?.address,
             areaType: site.areaType?.name || site.areaType?.code || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.areaType || "",
-            city: site.cityName?.code || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.city || tenantId,
-            subDistrict: site.districtName?.name || site.districtName || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.subDistrict || "",
+            city: site.districtName?.code || site.districtName?.name || site.districtName || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.city || tenantId,
+            subDistrict: site.cityName?.code || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.subDistrict || "",
             addressLine2: (site.areaType?.code === "RURAL" || site.areaType?.code === "Rural") ? (site.villageName || "") : (site.mohalla?.name || site.mohalla || ""),
             doorNo: site.plotSurveyNo || "",
             street: site.streetName || "",
             landmark: site.landmarkName || "",
             pincode: site.pincode || "",
-            locality: site.mohalla ? { code: site.mohalla.code || site.mohalla } : (fireNOCData?.fireNOCDetails?.propertyDetails?.address?.locality || null),
+            locality: site.mohalla ? { code: site.mohalla.code || site.mohalla } : (fireNOCData?.fireNOCDetails?.propertyDetails?.address?.locality || { code: "UNKNOWN" }),
             latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : (fireNOCData?.fireNOCDetails?.propertyDetails?.address?.latitude || 0),
             longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : (fireNOCData?.fireNOCDetails?.propertyDetails?.address?.longitude || 0),
           },
           propertyId: site.propertyId || fireNOCData?.fireNOCDetails?.propertyDetails?.propertyId || "",
-          geoLocation: site.geoLocation || fireNOCData?.fireNOCDetails?.propertyDetails?.geoLocation || null,
-          latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : (fireNOCData?.fireNOCDetails?.propertyDetails?.latitude || null),
-          longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : (fireNOCData?.fireNOCDetails?.propertyDetails?.longitude || null),
         },
         buildings,
         applicantDetails: {
@@ -169,6 +185,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         additionalDetail: {
           ...fireNOCData?.fireNOCDetails?.additionalDetail,
         },
+        tenantId: applicationTenantId,
       },
     };
 
@@ -179,7 +196,16 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     setIsSubmitting(true);
     try {
       const payload = buildUpdatePayload(currentStepData);
-      const response = await Digit.FIRENOCService.update({ tenantId, details: payload });
+
+      const fireNOCData = currentStepData?.apiData?.FireNOCs?.[0];
+      const site = currentStepData?.siteDetails || {};
+      const selectedStationCode = site.fireStationId || fireNOCData?.fireNOCDetails?.firestationId || "";
+      const selectedStationObj = fireStationData?.find(
+        (s) => s.code === selectedStationCode || s.id === selectedStationCode
+      );
+      const applicationTenantId = selectedStationObj?.tenantId || selectedStationObj?.baseTenantId || tenantId;
+
+      const response = await Digit.FIRENOCService.update({ tenantId: applicationTenantId, details: payload });
 
       if (response?.FireNOCs?.length > 0) {
         const applicationNo = response.FireNOCs[0]?.fireNOCDetails?.applicationNumber;

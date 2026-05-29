@@ -24,7 +24,7 @@ const Response = (props) => {
   }
 
   const onGoToNOC = () => {
-    history.push(`/digit-ui/employee/firenoc/inbox`);
+    history.push(`/digit-ui/employee/firenoc/search`);
   };
 
   const handlePayment = () => {

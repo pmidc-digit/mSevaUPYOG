@@ -229,6 +229,7 @@ const EditApplication = () => {
       };
 
       const selectedCity = ulbListOptions?.find((obj) => obj.code === address?.city) || null;
+      const selectedSubDistrictCity = ulbListOptions?.find((obj) => obj.code === address?.subDistrict) || null;
       const districtName = selectedCity ? {
         code: selectedCity?.city?.districtTenantCode,
         name: selectedCity?.city?.districtName || selectedCity?.city?.districtTenantCode
@@ -277,7 +278,9 @@ const EditApplication = () => {
       const updatedSiteDetails = {
         areaType: getAreaTypeObj(address?.areaType),
         districtName: districtName,
-        cityName: selectedCity ? { code: selectedCity.code, name: selectedCity.name || selectedCity.code } : null,
+        cityName: selectedSubDistrictCity 
+          ? { code: selectedSubDistrictCity.code, name: selectedSubDistrictCity.name || selectedSubDistrictCity.code } 
+          : (selectedCity ? { code: selectedCity.code, name: selectedCity.name || selectedCity.code } : null),
         villageName: address?.areaType?.toUpperCase() === "RURAL" ? address?.addressLine2 : "",
         mohalla: mohalla,
         pincode: address?.pincode || "",

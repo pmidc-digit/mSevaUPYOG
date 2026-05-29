@@ -218,6 +218,7 @@ const FireNOCApplicantDetails = (_props) => {
                 name={`${prefix}.name`}
                 rules={{
                   required: t("REQUIRED_FIELD"),
+                  pattern: { value: /^[A-Za-z\s]+$/, message: t("ONLY_ENGLISH_LETTERS_ALLOWED") },
                   maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
                 }}
                 render={(props) => (

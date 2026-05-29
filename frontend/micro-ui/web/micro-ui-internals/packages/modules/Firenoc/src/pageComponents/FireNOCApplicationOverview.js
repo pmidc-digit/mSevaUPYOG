@@ -134,14 +134,14 @@ const FireNOCApplicationOverview = () => {
       history.push(redirectPath);
       return;
     }
-    if (action?.action === "APPLY") {
-      console.log("APPLY action selected - submitting directly without modal");
+    if (action?.action === "APPLY" || action?.action === "APPROVE") {
+      console.log(`${action.action} action selected - submitting directly without modal`);
       const payload = {
         FireNOCs: [{
           ...fireNOC,
           fireNOCDetails: {
             ...fireNOC?.fireNOCDetails,
-            action: "APPLY"
+            action: action.action
           }
         }]
       };
@@ -254,6 +254,26 @@ const FireNOCApplicationOverview = () => {
   
     const isResumable = appStatus === "INITIATED";
 
+    const handleDownloadPdf = async () => {
+    try {
+      setLoading(true);
+      const Property = fireNOC;
+      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+      console.log('tenantInfo', tenantInfo)
+      // const site = Property?.nocDetails?.additionalDetails?.siteDetails;
+      const ulbType = tenantInfo?.city?.ulbType;
+      const ulbName = tenantInfo?.city?.name;
+
+      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
+      setTimeout(() => {
+        Digit.Utils.pdf.generateFormattedFireNoc(acknowledgementData);
+      }, 0);
+    } catch (error) {
+      // console.error("Error generating acknowledgement:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getRecieptSearch = async ({ tenantId, payments, pdfkey, EmpData = null, ...params }) => {
     try {
@@ -307,31 +327,47 @@ const FireNOCApplicationOverview = () => {
   };
 
   const dowloadOptions =
-    payment &&
-      details?.status !== "CANCELLED" &&
-      details?.status !== "PENDINGPAYMENT"
-      ? [
+  payment &&
+  details?.status !== "CANCELLED" &&
+  details?.status !== "PENDINGPAYMENT"
+    ? [
+        // Show receipt for APPROVED and all other active statuses
+        {
+          label: t("CS_COMMON_PAYMENT_RECEIPT"),
+          onClick: () =>
+            getRecieptSearch({
+              tenantId: paymentDetail?.tenantId,
+              payments: payment,
+              pdfkey: "firenocreceipt",
+            }),
+        },
+
+        // Show NOC Certificate only when APPROVED
         ...(details?.status === "APPROVED"
           ? [
-            {
-              label: t("CS_COMMON_PAYMENT_RECEIPT"),
-              onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenocreceipt" }),
-            },
-          ]
+              {
+                label: t("NOC_CERTIFICATE"),
+                onClick: () =>
+                  getSanctionLetter({
+                    tenantId: paymentDetail?.tenantId,
+                    payments: payment,
+                    pdfkey: "firenoc-sanctionletter",
+                  }),
+              },
+            ]
           : []),
-        {
-          label: t("NOC_CERTIFICATE"),
-          onClick: () => getSanctionLetter({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-sanctionletter" }),
-        },
+
         {
           label: t("NOC_APPLICATION_FORM"),
-          onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-application" }),
+          onClick: handleDownloadPdf,
+          // onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-application" }),
         },
       ]
-      : [
+    : [
         {
           label: t("NOC_APPLICATION_FORM"),
-          onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-application" }),
+          onClick: handleDownloadPdf,
+          // onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-application" }),
         },
       ];
 

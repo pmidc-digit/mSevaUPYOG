@@ -132,7 +132,7 @@ function NOCSummary({ currentStepData: formData, t }) {
   const applicationNo = apiFireNOC?.fireNOCDetails?.applicationNumber || "";
   const tenantId = apiFireNOC?.tenantId || site?.cityName?.code || "";
 
-  const owners = appDetails?.owners || [];
+  const owners = appDetails?.owners || apiFireNOC?.fireNOCDetails?.applicantDetails?.owners || [];
   const primaryOwner = owners[0] || {};
 
   /* doc friendly name map */
@@ -189,19 +189,19 @@ function NOCSummary({ currentStepData: formData, t }) {
               {(site?.buildings?.length > 1) && (
                 <Row label={t(`Building ${i + 1}`)} text="" />
               )}
-              <Row label={t("Name Of Building")} text={val(b?.name)} />
-              <Row label={t("Building Usage Type as per NBC")} text={val(b?.buildingUsageType?.name || b?.buildingUsageType?.code)} />
-              <Row label={t("Building Usage Subtype as per NBC")} text={val(b?.buildingUsageSubType?.name || b?.buildingUsageSubType?.code)} />
+              <Row label={t("Name Of Building")} text={val(b?.buildingName || b?.name)} />
+              <Row label={t("Building Usage Type as per NBC")} text={val(b?.buildingUsageType?.name || b?.buildingUsageType?.code || b?.buildingUsageType)} />
+              <Row label={t("Building Usage Subtype as per NBC")} text={val(b?.buildingUsageSubType?.name || b?.buildingUsageSubType?.code || b?.buildingUsageSubType)} />
               <Row label={t("Land Area(in Sq meters)")} text={val(b?.landArea)} />
               <Row label={t("Total Covered Area(in Sq meters)")} text={val(b?.totalCoveredArea)} />
               <Row label={t("Parking Area (in Sq meters)")} text={val(b?.parkingArea)} />
-              <Row label={t("Left surrounding")} text={val(b?.surroundingOnLeft?.name || b?.surroundingOnLeft)} />
-              <Row label={t("Right surrounding")} text={val(b?.surroundingOnRight?.name || b?.surroundingOnRight)} />
-              <Row label={t("Front surrounding")} text={val(b?.surroundingOnFront?.name || b?.surroundingOnFront)} />
+              <Row label={t("Left surrounding")} text={val(b?.leftSurrounding?.name || b?.leftSurrounding || b?.surroundingOnLeft)} />
+              <Row label={t("Right surrounding")} text={val(b?.rightSurrounding?.name || b?.rightSurrounding || b?.surroundingOnRight)} />
+              <Row label={t("Front surrounding")} text={val(b?.frontSurrounding?.name || b?.frontSurrounding || b?.surroundingOnFront)} />
               <Row label={t("Back surrounding")} text={val(b?.surroundingOnBack?.name || b?.surroundingOnBack)} />
-              <Row label={t("Height of the Building from Ground level (in meters)")} text={val(b?.uomsMap?.HEIGHT_OF_BUILDING)} />
+              <Row label={t("Height of the Building from Ground level (in meters)")} text={val(b?.heightOfBuilding || b?.uomsMap?.HEIGHT_OF_BUILDING)} />
               <Row label={t("No of Floors")} text={val(b?.noOfFloors?.code || b?.noOfFloors)} />
-              <Row label={t("Ground floor builtup area(in sq. meter)")} text={val(b?.totalCoveredArea)} />
+              <Row label={t("Ground floor builtup area(in sq. meter)")} text={val(b?.groundFloorBuiltupArea || b?.totalCoveredArea)} />
             </React.Fragment>
           ))}
         </StatusTable>
@@ -216,10 +216,10 @@ function NOCSummary({ currentStepData: formData, t }) {
           <Row label={t("Area Type")} text={val(site.areaType?.name || site.areaType?.code)} />
           <Row label={t("District Name")} text={val(site.districtName?.name || site.districtName)} />
           <Row label={t("Sub District Name")} text={val(site.cityName?.name || site.cityName?.code)} />
-          <Row label={t("Door/House No.")} text={val(site.doorHouseNo)} />
+          <Row label={t("Door/House No.")} text={val(site.plotSurveyNo || site.doorHouseNo)} />
           <Row label={t("Street Name")} text={val(site.streetName)} />
           {site.areaType?.code === "URBAN"
-            ? <Row label={t("Mohalla")} text={val(site.mohalla?.name || site.mohalla?.i18nkey || site.mohalla)} />
+            ? <Row label={t("Mohalla")} text={val(site.mohalla?.name || (site.mohalla?.i18nkey ? t(site.mohalla.i18nkey) : null) || site.mohalla?.code || site.mohalla)} />
             : <Row label={t("Village Name")} text={val(site.villageName)} />
           }
           <Row label={t("Landmark Name")} text={val(site.landmarkName)} />
@@ -231,7 +231,7 @@ function NOCSummary({ currentStepData: formData, t }) {
           } />
           <Row label={t("Applicable Fire Station")} text={val(
             (() => {
-              const stationCode = site.fireStationId;
+              const stationCode = typeof site.fireStationId === "object" ? (site.fireStationId?.name || site.fireStationId?.code) : site.fireStationId;
               if (!stationCode) return null;
               return stationCode.replace(/_/g, " ").replace(/^FS /, "").replace(/\b\w/g, c => c.toUpperCase());
             })()

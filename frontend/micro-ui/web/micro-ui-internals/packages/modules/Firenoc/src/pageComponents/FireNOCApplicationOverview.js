@@ -254,26 +254,6 @@ const FireNOCApplicationOverview = () => {
   
     const isResumable = appStatus === "INITIATED";
 
-    const handleDownloadPdf = async () => {
-    try {
-      setLoading(true);
-      const Property = fireNOC;
-      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-      console.log('tenantInfo', tenantInfo)
-      // const site = Property?.nocDetails?.additionalDetails?.siteDetails;
-      const ulbType = tenantInfo?.city?.ulbType;
-      const ulbName = tenantInfo?.city?.name;
-
-      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
-      setTimeout(() => {
-        Digit.Utils.pdf.generateFormattedFireNoc(acknowledgementData);
-      }, 0);
-    } catch (error) {
-      // console.error("Error generating acknowledgement:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getRecieptSearch = async ({ tenantId, payments, pdfkey, EmpData = null, ...params }) => {
     try {
@@ -359,15 +339,13 @@ const FireNOCApplicationOverview = () => {
 
         {
           label: t("NOC_APPLICATION_FORM"),
-          onClick: handleDownloadPdf,
-          // onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-application" }),
+          onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-application" }),
         },
       ]
     : [
         {
           label: t("NOC_APPLICATION_FORM"),
-          onClick: handleDownloadPdf,
-          // onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-application" }),
+          onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-application" }),
         },
       ];
 

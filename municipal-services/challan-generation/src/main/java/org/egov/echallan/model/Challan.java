@@ -24,16 +24,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.egov.echallan.web.models.workflow.Workflow;
-import org.hibernate.validator.constraints.SafeHtml;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
 
 /**
  * Capture the echallan details
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-08-10T16:46:24.044+05:30[Asia/Calcutta]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-08-10T16:46:24.044+05:30[Asia/Calcutta]")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -46,31 +45,24 @@ public class Challan {
   private UserInfo citizen = null;
 
   @JsonProperty("id")
-  @SafeHtml
   private String id = null;
 
   @JsonProperty("tenantId")
-  @SafeHtml
   private String tenantId = null;
 
   @JsonProperty("businessService")
-  @SafeHtml
   private String businessService = null;
 
   @JsonProperty("challanNo")
-  @SafeHtml
   private String challanNo = null;
 
   @JsonProperty("referenceId")
-  @SafeHtml
   private String referenceId = null;
 
   @JsonProperty("description")
-  @SafeHtml
   private String description = null;
 
   @JsonProperty("accountId")
-  @SafeHtml
   private String accountId = null;
 
   @JsonProperty("additionalDetail")
@@ -78,7 +70,6 @@ public class Challan {
   private Object additionalDetail = null;
 
   @JsonProperty("source")
-  @SafeHtml
   private String source = null;
   
   @JsonProperty("taxPeriodFrom")
@@ -102,7 +93,6 @@ public class Challan {
     private List<DocumentDetail> uploadedDocumentDetails;
   
   @JsonProperty("filestoreid")
-  @SafeHtml
   private String filestoreid = null;
 
   @JsonProperty("workflow")
@@ -160,15 +150,12 @@ public class Challan {
 
   // Offence-related fields - User-friendly names only
   @JsonProperty("offenceTypeName")
-  @SafeHtml
   private String offenceTypeName = null;
 
   @JsonProperty("offenceCategoryName")
-  @SafeHtml
   private String offenceCategoryName = null;
 
   @JsonProperty("offenceSubCategoryName")
-  @SafeHtml
   private String offenceSubCategoryName = null;
 
   @JsonProperty("challanAmount")

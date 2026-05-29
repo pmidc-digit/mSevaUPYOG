@@ -200,7 +200,7 @@ public class NotificationService {
 	
 	
 	private MdmsCriteriaReq getRequestForEvents(RequestInfo requestInfo, String tenantId) {
-		MasterDetail masterDetail = org.egov.mdms.model.MasterDetail.builder()
+		MasterDetail masterDetail = MasterDetail.builder()
 				.name(BUSINESSSERVICE_MDMS_MASTER).filter(BUSINESSSERVICE_CODES_FILTER).build();
 		List<MasterDetail> masterDetails = new ArrayList<>();
 		masterDetails.add(masterDetail);

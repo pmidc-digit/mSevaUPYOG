@@ -5,47 +5,49 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.2.6.RELEASE</version>
+    <version>4.0.2</version>
   </parent>
   <groupId>org.egov</groupId>
   <artifactId>challan-generation</artifactId>
-  <version>1.1.0-SNAPSHOT</version>
+  <version>1.1.1-SNAPSHOT</version>
   <name>challan-generation</name>
   <properties>
-    <log4j2.version>2.17.1</log4j2.version>
-    <java.version>1.8</java.version>
+    <log4j2.version>2.21.1</log4j2.version>
+    <java.version>21</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <lombok.version>1.18.8</lombok.version>
+    <lombok.version>1.18.32</lombok.version>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-beans</artifactId>
-      <version>5.2.20.RELEASE</version>
-    </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jdbc</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.hibernate</groupId>
+      <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator</artifactId>
-      <version>6.0.16.Final</version>
+      <version>8.0.1.Final</version>
     </dependency>
     <dependency>
       <groupId>org.jsoup</groupId>
       <artifactId>jsoup</artifactId>
-      <version>1.10.2</version>
+      <version>1.17.2</version>
     </dependency>
+    <dependency>
+      <groupId>org.egov.services</groupId>
+      <artifactId>tracer</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+
     <dependency>
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-core</artifactId>
-      <version>6.4.3</version>
+      <version>10.7.1</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -55,6 +57,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
+      <version>42.7.1</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -69,33 +72,45 @@
 
     <dependency>
       <groupId>org.springdoc</groupId>
-      <artifactId>springdoc-openapi-ui</artifactId>
-      <version>1.6.15</version>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>2.2.0</version>
     </dependency>
 
     <dependency>
       <groupId>org.egov.services</groupId>
       <artifactId>services-common</artifactId>
-      <version>1.1.1-SNAPSHOT</version>
+      <version>3.0.0-SNAPSHOT</version>
     </dependency>
     
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-kafka</artifactId>
+
+    </dependency>
+
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
+      <version>3.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
     </dependency>
     <dependency>
       <groupId>org.egov</groupId>
       <artifactId>mdms-client</artifactId>
-      <version>0.0.4-SNAPSHOT</version>
+      <version>3.0.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <repositories>
@@ -144,7 +159,7 @@
        <plugin>
         <groupId>cz.habarta.typescript-generator</groupId>
         <artifactId>typescript-generator-maven-plugin</artifactId>
-        <version>2.22.595</version>
+        <version>3.2.1263</version>
         <executions>
           <execution>
             <id>generate</id>
@@ -186,7 +201,6 @@
             <customTypeMapping>org.egov.echallan.web.models.uservevents.Action:Action</customTypeMapping>
           </customTypeMappings>
           <namespace>Digit</namespace>
-          <debug>true</debug>
           <outputKind>module</outputKind>
         </configuration>
       </plugin>

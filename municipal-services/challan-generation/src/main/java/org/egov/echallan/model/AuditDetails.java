@@ -24,7 +24,7 @@ import lombok.Setter;
 /**
  * Collection of audit related fields used by most models
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-08-10T16:46:24.044+05:30[Asia/Calcutta]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-08-10T16:46:24.044+05:30[Asia/Calcutta]")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -116,7 +116,7 @@ public class AuditDetails {
     this.lastModifiedTime = lastModifiedTime;
   }
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -132,7 +132,7 @@ public class AuditDetails {
 
   @Override
   public int hashCode() {
-    return java.util.Objects.hash(createdBy, lastModifiedBy, createdTime, lastModifiedTime);
+    return Objects.hash(createdBy, lastModifiedBy, createdTime, lastModifiedTime);
   }
 
   @Override
@@ -152,7 +152,7 @@ public class AuditDetails {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

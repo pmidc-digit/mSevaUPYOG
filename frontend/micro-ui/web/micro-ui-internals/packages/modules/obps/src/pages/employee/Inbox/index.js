@@ -1,21 +1,23 @@
-import React, { Fragment, useCallback, useMemo, useReducer } from "react";
-import { InboxComposer, CaseIcon, Header } from "@mseva/digit-ui-react-components";
+import React, { Fragment, useCallback, useMemo, useReducer, useEffect } from "react";
+import { InboxComposer, CaseIcon, Header, SubmitBar } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
 import { Link } from "react-router-dom";
-import { OBPS_BPA_NOR_BUSINESS_SERVICES } from "../../../../../../constants/constants";
+import { MSEVA_APP_LINK, OBPS_BPA_NOR_BUSINESS_SERVICES } from "../../../../../../constants/constants";
 
 const Inbox = ({ parentRoute }) => {
   window.scroll(0, 0);
   const { t } = useTranslation();
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
   const isEmoployee = window.location.href.includes("employee");
   const employeeName = Digit.UserService.getUser()?.info?.name;
+  const { data: cities } = Digit.Hooks.useTenants();
 
   const searchFormDefaultValues = {};
 
@@ -26,6 +28,11 @@ const Inbox = ({ parentRoute }) => {
     assignee: "ASSIGNED_TO_ME",
     applicationType: [],
   };
+
+  const selectedTenantIdDefaultValues = {
+    tenantId: cities?.[0]?.code || null,
+  };
+
   const tableOrderFormDefaultValues = {
     sortBy: "",
     limit: Digit.Utils.browser.isMobile() ? 50 : 10,
@@ -44,6 +51,9 @@ const Inbox = ({ parentRoute }) => {
       case "mutateTableForm":
         Digit.SessionStorage.set("OBPS.INBOX", { ...state, tableForm: payload.data });
         return { ...state, tableForm: payload.data };
+      case "mutateSelectedTenantId":
+        Digit.SessionStorage.set("OBPS.INBOX", { ...state, selectedTenantId: payload.data });
+        return { ...state, selectedTenantId: payload.data };
       default:
         break;
     }
@@ -62,7 +72,13 @@ const Inbox = ({ parentRoute }) => {
     setFilterFormValue("locality", []);
     setFilterFormValue("assignee", "ASSIGNED_TO_ALL");
     setFilterFormValue("applicationType", []);
+    onSelectedTenantIdReset(setFilterFormValue)
     dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
+  };
+
+  const onSelectedTenantIdReset = (setSelectedTenantIdValue) => {
+    setSelectedTenantIdValue("tenantId", tenantId || null);
+    dispatch({ action: "mutateSelectedTenantId", data: selectedTenantIdDefaultValues });
   };
 
   const onSortFormReset = (setSortFormValue) => {
@@ -70,18 +86,23 @@ const Inbox = ({ parentRoute }) => {
     dispatch({ action: "mutateTableForm", data: tableOrderFormDefaultValues });
   };
 
+  const setSelectedTenantIdValue = (key, value) => {
+    dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
+  };
   const formInitValue = useMemo(() => {
     return (
       InboxObjectInSessionStorage || {
         filterForm: filterFormDefaultValues,
         searchForm: searchFormDefaultValues,
         tableForm: tableOrderFormDefaultValues,
+        selectedTenantId: selectedTenantIdDefaultValues,
       }
     );
   }, [
     Object.values(InboxObjectInSessionStorage?.filterForm || {}),
     Object.values(InboxObjectInSessionStorage?.searchForm || {}),
     Object.values(InboxObjectInSessionStorage?.tableForm || {}),
+    Object.values(InboxObjectInSessionStorage?.selectedTenantId || {}),
   ]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
@@ -120,8 +141,8 @@ const Inbox = ({ parentRoute }) => {
     t
   );
 
-  const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {} } = Digit.Hooks.obps.useBPAInbox({
-    tenantId,
+  const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {}, refetch } = Digit.Hooks.obps.useBPAInbox({
+    tenantId: (isEmoployee && tenantId === "pb.punjab") ? (formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId) : tenantId,
     filters: { 
       ...formState,
       filterForm: {
@@ -129,6 +150,7 @@ const Inbox = ({ parentRoute }) => {
         businessService: formState?.filterForm?.businessService === "BPA" ? OBPS_BPA_NOR_BUSINESS_SERVICES : formState?.filterForm?.businessService || null,
       }
      },
+    config: { enabled: !!tenantId }
   });
 
 
@@ -165,10 +187,14 @@ const Inbox = ({ parentRoute }) => {
           getFilterFormValue,
           localitiesForEmployeesCurrentTenant,
           loadingLocalitiesForEmployeesCurrentTenant,
+          cities,
+          selectedTenantIdState: formState?.selectedTenantId?.tenantId ? formState?.selectedTenantId : {tenantId: cities?.[0]?.code},
+          setSelectedTenantIdValue,
+          tenantId
         }}
       />
     ),
-    [statuses, isInboxLoading, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant]
+    [statuses, isInboxLoading, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant, formState?.selectedTenantId]
   );
 
   const onSearchFormSubmit = (data) => {
@@ -205,12 +231,24 @@ const Inbox = ({ parentRoute }) => {
 
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 
+  useEffect(() => {
+    refetch()
+  }, [])
+
   return (
     <React.Fragment>
       <Header>
-        {t("ES_COMMON_INBOX")}
-        {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
-        {isEmoployee && <p className="inbox-name">{employeeName}</p>}
+        <div style={{...{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }, ...isMobile?{flexDirection: "column"}:{} }}>
+          <div>
+            {t("ES_COMMON_INBOX")}
+            {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
+            {isEmoployee && <p className="inbox-name">{employeeName}</p>}
+          </div>
+          <div style={{ display: "flex", flexDirection: "row", gap: "5px"}}>
+            {isEmoployee && <SubmitBar label={t("User Manual")} onSubmit={() => window.open("https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FBPA%2FMarch%2F13%2F1773381614243uFJyzhFqyR.pdf")} />}
+            {isEmoployee && <SubmitBar label={t("Android App")} onSubmit={() => window.open(MSEVA_APP_LINK)} />}
+          </div>
+        </div>
       </Header>
       {Digit.Utils.browser.isMobile() &&
         <div style={{marginLeft: "12px"}}>

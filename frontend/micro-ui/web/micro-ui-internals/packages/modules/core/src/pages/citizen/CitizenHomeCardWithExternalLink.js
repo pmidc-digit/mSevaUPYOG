@@ -194,13 +194,29 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
     return displayName?.includes("Sample Files")
   }
 
+  const isSampleFileResidential = (displayName) => {
+    return displayName?.includes("Sample Files Residential")
+  }
+  const isSampleFileCommercial = (displayName) => {
+    return displayName?.includes("Sample Files Commercial")
+  }
+  const isSampleFileIndustrial = (displayName) => {
+    return displayName?.includes("Sample Files Industrial")
+  }
+  const isSampleFileInstitutional = (displayName) => {
+    return displayName?.includes("Sample Files Institutional")
+  }
+
   const isVideo = (displayName) => {
     return displayName?.includes("Video")
   }
 
   const remainingUserManualLinks = links?.filter((value) => isUserManual(value?.displayName))
 
-  const remainingSampleFilesLink = links?.filter((value) => isSampleFile(value?.displayName))
+  const remainingSampleFilesLink = links?.filter((value) => isSampleFileResidential(value?.displayName))
+  const remainingSampleFilesCommLink = links?.filter((value) => isSampleFileCommercial(value?.displayName))
+  const remainingSampleFilesIndLink = links?.filter((value) => isSampleFileIndustrial(value?.displayName))
+  const remainingSampleFilesInstLink = links?.filter((value) => isSampleFileInstitutional(value?.displayName))
   
   const remainingVideoLink = links?.filter((value) => isVideo(value?.displayName))
 
@@ -262,6 +278,9 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
         
         {remainingUserManualLinks?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingUserManualLinks)}</div>}
         {remainingSampleFilesLink?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingSampleFilesLink?.sort((a,b) => a.order - b .order))}</div>}
+        {remainingSampleFilesCommLink?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingSampleFilesCommLink?.sort((a,b) => a.order - b .order))}</div>}
+        {remainingSampleFilesIndLink?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingSampleFilesIndLink?.sort((a,b) => a.order - b .order))}</div>}
+        {remainingSampleFilesInstLink?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingSampleFilesInstLink?.sort((a,b) => a.order - b .order))}</div>}
         {remainingVideoLink?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingVideoLink)}</div>}
       </div>
 

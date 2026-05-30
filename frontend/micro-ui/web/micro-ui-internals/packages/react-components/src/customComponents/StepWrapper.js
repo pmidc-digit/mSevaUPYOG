@@ -34,7 +34,7 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
       width: "56px",
       height: "56px",
       borderRadius: "50%",
-      background: completed ? "linear-gradient(135deg,#2563eb,#7c3aed)" : "#ffffff",
+      background: completed ? "#003C71" : "#ffffff",
       color: completed ? "#ffffff" : "#0f172a",
       display: "flex",
       alignItems: "center",

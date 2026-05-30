@@ -41,7 +41,18 @@ const RALApplicationDetails = () => {
   const [getWorkflowService, setWorkflowService] = useState([]);
   const menuRef = useRef();
   Digit.Hooks.useClickOutside(menuRef, () => setDisplayMenu(false), displayMenu);
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rentandlease-receipt"});
 
+
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "rl-services",
+      consumerCodes: acknowledgementIds,
+      isEmployee: false,
+    },
+    { enabled: acknowledgementIds ? true : false }
+  );
   const fetchApplications = async (filters) => {
     setLoader(true);
     try {
@@ -61,15 +72,6 @@ const RALApplicationDetails = () => {
     }
   }, []);
 
-  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-    {
-      tenantId: tenantId,
-      businessService: "rl-services",
-      consumerCodes: acknowledgementIds,
-      isEmployee: false,
-    },
-    { enabled: acknowledgementIds ? true : false }
-  );
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId,
     id: acknowledgementIds,
@@ -115,34 +117,6 @@ const RALApplicationDetails = () => {
       setLoader(false);
     }
   };
-  async function getRecieptSearch({ tenantId, payments, ...params }) {
-    setLoader(true);
-    try {
-      let response = null;
-
-      response = await Digit.PaymentService.generatePdf(
-        tenantId,
-        {
-          Payments: [
-            {
-              ...(payments || {}),
-              AllotmentDetails: [applicationData],
-            },
-          ],
-        },
-        "rentandlease-receipt"
-      );
-
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-        fileStoreIds: response.filestoreIds[0],
-      });
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
-      setLoader(false);
-    } catch (error) {
-      console.error(error);
-      setLoader(false);
-    }
-  }
   const dowloadOptions = [];
 
   if ((applicationData?.status === "APPROVED" || applicationData?.status === "CLOSED")) {
@@ -151,10 +125,15 @@ const RALApplicationDetails = () => {
         onClick: () => getAcknowledgement(),
       });
   }
-  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      onClick: () =>
+        printBillReceipt({
+          businessService: "rl-services",
+          receiptNumber: acknowledgementIds,
+          rootKey: "PAYMENTS",
+        }),
     });
   }
   let actions =
@@ -590,7 +569,7 @@ const RALApplicationDetails = () => {
       </div>
 
       {showToast && <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={closeToast} style={{ zIndex: 1000 }} />}
-      {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
+      {(loader || recieptDataLoading || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>
   );
 };

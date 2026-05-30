@@ -12,21 +12,22 @@ const InboxLinks = ({ parentRoute, businessService }) => {
       link: "/digit-ui/employee/pt/new-application",
       businessService: "PT",
       roles: [],
+      icon: "➕",
     },
     {
-      text: "PT_SEARCH_PROPERTY",
+      text: "SEARCH_PROPERTY",
       link: `/digit-ui/employee/pt/search`,
       businessService: "PT",
       roles: [],
+      icon: "🔍",
     },
     {
       text: "ES_COMMON_APPLICATION_SEARCH",
       link: `/digit-ui/employee/pt/application-search`,
       businessService: "PT",
       roles: [],
+      icon: "📋",
     },
-    // { text: "PT_REPORTS", hyperLink: true, link: "/digit-ui/employee/integration/dss/propertytax", roles: [], businessService: "PT" },
-    // { text: "PT_DASHBOARD", link: "/digit-ui/employee/", roles: [], businessService: "PT" },
   ];
 
   const [links, setLinks] = useState([]);
@@ -40,30 +41,58 @@ const InboxLinks = ({ parentRoute, businessService }) => {
     setLinks(linksToShow);
   }, []);
 
-  const GetLogo = () => (
-    <div className="header">
-      <span className="logo">
-        <PropertyHouse />
-      </span>{" "}
-      <span className="text">{t("ES_TITLE_PROPERTY_TAX")}</span>
-    </div>
-  );
-
   return (
-    // <Card style={{ paddingRight: 0, marginTop: 0 }} className="employeeCard filter inboxLinks">
-    <Card className="employeeCard filter inboxLinks">
-      <div className="complaint-links-container">
-        {GetLogo()}
-        {/* <div style={{ marginLeft: "unset", paddingLeft: "0px" }} className="body"> */}
-        <div className="body">
-          {links.map(({ link, text, hyperlink = false, roles = [] }, index) => {
-            return (
-              <span className="link" key={index}>
-                {hyperlink ? <a href={link}>{text}</a> : <Link to={link}>{t(text)}</Link>}
-              </span>
-            );
-          })}
-        </div>
+    <Card
+      className="employeeCard filter inboxLinks"
+      style={{ padding: 0, overflow: "hidden", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", margin: 0 }}
+    >
+      <div
+        style={{
+          background: "linear-gradient(135deg, #0b4e9b 0%, #1671c8 100%)",
+          padding: "16px",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+        }}
+      >
+        <span style={{ color: "white", display: "flex", alignItems: "center" }}>
+          <PropertyHouse />
+        </span>
+        <span style={{ color: "white", fontWeight: "700", fontSize: "15px", letterSpacing: "0.3px" }}>
+          {t("ES_TITLE_PROPERTY_TAX")}
+        </span>
+      </div>
+
+      <div style={{ padding: "6px 0" }}>
+        {links.map(({ link, text, hyperlink = false, icon }, index) => {
+          const linkStyle = {
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            padding: "11px 16px",
+            color: "#1671c8",
+            textDecoration: "none",
+            fontSize: "14px",
+            fontWeight: "500",
+            borderBottom: index < links.length - 1 ? "1px solid #f0f4f8" : "none",
+            transition: "background 0.15s",
+          };
+          return (
+            <div key={index}>
+              {hyperlink ? (
+                <a href={link} style={linkStyle}>
+                  <span style={{ fontSize: "13px" }}>{icon}</span>
+                  {t(text)}
+                </a>
+              ) : (
+                <Link to={link} style={linkStyle}>
+                  <span style={{ fontSize: "13px" }}>{icon}</span>
+                  {t(text)}
+                </Link>
+              )}
+            </div>
+          );
+        })}
       </div>
     </Card>
   );

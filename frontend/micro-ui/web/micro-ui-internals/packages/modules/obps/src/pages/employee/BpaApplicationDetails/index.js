@@ -44,7 +44,8 @@ import {
   getBase64Img,
   getApproveRejectComments,
   fetchUrl,
-  decryptId
+  decryptId,
+  fetchFilestoreAndTenant
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
@@ -85,11 +86,11 @@ const CloseBtn = (props) => {
 };
 
 const BpaApplicationDetail = () => {
-  const { bpaid } = useParams();
+  const { bpaid, tenant } = useParams();
   const id = decryptId(bpaid)
   const { t } = useTranslation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
-  const tenantId = localStorage.getItem("tenant-id");
+  const tenantId = localStorage.getItem("tenant-id") === "pb.punjab" ? tenant : localStorage.getItem("tenant-id");
   const [showToast, setShowToast] = useState(null);
   const [canSubmit, setSubmitValve] = useState({});
   const defaultValues = {};
@@ -109,7 +110,6 @@ const BpaApplicationDetail = () => {
   const [fileUrls, setFileUrls] = useState({});
   const [ownerFileUrls, setOwnerFileUrls] = useState({});
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
-  const [comments , setComments] = useState (null)
   
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
@@ -121,7 +121,6 @@ const BpaApplicationDetail = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
-  console.log("selectedAction",selectedAction)
   const [showModal, setShowModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
@@ -148,7 +147,7 @@ const BpaApplicationDetail = () => {
 
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["RiskTypeComputation"]);
 
-  const { data = {}, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
+  const { data = {}, isLoading, refetch } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
     enabled: !!id, // 👈 only runs when valid
   });
 
@@ -248,7 +247,9 @@ const BpaApplicationDetail = () => {
       window.scrollTo({
         top: 0,
         behavior: "smooth" // use "auto" for instant scroll
-      });    
+      });
+      refetch()
+      workflowDetails.revalidate();
   }, [])
 
   useEffect(() => {
@@ -577,8 +578,8 @@ const BpaApplicationDetail = () => {
     {
       Header: t(" "),
       accessor: "value",
-      Cell: ({ value }) => {
-        return value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA");
+      Cell: ({ value, row }) => {
+        return value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => row?.original?.title === "BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL" ? window.open(value) : fetchUrl(value, tenantId)} /> : t("CS_NA");
       },
     },
   ];
@@ -592,7 +593,7 @@ const BpaApplicationDetail = () => {
     {
       Header: t(""),
       accessor: "planReport",
-      Cell: ({ value }) => (value ? <LinkButton className="view-link-button" label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA")),
+      Cell: ({ value }) => (value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA")),
     },
   ];
   // const ecbcDocumentsData = useMemo(() => {
@@ -746,14 +747,12 @@ const BpaApplicationDetail = () => {
     });
   }
 
-  useEffect(() => {
-      if (workflowDetails?.data!=null && !workflowDetails?.isLoading ){
-        const commentobj = getApproveRejectComments(workflowDetails);
-        if (commentobj){
-          setComments(commentobj)
-        }
-      }
-    }, [workflowDetails]);
+  const comments = useMemo(() => {
+  if (workflowDetails?.data && !workflowDetails?.isLoading) {
+    return getApproveRejectComments(workflowDetails);
+  }
+  return null;
+}, [workflowDetails?.data, workflowDetails?.isLoading]);
 
   const userInfo = Digit.UserService.getUser();
   const rolearray = userInfo?.info?.roles.filter((item) => {
@@ -1108,10 +1107,33 @@ const BpaApplicationDetail = () => {
       setLoader(true);
 
       const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
+      const uploadedDiagramObject = fetchFilestoreAndTenant(data?.edcrDetails?.updatedDxfFile, tenantId)
       if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
 
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      const receiptUrl = fileStore?.[fileStoreId];
+      const payload = {
+        uploadedDiagram: {
+          ...uploadedDiagramObject
+        },
+        sanctionLetter: {
+          filestoreId: fileStoreId,
+          tenantId: tenantId
+        },
+        details: {
+          ulbName: data?.applicationData?.additionalDetails?.UlbName,
+          dateOfApproval: new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST',
+          fileNumber: data?.applicationData?.applicationNo,
+          buildingCategory: data?.applicationData?.additionalDetails?.categoriesName,
+          professionalName: data?.applicationData?.additionalDetails?.stakeholderName,
+          plotArea: data?.applicationData?.additionalDetails?.area,
+          builtUpArea: data?.applicationData?.additionalDetails?.builtUpArea,
+          isAutoApproved: false
+        }
+      }
+
+      const mergedFilestore = await Digit.EDCRService.mergeSanctionLetter({additionalDetails: payload}, stateId);
+
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: mergedFilestore?.mergedFileStoreId?.fileStoreId || fileStoreId });
+      const receiptUrl = fileStore?.[mergedFilestore?.mergedFileStoreId?.fileStoreId || fileStoreId];
       if (!receiptUrl) throw new Error("Could not resolve filestore URL");
       const urlObj = new URL(receiptUrl);
       const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
@@ -1123,7 +1145,7 @@ const BpaApplicationDetail = () => {
       setShowToast({
         key: "true",
         error: true,
-        message: "Failed to open sanction letter. Please try again.",
+        label: "Failed to open sanction letter. Please try again.",
       });
     } finally {
       setLoader(false);
@@ -1467,13 +1489,36 @@ const BpaApplicationDetail = () => {
       // console.log("🎯 Starting certificate eSign process...");
 
       const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
+      const uploadedDiagramObject = fetchFilestoreAndTenant(data?.edcrDetails?.updatedDxfFile, tenantId)
+      
+      const payload = {
+        uploadedDiagram: {
+          ...uploadedDiagramObject
+        },
+        sanctionLetter: {
+          filestoreId: fileStoreId,
+          tenantId: tenantId
+        },
+        details: {
+          ulbName: data?.applicationData?.additionalDetails?.UlbName,
+          dateOfApproval: new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST',
+          fileNumber: data?.applicationData?.applicationNo,
+          buildingCategory: data?.applicationData?.additionalDetails?.categoriesName,
+          professionalName: data?.applicationData?.additionalDetails?.stakeholderName,
+          plotArea: data?.applicationData?.additionalDetails?.area,
+          builtUpArea: data?.applicationData?.additionalDetails?.builtUpArea,
+          isAutoApproved: false
+        }
+      }
+
+      const mergedFilestore = await Digit.EDCRService.mergeSanctionLetter({additionalDetails: payload}, stateId);
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
       const authToken = localStorage.getItem('token');
 
       // Trigger eSign
       eSignCertificate(
-        { fileStoreId, tenantId, callbackUrl, authToken },
+        { fileStoreId: mergedFilestore?.mergedFileStoreId?.fileStoreId || fileStoreId, tenantId, callbackUrl, authToken },
         {
           onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {
@@ -1481,7 +1526,7 @@ const BpaApplicationDetail = () => {
             setShowToast({
               key: "true",
               error: true,
-              message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
+              label: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
             });
           },
         }
@@ -1491,7 +1536,7 @@ const BpaApplicationDetail = () => {
       setShowToast({
         key: "true",
         error: true,
-        message: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
+        label: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
       });
     }
   };
@@ -1714,6 +1759,7 @@ const BpaApplicationDetail = () => {
                             //     </p> */}
                             //   </Fragment>
                             // )})
+                            <React.Fragment>
                             <Table
                               className="customTable table-border-style"
                               t={t}
@@ -1725,9 +1771,8 @@ const BpaApplicationDetail = () => {
                               manualPagination={false}
                               isPaginationRequired={false}
                             />
-                          ) : null}
 
-                          {detail?.isScrutinyDetails && data?.applicationData?.additionalDetails?.oldEDCR?.length > 0 && (
+                            {detail?.isScrutinyDetails && data?.applicationData?.additionalDetails?.oldEDCR?.length > 0 && (
                             <Table
                               className="customTable table-border-style"
                               t={t}
@@ -1740,6 +1785,8 @@ const BpaApplicationDetail = () => {
                               isPaginationRequired={false}
                             />
                           )}
+                          </React.Fragment>
+                          ) : null}
 
                           {/* to get Owner values */}
                           {detail?.isOwnerDetails && detail?.additionalDetails?.owners?.length > 0
@@ -1833,6 +1880,23 @@ const BpaApplicationDetail = () => {
                                       />
                                     ))}
                               </StatusTable>
+                              {!(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) && ["DOC_VERIFICATION_PENDING", "FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && <div>
+                                  {(
+                                    <div>
+                                      {pdfLoading ? <Loader /> : <Table
+                                        className="customTable table-border-style"
+                                        t={t}
+                                        data={documentsData}
+                                        columns={documentsColumns}
+                                        getCellProps={() => ({ style: {} })}
+                                        disableSort={true}
+                                        autoSort={false}
+                                        manualPagination={false}
+                                        isPaginationRequired={false}
+                                      />}
+                                    </div>
+                                  )}
+                              </div>}
                               {data?.applicationData?.status != "DOC_VERIFICATION_PENDING" && !(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) && !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && <div>
                                 {(
                                     <StatusTable>
@@ -1891,22 +1955,6 @@ const BpaApplicationDetail = () => {
                           {/* to get FieldInspection values */}
                           {detail?.isFieldInspection ? (
                             <div>
-                              {data?.applicationData?.status === "INSPECTION_REPORT_PENDING" &&
-                                (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
-                                  <Card>
-                                    <InspectionReport
-                                      isCitizen={true}
-                                      fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
-                                      onSelect={onChangeReport}
-                                    />
-                                  </Card>
-                                )}
-                              {data?.applicationData?.status != "INSPECTION_REPORT_PENDING" &&
-                                data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0 && (
-                                  <Card>
-                                    <InspectionReportDisplay fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending} />
-                                  </Card>
-                                )}
                               {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
                                 (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
                                   <Card>
@@ -1917,6 +1965,13 @@ const BpaApplicationDetail = () => {
                                       geoLocations={geoLocations}
                                       customOpen={routeToImage}
                                     />
+                                  </Card>
+                                )}
+
+                              {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
+                                (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length === 0 && (
+                                  <Card>
+                                    <div id="fieldInspection">{t("Site Inspection is in progress, Checklist will be available once completed.")}</div>
                                   </Card>
                                 )}
 
@@ -1964,6 +2019,22 @@ const BpaApplicationDetail = () => {
                                   )}
                                 </Card>
                               )}
+                              {data?.applicationData?.status === "INSPECTION_REPORT_PENDING" &&
+                                (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
+                                  <Card>
+                                    <InspectionReport
+                                      isCitizen={true}
+                                      fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
+                                      onSelect={onChangeReport}
+                                    />
+                                  </Card>
+                                )}
+                              {data?.applicationData?.status != "INSPECTION_REPORT_PENDING" &&
+                                data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0 && (
+                                  <Card>
+                                    <InspectionReportDisplay fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending} />
+                                  </Card>
+                                )}
                             </div>
                           ) : null}
 

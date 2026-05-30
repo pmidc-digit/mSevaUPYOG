@@ -45,6 +45,38 @@ import ApplicationHistory from "./ApplicationHistory";
 import PaymentHistory from "./PaymentHistory";
 import ApplicationTimeline from "./ApplicationTimeline";
 import NewApplicationTimeline from "./NewApplicationTimeline";
+const PTActionButton = ({ label, color, hoverColor, icon, onClick }) => {
+  const [hovered, setHovered] = React.useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "8px",
+        padding: "10px 20px",
+        border: "none",
+        borderRadius: "8px",
+        background: hovered ? hoverColor : color,
+        color: "#ffffff",
+        fontSize: "14px",
+        fontWeight: "600",
+        cursor: "pointer",
+        transition: "background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease",
+        whiteSpace: "nowrap",
+        boxShadow: hovered ? `0 6px 16px ${color}55` : `0 2px 6px ${color}33`,
+        transform: hovered ? "translateY(-2px)" : "translateY(0)",
+        letterSpacing: "0.01em",
+      }}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+};
+
 function ApplicationDetailsContent({
   applicationDetails,
   demandData,
@@ -852,15 +884,30 @@ function ApplicationDetailsContent({
       )}
 
       {window.location.href.includes("/pt/") ? (
-        <ActionBar className="clear-search-container" style={{ display: "block" }}>
-          <SubmitBar label={"Make Property Active"} style={{ flex: 1 }} onSubmit={PropertyActive} />
-          <SubmitBar label={"Make Property Inactive"} style={{ marginLeft: "20px" }} onSubmit={PropertyInActive} />
-          <SubmitBar label={"Edit Property"} style={{ marginLeft: "20px" }} onSubmit={EditProperty} />
-          <SubmitBar label={"Access Property"} style={{ marginLeft: "20px" }} onSubmit={AccessProperty} />
+        <ActionBar className="clear-search-container">
+          <PTActionButton label="Make Active" color="#00703C" hoverColor="#005a30" icon={
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          } onClick={PropertyActive} />
+          <PTActionButton label="Make Inactive" color="#B5451B" hoverColor="#8f3415" icon={
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+          } onClick={PropertyInActive} />
+          <PTActionButton label="Edit Property" color="#1A5CA8" hoverColor="#134a8a" icon={
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          } onClick={EditProperty} />
+          <PTActionButton label="Access Property" color="#003C71" hoverColor="#002554" icon={
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          } onClick={AccessProperty} />
         </ActionBar>
-      ) : (
-        <div></div>
-      )}
+      ) : null}
       {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
     </Card>
   );

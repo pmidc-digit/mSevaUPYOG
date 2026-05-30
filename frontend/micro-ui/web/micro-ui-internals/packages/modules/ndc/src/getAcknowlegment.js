@@ -71,19 +71,17 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   const designationCode = empData?.officer?.designation; // e.g. "DESIG_68"
   const designationKey = designationCode ? `COMMON_MASTERS_DESIGNATION_${designationCode}` : null;
   const designation = designationKey ? t(designationKey, { defaultValue: designationCode }) : "NA";
-
   const applicationNumber = appData?.applicationNo || "NA";
   // const propertyId = ndc?.consumerCode || "NA";
   const ptObj = appData?.NdcDetails?.find(item => item.businessService === 'PT');
   const propertyId = ptObj?.consumerCode;
-  console.log('ptObj', ptObj)
 
   const propertyType = add?.propertyType ? t(add.propertyType) : "NA";
   const applicantName = owner?.name || "NA";
   // const address = owner?.permanentAddress || owner?.correspondenceAddress || "NA";
   const address = appData?.NdcDetails?.[0]?.additionalDetails?.propertyAddress || owner?.permanentAddress || owner?.correspondenceAddress || "NA";
   const remarks = appData?.NdcDetails?.[0]?.additionalDetails?.remarks || null;
-
+  const reason = t(appData?.reason) || null;
   const ulbName = tenantInfo?.name || appData?.tenantId || "NA";
   const duesAmount = add?.duesAmount || appData?.additionalDetails?.duesAmount || "0";
   const dateOfApplication = add?.dateOfApplication || "NA";
@@ -111,41 +109,43 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   { text: `${appData?.owners?.[0]?.fatherOrHusbandName || "NA"}`, bold: true , fontSize: 9 },
   { text: " resident of ", bold: false , fontSize: 9},
   { text: `${address}.\n`, bold: true ,fontSize: 9 },
+  { text: " Reason For Applying: ", bold: false , fontSize: 9},
+  { text: `${reason}.\n`, bold: true ,fontSize: 9 },
   {
     text: [
       { text: `• This is to certify that, as per the records and data with ${ulbName}, all applicable municipal dues related to the above mentioned property have been duly recovered/deposited. `, bold: true , fontSize: 9 },
-      { text: `${t("NDC_CERTIFY_NOTE_ONE_PB")} ${ulbName} ${t("NDC_CERTIFY_NOTE_TWO_PB")}\n`, bold: false , fontSize: 9}
+      { text: `ਇਹ ਪ੍ਰਮਾਣਿਤ ਕੀਤਾ ਜਾਂਦਾ ਹੈ ਕਿ ਉਪਰੋਕਤ ਉਲਲੇਖਿਤ ਸੰਪਤੀ ਨਾਲ ਸਬੰਧਿਤ ਸਾਰੇ ਲਾਗੂ ਨਗਰ ਨਿਗਮ ਦੇ ਬਕਾਇਆ, ${ulbName} ਦੇ ਅਭਿਲੇਖਾਂ ਅਤੇ ਡਾਟਾ ਅਨੁਸਾਰ, ਪੂਰੀ ਤਰ੍ਹਾਂ ਵਸੂਲ/ਜਮਾ ਕਰਵਾ ਦਿੱਤੇ ਗਏ ਹਨ।\n`, bold: false , fontSize: 9}
     ]
   },
 
   {
     text: [
       { text: `• This No Dues Certificate is valid for one month from the date of issuance.`, bold: true , fontSize: 9 },
-      { text: `${t("NDC_VALIDITY_NOTE_PB")}\n`, bold: false , fontSize: 9 }
+      { text: `ਇਹ ਨੋ ਡਿਊਜ਼ ਸਰਟੀਫਿਕੇਟ ਜਾਰੀ ਕਰਨ ਦੀ ਤਾਰੀਖ ਤੋਂ ਇੱਕ ਮਹੀਨੇ ਲਈ ਹੀ ਵੈਧ ਹੋਵੇਗਾ।\n`, bold: false , fontSize: 9 }
     ]
   },
   {
     text: [
       { text: `• This is only a No Dues Certificate for municipal dues as on date and it does not regulate the compliance of building regulations, change of land use, any fire safety regulations or any other compliance under any act/rules. `, bold: true , fontSize: 9},
-      { text: `${t("NDC_BUILDING_NOTE_PB")}\n`, bold: false , fontSize: 9 }
+      { text: `ਇਹ ਕੇਵਲ ਮੌਜੂਦਾ ਤਾਰੀਖ ਤੱਕ ਦੇ ਨਗਰ ਨਿਗਮ ਦੇ ਬਕਾਇਆ ਲਈ ਨੋ ਡਿਊਜ਼ ਸਰਟੀਫਿਕੇਟ ਹੈ ਅਤੇ ਇਹ ਇਮਾਰਤੀ ਨਿਯਮਾਂ ਦੀ ਪਾਲਣਾ, ਭੂਮੀ ਉਪਯੋਗ ਵਿੱਚ ਬਦਲਾਅ, ਕੋਈ ਵੀ ਅੱਗ ਸੁਰੱਖਿਆ ਨਿਯਮ ਜਾਂ ਕਿਸੇ ਵੀ ਕਾਨੂੰਨ/ਨਿਯਮਾਂ ਅਧੀਨ ਹੋਣ ਵਾਲੀ ਹੋਰ ਪਾਲਣਾ ਨੂੰ ਨਿਯੰਤਰਿਤ ਨਹੀਂ ਕਰਦਾ।\n`, bold: false , fontSize: 9 }
     ]
   },
   {
     text: [
       { text: `• This No Dues Certificate does not bar any competent authority to take action under their prevailing act/rules. `, bold: true, fontSize: 9 },
-      { text: `${t("NDC_AUTHORITY_NOTE_PB")}\n`, bold: false , fontSize: 9 }
+      { text: `ਇਹ ਨੋ ਡਿਊਜ਼ ਸਰਟੀਫਿਕੇਟ ਕਿਸੇ ਵੀ ਯੋਗ ਅਧਿਕਾਰੀ ਨੂੰ ਆਪਣੇ ਲਾਗੂ ਕਾਨੂੰਨ/ਨਿਯਮਾਂ ਅਧੀਨ ਕਾਰਵਾਈ ਕਰਨ ਤੋਂ ਨਹੀਂ ਰੋਕਦਾ।\n`, bold: false , fontSize: 9 }
     ]
   },
   {
     text: [
       { text: `• In case any discrepancies in the amount deposited are discovered by the Municipal Corporation/Council at any stage, it shall be the responsibility of the owner to deposit the differential amount as notified by the Municipal Corporation/Council, which will have the full right to recover the same. `, bold: true , fontSize: 9 },
-      { text: `${t("NDC_DISCREPANCY_NOTE_PB")}\n`, bold: false , fontSize: 9}
+      { text: `ਜੇ ਕਿਸੇ ਵੀ ਪੜਾਅ ‘ਤੇ ਨਗਰ ਨਿਗਮ/ਕੌਂਸਲ ਵੱਲੋਂ ਜਮ੍ਹਾਂ ਕਰਵਾਈ ਗਈ ਰਕਮ ਵਿੱਚ ਕੋਈ ਵੀ ਗੜਬੜ ਪਾਈ ਜਾਂਦੀ ਹੈ, ਤਾਂ ਨਗਰ ਨਿਗਮ/ਕੌਂਸਲ ਵੱਲੋਂ ਸੂਚਿਤ ਕੀਤੀ ਗਈ ਬਕਾਇਆ ਰਕਮ ਜਮ੍ਹਾਂ ਕਰਵਾਉਣ ਦੀ ਜ਼ਿੰਮੇਵਾਰੀ ਮਾਲਕ ਦੀ ਹੋਵੇਗੀ ਅਤੇ ਨਗਰ ਨਿਗਮ/ਕੌਂਸਲ ਨੂੰ ਇਸਦੀ ਵਸੂਲੀ ਦਾ ਪੂਰਾ ਅਧਿਕਾਰ ਹੋਵੇਗਾ।\n`, bold: false , fontSize: 9}
     ]
   },
   {
     text: [
       { text: `• This certificate is only for the purpose of municipal dues and this certificate is not a proof of ownership. `, bold: true , fontSize: 9 },
-      { text: `${t("NDC_OWNERSHIP_NOTE_PB")}\n`, bold: false , fontSize: 9 }
+      { text: `ਇਹ ਸਰਟੀਫਿਕੇਟ ਕੇਵਲ ਨਗਰ ਨਿਗਮ ਦੇ ਬਕਾਇਆ ਲਈ ਜਾਰੀ ਕੀਤਾ ਗਿਆ ਹੈ ਅਤੇ ਇਹ ਮਲਕੀਅਤ ਦਾ ਕੋਈ ਸਬੂਤ ਨਹੀਂ ਹੈ।\n`, bold: false , fontSize: 9 }
     ]
   },
   remarks && remarks.trim() !== "" && {

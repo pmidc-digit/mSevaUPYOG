@@ -34,7 +34,7 @@
         var centralInstanceEnabled = false;
         var footerBWLogoURL = "https://s3.ap-south-1.amazonaws.com/egov-uat-assets/digit-footer-bw.png";
         var footerLogoURL = "https://s3.ap-south-1.amazonaws.com/egov-uat-assets/digit-footer.png";
-        var digitHomeURL = "https://mseva-uat.lgpunjab.gov.in/";
+        var digitHomeURL = "https://mseva-dev.lgpunjab.gov.in/";
         var assetS3Bucket = "pg-egov-assets";
         var getConfig = function (key) {
           if (key === "STATE_LEVEL_TENANT_ID") {
@@ -79,7 +79,11 @@
   })();
 </script>
 <!-- End Matomo Code -->
-
+<style>
+  #logo-img-container{
+    display: none !important;
+  }
+</style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

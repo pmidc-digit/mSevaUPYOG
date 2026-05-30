@@ -21,6 +21,13 @@ const BillGenie = () => {
   const [loader, setLoader] = useState(false);
   const [getBills, setBills] = useState([]);
   const [showToast, setShowToast] = useState(null);
+  
+  const { printReceipt } = Digit.Hooks.usePrintBillReceipt({
+    tenantId,
+    setLoader,
+    t,
+    pdfkey: "rentandlease-bill"
+  });
 
   const closeToast = () => {
     setShowToast(null);
@@ -119,21 +126,15 @@ const BillGenie = () => {
     },
   ];
 
+  
   const getReceiptSearch = async (bill) => {
-    setLoader(true);
-    try {
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Bills: [bill] }, "rentandlease-bill");
-      setLoader(false);
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-        fileStoreIds: response.filestoreIds[0],
-      });
-
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
-    } catch (error) {
-      setLoader(false);
-      setShowToast({ error: true, label: t("CS_COMMON_ERROR_GENERATING_RECEIPT") });
-    }
+    printReceipt({
+      billOrPaymentResponse: [bill],
+      businessService: "rl-services",
+      rootKey: "BILLS",
+    });
   };
+
 
   return (
     <React.Fragment>

@@ -2,6 +2,8 @@ import { Fonts } from "./fonts";
 import React, { ReactDOM } from "react";
 import QRCode from "qrcode";
 import EXIF from "exif-js";
+import { buildRainmakerCard, buildAttachmentsSection } from "./pdfHelpers";
+const pdfMake = require("pdfmake/build/pdfmake.js");
 import pdfMake from "pdfmake/build/pdfmake.js";
 // const pdfFonts = require("pdfmake/build/vfs_fonts.js");
 // pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -60,10 +62,10 @@ const generateQRCodeDataUrl = async (value) => {
 };
 
 const currentDate = new Date().toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+});
 function getBase64Image(tenantId) {
   try {
     const img = document.getElementById(`logo-${tenantId}`);
@@ -114,24 +116,24 @@ const jsPdfGenerator = async ({
     email?.length <= 15
       ? 190
       : email?.length <= 20
-      ? 150
-      : email?.length <= 25
-      ? 130
-      : email?.length <= 30
-      ? 90
-      : email?.length <= 35
-      ? 50
-      : email?.length <= 40
-      ? 10
-      : email?.length <= 45
-      ? 0
-      : email?.length <= 50
-      ? -20
-      : email?.length <= 55
-      ? -70
-      : email?.length <= 60
-      ? -100
-      : -60;
+        ? 150
+        : email?.length <= 25
+          ? 130
+          : email?.length <= 30
+            ? 90
+            : email?.length <= 35
+              ? 50
+              : email?.length <= 40
+                ? 10
+                : email?.length <= 45
+                  ? 0
+                  : email?.length <= 50
+                    ? -20
+                    : email?.length <= 55
+                      ? -70
+                      : email?.length <= 60
+                        ? -100
+                        : -60;
 
   const baseUrl = window.location.origin;
   let qrCodeDataUrl = "";
@@ -226,7 +228,7 @@ const jsPdfGeneratorFormatted = async ({
   ulbType,
   ulbName
 }) => {
-  console.log("ulbType",ulbType)
+  console.log("ulbType", ulbType)
   const baseUrl = window.location.origin;
   let finalUrl;
 
@@ -242,10 +244,10 @@ const jsPdfGeneratorFormatted = async ({
     ? await getBase64FromUrl(finalUrl)
     : baseUrl;
 
-  const contentFormatted = await createContentFormatted( details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit );
+  const contentFormatted = await createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit);
   const dd = {
-    
-background: [
+
+    background: [
       {
         image: AcknowledgmentPage,
         width: 595,
@@ -256,7 +258,7 @@ background: [
 
     header: {},
     content: [
-      ...createHeaderFormatted(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName),
+      ...createHeaderFormatted(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber, ulbType, ulbName),
       ...contentFormatted
     ],
     footer: function (currentPage, pageCount) {
@@ -270,7 +272,7 @@ background: [
         };
       }
       return null; // no footer on other pages
-    },    
+    },
     defaultStyle: {
       font: "Hind",
       margin: [20, 10, 20, 10],
@@ -298,9 +300,9 @@ const jsPdfGeneratorFormattedNOC = async ({
   imageURL,
   ulbType,
   ulbName,
-  openInNewTab = false 
+  openInNewTab = false
 }) => {
-  console.log("ulbType",ulbType)
+  console.log("ulbType", ulbType)
   const baseUrl = window.location.origin;
   let finalUrl;
 
@@ -316,10 +318,10 @@ const jsPdfGeneratorFormattedNOC = async ({
     ? await getBase64FromUrl(finalUrl)
     : baseUrl;
 
-  const contentFormatted = await createContentFormatted( details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit );
+  const contentFormatted = await createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit);
   const dd = {
-    
-background: [
+
+    background: [
       {
         image: AcknowledgmentPage,
         width: 595,
@@ -330,7 +332,7 @@ background: [
 
     header: {},
     content: [
-      ...createHeaderFormattedNOC(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName),
+      ...createHeaderFormattedNOC(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber, ulbType, ulbName),
       ...contentFormatted
     ],
     footer: function (currentPage, pageCount) {
@@ -344,7 +346,7 @@ background: [
         };
       }
       return null; // no footer on other pages
-    },    
+    },
     defaultStyle: {
       font: "Hind",
       margin: [20, 10, 20, 10],
@@ -355,7 +357,7 @@ background: [
   let Hind = pdfFonts[locale] || pdfFonts["Hind"];
   pdfMake.fonts = { Hind: { ...Hind } };
   const generatedPDF = pdfMake.createPdf(dd);
-   if (openInNewTab) {
+  if (openInNewTab) {
     generatedPDF.getBlob((blob) => {
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank");
@@ -363,6 +365,170 @@ background: [
   } else {
     downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
   }
+};
+
+const jsPdfGeneratorFormattedFireNOC = async ({
+  breakPageLimit = null,
+  tenantId,
+  logo,
+  name,
+  email,
+  phoneNumber,
+  heading,
+  details,
+  applicationNumber,
+  applicationDate = "", // ADD THIS
+  t = (text) => text,
+  imageURL,
+  ulbType,
+  ulbName,
+  openInNewTab = false,
+}) => {
+  // ... existing imageURL / base64Image logic unchanged ...
+  console.log("details for firenoc [FIRENOC]", details);
+
+  const contentFormatted = await createContentFormattedFireNoc(
+    details,
+    applicationNumber,
+    logo,
+    tenantId,
+    phoneNumber,
+    breakPageLimit
+  );
+  const baseUrl = window.location.origin;
+
+  const base64Image = await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/ndc/search/application-overview/${applicationNumber}`);
+  console.log(base64Image.slice(0, 50));
+
+
+
+  const dd = {
+    margin: [0, 0, 0, 0],
+    header: {},
+    content: [
+      ...createHeaderFormattedFireNoc(
+        details,
+        name,
+        base64Image, // QR data URL — same as before
+        phoneNumber,
+        email,
+        logo,
+        tenantId,
+        heading,
+        applicationNumber,
+        ulbType,
+        ulbName,
+        applicationDate // NEW
+      ),
+      ...contentFormatted,
+    ],
+    defaultStyle: {
+      font: "Hind",
+      margin: [20, 10, 20, 10],
+    },
+    // ADD pageBreakBefore (optional, from Rainmaker)
+    pageBreakBefore(currentNode, followingNodesOnPage) {
+      let nodeLength = followingNodesOnPage.length;
+      followingNodesOnPage.forEach((node, ind) => {
+        if (node.style === "pdf-table-card") nodeLength = ind;
+      });
+      if (
+        currentNode.startPosition?.verticalRatio > 0.9 &&
+        currentNode.style === "pdf-card-title"
+      ) {
+        return true;
+      }
+      if (
+        currentNode.startPosition?.verticalRatio > 0.75 &&
+        currentNode.style === "pdf-card-title" &&
+        nodeLength > 19
+      ) {
+        return true;
+      }
+      return false;
+    },
+    styles: {
+      // Rainmaker layout styles — ADD/MERGE with your existing styles
+      "pdf-header": {
+        fillColor: "#F2F2F2",
+        margin: [-70, -41, -81, 10],
+      },
+      "pdf-head-qr-code": {
+        fillColor: "#F2F2F2",
+        margin: [-70, -41, -81, 0],
+      },
+      "pdf-header-text": {
+        color: "#484848",
+        fontSize: 20,
+        // bold: true,
+        letterSpacing: 0.74,
+        margin: [0, 0, 0, 2],
+      },
+      "pdf-header-sub-text": {
+        color: "#484848",
+        fontSize: 15,
+        letterSpacing: 0.6,
+      },
+      "pdf-application-no": {
+        fontSize: 12,
+        // bold: true,
+        margin: [-18, 8, 0, 0],
+        color: "#484848",
+      },
+      "pdf-application-no-value": {
+        fontSize: 12,
+        margin: [-18, 6, 0, 0],
+        color: "#484848",
+      },
+      "pdf-card-title": {
+        fontSize: 11,
+        // bold: true,
+        margin: [-18, 5, 2, 8],
+        color: "#484848",
+      },
+      "pdf-table-card": {
+        fillColor: "#F2F2F2",
+        fontSize: 7,
+        color: "#484848",
+        margin: [-20, -2, -8, -8],
+      },
+      "pdf-table-card-white": {
+        fillColor: "white",
+        fontSize: 7,
+        color: "#484848",
+        margin: [-20, -2, -8, -8],
+      },
+      "pdf-card-key": {
+        color: "rgba(0, 0, 0, 0.54)",
+        fontSize: 8,
+        margin: [0, 1, 0, 0],
+      },
+      "pdf-card-value": {
+        fontSize: 10,
+        color: "rgba(0, 0, 0, 0.87)",
+        margin: [0, 0, 0, 1],
+      },
+      // keep any of your old styles (e.g. tableExample, header) if still used by attachments
+      // header: { bold: true },
+      tableExample: {},
+    },
+  };
+
+  pdfMake.vfs = Fonts;
+  let locale = Digit.SessionStorage.get("locale") || "en_IN";
+  let Hind = pdfFonts[locale] || pdfFonts["Hind"];
+  pdfMake.fonts = { Hind: { ...Hind } };
+
+  const generatedPDF = pdfMake.createPdf(dd);
+  if (openInNewTab) {
+    generatedPDF.getBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    });
+  } else {
+    downloadPDFFileUsingBase64(generatedPDF, "FireNoc-Acknowledgement.pdf");
+  }
+  // ... rest unchanged (openInNewTab / download)
 };
 
 
@@ -389,24 +555,24 @@ const jsPdfGeneratorNDC = async ({
     email?.length <= 15
       ? 190
       : email?.length <= 20
-      ? 150
-      : email?.length <= 25
-      ? 130
-      : email?.length <= 30
-      ? 90
-      : email?.length <= 35
-      ? 50
-      : email?.length <= 40
-      ? 10
-      : email?.length <= 45
-      ? 0
-      : email?.length <= 50
-      ? -20
-      : email?.length <= 55
-      ? -70
-      : email?.length <= 60
-      ? -100
-      : -60;
+        ? 150
+        : email?.length <= 25
+          ? 130
+          : email?.length <= 30
+            ? 90
+            : email?.length <= 35
+              ? 50
+              : email?.length <= 40
+                ? 10
+                : email?.length <= 45
+                  ? 0
+                  : email?.length <= 50
+                    ? -20
+                    : email?.length <= 55
+                      ? -70
+                      : email?.length <= 60
+                        ? -100
+                        : -60;
   const baseUrl = window.location.origin;
   let qrCodeDataUrl = "";
   qrCodeDataUrl = await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/ndc/search/application-overview/${applicationNumber}`);
@@ -422,15 +588,15 @@ const jsPdfGeneratorNDC = async ({
     margin: [20, 20, 20, 20],
     header: {},
     content: [
-      ...createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl,ulbType),
+      ...createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl, ulbType),
       {
         stack: [
-          { 
-            text: `Date Of Issuance : ${approvalDate}`, 
-            font: "Hind", 
-            fontSize: 11, 
-            margin: [0, 2, 0, 0], 
-            bold: true 
+          {
+            text: `Date Of Issuance : ${approvalDate}`,
+            font: "Hind",
+            fontSize: 11,
+            margin: [0, 2, 0, 0],
+            bold: true
           }
         ],
         alignment: "right",
@@ -451,7 +617,7 @@ const jsPdfGeneratorNDC = async ({
           { text: "Issuing Authority", font: "Hind", fontSize: 11, bold: true, margin: [0, -10, 0, 0] },
           {
             stack: [
-              { text: ulbType, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0],bold: true },
+              { text: ulbType, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true },
               { text: ulb, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true }
 
             ]
@@ -461,17 +627,17 @@ const jsPdfGeneratorNDC = async ({
         margin: [0, 0, 20, 0]
       },
       {
-      stack: [
-        { text: "Note:-", font: "Hind", fontSize: 8 },
-        { text: "1. The authenticity of this document can be verified by scanning the QR code mentioned on the document.", font: "Hind", fontSize: 8 },
-        { text: "2. For further information please visit 'https://mseva.lgpunjab.gov.in/' ", font: "Hind", fontSize: 8 },
-        { text: "3. The responsibility of verification of this document before accepting the same for any legal purposes would rest with the Institution / Organization / Company or any other Entity where this document is produced.", font: "Hind", fontSize: 8 },
-        { text: "4. This is computer generated certificate and does not require hand written signature.", font: "Hind", fontSize: 8 },
-        { text: "5. In case of any discrepancy please inform the issuing authority of the certificate.", font: "Hind", fontSize: 8 }
-      ],
-      alignment: "left",
-      margin: [10, 2]
-    },
+        stack: [
+          { text: "Note:-", font: "Hind", fontSize: 8 },
+          { text: "1. The authenticity of this document can be verified by scanning the QR code mentioned on the document.", font: "Hind", fontSize: 8 },
+          { text: "2. For further information please visit 'https://mseva.lgpunjab.gov.in/' ", font: "Hind", fontSize: 8 },
+          { text: "3. The responsibility of verification of this document before accepting the same for any legal purposes would rest with the Institution / Organization / Company or any other Entity where this document is produced.", font: "Hind", fontSize: 8 },
+          { text: "4. This is computer generated certificate and does not require hand written signature.", font: "Hind", fontSize: 8 },
+          { text: "5. In case of any discrepancy please inform the issuing authority of the certificate.", font: "Hind", fontSize: 8 }
+        ],
+        alignment: "left",
+        margin: [10, 2]
+      },
 
     ],
 
@@ -482,7 +648,7 @@ const jsPdfGeneratorNDC = async ({
   };
 
   pdfMake.vfs = Fonts;
-  let locale = Digit.SessionStorage.get("locale") || "en_IN";
+  let locale = Digit.SessionStorage.get("locale") || "pn_IN";
   let Hind = pdfFonts[locale] || pdfFonts["Hind"];
   pdfMake.fonts = { Hind: { ...Hind } };
 
@@ -507,24 +673,24 @@ const jsPdfGeneratorBPAREG = async ({
     email?.length <= 15
       ? 190
       : email?.length <= 20
-      ? 150
-      : email?.length <= 25
-      ? 130
-      : email?.length <= 30
-      ? 90
-      : email?.length <= 35
-      ? 50
-      : email?.length <= 40
-      ? 10
-      : email?.length <= 45
-      ? 0
-      : email?.length <= 50
-      ? -20
-      : email?.length <= 55
-      ? -70
-      : email?.length <= 60
-      ? -100
-      : -60;
+        ? 150
+        : email?.length <= 25
+          ? 130
+          : email?.length <= 30
+            ? 90
+            : email?.length <= 35
+              ? 50
+              : email?.length <= 40
+                ? 10
+                : email?.length <= 45
+                  ? 0
+                  : email?.length <= 50
+                    ? -20
+                    : email?.length <= 55
+                      ? -70
+                      : email?.length <= 60
+                        ? -100
+                        : -60;
 
   const baseUrl = window.location.origin;
   let qrCodeDataUrl = "";
@@ -595,27 +761,27 @@ const jsPdfGeneratorNewBPAREG = async ({
     email?.length <= 15
       ? 190
       : email?.length <= 20
-      ? 150
-      : email?.length <= 25
-      ? 130
-      : email?.length <= 30
-      ? 90
-      : email?.length <= 35
-      ? 50
-      : email?.length <= 40
-      ? 10
-      : email?.length <= 45
-      ? 0
-      : email?.length <= 50
-      ? -20
-      : email?.length <= 55
-      ? -70
-      : email?.length <= 60
-      ? -100
-      : -60;
+        ? 150
+        : email?.length <= 25
+          ? 130
+          : email?.length <= 30
+            ? 90
+            : email?.length <= 35
+              ? 50
+              : email?.length <= 40
+                ? 10
+                : email?.length <= 45
+                  ? 0
+                  : email?.length <= 50
+                    ? -20
+                    : email?.length <= 55
+                      ? -70
+                      : email?.length <= 60
+                        ? -100
+                        : -60;
 
   const baseUrl = window.location.origin;
-  
+
   const module = applicationNumber.split("-")[1];
   const splitURL = imageURL.split("filestore")?.[1];
 
@@ -690,24 +856,24 @@ const jsPdfGeneratorv1 = async ({
     email?.length <= 15
       ? 190
       : email?.length <= 20
-      ? 150
-      : email?.length <= 25
-      ? 130
-      : email?.length <= 30
-      ? 90
-      : email?.length <= 35
-      ? 50
-      : email?.length <= 40
-      ? 10
-      : email?.length <= 45
-      ? 0
-      : email?.length <= 50
-      ? -20
-      : email?.length <= 55
-      ? -70
-      : email?.length <= 60
-      ? -100
-      : -60;
+        ? 150
+        : email?.length <= 25
+          ? 130
+          : email?.length <= 30
+            ? 90
+            : email?.length <= 35
+              ? 50
+              : email?.length <= 40
+                ? 10
+                : email?.length <= 45
+                  ? 0
+                  : email?.length <= 50
+                    ? -20
+                    : email?.length <= 55
+                      ? -70
+                      : email?.length <= 60
+                        ? -100
+                        : -60;
   const baseUrl = window.location.origin;
   let qrCodeDataUrl = "";
   try {
@@ -760,13 +926,13 @@ const jsPdfGeneratorv1 = async ({
       },
       ...(qrCodeDataUrl
         ? [
-            {
-              image: qrCodeDataUrl,
-              width: 150,
-              alignment: "center",
-              margin: [0, 20, 0, 0],
-            },
-          ]
+          {
+            image: qrCodeDataUrl,
+            width: 150,
+            alignment: "center",
+            margin: [0, 20, 0, 0],
+          },
+        ]
         : []),
       {
         text: "TERMS_AND_CONDITIONS_OF_LICENSE",
@@ -872,23 +1038,23 @@ const generateBillAmendPDF = async ({ tenantId, bodyDetails, headerDetails, logo
  * @param {Object} data - The timeline data prepared by getTimelineAcknowledgementData
  */
 const generateTimelinePDF = async (data) => {
-  console.log(data,"data i get ")
-  const { t, tenantId, tenantName, heading, businessId, businessService, currentStatus, generatedDate, generatedDateTime, timelineRows, totalSteps,moduleName } = data;
+  console.log(data, "data i get ")
+  const { t, tenantId, tenantName, heading, businessId, businessService, currentStatus, generatedDate, generatedDateTime, timelineRows, totalSteps, moduleName } = data;
 
-  
+
   let moduleNamenew = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
   // Build content for each timeline entry in eOffice style
-  
+
   const buildTimelineEntries = () => {
     const entries = [];
-    
+
     timelineRows.forEach((row, index) => {
       // Main content box with light green background (#ccffcc)
       entries.push({
-        margin: [0, 0, 0, 2 ],
+        margin: [0, 0, 0, 2],
         table: {
           widths: ['*'],
-          margin:[0,0,0,0],
+          margin: [0, 0, 0, 0],
           body: [
             [{
               stack: [
@@ -900,21 +1066,21 @@ const generateTimelinePDF = async (data) => {
                       { text: [{ text: 'Action: ', bold: true, color: '#555' }, { text: row.action || 'N/A', color: '#000', bold: true }], fontSize: 10, border: [false, false, false, false] },
                       { text: '', border: [false, false, false, false] },
                       {
-                      stack: [
-                         { text: 'Date & Time:', fontSize: 8, color: '#777', bold: true },
-                         { text: `${row.date} | ${row.time}`, fontSize: 9, color: '#333', bold: true, margin: [0, 2, 0, 0] }
-                      ],
-                      alignment: 'right'
+                        stack: [
+                          { text: 'Date & Time:', fontSize: 8, color: '#777', bold: true },
+                          { text: `${row.date} | ${row.time}`, fontSize: 9, color: '#333', bold: true, margin: [0, 2, 0, 0] }
+                        ],
+                        alignment: 'right'
                       }, // Spacer add here date and time below
                     ]]
                   },
                   layout: 'noBorders',
                   margin: [0, 0, 0, 2]
                 },
-                
+
                 // Divider line
                 { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 485, y2: 0, lineWidth: 0.5, lineColor: '#99cc99' }] },
-                
+
                 // Comment/Remarks section
                 {
                   columns: [
@@ -924,9 +1090,9 @@ const generateTimelinePDF = async (data) => {
                         {
                           text: row.comment && row.comment !== '-'
                             ? [
-                                { text: 'Note: ', bold: true },
-                                { text: row.comment.split('').join('\u200B') }
-                              ]
+                              { text: 'Note: ', bold: true },
+                              { text: row.comment.split('').join('\u200B') }
+                            ]
                             : { text: 'No Comments', color: '#777' },
                           fontSize: 11,
                           color: row.comment && row.comment !== '-' ? '#222' : '#777',
@@ -950,7 +1116,7 @@ const generateTimelinePDF = async (data) => {
                                 stack: row.documents.map(doc => {
                                   return {
                                     columns: [
-                                      { 
+                                      {
                                         text: doc.name,
                                         fontSize: 10,
                                         color: '#555',
@@ -958,7 +1124,7 @@ const generateTimelinePDF = async (data) => {
                                         decoration: 'underline',
                                         listType: "none",
                                         link: doc.link,
-                                        linkTarget: '_blank' 
+                                        linkTarget: '_blank'
                                       }
                                     ]
                                   };
@@ -988,7 +1154,7 @@ const generateTimelinePDF = async (data) => {
                 }
 
               ],
-              fillColor: '#b8ebb8', 
+              fillColor: '#b8ebb8',
               margin: [15, 6, 15, 0],
               border: [true, true, true, true],
               borderColor: ['#99cc99', '#99cc99', '#99cc99', '#99cc99']
@@ -996,11 +1162,11 @@ const generateTimelinePDF = async (data) => {
           ],
         },
         layout: {
-      fillColor: function (rowIndex) {
-        // skip header row (rowIndex === 0), shade only data rows
-        return rowIndex > 0 && rowIndex % 2 === 1 ? '#f5f5f5' : null;
-      }
-    },
+          fillColor: function (rowIndex) {
+            // skip header row (rowIndex === 0), shade only data rows
+            return rowIndex > 0 && rowIndex % 2 === 1 ? '#f5f5f5' : null;
+          }
+        },
 
       });
     });
@@ -1011,26 +1177,26 @@ const generateTimelinePDF = async (data) => {
   const dd = {
     pageMargins: [40, 80, 40, 60],
     background: function (currentPage, pageSize) {
-    return {
-      canvas: [
-        {
-          type: 'rect',
-          x: 0,
-          y: 0,
-          w: pageSize.width,
-          h: pageSize.height,
-          color: '#ccffcc' // solid background (no alpha in hex)
-        }
-      ]
-    };
-  },
+      return {
+        canvas: [
+          {
+            type: 'rect',
+            x: 0,
+            y: 0,
+            w: pageSize.width,
+            h: pageSize.height,
+            color: '#ccffcc' // solid background (no alpha in hex)
+          }
+        ]
+      };
+    },
     pageOrientation: 'portrait',
     header: {
       stack: [
         {
           columns: [
             {
-              text: `${t(moduleNamenew)} Application Timeline`  || 'Government Department',
+              text: `${t(moduleNamenew)} Application Timeline` || 'Government Department',
               fontSize: 14,
               bold: true,
               color: '#2947A3',
@@ -1077,7 +1243,7 @@ const generateTimelinePDF = async (data) => {
       // File Reference Header
       {
         table: {
-          widths: ['10%', '30%','15%','15%','15%','17%'],
+          widths: ['10%', '30%', '15%', '15%', '15%', '17%'],
           body: [
             [
               { text: 'File No:', bold: true, fontSize: 11, border: [false, false, false, false] },
@@ -1090,8 +1256,8 @@ const generateTimelinePDF = async (data) => {
             ]
           ],
         },
-            layout: {
-              fillColor: function (rowIndex) {
+        layout: {
+          fillColor: function (rowIndex) {
             // skip header row (rowIndex === 0), shade only data rows
             return rowIndex > 0 && rowIndex % 2 === 1 ? '#c4f2c4' : '#b8ebb8';
           }
@@ -1135,7 +1301,8 @@ export default {
   generateBillAmendPDF,
   generateTimelinePDF,
   generateFormatted: jsPdfGeneratorFormatted,
-  generateFormattedNOC: jsPdfGeneratorFormattedNOC
+  generateFormattedNOC: jsPdfGeneratorFormattedNOC,
+  generateFormattedFireNoc: jsPdfGeneratorFormattedFireNOC
 };
 
 const createBodyContentBillAmend = (table, t) => {
@@ -1507,14 +1674,14 @@ function createContentDetails(details, qrCodeDataUrl) {
             },
             ...(qrCodeDataUrl
               ? [
-                  {
-                    width: "auto",
-                    image: qrCodeDataUrl,
-                    // width: 70,
-                    alignment: "right",
-                    margin: [0, 10, 10, 0],
-                  },
-                ]
+                {
+                  width: "auto",
+                  image: qrCodeDataUrl,
+                  // width: 70,
+                  alignment: "right",
+                  margin: [0, 10, 10, 0],
+                },
+              ]
               : []),
           ],
         });
@@ -1683,7 +1850,7 @@ function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, 
   return headerData;
 }
 
-function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl,ulbType) {
+function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl, ulbType) {
   const ulb = tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
   let headerData = [];
   headerData.push({
@@ -1719,7 +1886,7 @@ function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tena
                 alignment: "center",
               },
               {
-                text: name ? name :"No Dues Certificate",
+                text: name ? name : "No Dues Certificate",
                 fontSize: 11,
                 alignment: "center",
               },
@@ -1730,11 +1897,11 @@ function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tena
           // Right: QR code (if available)
           qrCodeDataUrl
             ? {
-                image: qrCodeDataUrl,
-                width: 78,
-                margin: [10, 10],
-                alignment: "right",
-              }
+              image: qrCodeDataUrl,
+              width: 78,
+              margin: [10, 10],
+              alignment: "right",
+            }
             : {},
         ],
       ],
@@ -1990,11 +2157,11 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
       let valueRows;
 
       if (detail?.isAttachments) {
-        console.log(detail ,"detail rn")
+        console.log(detail, "detail rn")
         valueRows = [];
         for (let i = 0; i < detail.values.length; i++) {
           const doc = detail.values[i];
-          console.log("doc passed to buildattachment",doc)
+          console.log("doc passed to buildattachment", doc)
           const isLast = i === detail.values.length - 1;
 
           const base64Image = await buildAttachment(doc);
@@ -2009,7 +2176,7 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
                 border: isLast ? [true, false, false, true] : [true, false, false, false]
               },
               {
-                image: base64Image, 
+                image: base64Image,
                 width: 100,
                 height: 100,
                 margin: [0, 2, 0, 2],
@@ -2093,10 +2260,32 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
 
   return detailsHeaders;
 }
+async function createContentFormattedFireNoc(
+  details,
+  applicationNumber,
+  logo,
+  tenantId,
+  phoneNumber,
+  breakPageLimit = null
+) {
+  const content = [];
 
+  for (const detail of details || []) {
+    if (!detail?.values?.length) continue;
 
-function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName) {
-  const ulb = ulbName? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
+    if (detail?.isAttachments) {
+      content.push(...(await buildAttachmentsSection(detail, buildAttachment)));
+      continue;
+    }
+
+    content.push(...buildRainmakerCard(detail.title, detail.values));
+  }
+
+  return content;
+}
+
+function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber, ulbType, ulbName) {
+  const ulb = ulbName ? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
   let headerData = [];
   headerData.push({
     style: "tableExample",
@@ -2131,7 +2320,7 @@ function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, email,
                 alignment: "center",
               },
               {
-                text: name ? name :"No Dues Certificate",
+                text: name ? name : "No Dues Certificate",
                 fontSize: 11,
                 alignment: "center",
               },
@@ -2142,11 +2331,11 @@ function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, email,
           // Right: QR code (if available)
           qrCodeDataUrl
             ? {
-                image: qrCodeDataUrl,
-                width: 70,
-                margin: [30, 15 , 2, 10],
-                alignment: "right",
-              }
+              image: qrCodeDataUrl,
+              width: 70,
+              margin: [30, 15, 2, 10],
+              alignment: "right",
+            }
             : {},
         ],
       ],
@@ -2196,15 +2385,15 @@ function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, email,
   return headerData;
 }
 
-function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName) {
-  const ulb = ulbName? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
+function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber, ulbType, ulbName) {
+  const ulb = ulbName ? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
   let headerData = [];
   headerData.push({
     style: "tableExample",
     layout: "noBorders",
     margin: [0, 0, 0, 0],
     table: {
-      widths: ["90%" , "10%"], // center, right
+      widths: ["90%", "10%"], // center, right
       body: [
         [
           // Left: Logo
@@ -2232,7 +2421,7 @@ function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, ema
                 alignment: "center",
               },
               {
-                text: name ? name :"No Dues Certificate",
+                text: name ? name : "No Dues Certificate",
                 fontSize: 11,
                 alignment: "center",
               },
@@ -2243,11 +2432,11 @@ function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, ema
           // Right: QR code (if available
           qrCodeDataUrl
             ? {
-                image: qrCodeDataUrl,
-                width: 70,
-                margin: [30, 15 , 2, 10],
-                alignment: "right",
-              }
+              image: qrCodeDataUrl,
+              width: 70,
+              margin: [30, 15, 2, 10],
+              alignment: "right",
+            }
             : {},
         ],
       ],
@@ -2297,13 +2486,106 @@ function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, ema
   return headerData;
 }
 
+function createHeaderFormattedFireNoc(
+  details,
+  name,
+  qrCodeDataUrl,
+  phoneNumber,
+  email,
+  logo,
+  tenantId,
+  heading,
+  applicationNumber,
+  ulbType,
+  ulbName,
+  applicationDate = ""
+) {
+  const ulb =
+    ulbName ||
+    tenantId?.split(".")?.[1]?.replace(/^./, (c) => c.toUpperCase()) ||
+    "";
+
+  const ulbLine =
+    ulbType && ulb ? `${ulbType} ${ulb}` : `Municipal Corporation ${ulb}`;
+
+  return [
+    {
+      style: qrCodeDataUrl ? "pdf-head-qr-code" : "pdf-header",
+      layout: "noBorders",
+      table: {
+        widths: qrCodeDataUrl ? [120, "*", 120] : [120, "*", 40],
+        body: [
+          [
+
+            {
+              image: localGovLogo,
+              width: 50,
+              height: 51.25,
+              margin: [51, 6, 10, 10],
+            },
+
+            {
+              stack: [
+                { text: ulbLine, style: "pdf-header-text" },
+                { text: heading || "Application", style: "pdf-header-sub-text" },
+              ],
+              alignment: "left",
+              margin: [10, 8, 0, 0],
+            },
+
+            qrCodeDataUrl
+              ? {
+                image: qrCodeDataUrl,
+                width: 70,
+                height: 70,
+                margin: [50, 8, 8, 8],
+                alignment: "right",
+              }
+              : { text: "" },
+          ],
+        ],
+      },
+    },
+    {
+      style: "pdf-application-no",
+      columns: [
+        {
+          text: [
+            {
+              text: "Application No. ", //bold: true 
+
+            },
+            {
+              text: applicationNumber || "",
+              style: "pdf-application-no-value",
+            },
+          ],
+          alignment: "left",
+        },
+        {
+          text: [
+            {
+              text: "Date of Application ", //bold: true 
+
+            },
+            {
+              text: applicationDate || "",
+              style: "pdf-application-no-value",
+            },
+          ],
+          alignment: "right",
+        },
+      ],
+    },
+  ];
+}
 
 
 
 function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId, phoneNumber, breakPageLimit = null) {
   const detailsHeaders = [];
   let counter = 1;
-  console.log("details here are: ",details)
+  console.log("details here are: ", details)
   console.log("createcontent func here")
   details.forEach((detail, index) => {
     if (detail?.values?.length > 0) {
@@ -2337,14 +2619,14 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
             },
             ...(qrCodeDataUrl
               ? [
-                  {
-                    width: "auto",
-                    image: qrCodeDataUrl,
-                    // width: 70,
-                    alignment: "right",
-                    margin: [0, 5, 5, 0],
-                  },
-                ]
+                {
+                  width: "auto",
+                  image: qrCodeDataUrl,
+                  // width: 70,
+                  alignment: "right",
+                  margin: [0, 5, 5, 0],
+                },
+              ]
               : []),
           ],
         });
@@ -2396,7 +2678,7 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
               ? `: ${indData.value}`
               : "",
             fontSize: 9,
-            margin: [6, -2, 0, -2] 
+            margin: [6, -2, 0, -2]
           }
         ]);
 
@@ -2405,8 +2687,8 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
           layout: "noBorders",
           margin: [10, 0, 5, 0],
           table: {
-            widths: [220, "*"], 
-            body: valueRows        
+            widths: [220, "*"],
+            body: valueRows
           }
         });
       }

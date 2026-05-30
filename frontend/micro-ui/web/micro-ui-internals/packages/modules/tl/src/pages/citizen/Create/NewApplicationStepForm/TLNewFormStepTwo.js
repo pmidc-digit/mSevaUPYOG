@@ -5,6 +5,7 @@ import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import { convertDateToEpoch } from "../../../../utils";
 import { Loader } from "../../../../components/Loader";
+import _ from "lodash";
 
 const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   //const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();

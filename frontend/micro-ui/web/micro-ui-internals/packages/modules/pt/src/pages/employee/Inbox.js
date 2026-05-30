@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@mseva/digit-ui-react-components";
+import { Link } from "react-router-dom";
 
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
@@ -110,36 +111,93 @@ const Inbox = ({
         // <div></div>
       );
     } else {
+      const totalCount = Number(data?.[0]?.totalCount) || 0;
       return (
-        <div>
-          {isInbox && <Header>{t("ES_COMMON_INBOX")}</Header>}
-          {!isInbox && <Header>{t("SEARCH_PROPERTY")}</Header>}
-          
-          <DesktopInbox
-            moduleCode={moduleCode}
-            data={data}
-            tableConfig={TableConfig(t)["PT"]}
-            isLoading={hookLoading}
-            defaultSearchParams={initialStates.searchParams}
-            isSearch={!isInbox}
-            onFilterChange={handleFilterChange}
-            searchFields={searchFields}
-            onSearch={handleFilterChange}
-            onSort={handleSort}
-            onNextPage={fetchNextPage}
-            onPrevPage={fetchPrevPage}
-            currentPage={Math.floor(pageOffset / pageSize)}
-            pageSizeLimit={pageSize}
-            disableSort={false}
-            onPageSizeChange={handlePageSizeChange}
-            parentRoute={parentRoute}
-            searchParams={searchParams}
-            sortParams={sortParams}
-            totalRecords={Number(data?.[0]?.totalCount)}
-            filterComponent={filterComponent}
-            EmptyResultInboxComp={EmptyResultInboxComp}
-            useNewInboxAPI={useNewInboxAPI}
-          />
+        <div style={{ padding: "0 0 24px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "20px 24px 16px",
+              borderBottom: "2px solid #e5e7eb",
+              marginBottom: "20px",
+              background: "#fff",
+            }}
+          >
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Header style={{ margin: 0 }}>
+                  {isInbox ? t("ES_COMMON_INBOX") : t("SEARCH_PROPERTY")}
+                </Header>
+                {isInbox && totalCount > 0 && (
+                  <span
+                    style={{
+                      background: "#1671c8",
+                      color: "#fff",
+                      borderRadius: "12px",
+                      padding: "2px 10px",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {totalCount}
+                  </span>
+                )}
+              </div>
+              <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: "13px" }}>
+                {isInbox ? t("PT_INBOX_SUBTITLE", { defaultValue: "Property Tax — Pending Applications" }) : t("PT_SEARCH_SUBTITLE", { defaultValue: "Search registered properties" })}
+              </p>
+            </div>
+
+            {/* <Link
+              to="/digit-ui/employee/pt/new-application"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "linear-gradient(135deg, #0b4e9b 0%, #1671c8 100%)",
+                color: "#fff",
+                padding: "9px 18px",
+                borderRadius: "6px",
+                textDecoration: "none",
+                fontSize: "14px",
+                fontWeight: "600",
+                boxShadow: "0 2px 6px rgba(11,78,155,0.3)",
+              }}
+            >
+              <span style={{ fontSize: "16px", lineHeight: 1 }}>+</span>
+              {t("ES_TITLE_NEW_REGISTRATION")}
+            </Link> */}
+          </div>
+
+          <div style={{ padding: "0 24px" }}>
+            <DesktopInbox
+              moduleCode={moduleCode}
+              data={data}
+              tableConfig={TableConfig(t)["PT"]}
+              isLoading={hookLoading}
+              defaultSearchParams={initialStates.searchParams}
+              isSearch={!isInbox}
+              onFilterChange={handleFilterChange}
+              searchFields={searchFields}
+              onSearch={handleFilterChange}
+              onSort={handleSort}
+              onNextPage={fetchNextPage}
+              onPrevPage={fetchPrevPage}
+              currentPage={Math.floor(pageOffset / pageSize)}
+              pageSizeLimit={pageSize}
+              disableSort={false}
+              onPageSizeChange={handlePageSizeChange}
+              parentRoute={parentRoute}
+              searchParams={searchParams}
+              sortParams={sortParams}
+              totalRecords={totalCount}
+              filterComponent={filterComponent}
+              EmptyResultInboxComp={EmptyResultInboxComp}
+              useNewInboxAPI={useNewInboxAPI}
+            />
+          </div>
         </div>
       );
     }

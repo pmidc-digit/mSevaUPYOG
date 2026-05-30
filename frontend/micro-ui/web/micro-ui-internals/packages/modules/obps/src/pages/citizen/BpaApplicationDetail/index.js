@@ -55,6 +55,7 @@ import ApplicationTimeline from "../../../../../templates/ApplicationDetails/com
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline"
 import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew"
 import { decryptId } from "../../../utils/index";
+import PdfPreviewModal from "../../../components/PdfPreviewModal"
 
 
 const BpaApplicationDetail = () => {
@@ -87,8 +88,11 @@ const BpaApplicationDetail = () => {
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
   const [userSelected, setUser] = useState(null);
-  const [comments , setComments] = useState (null)
-
+  const [getLoader, setLoader] = useState(false);
+  const [getLoading, setLoading] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [showPdfModal, setShowPdfModal] = useState(false);
+  const stateId = Digit.ULBService.getStateId();
 
   const user = Digit.UserService.getUser()
 
@@ -105,7 +109,7 @@ const BpaApplicationDetail = () => {
   )
   const value = "";
   const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["DocTypeMapping"])
-  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
+  const { data, isLoading, refetch } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
     enabled: !!id, // 👈 only runs when valid
   })
   console.log('data for obps inbox', data)
@@ -114,7 +118,7 @@ const BpaApplicationDetail = () => {
   const cities = Digit.Hooks.useTenants();
   const applicationType = data?.edcrDetails?.appliactionType
   const isOCApplication = applicationType === "BUILDING_OC_PLAN_SCRUTINY";
-  const isBPA = data?.applicationData?.businessService === "BPA_LOW"
+  const isBPA = data?.applicationData?.additionalDetails?.isSelfCertification
 
 
 
@@ -231,7 +235,9 @@ console.log("building category here: & fileNo", usage,fileno);
       window.scrollTo({
         top: 0,
         behavior: "smooth" // use "auto" for instant scroll
-      });    
+      });
+      refetch();
+      workflowDetails.revalidate();
   }, [])
 
   const ecbcDocumentsData = useMemo(() => {
@@ -317,14 +323,15 @@ console.log('userInfo', userInfo)
   const [errorFile, setError] = useState(null);
   const [isFileLoading, setIsFileLoading] = useState(false)
 
-  useEffect(() => {
-    if (workflowDetails?.data!=null && !workflowDetails?.isLoading && (data?.applicationStatus === "ESIGNED" || data?.applicationStatus === "REJECTED")){
-      const commentobj = getApproveRejectComments(workflowDetails);
-      if (commentobj){
-        setComments(commentobj)
-      }
+  const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
+
+  const comments = useMemo(() => {
+    if (workflowDetails?.data && !workflowDetails?.isLoading && (data?.applicationStatus === "APPROVED" || data?.applicationStatus === "REJECTED")) {
+      return getApproveRejectComments(workflowDetails);
     }
-  }, [workflowDetails]);
+    return null;
+  }, [workflowDetails?.data, workflowDetails?.isLoading, data?.applicationStatus]);
+  
 
   useEffect(() => {
       if (!userSelected) {
@@ -542,11 +549,11 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
     {
       Header: t(" "),
       accessor: "value",
-      Cell: ({ value }) =>
+      Cell: ({ value, row }) =>
         value ? (
           <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
-            onClick={() => fetchUrl(value, tenantId)}
+            onClick={() => row?.original?.title === "BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL" ? window.open(value) : fetchUrl(value, tenantId)}
           />
         ) : (
           t("CS_NA")
@@ -581,9 +588,9 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
   let businessService = []
   let acceptFormat = ".pdf";
 
-  if (data && data?.applicationData?.businessService === "BPA_LOW") {
+  if (data && data?.applicationData?.additionalDetails?.isSelfCertification) {
     businessService = ["BPA.LOW_RISK_PERMIT_FEE"]
-  } else if (data && data?.applicationData?.businessService === "BPA" && data?.applicationData?.riskType === "HIGH") {
+  } else if (data && !data?.applicationData?.additionalDetails?.isSelfCertification && data?.applicationData?.riskType === "HIGH") {
     businessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"]
   } else {
     businessService = ["BPA.NC_OC_APP_FEE", "BPA.NC_OC_SAN_FEE"]
@@ -768,6 +775,10 @@ useEffect(() => {
   }
 
   async function getPermitOccupancyOrderSearch({ tenantId }, order, mode = "download") {
+    let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
+    let tenant = data?.tenantId || tenantId;
+
+    if(!fileStoreId) {
     const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
 
     const newValidityDate = new Date(data?.applicationData?.approvalDate);
@@ -820,10 +831,75 @@ useEffect(() => {
       requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir"
     }
     const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order)
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
-    window.open(fileStore[response?.filestoreIds[0]], "_blank")
+    fileStoreId = response?.filestoreIds[0]
+    tenant = tenantId
+  }
+    const fileStore = await Digit.PaymentService.printReciept(tenant, { fileStoreIds: fileStoreId })
+    window.open(fileStore[fileStoreId], "_blank")
     requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType
   }
+  
+  async function getPermitOccupancyOrderSearchReturnFilestore({ tenantId }, order, mode = "download") {
+    const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
+
+    const newValidityDate = new Date(data?.applicationData?.approvalDate);
+
+    // validity date = approval date + 3 as per feedback
+    newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
+    const approvalDatePlusThree = newValidityDate.getTime();
+
+
+    const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation , approverComment: comments}
+    let count = 0
+    for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+      if (
+        (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+          workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+        workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+        count == 0
+      ) {
+        requestData.additionalDetails.submissionDate =
+          workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime
+        count = 1
+      }
+    }
+    if (stakeholderAddress && requestData && requestData?.additionalDetails) {
+      requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
+    }
+    if (requestData && requestData?.additionalDetails?.signature?.signURL) {
+      const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, state);
+      requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
+    }
+
+    if (requestData?.additionalDetails?.approvedColony == "NO") {
+      requestData.additionalDetails.permitData =
+        "The plot has been officially regularized under No. " +
+        requestData?.additionalDetails?.NocNumber +
+        "  dated " + requestData?.additionalDetails?.nocObject?.approvedOn + " , registered in the name of " + requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + ". This regularization falls within the jurisdiction of " +
+        requestData?.additionalDetails?.UlbName +
+        ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
+    } else if (requestData?.additionalDetails?.approvedColony == "YES") {
+      requestData.additionalDetails.permitData =
+        "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony
+    } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
+      requestData.additionalDetails.permitData =
+        "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony
+    } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
+      requestData.additionalDetails.permitData =
+        "The building plan falls under Stand-Alone Project."
+    } else {
+      requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir"
+    }
+    const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order)
+    if(response?.filestoreIds[0]){
+      return response.filestoreIds[0]
+    }else{
+      return null
+    }
+    
+  }
+
    async function getPermitOccupancyOrderSearchFilestore({ tenantId }, order, mode = "download") {
      try {
        setIsEnableLoader(true);
@@ -1044,6 +1120,67 @@ useEffect(() => {
     setShowTermsModal(false)
   }
 
+  const printCertificateWithESign = async () => {
+    try {
+      // console.log("🎯 Starting certificate eSign process...");
+
+      const fileStoreId = await getPermitOccupancyOrderSearchReturnFilestore({tenantId}, "buildingpermit");
+
+      const callbackUrl = `${window.location.origin}/digit-ui/citizen/obps/bpa/esign/complete/${id}`;
+      const authToken = localStorage.getItem('token');
+
+      // Trigger eSign
+      eSignCertificate(
+        { fileStoreId, tenantId, callbackUrl, authToken },
+        {
+          onSuccess: () => console.log("✅ eSign initiated successfully"),
+          onError: (error) => {
+            console.error("❌ eSign failed:", error);
+            setShowToast({
+              key: "true",
+              error: true,
+              message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
+            });
+          },
+        }
+      );
+    } catch (error) {
+      console.error("❌ Certificate preparation failed:", error);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
+      });
+    }
+  };
+
+  async function openSanctionLetterPopup() {
+    try {
+      setLoader(true);
+
+      const fileStoreId = await getPermitOccupancyOrderSearchReturnFilestore({tenantId}, "buildingpermit");
+      if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
+
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      const receiptUrl = fileStore?.[fileStoreId];
+      if (!receiptUrl) throw new Error("Could not resolve filestore URL");
+      const urlObj = new URL(receiptUrl);
+      const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
+
+      setPdfUrl(downloadUrl);
+      setShowPdfModal(true);
+    } catch (error) {
+      console.error("Sanction Letter popup error:", error);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: "Failed to open sanction letter. Please try again.",
+      });
+    } finally {
+      setLoader(false);
+    }
+  }
+
   function onActionSelect(action) {
     const path = data?.applicationData?.additionalDetails?.applicationType == "BUILDING_OC_PLAN_SCRUTINY" ? "ocbpa" : "bpa";
     // if(!agree || !isCitizenDeclared || !isTocAccepted){
@@ -1102,6 +1239,9 @@ useEffect(() => {
 
       }
       saveAsDraft(data?.applicationData, action)
+    }
+    if (action === "ESIGN") {
+      openSanctionLetterPopup();
     }
     setSelectedAction(action)
     setDisplayMenu(false)
@@ -1285,86 +1425,6 @@ useEffect(() => {
     // else return false
   }
 
-  // const submitAction = (workflow) => {
-  //   setIsEnableLoader(true);
-  //   mutation.mutate(
-  //     { BPA: { ...data?.applicationData, workflow } },
-  //     {
-  //       onError: (error, variables) => {
-  //         setIsEnableLoader(false);
-  //         setShowModal(false);
-  //         setShowToast({ key: "error", action: error?.response?.data?.Errors[0]?.message ? error?.response?.data?.Errors[0]?.message : error });
-  //         setTimeout(closeToast, 5000);
-  //       },
-  //       onSuccess: (data, variables) => {
-  //         setIsEnableLoader(false);
-  //         history.replace(`/digit-ui/citizen/obps/response`, { data: data });
-  //         setShowModal(false);
-  //         setShowToast({ key: "success", action: selectedAction });
-  //         setTimeout(closeToast, 5000);
-  //         queryClient.invalidateQueries("BPA_DETAILS_PAGE");
-  //         queryClient.invalidateQueries("workFlowDetails");
-  //       },
-  //     }
-  //   );
-  // }
-
-  // const submitAction = (workflow) => {
-  //   setIsEnableLoader(true)
-
-  //   // Check if "CITIZEN.UNDERTAKING" document already exists
-  // const citizenUndertakingExists = data?.applicationData?.documents?.some(
-  //   (doc) => doc.documentType === "CITIZEN.UNDERTAKING",
-  // )
-
-  //   // Create a new array with the existing documents and the new Citizenconsentform (if it doesn't exist)
-  // const updatedDocuments = [
-  //   ...data?.applicationData?.documents.filter((doc) => doc.documentType !== "CITIZEN.UNDERTAKING"),
-  //   ...(citizenUndertakingExists
-  //     ? data?.applicationData?.documents.filter((doc) => doc.documentType === "CITIZEN.UNDERTAKING")
-  //     : [
-  //         {
-  //           documentType: "CITIZEN.UNDERTAKING",
-  //           fileStoreId: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
-  //           fileStore: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
-  //         },
-  //       ]),
-  // ]
-
-  //   // Update the applicationData object with the new documents array
-  //   const updatedApplicationData = {
-  //     ...data?.applicationData,
-  //     documents: updatedDocuments,
-  //     additionalDetails: {
-  //       ...data?.applicationData?.additionalDetails,
-  //       otpVerifiedTimestampcitizen: sessionStorage.getItem("otpVerifiedTimestampcitizen"),
-  //     },
-  //   }
-
-  //   mutation.mutate(
-  //     { BPA: { ...updatedApplicationData, workflow } },
-  //     {
-  //       onError: (error, variables) => {
-  //         setIsEnableLoader(false)
-  //         setShowModal(false)
-  //         setShowToast({
-  //           key: "error",
-  //           action: error?.response?.data?.Errors[0]?.message ? error?.response?.data?.Errors[0]?.message : error,
-  //         })
-  //         setTimeout(closeToast, 5000)
-  //       },
-  //       onSuccess: (data, variables) => {
-  //         setIsEnableLoader(false)
-  //         history.replace(`/digit-ui/citizen/obps/response`, { data: data })
-  //         setShowModal(false)
-  //         setShowToast({ key: "success", action: selectedAction })
-  //         setTimeout(closeToast, 5000)
-  //         queryClient.invalidateQueries("BPA_DETAILS_PAGE")
-  //         queryClient.invalidateQueries("workFlowDetails")
-  //       },
-  //     },
-  //   )
-  // }
 
   function validateAmount(value) {
     if (value === null || value === undefined) return ""; // optional → allowed
@@ -1656,7 +1716,7 @@ useEffect(() => {
 
   if (
     data &&
-    data?.applicationData?.businessService === "BPA_LOW" &&
+    data?.applicationData?.additionalDetails?.isSelfCertification &&
     data?.collectionBillDetails?.length > 0 &&
     data?.applicationData?.additionalDetails?.isSanctionLetterGenerated
   ) {
@@ -2452,6 +2512,22 @@ useEffect(() => {
               </div>
             )
           })}
+
+          {showPdfModal && (
+        <PdfPreviewModal
+          open={showPdfModal}
+          url={pdfUrl}
+          onClose={() => {
+            setShowPdfModal(false);
+            setPdfUrl(null);
+          }}
+          title={t("NOC_SANCTION_LETTER")}
+        >
+          <ActionBar>
+            <SubmitBar label={t("ESIGN")} onSubmit={printCertificateWithESign} disabled={eSignLoading} />
+          </ActionBar>
+        </PdfPreviewModal>
+      )}
         
 
         {showTermsModal ? (

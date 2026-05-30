@@ -15,7 +15,7 @@ const useInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) => {
             // [t("ES_INBOX_LOCALITY")]: t(locality),
             [t("EVENTS_STATUS_LABEL")]: status ? t(`WF_LAYOUT_${status}`): t(`WF_LAYOUT_${status}`),
             [t("WF_INBOX_HEADER_CURRENT_OWNER")]: owner,
-            "Generated ID" : encryptId(applicationId)
+            "Vehicle Log" : {id: encryptId(applicationId), hidden: true},
             // [t("ES_INBOX_SLA_DAYS_REMAINING")]: sla
     }))
 
@@ -45,7 +45,11 @@ const useInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) => {
         </SearchField>
     }
 
-    return ({ data:dataForMobileInboxCards,isTwoDynamicPrefix:false, linkPrefix: window.location.href.includes("/citizen") ?  `/digit-ui/citizen/obps/bpa-app/` : `/digit-ui/employee/obps/inbox/bpa/`,getRedirectionLink:getRedirectionLink, serviceRequestIdKey: "Generated ID", MobileSortFormValues})
+    const serviceRequestIdKeyFunction = (object) => {
+        return object["Vehicle Log"]?.id
+    }
+
+    return ({ data:dataForMobileInboxCards,isTwoDynamicPrefix:false, linkPrefix: window.location.href.includes("/citizen") ?  `/digit-ui/citizen/obps/bpa-app/` : `/digit-ui/employee/obps/inbox/bpa/`,getRedirectionLink:getRedirectionLink, serviceRequestIdKey: serviceRequestIdKeyFunction, MobileSortFormValues})
 
 }
 

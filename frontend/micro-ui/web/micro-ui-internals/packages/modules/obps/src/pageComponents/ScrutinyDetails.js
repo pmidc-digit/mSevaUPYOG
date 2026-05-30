@@ -520,6 +520,18 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
                   />
                 }
               ></Row>
+              <Row
+                className="border-none"
+                label={t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL")}
+                text={
+                  <SubmitBar
+                    label={t("BPA_BASIC_DETAILS_UPLOADED_DIAGRAM_DXF")}
+                    onSubmit={() => {
+                      window.open(data?.dxfFile);
+                    }}
+                  />
+                }
+              ></Row>
             </StatusTable>
           </div>
 

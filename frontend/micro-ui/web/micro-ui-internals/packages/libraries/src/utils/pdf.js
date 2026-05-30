@@ -2,7 +2,7 @@ import { Fonts } from "./fonts";
 import React, { ReactDOM } from "react";
 import QRCode from "qrcode";
 import EXIF from "exif-js";
-const pdfMake = require("pdfmake/build/pdfmake.js");
+import pdfMake from "pdfmake/build/pdfmake.js";
 // const pdfFonts = require("pdfmake/build/vfs_fonts.js");
 // pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
@@ -1510,7 +1510,7 @@ function createContentDetails(details, qrCodeDataUrl) {
                   {
                     width: "auto",
                     image: qrCodeDataUrl,
-                    width: 70,
+                    // width: 70,
                     alignment: "right",
                     margin: [0, 10, 10, 0],
                   },
@@ -2340,7 +2340,7 @@ function createContent(details, applicationNumber, qrCodeDataUrl, logo, tenantId
                   {
                     width: "auto",
                     image: qrCodeDataUrl,
-                    width: 70,
+                    // width: 70,
                     alignment: "right",
                     margin: [0, 5, 5, 0],
                   },

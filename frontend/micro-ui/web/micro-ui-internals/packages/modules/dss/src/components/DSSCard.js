@@ -37,7 +37,7 @@ const NDSSCard = () => {
     .map((obj) => ({
       label: t(obj?.label),
       link: `/digit-ui/employee/dss/dashboard/${obj?.key}`,
-      link: obj?.others?`/digit-ui/employee/dss/${obj?.key}`:`/digit-ui/employee/dss/dashboard/${obj?.key}`,
+      // link: obj?.others?`/digit-ui/employee/dss/${obj?.key}`:`/digit-ui/employee/dss/dashboard/${obj?.key}`,
     }));
 
   const propsForModuleCard = {

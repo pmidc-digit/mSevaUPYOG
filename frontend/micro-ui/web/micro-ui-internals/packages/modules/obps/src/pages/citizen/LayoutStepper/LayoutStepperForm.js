@@ -166,7 +166,7 @@ const LayoutStepperForm = () => {
     // Documents from primaryOwner
     primaryOwnerPhoto: primaryOwner?.additionalDetails?.ownerPhoto || professionalDetails?.primaryOwnerPhoto || "",
     primaryOwnerDocument: primaryOwner?.additionalDetails?.documentFile || professionalDetails?.primaryOwnerDocument || "",
-    authorisedPerson: primaryOwner?.additionalDetails?.authorisedPerson || ""
+    // authorisedPerson: primaryOwner?.additionalDetails?.authorisedPerson || ""
   };
 
   // useEffect(() => {

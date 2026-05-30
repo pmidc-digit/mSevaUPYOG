@@ -95,7 +95,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
       basementArea: currentStepData?.siteDetails?.basementArea || "",
 
-      floorArea: currentStepData?.siteDetails?.floorArea || [{ value: "" }],
+      // floorArea: currentStepData?.siteDetails?.floorArea || [{ value: "" }],
 
       areaUnderCommunityCenterInSqM: currentStepData?.siteDetails?.areaUnderCommunityCenterInSqM || "",
       areaUnderCommunityCenterInPct: currentStepData?.siteDetails?.areaUnderCommunityCenterInPct || "",

@@ -675,7 +675,7 @@ const FireNOCApplicantDetails = (_props) => {
                   padding: "8px 16px",
                   borderRadius: "4px",
                   color: "#FFF",
-                  background: "linear-gradient(135deg, #2563eb, #1e40af)",
+                  // background: "linear-gradient(135deg, #2563eb, #1e40af)",
                   fontWeight: 600,
                 }}
               >

@@ -49,7 +49,7 @@ const transformDetails = ({ id, service, workflow, thumbnails, complaintType }) 
       serviceCode: service.serviceCode,
       // prioritylevel : service.priorityLevel
     },
-    service: service,
+    // service: service,
   };
 };
 

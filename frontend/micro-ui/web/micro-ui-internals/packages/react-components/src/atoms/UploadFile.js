@@ -17,7 +17,7 @@ const getCitizenStyles = (value) => {
         width: "100%",
         overflow: "hidden",
         textOverflow: "ellipsis",
-        width: "80%"
+        // width: "80%"
       },
       tagStyles: {
         width: "90%",
@@ -88,7 +88,7 @@ const getCitizenStyles = (value) => {
         padding: "5px", 
         margin: 0,
         width: "100%",
-        margin: "5px"
+        // margin: "5px"
       },
       textStyles: {
         wordBreak: "break-word",

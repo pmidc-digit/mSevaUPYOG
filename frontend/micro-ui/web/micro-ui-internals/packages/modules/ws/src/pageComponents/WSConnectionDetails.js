@@ -165,7 +165,7 @@ const WSConnectionDetails = ({ config, onSelect, formData, setError, formState, 
     connectionCategoryList,
     subUsageTypeList,
     groupList,
-    formData,
+    // formData,
     tenantId
   };
 

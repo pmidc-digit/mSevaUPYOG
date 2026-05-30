@@ -60,7 +60,7 @@ const useBillAmendmentInbox = ({ tenantId, filters, config = {} }) => {
           status: application?.ProcessInstance?.state?.state,
           owner: application?.serviceObject?.additionalDetails?.ownerName || "NA",
           address: application?.serviceObject?.additionalDetails?.locality || "NA",
-          status: application?.businessObject?.status,
+          // status: application?.businessObject?.status,
           taskOwner: application?.ProcessInstance?.assigner?.name || "NA",
           tenantId: application?.ProcessInstance?.tenantId,
         })),

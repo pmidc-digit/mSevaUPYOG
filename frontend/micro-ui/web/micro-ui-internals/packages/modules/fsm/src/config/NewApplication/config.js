@@ -154,7 +154,7 @@ export const newConfig = [
           header: "ES_NEW_APPLICATION_SLUM_CHECK",
           submitBarLabel: "CS_COMMON_NEXT",
         },
-        component: "CheckSlum",
+        // component: "CheckSlum",
         key: "address",
         withoutLabel: true,
         nextStep: "slum-details",

@@ -512,10 +512,10 @@ const fsm = {
   useVendorUpdate,
   useVehicleDetails,
   useVehicleCreate,
-  useVendorCreate,
-  useVendorUpdate,
-  useVehicleDetails,
-  useVehicleCreate,
+  // useVendorCreate,
+  // useVendorUpdate,
+  // useVehicleDetails,
+  // useVehicleCreate,
   useUpdateVehicle,
   useDriverSearch,
   useDriverCreate,
@@ -650,9 +650,9 @@ const obps = {
   useLayoutType,
   useLayoutSearchApplication,
   useLayoutCheckListSearch,
-  useLayoutBuildingType,
-  useLayoutBuildingCategory,
-  useLayoutRoadType,
+  // useLayoutBuildingType,
+  // useLayoutBuildingCategory,
+  // useLayoutRoadType,
   useLayoutCitizenSearchApplication,
   useLayoutDocumentSearch,
   useCLUFeeCalculator,
@@ -663,7 +663,7 @@ const obps = {
   useCLUCheckListSearch,
   useLayoutSearchApplicationByIdOrMobile,
   useCLUInbox,
-  useLayoutBuildingCategory,
+  // useLayoutBuildingCategory,
   useBPACheckListSearch
 };
 
@@ -689,7 +689,7 @@ const sv = {
   useSvSearchApplication,
   useSVApplicationDetail,
   useSVApplicationAction,
-  useSvSearchApplication,
+  // useSvSearchApplication,
 };
 
 // for using tenant for city and document and search

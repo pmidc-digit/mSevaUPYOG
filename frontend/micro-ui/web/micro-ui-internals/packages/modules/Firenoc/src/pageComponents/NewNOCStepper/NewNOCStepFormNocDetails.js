@@ -1,9 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionBar, SubmitBar, Dropdown, CardLabel, LabelFieldPair, CardSectionHeader, TextInput, Toast } from "@mseva/digit-ui-react-components";
-import { UPDATE_NOCNewApplication_FORM } from "../../redux/action/NOCNewApplicationActions";
+import { 
+  UPDATE_NOCNewApplication_FORM,
+  UPDATE_NOCNewApplication_CoOrdinates,
+  UPDATE_NOC_OwnerIds,
+  UPDATE_NOC_OwnerPhotos
+} from "../../redux/action/NOCNewApplicationActions";
 import { useTranslation } from "react-i18next";
 import { Controller, useForm } from "react-hook-form";
+import { formatDateForInput } from "../../utils";
 
 const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
   const dispatch = useDispatch();
@@ -15,6 +21,12 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
   const currentStepData = useSelector(function (state) {
     return state.noc.NOCNewApplicationFormReducer.formData?.nocDetails || {};
   });
+
+  const apiData = useSelector(
+    (state) => state?.noc?.NOCNewApplicationFormReducer?.formData?.apiData
+  );
+  const applicationStatus = apiData?.FireNOCs?.[0]?.applicationStatus || apiData?.FireNOCs?.[0]?.fireNOCDetails?.status || "";
+  const isSentBack = ["CITIZENACTIONREQUIRED", "SENDBACKTOCITIZEN", "CITIZEN_ACTION_REQUIRED"].includes(applicationStatus) || window.location.href.includes("/edit-application/");
 
   const {
     control,
@@ -58,9 +70,159 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
       .map((s) => ({ code: s.id, name: s.name || s.id }));
   }, [fireStationData, tenantId]);
 
+  const { data: ulbList } = Digit.Hooks.useTenants();
+  const ulbListOptions = useMemo(() => {
+    return ulbList?.map((city) => ({
+      ...city,
+      displayName: t(city.i18nKey),
+    }));
+  }, [ulbList]);
+
+  const autofillNocData = (nocObject) => {
+    if (!nocObject) return;
+
+    const fireNOCDetails = nocObject?.fireNOCDetails || {};
+    const applicantDetails = fireNOCDetails?.applicantDetails || {};
+    const address = fireNOCDetails?.propertyDetails?.address || {};
+    const documents = nocObject?.documents || fireNOCDetails?.applicantDetails?.additionalDetail?.ownerAuditionalDetail?.documents || [];
+    const coordinates = fireNOCDetails?.additionalDetail?.coordinates || {};
+    const ownerPhotoList = fireNOCDetails?.additionalDetail?.ownerPhotos || [];
+    const ownerIdList = fireNOCDetails?.additionalDetail?.ownerIds || [];
+
+    const formattedDocuments = {
+      documents: {
+        documents: documents?.map((doc) => {
+          const fileId = doc?.fileStoreId || doc?.filestoreId || doc?.documentUid || doc?.uuid || "";
+          return {
+            documentType: doc?.documentType || "",
+            uuid: doc?.uuid || "",
+            documentUid: fileId,
+            documentAttachment: fileId,
+            filestoreId: fileId,
+          };
+        }),
+      },
+    };
+
+    Object.entries(coordinates).forEach(([key, value]) => {
+      dispatch(UPDATE_NOCNewApplication_CoOrdinates(key, value));
+    });
+
+    dispatch(UPDATE_NOC_OwnerIds("ownerIdList", ownerIdList));
+    dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList", ownerPhotoList));
+
+    const formattedOwners = fireNOCDetails?.applicantDetails?.owners?.map((owner) => ({
+      mobileNumber: owner?.mobileNumber || "",
+      name: owner?.name || "",
+      gender: owner?.gender ? { code: owner.gender, i18nKey: `COMMON_GENDER_${owner.gender}` } : null,
+      dateOfBirth: owner?.dob ? formatDateForInput(new Date(owner.dob)) : "",
+      emailId: owner?.emailId || "",
+      fatherOrHusbandName: owner?.fatherOrHusbandName || "",
+      relationship: owner?.relationship ? { code: owner.relationship.toUpperCase(), i18nKey: `COMMON_RELATION_${owner.relationship.toUpperCase()}` } : null,
+      panNo: owner?.pan || owner?.panNo || "",
+      address: owner?.correspondenceAddress || "",
+    })) || [];
+
+    const ownerShipType = fireNOCDetails?.applicantDetails?.ownerShipType || "";
+    const ownerShipMajorType = fireNOCDetails?.applicantDetails?.ownerShipMajorType || ownerShipType.split(".")[0];
+
+    const updatedApplicantDetails = {
+      applicantType: ownerShipMajorType ? {
+        code: ownerShipMajorType,
+        name: `COMMON_MASTERS_OWNERSHIPCATEGORY_${ownerShipMajorType}`,
+        i18nKey: ownerShipMajorType,
+      } : null,
+      applicantSubtype: ownerShipType ? {
+        code: ownerShipType,
+        name: `COMMON_MASTERS_OWNERSHIPCATEGORY_${ownerShipType.replaceAll(".", "_")}`,
+        i18nKey: ownerShipType,
+      } : null,
+      owners: formattedOwners,
+    };
+
+    const selectedCity = ulbListOptions?.find((obj) => obj.code === address?.city) || null;
+    const selectedSubDistrictCity = ulbListOptions?.find((obj) => obj.code === address?.subDistrict) || null;
+    const districtName = selectedCity ? {
+      code: selectedCity?.city?.districtTenantCode,
+      name: selectedCity?.city?.districtName || selectedCity?.city?.districtTenantCode,
+    } : null;
+
+    const mohallaCode = address?.locality?.code || (typeof address?.locality === "string" ? address?.locality : "") || (address?.areaType?.toUpperCase() !== "RURAL" ? address?.addressLine2 : "") || "";
+    const cityNameCode = address?.city || "";
+    const i18nkey = cityNameCode && mohallaCode ? `${cityNameCode.toUpperCase().split(".").join("_")}_REVENUE_${mohallaCode}` : "";
+    const mohalla = mohallaCode ? {
+      code: mohallaCode,
+      name: address?.locality?.name || mohallaCode,
+      i18nkey: i18nkey,
+    } : null;
+
+    const formattedBuildings = fireNOCDetails?.buildings?.map((b) => {
+      const heightVal = b?.uoms?.find((u) => u.code === "HEIGHT_OF_BUILDING")?.value || "";
+      const floorsVal = b?.uoms?.find((u) => u.code === "NO_OF_FLOORS")?.value || "";
+      const basementsVal = b?.uoms?.find((u) => u.code === "NO_OF_BASEMENTS")?.value || "";
+      const builtUpAreaVal = b?.uoms?.find((u) => u.code === "BUILTUP_AREA")?.value || "";
+      return {
+        buildingName: b?.name || "",
+        buildingUsageType: b?.usageType ? { code: b.usageType, name: b.usageType } : null,
+        buildingUsageSubType: b?.usageSubType ? { code: b.usageSubType, name: b.usageSubType } : null,
+        noOfFloors: floorsVal ? { code: String(floorsVal), name: String(floorsVal) } : null,
+        noOfBasements: basementsVal ? { code: String(basementsVal), name: String(basementsVal) } : { code: "0", name: "0" },
+        heightOfBuilding: heightVal,
+        landArea: b?.landArea || "",
+        totalCoveredArea: b?.totalCoveredArea || "",
+        parkingArea: b?.parkingArea || "",
+        leftSurrounding: b?.leftSurrounding || "",
+        rightSurrounding: b?.rightSurrounding || "",
+        frontSurrounding: b?.frontSurrounding || "",
+        backSurrounding: b?.backSurrounding || "",
+        groundFloorBuiltupArea: builtUpAreaVal,
+      };
+    }) || [];
+
+    const getAreaTypeObj = (areaTypeStr) => {
+      if (!areaTypeStr) return null;
+      const upper = areaTypeStr.toUpperCase();
+      if (upper === "URBAN") return { code: "URBAN", name: "Urban" };
+      if (upper === "RURAL") return { code: "RURAL", name: "Rural" };
+      return { code: upper, name: areaTypeStr };
+    };
+
+    const updatedSiteDetails = {
+      areaType: getAreaTypeObj(address?.areaType),
+      districtName: districtName,
+      cityName: selectedSubDistrictCity 
+        ? { code: selectedSubDistrictCity.code, name: selectedSubDistrictCity.name || selectedSubDistrictCity.code } 
+        : (selectedCity ? { code: selectedCity.code, name: selectedCity.name || selectedCity.code } : null),
+      villageName: address?.areaType?.toUpperCase() === "RURAL" ? address?.addressLine2 : "",
+      mohalla: mohalla,
+      pincode: address?.pincode || "",
+      doorHouseNo: address?.doorNo || "",
+      streetName: address?.street || "",
+      landmarkName: address?.landmark || "",
+      propertyId: fireNOCDetails?.propertyDetails?.propertyId || fireNOCDetails?.propertyId || "",
+      plotSurveyNo: address?.doorNo || "",
+      geoLocation: fireNOCDetails?.propertyDetails?.geoLocation || 
+                   (fireNOCDetails?.propertyDetails?.latitude && fireNOCDetails?.propertyDetails?.longitude ? { latitude: Number(fireNOCDetails.propertyDetails.latitude), longitude: Number(fireNOCDetails.propertyDetails.longitude) } : null) ||
+                   (address?.latitude && address?.longitude ? { latitude: Number(address.latitude), longitude: Number(address.longitude) } : null) ||
+                   (coordinates?.latitude && coordinates?.longitude ? { latitude: Number(coordinates.latitude), longitude: Number(coordinates.longitude) } : null) || null,
+      fireStationId: fireNOCDetails?.firestationId || "",
+      noOfBuildings: fireNOCDetails?.noOfBuildings || "SINGLE",
+      buildings: formattedBuildings,
+    };
+
+    dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", updatedApplicantDetails));
+    dispatch(UPDATE_NOCNewApplication_FORM("siteDetails", updatedSiteDetails));
+    dispatch(UPDATE_NOCNewApplication_FORM("documents", formattedDocuments));
+    dispatch(UPDATE_NOCNewApplication_FORM("uploadedDocuments", { documents: formattedDocuments.documents.documents }));
+    dispatch(UPDATE_NOCNewApplication_FORM("apiData", { FireNOCs: [nocObject] }));
+  };
+
   useEffect(() => {
     if (currentStepData?.fireNOCType) {
       setValue("fireNOCType", currentStepData.fireNOCType);
+    }
+    if (currentStepData?.firestationId) {
+      setValue("firestationId", currentStepData.firestationId);
     }
     if (currentStepData?.provisionalNocNumber) {
       setValue("provisionalNocNumber", currentStepData.provisionalNocNumber);
@@ -92,15 +254,20 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
     config: { enabled: false },
   });
 
+  const hasProvisionalResult = !!currentStepData?.provisionalNocData || !!provisionalData?.FireNOCs?.length;
+  const hasOldNocResult = !!currentStepData?.oldNocData || !!oldNocData?.FireNOCs?.length;
+
   // Handle provisional search response
   useEffect(() => {
     if (provisionalData) {
       if (provisionalData?.FireNOCs?.length > 0) {
         setShowToast({ success: true, message: "NOC_PROVISIONAL_NUMBER_FOUND" });
+        const nocObj = provisionalData.FireNOCs[0];
         dispatch(UPDATE_NOCNewApplication_FORM(config.key, {
           ...watch(),
-          provisionalNocData: provisionalData.FireNOCs[0],
+          provisionalNocData: nocObj,
         }));
+        autofillNocData(nocObj);
       } else {
         setShowToast({ error: true, message: "NOC_PROVISIONAL_NUMBER_NOT_FOUND" });
       }
@@ -113,10 +280,12 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
     if (oldNocData) {
       if (oldNocData?.FireNOCs?.length > 0) {
         setShowToast({ success: true, message: "NOC_OLD_NOC_NUMBER_FOUND" });
+        const nocObj = oldNocData.FireNOCs[0];
         dispatch(UPDATE_NOCNewApplication_FORM(config.key, {
           ...watch(),
-          oldNocData: oldNocData.FireNOCs[0],
+          oldNocData: nocObj,
         }));
+        autofillNocData(nocObj);
       } else {
         setShowToast({ error: true, message: "NOC_OLD_NOC_NUMBER_NOT_FOUND" });
       }
@@ -132,7 +301,7 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
       return;
     }
     setProvisionalSearchNo(nocNumber.trim());
-    let response = refetchProvisional();
+    setTimeout(() => refetchProvisional(), 0);
   };
 
   const handleOldNocSearch = () => {
@@ -189,6 +358,7 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
                       optionKey="name"
                       t={t}
                       placeholder={t("NOC_SELECT_NOC_TYPE_PLACEHOLDER")}
+                      disable={props.value?.code === "RENEWAL" || props.value === "RENEWAL" || isSentBack}
                     />
                   )}
                 />
@@ -243,19 +413,21 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
                         onChange={(e) => props.onChange(e.target.value)}
                         placeholder={t("Enter Provisional fire NoC number")}
                         style={{ flex: 1 }}
+                        disable={hasProvisionalResult}
                       />
                     )}
                   />
                   <button
                     type="button"
                     onClick={handleProvisionalSearch}
+                    disabled={hasProvisionalResult}
                     style={{
-                      background: "linear-gradient(135deg, #2563eb, #1e40af)",
+                      background: hasProvisionalResult ? "#ccc" : "linear-gradient(135deg, #2563eb, #1e40af)",
                       color: "#fff",
                       border: "none",
                       borderRadius: "4px",
                       padding: "8px 20px",
-                      cursor: "pointer",
+                      cursor: hasProvisionalResult ? "not-allowed" : "pointer",
                       fontWeight: "bold",
                       fontSize: "14px",
                       whiteSpace: "nowrap",
@@ -285,19 +457,21 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
                         onChange={(e) => props.onChange(e.target.value)}
                         placeholder={t("Enter old fire NoC number")}
                         style={{ flex: 1 }}
+                        disable={hasOldNocResult}
                       />
                     )}
                   />
                   <button
                     type="button"
                     onClick={handleOldNocSearch}
+                    disabled={hasOldNocResult}
                     style={{
-                      background: "linear-gradient(135deg, #2563eb, #1e40af)",
+                      background: hasOldNocResult ? "#ccc" : "linear-gradient(135deg, #2563eb, #1e40af)",
                       color: "#fff",
                       border: "none",
                       borderRadius: "4px",
                       padding: "8px 20px",
-                      cursor: "pointer",
+                      cursor: hasOldNocResult ? "not-allowed" : "pointer",
                       fontWeight: "bold",
                       fontSize: "14px",
                       whiteSpace: "nowrap",

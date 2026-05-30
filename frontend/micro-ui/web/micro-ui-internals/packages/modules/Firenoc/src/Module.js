@@ -37,7 +37,7 @@ import EditApplication from "./pageComponents/EditApplication/EditApplication";
 import MyApplications from "./pages/citizen/Applications/MyApplications";
 import CitizenApplicationOverview from "./pages/citizen/Applications/ApplicationsOverview";
 import FireNOCMyApplications from "./pages/citizen/Applications/FireNOCMyApplications";
-import FireNOCApplicationOverview from "./pages/citizen/Applications/FireNOCApplicationOverview";
+import FireNOCApplicationOverview from "./pageComponents/FireNOCApplicationOverview";
 import CitizenSearchApplication from "./pageComponents/SearchApplication/index"
 import InspectionReport from "./pageComponents/InsectionReport"
 
@@ -51,18 +51,18 @@ export const FireNOCLinks = ({ matchPath, userType }) => {
 
   const links = [
     {
-      link: `${matchPath}/noc/new-application`,
+      link: `${matchPath}/firenoc/new-application`,
       i18nKey: t("NOC_NEW_APPLICATION"),
     },
     {
-      link: `${matchPath}/noc/my-application`,
+      link: `${matchPath}/firenoc/my-application`,
       i18nKey: t("NOC_MY_APPLICATION"),
     },
     {
-      link: `${matchPath}/noc/search-application`,
+      link: `${matchPath}/firenoc/search-application`,
       i18nKey: t("NOC_SEARCH_APPLICATION"),
     },
-    
+
   ];
 
   return <CitizenHomeCard header={t("ACTION_TEST_NOC")} links={links} Icon={() => <CaseIcon className="fill-path-primary-main" />} />;
@@ -74,7 +74,7 @@ export const FireNOCModule = ({ stateCode, userType, tenants }) => {
   const { path, url } = useRouteMatch();
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
-  
+
   Digit.SessionStorage.set("NOC_TENANTS", tenants);
 
   if (isLoading) {
@@ -82,9 +82,9 @@ export const FireNOCModule = ({ stateCode, userType, tenants }) => {
   }
 
   if (userType === "citizen") {
-    return <CitizenApp/>;
+    return <CitizenApp />;
   }
-   
+
   return <EmployeeApp path={path} stateCode={stateCode} />;
 };
 

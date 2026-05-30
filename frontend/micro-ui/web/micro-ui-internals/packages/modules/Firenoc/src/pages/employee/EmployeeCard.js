@@ -69,11 +69,15 @@ const NOCEmployeeHomeCard = () => {
         {
           count: totalCount ,
           label: t("ES_COMMON_INBOX"),
-          link: `/digit-ui/employee/noc/inbox`
+          link: `/digit-ui/employee/firenoc/inbox`
         },
         {
           label: t("ES_COMMON_APPLICATION_SEARCH"),
-          link: `/digit-ui/employee/noc/search`
+          link: `/digit-ui/employee/firenoc/search`
+        },
+        {
+          label: t("NOC_NEW_APPLICATION"),
+          link: `/digit-ui/employee/firenoc/new-application`
         }
       ]
     }),[isInboxLoading, totalCount]);

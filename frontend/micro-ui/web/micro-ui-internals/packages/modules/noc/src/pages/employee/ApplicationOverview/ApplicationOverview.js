@@ -115,7 +115,7 @@ const NOCEmployeeApplicationOverview = () => {
   const [getLoader, setLoader] = useState(false);
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [feeAdjustments, setFeeAdjustments] = useState([]);
-  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
+  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
   const loading = isLoading || getLoader;
   const applicationDetails = data?.resData;
   console.log("applicationDetails", applicationDetails);
@@ -126,8 +126,8 @@ const NOCEmployeeApplicationOverview = () => {
   const [siteImages, setSiteImages] = useState(
     applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
       ? {
-          documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages,
-        }
+        documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages,
+      }
       : {}
   );
   const [timeObj, setTimeObj] = useState(null);
@@ -308,9 +308,9 @@ const NOCEmployeeApplicationOverview = () => {
 
     return conditionText
       ? {
-          ConditionLine: "The above approval is subjected to the following conditions:\n",
-          ConditionText: conditionText,
-        }
+        ConditionLine: "The above approval is subjected to the following conditions:\n",
+        ConditionText: conditionText,
+      }
       : "";
   }, [workflowDetails]);
 
@@ -447,7 +447,7 @@ const NOCEmployeeApplicationOverview = () => {
       const authToken = localStorage.getItem('token');
       // Trigger eSign
       eSignCertificate(
-        { fileStoreId, tenantId, callbackUrl, authToken  },
+        { fileStoreId, tenantId, callbackUrl, authToken },
         {
           onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {
@@ -643,7 +643,7 @@ const NOCEmployeeApplicationOverview = () => {
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`);
       const endTime = Date.now();
 
-      if(submittedOn!== null){
+      if (submittedOn !== null) {
         setAppDate(Number(submittedOn))
       }
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
@@ -1183,9 +1183,9 @@ const NOCEmployeeApplicationOverview = () => {
       {appDate !== null && (
         <React.Fragment>
           <Card>
-          <StatusTable>
-            <Row label={t("Application Date")} text={format(appDate, "dd/MM/yyyy") || "N/A"} />
-          </StatusTable>
+            <StatusTable>
+              <Row label={t("Application Date")} text={format(appDate, "dd/MM/yyyy") || "N/A"} />
+            </StatusTable>
           </Card>
         </React.Fragment>
       )}
@@ -1384,9 +1384,8 @@ const NOCEmployeeApplicationOverview = () => {
         <Card>
           <CardSubHeader>
             {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-              ? `${t("BPA_FI_REPORT")} - Verified by ${
-                  InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                }`
+              ? `${t("BPA_FI_REPORT")} - Verified by ${InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+              }`
               : t("BPA_FI_REPORT")}
           </CardSubHeader>
 
@@ -1411,9 +1410,8 @@ const NOCEmployeeApplicationOverview = () => {
           <Card>
             <CardSubHeader>
               {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                ? `${t("BPA_FI_REPORT")} - Verified by ${
-                    InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                  }`
+                ? `${t("BPA_FI_REPORT")} - Verified by ${InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                }`
                 : t("BPA_FI_REPORT")}
             </CardSubHeader>
 
@@ -1438,15 +1436,14 @@ const NOCEmployeeApplicationOverview = () => {
       <Card>
         <CardSubHeader>
           {documentVerifier || applicationDetails?.documentVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.documentVerifier
-            ? `Document Checklist Verified by - ${
-                documentVerifier ||
-                applicationDetails?.documentVerifier ||
-                applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.documentVerifier
-              }`
+            ? `Document Checklist Verified by - ${documentVerifier ||
+            applicationDetails?.documentVerifier ||
+            applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.documentVerifier
+            }`
             : "Documents Uploaded"}
         </CardSubHeader>
         {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ||
-        applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" ? (
+          applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" ? (
           <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
         ) : (
           <>
@@ -1498,7 +1495,7 @@ const NOCEmployeeApplicationOverview = () => {
               optionKey={"action"}
               t={t}
               onSelect={onActionSelect}
-              // style={MenuStyle}
+            // style={MenuStyle}
             />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />

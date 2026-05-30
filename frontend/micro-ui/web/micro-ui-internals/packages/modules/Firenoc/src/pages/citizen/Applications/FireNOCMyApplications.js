@@ -99,10 +99,18 @@ const FireNOCMyApplications = () => {
               <StatusBadge status={status} />
             </div>
 
-            <SubmitBar
-              label={t("TL_VIEW_DETAILS")}
-              onSubmit={() => history.push(detailUrl)}
-            />
+            <div style={{ display: "flex", gap: "10px" }}>
+              <SubmitBar
+                label={t("TL_VIEW_DETAILS")}
+                onSubmit={() => history.push(detailUrl)}
+              />
+              {(status === "CITIZENACTIONREQUIRED" || status === "SENDBACKTOCITIZEN") && (
+                <SubmitBar
+                  label={t("CS_COMMON_RESUBMIT")}
+                  onSubmit={() => history.push(`/digit-ui/citizen/firenoc/edit-application/${appNo}?tenantId=${app?.tenantId || ""}`)}
+                />
+              )}
+            </div>
           </Card>
         );
       })}

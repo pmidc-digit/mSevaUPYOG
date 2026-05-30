@@ -395,7 +395,6 @@ const jsPdfGeneratorFormattedFireNOC = async ({
     breakPageLimit
   );
   const baseUrl = window.location.origin;
-
   const base64Image = await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/ndc/search/application-overview/${applicationNumber}`);
   console.log(base64Image.slice(0, 50));
 
@@ -2515,7 +2514,6 @@ function createHeaderFormattedFireNoc(
         widths: qrCodeDataUrl ? [120, "*", 120] : [120, "*", 40],
         body: [
           [
-
             {
               image: localGovLogo,
               width: 50,

@@ -44,6 +44,7 @@ const NOCModal = ({
   showErrorToast,
   errorOne,
   closeToastOne,
+  isEmployee,
 }) => {
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
@@ -54,21 +55,29 @@ const NOCModal = ({
   const [error, setError] = useState(null);
   const [financialYears, setFinancialYears] = useState([]);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
- 
+
   const checkRole = action?.state?.actions;
 
-  const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles))];
+  const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles || []))];
 
-  const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
+  const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles || []))];
+
+  const rolesFromAction = action?.assigneeRoles?.map?.((e) => ({ code: e })) || [];
+  const rolesFromEmployees = allRolesNew?.map((role) => ({ code: role })) || [];
+
+  let finalRoles = rolesFromAction.length > 0 ? rolesFromAction : rolesFromEmployees;
+  if (finalRoles.length === 0) {
+    finalRoles = [
+      { code: "FIRENOC_VERIFIER" },
+      { code: "FIRENOC_APPROVER" }
+    ];
+  }
 
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
-       //roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
-      roles: allRolesNew?.map((role) => ({ code: role })),
+      roles: finalRoles,
       isActive: true,
-      zones: applicationData?.[0]?.nocDetails?.additionalDetails?.siteDetails?.zone
-
     },
     { enabled: !action?.isTerminateState }
   );
@@ -101,7 +110,7 @@ const NOCModal = ({
         approverData?.Employees?.map((employee) => {
           const deptCode = employee?.assignments?.[0]?.department;
           const matchedDept = departments?.find((d) => d?.code === deptCode);
-          return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}`  };
+          return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}` };
         })
       );
     }
@@ -134,19 +143,19 @@ const NOCModal = ({
     })();
   }, [file]);
 
-  useEffect(()=>{
-    if(action?.action === "SENDBACKTOCITIZEN"){
-      const uuid= applicationDetails?.Noc?.[0]?.auditDetails?.createdBy || null;
-   
-      setSelectedApprover({uuid});
+  useEffect(() => {
+    if (action?.action === "SENDBACKTOCITIZEN") {
+      const uuid = applicationDetails?.Noc?.[0]?.auditDetails?.createdBy || null;
+
+      setSelectedApprover({ uuid });
     }
-   
-  },[action]);
+
+  }, [action]);
 
 
   function submit(data) {
-    
-    const mandatoryActions = [ "APPROVE","VERIFY","REJECT","SENDBACKTOCITIZEN", "SENDBACKTOVERIFIER","FORWARD"];
+
+    const mandatoryActions = ["APPROVE", "VERIFY", "REJECT", "SENDBACKTOCITIZEN", "SENDBACKTOVERIFIER", "FORWARD"];
 
     let checkCommentsMandatory = mandatoryActions.includes(action?.action);
 
@@ -161,49 +170,75 @@ const NOCModal = ({
       finalComments = `${commentsText}[#?..**]${conditionalText}`;
     }
 
-    if (action?.action !== "APPROVE" && action?.action !== "UPDATE_FEE" && action?.action !== "REJECT" && action?.action !== "SEND_FOR_INSPECTION_REPORT"  && !selectedApprover?.uuid) {
-      setTimeout(()=>{
+    if (
+      action?.action !== "APPROVE" &&
+      action?.action !== "UPDATE_FEE" &&
+      action?.action !== "REJECT" &&
+      action?.action !== "SEND_FOR_INSPECTION_REPORT" &&
+      action?.action !== "CANCEL" &&
+      !selectedApprover?.uuid
+    ) {
+      setTimeout(() => {
         closeToast();
-      },2000);
+      }, 2000);
 
-      setShowToast({ key: "true", error:true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
+      setShowToast({ key: "true", error: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
+      return;
+    }
+
+    if (action?.action === "CANCEL" && !data?.assigneeName?.trim()) {
+      setTimeout(() => {
+        closeToast();
+      }, 2000);
+
+      setShowToast({ key: "true", error: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
       return;
     }
 
     if (checkCommentsMandatory && !commentsText) {
-      setTimeout(()=>{
+      setTimeout(() => {
         closeToast();
-      },2000);
+      }, 2000);
 
-     setShowToast({ key: "true", error:true, message: t("COMMON_COMMENTS_REQUIRED_LABEL") });
-     return;
+      setShowToast({ key: "true", error: true, message: t("COMMON_COMMENTS_REQUIRED_LABEL") });
+      return;
     }
 
+    const finalAssignee = action?.action === "CANCEL"
+      ? []
+      : (!selectedApprover?.uuid ? null : [selectedApprover?.uuid]);
 
-
-    let workflow = { action: action?.action, comments: data?.comments, businessService, moduleName: moduleCode };
-    applicationData = {
-      ...applicationData,
-      action: action?.action,
-      comment: finalComments,
-      assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
-      // assignee: action?.isTerminateState ? [] : [selectedApprover?.uuid],
-      wfDocuments: uploadedFile
-        ? [
+    let singleApp = { ...(applicationData?.[0] || {}) };
+    if (singleApp.fireNOCDetails) {
+      singleApp.fireNOCDetails = {
+        ...singleApp.fireNOCDetails,
+        action: action?.action,
+        comment: finalComments,
+        assignee: finalAssignee,
+        name: action?.action === "CANCEL" ? (data?.assigneeName || null) : (singleApp.fireNOCDetails.name || null),
+        wfDocuments: uploadedFile
+          ? [
             {
               documentType: file?.type,
-              // documentType: action?.action + "_DOC",
               fileName: file?.name,
               documentUid: uploadedFile,
               filestoreId: uploadedFile,
               documentAttachment: uploadedFile
             },
           ]
-        : null,
-    };
+          : null,
+      };
+      singleApp.assignee = finalAssignee;
+      singleApp.comment = finalComments;
+      singleApp.action = action?.action;
+    } else {
+      singleApp.action = action?.action;
+      singleApp.comment = finalComments;
+      singleApp.assignee = finalAssignee;
+    }
 
     submitAction({
-      Licenses: [applicationData],
+      FireNOCs: [singleApp],
     });
   }
 
@@ -220,6 +255,7 @@ const NOCModal = ({
           uploadedFile,
           setUploadedFile,
           businessService,
+          isEmployee,
         })
       );
     }
@@ -232,7 +268,7 @@ const NOCModal = ({
       actionCancelLabel={t(config.label.cancel)}
       actionCancelOnSubmit={closeModal}
       actionSaveLabel={t(config.label.submit)}
-      actionSaveOnSubmit={() => {}}
+      actionSaveOnSubmit={() => { }}
       // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       formId="modal-action"
     >
@@ -248,10 +284,10 @@ const NOCModal = ({
         onSubmit={submit}
         defaultValues={defaultValues}
         formId="modal-action"
-        // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
+      // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       />
       {/* )} */}
-      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={showToast?.message} onClose={closeToast} isDleteBtn={true}/>}
+      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={showToast?.message} onClose={closeToast} isDleteBtn={true} />}
       {showErrorToast && <Toast error={true} label={errorOne} isDleteBtn={true} onClose={closeToastOne} />}
     </Modal>
   ) : (

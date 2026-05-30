@@ -26,7 +26,7 @@ const MyApplications = ({ view }) => {
     tenantId
   );
 
-  
+
   // Debug owner name
   if (data?.data && data?.data?.length > 0) { }
 
@@ -66,7 +66,7 @@ const MyApplications = ({ view }) => {
         Header: t("NOC_APPLICATION_NUMBER"),
         accessor: (row) => row?.Applications?.applicationNo,
         Cell: ({ row }) => (
-          <Link to={`/digit-ui/citizen/noc/search/application-overview/${row.original?.Applications?.applicationNo}`}>
+          <Link to={`/digit-ui/citizen/firenoc/search/application-overview/${row.original?.Applications?.applicationNo}`}>
             <b>{GetCell(row.original?.Applications?.applicationNo)}</b>
           </Link>
         ),
@@ -88,7 +88,7 @@ const MyApplications = ({ view }) => {
       //   Cell: ({ row }) => (
       //     <SubmitBar
       //       label={t("TL_VIEW_DETAILS")}
-      //       onSubmit={() => history.push(`/digit-ui/citizen/noc/search/application-overview/${row.original?.Applications?.applicationNo}`)}
+      //       onSubmit={() => history.push(`/digit-ui/citizen/firenoc/search/application-overview/${row.original?.Applications?.applicationNo}`)}
       //     />
       //   ),
       // },
@@ -140,7 +140,7 @@ const MyApplications = ({ view }) => {
                 <p style={{ margin: "4px 0" }}>
                   <b>{t("NOC_APPLICATION_STATUS")}:</b> {t(application?.Applications?.applicationStatus) || application?.Applications?.applicationStatus || t("CS_NA")}
                 </p>
-                <SubmitBar label={t("TL_VIEW_DETAILS")} onSubmit={() => history.push(`/digit-ui/citizen/noc/search/application-overview/${application?.Applications?.applicationNo}`)} />
+                <SubmitBar label={t("TL_VIEW_DETAILS")} onSubmit={() => history.push(`/digit-ui/citizen/firenoc/search/application-overview/${application?.Applications?.applicationNo}`)} />
               </Card>
             ))}
           </div>

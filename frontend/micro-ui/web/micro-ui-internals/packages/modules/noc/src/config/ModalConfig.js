@@ -14,7 +14,7 @@ export const ModalConfig = ({
   businessService,
 }) => {
   let checkCondtions = true;
-  if (action?.action == "SENDBACKTOCITIZEN" || action?.action == "APPROVE" || action?.action == "REJECT" || action?.action == "SENDBACK" || action?.action == "SEND_FOR_INSPECTION_REPORT" ||action?.action == "UPDATE_FEE")
+  if (action?.action == "SENDBACKTOCITIZEN" || action?.action == "APPROVE" || action?.action == "REJECT" || action?.action == "SEND_FOR_INSPECTION_REPORT" || action?.action == "UPDATE_FEE")
     checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;
 
@@ -48,26 +48,26 @@ export const ModalConfig = ({
             populators: {
               name: "comments",
             },
-            validation: { 
-              pattern: getPattern("Comments"), 
-              required: true, 
-              title: t("WF_COMMON_COMMENTS_ERROR") 
+            validation: {
+              pattern: getPattern("Comments"),
+              required: true,
+              title: t("WF_COMMON_COMMENTS_ERROR")
             },
           },
 
           action?.action === "APPROVE"
             ? {
-                label: t("WF_CONDITIONAL_COMMENTS_LABEL"),
-                type: "textarea",
-                populators: {
-                  name: "conditionalComments",
-                },
-                validation: {
-                  pattern: getPattern("Comments"),
-                  required: false, // not mandatory
-                  title: t("WF_COMMON_COMMENTS_ERROR"),
-                },
-              }
+              label: t("WF_CONDITIONAL_COMMENTS_LABEL"),
+              type: "textarea",
+              populators: {
+                name: "conditionalComments",
+              },
+              validation: {
+                pattern: getPattern("Comments"),
+                required: false, // not mandatory
+                title: t("WF_COMMON_COMMENTS_ERROR"),
+              },
+            }
             : null,
           {
             label: t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),

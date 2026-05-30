@@ -13,8 +13,8 @@ const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
 const colItem = { flex: 1, minWidth: "250px" };
 
 const relationshipOptions = [
-  { code: "FATHER", i18nKey: "Father" },
-  { code: "HUSBAND", i18nKey: "Husband" },
+  { code: "FATHER", i18nKey: "COMMON_RELATION_FATHER" },
+  { code: "HUSBAND", i18nKey: "COMMON_RELATION_HUSBAND" },
 ];
 
 /* ───── empty‑owner templates ───── */
@@ -35,6 +35,9 @@ const emptyInstitutionalOwner = () => ({
   officialTelNo: "",
   authorizedPersonName: "",
   designation: "",
+  gender: null,
+  fatherOrHusbandName: "",
+  relationship: null,
   mobileNumber: "",
   emailId: "",
   officialAddress: "",
@@ -87,13 +90,13 @@ const FireNOCApplicantDetails = (_props) => {
         const isInst = mainCode.startsWith("INSTITUTIONAL");
         typeMap[mainCode] = {
           code: mainCode,
-          name: t(`COMMON_MASTERS_OWNERSHIPCATEGORY_${mainCode}`),
+          name: `COMMON_MASTERS_OWNERSHIPCATEGORY_${mainCode}`,
           group: isInst ? "INSTITUTIONAL" : "INDIVIDUAL",
         };
       }
     });
     return Object.values(typeMap);
-  }, [ownerShipData, t]);
+  }, [ownerShipData]);
 
   /* Derive subtype options based on selected applicant type */
   const subtypeOptions = useMemo(() => {
@@ -102,9 +105,29 @@ const FireNOCApplicantDetails = (_props) => {
       .filter((e) => e.code.split(".")[0] === applicantType.code && e.code.includes("."))
       .map((e) => ({
         code: e.code,
-        name: t(`COMMON_MASTERS_OWNERSHIPCATEGORY_${e.code.replaceAll(".", "_")}`),
+        name: `COMMON_MASTERS_OWNERSHIPCATEGORY_${e.code.replaceAll(".", "_")}`,
       }));
-  }, [ownerShipData, applicantType?.code, t]);
+  }, [ownerShipData, applicantType?.code]);
+
+  /* Pre-select fully populated options for applicantType in Edit Mode */
+  useEffect(() => {
+    if (applicantType?.code && applicantTypeOptions?.length > 0) {
+      const matched = applicantTypeOptions.find((opt) => opt.code === applicantType.code);
+      if (matched && (!applicantType.name || applicantType.name !== matched.name)) {
+        setValue("applicantType", matched);
+      }
+    }
+  }, [applicantType?.code, applicantTypeOptions]);
+
+  /* Pre-select fully populated options for applicantSubtype in Edit Mode */
+  useEffect(() => {
+    if (applicantSubtype?.code && subtypeOptions?.length > 0) {
+      const matched = subtypeOptions.find((opt) => opt.code === applicantSubtype.code);
+      if (matched && (!applicantSubtype.name || applicantSubtype.name !== matched.name)) {
+        setValue("applicantSubtype", matched);
+      }
+    }
+  }, [applicantSubtype?.code, subtypeOptions]);
 
   /* ─── useFieldArray for owners ─── */
   const { fields, append, remove } = useFieldArray({ control, name: "owners" });
@@ -138,17 +161,6 @@ const FireNOCApplicantDetails = (_props) => {
       }
     }
   }, [applicantSubtype?.code]);
-
-  /* ─── Hydrate from redux on mount ─── */
-  useEffect(() => {
-    const saved = currentStepData?.applicationDetails;
-    if (!saved) return;
-    if (saved.applicantType) setValue("applicantType", saved.applicantType);
-    if (saved.applicantSubtype) setValue("applicantSubtype", saved.applicantSubtype);
-    if (Array.isArray(saved.owners) && saved.owners.length) {
-      setValue("owners", saved.owners);
-    }
-  }, []);
 
   /* ════════════════  RENDER HELPERS  ════════════════ */
 
@@ -206,6 +218,7 @@ const FireNOCApplicantDetails = (_props) => {
                 name={`${prefix}.name`}
                 rules={{
                   required: t("REQUIRED_FIELD"),
+                  pattern: { value: /^[A-Za-z\s]+$/, message: t("ONLY_ENGLISH_LETTERS_ALLOWED") },
                   maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
                 }}
                 render={(props) => (
@@ -506,6 +519,91 @@ const FireNOCApplicantDetails = (_props) => {
               />
               {errors?.owners?.[index]?.designation && (
                 <p style={{ color: "red", marginTop: "4px" }}>{errors.owners[index].designation.message}</p>
+              )}
+            </div>
+          </LabelFieldPair>
+        </div>
+
+        {/* Row 3: Gender + Father/Husband Name */}
+        <div style={twoColRow}>
+          <LabelFieldPair style={colItem}>
+            <CardLabel className="card-label-smaller">
+              {t("Gender")}<span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={`${prefix}.gender`}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <RadioButtons
+                    t={t}
+                    options={genderMenu}
+                    optionsKey="code"
+                    value={props.value}
+                    selectedOption={props.value}
+                    onSelect={(e) => props.onChange(e)}
+                    isDependent={true}
+                    style={{ display: "flex", gap: "16px" }}
+                  />
+                )}
+              />
+              {errors?.owners?.[index]?.gender && (
+                <p style={{ color: "red", marginTop: "4px" }}>{errors.owners[index].gender.message}</p>
+              )}
+            </div>
+          </LabelFieldPair>
+
+          <LabelFieldPair style={colItem}>
+            <CardLabel className="card-label-smaller">
+              {t("Father/Husband's Name")}<span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={`${prefix}.fatherOrHusbandName`}
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: { value: /^[A-Za-z\s]+$/, message: t("ONLY_ENGLISH_LETTERS_ALLOWED") },
+                  maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
+                }}
+                render={(props) => (
+                  <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} placeholder={t("Enter Father/Husband's Name")} />
+                )}
+              />
+              {errors?.owners?.[index]?.fatherOrHusbandName && (
+                <p style={{ color: "red", marginTop: "4px" }}>{errors.owners[index].fatherOrHusbandName.message}</p>
+              )}
+            </div>
+          </LabelFieldPair>
+        </div>
+
+        {/* Row 4: Relationship */}
+        <div style={twoColRow}>
+          <LabelFieldPair style={colItem}>
+            <CardLabel className="card-label-smaller">
+              {t("Relationship")}<span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={`${prefix}.relationship`}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <RadioButtons
+                    t={t}
+                    options={relationshipOptions}
+                    optionsKey="i18nKey"
+                    value={props.value}
+                    selectedOption={props.value}
+                    onSelect={(e) => props.onChange(e)}
+                    isDependent={true}
+                    style={{ display: "flex", gap: "16px" }}
+                  />
+                )}
+              />
+              {errors?.owners?.[index]?.relationship && (
+                <p style={{ color: "red", marginTop: "4px" }}>{errors.owners[index].relationship.message}</p>
               )}
             </div>
           </LabelFieldPair>

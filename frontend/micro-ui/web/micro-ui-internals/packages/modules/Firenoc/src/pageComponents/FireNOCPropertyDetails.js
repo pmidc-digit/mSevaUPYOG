@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { useSelector } from "react-redux";
 import {
   LabelFieldPair,
   TextInput,
@@ -44,6 +45,16 @@ const emptyBuilding = {
 
 const FireNOCPropertyDetails = (_props) => {
   const { t, Controller, control, errors, watch, useFieldArray, setValue } = _props;
+
+  const isRenewal = useSelector(
+    (state) => state?.noc?.NOCNewApplicationFormReducer?.formData?.nocDetails?.fireNOCType?.code === "RENEWAL"
+  );
+
+  const apiData = useSelector(
+    (state) => state?.noc?.NOCNewApplicationFormReducer?.formData?.apiData
+  );
+  const applicationStatus = apiData?.FireNOCs?.[0]?.applicationStatus || apiData?.FireNOCs?.[0]?.fireNOCDetails?.status || "";
+  const isSentBack = ["CITIZENACTIONREQUIRED", "SENDBACKTOCITIZEN", "CITIZEN_ACTION_REQUIRED"].includes(applicationStatus) || window.location.href.includes("/edit-application/");
 
   const stateId = Digit.ULBService.getStateId();
 
@@ -95,7 +106,7 @@ const FireNOCPropertyDetails = (_props) => {
             <div className="field">
               <Controller control={control} name={`${prefix}.buildingName`} rules={{ required: t("REQUIRED_FIELD") }}
                 render={(props) => (
-                  <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} placeholder={t("Enter Name of the Building")} />
+                  <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} placeholder={t("Enter Name of the Building")} disable={isRenewal} />
                 )}
               />
               {errors?.buildings?.[index]?.buildingName && <p style={{ color: "red", marginTop: "4px" }}>{errors.buildings[index].buildingName.message}</p>}
@@ -106,7 +117,7 @@ const FireNOCPropertyDetails = (_props) => {
             <div className="field">
               <Controller control={control} name={`${prefix}.buildingUsageType`} rules={{ required: t("REQUIRED_FIELD") }}
                 render={(props) => (
-                  <Dropdown className="form-field" select={(val) => { props.onChange(val); setValue(`${prefix}.buildingUsageSubType`, null); }} selected={props.value} option={buildingUsageTypeOptions} optionKey="name" t={t} placeholder={t("Select Building Usage Type")} />
+                  <Dropdown className="form-field" select={(val) => { props.onChange(val); setValue(`${prefix}.buildingUsageSubType`, null); }} selected={props.value} option={buildingUsageTypeOptions} optionKey="name" t={t} placeholder={t("Select Building Usage Type")} disable={isSentBack} />
                 )}
               />
               {errors?.buildings?.[index]?.buildingUsageType && <p style={{ color: "red", marginTop: "4px" }}>{errors.buildings[index].buildingUsageType.message}</p>}
@@ -121,7 +132,7 @@ const FireNOCPropertyDetails = (_props) => {
             <div className="field">
               <Controller control={control} name={`${prefix}.buildingUsageSubType`} rules={{ required: t("REQUIRED_FIELD") }}
                 render={(props) => (
-                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={subTypeOptions} optionKey="name" t={t} placeholder={t("Select Building Usage Subtype")} />
+                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={subTypeOptions} optionKey="name" t={t} placeholder={t("Select Building Usage Subtype")} disable={isSentBack} />
                 )}
               />
               {errors?.buildings?.[index]?.buildingUsageSubType && <p style={{ color: "red", marginTop: "4px" }}>{errors.buildings[index].buildingUsageSubType.message}</p>}

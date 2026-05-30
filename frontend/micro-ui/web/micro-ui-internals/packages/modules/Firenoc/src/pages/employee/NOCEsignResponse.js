@@ -19,7 +19,7 @@ const NOCEsignResponse = () => {
   const applicationNo = parts[parts.length - 2];
   const fileStoreId = parts[parts.length - 1];
 
-  const { isLoading, data} = Digit.Hooks.noc.useNOCSearchApplication(
+  const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication(
     { applicationNo },
     tenantId
   );
@@ -48,7 +48,7 @@ const NOCEsignResponse = () => {
 
       mutation.mutateAsync({ Noc: updatedApplication })
         .then(() => {
-         
+
           setLoading(false);
 
           // 🔹 Show success toast
@@ -61,7 +61,7 @@ const NOCEsignResponse = () => {
           }, 1000);
 
           const timeout = setTimeout(() => {
-            history.push(`/digit-ui/employee/noc/inbox/application-overview/${applicationNo}`);
+            history.push(`/digit-ui/employee/firenoc/inbox/application-overview/${applicationNo}`);
           }, 10000);
 
           return () => {
@@ -78,7 +78,7 @@ const NOCEsignResponse = () => {
 
           // redirect after showing toast
           const timeout = setTimeout(() => {
-            history.push(`/digit-ui/employee/noc/inbox/application-overview/${applicationNo}`);
+            history.push(`/digit-ui/employee/firenoc/inbox/application-overview/${applicationNo}`);
           }, 10000);
 
           return () => clearTimeout(timeout);

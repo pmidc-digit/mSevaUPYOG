@@ -290,5 +290,17 @@ export const quickServiceModules = {
       subHeading: "",
       roles: [],
     },
+    {
+      moduleCode: "FIRENOC",
+      moduleName: "FIRENOC",
+      bgColor: "#3e4b5b",
+      labelKey: "",
+      icon: "",
+      routes: "/digit-ui/employee/firenoc/search/application",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+      roles: [],
+    },
   ],
 };

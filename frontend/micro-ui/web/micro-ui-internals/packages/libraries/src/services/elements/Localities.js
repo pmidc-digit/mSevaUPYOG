@@ -12,6 +12,7 @@ const getI18nKeys = (localitiesWithLocalizationKeys) => {
 };
 
 const getLocalities = (tenantBoundry) => {
+  if (!tenantBoundry || !tenantBoundry.boundary) return [];
   const adminCode = ADMIN_CODE(tenantBoundry);
   const localitiesWithLocalizationKeys = tenantBoundry.boundary.map((boundaryObj) => ({
     ...boundaryObj,

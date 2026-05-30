@@ -65,7 +65,8 @@ export const FIRENOCService = {
       },
       ...details,
     };
-    const resp = await fetch(`${Urls.firenoc.update}?tenantId=${encodeURIComponent(tenantId)}`, {
+    const url = (tenantId && tenantId !== "pb.testing") ? `${Urls.firenoc.update}?tenantId=${encodeURIComponent(tenantId)}` : `${Urls.firenoc.update}?`;
+    const resp = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json;charset=UTF-8" },
       body: JSON.stringify(body),

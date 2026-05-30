@@ -1,19 +1,19 @@
-import { Banner, Card, CardText, ActionBar, SubmitBar , Loader } from "@mseva/digit-ui-react-components";
-import React ,{useState} from "react";
+import { Banner, Card, CardText, ActionBar, SubmitBar, Loader } from "@mseva/digit-ui-react-components";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
-import { stringReplaceAll} from "../../utils";
+import { stringReplaceAll } from "../../utils";
 import { getNOCAcknowledgementData } from "../../utils/getNOCAcknowledgementData";
 
 const NOCResponseCitizen = (props) => {
-  const location=useLocation();
-  const {pathname, state } = location;
+  const location = useLocation();
+  const { pathname, state } = location;
   const { t } = useTranslation();
   const history = useHistory();
   const nocData = state?.data?.FireNOCs?.[0];
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const [loading, setLoading] = useState(false);
-  
+
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -27,7 +27,7 @@ const NOCResponseCitizen = (props) => {
   const onViewApplication = () => {
     setLoading(true); // show loading first
     setTimeout(() => {
-      history.push(`/digit-ui/citizen/noc/search/application-overview/${nocCode}`);
+      history.push(`/digit-ui/citizen/firenoc/search/application-overview/${nocCode}`);
     }, 1000); // delay navigation by 1 second
   };
 
@@ -37,32 +37,32 @@ const NOCResponseCitizen = (props) => {
   };
 
   const handlePayment = () => {
-    history.push(`/digit-ui/citizen/payment/collect/obpas_noc/${nocCode}/${tenantId}?tenantId=${tenantId}`);
+    history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${nocCode}/${tenantId}?tenantId=${tenantId}`);
   };
 
 
   const handleDownloadPdf = async (isView = false) => {
-    try{
+    try {
       setLoading(true);
-    const Property = nocData;
-    if (!Property) {
-      setLoading(false);
-      return;
-    }
-    const tenantInfo = tenants?.find((tenant) => tenant.code === Property.tenantId);
-    const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, null, null, t, isView);
-    Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
-    }catch(error){
+      const Property = nocData;
+      if (!Property) {
+        setLoading(false);
+        return;
+      }
+      const tenantInfo = tenants?.find((tenant) => tenant.code === Property.tenantId);
+      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, null, null, t, isView);
+      Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+    } catch (error) {
       console.error("PDF generation error:", error);
-    }finally{
+    } finally {
       setLoading(false);
     }
   };
 
-   if (loading) {
-      return <Loader />;
-    }
-  
+  if (loading) {
+    return <Loader />;
+  }
+
 
 
   return (

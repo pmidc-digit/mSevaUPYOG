@@ -169,8 +169,19 @@ function NOCSummary({ currentStepData: formData, t }) {
         <CardSubHeader>{t("NOC Details")}</CardSubHeader>
         <StatusTable>
           <Row label={t("NOC Type")} text={val(nocDetails?.fireNOCType?.code)} />
-          <Row label={t("Provisional fire NoC number")} text={val(apiFireNOC?.fireNOCDetails?.nocNo || applicationNo)} />
+          {nocDetails?.fireNOCType?.code === "RENEWAL" ? (
+            <Row
+              label={t("old fire NoC number")}
+              text={val(nocDetails?.oldFireNocNumber || apiFireNOC?.fireNOCDetails?.oldFireNocNumber)}
+            />
+          ) : (
+            <Row
+              label={t("Provisional fire NoC number")}
+              text={val(nocDetails?.provisionalNocNumber || apiFireNOC?.fireNOCDetails?.provisionalNocNumber)}
+            />
+          )}
           <Row label={t("Validity Year")} text={val(nocDetails?.validityYear?.code || nocDetails?.validityYear)} />
+          {/* <Row label={t("Validity Year")} text={val(apiFireNOC?.fireNOCDetails?.financialYear || nocDetails?.validityYear?.code || nocDetails?.validityYear)} /> */}
         </StatusTable>
       </Card>
 

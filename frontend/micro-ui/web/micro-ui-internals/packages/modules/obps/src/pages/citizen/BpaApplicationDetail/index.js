@@ -1630,10 +1630,10 @@ useEffect(() => {
             nextActions: [],
           },
         },
-        data: {
-          ...workflowDetails?.data,
-          nextActions: [],
-        },
+        /* data: { */
+          /* ...workflowDetails?.data, */
+          /* nextActions: [], */
+        /* }, */
       }
     }
   }

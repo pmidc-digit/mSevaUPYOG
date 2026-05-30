@@ -209,7 +209,7 @@ const WSApplicationDetails = () => {
       break;
     case "PENDING_FOR_DISCONNECTION_EXECUTION":
     case "DISCONNECTION_EXECUTED":
-    case "PENDING_FOR_PAYMENT":
+    // case "PENDING_FOR_PAYMENT":
       if(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") || data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT") ){
         downloadOptions = disconnectionNoticeNApplicationFormOptions
       }

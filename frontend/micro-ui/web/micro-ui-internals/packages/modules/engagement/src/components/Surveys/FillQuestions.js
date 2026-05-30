@@ -386,12 +386,12 @@ const FillQuestions = (props) => {
               : localStorage.getItem("CITIZEN.CITY")
             : city,
         locality: locality,
-        tenantId:
+        /* tenantId:
           city === null
             ? window.location.href?.includes("/employee")
               ? prevProps?.citizenData?.city?.code
               : localStorage.getItem("CITIZEN.CITY")
-            : city,
+            : city, */
         status: "Draft",
         answers: answerArr,
       },

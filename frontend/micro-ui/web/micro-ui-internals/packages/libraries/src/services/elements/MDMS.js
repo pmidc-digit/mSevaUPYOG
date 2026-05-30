@@ -1864,8 +1864,8 @@ const transformResponse = (type, MdmsRes, moduleCode, tenantId) => {
     case "ReceivedPaymentType":
       return GetReceivedPaymentType(MdmsRes);
     //############ //////////////////********************** */
-    case "Documents":
-      return getPetDocumentsRequiredScreen(MdmsRes);
+    // case "Documents":
+      // return getPetDocumentsRequiredScreen(MdmsRes);
     case "PetType":
       return getPetType(MdmsRes);
     case "BreedType":
@@ -1873,11 +1873,11 @@ const transformResponse = (type, MdmsRes, moduleCode, tenantId) => {
     case "PTRGendertype":
       return PTRGenderType(MdmsRes);
 
-    case "Documents":
-      return getSVDocuments(MdmsRes);
+    // case "Documents":
+      // return getSVDocuments(MdmsRes);
 
-    case "Documents":
-      return getADSDocuments(MdmsRes);
+    // case "Documents":
+      // return getADSDocuments(MdmsRes);
 
     case "PTRPetType":
       return PTRPetType(MdmsRes);
@@ -1900,8 +1900,8 @@ const transformResponse = (type, MdmsRes, moduleCode, tenantId) => {
 
     case "BPAUlbType":
       return BPAUlbType(MdmsRes);
-    case "Documents":
-      return getAssetDocuments(MdmsRes);
+    // case "Documents":
+      // return getAssetDocuments(MdmsRes);
 
     case "assetCategory":
       return getAssetSubParent(MdmsRes);

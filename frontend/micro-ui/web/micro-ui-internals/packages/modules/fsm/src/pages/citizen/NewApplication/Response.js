@@ -102,13 +102,13 @@ const Response = ({ data, onSuccess }) => {
             paymentPreference: amount === 0 ? null : selectPaymentPreference?.paymentType ? selectPaymentPreference?.paymentType?.code : null,
             noOfTrips: selectTripNo ? selectTripNo?.tripNo?.code : 1,
             vehicleCapacity: selectTripNo ? selectTripNo?.vehicleCapacity?.capacity : "",
-            additionalDetails: {
+            /* additionalDetails: {
               totalAmount: amount,
               tripAmount: amountPerTrip,
               propertyID : propertyID?.propertyID,
               distancefromroad : data.roadWidth.distancefromroad,
               roadWidth: data.roadWidth.roadWidth,
-            },
+            }, */
             advanceAmount,
           },
           workflow: null,

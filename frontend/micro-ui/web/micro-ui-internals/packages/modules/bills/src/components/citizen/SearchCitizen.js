@@ -181,7 +181,7 @@ const SearchCitizen = ({ onSearch, type, onClose, searchFields, searchParams, is
                     // disabled={!!Object.keys(formState.errors).length || Object.keys(form).every((key) => !form?.[key])}
                     submit
                   />
-                  <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
+                  <div style={{ width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
                     {clearAll()}
                   </div>
                 </div>

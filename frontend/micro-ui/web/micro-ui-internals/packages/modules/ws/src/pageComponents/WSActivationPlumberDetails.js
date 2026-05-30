@@ -51,7 +51,7 @@ const WSActivationPlumberDetails = ({ config, onSelect, userType, formData, setE
         plumberDetails,
         filters,
         options,
-        setPlumberDetails
+        // setPlumberDetails
     };
 
     return (

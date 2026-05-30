@@ -19,6 +19,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import ReactTooltip from "react-tooltip";
 import { useTranslation } from 'react-i18next';
+import * as DigitComponents from "@mseva/digit-ui-react-components";
 
 const resolveLinkPath = (childTo, parentTo) => `${parentTo}/${childTo}`;
 
@@ -50,7 +51,7 @@ const NavItemHeader = props => {
   let leftIcon = IconsObject[leftIconArray] || IconsObject.collections;
   const iconArr = item?.icon?.leftIcon?.split?.(":") || item?.leftIcon?.split?.(":");
   if (iconArr?.[0] == 'dynamic') {
-    var IconComp = require("@mseva/digit-ui-react-components")?.[iconArr?.[1]];
+    var IconComp = DigitComponents?.[iconArr?.[1]];
     leftIcon = IconComp ? <IconComp /> : leftIcon;
   }
   const getModuleName = label?.replace(/[ -]/g, "_").toUpperCase();

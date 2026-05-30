@@ -151,7 +151,7 @@ const DesktopInbox = ({
       {/* <div className="pgr-desktop-inbox-content-wrapper"> */}
       <div style={{ flex: 1 }}>
         <SearchComplaint onSearch={onSearch} type="desktop" />
-         <div style={{ marginTop: "24px", marginTop: "24px", marginLeft: "24px", flex: 1 }}>{result}</div>
+         <div style={{ marginTop: "24px", marginLeft: "24px", flex: 1 }}>{result}</div>
         {/* <div className="pgr-desktop-inbox-result-container">{result}</div> */}
       </div>
     </div>

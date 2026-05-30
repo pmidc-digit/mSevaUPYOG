@@ -125,7 +125,7 @@ const WSPlumberDetails = ({ config, onSelect, userType, formData, setError, form
         plumberDetails,
         filters,
         options,
-        setPlumberDetails
+        // setPlumberDetails
     };
 
     return (

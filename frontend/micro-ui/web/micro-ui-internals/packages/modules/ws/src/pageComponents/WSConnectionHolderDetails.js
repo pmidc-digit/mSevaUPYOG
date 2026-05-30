@@ -141,7 +141,7 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
     setConnectionHolderDetails,
     setIsErrors,
     isErrors,
-    connectionHolderDetails,
+    // connectionHolderDetails,
     filters,
     menu,
     uploadedFile,

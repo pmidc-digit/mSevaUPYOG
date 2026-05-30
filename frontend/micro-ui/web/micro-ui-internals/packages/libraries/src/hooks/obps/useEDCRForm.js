@@ -274,7 +274,7 @@ useEffect(() => {
     setUlb,
     setUploadMessage,
     setUploadedFile,
-    setcoreArea,
+    // setcoreArea,
     setSelectLayout,
     setPurchasableFar,
     siteReserved,

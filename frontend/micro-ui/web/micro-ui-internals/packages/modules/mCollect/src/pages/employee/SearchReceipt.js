@@ -234,7 +234,7 @@ const SearchReceipt = () => {
     ],
     [t, tenantId]
   );
-  const handleReset = () => {
+  const handleReset = () => {s
     reset(); // resets all fields to defaultValues
     setTableData([]);
     setHasSearched(false);

@@ -305,6 +305,7 @@ const componentsToRegister = {
   NewPTStepFormFive,
   PropertySelectDocs,
   PropertyResponseCitizen,
+  PTImportantDates,
   PTCitizenTransferOwnership: CitizenTransferOwnership,
 };
 

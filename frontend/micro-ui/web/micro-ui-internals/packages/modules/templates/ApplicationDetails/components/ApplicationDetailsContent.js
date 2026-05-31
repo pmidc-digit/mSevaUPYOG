@@ -905,15 +905,7 @@ const propertyDocuments = propertyDocumentValues.length
           {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
         </React.Fragment>
       ))}
-      {showHistory && assessmentDetails?.length > 0 && (
-        <AssessmentHistory
-          assessmentData={filtered}
-          propertyId={currentPropertyId}
-          tenantId={applicationData?.tenantId || tenantId}
-          propertyStatus={propertyStatus}
-          applicationData={applicationData}
-        />
-      )}
+      {showHistory && assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
       {showHistory && <PaymentHistory payments={payments} />}
       {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />

@@ -56,7 +56,8 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onSubmit = async (data, selectedAction) => {
-    // setLoader(true);
+    console.log("data", data);
+    setLoader(true);
     // debugger
 
     const { propertyDetails, propertyAddress, ownerDetails, documents } = data;
@@ -211,7 +212,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
     };
 
     try {
-   
+       debugger
       let response;
       if (isEditMode) {
         response = await Digit.PTService.update({ Property: formData }, tenantId);

@@ -109,6 +109,7 @@ function ApplicationDetailsContent({
   isInfoLabel = false,
   propertyId,
   moduleCode,
+  showHistory = true,
 }) {
   const { t } = useTranslation();
   const history = useHistory();
@@ -497,6 +498,7 @@ function ApplicationDetailsContent({
   const applicationData_pt = applicationDetails?.applicationData;
   const propertyIds = applicationDetails?.applicationData?.propertyId || "";
   const checkPropertyStatus = applicationDetails?.additionalDetails?.propertytobestatus;
+  console.log("dnddnfnfn ", checkPropertyStatus);
   const PropertyInActive = () => {
     if (window.location.href.includes("employee")) {
       if (checkPropertyStatus == "ACTIVE") {
@@ -870,9 +872,9 @@ function ApplicationDetailsContent({
           {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
         </React.Fragment>
       ))}
-      {assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
-      <PaymentHistory payments={payments} />
-      {moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
+      {showHistory && assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
+      {showHistory && <PaymentHistory payments={payments} />}
+      {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />
       )}
 

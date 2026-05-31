@@ -182,8 +182,7 @@ const SearchReceipt = () => {
     ],
     [t]
   );
-  const handleReset = () => {
-    debugger
+  const handleReset = () => {s
     reset(); // resets all fields to defaultValues
    
   };

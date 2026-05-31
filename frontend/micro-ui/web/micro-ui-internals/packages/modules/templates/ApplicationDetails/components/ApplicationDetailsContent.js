@@ -63,6 +63,7 @@ function ApplicationDetailsContent({
   isInfoLabel = false,
   propertyId,
   moduleCode,
+  showHistory = true,
 }) {
   const { t } = useTranslation();
   const history = useHistory();
@@ -813,9 +814,9 @@ function ApplicationDetailsContent({
           {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
         </React.Fragment>
       ))}
-      {assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
-      <PaymentHistory payments={payments} />
-      {moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
+      {showHistory && assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
+      {showHistory && <PaymentHistory payments={payments} />}
+      {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />
       )}
 

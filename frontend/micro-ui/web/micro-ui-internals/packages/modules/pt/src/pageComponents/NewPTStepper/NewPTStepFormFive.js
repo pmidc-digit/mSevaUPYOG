@@ -58,6 +58,8 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
   const onSubmit = async (data, selectedAction) => {
     console.log("data", data);
     setLoader(true);
+    // debugger
+
     const { propertyDetails, propertyAddress, ownerDetails, documents } = data;
     const originalProperty = data._originalProperty;
     const isEditMode = !!originalProperty;
@@ -123,6 +125,9 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       };
     });
 
+    
+
+
     const formData = {
       // Spread original property to preserve all IDs and audit fields in edit mode
       ...(isEditMode ? originalProperty : {}),
@@ -181,6 +186,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
     };
 
     try {
+       debugger
       let response;
       if (isEditMode) {
         response = await Digit.PTService.update({ Property: formData }, tenantId);

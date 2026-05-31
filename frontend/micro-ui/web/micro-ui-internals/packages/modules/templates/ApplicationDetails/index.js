@@ -54,6 +54,7 @@ const ApplicationDetails = (props) => {
     isInfoLabel = false,
     clearDataDetails,
     propertyId,
+    showHistory = true,
   } = props;
 
   useEffect(() => {
@@ -364,6 +365,7 @@ const ApplicationDetails = (props) => {
             isInfoLabel={isInfoLabel}
             propertyId={propertyId}
             moduleCode={moduleCode}
+            showHistory={showHistory}
           />
           {showModal ? (
             <ActionModal

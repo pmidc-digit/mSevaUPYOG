@@ -102,6 +102,7 @@ import SelectOtp from "../../core/src/pages/citizen/Login/SelectOtp";
 import CitizenFeedback from "@mseva/digit-ui-module-core/src/components/CitizenFeedback";
 import AcknowledgementCF from "@mseva/digit-ui-module-core/src/components/AcknowledgementCF";
 import PTCitizenFeedbackPopUp from "./pageComponents/PTCitizenFeedbackPopUp";
+import PTImportantDates from "./pageComponents/PTImportantDates";
 
 import PTSelectLandmark from "./pageComponents/PTSelectLandmark";
 import NewPropertyStepForm from "../src/pages/employee/NewApplication/NewApplicationStepForm/NewPropertyStepForm";
@@ -303,6 +304,8 @@ const componentsToRegister = {
   NewPTStepFormFive,
   PropertySelectDocs,
   PropertyResponseCitizen,
+  PTImportantDates,
+  PTCitizenTransferOwnership: CitizenTransferOwnership,
 };
 
 const addComponentsToRegistry = () => {

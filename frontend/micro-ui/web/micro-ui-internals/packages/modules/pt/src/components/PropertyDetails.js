@@ -108,6 +108,9 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   const { data: UsageCategoryNewData = [], isLoading: UsageCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
     { name: "UsageCategory" },
   ]);
+  
+
+  
 
   useEffect(() => {
     if (PropertyTypeData) {
@@ -116,11 +119,13 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     }
   }, [PropertyTypeData]);
 
-  console.log("location2", location?.state);
+  console.log("location2", location?.state); 
 
   useEffect(() => {
-    const major = UsageCategoryData?.PropertyTax?.UsageCategoryMajor || [];
-    const minor = UsageCategoryDataMajor?.PropertyTax?.UsageCategoryMinor || [];
+    // const major = UsageCategoryData?.PropertyTax?.UsageCategoryMajor || [];
+    // const minor = UsageCategoryDataMajor?.PropertyTax?.UsageCategoryMinor || [];
+    const minor = UsageCategoryData?.PropertyTax?.UsageCategoryMinor || [];
+    const major = UsageCategoryDataMajor?.PropertyTax?.UsageCategoryMajor || [];
     const combinedData = [...minor, ...major]?.filter((item) => item?.code != "NONRESIDENTIAL");
     setUsageData(combinedData);
   }, [UsageCategoryData, UsageCategoryDataMajor]);
@@ -179,12 +184,20 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
     const value = location?.state;
 
-    const getResident = getUsageData?.find((item) => item?.code == stateDataCheck?.propertyUsageType?.code || item?.name == (value?.useType || stateDataCheck?.propertyUsageType?.name));
+    const storedUsageCode = stateDataCheck?.propertyUsageType?.code;
+    const getResident = getUsageData?.find((item) =>
+      item?.code == storedUsageCode
+      || item?.code == storedUsageCode?.split(".")?.[1]
+      || item?.name == (value?.useType || stateDataCheck?.propertyUsageType?.name)
+    );
 
     const getPropertyType = getPropertyTypeData?.find((item) => item?.code == stateDataCheck?.propertyType?.code);
-    const checkData = UsageCategoryNewData?.PropertyTax?.UsageCategory?.filter(
-      (item) => item?.usageCategoryMinor == stateDataCheck?.propertyUsageType?.code
-    );
+    // Use the resolved MDMS minor code (e.g. "INDUSTRIAL") so the filter matches segments in sub-usage codes
+    var restoredCode = (getResident && getResident.code) || (stateDataCheck && stateDataCheck.propertyUsageType && stateDataCheck.propertyUsageType.code);
+    var allUsageForRestore = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
+    var checkData = allUsageForRestore ? allUsageForRestore.filter(function(item) {
+      return item && item.code && restoredCode && item.code.split(".").indexOf(restoredCode) !== -1;
+    }) : [];
     const checkFloors = floorOptions?.find((f) => f.code == stateDataCheck?.noOfFloors?.code);
 
     setSubUsageData(checkData);
@@ -196,6 +209,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     setValue("heightOfProperty", stateDataCheck?.heightOfProperty);
     setValue("plotSize", stateDataCheck?.plotSize);
     setValue("noOfFloors", checkFloors);
+    setValue("vasikaNo", stateDataCheck?.vasikaNo || "");
+setValue("vasikaDate", stateDataCheck?.vasikaDate || "");
+setValue("allotmentNo", stateDataCheck?.allotmentNo || "");
+setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
 
     if (stateDataCheck?.unitDetails?.length > 0) {
       remove([...Array(fields.length).keys()]);
@@ -232,7 +249,11 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     const groundFloor = floorOptions?.find((f) => f.code == "0");
 
     const newUnits = Array.from({ length: floorCount }, (_, index) => ({
-      unitUsageType: watch("propertyUsageType")?.name || "",
+      unitUsageType:
+  (watch("propertyUsageType") && watch("propertyUsageType").name === "Mixed" &&
+   watch("propertyType") && watch("propertyType").code === "BUILTUP.SHAREDPROPERTY")
+    ? ""
+    : (watch("propertyUsageType") && watch("propertyUsageType").name) || "",
       occupancy: null,
       floor: index === 0 ? groundFloor : null, // ✅ First is Ground Floor
     }));
@@ -257,7 +278,11 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 <Dropdown
                   select={(e) => {
                     props.onChange(e);
-                    const checkData = UsageCategoryNewData?.PropertyTax?.UsageCategory?.filter((item) => item?.usageCategoryMinor == e?.code);
+                    var selectedCode = e && e.code;
+                    var allUsage = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
+                    var checkData = allUsage ? allUsage.filter(function(item) {
+                      return item && item.code && selectedCode && item.code.split(".").indexOf(selectedCode) !== -1;
+                    }) : [];
                     setSubUsageData(checkData);
                   }}
                   selected={props.value}
@@ -283,6 +308,72 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
           </div>
         </LabelFieldPair>
       </div>
+
+    {/* Row: Vasika No + Vasika Date */}
+<div style={twoColRow}>
+  <LabelFieldPair style={colItem}>
+    <CardLabel className="card-label-smaller">{t("Vasika No")}</CardLabel>
+    <div className="form-field">
+      <Controller
+        control={control}
+        name="vasikaNo"
+        render={(props) => (
+          <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />
+        )}
+      />
+    </div>
+  </LabelFieldPair>
+  <LabelFieldPair style={colItem}>
+    <CardLabel className="card-label-smaller">{t("Vasika Date")}</CardLabel>
+    <div className="form-field">
+      <Controller
+        control={control}
+        name="vasikaDate"
+        render={(props) => (
+          <TextInput
+            type="date"
+            value={props.value}
+            onChange={(e) => props.onChange(e.target.value)}
+            t={t}
+          />
+        )}
+      />
+    </div>
+  </LabelFieldPair>
+</div>
+
+{/* Row: Allotment No + Allotment Date */}
+<div style={twoColRow}>
+  <LabelFieldPair style={colItem}>
+    <CardLabel className="card-label-smaller">{t("Allotment No")}</CardLabel>
+    <div className="form-field">
+      <Controller
+        control={control}
+        name="allotmentNo"
+        render={(props) => (
+          <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />
+        )}
+      />
+    </div>
+  </LabelFieldPair>
+  <LabelFieldPair style={colItem}>
+    <CardLabel className="card-label-smaller">{t("Allotment Date")}</CardLabel>
+    <div className="form-field">
+      <Controller
+        control={control}
+        name="allotmentDate"
+        render={(props) => (
+          <TextInput
+            type="date"
+            value={props.value}
+            onChange={(e) => props.onChange(e.target.value)}
+            t={t}
+          />
+        )}
+      />
+    </div>
+  </LabelFieldPair>
+</div>
 
       {/* Row 2: Business Name + Remarks */}
       <div style={twoColRow}>
@@ -428,14 +519,52 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
             <LabelFieldPair style={colItem}>
               <CardLabel className="card-label-smaller">{t("Unit Usage Type")}*</CardLabel>
               <div className="form-field">
-                <Controller
-                  control={control}
-                  name={`unitDetails.${index}.unitUsageType`}
-                  defaultValue={item?.unitUsageType || watch("propertyUsageType")?.name || ""}
-                  rules={{ required: t("Unit Usage Type is required") }}
-                  // defaultValue={watch("propertyUsageType")?.name}
-                  render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} disabled={true} />}
-                />
+
+
+                  <Controller
+                    control={control}
+                    name={`unitDetails.${index}.unitUsageType`}
+                    defaultValue={
+                      (watch("propertyUsageType") && watch("propertyUsageType").name === "Mixed" &&
+                        watch("propertyType") && watch("propertyType").code === "BUILTUP.SHAREDPROPERTY")
+                        ? (item && item.unitUsageType) || ""
+                        : (item && item.unitUsageType) || (watch("propertyUsageType") && watch("propertyUsageType").name) || ""
+                    }
+                    rules={{ required: t("Unit Usage Type is required") }}
+                    render={function (props) {
+                      if (
+                        watch("propertyUsageType") &&
+                        watch("propertyUsageType").name === "Mixed" &&
+                        watch("propertyType") &&
+                        watch("propertyType").code === "BUILTUP.SHAREDPROPERTY"
+                      ) {
+                        // Show dropdown — look up full MDMS object so Dropdown can display name correctly
+                        return (
+                          <Dropdown
+                            select={props.onChange}
+                            selected={getUsageData?.find((u) => u.code === (props.value?.code || props.value)) || props.value}
+                            option={getUsageData}
+                            optionKey="name"
+                            t={t}
+                          />
+                        );
+                      } else {
+                        // Show disabled input — display the resolved usage name, not the raw stored code
+                        return (
+                          <TextInput
+                            value={watch("propertyUsageType")?.name || props.value}
+                            onChange={function (e) { props.onChange(e.target.value); }}
+                            t={t}
+                            disabled={true}
+                          />
+                        );
+                      }
+                    }}
+                  />
+
+
+
+
                 {errors?.unitDetails?.[index]?.unitUsageType && (
                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].unitUsageType.message}</p>
                 )}
@@ -450,7 +579,16 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   name={`unitDetails.${index}.subUsageType`}
                   defaultValue={getSubUsageData?.find((s) => s.code === item?.subUsageType?.code || s.code === item?.subUsageType) || null}
                   rules={{ required: t("Sub Usage Type is required") }}
-                  render={(props) => <Dropdown select={props.onChange} selected={props.value} option={getSubUsageData} optionKey="name" t={t} />}
+                  render={(props) => {
+                    var unitUsageVal = watch("unitDetails." + index + ".unitUsageType");
+                    var unitCode = unitUsageVal && typeof unitUsageVal === "object" ? unitUsageVal.code : null;
+                    var allUsage = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
+                    var rowOptions = (unitCode && allUsage)
+                      ? allUsage.filter(function(opt) { return opt && opt.code && opt.code.split(".").indexOf(unitCode) !== -1; })
+                      : getSubUsageData;
+                    // Look up full MDMS object so Dropdown can display name correctly
+                    return <Dropdown select={props.onChange} selected={rowOptions?.find((o) => o.code === (props.value?.code || props.value)) || props.value} option={rowOptions} optionKey="name" t={t} />;
+                  }}
                 />
                 {errors?.unitDetails?.[index]?.subUsageType && (
                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].subUsageType.message}</p>

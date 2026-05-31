@@ -105,9 +105,13 @@ const PropertyAddressDetails = ({ goNext }) => {
       const checkHouseNo = sanitize(value?.flatNo) || stateDataCheck?.houseNo;
       const checkBuildingName = sanitize(value?.buildingName) || stateDataCheck?.buildingName;
       const checkLocality = getLocality?.find((item) => item?.code == stateDataCheck?.locality?.code);
-      console.log("checkLocality", checkLocality);
+      const checkExistingPropertyId = stateDataCheck?.existingPropertyId || stateDataCheck?.oldPropertyId || "";
+      console.log("checkjjjj", stateDataCheck);
       console.log("getLocality", getLocality);
       const checkYearOfCreation = getYearCreation?.find((item) => item?.code == stateDataCheck?.yearOfCreation?.code);
+      const checkCity = tenants?.find((item) => item?.name === stateDataCheck?.city?.name)
+        || tenants?.find((item) => item?.code === stateDataCheck?.city?.code);
+      setValue("city", checkCity);
       setValue("surveyId", checkSurveyId);
       setValue("houseNo", checkHouseNo);
       setValue("buildingName", checkBuildingName);
@@ -115,8 +119,9 @@ const PropertyAddressDetails = ({ goNext }) => {
       setValue("pincode", stateDataCheck?.pincode);
       setValue("locality", checkLocality);
       setValue("yearOfCreation", checkYearOfCreation);
+       setValue("existingPropertyId", checkExistingPropertyId);
     }
-  }, [location, stateDataCheck, getLocality, getYearCreation]);
+  }, [location, stateDataCheck, getLocality, getYearCreation, tenants]);
 
   return (
     <form  onSubmit={handleSubmit(onSubmit)}>
@@ -144,6 +149,30 @@ const PropertyAddressDetails = ({ goNext }) => {
           </button>
           </div>
       </div>
+
+
+      {/* Row: Existing Property ID */}
+<div style={twoColRow}>
+  <LabelFieldPair style={colItem}>
+    <CardLabel className="card-label-smaller">{t("Existing Property ID")}</CardLabel>
+    <div className="form-field">
+      <Controller
+        control={control}
+        name="existingPropertyId"
+        render={(props) => (
+          <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />
+        )}
+      />
+    </div>
+  </LabelFieldPair>
+  <div style={colItem}></div>
+</div>
+
+
+
+
+
+
       {/* Row 1: City + House/Shop No */}
       <div style={twoColRow}>
         <LabelFieldPair style={colItem}>

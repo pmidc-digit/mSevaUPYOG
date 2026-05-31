@@ -93,7 +93,7 @@ const EditPropertyStepForm = ({ applicationData }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
-  const formState = useSelector((state) => state.pt.PTNewApplicationForm);
+const formState = useSelector((state) => state.pt.PTNewApplicationFormReducer);
   const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();

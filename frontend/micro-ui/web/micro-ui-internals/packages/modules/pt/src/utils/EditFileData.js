@@ -19,7 +19,7 @@ export const mapApplicationDataToDefaultValues = (applicationData) => {
   const propertyDetails = applicationData?.PropertyDetails || {};
   const vasikaDetails = propertyDetails?.vasikaDetails || {};
   const allotmentDetails = propertyDetails?.allottmentDetails || {};
-  let units = applicationData?.units.map((val) => {return {...val, usageCategoryType: val?.usageCategory, RentedMonths: val?.additionalDetails?.rentedformonths, NonRentedMonthsUsage: val?.additionalDetails?.usageForDueMonths }}) || [];
+  let units = applicationData?.units?.map((val) => {return {...val, usageCategoryType: val?.usageCategory, RentedMonths: val?.additionalDetails?.rentedformonths, NonRentedMonthsUsage: val?.additionalDetails?.usageForDueMonths }}) || [];
 
   
 

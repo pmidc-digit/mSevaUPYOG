@@ -70,6 +70,57 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
     error: errorApplicationDetails,
   } = Digit.Hooks.pt.useApplicationDetail(t, tenantId, propertyId);
 
+  if (property && property.owners && property.owners.length > 0) {
+    let ownersTemp = [];
+    let owners = [];
+    property.owners.map((owner) => {
+      owner.documentUid = owner.documents ? owner.documents[0].documentUid : "NA";
+      owner.documentType = owner.documents ? owner.documents[0].documentType : "NA";
+      if (owner.status == "ACTIVE") {
+        ownersTemp.push(owner);
+      } else {
+        owners.push(owner);
+      }
+    });
+
+    property.ownersInit = owners;
+    property.ownersTemp = ownersTemp;
+  }
+  property.ownershipCategoryTemp = property.ownershipCategory;
+  property.ownershipCategoryInit = "NA";
+  // Set Institution/Applicant info card visibility
+  if (property?.ownershipCategoryTemp?.startsWith("INSTITUTION")) {
+    property.institutionTemp = property.institution;
+  }
+
+  let previousActiveProperty;
+  if (auditResponse && Array.isArray(get(auditResponse, "Properties", [])) && get(auditResponse, "Properties", []).length > 0) {
+    const propertiesAudit = get(auditResponse, "Properties", []);
+    const propertyIndex = property.status == "ACTIVE" ? 1 : 0;
+    previousActiveProperty = propertiesAudit
+      .filter((property) => property.status == "ACTIVE")
+      .sort((x, y) => y.auditDetails.lastModifiedTime - x.auditDetails.lastModifiedTime)[propertyIndex];
+    if (!previousActiveProperty) {
+      const sortedAudit = [...propertiesAudit].sort((x, y) => y.auditDetails.lastModifiedTime - x.auditDetails.lastModifiedTime);
+      previousActiveProperty = sortedAudit[1] || sortedAudit[0];
+    }
+    if (previousActiveProperty) {
+      property.ownershipCategoryInit = previousActiveProperty.ownershipCategory;
+      property.ownersInit = previousActiveProperty.owners ? previousActiveProperty.owners.filter((owner) => owner.status == "ACTIVE") : [];
+
+      if (property.ownershipCategoryInit && property.ownershipCategoryInit.startsWith("INSTITUTION")) {
+        property.institutionInit = previousActiveProperty.institution;
+      }
+    }
+  }
+
+  let transfereeOwners = get(property, "ownersTemp", []);
+  let transferorOwners = get(property, "ownersInit", []);
+
+  let transfereeInstitution = get(property, "institutionTemp", []);
+
+  let transferorInstitution = get(property, "institutionInit", []);
+
   useEffect(async () => {
     if (acknowledgementIds) {
       const res = await Digit.PaymentService.searchBill(tenantId, { Service: businessService, consumerCode: acknowledgementIds });
@@ -111,7 +162,7 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
       let compConfig = newConfigMutate.reduce((acc, el) => [...acc, ...el.body], []).find((e) => e.component === "TransfererDetails");
       applicationDetails.unshift({
         title: "PT_MUTATION_TRANSFEROR_DETAILS",
-        belowComponent: () => <TransfererDetails userType="employee" formData={{ originalData: auditResponse[0] }} config={compConfig} />,
+        belowComponent: () => <TransfererDetails userType="employee" formData={{ originalData: previousActiveProperty }} config={compConfig} />,
       });
       setAppDetailsToShow({ ...appDetailsToShow, applicationDetails });
     }
@@ -235,52 +286,6 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
     };
     property.workflow = workflow;
   }
-
-  if (property && property.owners && property.owners.length > 0) {
-    let ownersTemp = [];
-    let owners = [];
-    property.owners.map((owner) => {
-      owner.documentUid = owner.documents ? owner.documents[0].documentUid : "NA";
-      owner.documentType = owner.documents ? owner.documents[0].documentType : "NA";
-      if (owner.status == "ACTIVE") {
-        ownersTemp.push(owner);
-      } else {
-        owners.push(owner);
-      }
-    });
-
-    property.ownersInit = owners;
-    property.ownersTemp = ownersTemp;
-  }
-  property.ownershipCategoryTemp = property.ownershipCategory;
-  property.ownershipCategoryInit = "NA";
-  // Set Institution/Applicant info card visibility
-  if (get(application, "Properties[0].ownershipCategory", "").startsWith("INSTITUTION")) {
-    property.institutionTemp = property.institution;
-  }
-
-  if (auditResponse && Array.isArray(get(auditResponse, "Properties", [])) && get(auditResponse, "Properties", []).length > 0) {
-    const propertiesAudit = get(auditResponse, "Properties", []);
-    const propertyIndex = property.status == "ACTIVE" ? 1 : 0;
-    const previousActiveProperty = propertiesAudit
-      .filter((property) => property.status == "ACTIVE")
-      .sort((x, y) => y.auditDetails.lastModifiedTime - x.auditDetails.lastModifiedTime)[propertyIndex];
-    // Removed filter(property => property.status == 'ACTIVE') condition to match result in qa env
-    // const previousActiveProperty = propertiesAudit.sort((x, y) => y.auditDetails.lastModifiedTime - x.auditDetails.lastModifiedTime)[propertyIndex];
-    property.ownershipCategoryInit = previousActiveProperty.ownershipCategory;
-    property.ownersInit = previousActiveProperty.owners.filter((owner) => owner.status == "ACTIVE");
-
-    if (property.ownershipCategoryInit.startsWith("INSTITUTION")) {
-      property.institutionInit = previousActiveProperty.institution;
-    }
-  }
-
-  let transfereeOwners = get(property, "ownersTemp", []);
-  let transferorOwners = get(property, "ownersInit", []);
-
-  let transfereeInstitution = get(property, "institutionTemp", []);
-
-  let transferorInstitution = get(property, "institutionInit", []);
 
   let units = [];
   units = application?.units;
@@ -415,7 +420,7 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
                     <Row label={t("Guardian Name")} text={owner?.fatherOrHusbandName || t("CS_NA")} />
                     <Row label={t("PT_FORM3_MOBILE_NUMBER")} text={owner?.mobileNumber || t("CS_NA")} />
                     <Row label={t("PT_MUTATION_AUTHORISED_EMAIL")} text={owner?.emailId || t("CS_NA")} />
-                    <Row label={t("PT_MUTATION_TRANSFEROR_SPECIAL_CATEGORY")} text={owner?.ownerType.toLowerCase() || t("CS_NA")} />
+                    <Row label={t("PT_MUTATION_TRANSFEROR_SPECIAL_CATEGORY")} text={owner?.ownerType?.toLowerCase() || t("CS_NA")} />
                     <Row label={t("PT_OWNERSHIP_INFO_CORR_ADDR")} text={owner?.correspondenceAddress || t("CS_NA")} />
                   </StatusTable>
                 </div>
@@ -423,7 +428,7 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
         </div>
 
         <CardSubHeader style={getCardSubHeadrStyles()}>{t("PT_MUTATION_TRANSFEREE_DETAILS")}</CardSubHeader>
-        {transferorInstitution.length ? (
+        {property?.ownershipCategoryTemp?.startsWith("INSTITUTION") ? (
           <div>
             {Array.isArray(transfereeOwners) &&
               transfereeOwners
@@ -440,12 +445,12 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
                       )}
                     </CardSubHeader>
                     <StatusTable>
-                      <Row label={t("PT_INSTITUTION_NAME")} text={transferorInstitution?.institutionName || t("CS_NA")} />
-                      <Row label={t("PT_TYPE_OF_INSTITUTION")} text={`${t(transferorInstitution?.institutionType)}` || t("CS_NA")} />
-                      <Row label={t("PT_NAME_AUTHORIZED_PERSON")} text={transferorInstitution?.nameOfAuthorizedPerson || t("CS_NA")} />
+                      <Row label={t("PT_INSTITUTION_NAME")} text={transfereeInstitution?.institutionName || transfereeInstitution?.name || t("CS_NA")} />
+                      <Row label={t("PT_TYPE_OF_INSTITUTION")} text={`${t(transfereeInstitution?.institutionType || transfereeInstitution?.type)}` || t("CS_NA")} />
+                      <Row label={t("PT_NAME_AUTHORIZED_PERSON")} text={transfereeInstitution?.nameOfAuthorizedPerson || t("CS_NA")} />
                       <Row label={t("PT_LANDLINE_NUMBER")} text={owner?.altContactNumber || t("CS_NA")} />
                       <Row label={t("PT_FORM3_MOBILE_NUMBER")} text={owner?.mobileNumber || t("CS_NA")} />
-                      <Row label={t("PT_INSTITUTION_DESIGNATION")} text={transferorInstitution?.designation || t("CS_NA")} />
+                      <Row label={t("PT_INSTITUTION_DESIGNATION")} text={transfereeInstitution?.designation || t("CS_NA")} />
                       <Row label={t("PT_MUTATION_AUTHORISED_EMAIL")} text={owner?.emailId || t("CS_NA")} />
                       <Row label={t("PT_OWNERSHIP_INFO_CORR_ADDR")} text={owner?.correspondenceAddress || t("CS_NA")} />
                     </StatusTable>
@@ -472,7 +477,7 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
                     <Row label={t("PT_FORM3_RELATIONSHIP")} text={t(owner?.relationship) || t("CS_NA")} />
                     <Row label={t("PT_MUTATION_AUTHORISED_EMAIL")} text={owner?.emailId || t("CS_NA")} />
                     <Row label={t("PT_OWNERSHIP_INFO_CORR_ADDR")} text={owner?.correspondenceAddress || t("CS_NA")} />
-                    <Row label={t("PT_MUTATION_TRANSFEROR_SPECIAL_CATEGORY")} text={(owner?.ownerType).toLowerCase() || t("CS_NA")} />
+                    <Row label={t("PT_MUTATION_TRANSFEROR_SPECIAL_CATEGORY")} text={owner?.ownerType?.toLowerCase() || t("CS_NA")} />
                     <Row
                       label={t("PT_FORM3_OWNERSHIP_TYPE")}
                       text={`${property?.ownershipCategoryTemp ? t(`PT_OWNERSHIP_${property?.ownershipCategoryTemp}`) : t("CS_NA")}`}

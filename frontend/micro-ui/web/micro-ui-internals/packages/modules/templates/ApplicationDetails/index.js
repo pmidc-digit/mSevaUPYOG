@@ -54,6 +54,7 @@ const ApplicationDetails = (props) => {
     isInfoLabel = false,
     clearDataDetails,
     propertyId,
+    showHistory = true,
   } = props;
 
   useEffect(() => {
@@ -66,6 +67,10 @@ const ApplicationDetails = (props) => {
     console.log("action====", action);
     console.log("applicationDetails===>",applicationDetails)
     if (action) {
+      if (action?.forcedName === "PT_OWNERSHIP_TRANSFER" && typeof action?.customFunctionToExecute === "function") {
+        action.customFunctionToExecute();
+        return;
+      }
       if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
         window.location.assign(window.location.href.split("bpa")[0] + "editApplication/bpa" + window.location.href.split("bpa")[1]);
       }
@@ -306,6 +311,7 @@ const ApplicationDetails = (props) => {
             isInfoLabel={isInfoLabel}
             propertyId={propertyId}
             moduleCode={moduleCode}
+            showHistory={showHistory}
           />
           {showModal ? (
             <ActionModal

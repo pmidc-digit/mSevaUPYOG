@@ -15,7 +15,7 @@ export const mapPropertyToFormData = (property) => {
 
   // --- Step 1: Property Address ---
   const propertyAddress = {
-    surveyId: property.additionalDetails?.surveyId || "",
+    surveyId: property.surveyId || property.additionalDetails?.surveyId || "",
     city: { code: property.tenantId, name: property.address?.city || "" },
     houseNo: property.address?.doorNo || "",
     buildingName: property.address?.buildingName || "",
@@ -25,6 +25,7 @@ export const mapPropertyToFormData = (property) => {
     yearOfCreation: property.additionalDetails?.yearConstruction
       ? { code: property.additionalDetails.yearConstruction }
       : null,
+    existingPropertyId: property.oldPropertyId || "",
   };
 
   // --- Step 2: Property Details ---
@@ -36,7 +37,14 @@ export const mapPropertyToFormData = (property) => {
   const unitDetails = (property.units || [])
     .filter((u) => u.active !== false)
     .map((unit) => ({
-      unitUsageType: usageCode || "",
+      unitUsageType: (() => {
+        const parts = (unit.usageCategory || "").split(".");
+        // Take minor segment (index 1) if present, else major (index 0)
+        const minorCode = parts[1] || parts[0] || "";
+        return minorCode ? { code: minorCode } : (usageCode ? { code: usageCode } : "");
+      })(),
+
+
       subUsageType: unit.usageCategory ? { code: unit.usageCategory } : null,
       occupancy: unit.occupancyType ? { code: unit.occupancyType } : null,
       floor: unit.floorNo != null ? { code: String(unit.floorNo) } : null,
@@ -54,7 +62,11 @@ export const mapPropertyToFormData = (property) => {
     propertyUsageType: usageCode ? { code: usageCode } : null,
     propertyType: property.propertyType ? { code: property.propertyType } : null,
     businessName: property.additionalDetails?.businessName || "",
-    remarks: property.additionalDetails?.remrks || "",
+    remarks: property.additionalDetails?.remarks || property.additionalDetails?.remrks || "",
+    vasikaNo: property.additionalDetails?.vasikaNo || "",
+   vasikaDate: property.additionalDetails?.vasikaDate || "",
+   allotmentNo: property.additionalDetails?.allotmentNo || "",
+   allotmentDate: property.additionalDetails?.allotmentDate || "",
     flammable: property.additionalDetails?.inflammable || false,
     heightOfProperty: property.additionalDetails?.heightAbove36Feet || false,
     plotSize: property.landArea || "",
@@ -67,21 +79,77 @@ export const mapPropertyToFormData = (property) => {
   // --- Step 3: Owner Details ---
   const ownerShip = ownershipOptions.find((o) => o.value === property.ownershipCategory) || null;
 
+  const genderOptions = [
+    { name: "Male", code: "MALE" },
+    { name: "Female", code: "FEMALE" },
+    { name: "Transgender", code: "TRANSGENDER" },
+    { name: "Others", code: "OTHERS" },
+  ];
+  const relationshipOptions = [
+    { name: "Father", code: "FATHER" },
+    { name: "Husband", code: "HUSBAND" },
+  ];
+
   const ownersList = (property.owners || [])
-    .filter((o) => o.status === "ACTIVE")
-    .map((owner) => ({
-      name: owner.name || "",
-      mobileNumber: owner.mobileNumber || "",
-      emailId: owner.emailId || "",
-      address: owner.permanentAddress || owner.correspondenceAddress || "",
-    }));
+  .filter((o) => o.status === "ACTIVE")
+  .map((owner) => ({
+    name: owner.name || "",
+    mobileNumber: owner.mobileNumber || "",
+    emailId: owner.emailId || "",
+
+    designation:
+      owner.designation ||
+      property?.institution?.designation ||
+      "",
+    altContactNumber: owner.altContactNumber || "",
+    address:
+      owner.permanentAddress ||
+      owner.correspondenceAddress ||
+      "",
+
+    // Missing fields
+    gender: owner.gender
+      ? { code: owner.gender, name: owner.gender }
+      : "",
+
+    fatherOrHusbandName:
+      owner.fatherOrHusbandName || "",
+
+    relationship: owner.relationship
+      ? {
+          code: owner.relationship.toUpperCase(),
+          name: owner.relationship,
+        }
+      : "",
+
+    ownerType: owner.ownerType
+      ? { code: owner.ownerType }
+      : "",
+
+    ownershipPercentage:
+      owner.ownerShipPercentage || "",
+
+    docIdType: owner.documents?.[0]
+      ? {
+          code:
+            owner.documents[0].documentType,
+        }
+      : "",
+
+    docIdNo:
+      owner.documents?.[0]?.documentUid ||
+      "",
+  }));
+
+
 
   const ownerDetails = {
     ownerShip: ownerShip,
     owners: ownersList.length > 0 ? ownersList : [{ name: "", mobileNumber: "", emailId: "", address: "" }],
     ...(property.institution && {
       institutionName: property.institution.name || "",
-      institutionType: property.institution.type ? { code: property.institution.type } : null,
+      // institutionType: property.institution.type ? { code: property.institution.type } : null,
+      institutionType: property.institution.type || null,
     }),
   };
 

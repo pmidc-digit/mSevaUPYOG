@@ -17,8 +17,6 @@ const NewPTStepFormOne = ({ config, onGoNext, onBackClick }) => {
     return state.pt.PTNewApplicationFormReducer.formData;
   });
 
-  console.log("currentStepData", currentStepData);
-
   function goNext(data) {
     dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
     onGoNext();
@@ -32,8 +30,6 @@ const NewPTStepFormOne = ({ config, onGoNext, onBackClick }) => {
     setShowToast(false);
     setError("");
   };
-
-  console.log("me rendering instead");
 
   return (
     <React.Fragment>

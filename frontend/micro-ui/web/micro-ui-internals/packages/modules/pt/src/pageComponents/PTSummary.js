@@ -18,6 +18,40 @@ const PTSummary = ({ formData, t }) => {
   console.log("SummaryData", SummaryData);
 
   let docs = formData?.documents?.documents?.documents || SummaryData?.documents?.documents?.documents;
+  const ownerDetails = SummaryData?.ownerDetails || {};
+  const propertyDetails = SummaryData?.propertyDetails || {};
+  const propertyAddress = SummaryData?.propertyAddress || {};
+  const isInstitutionalOwner = ownerDetails?.ownerShip?.code?.includes("INSTITUTIONAL");
+
+  const getDisplayValue = (value, fallback = "NA") => {
+    if (value === undefined || value === null || value === "") return fallback;
+    if (typeof value === "object") return value?.name || value?.label || value?.code || value?.i18nKey || fallback;
+    return value;
+  };
+
+  const getUsageTypeLabel = (unit) => {
+    const usageValue = unit?.unitUsageType;
+    if (typeof usageValue === "string" && usageValue) {
+      return usageValue;
+    }
+    return getDisplayValue(usageValue);
+  };
+
+  const getFloorCount = () => {
+    const rawNoOfFloors = propertyDetails?.noOfFloors;
+    const directFloorCount = Number(rawNoOfFloors?.code || rawNoOfFloors?.name || rawNoOfFloors);
+    if (!isNaN(directFloorCount) && directFloorCount > 0) return String(directFloorCount);
+
+    const unitFloors = (propertyDetails?.unitDetails || [])
+      .map((unit) => Number(unit?.floor?.code || unit?.floor?.name || unit?.floor))
+      .filter((floor) => !isNaN(floor));
+
+    if (unitFloors.length) {
+      return String(Math.max(...unitFloors));
+    }
+
+    return "NA";
+  };
 
   const styles = {
     wrapper: {
@@ -62,49 +96,88 @@ const PTSummary = ({ formData, t }) => {
   return (
     <div className="application-summary" style={styles.wrapper}>
       {/* onwers Section */}
-      {SummaryData?.ownerDetails?.owners?.map((item, index) => {
+      {ownerDetails?.owners?.map((item, index) => {
         return (
           <Card className="summary-section" style={styles.section} key={`summary${index}`}>
             <CardSectionHeader>
-              {t("Owner")} {index + 1}
+              {t(isInstitutionalOwner ? "Institute" : "Owner")} {index + 1}
             </CardSectionHeader>
             <div className="section-content">
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Name")}</CardLabel>
-                <div style={styles.value}>{item?.name || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Mobile Number")}</CardLabel>
-                <div style={styles.value}>{item?.mobileNumber || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Email Id")}</CardLabel>
-                <div style={styles.value}>{item?.emailId || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Address")}</CardLabel>
-                <div style={styles.value}>{item?.address || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Guardian Name")}</CardLabel>
-                <div style={styles.value}>{item?.fatherOrHusbandName || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Gender")}</CardLabel>
-                <div style={styles.value}>{item?.gender?.name || item?.gender || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Relationship")}</CardLabel>
-                <div style={styles.value}>{item?.relationship?.name || item?.relationship || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Special Category")}</CardLabel>
-                <div style={styles.value}>{item?.ownerType?.code || (typeof item?.ownerType === "string" ? item?.ownerType : "NA")}</div>
-              </LabelFieldPair>
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Ownership Percentage")}</CardLabel>
-                <div style={styles.value}>{item?.ownershipPercentage || "NA"}</div>
-              </LabelFieldPair>
+              {isInstitutionalOwner ? (
+                <>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Institution Name")}</CardLabel>
+                    <div style={styles.value}>{ownerDetails?.institutionName || item?.institutionName || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Designation")}</CardLabel>
+                    <div style={styles.value}>{item?.designation || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Institution Type")}</CardLabel>
+                    <div style={styles.value}>{getDisplayValue(ownerDetails?.institutionType)}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Name of Authorized Person")}</CardLabel>
+                    <div style={styles.value}>{item?.name || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Telephone Number")}</CardLabel>
+                    <div style={styles.value}>{item?.altContactNumber || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Mobile Number")}</CardLabel>
+                    <div style={styles.value}>{item?.mobileNumber || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Email Id")}</CardLabel>
+                    <div style={styles.value}>{item?.emailId || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Address")}</CardLabel>
+                    <div style={styles.value}>{item?.address || item?.correspondenceAddress || "NA"}</div>
+                  </LabelFieldPair>
+                </>
+              ) : (
+                <>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Name")}</CardLabel>
+                    <div style={styles.value}>{item?.name || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Mobile Number")}</CardLabel>
+                    <div style={styles.value}>{item?.mobileNumber || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Email Id")}</CardLabel>
+                    <div style={styles.value}>{item?.emailId || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Address")}</CardLabel>
+                    <div style={styles.value}>{item?.address || item?.correspondenceAddress || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Guardian Name")}</CardLabel>
+                    <div style={styles.value}>{item?.fatherOrHusbandName || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Gender")}</CardLabel>
+                    <div style={styles.value}>{getDisplayValue(item?.gender)}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Relationship")}</CardLabel>
+                    <div style={styles.value}>{getDisplayValue(item?.relationship)}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Special Category")}</CardLabel>
+                    <div style={styles.value}>{getDisplayValue(item?.ownerType)}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair style={styles.labelFieldPair}>
+                    <CardLabel>{t("Ownership Percentage")}</CardLabel>
+                    <div style={styles.value}>{item?.ownershipPercentage || "NA"}</div>
+                  </LabelFieldPair>
+                </>
+              )}
             </div>
           </Card>
         );
@@ -115,49 +188,49 @@ const PTSummary = ({ formData, t }) => {
         <div className="section-content">
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Property Usage Type")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyDetails?.propertyUsageType?.name || "NA"}</div>
+            <div style={styles.value}>{getDisplayValue(propertyDetails?.propertyUsageType)}</div>
           </LabelFieldPair>
 
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Property Type")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyDetails?.propertyType?.name || "NA"}</div>
+            <div style={styles.value}>{getDisplayValue(propertyDetails?.propertyType)}</div>
           </LabelFieldPair>
 
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Business Name")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyDetails?.businessName || "NA"}</div>
+            <div style={styles.value}>{propertyDetails?.businessName || "NA"}</div>
           </LabelFieldPair>
 
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Remarks")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyDetails?.remarks || "NA"}</div>
+            <div style={styles.value}>{propertyDetails?.remarks || "NA"}</div>
           </LabelFieldPair>
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Plot Size (sq. yards)")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyDetails?.plotSize || "NA"}</div>
+            <div style={styles.value}>{propertyDetails?.plotSize || "NA"}</div>
           </LabelFieldPair>
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("No. of Floors")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyDetails?.noOfFloors?.code || "NA"}</div>
+            <div style={styles.value}>{getFloorCount()}</div>
           </LabelFieldPair>
-          {SummaryData?.propertyDetails?.unitDetails?.map((unit, idx) => (
+          {propertyDetails?.unitDetails?.map((unit, idx) => (
             <div key={idx} style={{ borderTop: "1px solid #eee", marginTop: "0.5rem", paddingTop: "0.5rem" }}>
               <div style={{ fontWeight: 600, paddingBottom: "0.3rem" }}>{t("Unit")} {idx + 1}</div>
               <LabelFieldPair style={styles.labelFieldPair}>
                 <CardLabel>{t("Floor")}</CardLabel>
-                <div style={styles.value}>{unit?.floor?.name || unit?.floor?.code || "NA"}</div>
+                <div style={styles.value}>{getDisplayValue(unit?.floor)}</div>
               </LabelFieldPair>
               <LabelFieldPair style={styles.labelFieldPair}>
                 <CardLabel>{t("Usage Type")}</CardLabel>
-                <div style={styles.value}>{unit?.unitUsageType?.name || unit?.unitUsageType?.code || "NA"}</div>
+                <div style={styles.value}>{getUsageTypeLabel(unit)}</div>
               </LabelFieldPair>
               <LabelFieldPair style={styles.labelFieldPair}>
                 <CardLabel>{t("Sub Usage Type")}</CardLabel>
-                <div style={styles.value}>{unit?.subUsageType?.name || unit?.subUsageType?.code || "NA"}</div>
+                <div style={styles.value}>{getDisplayValue(unit?.subUsageType)}</div>
               </LabelFieldPair>
               <LabelFieldPair style={styles.labelFieldPair}>
                 <CardLabel>{t("Occupancy Type")}</CardLabel>
-                <div style={styles.value}>{unit?.occupancy?.name || unit?.occupancy?.code || "NA"}</div>
+                <div style={styles.value}>{getDisplayValue(unit?.occupancy)}</div>
               </LabelFieldPair>
               <LabelFieldPair style={styles.labelFieldPair}>
                 <CardLabel>{t("Built Up Area")}</CardLabel>
@@ -177,35 +250,35 @@ const PTSummary = ({ formData, t }) => {
         <div className="section-content">
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("City")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyAddress?.city?.name || "NA"}</div>
+            <div style={styles.value}>{getDisplayValue(propertyAddress?.city)}</div>
           </LabelFieldPair>
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("House / Door No.")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyAddress?.houseNo || "NA"}</div>
+            <div style={styles.value}>{propertyAddress?.houseNo || "NA"}</div>
           </LabelFieldPair>
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Building Name")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyAddress?.buildingName || "NA"}</div>
+            <div style={styles.value}>{propertyAddress?.buildingName || "NA"}</div>
           </LabelFieldPair>
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Street Name")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyAddress?.streetName || "NA"}</div>
+            <div style={styles.value}>{propertyAddress?.streetName || "NA"}</div>
           </LabelFieldPair>
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Locality")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyAddress?.locality?.name || "NA"}</div>
+            <div style={styles.value}>{getDisplayValue(propertyAddress?.locality)}</div>
           </LabelFieldPair>
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Pincode")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyAddress?.pincode || "NA"}</div>
+            <div style={styles.value}>{propertyAddress?.pincode || "NA"}</div>
           </LabelFieldPair>
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Survey ID")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyAddress?.surveyId || "NA"}</div>
+            <div style={styles.value}>{propertyAddress?.surveyId || "NA"}</div>
           </LabelFieldPair>
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Year of Creation")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyAddress?.yearOfCreation?.name || SummaryData?.propertyAddress?.yearOfCreation?.code || "NA"}</div>
+            <div style={styles.value}>{getDisplayValue(propertyAddress?.yearOfCreation)}</div>
           </LabelFieldPair>
         </div>
       </div>

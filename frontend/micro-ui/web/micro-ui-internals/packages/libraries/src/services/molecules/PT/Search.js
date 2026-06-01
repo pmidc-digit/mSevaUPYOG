@@ -258,10 +258,10 @@ export const PTSearch = {
           { title: "PT_ASSESMENT_INFO_NO_OF_FLOOR", value: response?.noOfFloors },
 
 
-          { title: "Vasika No", value: response?.vasikaNo },
-          { title: "Vasika Date", value: response?.vasikaDate },
-          { title: "Allotment No", value: response?.allotmentNo },
-          { title: "Allotment Date", value: response?.allotmentDate },
+          { title: "Vasika No", value: response?.additionalDetails?.vasikaNo },
+          { title: "Vasika Date", value: response?.additionalDetails?.vasikaDate },
+          { title: "Allotment No", value: response?.additionalDetails?.allotmentNo },
+          { title: "Allotment Date", value: response?.additionalDetails?.allotmentDate },
           { title: "Business Name", value: response?.additionalDetails?.businessName },
           { title: "Remarks", value: response?.additionalDetails?.remarks },
           { title: "Do you have any inflammable material stored in your property?", value: response?.additionalDetails?.inflammable===false?"No":true?"Yes":null},

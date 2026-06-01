@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Dropdown, FormStep, LabelFieldPair, CardLabel, RadioOrSelect } from "@mseva/digit-ui-react-components";
+import { Dropdown, FormStep, LabelFieldPair, CardLabel, RadioOrSelect, CardLabelError } from "@mseva/digit-ui-react-components";
 import Timeline from "../../components/TLTimeline";
 
 const ReasonForTransfer = (props) => {
-  const { t, config, onSelect, userType, formData, setError, clearErrors, errors } = props;
+  const { t, config, onSelect, userType, formData, setError, clearErrors, errors, formState } = props;
 
   const { data, isLoading } = Digit.Hooks.pt.useMDMS(Digit.ULBService.getStateId(), "PropertyTax", "ReasonForTransfer", {});
 
@@ -27,8 +27,10 @@ const ReasonForTransfer = (props) => {
   useEffect(() => {
     if (userType === "employee") {
       if (!reasonForTransfer) {
-        setError(config.key, { type: "Required" });
-      } else if (errors?.[config.key]) clearErrors(config.key);
+        setError("additionalDetails.reasonForTransfer", { type: "Required" });
+      } else if (errors?.additionalDetails?.reasonForTransfer) {
+        clearErrors("additionalDetails.reasonForTransfer");
+      }
       goNext();
     }
   }, [reasonForTransfer]);
@@ -44,6 +46,11 @@ const ReasonForTransfer = (props) => {
             <Dropdown t={t} option={menu} optionKey={"i18nKey"} select={setSelected} selected={reasonForTransfer} />
           </div>
         </LabelFieldPair>
+        {formState?.submitCount > 0 && !reasonForTransfer && (
+          <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+            {t("CORE_COMMON_REQUIRED_ERRMSG")}
+          </CardLabelError>
+        )}
       </React.Fragment>
     );
   }

@@ -50,7 +50,7 @@ const EmployeeApp = ({ path, url, userType }) => {
 
   const breadcrumbObj = {
     ["/digit-ui/employee/pt/inbox"]: "ES_TITLE_INBOX",
-    ["/digit-ui/employee/pt/new-application"]: "ES_TITLE_NEW_PROPERTY_APPLICATION",
+    ["/digit-ui/employee/pt/new-aplplication"]: "ES_TITLE_NEW_PROPERTY_APPLICATION",
     ["/digit-ui/employee/pt/search"]: "PT_COMMON_SEARCH_PROPERTY_SUB_HEADER",
     ["/digit-ui/employee/pt/application-search"]: "ES_COMMON_APPLICATION_SEARCH",
     ["/digit-ui/employee/pt/Ulb-assesment"]: "ES_COMMON_ULB_ASSESSMENT",
@@ -168,7 +168,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const ApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ApplicationDetails");
   const PropertyDetails = Digit?.ComponentRegistryService?.getComponent("PTPropertyDetails");
   const AssessmentDetails = Digit?.ComponentRegistryService?.getComponent("PTAssessmentDetails");
-  const EditApplication = Digit?.ComponentRegistryService?.getComponent("PTEditApplication");
+  const EditApplication = Digit?.ComponentRegistryService?.getComponent("NewPTStepperForm");
   const Response = Digit?.ComponentRegistryService?.getComponent("PTResponse");
   const TransferOwnership = Digit?.ComponentRegistryService?.getComponent("PTTransferOwnership");
   const DocsRequired = Digit?.ComponentRegistryService?.getComponent("PTDocsRequired");
@@ -229,7 +229,9 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseEmployee {...props} t={t} parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/gis-values`} component={() => <GISIntegrationEmployee />} />
-          <PrivateRoute path={`${path}/new-application`} component={() => <GISComponent />} />
+    
+           <PrivateRoute path={`${path}/new-application`} component={() => <CreatePropertyForm parentUrl={url} />} />
+
           <PrivateRoute
             path={`${path}/searchold`}
             component={() => (

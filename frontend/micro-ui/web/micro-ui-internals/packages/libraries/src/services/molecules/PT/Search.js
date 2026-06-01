@@ -246,7 +246,7 @@ export const PTSearch = {
           { title: "PT_PROPERTY_ADDRESS_PINCODE", value: response?.address?.pincode },
           { title: "Existing Property ID", value: response?.oldPropertyId},
           { title: "Survey Id/UID", value: response?.surveyId},
-          { title: "Year of creation of Property", value: response?.yearOfCreation},
+          { title: "Year of creation of Property", value: response?.additionalDetails?.yearConstruction},
         ],
       },
       {
@@ -257,12 +257,13 @@ export const PTSearch = {
           { title: "PT_ASSESMENT_INFO_PLOT_SIZE", value: response?.landArea },
           { title: "PT_ASSESMENT_INFO_NO_OF_FLOOR", value: response?.noOfFloors },
 
+
           { title: "Vasika No", value: response?.vasikaNo },
           { title: "Vasika Date", value: response?.vasikaDate },
           { title: "Allotment No", value: response?.allotmentNo },
           { title: "Allotment Date", value: response?.allotmentDate },
-          { title: "Business Name", value: response?.businessName },
-          { title: "Remarks", value: response?.remarks },
+          { title: "Business Name", value: response?.additionalDetails?.businessName },
+          { title: "Remarks", value: response?.additionalDetails?.remarks },
           { title: "Do you have any inflammable material stored in your property?", value: response?.additionalDetails?.inflammable===false?"No":true?"Yes":null},
           { title: "Height of property more than 36 feet?", value: response?.additionalDetails?.heightAbove36Feet===false?"No":true?"Yes":null},
         ],
@@ -337,6 +338,14 @@ export const PTSearch = {
                     isArray: false,
                   }, },
                 },
+                { title: "PT_OWNERSHIP_INFO_GENDER", value: owner?.gender, privacy: { uuid: owner?.uuid, fieldName: "gender", model: "User",showValue: false,
+                  loadData: {
+                    serviceName: "/property-services/property/_search",
+                    requestBody: {},
+                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
+                    jsonPath: "Properties[0].owners[0].gender",
+                    isArray: false,
+                  }, } },
                 { title: "PT_FORM3_OWNERSHIP_TYPE", value: response?.ownershipCategory },
                 {
                   title: "PT_OWNERSHIP_INFO_MOBILE_NO",
@@ -363,14 +372,7 @@ export const PTSearch = {
                   }, },
                 },
                 { title: "Ownership Percentage", value: response?.owners[0]?.ownerShipPercentage},
-                { title: "PT_OWNERSHIP_INFO_GENDER", value: owner?.gender, privacy: { uuid: owner?.uuid, fieldName: "gender", model: "User",showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
-                    jsonPath: "Properties[0].owners[0].gender",
-                    isArray: false,
-                  }, } },
+                
               
                 {
                   title: "PT_OWNERSHIP_INFO_USER_CATEGORY",

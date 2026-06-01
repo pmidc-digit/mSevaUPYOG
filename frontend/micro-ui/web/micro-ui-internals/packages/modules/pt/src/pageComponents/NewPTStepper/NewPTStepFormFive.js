@@ -56,8 +56,10 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onSubmit = async (data, selectedAction) => {
-    console.log("data", data);
+
     setLoader(true);
+    // debugger
+
     const { propertyDetails, propertyAddress, ownerDetails, documents } = data;
     const originalProperty = data._originalProperty;
     const isEditMode = !!originalProperty;
@@ -114,22 +116,46 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
 
     const computedOwners = ownerDetails?.owners?.map((owner, index) => {
       const originalOwner = originalProperty?.owners?.[index];
+      const specialCategoryDoc =
+        owner?.docIdType?.code && owner?.docIdNo
+          ? [{ documentUid: owner.docIdNo, documentType: owner.docIdType.code, fileStoreId: owner.docIdNo }]
+          : [];
       return {
         // Preserve original owner fields (id, uuid, etc.) in edit mode
         ...(isEditMode && originalOwner ? originalOwner : {}),
-        ...owner,
-        ownerType: "NONE",
-        altContactNumber: owner?.mobileNumber,
+        name: owner?.name,
+        mobileNumber: owner?.mobileNumber,
+        emailId: owner?.emailId,
+        permanentAddress: owner?.address,
+        gender: owner?.gender?.name || owner?.gender,
+        fatherOrHusbandName: owner?.fatherOrHusbandName,
+        relationship: owner?.relationship?.name || owner?.relationship,
+        ownerShipPercentage: owner?.ownershipPercentage,
+        ownerType: owner?.ownerType?.code || owner?.ownerType || "NONE",
+        altContactNumber: owner?.altContactNumber,
+        designation: owner?.designation,
+
+
+        ...(specialCategoryDoc.length > 0 && { documents: specialCategoryDoc }),
       };
     });
+
+    
+
 
     const formData = {
       // Spread original property to preserve all IDs and audit fields in edit mode
       ...(isEditMode ? originalProperty : {}),
       tenantId: tenantId,
+      surveyId: propertyAddress?.surveyId || undefined,
+      oldPropertyId: propertyAddress?.existingPropertyId || undefined,
       address: {
         ...(isEditMode ? originalProperty.address : {}),
+        doorNo: propertyAddress?.houseNo,
+        buildingName: propertyAddress?.buildingName,
+        street: propertyAddress?.streetName,
         city: propertyAddress?.city?.name,
+        pincode: propertyAddress?.pincode,
         locality: {
           ...(isEditMode ? originalProperty.address?.locality : {}),
           code: propertyAddress?.locality?.code,
@@ -143,6 +169,10 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
         remrks: propertyDetails?.remarks,
         inflammable: propertyDetails?.flammable,
         heightAbove36Feet: propertyDetails?.heightOfProperty,
+        vasikaNo: propertyDetails?.vasikaNo,
+        vasikaDate: propertyDetails?.vasikaDate,
+        allotmentNo: propertyDetails?.allotmentNo,
+        allotmentDate: propertyDetails?.allotmentDate,
       },
       usageCategoryMinor: usageCategoryMajor === propertyUsageCode ? null : propertyUsageCode,
       usageCategoryMajor: usageCategoryMajor,
@@ -160,7 +190,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
           type: ownerDetails?.institutionType?.code,
           nameOfAuthorizedPerson: ownerDetails?.owners?.[0]?.name,
           tenantId: null,
-          designation: "no",
+          designation: owner?.designation,
         },
       }),
 
@@ -181,19 +211,25 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
     };
 
     try {
+       debugger
       let response;
       if (isEditMode) {
         response = await Digit.PTService.update({ Property: formData }, tenantId);
       } else {
+  
         response = await Digit.PTService.create({ Property: formData }, tenantId);
+        console.log("createxresponse: ", response); 
+      
+    
       }
-      console.log("response====", response);
       const id = response?.Properties[0]?.propertyId;
       setLoader(false);
       if (isCitizen) {
         history.push("/digit-ui/citizen/pt/property/response/" + id);
       } else {
-        history.push("/digit-ui/employee/garbagecollection/response/" + id);
+        // history.push("/digit-ui/employee/garbagecollection/response/" + id);
+        history.push("/digit-ui/employee/pt/property/response/" + id);
+
       }
     } catch (error) {
       setLoader(false);

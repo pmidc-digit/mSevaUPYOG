@@ -107,37 +107,15 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
         >
           <InboxLinks parentRoute={props.parentRoute} businessService={props.moduleCode} />
 
-          <div
-            style={{
-              borderRadius: "8px",
-              overflow: "hidden",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-              background: "#fff",
-            }}
-          >
-            <div
-              style={{
-                background: "#f0f4f8",
-                padding: "10px 16px",
-                borderBottom: "1px solid #e2e8f0",
-              }}
-            >
-              <span style={{ fontWeight: "600", fontSize: "13px", color: "#374151", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                {t("ES_COMMON_FILTER")}
-              </span>
-            </div>
-            <div style={{ padding: "12px" }}>
-              <FilterComponent
-                defaultSearchParams={props.defaultSearchParams}
-                onFilterChange={props.onFilterChange}
-                searchParams={props.searchParams}
-                type="desktop"
-                useNewInboxAPI={useNewInboxAPI}
-                statusMap={useNewInboxAPI ? data?.[0].statusMap : null}
-                moduleCode={props.moduleCode}
-              />
-            </div>
-          </div>
+          <FilterComponent
+            defaultSearchParams={props.defaultSearchParams}
+            onFilterChange={props.onFilterChange}
+            searchParams={props.searchParams}
+            type="desktop"
+            useNewInboxAPI={useNewInboxAPI}
+            statusMap={useNewInboxAPI ? data?.[0].statusMap : null}
+            moduleCode={props.moduleCode}
+          />
         </div>
       )}
 

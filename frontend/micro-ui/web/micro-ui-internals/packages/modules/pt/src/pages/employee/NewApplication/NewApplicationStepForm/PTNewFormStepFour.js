@@ -1,13 +1,72 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-//
-import { FormComposer } from "@mseva/digit-ui-react-components";
+import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
 
-const PTNewFormStepFour = ({ config, onGoNext, onBackClick, t }) => {
-  function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+import _ from "lodash";
+
+const NewPTStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
+  const dispatch = useDispatch();
+  const [showToast, setShowToast] = useState(false);
+  const [error, setError] = useState("");
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
+
+  const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS('pb', "PropertyTax", [{ name: "Documents" }]);
+
+  const currentStepData = useSelector(function (state) {
+    return state.pt.PTNewApplicationFormReducer.formData && state.pt.PTNewApplicationFormReducer.formData[config?.key]
+      ? state.pt.PTNewApplicationFormReducer.formData[config?.key]
+      : {};
+  });
+
+  // Enrich config with document data
+  const enrichedConfig = useMemo(() => {
+    if (!docData || isLoading) return config.currStepConfig;
+
+    const documentsList = docData?.["PropertyTax"]?.Documents || [];
+
+    return {
+      ...config.currStepConfig,
+      fields: config.currStepConfig.fields?.map(field => {
+        if (field.name === "documents") {
+          return {
+            ...field,
+            documentsList: documentsList
+          };
+        }
+        return field;
+      })
+    };
+  }, [docData, isLoading, config.currStepConfig]);
+
+  const goNext = async (finalData) => {
+    const missingFields = validation(finalData);
+    if (missingFields.length > 0) {
+      setError(`${t("PT_" + missingFields[0].replace(".", "_").toUpperCase())}`);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+      return;
+    }
     onGoNext();
+  };
+
+  function validation(formData) {
+    const chbDocumentsType = docData?.["PropertyTax"]?.Documents || [];
+    const uploadedDocs = formData?.documents?.documents || [];
+    // Extract required docs
+    const requiredDocs = chbDocumentsType?.filter((doc) => doc.required).map((doc) => doc.code);
+    // Extract uploaded document codes
+    const uploadedDocCodes = uploadedDocs?.map((doc) => doc.documentType || []);
+
+    // // Missing required docs
+    // const missingDocs = requiredDocs?.filter((reqDoc) => !uploadedDocCodes.includes(reqDoc));
+
+    // For dropdowns: match if uploadedDoc starts with requiredDoc (prefix check)
+    const missingDocs = requiredDocs?.filter((reqDoc) => !uploadedDocCodes.some((uploaded) => uploaded && uploaded.startsWith(reqDoc)));
+
+    return missingDocs;
   }
 
   function onGoBack(data) {
@@ -15,38 +74,31 @@ const PTNewFormStepFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in document detilas in step 4  ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+    console.log("onFormValueChange", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
     }
   };
 
-  const currentStepData = useSelector(function (state) {
-    console.log("state in step four ", state);
-    return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
-      ? state.pt.PTNewApplicationForm.formData[config.key]
-      : {};
-  });
-  console.log("currentStepData in step four: ", currentStepData);
-  const dispatch = useDispatch();
-
-  // console.log("currentStepData in  Administrative details: ", currentStepData);
-
+  const closeToast = () => {
+    setShowToast(false);
+    setError("");
+  };
   return (
     <React.Fragment>
       <FormComposer
         defaultValues={currentStepData}
-        //heading={t("")}
-        config={config.currStepConfig}
+        config={enrichedConfig}
         onSubmit={goNext}
         onFormValueChange={onFormValueChange}
-        //isDisabled={!canSubmit}
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
       />
+      {showToast && <Toast isDeleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };
 
-export default PTNewFormStepFour;
+export default NewPTStepFormFour;

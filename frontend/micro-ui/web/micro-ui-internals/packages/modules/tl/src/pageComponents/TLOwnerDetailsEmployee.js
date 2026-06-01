@@ -1232,7 +1232,9 @@ const OwnerForm = (_props) => {
               </div>
               <div style={colItem}>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_EMP_APPLICATION_SPL_CAT")} `}</CardLabel>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_EMP_APPLICATION_SPL_CAT")} `}
+                   <span className="requiredField">*</span>
+                </CardLabel>
                 <Controller
                   control={control}
                   name={"ownerType"}

@@ -71,7 +71,11 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     const isMultipleOwner = ownershipCode === "INDIVIDUAL.MULTIPLEOWNERS";
 
     const validateOwner = (owner, index = 1) => {
-      if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
+      if (!owner?.name) {
+        missingFields.push(`Name (Owner ${index})`);
+      } else if (/\d/.test(owner.name)) {
+        missingFields.push(`Name (Owner ${index}) should not contain numeric values`);
+      }
 
       if (!owner?.mobileNumber) {
         missingFields.push(`Mobile Number (Owner ${index})`);
@@ -93,11 +97,21 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         if (isOver100) missingFields.push(`Owner ${index} date of birth is not valid (max age: 100 years)`);
       }
       if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
-      if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
+      if (!owner?.fatherOrHusbandName) {
+        missingFields.push(`Father/Husband Name (Owner ${index})`);
+      } else if (/\d/.test(owner.fatherOrHusbandName)) {
+        missingFields.push(`Father/Husband Name (Owner ${index}) should not contain numeric values`);
+      }
 
       if (owner?.emailId && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(owner.emailId)) {
         missingFields.push(`Email (Owner ${index}) is not valid`);
       }
+
+      if (owner?.pan && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i.test(owner.pan)) {
+        missingFields.push(`PAN (Owner ${index}) must be a valid 10-character format (e.g., AAAAA9999A)`);
+      }
+
+      if (!owner?.ownerType?.code) missingFields.push(`Special Category (Owner ${index})`);
     };
 
     if (isSingleOwner) {

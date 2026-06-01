@@ -13,6 +13,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import lombok.extern.slf4j.Slf4j;
 
+import jakarta.annotation.PostConstruct;
+
 @Component
 @Slf4j
 public class ReceiptConsumer {
@@ -23,7 +25,7 @@ public class ReceiptConsumer {
 	@org.springframework.beans.factory.annotation.Value("${kafka.topics.receipt.create}")
 	private String receiptTopic;
 
-	@javax.annotation.PostConstruct
+	@PostConstruct
 	public void init() {
 		log.info("ReceiptConsumer initialized - Listening to topic: {}, group: egov-pet-service", receiptTopic);
 	}

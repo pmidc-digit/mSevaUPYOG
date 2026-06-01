@@ -1,7 +1,6 @@
 
 package org.egov.ptr.web.controllers;
 
-import io.swagger.annotations.ApiParam;
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.ptr.models.*;
 import org.egov.ptr.models.collection.GetBillCriteria;
@@ -15,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.Collections;
 import java.util.List;
 

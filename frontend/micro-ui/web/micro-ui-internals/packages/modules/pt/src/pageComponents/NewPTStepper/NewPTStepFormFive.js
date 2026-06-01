@@ -160,7 +160,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
           type: ownerDetails?.institutionType?.code,
           nameOfAuthorizedPerson: ownerDetails?.owners?.[0]?.name,
           tenantId: null,
-          designation: "no",
+          designation: ownerDetails?.owners?.[0]?.designation,
         },
       }),
 

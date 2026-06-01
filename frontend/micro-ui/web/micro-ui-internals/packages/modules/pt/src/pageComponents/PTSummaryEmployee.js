@@ -8,7 +8,26 @@ function PTSummaryEmployee({ formData, t }) {
   const { pathname: url } = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
-  const mutateScreen = url.includes("/property-mutate/");
+  const mutateScreen = url.includes("/property-mutate/") || url.includes("/transfer-ownership/");
+  const getDisplayValue = (value, fallback = "NA") => {
+    if (value === undefined || value === null || value === "") return fallback;
+    if (typeof value === "object") return value?.name || value?.label || value?.value || value?.code || value?.i18nKey || fallback;
+    return value;
+  };
+
+  const getFloorCount = (propertyDetails = {}) => {
+    const directFloorCount = Number(propertyDetails?.noOfFloors?.code || propertyDetails?.noOfFloors?.name || propertyDetails?.noOfFloors);
+    if (!isNaN(directFloorCount) && directFloorCount > 0) return String(directFloorCount);
+
+    const unitFloors = (propertyDetails?.units || [])
+      .map((unit) => Number(unit?.floorNoCitizen?.code || unit?.floorNoCitizen || unit?.floor?.code || unit?.floor || unit?.floorNo))
+      .filter((floor) => !isNaN(floor));
+
+    return unitFloors.length ? String(Math.max(...unitFloors)) : "NA";
+  };
+
+  const isInstitutionalOwnership = formData?.ownerShipDetails?.ownershipCategory?.code?.includes("INSTITUTIONAL");
+  const isIndividualOwnership = formData?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL") || formData?.ownerShipDetails?.ownershipCategory?.code === "SINGLEOWNER";
   return (
     <>
       {mutateScreen ? (
@@ -173,11 +192,11 @@ function PTSummaryEmployee({ formData, t }) {
             <div className="section-content">
               <LabelFieldPair>
                 <CardLabel>{t("Property Usage Type")}</CardLabel>
-                <div>{formData?.PropertyDetails?.usageCategoryMajor?.i18nKey || "NA"}</div>
+                <div>{getDisplayValue(formData?.PropertyDetails?.usageCategoryMajor)}</div>
               </LabelFieldPair>
               <LabelFieldPair>
                 <CardLabel>{t("Type of Building")}</CardLabel>
-                <div>{formData?.PropertyDetails?.PropertyType?.i18nKey || "NA"}</div>
+                <div>{getDisplayValue(formData?.PropertyDetails?.PropertyType)}</div>
               </LabelFieldPair>
               <LabelFieldPair>
                 <CardLabel>{t("Plot Size(sq yards)")}</CardLabel>
@@ -185,7 +204,7 @@ function PTSummaryEmployee({ formData, t }) {
               </LabelFieldPair>
               <LabelFieldPair>
                 <CardLabel>{t("No of Floor")}</CardLabel>
-                <div>{formData?.PropertyDetails?.noOfFloors || "NA"}</div>
+                <div>{getFloorCount(formData?.PropertyDetails)}</div>
               </LabelFieldPair>
               {window.location.href.includes("/citizen") ? null : (
                 <LabelFieldPair>
@@ -213,20 +232,39 @@ function PTSummaryEmployee({ formData, t }) {
               )}
               <LabelFieldPair>
                 <CardLabel>{t("Business Name")}</CardLabel>
-                <div>{formData?.PropertyDetails?.businessName?.businessName || "NA"}</div>
+                <div>{getDisplayValue(formData?.PropertyDetails?.businessName)}</div>
               </LabelFieldPair>
               <LabelFieldPair>
                 <CardLabel>{t("Remarks")}</CardLabel>
                 <div>{formData?.PropertyDetails?.remarks || "NA"}</div>
               </LabelFieldPair>
+              {formData?.PropertyDetails?.units?.map((unit, index) => (
+                <div key={index}>
+                  <LabelFieldPair>
+                    <CardLabel>{t("Unit")}</CardLabel>
+                    <div>{index + 1}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair>
+                    <CardLabel>{t("Floor")}</CardLabel>
+                    <div>{getDisplayValue(unit?.floorNoCitizen || unit?.floor || unit?.floorNo)}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair>
+                    <CardLabel>{t("Usage Type")}</CardLabel>
+                    <div>{getDisplayValue(unit?.unitUsageType || unit?.usageCategoryType || unit?.usageCategory)}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair>
+                    <CardLabel>{t("Sub Usage Type")}</CardLabel>
+                    <div>{getDisplayValue(unit?.subUsageType)}</div>
+                  </LabelFieldPair>
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Owner Details Section */}
           <div className="summary-section">
             <div className="section-content">
-              {(formData?.ownerShipDetails?.ownershipCategory?.code === "INSTITUTIONALPRIVATE" ||
-                formData?.ownerShipDetails?.ownershipCategory?.code === "INSTITUTIONALGOVERNMENT") && (
+              {isInstitutionalOwnership && (
                 <>
                   {formData?.ownerShipDetails?.owners?.map((owner, index) => (
                     <div key={index}>
@@ -240,7 +278,7 @@ function PTSummaryEmployee({ formData, t }) {
                       </LabelFieldPair>
                       <LabelFieldPair>
                         <CardLabel>{t("Type of Institution")}</CardLabel>
-                        <div>{formData?.ownerShipDetails?.ownershipCategory?.label || "NA"}</div>
+                        <div>{getDisplayValue(owner?.institutionType) || getDisplayValue(formData?.ownerShipDetails?.ownershipCategory)}</div>
                       </LabelFieldPair>
 
                       <LabelFieldPair>
@@ -271,8 +309,7 @@ function PTSummaryEmployee({ formData, t }) {
                   ))}
                 </>
               )}
-              {(formData?.ownerShipDetails?.ownershipCategory?.code === "INDIVIDUAL.SINGLEOWNER" ||
-                formData?.ownerShipDetails?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS") && (
+              {isIndividualOwnership && (
                 <>
                   {formData?.ownerShipDetails?.owners?.map((owner, index) => (
                     <div key={index}>
@@ -286,11 +323,11 @@ function PTSummaryEmployee({ formData, t }) {
                       </LabelFieldPair>
                       <LabelFieldPair>
                         <CardLabel>{t("Gender")}</CardLabel>
-                        <div>{owner.gender?.value || "NA"}</div>
+                        <div>{getDisplayValue(owner?.gender)}</div>
                       </LabelFieldPair>
                       <LabelFieldPair>
                         <CardLabel>{t("Ownership Type")}</CardLabel>
-                        <div>{formData?.ownerShipDetails?.ownershipCategory?.label || "NA"}</div>
+                        <div>{getDisplayValue(formData?.ownerShipDetails?.ownershipCategory)}</div>
                       </LabelFieldPair>
                       <LabelFieldPair>
                         <CardLabel>{t("MOBILE NO")}</CardLabel>
@@ -314,7 +351,7 @@ function PTSummaryEmployee({ formData, t }) {
                       </LabelFieldPair>
                       <LabelFieldPair>
                         <CardLabel>{t("Document Type")}</CardLabel>
-                        <div>{owner.documents?.documentType?.i18nKey || "NA"}</div>
+                        <div>{getDisplayValue(owner.documents?.documentType)}</div>
                       </LabelFieldPair>
                       <LabelFieldPair>
                         <CardLabel>{t("Ownership Document ID")}</CardLabel>

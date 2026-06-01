@@ -77,6 +77,7 @@ const EmployeeApp = ({ path }) => {
     !location.pathname.includes("new-application") &&
     !location.pathname.includes("edit-application") &&
     !location.pathname.includes("firenoc/inbox") &&
+    !location.pathname.includes("application-overview") &&
     !isResponse;
 
   return (

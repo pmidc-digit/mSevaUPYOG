@@ -42,12 +42,33 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     );
     const applicationTenantId = selectedStationObj?.tenantId || selectedStationObj?.baseTenantId || tenantId;
 
-    const convertedDocs = docsFromRedux.map((doc) => ({
-      tenantId: applicationTenantId,
-      documentType: doc.documentType,
-      fileStoreId: doc.filestoreId || doc.fileStoreId,
-      ...(doc.dropdown ? { dropdown: doc.dropdown } : {}),
-    }));
+    const convertedDocs = docsFromRedux.map((doc) => {
+      let docType = doc.documentType || "";
+      let dropdown = doc.dropdown ? { ...doc.dropdown } : null;
+
+      if (
+        docType.startsWith("OWNER.IDENTITYPROOF") ||
+        doc.dropdown?.value?.startsWith("OWNER.IDENTITYPROOF") ||
+        doc.dropdown?.code?.startsWith("OWNER.IDENTITYPROOF")
+      ) {
+        const fullSubtype =
+          (docType !== "OWNER.IDENTITYPROOF" && docType.startsWith("OWNER.IDENTITYPROOF."))
+            ? docType
+            : (doc.dropdown?.value || doc.dropdown?.code || "OWNER.IDENTITYPROOF.AADHAAR");
+
+        docType = "OWNER.IDENTITYPROOF";
+        dropdown = { value: fullSubtype };
+      } else {
+        docType = doc.dropdown?.value || doc.dropdown?.code || doc.documentType;
+      }
+
+      return {
+        tenantId: applicationTenantId,
+        documentType: docType,
+        fileStoreId: doc.filestoreId || doc.fileStoreId,
+        ...(dropdown ? { dropdown } : {}),
+      };
+    });
 
     const originalStatus = fireNOCData?.fireNOCDetails?.status || fireNOCData?.status;
     const hasApplicationNo = fireNOCData?.applicationNumber || fireNOCData?.fireNOCDetails?.applicationNumber;

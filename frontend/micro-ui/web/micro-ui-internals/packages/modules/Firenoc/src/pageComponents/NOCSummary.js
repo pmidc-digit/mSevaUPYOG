@@ -127,7 +127,10 @@ function NOCSummary({ currentStepData: formData, t }) {
   const site = formData?.siteDetails || {};
   const appDetails = formData?.applicationDetails || {};
   // FIRENOCService.create stores response under FireNOCs (not Noc)
-  const apiFireNOC = formData?.apiData?.FireNOCs?.[0];
+  const apiFireNOC = formData?.apiData?.FireNOCs?.[0] || 
+                     formData?.apiData?.Noc?.[0] || 
+                     formData?.apiData?.[0] || 
+                     formData?.apiData;
 
   const applicationNo = apiFireNOC?.fireNOCDetails?.applicationNumber || "";
   const tenantId = apiFireNOC?.tenantId || site?.cityName?.code || "";
@@ -180,7 +183,7 @@ function NOCSummary({ currentStepData: formData, t }) {
               text={val(nocDetails?.provisionalNocNumber || apiFireNOC?.fireNOCDetails?.provisionalNocNumber)}
             />
           )}
-          <Row label={t("Validity Year")} text={val(nocDetails?.validityYear?.code || nocDetails?.validityYear)} />
+          <Row label={t("Validity Year")} text={val(nocDetails?.validityYear?.code || nocDetails?.validityYear || apiFireNOC?.fireNOCDetails?.additionalDetail?.validityYears)} />
           {/* <Row label={t("Validity Year")} text={val(apiFireNOC?.fireNOCDetails?.financialYear || nocDetails?.validityYear?.code || nocDetails?.validityYear)} /> */}
         </StatusTable>
       </Card>
@@ -209,7 +212,7 @@ function NOCSummary({ currentStepData: formData, t }) {
               <Row label={t("Left surrounding")} text={val(b?.leftSurrounding?.name || b?.leftSurrounding || b?.surroundingOnLeft)} />
               <Row label={t("Right surrounding")} text={val(b?.rightSurrounding?.name || b?.rightSurrounding || b?.surroundingOnRight)} />
               <Row label={t("Front surrounding")} text={val(b?.frontSurrounding?.name || b?.frontSurrounding || b?.surroundingOnFront)} />
-              <Row label={t("Back surrounding")} text={val(b?.surroundingOnBack?.name || b?.surroundingOnBack)} />
+              <Row label={t("Back surrounding")} text={val(b?.backSurrounding?.name || b?.backSurrounding || b?.surroundingOnBack)} />
               <Row label={t("Height of the Building from Ground level (in meters)")} text={val(b?.heightOfBuilding || b?.uomsMap?.HEIGHT_OF_BUILDING)} />
               <Row label={t("No of Floors")} text={val(b?.noOfFloors?.code || b?.noOfFloors)} />
               <Row label={t("Ground floor builtup area(in sq. meter)")} text={val(b?.groundFloorBuiltupArea || b?.totalCoveredArea)} />
@@ -233,12 +236,26 @@ function NOCSummary({ currentStepData: formData, t }) {
             ? <Row label={t("Mohalla")} text={val(site.mohalla?.name || (site.mohalla?.i18nkey ? t(site.mohalla.i18nkey) : null) || site.mohalla?.code || site.mohalla)} />
             : <Row label={t("Village Name")} text={val(site.villageName)} />
           }
-          <Row label={t("Landmark Name")} text={val(site.landmarkName)} />
+          <Row label={t("Landmark Name")} text={val(site.landmarkName || apiFireNOC?.fireNOCDetails?.propertyDetails?.address?.landmark || site.landmark)} />
           <Row label={t("Pincode")} text={val(site.pincode)} />
           <Row label={t("Locate on Map")} text={
-            site.geoLocation?.latitude
-              ? `${site.geoLocation.latitude}, ${site.geoLocation.longitude}`
-              : NA
+            (() => {
+              const lat = site.geoLocation?.latitude || 
+                          site.geoLocation?.lat ||
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.geoLocation?.latitude || 
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.geoLocation?.lat ||
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.address?.latitude || 
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.latitude;
+              const lng = site.geoLocation?.longitude || 
+                          site.geoLocation?.lng ||
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.geoLocation?.longitude || 
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.geoLocation?.lng ||
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.address?.longitude || 
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.longitude;
+              const hasLat = lat !== undefined && lat !== null && lat !== "";
+              const hasLng = lng !== undefined && lng !== null && lng !== "";
+              return hasLat && hasLng ? `${lat}, ${lng}` : NA;
+            })()
           } />
           <Row label={t("Applicable Fire Station")} text={val(
             (() => {
@@ -253,26 +270,30 @@ function NOCSummary({ currentStepData: formData, t }) {
       {/* ── Applicant Details ── */}
       <Card>
         <CardSubHeader>{t("Applicant Details")}</CardSubHeader>
-        {owners.map((owner, index) => (
-          <div key={index} style={index > 0 ? { marginTop: "20px", borderTop: "1px solid #efefef", paddingTop: "16px" } : {}}>
-            {owners.length > 1 && (
-              <div style={{ fontWeight: "600", marginBottom: "12px", color: "#505A5F" }}>
-                {`${t("Applicant")} ${index + 1}`}
-              </div>
-            )}
-            <StatusTable>
-              <Row label={t("Mobile Number")} text={val(owner.mobileNumber)} />
-              <Row label={t("Name")} text={val(owner.ownerOrFirmName || owner.name)} />
-              <Row label={t("Gender")} text={val(owner.gender?.code || owner.gender)} />
-              <Row label={t("Father/Husband's Name")} text={val(owner.fatherOrHusbandName)} />
-              <Row label={t("Relationship")} text={val(owner.relationship?.code || owner.relationship)} />
-              <Row label={t("Date Of Birth")} text={formatDob(owner.dob || owner.dateOfBirth)} />
-              <Row label={t("Email")} text={val(owner.emailId)} />
-              <Row label={t("PAN No.")} text={val(owner.panNo || owner.pan)} />
-              <Row label={t("Correspondence Address")} text={val(owner.address || owner.correspondenceAddress)} />
-            </StatusTable>
-          </div>
-        ))}
+        {owners.map((owner, index) => {
+          const apiOwner = apiFireNOC?.fireNOCDetails?.applicantDetails?.owners?.[index] || {};
+          const panVal = owner.panNo || owner.pan || owner.panNumber || apiOwner.pan || apiOwner.panNo || apiOwner.panNumber;
+          return (
+            <div key={index} style={index > 0 ? { marginTop: "20px", borderTop: "1px solid #efefef", paddingTop: "16px" } : {}}>
+              {owners.length > 1 && (
+                <div style={{ fontWeight: "600", marginBottom: "12px", color: "#505A5F" }}>
+                  {`${t("Applicant")} ${index + 1}`}
+                </div>
+              )}
+              <StatusTable>
+                <Row label={t("Mobile Number")} text={val(owner.mobileNumber)} />
+                <Row label={t("Name")} text={val(owner.ownerOrFirmName || owner.name)} />
+                <Row label={t("Gender")} text={val(owner.gender?.code || owner.gender)} />
+                <Row label={t("Father/Husband's Name")} text={val(owner.fatherOrHusbandName)} />
+                <Row label={t("Relationship")} text={val(owner.relationship?.code || owner.relationship)} />
+                <Row label={t("Date Of Birth")} text={formatDob(owner.dob || owner.dateOfBirth)} />
+                <Row label={t("Email")} text={val(owner.emailId)} />
+                <Row label={t("PAN No.")} text={val(panVal)} />
+                <Row label={t("Correspondence Address")} text={val(owner.address || owner.correspondenceAddress)} />
+              </StatusTable>
+            </div>
+          );
+        })}
       </Card>
 
       {/* ── Documents ── */}

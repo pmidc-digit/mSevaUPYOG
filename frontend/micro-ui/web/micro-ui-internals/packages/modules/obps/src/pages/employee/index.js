@@ -8,6 +8,7 @@ import Search from "./Search";
 import OBPSResponse from "./OBPSResponse";
 import StakeholderResponse from "./StakeholderResponse";
 import BPAEsignResponse from "./BPAEsignResponse";
+import BPASanctionEsignResponse from "./BPASanctionEsignResponse";
 
 
 
@@ -117,11 +118,12 @@ const EmployeeApp = ({ path }) => {
           <PrivateRoute path={`${path}/search/application/bpa/:bpaid`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/inbox/editApplication/bpa/:bpaid`} component={BpaApplicationDetail} />
+          <PrivateRoute path={`${path}/filestore/:id/:file`} component={BPASanctionEsignResponse} />
           <PrivateRoute path={`${path}/inbox/bpa/:bpaid/:tenant`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/inbox/bpa/:bpaid`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/stakeholder-inbox`} component={(props) => <StakeholderInbox {...props} parentRoute={path} />} />
-          <PrivateRoute path={`${path}/bpa/esign/complete/:id/:file`} component={BPAEsignResponse} />
+          <PrivateRoute path={`${path}/bpa/esign/complete/:id/:file/:drawing`} component={BPAEsignResponse} />
           <PrivateRoute path={`${path}/bpa/:bpaid`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
           <PrivateRoute path={`${path}/stakeholder-response`} component={StakeholderResponse} />

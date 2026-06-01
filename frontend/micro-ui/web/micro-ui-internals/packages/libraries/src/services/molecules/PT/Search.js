@@ -259,15 +259,14 @@ export const PTSearch = {
           { title: "PT_ASSESMENT_INFO_PLOT_SIZE", value: response?.landArea },
           { title: "PT_ASSESMENT_INFO_NO_OF_FLOOR", value: response?.noOfFloors },
 
-
           { title: "Vasika No", value: response?.additionalDetails?.vasikaNo },
           { title: "Vasika Date", value: response?.additionalDetails?.vasikaDate },
           { title: "Allotment No", value: response?.additionalDetails?.allotmentNo },
           { title: "Allotment Date", value: response?.additionalDetails?.allotmentDate },
           { title: "Business Name", value: response?.additionalDetails?.businessName },
           { title: "Remarks", value: response?.additionalDetails?.remarks },
-          { title: "Do you have any inflammable material stored in your property?", value: getBooleanDisplayValue(response?.additionalDetails?.inflammable) },
-          { title: "Height of property more than 36 feet?", value: getBooleanDisplayValue(response?.additionalDetails?.heightAbove36Feet) },
+          { title: "Do you have any inflammable material stored in your property?", value: response?.additionalDetails?.inflammable===false?"No":true?"Yes":null},
+          { title: "Height of property more than 36 feet?", value: response?.additionalDetails?.heightAbove36Feet===false?"No":true?"Yes":null},
         ],
         additionalDetails: {
           floors: response?.units

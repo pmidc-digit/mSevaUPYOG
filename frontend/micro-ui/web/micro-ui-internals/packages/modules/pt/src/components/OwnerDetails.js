@@ -213,7 +213,7 @@ useEffect(() => {
   const formattedAddress = buildPropertyAddress(propertyAddress);
   if (!formattedAddress) return;
 
-  (getValues({ nest: true })?.owners || []).forEach((owner, index) => {
+  (getValues("owners") || []).forEach((owner, index) => {
     if (owner?.isSamePropertyAddress && owner?.address !== formattedAddress) {
       setValue(`owners.${index}.address`, formattedAddress);
     }

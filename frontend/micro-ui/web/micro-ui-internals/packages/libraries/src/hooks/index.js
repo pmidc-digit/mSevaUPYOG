@@ -17,7 +17,7 @@ import {
   usePaymentSearch,
   useBulkPdfDetails,
 } from "./payment";
-import {usePrintBillReceipt} from "./usePrintBillReceipt";
+import { usePrintBillReceipt } from "./usePrintBillReceipt";
 import { useMCollectRecieptSearch } from "./mcollect/mCollect";
 import { useChallanGenerationRecieptSearch } from "./challanGeneration/challanGeneration";
 import { useRentAndLeaseRecieptSearch, useRentAndLeaseProperties } from "./rentAndLease/rentAndLease";
@@ -182,6 +182,7 @@ import useTLApplicationDetail from "./tl/useApplicationDetail";
 import useTLApplicationActions from "./tl/useApplicationActions";
 import useTLFetchBill from "./tl/useFetchBill";
 import useNDCDocumentSearch from "./ndc/useNDCDocumentSearch";
+import useSearchNDCWS from "./ndc/useSearchWS";
 
 import useTLGenderMDMS from "./tl/useTLGenderMDMS";
 import useTLInbox from "./tl/useInbox";
@@ -256,7 +257,12 @@ import useSurveyQuestionInbox from "./surveys/useSurveyQuestionInbox";
 
 import useNOCDetails from "./noc/useNOCDetails";
 import useNOCInbox from "./noc/useInbox";
-import { useNOCSearchApplication, useNOCCitizenSearchApplication, useNOCSearchApplicationByIdOrMobile, useNOCCheckListSearch } from "./noc/useSearchApplications";
+import {
+  useNOCSearchApplication,
+  useNOCCitizenSearchApplication,
+  useNOCSearchApplicationByIdOrMobile,
+  useNOCCheckListSearch,
+} from "./noc/useSearchApplications";
 import useBuildingCategory from "./noc/useBuildingCategory";
 import useBuildingType from "./noc/useBuildingType";
 import useRoadType from "./noc/useRoadType";
@@ -419,7 +425,12 @@ import useGCInbox from "./gc/useInbox";
 
 //CLU
 import useCLUFeeCalculator from "./obps/useCLUFeeCalculator";
-import { useCLUSearchApplication, useCLUCitizenSearchApplication, useCLUSearchApplicationByIdOrMobile, useCLUCheckListSearch } from "./obps/useCLUSearchApplication";
+import {
+  useCLUSearchApplication,
+  useCLUCitizenSearchApplication,
+  useCLUSearchApplicationByIdOrMobile,
+  useCLUCheckListSearch,
+} from "./obps/useCLUSearchApplication";
 import useCLUInbox from "./obps/useCLUInbox";
 import useLudhianaPropertSearch from "./pt/useLudhianaPropertSearch";
 import useBathindaPropertySearch from "./pt/useBathindaPropertySearch";
@@ -663,7 +674,7 @@ const obps = {
   useLayoutSearchApplicationByIdOrMobile,
   useCLUInbox,
   useLayoutBuildingCategory,
-  useBPACheckListSearch
+  useBPACheckListSearch,
 };
 
 const events = {
@@ -777,7 +788,7 @@ const noc = {
   useNOCFeeCalculator,
   useNOCSearchApplicationByIdOrMobile,
   useNOCCheckListSearch,
-  useNocCreateAPI
+  useNocCreateAPI,
 };
 
 const ndc = {
@@ -785,6 +796,7 @@ const ndc = {
   useSearchApplication: useNDCSearchApplication,
   useSearchEmployeeApplication: useNDCSearchApplicationEmployee,
   useNDCDocumentSearch,
+  useSearchWS: useSearchNDCWS,
 };
 
 const challangeneration = {

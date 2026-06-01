@@ -1006,7 +1006,7 @@ useEffect(() => {
        console.log("error", error);
      } finally {
        Digit.StoreData.getCurrentLanguage = prevGetLang;
-       setIsEnableLoader(true);
+       setIsEnableLoader(false);
      }
    }
 

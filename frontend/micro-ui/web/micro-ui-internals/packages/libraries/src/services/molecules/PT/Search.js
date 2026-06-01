@@ -259,7 +259,6 @@ export const PTSearch = {
           { title: "PT_ASSESMENT_INFO_PLOT_SIZE", value: response?.landArea },
           { title: "PT_ASSESMENT_INFO_NO_OF_FLOOR", value: response?.noOfFloors },
 
-
           { title: "Vasika No", value: response?.additionalDetails?.vasikaNo },
           { title: "Vasika Date", value: response?.additionalDetails?.vasikaDate },
           { title: "Allotment No", value: response?.additionalDetails?.allotmentNo },

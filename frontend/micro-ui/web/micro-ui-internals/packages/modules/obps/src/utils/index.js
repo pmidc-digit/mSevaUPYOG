@@ -1565,6 +1565,32 @@ export const fetchOnlyUrl = async (docUrl, tenantId) => {
   }
 };
 
+export const fetchOnlyFileStore = (docUrl, tenantId) => {
+  if (docUrl) {
+    if (typeof docUrl === "string" && docUrl.includes("fileStoreId=")) {
+      const queryPart = docUrl.split("?")[1];
+      if (queryPart) {
+        const urlParams = new URLSearchParams(queryPart);
+        const id = urlParams.get("fileStoreId")
+        const fullTenantId = urlParams.get("tenantId")
+        if(id && fullTenantId){
+          return {
+            id, fullTenantId
+          };
+        }else{
+          return null;
+        }
+      }else{
+        return null;
+      }
+    }else{
+      return null
+    }
+  }else{
+    return null;
+  }
+};
+
 export const mergePDFsWithoutLibrary = async (urls) => {
   const container = document.createElement("div");
 

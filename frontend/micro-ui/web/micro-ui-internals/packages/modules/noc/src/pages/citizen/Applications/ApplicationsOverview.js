@@ -262,6 +262,7 @@ const CitizenApplicationOverview = () => {
   }
 
   async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
+    const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       setLoading(true);
 
@@ -272,6 +273,7 @@ const CitizenApplicationOverview = () => {
 
       if (!fileStoreId) {
         const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
+        Digit.StoreData.getCurrentLanguage = () => "pn_IN";
 
         const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] }, pdfkey);
 
@@ -305,14 +307,16 @@ const CitizenApplicationOverview = () => {
       // console.error("Sanction Letter download error:", error);
     } finally {
       setLoading(false);
-    
+      Digit.StoreData.getCurrentLanguage = prevGetLang;
   }
 }
   async function getRejectionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-rejectionletter", ...params }) {
+    const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       setLoading(true);
       let fileStoreId = null;
       const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
+      Digit.StoreData.getCurrentLanguage = () => "pn_IN";
       const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] }, pdfkey);
       fileStoreId = response?.filestoreIds[0];
       refetch();
@@ -325,6 +329,7 @@ const CitizenApplicationOverview = () => {
       console.error("rejection Letter download error:", error);
     } finally {
       setLoading(false);
+      Digit.StoreData.getCurrentLanguage = prevGetLang;
     }
   }
 

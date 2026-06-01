@@ -186,7 +186,8 @@ const EditApplication = () => {
               uuid: doc?.uuid || "",
               documentUid: fileId,
               documentAttachment: fileId,
-              filestoreId: fileId
+              filestoreId: fileId,
+              dropdown: doc?.dropdown || null
             };
           })
         }

@@ -91,7 +91,17 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
 
     const formattedDocuments = {
       documents: {
-        documents: [],
+        documents: documents?.map((doc) => {
+          const fileId = doc?.fileStoreId || doc?.filestoreId || doc?.documentUid || doc?.uuid || "";
+          return {
+            documentType: doc?.documentType || "",
+            uuid: doc?.uuid || "",
+            documentUid: fileId,
+            documentAttachment: fileId,
+            filestoreId: fileId,
+            dropdown: doc?.dropdown || null,
+          };
+        }) || [],
       },
     };
 

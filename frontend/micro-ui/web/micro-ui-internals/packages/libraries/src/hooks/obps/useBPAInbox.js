@@ -8,19 +8,19 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
   const { t } = useTranslation();
   const user = Digit.UserService.getUser();
   const stateId = Digit.ULBService.getStateId();
-  const { data: holidayList, isLoading: isHolidayListLoading } =  Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "Holidays" }])
-  let { moduleName, businessService, applicationStatus, locality, assignee, applicationType } = filterForm;
+  const { data: holidayList, isLoading: isHolidayListLoading } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "Holidays" }]);
+  let { moduleName, businessService, applicationStatus, locality, assignee, applicationType, licenseType } = filterForm;
   const { mobileNumber, applicationNo } = searchForm;
   const { sortBy, limit, offset, sortOrder } = tableForm;
 
   // Parse holidays from the MDMS data into a Set for quick lookup
   const holidaysSet = new Set();
   if (holidayList?.["common-masters"]?.Holidays) {
-    holidayList["common-masters"].Holidays.forEach(yearData => {
-      yearData.months.forEach(monthData => {
-        monthData.holidays.forEach(dayOfMonth => {
+    holidayList["common-masters"].Holidays.forEach((yearData) => {
+      yearData.months.forEach((monthData) => {
+        monthData.holidays.forEach((dayOfMonth) => {
           // Create a date key for quick lookup (YYYY-MM-DD)
-          const dateKey = `${yearData.year}-${String(monthData.month).padStart(2, '0')}-${String(dayOfMonth).padStart(2, '0')}`;
+          const dateKey = `${yearData.year}-${String(monthData.month).padStart(2, "0")}-${String(dayOfMonth).padStart(2, "0")}`;
           holidaysSet.add(dateKey);
         });
       });
@@ -37,10 +37,10 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
     (window.location.href.includes("obps/inbox") || window.location.href.includes("obps/bpa/inbox"))
   ) {
     businessService = OBPS_BPA_OC_BUSINESS_SERVICES;
-  }
-  else if (
+  } else if (
     applicationType !== "BUILDING_OC_PLAN_SCRUTINY" &&
-    (window.location.href.includes("obps/inbox") || window.location.href.includes("obps/bpa/inbox")) && !businessService
+    (window.location.href.includes("obps/inbox") || window.location.href.includes("obps/bpa/inbox")) &&
+    !businessService
   ) {
     businessService = OBPS_BPA_BUSINESS_SERVICES;
   }
@@ -57,11 +57,13 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
               ? [businessService]
               : [...businessService]
             : OBPS_BPA_BUSINESS_SERVICES
+          : licenseType && licenseType.filter((item) => item).length > 0
+          ? licenseType.filter((item) => item)
           : businessService
           ? [businessService.identifier]
-          // ? [businessService]
-          :["ARCHITECT", "ENGINEER", "TOWNPLANNER", "SUPERVISOR", "ARCHITECT_UPGRADE", "BPAREG_UPGRADE"],
-          // : ["ARCHITECT", "BUILDER", "ENGINEER", "STRUCTURALENGINEER", "TOWNPLANNER", "SUPERVISOR"],
+          : // ? [businessService]
+            ["ARCHITECT", "ENGINEER", "TOWNPLANNER", "SUPERVISOR", "ARCHITECT_UPGRADE", "BPAREG_UPGRADE"],
+      // : ["ARCHITECT", "BUILDER", "ENGINEER", "STRUCTURALENGINEER", "TOWNPLANNER", "SUPERVISOR"],
       ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
     },
     moduleSearchCriteria: {
@@ -82,18 +84,18 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
   }
 
   // Calculate business days (weekdays only, excluding holidays) between two timestamps
-  const getBusinessDaysSinceCreated = (startTime, endTime) => {    
+  const getBusinessDaysSinceCreated = (startTime, endTime) => {
     const startDate = new Date(startTime);
     const endDate = new Date(endTime);
     let count = 0;
     const currentDate = new Date(startDate);
-    
+
     while (currentDate <= endDate) {
       const dayOfWeek = currentDate.getDay();
       // 0 = Sunday, 6 = Saturday - skip weekends
       if (dayOfWeek !== 0 && dayOfWeek !== 6) {
         // Convert to YYYY-MM-DD format and check if it's a holiday
-        const dateKey = currentDate.toISOString().split('T')[0];
+        const dateKey = currentDate.toISOString().split("T")[0];
         // Only count if it's not a holiday
         if (!holidaysSet.has(dateKey)) {
           count++;
@@ -101,7 +103,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
       }
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    
+
     return count;
   };
 
@@ -109,7 +111,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
     if (!createdTime) return "NA";
 
     // If application is approved (approvedDate is not 0 and not null)
-    if(approvedDate && approvedDate !== 0){
+    if (approvedDate && approvedDate !== 0) {
       return getBusinessDaysSinceCreated(createdTime, approvedDate);
     }
 
@@ -135,23 +137,25 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           applicationType: application?.businessObject?.additionalDetails?.applicationType
             ? `WF_BPA_${application?.businessObject?.additionalDetails?.applicationType}`
             : "-",
-          locality: application.businessObject?.landInfo?.address?.locality?.code ? `${application.businessObject?.tenantId
-            ?.toUpperCase()
-            ?.split(".")
-            ?.join("_")}_REVENUE_${application.businessObject?.landInfo?.address?.locality?.code?.toUpperCase()}` : "NA",
+          locality: application.businessObject?.landInfo?.address?.locality?.code
+            ? `${application.businessObject?.tenantId
+                ?.toUpperCase()
+                ?.split(".")
+                ?.join("_")}_REVENUE_${application.businessObject?.landInfo?.address?.locality?.code?.toUpperCase()}`
+            : "NA",
           status: application?.ProcessInstance?.state?.state,
           state: application?.ProcessInstance?.state?.state,
-          owner: application?.businessObject?.landInfo?.owners?.find(item => item?.isPrimaryOwner)?.name || "NA",
+          owner: application?.businessObject?.landInfo?.owners?.find((item) => item?.isPrimaryOwner)?.name || "NA",
           mobileNumber: application?.businessObject?.tradeLicenseDetail?.owners?.[0]?.mobileNumber || "NA",
           // sla: application?.businessObject?.status.match(/^(APPROVED)$/)
           //   ? getDaysSinceCreated(application?.businessObject?.applicationDate, application?.businessObject?.approvalDate)
           //   : getDaysSinceCreated(application?.businessObject?.applicationDate),
           sla: getDaysSinceCreated(application?.businessObject?.applicationDate, application?.businessObject?.approvalDate),
-          assignedOwner: application?.ProcessInstance?.assignes?.[0]?.name || t("DOCUMENT_VERIFIER",),
+          assignedOwner: application?.ProcessInstance?.assignes?.[0]?.name || t("DOCUMENT_VERIFIER"),
           category: application.businessObject?.additionalDetails?.categoriesName,
           zone: application.businessObject?.additionalDetails?.zonenumber,
           selfCertification: application.businessObject?.additionalDetails?.isSelfCertification ? "Yes" : "No",
-          tenantId: application.businessObject?.tenantId
+          tenantId: application.businessObject?.tenantId,
         })),
         totalCount: data.totalCount,
         nearingSlaCount: data?.nearingSlaCount,

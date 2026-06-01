@@ -1,4 +1,5 @@
 import { initLibraries } from "@mseva/digit-ui-libraries";
+import "@pmidc/upyog-css";
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";

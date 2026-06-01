@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 
 import org.egov.domain.model.ReportDefinitions;
 import org.springframework.boot.context.properties.ConfigurationProperties;

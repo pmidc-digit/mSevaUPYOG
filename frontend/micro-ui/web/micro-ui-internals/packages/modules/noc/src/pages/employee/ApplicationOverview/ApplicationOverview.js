@@ -394,6 +394,7 @@ const NOCEmployeeApplicationOverview = () => {
   };
 
   async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
+    const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       setLoader(true);
 
@@ -402,7 +403,7 @@ const NOCEmployeeApplicationOverview = () => {
 
       if (!fileStoreId) {
         const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
-
+        Digit.StoreData.getCurrentLanguage = () => "pn_IN";
         const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] }, pdfkey);
 
         fileStoreId = response?.filestoreIds[0];
@@ -413,6 +414,7 @@ const NOCEmployeeApplicationOverview = () => {
       console.error("Sanction Letter download error:", error);
     } finally {
       setLoader(false);
+      Digit.StoreData.getCurrentLanguage = prevGetLang;
     }
   }
 

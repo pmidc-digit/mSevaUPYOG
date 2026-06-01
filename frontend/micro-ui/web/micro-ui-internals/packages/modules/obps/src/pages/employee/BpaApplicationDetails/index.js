@@ -1214,7 +1214,8 @@ const BpaApplicationDetail = () => {
   }
 
   async function getPermitOccupancyOrderSearchFilestoreNew({ tenantId }, order, mode = "download") {
-     try {
+    const prevGetLang = Digit.StoreData.getCurrentLanguage; 
+    try {
        setIsEnableLoader(true);
        const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
         const ownersList = data?.applicationData?.landInfo?.owners?.map((item) => item.name);
@@ -1255,9 +1256,9 @@ const BpaApplicationDetail = () => {
              count = 1;
            }
          }
-         if (stakeholderAddress && requestData && requestData?.additionalDetails) {
-           requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
-         }
+        if (data?.applicationData?.additionalDetails?.stakeholderAddress && requestData && requestData?.additionalDetails) {
+          requestData.additionalDetails.stakeholderAddress = data?.applicationData?.additionalDetails?.stakeholderAddress;
+        }
         //  if (requestData && requestData?.additionalDetails?.signature?.signURL) {
         //    const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, state);
         //    requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
@@ -1285,6 +1286,7 @@ const BpaApplicationDetail = () => {
          } else {
            requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
          }
+         Digit.StoreData.getCurrentLanguage = () => "pn_IN";
          const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
          fileStoreId = response?.filestoreIds[0];
        }
@@ -1293,6 +1295,7 @@ const BpaApplicationDetail = () => {
      } catch (error) {
        console.log("error", error);
      } finally {
+        Digit.StoreData.getCurrentLanguage = prevGetLang;
        setIsEnableLoader(false);
      }
    }

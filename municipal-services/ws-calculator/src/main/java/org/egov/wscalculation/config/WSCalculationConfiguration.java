@@ -232,5 +232,8 @@ public class WSCalculationConfiguration {
 	
 	@Value("${kafka.topics.save.demand}")
 	private String saveDemand;
+	
+	@Value("${egov.ws_calculation.bulkMeterReading.default.limit}")
+	private String bulkMeterLimit;
 
 }

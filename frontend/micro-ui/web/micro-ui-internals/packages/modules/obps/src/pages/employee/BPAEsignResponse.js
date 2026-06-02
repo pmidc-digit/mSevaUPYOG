@@ -59,8 +59,7 @@ const BPAEsignResponse = () => {
           additionalDetails: {
             ...application?.additionalDetails,
             sanctionLetterFilestoreId: fileStoreId,
-            sanctionLetterDrawing: drawing === "true" ? true : false,
-            drawingFilestoreId: fileStoreId || null,
+            drawingFilestoreId: drawing || null,
           },
           workflow: { 
             action: "ESIGN",

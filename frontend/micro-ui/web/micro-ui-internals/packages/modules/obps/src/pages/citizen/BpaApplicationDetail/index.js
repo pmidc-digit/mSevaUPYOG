@@ -774,6 +774,17 @@ useEffect(() => {
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
   }
 
+  async function getDrawingDownload({ tenantId }, fileStoreId) {
+    if (!fileStoreId) {
+      console.error("No fileStoreId provided for drawing download");
+      return;
+    }
+    else {
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId })
+    window.open(fileStore[fileStoreId], "_blank")
+    }
+  }
+
   async function getPermitOccupancyOrderSearch({ tenantId }, order, mode = "download") {
     let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
     let tenant = data?.tenantId || tenantId;
@@ -1180,7 +1191,7 @@ useEffect(() => {
 
       const fileStoreId = await getPermitOccupancyOrderSearchReturnFilestore({tenantId}, "buildingpermit");
 
-      const callbackUrl = `${window.location.origin}/digit-ui/citizen/obps/bpa/esign/complete/${id}`;
+      const callbackUrl = `${window.location.origin}/digit-ui/citizen/obps/filestore/${id}`;
       const authToken = localStorage.getItem('token');
 
       // Trigger eSign
@@ -1781,6 +1792,11 @@ useEffect(() => {
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
         onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit"),
+      },
+      {
+        order: 4,
+        label: t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL"),
+        onClick: () => getDrawingDownload({ tenantId }, data?.applicationData?.additionalDetails?.drawingFilestoreId),
       });
     data?.applicationData?.status.includes("REVOCATION") &&
       dowloadOptions.push({
@@ -1794,6 +1810,11 @@ useEffect(() => {
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
         onClick: () => getPermitOccupancyOrderSearchFilestore({ tenantId: data?.applicationData?.tenantId }, "buildingpermit-normal"),
+      },
+      {
+        order: 4,
+        label: t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL"),
+        onClick: () => getDrawingDownload({ tenantId }, data?.applicationData?.additionalDetails?.drawingFilestoreId),
       });
     } else if(data?.applicationData?.status === "APPROVED") {
       dowloadOptions.push({

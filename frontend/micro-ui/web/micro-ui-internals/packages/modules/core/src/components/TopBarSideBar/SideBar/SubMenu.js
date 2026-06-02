@@ -53,7 +53,8 @@ const SubMenu = ({ item, onLinkClick }) => {
   const leftIcon = IconsObject[leftIconArray] || IconsObject.collections;
   const getModuleName = item?.moduleName?.replace(/[ -]/g, "_");
   const appendTranslate = t(`ACTION_TEST_${getModuleName}`);
-  const trimModuleName = t(appendTranslate?.length > 20 ? appendTranslate.substring(0, 20) + "..." : appendTranslate);
+  const trimModuleName = t(appendTranslate);
+  // const trimModuleName = t(appendTranslate?.length > 20 ? appendTranslate.substring(0, 20) + "..." : appendTranslate);
 
   if (item.type === "single") {
     const getOrigin = window.location.origin;
@@ -133,7 +134,8 @@ const SubMenu = ({ item, onLinkClick }) => {
             .map((item, index) => {
               const getChildName = item?.displayName?.toUpperCase()?.replace(/[ -]/g, "_");
               const appendTranslate = t(`ACTION_TEST_${getChildName}`);
-              const trimModuleName = t(appendTranslate?.length > 20 ? appendTranslate.substring(0, 20) + "..." : appendTranslate);
+              const trimModuleName = t(appendTranslate);
+              // const trimModuleName = t(appendTranslate?.length > 20 ? appendTranslate.substring(0, 20) + "..." : appendTranslate);
 
               if (item.navigationURL.indexOf("/digit-ui") === -1) {
                 const getOrigin = window.location.origin;

@@ -1,8 +1,8 @@
 import { CardText, Loader, PDFSvg } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { pdfDocumentName, pdfDownloadLink, getDocumentsName, stringReplaceAll } from "../utils";
-
+//import { pdfDocumentName, pdfDownloadLink, getDocumentsName, stringReplaceAll } from "../utils";
+import { pdfDocumentName, pdfDownloadLink, stringReplaceAll } from "../utils";
 
 function OBPSDocument({
   value = {},

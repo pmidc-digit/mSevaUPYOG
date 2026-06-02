@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 //
 import { FormComposer } from "@mseva/digit-ui-react-components";
-import { UPDATE_PtNewApplication, RESET_PT_NEW_APPLICATION_FORM } from "../../../redux/action/PTNewApplicationActions";
+//import { UPDATE_PtNewApplication,
+  import { RESET_PT_NEW_APPLICATION_FORM } from "../../../redux/action/PTNewApplicationActions";
 
 const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();

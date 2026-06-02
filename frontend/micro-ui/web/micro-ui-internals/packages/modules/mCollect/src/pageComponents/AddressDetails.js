@@ -6,7 +6,8 @@ import { sortDropdownNames } from "../pages/employee/Utils/Sortbyname";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { useLocation } from "react-router-dom";
-import { getUniqueItemsFromArray, commonTransform, stringReplaceAll,getPattern, convertEpochToDate } from "../utils";
+//import { getUniqueItemsFromArray, commonTransform, stringReplaceAll,getPattern, convertEpochToDate } from "../utils";
+import { stringReplaceAll,convertEpochToDate } from "../utils";
 
 const createConsumerDetails = (getCities) => ({
   doorNo: "",

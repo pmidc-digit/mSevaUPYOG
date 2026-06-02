@@ -13,9 +13,9 @@ import {
   SubmitBar,
   Menu,
   LinkButton,
-  TLTimeLine,
+ // TLTimeLine,
   DisplayPhotos,
-  StarRated,
+  //StarRated,
   MultiLink
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";

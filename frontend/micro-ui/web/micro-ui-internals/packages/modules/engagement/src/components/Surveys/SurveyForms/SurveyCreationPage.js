@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+// import {
+//   addCategory,
+//   autoCalculateCategoriesWeight,
+//   deleteCategory,
+//   recalculateWeightage,
+//   updateWeightage,
+// } from "../../../redux/actions/surveyFormActions";
 import {
   addCategory,
   autoCalculateCategoriesWeight,
   deleteCategory,
   recalculateWeightage,
-  updateWeightage,
-} from "../../../redux/actions/surveyFormActions";
+  } from "../../../redux/actions/surveyFormActions";
 import CategoryCard from "./CategoryCard";
 import { DatePicker, Dropdown, CheckBox, TextArea, TextInput, CardLabelError } from "@mseva/digit-ui-react-components";
 

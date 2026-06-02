@@ -192,6 +192,7 @@ const ApplicationDetails = () => {
   }, [applicationDetails?.applicationData?.applicationNumber]);
 
   if (workflowDetails?.data?.processInstances?.length > 0) {
+    //debugger
     let filteredActions = [];
     filteredActions = get(workflowDetails?.data?.processInstances[0], "nextActions", [])?.filter((item) => item.action != "ADHOC" && item.action != "INITIATE");
     let actions = orderBy(filteredActions, ["action"], ["desc"]);

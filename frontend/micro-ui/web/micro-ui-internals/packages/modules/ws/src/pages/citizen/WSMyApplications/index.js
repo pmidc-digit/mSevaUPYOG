@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import WSApplication from "./ws-application";
-import { propertyCardBodyStyle } from "../../../utils";
+//import { propertyCardBodyStyle } from "../../../utils";
 import WSInfoLabel from "../../../pageComponents/WSInfoLabel";
 
 export const WSMyApplications = () => {

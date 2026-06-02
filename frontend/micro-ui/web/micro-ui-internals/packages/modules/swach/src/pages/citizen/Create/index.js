@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import merge from "lodash.merge";
 import { useDispatch } from "react-redux";
 import { createComplaint } from "../../../redux/actions/index";
-import { PGR_CITIZEN_COMPLAINT_CONFIG, SWACH_CITIZEN_CREATE_COMPLAINT } from "../../../constants/Citizen";
+//import { PGR_CITIZEN_COMPLAINT_CONFIG, SWACH_CITIZEN_CREATE_COMPLAINT } from "../../../constants/Citizen";
 import Response from "./Response";
 
 import { config as defaultConfig } from "./defaultConfig";

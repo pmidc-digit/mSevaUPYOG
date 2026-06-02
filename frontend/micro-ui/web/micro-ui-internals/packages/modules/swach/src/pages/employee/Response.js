@@ -2,7 +2,7 @@ import React,{ useState }  from "react";
 import { Card, Banner, CardText, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Link, useRouteMatch } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { PgrRoutes, getRoute } from "../../constants/Routes";
+//import { PgrRoutes, getRoute } from "../../constants/Routes";
 import { useTranslation } from "react-i18next";
 import getSWACHcknowledgementData from "../../utils/getSWACHcknowledgementData"
 const GetActionMessage = ({ action }) => {

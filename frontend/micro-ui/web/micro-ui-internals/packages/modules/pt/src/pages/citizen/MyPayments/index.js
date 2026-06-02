@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import PTPayments from "./PTPayments";
-import { propertyCardBodyStyle } from "../../../utils";
+//import { propertyCardBodyStyle } from "../../../utils";
 
 export const PTMyPayments = () => {
   const { t } = useTranslation();

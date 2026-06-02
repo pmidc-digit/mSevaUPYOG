@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardSubHeader, CardText, Loader, SubmitBar,Modal } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState,Fragment,useRef } from "react";
-import { cardBodyStyle, stringReplaceAll } from "../utils";
+//import { cardBodyStyle, stringReplaceAll } from "../utils";
+import { stringReplaceAll } from "../utils";
 import { useTranslation } from "react-i18next";
 export const TransferOwnership = () => {
   const {t} =useTranslation()

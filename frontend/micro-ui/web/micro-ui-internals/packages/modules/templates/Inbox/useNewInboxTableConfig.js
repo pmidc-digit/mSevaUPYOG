@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 
-const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
+const useNewInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
   const { t } = useTranslation();
 
   const getStatusClass = (status) => {
@@ -53,10 +53,10 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         className: "ndc-new-table-app",
         Cell: ({ row }) => (
           <div className="ndc-new-cell-stack">
-            <Link to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`} className="ndc-new-app-link">
+            <Link to={`${parentRoute}/inbox/application-overview/${row.original?.applicationId}`} className="ndc-new-app-link">
               {row.original?.applicationId || row.original?.applicationNo || "-"}
             </Link>
-            {/* {row.original?.locality ? <div className="ndc-new-cell-secondary">{row.original?.locality}</div> : null} */}
+            {row.original?.locality ? <div className="ndc-new-cell-secondary">{row.original?.locality}</div> : null}
           </div>
         ),
       },
@@ -135,17 +135,15 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
     onSort: onSortingByData,
     totalRecords: totalCount,
     onSearch: formState?.searchForm?.message,
-    onLastPage: () => {
-      const limit = parseInt(formState.tableForm?.limit) || 10;
+    onLastPage: () =>
       dispatch({
         action: "mutateTableForm",
-        data: { ...formState.tableForm, offset: Math.floor((totalCount - 1) / limit) * limit },
-      });
-    },
+        data: { ...formState.tableForm, offset: Math.ceil(totalCount / 10) * 10 - parseInt(formState.tableForm?.limit) },
+      }),
     onFirstPage: () => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } }),
     data: table,
     columns: tableColumnConfig,
   };
 };
 
-export default useLayoutTableConfig;
+export default useNewInboxTableConfig;

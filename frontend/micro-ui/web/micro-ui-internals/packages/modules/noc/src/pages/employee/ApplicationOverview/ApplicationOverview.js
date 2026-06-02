@@ -877,12 +877,12 @@ const NOCEmployeeApplicationOverview = () => {
         }
         const additionalRemarks = fieldInspectionPending?.[0]?.["Remarks_19"];
 
-        if (additionalRemarks && additionalRemarks.trim().split(/\s+/).filter(Boolean).length < 20) {
+        if (additionalRemarks && additionalRemarks.trim().length < 20) {
           closeModal();
           setShowToast({
             key: "true",
             error: true,
-            message: "Additional remarks must be at least 20 words long",
+            message: "Additional remarks must be at least 20 characters long",
           });
           return;
         }

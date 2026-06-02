@@ -16,7 +16,7 @@ import {
   TLTimeLine,
   DisplayPhotos,
   StarRated,
-  MultiLink
+  MultiLink,
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -40,9 +40,9 @@ const CitizenApplicationOverview = () => {
   const [appDetails, setAppDetails] = useState({});
   const [showToast, setShowToast] = useState(null);
   const [approver, setApprover] = useState(null);
-  const[approverStatement, setApproverStatement]= useState(null)
+  const [approverStatement, setApproverStatement] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
-  
+
   const [ndcDatils, setNdcDetails] = useState([]);
   const [displayData, setDisplayData] = useState({});
   const [getLoader, setLoader] = useState(false);
@@ -63,7 +63,7 @@ const CitizenApplicationOverview = () => {
   useEffect(() => {
     if (workflowDetails) {
       const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
-      const name = approveInstance?.assigner?.name || "NA";          
+      const name = approveInstance?.assigner?.name || "NA";
       const status = applicationDetails?.Applications?.[0]?.applicationStatus;
       setApproverStatement(status ? `${t(status)} By` : "");
       setApprover(name);
@@ -86,7 +86,7 @@ const CitizenApplicationOverview = () => {
     const userInfo = userInfos ? JSON.parse(userInfos) : {};
     user = userInfo?.value;
   }
-   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
       businessService: "NDC",
@@ -103,15 +103,17 @@ const CitizenApplicationOverview = () => {
       let application = applicationDetails?.Applications?.[0];
       if (payments?.fileStoreId) {
         response = { filestoreIds: [payments?.fileStoreId] };
-      }else {
+      } else {
         response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { Payments: [
+          {
+            Payments: [
               {
                 ...(payments || {}),
                 ...application,
               },
-            ], },
+            ],
+          },
           "ndc-receipt"
         );
       }
@@ -127,11 +129,14 @@ const CitizenApplicationOverview = () => {
   }
   const dowloadOptions = [];
 
-  if(applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED"){
+  if (
+    applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" ||
+    applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED"
+  ) {
     dowloadOptions.push({
-    label: t("DOWNLOAD_CERTIFICATE"),
-    onClick: () => handleDownloadPdf(),
-  });
+      label: t("DOWNLOAD_CERTIFICATE"),
+      onClick: () => handleDownloadPdf(),
+    });
   }
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
@@ -139,7 +144,7 @@ const CitizenApplicationOverview = () => {
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
   }
-  
+
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const removeDuplicatesByUUID = (arr) => {
     const seen = new Set();
@@ -163,6 +168,7 @@ const CitizenApplicationOverview = () => {
         name: primaryOwner?.name,
         mobile: primaryOwner?.mobileNumber,
         email: primaryOwner?.emailId,
+        fatherName: primaryOwner?.fatherOrHusbandName,
         address: primaryOwner?.permanentAddress,
         // createdDate: ndcObject?.owners?.[0]?.createdtime ? format(new Date(ndcObject?.owners?.[0]?.createdtime), "dd/MM/yyyy") : "",
         applicationNo: ndcObject?.applicationNo,
@@ -283,7 +289,7 @@ const CitizenApplicationOverview = () => {
 
         <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
           <div className="cardHeaderWithOptions ral-app-details-header">
-            { getLoader && <Loader />}
+            {getLoader && <Loader />}
             {dowloadOptions && dowloadOptions.length > 0 && (
               <MultiLink
                 className="multilinkWrapper"
@@ -319,7 +325,8 @@ const CitizenApplicationOverview = () => {
               ?.map(([key, value]) => (
                 <Row
                   key={key}
-                  label={t(`${key?.toUpperCase()}`)}
+                  label={key === "fatherName" ? "Father Name" : t(`${key?.toUpperCase()}`)}
+                  // label={t(`${key?.toUpperCase()}`)}
                   text={
                     Array.isArray(value)
                       ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
@@ -342,7 +349,7 @@ const CitizenApplicationOverview = () => {
               <StatusTable>
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
                 {/* <Row label={t("Name")} text={t(`${detail.businessService}`) || detail.businessService} /> */}
-                <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
+                <Row label={t("Property Id")} text={detail.consumerCode || "N/A"} />
                 {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
                 <div
                   style={{
@@ -374,6 +381,7 @@ const CitizenApplicationOverview = () => {
                         }`
                       )}
                     />
+                    <Row label={t("Area")} text={propertyDetailsFetch?.Properties?.[0]?.landArea || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city || "N/A"} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo || "N/A"} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName || "N/A"} />

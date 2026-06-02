@@ -11,14 +11,13 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log("coming here again", checkFormData);
-
+    console.log("coming here again");
     if (checkFormData?.responseData?.[0]?.Documents?.length && documents.length === 0) {
       // Map API response into the structure your UploadFile expects
       const apiDocs = checkFormData?.responseData?.[0]?.Documents?.map((doc) => ({
         documentType: doc?.documentType,
-        fileStoreId: doc?.uuid, // 👈 key mapping
-        documentUid: doc?.uuid, // 👈 key mapping
+        fileStoreId: doc?.documentAttachment, // 👈 key mapping
+        documentUid: doc?.documentAttachment, // 👈 key mapping
       }));
 
       setDocuments(apiDocs);

@@ -781,7 +781,10 @@ useEffect(() => {
       if (!fileStoreId) {
         const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
         Digit.StoreData.getCurrentLanguage = () => "pn_IN";
-        const newValidityDate = new Date(data?.applicationData?.approvalDate);
+        const newValidityDate =
+          data?.applicationData?.approvalDate !== 0 && data?.applicationData?.approvalDate
+            ? data.applicationData.approvalDate
+            : Date.now();
 
         // validity date = approval date + 3 as per feedback
         newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
@@ -794,7 +797,7 @@ useEffect(() => {
           subjectLine,
           fileno,
           nowIST,
-          newValidityDate,
+          newValidityDate: approvalDatePlusThree,
           designation,
           approverComment: comments,
         };
@@ -886,70 +889,92 @@ useEffect(() => {
   }
   
   async function getPermitOccupancyOrderSearchReturnFilestore({ tenantId }, order, mode = "download") {
-    const ownersList = data?.applicationData?.landInfo?.owners?.map((item) => item.name);
-    const firmName = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
-    const isFirm = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
-    const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]?.filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
+    const prevGetLang = Digit.StoreData.getCurrentLanguage;
+    try {
+      setIsEnableLoader(true);
+      const ownersList = data?.applicationData?.landInfo?.owners?.map((item) => item.name);
+      const firmName = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
+      const isFirm = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
+      const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]
+        ?.filter((v, i, arr) => v && arr.indexOf(v) === i)
+        .join(", ");
 
-    const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
+      const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
 
-    const newValidityDate = Date.now();
-    const validityDateObj = new Date(newValidityDate);
-    // validity date = approval date + 3 as per feedback
-    validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
-    const approvalDatePlusThree = validityDateObj.getTime();
+      const newValidityDate = Date.now();
+      const validityDateObj = new Date(newValidityDate);
+      // validity date = approval date + 3 as per feedback
+      validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
+      const approvalDatePlusThree = validityDateObj.getTime();
 
-
-
-    const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate: approvalDatePlusThree, combinedOwnersName, designation , approverComment: comments}
-    let count = 0
-    for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
-      if (
-        (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
-          workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
-        workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
-        count == 0
-      ) {
-        requestData.additionalDetails.submissionDate =
-          workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime
-        count = 1
+      const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+      const requestData = {
+        ...data?.applicationData,
+        edcrDetail: [{ ...data?.edcrDetails }],
+        subjectLine,
+        fileno,
+        nowIST,
+        newValidityDate: approvalDatePlusThree,
+        combinedOwnersName,
+        designation,
+        approverComment: comments,
+      };
+      let count = 0;
+      for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+        if (
+          (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+            workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+          workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+          count == 0
+        ) {
+          requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+          count = 1;
+        }
       }
-    }
-    if (stakeholderAddress && requestData && requestData?.additionalDetails) {
-      requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
-    }
-    // if (requestData && requestData?.additionalDetails?.signature?.signURL) {
-    //   const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, state);
-    //   requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
-    // }
+      if (stakeholderAddress && requestData && requestData?.additionalDetails) {
+        requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
+      }
+      // if (requestData && requestData?.additionalDetails?.signature?.signURL) {
+      //   const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, state);
+      //   requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
+      // }
 
-    if (requestData?.additionalDetails?.approvedColony == "NO") {
-      requestData.additionalDetails.permitData =
-        "The plot has been officially regularized under No. " +
-        requestData?.additionalDetails?.NocNumber +
-        "  dated " + requestData?.additionalDetails?.nocObject?.approvedOn + " , registered in the name of " + requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + ". This regularization falls within the jurisdiction of " +
-        requestData?.additionalDetails?.UlbName +
-        ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
-    } else if (requestData?.additionalDetails?.approvedColony == "YES") {
-      requestData.additionalDetails.permitData =
-        "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony
-    } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
-      requestData.additionalDetails.permitData =
-        "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony
-    } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
-      requestData.additionalDetails.permitData =
-        "The building plan falls under Stand-Alone Project."
-    } else {
-      requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir"
+      if (requestData?.additionalDetails?.approvedColony == "NO") {
+        requestData.additionalDetails.permitData =
+          "The plot has been officially regularized under No. " +
+          requestData?.additionalDetails?.NocNumber +
+          "  dated " +
+          requestData?.additionalDetails?.nocObject?.approvedOn +
+          " , registered in the name of " +
+          requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName +
+          ". This regularization falls within the jurisdiction of " +
+          requestData?.additionalDetails?.UlbName +
+          ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
+      } else if (requestData?.additionalDetails?.approvedColony == "YES") {
+        requestData.additionalDetails.permitData =
+          "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony;
+      } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
+        requestData.additionalDetails.permitData =
+          "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony;
+      } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
+        requestData.additionalDetails.permitData = "The building plan falls under Stand-Alone Project.";
+      } else {
+        requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
+      }
+      Digit.StoreData.getCurrentLanguage = () => "pn_IN";
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
+      if (response?.filestoreIds[0]) {
+        return response.filestoreIds[0];
+      } else {
+        return null;
+      }
+    } catch (err) {
+      console.log("err", err);
+      return null;
+    } finally {
+      Digit.StoreData.getCurrentLanguage = prevGetLang;
+      setIsEnableLoader(false);
     }
-    const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order)
-    if(response?.filestoreIds[0]){
-      return response.filestoreIds[0]
-    }else{
-      return null
-    }
-    
   }
 
    async function getPermitOccupancyOrderSearchFilestore({ tenantId }, order, mode = "download") {

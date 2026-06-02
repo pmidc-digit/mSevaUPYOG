@@ -151,7 +151,7 @@ public class WSCalculatorQueryBuilder {
 			+ " ebm.zonecode as zonecode , ebm.blockcode AS blockcode , ebm.localitycode as localityCode , conn.additionaldetails->>'groups' as groups FROM eg_ws_meterreading mr "
 			+ INNER_JOIN_STRING + " eg_ws_connection conn  ON mr.connectionno = conn.connectionno  AND mr.tenantid = conn.tenantid  "
 			+ INNER_JOIN_STRING +" eg_ws_service ews  ON conn.id = ews.connection_id " + INNER_JOIN_STRING +" eg_pt_property epp  ON conn.property_id = epp.propertyid "
-			+ INNER_JOIN_STRING +" eg_pt_address epa  ON epa.propertyid = epp.id ";
+			+ INNER_JOIN_STRING +" eg_pt_address epa  ON epa.propertyid = epp.id " + INNER_JOIN_STRING + " eg_bndry_mohalla ebm ON ebm.tenantid = conn.tenantid AND ebm.localitycode = epa.locality ";
 	
 	public static final String RELATED_SW_CONNECTION_SEARCH_QUERY = "SELECT conn.relatedSwConn from eg_ws_connection conn ";
 

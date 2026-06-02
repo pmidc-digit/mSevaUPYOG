@@ -50,11 +50,11 @@ const OBPSBreadCrumbs = ({ location }) => {
     //   content: t("ES_OBPS_SEARCH_BPA"),
     //   show: location.pathname.includes("obps/inbox/bpa") ? true : false,
     // },
-    {
-      path: "/digit-ui/employee/obps/inbox",
-      content: t("ES_COMMON_OBPS_INBOX_TITLE"),
-      show: location.pathname.includes("obps/response") ? true : false,
-    },
+    // {
+    //   path: "/digit-ui/employee/obps/inbox",
+    //   content: t("ES_COMMON_OBPS_INBOX_TITLE"),
+    //   show: location.pathname.includes("obps/response") ? true : false,
+    // },
     {
       path: "/digit-ui/employee/obps/inbox/stakeholder/:id",
       content: t("ES_OBPS_SEARCH_BPA"),

@@ -76,6 +76,11 @@ const OBPSResponse = (props) => {
     window.location.reload();
   };
 
+  const onInbox = () => {
+    history.push(`/digit-ui/employee/obps/inbox`);
+    window.location.reload();
+  };
+
   const getApplicationNoLabel = () => {
     return bpaBusinessService == "BPA" ? t("BPA_PERMIT_APPLICATION_NUMBER_LABEL") : t("BPA_OCCUPANCY_CERTIFICATE_APPLICATION_NUMBER_LABEL");
   };
@@ -170,7 +175,10 @@ const OBPSResponse = (props) => {
                     </Link>
                   </div>
                 ) : (
+                  <div className="action-bar-wrap">
                   <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} style={{ margin: "10px 10px 0px 0px" }} />
+                  <SubmitBar label={t("CORE_COMMON_GO_TO_INBOX")} onSubmit={onInbox} />
+                  </div>
                 )}
               </div>
             </ActionBar>

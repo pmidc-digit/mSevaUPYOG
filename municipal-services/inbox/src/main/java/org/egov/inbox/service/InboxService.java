@@ -139,6 +139,9 @@ public class InboxService {
     private NOCInboxFilterService nocInboxFilterService;
 
     @Autowired
+    private FireNocInboxFilterService fireNocInboxFilterService;
+
+    @Autowired
     private WSInboxFilterService wsInboxFilterService;
     
     @Autowired
@@ -265,7 +268,7 @@ public class InboxService {
             response.setNearingSlaCount(0);
             return response;
         }     
-//        processCriteria.setStatus(statusIds);
+        processCriteria.setStatus(statusIds);
         processCriteria.setBusinessIds(new ArrayList<>(businessKeys));
         processCriteria.setTenantId(criteria.getTenantId());
         processCriteria.setIsProcessCountCall(Boolean.FALSE);
@@ -305,8 +308,24 @@ public class InboxService {
         int searcherCount = resolveSearcherCount(moduleName, criteria, statusIdNameMap, requestInfo);
         int totalCount = (searcherCount >= 0) ? searcherCount : processInstanceMap.size();
 
-        // FIXED: store businessIds as List<String>, not CSV
-        moduleSearchCriteria.put(srvMap.get("applNosParam"), new ArrayList<>(processInstanceMap.keySet()));
+        // Translate applicationNo to UUID for firenoc if mapping is available, so we search by UUIDs instead of applicationNo
+        if ("firenoc".equalsIgnoreCase(moduleName) && moduleSearchCriteria.containsKey("firenoc_appNo_to_uuid_map")) {
+            Map<String, String> appNoToUuidMap = (Map<String, String>) moduleSearchCriteria.get("firenoc_appNo_to_uuid_map");
+            List<String> uuids = new ArrayList<>();
+            for (String appNo : processInstanceMap.keySet()) {
+                if (appNoToUuidMap.containsKey(appNo)) {
+                    uuids.add(appNoToUuidMap.get(appNo));
+                } else {
+                    uuids.add(appNo); // fallback
+                }
+            }
+            moduleSearchCriteria.put(srvMap.get("applNosParam"), uuids);
+            moduleSearchCriteria.remove("firenoc_appNo_to_uuid_map");
+            moduleSearchCriteria.remove("limit");
+            moduleSearchCriteria.remove("sortOrder");
+        } else {
+            moduleSearchCriteria.put(srvMap.get("applNosParam"), new ArrayList<>(processInstanceMap.keySet()));
+        }
         moduleSearchCriteria.put("tenantId", criteria.getTenantId());
 
         JSONArray businessObjects =
@@ -314,7 +333,13 @@ public class InboxService {
 
         Map<String, Object> businessMap =
                 StreamSupport.stream(businessObjects.spliterator(), false)
-                        .collect(Collectors.toMap(s -> ((JSONObject) s).get(businessIdParam).toString(), s -> s));
+                        .collect(Collectors.toMap(
+                                s -> ((JSONObject) s).get(businessIdParam) != null ? ((JSONObject) s).get(businessIdParam).toString() : "",
+                                s -> s,
+                                (v1, v2) -> v1
+                        ));
+
+        businessMap = resolveBusinessMap(moduleName, businessMap);
 
         // Use full status count map (not filtered) so UI shows all statuses
         List<HashMap<String, Object>> statusMap = fullStatusCountMap;
@@ -457,6 +482,13 @@ public class InboxService {
                     moduleSearchCriteria.put("applicationNo", applicationNumbers);
                 break;
 
+            case "firenoc":
+                applicationNumbers = fireNocInboxFilterService.fetchApplicationNumbersFromSearcher(
+                        criteria, statusIdNameStringMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers))
+                    moduleSearchCriteria.put("ids", applicationNumbers);
+                break;
+
             case "chb":
             case "CHB":
                 applicationNumbers = chbInboxFilterService.fetchApplicationNumbersFromSearcher(
@@ -524,7 +556,26 @@ public class InboxService {
     }
 
 
-    
+    private Map<String, Object> resolveBusinessMap(String moduleName, Map<String, Object> businessMap) {
+        if ("firenoc".equalsIgnoreCase(moduleName)) {
+            Map<String, Object> resolvedMap = new HashMap<>();
+            for (Map.Entry<String, Object> entry : businessMap.entrySet()) {
+                Object value = entry.getValue();
+                if (value instanceof JSONObject) {
+                    JSONObject fn = (JSONObject) value;
+                    if (fn.has("fireNOCDetails")) {
+                        JSONObject details = fn.getJSONObject("fireNOCDetails");
+                        if (details.has("applicationNumber") && details.get("applicationNumber") != null) {
+                            resolvedMap.put(details.get("applicationNumber").toString(), value);
+                        }
+                    }
+                }
+            }
+            return resolvedMap;
+        }
+        return businessMap;
+    }
+
     private Object findClosestBusinessObject(String businessId, Map<String, Object> businessMap) {
 
         // 1. Exact match

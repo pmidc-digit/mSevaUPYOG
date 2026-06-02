@@ -76,7 +76,7 @@ const BPASanctionEsignResponse = () => {
     }, [applicationNo])
 
   useEffect(async () => {
-    if (edcrData?.dxfFile){
+    if (edcrData?.updatedDxfFile){
       setApiLoading(true);
       printDrawingWithESign()
     }
@@ -86,16 +86,16 @@ const BPASanctionEsignResponse = () => {
       try {
         // console.log("🎯 Starting certificate eSign process...");
   
-        const { id: fileStoreId, tenantId: tenant} = fetchOnlyFileStore(edcrData?.dxfFile)
+        const { id: fileStoreId, tenantId: tenant} = fetchOnlyFileStore(edcrData?.updatedDxfFile)
   
-        const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${applicationNo}/${filestore}`;
+        const callbackUrl = isCitizen ? `${window.location.origin}/digit-ui/citizen/obps/bpa/esign/complete/${applicationNo}/${filestore}` : `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${applicationNo}/${filestore}`;
         const authToken = localStorage.getItem('token');
 
         console.log("📁 FileStore ID:", fileStoreId, tenant, callbackUrl, authToken);
   
         // Trigger eSign
         eSignCertificate(
-          { fileStoreId, tenantId, callbackUrl, authToken },
+          { fileStoreId, tenantId: tenant, callbackUrl, authToken },
           {
             onSuccess: () => console.log("✅ eSign initiated successfully"),
             onError: (error) => {

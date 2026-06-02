@@ -131,11 +131,11 @@ const InboxComposer = ({
 
     const getSearchActionText = () => {
       if (window.location.href.includes("/obps")) {
-        return t("ES_INBOX_COMMON_SEARCH")
+        return t("ES_INBOX_COMMON_SEARCH");
       } else {
-        return t("ES_COMMON_SEARCH")
+        return t("ES_COMMON_SEARCH");
       }
-    }
+    };
 
     return (
       <div className="InboxComposerWrapper">
@@ -157,25 +157,31 @@ const InboxComposer = ({
             <CurrentMobileModalComponent {...propsForCurrentMobileModalComponent} />
           </PopUp>
         ) : null}
-        {/* {isInboxLoading ? <Loader /> : <DetailsCard {...propsForInboxMobileCards} />} */}
-        {isInboxLoading ? <Loader /> :
+        {/* Using global Table component which has built-in mobile card view */}
+        {isInboxLoading ? (
+          <Loader />
+        ) : (
           <div>
-            {propsForInboxMobileCards?.data?.length < 1 ?
+            {propsForInboxTable?.data?.length < 1 ? (
               <Card className="margin-unset text-align-center">
                 {propsForInboxTable?.noResultsMessage ? t(propsForInboxTable?.noResultsMessage) : t("CS_MYAPPLICATIONS_NO_APPLICATION")}
-              </Card> : <DetailsCard {...propsForInboxMobileCards} />}
-          </div>}
+              </Card>
+            ) : (
+              <Table t={t} {...propsForInboxTable} />
+            )}
+          </div>
+        )}
       </div>
     );
   }
 
-  const isEnabledCommonModules =
-    window.location.href.includes("/obps/") ||
-    window.location.href.includes("/noc/") ;
+  const isEnabledCommonModules = window.location.href.includes("/obps/") || window.location.href.includes("/noc/");
 
-  const isEnabledWSCommonModules = window.location.href.includes("/ws/water/inbox") || window.location.href.includes("/ws/sewerage/inbox") ||
-  window.location.href.includes("/ws/water/bill-amendment/inbox") ||
-  window.location.href.includes("/ws/sewerage/bill-amendment/inbox");
+  const isEnabledWSCommonModules =
+    window.location.href.includes("/ws/water/inbox") ||
+    window.location.href.includes("/ws/sewerage/inbox") ||
+    window.location.href.includes("/ws/water/bill-amendment/inbox") ||
+    window.location.href.includes("/ws/sewerage/bill-amendment/inbox");
 
   if (isEnabledCommonModules) {
     return (
@@ -191,14 +197,14 @@ const InboxComposer = ({
             </FilterForm>
           </div>
         </div>
-        <div style={propsForInboxTable?.tableStyle ? { flex: 1, ...propsForInboxTable?.tableStyle}:{flex: 1}}>
+        <div style={propsForInboxTable?.tableStyle ? { flex: 1, ...propsForInboxTable?.tableStyle } : { flex: 1 }}>
           <SearchForm onSubmit={onSearchFormSubmit} handleSubmit={handleSearchFormSubmit} id="search-form" className="rm-mb form-field-flex-one">
             <SearchFormFields
               registerRef={registerSearchFormField}
               searchFormState={searchFormState}
               {...{ controlSearchForm }}
               searchFieldComponents={
-                <div style={window.location.href.includes("/citizen/obps") ? {display : "flex"} : {}}>
+                <div style={window.location.href.includes("/citizen/obps") ? { display: "flex" } : {}}>
                   <SubmitBar label={t("ES_COMMON_SEARCH")} submit form="search-form" className="submit-bar-search" />
                   <p onClick={onResetSearchForm} className="clear-search" style={{ paddingTop: "9px", color: " #a82227" }}>
                     {t(`ES_COMMON_CLEAR_SEARCH`)}

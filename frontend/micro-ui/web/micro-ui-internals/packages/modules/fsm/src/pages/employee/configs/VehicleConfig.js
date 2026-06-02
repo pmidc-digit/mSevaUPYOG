@@ -1,5 +1,5 @@
 import React from "react";
-const { DatePicker, Dropdown } = require("@mseva/digit-ui-react-components");
+import { DatePicker, Dropdown } from "@mseva/digit-ui-react-components";
 
 const VehicleConfig = (t, disabled = false) => {
   return [

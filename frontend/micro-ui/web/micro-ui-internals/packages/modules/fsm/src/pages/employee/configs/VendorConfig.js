@@ -1,6 +1,6 @@
 import React from "react";
 import { convertEpochToDate } from "../../../utils";
-const { DatePicker, Dropdown } = require("@mseva/digit-ui-react-components");
+import { DatePicker, Dropdown } from "@mseva/digit-ui-react-components";
 
 const VendorConfig = (t, disabled = false) => {
   return [

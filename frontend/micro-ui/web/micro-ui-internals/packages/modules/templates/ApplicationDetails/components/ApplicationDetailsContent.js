@@ -13,6 +13,8 @@ import {
   ActionBar,
   SubmitBar,
   Table,
+  Modal,
+  Dropdown,
 } from "@mseva/digit-ui-react-components";
 import { values } from "lodash";
 import React, { Fragment, useEffect, useState } from "react";
@@ -45,6 +47,19 @@ import ApplicationHistory from "./ApplicationHistory";
 import PaymentHistory from "./PaymentHistory";
 import ApplicationTimeline from "./ApplicationTimeline";
 import NewApplicationTimeline from "./NewApplicationTimeline";
+
+const CloseIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+  </svg>
+);
+
+const CloseBtn = (props) => (
+  <div className="icon-bg-secondary" onClick={props.onClick}>
+    <CloseIcon />
+  </div>
+);
 const PTActionButton = ({ label, color, hoverColor, icon, onClick }) => {
   const [hovered, setHovered] = React.useState(false);
   return (
@@ -76,7 +91,6 @@ const PTActionButton = ({ label, color, hoverColor, icon, onClick }) => {
     </button>
   );
 };
-
 function ApplicationDetailsContent({
   applicationDetails,
   demandData,
@@ -95,12 +109,31 @@ function ApplicationDetailsContent({
   isInfoLabel = false,
   propertyId,
   moduleCode,
+  showHistory = true,
 }) {
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
   const [payments, setPayments] = useState([]);
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
+  const [financialYears, setFinancialYears] = useState([]);
+
+  const { isLoading: financialYearsLoading, data: financialYearsData } = Digit.Hooks.useCustomMDMS(
+    Digit.ULBService.getStateId(),
+    "egf-master",
+    [{ name: "FinancialYear", filter: "[?(@.module == 'PT')]" }]
+  );
+
+  useEffect(() => {
+    if (financialYearsData?.["egf-master"]?.["FinancialYear"]) {
+      const sorted = [...financialYearsData["egf-master"]["FinancialYear"]].sort(
+        (a, b) => b.startingDate - a.startingDate
+      );
+      setFinancialYears(sorted);
+    }
+  }, [financialYearsData]);
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
 
@@ -465,6 +498,7 @@ function ApplicationDetailsContent({
   const applicationData_pt = applicationDetails?.applicationData;
   const propertyIds = applicationDetails?.applicationData?.propertyId || "";
   const checkPropertyStatus = applicationDetails?.additionalDetails?.propertytobestatus;
+  console.log("dnddnfnfn ", checkPropertyStatus);
   const PropertyInActive = () => {
     if (window.location.href.includes("employee")) {
       if (checkPropertyStatus == "ACTIVE") {
@@ -519,7 +553,31 @@ function ApplicationDetailsContent({
     // alert("edit property");
   };
   const AccessProperty = () => {
-    alert("access property");
+    setSelectedFinancialYear(null);
+    setShowAccessModal(true);
+  };
+
+  const handleAccessPropertySubmit = () => {
+    if (!selectedFinancialYear) return;
+    const pID = applicationDetails?.applicationData?.propertyId || propertyId;
+    setShowAccessModal(false);
+    const isEmployee = window.location.href.includes("employee");
+    const pathname = isEmployee
+      ? `/digit-ui/employee/pt/assessment-details/${pID}`
+      : `/digit-ui/citizen/pt/property/assessment-details/${pID}`;
+    history.replace({
+      pathname,
+      state: {
+        Assessment: {
+          financialYear: selectedFinancialYear?.name || selectedFinancialYear?.code,
+          propertyId: pID,
+          tenantId: applicationData?.tenantId || tenantId,
+          source: applicationData?.source,
+          channel: applicationData?.channel,
+          assessmentDate: Date.now(),
+        },
+      },
+    });
   };
 
   useEffect(() => {
@@ -814,9 +872,9 @@ function ApplicationDetailsContent({
           {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
         </React.Fragment>
       ))}
-      {assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
-      <PaymentHistory payments={payments} />
-      {moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
+      {showHistory && assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
+      {showHistory && <PaymentHistory payments={payments} />}
+      {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />
       )}
 
@@ -883,7 +941,7 @@ function ApplicationDetailsContent({
         </React.Fragment>
       )}
 
-      {window.location.href.includes("/pt/") ? (
+       {window.location.href.includes("/pt/") ? (
         <ActionBar className="clear-search-container">
           <PTActionButton label="Make Active" color="#00703C" hoverColor="#005a30" icon={
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -908,9 +966,35 @@ function ApplicationDetailsContent({
           } onClick={AccessProperty} />
         </ActionBar>
       ) : null}
+      {showAccessModal && (
+        <Modal
+          headerBarMain={<h1 className="heading-m">{t("PT_SELECT_FINANCIAL_YEAR")}</h1>}
+          headerBarEnd={<CloseBtn onClick={() => setShowAccessModal(false)} />}
+          actionCancelLabel={t("CORE_COMMON_CANCEL")}
+          actionCancelOnSubmit={() => setShowAccessModal(false)}
+          actionSaveLabel={t("PT_SELECT")}
+          actionSaveOnSubmit={handleAccessPropertySubmit}
+          isDisabled={!selectedFinancialYear}
+        >
+          {financialYearsLoading ? (
+            <Loader />
+          ) : (
+            <div style={{ padding: "8px 0" }}>
+              <Dropdown
+                option={financialYears}
+                optionKey="code"
+                selected={selectedFinancialYear}
+                select={setSelectedFinancialYear}
+                placeholder={t("PT_SELECT_FINANCIAL_YEAR")}
+              />
+            </div>
+          )}
+        </Modal>
+      )}
       {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
     </Card>
   );
 }
 
 export default ApplicationDetailsContent;
+

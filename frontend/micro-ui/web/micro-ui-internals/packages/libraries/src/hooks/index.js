@@ -265,7 +265,8 @@ import useNOCDocumentSearch from "./noc/useNOCDocumentsSearch";
 import useNocType from "./noc/useNocType";
 import useNOCFeeCalculator from "./noc/useNOCFeeCalculator";
 
-import useNOCSearchByNumber, { useFIRENOCMyApplications, useFIRENOCApplicationDetails } from "./firenoc/useNOCSearchByNumber";
+import useNOCSearchByNumber, { useFIRENOCMyApplications, useFIRENOCApplicationDetails, useFIRENOCSearchApplication } from "./firenoc/useNOCSearchByNumber";
+import useFIRENOCInbox from "./firenoc/useInbox";
 
 import WSSearchMdmsTypes from "./ws/WSSearchMdmsTypes";
 import usewsTenants from "./ws/useTenants";
@@ -513,10 +514,10 @@ const fsm = {
   useVendorUpdate,
   useVehicleDetails,
   useVehicleCreate,
-  useVendorCreate,
-  useVendorUpdate,
-  useVehicleDetails,
-  useVehicleCreate,
+  // useVendorCreate,
+  // useVendorUpdate,
+  // useVehicleDetails,
+  // useVehicleCreate,
   useUpdateVehicle,
   useDriverSearch,
   useDriverCreate,
@@ -651,9 +652,9 @@ const obps = {
   useLayoutType,
   useLayoutSearchApplication,
   useLayoutCheckListSearch,
-  useLayoutBuildingType,
-  useLayoutBuildingCategory,
-  useLayoutRoadType,
+  // useLayoutBuildingType,
+  // useLayoutBuildingCategory,
+  // useLayoutRoadType,
   useLayoutCitizenSearchApplication,
   useLayoutDocumentSearch,
   useCLUFeeCalculator,
@@ -664,7 +665,7 @@ const obps = {
   useCLUCheckListSearch,
   useLayoutSearchApplicationByIdOrMobile,
   useCLUInbox,
-  useLayoutBuildingCategory,
+  // useLayoutBuildingCategory,
   useBPACheckListSearch
 };
 
@@ -690,7 +691,7 @@ const sv = {
   useSvSearchApplication,
   useSVApplicationDetail,
   useSVApplicationAction,
-  useSvSearchApplication,
+  // useSvSearchApplication,
 };
 
 // for using tenant for city and document and search
@@ -786,6 +787,8 @@ const firenoc = {
   useNOCSearchByNumber,
   useFIRENOCMyApplications,
   useFIRENOCApplicationDetails,
+  useFIRENOCSearchApplication,
+  useInbox: useFIRENOCInbox,
 };
 
 const ndc = {

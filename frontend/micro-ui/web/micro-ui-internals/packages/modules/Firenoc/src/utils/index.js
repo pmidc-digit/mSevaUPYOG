@@ -24,7 +24,7 @@ export const EmployeeData = (tenantId, consumerCode) => {
   const wfData = Digit.Hooks.useWorkflowDetails({
     tenantId,
     id: consumerCode,
-    moduleCode: "obpas_noc",
+    moduleCode: "FIRENOC",
     role: "EMPLOYEE",
   });
 

@@ -60,11 +60,11 @@ const PTEditFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
 
   const currentStepData = useSelector(function (state) {
     console.log("state in step one edit ", state);
-    return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
-      ? state.pt.PTNewApplicationForm.formData[config.key]
+    return state.pt.PTNewApplicationFormReducer.formData && state.pt.PTNewApplicationFormReducer.formData[config.key]
+      ? state.pt.PTNewApplicationFormReducer.formData[config.key]
       : {};
   });
-  const reduxStepData = useSelector((state) => state.pt.PTNewApplicationForm.formData.LocationDetails);
+  const reduxStepData = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData.LocationDetails);
   const [localStepData, setLocalStepData] = useState(reduxStepData);
   console.log("reduxStepData in step one: ", reduxStepData);
   const dispatch = useDispatch();

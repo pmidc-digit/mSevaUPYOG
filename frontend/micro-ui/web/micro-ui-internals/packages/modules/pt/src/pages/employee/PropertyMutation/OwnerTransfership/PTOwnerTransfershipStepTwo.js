@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-//
+import _ from "lodash";
 import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
 import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
 
@@ -8,6 +8,7 @@ const PTOwnerTransfershipStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const isFirstRender = useRef(true);
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+    dispatch(UPDATE_PTNewApplication_FORM(config.key, data || {}));
     onGoNext();
   }
 
@@ -29,13 +30,24 @@ const PTOwnerTransfershipStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   const currentStepData = useSelector(function (state) {
-    console.log("state in step two ", state);
-    return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.DocuementDetails
-      ? state.pt.PTNewApplicationForm.DocuementDetails
-      : {};
-  });
-  const reduxStepData = useSelector((state) => state.pt.PTNewApplicationForm.formData.DocuementDetails);
-  const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData);
+  console.log("state in step two ", state);
+
+  return state.pt.PTNewApplicationFormReducer?.formData &&
+    state.pt.PTNewApplicationFormReducer?.formData?.DocuementDetails
+    ? state.pt.PTNewApplicationFormReducer?.formData?.DocuementDetails
+    : {};
+});
+
+const reduxStepData = useSelector(
+  (state) =>
+    state.pt.PTNewApplicationFormReducer?.formData
+      ?.DocuementDetails
+);
+
+const formData = useSelector(
+  (state) =>
+    state.pt.PTNewApplicationFormReducer?.formData
+);
   console.log("Step twoo formdata +", formData);
   const [localStepData, setLocalStepData] = useState(reduxStepData);
   console.log("reduxStepData in step twoo: +", localStepData);

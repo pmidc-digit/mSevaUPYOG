@@ -132,15 +132,15 @@ const NewApplication = () => {
         }
         return _owner;
       }),
-      additionalDetails:{
-       vasikaNo: data?.vasikaDetails?.vasikaNo,
-       vasikaDate: data?.vasikaDetails?.vasikaDate,
-       allotmentNo: data?.allottmentDetails?.allotmentNo,
-       allotmentDate: data?.allottmentDetails?.allotmentDate,
-       businessName: data?.businessName,
-       yearConstruction: data?.yearOfCreation,
-       remarks: data?.remarks
-      },
+      /* additionalDetails:{ */
+       /* vasikaNo: data?.vasikaDetails?.vasikaNo, */
+       /* vasikaDate: data?.vasikaDetails?.vasikaDate, */
+//        allotmentNo: data?.allottmentDetails?.allotmentNo,
+//        allotmentDate: data?.allottmentDetails?.allotmentDate,
+//        businessName: data?.businessName,
+//        yearConstruction: data?.yearOfCreation,
+//        remarks: data?.remarks
+//       },
       channel: "CFC_COUNTER", // required
       creationReason: "CREATE", // required
       source: "MUNICIPAL_RECORDS", // required
@@ -450,7 +450,7 @@ let conf =[
             "key": "address",
             // "isMandatory": true,
             "component": "VasikaDetails",
-            "key": "vasikaDetails",
+            // "key": "vasikaDetails",
             "withoutLabel": true,
           },
           {

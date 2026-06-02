@@ -87,13 +87,37 @@ export const TableConfig = (t) => ({
       },
     ],
     inboxColumns: (props) => [
+
+      {
+        Header: t("ES_INBOX_APPLICATION_NO"),
+        Cell: ({ row }) => {
+          return (
+            <div>
+              <span className="link">
+                <Link
+                  to={`${props.parentRoute}/application-details/${row.original?.searchData?.["propertyId"]
+                    }`}
+                >
+                  {row.original?.workflowData?.businessId || "-"}
+                </Link>
+              </span>
+            </div>
+          );
+        },
+        mobileCell: (original) => GetMobCell(original?.workflowData?.businessId || "-"),
+      },
       {
         Header: t("ES_INBOX_UNIQUE_PROPERTY_ID"),
         Cell: ({ row }) => {
           return (
             <div>
               <span className="link">
-                <Link to={`${props.parentRoute}/application-details/` + row.original?.searchData?.["propertyId"]}>
+                <Link
+                  to={`/digit-ui/employee/pt/ptsearch/property-details/${row.original?.searchData?.["propertyId"]
+                    }`}
+                >
+
+
                   {row.original?.searchData?.["propertyId"]}
                 </Link>
               </span>
@@ -130,6 +154,13 @@ export const TableConfig = (t) => ({
         },
       },
       {
+        Header: t("ES_INBOX_OWNER_MOBILE"),
+        Cell: ({ row }) => {
+          return GetCell(row.original?.searchData?.["owners"]?.[0]?.mobileNumber || "-");
+        },
+        mobileCell: (original) => GetMobCell(original?.searchData?.["owners"]?.[0]?.mobileNumber || "-"),
+      },
+      {
         Header: t("ES_INBOX_STATUS"),
         Cell: ({ row }) => {
           const wf = row.original?.workflowData;
@@ -137,16 +168,16 @@ export const TableConfig = (t) => ({
         },
         mobileCell: (original) => GetMobCell(t(`ES_PT_COMMON_STATUS_${original?.workflowData?.state?.["state"]}`)),
       },
-      {
-        Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
-        accessor: "createdTime",
-        Cell: ({ row }) => {
-          const wf = row.original.workflowData;
-          const math = Math.round((wf?.businesssServiceSla || 0) / (24 * 60 * 60 * 1000)) || "-";
-          return GetSlaCell(math);
-        },
-        mobileCell: (original) => GetSlaCell(Math.round((original?.workflowData?.["businesssServiceSla"] || 0) / (24 * 60 * 60 * 1000))),
-      },
+      // {
+      //   Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
+      //   accessor: "createdTime",
+      //   Cell: ({ row }) => {
+      //     const wf = row.original.workflowData;
+      //     const math = Math.round((wf?.businesssServiceSla || 0) / (24 * 60 * 60 * 1000)) || "-";
+      //     return GetSlaCell(math);
+      //   },
+      //   mobileCell: (original) => GetSlaCell(Math.round((original?.workflowData?.["businesssServiceSla"] || 0) / (24 * 60 * 60 * 1000))),
+      // },
     ],
     serviceRequestIdKey: (original) => original?.[t("ES_INBOX_UNIQUE_PROPERTY_ID")]?.props?.children,
   },

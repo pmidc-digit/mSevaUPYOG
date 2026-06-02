@@ -1,5 +1,6 @@
 import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect } from "react";
-import { InboxComposer, ComplaintIcon, Header, Loader  } from "@mseva/digit-ui-react-components";
+import { InboxComposer, ComplaintIcon, Header, Loader, SubmitBar } from "@mseva/digit-ui-react-components";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
@@ -25,7 +26,7 @@ const Inbox = ({ parentRoute }) => {
   const filterFormDefaultValues = {
     moduleName: "noc-service",
     applicationStatus: [],
-    businessService: "obpas_noc",
+    businessService: "FIRENOC",
     locality: [],
     assignee: "ASSIGNED_TO_ME",
     businessServiceArray: businessServiceList(true) || [],
@@ -162,12 +163,7 @@ const Inbox = ({ parentRoute }) => {
   const PropsForInboxLinks = {
     logoIcon: <ComplaintIcon />,
     headerText: "ACTION_TEST_NOC",
-    links: [
-      {
-        text: t("ES_COMMON_APPLICATION_SEARCH"),
-        link: "/digit-ui/employee/noc/search/application",
-      },
-    ],
+    links: [],
   };
 
   const SearchFormFields = useCallback(
@@ -235,13 +231,23 @@ const Inbox = ({ parentRoute }) => {
     }
   return (
     <>
-      <Header>
-        {employeeData &&
-          !isLoading &&
-          `Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
-        
-        <div> {t("ES_COMMON_INBOX")} {totalCount ? <p className="inbox-count">{totalCount}</p> : null}</div>
-      </Header>
+      <div className="header-container-firenoc" style={{ display: "flex", justifyContent: "space-between" }}>
+        <Header>
+          {employeeData &&
+            !isLoading &&
+            `Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
+          
+          <div> {t("ES_COMMON_INBOX")} {totalCount ? <p className="inbox-count">{totalCount}</p> : null}</div>
+        </Header>
+        <div style={{ display: "flex", gap: "10px", marginTop: "24px" }}>
+          <Link to="/digit-ui/employee/firenoc/search/application">
+            <SubmitBar label={t("ES_COMMON_APPLICATION_SEARCH")} />
+          </Link>
+          <Link to="/digit-ui/employee/firenoc/new-application">
+            <SubmitBar label={t("NOC_NEW_APPLICATION")} />
+          </Link>
+        </div>
+      </div>
       <InboxComposer
         {...{
           isInboxLoading,

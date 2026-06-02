@@ -299,7 +299,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
     if (reciept_data_pay && reciept_data_pay?.Payments.length > 0 && !recieptDataLoadingPay) {
       dowloadOptions.push({
         label: t("Pay 2 Fee"),
-        label: t("CLU_FEE_RECEIPT_2"),
+        // label: t("CLU_FEE_RECEIPT_2"),
         onClick: () => getRecieptSearch({ tenantId: reciept_data_pay?.Payments[0]?.tenantId, payments: reciept_data_pay?.Payments[0], pdfkey:"layoutreceipt-second" }),
       });
     }

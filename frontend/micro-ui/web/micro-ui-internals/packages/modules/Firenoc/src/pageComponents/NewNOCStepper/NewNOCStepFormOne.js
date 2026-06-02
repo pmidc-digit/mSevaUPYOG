@@ -5,6 +5,14 @@ import { UPDATE_NOCNewApplication_FORM } from "../../redux/action/NOCNewApplicat
 import { useTranslation } from "react-i18next";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import FireNOCApplicantDetails from "../FireNOCApplicantDetails";
+const getRelationshipApiValue = (rel) => {
+  if (!rel) return "";
+  const code = (typeof rel === "object" ? rel.code : rel) || "";
+  const upper = code.toUpperCase();
+  if (upper === "FATHER" || upper === "COMMON_RELATION_FATHER") return "Father";
+  if (upper === "HUSBAND" || upper === "COMMON_RELATION_HUSBAND") return "Husband";
+  return typeof rel === "object" ? (rel.code || rel.i18nKey || "") : rel;
+};
 
 const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const dispatch = useDispatch();
@@ -71,7 +79,10 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
 
-    if (currentStepData?.apiData?.FireNOCs?.[0]?.fireNOCDetails?.applicationNumber) {
+    const fireNOC = currentStepData?.apiData?.FireNOCs?.[0];
+    const isDraft = (fireNOC?.fireNOCDetails?.status === "INITIATED" || fireNOC?.status === "INITIATED") && fireNOC?.fireNOCDetails?.applicationNumber;
+
+    if (isDraft) {
       onGoNext();
     } else {
       callCreateAPI({ ...currentStepData, [config.key]: data });
@@ -87,8 +98,17 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
     /* ── resolve firestationId from selected city ── */
     const cityCode = site.cityName?.code || "";
-    const matchedStation = fireStationData?.find((s) => s.baseTenantId === cityCode);
+    const matchedStation = fireStationData?.find(
+      (s) => s.baseTenantId === cityCode || (Array.isArray(s.ulb) && s.ulb.some((u) => u.code === cityCode))
+    );
     const resolvedFirestationId = site.fireStationId || matchedStation?.code || "";
+
+    /* ── resolve applicationTenantId based on resolved firestationId ── */
+    const selectedStationCode = site.fireStationId || resolvedFirestationId;
+    const selectedStationObj = fireStationData?.find(
+      (s) => s.code === selectedStationCode || s.id === selectedStationCode
+    );
+    const applicationTenantId = selectedStationObj?.tenantId || selectedStationObj?.baseTenantId || tenantId;
 
     /* ── ownerShipType mapping ── */
     const ownerShipType = appDetails.applicantSubtype?.code || "INDIVIDUAL.SINGLEOWNER";
@@ -99,6 +119,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
       const floors = Number(b.noOfFloors?.code || b.noOfFloors || 0);
       const basements = Number(b.noOfBasements?.code || b.noOfBasements || 0);
       const height = Number(b.heightOfBuilding || 0);
+      const builtUpArea = Number(b.groundFloorBuiltupArea || 0);
       return {
         name: b.buildingName || "",
         usageType: b.buildingUsageType?.code || b.buildingUsageType || "",
@@ -107,14 +128,20 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           NO_OF_FLOORS: String(floors),
           NO_OF_BASEMENTS: String(basements),
           HEIGHT_OF_BUILDING: String(height),
+          BUILTUP_AREA: String(builtUpArea),
         },
         landArea: Number(b.landArea || 0),
         totalCoveredArea: Number(b.totalCoveredArea || 0),
         parkingArea: Number(b.parkingArea || 0),
+        rightSurrounding: b.rightSurrounding || "",
+        leftSurrounding: b.leftSurrounding || "",
+        frontSurrounding: b.frontSurrounding || "",
+        backSurrounding: b.backSurrounding || "",
         uoms: [
           { code: "HEIGHT_OF_BUILDING", value: height, isActiveUom: true, active: true },
           { code: "NO_OF_FLOORS", value: floors, isActiveUom: false, active: true },
           { code: "NO_OF_BASEMENTS", value: basements, isActiveUom: false, active: true },
+          { code: "BUILTUP_AREA", value: builtUpArea, isActiveUom: false, active: true },
         ],
         applicationDocuments: [],
       };
@@ -128,29 +155,40 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           name: item.name || "",
           dob: Digit.Utils.pt.convertDateToEpoch(item.dateOfBirth || ""),
           gender: item.gender?.code || "",
-          relationship: item.relationship?.i18nKey || item.relationship?.code || "",
+          relationship: getRelationshipApiValue(item.relationship),
           fatherOrHusbandName: item.fatherOrHusbandName || "",
           correspondenceAddress: item.address || "",
+          emailId: item.emailId || "",
+          pan: item.panNo || item.pan || "",
         };
       }
       return {
         mobileNumber: item.mobileNumber || "",
         name: item.authorizedPersonName || "",
+        gender: item.gender?.code || "",
         emailId: item.emailId || "",
         correspondenceAddress: item.officialAddress || "",
         institutionName: item.institutionName || "",
         officialTelNo: item.officialTelNo || "",
         designation: item.designation || "",
+        fatherOrHusbandName: item.fatherOrHusbandName || "",
+        relationship: getRelationshipApiValue(item.relationship),
       };
     });
 
     /* ── propertyDetails.address ── */
-    const isRuralSite = site.areaType?.code === "RURAL";
     const address = {
       areaType: site.areaType?.name || site.areaType?.code || "",
-      city: site.cityName?.code || tenantId,
-      subDistrict: site.districtName?.name || site.districtName || "",
-      addressLine2: isRuralSite ? (site.villageName || "") : (site.mohalla?.name || site.mohalla || ""),
+      city: site.districtName?.code || site.districtName?.name || site.districtName || tenantId,
+      subDistrict: site.cityName?.code || "",
+      addressLine2: (site.areaType?.code === "RURAL" || site.areaType?.code === "Rural") ? (site.villageName || "") : (site.mohalla?.name || site.mohalla || ""),
+      doorNo: site.plotSurveyNo || "",
+      street: site.streetName || "",
+      landmark: site.landmarkName || "",
+      pincode: site.pincode || "",
+      locality: site.mohalla ? { code: site.mohalla.code || site.mohalla } : { code: "UNKNOWN" },
+      latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : 0,
+      longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : 0,
     };
 
     const payload = {
@@ -159,7 +197,12 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           fireNOCDetails: {
             noOfBuildings: site.noOfBuildings || "SINGLE",
             fireNOCType: noc.fireNOCType?.code || "NEW",
-            propertyDetails: { address },
+            provisionalNocNumber: noc.provisionalNocNumber || "",
+            oldFireNocNumber: noc.oldFireNocNumber || "",
+            propertyDetails: {
+              address,
+              propertyId: site.propertyId || "",
+            },
             firestationId: resolvedFirestationId,
             buildings,
             applicantDetails: {
@@ -171,19 +214,25 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
               },
             },
             action: "INITIATE",
-            additionalDetail: { documents: [] },
-            channel: "CITIZEN",
+            additionalDetail: {
+              documents: [],
+            },
+            channel: window.location.href.includes("employee") ? "COUNTER" : "CITIZEN",
             financialYear: "2019-20",
-            tenantId,
+            tenantId: applicationTenantId,
           },
-          tenantId,
+          tenantId: applicationTenantId,
           isLegacy: false,
+          ...(noc.fireNOCType?.code === "NEW" && noc.provisionalNocNumber ? {
+            provisionFireNOCNumber: noc.provisionalNocNumber,
+            fireNOCNumber: noc.provisionalNocNumber
+          } : {}),
         },
       ],
     };
 
     try {
-      const response = await Digit.FIRENOCService.create({ tenantId, details: payload });
+      const response = await Digit.FIRENOCService.create({ tenantId: applicationTenantId, details: payload });
       if (response?.ResponseInfo?.status === "successful" && !response?.Errors?.length) {
         dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
         onGoNext();

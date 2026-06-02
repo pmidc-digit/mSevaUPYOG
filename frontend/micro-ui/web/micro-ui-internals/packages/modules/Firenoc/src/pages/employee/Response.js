@@ -1,18 +1,18 @@
 import { Banner, Card, CardText, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory, useLocation} from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { stringReplaceAll } from "../../utils";
 // import { getNOCAcknowledgementData } from "../../utils/getNOCAcknowledgementData";
 
 const Response = (props) => {
-  const location=useLocation();
-  const {pathname, state} = location;
+  const location = useLocation();
+  const { pathname, state } = location;
   const { t } = useTranslation();
   const history = useHistory();
   const nocData = state?.data?.Noc?.[0];
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
-  
+
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -24,15 +24,15 @@ const Response = (props) => {
   }
 
   const onGoToNOC = () => {
-    history.push(`/digit-ui/employee/noc/inbox`);
+    history.push(`/digit-ui/employee/firenoc/search`);
   };
 
-   const handlePayment = () => {
-    history.push(`/digit-ui/employee/payment/collect/obpas_noc/${nocCode}/${tenantId}?tenantId=${tenantId}`);
+  const handlePayment = () => {
+    history.push(`/digit-ui/employee/payment/collect/FIRENOC/${nocCode}/${tenantId}?tenantId=${tenantId}`);
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
   };
   const onViewApplication = () => {
-    history.push(`/digit-ui/citizen/noc/search/application-overview/${nocCode}`);
+    history.push(`/digit-ui/employee/firenoc/search/application-overview/${nocCode}`);
   };
 
   // const handleDownloadPdf = async () => {
@@ -52,14 +52,14 @@ const Response = (props) => {
     <div>
       <Card>
         <Banner
-         // message={t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
-         // message={t("NOC_APPLICATION_SUCCESS_HEADER")}
+          // message={t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
+          // message={t("NOC_APPLICATION_SUCCESS_HEADER")}
           message={t(`NOC_APPLICATION_${nocData?.workflow?.action}_SUCCESS_HEADER`)}
           applicationNumber={nocCode}
           info={nocData?.applicationStatus == "REJECTED" ? "" : t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_APPLICATION_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}
           style={{ padding: "10px" }}
-          headerStyles={{fontSize: "32px", wordBreak: "break-word"}}
+          headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         {/* {nocData?.applicationStatus !== "REJECTED" ? 
         (
@@ -69,7 +69,7 @@ const Response = (props) => {
         </CardText>  */}
         {/* <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
         </div>
-        ):null} */} 
+        ):null} */}
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_NOC")} onSubmit={onGoToNOC} />

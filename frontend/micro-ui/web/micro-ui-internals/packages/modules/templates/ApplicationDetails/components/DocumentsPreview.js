@@ -16,7 +16,7 @@ function DocumentsPreview({ documents, svgStyles = {}, isSendBackFlow = false, i
                         {document?.values && document?.values.length > 0 ? document?.values?.map((value, index) => (
                             <div style={{width: "180px",}}>
                             <CardSubHeader style={titleStyles ? titleStyles : { marginTop: "32px", marginBottom: "8px", color: "#505A5F", fontSize: "24px" }}>{t(document?.title)}</CardSubHeader>
-                            <a target="_" href={value?.url} style={{ minWidth: "80px", marginRight: "10px", maxWidth: "100px", height: "auto", minWidth: "100px" }} key={index}>
+                            <a target="_" href={value?.url} style={{ marginRight: "10px", maxWidth: "100px", height: "auto", minWidth: "100px" }} key={index}>
                                 <div style={{ display: "flex", justifyContent: "flex-start" }}>
                                     <PDFSvg />
                                 </div>
@@ -28,7 +28,7 @@ function DocumentsPreview({ documents, svgStyles = {}, isSendBackFlow = false, i
                         
                         <div style={{width: "180px",}}>
                             <CardSubHeader style={titleStyles ? titleStyles : { marginTop: "32px", marginBottom: "8px", color: "#505A5F", fontSize: "24px" }}></CardSubHeader>
-                            <div   style={{ minWidth: "80px", marginRight: "10px", maxWidth: "100px", height: "auto", minWidth: "100px" }} key={index}>
+                            <div   style={{ marginRight: "10px", maxWidth: "100px", height: "auto", minWidth: "100px" }} key={index}>
                                 <div style={{ display: "flex", justifyContent: "flex-start" }}>
                                     <PDFSvg />
                                 </div>
@@ -52,7 +52,7 @@ function DocumentsPreview({ documents, svgStyles = {}, isSendBackFlow = false, i
                                     <p style={{ marginTop: "8px", fontWeight: "bold", marginBottom: "10px" }}>{t(value?.title)}</p>
                                     {value?.docInfo ? <div style={{ fontSize: "12px", color: "#505A5F", fontWeight: 400, lineHeight: "15px", marginBottom: "10px" }}>{`${t(value?.docInfo)}`}</div> : null}
                                     <PDFSvg />
-                                    <p style={{ marginTop: "8px", fontSize: "16px", lineHeight: "19px", color: "#505A5F", fontWeight: "400", textAlign: "center", color: "#505A5F"  }}>{`${t(value?.title)}`}</p>
+                                    <p style={{ marginTop: "8px", fontSize: "16px", lineHeight: "19px", fontWeight: "400", textAlign: "center", color: "#505A5F"  }}>{`${t(value?.title)}`}</p>
                                 </div>
                             </a>
                         )) : !(window.location.href.includes("citizen")) && <div><p>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</p></div>}

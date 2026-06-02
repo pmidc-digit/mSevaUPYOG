@@ -21,17 +21,25 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
 
   const [selectedDocument, setSelectedDocument] = useState(() => {
     if (filteredDocument) {
+      if (doc.hasDropdown) {
+        const selectedCode = filteredDocument.dropdown?.value || filteredDocument.dropdown?.code || filteredDocument.documentType;
+        const matched = doc.dropdownData?.find((d) => d.code === selectedCode);
+        if (matched) {
+          return { ...matched, name: t(matched.code.replaceAll(".", "_")) };
+        }
+        return { code: selectedCode, active: true, name: t(selectedCode.replaceAll(".", "_")) };
+      }
       return { code: filteredDocument.documentType, active: true };
     }
     if (!doc.hasDropdown) {
       return { code: doc.code, active: true };
     }
     const activeDropdown = doc.dropdownData?.filter((d) => d.active) || [];
-    return activeDropdown.length === 1 ? activeDropdown[0] : null;
+    return activeDropdown.length === 1 ? { ...activeDropdown[0], name: t(activeDropdown[0].code.replaceAll(".", "_")) } : null;
   });
 
   const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(filteredDocument?.filestoreId || null);
+  const [uploadedFile, setUploadedFile] = useState(filteredDocument?.filestoreId || filteredDocument?.documentUid || filteredDocument?.documentAttachment || null);
   const [isUploading, setIsUploading] = useState(false);
 
   /* dropdown options */
@@ -86,6 +94,7 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
           filestoreId: uploadedFile,
           documentUid: uploadedFile,
           documentAttachment: uploadedFile,
+          dropdown: { value: selectedDocument.code },
         },
       ];
     });
@@ -161,7 +170,9 @@ const FireNOCDocuments = ({ t, config, onSelect, formData }) => {
 
   /* Seed from Redux so uploads survive back-navigation */
   const persistedDocs = useSelector(
-    (state) => state?.noc?.NOCNewApplicationFormReducer?.formData?.uploadedDocuments?.documents || []
+    (state) => 
+      state?.noc?.NOCNewApplicationFormReducer?.formData?.uploadedDocuments?.documents || 
+      state?.noc?.NOCNewApplicationFormReducer?.formData?.documents?.documents?.documents || []
   );
   const [documents, setDocuments] = useState(persistedDocs);
   const [error, setError] = useState(null);

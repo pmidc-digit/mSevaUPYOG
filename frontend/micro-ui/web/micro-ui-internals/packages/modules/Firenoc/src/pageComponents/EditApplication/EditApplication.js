@@ -5,34 +5,49 @@ import { useHistory, useLocation, useParams } from "react-router-dom";
 import { formatDateForInput } from "../../utils";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper"
 import { stepperConfig } from "../../config/Create/stepperConfig";
-import { SET_NOCNewApplication_STEP, RESET_NOC_NEW_APPLICATION_FORM, 
-  UPDATE_NOCNewApplication_FORM, UPDATE_NOCNewApplication_CoOrdinates, UPDATE_NOC_OwnerIds, UPDATE_NOC_OwnerPhotos } from "../../redux/action/NOCNewApplicationActions";
+import {
+  SET_NOCNewApplication_STEP, RESET_NOC_NEW_APPLICATION_FORM,
+  UPDATE_NOCNewApplication_FORM, UPDATE_NOCNewApplication_CoOrdinates, UPDATE_NOC_OwnerIds, UPDATE_NOC_OwnerPhotos
+} from "../../redux/action/NOCNewApplicationActions";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 import { Loader } from "../../components/Loader";
 
 //Config for steps
 const createEmployeeConfig = [
   {
-    head: "APPLICATION DETAILS",
-    stepLabel: "NOC_APPLICATION_DETAILS",
+    head: "NOC DETAILS",
+    stepLabel: "NOC_NOC_DETAILS_HEADER",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
-    component: "NewNOCStepFormOne",
-    key: "applicationDetails",
+    component: "FIRENOCStepFormNocDetails",
+    key: "nocDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
     },
   },
   {
-    head: "SITE DETAILS",
-    stepLabel: "NOC_SITE_DETAILS",
+    head: "PROPERTY DETAILS",
+    stepLabel: "NOC_PROPERTY_DETAILS",
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
-    component: "NewNOCStepFormTwo",
+    component: "FIRENOCStepFormTwo",
     key: "siteDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "CS_COMMON_NEXT",
+    },
+  },
+  {
+    head: "APPLICANT DETAILS",
+    stepLabel: "NOC_APPLICANT_DETAILS",
+    stepNumber: 3,
+    isStepEnabled: true,
+    type: "component",
+    component: "FIRENOCStepFormOne",
+    key: "applicationDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
@@ -41,10 +56,10 @@ const createEmployeeConfig = [
   {
     head: "DOCUMENT DETAILS",
     stepLabel: "ES_TITILE_DOCUMENT_DETAILS",
-    stepNumber: 3,
+    stepNumber: 4,
     isStepEnabled: true,
     type: "component",
-    component: "NewNOCStepFormThree",
+    component: "FIRENOCStepFormThree",
     key: "documents",
     withoutLabel: true,
     texts: {
@@ -54,17 +69,16 @@ const createEmployeeConfig = [
   {
     head: "SUMMARY DETAILS",
     stepLabel: "ES_TITILE_SUMMARY_DETAILS",
-    stepNumber: 4,
+    stepNumber: 5,
     isStepEnabled: true,
     type: "component",
-    component: "NewNOCStepFormFour",
+    component: "FIRENOCStepFormFour",
     key: "summary",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_SUBMIT",
     },
   },
-
 ];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
@@ -82,25 +96,38 @@ const EditApplication = () => {
   const step = formState.step;
   const [hydrated, setHydrated] = useState(false);
 
-  //Makesure to pass tenantId correctly
-  let tenantId;
-  if(window.location.pathname.includes("employee")){
-   tenantId = window.localStorage.getItem("Employee.tenant-id");
-  }else{
-   tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  const { search } = useLocation();
+  const queryParams = new URLSearchParams(search);
+  let tenantId = queryParams.get("tenantId");
+  if (!tenantId) {
+    if (window.location.pathname.includes("employee")) {
+      tenantId = window.localStorage.getItem("Employee.tenant-id");
+    } else {
+      tenantId = window.localStorage.getItem("CITIZEN.CITY");
+    }
   }
 
-  const { isLoading, data} = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
-  const applicationDetails= data?.resData;
-  
-  const nocObject = applicationDetails?.Noc?.[0] || {};
-  const applicantDetails = nocObject?.nocDetails?.additionalDetails?.applicationDetails || {};
-  const siteDetails = nocObject?.nocDetails?.additionalDetails?.siteDetails || {};
-  const documents = nocObject?.documents?.filter((doc)=> (doc?.documentUid) || (doc?.documentType)) || [];
-  const coordinates= nocObject?.nocDetails?.additionalDetails?.coordinates || {};
-  const ownerPhotoList= nocObject?.nocDetails?.additionalDetails?.ownerPhotos || [];
-  const ownerIdList= nocObject?.nocDetails?.additionalDetails?.ownerIds || [];
-  
+  const { isLoading, data: nocObject } = Digit.Hooks.firenoc.useFIRENOCApplicationDetails({
+    tenantId,
+    applicationNumber: id,
+  });
+  const applicationDetails = { FireNOCs: nocObject ? [nocObject] : [] };
+
+  const fireNOCDetails = nocObject?.fireNOCDetails || {};
+  const applicantDetails = fireNOCDetails?.applicantDetails || {};
+  const address = fireNOCDetails?.propertyDetails?.address || {};
+  const siteDetails = {
+    doorHouseNo: address.doorNo || "",
+    streetName: address.street || "",
+    landmarkName: address.landmark || "",
+    pincode: address.pincode || "",
+    propertyId: fireNOCDetails?.propertyDetails?.propertyId || "",
+  };
+  const documents = nocObject?.documents || fireNOCDetails?.applicantDetails?.additionalDetail?.ownerAuditionalDetail?.documents || [];
+  const coordinates = fireNOCDetails?.additionalDetail?.coordinates || {};
+  const ownerPhotoList = fireNOCDetails?.additionalDetail?.ownerPhotos || [];
+  const ownerIdList = fireNOCDetails?.additionalDetail?.ownerIds || [];
+
   const setStep = (updatedStepNumber) => {
     dispatch(SET_NOCNewApplication_STEP(updatedStepNumber));
   };
@@ -110,158 +137,208 @@ const EditApplication = () => {
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId);
   const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
   const { data: buildingCategory, isLoading: isBuildingCategoryLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
-  const { data: nocType, isLoading: isNocTypeLoading,  } = Digit.Hooks.noc.useNocType(stateId);
+  const { data: nocType, isLoading: isNocTypeLoading, } = Digit.Hooks.noc.useNocType(stateId);
   const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
-  const [cities, setcitiesopetions] = useState(Digit.Hooks.noc.useTenants());
-  const options = [
-    {code: "YES",i18nKey: "YES",}, {code: "NO",i18nKey: "NO",},
-  ];
-  const { data: fetchedLocalities, isLoading: isBoundaryLoading } = Digit.Hooks.useBoundaryLocalities(tenantId, "revenue", {}, t);
-
   const ulbListOptions = ulbList?.map((city) => ({
     ...city,
     displayName: t(city.i18nKey),
   }));
 
+  const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{ name: "zoneMaster", filter: `$.[?(@.tanentId == '${tenantId}')]` }]);
 
-  let localityAreaType = fetchedLocalities?.find((loc) => loc.name === siteDetails?.localityAreaType?.name) || siteDetails?.localityAreaType || null
-        
-  const { isGenderLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
-
-  let menu = [];
-  genderTypeData &&
-    genderTypeData["common-masters"]?.GenderType?.filter((data) => data.active)?.map((genderDetails) => {
-      menu.push({ i18nKey: `COMMON_GENDER_${genderDetails.code}`, code: `${genderDetails.code}`, value: `${genderDetails.code}` });
+  const { data: fireStationData, isLoading: isFireStationLoading } = Digit.Hooks.useCustomMDMS(stateId, "firenoc", [{ name: "FireStations" }], {
+    select: (d) => d?.firenoc?.FireStations?.filter((s) => s.active) || [],
   });
+  const fireStationOptions = fireStationData
+    ?.filter((s) => s.tenantId === tenantId)
+    ?.map((s) => ({ code: s.id, name: s.name || s.id })) || [];
 
-  const [selectedDistrict, setSelectedDistrict] = useState(null);
+  useEffect(() => {
+    setHydrated(false);
+  }, [id]);
 
-//   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
-//   selectedDistrict?.code,
-//   "revenue",
-//   { enabled: !!selectedDistrict },
-//   t
-//  );
+  const ready =
+    !isLoading &&
+    !isBuildingTypeLoading &&
+    !isZoneListLoading &&
+    !isNocTypeLoading &&
+    !isUlbListLoading &&
+    !isFireStationLoading &&
+    applicationDetails?.FireNOCs?.length > 0;
+  useEffect(() => {
+    if (ready && nocObject?.applicationStatus === "INITIATED") {
+      const basePath = window.location.pathname.includes("employee")
+        ? "/digit-ui/employee/firenoc"
+        : "/digit-ui/citizen/firenoc";
+      history.replace(`${basePath}/new-application/${id}?tenantId=${tenantId}`);
+    }
+  }, [ready, nocObject]);
 
-
- const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
- const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
-
-//   useEffect(() => {
-//   if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
-//     const zoneName = siteDetails?.zone?.name || siteDetails?.zone;
-//     const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName);
-
-//     if (matchedZone) {
-//       dispatch(
-//         UPDATE_NOCNewApplication_FORM("siteDetails", {
-//           ...formData.siteDetails,
-//           zone: matchedZone,
-//         })
-//       );
-//     }
-//   }
-// }, [fetchedLocalities, siteDetails?.zone]);
-
-useEffect(() => {
-
-  setHydrated(false);
-
-}, [id]);
-
-const ready =
-  !isLoading &&
-  !isBuildingTypeLoading &&
-  !isZoneListLoading &&
-  !isNocTypeLoading &&
-  !isUlbListLoading &&
-  applicationDetails?.Noc?.length > 0;
   useEffect(() => {
     dispatch(RESET_NOC_NEW_APPLICATION_FORM());
-    if(ready){
-        const formattedDocuments = {
-       documents: {
-        documents: documents?.map((doc) => ({
-          documentType: doc?.documentType || "",
-          uuid: doc?.uuid || "",
-          documentUid: doc?.documentUid || "",
-          documentAttachment: doc?.documentAttachment || "",
-          filestoreId: doc?.uuid || ""
-        })),
-       },
-        };
-
-        Object.entries(coordinates).forEach(([key,value])=>{
-        dispatch(UPDATE_NOCNewApplication_CoOrdinates(key, value));
-        });
-
-        dispatch(UPDATE_NOC_OwnerIds("ownerIdList", ownerIdList));
-        dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList", ownerPhotoList));
-
-        const updatedApplicantDetails=
-        {
-          ...applicantDetails,
-            owners: applicantDetails.owners?.map(owner => ({
-              ...owner,
-            })) || [],
-          //applicantGender : menu?.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
+    if (ready) {
+      const formattedDocuments = {
+        documents: {
+          documents: documents?.map((doc) => {
+            const fileId = doc?.fileStoreId || doc?.filestoreId || doc?.documentUid || doc?.uuid || "";
+            return {
+              documentType: doc?.documentType || "",
+              uuid: doc?.uuid || "",
+              documentUid: fileId,
+              documentAttachment: fileId,
+              filestoreId: fileId,
+              dropdown: doc?.dropdown || null
+            };
+          })
         }
+      };
 
-        
-        const updatedSiteDetails = {
-          ...siteDetails,
-          ulbName: ulbListOptions?.find((obj) => obj.name === siteDetails?.ulbName?.name || obj.name === siteDetails?.ulbName),
-          roadType: roadType?.find((obj) => obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType),
-          buildingStatus: buildingType?.find((obj) => obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus),
-          isBasementAreaAvailable: options?.find(
-            (obj) => obj.code === siteDetails?.isBasementAreaAvailable?.code || obj.code === siteDetails?.isBasementAreaAvailable
-          ),
-          vasikaNumber: nocObject?.vasikaNumber,
-          vasikaDate: formatDateForInput(nocObject?.vasikaDate),
+      Object.entries(coordinates).forEach(([key, value]) => {
+        dispatch(UPDATE_NOCNewApplication_CoOrdinates(key, value));
+      });
 
-          zone: zoneOptions?.find((obj) => obj.name === siteDetails?.zone?.name || obj.name === siteDetails?.zone),
-          localityAreaType:
-            fetchedLocalities?.find((loc) => loc.name === siteDetails?.localityAreaType?.name) || siteDetails?.localityAreaType || null,
-          specificationBuildingCategory: buildingCategory?.find(
-            (obj) => obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory
-          ),
-          specificationNocType: nocType?.find(
-            (obj) => obj.name === siteDetails?.specificationNocType?.name || obj.name === siteDetails?.specificationNocType
-          ),
-          specificationRestrictedArea: options?.find(
-            (obj) => obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea
-          ),
-          specificationIsSiteUnderMasterPlan: options?.find(
-            (obj) =>
-              obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan
-          ),
+      dispatch(UPDATE_NOC_OwnerIds("ownerIdList", ownerIdList));
+      dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList", ownerPhotoList));
+
+      const formattedOwners = fireNOCDetails?.applicantDetails?.owners?.map((owner) => ({
+        mobileNumber: owner?.mobileNumber || "",
+        name: owner?.name || "",
+        gender: owner?.gender ? { code: owner.gender, i18nKey: `COMMON_GENDER_${owner.gender}` } : null,
+        dateOfBirth: owner?.dob ? formatDateForInput(new Date(owner.dob)) : "",
+        emailId: owner?.emailId || "",
+        fatherOrHusbandName: owner?.fatherOrHusbandName || "",
+        relationship: owner?.relationship ? { code: owner.relationship.toUpperCase(), i18nKey: `COMMON_RELATION_${owner.relationship.toUpperCase()}` } : null,
+        panNo: owner?.pan || owner?.panNo || "",
+        address: owner?.correspondenceAddress || "",
+      })) || [];
+
+      const ownerShipType = fireNOCDetails?.applicantDetails?.ownerShipType || "";
+      const ownerShipMajorType = fireNOCDetails?.applicantDetails?.ownerShipMajorType || ownerShipType.split(".")[0];
+
+      const updatedApplicantDetails = {
+        applicantType: ownerShipMajorType ? {
+          code: ownerShipMajorType,
+          name: `COMMON_MASTERS_OWNERSHIPCATEGORY_${ownerShipMajorType}`,
+          i18nKey: ownerShipMajorType
+        } : null,
+        applicantSubtype: ownerShipType ? {
+          code: ownerShipType,
+          name: `COMMON_MASTERS_OWNERSHIPCATEGORY_${ownerShipType.replaceAll(".", "_")}`,
+          i18nKey: ownerShipType
+        } : null,
+        owners: formattedOwners,
+      };
+
+      const selectedCity = ulbListOptions?.find((obj) => obj.code === address?.city) || null;
+      const selectedSubDistrictCity = ulbListOptions?.find((obj) => obj.code === address?.subDistrict) || null;
+      const districtName = selectedCity ? {
+        code: selectedCity?.city?.districtTenantCode,
+        name: selectedCity?.city?.districtName || selectedCity?.city?.districtTenantCode
+      } : null;
+
+      const mohallaCode = address?.locality?.code || (typeof address?.locality === "string" ? address?.locality : "") || (address?.areaType?.toUpperCase() !== "RURAL" ? address?.addressLine2 : "") || "";
+      const cityNameCode = address?.city || "";
+      const i18nkey = cityNameCode && mohallaCode ? `${cityNameCode.toUpperCase().split(".").join("_")}_REVENUE_${mohallaCode}` : "";
+      const mohalla = mohallaCode ? {
+        code: mohallaCode,
+        name: address?.locality?.name || mohallaCode,
+        i18nkey: i18nkey
+      } : null;
+
+      const formattedBuildings = fireNOCDetails?.buildings?.map((b) => {
+        const heightVal = b?.uoms?.find((u) => u.code === "HEIGHT_OF_BUILDING")?.value || "";
+        const floorsVal = b?.uoms?.find((u) => u.code === "NO_OF_FLOORS")?.value || "";
+        const basementsVal = b?.uoms?.find((u) => u.code === "NO_OF_BASEMENTS")?.value || "";
+        const builtUpAreaVal = b?.uoms?.find((u) => u.code === "BUILTUP_AREA")?.value || "";
+        return {
+          buildingName: b?.name || "",
+          buildingUsageType: b?.usageType ? { code: b.usageType, name: b.usageType } : null,
+          buildingUsageSubType: b?.usageSubType ? { code: b.usageSubType, name: b.usageSubType } : null,
+          noOfFloors: floorsVal ? { code: String(floorsVal), name: String(floorsVal) } : null,
+          noOfBasements: basementsVal ? { code: String(basementsVal), name: String(basementsVal) } : { code: "0", name: "0" },
+          heightOfBuilding: heightVal,
+          landArea: b?.landArea || "",
+          totalCoveredArea: b?.totalCoveredArea || "",
+          parkingArea: b?.parkingArea || "",
+          leftSurrounding: b?.leftSurrounding || "",
+          rightSurrounding: b?.rightSurrounding || "",
+          frontSurrounding: b?.frontSurrounding || "",
+          backSurrounding: b?.backSurrounding || "",
+          groundFloorBuiltupArea: builtUpAreaVal,
         };
-      
-        dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", updatedApplicantDetails));
-        dispatch(UPDATE_NOCNewApplication_FORM("siteDetails", updatedSiteDetails));
-        dispatch(UPDATE_NOCNewApplication_FORM("documents", formattedDocuments));
-        dispatch(UPDATE_NOCNewApplication_FORM("apiData", applicationDetails));
-        
+      }) || [];
+
+      const getAreaTypeObj = (areaTypeStr) => {
+        if (!areaTypeStr) return null;
+        const upper = areaTypeStr.toUpperCase();
+        if (upper === "URBAN") return { code: "URBAN", name: "Urban" };
+        if (upper === "RURAL") return { code: "RURAL", name: "Rural" };
+        return { code: upper, name: areaTypeStr };
+      };
+
+      const updatedSiteDetails = {
+        areaType: getAreaTypeObj(address?.areaType),
+        districtName: districtName,
+        cityName: selectedSubDistrictCity 
+          ? { code: selectedSubDistrictCity.code, name: selectedSubDistrictCity.name || selectedSubDistrictCity.code } 
+          : (selectedCity ? { code: selectedCity.code, name: selectedCity.name || selectedCity.code } : null),
+        villageName: address?.areaType?.toUpperCase() === "RURAL" ? address?.addressLine2 : "",
+        mohalla: mohalla,
+        pincode: address?.pincode || "",
+        doorHouseNo: address?.doorNo || "",
+        streetName: address?.street || "",
+        landmarkName: address?.landmark || "",
+        propertyId: fireNOCDetails?.propertyDetails?.propertyId || fireNOCDetails?.propertyId || "",
+        plotSurveyNo: address?.doorNo || "",
+        geoLocation: fireNOCDetails?.propertyDetails?.geoLocation || 
+                     (fireNOCDetails?.propertyDetails?.latitude && fireNOCDetails?.propertyDetails?.longitude ? { latitude: Number(fireNOCDetails.propertyDetails.latitude), longitude: Number(fireNOCDetails.propertyDetails.longitude) } : null) ||
+                     (address?.latitude && address?.longitude ? { latitude: Number(address.latitude), longitude: Number(address.longitude) } : null) ||
+                     (coordinates?.latitude && coordinates?.longitude ? { latitude: Number(coordinates.latitude), longitude: Number(coordinates.longitude) } : null) || null,
+        fireStationId: fireNOCDetails?.firestationId || "",
+        noOfBuildings: fireNOCDetails?.noOfBuildings || "SINGLE",
+        buildings: formattedBuildings,
+      };
+
+      const updatedNocDetails = {
+        fireNOCType: nocType?.find((obj) => obj.code === fireNOCDetails?.fireNOCType || obj.name === fireNOCDetails?.fireNOCType) || {
+          code: fireNOCDetails?.fireNOCType,
+          name: t(`NOC_${fireNOCDetails?.fireNOCType}`),
+        },
+        firestationId: fireStationOptions?.find((obj) => obj.code === fireNOCDetails?.firestationId) || {
+          code: fireNOCDetails?.firestationId,
+          name: fireNOCDetails?.firestationId,
+        },
+        provisionalNocNumber: fireNOCDetails?.provisionalNocNumber || "",
+        oldFireNocNumber: fireNOCDetails?.oldFireNocNumber || "",
+      };
+
+      dispatch(UPDATE_NOCNewApplication_FORM("nocDetails", updatedNocDetails));
+      dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", updatedApplicantDetails));
+      dispatch(UPDATE_NOCNewApplication_FORM("siteDetails", updatedSiteDetails));
+      dispatch(UPDATE_NOCNewApplication_FORM("documents", formattedDocuments));
+      dispatch(UPDATE_NOCNewApplication_FORM("uploadedDocuments", { documents: formattedDocuments.documents.documents }));
+      dispatch(UPDATE_NOCNewApplication_FORM("apiData", applicationDetails));
+
     }
   }, [ready]);
 
-  
 
-useEffect(() => {
-  if (ready && !hydrated) {
-    setHydrated(true);
-  }
-}, [ready, hydrated]);
+
+  useEffect(() => {
+    if (ready && !hydrated) {
+      setHydrated(true);
+    }
+  }, [ready, hydrated]);
 
 
 
   const handleSubmit = (dataGet) => {
-    
+
   };
-  
-   if (isLoading || !hydrated) {
-    return <div><Loader/></div>; // or a spinner component
-   }
+
+  if (isLoading || !hydrated) {
+    return <div><Loader /></div>; // or a spinner component
+  }
 
 
   return (

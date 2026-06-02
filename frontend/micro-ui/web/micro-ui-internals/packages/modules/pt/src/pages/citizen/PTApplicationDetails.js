@@ -126,26 +126,32 @@ const PTApplicationDetails = () => {
   property.ownershipCategoryTemp = property?.ownershipCategory;
   property.ownershipCategoryInit = "NA";
   // Set Institution/Applicant info card visibility
-  if (get(application, "Properties[0].ownershipCategory", "")?.startsWith("INSTITUTION")) {
+  if (property?.ownershipCategoryTemp?.startsWith("INSTITUTION")) {
     property.institutionTemp = property.institution;
   }
 
+  let previousActiveProperty;
   if (auditResponse && Array.isArray(get(auditResponse, "Properties", [])) && get(auditResponse, "Properties", []).length > 0) {
     const propertiesAudit = get(auditResponse, "Properties", []);
     const propertyIndex = property.status == "ACTIVE" ? 1 : 0;
-    // const previousActiveProperty = propertiesAudit.filter(property => property.status == 'ACTIVE').sort((x, y) => y.auditDetails.lastModifiedTime - x.auditDetails.lastModifiedTime)[propertyIndex];
-    // Removed filter(property => property.status == 'ACTIVE') condition to match result in qa env
-    const previousActiveProperty = propertiesAudit
+    previousActiveProperty = propertiesAudit
       .filter((property) => property.status == "ACTIVE")
       .sort((x, y) => y.auditDetails.lastModifiedTime - x.auditDetails.lastModifiedTime)[propertyIndex];
-    property.ownershipCategoryInit = previousActiveProperty?.ownershipCategory;
-    property.ownersInit = previousActiveProperty?.owners?.filter((owner) => owner.status == "ACTIVE");
+    if (!previousActiveProperty) {
+      const sortedAudit = [...propertiesAudit].sort((x, y) => y.auditDetails.lastModifiedTime - x.auditDetails.lastModifiedTime);
+      previousActiveProperty = sortedAudit[1] || sortedAudit[0];
+    }
+    if (previousActiveProperty) {
+      property.ownershipCategoryInit = previousActiveProperty.ownershipCategory;
+      property.ownersInit = previousActiveProperty.owners ? previousActiveProperty.owners.filter((owner) => owner.status == "ACTIVE") : [];
 
+      if (property?.ownershipCategoryInit?.startsWith("INSTITUTION")) {
+        property.institutionInit = previousActiveProperty.institution;
+      }
+    }
     const curWFProperty = propertiesAudit.sort((x, y) => y.auditDetails.lastModifiedTime - x.auditDetails.lastModifiedTime)[0];
-    property.ownersTemp = curWFProperty.owners.filter((owner) => owner.status == "ACTIVE");
-
-    if (property?.ownershipCategoryInit?.startsWith("INSTITUTION")) {
-      property.institutionInit = previousActiveProperty.institution;
+    if (curWFProperty && curWFProperty.owners) {
+      property.ownersTemp = curWFProperty.owners.filter((owner) => owner.status == "ACTIVE");
     }
   }
 
@@ -320,7 +326,7 @@ const PTApplicationDetails = () => {
               <CardSubHeader style={{ fontSize: "24px" }}>{t("PT_MUTATION_TRANSFEROR_DETAILS")}</CardSubHeader>
               <div>
                 {Array.isArray(transferorOwners) &&
-                   transfereeOwners.sort((item,item2)=>{return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence}).map((owner, index) => (
+                   transferorOwners.slice().sort((item,item2)=>{return (item?.additionalDetails?.ownerSequence || 0) - (item2?.additionalDetails?.ownerSequence || 0)}).map((owner, index) => (
                     <div key={index}>
                       <CardSubHeader>
                         {transferorOwners.length != 1 && (
@@ -337,7 +343,7 @@ const PTApplicationDetails = () => {
                         <Row
                           className="border-none"
                           label={t("PT_MUTATION_TRANSFEROR_SPECIAL_CATEGORY")}
-                          text={owner?.ownerType || t("CS_NA")}
+                          text={owner?.ownerType?.toLowerCase() || t("CS_NA")}
                         />
                         <Row className="border-none" label={t("PT_OWNERSHIP_INFO_CORR_ADDR")} text={owner?.correspondenceAddress || t("CS_NA")} />
                       </StatusTable>
@@ -346,10 +352,10 @@ const PTApplicationDetails = () => {
               </div>
 
               <CardSubHeader style={{ fontSize: "24px" }}>{t("PT_MUTATION_TRANSFEREE_DETAILS")}</CardSubHeader>
-              {isInstitution ? (
+              {property?.ownershipCategoryTemp?.startsWith("INSTITUTION") ? (
                 <div>
                   {Array.isArray(transfereeOwners) &&
-                   transfereeOwners.sort((item,item2)=>{return item.additionalDetails.ownerSequence - item2.additionalDetails.ownerSequence}).map((owner, index) => (
+                   transfereeOwners.slice().sort((item,item2)=>{return (item?.additionalDetails?.ownerSequence || 0) - (item2?.additionalDetails?.ownerSequence || 0)}).map((owner, index) => (
                       <div key={index}>
                         <CardSubHeader>
                           {transfereeOwners.length != 1 && (
@@ -359,19 +365,19 @@ const PTApplicationDetails = () => {
                           )}
                         </CardSubHeader>
                         <StatusTable>
-                          <Row className="border-none" label={t("PT_INSTITUTION_NAME")} text={transferorInstitution?.name || t("CS_NA")} />
-                          <Row className="border-none" label={t("PT_TYPE_OF_INSTITUTION")} text={`${t(transferorInstitution?.type)}` || t("CS_NA")} />
+                          <Row className="border-none" label={t("PT_INSTITUTION_NAME")} text={transfereeInstitution?.institutionName || transfereeInstitution?.name || t("CS_NA")} />
+                          <Row className="border-none" label={t("PT_TYPE_OF_INSTITUTION")} text={`${t(transfereeInstitution?.institutionType || transfereeInstitution?.type)}` || t("CS_NA")} />
                           <Row
                             className="border-none"
                             label={t("PT_NAME_AUTHORIZED_PERSON")}
-                            text={transferorInstitution?.nameOfAuthorizedPerson || t("CS_NA")}
+                            text={transfereeInstitution?.nameOfAuthorizedPerson || t("CS_NA")}
                           />
                           <Row className="border-none" label={t("PT_LANDLINE_NUMBER")} text={owner?.altContactNumber || t("CS_NA")} />
                           <Row className="border-none" label={t("PT_FORM3_MOBILE_NUMBER")} text={owner?.mobileNumber || t("CS_NA")} />
                           <Row
                             className="border-none"
                             label={t("PT_INSTITUTION_DESIGNATION")}
-                            text={transferorInstitution?.designation || t("CS_NA")}
+                            text={transfereeInstitution?.designation || t("CS_NA")}
                           />
                           <Row className="border-none" label={t("PT_MUTATION_AUTHORISED_EMAIL")} text={owner?.emailId || t("CS_NA")} />
                           <Row className="border-none" label={t("PT_OWNERSHIP_INFO_CORR_ADDR")} text={owner?.correspondenceAddress || t("CS_NA")} />
@@ -382,7 +388,7 @@ const PTApplicationDetails = () => {
               ) : (
                 <div>
                   {Array.isArray(transfereeOwners) &&
-                    transfereeOwners.sort((item,item2)=>{return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence}).map((owner, index) => (
+                    transfereeOwners.slice().sort((item,item2)=>{return (item?.additionalDetails?.ownerSequence || 0) - (item2?.additionalDetails?.ownerSequence || 0)}).map((owner, index) => (
                       <div key={index}>
                         <CardSubHeader>
                           {transfereeOwners.length != 1 && (
@@ -398,16 +404,16 @@ const PTApplicationDetails = () => {
                           <Row
                             className="border-none"
                             label={t("PT_FORM3_OWNERSHIP_TYPE")}
-                            text={`${application?.ownershipCategory ? t(`PT_OWNERSHIP_${application?.ownershipCategory}`) : t("CS_NA")}`}
+                            text={`${property?.ownershipCategoryTemp ? t(`PT_OWNERSHIP_${property?.ownershipCategoryTemp}`) : t("CS_NA")}`}
                           />
                           <Row className="border-none" label={t("PT_FORM3_MOBILE_NUMBER")} text={owner?.mobileNumber || t("CS_NA")} />
                           <Row className="border-none" label={t("PT_MUTATION_AUTHORISED_EMAIL")} text={owner?.emailId || t("CS_NA")} />
                           <Row
                             className="border-none"
                             label={t("PT_MUTATION_TRANSFEROR_SPECIAL_CATEGORY")}
-                            text={(owner?.ownerType) || t("CS_NA")}
+                            text={owner?.ownerType?.toLowerCase() || t("CS_NA")}
                           />
-                          <Row className="border-none" label={t("PT_OWNERSHIP_INFO_CORR_ADDR")} text={owner?.correspondenceAddress || t("CS_NA")} />
+                          <Row className="border-none" label={t("PT_OWNERSHIP_INFO_CORR_ADDR")} text={owner?.permanentAddress || owner?.correspondenceAddress || t("CS_NA")} />
                         </StatusTable>
                       </div>
                     ))}

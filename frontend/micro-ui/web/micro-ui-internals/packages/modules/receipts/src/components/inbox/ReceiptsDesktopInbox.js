@@ -110,7 +110,7 @@ const ReceiptsDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
         pageSizeLimit={props.pageSizeLimit}
         onSort={props.onSort}
         disableSort={props.disableSort}
-        onPageSizeChange={props.onPageSizeChange}
+
         sortParams={props.sortParams}
         totalRecords={props.totalRecords}
       />

@@ -59,14 +59,18 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     },
   });
 
-  // Hydrate form from Redux on mount
+  // Hydrate form from Redux
   useEffect(() => {
     if (currentStepData && Object.keys(currentStepData).length > 0) {
       Object.entries(currentStepData).forEach(([key, value]) => {
-        if (key !== "buildings") setValue(key, value);
+        if (key !== "buildings") {
+          setValue(key, value);
+        } else if (Array.isArray(value) && value.length > 0) {
+          setValue("buildings", value);
+        }
       });
     }
-  }, []);
+  }, [currentStepData, setValue]);
 
   const handleBack = () => {
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, getValues()));

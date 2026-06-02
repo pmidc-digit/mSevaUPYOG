@@ -234,8 +234,8 @@ const SVDocumentsDetail = ({ t, config, onSelect, formData, editdata, previousDa
         comments: "",
         businessService: "street-vending",
         moduleName: "sv-services",
-        businessService: "street-vending",
-        moduleName: "sv-services",
+        // businessService: "street-vending",
+        // moduleName: "sv-services",
         varificationDocuments: [
           {
             additionalDetails: {},

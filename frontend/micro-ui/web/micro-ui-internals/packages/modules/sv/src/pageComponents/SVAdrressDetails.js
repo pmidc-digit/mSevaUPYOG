@@ -365,8 +365,8 @@ const SVAdrressDetails = ({ t, config, onSelect, userType, formData, editdata, p
         comments: "",
         businessService: "street-vending",
         moduleName: "sv-services",
-        businessService: "street-vending",
-        moduleName: "sv-services",
+        // businessService: "street-vending",
+        // moduleName: "sv-services",
         varificationDocuments: [
           {
             additionalDetails: {},

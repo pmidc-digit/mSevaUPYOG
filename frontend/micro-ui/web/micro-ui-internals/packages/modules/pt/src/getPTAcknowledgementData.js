@@ -343,10 +343,10 @@ const getPTAcknowledgementData = async (application, tenantInfo, t) => {
           { title: t("PT_PROPERTY_EXISTING_PROPERTY_ID"), value: application?.existingPropertyId || t("CS_NA") },
 
          // application?.channel === "CITIZEN" && { title: t("PT_PROPERTY_ADDRESS_LANDMARK"), value: application?.address?.landmark || t("CS_NA") },
-        ]
-        (application?.channel === "CITIZEN")&&
-          values.push({ title: t("PT_PROPERTY_ADDRESS_LANDMARK"), value: application?.address?.landmark || t("CS_NA") })
-        
+          ...(application?.channel === "CITIZEN"
+            ? [{ title: t("PT_PROPERTY_ADDRESS_LANDMARK"), value: application?.address?.landmark || t("CS_NA") }]
+            : []),
+        ],
       },
       {
         title: t("PT_COMMON_DOCS"),

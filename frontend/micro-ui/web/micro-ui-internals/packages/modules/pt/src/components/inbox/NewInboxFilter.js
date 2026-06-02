@@ -27,6 +27,7 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
     },
   ];
 
+  
   const localParamChange = (filterParam) => {
     let keys_to_delete = filterParam.delete;
     let _new = { ..._searchParams, ...filterParam };
@@ -66,6 +67,7 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
         <div className="filter-card">
           <div className="heading" style={{ alignItems: "center" }}>
             <div className="filter-label" style={{ display: "flex", alignItems: "center" }}>
+
               <span>
                 <svg width="17" height="17" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -73,12 +75,16 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
                     fill="#505A5F"
                   />
                 </svg>
+                
               </span>
               <span style={{ marginLeft: "8px", fontWeight: "normal" }}>{t("ES_COMMON_FILTER_BY")}:</span>
             </div>
+
             <div className="clearAll" onClick={clearAll}>
               {t("ES_COMMON_CLEAR_ALL")}
             </div>
+
+            
             {props.type === "desktop" && (
               <span className="clear-search" onClick={clearAll} style={{ border: "1px solid #e0e0e0", padding: "6px" }}>
                 <svg width="17" height="17" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -3,7 +3,7 @@ import React, { useEffect, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { transformBookingResponseToBookingData, ChallanData, amountToWords, getLocationName, formatDate } from "../../index";
+import { transformBookingResponseToBookingData, ChallanData, amountToWords, getLocationName, formatDate, fixAdjustedAmount } from "../../index";
 
 export const SuccessfulPayment = (props) => {
   console.log("Getting Here 2");
@@ -675,10 +675,10 @@ const WrapPaymentComponent = (props) => {
       const generatePdfKeyForTL = "chb-permissionletter";
       if (!fileStoreId) {
         const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
-
+        const pdfPayments = fixAdjustedAmount(payments?.Payments?.[0]);
         const response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          { Payments: [{ ...pdfPayments, ...application }] },
           generatePdfKeyForTL
         );
         const updatedApplication = {
@@ -718,10 +718,11 @@ const WrapPaymentComponent = (props) => {
       };
       let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
+        const pdfPayments = fixAdjustedAmount(payments?.Payments?.[0]);
         let response = { filestoreIds: [payments?.fileStoreId] };
         response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          { Payments: [{ ...pdfPayments, ...application }] },
           "chbservice-receipt"
         );
         const updatedApplication = {
@@ -1445,7 +1446,7 @@ const WrapPaymentComponent = (props) => {
           business_service === "chb-services" ||
           business_service === "NDC" ||
           business_service === "Challan_Generation" ||
-          business_service === "rl-services",
+          business_service === "rl-services"||
           business_service === "GC.ONE_TIME_FEE"
         ) && (
           <div

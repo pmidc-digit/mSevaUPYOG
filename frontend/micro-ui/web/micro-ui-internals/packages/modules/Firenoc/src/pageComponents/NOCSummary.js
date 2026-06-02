@@ -13,23 +13,55 @@ function FeeEstimateCard({ applicationNo, tenantId, t }) {
   useEffect(() => {
     if (!applicationNo || !tenantId) return;
     setLoading(true);
-    // billing-service requires state-level tenantId (e.g. "pb" not "pb.amritsar")
-    const billingTenantId = tenantId.split(".")[0];
-    Digit.PaymentService.fetchBill(billingTenantId, {
-      consumerCode: applicationNo,
-      businessService: "FIRENOC",
-    })
-      .then((res) => setBill(res?.Bill?.[0] || null))
-      .catch(() => setBill(null))
-      .finally(() => setLoading(false));
+    const billingTenantId = tenantId;
+
+    // Search for any existing payment receipts first to see if it was paid
+    Digit.PaymentService.recieptSearch(billingTenantId, "FIRENOC", { consumerCodes: applicationNo })
+      .then((recieptRes) => {
+        if (recieptRes?.Payments?.length > 0) {
+          const payment = recieptRes.Payments[0];
+          const paidBill = payment?.paymentDetails?.[0]?.bill;
+          if (paidBill) {
+            setBill({
+              ...paidBill,
+              status: "PAID",
+              totalAmount: payment.totalAmountPaid != null ? payment.totalAmountPaid : paidBill.totalAmount,
+            });
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Fallback to fetch outstanding bill if unpaid
+        Digit.PaymentService.fetchBill(billingTenantId, {
+          consumerCode: applicationNo,
+          businessService: "FIRENOC",
+        })
+          .then((res) => setBill(res?.Bill?.[0] || null))
+          .catch(() => setBill(null))
+          .finally(() => setLoading(false));
+      })
+      .catch(() => {
+        Digit.PaymentService.fetchBill(billingTenantId, {
+          consumerCode: applicationNo,
+          businessService: "FIRENOC",
+        })
+          .then((res) => setBill(res?.Bill?.[0] || null))
+          .catch(() => setBill(null))
+          .finally(() => setLoading(false));
+      });
   }, [applicationNo, tenantId]);
 
   const _nocFeesVal = bill?.billDetails?.[0]?.billAccountDetails?.find(
     (a) => a.taxHeadCode === "FIRENOC_FEES"
-  )?.amount;
-  const nocFees = _nocFeesVal != null ? _nocFeesVal : 0;
+  );
+  const nocFees = _nocFeesVal
+    ? (_nocFeesVal.amountPaid != null && _nocFeesVal.amountPaid > 0
+        ? _nocFeesVal.amountPaid
+        : (_nocFeesVal.amount != null ? _nocFeesVal.amount : 0))
+    : 0;
   const totalAmount = bill?.totalAmount != null ? bill.totalAmount : 0;
-  const isPaid = bill?.status === "PAID";
+  const isPaid = bill?.status === "PAID" || bill?.status === "paid";
 
   return (
     <Card>
@@ -95,12 +127,15 @@ function NOCSummary({ currentStepData: formData, t }) {
   const site = formData?.siteDetails || {};
   const appDetails = formData?.applicationDetails || {};
   // FIRENOCService.create stores response under FireNOCs (not Noc)
-  const apiFireNOC = formData?.apiData?.FireNOCs?.[0];
+  const apiFireNOC = formData?.apiData?.FireNOCs?.[0] || 
+                     formData?.apiData?.Noc?.[0] || 
+                     formData?.apiData?.[0] || 
+                     formData?.apiData;
 
   const applicationNo = apiFireNOC?.fireNOCDetails?.applicationNumber || "";
   const tenantId = apiFireNOC?.tenantId || site?.cityName?.code || "";
 
-  const owners = appDetails?.owners || [];
+  const owners = appDetails?.owners || apiFireNOC?.fireNOCDetails?.applicantDetails?.owners || [];
   const primaryOwner = owners[0] || {};
 
   /* doc friendly name map */
@@ -137,8 +172,19 @@ function NOCSummary({ currentStepData: formData, t }) {
         <CardSubHeader>{t("NOC Details")}</CardSubHeader>
         <StatusTable>
           <Row label={t("NOC Type")} text={val(nocDetails?.fireNOCType?.code)} />
-          <Row label={t("Provisional fire NoC number")} text={val(apiFireNOC?.fireNOCDetails?.nocNo || applicationNo)} />
-          <Row label={t("Validity Year")} text={val(nocDetails?.validityYear?.code || nocDetails?.validityYear)} />
+          {nocDetails?.fireNOCType?.code === "RENEWAL" ? (
+            <Row
+              label={t("old fire NoC number")}
+              text={val(nocDetails?.oldFireNocNumber || apiFireNOC?.fireNOCDetails?.oldFireNocNumber)}
+            />
+          ) : (
+            <Row
+              label={t("Provisional fire NoC number")}
+              text={val(nocDetails?.provisionalNocNumber || apiFireNOC?.fireNOCDetails?.provisionalNocNumber)}
+            />
+          )}
+          <Row label={t("Validity Year")} text={val(nocDetails?.validityYear?.code || nocDetails?.validityYear || apiFireNOC?.fireNOCDetails?.additionalDetail?.validityYears)} />
+          {/* <Row label={t("Validity Year")} text={val(apiFireNOC?.fireNOCDetails?.financialYear || nocDetails?.validityYear?.code || nocDetails?.validityYear)} /> */}
         </StatusTable>
       </Card>
 
@@ -157,19 +203,19 @@ function NOCSummary({ currentStepData: formData, t }) {
               {(site?.buildings?.length > 1) && (
                 <Row label={t(`Building ${i + 1}`)} text="" />
               )}
-              <Row label={t("Name Of Building")} text={val(b?.name)} />
-              <Row label={t("Building Usage Type as per NBC")} text={val(b?.buildingUsageType?.name || b?.buildingUsageType?.code)} />
-              <Row label={t("Building Usage Subtype as per NBC")} text={val(b?.buildingUsageSubType?.name || b?.buildingUsageSubType?.code)} />
+              <Row label={t("Name Of Building")} text={val(b?.buildingName || b?.name)} />
+              <Row label={t("Building Usage Type as per NBC")} text={val(b?.buildingUsageType?.name || b?.buildingUsageType?.code || b?.buildingUsageType)} />
+              <Row label={t("Building Usage Subtype as per NBC")} text={val(b?.buildingUsageSubType?.name || b?.buildingUsageSubType?.code || b?.buildingUsageSubType)} />
               <Row label={t("Land Area(in Sq meters)")} text={val(b?.landArea)} />
               <Row label={t("Total Covered Area(in Sq meters)")} text={val(b?.totalCoveredArea)} />
               <Row label={t("Parking Area (in Sq meters)")} text={val(b?.parkingArea)} />
-              <Row label={t("Left surrounding")} text={val(b?.surroundingOnLeft?.name || b?.surroundingOnLeft)} />
-              <Row label={t("Right surrounding")} text={val(b?.surroundingOnRight?.name || b?.surroundingOnRight)} />
-              <Row label={t("Front surrounding")} text={val(b?.surroundingOnFront?.name || b?.surroundingOnFront)} />
-              <Row label={t("Back surrounding")} text={val(b?.surroundingOnBack?.name || b?.surroundingOnBack)} />
-              <Row label={t("Height of the Building from Ground level (in meters)")} text={val(b?.uomsMap?.HEIGHT_OF_BUILDING)} />
+              <Row label={t("Left surrounding")} text={val(b?.leftSurrounding?.name || b?.leftSurrounding || b?.surroundingOnLeft)} />
+              <Row label={t("Right surrounding")} text={val(b?.rightSurrounding?.name || b?.rightSurrounding || b?.surroundingOnRight)} />
+              <Row label={t("Front surrounding")} text={val(b?.frontSurrounding?.name || b?.frontSurrounding || b?.surroundingOnFront)} />
+              <Row label={t("Back surrounding")} text={val(b?.backSurrounding?.name || b?.backSurrounding || b?.surroundingOnBack)} />
+              <Row label={t("Height of the Building from Ground level (in meters)")} text={val(b?.heightOfBuilding || b?.uomsMap?.HEIGHT_OF_BUILDING)} />
               <Row label={t("No of Floors")} text={val(b?.noOfFloors?.code || b?.noOfFloors)} />
-              <Row label={t("Ground floor builtup area(in sq. meter)")} text={val(b?.totalCoveredArea)} />
+              <Row label={t("Ground floor builtup area(in sq. meter)")} text={val(b?.groundFloorBuiltupArea || b?.totalCoveredArea)} />
             </React.Fragment>
           ))}
         </StatusTable>
@@ -184,22 +230,36 @@ function NOCSummary({ currentStepData: formData, t }) {
           <Row label={t("Area Type")} text={val(site.areaType?.name || site.areaType?.code)} />
           <Row label={t("District Name")} text={val(site.districtName?.name || site.districtName)} />
           <Row label={t("Sub District Name")} text={val(site.cityName?.name || site.cityName?.code)} />
-          <Row label={t("Door/House No.")} text={val(site.doorHouseNo)} />
+          <Row label={t("Door/House No.")} text={val(site.plotSurveyNo || site.doorHouseNo)} />
           <Row label={t("Street Name")} text={val(site.streetName)} />
           {site.areaType?.code === "URBAN"
-            ? <Row label={t("Mohalla")} text={val(site.mohalla?.name || site.mohalla?.i18nkey || site.mohalla)} />
+            ? <Row label={t("Mohalla")} text={val(site.mohalla?.name || (site.mohalla?.i18nkey ? t(site.mohalla.i18nkey) : null) || site.mohalla?.code || site.mohalla)} />
             : <Row label={t("Village Name")} text={val(site.villageName)} />
           }
-          <Row label={t("Landmark Name")} text={val(site.landmarkName)} />
+          <Row label={t("Landmark Name")} text={val(site.landmarkName || apiFireNOC?.fireNOCDetails?.propertyDetails?.address?.landmark || site.landmark)} />
           <Row label={t("Pincode")} text={val(site.pincode)} />
           <Row label={t("Locate on Map")} text={
-            site.geoLocation?.latitude
-              ? `${site.geoLocation.latitude}, ${site.geoLocation.longitude}`
-              : NA
+            (() => {
+              const lat = site.geoLocation?.latitude || 
+                          site.geoLocation?.lat ||
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.geoLocation?.latitude || 
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.geoLocation?.lat ||
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.address?.latitude || 
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.latitude;
+              const lng = site.geoLocation?.longitude || 
+                          site.geoLocation?.lng ||
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.geoLocation?.longitude || 
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.geoLocation?.lng ||
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.address?.longitude || 
+                          apiFireNOC?.fireNOCDetails?.propertyDetails?.longitude;
+              const hasLat = lat !== undefined && lat !== null && lat !== "";
+              const hasLng = lng !== undefined && lng !== null && lng !== "";
+              return hasLat && hasLng ? `${lat}, ${lng}` : NA;
+            })()
           } />
           <Row label={t("Applicable Fire Station")} text={val(
             (() => {
-              const stationCode = site.fireStationId;
+              const stationCode = typeof site.fireStationId === "object" ? (site.fireStationId?.name || site.fireStationId?.code) : site.fireStationId;
               if (!stationCode) return null;
               return stationCode.replace(/_/g, " ").replace(/^FS /, "").replace(/\b\w/g, c => c.toUpperCase());
             })()
@@ -210,17 +270,30 @@ function NOCSummary({ currentStepData: formData, t }) {
       {/* ── Applicant Details ── */}
       <Card>
         <CardSubHeader>{t("Applicant Details")}</CardSubHeader>
-        <StatusTable>
-          <Row label={t("Mobile Number")} text={val(primaryOwner.mobileNumber)} />
-          <Row label={t("Name")} text={val(primaryOwner.ownerOrFirmName || primaryOwner.name)} />
-          <Row label={t("Gender")} text={val(primaryOwner.gender?.code || primaryOwner.gender)} />
-          <Row label={t("Father/Husband's Name")} text={val(primaryOwner.fatherOrHusbandName)} />
-          <Row label={t("Relationship")} text={val(primaryOwner.relationship?.code || primaryOwner.relationship)} />
-          <Row label={t("Date Of Birth")} text={formatDob(primaryOwner.dob || primaryOwner.dateOfBirth)} />
-          <Row label={t("Email")} text={val(primaryOwner.emailId)} />
-          <Row label={t("PAN No.")} text={val(primaryOwner.panNo || primaryOwner.pan)} />
-          <Row label={t("Correspondence Address")} text={val(primaryOwner.address || primaryOwner.correspondenceAddress)} />
-        </StatusTable>
+        {owners.map((owner, index) => {
+          const apiOwner = apiFireNOC?.fireNOCDetails?.applicantDetails?.owners?.[index] || {};
+          const panVal = owner.panNo || owner.pan || owner.panNumber || apiOwner.pan || apiOwner.panNo || apiOwner.panNumber;
+          return (
+            <div key={index} style={index > 0 ? { marginTop: "20px", borderTop: "1px solid #efefef", paddingTop: "16px" } : {}}>
+              {owners.length > 1 && (
+                <div style={{ fontWeight: "600", marginBottom: "12px", color: "#505A5F" }}>
+                  {`${t("Applicant")} ${index + 1}`}
+                </div>
+              )}
+              <StatusTable>
+                <Row label={t("Mobile Number")} text={val(owner.mobileNumber)} />
+                <Row label={t("Name")} text={val(owner.ownerOrFirmName || owner.name)} />
+                <Row label={t("Gender")} text={val(owner.gender?.code || owner.gender)} />
+                <Row label={t("Father/Husband's Name")} text={val(owner.fatherOrHusbandName)} />
+                <Row label={t("Relationship")} text={val(owner.relationship?.code || owner.relationship)} />
+                <Row label={t("Date Of Birth")} text={formatDob(owner.dob || owner.dateOfBirth)} />
+                <Row label={t("Email")} text={val(owner.emailId)} />
+                <Row label={t("PAN No.")} text={val(panVal)} />
+                <Row label={t("Correspondence Address")} text={val(owner.address || owner.correspondenceAddress)} />
+              </StatusTable>
+            </div>
+          );
+        })}
       </Card>
 
       {/* ── Documents ── */}

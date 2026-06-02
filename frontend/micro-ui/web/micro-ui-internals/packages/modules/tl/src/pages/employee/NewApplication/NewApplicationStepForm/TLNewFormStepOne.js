@@ -62,6 +62,14 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     const localityCode = cpt?.details?.address?.locality?.code || address?.locality?.code;
     if (!localityCode) missingFields.push("Locality");
 
+    // Check pincode - non-mandatory, but if provided must be valid (6 digits, starting with 1-9)
+    if (address?.pincode) {
+      const pincodeRegex = /^[1-9][0-9]{5}$/;
+      if (!pincodeRegex.test(address.pincode)) {
+        missingFields.push("Pincode (must be 6 digits)");
+      }
+    }
+
     return missingFields;
   }
 

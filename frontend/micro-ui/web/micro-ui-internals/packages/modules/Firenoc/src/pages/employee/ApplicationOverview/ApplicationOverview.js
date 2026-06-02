@@ -23,7 +23,7 @@ import {
   CheckBox,
   MultiLink
 } from "@mseva/digit-ui-react-components";
-import React, { Fragment, useEffect, useState, useRef,useMemo  } from "react";
+import React, { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import NOCDocument from "../../../pageComponents/NOCDocument";
@@ -105,14 +105,14 @@ const NOCEmployeeApplicationOverview = () => {
   const [showErrorToast, setShowErrorToastt] = useState(null);
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
-  const [approverComment , setApproverComment] = useState(null);
+  const [approverComment, setApproverComment] = useState(null);
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [feeAdjustments, setFeeAdjustments] = useState([]);
-  const { isLoading, data, refetch  } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const loading = isLoading || getLoader;
   const applicationDetails = data?.resData;
   const [showImageModal, setShowImageModal] = useState(false);
@@ -120,26 +120,26 @@ const NOCEmployeeApplicationOverview = () => {
   const [checklistRemarks, setChecklistRemarks] = useState({});
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
   const [siteImages, setSiteImages] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages ? {
-      documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
+    documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
   } : {})
-    const [timeObj, setTimeObj] = useState(null);
-    
+  const [timeObj, setTimeObj] = useState(null);
+
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [showOptions, setShowOptions] = useState(false);
   const [fieldInspectionPending, setFieldInspectionPending] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || [])
   const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
-  const [distances, setDistances] = useState([]);  
+  const [distances, setDistances] = useState([]);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [showPdfModal, setShowPdfModal] = useState(false);
   const stateId = Digit.ULBService.getStateId();
   const { data: allowedDistance, isLoading: isDistanceLoading } = Digit.Hooks.useCommonMDMS(stateId, "common-masters", ["AllowedDistance"]);
   const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService != null ? applicationDetails.Noc[0].nocDetails.additionalDetails.businessService : null;
- 
 
-   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
-      businessService: "obpas_noc",
+      businessService: "FIRENOC",
       consumerCodes: id,
       isEmployee: false,
     },
@@ -152,24 +152,24 @@ const NOCEmployeeApplicationOverview = () => {
   });
 
 
- const { data: searchChecklistData, refetch: refetchChecklist } =  Digit.Hooks.noc.useNOCCheckListSearch({ applicationNo: id }, tenantId);
+  const { data: searchChecklistData, refetch: refetchChecklist } = Digit.Hooks.noc.useNOCCheckListSearch({ applicationNo: id }, tenantId);
 
   useEffect(() => {
-      if (eSignError) {
-        setShowToast({
-          key: "true",
-          error: true,
-          message: "eSign process failed. Please try again.",
-        });
-      }
-    }, [eSignError]);
-
-    let nocDistance; 
-
-    if(!isDistanceLoading){
-      const _nocDistVal = allowedDistance?.["common-masters"]?.AllowedDistance?.find((item) => item?.module === "NOC" && item?.active)?.value;
-      nocDistance = _nocDistVal != null ? _nocDistVal : null;
+    if (eSignError) {
+      setShowToast({
+        key: "true",
+        error: true,
+        message: "eSign process failed. Please try again.",
+      });
     }
+  }, [eSignError]);
+
+  let nocDistance;
+
+  if (!isDistanceLoading) {
+    const _nocDistVal = allowedDistance?.["common-masters"]?.AllowedDistance?.find((item) => item?.module === "NOC" && item?.active)?.value;
+    nocDistance = _nocDistVal != null ? _nocDistVal : null;
+  }
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
       return siteImages?.documents?.map((img) => {
@@ -218,7 +218,7 @@ const NOCEmployeeApplicationOverview = () => {
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
-    const Close = () => (
+  const Close = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
       <path d="M0 0h24v24H0V0z" fill="none" />
       <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
@@ -233,44 +233,44 @@ const NOCEmployeeApplicationOverview = () => {
     );
   };
   useEffect(() => {
-      if (isLoading || !tenantId || !businessServiceCode) return;
+    if (isLoading || !tenantId || !businessServiceCode) return;
 
-      (async () => {
-        try{
+    (async () => {
+      try {
         setLoader(true);
         const wf = await Digit.WorkflowService.init(tenantId, businessServiceCode);
         setLoader(false);
         setWorkflowService(wf?.BusinessServices?.[0]?.states);
-        }catch(e){
-        }finally{
-          setLoader(false);
-        }
-      })();
+      } catch (e) {
+      } finally {
+        setLoader(false);
+      }
+    })();
   }, [tenantId, businessServiceCode, isLoading]);
   // useEffect(() => {
   //   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
   //     const commentsobj = workflowDetails?.data?.timeline
   //       ?.filter((item) => item?.performedAction === "APPROVE")
   //       ?.flatMap((item) => item?.wfComment || []);
-      
+
   //     const approvercomments = commentsobj?.[0];
-  
+
   //     // Extract only the part after [#?..**]
   //     let conditionText = "";
   //     if (approvercomments?.includes("[#?..**]")) {
   //       conditionText = approvercomments.split("[#?..**]")[1] || "";
   //     }
-  
+
   //     const finalComment = conditionText
   //       ? `The above approval is subjected to the following conditions:\n${conditionText}`
   //       : "";
-  
+
   //     setApproverComment(finalComment);
   //   }
   // }, [workflowDetails]);
-  
 
-  
+
+
   const finalComment = useMemo(() => {
     if (!workflowDetails || workflowDetails.isLoading || !workflowDetails.data) {
       return "";
@@ -289,14 +289,14 @@ const NOCEmployeeApplicationOverview = () => {
 
     return conditionText
       ? {
-          ConditionLine: "The above approval is subjected to the following conditions:\n",
-          ConditionText: conditionText,
-        }
+        ConditionLine: "The above approval is subjected to the following conditions:\n",
+        ConditionText: conditionText,
+      }
       : "";
   }, [workflowDetails]);
 
 
-  
+
   // async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
   //   const application = applicationDetails?.Noc?.[0];
   //   try {
@@ -352,7 +352,7 @@ const NOCEmployeeApplicationOverview = () => {
     }
   }
 
-const handleDownloadPdf = async () => {
+  const handleDownloadPdf = async () => {
     try {
       setLoader(true);
       const Property = applicationDetails?.Noc?.[0];
@@ -362,7 +362,7 @@ const handleDownloadPdf = async () => {
       const ulbType = site?.ulbType;
       const ulbName = site?.ulbName?.city?.name || site?.ulbName;
 
-      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t , false, searchChecklistData);
+      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t, false, searchChecklistData);
       setTimeout(() => {
         Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
       }, 0);
@@ -419,13 +419,13 @@ const handleDownloadPdf = async () => {
       // await mutation.mutateAsync({ Noc: updatedApplication });
       // refetch();
 
-      const callbackUrl = `${window.location.origin}/digit-ui/employee/noc/esign/complete/${id}`;
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/firenoc/esign/complete/${id}`;
 
       // Trigger eSign
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl },
         {
-          onSuccess: () => {},
+          onSuccess: () => { },
           onError: (error) => {
             setShowToast({
               key: "true",
@@ -445,14 +445,14 @@ const handleDownloadPdf = async () => {
   };
 
 
-  
+
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
   dowloadOptions.push({
-      label: t("Application Form"),
-      onClick: handleDownloadPdf,
-    });
+    label: t("Application Form"),
+    onClick: handleDownloadPdf,
+  });
   // if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
   //   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
   //     dowloadOptions.push({
@@ -462,42 +462,42 @@ const handleDownloadPdf = async () => {
   //     });
   //   }
   // }
- useEffect(() => {
-  const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
-  const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
-  if (apiEstimates.length === 0) return;
+  useEffect(() => {
+    const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
+    const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
+    if (apiEstimates.length === 0) return;
 
-  setFeeAdjustments((prev = []) => {
-    // build prev map
-    const prevByTax = (prev || []).reduce((acc, it) => {
-      if (it?.taxHeadCode) acc[it.taxHeadCode] = it;
-      return acc;
-    }, {});
+    setFeeAdjustments((prev = []) => {
+      // build prev map
+      const prevByTax = (prev || []).reduce((acc, it) => {
+        if (it?.taxHeadCode) acc[it.taxHeadCode] = it;
+        return acc;
+      }, {});
 
-    // build merged but keep prev edited rows
-    const merged = apiEstimates.map((tax) => {
-      const saved = latestCalc?.taxHeadEstimates?.find((c) => c.taxHeadCode === tax.taxHeadCode);
-      const prevItem = prevByTax[tax.taxHeadCode] || {};
-      const isEdited = !!prevItem.edited;
+      // build merged but keep prev edited rows
+      const merged = apiEstimates.map((tax) => {
+        const saved = latestCalc?.taxHeadEstimates?.find((c) => c.taxHeadCode === tax.taxHeadCode);
+        const prevItem = prevByTax[tax.taxHeadCode] || {};
+        const isEdited = !!prevItem.edited;
 
-      return {
-        taxHeadCode: tax.taxHeadCode,
-        category: tax.category,
-        adjustedAmount: isEdited ? prevItem.adjustedAmount : (tax.estimateAmount != null ? tax.estimateAmount : (saved?.estimateAmount != null ? saved.estimateAmount : 0)),
-        remark: isEdited ? (prevItem.remark != null ? prevItem.remark : "") : (tax.remarks != null ? tax.remarks : (saved?.remarks != null ? saved.remarks : "")),
-        filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : (tax.filestoreId != null ? tax.filestoreId : (saved?.filestoreId != null ? saved.filestoreId : null)),
-        onDocumentLoading: false,
-        documentError: null,
-        edited: prevItem.edited != null ? prevItem.edited : false,
-      };
+        return {
+          taxHeadCode: tax.taxHeadCode,
+          category: tax.category,
+          adjustedAmount: isEdited ? prevItem.adjustedAmount : (tax.estimateAmount != null ? tax.estimateAmount : (saved?.estimateAmount != null ? saved.estimateAmount : 0)),
+          remark: isEdited ? (prevItem.remark != null ? prevItem.remark : "") : (tax.remarks != null ? tax.remarks : (saved?.remarks != null ? saved.remarks : "")),
+          filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : (tax.filestoreId != null ? tax.filestoreId : (saved?.filestoreId != null ? saved.filestoreId : null)),
+          onDocumentLoading: false,
+          documentError: null,
+          edited: prevItem.edited != null ? prevItem.edited : false,
+        };
+      });
+
+      return merged;
     });
-
-    return merged;
-  });
-}, [applicationDetails, data]);
+  }, [applicationDetails, data]);
 
 
-const [displayMenu, setDisplayMenu] = useState(false);
+  const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [viewTimeline, setViewTimeline] = useState(false);
@@ -541,26 +541,26 @@ const [displayMenu, setDisplayMenu] = useState(false);
   );
   const coordinates = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.coordinates;
 
- 
+
 
   useEffect(() => {
-  const status = applicationDetails?.Noc?.[0]?.applicationStatus;
-  const additionalDetails = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails;
-  if (status === "DOCUMENTVERIFY") { 
-     setDocumentVerifier( 
-      additionalDetails?.documentVerifier || user?.info?.name || "" ); 
-    } else if (status === "INSPECTION_REPORT_PENDING") { 
-       setInspectionReportVerifier( additionalDetails?.InspectionReportVerifier || user?.info?.name || "" ); 
-      }
-}, [applicationDetails?.Noc?.[0]?.applicationStatus, user?.info?.name]);
+    const status = applicationDetails?.Noc?.[0]?.applicationStatus;
+    const additionalDetails = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails;
+    if (status === "DOCUMENTVERIFY") {
+      setDocumentVerifier(
+        additionalDetails?.documentVerifier || user?.info?.name || "");
+    } else if (status === "INSPECTION_REPORT_PENDING") {
+      setInspectionReportVerifier(additionalDetails?.InspectionReportVerifier || user?.info?.name || "");
+    }
+  }, [applicationDetails?.Noc?.[0]?.applicationStatus, user?.info?.name]);
 
 
   const hasRole = user?.info?.roles?.some(
-  role => role?.code === "OBPAS_NOC_JE" || role?.code === "OBPAS_NOC_BI"
-);
+    role => role?.code === "OBPAS_NOC_JE" || role?.code === "OBPAS_NOC_BI"
+  );
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
-  if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
+  if (window.location.href.includes("/obps") || window.location.href.includes("/firenoc")) {
     const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
     const userInfo = userInfos ? JSON.parse(userInfos) : {};
     user = userInfo?.value;
@@ -586,7 +586,7 @@ const [displayMenu, setDisplayMenu] = useState(false);
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  useEffect(() => {    
+  useEffect(() => {
     const nocObject = applicationDetails?.Noc?.[0];
 
     if (nocObject) {
@@ -613,11 +613,11 @@ const [displayMenu, setDisplayMenu] = useState(false);
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
       const endTime = Date.now();
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
-        const time = formatDuration(totalTime);
+      const time = formatDuration(totalTime);
       setTimeObj(time);
       const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
 
-      setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+      setSiteImages(siteImagesFromData ? { documents: siteImagesFromData } : {});
       setFieldInspectionPending(nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending || []);
     }
   }, [applicationDetails?.Noc]);
@@ -625,8 +625,8 @@ const [displayMenu, setDisplayMenu] = useState(false);
   function routeToImage(filestoreId) {
     getUrlForDocumentView(filestoreId)
   }
-  
- 
+
+
 
 
   const getUrlForDocumentView = async (filestoreId) => {
@@ -637,12 +637,12 @@ const [displayMenu, setDisplayMenu] = useState(false);
         const fileUrl = result.data[filestoreId];
         if (fileUrl) {
           // window.open(fileUrl, "_blank");
-          if(!isMobile){
+          if (!isMobile) {
             window.open(fileUrl, "_blank");
-          }else{
+          } else {
             setShowImageModal(true);
-            setImageUrl(fileUrl);            
-          }         
+            setImageUrl(fileUrl);
+          }
         } else {
         }
       } else {
@@ -663,12 +663,12 @@ const [displayMenu, setDisplayMenu] = useState(false);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
     setEmployees(filterRoles?.[0]?.actions);
 
-    
+
     if (validationMsg) {
-       
-          alert(validationMsg);
-       
-      }
+
+      alert(validationMsg);
+
+    }
 
     const payload = {
       Licenses: [action],
@@ -693,10 +693,10 @@ const [displayMenu, setDisplayMenu] = useState(false);
       });
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
-}     else if (action?.action == "UPDATE_ZONE") {
+    } else if (action?.action == "UPDATE_ZONE") {
       setShowZoneModal(true);
     } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
+      history.push(`/digit-ui/employee/payment/collect/FIRENOC/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {
       if (
         applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
@@ -711,73 +711,73 @@ const [displayMenu, setDisplayMenu] = useState(false);
     }
   }
 
-useEffect(() => {
-  const fetchDistances = async () => {
-    if (coordinates?.Latitude1 && coordinates?.Latitude2 && geoLocations?.length > 0 && applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS") {
-      try {
-        const results = await Promise.all(
-          geoLocations.map(async (loc, idx) => {
-            const d1 = await getDrivingDistance(
-              parseFloat(coordinates?.Latitude1),
-              parseFloat(coordinates?.Longitude1),
-              parseFloat(loc?.latitude),
-              parseFloat(loc?.longitude)
-            );
-            const d2 = await getDrivingDistance(
-              parseFloat(coordinates?.Latitude2),
-              parseFloat(coordinates?.Longitude2),
-              parseFloat(loc?.latitude),
-              parseFloat(loc?.longitude)
-            );
-            const minDistance = Math.min(d1, d2);
-            return minDistance;
-          })
-        );
-        setDistances(results);
-      } catch (err) {
+  useEffect(() => {
+    const fetchDistances = async () => {
+      if (coordinates?.Latitude1 && coordinates?.Latitude2 && geoLocations?.length > 0 && applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS") {
+        try {
+          const results = await Promise.all(
+            geoLocations.map(async (loc, idx) => {
+              const d1 = await getDrivingDistance(
+                parseFloat(coordinates?.Latitude1),
+                parseFloat(coordinates?.Longitude1),
+                parseFloat(loc?.latitude),
+                parseFloat(loc?.longitude)
+              );
+              const d2 = await getDrivingDistance(
+                parseFloat(coordinates?.Latitude2),
+                parseFloat(coordinates?.Longitude2),
+                parseFloat(loc?.latitude),
+                parseFloat(loc?.longitude)
+              );
+              const minDistance = Math.min(d1, d2);
+              return minDistance;
+            })
+          );
+          setDistances(results);
+        } catch (err) {
+        }
       }
-    }
-  };
+    };
 
-  fetchDistances();
-}, [coordinates, geoLocations]);
+    fetchDistances();
+  }, [coordinates, geoLocations]);
 
-// validation util
-const validateSiteImages = (action) => {
-  if (
-    applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
-    action?.action === "SEND_FOR_INSPECTION_REPORT"
-  ) {
+  // validation util
+  const validateSiteImages = (action) => {
+    if (
+      applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
+      action?.action === "SEND_FOR_INSPECTION_REPORT"
+    ) {
 
-    // Check distances
-    if (distances?.length > 0) {
-      for (let i = 0; i < distances.length; i++) {
-        const d = distances[i];
-        if (d > nocDistance) {
-          // return with index (human-friendly: +1)
-          return `Site image ${i + 1} is not within ${nocDistance} meters`;
+      // Check distances
+      if (distances?.length > 0) {
+        for (let i = 0; i < distances.length; i++) {
+          const d = distances[i];
+          if (d > nocDistance) {
+            // return with index (human-friendly: +1)
+            return `Site image ${i + 1} is not within ${nocDistance} meters`;
+          }
         }
       }
     }
-  }
-  return null; // no error
-};
+    return null; // no error
+  };
 
 
   const isFeeDisabled = applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
   const isDocPending = applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY";
-  
+
   const handleZoneSubmit = (selectedZone) => {
-  const payload = {
-    Licenses: [{
-      action: "UPDATE_ZONE",
-      comment: "",
-      // Pass the zone object which contains both code and name
-      zone: selectedZone
-    }]
+    const payload = {
+      Licenses: [{
+        action: "UPDATE_ZONE",
+        comment: "",
+        // Pass the zone object which contains both code and name
+        zone: selectedZone
+      }]
+    };
+    submitAction(payload);
   };
-  submitAction(payload);
-};
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Noc?.[0] || {};
     const vasikaNumber = payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
@@ -867,7 +867,7 @@ const validateSiteImages = (action) => {
         }
       }
     }
-    
+
     const newCalculation = {
       isLatest: true,
       updatedBy: Digit.UserService.getUser()?.info?.name,
@@ -897,12 +897,12 @@ const validateSiteImages = (action) => {
           siteImages: siteImages?.documents || [],
           fieldinspection_pending: fieldInspectionPending,
           documentVerifier: documentVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.documentVerifier,
-          InspectionReportVerifier : InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+          InspectionReportVerifier: InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
         },
       },
     };
 
-        
+
     if (filtData?.action === "UPDATE_ZONE") {
       const currentSite = updatedApplicant?.nocDetails?.additionalDetails?.siteDetails || {};
       updatedApplicant.nocDetails.additionalDetails.siteDetails = {
@@ -914,9 +914,9 @@ const validateSiteImages = (action) => {
 
     updatedApplicant.workflow = {
       action: filtData.action,
-       assignes: applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"
-    ? [Digit.UserService.getUser()?.info?.uuid]   
-    : filtData?.assignee,                        
+      assignes: applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"
+        ? [Digit.UserService.getUser()?.info?.uuid]
+        : filtData?.assignee,
       comment: filtData?.comment,
       documents: filtData?.wfDocuments,
     };
@@ -952,7 +952,7 @@ const validateSiteImages = (action) => {
             tenantId,
             action: existing ? "update" : "INITIATE",
             remarks: checklistRemarks[doc?.documentUid] || "",
-            order:doc?.order
+            order: doc?.order
           };
         }),
       };
@@ -979,21 +979,21 @@ const validateSiteImages = (action) => {
           workflowDetails.revalidate();
           setSelectedAction(null);
           setTimeout(() => {
-            window.location.href = "/digit-ui/employee/noc/inbox";
+            window.location.href = "/digit-ui/employee/firenoc/inbox";
           }, 3000);
         } else if (filtData?.action === "UPDATE_ZONE") {
-              setShowToast({ key: "true", success: true, message: "Zone updated successfully" });
-              workflowDetails.revalidate();
-              refetch();
-              setShowZoneModal(false);
-              setSelectedAction(null);
-              setTimeout(() => {
-                window.location.href = "/digit-ui/employee/noc/inbox";
-              }, 3000);
+          setShowToast({ key: "true", success: true, message: "Zone updated successfully" });
+          workflowDetails.revalidate();
+          refetch();
+          setShowZoneModal(false);
+          setSelectedAction(null);
+          setTimeout(() => {
+            window.location.href = "/digit-ui/employee/firenoc/inbox";
+          }, 3000);
         } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
           history.replace({
-            pathname: `/digit-ui/employee/noc/response/${response?.Noc?.[0]?.applicationNo}`,
+            pathname: `/digit-ui/employee/firenoc/response/${response?.Noc?.[0]?.applicationNo}`,
             state: { data: response },
           });
         } else {
@@ -1005,7 +1005,7 @@ const validateSiteImages = (action) => {
           setSelectedAction(null);
           refetchChecklist();
           setTimeout(() => {
-            window.location.href = "/digit-ui/employee/noc/inbox";
+            window.location.href = "/digit-ui/employee/firenoc/inbox";
           }, 3000);
         }
       } else {
@@ -1056,14 +1056,14 @@ const validateSiteImages = (action) => {
     const [year, month, day] = dateString.split("-");
     return `${day}/${month}/${year}`;
   };
-  
+
   const handleViewTimeline = () => {
     setViewTimeline(true);
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
-  
-  
+
+
 
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
@@ -1072,7 +1072,7 @@ const validateSiteImages = (action) => {
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
 
- 
+
   return (
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
@@ -1313,9 +1313,8 @@ const validateSiteImages = (action) => {
         <Card>
           <CardSubHeader>
             {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-              ? `${t("BPA_FI_REPORT")} - Verified by ${
-                  InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                }`
+              ? `${t("BPA_FI_REPORT")} - Verified by ${InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+              }`
               : t("BPA_FI_REPORT")}
           </CardSubHeader>
 
@@ -1340,9 +1339,8 @@ const validateSiteImages = (action) => {
           <Card>
             <CardSubHeader>
               {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                ? `${t("BPA_FI_REPORT")} - Verified by ${
-                    InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                  }`
+                ? `${t("BPA_FI_REPORT")} - Verified by ${InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                }`
                 : t("BPA_FI_REPORT")}
             </CardSubHeader>
 
@@ -1367,15 +1365,14 @@ const validateSiteImages = (action) => {
       <Card>
         <CardSubHeader>
           {documentVerifier || applicationDetails?.documentVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.documentVerifier
-            ? `Document Checklist Verified by - ${
-                documentVerifier ||
-                applicationDetails?.documentVerifier ||
-                applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.documentVerifier
-              }`
+            ? `Document Checklist Verified by - ${documentVerifier ||
+            applicationDetails?.documentVerifier ||
+            applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.documentVerifier
+            }`
             : "Documents Uploaded"}
         </CardSubHeader>
         {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ||
-        applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" ? (
+          applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" ? (
           <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
         ) : (
           <>
@@ -1427,7 +1424,7 @@ const validateSiteImages = (action) => {
               optionKey={"action"}
               t={t}
               onSelect={onActionSelect}
-              // style={MenuStyle}
+            // style={MenuStyle}
             />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />

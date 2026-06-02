@@ -304,7 +304,7 @@ export default {
   downloadReceipt,
   downloadBill,
   downloadPDFFromLink,
-  downloadBill,
+  // downloadBill,
   getFileUrl,
   getFileTypeFromFileStoreURL,
   browser: BrowserUtil,

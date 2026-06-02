@@ -525,7 +525,7 @@ const getFormattedULBName = (ulbCode = "") => {
                 paymentRes?.Payments?.[0]?.totalAmountPaid !== null || paymentRes?.Payments?.[0]?.totalAmountPaid !== undefined
                   ? "WF_BPA_PAID"
                   : "NA",
-              isTransLate: true,
+              // isTransLate: true,
             },
           ],
         },

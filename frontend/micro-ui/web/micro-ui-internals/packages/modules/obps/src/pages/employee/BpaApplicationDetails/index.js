@@ -796,6 +796,17 @@ const BpaApplicationDetail = () => {
     });
   }
 
+  async function getDrawingDownload({ tenantId }, fileStoreId) {
+    if (!fileStoreId) {
+      console.error("No fileStoreId provided for drawing download");
+      return;
+    }
+    else {
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId })
+    window.open(fileStore[fileStoreId], "_blank")
+    }
+  }
+
   let dowloadOptions = [];
 
   if (data?.collectionBillDetails?.length > 0) {
@@ -854,6 +865,11 @@ const BpaApplicationDetail = () => {
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
         onClick: () => getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit-low"),
+      },
+      {
+        order: 4,
+        label: t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL"),
+        onClick: () => getDrawingDownload({ tenantId }, data?.applicationData?.additionalDetails?.drawingFilestoreId),
       });
     data?.applicationData?.status.includes("REVOCATION") &&
       dowloadOptions.push({
@@ -867,6 +883,11 @@ const BpaApplicationDetail = () => {
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
         onClick: () => getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
+      },
+      {
+        order: 4,
+        label: t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL"),
+        onClick: () => getDrawingDownload({ tenantId }, data?.applicationData?.additionalDetails?.drawingFilestoreId),
       });
     }
   } else {

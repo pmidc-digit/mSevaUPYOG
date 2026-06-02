@@ -76,7 +76,7 @@ const OBPSResponse = (props) => {
     window.location.reload();
   };
 
-  const onSubmitInbox = () => {
+  const onInbox = () => {
     history.push(`/digit-ui/employee/obps/inbox`);
     window.location.reload();
   };
@@ -176,8 +176,8 @@ const OBPSResponse = (props) => {
                   </div>
                 ) : (
                   <div className="action-bar-wrap">
-                  <SubmitBar label={t("CORE_COMMON_GO_TO_INBOX")} onSubmit={onSubmitInbox} style={{ margin: "10px 10px 0px 0px" }} />
                   <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} style={{ margin: "10px 10px 0px 0px" }} />
+                  <SubmitBar label={t("CORE_COMMON_GO_TO_INBOX")} onSubmit={onInbox} />
                   </div>
                 )}
               </div>

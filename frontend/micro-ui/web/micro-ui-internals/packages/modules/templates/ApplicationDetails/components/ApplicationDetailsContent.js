@@ -505,22 +505,6 @@ function ApplicationDetailsContent({
   const applicationData_pt = applicationDetails?.applicationData;
   const propertyIds = currentPropertyId || "";
   const propertyStatus = propertySearchData?.Properties?.[0]?.status || applicationDetails?.applicationData?.status;
-const propertyDocumentValues =
-  propertySearchData?.Properties?.[0]?.documents ||
-  applicationDetails?.applicationData?.documents ||
-  [];
-
-const propertyDocuments = propertyDocumentValues.length
-  ? [
-      {
-        title: "PT_PROPERTY_DOCUMENTS",
-        values: propertyDocumentValues.map((doc) => ({
-          ...doc,
-          title: doc.documentType,
-        })),
-      },
-    ]
-  : [];
   const PropertyInActive = () => {
     if (window.location.href.includes("employee")) {
       if (propertyStatus !== "ACTIVE") {

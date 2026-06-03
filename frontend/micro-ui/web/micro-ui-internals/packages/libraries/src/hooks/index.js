@@ -270,6 +270,8 @@ import useNOCTenants from "./noc/useTenants";
 import useNOCDocumentSearch from "./noc/useNOCDocumentsSearch";
 import useNocType from "./noc/useNocType";
 import useNOCFeeCalculator from "./noc/useNOCFeeCalculator";
+import useNOCSearchByNumber, { useFIRENOCMyApplications, useFIRENOCApplicationDetails, useFIRENOCSearchApplication } from "./firenoc/useNOCSearchByNumber";
+import useFIRENOCInbox from "./firenoc/useInbox";
 
 import WSSearchMdmsTypes from "./ws/WSSearchMdmsTypes";
 import usewsTenants from "./ws/useTenants";
@@ -791,6 +793,14 @@ const noc = {
   useNocCreateAPI,
 };
 
+const firenoc = {
+  useNOCSearchByNumber,
+  useFIRENOCMyApplications,
+  useFIRENOCApplicationDetails,
+  useFIRENOCSearchApplication,
+  useInbox: useFIRENOCInbox,
+};
+
 const ndc = {
   useInbox: useNDCInbox,
   useSearchApplication: useNDCSearchApplication,
@@ -937,6 +947,7 @@ const Hooks = {
   engagement,
   survey,
   noc,
+  firenoc,
   ws,
   gc,
   useCustomMDMS,

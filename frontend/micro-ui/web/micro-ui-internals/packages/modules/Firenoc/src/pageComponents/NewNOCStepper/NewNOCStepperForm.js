@@ -208,6 +208,7 @@ const NewNOCStepperForm = () => {
               documentUid: fileId,
               documentAttachment: fileId,
               filestoreId: fileId,
+              dropdown: doc?.dropdown || null,
             };
           }),
         },

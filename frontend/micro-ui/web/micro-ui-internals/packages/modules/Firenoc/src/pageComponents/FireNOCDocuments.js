@@ -21,13 +21,21 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
 
   const [selectedDocument, setSelectedDocument] = useState(() => {
     if (filteredDocument) {
+      if (doc.hasDropdown) {
+        const selectedCode = filteredDocument.dropdown?.value || filteredDocument.dropdown?.code || filteredDocument.documentType;
+        const matched = doc.dropdownData?.find((d) => d.code === selectedCode);
+        if (matched) {
+          return { ...matched, name: t(matched.code.replaceAll(".", "_")) };
+        }
+        return { code: selectedCode, active: true, name: t(selectedCode.replaceAll(".", "_")) };
+      }
       return { code: filteredDocument.documentType, active: true };
     }
     if (!doc.hasDropdown) {
       return { code: doc.code, active: true };
     }
     const activeDropdown = doc.dropdownData?.filter((d) => d.active) || [];
-    return activeDropdown.length === 1 ? activeDropdown[0] : null;
+    return activeDropdown.length === 1 ? { ...activeDropdown[0], name: t(activeDropdown[0].code.replaceAll(".", "_")) } : null;
   });
 
   const [file, setFile] = useState(null);
@@ -86,6 +94,7 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
           filestoreId: uploadedFile,
           documentUid: uploadedFile,
           documentAttachment: uploadedFile,
+          dropdown: { value: selectedDocument.code },
         },
       ];
     });

@@ -43,7 +43,9 @@ import {
   scrutinyDetailsData,
   getApproveRejectComments,
   fetchUrl,
-  decryptId
+  decryptId,
+  fetchFilestoreAndTenant,
+  amountToWords
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
@@ -84,7 +86,7 @@ const CloseBtn = (props) => {
 };
 
 const BpaApplicationDetail = () => {
-  const { bpaid, tenant } = useParams();
+  const { bpaid, tenant, filestore } = useParams();
   const id = decryptId(bpaid)
   const { t } = useTranslation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -93,6 +95,7 @@ const BpaApplicationDetail = () => {
   const [canSubmit, setSubmitValve] = useState({});
   const defaultValues = {};
   const history = useHistory();
+  const stateCode = Digit.ULBService.getStateId()
   // delete
   const [_formData, setFormData, _clear] = Digit.Hooks.useSessionStorage("store-data", null);
   const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
@@ -122,7 +125,7 @@ const BpaApplicationDetail = () => {
   const [showModal, setShowModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
-  let { id: applicationNumber } = useParams();
+  // let { id: applicationNumber } = useParams();
   const [isEnableLoader, setIsEnableLoader] = useState(false);
   const [checklistRemarks, setChecklistRemarks] = useState({});
   const [getLoader, setLoader] = useState(false);
@@ -442,74 +445,104 @@ const BpaApplicationDetail = () => {
   };
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let response = null;
-    if (payments?.fileStoreId) {
-      response = { filestoreIds: [payments?.fileStoreId] };
-    } else {
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "bpa-receipt");
+      let response = null
+      console.log('payments here here', payments)
+      const fee = payments?.totalAmountPaid;
+      
+  
+      const adjustedAmounts = data?.applicationData?.additionalDetails?.adjustedAmounts;
+  
+      data.additionalDetails = {
+        ...data?.applicationData?.additionalDetails,
+        adjustedAmounts
+      };
+  
+  
+    const amountinwords = amountToWords(fee)
+    console.log('amountinwords', amountinwords)
+      if (payments?.fileStoreId) {
+        response = { filestoreIds: [payments?.fileStoreId] }
+      } else if(payments?.paymentDetails?.[0]?.businessService === "BPA.NC_SAN_FEE") {
+        const fileNo = fileno
+        response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords,fileNo, BPA: [data]  }] }, "bpa-receiptsecond")
+        console.log("Final Payments array:", [{ ...payments, usage }]);
+      }
+      else if(payments?.paymentDetails?.[0]?.businessService === "BPA.NC_APP_FEE") {
+        response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords, BPA: [data]}] }, "bpa-obps-receipt")
+        console.log("Final Payments array:", [{ ...payments, usage }]);
+      }
+      else{
+          response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords , BPA: [data]  }] }, "bpa-receipt") //to do: bpa-obps-receipt
+          console.log("Final Payments array:", [{ ...payments, usage }]);
+      }
+  
+      const fileStore = await Digit.PaymentService.printReciept(stateCode, { fileStoreIds: response.filestoreIds[0] })
+      window.open(fileStore[response?.filestoreIds[0]], "_blank")
     }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-    window.open(fileStore[response?.filestoreIds[0]], "_blank");
-  }
 
   async function getPermitOccupancyOrderSearch({ tenantId }, order, mode = "download") {
-    const prevGetLang = Digit.StoreData.getCurrentLanguage;
-    try {
-      let currentDate = new Date();
-      data.applicationData.additionalDetails.runDate = convertDateToEpoch(
-        currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
-      );
-      let requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }] };
-      Digit.StoreData.getCurrentLanguage = () => "pn_IN";
-      const state = Digit.ULBService.getStateId();
-      let count = 0;
+    let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
+    let tenant = data?.tenantId || tenantId;
 
-      for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
-        if (
-          (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
-            workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
-          workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
-          count == 0
-        ) {
-          requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
-          count = 1;
-        }
-      }
+    if(!fileStoreId) {
+    const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
 
-      if (requestData?.additionalDetails?.approvedColony == "NO") {
-        requestData.additionalDetails.permitData =
-          "The plot has been officially regularized under No." +
-          requestData?.additionalDetails?.NocNumber +
-          "  dated " +
-          requestData?.additionalDetails?.nocObject?.approvedOn +
-          " , registered in the name of " +
-          requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName +
-          " . This regularization falls within the jurisdiction of " +
-          state +
-          ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
-      } else if (requestData?.additionalDetails?.approvedColony == "YES") {
-        requestData.additionalDetails.permitData =
-          "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony;
-      } else {
-        requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
-      }
+    const newValidityDate = new Date(data?.applicationData?.approvalDate);
 
-      let response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
-      requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType;
-      let edcrResponse = await Digit.OBPSService.edcr_report_download({ BPA: { ...requestData } });
-      const responseStatus = parseInt(edcrResponse.status, 10);
-      if (responseStatus === 201 || responseStatus === 200) {
-        mode == "print"
-          ? printPdf(new Blob([edcrResponse.data], { type: "application/pdf" }))
-          : downloadPdf(new Blob([edcrResponse.data], { type: "application/pdf" }), `edcrReport.pdf`);
+    // validity date = approval date + 3 as per feedback
+    newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
+    const approvalDatePlusThree = newValidityDate.getTime();
+
+
+    const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation , approverComment: comments}
+    let count = 0
+    for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+      if (
+        (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+          workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+        workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+        count == 0
+      ) {
+        requestData.additionalDetails.submissionDate =
+          workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime
+        count = 1
       }
-    } catch (error) {
-      console.log("error", error);
-    } finally {
-      Digit.StoreData.getCurrentLanguage = prevGetLang;
     }
+    if (stakeholderAddress && requestData && requestData?.additionalDetails) {
+      requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
+    }
+    // if (requestData && requestData?.additionalDetails?.signature?.signURL) {
+    //   const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, state);
+    //   requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
+    // }
+
+    if (requestData?.additionalDetails?.approvedColony == "NO") {
+      requestData.additionalDetails.permitData =
+        "The plot has been officially regularized under No. " +
+        requestData?.additionalDetails?.NocNumber +
+        "  dated " + requestData?.additionalDetails?.nocObject?.approvedOn + " , registered in the name of " + requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + ". This regularization falls within the jurisdiction of " +
+        requestData?.additionalDetails?.UlbName +
+        ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
+    } else if (requestData?.additionalDetails?.approvedColony == "YES") {
+      requestData.additionalDetails.permitData =
+        "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony
+    } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
+      requestData.additionalDetails.permitData =
+        "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony
+    } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
+      requestData.additionalDetails.permitData =
+        "The building plan falls under Stand-Alone Project."
+    } else {
+      requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir"
+    }
+    const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order)
+    fileStoreId = response?.filestoreIds[0]
+    tenant = tenantId
+  }
+    const fileStore = await Digit.PaymentService.printReciept(tenant, { fileStoreIds: fileStoreId })
+    window.open(fileStore[fileStoreId], "_blank")
+    requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType
   }
 
   let applicationDocs = [],
@@ -796,100 +829,142 @@ const BpaApplicationDetail = () => {
     });
   }
 
-  let dowloadOptions = [];
-
-  if (data?.collectionBillDetails?.length > 0) {
-    const bpaPayments = cloneDeep(data?.collectionBillDetails);
-    bpaPayments.forEach((pay) => {
-      if (pay?.paymentDetails[0]?.businessService === "BPA.NC_OC_APP_FEE") {
-        dowloadOptions.push({
-          order: 1,
-          label: t("BPA_APP_FEE_RECEIPT"),
-          onClick: () =>
-            getRecieptSearch({ tenantId: data?.applicationData?.tenantId, payments: pay, consumerCodes: data?.applicationData?.applicationNo }),
-        });
-      }
-
-      if (pay?.paymentDetails[0]?.businessService === "BPA.NC_OC_SAN_FEE") {
-        dowloadOptions.push({
-          order: 2,
-          label: t("BPA_OC_DEV_PEN_RECEIPT"),
-          onClick: () =>
-            getRecieptSearch({ tenantId: data?.applicationData?.tenantId, payments: pay, consumerCodes: data?.applicationData?.applicationNo }),
-        });
-      }
-
-      if (pay?.paymentDetails[0]?.businessService === "BPA.LOW_RISK_PERMIT_FEE") {
-        dowloadOptions.push({
-          order: 1,
-          label: t("BPA_FEE_RECEIPT"),
-          onClick: () =>
-            getRecieptSearch({ tenantId: data?.applicationData?.tenantId, payments: pay, consumerCodes: data?.applicationData?.applicationNo }),
-        });
-      }
-
-      if (pay?.paymentDetails[0]?.businessService === "BPA.NC_APP_FEE") {
-        dowloadOptions.push({
-          order: 1,
-          label: t("BPA_APP_FEE_RECEIPT"),
-          onClick: () =>
-            getRecieptSearch({ tenantId: data?.applicationData?.tenantId, payments: pay, consumerCodes: data?.applicationData?.applicationNo }),
-        });
-      }
-
-      if (pay?.paymentDetails[0]?.businessService === "BPA.NC_SAN_FEE") {
-        dowloadOptions.push({
-          order: 2,
-          label: t("BPA_SAN_FEE_RECEIPT"),
-          onClick: () =>
-            getRecieptSearch({ tenantId: data?.applicationData?.tenantId, payments: pay, consumerCodes: data?.applicationData?.applicationNo }),
-        });
-      }
-    });
-  }
-
-  if (data && data?.applicationData?.businessService === "BPA_LOW" && data?.collectionBillDetails?.length > 0) {
-    !data?.applicationData?.status.includes("REVOCATION") &&
-      dowloadOptions.push({
-        order: 3,
-        label: t("BPA_PERMIT_ORDER"),
-        onClick: () => getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit-low"),
-      });
-    data?.applicationData?.status.includes("REVOCATION") &&
-      dowloadOptions.push({
-        order: 3,
-        label: t("BPA_REVOCATION_PDF_LABEL"),
-        onClick: () => getRevocationPDFSearch({ tenantId: data?.applicationData?.tenantId }),
-      });
-  } else if (data && data?.applicationData?.businessService === "BPA" && data?.collectionBillDetails?.length > 0) {
-    if (data?.applicationData?.status === "APPROVED") {
-      dowloadOptions.push({
-        order: 3,
-        label: t("BPA_PERMIT_ORDER"),
-        onClick: () => getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
-      });
+  async function getDrawingDownload({ tenantId }, fileStoreId) {
+    if (!fileStoreId) {
+      console.error("No fileStoreId provided for drawing download");
+      return;
     }
-  } else {
-    if (data?.applicationData?.status === "APPROVED") {
-      dowloadOptions.push({
-        order: 3,
-        label: t("BPA_OC_CERTIFICATE"),
-        onClick: () => getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "occupancy-certificate"),
-      });
+    else {
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId })
+    window.open(fileStore[fileStoreId], "_blank")
     }
   }
 
-  if (data?.comparisionReport && data && data?.applicationData?.businessService === "BPA_OC") {
-    dowloadOptions.push({
-      order: 4,
-      label: t("BPA_COMPARISON_REPORT_LABEL"),
-      onClick: () => window.open(data?.comparisionReport?.comparisonReport, "_blank"),
-    });
-  }
-
-  dowloadOptions.sort(function (a, b) {
-    return a.order - b.order;
-  });
+  const dowloadOptions = []
+  
+    if (data?.collectionBillDetails?.length > 0) {
+      const bpaPayments = cloneDeep(data?.collectionBillDetails)
+      bpaPayments.forEach((pay) => {
+        if (pay?.paymentDetails[0]?.businessService === "BPA.NC_OC_APP_FEE") {
+          dowloadOptions.push({
+            order: 1,
+            label: t("BPA_APP_FEE_RECEIPT"),
+            onClick: () =>
+              getRecieptSearch({
+                tenantId: data?.applicationData?.tenantId,
+                payments: pay,
+                consumerCodes: data?.applicationData?.applicationNo,
+              }),
+          })
+        }
+  
+        if (pay?.paymentDetails[0]?.businessService === "BPA.NC_OC_SAN_FEE") {
+          dowloadOptions.push({
+            order: 2,
+            label: t("BPA_OC_DEV_PEN_RECEIPT"),
+            onClick: () =>
+              getRecieptSearch({
+                tenantId: data?.applicationData?.tenantId,
+                payments: pay,
+                consumerCodes: data?.applicationData?.applicationNo,
+              }),
+          })
+        }
+  
+        if (pay?.paymentDetails[0]?.businessService === "BPA.LOW_RISK_PERMIT_FEE") {
+          dowloadOptions.push({
+            order: 1,
+            label: t("BPA_FEE_RECEIPT"),
+            onClick: () =>
+              getRecieptSearch({
+                tenantId: data?.applicationData?.tenantId,
+                payments: pay,
+                consumerCodes: data?.applicationData?.applicationNo,
+              }),
+          })
+        }
+  
+        if (pay?.paymentDetails[0]?.businessService === "BPA.NC_APP_FEE") {
+          dowloadOptions.push({
+            order: 1,
+            label: t("BPA_APP_FEE_RECEIPT"),
+            onClick: () =>
+              getRecieptSearch({
+                tenantId: data?.applicationData?.tenantId,
+                payments: pay,
+                consumerCodes: data?.applicationData?.applicationNo,
+              }),
+          })
+        }
+  
+        if (pay?.paymentDetails[0]?.businessService === "BPA.NC_SAN_FEE") {
+          dowloadOptions.push({
+            order: 2,
+            label: t("BPA_SAN_FEE_RECEIPT"),
+            onClick: () =>
+              getRecieptSearch({
+                tenantId: data?.applicationData?.tenantId,
+                payments: pay,
+                consumerCodes: data?.applicationData?.applicationNo,
+              }),
+          })
+        }
+      })
+    }
+  
+    if (
+      data &&
+      data?.applicationData?.businessService === "BPA_LOW" &&
+      data?.collectionBillDetails?.length > 0 &&
+      data?.applicationData?.additionalDetails?.isSanctionLetterGenerated
+    ) {
+      !data?.applicationData?.status.includes("REVOCATION") &&
+        dowloadOptions.push({
+          order: 3,
+          label: t("BPA_PERMIT_ORDER"),
+          onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit"),
+        },
+        {
+          order: 4,
+          label: t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL"),
+          onClick: () => getDrawingDownload({ tenantId }, data?.applicationData?.additionalDetails?.drawingFilestoreId),
+        });
+      data?.applicationData?.status.includes("REVOCATION") &&
+        dowloadOptions.push({
+          order: 3,
+          label: t("BPA_REVOCATION_PDF_LABEL"),
+          onClick: () => getRevocationPDFSearch({ tenantId: data?.applicationData?.tenantId }),
+        });
+    } else if (data && data?.collectionBillDetails?.length > 0 ) {
+      if (!data?.applicationData?.additionalDetails?.isSelfCertification && data?.applicationData?.status === "APPROVED") {
+        dowloadOptions.push({
+          order: 3,
+          label: t("BPA_PERMIT_ORDER"),
+          onClick: () => getPermitOccupancyOrderSearchFilestoreNew({ tenantId: data?.applicationData?.tenantId }, "buildingpermit-normal"),
+        },
+        {
+          order: 4,
+          label: t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL"),
+          onClick: () => getDrawingDownload({ tenantId }, data?.applicationData?.additionalDetails?.drawingFilestoreId),
+        });
+      } else if(data?.applicationData?.status === "APPROVED") {
+        dowloadOptions.push({
+          order: 3,
+          label: t("BPA_OC_CERTIFICATE"),
+          onClick: () => getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
+        });
+      }
+    }
+  
+    if (data?.comparisionReport) {
+      dowloadOptions.push({
+        order: 4,
+        label: t("BPA_COMPARISON_REPORT_LABEL"),
+        onClick: () => window.open(data?.comparisionReport?.comparisonReport, "_blank"),
+      })
+    }
+  
+    dowloadOptions.sort((a, b) => a.order - b.order)
 
   if (workflowDetails?.data?.nextActions?.length > 0) {
     workflowDetails.data.nextActions = workflowDetails?.data?.nextActions?.filter((actn) => actn.action !== "SKIP_PAYMENT");
@@ -1137,6 +1212,90 @@ const BpaApplicationDetail = () => {
       Digit.StoreData.getCurrentLanguage = prevGetLang;
     }
   }
+
+  async function getPermitOccupancyOrderSearchFilestoreNew({ tenantId }, order, mode = "download") {
+     try {
+       setIsEnableLoader(true);
+       const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
+        const ownersList = data?.applicationData?.landInfo?.owners?.map((item) => item.name);
+        const firmName = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
+        const isFirm = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
+        const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]?.filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
+
+       const newValidityDate = Date.now();
+
+       // validity date = approval date + 3 as per feedback
+       const validityDateObj = new Date(newValidityDate);
+       validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
+       const approvalDatePlusThree = validityDateObj.getTime();
+       let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
+
+       if (!fileStoreId) {
+         const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+         const requestData = {
+           ...data?.applicationData,
+           edcrDetail: [{ ...data?.edcrDetails }],
+           subjectLine,
+           fileno,
+           nowIST,
+           newValidityDate:approvalDatePlusThree,
+           designation,
+           combinedOwnersName,
+           approverComment: comments,
+         };
+         let count = 0;
+         for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+           if (
+             (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+               workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+             workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+             count == 0
+           ) {
+             requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+             count = 1;
+           }
+         }
+         if (stakeholderAddress && requestData && requestData?.additionalDetails) {
+           requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
+         }
+        //  if (requestData && requestData?.additionalDetails?.signature?.signURL) {
+        //    const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, state);
+        //    requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
+        //  }
+
+         if (requestData?.additionalDetails?.approvedColony == "NO") {
+           requestData.additionalDetails.permitData =
+             "The plot has been officially regularized under No. " +
+             requestData?.additionalDetails?.NocNumber +
+             "  dated " +
+             requestData?.additionalDetails?.nocObject?.approvedOn +
+             " , registered in the name of " +
+             requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName +
+             ". This regularization falls within the jurisdiction of " +
+             requestData?.additionalDetails?.UlbName +
+             ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
+         } else if (requestData?.additionalDetails?.approvedColony == "YES") {
+           requestData.additionalDetails.permitData =
+             "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony;
+         } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
+           requestData.additionalDetails.permitData =
+             "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony;
+         } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
+           requestData.additionalDetails.permitData = "The building plan falls under Stand-Alone Project.";
+         } else {
+           requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
+         }
+         const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
+         fileStoreId = response?.filestoreIds[0];
+       }
+       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+       window.open(fileStore[fileStoreId], "_blank");
+     } catch (error) {
+       console.log("error", error);
+     } finally {
+       setIsEnableLoader(false);
+     }
+   }
 
   async function openSanctionLetterPopup() {
     try {
@@ -1503,7 +1662,8 @@ const BpaApplicationDetail = () => {
 
       const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
 
-      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/filestore/${id}`;
+      // const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
       const authToken = localStorage.getItem('token');
 
       // Trigger eSign
@@ -1561,29 +1721,26 @@ const BpaApplicationDetail = () => {
     <Fragment>
       <div className={"employee-main-application-details"}>
         <div
-          className={"employee-application-details"}
-          style={{ marginBottom: "15px", display: "flex", flexDirection: !isMobile ? "row" : "column" }}
+          className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}
         >
           <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
           <div
             style={{
-              margin: "10px, 0px",
-              display: "flex",
-              gap: "8px",
+              display: "flex", gap: "8px", flexWrap: "nowrap",
               alignItems: !isMobile ? "center" : "left",
-              flexDirection: !isMobile ? "row" : "column",
+              // flexDirection: !isMobile ? "row" : "column",
             }}
           >
-            {/* <div style={{}}>
-              {dowloadOptions && dowloadOptions.length > 0 && <MultiLink
-                className="multilinkWrapper"
-                onHeadClick={() => setShowOptions(!showOptions)}
-                displayOptions={showOptions}
-                options={dowloadOptions}
-                downloadBtnClassName={"employee-download-btn-className"}
-                optionsClassName={"employee-options-btn-className"}
-              />}
-            </div> */}
+            <div>
+              {dowloadOptions && dowloadOptions.length > 0 && (
+                <MultiLink
+                  className="multilinkWrapper"
+                  onHeadClick={() => setShowOptions(!showOptions)}
+                  displayOptions={showOptions}
+                  options={dowloadOptions}
+                />
+              )}
+            </div>
             <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
             {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
               (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
@@ -2362,7 +2519,7 @@ const BpaApplicationDetail = () => {
             action={selectedAction}
             tenantId={tenantId}
             state={stateId}
-            id={applicationNumber}
+            id={id}
             applicationDetails={data}
             applicationData={data?.applicationData}
             closeModal={closeModal}

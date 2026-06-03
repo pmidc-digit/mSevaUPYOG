@@ -370,10 +370,17 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
         </LabelFieldPair>
       ) : null} */}
       <LabelFieldPair style={{ display: "inline" }}>
-        <CardLabel style={{ marginBottom: "8px", width: "auto" }}>
-          {t(doc?.code)} <span style={{ color: "red" }}> {doc?.required && " *"}</span>
+        <CardLabel className="bpa-owner-cardlabel-negative-margin ads-search-container"
+        //  style={{ marginBottom: "8px", width: "auto" }}
+         >
+          {t(doc?.code)} <span 
+          // className="bpa-newbuilding-ecbc-error-text"
+           style={{ color: "red" }}
+           > {doc?.required && " *"}</span>
         </CardLabel>
-        <div className="field" style={{ width: "100%" }}>
+        <div className="field payment-form-text-input-correction"
+        //  style={{ width: "100%" }}
+         >
           {/* <CustomUploadFile
             onUpload={selectfile}
             onDelete={() => {
@@ -390,8 +397,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             customOpen={customOpen}
           /> */}
           <div className={`upload-file upload-file-max-width`}>
-            <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", flexWrap: "wrap", margin: "0px", padding: "0px" }}>
-              <div style={{ height: "auto", minHeight: "40px", width: "43%", maxHeight: "40px", margin: "5px", padding: "0px", }}>
+            <div className="obps-document-detail-item zero-margin-padding" >
+              <div className="auto-height-box-43"> 
                 <SubmitBar
                   label={t("CAPTURE_IMAGE")}
                   onSubmit={() => {
@@ -404,8 +411,9 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
                 />
               </div>
               {uploadedFile &&
-                <div style={!mobile ? { margin: "0px", display: "flex", justifyContent: "center", padding: "0px", width: "46%" } : { width: "80%", display: "flex", marginBottom: "10px", justifyContent: "center" }}>
+                <div className={!mobile ? "center-flex-desktop" : "center-flex-mobile"}>
                   <SubmitBar
+                    className="view-button"
                     onSubmit={() => {
                       routeTo(uploadedFile);
                     }}

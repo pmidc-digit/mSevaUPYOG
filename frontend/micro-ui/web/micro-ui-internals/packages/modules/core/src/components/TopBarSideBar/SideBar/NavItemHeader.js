@@ -55,7 +55,8 @@ const NavItemHeader = props => {
   }
   const getModuleName = label?.replace(/[ -]/g, "_").toUpperCase();
   const appendTranslate = t(`ACTION_TEST_${getModuleName.toUpperCase()}`);
-  const trimModuleName = t(appendTranslate?.length > 20 ? appendTranslate.substring(0, 20) + "..." : appendTranslate);
+  const trimModuleName = t(appendTranslate);
+  // const trimModuleName = t(appendTranslate?.length > 20 ? appendTranslate.substring(0, 20) + "..." : appendTranslate);
 
   const onExpandChange = e => {
     e.preventDefault();
@@ -92,7 +93,8 @@ const NavItemHeader = props => {
             const leftIcon = IconsObject[leftIconArray] || IconsObject.collections;
             const getModuleName = label?.replace(/[ -]/g, "_").toUpperCase();
             const appendTranslate = t(`ACTION_TEST_${getModuleName.toUpperCase()}`);
-            const trimModuleName = t(appendTranslate?.length > 20 ? appendTranslate.substring(0, 20) + "..." : appendTranslate);
+            const trimModuleName = t(appendTranslate);
+            // const trimModuleName = t(appendTranslate?.length > 20 ? appendTranslate.substring(0, 20) + "..." : appendTranslate);
 
             if (children) {
               return (

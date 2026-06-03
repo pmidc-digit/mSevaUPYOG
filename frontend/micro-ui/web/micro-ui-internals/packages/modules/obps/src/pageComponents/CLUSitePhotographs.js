@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { ImageViewer, Card, CardSubHeader, CardSectionHeader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import EXIF from "exif-js";
+import EXIF from "../utils/exif-compat";
 
 const CLUSitePhotographs = ({ documents, coordinates={} }) => {
   const { t } = useTranslation();

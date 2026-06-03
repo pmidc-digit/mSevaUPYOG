@@ -33,6 +33,7 @@ import { PayTwoTable } from "./PayTwoTable";
 import { FeeHistoryTable } from "./FeeHistoryTable";
 import { buildFeeHistoryByTax } from "../utils";
 import { PayTwoTableRegular } from "./PayTwoTableRegular";
+import PaymentHistory from "../../../templates/ApplicationDetails/components/PaymentHistory";
 
 const thStyle = {
     border: "1px solid #ddd",
@@ -62,7 +63,8 @@ const FeeEstimation = ({
     adjustedAmounts,
     setAdjustedAmounts,
     disable = false,
-    hidePayTwo = false
+    hidePayTwo = false,
+    collectionData = null
 }) => {
     const [showToast, setShowToast] = useState(null);
     const [isDisabled, setIsDisabled] = useState();
@@ -368,7 +370,7 @@ const FeeEstimation = ({
         {
             Header: t("BPA_AMOUNT"),
             accessor: "amount",
-            Cell: ({ value }) => (value !== null && value !== undefined ? `₹ ${value.toLocaleString()}` : t("CS_NA")),
+            Cell: ({ value }) => (value !== null && value !== undefined ? typeof value === "string" ? value : `₹ ${value.toLocaleString()}` : t("CS_NA")),
         },
     ];
     
@@ -467,6 +469,8 @@ const FeeEstimation = ({
                     isPaginationRequired={false}
                 />
             </div>}
+
+            {collectionData?.length > 0 && <PaymentHistory payments={collectionData} t={t} />}
 
             {!hidePayTwo && currentStepData?.createdResponse?.additionalDetails?.isSelfCertification && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
             

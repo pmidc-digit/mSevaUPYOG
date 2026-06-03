@@ -86,7 +86,7 @@ const CloseBtn = (props) => {
 };
 
 const BpaApplicationDetail = () => {
-  const { bpaid, tenant } = useParams();
+  const { bpaid, tenant, filestore } = useParams();
   const id = decryptId(bpaid)
   const { t } = useTranslation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -125,7 +125,7 @@ const BpaApplicationDetail = () => {
   const [showModal, setShowModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
-  let { id: applicationNumber } = useParams();
+  // let { id: applicationNumber } = useParams();
   const [isEnableLoader, setIsEnableLoader] = useState(false);
   const [checklistRemarks, setChecklistRemarks] = useState({});
   const [getLoader, setLoader] = useState(false);
@@ -840,6 +840,17 @@ const BpaApplicationDetail = () => {
     });
   }
 
+  async function getDrawingDownload({ tenantId }, fileStoreId) {
+    if (!fileStoreId) {
+      console.error("No fileStoreId provided for drawing download");
+      return;
+    }
+    else {
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId })
+    window.open(fileStore[fileStoreId], "_blank")
+    }
+  }
+
   const dowloadOptions = []
   
     if (data?.collectionBillDetails?.length > 0) {
@@ -923,6 +934,11 @@ const BpaApplicationDetail = () => {
           order: 3,
           label: t("BPA_PERMIT_ORDER"),
           onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit"),
+        },
+        {
+          order: 4,
+          label: t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL"),
+          onClick: () => getDrawingDownload({ tenantId }, data?.applicationData?.additionalDetails?.drawingFilestoreId),
         });
       data?.applicationData?.status.includes("REVOCATION") &&
         dowloadOptions.push({
@@ -936,6 +952,11 @@ const BpaApplicationDetail = () => {
           order: 3,
           label: t("BPA_PERMIT_ORDER"),
           onClick: () => getPermitOccupancyOrderSearchFilestoreNew({ tenantId: data?.applicationData?.tenantId }, "buildingpermit-normal"),
+        },
+        {
+          order: 4,
+          label: t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL"),
+          onClick: () => getDrawingDownload({ tenantId }, data?.applicationData?.additionalDetails?.drawingFilestoreId),
         });
       } else if(data?.applicationData?.status === "APPROVED") {
         dowloadOptions.push({
@@ -1701,7 +1722,8 @@ const BpaApplicationDetail = () => {
 
       const mergedFilestore = await Digit.EDCRService.mergeSanctionLetter({additionalDetails: payload}, stateId);
 
-      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/filestore/${id}`;
+      // const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
       const authToken = localStorage.getItem('token');
 
       // Trigger eSign
@@ -2466,6 +2488,7 @@ const BpaApplicationDetail = () => {
               waterCharges={waterCharges}
               adjustedAmounts={adjustedAmounts}
               setAdjustedAmounts={setAdjustedAmounts}
+              collectionData={data?.collectionBillDetails}
             />
           )}
         </Card>
@@ -2556,7 +2579,7 @@ const BpaApplicationDetail = () => {
             action={selectedAction}
             tenantId={tenantId}
             state={stateId}
-            id={applicationNumber}
+            id={id}
             applicationDetails={data}
             applicationData={data?.applicationData}
             closeModal={closeModal}

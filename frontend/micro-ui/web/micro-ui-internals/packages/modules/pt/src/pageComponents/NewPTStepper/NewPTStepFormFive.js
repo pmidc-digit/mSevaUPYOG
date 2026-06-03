@@ -190,7 +190,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
           type: ownerDetails?.institutionType?.code,
           nameOfAuthorizedPerson: ownerDetails?.owners?.[0]?.name,
           tenantId: null,
-          designation: owner?.designation,
+          designation: ownerDetails?.owners?.[0]?.designation,
         },
       }),
 
@@ -211,7 +211,6 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
     };
 
     try {
-       debugger
       let response;
       if (isEditMode) {
         response = await Digit.PTService.update({ Property: formData }, tenantId);

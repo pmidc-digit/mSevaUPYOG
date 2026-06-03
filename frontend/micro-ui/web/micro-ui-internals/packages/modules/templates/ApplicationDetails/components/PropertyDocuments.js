@@ -39,6 +39,32 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow=false }) 
 
   const checkLocation = window.location.href.includes("employee/tl") || window.location.href.includes("/obps") || window.location.href.includes("employee/ws");
   const isStakeholderApplication = window.location.href.includes("stakeholder");
+  const isPTLocation = window.location.href.includes("/pt/");
+
+  if (isPTLocation) {
+    return (
+      <div style={{ marginTop: "24px", padding: "18px 12px", backgroundColor: "#f0f0f0" }}>
+        {documents?.map((document, index) => (
+          <React.Fragment key={index}>
+            {document?.title ? <CardSubHeader style={{ marginBottom: "24px", color: "#0b0c0c", fontSize: "20px" }}>{t(document.title)}</CardSubHeader> : null}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "24px" }}>
+              {document?.values?.map((value, documentIndex) => (
+                <div key={documentIndex} style={{ minWidth: "320px", padding: "12px", backgroundColor: "#ffffff" }}>
+                  <p style={{ margin: "0 0 12px", color: "#0b0c0c", fontSize: "18px" }}>{t(value?.title)}</p>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <p style={{ margin: 0, color: "#505a5f", fontSize: "16px" }}>{`${t("Document")} - ${documentIndex + 1}`}</p>
+                    <a target="_blank" rel="noreferrer" href={pdfFiles[value.fileStoreId]?.split(",")[0]} style={{ color: "#f4511e", fontSize: "16px", textDecoration: "none" }}>
+                      {t("VIEW")}
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div style={{ marginTop: "19px" }}>

@@ -142,6 +142,7 @@
 @import "./modules/BPA/index.scss";
 @import "./pages/common/sitePhotoGraphs.scss";
 @import "./modules/TL/index.scss";
+@import "./components/newInbox.scss";
 
 .display-none {
   display: none;
@@ -2418,6 +2419,6 @@ input[type="date"] {
     width: 100%;
   }
 }
-.hrms-text-transform{
+.hrms-text-transform {
   text-transform: none !important;
 }

@@ -1,223 +1,188 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { InboxComposer, CaseIcon, Header, SubmitBar } from "@mseva/digit-ui-react-components";
+import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-
-import CLUFilterFormFieldsComponent from "./CLUFilterFormFieldsComponent";
-import CLUSearchFormFields from "./CLUSearchFormFields";
-import useCLUInboxMobileCardsData from "./useCLUInboxMobileCardsData";
+import { useForm } from "react-hook-form";
+import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
+import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templates/Inbox/components";
 import useCLUTableConfig from "./useCLUTableConfig";
-import { MSEVA_APP_LINK } from "../../../../../../constants/constants";
-
 
 const CLUInbox = ({ parentRoute }) => {
-  window.scroll(0, 0)
-  const { t } = useTranslation()
+  const { t } = useTranslation();
+  const [error, setError] = useState({
+    error: false,
+    label: "",
+  });
+
+  useEffect(() => {
+    window.scroll(0, 0);
+  }, []);
+
   const { data: cities } = Digit.Hooks.useTenants();
-  const isMobile = window.Digit.Utils.browser.isMobile();
+  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const [activeStatusTab, setActiveStatusTab] = useState("ALL");
+  const [topBarSearch, setTopBarSearch] = useState("");
 
-  const tenantId = window.localStorage.getItem("Employee.tenant-id")
+  const searchFormDefaultValues = useMemo(
+    () => ({
+      mobileNumber: "",
+      applicationNumber: "",
+    }),
+    []
+  );
 
-  const searchFormDefaultValues = {
-    mobileNumber: "",
-    applicationNumber: "",
-  }
+  const filterFormDefaultValues = useMemo(
+    () => ({
+      moduleName: "clu-service",
+      applicationStatus: [],
+      businessService: "clu_mcl",
+      assignee: "ASSIGNED_TO_ME",
+    }),
+    []
+  );
 
-  const filterFormDefaultValues = {
-    moduleName: "clu-service",
-    applicationStatus: [],
-    businessService: "clu_mcl",// it is dynamic as it  consists of two businessServices
-    assignee: "ASSIGNED_TO_ME",
-  }
+  const selectedTenantIdDefaultValues = useMemo(
+    () => ({
+      tenantId: cities?.[0]?.code || null,
+    }),
+    [cities]
+  );
 
-  const tableOrderFormDefaultValues = {
-    sortBy: "",
-    limit: Digit.Utils.browser.isMobile() ? 50 : 10,
-    offset: 0,
-    sortOrder: "ASC",
-  }
+  const isMobileDevice = Digit.Utils.browser.isMobile();
 
-  const selectedTenantIdDefaultValues = {
-    tenantId: cities?.[0]?.code || null,
-  };
+  const tableOrderFormDefaultValues = useMemo(
+    () => ({
+      sortBy: "",
+      limit: isMobileDevice ? 50 : 10,
+      offset: 0,
+      sortOrder: "ASC",
+    }),
+    [isMobileDevice]
+  );
 
   function formReducer(state, payload) {
     switch (payload.action) {
       case "mutateSearchForm":
-        Digit.SessionStorage.set("CLU.INBOX", { ...state, searchForm: payload.data })
-        return { ...state, searchForm: payload.data }
+        Digit.SessionStorage.set("CLU.INBOX", { ...state, searchForm: payload.data });
+        return { ...state, searchForm: payload.data };
       case "mutateFilterForm":
-        Digit.SessionStorage.set("CLU.INBOX", { ...state, filterForm: payload.data })
-        return { ...state, filterForm: payload.data }
+        Digit.SessionStorage.set("CLU.INBOX", { ...state, filterForm: payload.data });
+        return { ...state, filterForm: payload.data };
       case "mutateTableForm":
-        Digit.SessionStorage.set("CLU.INBOX", { ...state, tableForm: payload.data })
-        return { ...state, tableForm: payload.data }
+        Digit.SessionStorage.set("CLU.INBOX", { ...state, tableForm: payload.data });
+        return { ...state, tableForm: payload.data };
       case "mutateSelectedTenantId":
         Digit.SessionStorage.set("CLU.INBOX", { ...state, selectedTenantId: payload.data });
         return { ...state, selectedTenantId: payload.data };
       default:
-        break
+        break;
     }
   }
 
-  const InboxObjectInSessionStorage = Digit.SessionStorage.get("CLU.INBOX")
-
-  const onSearchFormReset = (setSearchFormValue) => {
-    setSearchFormValue("mobileNumber", null)
-    setSearchFormValue("applicationNumber", null)
-    dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues })
-  }
-
-
-  const onSelectedTenantIdReset = (setSelectedTenantIdValue) => {
-    setSelectedTenantIdValue("tenantId", tenantId || null);
-    dispatch({ action: "mutateSelectedTenantId", data: selectedTenantIdDefaultValues });
-  };
-
-  const setSelectedTenantIdValue = (key, value) => {
-    console.log("ValueChangeinTenant", key, value);
-    dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
-  };
-
-  const onFilterFormReset = (setFilterFormValue) => {
-    setFilterFormValue("moduleName", "clu-service")
-    setFilterFormValue("applicationStatus", "")
-    setFilterFormValue("assignee", "ASSIGNED_TO_ALL")
-    onSelectedTenantIdReset(setFilterFormValue)
-    dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues })
-  }
-
-  const onSortFormReset = (setSortFormValue) => {
-    setSortFormValue("sortOrder", "ASC")
-    dispatch({ action: "mutateTableForm", data: tableOrderFormDefaultValues })
-  }
+  const inboxObjectInSessionStorage = Digit.SessionStorage.get("CLU.INBOX");
 
   const formInitValue = useMemo(() => {
-    return (
-      InboxObjectInSessionStorage || {
-        filterForm: filterFormDefaultValues,
-        searchForm: searchFormDefaultValues,
-        tableForm: tableOrderFormDefaultValues,
-        selectedTenantId: selectedTenantIdDefaultValues,
-      }
-    )
+    if (inboxObjectInSessionStorage) {
+      const sessionLimit = parseInt(inboxObjectInSessionStorage.tableForm?.limit, 10);
+      const validLimit = [10, 20, 30, 40, 50].includes(sessionLimit) ? sessionLimit : tableOrderFormDefaultValues.limit;
+      return {
+        filterForm: inboxObjectInSessionStorage.filterForm || filterFormDefaultValues,
+        searchForm: inboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
+        tableForm: {
+          ...tableOrderFormDefaultValues,
+          ...(inboxObjectInSessionStorage.tableForm || {}),
+          limit: validLimit,
+          offset: 0,
+        },
+        selectedTenantId: inboxObjectInSessionStorage.selectedTenantId || selectedTenantIdDefaultValues,
+      };
+    }
+
+    return {
+      filterForm: filterFormDefaultValues,
+      searchForm: searchFormDefaultValues,
+      tableForm: tableOrderFormDefaultValues,
+      selectedTenantId: selectedTenantIdDefaultValues,
+    };
   }, [
-    Object.values(InboxObjectInSessionStorage?.filterForm || {}),
-    Object.values(InboxObjectInSessionStorage?.searchForm || {}),
-    Object.values(InboxObjectInSessionStorage?.tableForm || {}),
-    Object.values(InboxObjectInSessionStorage?.selectedTenantId || {}),
-  ])
+    inboxObjectInSessionStorage,
+    filterFormDefaultValues,
+    searchFormDefaultValues,
+    tableOrderFormDefaultValues,
+    selectedTenantIdDefaultValues,
+  ]);
 
-  const [formState, dispatch] = useReducer(formReducer, formInitValue)
+  const [formState, dispatch] = useReducer(formReducer, formInitValue);
+  const [tableData, setTableData] = useState([]);
+  const [statusData, setStatusData] = useState([]);
+  const [totalCountData, setTotalCountData] = useState(0);
 
-  // State management for table, statuses, and totalCount
-  const [tableData, setTableData] = useState([])
-  const [statusData, setStatusData] = useState([])
-  const [totalCountData, setTotalCountData] = useState(0)
+  const setSelectedTenantIdValue = useCallback((key, value) => {
+    dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
+  }, [formState.selectedTenantId]);
 
-  const { isLoading: isInboxLoading, data: inboxData, refetch } = Digit.Hooks.obps.useCLUInbox({
-    tenantId: (tenantId === "pb.punjab") ? (formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId) : tenantId,
-    filters: { ...formState },
+  const memoizedFilters = useMemo(() => {
+    return {
+      filterForm: formState?.filterForm || filterFormDefaultValues,
+      searchForm: formState?.searchForm || searchFormDefaultValues,
+      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
+      selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
+    };
+  }, [
+    formState?.filterForm,
+    formState?.searchForm,
+    formState?.tableForm,
+    formState?.selectedTenantId,
+    filterFormDefaultValues,
+    searchFormDefaultValues,
+    tableOrderFormDefaultValues,
+    selectedTenantIdDefaultValues,
+  ]);
+
+  const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+
+  const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.obps.useCLUInbox({
+    tenantId: effectiveTenantId,
+    filters: memoizedFilters,
     config: {
       enabled: !!tenantId,
-    }
-  })
-
-  //console.log("inboxData ==>", inboxData)
+    },
+  });
 
   useEffect(() => {
     if (inboxData) {
-      //console.log("  Setting inbox data:", inboxData)
-      setStatusData(inboxData?.statuses || [])
-      setTableData(inboxData?.table || [])
-      setTotalCountData(inboxData?.totalCount || 0)
+      setStatusData(inboxData?.statuses || []);
+      setTableData(inboxData?.table || []);
+      setTotalCountData(inboxData?.totalCount || 0);
     }
-  }, [inboxData])
-
-  useEffect(() => {
-    // if (inboxData) {
-    //   inboxData.revalidate()
-    // }
-    refetch();
-  }, [])
+  }, [inboxData]);
 
   const onPageSizeChange = (e) => {
-    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value } })
-  }
+    const newLimit = parseInt(e.target.value, 10);
+    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: newLimit, offset: 0 } });
+  };
 
   const onSortingByData = (e) => {
     if (e.length > 0) {
-      const [{ id, desc }] = e
-      const sortOrder = desc ? "DESC" : "ASC"
-      const sortBy = id
+      const [{ id, desc }] = e;
+      const sortOrder = desc ? "DESC" : "ASC";
+      const sortBy = id;
       if (!(formState.tableForm.sortBy === sortBy && formState.tableForm.sortOrder === sortOrder)) {
         dispatch({
           action: "mutateTableForm",
           data: { ...formState.tableForm, sortBy: id, sortOrder: desc ? "DESC" : "ASC" },
-        })
+        });
       }
     }
-  }
+  };
 
-  const onMobileSortOrderData = (data) => {
-    const { sortOrder } = data
-    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortOrder } })
-  }
-
-  const SearchFormFields = useCallback(
-    ({ registerRef, searchFormState, searchFieldComponents }) => (
-      <CLUSearchFormFields {...{ registerRef, searchFormState, searchFieldComponents }} />
-    ),
-    [],
-  )
-
-  const FilterFormFields = useCallback(
-    ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => (
-      <CLUFilterFormFieldsComponent
-        {...{
-          statuses: statusData,
-          isInboxLoading,
-          registerRef,
-          controlFilterForm,
-          setFilterFormValue,
-          filterFormState: formState?.filterForm,
-          getFilterFormValue,
-          cities,
-          selectedTenantIdState: formState?.selectedTenantId?.tenantId ? formState?.selectedTenantId : {tenantId: cities?.[0]?.code},
-          setSelectedTenantIdValue,
-          tenantId
-        }}
-      />
-    ),
-    [statusData, isInboxLoading],
-  )
-
-  const onSearchFormSubmit = (data) => {
-    data.hasOwnProperty("") && delete data?.[""]
-    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } })
-    dispatch({ action: "mutateSearchForm", data })
-  }
-
-  const onFilterFormSubmit = (data) => {
-    data.hasOwnProperty("") && delete data?.[""]
-    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } })
-    dispatch({ action: "mutateFilterForm", data })
-  }
-
-  const propsForSearchForm = {
-    SearchFormFields,
-    onSearchFormSubmit,
-    searchFormDefaultValues: formState?.searchForm,
-    resetSearchFormDefaultValues: searchFormDefaultValues,
-    onSearchFormReset,
-  }
-
-  const propsForFilterForm = {
-    FilterFormFields,
-    onFilterFormSubmit,
-    filterFormDefaultValues: formState?.filterForm,
-    resetFilterFormDefaultValues: filterFormDefaultValues,
-    onFilterFormReset,
-  }
+  const onFilterFormSubmit = useCallback(
+    (data) => {
+      data.hasOwnProperty("") && delete data?.[""];
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({ action: "mutateFilterForm", data: { ...formState.filterForm, ...data } });
+    },
+    [formState.tableForm, formState.filterForm]
+  );
 
   const propsForInboxTable = useCLUTableConfig({
     parentRoute,
@@ -227,62 +192,171 @@ const CLUInbox = ({ parentRoute }) => {
     table: tableData,
     dispatch,
     onSortingByData,
-    tenantId
-  })
+    tenantId,
+  });
 
-  const propsForInboxMobileCards = useCLUInboxMobileCardsData({ parentRoute, table:tableData })
+  const {
+    control: controlFilterForm,
+    handleSubmit: handleFilterFormSubmit,
+    setValue: setFilterFormValue,
+    getValues: getFilterFormValue,
+    reset: resetFilterForm,
+  } = useForm({
+    defaultValues: { ...filterFormDefaultValues },
+  });
 
-  const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset }
+  const handleFilterChange = useCallback(
+    (filterData) => {
+      if (filterData.applicationStatus) {
+        setFilterFormValue(
+          "applicationStatus",
+          filterData.applicationStatus.map((item) => item.code)
+        );
+      }
+      if (filterData.assignee) {
+        setFilterFormValue("assignee", filterData.assignee);
+      }
 
-  const PropsForInboxLinks = {
-    logoIcon: <CaseIcon />,
-    headerText: "ACTION_TEST_CLU_HOME",
-    links: [
-      // {
-      //   text: t("CLU_NEW_APPLICATION"),
-      //   link: "/digit-ui/employee/obps/clu/new-application",
-      // },
-    ],
-  }
+      dispatch({
+        action: "mutateFilterForm",
+        data: {
+          ...formState?.filterForm,
+          applicationStatus: filterData.applicationStatus?.map((item) => item.code) || [],
+          assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ME",
+        },
+      });
+    },
+    [formState?.filterForm, setFilterFormValue]
+  );
 
-  const user = Digit.UserService.getUser();
-  const {data: employeeData , isLoading: isEmployeeLoading} = Digit.Hooks.useEmployeeSearch(tenantId, { codes: user?.info?.userName, isActive: true }, { enabled: !!user?.info?.userName });
+  const searchDebounceRef = useRef(null);
+  const hasInitializedFilterForm = useRef(false);
 
-  const [employeeName, setEmployeeName] = useState("");
-  const [employeeRole, setEmployeeRole] = useState("");
+  const onNextPage = () =>
+    dispatch({
+      action: "mutateTableForm",
+      data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) + parseInt(formState.tableForm?.limit) },
+    });
+
+  const onPrevPage = () =>
+    dispatch({
+      action: "mutateTableForm",
+      data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) - parseInt(formState.tableForm?.limit) },
+    });
 
   useEffect(() => {
-      if (!isEmployeeLoading && employeeData) {
-        const code=  employeeData?.Employees?.[0]?.user?.name || "";
-        const desig = employeeData?.Employees?.[0]?.assignments?.[0]?.designation || ""
-        setEmployeeName(code);
-        setEmployeeRole(desig);
+    if (formState?.filterForm) {
+      setFilterFormValue("moduleName", formState.filterForm.moduleName || "clu-service");
+      setFilterFormValue("applicationStatus", formState.filterForm.applicationStatus || []);
+      setFilterFormValue("assignee", formState.filterForm.assignee || "ASSIGNED_TO_ME");
+      setFilterFormValue("businessService", formState.filterForm.businessService || "clu_mcl");
+    }
+  }, [
+    formState?.filterForm?.moduleName,
+    formState?.filterForm?.applicationStatus,
+    formState?.filterForm?.assignee,
+    formState?.filterForm?.businessService,
+    setFilterFormValue,
+  ]);
+
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      const value = String(topBarSearch || "").trim();
+      const nextSearchForm = value ? { applicationNumber: value } : {};
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({ action: "mutateSearchForm", data: nextSearchForm });
+    }, 400);
+    return () => clearTimeout(searchDebounceRef.current);
+  }, [topBarSearch]);
+
+  useEffect(() => {
+    if (hasInitializedFilterForm.current) return;
+    if (resetFilterForm && formState) {
+      resetFilterForm(formState?.filterForm);
+      hasInitializedFilterForm.current = true;
+    }
+  }, [formState, resetFilterForm]);
+
+  const onStatusTabClick = useCallback(
+    (label, statusCode) => {
+      setActiveStatusTab(statusCode || label);
+      if (label === "CLEAR") {
+        setTopBarSearch("");
+        return;
       }
-  }, [employeeData, isEmployeeLoading]);
+      if (label === "ALL") {
+        setFilterFormValue("applicationStatus", [], { shouldDirty: true, shouldTouch: true });
+        handleFilterFormSubmit(onFilterFormSubmit)();
+        return;
+      }
+      const resolvedCode = statusCode || label;
+      setFilterFormValue("applicationStatus", [resolvedCode], { shouldDirty: true, shouldTouch: true });
+      handleFilterFormSubmit(onFilterFormSubmit)();
+    },
+    [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
+  );
+
+  useEffect(() => {
+    if (isError) {
+      setError({
+        error: true,
+        label: t("ES_OBPS_INBOX_ERROR"),
+      });
+      setTimeout(() => {
+        window.location.href = `/digit-ui/employee/`;
+      }, 5000);
+    }
+  }, [isError, t]);
 
   return (
     <>
-      <Header>
-        {employeeData && !isEmployeeLoading && `Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
-        <div style={{...{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }, ...isMobile?{flexDirection: "column"}:{} }}>
-        <div> {t("ES_COMMON_INBOX")} {totalCountData ? <p className="inbox-count">{totalCountData}</p> : null} </div>
-        {<SubmitBar label={t("Android App")} onSubmit={() => window.open(MSEVA_APP_LINK)} />}
-        </div>
-      </Header>
-      <InboxComposer
-        {...{
-          isInboxLoading,
-          PropsForInboxLinks,
-          ...propsForSearchForm,
-          ...propsForFilterForm,
-          ...propsForMobileSortForm,
-          propsForInboxTable,
-          propsForInboxMobileCards,
-          formState,
-        }}
-      ></InboxComposer>
+      {!isError && (
+        <InboxWrapper
+          title={t("ES_COMMON_INBOX")}
+          totalCount={totalCountData}
+          filterSection={
+            <NewFilterFormFieldComponent
+              registerRef={() => {}}
+              controlFilterForm={controlFilterForm}
+              setFilterFormValue={setFilterFormValue}
+              filterFormState={formState?.filterForm}
+              getFilterFormValue={getFilterFormValue}
+              statuses={statusData}
+              isInboxLoading={isInboxLoading}
+              handleFilter={handleFilterChange}
+            />
+          }
+          topBar={
+            <InboxTopBar
+              statuses={statusData}
+              activeTab={activeStatusTab}
+              onTabClick={onStatusTabClick}
+              searchValue={topBarSearch}
+              onSearchChange={(e) => setTopBarSearch(e.target.value)}
+              searchPlaceholder="Search by application number..."
+              totalCount={totalCountData}
+            />
+          }
+          isLoading={isInboxLoading}
+          tableData={tableData}
+          tableProps={propsForInboxTable}
+          tableHeader="ES_INBOX_INBOX"
+          pagination={
+            <InboxPagination
+              offset={formState.tableForm?.offset || 0}
+              limit={formState.tableForm?.limit || 10}
+              totalCount={totalCountData}
+              onPageSizeChange={onPageSizeChange}
+              onNextPage={onNextPage}
+              onPrevPage={onPrevPage}
+            />
+          }
+        />
+      )}
+      {error.error && <Toast error label={error.label} onClose={() => setError({ error: false, label: "" })} />}
     </>
-  )
-}
+  );
+};
 
-export default CLUInbox
+export default CLUInbox;

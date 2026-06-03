@@ -420,6 +420,10 @@ function ApplicationDetailsContent({
     setShowToast(null);
   };
 
+  const propertyDocuments = applicationDetails?.applicationDetails
+    ?.flatMap((detail) => detail?.additionalDetails?.documents || [])
+    ?.filter((document) => document?.values?.length > 0);
+
   // (Redirect handled centrally in ApplicationDetails template on mutation success)
 
   // const PROPERTY_UPDATE_URL = "https://mseva-uat.lgpunjab.gov.in/property-services/property/_update?tenantId=pb.testing&propertyIds=PT-1012-2017548";
@@ -566,7 +570,41 @@ const PropertyInActive = async () => {
     // alert("edit property");
   };
   const AccessProperty = () => {
-    alert("access property");
+    const propertyStatus = applicationDetails?.applicationData?.status;
+    if (propertyStatus === "INWORKFLOW" || propertyStatus === "INACTIVE") {
+      setShowAccessModal(false);
+      setShowToast({
+        isError: true,
+        label: "This action cannot be done on Inactive property or the property in workflow",
+      });
+      return;
+    }
+
+    setSelectedFinancialYear(null);
+    setShowAccessModal(true);
+  };
+
+  const handleAccessPropertySubmit = () => {
+    if (!selectedFinancialYear) return;
+    const pID = applicationDetails?.applicationData?.propertyId || propertyId;
+    setShowAccessModal(false);
+    const isEmployee = window.location.href.includes("employee");
+    const pathname = isEmployee
+      ? `/digit-ui/employee/pt/assessment-details/${pID}`
+      : `/digit-ui/citizen/pt/property/assessment-details/${pID}`;
+    history.replace({
+      pathname,
+      state: {
+        Assessment: {
+          financialYear: selectedFinancialYear?.name || selectedFinancialYear?.code,
+          propertyId: pID,
+          tenantId: applicationData?.tenantId || tenantId,
+          source: applicationData?.source,
+          channel: applicationData?.channel,
+          assessmentDate: Date.now(),
+        },
+      },
+    });
   };
 
   useEffect(() => {
@@ -866,6 +904,7 @@ const PropertyInActive = async () => {
       {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />
       )}
+      {window.location.href.includes("/pt/") && propertyDocuments?.length > 0 && <PropertyDocuments documents={propertyDocuments} />}
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>

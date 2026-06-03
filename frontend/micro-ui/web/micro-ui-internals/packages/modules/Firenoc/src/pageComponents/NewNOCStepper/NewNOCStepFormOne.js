@@ -73,16 +73,17 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     return true;
   }
 
-  /* ─── Submit ─── */
   const onSubmit = (data) => {
     if (!checkValidation(data)) return;
 
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
 
     const fireNOC = currentStepData?.apiData?.FireNOCs?.[0];
+    const applicationStatus = fireNOC?.applicationStatus || fireNOC?.fireNOCDetails?.status || fireNOC?.status || "";
+    const isSentBack = ["CITIZENACTIONREQUIRED", "SENDBACKTOCITIZEN", "CITIZEN_ACTION_REQUIRED"].includes(applicationStatus) || window.location.href.includes("/edit-application/");
     const isDraft = (fireNOC?.fireNOCDetails?.status === "INITIATED" || fireNOC?.status === "INITIATED") && fireNOC?.fireNOCDetails?.applicationNumber;
 
-    if (isDraft) {
+    if (isDraft || isSentBack) {
       onGoNext();
     } else {
       callCreateAPI({ ...currentStepData, [config.key]: data });

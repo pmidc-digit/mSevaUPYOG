@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 import GIS from "./GIS";
 import Timeline from "../components/Timeline";
 import { stringReplaceAll } from "../utils";
-import EXIF from "exif-js";
+import EXIF from "../utils/exif-compat";
 import BharatMap from "./BharatMap";
 import CustomLocationSearch from "../components/CustomLocationSearch";
 import { LoaderNew } from "../components/LoaderNew";

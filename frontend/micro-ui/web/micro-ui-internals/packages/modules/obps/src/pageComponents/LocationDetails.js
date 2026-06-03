@@ -437,7 +437,13 @@ useEffect(() => {
 
 
 
-  function convertToDecimal([degrees, minutes, seconds], ref) {
+  function convertToDecimal(dmsArray, ref) {
+  // Handle both object format {numerator, denominator} and direct decimal
+  if (!Array.isArray(dmsArray)) {
+    return ref === "S" || ref === "W" ? -Math.abs(dmsArray) : Math.abs(dmsArray);
+  }
+
+  const [degrees, minutes, seconds] = dmsArray;
   const d = degrees?.numerator / degrees?.denominator || 0;
   const m = minutes?.numerator / minutes?.denominator || 0;
   const s = seconds?.numerator / seconds?.denominator || 0;

@@ -1,6 +1,6 @@
 package org.egov.dataupload.service;
 
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -81,10 +81,10 @@ public class ExcelIO implements FileIO {
                     } else if (0 == cell.getRowIndex()) {
                         columnHeaders.add(cell.getStringCellValue());
                     } else {
-                        switch (cell.getCellTypeEnum()) {
+                        switch (cell.getCellType()) {
                             case NUMERIC:
-                                if (CellType.NUMERIC == cell.getCellTypeEnum()) {
-                                    if (HSSFDateUtil.isCellDateFormatted(cell)) {
+                                if (CellType.NUMERIC == cell.getCellType()) {
+                                    if (DateUtil.isCellDateFormatted(cell)) {
                                         dataList.add(format.format(new Date(cell.getDateCellValue().getTime())));
                                     } else {
                                         dataList.add(dataFormatter.formatCellValue(cell));
@@ -133,9 +133,6 @@ public class ExcelIO implements FileIO {
         } catch (IOException e) {
             logger.error("Unable to open stream.", e);
             throw e;
-        } catch (InvalidFormatException e) {
-            logger.error("Invalid format found, not an excel file. ", e);
-            throw new IOException("Invalid file format provided, not an excel file");
         }
 
     }

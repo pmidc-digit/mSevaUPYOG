@@ -12,7 +12,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -59,39 +59,39 @@ public class DataUploadUtils {
 
     public double getCellValueAsDouble(Cell cell) throws InvalidFormatException {
 
-        if (cell.getCellTypeEnum() == CellType.NUMERIC)
+        if (cell.getCellType() == CellType.NUMERIC)
         {
             return cell.getNumericCellValue();
-        } else if (cell.getCellTypeEnum() == CellType.STRING) {
+        } else if (cell.getCellType() == CellType.STRING) {
             return Double.parseDouble(cell.getStringCellValue());
-        } else if (cell.getCellTypeEnum() == CellType.BLANK || cell.getCellTypeEnum() == CellType._NONE) {
+        } else if (cell.getCellType() == CellType.BLANK || cell.getCellType() == CellType._NONE) {
             return 0;
         } else {
-            throw new InvalidFormatException("Cannot read int from a " + cell.getCellTypeEnum().toString() + " field type");
+            throw new InvalidFormatException("Cannot read int from a " + cell.getCellType().toString() + " field type");
         }
     }
 
     public String getCellValueAsString(Cell cell) throws InvalidFormatException {
-        if (cell.getCellTypeEnum() == CellType.NUMERIC)
+        if (cell.getCellType() == CellType.NUMERIC)
         {
             return Double.toString(cell.getNumericCellValue());
-        } else if (cell.getCellTypeEnum() == CellType.STRING || cell.getCellTypeEnum() == CellType.FORMULA) {
+        } else if (cell.getCellType() == CellType.STRING || cell.getCellType() == CellType.FORMULA) {
             return cell.getStringCellValue();
-        } else if (cell.getCellTypeEnum() == CellType.BOOLEAN) {
+        } else if (cell.getCellType() == CellType.BOOLEAN) {
             return Boolean.toString(cell.getBooleanCellValue());
-        } else if (cell.getCellTypeEnum() == CellType.BLANK || cell.getCellTypeEnum() == CellType._NONE) {
+        } else if (cell.getCellType() == CellType.BLANK || cell.getCellType() == CellType._NONE) {
             return "";
         }
         else {
-            throw new InvalidFormatException("Cannot read string from a " + cell.getCellTypeEnum().toString() + " field type");
+            throw new InvalidFormatException("Cannot read string from a " + cell.getCellType().toString() + " field type");
         }
     }
 
     public Boolean getCellValueAsBoolean(Cell cell) throws InvalidFormatException {
-        if (cell.getCellTypeEnum() == CellType.NUMERIC)
+        if (cell.getCellType() == CellType.NUMERIC)
         {
             return cell.getNumericCellValue() != 0;
-        } else if (cell.getCellTypeEnum() == CellType.STRING) {
+        } else if (cell.getCellType() == CellType.STRING) {
             String val = cell.getStringCellValue().toLowerCase().trim();
             if (val.equals("true") || val.equals("yes") || val.equals("on")) {
                 return true;
@@ -100,12 +100,12 @@ public class DataUploadUtils {
             } else {
                 throw new InvalidFormatException("Unsupported boolean value " + cell.getStringCellValue() + " field type");
             }
-        } else if (cell.getCellTypeEnum() == CellType.BOOLEAN) {
+        } else if (cell.getCellType() == CellType.BOOLEAN) {
             return cell.getBooleanCellValue();
-        } else if (cell.getCellTypeEnum() == CellType.BLANK || cell.getCellTypeEnum() == CellType._NONE) {
+        } else if (cell.getCellType() == CellType.BLANK || cell.getCellType() == CellType._NONE) {
             return false;
         } else {
-            throw new InvalidFormatException("Cannot read bool from a " + cell.getCellTypeEnum().toString() + " field type");
+            throw new InvalidFormatException("Cannot read bool from a " + cell.getCellType().toString() + " field type");
         }
     }
 
@@ -161,10 +161,10 @@ public class DataUploadUtils {
                     }else if(0 == cell.getRowIndex()) {
                         columnHeaders.add(cell.getStringCellValue());
                     }else {
-                            switch (cell.getCellTypeEnum()) {
+                            switch (cell.getCellType()) {
                                 case NUMERIC:
-                                    if (CellType.NUMERIC == cell.getCellTypeEnum()) {
-                                        if (HSSFDateUtil.isCellDateFormatted(cell)) {
+                                    if (CellType.NUMERIC == cell.getCellType()) {
+                                        if (DateUtil.isCellDateFormatted(cell)) {
                                             dataList.add(cell.getDateCellValue().getTime());
                                         } else {
                                             dataList.add(dataFormatter.formatCellValue(cell));
@@ -213,9 +213,6 @@ public class DataUploadUtils {
         } catch(IOException e){
             logger.error("Unable to open stream.", e);
             throw e;
-        } catch (InvalidFormatException e) {
-            logger.error("Invalid format found, not an excel file. ", e);
-            throw e;
         }
 
 	}
@@ -232,8 +229,8 @@ public class DataUploadUtils {
 
     private static boolean isCellEmpty(final Cell cell) {
         return cell == null ||
-                cell.getCellTypeEnum() == CellType.BLANK ||
-                cell.getCellTypeEnum() == CellType.STRING && cell.getStringCellValue().isEmpty();
+                cell.getCellType() == CellType.BLANK ||
+                cell.getCellType() == CellType.STRING && cell.getStringCellValue().isEmpty();
 
     }
 

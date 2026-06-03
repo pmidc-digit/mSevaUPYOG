@@ -46,7 +46,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 
-import net.minidev.json.JSONArray;
+
 
 @Service
 public class DataUploadService {
@@ -558,7 +558,7 @@ public class DataUploadService {
             logger.error("response: " + e.getResponseBodyAsString());
             //Handle unknown response without body, such as 401's etc
             if (e.getResponseBodyAsString().isEmpty()) {
-                failureMessage.append("API_ERROR_OCCURRED_").append(e.getRawStatusCode());
+                failureMessage.append("API_ERROR_OCCURRED_").append(e.getStatusCode().value());
             } else {
                 List<Object> errors = null;
                 String response = e.getResponseBodyAsString();
@@ -589,7 +589,7 @@ public class DataUploadService {
                     failureMessage.deleteCharAt(failureMessage.toString().length() - 2); //removing last comma
                 }
                 else{
-                    failureMessage.append("API_ERROR_OCCURRED_").append(e.getRawStatusCode());
+                    failureMessage.append("API_ERROR_OCCURRED_").append(e.getStatusCode().value());
                 }
             }
             logger.error(failureMessage.toString());
@@ -688,7 +688,7 @@ public class DataUploadService {
                     try {
                         String response = objectMapper.writeValueAsString(previousResponse);
                         request.getPrevResponseToRequestMap().forEach((key, value) -> {
-                            Object val = ((JSONArray) JsonPath.read(response, key)).get(0);
+                            Object val = ((java.util.List<?>) JsonPath.read(response, key)).get(0);
                             for (String path : value) {
                                 StringBuilder expression = new StringBuilder();
                                 String targetJsonPath = dataUploadUtils.getJsonPathKey(path, expression);

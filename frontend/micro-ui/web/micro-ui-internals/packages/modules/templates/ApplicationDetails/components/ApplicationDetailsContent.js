@@ -455,6 +455,10 @@ function ApplicationDetailsContent({
     setShowToast(null);
   };
 
+  const propertyDocuments = applicationDetails?.applicationDetails
+    ?.flatMap((detail) => detail?.additionalDetails?.documents || [])
+    ?.filter((document) => document?.values?.length > 0);
+
   // (Redirect handled centrally in ApplicationDetails template on mutation success)
 
   // const PROPERTY_UPDATE_URL = "https://mseva-uat.lgpunjab.gov.in/property-services/property/_update?tenantId=pb.testing&propertyIds=PT-1012-2017548";
@@ -553,6 +557,16 @@ function ApplicationDetailsContent({
     // alert("edit property");
   };
   const AccessProperty = () => {
+    const propertyStatus = applicationDetails?.applicationData?.status;
+    if (propertyStatus === "INWORKFLOW" || propertyStatus === "INACTIVE") {
+      setShowAccessModal(false);
+      setShowToast({
+        isError: true,
+        label: "This action cannot be done on Inactive property or the property in workflow",
+      });
+      return;
+    }
+
     setSelectedFinancialYear(null);
     setShowAccessModal(true);
   };
@@ -877,6 +891,7 @@ function ApplicationDetailsContent({
       {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />
       )}
+      {window.location.href.includes("/pt/") && propertyDocuments?.length > 0 && <PropertyDocuments documents={propertyDocuments} />}
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>

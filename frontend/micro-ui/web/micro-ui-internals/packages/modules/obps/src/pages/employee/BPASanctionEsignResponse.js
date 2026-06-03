@@ -86,7 +86,7 @@ const BPASanctionEsignResponse = () => {
       try {
         // console.log("🎯 Starting certificate eSign process...");
   
-        const { id: fileStoreId, tenantId: tenant} = fetchOnlyFileStore(edcrData?.updatedDxfFile)
+        const { id: fileStoreId, fullTenantId: tenant} = fetchOnlyFileStore(edcrData?.updatedDxfFile)
   
         const callbackUrl = isCitizen ? `${window.location.origin}/digit-ui/citizen/obps/bpa/esign/complete/${applicationNo}/${filestore}` : `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${applicationNo}/${filestore}`;
         const authToken = localStorage.getItem('token');

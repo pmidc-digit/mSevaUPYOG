@@ -125,6 +125,17 @@ function ApplicationDetailsContent({
     "egf-master",
     [{ name: "FinancialYear", filter: "[?(@.module == 'PT')]" }]
   );
+  const currentPropertyId = applicationDetails?.applicationData?.propertyId || propertyId;
+  const isPTLocation = window.location.href.includes("/pt/");
+  const { data: propertySearchData } = Digit.Hooks.pt.usePropertySearch(
+    {
+      tenantId,
+      filters: { propertyIds: currentPropertyId },
+    },
+    {
+      enabled: Boolean(isPTLocation && currentPropertyId),
+    }
+  );
 
   useEffect(() => {
     if (financialYearsData?.["egf-master"]?.["FinancialYear"]) {
@@ -468,10 +479,6 @@ function ApplicationDetailsContent({
       isactive: status === "ACTIVE",
       isinactive: status === "INACTIVE",
       creationReason: "STATUS",
-      additionalDetails: {
-        ...propertyData.additionalDetails,
-        propertytobestatus: status,
-      },
       workflow: {
         ...propertyData.workflow,
         businessService: "PT.CREATE",
@@ -480,7 +487,7 @@ function ApplicationDetailsContent({
       },
     };
     // try {
-    const response = await Digit.PTService.updatePT({ Property: { ...payload } }, tenantId, propertyIds);
+    const response = await Digit.PTService.update({ Property: { ...payload } }, tenantId, propertyIds);
     //   const result = await response.json();
     //   if (response.ok) {
     //     alert(`Property marked as ${status} successfully!`);
@@ -496,16 +503,16 @@ function ApplicationDetailsContent({
   };
 
   const applicationData_pt = applicationDetails?.applicationData;
-  const propertyIds = applicationDetails?.applicationData?.propertyId || "";
-  const checkPropertyStatus = applicationDetails?.additionalDetails?.propertytobestatus;
-  console.log("dnddnfnfn ", checkPropertyStatus);
+  const propertyIds = currentPropertyId || "";
+  const propertyStatus = propertySearchData?.Properties?.[0]?.status || applicationDetails?.applicationData?.status;
   const PropertyInActive = () => {
     if (window.location.href.includes("employee")) {
-      if (checkPropertyStatus == "ACTIVE") {
-        updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
-      } else {
-        alert("Property is already inactive.");
+      if (propertyStatus !== "ACTIVE") {
+        alert("This operation is not allowed as Property is not active.");
+        return;
       }
+
+      updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
     } else {
       alert("You are not authorized to change the property status.");
     }
@@ -513,9 +520,14 @@ function ApplicationDetailsContent({
 
   const PropertyActive = () => {
     if (window.location.href.includes("employee")) {
-      if (checkPropertyStatus == "INACTIVE") {
+      if (propertyStatus === "INWORKFLOW") {
+        alert("This operation is not allowed as Property is in INWORKFLOW.");
+        return;
+      }
+
+      if (propertyStatus === "INACTIVE") {
         updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
-      } else {
+      } else if (propertyStatus === "ACTIVE") {
         alert("Property is already active.");
       }
     } else {

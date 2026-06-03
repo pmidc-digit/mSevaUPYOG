@@ -19,8 +19,6 @@ const NewPTStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   const isEditMode = !!currentStepData?._originalProperty;
 
-  console.log("currentStepData", currentStepData);
-
   function goNext(data) {
     dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
     onGoNext();

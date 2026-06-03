@@ -1,7 +1,7 @@
 import React, { use, useEffect, useState } from "react";
 import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Loader } from "./Loader";
-import EXIF from "exif-js";
+import EXIF from "../utils/exif-compat";
 import CustomUploadFile from "./CustomUploadFile";
 import ImageCaptureModal from "../pageComponents/ImageCaptureModal";
 

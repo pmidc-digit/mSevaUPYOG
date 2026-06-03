@@ -102,6 +102,12 @@ import {
   PGRAILinks,
   PGRAIModule,
 } from "@mseva/upyog-ui-module-pgrai";
+import {
+  initFIRENOCComponents,
+  FIRENOCReducers,
+  FireNOCModule,
+  FireNOCLinks,
+} from "@mseva/digit-ui-module-firenoc";
 
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 
@@ -128,7 +134,7 @@ const enabledModules = [
   "Bills",
   "SW",
   "BillAmendment",
-  "FireNoc",
+  "FIRENOC",
   "Birth",
   "Death",
   "Swach",
@@ -184,6 +190,8 @@ window.Digit.ComponentRegistryService.setupRegistry({
   PGRAIModule,
   PGRAILinks,
   ...PGRAIComponents,
+  FIRENOCModule: FireNOCModule,
+  FIRENOCLinks: FireNOCLinks,
 });
 initPGRComponents();
 initSWACHComponents();
@@ -205,6 +213,7 @@ initBillsComponents();
 initNDCComponents();
 // initReportsComponents();
 initCustomisationComponents();
+initFIRENOCComponents();
 
 const moduleReducers = (initData) => ({
   pgr: PGRReducers(initData),
@@ -223,6 +232,7 @@ const moduleReducers = (initData) => ({
   challan: ChallanReducers(initData),
   rentAndLease: RentAndLeaseReducers(initData),
   gc: GarbageReducers(initData),
+  firenoc: FIRENOCReducers(initData),
 });
 
 function App() {

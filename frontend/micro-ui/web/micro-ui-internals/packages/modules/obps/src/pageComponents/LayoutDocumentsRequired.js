@@ -13,7 +13,7 @@ import {
   CitizenInfoLabel,
   ViewsIcon,
 } from "@mseva/digit-ui-react-components";
-import EXIF from "exif-js";
+import EXIF from "../utils/exif-compat";
 import { useDispatch, useSelector } from "react-redux";
 import { pdfDownloadLink } from "../utils";
 import { UPDATE_LayoutNewApplication_CoOrdinates } from "../redux/actions/LayoutNewApplicationActions";

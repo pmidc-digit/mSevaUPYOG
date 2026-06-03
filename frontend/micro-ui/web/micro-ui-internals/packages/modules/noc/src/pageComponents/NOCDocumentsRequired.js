@@ -14,7 +14,7 @@ import {
   CardSectionHeader,
   CardSubHeader,
 } from "@mseva/digit-ui-react-components";
-import EXIF from "exif-js";
+import EXIF from "../utils/exif-compat";
 import { useDispatch, useSelector } from "react-redux";
 import { pdfDownloadLink } from "../utils";
 import { UPDATE_NOCNewApplication_FORM, UPDATE_NOCNewApplication_CoOrdinates } from "../redux/action/NOCNewApplicationActions";
@@ -419,10 +419,23 @@ function PTRSelectDocument({
   }, [isHidden]);
 
   function convertToDecimal(coordinate) {
-    const degrees = coordinate[0];
-    const minutes = coordinate[1];
-    const seconds = coordinate[2];
-    return degrees + minutes / 60 + seconds / 3600;
+    if (!coordinate) return 0;
+
+    const toNumber = (part) => {
+      if (part == null) return 0;
+      if (typeof part === "object" && part !== null && "numerator" in part && "denominator" in part) {
+        return part.numerator / (part.denominator || 1);
+      }
+      if (typeof part === "number") return part;
+      return Number(part) || 0;
+    };
+
+    const degrees = toNumber(coordinate[0]);
+    const minutes = toNumber(coordinate[1]);
+    const seconds = toNumber(coordinate[2]);
+
+    const decimal = degrees + minutes / 60 + seconds / 3600;
+    return decimal;
   }
 
   function extractGeoLocation(file) {

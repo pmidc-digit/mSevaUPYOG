@@ -1866,7 +1866,7 @@ const BpaApplicationDetail = () => {
             style={{
               display: "flex", gap: "8px", flexWrap: "nowrap",
               alignItems: !isMobile ? "center" : "left",
-              // flexDirection: !isMobile ? "row" : "column",
+              flexDirection: !isMobile ? "row" : "column",
             }}
           >
             <div>

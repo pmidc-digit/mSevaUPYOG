@@ -4,7 +4,7 @@ RUN apk update && apk upgrade
 RUN apk add --no-cache git
 
 ARG WORK_DIR
-WORKDIR /app
+WORKDIR /app/web
 
 ENV NODE_OPTIONS="--max-old-space-size=8192"
 

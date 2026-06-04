@@ -212,7 +212,7 @@ const ApplicationOverview = () => {
     user = userInfo?.value;
   }
   const userRoles = user?.info?.roles?.map((e) => e.code);
-  const isCemp = user?.info?.roles.find((role) => role.code === "CEMP")?.code;
+  const isCemp = user?.info?.roles.find((role) => role.code === "NDCCEMP")?.code;
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -255,6 +255,7 @@ const ApplicationOverview = () => {
         name: ndcObject?.owners?.[0]?.name,
         mobile: ndcObject?.owners?.[0]?.mobileNumber,
         email: ndcObject?.owners?.[0]?.emailId,
+        fatherName: ndcObject?.owners?.[0]?.fatherOrHusbandName,
         address: ndcObject?.NdcDetails?.[0]?.additionalDetails?.propertyAddress,
         // createdDate: ndcObject?.owners?.[0]?.createdtime ? format(new Date(ndcObject?.owners?.[0]?.createdtime), "dd/MM/yyyy") : "",
         applicationNo: ndcObject?.applicationNo,
@@ -550,7 +551,8 @@ const ApplicationOverview = () => {
             Object.entries(displayData?.applicantData)?.map(([key, value]) => (
               <Row
                 key={key}
-                label={t(`${key?.toUpperCase()}`)}
+                label={key === "fatherName" ? "Father Name" : t(`${key?.toUpperCase()}`)}
+                // label={t(`${key?.toUpperCase()}`)}
                 text={
                   Array.isArray(value)
                     ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
@@ -578,7 +580,7 @@ const ApplicationOverview = () => {
             <div key={index} className="ndc-emp-app-overview">
               <StatusTable>
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
-                <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
+                <Row label={t("Property Id")} text={detail.consumerCode || "N/A"} />
                 {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
 
                 {(!canRaiseFlag || !isMarked) && (
@@ -651,6 +653,7 @@ const ApplicationOverview = () => {
                         }`
                       )}
                     />
+                    <Row label={t("Area")} text={propertyDetailsFetch?.Properties?.[0]?.landArea || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />

@@ -106,7 +106,7 @@ const ChallanApplicationDetails = () => {
       setLoader(false);
     }
   };
-  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "garbage-receipt"});
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "garbage-receipt" });
 
   useEffect(() => {
     if (id) {
@@ -176,20 +176,20 @@ const ChallanApplicationDetails = () => {
   );
 
   const getAcknowledgement = async () => {
-      setLoader(true);
-      try {
-        const applications = getChallanData;
-        const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
-        const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
-        setTimeout(() => {
-          Digit.Utils.pdf.generate(acknowldgementDataAPI);
-          setLoader(false);
-        }, 0);
-      } catch (error) {
-        console.error("Error generating acknowledgement:", error);
+    setLoader(true);
+    try {
+      const applications = getChallanData;
+      const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+      const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+      setTimeout(() => {
+        Digit.Utils.pdf.generate(acknowldgementDataAPI);
         setLoader(false);
-      }
-    };
+      }, 0);
+    } catch (error) {
+      console.error("Error generating acknowledgement:", error);
+      setLoader(false);
+    }
+  };
 
   const dowloadOptions = [];
 
@@ -198,7 +198,7 @@ const ChallanApplicationDetails = () => {
     onClick: () => getAcknowledgement(),
   });
 
-    if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
+  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () =>
@@ -370,19 +370,24 @@ const ChallanApplicationDetails = () => {
 
   const hideStatuses = ["INITIATED", "CONNECTION_ACTIVATED", "APPROVED"];
 
+  console.log("getChallanData", getChallanData);
+
   return (
     <React.Fragment>
       <div>
         <div className="cardHeaderWithOptions ral-app-details-header">
           <Header className="ral-header-32">{t("Application Details")}</Header>
-          {isCemp && (getChallanData?.applicationStatus === "APPROVED" ||getChallanData?.applicationStatus === "CONNECTION_ACTIVATED" ) && dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-            />
-          )}
+          {isCemp &&
+            (getChallanData?.applicationStatus === "APPROVED" || getChallanData?.applicationStatus === "CONNECTION_ACTIVATED") &&
+            dowloadOptions &&
+            dowloadOptions.length > 0 && (
+              <MultiLink
+                className="multilinkWrapper"
+                onHeadClick={() => setShowOptions(!showOptions)}
+                displayOptions={showOptions}
+                options={dowloadOptions}
+              />
+            )}
         </div>
         <Card>
           <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_OWNER_DETAILS")}</CardSubHeader>
@@ -402,8 +407,9 @@ const ChallanApplicationDetails = () => {
           <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("APPLICATION_NUMBER")} text={t(getChallanData?.applicationNo) || t("CS_NA")} />
+            <Row className="border-none" label={t("Connection Number")} text={t(getChallanData?.connectionNo) || t("CS_NA")} />
             <Row className="border-none" label={t("ACTION_TEST_APPLICATION_STATUS")} text={t(getChallanData?.applicationStatus) || t("CS_NA")} />
-            <Row className="border-none" label={t("GC_CONNECTION_TYPE")} text={getChallanData?.connectionCategory || t("CS_NA")} />
+            {/* <Row className="border-none" label={t("GC_CONNECTION_TYPE")} text={getChallanData?.connectionCategory || t("CS_NA")} /> */}
             <Row className="border-none" label={t("GC_FREQUENCY")} text={getChallanData?.frequency || t("CS_NA")} />
             <Row className="border-none" label={t("GC_WASTE_TYPE")} text={getChallanData?.typeOfWaste || t("CS_NA")} />
           </StatusTable>

@@ -79,7 +79,7 @@ const BillGenerate = () => {
             <div className="complaint-input-container for-pt">
               <div className="input-fields">
                 <span className="complaint-input">
-                  <Label>{t("NDC_CONSUMER_CODE")}</Label>
+                  <Label>{t("APPLICATION_NUMBER")}</Label>
                   <TextInput name="applicationNumber" inputRef={register} />
                 </span>
               </div>

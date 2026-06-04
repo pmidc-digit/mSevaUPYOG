@@ -78,8 +78,8 @@ const ChallanApplicationDetails = () => {
   const [getChallanData, setChallanData] = useState();
   const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
   const [printing, setPrinting] = useState(false);
-  
-  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "garbage-receipt"});
+
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "garbage-receipt" });
 
   // const { isLoading, data, refetch } = Digit.Hooks.chb.useChbSearch({
   //   tenantId,
@@ -167,7 +167,7 @@ const ChallanApplicationDetails = () => {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
-  
+
   const dowloadOptions = [];
 
   dowloadOptions.push({
@@ -175,19 +175,17 @@ const ChallanApplicationDetails = () => {
     onClick: () => getAcknowledgement(),
   });
 
-  
   if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () =>
         printBillReceipt({
-          businessService: "GC.ONE_TIME_FEE", 
+          businessService: "GC.ONE_TIME_FEE",
           receiptNumber: acknowledgementIds,
           rootKey: "PAYMENTS",
         }),
     });
   }
-
 
   return (
     <React.Fragment>
@@ -222,7 +220,7 @@ const ChallanApplicationDetails = () => {
           <StatusTable>
             <Row className="border-none" label={t("APPLICATION_NUMBER")} text={t(getChallanData?.applicationNo) || t("CS_NA")} />
             <Row className="border-none" label={t("ACTION_TEST_APPLICATION_STATUS")} text={t(getChallanData?.applicationStatus) || t("CS_NA")} />
-            <Row className="border-none" label={t("GC_CONNECTION_TYPE")} text={getChallanData?.connectionCategory || t("CS_NA")} />
+            {/* <Row className="border-none" label={t("GC_CONNECTION_TYPE")} text={getChallanData?.connectionCategory || t("CS_NA")} /> */}
             <Row className="border-none" label={t("GC_FREQUENCY")} text={getChallanData?.frequency || t("CS_NA")} />
             <Row className="border-none" label={t("GC_WASTE_TYPE")} text={getChallanData?.typeOfWaste || t("CS_NA")} />
           </StatusTable>

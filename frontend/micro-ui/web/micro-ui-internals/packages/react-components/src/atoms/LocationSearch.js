@@ -19,7 +19,9 @@ const GetPinCode = (places) => {
   let postalCode = null;
   places?.address_components?.forEach((place) => {
     let hasPostalCode = place.types.includes("postal_code");
-    postalCode = hasPostalCode ? place.long_name : null;
+    if (hasPostalCode) {
+      postalCode = place.long_name;
+    }
   });
   return postalCode;
 };
@@ -233,6 +235,15 @@ const setLocationText = (location, onChange, isPlaceRequired=false) => {
             onChange(pincode, { longitude: location.lng, latitude: location.lat });
           }
         }
+      } else {
+        console.warn("Geocoder failed with status:", status);
+        if (onChange) {
+          if (isPlaceRequired) {
+            onChange(null, { longitude: location.lng, latitude: location.lat }, "");
+          } else {
+            onChange(null, { longitude: location.lng, latitude: location.lat });
+          }
+        }
       }
     }
   );
@@ -303,8 +314,8 @@ const initAutocomplete = (onChange, position, isPlaceRequired=false) => {
       return;
     } // Clear out the old markers.
     let pincode = GetPinCode(place);
-    if (pincode) {
-      const { geometry } = place;
+    const { geometry } = place;
+    if (geometry) {
       const geoLocation = {
         latitude: geometry.location.lat(),
         longitude: geometry.location.lng(),

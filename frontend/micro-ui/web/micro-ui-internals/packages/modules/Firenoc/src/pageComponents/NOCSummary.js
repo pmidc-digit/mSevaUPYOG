@@ -89,6 +89,26 @@ function DocCard({ doc, t }) {
   const label = t(doc.documentType?.replaceAll(".", "_") || "");
   const fileId = doc.filestoreId || doc.documentAttachment || doc.uuid;
   const fileName = fileId ? `${fileId.slice(0, 8)}…` : NA;
+  const [fileUrl, setFileUrl] = useState("");
+
+  useEffect(() => {
+    if (fileId) {
+      const tenantId = Digit.ULBService.getStateId();
+      Digit.UploadServices.Filefetch([fileId], tenantId)
+        .then((res) => {
+          const url = res?.data?.[fileId] || res?.data?.fileStoreIds?.[0]?.url;
+          if (url) {
+            setFileUrl(url);
+          } else {
+            setFileUrl(`/filestore/v1/files/id?fileStoreId=${fileId}&tenantId=${tenantId}`);
+          }
+        })
+        .catch(() => {
+          setFileUrl(`/filestore/v1/files/id?fileStoreId=${fileId}&tenantId=${tenantId}`);
+        });
+    }
+  }, [fileId]);
+
   return (
     <div
       style={{
@@ -104,7 +124,7 @@ function DocCard({ doc, t }) {
         <span style={{ color: "#505A5F" }}>{fileName}</span>
         {fileId && (
           <a
-            href={`/filestore/v1/files/url?tenantId=pb&fileStoreIds=${fileId}`}
+            href={fileUrl || `/filestore/v1/files/id?fileStoreId=${fileId}&tenantId=${Digit.ULBService.getStateId()}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: "#e84646", fontWeight: "600", textDecoration: "none" }}
@@ -116,6 +136,58 @@ function DocCard({ doc, t }) {
     </div>
   );
 }
+
+/* ─── NocSummaryDocCard component for inline summary documents ─── */
+function NocSummaryDocCard({ doc, label, t }) {
+  const fileId = doc.filestoreId || doc.documentAttachment || doc.uuid;
+  const [fileUrl, setFileUrl] = useState("");
+
+  useEffect(() => {
+    if (fileId) {
+      const tenantId = Digit.ULBService.getStateId();
+      Digit.UploadServices.Filefetch([fileId], tenantId)
+        .then((res) => {
+          const url = res?.data?.[fileId] || res?.data?.fileStoreIds?.[0]?.url;
+          if (url) {
+            setFileUrl(url);
+          } else {
+            setFileUrl(`/filestore/v1/files/id?fileStoreId=${fileId}&tenantId=${tenantId}`);
+          }
+        })
+        .catch(() => {
+          setFileUrl(`/filestore/v1/files/id?fileStoreId=${fileId}&tenantId=${tenantId}`);
+        });
+    }
+  }, [fileId]);
+
+  return (
+    <div
+      style={{
+        border: "1px solid #D6D5D4",
+        borderRadius: "4px",
+        padding: "12px 16px",
+        minWidth: "200px",
+        flex: "1 1 200px",
+      }}
+    >
+      <div style={{ fontWeight: "600", fontSize: "14px", marginBottom: "8px" }}>{label}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
+        <span style={{ color: "#505A5F" }}>acknowledgement</span>
+        {fileId && (
+          <a
+            href={fileUrl || `/filestore/v1/files/id?fileStoreId=${fileId}&tenantId=${Digit.ULBService.getStateId()}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#e84646", fontWeight: "600", textDecoration: "none" }}
+          >
+            VIEW
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 /* ─── Main Summary Component ─── */
 function NOCSummary({ currentStepData: formData, t }) {
@@ -259,9 +331,10 @@ function NOCSummary({ currentStepData: formData, t }) {
           } />
           <Row label={t("Applicable Fire Station")} text={val(
             (() => {
-              const stationCode = typeof site.fireStationId === "object" ? (site.fireStationId?.name || site.fireStationId?.code) : site.fireStationId;
+              const rawStation = site.fireStationId || apiFireNOC?.fireNOCDetails?.firestationId || apiFireNOC?.fireNOCDetails?.fireStationId;
+              const stationCode = typeof rawStation === "object" ? (rawStation?.name || rawStation?.code) : rawStation;
               if (!stationCode) return null;
-              return stationCode.replace(/_/g, " ").replace(/^FS /, "").replace(/\b\w/g, c => c.toUpperCase());
+              return String(stationCode).replace(/_/g, " ").replace(/^FS /, "").replace(/\b\w/g, c => c.toUpperCase());
             })()
           )} />
         </StatusTable>
@@ -303,34 +376,7 @@ function NOCSummary({ currentStepData: formData, t }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginTop: "8px" }}>
             {uploadedDocuments.map((doc, i) => {
               const label = docLabelMap[doc.documentType] || t(doc.documentType?.replaceAll(".", "_") || "");
-              const fileId = doc.filestoreId || doc.documentAttachment || doc.uuid;
-              return (
-                <div
-                  key={i}
-                  style={{
-                    border: "1px solid #D6D5D4",
-                    borderRadius: "4px",
-                    padding: "12px 16px",
-                    minWidth: "200px",
-                    flex: "1 1 200px",
-                  }}
-                >
-                  <div style={{ fontWeight: "600", fontSize: "14px", marginBottom: "8px" }}>{label}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
-                    <span style={{ color: "#505A5F" }}>acknowledgement</span>
-                    {fileId && (
-                      <a
-                        href={`/filestore/v1/files/url?tenantId=pb&fileStoreIds=${fileId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: "#e84646", fontWeight: "600", textDecoration: "none" }}
-                      >
-                        VIEW
-                      </a>
-                    )}
-                  </div>
-                </div>
-              );
+              return <NocSummaryDocCard key={i} doc={doc} label={label} t={t} />;
             })}
           </div>
         </Card>

@@ -11,6 +11,11 @@ import {
   CardSubHeader,
   ActionBar,
   SubmitBar,
+  // Menu,
+  // LinkButton,
+  // TLTimeLine,
+  // DisplayPhotos,
+  // StarRated,
   MultiLink,
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
@@ -163,6 +168,7 @@ const CitizenApplicationOverview = () => {
         name: primaryOwner?.name,
         mobile: primaryOwner?.mobileNumber,
         email: primaryOwner?.emailId,
+        fatherName: primaryOwner?.fatherOrHusbandName,
         address: primaryOwner?.permanentAddress,
         // createdDate: ndcObject?.owners?.[0]?.createdtime ? format(new Date(ndcObject?.owners?.[0]?.createdtime), "dd/MM/yyyy") : "",
         applicationNo: ndcObject?.applicationNo,
@@ -319,7 +325,8 @@ const CitizenApplicationOverview = () => {
               ?.map(([key, value]) => (
                 <Row
                   key={key}
-                  label={t(`${key?.toUpperCase()}`)}
+                  label={key === "fatherName" ? "Father Name" : t(`${key?.toUpperCase()}`)}
+                  // label={t(`${key?.toUpperCase()}`)}
                   text={
                     Array.isArray(value)
                       ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
@@ -342,7 +349,7 @@ const CitizenApplicationOverview = () => {
               <StatusTable>
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
                 {/* <Row label={t("Name")} text={t(`${detail.businessService}`) || detail.businessService} /> */}
-                <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
+                <Row label={t("Property Id")} text={detail.consumerCode || "N/A"} />
                 {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
                 <div
                   style={{
@@ -374,6 +381,7 @@ const CitizenApplicationOverview = () => {
                         }`
                       )}
                     />
+                    <Row label={t("Area")} text={propertyDetailsFetch?.Properties?.[0]?.landArea || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city || "N/A"} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo || "N/A"} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName || "N/A"} />

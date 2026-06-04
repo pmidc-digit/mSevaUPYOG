@@ -49,6 +49,20 @@ const owners = [
   },
 ];
 
+const buildPropertyAddress = (address = {}) => {
+  const parts = [
+    address?.doorNo || address?.houseNo,
+    address?.buildingName,
+    address?.street || address?.streetName,
+    address?.locality?.name || address?.locality,
+    address?.pincode,
+  ]
+    .map((part) => (typeof part === "string" ? part.trim() : part))
+    .filter((part) => part !== undefined && part !== null && part !== "");
+
+  return parts.join(", ");
+};
+
 const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -56,6 +70,10 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   const [loader, setLoader] = useState(false);
   const tenants = Digit.Hooks.pt.useTenants();
   const stateDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData?.ownerDetails);
+  const propertyAddress = useSelector((state) => {
+    const formData = state.pt.PTNewApplicationFormReducer.formData || {};
+    return formData?.propertyAddress?.address || formData?.propertyAddress || formData?.LocationDetails?.address || formData?.LocationDetails1?.address;
+  });
 
   const isCitizen = window.location.href.includes("citizen");
   const getCity = localStorage.getItem("CITIZEN.CITY");
@@ -71,10 +89,23 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   // Memoize to prevent new [] reference each render (was causing infinite loop)
   const SubOwnerShipCategory = useMemo(() => SubOwnerShipCategoryRaw || {}, [SubOwnerShipCategoryRaw]);
 
+  const { data: ownerTypeDocumentRaw } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
+    { name: "OwnerTypeDocument" },
+  ]);
+
+  const ownerTypeDocuments = useMemo(
+    () => ownerTypeDocumentRaw?.PropertyTax?.OwnerTypeDocument?.filter((d) => d.active) || [],
+    [ownerTypeDocumentRaw]
+  );
+
+  const stateId = Digit.ULBService.getStateId();
+  const { data: mdmsData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", ["OwnerType"]);
+
   const {
     control,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     formState: { errors },
     trigger,
@@ -86,6 +117,8 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
           mobileNumber: "",
           emailId: "",
           address: "",
+          designation: "",
+          altContactNumber: "",
         },
       ],
     },
@@ -97,7 +130,9 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   });
 
   const onSubmit = async (data) => {
-    console.log("check final data", data);
+    
+    console.log("checkFinalData", data);
+    console.log("ownersssss", data.owners);
     goNext(data);
   };
 
@@ -114,16 +149,45 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   const ownerTypeCode = watch("ownerShip")?.code;
   const isMultiple = ownerTypeCode === "INDIVIDUAL.MULTIPLEOWNERS";
 
-  useEffect(() => {
-    // Don't wipe owners when ownerTypeCode changes due to restore from Redux
-    if (isRestoredRef.current) return;
-    if (!isMultiple) {
-      setValue("owners", [{ name: "", mobileNumber: "", emailId: "", address: "" }]);
-    }
-  }, [ownerTypeCode]);
+useEffect(() => {
+  // Don't reset while restoring edit data
+  if (isRestoredRef.current) return;
+
+  const currentOwners = watch("owners") || [];
+
+  // Single owner → keep first owner, don't wipe fields
+  if (!isMultiple) {
+    setValue("owners", [
+      currentOwners[0] || {
+        name: "",
+        mobileNumber: "",
+        emailId: "",
+        address: "",
+        designation: "",
+        altContactNumber: "",
+        gender: "",
+        fatherOrHusbandName: "",
+        relationship: "",
+        ownerType: "",
+        ownershipPercentage: "",
+      },
+    ]);
+  }
+}, [ownerTypeCode]);
+
+
 
   const instTypeOptions =
     SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item?.ownerShipCategory == watch("ownerShip")?.code) || [];
+
+  const ownerTypesMenu = useMemo(
+    () =>
+      mdmsData?.PropertyTax?.OwnerType?.map?.((e) => ({
+        i18nKey: `${e.code.replaceAll("PROPERTY", "COMMON_MASTERS").replaceAll(".", "_")}`,
+        code: e.code,
+      })) || [],
+    [mdmsData]
+  );
 
   useEffect(() => {
     if (stateDataCheck) {
@@ -136,35 +200,67 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   const ownerShip = watch("ownerShip");
   const isInstitution = ownerShip?.code === "INSTITUTIONALGOVERNMENT" || ownerShip?.code === "INSTITUTIONALPRIVATE";
 
-  useEffect(() => {
-    if (!ownerShip || !stateDataCheck) return;
-    if (isRestoredRef.current) return;
+useEffect(() => {
+  if (!propertyAddress) return;
 
-    setValue("institutionName", stateDataCheck?.institutionName || "");
+  const formattedAddress = buildPropertyAddress(propertyAddress);
+  if (!formattedAddress) return;
 
-    const instOptions = SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item.ownerShipCategory === ownerShip?.code) || [];
+  (getValues("owners") || []).forEach((owner, index) => {
+    if (owner?.isSamePropertyAddress && owner?.address !== formattedAddress) {
+      setValue(`owners.${index}.address`, formattedAddress);
+    }
+  });
+}, [propertyAddress, getValues, setValue]);
 
-    const checkInstitutionType = instOptions.find(
-      (item) => item.code === stateDataCheck?.institutionType?.code || item.code === stateDataCheck?.institutionType
+useEffect(() => {
+  if (!ownerShip || !stateDataCheck) return;
+  if (isRestoredRef.current) return;
+
+  setValue("institutionName", stateDataCheck?.institutionName || "");
+
+  const instOptions =
+    SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter(
+      (item) => item.ownerShipCategory === ownerShip?.code
+    ) || [];
+
+  const checkInstitutionType = instOptions.find(
+    (item) =>
+      item.code === stateDataCheck?.institutionType?.code ||
+      item.code === stateDataCheck?.institutionType
+  );
+
+  if (checkInstitutionType) {
+    setValue("institutionType", checkInstitutionType);
+  }
+
+  if (stateDataCheck?.owners?.length > 0) {
+    const hasUnresolvedDoc = stateDataCheck.owners.some(
+      (o) => o.docIdType?.code && !o.docIdType?.ownerTypeCode
     );
 
-    if (checkInstitutionType) {
-      setValue("institutionType", checkInstitutionType);
-    }
+    if (hasUnresolvedDoc && ownerTypeDocuments.length === 0) return;
 
-    if (stateDataCheck?.owners?.length > 0) {
-      remove([...Array(fields.length).keys()]);
+    remove([...Array(fields.length).keys()]);
 
-      stateDataCheck.owners.forEach((owner) => {
-        append(owner);
-      });
+    stateDataCheck.owners.forEach((owner) => {
+      const resolvedDocIdType =
+        owner.docIdType?.code && !owner.docIdType?.ownerTypeCode
+          ? ownerTypeDocuments.find((d) => d.code === owner.docIdType.code) ||
+            owner.docIdType
+          : owner.docIdType;
 
-      trigger();
-    }
+      append({ ...owner, docIdType: resolvedDocIdType });
+    });
 
+    trigger();
+  }
+
+  // FIX
+  if (instOptions.length > 0) {
     isRestoredRef.current = true;
-  }, [ownerShip, SubOwnerShipCategory, stateDataCheck]);
-
+  }
+}, [ownerShip, SubOwnerShipCategory, stateDataCheck, ownerTypeDocuments]);
   return (
     <form  onSubmit={handleSubmit(onSubmit)}>
       {/* city */}
@@ -267,50 +363,85 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
 
               {/* Row: Mobile + Name */}
               <div style={twoColRow}>
-              <LabelFieldPair style={colItem}>
-                <CardLabel className="card-label-smaller">{t("Mobile Number")}*</CardLabel>
-                <Controller
-                  control={control}
-                  name={`owners.${index}.mobileNumber`}
-                  defaultValue={item?.mobileNumber || ""}
-                  rules={{
-                    required: "Mobile number is required",
-                    pattern: {
-                      value: /^[6-9]\d{9}$/,
-                      message: "Enter valid number",
-                    },
-                  }}
-                  render={(props) => <MobileNumber {...props} disable={isEditMode} />}
-                />
-                {errors?.owners?.[index]?.mobileNumber && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].mobileNumber.message}</p>
-                )}
-              </LabelFieldPair>
-              <LabelFieldPair style={colItem}>
-                <CardLabel className="card-label-smaller">{t("Name")}*</CardLabel>
-                <Controller
-                  control={control}
-                  name={`owners.${index}.name`}
-                  defaultValue={item?.name || ""}
-                  rules={{ required: "Name required" }}
-                  render={(props) => <TextInput {...props} disable={isEditMode} />}
-                />
-                {errors?.owners?.[index]?.name && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].name.message}</p>
-                )}
-              </LabelFieldPair>
+                <LabelFieldPair style={colItem}>
+                  <CardLabel className="card-label-smaller">{t("Mobile Number")}*</CardLabel>
+                  <Controller
+                    control={control}
+                    name={`owners.${index}.mobileNumber`}
+                    defaultValue={item?.mobileNumber || ""}
+                    rules={{
+                      required: "Mobile number is required",
+                      pattern: {
+                        value: /^[6-9]\d{9}$/,
+                        message: "Enter valid number",
+                      },
+                    }}
+                    render={(props) => <MobileNumber {...props} disable={isEditMode} />}
+                  />
+                  {errors?.owners?.[index]?.mobileNumber && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].mobileNumber.message}</p>
+                  )}
+                </LabelFieldPair>
+                <LabelFieldPair style={colItem}>
+                  <CardLabel className="card-label-smaller">{t("Name")}*</CardLabel>
+                  <Controller
+                    control={control}
+                    name={`owners.${index}.name`}
+                    defaultValue={item?.name || ""}
+                    rules={{ required: "Name required" }}
+                    render={(props) => <TextInput {...props} disable={isEditMode} />}
+                  />
+                  {errors?.owners?.[index]?.name && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].name.message}</p>
+                  )}
+                </LabelFieldPair>
               </div>
+
+              {/* Designation + Landline Number (Institutional only) */}
+              {(ownerShip?.code === "INSTITUTIONALGOVERNMENT" || ownerShip?.code === "INSTITUTIONALPRIVATE") && (
+                <div style={twoColRow}>
+                  <LabelFieldPair style={colItem}>
+                    <CardLabel className="card-label-smaller">{t("Designation")}</CardLabel>
+                    <Controller
+                      control={control}
+                      name={`owners.${index}.designation`}
+                      defaultValue={item?.designation || ""}
+                      render={(props) => (
+                        <TextInput
+                          value={props.value}
+                          onChange={(e) => props.onChange(e.target.value)}
+                          disable={isEditMode}
+                        />
+                      )}
+                    />
+                  </LabelFieldPair>
+                  <LabelFieldPair style={colItem}>
+                    <CardLabel className="card-label-smaller">{t("Landline Number")}</CardLabel>
+                    <Controller
+                      control={control}
+                      name={`owners.${index}.altContactNumber`}
+                      defaultValue={item?.altContactNumber || ""}
+                      render={(props) => (
+                        <TextInput
+                          value={props.value}
+                          onChange={(e) => props.onChange(e.target.value)}
+                          disable={isEditMode}
+                        />
+                      )}
+                    />
+                  </LabelFieldPair>
+                </div>
+              )}
 
               {/* Email + Address */}
               <div style={twoColRow}>
               <LabelFieldPair style={colItem}>
-                <CardLabel className="card-label-smaller">{t("Email")}*</CardLabel>
+                <CardLabel className="card-label-smaller">{t("Email")}</CardLabel>
                 <Controller
                   control={control}
                   name={`owners.${index}.emailId`}
                   defaultValue={item?.emailId || ""}
                   rules={{
-                    required: "Email required",
                     pattern: {
                       value: /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/,
                       message: "Invalid email",
@@ -333,25 +464,236 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
               </LabelFieldPair>
               </div>
 
+              {/* Gender + Guardian Name (for individual owners) */}
+              {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (
+                <div style={twoColRow}>
+                  <LabelFieldPair style={colItem}>
+                    <CardLabel className="card-label-smaller">{t("Gender")}*</CardLabel>
+                    <Controller
+                      control={control}
+                      name={`owners.${index}.gender`}
+                      defaultValue={item?.gender || ""}
+                      rules={{ required: "Gender is required" }}
+                      render={(props) => (
+                        <Dropdown
+                          select={props.onChange}
+                          selected={props.value}
+                          option={[
+                            { name: "Male", code: "MALE" },
+                            { name: "Female", code: "FEMALE" },
+                            { name: "Transgender", code: "TRANSGENDER" },
+                            { name: "Others", code: "OTHERS" }
+                          ]}
+                          optionKey="name"
+                          t={t}
+                          disable={isEditMode}
+                        />
+                      )}
+                    />
+                    {errors?.owners?.[index]?.gender && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].gender.message}</p>
+                    )}
+                  </LabelFieldPair>
+                  <LabelFieldPair style={colItem}>
+                    <CardLabel className="card-label-smaller">{t("Guardian Name")}*</CardLabel>
+                    <Controller
+                      control={control}
+                      name={`owners.${index}.fatherOrHusbandName`}
+                      defaultValue={item?.fatherOrHusbandName || ""}
+                      rules={{ required: "Guardian name is required" }}
+                      render={(props) => <TextInput {...props} disable={isEditMode} />}
+                    />
+                    {errors?.owners?.[index]?.fatherOrHusbandName && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].fatherOrHusbandName.message}</p>
+                    )}
+                  </LabelFieldPair>
+                </div>
+              )}
+
+              {/* Relationship (for individual owners) */}
+              {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (
+                <div style={twoColRow}>
+                  <LabelFieldPair style={colItem}>
+                    <CardLabel className="card-label-smaller">{t("Relationship")}*</CardLabel>
+                    <Controller
+                      control={control}
+                      name={`owners.${index}.relationship`}
+                      defaultValue={item?.relationship || ""}
+                      rules={{ required: "Relationship is required" }}
+                      render={(props) => (
+                        <Dropdown
+                          select={props.onChange}
+                          selected={props.value}
+                          option={[
+                            { name: "Father", code: "FATHER" },
+                            { name: "Husband", code: "HUSBAND" }
+                          ]}
+                          optionKey="name"
+                          t={t}
+                          disable={isEditMode}
+                        />
+                      )}
+                    />
+                    {errors?.owners?.[index]?.relationship && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].relationship.message}</p>
+                    )}
+                  </LabelFieldPair>
+                </div>
+              )}
+
+              {/* Special Category + conditional Document ID fields (for individual owners) */}
+              {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (() => {
+                const ownerTypeVal = watch(`owners.${index}.ownerType`);
+                const ownerTypeCode = ownerTypeVal?.code;
+                const showDocFields = !!(ownerTypeCode && ownerTypeDocuments.some((d) => d.ownerTypeCode === ownerTypeCode));
+                return (
+                  <React.Fragment>
+                    <div style={twoColRow}>
+                      <LabelFieldPair style={colItem}>
+                        <CardLabel className="card-label-smaller">{t("Special Category")}*</CardLabel>
+                        <Controller
+                          control={control}
+                          name={`owners.${index}.ownerType`}
+                          defaultValue={item?.ownerType || ""}
+                          rules={{ required: "Special Category is required" }}
+                          render={(props) => (
+                            <Dropdown
+                              select={(selectedType) => {
+                                props.onChange(selectedType);
+                                const code = selectedType?.code;
+                                const matched = ownerTypeDocuments.find((d) => d.ownerTypeCode === code);
+                                if (matched) {
+                                  setValue(`owners.${index}.docIdType`, matched);
+                                } else {
+                                  setValue(`owners.${index}.docIdType`, null);
+                                  setValue(`owners.${index}.docIdNo`, "");
+                                }
+                              }}
+                              selected={props.value}
+                              option={ownerTypesMenu}
+                              optionKey="i18nKey"
+                              t={t}
+                              disable={isEditMode}
+                            />
+                          )}
+                        />
+                        {errors?.owners?.[index]?.ownerType && (
+                          <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].ownerType.message}</p>
+                        )}
+                      </LabelFieldPair>
+                    </div>
+                    {showDocFields && (
+                      <div style={twoColRow}>
+                        <LabelFieldPair style={colItem}>
+                          <CardLabel className="card-label-smaller">
+                            {t("Document ID Type")} <span style={{ color: "red" }}>*</span>
+                          </CardLabel>
+                          <Controller
+                            control={control}
+                            name={`owners.${index}.docIdType`}
+                            defaultValue={item?.docIdType || null}
+                            rules={{ required: "Document ID Type is required" }}
+                            render={(props) => (
+                              <Dropdown
+                                select={props.onChange}
+                                selected={props.value}
+                                option={ownerTypeDocuments}
+                                optionKey="name"
+                                t={t}
+                                disable={isEditMode}
+                              />
+                            )}
+                          />
+                          {errors?.owners?.[index]?.docIdType && (
+                            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].docIdType.message}</p>
+                          )}
+                        </LabelFieldPair>
+                        <LabelFieldPair style={colItem}>
+                          <CardLabel className="card-label-smaller">
+                            {t("Document ID no.")} <span style={{ color: "red" }}>*</span>
+                          </CardLabel>
+                          <Controller
+                            control={control}
+                            name={`owners.${index}.docIdNo`}
+                            defaultValue={item?.docIdNo || ""}
+                            rules={{ required: "Document ID no. is required" }}
+                            render={(props) => (
+                              <TextInput
+                                value={props.value}
+                                onChange={(e) => props.onChange(e.target.value)}
+                                placeholder={t("Enter identification no.")}
+                                disable={isEditMode}
+                              />
+                            )}
+                          />
+                          {errors?.owners?.[index]?.docIdNo && (
+                            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].docIdNo.message}</p>
+                          )}
+                        </LabelFieldPair>
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })()}
+
+              {/* Ownership Percentage (for individual owners) */}
+              {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (
+                <div style={twoColRow}>
+                  <LabelFieldPair style={colItem}>
+                    <CardLabel className="card-label-smaller">{t("Ownership Percentage")}</CardLabel>
+                    <Controller
+                      control={control}
+                      name={`owners.${index}.ownershipPercentage`}
+                      defaultValue={item?.ownershipPercentage || ""}
+                      rules={{
+                        validate: {
+                          maxHundred: (v) => !v || Number(v) <= 100 || "Ownership percentage cannot exceed 100%",
+                          minZero: (v) => !v || Number(v) >= 0 || "Ownership percentage cannot be negative",
+                          isNumber: (v) => !v || !isNaN(Number(v)) || "Must be a valid number",
+                        },
+                      }}
+                      render={(props) => (
+                        <TextInput
+                          value={props.value}
+                          onChange={(e) => props.onChange(e.target.value)}
+                          disable={isEditMode}
+                          placeholder="0-100"
+                        />
+                      )}
+                    />
+                    {errors?.owners?.[index]?.ownershipPercentage && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].ownershipPercentage.message}</p>
+                    )}
+                  </LabelFieldPair>
+                </div>
+              )}
+
               {/* checkBoxadress*/}
               <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", marginBottom: " 20px" }}>
                 <Controller
                   control={control}
-                  name={`owners.${index}.checkBoxadress`}
+                  name={`owners.${index}.isSamePropertyAddress`}
                   render={(props) => (
                     <input
-                      id={`flammable-${index}`}
+                      id={`samePropAddr-${index}`}
                       type="checkbox"
                       checked={props.value || false}
                       onChange={(e) => {
-                        props.onChange(e.target.checked);
+                        const checked = e.target.checked;
+                        props.onChange(checked);
+                        if (checked) {
+                          const formattedAddress = buildPropertyAddress(propertyAddress);
+                          if (getValues(`owners.${index}.address`) !== formattedAddress) {
+                            setValue(`owners.${index}.address`, formattedAddress);
+                          }
+                        }
                       }}
                       style={{ width: "18px", height: "18px", cursor: isEditMode ? "not-allowed" : "pointer" }}
                       disabled={isEditMode}
                     />
                   )}
                 />
-                <label htmlFor={`flammable-${index}`} style={{ cursor: "pointer", color: "#00bcd1", margin: 0 }}>
+                <label htmlFor={`samePropAddr-${index}`} style={{ cursor: "pointer", color: "#00bcd1", margin: 0 }}>
                   {t("Same as property address")}
                 </label>
               </div>
@@ -377,6 +719,11 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
                   mobileNumber: "",
                   emailId: "",
                   address: "",
+                  gender: "",
+                  fatherOrHusbandName: "",
+                  relationship: "",
+                  ownershipPercentage: "",
+                  isSamePropertyAddress: false,
                 })
               }
               style={{ color: "#00bcd1", background: "none", border: "none" }}

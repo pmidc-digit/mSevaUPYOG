@@ -6,19 +6,31 @@ import Timeline from "../../components/TLTimeline";
 
 const TransfererDetails = ({ userType, formData, config, onSelect }) => {
   const { t } = useTranslation();
-  const propertyDetails = userType === "employee" ? formData.originalData : formData.searchResult.property;
+  const storedTransferData = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("ownerTransferData") || "{}");
+    } catch (error) {
+      return {};
+    }
+  })();
+  const transferFormData = formData?.originalData ? formData : storedTransferData;
+  console.log("TransfererDetails userType:", userType, "formData:", formData);
+  const hasOriginalData = !!transferFormData?.originalData;
+  const propertyDetails = hasOriginalData ? transferFormData.originalData : transferFormData?.searchResult?.property;
+  console.log("TransfererDetails propertyDetails:", propertyDetails);
   const ownershipType = propertyDetails?.ownershipCategory?.split?.(".");
+  const isActiveOwner = (owner) => owner.status === "ACTIVE" || owner.status === "active" || owner.active === true || (!owner.status && owner.active !== false);
 
-  if (userType === "employee") {
+  if (userType === "employee" || hasOriginalData) {
     return (
       <React.Fragment>
         <StatusTable>
           {propertyDetails?.owners.sort((item,item2)=>{return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence})
-            ?.filter((e) => e.status === "ACTIVE")
+            ?.filter(isActiveOwner)
             .map((owner, index, arr) => {
               return (
                 <React.Fragment>
-                  {propertyDetails?.owners?.filter((e) => e.status === "ACTIVE").length > 1 ? (
+                  {propertyDetails?.owners?.filter(isActiveOwner).length > 1 ? (
                     <CardCaption style={{ marginTop: "24px", marginBottom: "12px", display: "block" }}>
                       {t("ES_OWNER") + "  " + (index + 1)}
                     </CardCaption>
@@ -47,11 +59,11 @@ const TransfererDetails = ({ userType, formData, config, onSelect }) => {
       <FormStep t={t} config={config} onSelect={onSelect} onSkip={() => {}} isDisabled={false}>
         <CardHeader>{t("PT_MUTATION_TRANSFEROR_DETAILS")}</CardHeader>
         {propertyDetails?.owners
-          ?.filter((e) => e.status === "ACTIVE")
+          ?.filter(isActiveOwner)
           .map((owner, index, arr) => {
             return (
               <React.Fragment key={index}>
-                {propertyDetails?.owners?.filter((e) => e.status === "ACTIVE").length > 1 ? (
+                {propertyDetails?.owners?.filter(isActiveOwner).length > 1 ? (
                   <CardCaption style={{ marginTop: "24px", marginBottom: "12px", display: "block" }}>
                     {t("ES_OWNER") + "  " + (index + 1)}
                   </CardCaption>
@@ -64,7 +76,7 @@ const TransfererDetails = ({ userType, formData, config, onSelect }) => {
                       <KeyNote
                         key={label.label}
                         keyValue={t(label.label)}
-                        note={typeof noteValue === "string" ? t(noteValue) : "N/A"}
+                        note={typeof noteValue === "string" || typeof noteValue === "number" ? t(noteValue) : "N/A"}
                         noteStyle={label.noteStyle}
                       />
                     );

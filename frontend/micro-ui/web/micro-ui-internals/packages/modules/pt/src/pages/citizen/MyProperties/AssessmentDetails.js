@@ -8,6 +8,7 @@ import { useQueryClient } from "react-query";
 import _, { first, update, values } from "lodash";
 import { Modal, Dropdown, Row, StatusTable } from "@mseva/digit-ui-react-components";
 import { convertEpochToDate } from "../../../utils/index";
+import PTImportantDates from "../../../pageComponents/PTImportantDates";
 
 
 const AssessmentDetails = () => {
@@ -652,35 +653,7 @@ console.log("isCheck",isCheck)
                 // belowComponent:()=><LinkLabel onClick={()=>{showPopUp(true)}} style={isMobile ? {color:"#a82227",marginLeft:"0px"} : {color:"#a82227"}}>{t("PT_ADD_REBATE_PENALITY")}</LinkLabel>
                 belowComponent: () => <>
                 {ptCalculationEstimateData?.Calculation?.length>0 &&  <LinkLabel onClick={() => { setShowCalc(true); }} style={isMobile ? { color: "#a82227", marginLeft: "0px" } : { color: "#a82227" }}>{t("CALCULATION DETAILS")}</LinkLabel>}
-                  <div style={{border:'1px solid lightgrey',padding:'8px'}}>
-                    <h3 style={{fontSize:'20px',fontWeight:'bold',color:'#0d43a7',marginBottom:'10px'}}>Important Dates</h3>
-                    <StatusTable>
-                      <Row
-                        labelStyle={{ wordBreak: "break-all", width: '50%' }}
-                        textStyle={{ wordBreak: "break-all" }}
-                        key={"rebate"}
-                        label={`Last Date for Rebate (${rebateObj?.rate}% of PT)`}
-                        text={`${rebateObj?.endingDay}`}
-                      />
-                      <Row
-                        labelStyle={{ wordBreak: "break-all", width: '50%' }}
-                        textStyle={{ wordBreak: "break-all" }}
-                        key={"penality"}
-                        label={`Penalty (${penalityObj?.rate}% of PT) applied from`}
-                        text={`${penalityObj?.startingDay}`}
-
-                      />
-                        <Row
-                        labelStyle={{ wordBreak: "break-all", width: '50%' }}
-                        textStyle={{ wordBreak: "break-all" }}
-                        key={"interest"}
-                        label={`Interest (${interestObj?.rate}% p.a. daily) applied from`}
-                        text={`${interestObj?.startingDay}`}
-
-                      />
-                    </StatusTable>
-                
-                  </div>
+                  <PTImportantDates financialYear={AssessmentData?.financialYear} />
                 </>
               },
               {
@@ -797,6 +770,7 @@ console.log("isCheck",isCheck)
           }
         }
         showTimeLine={false}
+        showHistory={false}
         isLoading={isLoading}
         isDataLoading={isLoading}
         applicationData={appDetailsToShow?.applicationData}

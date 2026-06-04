@@ -13,6 +13,8 @@ const NewPTStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     : window.localStorage.getItem("Employee.tenant-id");
   // Fetch MDMS docs
 
+  console.log("tenantIdforproperty", tenantId);
+
   const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [{ name: "Documents" }]);
 
   console.log("docData", docData);

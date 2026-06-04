@@ -1,12 +1,20 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
 // import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 
 const PTOwnerTransfershipSummaryStepThree = ({ config, onGoNext, onBackClick, t }) => {
-  const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData || {});
-  console.log("form data in summary", formData);
+  const formData = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData || {});
+  const storedTransferData = useMemo(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("ownerTransferData") || "{}");
+    } catch (error) {
+      return {};
+    }
+  }, []);
+  const summaryFormData = { ...storedTransferData, ...formData };
+  console.log("form data in summary", summaryFormData);
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     onGoNext();
@@ -26,8 +34,8 @@ const PTOwnerTransfershipSummaryStepThree = ({ config, onGoNext, onBackClick, t 
 
   // const currentStepData = useSelector(function (state) {
   //   console.log("state in step three ", state);
-  //   return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
-  //     ? state.pt.PTNewApplicationForm.formData[config.key]
+  //   return state.pt.PTNewApplicationFormReducer.formData && state.pt.PTNewApplicationFormReducer.formData[config.key]
+  //     ? state.pt.PTNewApplicationFormReducer.formData[config.key]
   //     : {};
   // });
 
@@ -36,7 +44,7 @@ const PTOwnerTransfershipSummaryStepThree = ({ config, onGoNext, onBackClick, t 
   return (
     <React.Fragment>
       <FormComposer
-        defaultValues={formData}
+        defaultValues={summaryFormData}
         //heading={t("")}
         config={config.currStepConfig}
         onSubmit={goNext}

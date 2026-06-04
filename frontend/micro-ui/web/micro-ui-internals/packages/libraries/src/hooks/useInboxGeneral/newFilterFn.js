@@ -16,6 +16,12 @@ export const filterFunctions = {
     if (filtersArg?.oldpropertyids) {
       searchFilters.oldpropertyids = filtersArg?.oldpropertyids;
     }
+    if (filtersArg?.name) {
+      searchFilters.name = filtersArg?.name;
+    }
+    if (filtersArg?.surveyId) {
+      searchFilters.surveyId = filtersArg?.surveyId;
+    }
     if (applicationStatus && applicationStatus?.[0]) {
       workflowFilters.status = applicationStatus.map((status) => status.uuid);
       if (applicationStatus?.some((e) => e.nonActionableRole)) {

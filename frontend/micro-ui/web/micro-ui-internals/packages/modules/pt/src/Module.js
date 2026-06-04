@@ -102,6 +102,7 @@ import SelectOtp from "../../core/src/pages/citizen/Login/SelectOtp";
 import CitizenFeedback from "@mseva/digit-ui-module-core/src/components/CitizenFeedback";
 import AcknowledgementCF from "@mseva/digit-ui-module-core/src/components/AcknowledgementCF";
 import PTCitizenFeedbackPopUp from "./pageComponents/PTCitizenFeedbackPopUp";
+import PTImportantDates from "./pageComponents/PTImportantDates";
 
 import PTSelectLandmark from "./pageComponents/PTSelectLandmark";
 import NewPropertyStepForm from "../src/pages/employee/NewApplication/NewApplicationStepForm/NewPropertyStepForm";
@@ -155,6 +156,7 @@ import PropertySelectDocs from "./components/PropertySelectDocs";
 import PTSummary from "../src/pageComponents/PTSummary";
 import getRootReducer from "./redux/reducer";
 import PropertyResponseCitizen from "./components/PropertyResponseCitizen";
+import CitizenTransferOwnership from "./pages/citizen/TransferOwnership";
 
 export const PTReducers = getRootReducer;
 
@@ -303,6 +305,7 @@ const componentsToRegister = {
   NewPTStepFormFive,
   PropertySelectDocs,
   PropertyResponseCitizen,
+  PTCitizenTransferOwnership: CitizenTransferOwnership,
 };
 
 const addComponentsToRegistry = () => {

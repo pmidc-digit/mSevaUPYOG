@@ -26,21 +26,21 @@ const inboxSearchFields = {
       },
     },
     
-    {
-      label: "ES_INBOX_OWNER_NAME",
-      name: "name",
-      roles: [],
-    },
-    {
-      label: "ES_SEARCH_EXISTING_PROPERTY_ID",
-      name: "oldpropertyids",
-      roles: [],
-    },
-    {
-      label: "ES_INBOX_SURVEY_ID",
-      name: "surveyId",
-      roles: [],
-    },
+    // {
+    //   label: "ES_INBOX_OWNER_NAME",
+    //   name: "name",
+    //   roles: [],
+    // },
+    // {
+    //   label: "ES_SEARCH_EXISTING_PROPERTY_ID",
+    //   name: "oldpropertyids",
+    //   roles: [],
+    // },
+    // {
+    //   label: "ES_INBOX_SURVEY_ID",
+    //   name: "surveyId",
+    //   roles: [],
+    // },
   ],
   PTR: [
     {

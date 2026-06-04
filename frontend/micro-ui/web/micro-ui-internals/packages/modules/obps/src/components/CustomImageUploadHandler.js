@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader, Toast, UploadImages } from "@mseva/digit-ui-react-components";
 import CustomUploadImages from "./CustomUploadImages";
-import EXIF from "exif-js";
+import EXIF from "../utils/exif-compat";
 
 const maxImageSize = process.env.IMAGE_MAX_UPLOAD_SIZE || 11534336;
 const imageSize = process.env.IMAGE_UPLOAD_SIZE || 2097152;

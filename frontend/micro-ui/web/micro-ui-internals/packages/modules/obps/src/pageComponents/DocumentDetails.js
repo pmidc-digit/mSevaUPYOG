@@ -35,7 +35,7 @@ import Timeline from "../components/Timeline";
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview";
 import { stringReplaceAll } from "../utils";
 import cloneDeep from "lodash/cloneDeep";
-import EXIF from "exif-js";
+import EXIF from "../utils/exif-compat";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { LoaderNew } from "../components/LoaderNew";
 

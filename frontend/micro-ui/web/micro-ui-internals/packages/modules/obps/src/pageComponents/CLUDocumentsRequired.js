@@ -11,7 +11,7 @@ import {
   CitizenInfoLabel,
   ViewsIcon
 } from "@mseva/digit-ui-react-components";
-import EXIF from "exif-js";
+import EXIF from "../utils/exif-compat";
 import { useDispatch, useSelector } from "react-redux";
 import { pdfDownloadLink } from "../utils";
 import { UPDATE_OBPS_FORM, UPDATE_OBPS_CoOrdinates } from "../redux/actions/OBPSActions";
@@ -336,10 +336,23 @@ function CLUSelectDocument({
   }, [isHidden]);
 
   function convertToDecimal(coordinate) {
-    const degrees = coordinate[0];
-    const minutes = coordinate[1];
-    const seconds = coordinate[2];
-    return degrees + minutes / 60 + seconds / 3600;
+    if (!coordinate) return 0;
+
+    const toNumber = (part) => {
+      if (part == null) return 0;
+      if (typeof part === "object" && part !== null && "numerator" in part && "denominator" in part) {
+        return part.numerator / (part.denominator || 1);
+      }
+      if (typeof part === "number") return part;
+      return Number(part) || 0;
+    };
+
+    const degrees = toNumber(coordinate[0]);
+    const minutes = toNumber(coordinate[1]);
+    const seconds = toNumber(coordinate[2]);
+
+    const decimal = degrees + minutes / 60 + seconds / 3600;
+    return decimal;
   }
 
   function extractGeoLocation(file) {
@@ -351,6 +364,7 @@ function CLUSelectDocument({
 
           const lat = EXIF.getTag(this, "GPSLatitude");
           const lon = EXIF.getTag(this, "GPSLongitude");
+          console.log("Extracted GPS coordinates from EXIF:", { lat, lon });
 
           if (lat && lon) {
             // Convert GPS coordinates to decimal format

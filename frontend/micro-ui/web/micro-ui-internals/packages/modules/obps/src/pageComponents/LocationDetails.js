@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 import GIS from "./GIS";
 import Timeline from "../components/Timeline";
 import { stringReplaceAll } from "../utils";
-import EXIF from "exif-js";
+import EXIF from "../utils/exif-compat";
 import BharatMap from "./BharatMap";
 import CustomLocationSearch from "../components/CustomLocationSearch";
 import { LoaderNew } from "../components/LoaderNew";
@@ -437,7 +437,13 @@ useEffect(() => {
 
 
 
-  function convertToDecimal([degrees, minutes, seconds], ref) {
+  function convertToDecimal(dmsArray, ref) {
+  // Handle both object format {numerator, denominator} and direct decimal
+  if (!Array.isArray(dmsArray)) {
+    return ref === "S" || ref === "W" ? -Math.abs(dmsArray) : Math.abs(dmsArray);
+  }
+
+  const [degrees, minutes, seconds] = dmsArray;
   const d = degrees?.numerator / degrees?.denominator || 0;
   const m = minutes?.numerator / minutes?.denominator || 0;
   const s = seconds?.numerator / seconds?.denominator || 0;

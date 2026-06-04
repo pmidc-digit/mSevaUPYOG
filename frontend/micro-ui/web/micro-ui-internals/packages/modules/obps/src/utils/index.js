@@ -1,6 +1,7 @@
 import cloneDeep from "lodash/cloneDeep";
 import { useParams, useLocation } from "react-router-dom";
 import CryptoJS from "crypto-js";
+import { v4 as uuidv4Lib } from "uuid";
 
 export const getPattern = (type) => {
   switch (type) {
@@ -24,7 +25,7 @@ export const sortDropdownNames = (options, optionkey, locilizationkey) => {
 };
 
 export const uuidv4 = () => {
-  return require("uuid/v4")();
+  return uuidv4Lib();
 };
 
 export const EmployeeData = async (tenantId, consumerCode , moduleCode = null) => {
@@ -1541,6 +1542,32 @@ export const fetchOnlyUrl = async (docUrl, tenantId) => {
     } catch (error) {
       console.error("Error fetching document:", error);
     }
+  }
+};
+
+export const fetchOnlyFileStore = (docUrl, tenantId) => {
+  if (docUrl) {
+    if (typeof docUrl === "string" && docUrl.includes("fileStoreId=")) {
+      const queryPart = docUrl.split("?")[1];
+      if (queryPart) {
+        const urlParams = new URLSearchParams(queryPart);
+        const id = urlParams.get("fileStoreId")
+        const fullTenantId = urlParams.get("tenantId")
+        if(id && fullTenantId){
+          return {
+            id, fullTenantId
+          };
+        }else{
+          return null;
+        }
+      }else{
+        return null;
+      }
+    }else{
+      return null
+    }
+  }else{
+    return null;
   }
 };
 

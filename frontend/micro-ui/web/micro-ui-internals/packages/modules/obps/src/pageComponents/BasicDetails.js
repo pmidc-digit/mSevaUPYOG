@@ -27,6 +27,7 @@ const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
   const [isDisabled, setIsDisabled] = useState(formData?.data?.scrutinyNumber ? true : false);
   const { t } = useTranslation();
   const stateCode = Digit.ULBService.getStateId();
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
   const isMobile = window.Digit.Utils.browser.isMobile();
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["RiskTypeComputation"]);
   const riskType = Digit.Utils.obps.calculateRiskType(
@@ -50,7 +51,7 @@ const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
   const handleKeyPress = async (event) => {
     if (event.key === "Enter") {
       if (!scrutinyNumber?.edcrNumber) return;
-      const details = await scrutinyDetailsData(scrutinyNumber?.edcrNumber, stateCode);
+      const details = await scrutinyDetailsData(scrutinyNumber?.edcrNumber, tenantId);
       if (details?.type == "ERROR") {
         setShowToast({ message: details?.message });
         setBasicData(null);
@@ -75,7 +76,7 @@ const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
 
   const handleSearch = async (event) => {
     setIsLoading(true)
-    const details = await scrutinyDetailsData(scrutinyNumber?.edcrNumber, stateCode);
+    const details = await scrutinyDetailsData(scrutinyNumber?.edcrNumber, tenantId);
     if (details?.type == "ERROR") {
       setShowToast({ message: details?.message });
       setBasicData(null);
@@ -110,7 +111,7 @@ const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
 
   const getDetails = async () => {
     setIsLoading(true)
-    const details = await scrutinyDetailsData(scrutinyNumber?.edcrNumber, stateCode);
+    const details = await scrutinyDetailsData(scrutinyNumber?.edcrNumber, tenantId);
     if (details?.type == "ERROR") {
       setShowToast({ message: details?.message });
       setBasicData(null);

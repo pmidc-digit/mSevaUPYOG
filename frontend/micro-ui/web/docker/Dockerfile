@@ -1,63 +1,32 @@
-#FROM egovio/alpine-node-builder-14:yarn AS build
-FROM node:14.21.3-alpine AS build
+FROM node:22-alpine AS build
+
 RUN apk update && apk upgrade
-RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    git
-RUN apk add --no-cache git>2.30.0
-RUN echo '{"resolutions": {"node-releases": "2.0.44"}}' > package.json
-RUN yarn add @mseva/digit-ui-libraries@1.1.68-UAT.30
-RUN yarn add @mseva/digit-ui-module-bills@1.0.8
-RUN yarn add @mseva/digit-ui-module-fsm@1.0.6
-RUN yarn add @mseva/digit-ui-module-dss@1.0.6
-RUN yarn add @mseva/digit-ui-module-mcollect@1.0.15-UAT.2
-RUN yarn add @mseva/digit-ui-module-pgr@1.0.26
-RUN yarn add @mseva/digit-ui-module-noc@1.0.78-UAT.19
-RUN yarn add @mseva/digit-ui-module-engagement@1.1.32-UAT.2
-RUN yarn add @mseva/digit-ui-module-hrms@1.0.23
-RUN yarn add @mseva/digit-ui-module-core@1.0.66-UAT.11
-RUN yarn add @mseva/digit-ui-module-common@1.1.88-UAT.18
-RUN yarn add @mseva/digit-ui-module-ws@1.0.15
-RUN yarn add @mseva/digit-ui-module-commonpt@1.0.6
-RUN yarn add @mseva/digit-ui-module-ptr@1.3.4-UAT.16
-RUN yarn add @mseva/digit-ui-module-swach@1.0.55-UAT.2
-RUN yarn add @mseva/digit-ui-module-pt@1.0.39-UAT.6
-RUN yarn add @mseva/digit-ui-module-tl@1.0.31-UAT.1.2
-RUN yarn add @mseva/digit-ui-module-obps@1.1.89-UAT.40
-RUN yarn add @mseva/digit-ui-module-sv@1.1.49-UAT.7
-RUN yarn add @mseva/upyog-ui-module-ads@1.1.86-UAT.10
-RUN yarn add @mseva/upyog-ui-module-chb@1.1.91-UAT.11
-RUN yarn add @mseva/upyog-ui-module-asset@1.1.44-UAT.7
-RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.33-UAT.7
-RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.29-UAT.5
-RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.33-UAT.6
-RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.51-UAT.18
-RUN yarn add @mseva/digit-ui-module-ndc@1.0.72-UAT.12
+RUN apk add --no-cache git
+
 ARG WORK_DIR
 WORKDIR /app
-# ENV NODE_OPTIONS "--max-old-space-size=8192" 12288 4192
-ENV  NODE_OPTIONS "--max_old_space_size=12288 react-scripts build"
-ENV GENERATE_SOURCEMAP "true"
+
+ENV NODE_OPTIONS="--max-old-space-size=8192"
 
 COPY ${WORK_DIR} .
-RUN ls -lah
 
-#RUN node web/envs.js
-RUN cd web/ \
-    && node envs.js \
-    && node -e 'console.log(v8.getHeapStatistics().heap_size_limit/(12288*12288))' \
-    &&  ./install-deps.sh \
+RUN node envs.js \
+    && chmod +x install-deps.sh \
+    && sed -i 's/\r$//' install-deps.sh \
+    && ./install-deps.sh \
     && yarn install \
-    && yarn build 
+    && yarn build
 
 
 FROM nginx:mainline-alpine
-#FROM ghcr.io/egovernments/nginx:mainline-alpine
+
+RUN apk add --no-cache font-noto font-noto-cjk
+
+RUN echo '{"resolutions": {"node-releases": "2.0.44"}}' > package.json
+
 ENV WORK_DIR=/var/web/digit-ui
 
 RUN mkdir -p ${WORK_DIR}
 
-COPY --from=build /app/web/build ${WORK_DIR}/
-COPY --from=build /app/web/docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/build ${WORK_DIR}/
+COPY --from=build /app/docker/nginx.conf /etc/nginx/conf.d/default.conf

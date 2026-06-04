@@ -2,6 +2,12 @@ FROM node:22-alpine AS build
 
 RUN apk update && apk upgrade
 RUN apk add --no-cache git
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    git
+RUN apk add --no-cache git>2.30.0
 
 WORKDIR /app
 

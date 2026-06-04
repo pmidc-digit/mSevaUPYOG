@@ -3,7 +3,7 @@ FROM node:22-alpine AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git
 RUN apk add --no-cache \
-    python3 \
+    python2 \
     make \
     g++ \
     git

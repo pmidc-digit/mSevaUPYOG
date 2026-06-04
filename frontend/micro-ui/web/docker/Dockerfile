@@ -10,12 +10,14 @@ ENV NODE_OPTIONS="--max-old-space-size=8192"
 
 COPY ${WORK_DIR} .
 
+RUN pwd && find . -type f | sort
+
 RUN node web/envs.js \
-    && chmod +x web/install-deps.sh \
-    && sed -i 's/\r$//' web/install-deps.sh \
-    && ./web/install-deps.sh \
-    && yarn install \
-    && yarn build
+ && chmod +x web/install-deps.sh \
+ && sed -i 's/\r$//' web/install-deps.sh \
+ && ./web/install-deps.sh \
+ && yarn install \
+ && yarn build
 
 
 FROM nginx:mainline-alpine

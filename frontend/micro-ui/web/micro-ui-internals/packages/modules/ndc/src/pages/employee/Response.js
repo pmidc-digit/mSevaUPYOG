@@ -27,7 +27,7 @@ const Response = (props) => {
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
   };
 
-  //  /digit-ui/employee/payment/collect/TL/PB-TL-2025-07-07-227598/pb.testing
+  const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ applicationNo: ndcCode }, tenantId);
 
   return (
     <div>
@@ -49,7 +49,7 @@ const Response = (props) => {
         <ActionBar classname="challan-emp-acknowledgement" >
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_NDC")} onSubmit={onGoToNDC} />
-          <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} />
+          {applicationDetails?.Applications?.[0]?.applicationStatus == "PENDINGPAYMENT" && <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} />}
         </ActionBar>
       </Card>
     </div>

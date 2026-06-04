@@ -55,7 +55,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const createApplication = async (data) => {
-    // setLoader(true);
+    setLoader(true);
     const applicant = Digit.UserService.getUser()?.info || {};
     const applicantId = applicant?.uuid;
 
@@ -73,10 +73,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
       return newOwner;
     });
-
-    console.log("owners??==", owners);
-
-    console.log("checkData==", data);
 
     // Prepare NdcDetails
     const ndcDetails = [];

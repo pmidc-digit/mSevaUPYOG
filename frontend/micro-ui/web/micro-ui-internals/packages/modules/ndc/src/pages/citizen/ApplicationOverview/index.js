@@ -11,10 +11,7 @@ import {
   CardSubHeader,
   ActionBar,
   SubmitBar,
-  Menu,
-  LinkButton,
-  DisplayPhotos,
-  MultiLink
+  MultiLink,
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -38,9 +35,9 @@ const CitizenApplicationOverview = () => {
   const [appDetails, setAppDetails] = useState({});
   const [showToast, setShowToast] = useState(null);
   const [approver, setApprover] = useState(null);
-  const[approverStatement, setApproverStatement]= useState(null)
+  const [approverStatement, setApproverStatement] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
-  
+
   const [ndcDatils, setNdcDetails] = useState([]);
   const [displayData, setDisplayData] = useState({});
   const [getLoader, setLoader] = useState(false);
@@ -61,7 +58,7 @@ const CitizenApplicationOverview = () => {
   useEffect(() => {
     if (workflowDetails) {
       const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
-      const name = approveInstance?.assigner?.name || "NA";          
+      const name = approveInstance?.assigner?.name || "NA";
       const status = applicationDetails?.Applications?.[0]?.applicationStatus;
       setApproverStatement(status ? `${t(status)} By` : "");
       setApprover(name);
@@ -84,7 +81,7 @@ const CitizenApplicationOverview = () => {
     const userInfo = userInfos ? JSON.parse(userInfos) : {};
     user = userInfo?.value;
   }
-   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
       businessService: "NDC",
@@ -101,15 +98,17 @@ const CitizenApplicationOverview = () => {
       let application = applicationDetails?.Applications?.[0];
       if (payments?.fileStoreId) {
         response = { filestoreIds: [payments?.fileStoreId] };
-      }else {
+      } else {
         response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { Payments: [
+          {
+            Payments: [
               {
                 ...(payments || {}),
                 ...application,
               },
-            ], },
+            ],
+          },
           "ndc-receipt"
         );
       }
@@ -125,11 +124,14 @@ const CitizenApplicationOverview = () => {
   }
   const dowloadOptions = [];
 
-  if(applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED"){
+  if (
+    applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" ||
+    applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED"
+  ) {
     dowloadOptions.push({
-    label: t("DOWNLOAD_CERTIFICATE"),
-    onClick: () => handleDownloadPdf(),
-  });
+      label: t("DOWNLOAD_CERTIFICATE"),
+      onClick: () => handleDownloadPdf(),
+    });
   }
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
@@ -137,7 +139,7 @@ const CitizenApplicationOverview = () => {
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
   }
-  
+
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const removeDuplicatesByUUID = (arr) => {
     const seen = new Set();
@@ -281,7 +283,7 @@ const CitizenApplicationOverview = () => {
 
         <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
           <div className="cardHeaderWithOptions ral-app-details-header">
-            { getLoader && <Loader />}
+            {getLoader && <Loader />}
             {dowloadOptions && dowloadOptions.length > 0 && (
               <MultiLink
                 className="multilinkWrapper"

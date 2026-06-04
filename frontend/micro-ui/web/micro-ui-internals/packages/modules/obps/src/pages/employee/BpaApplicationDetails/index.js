@@ -41,7 +41,6 @@ import {
   getOrderDocuments,
   getDocsFromFileUrls,
   scrutinyDetailsData,
-  getBase64Img,
   getApproveRejectComments,
   fetchUrl,
   decryptId,
@@ -367,6 +366,13 @@ const BpaApplicationDetail = () => {
           // Store URLs in state (example: object with keys)
           setFileUrls(urls);
         }
+        const result_new = await Digit.UploadServices.Filefetch([data?.applicationData?.additionalDetails?.uploadedFile], tenantId);
+        if (result_new?.data?.fileStoreIds) {
+          setFileUrls((prev) => ({
+            ...prev,
+            uploadedFile: result_new.data?.[data?.applicationData?.additionalDetails?.uploadedFile]
+          }));
+        }
       } catch (error) {
         console.error("Error fetching file URLs", error);
       } finally {
@@ -475,62 +481,60 @@ const BpaApplicationDetail = () => {
     }
 
   async function getPermitOccupancyOrderSearch({ tenantId }, order, mode = "download") {
-    const prevGetLang = Digit.StoreData.getCurrentLanguage;
-    try {
-      let currentDate = new Date();
-      data.applicationData.additionalDetails.runDate = convertDateToEpoch(
-        currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
-      );
-      let requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }] };
-      Digit.StoreData.getCurrentLanguage = () => "pn_IN";
-      const state = Digit.ULBService.getStateId();
-      let count = 0;
+    let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
+    let tenant = data?.tenantId || tenantId;
 
-      for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
-        if (
-          (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
-            workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
-          workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
-          count == 0
-        ) {
-          requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
-          count = 1;
-        }
-      }
+    if(!fileStoreId) {
+    const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
 
-      if (requestData?.additionalDetails?.approvedColony == "NO") {
-        requestData.additionalDetails.permitData =
-          "The plot has been officially regularized under No." +
-          requestData?.additionalDetails?.NocNumber +
-          "  dated " +
-          requestData?.additionalDetails?.nocObject?.approvedOn +
-          " , registered in the name of " +
-          requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName +
-          " . This regularization falls within the jurisdiction of " +
-          state +
-          ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
-      } else if (requestData?.additionalDetails?.approvedColony == "YES") {
-        requestData.additionalDetails.permitData =
-          "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony;
-      } else {
-        requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
-      }
+    const newValidityDate = new Date(data?.applicationData?.approvalDate);
 
-      let response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
-      requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType;
-      let edcrResponse = await Digit.OBPSService.edcr_report_download({ BPA: { ...requestData } });
-      const responseStatus = parseInt(edcrResponse.status, 10);
-      if (responseStatus === 201 || responseStatus === 200) {
-        mode == "print"
-          ? printPdf(new Blob([edcrResponse.data], { type: "application/pdf" }))
-          : downloadPdf(new Blob([edcrResponse.data], { type: "application/pdf" }), `edcrReport.pdf`);
+    // validity date = approval date + 3 as per feedback
+    newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
+    const approvalDatePlusThree = newValidityDate.getTime();
+
+
+    const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation , approverComment: comments}
+    let count = 0
+    for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+      if (
+        (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+          workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+        workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+        count == 0
+      ) {
+        requestData.additionalDetails.submissionDate =
+          workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime
+        count = 1
       }
-    } catch (error) {
-      console.log("error", error);
-    } finally {
-      Digit.StoreData.getCurrentLanguage = prevGetLang;
+    }
+    if (stakeholderAddress && requestData && requestData?.additionalDetails) {
+      requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
+    }
+    // if (requestData && requestData?.additionalDetails?.signature?.signURL) {
+    //   const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, state);
+    //   requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
+    // }
+
+    if (requestData?.additionalDetails?.approvedColony == "NO") {
+      requestData.additionalDetails.permitData =
+        "The plot has been officially regularized under No. " +
+        requestData?.additionalDetails?.NocNumber +
+        "  dated " + requestData?.additionalDetails?.nocObject?.approvedOn + " , registered in the name of " + requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + ". This regularization falls within the jurisdiction of " +
+        requestData?.additionalDetails?.UlbName +
+        ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
+    } else if (requestData?.additionalDetails?.approvedColony == "YES") {
+      requestData.additionalDetails.permitData =
+        "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony
+    } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
+      requestData.additionalDetails.permitData =
+        "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony
+    } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
+      requestData.additionalDetails.permitData =
+        "The building plan falls under Stand-Alone Project."
+    } else {
+      requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir"
     }
     const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order)
     fileStoreId = response?.filestoreIds[0]

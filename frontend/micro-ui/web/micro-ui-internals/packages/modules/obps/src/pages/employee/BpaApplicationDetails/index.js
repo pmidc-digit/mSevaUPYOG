@@ -44,7 +44,6 @@ import {
   getApproveRejectComments,
   fetchUrl,
   decryptId,
-  fetchFilestoreAndTenant,
   amountToWords
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";

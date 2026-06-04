@@ -11,9 +11,9 @@ ENV NODE_OPTIONS="--max-old-space-size=8192"
 COPY ${WORK_DIR} .
 
 RUN node web/envs.js \
-    && chmod +x install-deps.sh \
-    && sed -i 's/\r$//' install-deps.sh \
-    && ./install-deps.sh \
+    && chmod +x web/install-deps.sh \
+    && sed -i 's/\r$//' web/install-deps.sh \
+    && ./web/install-deps.sh \
     && yarn install \
     && yarn build
 

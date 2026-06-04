@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import * as UIComponents from "@mseva/digit-ui-react-components";
 import {
   ArrowForward,
   ArrowVectorDown,
@@ -47,10 +48,10 @@ const NavItemHeader = props => {
     collections: <CollectionIcon />,
   };
   const leftIconArray = icon?.split?.(":")?.[1];
-  const leftIcon = IconsObject[leftIconArray] || IconsObject.collections;
+  let leftIcon = IconsObject[leftIconArray] || IconsObject.collections;
   const iconArr=item?.icon?.leftIcon?.split?.(":")|| item?.leftIcon?.split?.(":");
   if(iconArr?.[0]=='dynamic'){
-    var IconComp = require("@mseva/digit-ui-react-components")?.[iconArr?.[1]];
+    const IconComp = UIComponents[iconArr?.[1]];
     leftIcon=IconComp?<IconComp/>:leftIcon;
   }
   const getModuleName = label?.replace(/[ -]/g, "_").toUpperCase();
@@ -90,7 +91,7 @@ const NavItemHeader = props => {
 
             const { label, icon, children } = item;
             const leftIconArray = icon?.split?.(":")?.[1];
-            const leftIcon = IconsObject[leftIconArray] || IconsObject.collections;
+            let leftIcon = IconsObject[leftIconArray] || IconsObject.collections;
             const getModuleName = label?.replace(/[ -]/g, "_").toUpperCase();
             const appendTranslate = t(`ACTION_TEST_${getModuleName.toUpperCase()}`);
             const trimModuleName = t(appendTranslate);

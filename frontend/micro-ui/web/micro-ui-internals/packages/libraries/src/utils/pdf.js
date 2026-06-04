@@ -2,8 +2,8 @@ import { Fonts } from "./fonts";
 import React, { ReactDOM } from "react";
 import QRCode from "qrcode";
 import EXIF from "exif-js";
-const pdfMake = require("pdfmake/build/pdfmake.js");
-// const pdfFonts = require("pdfmake/build/vfs_fonts.js");
+import pdfMake from "pdfmake/build/pdfmake.js";
+// import pdfFonts from "pdfmake/build/vfs_fonts.js";
 // pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 let pdfFonts = {

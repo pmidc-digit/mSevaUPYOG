@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import NavItemHeader from './NavItemHeader';
+import * as UIComponents from "@mseva/digit-ui-react-components";
 import {
   HomeIcon,
   ComplaintIcon,
@@ -37,10 +38,10 @@ const NavItem = props => {
     collections: <CollectionIcon />,
   };
   const leftIconArray = icon?.split?.(":")?.[1];
-  const leftIcon = IconsObject[leftIconArray] || IconsObject.collections;
+  let leftIcon = IconsObject[leftIconArray] || IconsObject.collections;
   const iconArr=icon?.leftIcon?.split?.(":")|| leftIcon?.split?.(":");
   if(iconArr?.[0]=='dynamic'){
-    var IconComp = require("@mseva/digit-ui-react-components")?.[iconArr?.[1]];
+    const IconComp = UIComponents[iconArr?.[1]];
     leftIcon=IconComp?<IconComp/>:leftIcon;
   }
   const getModuleName = label?.replace(/[ -]/g, "_").toUpperCase();

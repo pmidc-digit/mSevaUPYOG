@@ -750,7 +750,7 @@ config:
 
   - name: builds/upyog/frontend/micro-ui/digit-ui
     build:
-      - work-dir: frontend/micro-ui/
+      - work-dir: ./
         dockerfile: frontend/micro-ui/web/docker/Dockerfile
         image-name: digit-ui
         

@@ -3,19 +3,19 @@ FROM node:22-alpine AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git
 
-ARG WORK_DIR
+ARG WORK_DIR=.
 WORKDIR /app
 
 ENV NODE_OPTIONS="--max-old-space-size=8192"
 
-COPY ${WORK_DIR} .
+COPY . .
 
 RUN pwd && find . -type f | sort
 
-RUN node web/envs.js \
- && chmod +x web/install-deps.sh \
- && sed -i 's/\r$//' web/install-deps.sh \
- && ./web/install-deps.sh \
+RUN if [ -f "envs.js" ]; then node envs.js; elif [ -f "web/envs.js" ]; then node web/envs.js; fi \
+ && chmod +x install-deps.sh \
+ && sed -i 's/\r$//' install-deps.sh \
+ && ./install-deps.sh \
  && yarn install \
  && yarn build
 

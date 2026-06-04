@@ -10,7 +10,7 @@ ENV NODE_OPTIONS="--max-old-space-size=8192"
 
 COPY ${WORK_DIR} .
 
-RUN node envs.js \
+RUN node web/envs.js \
     && chmod +x install-deps.sh \
     && sed -i 's/\r$//' install-deps.sh \
     && ./install-deps.sh \

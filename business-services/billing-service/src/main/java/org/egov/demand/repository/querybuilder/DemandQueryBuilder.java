@@ -236,7 +236,7 @@ public class DemandQueryBuilder {
 
 	private static void addPagingClause(StringBuilder demandQueryBuilder, List<Object> preparedStatementValues) {
 		demandQueryBuilder.append(" LIMIT ?");
-		preparedStatementValues.add(500);
+		preparedStatementValues.add(1000);
 		demandQueryBuilder.append(" OFFSET ?");
 		preparedStatementValues.add(0);
 	}

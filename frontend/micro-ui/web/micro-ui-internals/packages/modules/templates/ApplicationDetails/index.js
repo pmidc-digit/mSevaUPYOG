@@ -66,6 +66,32 @@ const ApplicationDetails = (props) => {
   function onActionSelect(action) {
     console.log("action====", action);
     console.log("applicationDetails===>",applicationDetails)
+    const isTLService =
+    businessService?.toUpperCase()?.includes("TL") ||
+    applicationDetails?.applicationData?.businessService?.toUpperCase()?.includes("TL");
+
+  if (isTLService && action) {
+
+    // Edit & Renewal
+    if (action?.action === "RENEWAL_SUBMIT_BUTTON") {
+      history.push({
+        pathname: `/digit-ui/employee/tl/renew-application-details/${applicationDetails?.applicationData?.applicationNumber}`,
+        state: applicationDetails,
+      });
+
+      setSelectedAction(action);
+      setDisplayMenu(false);
+      return;
+    }
+
+    // Direct Renewal
+    if (action?.action === "DIRECT_RENEWAL_BUTTON") {
+      setSelectedAction(action);
+      setDisplayMenu(false);
+      setShowModal(true);
+      return;
+    }
+  }
     if (action) {
       if (action?.forcedName === "PT_OWNERSHIP_TRANSFER" && typeof action?.customFunctionToExecute === "function") {
         action.customFunctionToExecute();

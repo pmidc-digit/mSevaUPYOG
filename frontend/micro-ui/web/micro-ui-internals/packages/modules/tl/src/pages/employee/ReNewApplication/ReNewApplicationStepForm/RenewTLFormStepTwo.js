@@ -280,7 +280,7 @@ useEffect(() => {
     let formData = {
       comment: null,
       id: applicationData?.id,
-      tradeName: applicationData.tradeName,
+      tradeName: Traid?.tradedetils?.[0]?.tradeName || applicationData.tradeName,
       applicationNumber: applicationData?.applicationNumber,
       licenseNumber: applicationData?.licenseNumber,
       oldLicenseNumber: applicationData?.oldLicenseNumber || null,

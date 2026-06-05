@@ -233,7 +233,6 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
                   // onSelect(config.key, { id: e.target.value });
                   setValue(e.target.value, propertyIdInput.name);
                 }}
-                disable={isEmpRenewLicense}
                 defaultValue={undefined}
                 style={{ width: "80%", float: "left", marginRight: "20px" }}
                 {...propertyIdInput.validation}

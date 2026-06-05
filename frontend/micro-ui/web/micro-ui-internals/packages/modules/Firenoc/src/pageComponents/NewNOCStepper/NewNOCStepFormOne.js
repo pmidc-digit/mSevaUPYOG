@@ -63,7 +63,15 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   /* ─── Validation ─── */
   function checkValidation(data) {
+    const applicantSubtype = data?.applicantSubtype?.code || "";
     const owners = data?.owners != null ? data.owners : [];
+
+    if (applicantSubtype.includes("MULTIPLEOWNERS") && owners.length < 2) {
+      setShowToast({ key: "true", error: true, message: t("NOC_ERROR_ADD_ALL_OWNER_DETAILS") || "Please add all the owner details" });
+      setTimeout(() => setShowToast(null), 3000);
+      return false;
+    }
+
     const uniqueMobiles = new Set(owners.map((o) => o.mobileNumber));
     if (uniqueMobiles.size !== owners.length) {
       setShowToast({ key: "true", error: true, message: t("DUPLICATE_OWNER_FOUND_LABEL") });

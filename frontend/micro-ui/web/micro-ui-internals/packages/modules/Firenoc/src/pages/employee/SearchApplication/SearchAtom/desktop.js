@@ -8,17 +8,18 @@ const SearchApplicationDesktopView = ({ columns, SearchFormFieldsComponent, onSu
   if (getValues("offset") == undefined) setValue("offset", 0);
   if (getValues("limit") == undefined) setValue("limit", 10);
 
-  const [currPage, setCurrPage] = useState(Number(getValues("offset")) / Number(getValues("limit")));
+  const [currPage, setCurrPage] = useState(0);
+  const [limit, setLimit] = useState(10);
   const { t } = useTranslation();
 
   const fetchLastPage = () => {
-    setValue("offset", Count && Math.ceil(Count / 10) * 10 - getValues("limit"));
-    handleSubmit(onSubmit)();
+    if (filteredData.length > 0) {
+      setCurrPage(Math.ceil(filteredData.length / limit) - 1);
+    }
   };
 
   const fetchFirstPage = () => {
-    setValue("offset", 0);
-    handleSubmit(onSubmit)();
+    setCurrPage(0);
   };
 
   const onSort = useCallback((args) => {
@@ -28,17 +29,16 @@ const SearchApplicationDesktopView = ({ columns, SearchFormFieldsComponent, onSu
   }, []);
 
   function onPageSizeChange(e) {
-    setValue("limit", Number(e.target.value));
-    handleSubmit(onSubmit)();
+    const newLimit = Number(e.target.value);
+    setLimit(newLimit);
+    setCurrPage(0);
   }
 
   function nextPage() {
-    setValue("offset", Number(getValues("offset")) + Number(getValues("limit")));
-    handleSubmit(onSubmit)();
+    setCurrPage((prev) => prev + 1);
   }
   function previousPage() {
-    setValue("offset", Number(getValues("offset")) - Number(getValues("limit")));
-    handleSubmit(onSubmit)();
+    setCurrPage((prev) => Math.max(0, prev - 1));
   }
 
   const [visibleColumnIds, setVisibleColumnIds] = useState([
@@ -94,10 +94,10 @@ const SearchApplicationDesktopView = ({ columns, SearchFormFieldsComponent, onSu
   }, [data, localSearchTerm]);
 
   useEffect(() => {
-    if (!(getValues("offset") == undefined || getValues("limit") == undefined)) setCurrPage(Number(getValues("offset")) / Number(getValues("limit")));
-  }, [getValues("offset"), getValues("limit")]);
+    setCurrPage(0);
+  }, [data]);
 
-  const TableComponent = () => {
+  const tableComponent = useMemo(() => {
     if (isLoading) {
       return <Loader />;
     } else {
@@ -366,7 +366,7 @@ const SearchApplicationDesktopView = ({ columns, SearchFormFieldsComponent, onSu
                 <div className="no-print">
                   <Table
                     t={t}
-                    data={filteredData.slice(currPage * Number(getValues("limit")), (currPage + 1) * Number(getValues("limit")))}
+                    data={filteredData}
                     columns={filteredColumns}
                     getCellProps={(cellInfo) => {
                       return {
@@ -377,17 +377,10 @@ const SearchApplicationDesktopView = ({ columns, SearchFormFieldsComponent, onSu
                         },
                       };
                     }}
-                    onPageSizeChange={onPageSizeChange}
-                    currentPage={currPage}
-                    onNextPage={nextPage}
-                    onPrevPage={previousPage}
-                    pageSizeLimit={Number(getValues("limit"))}
                     onSort={onSort}
-                    totalRecords={Count}
                     disableSort={false}
-                    onLastPage={fetchLastPage}
-                    onFirstPage={fetchFirstPage}
                     sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
+                    manualPagination={false}
                   />
                 </div>
               )}
@@ -397,7 +390,7 @@ const SearchApplicationDesktopView = ({ columns, SearchFormFieldsComponent, onSu
                 <div className="no-print" style={{ display: "flex", flexDirection: "column", background: "#fff", border: "1px solid #E4E7EB", borderTop: "none" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff" }}>
                     <tbody>
-                      {filteredData.slice(currPage * 10, (currPage + 1) * 10).map((row, rowIndex) => (
+                      {filteredData.slice(currPage * limit, (currPage + 1) * limit).map((row, rowIndex) => (
                         <React.Fragment key={rowIndex}>
                           {/* Visual separation spacer bar between records */}
                           {rowIndex > 0 && (
@@ -478,14 +471,14 @@ const SearchApplicationDesktopView = ({ columns, SearchFormFieldsComponent, onSu
                     </span>
                     <button 
                       onClick={nextPage} 
-                      disabled={Count && (currPage + 1) * 10 >= Count}
+                      disabled={(currPage + 1) * limit >= filteredData.length}
                       style={{
                         padding: "8px 16px",
-                        background: Count && (currPage + 1) * 10 >= Count ? "#E4E7EB" : "#F47738",
-                        color: Count && (currPage + 1) * 10 >= Count ? "#A0AEC0" : "#fff",
+                        background: (currPage + 1) * limit >= filteredData.length ? "#E4E7EB" : "#F47738",
+                        color: (currPage + 1) * limit >= filteredData.length ? "#A0AEC0" : "#fff",
                         border: "none",
                         borderRadius: "4px",
-                        cursor: Count && (currPage + 1) * 10 >= Count ? "not-allowed" : "pointer",
+                        cursor: (currPage + 1) * limit >= filteredData.length ? "not-allowed" : "pointer",
                         fontWeight: "600"
                       }}
                     >
@@ -617,14 +610,14 @@ const SearchApplicationDesktopView = ({ columns, SearchFormFieldsComponent, onSu
         </React.Fragment>
       );
     }
-  };
+  }, [isLoading, data, filteredData, filteredColumns, isSmallScreen, currPage, limit, t, visibleColumnIds, localSearchTerm, showLocalSearchInput, isDropdownOpen, columns]);
 
   return (
     <React.Fragment>
       <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit}>
         <SearchFormFieldsComponent onSubmit={onSubmit} handleSubmit={handleSubmit} isMobileView={false} />
       </SearchForm>
-      <TableComponent />
+      {tableComponent}
     </React.Fragment>
   );
 };

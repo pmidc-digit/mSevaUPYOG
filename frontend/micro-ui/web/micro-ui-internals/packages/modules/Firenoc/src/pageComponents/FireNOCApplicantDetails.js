@@ -197,9 +197,11 @@ const FireNOCApplicantDetails = (_props) => {
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   pattern: { value: /^[6-9]\d{9}$/, message: t("INVALID_MOBILE_NUMBER") },
+                  minLength: { value: 10, message: t("INVALID_MOBILE_NUMBER") },
+                  maxLength: { value: 10, message: t("INVALID_MOBILE_NUMBER") }
                 }}
                 render={(props) => (
-                  <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} placeholder={t("Enter Mobile Number")} />
+                  <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} placeholder={t("Enter Mobile Number")} maxlength={10} />
                 )}
               />
               {errors?.owners?.[index]?.mobileNumber && (
@@ -470,10 +472,12 @@ const FireNOCApplicantDetails = (_props) => {
                 name={`${prefix}.officialTelNo`}
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  pattern: { value: /^[0-9]{6,15}$/, message: t("INVALID_TELEPHONE_NUMBER") },
+                  pattern: { value: /^[0-9]{10}$/, message: t("INVALID_TELEPHONE_NUMBER") },
+                  minLength: { value: 10, message: t("INVALID_TELEPHONE_NUMBER") },
+                  maxLength: { value: 10, message: t("INVALID_TELEPHONE_NUMBER") }
                 }}
                 render={(props) => (
-                  <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} placeholder={t("Enter Official Telephone No.")} />
+                  <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} placeholder={t("Enter Official Telephone No.")} maxlength={10} />
                 )}
               />
               {errors?.owners?.[index]?.officialTelNo && (
@@ -493,7 +497,11 @@ const FireNOCApplicantDetails = (_props) => {
               <Controller
                 control={control}
                 name={`${prefix}.authorizedPersonName`}
-                rules={{ required: t("REQUIRED_FIELD"), maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") } }}
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: { value: /^[A-Za-z\s]+$/, message: t("ONLY_ENGLISH_LETTERS_ALLOWED") },
+                  maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") }
+                }}
                 render={(props) => (
                   <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} placeholder={t("Enter Authorized Person Name")} />
                 )}
@@ -622,9 +630,11 @@ const FireNOCApplicantDetails = (_props) => {
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   pattern: { value: /^[6-9]\d{9}$/, message: t("INVALID_MOBILE_NUMBER") },
+                  minLength: { value: 10, message: t("INVALID_MOBILE_NUMBER") },
+                  maxLength: { value: 10, message: t("INVALID_MOBILE_NUMBER") }
                 }}
                 render={(props) => (
-                  <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} placeholder={t("Enter Mobile Number")} />
+                  <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} placeholder={t("Enter Mobile Number")} maxlength={10} />
                 )}
               />
               {errors?.owners?.[index]?.mobileNumber && (
@@ -769,11 +779,10 @@ const FireNOCApplicantDetails = (_props) => {
                 style={{
                   cursor: "pointer",
                   background: "none",
-                  border: "1px dashed #505A5F",
+                  border: "1px dashed #F47738",
                   padding: "8px 16px",
                   borderRadius: "4px",
-                  color: "#FFF",
-                  // background: "linear-gradient(135deg, #2563eb, #1e40af)",
+                  color: "#F47738",
                   fontWeight: 600,
                 }}
               >

@@ -62,6 +62,7 @@ const useGCInbox = ({ tenantId, filters, config = {} }) => {
             businessService: dataForm?.businessService,
             status: `${dataRes.applicationStatus}`,
             applicationStatus: dataRes?.status,
+            connectionNo : dataRes?.connectionNo
           };
         });
 

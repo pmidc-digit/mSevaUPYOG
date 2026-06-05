@@ -1,15 +1,59 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useGlobalFilter, usePagination, useRowSelect, useSortBy, useTable } from "react-table";
 import { ArrowBack, ArrowForward, ArrowToFirst, ArrowToLast, SortDown, SortUp } from "./svgindex";
 
 const noop = () => {};
+
+const getStatusClass = (status) => {
+  const value = String(status || "").toLowerCase();
+  if (value.includes("approved")) return "approved";
+  if (value.includes("rejected")) return "rejected";
+  if (value.includes("forward")) return "forwarded";
+  if (value.includes("process")) return "in-progress";
+  if (value.includes("pending")) return "pending";
+  if (value.includes("new")) return "new";
+  return "default";
+};
+
+const getStatusRowStyle = (statusClass) => {
+  return {};
+};
+
+const getStatusPillStyle = (statusClass) => {
+  if (statusClass === "approved") return { background: "#dcfce7", color: "#166534" };
+  if (statusClass === "rejected") return { background: "#fee2e2", color: "#b91c1c" };
+  if (statusClass === "forwarded") return { background: "#dbeafe", color: "#1d4ed8" };
+  if (statusClass === "in-progress") return { background: "#cbd5e1", color: "#1e293b" };
+  if (statusClass === "pending") return { background: "#ffedd5", color: "#c2410c" };
+  if (statusClass === "new") return { background: "#e2e8f0", color: "#1e293b" };
+  return { background: "#e2e8f0", color: "#1e293b" };
+};
+
+const getStatusDisplayText = (value) =>
+  String(value || "")
+    .toLowerCase()
+    .replace(/\s+/g, "");
+
+const extractTextValue = (value) => {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
+  if (Array.isArray(value))
+    return value
+      .map((item) => extractTextValue(item))
+      .join(" ")
+      .trim();
+  if (React.isValidElement(value)) return extractTextValue(value.props?.children);
+  return "";
+};
+
+console.log("TABLE_JS_LOADED_FROM_REACT_COMPONENTS_ATOMS");
 
 const Table = ({
   className = "table",
   t,
   data,
   columns,
-  getCellProps,
+  getCellProps = () => ({}),
   currentPage = 0,
   pageSizeLimit = 10,
   disableSort = true,
@@ -27,13 +71,14 @@ const Table = ({
   onFirstPage,
   isPaginationRequired = true,
   sortParams = [],
-  showAutoSerialNo=false,
-  customTableWrapperClassName="",
-  styles={},
+  showAutoSerialNo = false,
+  customTableWrapperClassName = "",
+  styles = {},
   tableTopComponent,
   tableRef,
-  isReportTable=false,
+  isReportTable = false,
   inboxStyles,
+  getRowProps,
 }) => {
   const {
     getTableProps,
@@ -86,71 +131,273 @@ const Table = ({
 
   useEffect(() => setGlobalFilter(onSearch), [onSearch, setGlobalFilter]);
 
+  const isMobile = window.Digit.Utils.browser.isMobile();
+
   const tref = useRef();
-  
+  const tableClassName = `${className || "table"} ndc-new-table`.trim();
+  const tableWrapperClassName = `${customTableWrapperClassName} ndc-new-table-wrapper`.trim();
+  const tableStyles = {
+    width: "100%",
+    borderCollapse: "collapse",
+    borderRadius: "16px",
+    overflow: "hidden",
+    background: "#ffffff",
+    ...styles,
+  };
+
+  console.log(isMobile, "IS MOBILE RENDER");
+
+  console.log("loovvvvv1233", rows);
+
+  if (isMobile) {
+    return (
+      <React.Fragment>
+        {tableTopComponent ? tableTopComponent : null}
+        <div className="digit-table-mobile-wrapper">
+          {page.length === 0 ? (
+            <div className="digit-table-mobile-no-data">{t ? t("CS_MYAPPLICATIONS_NO_APPLICATION") : "No data available"}</div>
+          ) : (
+            page.map((row, rowIndex) => {
+              prepareRow(row);
+              return (
+                <div key={row.id || rowIndex} className="digit-table-mobile-card">
+                  {showAutoSerialNo && (
+                    <div className="digit-table-mobile-card-row">
+                      <span className="digit-table-mobile-card-label">
+                        {typeof showAutoSerialNo === "string" ? (t ? t(showAutoSerialNo) : showAutoSerialNo) : t ? t("TB_SNO") : "S.No"}
+                      </span>
+                      <span className="digit-table-mobile-card-value">{rowIndex + 1}</span>
+                    </div>
+                  )}
+                  {row.cells.map((cell, cellIndex) => {
+                    const columnMeta = [cell.column?.id, cell.column?.accessor, cell.column?.Header]
+                      .map((field) => String(field || "").toLowerCase())
+                      .join(" ");
+                    const isStatusColumn = columnMeta.includes("status");
+                    const cellValue = extractTextValue(cell.value) || extractTextValue(cell.render("Cell"));
+                    const headerText =
+                      typeof cell.column.Header === "string"
+                        ? t
+                          ? t(cell.column.Header)
+                          : cell.column.Header
+                        : t
+                        ? t(cell.column.id || `Column ${cellIndex + 1}`)
+                        : cell.column.id || `Column ${cellIndex + 1}`;
+
+                    return (
+                      <div key={cell.column.id || cellIndex} className="digit-table-mobile-card-row">
+                        <span className="digit-table-mobile-card-label">{headerText}</span>
+                        <span className="digit-table-mobile-card-value">
+                          {isStatusColumn && cellValue ? (
+                            <span className={`digit-table-mobile-status-pill ${getStatusClass(cellValue)}`}>{getStatusDisplayText(cellValue)}</span>
+                          ) : (
+                            cell.render("Cell")
+                          )}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })
+          )}
+        </div>
+        {isPaginationRequired && (
+          <div className="digit-table-mobile-pagination">
+            <div>
+              {t ? t("CS_COMMON_ROWS_PER_PAGE") : "Rows per page"}:
+              <select
+                value={pageSize}
+                style={{ marginLeft: "8px" }}
+                onChange={manualPagination ? onPageSizeChange : (e) => setPageSize(Number(e.target.value))}
+              >
+                {[10, 20, 30, 40, 50].map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <span>
+              {pageIndex * pageSize + 1}-
+              {manualPagination
+                ? (currentPage + 1) * pageSizeLimit > totalRecords
+                  ? totalRecords
+                  : (currentPage + 1) * pageSizeLimit
+                : pageIndex * pageSize + page?.length}{" "}
+              {totalRecords ? `of ${manualPagination ? totalRecords : rows.length}` : ""}
+            </span>
+            <div className="pagination-controls">
+              {!manualPagination && pageIndex !== 0 && <ArrowToFirst onClick={() => gotoPage(0)} />}
+              {canPreviousPage && manualPagination && onFirstPage && <ArrowToFirst onClick={() => onFirstPage()} />}
+              {canPreviousPage && <ArrowBack onClick={() => (manualPagination ? onPrevPage() : previousPage())} />}
+              {canNextPage && <ArrowForward onClick={() => (manualPagination ? onNextPage() : nextPage())} />}
+              {!manualPagination && pageIndex !== pageCount - 1 && <ArrowToLast onClick={() => gotoPage(pageCount - 1)} />}
+              {rows.length === pageSizeLimit && canNextPage && manualPagination && onLastPage && <ArrowToLast onClick={() => onLastPage()} />}
+            </div>
+          </div>
+        )}
+      </React.Fragment>
+    );
+  }
+
   return (
     <React.Fragment>
-    <div ref={tref} style={tref.current && tref.current.offsetWidth < tref.current.scrollWidth ? {...inboxStyles}: {}}>
-    <span className={customTableWrapperClassName}>
-    {tableTopComponent ? tableTopComponent:null}
-      <table className={className} {...getTableProps()} style={styles} ref={tableRef}>
-         
-        <thead>
-          {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-             {showAutoSerialNo&& <th style={{  verticalAlign: "top"}}>
-              {showAutoSerialNo&& typeof showAutoSerialNo =="string"?t(showAutoSerialNo):t("TB_SNO")}
-              </th>}
-              {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps(column.getSortByToggleProps())} style={{ verticalAlign: "top" }}>
-                  {column.render("Header")}
-                  <span>{column.isSorted ? column.isSortedDesc ? <SortDown /> : <SortUp /> : ""}</span>
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-          {page.map((row, i) => {
-            // rows.slice(0, 10).map((row, i) => {
-            prepareRow(row);
-            return (
-              <tr {...row.getRowProps()}>
-              {showAutoSerialNo&&  <td >
-              {i+1}
-              </td>}
-                {row.cells.map((cell) => {
-                  return (
-                    <td
-                      // style={{ padding: "20px 18px", fontSize: "16px", borderTop: "1px solid grey", textAlign: "left", verticalAlign: "middle" }}
-                      {...cell.getCellProps([
-                        // {
-                        //   className: cell.column.className,
-                        //   style: cell.column.style,
-                        // },
-                        // getColumnProps(cell.column),
-                        getCellProps(cell),
-                      ])}
+      <div ref={tref} style={tref.current && tref.current.offsetWidth < tref.current.scrollWidth ? { ...inboxStyles } : {}}>
+        <div className={tableWrapperClassName}>
+          {tableTopComponent ? tableTopComponent : null}
+          <table className={tableClassName} {...getTableProps()} style={tableStyles} ref={tableRef}>
+            <thead>
+              {headerGroups.map((headerGroup) => (
+                <tr {...headerGroup.getHeaderGroupProps()}>
+                  {showAutoSerialNo && (
+                    <th
+                      style={{
+                        verticalAlign: "top",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontSize: "12px",
+                        color: "#6b7280",
+                        padding: "14px 20px",
+                        background: "#f3f4f6",
+                        borderBottom: "1px solid #e5e7eb",
+                      }}
                     >
-                      {cell.attachment_link ? (
-                        <a style={{ color: "#1D70B8" }} href={cell.attachment_link}>
-                          {cell.render("Cell")}
-                        </a>
-                      ) : (
-                        <React.Fragment> {cell.render("Cell")} </React.Fragment>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      </span>
+                      {showAutoSerialNo && typeof showAutoSerialNo == "string" ? t(showAutoSerialNo) : t("TB_SNO")}
+                    </th>
+                  )}
+                  {headerGroup.headers.map((column) => (
+                    <th
+                      {...column.getHeaderProps(column.getSortByToggleProps())}
+                      style={{
+                        verticalAlign: "top",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontSize: "12px",
+                        color: "#6b7280",
+                        padding: "14px 20px",
+                        background: "#f3f4f6",
+                        borderBottom: "1px solid #e5e7eb",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {column.render("Header")}
+                      <span>{column.isSorted ? column.isSortedDesc ? <SortDown /> : <SortUp /> : ""}</span>
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody {...getTableBodyProps()}>
+              {page.map((row, i) => {
+                // rows.slice(0, 10).map((row, i) => {
+                prepareRow(row);
+                const statusCell = row?.cells?.find((cell) =>
+                  [cell.column?.id, cell.column?.accessor, cell.column?.Header]
+                    .map((field) => String(field || "").toLowerCase())
+                    .join(" ")
+                    .includes("status")
+                );
+                const statusValue = String(
+                  row?.original?.status ||
+                    row?.original?.applicationStatus ||
+                    extractTextValue(statusCell?.value) ||
+                    extractTextValue(statusCell?.render?.("Cell")) ||
+                    ""
+                );
+                const normalizedStatusValue = statusValue.toLowerCase();
+                const statusClass = getStatusClass(normalizedStatusValue);
+                const statusStyle = getStatusRowStyle(statusClass);
+                const rowProps = getRowProps ? getRowProps(row) : {};
+                return (
+                  <tr
+                    {...row.getRowProps({
+                      ...rowProps,
+                      "data-status": normalizedStatusValue,
+                      className: [rowProps?.className, statusClass].filter(Boolean).join(" "),
+                      style: {
+                        ...statusStyle,
+                        ...(rowProps?.style || {}),
+                      },
+                    })}
+                  >
+                    {showAutoSerialNo && <td>{i + 1}</td>}
+                    {row.cells.map((cell) => {
+                      return (
+                        <td
+                          // style={{ padding: "20px 18px", fontSize: "16px", borderTop: "1px solid grey", textAlign: "left", verticalAlign: "middle" }}
+                          {...cell.getCellProps([
+                            // {
+                            //   className: cell.column.className,
+                            //   style: cell.column.style,
+                            // },
+                            // getColumnProps(cell.column),
+                            (() => {
+                              const cellProps = getCellProps(cell) || {};
+                              const isActionColumn = String(cell.column?.id || cell.column?.accessor || "")
+                                .toLowerCase()
+                                .includes("action");
+                              return {
+                                ...cellProps,
+                                className: [cellProps.className, "ndc-new-cell"].filter(Boolean).join(" "),
+                                style: {
+                                  padding: "16px 20px",
+                                  fontSize: "14px",
+                                  color: "#334155",
+                                  borderBottom: "1px solid #e5e7eb",
+                                  textAlign: isActionColumn ? "center" : "left",
+                                  verticalAlign: "middle",
+                                  ...(cellProps.style || {}),
+                                },
+                              };
+                            })(),
+                          ])}
+                        >
+                          {cell.attachment_link ? (
+                            <a style={{ color: "#2563eb", fontWeight: 600 }} href={cell.attachment_link}>
+                              {cell.render("Cell")}
+                            </a>
+                          ) : (
+                            (() => {
+                              const columnMeta = [cell.column?.id, cell.column?.accessor, cell.column?.Header]
+                                .map((field) => String(field || "").toLowerCase())
+                                .join(" ");
+                              const isStatusColumn = columnMeta.includes("status");
+                              const cellValue = extractTextValue(cell.value) || extractTextValue(cell.render("Cell"));
+                              const canPill = isStatusColumn && !!String(cellValue || "").trim();
+                              if (!canPill) return <React.Fragment> {cell.render("Cell")} </React.Fragment>;
+                              const cellStatusClass = getStatusClass(cellValue);
+                              const pillStyle = getStatusPillStyle(cellStatusClass);
+                              return (
+                                <span
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    padding: "6px 12px",
+                                    borderRadius: "999px",
+                                    fontSize: "13px",
+                                    fontWeight: 700,
+                                    ...pillStyle,
+                                  }}
+                                >
+                                  {getStatusDisplayText(cellValue)}
+                                </span>
+                              );
+                            })()
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
       {isPaginationRequired && (
-        <div className="pagination dss-white-pre" >
+        <div className="pagination dss-white-pre">
           {`${t("CS_COMMON_ROWS_PER_PAGE")} :`}
           <select
             className="cp"
@@ -172,17 +419,17 @@ const Table = ({
                 ? (currentPage + 1) * pageSizeLimit > totalRecords
                   ? totalRecords
                   : (currentPage + 1) * pageSizeLimit
-                : (pageIndex * pageSize + page?.length)}{" "}
+                : pageIndex * pageSize + page?.length}{" "}
               {/* {(pageIndex + 1) * pageSizeLimit > rows.length ? rows.length : (pageIndex + 1) * pageSizeLimit}{" "} */}
               {totalRecords ? `of ${manualPagination ? totalRecords : rows.length}` : ""}
             </span>{" "}
           </span>
           {/* to go to first and last page we need to do a manual pagination , it can be updated later*/}
-          {!manualPagination&& pageIndex!=0 &&<ArrowToFirst onClick={() => gotoPage(0)} className={"cp"} />}
+          {!manualPagination && pageIndex != 0 && <ArrowToFirst onClick={() => gotoPage(0)} className={"cp"} />}
           {canPreviousPage && manualPagination && onFirstPage && <ArrowToFirst onClick={() => manualPagination && onFirstPage()} className={"cp"} />}
           {canPreviousPage && <ArrowBack onClick={() => (manualPagination ? onPrevPage() : previousPage())} className={"cp"} />}
           {canNextPage && <ArrowForward onClick={() => (manualPagination ? onNextPage() : nextPage())} className={"cp"} />}
-          {!manualPagination&& pageIndex != pageCount-1 && <ArrowToLast onClick={() => gotoPage(pageCount-1 )} className={"cp"} />}
+          {!manualPagination && pageIndex != pageCount - 1 && <ArrowToLast onClick={() => gotoPage(pageCount - 1)} className={"cp"} />}
           {rows.length == pageSizeLimit && canNextPage && manualPagination && onLastPage && (
             <ArrowToLast onClick={() => manualPagination && onLastPage()} className={"cp"} />
           )}

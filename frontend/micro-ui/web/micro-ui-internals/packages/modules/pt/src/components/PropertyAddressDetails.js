@@ -27,7 +27,6 @@ const PropertyAddressDetails = ({ goNext }) => {
   const [loader, setLoader] = useState(false);
   const tenants = Digit.Hooks.pt.useTenants();
   const isCitizen = window.location.href.includes("citizen");
-  const getCity = localStorage.getItem("CITIZEN.CITY");
   const stateDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData?.propertyAddress);
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
@@ -71,11 +70,11 @@ const PropertyAddressDetails = ({ goNext }) => {
   }, [tenantId]);
 
   useEffect(() => {
-    if (tenants) {
-      const checkCity = tenants?.find((item) => item?.code == getCity);
+    if (tenants && tenantId) {
+      const checkCity = tenants?.find((item) => item?.code == tenantId);
       setValue("city", checkCity);
     }
-  }, [tenants, getCity]);
+  }, [tenants, tenantId, setValue]);
 
   useEffect(() => {
     if (CreationYearData?.["egf-master"]?.FinancialYear) {

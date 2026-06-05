@@ -1,47 +1,60 @@
-import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect } from "react";
-import { InboxComposer, ComplaintIcon, Header, Loader, SubmitBar  } from "@mseva/digit-ui-react-components";
+import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
-import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
+import { useForm } from "react-hook-form";
+import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
+import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templates/Inbox/components";
 import useInboxTableConfig from "./useInboxTableConfig";
-import useInboxMobileCardsData from "./useInboxMobileCardsData";
-import { businessServiceList } from "../../../utils";
-import { MSEVA_APP_LINK } from "../../../../../../constants/constants";
 
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
-  const [employeeName, setEmployeeName] = useState("");
-  const [employeeRole, setEmployeeRole] = useState("");
-  const { data: cities } = Digit.Hooks.useTenants();
-  const isMobile = window.Digit.Utils.browser.isMobile();
-  
+  const [error, setError] = useState({
+    error: false,
+    label: "",
+  });
 
-  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  useEffect(() => {
+    window.scroll(0, 0);
+  }, []);
+
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const { data: cities } = Digit.Hooks.useTenants();
 
-  const searchFormDefaultValues = {
-    mobileNumber: "",
-    applicationNo: ""
-  };
+  const [activeStatusTab, setActiveStatusTab] = useState("ALL");
+  const [topBarSearch, setTopBarSearch] = useState("");
 
-  const filterFormDefaultValues = {
-    moduleName: "noc-service",
-    applicationStatus: [],
-    businessService: "obpas_noc",
-    locality: [],
-    assignee: "ASSIGNED_TO_ME",
-    businessServiceArray: businessServiceList(true) || [],
-  };
-  const tableOrderFormDefaultValues = {
-    sortBy: "",
-    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
-    offset: 0,
-    sortOrder: "DESC",
-  };
+  const searchFormDefaultValues = useMemo(() => ({}), []);
 
-  const selectedTenantIdDefaultValues = {
-    tenantId: cities?.[0]?.code || null,
-  };
+  const filterFormDefaultValues = useMemo(
+    () => ({
+      moduleName: "noc-service",
+      applicationStatus: [],
+      businessService: "obpas_noc",
+      locality: [],
+      assignee: "ASSIGNED_TO_ME",
+      businessServiceArray: [],
+    }),
+    []
+  );
+
+  const selectedTenantIdDefaultValues = useMemo(
+    () => ({
+      tenantId: cities?.[0]?.code || null,
+    }),
+    [cities]
+  );
+
+  const isMobileDevice = Digit.Utils.browser.isMobile();
+
+  const tableOrderFormDefaultValues = useMemo(
+    () => ({
+      sortBy: "",
+      limit: isMobileDevice ? 50 : 10,
+      offset: 0,
+      sortOrder: "DESC",
+    }),
+    [isMobileDevice]
+  );
 
   function formReducer(state, payload) {
     switch (payload.action) {
@@ -55,241 +68,280 @@ const Inbox = ({ parentRoute }) => {
         Digit.SessionStorage.set("NOC.INBOX", { ...state, tableForm: payload.data });
         return { ...state, tableForm: payload.data };
       case "mutateSelectedTenantId":
-        Digit.SessionStorage.set("CLU.INBOX", { ...state, selectedTenantId: payload.data });
+        Digit.SessionStorage.set("NOC.INBOX", { ...state, selectedTenantId: payload.data });
         return { ...state, selectedTenantId: payload.data };
       default:
         break;
     }
   }
-  const InboxObjectInSessionStorage = Digit.SessionStorage.get("NOC.INBOX");
 
-  const onSelectedTenantIdReset = (setSelectedTenantIdValue) => {
-    setSelectedTenantIdValue("tenantId", tenantId || null);
-    dispatch({ action: "mutateSelectedTenantId", data: selectedTenantIdDefaultValues });
-  };
-
-  const setSelectedTenantIdValue = (key, value) => {
-    console.log("ValueChangeinTenant", key, value);
-    dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
-  };
-
-  const onSearchFormReset = (setSearchFormValue) => {
-    setSearchFormValue("mobileNumber", null);
-    setSearchFormValue("applicationNo", null);
-    dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
-  };
-
-  const onFilterFormReset = (setFilterFormValue) => {
-    setFilterFormValue("moduleName", "noc-service");
-    setFilterFormValue("applicationStatus", "");
-    setFilterFormValue("locality", []);
-    setFilterFormValue("assignee", "ASSIGNED_TO_ALL");
-    setFilterFormValue("applicationType", []);
-    onSelectedTenantIdReset(setFilterFormValue)
-    dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
-  };
-
-  const onSortFormReset = (setSortFormValue) => {
-    setSortFormValue("sortOrder", "DESC");
-    dispatch({ action: "mutateTableForm", data: tableOrderFormDefaultValues });
-  };
+  const inboxObjectInSessionStorage = Digit.SessionStorage.get("NOC.INBOX");
 
   const formInitValue = useMemo(() => {
-    return (
-      InboxObjectInSessionStorage || {
-        filterForm: filterFormDefaultValues,
-        searchForm: searchFormDefaultValues,
-        tableForm: tableOrderFormDefaultValues,
-        selectedTenantId: selectedTenantIdDefaultValues,
-      }
-    );
-  }, [
-    Object.values(InboxObjectInSessionStorage?.filterForm || {}),
-    Object.values(InboxObjectInSessionStorage?.searchForm || {}),
-    Object.values(InboxObjectInSessionStorage?.tableForm || {}),
-    Object.values(InboxObjectInSessionStorage?.selectedTenantId || {}),
-  ]);
+    if (inboxObjectInSessionStorage) {
+      const sessionLimit = parseInt(inboxObjectInSessionStorage.tableForm?.limit, 10);
+      const validLimit = [10, 20, 30, 40, 50].includes(sessionLimit) ? sessionLimit : tableOrderFormDefaultValues.limit;
+      return {
+        filterForm: inboxObjectInSessionStorage.filterForm || filterFormDefaultValues,
+        searchForm: inboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
+        tableForm: {
+          ...tableOrderFormDefaultValues,
+          ...(inboxObjectInSessionStorage.tableForm || {}),
+          limit: validLimit,
+          offset: 0,
+        },
+        selectedTenantId: inboxObjectInSessionStorage.selectedTenantId || selectedTenantIdDefaultValues,
+      };
+    }
+
+    return {
+      filterForm: filterFormDefaultValues,
+      searchForm: searchFormDefaultValues,
+      tableForm: tableOrderFormDefaultValues,
+      selectedTenantId: selectedTenantIdDefaultValues,
+    };
+  }, [inboxObjectInSessionStorage, filterFormDefaultValues, searchFormDefaultValues, tableOrderFormDefaultValues, selectedTenantIdDefaultValues]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
+  const [tableData, setTableData] = useState([]);
+  const [statusData, setStatusData] = useState([]);
+  const [totalCountData, setTotalCountData] = useState(0);
+
+  const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+
+  const memoizedFilters = useMemo(() => {
+    return {
+      filterForm: formState?.filterForm || filterFormDefaultValues,
+      searchForm: formState?.searchForm || searchFormDefaultValues,
+      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
+      selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
+    };
+  }, [
+    formState?.filterForm,
+    formState?.searchForm,
+    formState?.tableForm,
+    formState?.selectedTenantId,
+    filterFormDefaultValues,
+    searchFormDefaultValues,
+    tableOrderFormDefaultValues,
+    selectedTenantIdDefaultValues,
+  ]);
+
+  const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.noc.useInbox({
+    tenantId: effectiveTenantId,
+    filters: memoizedFilters,
+    config: { enabled: !!tenantId },
+  });
+
+  useEffect(() => {
+    if (inboxData) {
+      setStatusData(inboxData?.statuses || []);
+      setTableData(inboxData?.table || []);
+      setTotalCountData(inboxData?.totalCount || 0);
+    }
+  }, [inboxData]);
+
   const onPageSizeChange = (e) => {
-    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value } });
+    const newLimit = parseInt(e.target.value, 10);
+    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: newLimit, offset: 0 } });
   };
+
   const onSortingByData = (e) => {
     if (e.length > 0) {
       const [{ id, desc }] = e;
       const sortOrder = desc ? "DESC" : "ASC";
       const sortBy = id;
       if (!(formState.tableForm.sortBy === sortBy && formState.tableForm.sortOrder === sortOrder)) {
-        dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortBy: id, sortOrder: desc ? "DESC" : "ASC" } });
+        dispatch({
+          action: "mutateTableForm",
+          data: { ...formState.tableForm, sortBy: id, sortOrder: desc ? "DESC" : "ASC" },
+        });
       }
     }
   };
 
-  const onMobileSortOrderData = (data) => {
-    const { sortOrder } = data;
-    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortOrder } });
-  };
-
-  const { data: localitiesForEmployeesCurrentTenant, isLoading: loadingLocalitiesForEmployeesCurrentTenant } = Digit.Hooks.useBoundaryLocalities(
-    tenantId,
-    "revenue",
-    {},
-    t
+  const onFilterFormSubmit = useCallback(
+    (data) => {
+      data.hasOwnProperty("") && delete data?.[""];
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({ action: "mutateFilterForm", data: { ...formState.filterForm, ...data } });
+    },
+    [formState.tableForm, formState.filterForm]
   );
-  const user = Digit.UserService.getUser();
 
-  // console.log('user', user)
-
-  const {data: employeeData , isLoading} = Digit.Hooks.useEmployeeSearch(tenantId, { codes: user?.info?.userName, isActive: true }, { enabled: !!user?.info?.userName });
-  console.log('employeeData', employeeData)
-
-
-
-
-    useEffect(() => {
-      if (!isLoading && employeeData) {
-        const code=  employeeData?.Employees?.[0]?.user?.name || "";
-        const desig = employeeData?.Employees?.[0]?.assignments?.[0]?.designation || ""
-        setEmployeeName(code);
-        setEmployeeRole(desig);
-      }
-  }, [employeeData]);
-
-  console.log('employeeName, employeeRole', employeeName, employeeRole)
-
-
-  const { isLoading: isInboxLoading, data, refetch} = Digit.Hooks.noc.useInbox({
-    tenantId: (tenantId === "pb.punjab") ? (formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId) : tenantId,
-    filters: { ...formState },
-    config: {
-      enabled: !!tenantId,
-    }
+  const propsForInboxTable = useInboxTableConfig({
+    parentRoute,
+    onPageSizeChange,
+    formState,
+    totalCount: totalCountData,
+    table: tableData,
+    dispatch,
+    onSortingByData,
+    tenantId,
   });
 
-  useEffect(()=>{
-    // if(data){
-    //   data.revalidate();
-    // }
-    refetch();
-  },[])
-  
- // console.log("data in noc==>", data);
+  const {
+    control: controlFilterForm,
+    handleSubmit: handleFilterFormSubmit,
+    setValue: setFilterFormValue,
+    getValues: getFilterFormValue,
+    reset: resetFilterForm,
+  } = useForm({
+    defaultValues: { ...filterFormDefaultValues },
+  });
 
-  // let table = [];
-  const [table, setTable] = useState([]);
-  const [statuses, setStatuses] = useState([]);
-  const [totalCount, setTotalCount] = useState(0);
+  const handleFilterChange = useCallback(
+    (filterData) => {
+      if (filterData.applicationStatus) {
+        setFilterFormValue(
+          "applicationStatus",
+          filterData.applicationStatus.map((item) => item.code)
+        );
+      }
+      if (filterData.assignee) {
+        setFilterFormValue("assignee", filterData.assignee);
+      }
+
+      dispatch({
+        action: "mutateFilterForm",
+        data: {
+          ...formState?.filterForm,
+          applicationStatus: filterData.applicationStatus?.map((item) => item.code) || [],
+          assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ME",
+        },
+      });
+    },
+    [formState?.filterForm, setFilterFormValue]
+  );
+
+  const searchDebounceRef = useRef(null);
+  const hasInitializedFilterForm = useRef(false);
+
+  const onNextPage = () =>
+    dispatch({
+      action: "mutateTableForm",
+      data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) + parseInt(formState.tableForm?.limit) },
+    });
+
+  const onPrevPage = () =>
+    dispatch({
+      action: "mutateTableForm",
+      data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) - parseInt(formState.tableForm?.limit) },
+    });
 
   useEffect(() => {
-      if (data) {
-        console.log('data?.table', data?.table)
-        setStatuses(data?.statuses || []);
-        setTable(data?.table || []);
-        setTotalCount(data?.totalCount || 0);
-      }
-  }, [data]);
-
-  const PropsForInboxLinks = {
-    logoIcon: <ComplaintIcon />,
-    headerText: "ACTION_TEST_NOC",
-    links: [
-      {
-        text: "",
-        link: "",
-      },
-    ],
-  };
-
-  const SearchFormFields = useCallback(
-    ({ registerRef, searchFormState, searchFieldComponents }) => (
-      <SearchFormFieldsComponents {...{ registerRef, searchFormState, searchFieldComponents }} />
-    ),
-    []
-  );
-
-  const FilterFormFields = useCallback(
-    ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => (
-      <FilterFormFieldsComponent
-        {...{
-          statuses,
-          isInboxLoading,
-          registerRef,
-          controlFilterForm,
-          setFilterFormValue,
-          filterFormState: formState?.filterForm,
-          getFilterFormValue,
-          localitiesForEmployeesCurrentTenant,
-          loadingLocalitiesForEmployeesCurrentTenant,
-          cities,
-          selectedTenantIdState: formState?.selectedTenantId?.tenantId ? formState?.selectedTenantId : {tenantId: cities?.[0]?.code},
-          setSelectedTenantIdValue,
-          tenantId
-        }}
-      />
-    ),
-    [statuses, isInboxLoading, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant]
-  );
-
-  const onSearchFormSubmit = (data) => {
-    console.log("data in OnSearchFormSubmit", data);
-    data.hasOwnProperty("") && delete data?.[""]; 
-    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
-    dispatch({ action: "mutateSearchForm", data });
-  };
-
-  const onFilterFormSubmit = (data) => {
-    console.log("data in OnFilterFormSubmit", data);
-    data.hasOwnProperty("") && delete data?.[""];
-    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
-    dispatch({ action: "mutateFilterForm", data });
-  };
-
-  const propsForSearchForm = {
-    SearchFormFields,
-    onSearchFormSubmit,
-    searchFormDefaultValues: formState?.searchForm,
-    resetSearchFormDefaultValues: searchFormDefaultValues,
-    onSearchFormReset,
-  };
-
-  const propsForFilterForm = {
-    FilterFormFields,
-    onFilterFormSubmit,
-    filterFormDefaultValues: formState?.filterForm,
-    resetFilterFormDefaultValues: filterFormDefaultValues,
-    onFilterFormReset,
-  };
-
-  const propsForInboxTable = useInboxTableConfig({ ...{ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId } });
-
-  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table });
-
-  const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
-
-  if (isLoading) {
-      return <Loader />;
+    if (formState?.filterForm) {
+      setFilterFormValue("moduleName", formState.filterForm.moduleName || "noc-service");
+      setFilterFormValue("applicationStatus", formState.filterForm.applicationStatus || []);
+      setFilterFormValue("assignee", formState.filterForm.assignee || "ASSIGNED_TO_ME");
+      setFilterFormValue("businessService", formState.filterForm.businessService || "obpas_noc");
+      setFilterFormValue("locality", formState.filterForm.locality || []);
     }
+  }, [
+    formState?.filterForm?.moduleName,
+    formState?.filterForm?.applicationStatus,
+    formState?.filterForm?.assignee,
+    formState?.filterForm?.businessService,
+    formState?.filterForm?.locality,
+    setFilterFormValue,
+  ]);
+
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      const value = String(topBarSearch || "").trim();
+      const nextSearchForm = value ? { applicationNo: value } : {};
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({ action: "mutateSearchForm", data: nextSearchForm });
+    }, 400);
+    return () => clearTimeout(searchDebounceRef.current);
+  }, [topBarSearch]);
+
+  useEffect(() => {
+    if (hasInitializedFilterForm.current) return;
+    if (resetFilterForm && formState) {
+      resetFilterForm(formState?.filterForm);
+      hasInitializedFilterForm.current = true;
+    }
+  }, [formState, resetFilterForm]);
+
+  const onStatusTabClick = useCallback(
+    (label, statusCode) => {
+      setActiveStatusTab(statusCode || label);
+      if (label === "CLEAR") {
+        setTopBarSearch("");
+        return;
+      }
+      if (label === "ALL") {
+        setFilterFormValue("applicationStatus", [], { shouldDirty: true, shouldTouch: true });
+        handleFilterFormSubmit(onFilterFormSubmit)();
+        return;
+      }
+      const resolvedCode = statusCode || label;
+      setFilterFormValue("applicationStatus", [resolvedCode], { shouldDirty: true, shouldTouch: true });
+      handleFilterFormSubmit(onFilterFormSubmit)();
+    },
+    [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
+  );
+
+  useEffect(() => {
+    if (isError) {
+      setError({
+        error: true,
+        label: t("ES_OBPS_INBOX_ERROR"),
+      });
+      setTimeout(() => {
+        window.location.href = `/digit-ui/employee/`;
+      }, 5000);
+    }
+  }, [isError, t]);
+
   return (
     <>
-      <Header>
-        {employeeData && !isLoading &&`Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
-        <div style={{...{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }, ...isMobile?{flexDirection: "column"}:{} }}>
-        <div> {t("ES_COMMON_INBOX")} {totalCount ? <p className="inbox-count">{totalCount}</p> : null}</div>
-        {<SubmitBar label={t("Android App")} onSubmit={() => window.open(MSEVA_APP_LINK)} />}
-        </div>
-      </Header>
-      <InboxComposer
-        {...{
-          isInboxLoading,
-          PropsForInboxLinks,
-          ...propsForSearchForm,
-          ...propsForFilterForm,
-          ...propsForMobileSortForm,
-          propsForInboxTable,
-          propsForInboxMobileCards,
-          formState,
-        }}
-      ></InboxComposer>
+      {!isError && (
+        <InboxWrapper
+          title={t("ES_COMMON_INBOX")}
+          totalCount={totalCountData}
+          filterSection={
+            <NewFilterFormFieldComponent
+              registerRef={() => {}}
+              controlFilterForm={controlFilterForm}
+              setFilterFormValue={setFilterFormValue}
+              filterFormState={formState?.filterForm}
+              getFilterFormValue={getFilterFormValue}
+              statuses={statusData}
+              isInboxLoading={isInboxLoading}
+              handleFilter={handleFilterChange}
+            />
+          }
+          topBar={
+            <InboxTopBar
+              statuses={statusData}
+              activeTab={activeStatusTab}
+              onTabClick={onStatusTabClick}
+              searchValue={topBarSearch}
+              onSearchChange={(e) => setTopBarSearch(e.target.value)}
+              searchPlaceholder="Search by application number..."
+              totalCount={totalCountData}
+            />
+          }
+          isLoading={isInboxLoading}
+          tableData={tableData}
+          tableProps={propsForInboxTable}
+          tableHeader="ES_INBOX_INBOX"
+          pagination={
+            <InboxPagination
+              offset={formState.tableForm?.offset || 0}
+              limit={formState.tableForm?.limit || 10}
+              totalCount={totalCountData}
+              onPageSizeChange={onPageSizeChange}
+              onNextPage={onNextPage}
+              onPrevPage={onPrevPage}
+            />
+          }
+        />
+      )}
+      {error.error && <Toast error label={error.label} onClose={() => setError({ error: false, label: "" })} />}
     </>
   );
 };

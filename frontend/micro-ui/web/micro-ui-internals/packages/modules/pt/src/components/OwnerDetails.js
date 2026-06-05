@@ -49,6 +49,20 @@ const owners = [
   },
 ];
 
+const buildPropertyAddress = (address = {}) => {
+  const parts = [
+    address?.doorNo || address?.houseNo,
+    address?.buildingName,
+    address?.street || address?.streetName,
+    address?.locality?.name || address?.locality,
+    address?.pincode,
+  ]
+    .map((part) => (typeof part === "string" ? part.trim() : part))
+    .filter((part) => part !== undefined && part !== null && part !== "");
+
+  return parts.join(", ");
+};
+
 const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -56,6 +70,10 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   const [loader, setLoader] = useState(false);
   const tenants = Digit.Hooks.pt.useTenants();
   const stateDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData?.ownerDetails);
+  const propertyAddress = useSelector((state) => {
+    const formData = state.pt.PTNewApplicationFormReducer.formData || {};
+    return formData?.propertyAddress?.address || formData?.propertyAddress || formData?.LocationDetails?.address || formData?.LocationDetails1?.address;
+  });
 
   const isCitizen = window.location.href.includes("citizen");
   const getCity = localStorage.getItem("CITIZEN.CITY");
@@ -87,6 +105,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
     control,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     formState: { errors },
     trigger,
@@ -180,6 +199,19 @@ useEffect(() => {
 
   const ownerShip = watch("ownerShip");
   const isInstitution = ownerShip?.code === "INSTITUTIONALGOVERNMENT" || ownerShip?.code === "INSTITUTIONALPRIVATE";
+
+useEffect(() => {
+  if (!propertyAddress) return;
+
+  const formattedAddress = buildPropertyAddress(propertyAddress);
+  if (!formattedAddress) return;
+
+  (getValues("owners") || []).forEach((owner, index) => {
+    if (owner?.isSamePropertyAddress && owner?.address !== formattedAddress) {
+      setValue(`owners.${index}.address`, formattedAddress);
+    }
+  });
+}, [propertyAddress, getValues, setValue]);
 
 useEffect(() => {
   if (!ownerShip || !stateDataCheck) return;
@@ -647,11 +679,13 @@ useEffect(() => {
                       type="checkbox"
                       checked={props.value || false}
                       onChange={(e) => {
-                        props.onChange(e.target.checked);
-                        if (e.target.checked) {
-                          // Copy property address to owner address
-                          const propertyAddr = watch("address") || "";
-                          setValue(`owners.${index}.address`, propertyAddr);
+                        const checked = e.target.checked;
+                        props.onChange(checked);
+                        if (checked) {
+                          const formattedAddress = buildPropertyAddress(propertyAddress);
+                          if (getValues(`owners.${index}.address`) !== formattedAddress) {
+                            setValue(`owners.${index}.address`, formattedAddress);
+                          }
                         }
                       }}
                       style={{ width: "18px", height: "18px", cursor: isEditMode ? "not-allowed" : "pointer" }}

@@ -74,7 +74,7 @@ const MCollectAcknowledgement = () => {
                 pathname: `/digit-ui/employee/payment/collect/${params?.serviceCategory}/${params?.challanNumber}/tenantId=${params?.tenantId}?workflow=mcollect`,
               }}
             >
-              <SubmitBar label={t("UC_BUTTON_PAY")} />
+              <SubmitBar label={t("CHALLAN_PAY_LATE")} />
             </Link>
           </ActionBar>
         </Card>

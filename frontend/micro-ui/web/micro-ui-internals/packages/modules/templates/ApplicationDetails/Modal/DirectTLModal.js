@@ -53,14 +53,26 @@ const years = useMemo(() => {
 
   console.log("years", years);
 
+  const getFinancialYearForRenewal = () => {
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1; // 1-12
+    const currentYear = now.getFullYear();
 
-
-  
+    if (currentMonth < 3) {
+      // Jan, Feb: renew for FY that starts in Apr of current year
+      const nextYear = currentYear.toString().slice(-2);
+      return `${currentYear - 1}-${nextYear}`;
+    } else {
+      // Mar onwards: renew for FY that starts in Apr of next year
+      const nextYear = (currentYear + 1).toString().slice(-2);
+      return `${currentYear}-${nextYear}`;
+    }
+  };
 
   function submit(data) {
-    let financialYear = applicationData?.financialYear;
-    const financialYearDate = financialYear?.split('-')[1];
-    const finalFinancialYear = `20${Number(financialYearDate)}-${Number(financialYearDate)+1}`
+    let finalFinancialYear = getFinancialYearForRenewal();
+    // const financialYearDate = financialYear?.split('-')[1];
+    // const finalFinancialYear = `20${Number(financialYearDate)}-${Number(financialYearDate)+1}`
 
     // Determine if hazardous based on trade type MDMS data
     const tradeTypeCodes = new Set((applicationData?.tradeLicenseDetail?.tradeUnits || []).map(unit => unit.tradeType));

@@ -391,10 +391,43 @@ public class InboxService {
         if (moduleName == null) return -1;
         switch (moduleName.toLowerCase()) {
             case "bpa-service":
+            case "bpa":
                 return bpaInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
-            // Add more modules here as needed, e.g.:
-            // case "ndc":
-            //     return ndcInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "ndc":
+                return ndcInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "swach":
+                return swachInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "pet-service":
+                return petInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "advandhoarding-services":
+                return advInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "bpareg":
+            case "tl":
+                return tlInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "pgr":
+                return pgrInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "noc-service":
+                return nocInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "firenoc":
+                return fireNocInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "chb":
+                return chbInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "challan_generation":
+                return challanInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "layout-service":
+                return layoutInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "clu-service":
+                return cluInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "gc-services":
+                return garbageInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "rl-services":
+                return rlInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "bs-ws":
+                return wsInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "bs-sw":
+                return swInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "billing-amendment":
+                return billInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
             default:
                 return -1;
         }

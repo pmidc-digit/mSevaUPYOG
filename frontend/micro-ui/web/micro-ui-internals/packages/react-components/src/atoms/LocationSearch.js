@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { SearchIconSvg } from "./svgindex";
+import { Loader } from "@googlemaps/js-api-loader";
 
 let defaultBounds = {};
 
@@ -34,61 +35,22 @@ const getName = (places) => {
   return name;
 };
 
-const loadGoogleMaps = (callback, onError) => {
-  const tryLoad = (apiKey) => {
-    // Create the global callback function that Google Maps will call when it's ready
-    window.__googleMapsCallback = () => {
-      if (window.google && window.google.maps) {
-        if (callback) callback();
-      } else {
-        handleFail();
-      }
-    };
+const loadGoogleMaps = (callback) => {
+  const key = globalConfigs?.getConfig("GMAPS_API_KEY");
+  const loader = new Loader({
+    apiKey: key,
+    version: "weekly",
+    libraries: ["places"],
+  });
 
-    const handleFail = () => {
-      console.warn("Google Maps failed to load correctly with key:", apiKey);
-      if (apiKey !== "") {
-        // Clear all previous maps scripts and window variables
-        const scripts = document.querySelectorAll('script[src*="maps.googleapis.com"]');
-        scripts.forEach((s) => s.remove());
-        
-        // Clean up global objects
-        if (window.google) {
-          try { delete window.google; } catch (e) { window.google = undefined; }
-        }
-        try { delete window.__googleMapsCallback; } catch (e) { window.__googleMapsCallback = undefined; }
-        
-        // Retry with blank key
-        console.log("Retrying load without API key...");
-        tryLoad("");
-      } else if (onError) {
-        onError(new Error("maps object is undefined even without API key"));
-      }
-    };
-
-    // Construct the URL
-    const url = `https://maps.googleapis.com/maps/api/js?v=weekly&libraries=places&callback=__googleMapsCallback${apiKey ? `&key=${apiKey}` : ""}`;
-
-    const script = document.createElement("script");
-    script.src = url;
-    script.async = true;
-    script.defer = true;
-    script.onerror = () => {
-      script.remove();
-      handleFail();
-    };
-
-    document.head.appendChild(script);
-  };
-
-  // Check if already loaded
-  if (window.google && window.google.maps) {
-    if (callback) callback();
-    return;
-  }
-
-  let key = window.globalConfigs?.getConfig("GMAPS_API_KEY") || "";
-  tryLoad(key);
+  loader
+    .load()
+    .then(() => {
+      if (callback) callback();
+    })
+    .catch((e) => {
+      // do something
+    });
 };
 
 const mapStyles = [
@@ -263,23 +225,12 @@ const setLocationText = (location, onChange, isPlaceRequired=false) => {
         if (results[0]) {
           let pincode = GetPinCode(results[0]);
           const infoWindowContent = document.getElementById("pac-input");
-          if (infoWindowContent) {
-            infoWindowContent.value = getName(results[0]);
-          }
+          infoWindowContent.value = getName(results[0]);
           if (onChange) {
             if(isPlaceRequired)
-            onChange(pincode, { longitude: location.lng, latitude: location.lat }, infoWindowContent?.value);
+            onChange(pincode, { longitude: location.lng, latitude: location.lat }, infoWindowContent.value);
             else
             onChange(pincode, { longitude: location.lng, latitude: location.lat });
-          }
-        }
-      } else {
-        console.warn("Geocoder failed with status:", status);
-        if (onChange) {
-          if (isPlaceRequired) {
-            onChange(null, { longitude: location.lng, latitude: location.lat }, "");
-          } else {
-            onChange(null, { longitude: location.lng, latitude: location.lat });
           }
         }
       }
@@ -302,27 +253,15 @@ const onMarkerDragged = (marker, onChange, isPlaceRequired = false) => {
   setLocationText(location, onChange);
 };
 
-const initAutocomplete = (onChange, position, isPlaceRequired = false, mapElement, inputElement, mapRefInstance, markersRefInstance) => {
-  if (!mapElement || !inputElement) {
-    mapElement = document.getElementById("map");
-    inputElement = document.getElementById("pac-input");
-  }
-
-  if (!mapElement || !inputElement) {
-    console.warn("Map container or Input element not found, retrying...");
-    setTimeout(() => initAutocomplete(onChange, position, isPlaceRequired, mapElement, inputElement, mapRefInstance, markersRefInstance), 100);
-    return;
-  }
-
-  const map = new window.google.maps.Map(mapElement, {
+const initAutocomplete = (onChange, position, isPlaceRequired=false) => {
+  const map = new window.google.maps.Map(document.getElementById("map"), {
     center: position,
     zoom: 15,
     mapTypeId: "roadmap",
     styles: mapStyles,
   }); // Create the search box and link it to the UI element.
 
-  if (mapRefInstance) mapRefInstance.current = map;
-
+  const input = document.getElementById("pac-input");
   updateDefaultBounds(position);
   const options = {
     bounds: defaultBounds,
@@ -330,8 +269,9 @@ const initAutocomplete = (onChange, position, isPlaceRequired = false, mapElemen
     fields: ["address_components", "geometry", "icon", "name"],
     origin: position,
     strictBounds: false,
+    types: ["address"],
   };
-  const searchBox = new window.google.maps.places.Autocomplete(inputElement, options);
+  const searchBox = new window.google.maps.places.Autocomplete(input, options);
   // map.controls[google.maps.ControlPosition.TOP_LEFT].push(input); // Bias the SearchBox results towards current map's viewport.
 
   map.addListener("bounds_changed", () => {
@@ -347,28 +287,11 @@ const initAutocomplete = (onChange, position, isPlaceRequired = false, mapElemen
       clickable: true,
     }),
   ];
-  if (markersRefInstance) markersRefInstance.current = markers;
 
   if(isPlaceRequired)
   setLocationText(position, onChange,true);
   else
   setLocationText(position, onChange);
-
-  // Listen for map click to place the pointer
-  map.addListener("click", (event) => {
-    const clickedLocation = {
-      lat: event.latLng.lat(),
-      lng: event.latLng.lng(),
-    };
-    if (markers.length > 0 && markers[0]) {
-      markers[0].setPosition(event.latLng);
-    }
-    if (isPlaceRequired) {
-      setLocationText(clickedLocation, onChange, true);
-    } else {
-      setLocationText(clickedLocation, onChange);
-    }
-  });
 
   // Listen for the event fired when the user selects a prediction and retrieve
   // more details for that place.
@@ -380,17 +303,16 @@ const initAutocomplete = (onChange, position, isPlaceRequired = false, mapElemen
       return;
     } // Clear out the old markers.
     let pincode = GetPinCode(place);
-    const { geometry } = place;
-    if (geometry && geometry.location) {
+    if (pincode) {
+      const { geometry } = place;
       const geoLocation = {
         latitude: geometry.location.lat(),
         longitude: geometry.location.lng(),
       };
-      if (isPlaceRequired) {
-        onChange(pincode, geoLocation, place.name);
-      } else {
-        onChange(pincode, geoLocation);
-      }
+      if(isPlaceRequired)
+      onChange(pincode, geoLocation, place.name);
+      else
+      onChange(pincode, geoLocation);
     }
     markers.forEach((marker) => {
       marker.setMap(null);
@@ -411,7 +333,6 @@ const initAutocomplete = (onChange, position, isPlaceRequired = false, mapElemen
         clickable: true,
       })
     );
-    if (markersRefInstance) markersRefInstance.current = markers;
     markers[0].addListener("dragend", (marker) => onMarkerDragged(marker, onChange, isPlaceRequired));
     if (place.geometry.viewport) {
       // Only geocodes have viewport.
@@ -425,148 +346,47 @@ const initAutocomplete = (onChange, position, isPlaceRequired = false, mapElemen
 };
 
 const LocationSearch = (props) => {
-  const mapRef = React.useRef(null);
-  const inputRef = React.useRef(null);
-  const [errorMsg, setErrorMsg] = React.useState(null);
-  const mapRefInstance = React.useRef(null);
-  const markersRefInstance = React.useRef([]);
-
-  const handleManualSearch = () => {
-    const query = inputRef.current?.value;
-    if (!query) return;
-
-    const geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ address: query, componentRestrictions: { country: "in" } }, (results, status) => {
-      if (status === "OK" && results[0]) {
-        const location = results[0].geometry.location;
-        const clickedLocation = {
-          lat: location.lat(),
-          lng: location.lng(),
-        };
-
-        const map = mapRefInstance.current;
-        const markers = markersRefInstance.current;
-
-        if (map) {
-          map.setCenter(location);
-          map.setZoom(15);
-        }
-
-        if (markers && markers.length > 0 && markers[0]) {
-          markers[0].setPosition(location);
-        }
-
-        let pincode = GetPinCode(results[0]);
-        if (props.onChange) {
-          if (props.isPlaceRequired) {
-            props.onChange(pincode, { longitude: clickedLocation.lng, latitude: clickedLocation.lat }, results[0].formatted_address);
-          } else {
-            props.onChange(pincode, { longitude: clickedLocation.lng, latitude: clickedLocation.lat });
-          }
-        }
-      } else {
-        console.warn("Manual Geocode failed for:", query, "Status:", status);
-      }
-    });
-  };
-
   useEffect(() => {
     async function mapScriptCall() {
       const getLatLng = (position) => {
-        try {
-          initAutocomplete(props.onChange, { lat: position.coords.latitude, lng: position.coords.longitude }, props.isPlaceRequired, mapRef.current, inputRef.current, mapRefInstance, markersRefInstance);
-        } catch (err) {
-          console.error("Map init failed:", err);
-          setErrorMsg("Init Error: " + err.message);
-        }
+        initAutocomplete(props.onChange, { lat: position.coords.latitude, lng: position.coords.longitude }, props.isPlaceRequired);
       };
       const getLatLngError = (error) => {
-        try {
-          let defaultLatLong = {};
-          if (props?.isPTDefault) {
-            defaultLatLong = props?.PTdefaultcoord?.defaultConfig || { lat: 31.6160638, lng: 74.8978579 };
-          } else {
-            defaultLatLong = {
-              lat: 31.6160638,
-              lng: 74.8978579,
-            };
-          }
-          initAutocomplete(props.onChange, defaultLatLong, props.isPlaceRequired, mapRef.current, inputRef.current, mapRefInstance, markersRefInstance);
-        } catch (err) {
-          console.error("Map init fallback failed:", err);
-          setErrorMsg("Init Fallback Error: " + err.message);
+        let defaultLatLong = {};
+        if (props?.isPTDefault) {
+          defaultLatLong = props?.PTdefaultcoord?.defaultConfig || { lat: 31.6160638, lng: 74.8978579 };
+        } else {
+          defaultLatLong = {
+            lat: 31.6160638,
+            lng: 74.8978579,
+          };
         }
+        initAutocomplete(props.onChange, defaultLatLong, props.isPlaceRequired);
       };
 
       const initMaps = () => {
-        try {
-          if (props.position?.latitude && props.position?.longitude) {
-            getLatLng({ coords: props.position });
-          } else if (navigator?.geolocation) {
-            navigator.geolocation.getCurrentPosition(getLatLng, getLatLngError, { timeout: 3000 });
-          } else {
-            getLatLngError();
-          }
-        } catch (err) {
-          setErrorMsg("InitMaps Error: " + err.message);
+        if (props.position?.latitude && props.position?.longitude) {
+          getLatLng({ coords: props.position });
+        } else if (navigator?.geolocation) {
+          navigator.geolocation.getCurrentPosition(getLatLng, getLatLngError);
+        } else {
+          getLatLngError();
         }
       };
 
-      try {
-        loadGoogleMaps(initMaps, (err) => {
-          setErrorMsg("Load Error: " + (err.message || String(err)));
-        });
-      } catch (err) {
-        setErrorMsg("Loader Init Error: " + err.message);
-      }
+      loadGoogleMaps(initMaps);
     }
     mapScriptCall();
   }, []);
 
   return (
     <div className="map-wrap">
-      {errorMsg && (
-        <div style={{ color: "red", padding: "12px", background: "#fee", border: "1px solid red", marginBottom: "12px", borderRadius: "4px", fontSize: "14px" }}>
-          <strong>Map Component Error:</strong> {errorMsg}
-        </div>
-      )}
-      <div className="map-search-bar-wrap" style={{ display: "flex", gap: "8px", background: "none", boxShadow: "none", width: "100%", padding: "0 0 10px 0" }}>
-        <div style={{ display: "flex", alignItems: "center", background: "#fff", border: "1px solid #ccc", borderRadius: "4px", padding: "0 10px", flex: 1, boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
-          <SearchIconSvg className="map-search-bar-icon" style={{ fill: "#464646", marginRight: "8px" }} />
-          <input
-            ref={inputRef}
-            id="pac-input"
-            className="map-search-bar"
-            type="text"
-            placeholder="Search Address"
-            style={{ border: "none", outline: "none", flex: 1, height: "40px", padding: "0" }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleManualSearch();
-              }
-            }}
-          />
-        </div>
-        <button
-          type="button"
-          onClick={handleManualSearch}
-          style={{
-            background: "#a82227",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            padding: "0 20px",
-            cursor: "pointer",
-            fontWeight: "bold",
-            height: "42px",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-          }}
-        >
-          Search
-        </button>
+      <div className="map-search-bar-wrap">
+        {/* <img src={searchicon} className="map-search-bar-icon" alt=""/> */}
+        <SearchIconSvg className="map-search-bar-icon" />
+        <input id="pac-input" className="map-search-bar" type="text" placeholder="Search Address"  style={{backgroundPosition: "left"}}/>
       </div>
-      <div ref={mapRef} id="map" className="map"></div>
+      <div id="map" className="map"></div>
     </div>
   );
 };

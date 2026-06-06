@@ -162,10 +162,6 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   const selectedpropertyUsageType = watch("propertyUsageType")?.code;
   const selectedFloors = watch("noOfFloors")?.code;
   const isResidentialFlat = selectedpropertyUsageType === "RESIDENTIAL" && selectedPropertyType === "BUILTUP.SHAREDPROPERTY";
-  const hideSubUsageType =
-    isResidentialFlat ||
-    (selectedpropertyUsageType === "RESIDENTIAL" &&
-      selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY");
   const allUsageOptions = useMemo(() => UsageCategoryNewData?.PropertyTax?.UsageCategory || [], [UsageCategoryNewData]);
 
   // Memoize floorOptions to prevent new [] reference each render (was causing infinite loop)
@@ -208,10 +204,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     const getPropertyType = getPropertyTypeData?.find((item) => item?.code == stateDataCheck?.propertyType?.code);
     // Use the resolved MDMS minor code (e.g. "INDUSTRIAL") so the filter matches segments in sub-usage codes
     var restoredCode = (getResident && getResident.code) || (stateDataCheck && stateDataCheck.propertyUsageType && stateDataCheck.propertyUsageType.code);
-    var allUsageForRestore = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
-    var checkData = allUsageForRestore ? allUsageForRestore.filter(function(item) {
-      return item && item.code && restoredCode && item.code.split(".").indexOf(restoredCode) !== -1;
-    }) : [];
+    var checkData = getUsageOptionsByCode(restoredCode);
     const checkFloors = floorOptions?.find((f) => f.code == stateDataCheck?.noOfFloors?.code);
 
     setSubUsageData(checkData);
@@ -294,10 +287,7 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                   select={(e) => {
                     props.onChange(e);
                     var selectedCode = e && e.code;
-                    var allUsage = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
-                    var checkData = allUsage ? allUsage.filter(function(item) {
-                      return item && item.code && selectedCode && item.code.split(".").indexOf(selectedCode) !== -1;
-                    }) : [];
+                    var checkData = getUsageOptionsByCode(selectedCode);
                     setSubUsageData(checkData);
                   }}
                   selected={props.value}
@@ -596,13 +586,14 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                   rules={{ required: t("Sub Usage Type is required") }}
                   render={(props) => {
                     var unitUsageVal = watch("unitDetails." + index + ".unitUsageType");
-                    var unitCode = unitUsageVal && typeof unitUsageVal === "object" ? unitUsageVal.code : null;
-                    var allUsage = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
-                    var rowOptions = (unitCode && allUsage)
-                      ? allUsage.filter(function(opt) { return opt && opt.code && opt.code.split(".").indexOf(unitCode) !== -1; })
+                    var unitCode = unitUsageVal && typeof unitUsageVal === "object" ? unitUsageVal.code : unitUsageVal;
+                    var rowOptions = unitCode
+                      ? getUsageOptionsByCode(unitCode)
                       : getSubUsageData;
+                    var selectedCode = props.value?.code || props.value;
+                    var selectedValue = rowOptions?.find((o) => o.code === selectedCode) || props.value;
                     // Look up full MDMS object so Dropdown can display name correctly
-                    return <Dropdown select={props.onChange} selected={rowOptions?.find((o) => o.code === (props.value?.code || props.value)) || props.value} option={rowOptions} optionKey="name" t={t} />;
+                    return <Dropdown select={props.onChange} selected={selectedValue} option={rowOptions} optionKey="name" t={t} />;
                   }}
                 />
                 {errors?.unitDetails?.[index]?.subUsageType && (

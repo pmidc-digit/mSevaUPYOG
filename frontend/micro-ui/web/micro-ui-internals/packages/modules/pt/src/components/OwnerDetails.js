@@ -388,8 +388,20 @@ useEffect(() => {
                     control={control}
                     name={`owners.${index}.name`}
                     defaultValue={item?.name || ""}
-                    rules={{ required: "Name required" }}
-                    render={(props) => <TextInput {...props} disable={isEditMode} />}
+                    rules={{
+                      required: "Name required",
+                      validate: {
+                        noNumbers: (value) => !/\d/.test(value || "") || "Numeric values are not allowed in name",
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        value={props.value}
+                        onChange={(e) => props.onChange(e.target.value.replace(/\d/g, ""))}
+                        onBlur={props.onBlur}
+                        disable={isEditMode}
+                      />
+                    )}
                   />
                   {errors?.owners?.[index]?.name && (
                     <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].name.message}</p>
@@ -526,6 +538,7 @@ useEffect(() => {
                           selected={props.value}
                           option={[
                             { name: "Father", code: "FATHER" },
+                            { name: "Mother", code: "MOTHER" },
                             { name: "Husband", code: "HUSBAND" }
                           ]}
                           optionKey="name"

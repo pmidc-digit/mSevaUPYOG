@@ -160,7 +160,13 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
   const selectedPropertyType = watch("propertyType")?.code;
   const selectedpropertyUsageType = watch("propertyUsageType")?.code;
+  const selectedFloors = watch("noOfFloors")?.code;
   const isResidentialFlat = selectedpropertyUsageType === "RESIDENTIAL" && selectedPropertyType === "BUILTUP.SHAREDPROPERTY";
+  const hideSubUsageType =
+    isResidentialFlat ||
+    (selectedpropertyUsageType === "RESIDENTIAL" &&
+      selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY" &&
+      selectedFloors === "1");
   const allUsageOptions = useMemo(() => UsageCategoryNewData?.PropertyTax?.UsageCategory || [], [UsageCategoryNewData]);
 
   // Memoize floorOptions to prevent new [] reference each render (was causing infinite loop)
@@ -244,8 +250,6 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
     setValue("plotSize", stateDataCheck?.plotSize);
     setValue("noOfFloors", checkFloors);
   }, [stateDataCheck, propertyType]);
-
-  const selectedFloors = watch("noOfFloors")?.code;
 
   useEffect(() => {
     if (!selectedFloors || isRestoring) return;
@@ -576,7 +580,7 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                 )}
               </div>
             </LabelFieldPair>
-            {!isResidentialFlat && (
+            {!hideSubUsageType && (
             <LabelFieldPair style={colItem}>
               <CardLabel className="card-label-smaller">{t("Sub Usage Type")}*</CardLabel>
               <div className="form-field">

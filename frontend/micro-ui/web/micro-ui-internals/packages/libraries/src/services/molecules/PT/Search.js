@@ -1,6 +1,8 @@
 import { getPropertySubtypeLocale, getPropertyTypeLocale } from "../../../utils/pt";
 import { PTService } from "../../elements/PT";
 
+const getBooleanDisplayValue = (value) => (value === true ? "Yes" : "No");
+
 export const PTSearch = {
   all: async (tenantId, filters = {}) => {
     const response = await PTService.search({ tenantId, filters });
@@ -264,8 +266,8 @@ export const PTSearch = {
           { title: "Allotment Date", value: response?.additionalDetails?.allotmentDate },
           { title: "Business Name", value: response?.additionalDetails?.businessName },
           { title: "Remarks", value: response?.additionalDetails?.remarks },
-          { title: "Do you have any inflammable material stored in your property?", value: response?.additionalDetails?.inflammable===false?"No":true?"Yes":null},
-          { title: "Height of property more than 36 feet?", value: response?.additionalDetails?.heightAbove36Feet===false?"No":true?"Yes":null},
+          { title: "Do you have any inflammable material stored in your property?", value: getBooleanDisplayValue(response?.additionalDetails?.inflammable) },
+          { title: "Height of property more than 36 feet?", value: getBooleanDisplayValue(response?.additionalDetails?.heightAbove36Feet) },
         ],
         additionalDetails: {
           floors: response?.units

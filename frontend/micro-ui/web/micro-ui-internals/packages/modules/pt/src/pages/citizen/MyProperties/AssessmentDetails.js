@@ -10,6 +10,7 @@ import { Modal, Dropdown, Row, StatusTable } from "@mseva/digit-ui-react-compone
 import { convertEpochToDate } from "../../../utils/index";
 import PTImportantDates from "../../../pageComponents/PTImportantDates";
 
+const getBooleanDisplayValue = (value) => (value === true ? "Yes" : "No");
 
 const AssessmentDetails = () => {
   const { t } = useTranslation();
@@ -688,8 +689,8 @@ console.log("isCheck",isCheck)
                   { title: t("PT_ASSESMENT_INFO_ALLOTMENT_DATE"), value: t(applicationDetails?.applicationData?.additionalDetails?.allotmentDate) || t("CS_NA") },
                   { title: t("PT_ASSESMENT_INFO_REMARKS"), value: t(applicationDetails?.applicationData?.additionalDetails?.remarks) || t("CS_NA") },
                   { title: t("PT_ASSESMENT_INFO_BUSINESS_NAME"), value: t(applicationDetails?.applicationData?.businessName) || t("CS_NA") },
-                  { title: t("Do you have any inflammable material stored in your property?"), value: t(applicationDetails?.additionalDetails?.inflammable === false ? "No" : true ? "Yes" : "NA") || t("CS_NA") },
-                  { title: t("Height of property more than 36 feet?"), value: t(applicationDetails?.additionalDetails?.heightAbove36Feet === false ? "No" : true ? "Yes" : "NA") || t("CS_NA") },
+                  { title: t("Do you have any inflammable material stored in your property?"), value: t(getBooleanDisplayValue(applicationDetails?.additionalDetails?.inflammable)) },
+                  { title: t("Height of property more than 36 feet?"), value: t(getBooleanDisplayValue(applicationDetails?.additionalDetails?.heightAbove36Feet)) },
                 ],
                 additionalDetails: {
                   floors: applicationDetails?.applicationData?.units

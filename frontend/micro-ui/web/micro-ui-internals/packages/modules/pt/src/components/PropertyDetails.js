@@ -162,6 +162,11 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   const selectedpropertyUsageType = watch("propertyUsageType")?.code;
   const selectedFloors = watch("noOfFloors")?.code;
   const isResidentialFlat = selectedpropertyUsageType === "RESIDENTIAL" && selectedPropertyType === "BUILTUP.SHAREDPROPERTY";
+  const hideSubUsageType =
+    isResidentialFlat ||
+    (selectedpropertyUsageType === "RESIDENTIAL" &&
+      selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY" &&
+      selectedFloors === "1");
   const allUsageOptions = useMemo(() => UsageCategoryNewData?.PropertyTax?.UsageCategory || [], [UsageCategoryNewData]);
 
   // Memoize floorOptions to prevent new [] reference each render (was causing infinite loop)

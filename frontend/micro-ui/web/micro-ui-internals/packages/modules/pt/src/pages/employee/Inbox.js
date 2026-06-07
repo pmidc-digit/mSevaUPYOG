@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@mseva/digit-ui-react-components";
+import { Link } from "react-router-dom";
 
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
@@ -87,6 +88,8 @@ const Inbox = ({
     setPageSize(Number(e.target.value));
   };
 
+  const totalCount = Number(data?.[0]?.totalCount);
+
   if (rest?.data?.length !== null) {
     if (isMobile) {
       return (
@@ -112,7 +115,31 @@ const Inbox = ({
     } else {
       return (
         <div>
-          {isInbox && <Header>{t("ES_COMMON_INBOX")}</Header>}
+          {isInbox && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", marginBottom: "16px" }}>
+              <Header>
+                {t("ES_COMMON_INBOX")}
+                {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
+              </Header>
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "12px", marginLeft: "auto" }}>
+                <Link to="/digit-ui/employee/pt/new-application" style={{ textDecoration: "none" }}>
+                  <button className="TL-new-application-btn" type="button">
+                    <span className="TL-plus-icon">+</span> {t("ES_TITLE_NEW_REGISTRATION")}
+                  </button>
+                </Link>
+                <Link to="/digit-ui/employee/pt/search" style={{ textDecoration: "none" }}>
+                  <button className="TL-new-application-btn" type="button">
+                    {t("PT_SEARCH_PROPERTY")}
+                  </button>
+                </Link>
+                <Link to="/digit-ui/employee/pt/application-search" style={{ textDecoration: "none" }}>
+                  <button className="TL-new-application-btn" type="button">
+                    {t("ES_COMMON_APPLICATION_SEARCH")}
+                  </button>
+                </Link>
+              </div>
+            </div>
+          )}
           {!isInbox && <Header>{t("SEARCH_PROPERTY")}</Header>}
           
           <DesktopInbox
@@ -135,7 +162,7 @@ const Inbox = ({
             parentRoute={parentRoute}
             searchParams={searchParams}
             sortParams={sortParams}
-            totalRecords={Number(data?.[0]?.totalCount)}
+            totalRecords={totalCount}
             filterComponent={filterComponent}
             EmptyResultInboxComp={EmptyResultInboxComp}
             useNewInboxAPI={useNewInboxAPI}

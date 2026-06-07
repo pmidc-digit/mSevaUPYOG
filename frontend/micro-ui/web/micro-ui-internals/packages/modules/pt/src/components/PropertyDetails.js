@@ -679,7 +679,23 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                   rules={{ required: t("Floor is required") }}
                   defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || null}
                   // defaultValue={item?.floor || ""}
-                  render={(props) => <Dropdown select={props.onChange} selected={props.value} option={tesFloorOptions} optionKey="name" t={t} />}
+                  render={(props) => {
+                    const isLockedGroundFloorUnit =
+                      selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY" &&
+                      index === 0 &&
+                      (props.value?.code === "0" || props.value === "0");
+
+                    return (
+                      <Dropdown
+                        select={props.onChange}
+                        selected={props.value}
+                        option={tesFloorOptions}
+                        optionKey="name"
+                        t={t}
+                        disable={isLockedGroundFloorUnit}
+                      />
+                    );
+                  }}
                 />
                 {errors?.unitDetails?.[index]?.floor && (
                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].floor.message}</p>

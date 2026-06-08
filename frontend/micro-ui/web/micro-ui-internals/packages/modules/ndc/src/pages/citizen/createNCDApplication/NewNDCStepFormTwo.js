@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
+import _ from "lodash";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { updateNDCForm } from "../../../redux/actions/NDCFormActions";
 
@@ -65,7 +66,6 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
     // Pick the source of truth for the application
     const baseApplication = checkFormData?.responseData?.[0] || {};
 
-
     // Build owners array
     const owners = [
       {
@@ -77,7 +77,6 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
         type: user?.info?.type,
       },
     ];
-
 
     // Clone and modify workflow action
     const updatedApplication = {

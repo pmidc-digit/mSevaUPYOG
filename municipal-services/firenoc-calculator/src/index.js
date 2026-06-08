@@ -47,23 +47,35 @@ app.use(
 app.use(tracer());
 
 let swaggerDoc = require("./swagger.json");
+let swaggerEnabled = envVariables.SWAGGER_ENABLED;
+if (typeof swaggerEnabled === "string") {
+  swaggerEnabled = swaggerEnabled.toLowerCase() === "true";
+}
 
-swaggerTools.initializeMiddleware(swaggerDoc, middleware => {
-  app.use(middleware.swaggerMetadata());
-
-  // Validate Swagger requests
-  // app.use(middleware.swaggerValidator());
-
-  // Route validated requests to appropriate controller
-  // app.use(middleware.swaggerRouter(options));
-
-  // Serve the Swagger documents and Swagger UI
-  app.use(middleware.swaggerUi());
+const startServer = () => {
   let serverPort = envVariables.SERVER_PORT;
   app.server.listen(serverPort, () => {
     console.log("port is ", serverPort);
   });
-});
+};
+
+if (swaggerEnabled) {
+  swaggerTools.initializeMiddleware(swaggerDoc, middleware => {
+    app.use(middleware.swaggerMetadata());
+
+    // Validate Swagger requests
+    // app.use(middleware.swaggerValidator());
+
+    // Route validated requests to appropriate controller
+    // app.use(middleware.swaggerRouter(options));
+
+    // Serve the Swagger documents and Swagger UI
+    app.use(middleware.swaggerUi());
+    startServer();
+  });
+} else {
+  startServer();
+}
 app.use("/", api(pool));
 
 //error handler middleware

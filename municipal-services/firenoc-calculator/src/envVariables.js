@@ -1,3 +1,7 @@
+import dotenv from "dotenv";
+
+dotenv.config();
+
 const envVariables = {
   //---------------------------- DATABASE CONFIGURATIONS -----------------------------//
   DB_USERNAME: process.env.DB_USERNAME || "postgres",
@@ -75,7 +79,8 @@ const envVariables = {
   TRACER_ENABLE_REQUEST_LOGGING:
     process.env.TRACER_ENABLE_REQUEST_LOGGING || false,
   HTTP_CLIENT_DETAILED_LOGGING_ENABLED:
-    process.env.HTTP_CLIENT_DETAILED_LOGGING_ENABLED || false
+    process.env.HTTP_CLIENT_DETAILED_LOGGING_ENABLED || false,
+  SWAGGER_ENABLED: process.env.SWAGGER_ENABLED || false
 };
 
 export default envVariables;

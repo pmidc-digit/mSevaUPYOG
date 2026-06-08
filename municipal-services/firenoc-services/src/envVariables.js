@@ -15,6 +15,8 @@ const envVariables = {
 
   //kafka configurations
   KAFKA_BROKER_HOST: process.env.KAFKA_BROKER_HOST || "localhost:9092",
+  KAFKA_ENABLED: process.env.KAFKA_ENABLED || "true",
+  KAFKA_CONSUMER_ENABLED: process.env.KAFKA_CONSUMER_ENABLED || "false",
   KAFKA_TOPICS_FIRENOC_CREATE:
     process.env.KAFKA_TOPICS_FIRENOC_CREATE || "save-fn-firenoc",
   KAFKA_TOPICS_FIRENOC_UPDATE:
@@ -135,12 +137,13 @@ const envVariables = {
 
   //pagination configurations
   EGOV_FN_DEFAULT_OFFSET: process.env.EGOV_FN_DEFAULT_OFFSET || 0,
-  EGOV_FN_DEFAULT_LIMIT: process.env.EGOV_FN_DEFAULT_OFFSET || 10,
-  EGOV_FN_MAX_OFFSET: process.env.EGOV_FN_DEFAULT_OFFSET || 100,
-  EGOV_HOST_BASE_URL:process.env.EGOV_HOST_BASE_URL|| "https://dev.digit.org/",
-  EGOV_RECEIPT_URL:process.EGOV_RECEIPT_URL||"citizen/fire-noc/search-preview",
+  EGOV_FN_DEFAULT_LIMIT: process.env.EGOV_FN_DEFAULT_LIMIT || 10,
+  EGOV_FN_MAX_OFFSET: process.env.EGOV_FN_MAX_OFFSET || 100,
+  EGOV_HOST_BASE_URL: process.env.EGOV_HOST_BASE_URL || "https://dev.digit.org/",
+  EGOV_RECEIPT_URL:
+    process.env.EGOV_RECEIPT_URL || "citizen/fire-noc/search-preview",
   ACTION_PAY: "PAY",
-  SENDBACK:"SENDBACK",
-  SENDBACKTOCITIZEN:"SENDBACKTOCITIZEN"
+  SENDBACK: "SENDBACK",
+  SENDBACKTOCITIZEN: "SENDBACKTOCITIZEN"
 };
 export default envVariables;

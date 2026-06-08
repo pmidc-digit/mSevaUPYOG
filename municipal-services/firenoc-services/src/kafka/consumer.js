@@ -10,41 +10,52 @@ import { updateApiResponse } from "../api/update";
 // import { httpRequest } from "../api";
 const { initializeProducer } = require("../kafka/producer");
 let producer;
-initializeProducer().then((p) => {
-   producer = p;
+const isFlagEnabled = value =>
+  String(value).toLowerCase() === "true" || String(value) === "1";
 
-  logger.info('Kafka producer connected');
-}).catch((error) => {
-  logger.error(error.stack || error);
-  process.exit(1);
-});
-var options = {
-  // connect directly to kafka broker (instantiates a KafkaClient)
-  kafkaHost: envVariables.KAFKA_BROKER_HOST,
-  groupId: "firenoc-consumer-group",
-  autoCommit: true,
-  autoCommitIntervalMs: 5000,
-  sessionTimeout: 15000,
-  fetchMaxBytes: 10 * 1024 * 1024, // 10 MB
-  // An array of partition assignment protocols ordered by preference. 'roundrobin' or 'range' string for
-  // built ins (see below to pass in custom assignment protocol)
-  protocol: ["roundrobin"],
-  // Offsets to use for new groups other options could be 'earliest' or 'none'
-  // (none will emit an error if no offsets were saved) equivalent to Java client's auto.offset.reset
-  fromOffset: "earliest",
-  // how to recover from OutOfRangeOffset error (where save offset is past server retention)
-  // accepts same value as fromOffset
-  outOfRangeOffset: "earliest"
-};
+const kafkaEnabled = isFlagEnabled(envVariables.KAFKA_ENABLED);
+const consumerEnabled = isFlagEnabled(envVariables.KAFKA_CONSUMER_ENABLED);
 
-var consumerGroup = new kafka.ConsumerGroup(options, [
-  envVariables.KAFKA_TOPICS_FIRENOC_CREATE,
-  envVariables.KAFKA_TOPICS_FIRENOC_UPDATE,
-  envVariables.KAFKA_TOPICS_FIRENOC_WORKFLOW,
-  envVariables.KAFKA_TOPICS_RECEIPT_CREATE
-]);
+if (kafkaEnabled) {
+  initializeProducer()
+    .then(p => {
+      producer = p;
+    })
+    .catch(error => {
+      logger.error(error.stack || error);
+    });
+}
 
-console.log("Consumer ");
+let consumerGroup = null;
+
+if (kafkaEnabled && consumerEnabled) {
+  const options = {
+    // connect directly to kafka broker (instantiates a KafkaClient)
+    kafkaHost: envVariables.KAFKA_BROKER_HOST,
+    groupId: "firenoc-consumer-group",
+    autoCommit: true,
+    autoCommitIntervalMs: 5000,
+    sessionTimeout: 15000,
+    fetchMaxBytes: 10 * 1024 * 1024, // 10 MB
+    // An array of partition assignment protocols ordered by preference. 'roundrobin' or 'range' string for
+    // built ins (see below to pass in custom assignment protocol)
+    protocol: ["roundrobin"],
+    // Offsets to use for new groups other options could be 'earliest' or 'none'
+    // (none will emit an error if no offsets were saved) equivalent to Java client's auto.offset.reset
+    fromOffset: "earliest",
+    // how to recover from OutOfRangeOffset error (where save offset is past server retention)
+    // accepts same value as fromOffset
+    outOfRangeOffset: "earliest"
+  };
+
+  consumerGroup = new kafka.ConsumerGroup(options, [
+    envVariables.KAFKA_TOPICS_FIRENOC_CREATE,
+    envVariables.KAFKA_TOPICS_FIRENOC_UPDATE,
+    envVariables.KAFKA_TOPICS_FIRENOC_WORKFLOW,
+    envVariables.KAFKA_TOPICS_RECEIPT_CREATE
+  ]);
+
+  console.log("Consumer ");
 
 consumerGroup.on("message", function(message) {
   console.log("consumer-topic", message.topic);
@@ -411,6 +422,11 @@ consumerGroup.on("message", function(message) {
   //   }
   // });
 
+  if (!producer) {
+    logger.warn("Kafka producer is not ready, skipping consumer-side publish");
+    return;
+  }
+
   producer.send(payloads).then((data) => {
     logger.info('Message sent to Kafka:', data);
     //logger.info("jobid: " + jobid + ": published to kafka successfully");
@@ -433,5 +449,10 @@ consumerGroup.on("error", function(err) {
 consumerGroup.on("offsetOutOfRange", function(err) {
   console.log("offsetOutOfRange:", err);
 });
+} else {
+  logger.info(
+    "Kafka consumer disabled. Set KAFKA_ENABLED=true and KAFKA_CONSUMER_ENABLED=true to consume topics locally."
+  );
+}
 
 export default consumerGroup;

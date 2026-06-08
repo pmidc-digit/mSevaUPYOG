@@ -4,6 +4,10 @@
   "private": true,
   "description": "Starter project for an ES6 RESTful Express API",
   "main": "dist",
+  "engines": {
+    "node": ">=18 <19",
+    "npm": ">=10 <11"
+  },
   "scripts": {
     "dev": " cross-env NODE_ENV=development nodemon -w src --exec \"babel-node src --presets es2015,stage-0\"",
     "build": "babel src -s -D -d dist --presets es2015,stage-0",
@@ -19,11 +23,12 @@
   "eslintConfig": {
     "extends": "eslint:recommended",
     "parserOptions": {
-      "ecmaVersion": 7,
+      "ecmaVersion": 2018,
       "sourceType": "module"
     },
     "env": {
-      "node": true
+      "node": true,
+      "es6": true
     },
     "rules": {
       "no-console": 0,

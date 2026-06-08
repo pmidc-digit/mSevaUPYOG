@@ -5,21 +5,26 @@
   "description": "Starter project for an ES6 RESTful Express API",
   "main": "dist",
   "scripts": {
-  "dev": "cross-env NODE_ENV=development DEBUG=swagger-express-validator nodemon -w src --exec \"babel-node src --presets es2015,stage-0\"",
+  "dev": "cross-env NODE_ENV=development DEBUG=swagger-express-validator nodemon -w src --exec \"babel-node src/index.js --presets es2015,stage-0\"",
   "build": "babel src -s -D -d dist --presets es2015,stage-0",
-  "start": "cross-env NODE_ENV=production node --max-old-space-size=4096 dist",
+  "start": "cross-env NODE_ENV=production node --max-old-space-size=4096 dist/index.js",
   "prestart": "npm run -s build",
-  "test": "eslint src",
-  "prod:start": "cross-env NODE_ENV=production node --max-old-space-size=4096 dist"
+  "test": "eslint --ext .js src",
+  "prod:start": "cross-env NODE_ENV=production node --max-old-space-size=4096 dist/index.js"
 },
+  "engines": {
+    "node": ">=22 <25",
+    "npm": ">=10"
+  },
   "eslintConfig": {
     "extends": "eslint:recommended",
     "parserOptions": {
-      "ecmaVersion": 7,
+      "ecmaVersion": 2018,
       "sourceType": "module"
     },
     "env": {
-      "node": true
+      "node": true,
+      "es6": true
     },
     "rules": {
       "no-console": 0,
@@ -34,6 +39,7 @@
     "compression": "^1.5.2",
     "cors": "^2.7.1",
     "cross-env": "^5.2.0",
+    "dotenv": "^16.6.1",
     "express": "^4.13.3",
     "express-async-handler": "^1.1.4",
     "kafka-node": "^5.0.0",

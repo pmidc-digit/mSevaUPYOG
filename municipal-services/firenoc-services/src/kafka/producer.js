@@ -1,47 +1,58 @@
 import logger from "../config/logger";
-var kafka = require("kafka-node");
 import envVariables from "../envVariables";
-const { Kafka, logLevel } = require('kafkajs')
-const Producer = kafka.Producer;
-let client;
-
-// if (process.env.NODE_ENV === "development") {
-//   client = new kafka.KafkaClient();
-//   console.log("local Producer- ");
-// } else {
-//   client = new kafka.KafkaClient({ kafkaHost: envVariables.KAFKA_BROKER_HOST });
-//   console.log("cloud Producer- ");
-// }
-// let kafkaClient = new Kafka({ 
-//   clientId: 'firenoc-services',
-//   logLevel: logLevel.INFO,
-//   brokers: [envVariables.KAFKA_BROKER_HOST], 
-//   retry: { retries: 1 },
-//   ssl: false
-// });
-
-//const producer = new Producer(client);
+const { Kafka, logLevel } = require("kafkajs");
 
 let producer;
+let producerPromise;
+
+const isFlagEnabled = value =>
+  String(value).toLowerCase() === "true" || String(value) === "1";
 
 const initializeProducer = async () => {
+  if (!isFlagEnabled(envVariables.KAFKA_ENABLED)) {
+    logger.warn("Kafka producer disabled via KAFKA_ENABLED=false");
+    return null;
+  }
+
   if (producer) return producer;
+  if (producerPromise) return producerPromise;
 
-  const kafka = new Kafka({
-    clientId: 'firenoc-services',
-    logLevel: logLevel.INFO,
-    brokers: [envVariables.KAFKA_BROKER_HOST], 
-    retry: { retries: 1 },
-    ssl: false
-  });
+  producerPromise = (async () => {
+    const kafka = new Kafka({
+      clientId: "firenoc-services",
+      logLevel: logLevel.INFO,
+      brokers: [envVariables.KAFKA_BROKER_HOST],
+      retry: { retries: 1 },
+      ssl: false
+    });
 
-  producer = kafka.producer();
-  await producer.connect();
+    producer = kafka.producer();
+    await producer.connect();
+    logger.info("Kafka producer connected");
 
-  return producer;
+    return producer;
+  })();
+
+  try {
+    return await producerPromise;
+  } catch (error) {
+    producerPromise = null;
+    producer = null;
+    throw error;
+  }
 };
 
-module.exports = { initializeProducer };
+const sendMessage = async payload => {
+  const kafkaProducer = await initializeProducer();
+  if (!kafkaProducer) {
+    logger.warn("Skipping Kafka publish because producer is disabled");
+    return null;
+  }
+
+  return kafkaProducer.send(payload);
+};
+
+module.exports = { initializeProducer, sendMessage };
 
 // producer.on("ready", function() {
 //   console.log("Producer is ready");

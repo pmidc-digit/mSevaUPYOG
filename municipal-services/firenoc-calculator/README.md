@@ -2,6 +2,21 @@
 
 The main objective of the Firenoc calculator module is to create, update, search billing slabs. Calculate and generate FireNOC charges.
 
+## Local Development
+
+This service now targets Node.js `18.20.8` LTS for local development. The repo includes a [.nvmrc](/Users/tarun/Desktop/mSevaUPYOG/municipal-services/firenoc-calculator/.nvmrc) file and an [.env.example](/Users/tarun/Desktop/mSevaUPYOG/municipal-services/firenoc-calculator/.env.example) template.
+
+Quick start:
+
+```bash
+nvm use
+npm install
+cp .env.example .env
+npm run dev
+```
+
+See [LOCALSETUP.md](/Users/tarun/Desktop/mSevaUPYOG/municipal-services/firenoc-calculator/LOCALSETUP.md) for dependency and port-forward details.
+
 ### DB UML Diagram
 - To Do
 

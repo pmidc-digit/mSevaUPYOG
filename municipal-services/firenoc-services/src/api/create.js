@@ -14,16 +14,7 @@ import { validateFireNOCModel } from "../utils/modelValidation";
 import set from "lodash/set";
 import get from "lodash/get";
 const asyncHandler = require("express-async-handler");
-const { initializeProducer } = require("../kafka/producer");
-let producer;
-initializeProducer().then((p) => {
-   producer = p;
-
-  logger.info('Kafka producer connected');
-}).catch((error) => {
-  logger.error(error.stack || error);
-  process.exit(1);
-});
+const { sendMessage } = require("../kafka/producer");
 export default ({ config }) => {
   let api = Router();
   api.post(
@@ -116,9 +107,9 @@ export const createApiResponse = async ({ body }, res, next) => {
   //  await producer.send(payloads, function(err, data) {
   //    if (err) console.log(err);
   //  });
-  await producer.send({
+  await sendMessage({
     topic: envVariables.KAFKA_TOPICS_FIRENOC_CREATE,
     messages: [{ value: JSON.stringify(body) }]
-});
+  });
   return response;
 };

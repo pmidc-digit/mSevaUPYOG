@@ -15,6 +15,28 @@ To setup the firenoc-service in your local system, clone the [Core Service repos
 
 ## Running Locally
 
+### Runtime
+
+- Recommended Node version: `24` LTS
+- Run `nvm use` in the project root after installing Node Version Manager compatible tooling
+- Install dependencies with `npm install`
+
+### Environment
+
+Create a local env file from the template and adjust values for your machine:
+
+```bash
+cp .env.example .env
+```
+
+Important local defaults included in `.env.example`:
+
+- Postgres defaults to `localhost:5432`
+- Kafka defaults to `localhost:9092`
+- `KAFKA_CONSUMER_ENABLED=false` so the HTTP service can boot locally without the async consumer loop
+
+If you want create/update flows to publish to Kafka locally, keep `KAFKA_ENABLED=true` and start Kafka. If you only want to boot the API for read/debug work, set `KAFKA_ENABLED=false`.
+
 To run the firenoc-service services locally, you need to run the below command to port forward below services
 
 ```bash
@@ -40,4 +62,14 @@ EGOV_FN_CALCULATOR_HOST: process.env.EGOV_FN_CALCULATOR_HOST || "http://localhos
 EGOV_MDMS_HOST: process.env.EGOV_MDMS_HOST || "http://localhost:8092"
 ```
 
-After updating the properties mentioned above, now start the fire-noc service by running the command **npm run dev** in terminal.
+After updating the properties mentioned above, start the service with:
+
+```bash
+npm run dev
+```
+
+For a production-style local run:
+
+```bash
+npm start
+```

@@ -18,16 +18,7 @@ import filter from "lodash/filter";
 import { validateFireNOCModel } from "../utils/modelValidation";
 import set from "lodash/set";
 import get from "lodash/get";
-const { initializeProducer } = require("../kafka/producer");
-let producer;
-initializeProducer().then((p) => {
-  producer = p;
-
-  logger.info('Kafka producer connected');
-}).catch((error) => {
-  logger.error(error.stack || error);
-  process.exit(1);
-});
+const { sendMessage } = require("../kafka/producer");
 export default ({ config }) => {
   let api = Router();
   api.post(
@@ -151,7 +142,7 @@ export const updateApiResponse = async ({ body }, next = {}) => {
   // initializeProducer.send(payloads, function(err, data) {
   //   if (err) console.log(err);
   // });
-  producer.send(payloads).then((data) => {
+  sendMessage(payloads).then((data) => {
     logger.info('Message sent to Kafka:', data);
     //logger.info("jobid: " + jobid + ": published to kafka successfully");
     //  successCallback({

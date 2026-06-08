@@ -1,5 +1,13 @@
 # Fire-NOC Service
 
+## Local Development
+
+- Recommended runtime: Node `24` LTS
+- Use `nvm use` in the repo root
+- Copy `.env.example` to `.env` and adjust values as needed
+- Run `npm install`
+- Use `npm run dev` for local development or `npm start` for a production-style boot
+
 The main objective of the Fire-NOC module is to provide **No Objection Certificate** indicating that the building is designed as per fire safety norms and regulation.
 ### DB UML Diagram
 - To Do

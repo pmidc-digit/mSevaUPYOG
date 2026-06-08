@@ -7,6 +7,8 @@ WORKDIR /app
 # Install Maven
 RUN apk add --no-cache maven
 
+RUN echo "nexusUsername=${nexusUsername}"
+
 # copy the project files
 COPY ${WORK_DIR}/pom.xml ./pom.xml
 COPY ${WORK_DIR}/settings.xml ./settings.xml

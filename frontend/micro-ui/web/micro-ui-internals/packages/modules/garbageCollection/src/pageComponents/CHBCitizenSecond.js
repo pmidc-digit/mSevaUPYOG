@@ -217,7 +217,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setPUnits(propertyDetailsFetch?.Properties[0]?.units);
       if (propertyDetailsFetch?.Properties || currentStepData?.venueDetails || currentStepData?.apiResponseData) {
         const backStepData = currentStepData?.venueDetails || currentStepData?.apiResponseData;
-        console.log("backStepData==???", backStepData);
 
         const location =
           propertyDetailsFetch?.Properties?.[0]?.owners?.[0]?.permanentAddress ||

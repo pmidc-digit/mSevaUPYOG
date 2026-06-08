@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 
 const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
 const colItem = { flex: 1, minWidth: "250px", flexDirection: "column", alignItems: "stretch" };
+const punjabPincodePattern = /^((14|15)\d{4}|160\d{3})$/;
 
 const PropertyAddressDetails = ({ goNext }) => {
   const dispatch = useDispatch();
@@ -181,7 +182,7 @@ const PropertyAddressDetails = ({ goNext }) => {
               name="city"
               rules={{ required: t("City is Required") }}
               render={(props) => (
-                <Dropdown select={props.onChange} selected={props.value} option={tenants} optionKey="name" t={t} disable={isCitizen} />
+                <Dropdown select={props.onChange} selected={props.value} option={tenants} optionKey="name" t={t} disable={true} />
               )}
             />
             {errors.city && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.city?.message}</p>}
@@ -251,6 +252,7 @@ const PropertyAddressDetails = ({ goNext }) => {
                   value: /^[1-9][0-9]{5}$/,
                   message: t("PTR_PINCODE_INVALID"),
                 },
+                validate: (value) => !value || punjabPincodePattern.test(value) || "Invalid PIN Code.",
               }}
               render={({ value, onChange, onBlur }) => (
                 <TextInput

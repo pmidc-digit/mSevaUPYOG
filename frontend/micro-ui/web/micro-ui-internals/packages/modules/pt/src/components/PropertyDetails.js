@@ -160,11 +160,25 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
   const selectedPropertyType = watch("propertyType")?.code;
   const selectedpropertyUsageType = watch("propertyUsageType")?.code;
+  const selectedFloors = watch("noOfFloors")?.code;
   const isResidentialFlat = selectedpropertyUsageType === "RESIDENTIAL" && selectedPropertyType === "BUILTUP.SHAREDPROPERTY";
+  const hideSubUsageType =
+    isResidentialFlat ||
+    (selectedpropertyUsageType === "RESIDENTIAL" &&
+      selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY");
+  const allUsageOptions = useMemo(() => UsageCategoryNewData?.PropertyTax?.UsageCategory || [], [UsageCategoryNewData]);
 
   // Memoize floorOptions to prevent new [] reference each render (was causing infinite loop)
   const floorOptionsRaw = FloorData?.PropertyTax?.Floor;
   const floorOptions = useMemo(() => floorOptionsRaw || [], [floorOptionsRaw]);
+
+  const getUsageOptionsByCode = (usageCode) => {
+    if (!usageCode) return [];
+
+    return allUsageOptions.filter((item) => {
+      return item?.code && item.code.split(".").indexOf(usageCode) !== -1;
+    });
+  };
 
   const tesFloorOptions = useMemo(() => {
     return [...floorOptions].sort((a, b) => {
@@ -178,7 +192,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
   useEffect(() => {
     if (!(location?.state || stateDataCheck)) return;
-    if (!getUsageData?.length || !getPropertyTypeData?.length) return; // wait for MDMS
+    if (!getUsageData?.length || !getPropertyTypeData?.length || !allUsageOptions?.length) return; // wait for MDMS
 
     setIsRestoring(true);
 
@@ -194,10 +208,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     const getPropertyType = getPropertyTypeData?.find((item) => item?.code == stateDataCheck?.propertyType?.code);
     // Use the resolved MDMS minor code (e.g. "INDUSTRIAL") so the filter matches segments in sub-usage codes
     var restoredCode = (getResident && getResident.code) || (stateDataCheck && stateDataCheck.propertyUsageType && stateDataCheck.propertyUsageType.code);
-    var allUsageForRestore = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
-    var checkData = allUsageForRestore ? allUsageForRestore.filter(function(item) {
-      return item && item.code && restoredCode && item.code.split(".").indexOf(restoredCode) !== -1;
-    }) : [];
+    var checkData = getUsageOptionsByCode(restoredCode);
     const checkFloors = floorOptions?.find((f) => f.code == stateDataCheck?.noOfFloors?.code);
 
     setSubUsageData(checkData);
@@ -218,13 +229,16 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
       remove([...Array(fields.length).keys()]);
 
       stateDataCheck.unitDetails.forEach((unit) => {
-        append(unit);
+        append({
+          ...unit,
+          subUsageType: unit?.subUsageType || null,
+        });
       });
 
       trigger();
     }
     setTimeout(() => setIsRestoring(false), 0);
-  }, [location, getUsageData, stateDataCheck, getPropertyTypeData, UsageCategoryNewData, floorOptions]);
+  }, [location, getUsageData, stateDataCheck, getPropertyTypeData, allUsageOptions, floorOptions]);
 
   const propertyType = watch("propertyType");
 
@@ -235,8 +249,6 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
     setValue("plotSize", stateDataCheck?.plotSize);
     setValue("noOfFloors", checkFloors);
   }, [stateDataCheck, propertyType]);
-
-  const selectedFloors = watch("noOfFloors")?.code;
 
   useEffect(() => {
     if (!selectedFloors || isRestoring) return;
@@ -279,10 +291,7 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                   select={(e) => {
                     props.onChange(e);
                     var selectedCode = e && e.code;
-                    var allUsage = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
-                    var checkData = allUsage ? allUsage.filter(function(item) {
-                      return item && item.code && selectedCode && item.code.split(".").indexOf(selectedCode) !== -1;
-                    }) : [];
+                    var checkData = getUsageOptionsByCode(selectedCode);
                     setSubUsageData(checkData);
                   }}
                   selected={props.value}
@@ -570,24 +579,25 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                 )}
               </div>
             </LabelFieldPair>
-            {!isResidentialFlat && (
+            {!hideSubUsageType && (
             <LabelFieldPair style={colItem}>
               <CardLabel className="card-label-smaller">{t("Sub Usage Type")}*</CardLabel>
               <div className="form-field">
                 <Controller
                   control={control}
                   name={`unitDetails.${index}.subUsageType`}
-                  defaultValue={getSubUsageData?.find((s) => s.code === item?.subUsageType?.code || s.code === item?.subUsageType) || null}
+                  defaultValue={item?.subUsageType || null}
                   rules={{ required: t("Sub Usage Type is required") }}
                   render={(props) => {
                     var unitUsageVal = watch("unitDetails." + index + ".unitUsageType");
-                    var unitCode = unitUsageVal && typeof unitUsageVal === "object" ? unitUsageVal.code : null;
-                    var allUsage = UsageCategoryNewData && UsageCategoryNewData.PropertyTax && UsageCategoryNewData.PropertyTax.UsageCategory;
-                    var rowOptions = (unitCode && allUsage)
-                      ? allUsage.filter(function(opt) { return opt && opt.code && opt.code.split(".").indexOf(unitCode) !== -1; })
+                    var unitCode = unitUsageVal && typeof unitUsageVal === "object" ? unitUsageVal.code : unitUsageVal;
+                    var rowOptions = unitCode
+                      ? getUsageOptionsByCode(unitCode)
                       : getSubUsageData;
+                    var selectedCode = props.value?.code || props.value;
+                    var selectedValue = rowOptions?.find((o) => o.code === selectedCode) || props.value;
                     // Look up full MDMS object so Dropdown can display name correctly
-                    return <Dropdown select={props.onChange} selected={rowOptions?.find((o) => o.code === (props.value?.code || props.value)) || props.value} option={rowOptions} optionKey="name" t={t} />;
+                    return <Dropdown select={props.onChange} selected={selectedValue} option={rowOptions} optionKey="name" t={t} />;
                   }}
                 />
                 {errors?.unitDetails?.[index]?.subUsageType && (
@@ -668,7 +678,23 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                   rules={{ required: t("Floor is required") }}
                   defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || null}
                   // defaultValue={item?.floor || ""}
-                  render={(props) => <Dropdown select={props.onChange} selected={props.value} option={tesFloorOptions} optionKey="name" t={t} />}
+                  render={(props) => {
+                    const isLockedGroundFloorUnit =
+                      selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY" &&
+                      index === 0 &&
+                      (props.value?.code === "0" || props.value === "0");
+
+                    return (
+                      <Dropdown
+                        select={props.onChange}
+                        selected={props.value}
+                        option={tesFloorOptions}
+                        optionKey="name"
+                        t={t}
+                        disable={isLockedGroundFloorUnit}
+                      />
+                    );
+                  }}
                 />
                 {errors?.unitDetails?.[index]?.floor && (
                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].floor.message}</p>

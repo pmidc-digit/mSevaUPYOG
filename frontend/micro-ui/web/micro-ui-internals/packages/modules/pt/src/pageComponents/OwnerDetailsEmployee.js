@@ -75,7 +75,7 @@ console.log("formData tes test",formData);
     }
   }, [formData?.ownershipCategory?.code]);
 
-  const relationshipTypes = [{ i18nKey: "PT_FORM3_FATHER", code: "FATHER" },{ i18nKey: "PT_FORM3_HUSBAND", code: "HUSBAND" }]
+  const relationshipTypes = [{ i18nKey: "PT_FORM3_FATHER", code: "FATHER" }, { i18nKey: "PT_FORM3_MOTHER", code: "MOTHER" }   ,{ i18nKey: "PT_FORM3_HUSBAND", code: "HUSBAND" } ]
 
   const ownerTypesMenu = useMemo(
     () =>
@@ -141,6 +141,7 @@ console.log("formData tes test",formData);
     config,
     menu,
     isEditScreen,
+    relationshipTypes,
     ownerTypesMenu,
     institutionTypeMenu
   };
@@ -179,6 +180,7 @@ const OwnerForm = (_props) => {
     formState,
     menu,
     isEditScreen,
+    relationshipTypes,
     ownerTypesMenu,
     institutionTypeMenu
   } = _props;
@@ -581,10 +583,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                       select={props.onChange}
                       onBlur={props.onBlur}
                       disable={isEditScreen}
-                      option={[
-                        { i18nKey: "PT_FORM3_FATHER", code: "FATHER" },
-                        { i18nKey: "PT_FORM3_HUSBAND", code: "HUSBAND" },
-                      ]}
+                      option={relationshipTypes}
                       optionKey="i18nKey"
                       t={t}
                     />

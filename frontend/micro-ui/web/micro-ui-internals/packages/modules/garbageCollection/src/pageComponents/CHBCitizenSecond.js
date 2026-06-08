@@ -217,6 +217,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setPUnits(propertyDetailsFetch?.Properties[0]?.units);
       if (propertyDetailsFetch?.Properties || currentStepData?.venueDetails || currentStepData?.apiResponseData) {
         const backStepData = currentStepData?.venueDetails || currentStepData?.apiResponseData;
+        console.log("backStepData==???", backStepData);
 
         const location =
           propertyDetailsFetch?.Properties?.[0]?.owners?.[0]?.permanentAddress ||
@@ -251,6 +252,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         setValue("unitId", checkUnitid || null);
         setValue("defAmount", backStepData?.additionalDetails?.defAmount || null);
         setValue("floorNo", getFloors || null);
+        setValue("termsAccepted", backStepData?.additionalDetails?.rentalStatus);
       }
     }
   }, [propertyDetailsFetch, GCData, setValue, currentStepData, getPUnits, uniqueFloors]);
@@ -334,6 +336,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           </LabelFieldPair>
           {(propertyDetailsFetch?.Properties || currentStepData?.venueDetails || currentStepData?.apiResponseData) && (
             <div>
+              {/* is rented */}
               <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", margin: "30px 0" }}>
                 <Controller
                   control={control}

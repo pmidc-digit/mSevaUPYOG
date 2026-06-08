@@ -30,7 +30,7 @@ const LayoutSpecificationDetails = (_props) => {
       if (!isNaN(plotArea) && !isNaN(fieldA) && plotArea !== fieldA) {
         setShowToast({
           error: true,
-          label: "Net Plot Area As Per Jamabandi Must Be Equal To Total Plot Area (Field A)",
+          label: "Net Plot Area As Per Jamabandi Must Be Equal To Total Plot Area",
         })
       } else {
         setShowToast(null)
@@ -60,7 +60,7 @@ const LayoutSpecificationDetails = (_props) => {
                   const plotArea = Number.parseFloat(value)
                   const fieldA = Number.parseFloat(areaLeftForRoadWidening)
                   if (isNaN(plotArea) || isNaN(fieldA)) return true
-                  return plotArea === fieldA || t("Net Plot Area As Per Jamabandi Must Be Equal To Total Plot Area (Field A)")
+                  return plotArea === fieldA || t("Net Plot Area As Per Jamabandi Must Be Equal To Total Plot Area")
                 },
               }}
               render={(props) => (

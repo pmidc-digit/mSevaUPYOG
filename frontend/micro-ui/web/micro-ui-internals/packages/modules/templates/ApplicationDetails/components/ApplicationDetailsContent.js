@@ -486,20 +486,13 @@ function ApplicationDetailsContent({
         moduleName: "PT",
       },
     };
-    // try {
-    const response = await Digit.PTService.update({ Property: { ...payload } }, tenantId, propertyIds);
-    //   const result = await response.json();
-    //   if (response.ok) {
-    //     alert(`Property marked as ${status} successfully!`);
-    //   } else {
-    //     alert("Failed to update property status.");
-    //     console.error(result);
-    //   }
-    // }
-    //  catch (err) {
-    //   console.error("Error inactivating property:", err);
-    //   alert(`Something went wrong while making the property ${status}.`);
-    // }
+    try {
+      await Digit.PTService.update({ Property: { ...payload } }, tenantId, propertyIds);
+      window.alert(`Property marked as ${status} successfully.`);
+    } catch (error) {
+      console.error(`Error updating property status to ${status}:`, error);
+      window.alert(`Something went wrong while making the property ${status}.`);
+    }
   };
 
   const applicationData_pt = applicationDetails?.applicationData;

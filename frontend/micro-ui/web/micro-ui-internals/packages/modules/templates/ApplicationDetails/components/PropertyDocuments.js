@@ -53,7 +53,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow=false }) 
                   <p style={{ margin: "0 0 12px", color: "#0b0c0c", fontSize: "18px" }}>{t(value?.title)}</p>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <p style={{ margin: 0, color: "#505a5f", fontSize: "16px" }}>{`${t("Document")} - ${documentIndex + 1}`}</p>
-                    <a target="_blank" rel="noreferrer" href={pdfFiles[value.fileStoreId]?.split(",")[0]} style={{ color: "#f4511e", fontSize: "16px", textDecoration: "none" }}>
+                    <a target="_blank" rel="noreferrer" href={pdfFiles[value.fileStoreId]?.split(",")[0]} style={{ color: "#1A5CA8", fontSize: "16px", textDecoration: "none" }}>
                       {t("VIEW")}
                     </a>
                   </div>

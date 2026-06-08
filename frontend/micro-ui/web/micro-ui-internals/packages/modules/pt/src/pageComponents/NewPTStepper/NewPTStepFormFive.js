@@ -56,7 +56,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onSubmit = async (data, selectedAction) => {
-    setLoader(true);
+    // setLoader(true);
     // debugger
 
     const { propertyDetails, propertyAddress, ownerDetails, documents } = data;
@@ -168,7 +168,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
         remarks: propertyDetails?.remarks,
         remrks: propertyDetails?.remarks,
         inflammable: propertyDetails?.flammable,
-        heightAbove36Feet: propesrtyDetails?.heightOfProperty,
+        heightAbove36Feet: propertyDetails?.heightOfProperty,
         vasikaNo: propertyDetails?.vasikaNo,
         vasikaDate: propertyDetails?.vasikaDate,
         allotmentNo: propertyDetails?.allotmentNo,
@@ -211,12 +211,12 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
     };
 
     try {
-       debugger
+   
       let response;
       if (isEditMode) {
         response = await Digit.PTService.update({ Property: formData }, tenantId);
       } else {
-        console.lo("runningcreateApi")
+        console.log("PT create payload", formData);
         response = await Digit.PTService.create({ Property: formData }, tenantId);
       
     
@@ -232,7 +232,18 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       }
     } catch (error) {
       setLoader(false);
-      alert(isEditMode ? "Error while updating the property" : "Error while creating the property");
+      const message =
+        error?.response?.data?.Errors?.[0]?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        (isEditMode ? "Error while updating the property" : "Error while creating the property");
+      console.error(isEditMode ? "PT update failed" : "PT create failed", {
+        error,
+        requestPayload: formData,
+        responseData: error?.response?.data,
+      });
+      setError(message);
+      setShowToast({ key: "error" });
     }
   };
 

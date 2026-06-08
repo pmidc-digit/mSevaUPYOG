@@ -13,6 +13,8 @@ import {
   ActionBar,
   SubmitBar,
   Table,
+  Modal,
+  Dropdown,
 } from "@mseva/digit-ui-react-components";
 import { values } from "lodash";
 import React, { Fragment, useEffect, useState } from "react";
@@ -45,6 +47,50 @@ import ApplicationHistory from "./ApplicationHistory";
 import PaymentHistory from "./PaymentHistory";
 import ApplicationTimeline from "./ApplicationTimeline";
 import NewApplicationTimeline from "./NewApplicationTimeline";
+
+const CloseIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+  </svg>
+);
+
+const CloseBtn = (props) => (
+  <div className="icon-bg-secondary" onClick={props.onClick}>
+    <CloseIcon />
+  </div>
+);
+const PTActionButton = ({ label, color, hoverColor, icon, onClick }) => {
+  const [hovered, setHovered] = React.useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "8px",
+        padding: "10px 20px",
+        border: "none",
+        borderRadius: "8px",
+        background: hovered ? hoverColor : color,
+        color: "#ffffff",
+        fontSize: "14px",
+        fontWeight: "600",
+        cursor: "pointer",
+        transition: "background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease",
+        whiteSpace: "nowrap",
+        boxShadow: hovered ? `0 6px 16px ${color}55` : `0 2px 6px ${color}33`,
+        transform: hovered ? "translateY(-2px)" : "translateY(0)",
+        letterSpacing: "0.01em",
+      }}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+};
 function ApplicationDetailsContent({
   applicationDetails,
   demandData,
@@ -420,10 +466,6 @@ function ApplicationDetailsContent({
     setShowToast(null);
   };
 
-  const propertyDocuments = applicationDetails?.applicationDetails
-    ?.flatMap((detail) => detail?.additionalDetails?.documents || [])
-    ?.filter((document) => document?.values?.length > 0);
-
   // (Redirect handled centrally in ApplicationDetails template on mutation success)
 
   // const PROPERTY_UPDATE_URL = "https://mseva-uat.lgpunjab.gov.in/property-services/property/_update?tenantId=pb.testing&propertyIds=PT-1012-2017548";
@@ -460,68 +502,21 @@ function ApplicationDetailsContent({
     // }
   };
 
- const applicationData_pt =
-  applicationDetails?.applicationData;
+  const applicationData_pt = applicationDetails?.applicationData;
+  const propertyIds = currentPropertyId || "";
+  const propertyStatus = propertySearchData?.Properties?.[0]?.status || applicationDetails?.applicationData?.status;
+  const PropertyInActive = () => {
+    if (window.location.href.includes("employee")) {
+      if (propertyStatus !== "ACTIVE") {
+        alert("This operation is not allowed as Property is not active.");
+        return;
+      }
 
-const propertyIds =
-  applicationDetails?.applicationData?.propertyId || "";
-
-// FIX: read status from applicationData
-const checkPropertyStatus =
-  applicationDetails?.applicationData?.status;
-
-const PropertyInActive = async () => {
-  console.log("applicationDetails", applicationDetails);
-  console.log(
-    "checkPropertyStatus",
-    checkPropertyStatus
-  );
-
-  // employee check
-  if (!window.location.href.includes("employee")) {
-    alert(
-      "You are not authorized to change the property status."
-    );
-    return;
-  }
-
-  // already inactive
-  if (checkPropertyStatus !== "ACTIVE") {
-    alert("Property is already inactive.");
-    return;
-  }
-
-  try {
-    // Update request payload
-    const updatedPayload = {
-      ...applicationData_pt,
-      status: "INACTIVE", 
-    };
-
-    console.log("Final Payload", {
-      Property: updatedPayload,
-    });
-
-    await updatePropertyStatus(
-      updatedPayload,
-      "INACTIVE",
-      propertyIds
-    );
-
-    alert("Property marked inactive successfully.");
-  } catch (err) {
-    console.error(
-      "Failed to update property status:",
-      err
-    );
-    alert(
-      "Something went wrong while updating property status."
-    );
-  }
-};
-
-
-
+      updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
+    } else {
+      alert("You are not authorized to change the property status.");
+    }
+  };
 
   const PropertyActive = () => {
     if (window.location.href.includes("employee")) {
@@ -570,16 +565,6 @@ const PropertyInActive = async () => {
     // alert("edit property");
   };
   const AccessProperty = () => {
-    const propertyStatus = applicationDetails?.applicationData?.status;
-    if (propertyStatus === "INWORKFLOW" || propertyStatus === "INACTIVE") {
-      setShowAccessModal(false);
-      setShowToast({
-        isError: true,
-        label: "This action cannot be done on Inactive property or the property in workflow",
-      });
-      return;
-    }
-
     setSelectedFinancialYear(null);
     setShowAccessModal(true);
   };
@@ -904,7 +889,6 @@ const PropertyInActive = async () => {
       {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />
       )}
-      {window.location.href.includes("/pt/") && propertyDocuments?.length > 0 && <PropertyDocuments documents={propertyDocuments} />}
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>
@@ -969,15 +953,55 @@ const PropertyInActive = async () => {
         </React.Fragment>
       )}
 
-      {window.location.href.includes("/pt/") ? (
-        <ActionBar className="clear-search-container" style={{ display: "block" }}>
-          <SubmitBar label={"Make Property Active"} style={{ flex: 1 }} onSubmit={PropertyActive} />
-          <SubmitBar label={"Make Property Inactive"} style={{ marginLeft: "20px" }} onSubmit={PropertyInActive} />
-          <SubmitBar label={"Edit Property"} style={{ marginLeft: "20px" }} onSubmit={EditProperty} />
-          <SubmitBar label={"Access Property"} style={{ marginLeft: "20px" }} onSubmit={AccessProperty} />
+       {window.location.href.includes("/pt/") ? (
+        <ActionBar className="clear-search-container">
+          <PTActionButton label="Make Active" color="#00703C" hoverColor="#005a30" icon={
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          } onClick={PropertyActive} />
+          <PTActionButton label="Make Inactive" color="#B5451B" hoverColor="#8f3415" icon={
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+          } onClick={PropertyInActive} />
+          <PTActionButton label="Edit Property" color="#1A5CA8" hoverColor="#134a8a" icon={
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          } onClick={EditProperty} />
+          <PTActionButton label="Access Property" color="#003C71" hoverColor="#002554" icon={
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          } onClick={AccessProperty} />
         </ActionBar>
-      ) : (
-        <div></div>
+      ) : null}
+      {showAccessModal && (
+        <Modal
+          headerBarMain={<h1 className="heading-m">{t("PT_SELECT_FINANCIAL_YEAR")}</h1>}
+          headerBarEnd={<CloseBtn onClick={() => setShowAccessModal(false)} />}
+          actionCancelLabel={t("CORE_COMMON_CANCEL")}
+          actionCancelOnSubmit={() => setShowAccessModal(false)}
+          actionSaveLabel={t("PT_SELECT")}
+          actionSaveOnSubmit={handleAccessPropertySubmit}
+          isDisabled={!selectedFinancialYear}
+        >
+          {financialYearsLoading ? (
+            <Loader />
+          ) : (
+            <div style={{ padding: "8px 0" }}>
+              <Dropdown
+                option={financialYears}
+                optionKey="code"
+                selected={selectedFinancialYear}
+                select={setSelectedFinancialYear}
+                placeholder={t("PT_SELECT_FINANCIAL_YEAR")}
+              />
+            </div>
+          )}
+        </Modal>
       )}
       {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
     </Card>
@@ -985,3 +1009,4 @@ const PropertyInActive = async () => {
 }
 
 export default ApplicationDetailsContent;
+

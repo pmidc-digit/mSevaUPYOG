@@ -20,6 +20,30 @@ const TransfererDetails = ({ userType, formData, config, onSelect }) => {
   console.log("TransfererDetails propertyDetails:", propertyDetails);
   const ownershipType = propertyDetails?.ownershipCategory?.split?.(".");
   const isActiveOwner = (owner) => owner.status === "ACTIVE" || owner.status === "active" || owner.active === true || (!owner.status && owner.active !== false);
+  const getValueByPath = (data, keyPath, index, stripPropertyPath = false) =>
+    keyPath
+      ?.filter((key) => !stripPropertyPath || !["searchResult", "property"].includes(key))
+      ?.reduce((acc, curr) => (curr === "_index_" ? acc?.[index] : acc?.[curr]), data);
+  const formatDisplayValue = (value) => {
+    if (value === undefined || value === null || value === "") return "N/A";
+
+    const resolvedValue = typeof value === "object" ? value?.label || value?.name || value?.code || value?.value : value;
+    if (resolvedValue === undefined || resolvedValue === null || resolvedValue === "") return "N/A";
+
+    if (typeof resolvedValue === "number") return resolvedValue;
+
+    const stringValue = String(resolvedValue);
+    const translatedValue = t(stringValue);
+    if (translatedValue && translatedValue !== stringValue) return translatedValue;
+    if (!stringValue.includes(".") && !stringValue.includes("_") && stringValue !== stringValue.toUpperCase()) return stringValue;
+
+    return stringValue
+      .split(".")
+      .pop()
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
 
   if (userType === "employee" || hasOriginalData) {
     return (
@@ -40,10 +64,8 @@ const TransfererDetails = ({ userType, formData, config, onSelect }) => {
                       (e) => e.ownershipType === "ALL" || ownershipType?.[0].includes(e.ownershipType) || e.ownershipType === ownershipType?.[0]
                     )
                     .map((label) => {
-                      let noteValue = label?.keyPath
-                        ?.filter((e) => !["searchResult", "property"].includes(e))
-                        ?.reduce((acc, curr) => (curr === "_index_" ? acc?.[index] : acc?.[curr]), propertyDetails);
-                      return <Row key={label.label} label={t(label.label)} text={noteValue || "N/A"} />;
+                      let noteValue = getValueByPath(propertyDetails, label?.keyPath, index, true);
+                      return <Row key={label.label} label={t(label.label)} text={formatDisplayValue(noteValue)} />;
                     })}
                 </React.Fragment>
               );
@@ -71,12 +93,12 @@ const TransfererDetails = ({ userType, formData, config, onSelect }) => {
                 {config.labels
                   ?.filter((e) => e.ownershipType === "ALL" || ownershipType?.[0].includes(e.ownershipType) || e.ownershipType === ownershipType?.[0])
                   .map((label) => {
-                    let noteValue = label?.keyPath?.reduce((acc, curr) => (curr === "_index_" ? acc?.[index] : acc?.[curr]), formData);
+                    let noteValue = getValueByPath(formData, label?.keyPath, index);
                     return (
                       <KeyNote
                         key={label.label}
                         keyValue={t(label.label)}
-                        note={typeof noteValue === "string" || typeof noteValue === "number" ? t(noteValue) : "N/A"}
+                        note={formatDisplayValue(noteValue)}
                         noteStyle={label.noteStyle}
                       />
                     );

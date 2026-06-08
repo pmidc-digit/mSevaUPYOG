@@ -182,6 +182,16 @@ export const newConfigMutate = [
             ownershipType: "INDIVIDUAL",
           },
           {
+            label: "PT_OWNERSHIP_INFO_GENDER",
+            keyPath: ["searchResult", "property", "owners", "_index_", "gender"],
+            ownershipType: "INDIVIDUAL",
+          },
+          {
+            label: "PT_FORM3_OWNERSHIP_TYPE",
+            keyPath: ["searchResult", "property", "ownershipCategory"],
+            ownershipType: "ALL",
+          },
+          {
             label: "PT_OWNERSHIP_INFO_MOBILE_NO",
             keyPath: ["searchResult", "property", "owners", "_index_", "mobileNumber"],
             ownershipType: "ALL",
@@ -189,6 +199,11 @@ export const newConfigMutate = [
           {
             label: "PT_OWNERSHIP_INFO_EMAIL_ID",
             keyPath: ["searchResult", "property", "owners", "_index_", "emailId"],
+            ownershipType: "INDIVIDUAL",
+          },
+          {
+            label: "Ownership Percentage",
+            keyPath: ["searchResult", "property", "owners", "_index_", "ownerShipPercentage"],
             ownershipType: "INDIVIDUAL",
           },
           {

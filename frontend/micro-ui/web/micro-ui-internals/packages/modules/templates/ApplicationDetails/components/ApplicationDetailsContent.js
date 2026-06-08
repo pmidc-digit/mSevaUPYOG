@@ -486,25 +486,34 @@ function ApplicationDetailsContent({
         moduleName: "PT",
       },
     };
-    // try {
-    const response = await Digit.PTService.update({ Property: { ...payload } }, tenantId, propertyIds);
-    //   const result = await response.json();
-    //   if (response.ok) {
-    //     alert(`Property marked as ${status} successfully!`);
-    //   } else {
-    //     alert("Failed to update property status.");
-    //     console.error(result);
-    //   }
-    // }
-    //  catch (err) {
-    //   console.error("Error inactivating property:", err);
-    //   alert(`Something went wrong while making the property ${status}.`);
-    // }
+    try {
+      await Digit.PTService.update({ Property: { ...payload } }, tenantId, propertyIds);
+      window.alert(`Property marked as ${status} successfully.`);
+    } catch (error) {
+      console.error(`Error updating property status to ${status}:`, error);
+      window.alert(`Something went wrong while making the property ${status}.`);
+    }
   };
 
   const applicationData_pt = applicationDetails?.applicationData;
   const propertyIds = currentPropertyId || "";
   const propertyStatus = propertySearchData?.Properties?.[0]?.status || applicationDetails?.applicationData?.status;
+const propertyDocumentValues =
+  propertySearchData?.Properties?.[0]?.documents ||
+  applicationDetails?.applicationData?.documents ||
+  [];
+
+const propertyDocuments = propertyDocumentValues.length
+  ? [
+      {
+        title: "PT_PROPERTY_DOCUMENTS",
+        values: propertyDocumentValues.map((doc) => ({
+          ...doc,
+          title: doc.documentType,
+        })),
+      },
+    ]
+  : [];
   const PropertyInActive = () => {
     if (window.location.href.includes("employee")) {
       if (propertyStatus !== "ACTIVE") {
@@ -565,6 +574,11 @@ function ApplicationDetailsContent({
     // alert("edit property");
   };
   const AccessProperty = () => {
+    if (["INACTIVE", "INWORKFLOW"].includes(propertyStatus?.toUpperCase())) {
+      alert("This operation is not allowed as Property is in INWORKFLOW or Inactive.");
+      return;
+    }
+
     setSelectedFinancialYear(null);
     setShowAccessModal(true);
   };
@@ -889,6 +903,7 @@ function ApplicationDetailsContent({
       {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />
       )}
+      {isPTLocation && propertyDocuments.length > 0 && <PropertyDocuments documents={propertyDocuments} />}
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>

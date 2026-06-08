@@ -180,6 +180,22 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     });
   };
 
+  const getResolvedUsageCode = (usageValue) => {
+    if (!usageValue) return selectedpropertyUsageType;
+
+    if (typeof usageValue === "object") {
+      if (usageValue.code) return usageValue.code;
+
+      if (usageValue.name) {
+        return getUsageData?.find((item) => item.code === usageValue.name || item.name === usageValue.name)?.code;
+      }
+
+      return selectedpropertyUsageType;
+    }
+
+    return getUsageData?.find((item) => item.code === usageValue || item.name === usageValue)?.code || usageValue;
+  };
+
   const tesFloorOptions = useMemo(() => {
     return [...floorOptions].sort((a, b) => {
       const aCode = Number(a.code);
@@ -590,10 +606,15 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                   rules={{ required: t("Sub Usage Type is required") }}
                   render={(props) => {
                     var unitUsageVal = watch("unitDetails." + index + ".unitUsageType");
-                    var unitCode = unitUsageVal && typeof unitUsageVal === "object" ? unitUsageVal.code : unitUsageVal;
-                    var rowOptions = unitCode
-                      ? getUsageOptionsByCode(unitCode)
+                    var resolvedUnitCode = getResolvedUsageCode(unitUsageVal);
+                    var rowOptions = resolvedUnitCode
+                      ? getUsageOptionsByCode(resolvedUnitCode)
                       : getSubUsageData;
+
+                    if (!rowOptions?.length) {
+                      rowOptions = getSubUsageData;
+                    }
+
                     var selectedCode = props.value?.code || props.value;
                     var selectedValue = rowOptions?.find((o) => o.code === selectedCode) || props.value;
                     // Look up full MDMS object so Dropdown can display name correctly

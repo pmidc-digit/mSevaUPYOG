@@ -1268,6 +1268,22 @@ const WrapPaymentComponent = (props) => {
           </Link>
         </div>
       ) : null}
+       {business_service == "TL" ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "15px",
+            flexWrap: "wrap",
+            gap: "20px",
+          }}
+        >
+          <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
+          <Link to={`/digit-ui/citizen`}>
+            <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+          </Link>
+        </div>
+      ) : null}
 
       {business_service == "GarbageCollection" && (
         <Link to={`/digit-ui/citizen/garbagecollection-home`}>
@@ -1445,6 +1461,7 @@ const WrapPaymentComponent = (props) => {
           business_service === "pet-services" ||
           business_service === "chb-services" ||
           business_service === "NDC" ||
+          business_service === "TL" ||
           business_service === "Challan_Generation" ||
           business_service === "rl-services"||
           business_service === "GC.ONE_TIME_FEE"

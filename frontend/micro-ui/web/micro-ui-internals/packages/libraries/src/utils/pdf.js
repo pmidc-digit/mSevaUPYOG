@@ -1,7 +1,6 @@
 import { Fonts } from "./fonts";
 import React, { ReactDOM } from "react";
 import QRCode from "qrcode";
-import EXIF from "exif-js";
 import { buildRainmakerCard, buildAttachmentsSection } from "./pdfHelpers";
 import pdfMake from "pdfmake/build/pdfmake.js";
 // const pdfFonts = require("pdfmake/build/vfs_fonts.js");
@@ -227,6 +226,7 @@ const jsPdfGeneratorFormatted = async ({
   ulbType,
   ulbName
 }) => {
+  console.log("this function executing")
   console.log("ulbType", ulbType)
   const baseUrl = window.location.origin;
   let finalUrl;
@@ -239,9 +239,21 @@ const jsPdfGeneratorFormatted = async ({
     finalUrl = imageURL;
   }
 
-  const base64Image = imageURL
-    ? await getBase64FromUrl(finalUrl)
-    : baseUrl;
+  let base64Image;
+if (imageURL) {
+  try {
+    base64Image = await getBase64FromUrl(finalUrl);
+  } catch (e) {
+    console.warn("Image fetch failed, falling back to QR code", e);
+    base64Image = await generateQRCodeDataUrl(
+      `${baseUrl}/digit-ui/citizen/ndc/search/application-overview/${applicationNumber}`
+    );
+  }
+} else {
+  base64Image = await generateQRCodeDataUrl(
+    `${baseUrl}/digit-ui/citizen/ndc/search/application-overview/${applicationNumber}`
+  );
+}
 
   const contentFormatted = await createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit);
   const dd = {
@@ -2162,8 +2174,9 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
 
   console.log("details here are: ", details);
   console.log("createcontent func here");
-
+ console.log("here 0")
   for (const detail of details) {
+    console.log("HERE 1")
     if (detail?.values?.length > 0) {
       const headerRow = [
         {
@@ -2179,7 +2192,7 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
         },
         {}
       ];
-
+      console.log(headerRow ,"headerRow")
       let valueRows;
 
       if (detail?.isAttachments) {
@@ -2191,6 +2204,8 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
           const isLast = i === detail.values.length - 1;
 
           const base64Image = await buildAttachment(doc);
+          console.log("=== base64Image result:", base64Image ? base64Image.slice(0, 30) : base64Image);
+
 
           if (base64Image) {
             valueRows.push([
@@ -2230,6 +2245,8 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
             ]);
           }
         }
+ console.log("=== valueRows for:", detail?.title, "===");
+console.log(" === valueRows:", JSON.stringify(valueRows, null, 2));
 
         if (detail?.values?.length === 1 && detail.values[0].value === "NA") {
           valueRows = [[
@@ -2265,6 +2282,14 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
         });
       }
 
+      // 1. After valueRows is built (both branches)
+
+// 2. Inside the attachment loop, after buildAttachment
+
+// 3. Just before detailsHeaders.push
+console.log("=== table body ===");
+console.log(" === widths:", [225, 250]);
+console.log("=== body:", JSON.stringify([headerRow, ...valueRows], null, 2));
       detailsHeaders.push({
         table: {
           widths: [225, 250],

@@ -246,6 +246,7 @@ const jsPdfGeneratorFormatted = async ({
   ulbType,
   ulbName
 }) => {
+  console.log("this function executing")
   console.log("ulbType", ulbType)
   const baseUrl = window.location.origin;
   let finalUrl;
@@ -2181,7 +2182,6 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
   console.log("details here are: ", details);
   console.log("createcontent func here");
   for (const detail of details) {
-    console.log("HERE 1")
     if (detail?.values?.length > 0) {
       const headerRow = [
         {
@@ -2197,6 +2197,7 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
         },
         {}
       ];
+
       let valueRows;
 
       if (detail?.isAttachments) {

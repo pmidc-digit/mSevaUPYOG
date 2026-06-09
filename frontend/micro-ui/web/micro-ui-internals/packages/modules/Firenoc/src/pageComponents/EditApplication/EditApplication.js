@@ -166,7 +166,7 @@ const EditApplication = () => {
     !isFireStationLoading &&
     applicationDetails?.FireNOCs?.length > 0;
   useEffect(() => {
-    if (ready && nocObject?.applicationStatus === "INITIATED") {
+    if (ready && (nocObject?.applicationStatus === "INITIATED" || nocObject?.status === "INITIATED" || nocObject?.fireNOCDetails?.status === "INITIATED")) {
       const basePath = window.location.pathname.includes("employee")
         ? "/digit-ui/employee/firenoc"
         : "/digit-ui/citizen/firenoc";

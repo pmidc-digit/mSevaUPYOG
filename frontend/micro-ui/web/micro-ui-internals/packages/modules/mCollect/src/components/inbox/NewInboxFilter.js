@@ -24,6 +24,7 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
   const [_searchParams, setSearchParams] = useState(() => searchParams);
   const [clearCheck, setclearCheck] = useState(false);
   const [selectedCategories, setselectedCategories] = useState([]);
+  const [selectedStatuses, setselectedStatuses] = useState([]);
 
   const localParamChange = (filterParam) => {
     setclearCheck(false);
@@ -38,11 +39,14 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
     setSearchParams(defaultSearchParams);
     onFilterChange(defaultSearchParams);
     setselectedCategories([]);
+    setselectedStatuses([]);
     setclearCheck(true);
   };
 
   const Refresh = () => {
     onRefresh(defaultSearchParams, true);
+    setselectedCategories([]);
+    setselectedStatuses([]);
     setclearCheck(true);
   };
 
@@ -94,18 +98,6 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
              </div>
           </div>
           <div>
-            {/* <div>
-              <Status
-                _searchParams={_searchParams}
-                businessServices={_searchParams.services}
-                clearCheck={clearCheck}
-                setclearCheck={setclearCheck}
-                onAssignmentChange={(e, status) => {
-                  if (e.target.checked) localParamChange({ status: [..._searchParams?.status, status?.code] });
-                  else localParamChange({ status: _searchParams?.status.filter((e) => e !== status?.code) });
-                }}
-              />
-            </div> */}
             <div>
               <ServiceCategory
                 searchParams={_searchParams}
@@ -135,6 +127,17 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
                 }}
               />
             </div>
+            <div>
+              <Status
+                searchParams={_searchParams}
+                selectedStatuses={selectedStatuses}
+                setSearchParams={setSearchParams}
+                setselectedStatuses={setselectedStatuses}
+                clearCheck={clearCheck}
+                setclearCheck={setclearCheck}
+              />
+            </div>
+
 
             <div>
               <SubmitBar

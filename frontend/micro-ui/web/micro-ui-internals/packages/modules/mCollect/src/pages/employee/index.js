@@ -59,6 +59,9 @@ const EmployeeApp = ({ path, url, userType }) => {
   const SearchChallanPage = Digit?.ComponentRegistryService?.getComponent("MCollectSearchChallan");
   const SearchBillPage = Digit?.ComponentRegistryService?.getComponent("MCollectSearchBill");
   const GroupBillPage = Digit?.ComponentRegistryService?.getComponent("GroupBill");
+  const CancelReceipt = Digit?.ComponentRegistryService?.getComponent("CancelReceipt");
+  const ReceiptAcknowledgement = Digit?.ComponentRegistryService?.getComponent("MCollectReceiptAcknowledgement");
+
 
   return (
     <Switch>
@@ -68,7 +71,17 @@ const EmployeeApp = ({ path, url, userType }) => {
             <Link to="/digit-ui/employee" style={{ cursor: "pointer", color: "#666" }}>
               {t("ES_COMMON_HOME")}
             </Link>{" "}
-            / <span>{location.pathname === "/digit-ui/employee/mcollect/inbox" ? t("UC_SEARCH_HEADER") : t("UC_COMMON_HEADER_SEARCH")}</span>
+            /{" "}
+            {location.pathname === "/digit-ui/employee/mcollect/inbox" ? (
+              <span>{t("UC_SEARCH_HEADER")}</span>
+            ) : (
+              <React.Fragment>
+                <Link to="/digit-ui/employee/mcollect/inbox" style={{ cursor: "pointer", color: "#666" }}>
+                  {t("ES_COMMON_INBOX")}
+                </Link>{" "}
+                / <span>{t("UC_COMMON_HEADER_SEARCH")}</span>
+              </React.Fragment>
+            )}
           </p>
           <PrivateRoute exact path={`${path}/`} component={() => <MCollectLinks matchPath={path} userType={userType} />} />
           <PrivateRoute
@@ -99,6 +112,8 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/search-challan`} component={() => <SearchChallanPage parentRoute={path} />} />{" "}
           <PrivateRoute path={`${path}/search-bill`} component={() => <SearchBillPage />} />{" "}
           <PrivateRoute path={`${path}/group-bill`} component={() => <GroupBillPage />} />{" "}
+          <PrivateRoute path={`${path}/cancelReceipt`} component={() => <CancelReceipt />} />{" "}
+          <PrivateRoute path={`${path}/response`} component={(props) => <ReceiptAcknowledgement {...props} parentRoute={path} />} />{" "}
         </div>
       </React.Fragment>
     </Switch>

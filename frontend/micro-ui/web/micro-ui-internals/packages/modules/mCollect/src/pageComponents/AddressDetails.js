@@ -6,7 +6,6 @@ import { sortDropdownNames } from "../pages/employee/Utils/Sortbyname";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { useLocation } from "react-router-dom";
-//import { getUniqueItemsFromArray, commonTransform, stringReplaceAll,getPattern, convertEpochToDate } from "../utils";
 import { stringReplaceAll,convertEpochToDate } from "../utils";
 
 const createConsumerDetails = (getCities) => ({
@@ -257,7 +256,7 @@ const OwnerForm1 = (_props) => {
                       setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disable={false}
+                    disable={isEdit}
                   />
                 )}
               />
@@ -284,7 +283,7 @@ const OwnerForm1 = (_props) => {
                       setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disable={false}
+                    disable={isEdit}
                   />
                 )}
               />
@@ -311,7 +310,7 @@ const OwnerForm1 = (_props) => {
                       setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disable={false}
+                    disable={isEdit}
                   />
                 )}
               />
@@ -331,19 +330,19 @@ const OwnerForm1 = (_props) => {
                     autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "pincode"}
                     errorStyle={(localFormState.touched.pincode && errors?.pincode?.message) ? true : false}
                     onChange={(e) => {
-                      const nextPincode = (e.target.value || "").replace(/\D/g, "").slice(0, 6);
-                      props.onChange(nextPincode);
-                      setPincode(nextPincode);
+                      props.onChange(e.target.value);
+                      setPincode(e.target.value);
                       setFocusIndex({ index: consumerdetail.key, type: "pincode" });
                     }}
                     onBlur={(e) => {
                       setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disable={false}
+                    disable={isEdit}
                   />
                 )}
               />
+              <CardLabelError style={{ width: "100%", fontSize: "12px", marginTop: "4px" }}>{localFormState.touched.pincode ? errors?.pincode?.message : ""}</CardLabelError>
             </div>
           </LabelFieldPair>
           <LabelFieldPair>
@@ -365,15 +364,14 @@ const OwnerForm1 = (_props) => {
                   select={props.onChange}
                   optionKey="i18nkey"
                   onBlur={props.onBlur}
-                  disable={false}
+                  disable={isEdit}
                   t={t}
                 />
               )}
             />
             </div>
           </LabelFieldPair>
-          </div>
-          <CardLabelError style={errorStyle}>{localFormState.touched.pincode ? errors?.pincode?.message : ""}</CardLabelError>
+        </div>
  
       </div>
        <hr style={{ width: "100%", border: "1px solid #D6D5D4", marginTop: "50px", marginBottom: "40px" }} />

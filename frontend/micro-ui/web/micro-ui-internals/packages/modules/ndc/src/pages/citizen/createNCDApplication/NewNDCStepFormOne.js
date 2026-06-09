@@ -4,6 +4,7 @@ import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { updateNDCForm } from "../../../redux/actions/NDCFormActions";
 import { useState } from "react";
 import { Loader } from "../../../components/Loader";
+import _ from "lodash";
 
 export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -55,11 +56,13 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const createApplication = async (data) => {
-    // setLoader(true);
+    setLoader(true);
     const applicant = Digit.UserService.getUser()?.info || {};
     const applicantId = applicant?.uuid;
 
-    const owners = (data?.cpt?.details?.owners || [])?.map((owner) => {
+    console.log("data?.cpt?.details?.owners", data?.cpt?.details?.owners);
+
+    const owners = (data?.cpt?.details?.owners || []).map((owner) => {
       const newOwner = JSON.parse(JSON.stringify(owner));
 
       delete newOwner.status;
@@ -71,8 +74,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
       return newOwner;
     });
-
-    console.log("checkData==", data);
 
     // Prepare NdcDetails
     const ndcDetails = [];

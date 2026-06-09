@@ -38,11 +38,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   const [propertyDetails, setPropertyDetails] = useState(formData?.PropertyDetails || {});
   const [selectedRow, setSelectedRow] = useState(null);
 
-  console.log("apiDataCheck", apiDataCheck);
-  console.log("formData==?/||", formData);
-  console.log("checkApiDataCheck====", checkApiDataCheck?.Applications?.[0]);
-
-  const { isLoading: waterConnectionLoading, data: waterConnectionData, error: waterConnectionError } = Digit.Hooks.ws.useSearchWS({
+  const { isLoading: waterConnectionLoading, data: waterConnectionData, error: waterConnectionError } = Digit.Hooks.ndc.useSearchWS({
     tenantId,
     filters: {
       searchType: "CONNECTION",
@@ -87,7 +83,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             name="applicationFee"
             checked={selectedRow?.uuid === row?.original?.uuid}
             onChange={() => {
-              console.log("row?.original", row?.original);
               setSelectedRow(row?.original);
             }}
           />
@@ -104,21 +99,20 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       ?.filter(Boolean)
       ?.join(", ");
 
+    console.log("formData====????", formData);
+
     const ownerObj = selectedRow;
 
     const emailApi = apiDataCheck?.[0]?.owners?.[0]?.emailId;
     const firstName = ownerObj?.name;
-    // let lastName;
-    // if (fullName?.length > 1) {
-    //   lastName = fullName?.[fullName.length - 1];
 
-    console.log("ownerObj?.emailId", ownerObj?.emailId);
-    console.log("formData?.PropertyDetails?.email", formData?.PropertyDetails?.email);
-    console.log("emailApi", emailApi);
-    // }
+    console.log("ownerObj", ownerObj);
+
     const email = ownerObj?.emailId || emailApi || "";
     const mobileNumber = ownerObj?.mobileNumber;
     const address = ownerObj?.permanentAddress;
+    const fatherOrHusbandName = ownerObj?.fatherOrHusbandName;
+    const landArea = formData?.cpt?.details?.landArea;
 
     const combinedObject = {};
     if (firstName) combinedObject.firstName = firstName;
@@ -126,10 +120,20 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     combinedObject.email = email;
     if (mobileNumber) combinedObject.mobileNumber = mobileNumber;
     if (address) combinedObject.address = address;
+    if (landArea) combinedObject.landArea = landArea;
+    if (fatherOrHusbandName) combinedObject.fatherOrHusbandName = fatherOrHusbandName;
     combinedObject.propertyBillData = {
       isLoading: false,
       billData: formData?.PropertyDetails?.propertyBillData?.billData || {},
     };
+
+    // Extract remarks from PT NdcDetails
+    const ptDetail = apiDataCheck?.[0]?.NdcDetails?.find((detail) => detail.businessService === "PT");
+
+    // Only update remarks from API if formData doesn't already have them (prevents overwriting on back navigation)
+    if (ptDetail?.additionalDetails?.remarks && !formData?.PropertyDetails?.remarks) {
+      combinedObject.remarks = ptDetail.additionalDetails.remarks;
+    }
 
     setPropertyDetails((prev) => {
       return {
@@ -211,7 +215,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     }));
   }
 
-  async function fetchBill(bussinessService, consumercodes, index) {
+  const fetchBill = async (bussinessService, consumercodes, index) => {
     if (bussinessService === "WS") {
       const updated = [...propertyDetails.waterConnection];
       updated[index].isLoading = true;
@@ -242,9 +246,10 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         consumerCode: consumercodes,
       });
       setPropertyLoader(false);
+      const amount = result?.Bill[0]?.totalAmount || 0;
 
       if (result?.Bill?.length > 0) {
-        if (result?.Bill[0]?.totalAmount > 0) {
+        if (amount > 0) {
           setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
         } else {
           setShowToast({ error: false, label: t("NDC_MESSAGE_NO_DUES_FOUND") });
@@ -342,10 +347,62 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         // setError(t("Invalid Consumer Number"));
       }
     } catch (error) {
+      console.log("error", error?.response?.data);
+      const checkError = error?.response?.data?.Errors[0]?.code;
+
+      if (checkError == "EMPTY_DEMANDS") {
+        if (bussinessService === "WS") {
+          const updated = [...propertyDetails.waterConnection];
+          updated[index].isLoading = false;
+          updated[index].billData = {
+            totalAmount: 0,
+          };
+          setPropertyDetails((prev) => ({
+            ...prev,
+            waterConnection: updated,
+          }));
+          setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_WS") });
+        } else if (bussinessService === "SW") {
+          const updated = [...propertyDetails.sewerageConnection];
+          updated[index].isLoading = false;
+          updated[index].billData = {
+            totalAmount: 0,
+          };
+          setPropertyDetails((prev) => ({
+            ...prev,
+            sewerageConnection: updated,
+          }));
+          setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_SW") });
+        }
+        return;
+      }
+
+      if (bussinessService === "WS") {
+        const updated = [...propertyDetails.waterConnection];
+
+        updated[index].isLoading = false;
+        updated[index].billData = {};
+
+        setPropertyDetails((prev) => ({
+          ...prev,
+          waterConnection: updated,
+        }));
+      } else if (bussinessService === "SW") {
+        const updated = [...propertyDetails.sewerageConnection];
+
+        updated[index].isLoading = false;
+        updated[index].billData = {};
+
+        setPropertyDetails((prev) => ({
+          ...prev,
+          sewerageConnection: updated,
+        }));
+      }
+
       setPropertyLoader(false);
       setShowToast({ error: true, label: t("NDC_MESSAGE_FETCH_FAILED") });
     }
-  }
+  };
 
   const closeToast = () => {
     setShowToast(null);
@@ -400,6 +457,8 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     }
   }
 
+  console.log("propertyDetails", propertyDetails);
+
   const PayWSBillModal = Digit?.ComponentRegistryService?.getComponent("PayWSBillModal");
 
   useEffect(() => {
@@ -419,13 +478,38 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       const checkOwners = checkApiDataCheck?.Applications?.[0]?.owners || apiDataCheck?.[0]?.owners;
       const filterRow = checkOwners?.find((owner) => owner?.isPrimaryOwner);
       // const primaryOwner = ndcObject?.owners?.find((owner) => owner?.isPrimaryOwner) || ndcObject?.owners?.[0]; // fallback if none marked
-      console.log("filterRow===", filterRow);
       setSelectedRow(filterRow);
     }
   }, [checkApiDataCheck, apiDataCheck]);
 
   return (
     <div style={{ marginBottom: "16px" }}>
+      {/* land area */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Land Area")} * `}</CardLabel>
+        <div className="form-field">
+          <Controller
+            control={control}
+            name={"landArea"}
+            defaultValue={propertyDetails?.landArea || ""}
+            render={(props) => (
+              <TextInput
+                value={propertyDetails?.landArea}
+                onChange={(e) => {
+                  setPropertyDetails((prev) => ({ ...prev, landArea: e.target.value }));
+                  props.onChange(e.target.value);
+                }}
+                onBlur={(e) => {
+                  // setFocusIndex({ index: -1 });
+                  props.onBlur(e);
+                }}
+                disabled={formData?.cpt?.details?.landArea}
+              />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+
       {(formData?.cpt?.details || apiDataCheck?.[0]?.NdcDetails) && (
         <div>
           <LabelFieldPair style={{ marginTop: "40px" }}>
@@ -476,6 +560,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                             type="button"
                             style={{ color: "white", fontSize: "13px" }}
                             onClick={() => {
+                              // alert("clicking")
                               fetchBill("WS", item.connectionNo, index);
                             }}
                           >
@@ -722,6 +807,32 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                 </div>
               </LabelFieldPair>
 
+              {/* father name */}
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Father Name")} * `}</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={"fatherOrHusbandName"}
+                    defaultValue={propertyDetails?.fatherOrHusbandName || ""}
+                    render={(props) => (
+                      <TextInput
+                        value={propertyDetails?.fatherOrHusbandName}
+                        onChange={(e) => {
+                          setPropertyDetails((prev) => ({ ...prev, fatherOrHusbandName: e.target.value }));
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          // setFocusIndex({ index: -1 });
+                          props.onBlur(e);
+                        }}
+                        disabled={formData?.cpt?.details?.owners?.[0]?.fatherOrHusbandName}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+
               {/* mobile number */}
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_MOBILE_NUMBER")} * `}</CardLabel>
@@ -805,6 +916,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           />
         </div>
       </LabelFieldPair>
+
       {/* tl number */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_TL_NUMBER")}`}</CardLabel>
@@ -829,6 +941,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           />
         </div>
       </LabelFieldPair>
+
       {showToast && <Toast isDleteBtn={true} error={showToast?.error} label={showToast?.label} onClose={closeToast} />}
       {showPayModal && (
         <PayWSBillModal

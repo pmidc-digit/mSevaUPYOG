@@ -16,6 +16,7 @@ import _ from "lodash";
 import { useLocation } from "react-router-dom";
 import isUndefined from "lodash/isUndefined";
 import { getUniqueItemsFromArray, commonTransform, stringReplaceAll, getPattern, convertEpochToDate } from "../utils";
+import { getRenewalTradeDetailsValidation } from "../utils/renewalValidation";
 
 const defaultFinancialYear = () => {
   const data = convertEpochToDate(Date.now());
@@ -330,6 +331,19 @@ const OwnerForm1 = (_props) => {
     }
   }, [licenseTypeValue]);
 
+  useEffect(() => {
+    const renewalTradeDetailsError = getRenewalTradeDetailsValidation({ tradedetils: [{ ...tradedetail, ...formValue }] }, formData?.applicationData);
+
+    if (renewalTradeDetailsError) {
+      setLocalError(renewalTradeDetailsError.fieldName, { type: "manual", message: renewalTradeDetailsError.message });
+      return;
+    }
+
+    if (errors?.financialYear?.type === "manual") {
+      clearLocalErrors("financialYear");
+    }
+  }, [formData?.applicationData, tradedetail, formValue, errors?.financialYear?.type]);
+
   // useEffect(() => {
   //   if(isEdit){
 
@@ -368,7 +382,7 @@ const OwnerForm1 = (_props) => {
               className="form-field"
               // selected={isRenewal ? financialYearOptions[0] : props.value}
               selected={props.value}
-              errorStyle={localFormState.touched.financialYear && errors?.financialYear?.message ? true : false}
+              errorStyle={!!errors?.financialYear?.message}
               // disable={financialYearOptions?.length === 1}
               option={financialYearOptions}
               select={props.onChange}
@@ -381,7 +395,7 @@ const OwnerForm1 = (_props) => {
           )}
         />
       </LabelFieldPair>
-      <CardLabelError >{localFormState.touched.financialYear ? errors?.financialYear?.message : ""}</CardLabelError>
+      <CardLabelError >{errors?.financialYear?.message || ""}</CardLabelError>
       </div>
       <div style={colItem}>
       <LabelFieldPair>

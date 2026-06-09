@@ -123,6 +123,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
         {renderLabel(t("Full Name"), formData?.NDCDetails?.PropertyDetails?.firstName)}
         {/* {renderLabel(t("Last Name"), formData?.NDCDetails?.PropertyDetails?.lastName)} */}
         {renderLabel(t("Mobile Number"), formData?.NDCDetails?.PropertyDetails?.mobileNumber)}
+        {renderLabel(t("Father Name"), formData?.NDCDetails?.PropertyDetails?.fatherOrHusbandName)}
         {renderLabel(t("Email ID"), formData?.NDCDetails?.PropertyDetails?.email)}
         {renderLabel(t("Address"), formData?.NDCDetails?.PropertyDetails?.address)}
         {/* {renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))} */}
@@ -146,6 +147,8 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
         )}
 
         {renderLabel(t("Property ID"), formData?.NDCDetails?.cpt?.id)}
+        {renderLabel(t("Area"), formData?.NDCDetails?.PropertyDetails?.landArea)}
+
         {renderLabel(
           t("Application Fees"),
           getData?.totalAmount ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(getData?.totalAmount) : "NA"

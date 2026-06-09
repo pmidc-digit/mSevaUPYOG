@@ -246,9 +246,11 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         consumerCode: consumercodes,
       });
       setPropertyLoader(false);
-      const amount = result?.Bill[0]?.totalAmount || 0;
+      const bill = Array.isArray(result?.Bill) && result.Bill.length > 0 ? result.Bill[0] : null;
+      const amount = bill?.totalAmount || 0;
+      // const amount = result?.Bill[0]?.totalAmount || 0;
 
-      if (result?.Bill?.length > 0) {
+      if (bill) {
         if (amount > 0) {
           setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
         } else {
@@ -256,7 +258,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         }
         if (bussinessService === "WS") {
           const updated = [...propertyDetails.waterConnection];
-          updated[index].billData = result?.Bill[0];
+          updated[index].billData = bill;
           updated[index].isLoading = false;
           setPropertyDetails((prev) => ({
             ...prev,
@@ -264,7 +266,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           }));
         } else if (bussinessService === "SW") {
           const updated = [...propertyDetails.sewerageConnection];
-          updated[index].billData = result?.Bill[0];
+          updated[index].billData = bill;
           updated[index].isLoading = false;
           setPropertyDetails((prev) => ({
             ...prev,
@@ -272,7 +274,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           }));
         } else if (bussinessService === "PT") {
           let updated = { ...propertyDetails.propertyBillData };
-          updated.billData = result?.Bill[0];
+          updated.billData = bill;
           updated.isLoading = false;
           setPropertyDetails((prev) => ({
             ...prev,

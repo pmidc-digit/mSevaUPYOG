@@ -47,7 +47,13 @@ const ApplicationDetails = () => {
   const [isAdhocUpdating, setIsAdhocUpdating] = useState(false);
   const [adhocLicenseData, setAdhocLicenseData] = useState(null);
 
-  const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.tl.useApplicationDetail(t, tenantId, applicationNumber);
+  const {
+    isLoading,
+    isError,
+    data: applicationDetails,
+    error,
+    refetch: refetchApplicationDetails,
+  } = Digit.Hooks.tl.useApplicationDetail(t, tenantId, applicationNumber);
 
   const stateId = Digit.ULBService.getStateId();
   const { data: TradeRenewalDate = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "TradeLicense", ["TradeRenewal"]);
@@ -79,6 +85,7 @@ const ApplicationDetails = () => {
     role: "TL_CEMP",
     config: { EditRenewalApplastModifiedTime: EditRenewalApplastModifiedTime },
   });
+  const revalidateWorkflowDetails = workflowDetails?.revalidate;
 
   const closeToast = () => {
     setShowToast(null);
@@ -175,6 +182,13 @@ const ApplicationDetails = () => {
       setBusinessService(workflowDetails?.data?.applicationBusinessService);
     }
   }, [workflowDetails.data]);
+
+  useEffect(() => {
+    if (!updateResponse) return;
+
+    refetchApplicationDetails?.();
+    revalidateWorkflowDetails?.();
+  }, [updateResponse, refetchApplicationDetails, revalidateWorkflowDetails]);
 
   // Display error toast for eSign failures
   useEffect(() => {

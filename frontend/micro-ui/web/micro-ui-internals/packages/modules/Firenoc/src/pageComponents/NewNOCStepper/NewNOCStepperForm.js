@@ -340,7 +340,7 @@ const NewNOCStepperForm = () => {
       dispatch(UPDATE_NOCNewApplication_FORM("uploadedDocuments", { documents: formattedDocuments.documents.documents }));
       dispatch(UPDATE_NOCNewApplication_FORM("apiData", applicationDetails));
 
-      if (nocObject?.applicationStatus === "INITIATED") {
+      if (nocObject?.applicationStatus === "INITIATED" || nocObject?.status === "INITIATED" || nocObject?.fireNOCDetails?.status === "INITIATED") {
         dispatch(SET_NOCNewApplication_STEP(4));
       }
       setHydrated(true);

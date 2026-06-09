@@ -15,7 +15,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 
 const SearchReceipt = () => {
   const { t } = useTranslation();
@@ -86,7 +86,7 @@ const SearchReceipt = () => {
 
     try {
       const response = await Digit.MCollectService.recieptSearch(tenantId, businessService, filteredData);
-      setTableData(response?.Payments);
+      setTableData(response?.Payments || []);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -99,6 +99,12 @@ const SearchReceipt = () => {
   };
 
   const downloadPDF = async (rowData) => {
+    const paymentState = rowData?.paymentStatus;
+    if (paymentState?.toUpperCase() === "CANCELLED") {
+      const msg = t("CR_CANCELLED_RECEIPT_CANNOT_DOWNLOAD");
+      alert(msg === "CR_CANCELLED_RECEIPT_CANNOT_DOWNLOAD" ? "Cancelled receipt cannot be downloaded!" : msg);
+      return;
+    }
     setIsLoading(true);
     try {
       const response = await Digit.MCollectService.generatePdf(tenantId, { Payments: [{ ...rowData }] }, "consolidatedreceiptold");
@@ -169,7 +175,7 @@ const SearchReceipt = () => {
         Header: t("UC_RECEIPT_DATE_LABEL"),
         disableSortBy: true,
         accessor: (row) => {
-          return GetCell(row?.paymentDetails?.[0]?.receiptNumber);
+          return GetCell(row?.transactionDate ? new Date(row.transactionDate).toLocaleDateString("en-IN") : "NA");
         },
       },
       {
@@ -179,12 +185,59 @@ const SearchReceipt = () => {
           return GetCell(row?.paymentDetails?.[0]?.bill?.totalAmount);
         },
       },
+      {
+        Header: t("UC_ACTION_LABEL"),
+        disableSortBy: true,
+        id: "cancelActionColumn",
+        accessor: (row) => row?.paymentDetails?.[0]?.receiptNumber,
+        Cell: ({ row }) => {
+          const paymentState = row.original?.paymentStatus;
+          if (paymentState?.toUpperCase() !== "CANCELLED") {
+            const receiptNumber = row.original?.paymentDetails?.[0]?.receiptNumber;
+            const businessService = row.original?.paymentDetails?.[0]?.businessService;
+            const labelText =
+              t("CR_CANCEL_RECEIPT_BUTTON") === "CR_CANCEL_RECEIPT_BUTTON" || t("CR_CANCEL_RECEIPT_BUTTON") === "cr_cancel_receipt_button"
+                ? t("CR_CANCEL") === "CR_CANCEL"
+                  ? "Cancel"
+                  : t("CR_CANCEL")
+                : t("CR_CANCEL_RECEIPT_BUTTON");
+            return (
+              <button
+                style={{
+                  background: "#F47738",
+                  color: "white",
+                  padding: "6px 12px",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  fontWeight: "bold",
+                  display: "inline-block",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  border: "none",
+                  boxShadow: "0 4px 10px rgba(244, 119, 56, 0.24)",
+                  transition: "transform 0.2s ease, background-color 0.2s ease",
+                }}
+                className="cancel-receipt-btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.location.href = `/digit-ui/employee/mcollect/cancelReceipt?receiptNumbers=${encodeURIComponent(receiptNumber)}&tenantId=${encodeURIComponent(tenantId)}&businessService=${encodeURIComponent(businessService)}`;
+                }}
+              >
+                {labelText}
+              </button>
+            );
+          }
+          return GetCell("NA");
+        },
+      },
     ],
-    [t]
+    [t, tenantId]
   );
-  const handleReset = () => {s
+  const handleReset = () => {
     reset(); // resets all fields to defaultValues
-   
+    setTableData([]);
+    setHasSearched(false);
   };
   return (
     <React.Fragment>
@@ -192,109 +245,109 @@ const SearchReceipt = () => {
         <Header>{t("UC_SEARCH_RECEIPTS_HEADER")}</Header>
       </div>
 
-      <Card>
-        <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="search-complaint-container" style={{ padding: "0", margin: "0" }}>
-              <div
-                className="complaint-input-container for-pt"
-                style={{ width: "100%", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", margin: "0" }}
-              >
-                <div className="input-fields">
-                  <span className="complaint-input">
-                    <Label>{t("UC_SERVICE_TYPE_LABEL")}*</Label>
-                    <Controller
-                      control={control}
-                      rules={{ required: t("REQUIRED_FIELD") }}
-                      name="businessServices"
-                      render={(props) => (
-                        <Dropdown
-                          option={EmployeeStatusData}
-                          select={(e) => {
-                            props.onChange(e);
-                          }}
-                          optionKey="i18nKey"
-                          onBlur={props.onBlur}
-                          t={t}
-                          selected={props.value}
-                        />
-                      )}
-                    />
-                    {errors.businessServices && <p style={{ color: "red", fontSize: "14px" }}>{errors.businessServices.message}</p>}
-                  </span>
-                </div>
-                <div className="input-fields">
-                  <span className="complaint-input">
-                    <Label>{t("UC_CONSUMER_CODE_LABEL")}</Label>
-                    <TextInput
-                      name="consumerCodes"
-                      type="text"
-                      inputRef={register({
-                        maxLength: {
-                          value: 500,
-                        },
-                      })}
-                    />
-                    {errors.consumerCodes && <p style={{ color: "red", fontSize: "14px" }}>{errors.consumerCodes.message}</p>}
-                  </span>
-                </div>
-                <div className="input-fields">
-                  <span className="complaint-input">
-                    <Label>{t("UC_RECEIPT_NO_LABEL")}</Label>
-                    <TextInput
-                      name="receiptNumbers"
-                      type="text"
-                      inputRef={register({
-                        maxLength: {
-                          value: 200,
-                        },
-                      })}
-                    />
-                    {errors.receiptNumbers && <p style={{ color: "red", fontSize: "14px" }}>{errors.receiptNumbers.message}</p>}
-                  </span>
-                </div>
-                <div className="input-fields">
-                  <span className="complaint-input">
-                    <Label>{t("UC_MOBILE_NO_LABEL")}</Label>
-                    <Controller
-                      control={control}
-                      name="mobileNumber"
-                      rules={{
-                        pattern: {
-                          value: /^[0-9]+$/,
-                          message: t("ERR_INVALID_MOBILE_NUMBER"),
-                        },
-                        minLength: {
-                          value: 10,
-                          message: t("ERR_MIN_LENGTH_MOBILE_NUMBER"),
-                        },
-                        maxLength: {
-                          value: 15,
-                          message: t("ERR_MAX_LENGTH_MOBILE_NUMBER"),
-                        },
-                      }}
-                      render={(props) => (
-                        <div className="field-container">
-                          <MobileNumber
-                            onChange={props.onChange}
-                            value={props.value}
-                            componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
-                          />
-                        </div>
-                      )}
-                    />
-                    {errors.mobileNumber && <p style={{ color: "red", fontSize: "14px" }}>{errors.mobileNumber.message}</p>}
-                  </span>
-                </div>
+    <Card>
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="search-complaint-container" style={{ padding: "0", margin: "0" }}>
+            <div
+              className="complaint-input-container for-pt"
+              style={{ width: "100%", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", margin: "0" }}
+            >
+              <div className="input-fields">
+                <span className="complaint-input">
+                  <Label>{t("UC_SERVICE_TYPE_LABEL")}*</Label>
+                  <Controller
+                    control={control}
+                    rules={{ required: t("REQUIRED_FIELD") }}
+                    name="businessServices"
+                    render={(props) => (
+                      <Dropdown
+                        option={EmployeeStatusData}
+                        select={(e) => {
+                          props.onChange(e);
+                        }}
+                        optionKey="i18nKey"
+                        onBlur={props.onBlur}
+                        t={t}
+                        selected={props.value}
+                      />
+                    )}
+                  />
+                  {errors.businessServices && <p style={{ color: "red", fontSize: "14px" }}>{errors.businessServices.message}</p>}
+                </span>
               </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px" }}>
-                <SubmitBar label={t("Next")} submit="submit" />
-               <SubmitBar label={t("CS_COMMON_RESET")} onSubmit={() => { reset(); }} className="submit-bar ral-back-btn" />
+              <div className="input-fields">
+                <span className="complaint-input">
+                  <Label>{t("UC_CONSUMER_CODE_LABEL")}</Label>
+                  <TextInput
+                    name="consumerCodes"
+                    type="text"
+                    inputRef={register({
+                      maxLength: {
+                        value: 500,
+                      },
+                    })}
+                  />
+                  {errors.consumerCodes && <p style={{ color: "red", fontSize: "14px" }}>{errors.consumerCodes.message}</p>}
+                </span>
+              </div>
+              <div className="input-fields">
+                <span className="complaint-input">
+                  <Label>{t("UC_RECEIPT_NO_LABEL")}</Label>
+                  <TextInput
+                    name="receiptNumbers"
+                    type="text"
+                    inputRef={register({
+                      maxLength: {
+                        value: 200,
+                      },
+                    })}
+                  />
+                  {errors.receiptNumbers && <p style={{ color: "red", fontSize: "14px" }}>{errors.receiptNumbers.message}</p>}
+                </span>
+              </div>
+              <div className="input-fields">
+                <span className="complaint-input">
+                  <Label>{t("UC_MOBILE_NO_LABEL")}</Label>
+                  <Controller
+                    control={control}
+                    name="mobileNumber"
+                    rules={{
+                      pattern: {
+                        value: /^[0-9]+$/,
+                        message: t("ERR_INVALID_MOBILE_NUMBER"),
+                      },
+                      minLength: {
+                        value: 10,
+                        message: t("ERR_MIN_LENGTH_MOBILE_NUMBER"),
+                      },
+                      maxLength: {
+                        value: 15,
+                        message: t("ERR_MAX_LENGTH_MOBILE_NUMBER"),
+                      },
+                    }}
+                    render={(props) => (
+                      <div className="field-container">
+                        <MobileNumber
+                          onChange={props.onChange}
+                          value={props.value}
+                          componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
+                        />
+                      </div>
+                    )}
+                  />
+                  {errors.mobileNumber && <p style={{ color: "red", fontSize: "14px" }}>{errors.mobileNumber.message}</p>}
+                </span>
               </div>
             </div>
-          </form>
-        </FormProvider>
-      </Card>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px" }}>
+             <SubmitBar label={t("ES_COMMON_SEARCH")} submit="submit" />
+             <SubmitBar label={t("CS_COMMON_RESET")} onSubmit={handleReset} className="submit-bar ral-back-btn" />
+            </div>
+          </div>
+        </form>
+      </FormProvider>
+    </Card> 
 
       {tableData?.length > 0 ? (
         <div style={{ marginTop: "24px", background: "white", padding: "16px", borderRadius: "8px" }}>
@@ -312,8 +365,6 @@ const SearchReceipt = () => {
                 },
               };
             }}
-            currentPage={getValues("offset") / getValues("limit")}
-            pageSizeLimit={getValues("limit")}
             disableSort={false}
           />
         </div>

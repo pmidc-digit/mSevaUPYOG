@@ -112,12 +112,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     );
     const resolvedFirestationId = site.fireStationId || matchedStation?.code || "";
 
-    /* ── resolve applicationTenantId based on resolved firestationId ── */
-    const selectedStationCode = site.fireStationId || resolvedFirestationId;
-    const selectedStationObj = fireStationData?.find(
-      (s) => s.code === selectedStationCode || s.id === selectedStationCode
-    );
-    const applicationTenantId = selectedStationObj?.tenantId || selectedStationObj?.baseTenantId || tenantId;
+    const applicationTenantId = tenantId;
 
     /* ── ownerShipType mapping ── */
     const ownerShipType = appDetails.applicantSubtype?.code || "INDIVIDUAL.SINGLEOWNER";
@@ -134,10 +129,10 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
         usageType: b.buildingUsageType?.code || b.buildingUsageType || "",
         usageSubType: b.buildingUsageSubType?.code || b.buildingUsageSubType || "",
         uomsMap: {
-          NO_OF_FLOORS: String(floors),
-          NO_OF_BASEMENTS: String(basements),
-          HEIGHT_OF_BUILDING: String(height),
-          BUILTUP_AREA: String(builtUpArea),
+          HEIGHT_OF_BUILDING: height,
+          NO_OF_FLOORS: floors,
+          NO_OF_BASEMENTS: basements,
+          BUILTUP_AREA: builtUpArea,
         },
         landArea: Number(b.landArea || 0),
         totalCoveredArea: Number(b.totalCoveredArea || 0),
@@ -152,6 +147,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           { code: "NO_OF_BASEMENTS", value: basements, isActiveUom: false, active: true },
           { code: "BUILTUP_AREA", value: builtUpArea, isActiveUom: false, active: true },
         ],
+        usageTypeMajor: b.buildingUsageType?.code || b.buildingUsageType || "",
         applicationDocuments: [],
       };
     });
@@ -187,9 +183,9 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
     /* ── propertyDetails.address ── */
     const address = {
-      areaType: site.areaType?.name || site.areaType?.code || "",
-      city: site.districtName?.code || site.districtName?.name || site.districtName || tenantId,
-      subDistrict: site.cityName?.code || "",
+      areaType: (site.areaType?.code || site.areaType?.name || "").toUpperCase(),
+      city: site.cityName?.code || site.cityName || tenantId,
+      subDistrict: site.districtName?.code || site.districtName?.name || site.districtName || "",
       addressLine2: (site.areaType?.code === "RURAL" || site.areaType?.code === "Rural") ? (site.villageName || "") : (site.mohalla?.name || site.mohalla || ""),
       doorNo: site.plotSurveyNo || "",
       street: site.streetName || "",

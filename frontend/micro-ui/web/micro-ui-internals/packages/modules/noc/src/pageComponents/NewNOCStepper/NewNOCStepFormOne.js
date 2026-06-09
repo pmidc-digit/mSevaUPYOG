@@ -30,6 +30,8 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     return state.noc.NOCNewApplicationFormReducer.ownerPhotos;
   });
 
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
+
   console.log("ownerIds", ownerIds);
   console.log("ownerPhotos", ownerPhotos);
 
@@ -181,6 +183,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const stateCode = Digit.ULBService.getStateId();
   const [stakeHolderRoles, setStakeholderRoles] = useState(false);
   const userRoles = userInfo?.info?.roles?.map((roleData) => roleData.code);
+  const userRolesMapped = userInfo?.info?.roles?.map((roleData) => ({role: roleData?.code, tenantId: roleData?.tenantId}));
 
   const { data: stakeHolderDetails, isLoading: stakeHolderDetailsLoading } = Digit.Hooks.obps.useMDMS(
     stateCode,
@@ -200,7 +203,10 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
       const uniqueRoles = roles?.filter((item, i, ar) => ar.indexOf(item) === i);
 
       uniqueRoles?.map((unRole) => {
-        if (userRoles?.includes(unRole)) {
+        if(userRoles?.includes("BPA_ARCHITECT")){
+          setIsRegisteredStakeHolder(true);
+        }
+        else if (userRolesMapped?.find((userRole) => userRole?.role === unRole && userRole?.tenantId === tenantId)) {
           setIsRegisteredStakeHolder(true);
         }
       });

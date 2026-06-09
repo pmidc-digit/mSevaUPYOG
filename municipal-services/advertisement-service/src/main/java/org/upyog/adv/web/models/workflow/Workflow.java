@@ -10,7 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.upyog.adv.web.models.DocumentDetail;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 /**
  * Minimal workflow payload used to pass action/comment/assignees from API to

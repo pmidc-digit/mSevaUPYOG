@@ -2,11 +2,9 @@ package org.upyog.adv.config;
 
 import java.util.TimeZone;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
-import org.egov.tracer.config.TracerConfiguration;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 
 import lombok.AllArgsConstructor;
@@ -21,7 +19,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-@Import({ TracerConfiguration.class })
 public class BookingConfiguration {
 
 	@Value("${app.timezone}")

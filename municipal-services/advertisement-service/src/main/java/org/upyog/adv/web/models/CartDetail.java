@@ -4,7 +4,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 import org.upyog.adv.util.BookingUtil;
 import org.upyog.adv.validator.CreateApplicationGroup;
@@ -12,7 +12,7 @@ import org.upyog.adv.validator.CreateApplicationGroup;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.micrometer.core.lang.NonNull;
+import org.springframework.lang.NonNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

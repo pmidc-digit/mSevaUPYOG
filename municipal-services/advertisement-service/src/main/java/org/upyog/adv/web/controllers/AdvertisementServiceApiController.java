@@ -2,7 +2,7 @@ package org.upyog.adv.web.controllers;
 
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,14 +37,11 @@ import org.upyog.adv.web.models.billing.Demand;
 import digit.models.coremodels.RequestInfoWrapper;
 import org.springframework.http.MediaType;
 import org.upyog.adv.util.QRCodeService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-10-15T13:40:01.245+05:30")
+@jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-10-15T13:40:01.245+05:30")
 
 @Controller
-@Api(value = "Advertisement Controller", description = "Operations related to Advertisement Booking")
 @RequestMapping("/booking")
 @Slf4j
 public class AdvertisementServiceApiController {
@@ -67,7 +64,7 @@ public class AdvertisementServiceApiController {
 
 	@RequestMapping(value = "/v1/_create", method = RequestMethod.POST)
 	public ResponseEntity<AdvertisementResponse> createBooking(
-			@ApiParam(value = "Details for theadvertisement booking time, payment and documents", required = true) @Valid @RequestBody BookingRequest bookingRequest) throws JsonProcessingException {
+			@Valid @RequestBody BookingRequest bookingRequest) throws JsonProcessingException {
 		log.info("bookingRequest : {}" , bookingRequest);
 		log.info("bookingRequest.isDraftApplication() {} ", bookingRequest.isDraftApplication());
 		validationService.validateRequest(bookingRequest);
@@ -134,7 +131,6 @@ public class AdvertisementServiceApiController {
 	
 	 @RequestMapping(value = "/v1/_update", method = RequestMethod.POST)
 	    public ResponseEntity<AdvertisementResponse> v1UpdateAdvertisementBooking(
-	            @ApiParam(value = "Details for the new (s) + RequestInfo meta data.", required = true) 
 	            @Valid @RequestBody BookingRequest advertisementBookingRequest) {
 	        
 	        /**
@@ -204,7 +200,7 @@ public class AdvertisementServiceApiController {
 	 // Gets the demand 
 	 @RequestMapping(value = "/v1/_estimate", method = RequestMethod.POST)
 		public ResponseEntity<AdvertisementDemandEstimationResponse> v1GetEstimateDemand(
-				@ApiParam(value = "Details for the advertisement booking for demand estimation", required = true) @Valid @RequestBody AdvertisementDemandEstimationCriteria estimationCriteria) throws JsonProcessingException {
+			@Valid @RequestBody AdvertisementDemandEstimationCriteria estimationCriteria) throws JsonProcessingException {
 			List<Demand> demands = demandService.getDemand(estimationCriteria);
 			ResponseInfo info = BookingUtil.createReponseInfo(estimationCriteria.getRequestInfo(), BookingConstants.ADVERTISEMENT_DEMAND_ESTIMATION,
 					StatusEnum.SUCCESSFUL);
@@ -216,7 +212,6 @@ public class AdvertisementServiceApiController {
 	 
 	 @RequestMapping(value = "/_deletedraft", method = RequestMethod.POST)
 		public ResponseEntity<AdvertisementResponse> advertisementDeleteDraft(
-				@ApiParam(value = "Details for draft deletion + RequestInfo meta data.", required = true) 
 				@RequestBody RequestInfoWrapper requestInfoWrapper,
 				@RequestParam(value = "draftId", required = true) String draftId) {
 			String draftDiscardResponse = bookingService.deleteAdvertisementDraft(draftId);

@@ -2,7 +2,7 @@ package org.upyog.adv.service;
 
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.egov.common.contract.request.RequestInfo;

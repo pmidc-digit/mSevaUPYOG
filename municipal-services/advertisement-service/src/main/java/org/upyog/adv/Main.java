@@ -41,10 +41,10 @@ public class Main {
 				.findAndRegisterModules();
 	}
 
-	@Autowired
-	public MappingJackson2HttpMessageConverter jacksonConverter(ObjectMapper objectMapper) {
+	@Bean
+	public MappingJackson2HttpMessageConverter jacksonConverter() {
 		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-		converter.setObjectMapper(objectMapper);
+		converter.setObjectMapper(objectMapper());
 		return converter;
 	}
 }

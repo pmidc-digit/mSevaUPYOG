@@ -3,7 +3,7 @@ package org.upyog.adv.repository;
 import java.util.List;
 import java.util.Map;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.upyog.adv.web.models.*;

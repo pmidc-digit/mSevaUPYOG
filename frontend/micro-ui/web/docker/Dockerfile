@@ -3,7 +3,7 @@ FROM node:14.21.3-alpine AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
 RUN echo '{"resolutions": {"node-releases": "2.0.44"}}' > package.json
-RUN yarn add @mseva/digit-ui-libraries@1.1.80
+RUN yarn add @mseva/digit-ui-libraries@1.1.81
 RUN yarn add @mseva/digit-ui-module-bills@1.0.8
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.6
 RUN yarn add @mseva/digit-ui-module-dss@1.0.6

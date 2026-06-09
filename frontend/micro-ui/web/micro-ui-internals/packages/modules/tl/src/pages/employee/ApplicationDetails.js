@@ -10,6 +10,7 @@ import orderBy from "lodash/orderBy";
 import getPDFData from "../../utils/getTLAcknowledgementData";
 import BreakupModal from "../../components/BreakupModal";
 import AdhocRebatePenaltyModal from "../../components/AdhocRebatePenaltyModal";
+import { buildTLPaymentBreakup, getTLBillAccountDetails, getTLTaxHeadLabel, getTLTotalAmount } from "../../utils/paymentBreakup";
 
 const ApplicationDetails = () => {
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -513,66 +514,27 @@ const ApplicationDetails = () => {
       });
     }
   };
-  const getTaxHeadLabel = (taxHeadCode) => {
-    const labels = {
-      TL_TAX: "Trade License Tax",
-      TL_ADHOC_PENALTY: "Adhoc Penalty",
-      TL_ADHOC_REBATE: "Adhoc Rebate",
-      TL_RENEWAL_REBATE: "Renewal Rebate",
-      TL_RENEWAL_PENALTY: "Penalty",
-    };
-    return t(taxHeadCode) !== taxHeadCode ? t(taxHeadCode) : labels[taxHeadCode] || taxHeadCode;
-  };
+  const getTaxHeadLabel = (taxHeadCode) => (t(taxHeadCode) !== taxHeadCode ? t(taxHeadCode) : getTLTaxHeadLabel(taxHeadCode));
 
   // Helper to get bill account details from bill or payment history
-  const getBillAccountDetails = () => {
-    if (billData?.billDetails?.[0]?.billAccountDetails) {
-      return billData.billDetails[0].billAccountDetails;
-    }
-    if (paymentsHistory?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.billAccountDetails) {
-      return paymentsHistory.Payments[0].paymentDetails[0].bill.billDetails[0].billAccountDetails;
-    }
-    return [];
-  };
+  const getBillAccountDetails = () => getTLBillAccountDetails({ billData, paymentsHistory });
 
-  const getTotalAmount = () => {
-    if (billData?.totalAmount !== undefined && billData?.totalAmount !== null) return billData.totalAmount;
-    if (paymentsHistory?.Payments?.[0]?.totalAmountPaid !== undefined) return paymentsHistory.Payments[0].totalAmountPaid;
-    return 0;
-  };
+  const getTotalAmount = () => getTLTotalAmount({ billData, paymentsHistory });
 
   // Get summarized fee line items for the fee card
   const getFeeLineItems = () => {
     const details = getBillAccountDetails();
-    const tlTax = details.find(d => d.taxHeadCode === "TL_TAX")?.amount || 0;
-    const renewalRebate = details.find(d => d.taxHeadCode === "TL_RENEWAL_REBATE")?.amount || 0;
-    const renewalPenalty = details.find(d => d.taxHeadCode === "TL_RENEWAL_PENALTY")?.amount || 0;
-    const adhocPenalty = details.find(d => d.taxHeadCode === "TL_ADHOC_PENALTY")?.amount || 0;
-    const adhocRebate = details.find(d => d.taxHeadCode === "TL_ADHOC_REBATE")?.amount || 0;
-
-    // For renewals, TL_TAX may be absent/zero — derive base fee from total
-    const isRenewal = applicationDetails?.applicationData?.applicationType === "RENEWAL";
-    const tlTaxFromBill = details.find(d => d.taxHeadCode === "TL_TAX")?.amount || 0;
-    const baseFee = tlTaxFromBill || (getTotalAmount() - renewalRebate - renewalPenalty - adhocPenalty - adhocRebate);
-
-    // Get reasons from license data for tooltips
     const licData = adhocLicenseData || applicationDetails?.applicationData;
     const penaltyReason = licData?.tradeLicenseDetail?.adhocPenaltyReason || "";
     const rebateReason = licData?.tradeLicenseDetail?.adhocExemptionReason || "";
 
-    const items = [
-      { label: isRenewal ? "Trade License Renewal Fee" : "Trade License Tax", amount: baseFee },
-      { label: isRenewal ? "Rebate" : "Renewal Rebate", amount: renewalRebate },
-      { label: "Penalty", amount: renewalPenalty },
-    ];
-    // Only show adhoc rows when they have non-zero values
-    if (adhocPenalty !== 0) {
-      items.push({ label: "Adhoc Penalty", amount: adhocPenalty, tooltip: penaltyReason });
-    }
-    if (adhocRebate !== 0) {
-      items.push({ label: "Adhoc Rebate", amount: adhocRebate, tooltip: rebateReason });
-    }
-    return items;
+    return buildTLPaymentBreakup({
+      billAccountDetails: details,
+      totalAmount: getTotalAmount(),
+      applicationType: applicationDetails?.applicationData?.applicationType,
+      penaltyReason,
+      rebateReason,
+    }).feeLineItems;
   };
 
   // Open ADHOC popup — pre-populate with existing values from license data
@@ -706,12 +668,11 @@ const ApplicationDetails = () => {
       const tradeUnitTotal = tradeUnitBreakup.reduce((sum, item) => sum + item.rate, 0);
       const accessoryTotal = accessoryBreakup.reduce((sum, item) => sum + item.rate, 0);
       const validityYears = applicationDetails?.applicationData?.tradeLicenseDetail?.additionalDetail?.validityYears || 1;
-
-      const tlTax = billAccDetails.find((a) => a.taxHeadCode === "TL_TAX")?.amount || 0;
-      const rebate = (billAccDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_REBATE")?.amount || 0) +
-                     (billAccDetails.find((a) => a.taxHeadCode === "TL_ADHOC_REBATE")?.amount || 0);
-      const penalty = (billAccDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_PENALTY")?.amount || 0) +
-                      (billAccDetails.find((a) => a.taxHeadCode === "TL_ADHOC_PENALTY")?.amount || 0);
+      const breakupSummary = buildTLPaymentBreakup({
+        billAccountDetails: billAccDetails,
+        totalAmount: bill?.totalAmount || 0,
+        applicationType: applicationDetails?.applicationData?.applicationType,
+      });
 
       setBreakupData({
         tradeUnitBreakup,
@@ -719,10 +680,10 @@ const ApplicationDetails = () => {
         tradeUnitTotal,
         accessoryTotal,
         validityYears,
-        tlTax,
-        rebate,
-        penalty,
-        totalAmount: bill?.totalAmount || tlTax,
+        tlTax: breakupSummary.tradeLicenseTax,
+        rebate: breakupSummary.rebate,
+        penalty: breakupSummary.penalty,
+        totalAmount: breakupSummary.totalAmount || breakupSummary.tradeLicenseTax,
         finalAmount: (tradeUnitTotal + accessoryTotal) * validityYears,
       });
     } catch (err) {
@@ -812,14 +773,11 @@ const ApplicationDetails = () => {
       const tradeUnitTotal = tradeUnitBreakup.reduce((sum, item) => sum + item.rate, 0);
       const accessoryTotal = accessoryBreakup.reduce((sum, item) => sum + item.rate, 0);
       const validityYears = applicationDetails?.applicationData?.tradeLicenseDetail?.additionalDetail?.validityYears || 1;
-
-      // Get tax head amounts from bill
-      const tlTax = billAccDetails.find((a) => a.taxHeadCode === "TL_TAX")?.amount || 0;
-      const rebate = (billAccDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_REBATE")?.amount || 0) +
-                     (billAccDetails.find((a) => a.taxHeadCode === "TL_ADHOC_REBATE")?.amount || 0);
-      const penalty = (billAccDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_PENALTY")?.amount || 0) +
-                      (billAccDetails.find((a) => a.taxHeadCode === "TL_ADHOC_PENALTY")?.amount || 0);
-      const totalAmount = bill?.totalAmount || tlTax;
+      const breakupSummary = buildTLPaymentBreakup({
+        billAccountDetails: billAccDetails,
+        totalAmount: bill?.totalAmount || 0,
+        applicationType: applicationDetails?.applicationData?.applicationType,
+      });
 
       setBreakupData({
         tradeUnitBreakup,
@@ -827,10 +785,10 @@ const ApplicationDetails = () => {
         tradeUnitTotal,
         accessoryTotal,
         validityYears,
-        tlTax,
-        rebate,
-        penalty,
-        totalAmount,
+        tlTax: breakupSummary.tradeLicenseTax,
+        rebate: breakupSummary.rebate,
+        penalty: breakupSummary.penalty,
+        totalAmount: breakupSummary.totalAmount || breakupSummary.tradeLicenseTax,
         finalAmount: (tradeUnitTotal + accessoryTotal) * validityYears,
       });
       setShowBreakupModal(true);

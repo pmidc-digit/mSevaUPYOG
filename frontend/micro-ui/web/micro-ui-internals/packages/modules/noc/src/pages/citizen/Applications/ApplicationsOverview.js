@@ -94,7 +94,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 const CitizenApplicationOverview = () => {
   const { nocid } = useParams();
   const id = decodeURIComponentCustom(nocid);
-  // console.log('id', id.length)
+  
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
@@ -664,7 +664,7 @@ const CitizenApplicationOverview = () => {
         />
       </Card>
 
-      {id.length > 0 && (
+      {id?.length > 0 && (
         <React.Fragment>
           <Card>
             <StatusTable>

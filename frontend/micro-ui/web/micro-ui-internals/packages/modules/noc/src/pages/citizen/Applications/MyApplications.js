@@ -70,11 +70,13 @@ const MyApplications = ({ view }) => {
       {
         Header: t("NOC_APPLICATION_NUMBER"),
         accessor: (row) => row?.Applications?.applicationNo,
-        Cell: ({ row }) => (
-          <Link to={`/digit-ui/citizen/noc/search/application-overview/${encodeURIComponentCustom(row.original?.Applications?.applicationNo)}`}>
+        Cell: ({ row }) => {
+          const encodedAppNo = encodeURIComponentCustom(row.original?.Applications?.applicationNo);
+          return (
+          <Link to={`/digit-ui/citizen/noc/search/application-overview/${encodedAppNo}`}>
             <b>{GetCell(row.original?.Applications?.applicationNo)}</b>
           </Link>
-        ),
+        )},
       },
       {
         Header: t("Owner Name"),

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import _ from "lodash";
+import { getRenewalTradeDetailsValidation } from "../../../../utils/renewalValidation";
 
 const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -14,6 +15,7 @@ const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   //   const currentStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData[config.key] || {});
   //     const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData.TraidDetails);
   const reduxStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData.TraidDetails);
+  const applicationData = useSelector((state) => state.tl.tlNewApplicationForm.formData.applicationData);
   const [localStepData, setLocalStepData] = useState(reduxStepData);
 
   function validateStepData(data) {
@@ -62,6 +64,9 @@ const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     if (!address?.city?.code) missingFields.push("City");
     const localityCode = cpt?.details?.address?.locality?.code || address?.locality?.code;
     if (!localityCode) missingFields.push("Locality");
+
+    const renewalTradeDetailsError = getRenewalTradeDetailsValidation(data, applicationData);
+    if (renewalTradeDetailsError) missingFields.push(renewalTradeDetailsError.message);
 
     return missingFields;
   }

@@ -45,7 +45,7 @@ public class RLConstants {
     // Legacy arrear keys for additionalDetails
     public static final String LEGACY_ARREAR_KEY = "arrear";
     public static final String LEGACY_ARREAR_START_DATE_KEY = "arrearStartDate";
-    public static final String LEGACY_ARREAR_END_DATE_KEY = "arrearEndDate";
+    public static final String LEGACY_LAST_BILLING_PERIOD_KEY = "lastBillingPeriod";
 
 	public static final String CGST_FEE_RL_APPLICATION = "RL_CGST_FEE";
 	

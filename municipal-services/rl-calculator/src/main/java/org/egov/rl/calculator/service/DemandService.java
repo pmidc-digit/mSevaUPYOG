@@ -83,7 +83,7 @@ public class DemandService {
 		if (firstCriteria.isSatelment()) {
 			return createSatelmentDemand(calculationReq);
 	        } else if (firstCriteria.isLegacyArrear() || isLegacyApplication) {
-            return createLegacyArrearDemand(calculationReq);
+            return createMonthlyLegacyDemands(calculationReq);
 		} else {
 
 			boolean isSecurityDeposite = firstCriteria.isSecurityDeposite();
@@ -157,65 +157,27 @@ public class DemandService {
 	 * Creates a single combined demand for legacy applications.
 	 * Legacy workflow should persist one demand containing RL fee, arrear and no security deposit.
      */
-    public DemandResponse createLegacyArrearDemand(CalculationReq calculationReq) {
-		log.info("Creating legacy combined demand - START");
+    public DemandResponse createMonthlyLegacyDemands(CalculationReq calculationReq) {
+		log.info("Creating monthly legacy demands - START");
         List<Demand> demands = new ArrayList<>();
         RequestInfo requestInfo = calculationReq.getRequestInfo();
 		for (CalculationCriteria criteria : calculationReq.getCalculationCriteria()) {
-			Demand demand = buildLegacyCombinedDemand(criteria);
-			if (demand != null) {
-				demands.add(demand);
+			List<Demand> generated = calculationService.generateMonthlyLegacyDemands(criteria, requestInfo);
+			if (generated != null && !generated.isEmpty()) {
+				demands.addAll(generated);
 			}
 		}
 
 		if (CollectionUtils.isEmpty(demands)) {
 			log.warn("No legacy demand could be built for the request");
-			return DemandResponse.builder().demands(Collections.emptyList()).build();
+			return DemandResponse.builder().demands(Collections.<Demand>emptyList()).build();
 		}
 
-		log.info("Saving legacy combined demand(s) to billing service. Count: {}", demands.size());
+		log.info("Saving legacy demand(s) to billing service. Count: {}", demands.size());
 		List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demands);
-		log.info("Legacy combined demand created successfully. Count: {}", savedDemands.size());
+		log.info("Legacy demand created successfully. Count: {}", savedDemands.size());
 		return DemandResponse.builder().demands(savedDemands).build();
     }
-
-	private Demand buildLegacyCombinedDemand(CalculationCriteria criteria) {
-		if (criteria == null || criteria.getAllotmentRequest() == null || CollectionUtils.isEmpty(criteria.getAllotmentRequest().getAllotment())) {
-			return null;
-		}
-
-		AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
-		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
-		String tenantId = allotmentDetails.getTenantId();
-		String consumerCode = allotmentDetails.getApplicationNumber();
-		BigDecimal arrearAmount = criteria.getArrearAmount() == null ? BigDecimal.ZERO : criteria.getArrearAmount();
-
-		Demand demand = calculationService.buildDemand(allotmentRequest, false);
-		if (demand == null) {
-			log.warn("Unable to build base legacy demand for consumerCode: {}, tenantId: {}", consumerCode, tenantId);
-			return null;
-		}
-
-		if (demand.getDemandDetails() == null) {
-			demand.setDemandDetails(new ArrayList<>());
-		}
-		demand.getDemandDetails().removeIf(detail -> detail.getTaxHeadMasterCode() != null
-				&& RLConstants.ROUND_OFF_RL_APPLICATION.equalsIgnoreCase(detail.getTaxHeadMasterCode()));
-
-		log.info("Adding legacy arrear to combined demand. consumerCode: {}, arrearAmount: {}", consumerCode,
-				arrearAmount);
-		demand.getDemandDetails().add(DemandDetail.builder()
-				.taxAmount(arrearAmount)
-				.taxHeadMasterCode(RLConstants.RL_ARREAR_FEE)
-				.tenantId(tenantId)
-				.build());
-
-		calculationService.addRoundOffTaxHead(tenantId, demand.getDemandDetails());
-		BigDecimal amountPayable = demand.getDemandDetails().stream().map(DemandDetail::getTaxAmount)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-		demand.setMinimumAmountPayable(amountPayable);
-		return demand;
-	}
 
 	public DemandResponse createSatelmentDemand(CalculationReq calculationReq) {
 

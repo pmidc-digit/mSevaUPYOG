@@ -61,22 +61,11 @@ public class AllotmentEnrichmentService {
 		 setRegistrationNumber(allotmentRequest);
 		}
 		
-		enrichLegacyDates(allotmentDetails);
-		
 		enrichTaxApplicability(requestInfo, allotmentDetails);
 		enrichAdditionalDetails(allotmentDetails);
 	}
 
-	private void enrichLegacyDates(AllotmentDetails allotmentDetails) {
-		if ("Legacy".equalsIgnoreCase(allotmentDetails.getApplicationType())) {
-			if (allotmentDetails.getStartDate() == null || allotmentDetails.getStartDate() == 0L) {
-				allotmentDetails.setStartDate(-2208988800000L); // 1/1/1900
-			}
-			if (allotmentDetails.getEndDate() == null || allotmentDetails.getEndDate() == 0L) {
-				allotmentDetails.setEndDate(32503680000000L); // 1/1/3000
-			}
-		}
-	}
+
 
 	private void enrichTaxApplicability(RequestInfo requestInfo, AllotmentDetails allotmentDetails) {
 		try {

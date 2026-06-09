@@ -384,7 +384,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    if (!_.isEqual(data, currentStepData)) {
+    if (JSON.stringify(data) !== JSON.stringify(currentStepData)) {
       dispatch(UPDATE_tlNewApplication(config.key, data));
     }
   };

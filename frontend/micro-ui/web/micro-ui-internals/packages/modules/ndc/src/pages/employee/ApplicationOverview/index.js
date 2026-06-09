@@ -715,7 +715,7 @@ const ApplicationOverview = () => {
       </Card>
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
-      {applicationDetails?.Applications?.[0]?.applicationStatus !== "INITIATED" && actions?.length && (
+      {applicationDetails?.Applications?.[0]?.applicationStatus !== "INITIATED" && actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu

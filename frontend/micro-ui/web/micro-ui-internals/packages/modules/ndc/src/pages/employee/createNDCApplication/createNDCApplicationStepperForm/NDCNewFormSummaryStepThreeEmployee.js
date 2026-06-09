@@ -35,9 +35,10 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
 
   function mapToNDCPayload(inputData, actionStatus) {
     const applicant = Digit.UserService.getUser()?.info || {};
-    console.log("checkFormData", formData);
-
-    const owners = (inputData?.apiData?.Applications?.[0]?.owners || [])?.map((item) => {
+    const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
+    
+    // const owners = (inputData?.apiData?.Applications?.[0]?.owners || [])?.map(({ status, ...rest }) => rest);
+    const owners = (inputData?.apiData?.Applications?.[0]?.owners || baseApplication?.owners)?.map((item) => {
       const obj = JSON.parse(JSON.stringify(item));
       delete obj.status;
       return obj;
@@ -52,9 +53,12 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
     //   },
     // ];
 
-    // Pick the source of truth for the application
-    const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
+    // return
+    
 
+    // Pick the source of truth for the application
+
+    // Clone and modify workflow action
     // Clone and modify workflow action
     const updatedApplication = {
       ...baseApplication,
@@ -63,7 +67,21 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
         action: actionStatus,
       },
       owners: owners,
-      NdcDetails: baseApplication?.NdcDetails,
+      // Map over NdcDetails to update PT details with latest form data
+      NdcDetails: baseApplication?.NdcDetails?.map((detail) => {
+        if (detail.businessService === "PT") {
+          return {
+            ...detail,
+            additionalDetails: {
+              ...detail.additionalDetails,
+              reason: formData?.NDCDetails?.NDCReason?.reason, // Update custom reason text from correct path
+              remarks: formData?.NDCDetails?.PropertyDetails?.remarks, // Update remarks from correct path
+            },
+          };
+        }
+        return detail;
+      }),
+      reason: formData?.NDCDetails?.NDCReason?.code, // Update selected reason code from correct path
       Documents: [], // We'll populate below
     };
 

@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
-import _ from "lodash";
+
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import { convertDateToEpoch } from "../../../../utils";
 import { Loader } from "../../../../components/Loader";
+
+const areFormValuesEqual = (left = {}, right = {}) => {
+  try {
+    return JSON.stringify(left) === JSON.stringify(right);
+  } catch (error) {
+    return false;
+  }
+};
 
 const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   //const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
@@ -548,7 +556,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue, data) => {
-    if (!_.isEqual(data, currentStepData)) {
+    if (!areFormValuesEqual(data, currentStepData)) {
       dispatch(UPDATE_tlNewApplication(config.key, data));
     }
   };

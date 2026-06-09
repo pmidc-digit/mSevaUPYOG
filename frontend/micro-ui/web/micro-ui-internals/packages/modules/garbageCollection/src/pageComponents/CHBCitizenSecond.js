@@ -14,15 +14,17 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const [error, setError] = useState("");
   const [getPUnits, setPUnits] = useState([]);
   const [getActiveStatus, setActiveStatus] = useState(false);
+  const [isRented, setIsRented] = useState(false);
 
-  const { data: GCData = [], isLoading: GCLoading } = Digit.Hooks.useCustomMDMS(tenantId, "sw-services-calculation", [{ name: "PropertyUsageType" }]);
+  const { data: GCData = [], isLoading: GCLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-calculation", [{ name: "PropertyUsageType" }]);
   const { data: WasteType = [], isLoading: WasteTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-masters", [{ name: "TypeOfWaste" }]);
   const { data: FreqType = [], isLoading: FreqTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-masters", [
     { name: "GarbageCollectionFrequency" },
   ]);
-  const { data: connectionCategory = [], isLoading: connectionCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-masters", [
-    { name: "connectionCategory" },
-  ]);
+
+  // const { data: connectionCategory = [], isLoading: connectionCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-masters", [
+  //   { name: "connectionCategory" },
+  // ]);
 
   const { data: amountData = [], isLoading: amountDataLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-calculation", [
     { name: "GCBillingSlab" },
@@ -55,7 +57,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           propertyType: data?.propertyType?.name,
           plotSize: data?.plotSize,
           location: data?.location,
-          connectionCategory: data?.connectionCategory?.name,
+          connectionCategory: "Permanent",
+          // connectionCategory: data?.connectionCategory?.name,
           connectionHolders: [
             {
               name: ownerData?.name,
@@ -70,8 +73,12 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             action: "DRAFT",
           },
           additionalDetails: {
-            connectionCategory: data?.connectionCategory?.name,
+            connectionCategory: "Permanent",
+            // connectionCategory: data?.connectionCategory?.name,
             locality: propertyDetailsFetch?.Properties?.[0]?.address?.locality?.code,
+            floorNo: data?.floorNo?.floorNo,
+            defAmount: data?.defAmount,
+            rentalStatus: isRented,
           },
         },
       };
@@ -102,7 +109,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           plotSize: data?.plotSize,
           location: data?.location,
           applicationType: "NEW_GARBAGE_CONNECTION",
-          connectionCategory: data?.connectionCategory?.name,
+          connectionCategory: "Permanent",
           unitId: data?.unitId?.id,
           connectionHolders: [
             {
@@ -119,8 +126,11 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             moduleName: "gc-services",
           },
           additionalDetails: {
-            connectionCategory: data?.connectionCategory?.name,
+            connectionCategory: "Permanent",
             locality: propertyDetailsFetch?.Properties?.[0]?.address?.locality?.code,
+            floorNo: data?.floorNo?.floorNo,
+            defAmount: data?.defAmount,
+            rentalStatus: isRented,
           },
         },
       };
@@ -154,14 +164,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       const responseData = await Digit.GCService.validateConnection({ tenantId, filters });
       setLoader(false);
       if (responseData?.canCreateConnection) {
-        setActiveStatus(true);
+        setActiveStatus(false);
       } else {
         setShowToast(true);
         setError(responseData?.message);
       }
     } catch (error) {
       setLoader(false);
-      setActiveStatus(false);
+      setActiveStatus(true);
       setShowToast(true);
       setError(error.response.data?.Errors?.[0]?.message);
     }
@@ -187,41 +197,64 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     return Array.from(map.values());
   }, [selectedFloorUnits]);
 
+  const uniqueFloors = React.useMemo(() => {
+    if (!getPUnits?.length) return [];
+
+    const map = new Map();
+
+    getPUnits.forEach((item) => {
+      if (!map.has(item.floorNo)) {
+        map.set(item.floorNo, item);
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) => a.floorNo - b.floorNo);
+  }, [getPUnits]);
+
   // PT-1012-2006092
   useEffect(() => {
     if (propertyDetailsFetch?.Properties[0]) {
       setPUnits(propertyDetailsFetch?.Properties[0]?.units);
       if (propertyDetailsFetch?.Properties || currentStepData?.venueDetails || currentStepData?.apiResponseData) {
         const backStepData = currentStepData?.venueDetails || currentStepData?.apiResponseData;
+
         const location =
           propertyDetailsFetch?.Properties?.[0]?.owners?.[0]?.permanentAddress ||
           backStepData?.location ||
           propertyDetailsFetch?.Properties?.[0]?.address?.locality?.name;
         const plotSize = propertyDetailsFetch?.Properties?.[0]?.landArea || backStepData?.plotSize;
+        const propertyType = propertyDetailsFetch?.Properties?.[0]?.usageCategory || backStepData?.propertyType;
+
         if (backStepData?.propertyId) setValue("propertyId", backStepData?.propertyId);
         setValue("location", location);
         setValue("plotSize", plotSize);
-        const pTypeOptions = GCData?.["sw-services-calculation"]?.PropertyUsageType || [];
+        const pTypeOptions = GCData?.["gc-services-calculation"]?.PropertyUsageType || [];
+
         const freqTypeOptions = FreqType?.["gc-services-masters"]?.GarbageCollectionFrequency || [];
         const wasteTypeOptions = WasteType?.["gc-services-masters"]?.TypeOfWaste || [];
-        const connectionCatoptions = connectionCategory?.["gc-services-masters"]?.connectionCategory || [];
+        // const connectionCatoptions = connectionCategory?.["gc-services-masters"]?.connectionCategory || [];
         const usage = propertyDetailsFetch?.Properties?.[0]?.usageCategory;
         const frequency = backStepData?.frequency;
         const typeOfWaste = backStepData?.typeOfWaste;
-        const connetionType = backStepData?.connectionCategory;
-        const pType = pTypeOptions?.find((item) => item?.name == backStepData?.propertyType);
+        // const connetionType = backStepData?.connectionCategory;
+        const pType = pTypeOptions?.find((item) => item?.name === propertyType || item?.code === propertyType);
         const freType = freqTypeOptions?.find((item) => item.name == frequency);
         const wasteType = wasteTypeOptions?.find((item) => item.name == typeOfWaste);
-        const connectionCategoryType = connectionCatoptions?.find((item) => item.code == connetionType);
+        // const connectionCategoryType = connectionCatoptions?.find((item) => item.code == connetionType);
         const checkUnitid = getPUnits?.find((item) => item?.id == backStepData?.unitId);
+
+        const getFloors = uniqueFloors?.find((item) => item?.floorNo == backStepData?.additionalDetails?.floorNo);
         setValue("propertyType", pType || null);
         setValue("frequency", freType || null);
         setValue("typeOfWaste", wasteType || null);
-        setValue("connectionCategory", connectionCategoryType || null);
+        // setValue("connectionCategory", connectionCategoryType || null);
         setValue("unitId", checkUnitid || null);
+        setValue("defAmount", backStepData?.additionalDetails?.defAmount || null);
+        setValue("floorNo", getFloors || null);
+        setValue("termsAccepted", backStepData?.additionalDetails?.rentalStatus);
       }
     }
-  }, [propertyDetailsFetch, GCData, setValue, currentStepData, getPUnits]);
+  }, [propertyDetailsFetch, GCData, setValue, currentStepData, getPUnits, uniqueFloors]);
 
   const searchProperty = async () => {
     const pId = watch("propertyId");
@@ -247,28 +280,19 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     setValue("location", "");
     setValue("frequency", null);
     setValue("typeOfWaste", null);
-    setValue("connectionCategory", null);
+    // setValue("connectionCategory", null);
     setPropertyId(null); // prevent auto fetch
   };
 
-  const uniqueFloors = React.useMemo(() => {
-    if (!getPUnits?.length) return [];
-
-    const map = new Map();
-
-    getPUnits.forEach((item) => {
-      if (!map.has(item.floorNo)) {
-        map.set(item.floorNo, item);
-      }
-    });
-
-    return Array.from(map.values()).sort((a, b) => a.floorNo - b.floorNo);
-  }, [getPUnits]);
-
-  const filterAmountData = (freq, propertyType) => {
+  const filterAmountData = (propertyType) => {
+    const freq = watch("frequency")?.name;
     const filterData = amountData?.["gc-services-calculation"]?.GCBillingSlab;
-    const finalData = filterData?.filter((item) => item.billingCycle === freq && item.buildingType === propertyType);
+    const finalData = filterData?.filter((item) => item.billingCycle === freq && item.buildingType === propertyType?.usageCategory);
     setValue("defAmount", finalData[0]?.minimumCharge);
+  };
+
+  const handleModalData = (e) => {
+    setIsRented(e.target.checked);
   };
 
   return (
@@ -311,6 +335,31 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           </LabelFieldPair>
           {(propertyDetailsFetch?.Properties || currentStepData?.venueDetails || currentStepData?.apiResponseData) && (
             <div>
+              {/* is rented */}
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", margin: "30px 0" }}>
+                <Controller
+                  control={control}
+                  name="termsAccepted"
+                  // rules={{ required: t("PLEASE_ACCEPT_TERMS_CONDITIONS") }}
+                  render={(props) => (
+                    <input
+                      id="termsAccepted"
+                      type="checkbox"
+                      checked={props.value || false}
+                      onChange={(e) => {
+                        props.onChange(e.target.checked);
+                        handleModalData(e);
+                      }}
+                      style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                    />
+                  )}
+                />
+                <label htmlFor="termsAccepted" style={{ cursor: "pointer", margin: 0, fontWeight: "bolder" }}>
+                  {t("Rental Status")}
+                </label>
+              </div>
+              {/* {errors.termsAccepted && <p style={{ color: "red" }}>{errors.termsAccepted.message}</p>} */}
+
               {/* property type  */}
               <LabelFieldPair style={{ marginBottom: "16px" }}>
                 <CardLabel className="card-label-smaller">
@@ -329,7 +378,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                           props.onChange(e);
                         }}
                         selected={props.value}
-                        option={GCData?.["sw-services-calculation"]?.PropertyUsageType}
+                        option={GCData?.["gc-services-calculation"]?.PropertyUsageType}
                         optionKey="name"
                       />
                     )}
@@ -408,7 +457,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         className="form-field"
                         select={(e) => {
                           props.onChange(e);
-                          filterAmountData(e?.name, watch("propertyType")?.code);
                         }}
                         selected={props.value}
                         option={FreqType?.["gc-services-masters"]?.GarbageCollectionFrequency}
@@ -417,29 +465,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     )}
                   />
                   {errors?.frequency && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.frequency.message}</p>}
-                </div>
-              </LabelFieldPair>
-
-              {/* amount */}
-              <LabelFieldPair style={{ marginBottom: "16px" }}>
-                <CardLabel className="card-label-smaller">{`${t("Amount")}`}</CardLabel>
-                <div className="form-field">
-                  <Controller
-                    control={control}
-                    name="defAmount"
-                    render={(props) => (
-                      <TextInput
-                        style={{ marginBottom: 0 }}
-                        value={props.value}
-                        onChange={(e) => {
-                          props.onChange(e.target.value);
-                        }}
-                        disabled={true}
-                        t={t}
-                      />
-                    )}
-                  />
-                  {errors?.location && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.location.message}</p>}
                 </div>
               </LabelFieldPair>
 
@@ -471,7 +496,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               </LabelFieldPair>
 
               {/* connectionCategory type  */}
-              <LabelFieldPair style={{ marginBottom: "16px" }}>
+              {/* <LabelFieldPair style={{ marginBottom: "16px" }}>
                 <CardLabel className="card-label-smaller">
                   {`${t("GC_CONNECTION_TYPE")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
@@ -497,9 +522,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.connectionCategory.message}</p>
                   )}
                 </div>
-              </LabelFieldPair>
+              </LabelFieldPair> */}
 
-              {/* property units  */}
+              {/* floorNo   */}
               <LabelFieldPair style={{ marginBottom: "16px" }}>
                 <CardLabel className="card-label-smaller">
                   {`${t("BPA_SCRUTINY_DETAILS_NUMBER_OF_FLOORS_LABEL")}`} <span style={{ color: "red" }}>*</span>
@@ -508,7 +533,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   <Controller
                     control={control}
                     name={"floorNo"}
-                    rules={{ required: t("units is required") }}
+                    rules={{ required: t("Floor is required") }}
                     render={(props) => (
                       <Dropdown
                         style={{ marginBottom: 0 }}
@@ -545,6 +570,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                           props.onChange(e);
                           const pID = propertyDetailsFetch?.Properties[0]?.propertyId;
                           checkConnection(pID, e?.id);
+                          filterAmountData(e);
                         }}
                         selected={props.value}
                         option={uniqueUsageCategories}
@@ -556,19 +582,40 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   {errors?.unitId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitId.message}</p>}
                 </div>
               </LabelFieldPair>
+
+              {/* amount */}
+              <LabelFieldPair style={{ marginBottom: "16px" }}>
+                <CardLabel className="card-label-smaller">{`${t("Amount")}`}</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name="defAmount"
+                    render={(props) => (
+                      <TextInput
+                        style={{ marginBottom: 0 }}
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        disabled={true}
+                        t={t}
+                      />
+                    )}
+                  />
+                  {errors?.location && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.location.message}</p>}
+                </div>
+              </LabelFieldPair>
             </div>
           )}
         </div>
         <ActionBar>
           <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
-          <SubmitBar label="Next" submit="submit" disabled={!getActiveStatus} />
+          <SubmitBar label="Next" submit="submit" disabled={getActiveStatus} />
         </ActionBar>
       </form>
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
 
-      {(amountDataLoading || loader || isLoading || GCLoading || WasteTypeLoading || FreqTypeLoading || connectionCategoryLoading) && (
-        <Loader page={true} />
-      )}
+      {(amountDataLoading || loader || isLoading || GCLoading || WasteTypeLoading || FreqTypeLoading) && <Loader page={true} />}
     </React.Fragment>
   );
 };

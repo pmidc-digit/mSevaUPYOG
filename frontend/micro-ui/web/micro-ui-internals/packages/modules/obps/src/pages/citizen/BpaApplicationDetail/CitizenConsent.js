@@ -290,7 +290,7 @@ console.log('data for ownerconsent', data)
     <div style="margin-top:-52px;">
       <p style="margin-bottom:-32px;"><strong>To</strong></p>
       <p style="margin-bottom:-32px;"><strong>${ulbselection || "<ULB Type>"}</strong></p>
-      <p style="margin-bottom:-32px;"><b>${data?.applicationData?.additionalDetails?.UlbName || "<ULB Name>"}</b></p>
+      <p style="margin-bottom:-32px;"><b>${data?.applicationData?.additionalDetails?.Ulblisttype || "<ULB Type>"} ${data?.applicationData?.additionalDetails?.UlbName || "<ULB Name>"}</b></p>
     </div>
 
     <p style="margin-top:-50px;"><strong>Dear Sir/Madam,</strong></p>

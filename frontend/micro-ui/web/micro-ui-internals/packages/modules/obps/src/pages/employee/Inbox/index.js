@@ -155,6 +155,7 @@ const Inbox = ({ parentRoute }) => {
     selectedTenantIdDefaultValues,
   ]);
 
+
   const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.obps.useBPAInbox({
     tenantId: effectiveTenantId,
     filters: memoizedFilters,
@@ -219,12 +220,22 @@ const Inbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
-      if (filterData.applicationStatus) {
-        setFilterFormValue(
-          "applicationStatus",
-          filterData.applicationStatus.map((item) => item.code)
-        );
-      }
+      
+      const resolvedIds =
+        filterData.applicationStatus?.flatMap((item) =>
+          statusData?.filter((status) => status.applicationstatus === item.code)?.map((status) => status.statusid)
+        ) || filterData.applicationStatus.map((item) => item.code) || [];
+
+        if (resolvedIds?.length > 0){
+          setFilterFormValue("applicationStatus", resolvedIds);
+        }
+
+      // if (filterData.applicationStatus) {
+      //   setFilterFormValue(
+      //     "applicationStatus",
+      //     filterData.applicationStatus.map((item) => item.code)
+      //   );
+      // }
       if (filterData.assignee) {
         setFilterFormValue("assignee", filterData.assignee);
       }
@@ -306,8 +317,9 @@ const Inbox = ({ parentRoute }) => {
         handleFilterFormSubmit(onFilterFormSubmit)();
         return;
       }
-      const resolvedCode = statusCode || label;
-      setFilterFormValue("applicationStatus", [resolvedCode], { shouldDirty: true, shouldTouch: true });
+      const resolvedCode =
+        statusData?.filter((status) => status.applicationstatus === (statusCode || label))?.map((status) => status.statusid) || statusCode || label;
+      setFilterFormValue("applicationStatus", resolvedCode, { shouldDirty: true, shouldTouch: true });
       handleFilterFormSubmit(onFilterFormSubmit)();
     },
     [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]

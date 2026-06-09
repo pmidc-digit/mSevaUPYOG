@@ -150,6 +150,10 @@ public class AllotmentValidator {
 		validateOwnersData(allotementRequest, errorMap);
 		boundaryService.validateAndLoadPropertyData(allotementRequest, errorMap);
 
+		if ("Legacy".equalsIgnoreCase(allotementRequest.getAllotment().get(0).getApplicationType())) {
+			return;
+		}
+
 		try {
 			long startDate1 = Optional.ofNullable(allotementRequest.getAllotment().get(0).getStartDate()).orElse(null);
 			long endDate1 = Optional.ofNullable(allotementRequest.getAllotment().get(0).getEndDate()).orElse(null);
@@ -251,6 +255,10 @@ public class AllotmentValidator {
 
 		validateOwnersData(allotementRequest, errorMap);
 		boundaryService.validateAndLoadPropertyData(allotementRequest, errorMap);
+		if ("Legacy".equalsIgnoreCase(allotementRequest.getAllotment().get(0).getApplicationType())) {
+			return;
+		}
+
 		try {
 			long startDate1 = Optional.ofNullable(allotementRequest.getAllotment().get(0).getStartDate()).orElse(null);
 			long endDate1 = Optional.ofNullable(allotementRequest.getAllotment().get(0).getEndDate()).orElse(null);

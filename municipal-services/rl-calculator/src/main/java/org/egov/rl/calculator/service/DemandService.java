@@ -248,7 +248,7 @@ public class DemandService {
 					.minimumAmountPayable(amountPayable).tenantId(tenantId)
 					.taxPeriodFrom(billingPeriod.getTaxPeriodFrom())
 					.taxPeriodTo(daysCycleCalculationService.minus5Days(billingPeriod.getTaxPeriodTo()))
-					.billExpiryTime(billingPeriod.getDemandExpiryDate()).consumerType(applicationType)
+					.billExpiryTime(billingPeriod.getTaxPeriodTo()).consumerType(applicationType)
 					.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 			demands.add(demand);
 		}
@@ -286,7 +286,7 @@ public class DemandService {
 			Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
 					.minimumAmountPayable(amountPayable).tenantId(tenantId)
 					.taxPeriodFrom(billingPeriod.getTaxPeriodFrom()).taxPeriodTo(billingPeriod.getTaxPeriodTo())
-					.billExpiryTime(billingPeriod.getDemandEndDateMillis()).consumerType(applicationType)
+					.billExpiryTime(billingPeriod.getTaxPeriodTo()).consumerType(applicationType)
 					.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 
 			demands.add(demand);
@@ -361,19 +361,14 @@ public class DemandService {
 		}
 		log.info("Found {} penalty slabs.", penaltySlabs.size());
 
-		Long demandCreationTime = demand.getAuditDetails() != null ? demand.getAuditDetails().getCreatedTime() : null;
-		Long expiryDurationMillis = demand.getBillExpiryTime();
-		log.info("Demand ID: {}. Creation Time: {}. Expiry Days: {}", demand.getId(), demandCreationTime,
-				expiryDurationMillis);
-
-		if (expiryDurationMillis == null || demandCreationTime == null) {
-			log.error("Cannot apply penalty. Demand creation time or expiry days is null for demand: {}",
-					demand.getId());
+		Long expiryTimeMillis = demand.getTaxPeriodTo();
+		
+		if (expiryTimeMillis == null) {
+			log.error("Cannot apply penalty. Demand taxPeriodTo is null for demand: {}", demand.getId());
 			return;
 		}
 
-		long expiryTimeMillis = demandCreationTime + expiryDurationMillis;
-		log.info("Demand ID: {}. Calculated Expiry Timestamp: {}. Current Time: {}", demand.getId(), expiryTimeMillis,
+		log.info("Demand ID: {}. TaxPeriodTo (Expiry Time): {}. Current Time: {}", demand.getId(), expiryTimeMillis,
 				System.currentTimeMillis());
 
 		if (System.currentTimeMillis() < expiryTimeMillis) {
@@ -513,7 +508,7 @@ public class DemandService {
 										? billingPeriod.getTaxPeriodTo()
 										: d.getEndDate();
 
-								long exparyDate = billingPeriod.getDemandExpiryDate();
+								long exparyDate = billingPeriod.getTaxPeriodTo();
 
 								Demand demand = schedulerService.billGenerateByCycle(startDay, endDay, exparyDate, d,
 										requestInfo, cycle);

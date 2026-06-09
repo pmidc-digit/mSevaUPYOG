@@ -263,7 +263,7 @@ public class CalculationService {
 			long endDay = billingPeriod.getTaxPeriodTo() <= allotmentDetails.getEndDate()
 					? billingPeriod.getTaxPeriodTo()
 					: allotmentDetails.getEndDate();
-			long expiryDate = billingPeriod.getDemandExpiryDate();
+			long expiryDate = billingPeriod.getTaxPeriodTo();
 
 			Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
 					.minimumAmountPayable(amountPayable).tenantId(tenantId).taxPeriodFrom(startDay).taxPeriodTo(endDay)

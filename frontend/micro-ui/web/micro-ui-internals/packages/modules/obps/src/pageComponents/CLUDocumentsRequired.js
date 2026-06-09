@@ -171,7 +171,10 @@ function CLUSelectDocument({
     setFile(selectedFile);
     // setFile(e.target.files[0]);
 
-    if (selectedFile && selectedFile.type === "image/jpeg") {
+    const fileType = selectedFile?.type?.toLowerCase();
+
+    // Accept jpeg, jpg and png images for EXIF extraction
+    if (selectedFile && (fileType?.includes("image/jpeg") || fileType?.includes("image/jpg") || fileType?.includes("image/png"))) {
       extractGeoLocation(selectedFile).then((location) => {
 
         if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
@@ -336,6 +339,8 @@ function CLUSelectDocument({
   }, [isHidden]);
 
   function convertToDecimal(coordinate) {
+    // Accept either a DMS array (with numerator/denominator objects) or a direct numeric coordinate
+    // If `ref` is provided, caller should apply sign separately. This helper will only convert magnitude.
     if (!coordinate) return 0;
 
     const toNumber = (part) => {
@@ -347,6 +352,11 @@ function CLUSelectDocument({
       return Number(part) || 0;
     };
 
+    if (!Array.isArray(coordinate)) {
+      // already a decimal number
+      return Number(coordinate) || 0;
+    }
+
     const degrees = toNumber(coordinate[0]);
     const minutes = toNumber(coordinate[1]);
     const seconds = toNumber(coordinate[2]);
@@ -356,34 +366,31 @@ function CLUSelectDocument({
   }
 
   function extractGeoLocation(file) {
-
     return new Promise((resolve) => {
       try {
-        // if (file && file.type === "image/jpeg" && file.size > 1000) {
         EXIF.getData(file, function () {
-
           const lat = EXIF.getTag(this, "GPSLatitude");
           const lon = EXIF.getTag(this, "GPSLongitude");
-          console.log("Extracted GPS coordinates from EXIF:", { lat, lon });
+          const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+          const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
 
-          if (lat && lon) {
-            // Convert GPS coordinates to decimal format
-            const latDecimal = convertToDecimal(lat).toFixed(6);
-            const lonDecimal = convertToDecimal(lon).toFixed(6);
-            resolve({ latitude: latDecimal, longitude: lonDecimal });
+          console.log("Extracted EXIF GPS tags:", { lat, lon, latRef, lonRef });
+
+          if (lat && lon && latRef && lonRef) {
+            // Convert GPS coordinates to decimal format and apply sign from refs
+            const latDecimal = convertToDecimal(lat);
+            const lonDecimal = convertToDecimal(lon);
+            const latitude = latRef === "S" ? -Math.abs(latDecimal) : Math.abs(latDecimal);
+            const longitude = lonRef === "W" ? -Math.abs(lonDecimal) : Math.abs(lonDecimal);
+
+            resolve({ latitude: latitude.toFixed(6), longitude: longitude.toFixed(6) });
           } else {
+            console.warn("No GPS EXIF tags (lat/lon/refs) found on file");
             resolve({ latitude: null, longitude: null });
-            if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
-              {
-                alert("Please Upload a Photo with Location Details");
-              }
-            } else {
-              null;
-            }
           }
         });
-        // }
       } catch (error) {
+        console.error("EXIF parsing failed:", error);
         resolve({ latitude: null, longitude: null });
       }
     });

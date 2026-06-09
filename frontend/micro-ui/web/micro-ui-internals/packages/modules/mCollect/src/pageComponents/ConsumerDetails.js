@@ -17,8 +17,8 @@ import { sortDropdownNames } from "../pages/employee/Utils/Sortbyname";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { useLocation } from "react-router-dom";
-//import { getUniqueItemsFromArray, commonTransform, stringReplaceAll, getPattern, convertEpochToDate } from "../utils";
 import { stringReplaceAll, convertEpochToDate } from "../utils";
+
 const createConsumerDetails = () => ({
   ConsumerName: "",
   mobileNumber: "",
@@ -209,7 +209,7 @@ const OwnerForm1 = (_props) => {
             </div>
             <div>
               <LabelFieldPair>
-                <CardLabel style={{ paddingTop: "10px" }} className="card-label-smaller">{`${t("UC_MOBILE_NUMBER")}`}<span>*</span></CardLabel>
+                <CardLabel style={{ paddingTop: "10px" }} className="card-label-smaller">{`${t("UC_MOBILE_NUMBER")?.replace("*", "")}`}<span>*</span></CardLabel>
                 <div className="form-field">
                   <Controller
                     control={control}

@@ -156,6 +156,10 @@ const NewChallan = ({ ChallanData }) => {
     return false;
   }
 
+  if (data.pincode && data.pincode.trim() !== "" && !/^[1-9][0-9]{5}$/.test(data.pincode)) {
+    return false;
+  }
+
   // Validate CH taxes
   // if (!data.CH) {
   //   return false;
@@ -213,14 +217,6 @@ const NewChallan = ({ ChallanData }) => {
           }),
         };
       } else {
-        const updatedAddress = {
-          ...ChallanData[0].address,
-          buildingName: data.building,
-          doorNo: data.doorNo,
-          street: data.streetName,
-          pincode: data.pincode,
-          locality: { code: data?.mohalla?.code },
-        };
         Challan = {
           accountId: ChallanData[0].accountId,
           citizen: ChallanData[0].citizen,
@@ -234,7 +230,7 @@ const NewChallan = ({ ChallanData }) => {
           taxPeriodFrom: Date.parse(data.fromDate),
           taxPeriodTo: Date.parse(data.toDate),
           tenantId: tenantId,
-          address: updatedAddress,
+          address: ChallanData[0].address,
           amount: TaxHeadMasterKeys.map((ele, index) => {
             return {
               taxHeadCode: `${data?.category?.code?.split(".")[0]}.${ele}`,

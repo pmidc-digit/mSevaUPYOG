@@ -234,7 +234,7 @@ const SearchChallan = (props) => {
                 </div>
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", gap : "20px" }}>
-                <SubmitBar label={t("Next")} submit="submit" />
+                <SubmitBar label={t("ES_COMMON_SEARCH")} submit="submit" />
                 <SubmitBar label={t("CS_COMMON_RESET")} onSubmit={() => { reset(); }} className="submit-bar ral-back-btn" />
               </div>
             </div>

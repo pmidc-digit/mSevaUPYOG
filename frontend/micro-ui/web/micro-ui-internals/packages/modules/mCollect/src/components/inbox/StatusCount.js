@@ -27,7 +27,7 @@ const StatusCount = ({ status, searchParams, onAssignmentChange, businessService
       checked={(() => {
         //IIFE
         if(!clearCheck)
-        return searchParams?.applicationStatus.some((e) => e.code === status.code);
+        return (searchParams?.status || []).includes(status.code);
         else{
           setclearCheck(false);
           return false;

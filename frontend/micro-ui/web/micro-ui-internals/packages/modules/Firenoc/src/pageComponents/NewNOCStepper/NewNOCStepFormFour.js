@@ -35,12 +35,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     const noc = formData?.nocDetails || {};
     const docsFromRedux = formData?.uploadedDocuments?.documents || [];
 
-    /* ── resolve applicationTenantId based on selected/original firestationId ── */
-    const selectedStationCode = site.fireStationId || fireNOCData?.fireNOCDetails?.firestationId || "";
-    const selectedStationObj = fireStationData?.find(
-      (s) => s.code === selectedStationCode || s.id === selectedStationCode
-    );
-    const applicationTenantId = selectedStationObj?.tenantId || selectedStationObj?.baseTenantId || tenantId;
+    const applicationTenantId = fireNOCData?.tenantId || tenantId;
 
     const convertedDocs = docsFromRedux.map((doc) => {
       let docType = doc.documentType || "";
@@ -59,7 +54,8 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         docType = "OWNER.IDENTITYPROOF";
         dropdown = { value: fullSubtype };
       } else {
-        docType = doc.dropdown?.value || doc.dropdown?.code || doc.documentType;
+        docType = doc.documentType || doc.dropdown?.value || doc.dropdown?.code || "";
+        dropdown = null;
       }
 
       return {
@@ -86,15 +82,16 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       const builtUpArea = Number(b.groundFloorBuiltupArea || 0);
 
       const originalUoms = originalBuilding?.uoms || [];
+      const deactivatedUoms = originalUoms.map((uom) => ({
+        ...uom,
+        active: false,
+      }));
       const newUoms = [
         { code: "HEIGHT_OF_BUILDING", value: height, isActiveUom: true, active: true },
         { code: "NO_OF_FLOORS", value: floors, isActiveUom: false, active: true },
         { code: "NO_OF_BASEMENTS", value: basements, isActiveUom: false, active: true },
         { code: "BUILTUP_AREA", value: builtUpArea, isActiveUom: false, active: true },
-      ].map((uom) => {
-        const match = originalUoms.find((ou) => ou.code === uom.code);
-        return match ? { ...uom, id: match.id } : uom;
-      });
+      ];
 
       return {
         ...originalBuilding,
@@ -102,10 +99,10 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         usageType: b.buildingUsageType?.code || b.buildingUsageType || "",
         usageSubType: b.buildingUsageSubType?.code || b.buildingUsageSubType || "",
         uomsMap: {
-          NO_OF_FLOORS: String(floors),
-          NO_OF_BASEMENTS: String(basements),
-          HEIGHT_OF_BUILDING: String(height),
-          BUILTUP_AREA: String(builtUpArea),
+          HEIGHT_OF_BUILDING: height,
+          NO_OF_FLOORS: floors,
+          NO_OF_BASEMENTS: basements,
+          BUILTUP_AREA: builtUpArea,
         },
         landArea: Number(b.landArea || 0),
         totalCoveredArea: Number(b.totalCoveredArea || 0),
@@ -114,7 +111,8 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         leftSurrounding: b.leftSurrounding || "",
         frontSurrounding: b.frontSurrounding || "",
         backSurrounding: b.backSurrounding || "",
-        uoms: newUoms,
+        uoms: [...newUoms, ...deactivatedUoms],
+        usageTypeMajor: b.buildingUsageType?.code || b.buildingUsageType || "",
         applicationDocuments: originalBuilding.applicationDocuments || [],
       };
     });
@@ -176,14 +174,14 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           ...fireNOCData?.fireNOCDetails?.propertyDetails,
           address: {
             ...fireNOCData?.fireNOCDetails?.propertyDetails?.address,
-            areaType: site.areaType?.name || site.areaType?.code || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.areaType || "",
-            city: site.districtName?.code || site.districtName?.name || site.districtName || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.city || tenantId,
-            subDistrict: site.cityName?.code || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.subDistrict || "",
-            addressLine2: (site.areaType?.code === "RURAL" || site.areaType?.code === "Rural") ? (site.villageName || "") : (site.mohalla?.name || site.mohalla || ""),
-            doorNo: site.plotSurveyNo || "",
-            street: site.streetName || "",
-            landmark: site.landmarkName || "",
-            pincode: site.pincode || "",
+            areaType: (site.areaType?.code || site.areaType?.name || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.areaType || "").toUpperCase(),
+            city: site.cityName?.code || site.cityName || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.city || tenantId,
+            subDistrict: site.districtName?.code || site.districtName?.name || site.districtName || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.subDistrict || "",
+            addressLine2: (site.areaType?.code === "RURAL" || site.areaType?.code === "Rural") ? (site.villageName || "") : (site.mohalla?.name || site.mohalla || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.addressLine2 || ""),
+            doorNo: site.plotSurveyNo || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.doorNo || "",
+            street: site.streetName || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.street || "",
+            landmark: site.landmarkName || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.landmark || "",
+            pincode: site.pincode || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.pincode || "",
             locality: site.mohalla ? { code: site.mohalla.code || site.mohalla } : (fireNOCData?.fireNOCDetails?.propertyDetails?.address?.locality || { code: "UNKNOWN" }),
             latitude: site.geoLocation?.latitude ? Number(site.geoLocation.latitude) : (fireNOCData?.fireNOCDetails?.propertyDetails?.address?.latitude || 0),
             longitude: site.geoLocation?.longitude ? Number(site.geoLocation.longitude) : (fireNOCData?.fireNOCDetails?.propertyDetails?.address?.longitude || 0),

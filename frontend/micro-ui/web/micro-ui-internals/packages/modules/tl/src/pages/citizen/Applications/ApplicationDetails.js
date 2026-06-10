@@ -522,7 +522,7 @@ const TLApplicationDetails = () => {
                           className="border-none"
                           // style={{ border: "none" }}
                           label={t("TL_REVIEWACCESSORY_TYPE_LABEL")}
-                          text={t(`TL_${ele?.accessoryCategory.split("-").join("_")}`)}
+                            text={ele?.accessoryCategory || t("CS_NA")}
                           textStyle={{ wordBreak: "break-word" }}
                         />
                         <Row

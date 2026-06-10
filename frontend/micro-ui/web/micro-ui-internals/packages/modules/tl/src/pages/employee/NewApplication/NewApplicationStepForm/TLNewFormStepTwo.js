@@ -6,6 +6,14 @@ import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicati
 import { convertDateToEpoch } from "../../../../utils";
 import { Loader } from "../../../../components/Loader";
 
+const areFormValuesEqual = (left = {}, right = {}) => {
+  try {
+    return JSON.stringify(left) === JSON.stringify(right);
+  } catch (error) {
+    return false;
+  }
+};
+
 const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
   const tenants = Digit.Hooks.tl.useTenants();

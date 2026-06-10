@@ -1,8 +1,16 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, Fragment, useRef } from "react";
 import { useSelector } from "react-redux";
 import { CardLabel } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import TLDocument from "./TLDocumets";
+import {
+  buildTLPaymentBreakup,
+  createTLPaymentSnapshot,
+  describeTLPaymentSnapshot,
+  getTLBillAccountDetails,
+  getTLPaymentSnapshotDecision,
+  getTLTotalAmount,
+} from "../utils/paymentBreakup";
 
 const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const { t } = useTranslation();
@@ -17,6 +25,7 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const [showBreakupModal, setShowBreakupModal] = useState(false);
   const [breakupData, setBreakupData] = useState(null);
   const [breakupLoading, setBreakupLoading] = useState(false);
+  const [resolvedPaymentSnapshot, setResolvedPaymentSnapshot] = useState(null);
 
   const owners = tradeLicenseDetail?.owners || [];
   const tradeUnits = tradeLicenseDetail?.tradeUnits || [];
@@ -29,38 +38,112 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
 
   const tenantId = createdResponse?.tenantId || Digit.ULBService.getCurrentTenantId();
   const consumerCode = createdResponse?.applicationNumber;
+  const { data: paymentsHistory } = Digit.Hooks.tl.useTLPaymentHistory(tenantId, consumerCode);
+  const debugSequenceRef = useRef(0);
 
   // State to hold bill amounts fetched from billing API (for edit path where calculation is empty)
-  const [billAmounts, setBillAmounts] = useState(null);
+  const [billData, setBillData] = useState(null);
+
+  const logPaymentDebug = (event, payload) => {
+    debugSequenceRef.current += 1;
+    console.info(`[TLSummaryPage payment-debug #${debugSequenceRef.current}] ${event}`, payload);
+  };
+
+  const licenseData = tradeLicenseDetail || createdResponse?.tradeLicenseDetail || {};
+  const resolvedBillAccountDetails = resolvedPaymentSnapshot?.billAccountDetails || [];
+  const resolvedTotalAmount = resolvedPaymentSnapshot?.totalAmount ?? 0;
+  const paymentBreakup = buildTLPaymentBreakup({
+    billAccountDetails: resolvedBillAccountDetails,
+    totalAmount: resolvedTotalAmount,
+    applicationType,
+    penaltyReason: licenseData?.adhocPenaltyReason || "",
+    rebateReason: licenseData?.adhocExemptionReason || "",
+  });
 
   const getTaxAmount = (category) => {
-    // First try from calculation.taxHeadEstimates (normal renewal path)
+    if (category === "TAX" && paymentBreakup.hasTaxHead("TL_TAX")) return paymentBreakup.tradeLicenseTax;
+    if (category === "REBATE" && (paymentBreakup.hasTaxHead("TL_RENEWAL_REBATE") || paymentBreakup.hasTaxHead("TL_ADHOC_REBATE"))) {
+      return paymentBreakup.rebate;
+    }
+    if (category === "PENALTY" && (paymentBreakup.hasTaxHead("TL_RENEWAL_PENALTY") || paymentBreakup.hasTaxHead("TL_ADHOC_PENALTY"))) {
+      return paymentBreakup.penalty;
+    }
+
+    // Fallback to calculation.taxHeadEstimates when bill/payment breakup is unavailable
     const fromCalc = taxHeads.find((item) => item.category === category)?.estimateAmount;
     if (fromCalc !== undefined && fromCalc !== null) return fromCalc;
-    // Fallback to bill amounts fetched from billing API (edit path)
-    if (billAmounts) {
-      if (category === "TAX") return billAmounts.tlTax || 0;
-      if (category === "REBATE") return billAmounts.rebate || 0;
-      if (category === "PENALTY") return billAmounts.penalty || 0;
-    }
+
     return 0;
   };
 
+  useEffect(() => {
+    const paymentHistoryBillAccountDetails = getTLBillAccountDetails({ paymentsHistory });
+    const paymentHistoryTotalAmount = getTLTotalAmount({ paymentsHistory });
+    const nextCandidates = [];
+
+    if (paymentHistoryBillAccountDetails.length > 0 || paymentHistoryTotalAmount > 0) {
+      nextCandidates.push(
+        createTLPaymentSnapshot({
+          source: "paymentsHistory",
+          billAccountDetails: paymentHistoryBillAccountDetails,
+          totalAmount: paymentHistoryTotalAmount,
+        })
+      );
+    }
+
+    const billAccountDetails = getTLBillAccountDetails({ billData });
+    const totalAmount = getTLTotalAmount({ billData });
+    if (billAccountDetails.length > 0 || totalAmount > 0) {
+      nextCandidates.push(
+        createTLPaymentSnapshot({
+          source: billData?.__source || "fetchBill",
+          billAccountDetails,
+          totalAmount,
+        })
+      );
+    }
+
+    if (nextCandidates.length === 0) {
+      return;
+    }
+
+    setResolvedPaymentSnapshot((currentSnapshot) => {
+      let selectedSnapshot = currentSnapshot;
+
+      nextCandidates.forEach((candidateSnapshot) => {
+        const decision = getTLPaymentSnapshotDecision(selectedSnapshot, candidateSnapshot);
+        logPaymentDebug("snapshot-candidate", {
+          source: candidateSnapshot.source,
+          decision: decision.reason,
+          accepted: decision.shouldReplace,
+          previous: describeTLPaymentSnapshot(selectedSnapshot),
+          candidate: describeTLPaymentSnapshot(candidateSnapshot),
+        });
+
+        if (decision.shouldReplace) {
+          selectedSnapshot = candidateSnapshot;
+        }
+      });
+
+      return selectedSnapshot;
+    });
+  }, [paymentsHistory, billData]);
+
   // Fetch bill amounts when calculation data is missing (edit/INITIATED path)
   useEffect(() => {
-    if (taxHeads.length === 0 && consumerCode && !billAmounts) {
+    if (consumerCode && !billData) {
       const billTenantId = createdResponse?.tenantId || tradeLicenseDetail?.address?.tenantId || tenantId;
       const fetchBill = async (retries) => {
         try {
           const fetchBillRes = await Digit.TLService.fetch_bill({ tenantId: billTenantId, filters: { consumerCode, businessService: "TL" } });
           const bill = fetchBillRes?.Bill?.[0];
           if (bill) {
-            const billAccountDetails = bill?.billDetails?.[0]?.billAccountDetails || [];
-            const tlTax = billAccountDetails.find((a) => a.taxHeadCode === "TL_TAX")?.amount || 0;
-            const rebate = billAccountDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_REBATE")?.amount || 0;
-            const penalty = billAccountDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_PENALTY")?.amount || 0;
-            const totalAmount = bill?.totalAmount || tlTax;
-            setBillAmounts({ tlTax, rebate, penalty, totalAmount });
+            logPaymentDebug("fetch_bill-response", {
+              source: "fetchBill",
+              totalAmount: bill?.totalAmount,
+              billAccountDetails: bill?.billDetails?.[0]?.billAccountDetails || [],
+            });
+            setBillData({ ...bill, __source: "fetchBill" });
           } else if (retries < 2) {
             setTimeout(() => fetchBill(retries + 1), 2000);
           } else {
@@ -99,7 +182,17 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
               return sum + (slab?.rate || 0);
             }, 0);
             const total = (tradeTotal + accTotal) * (validityYears || 1);
-            setBillAmounts({ tlTax: total, rebate: 0, penalty: 0, totalAmount: total });
+            const slabFallbackBill = {
+              totalAmount: total,
+              billDetails: [{ billAccountDetails: [{ taxHeadCode: "TL_TAX", amount: total }] }],
+              __source: "slabFallback",
+            };
+            logPaymentDebug("slab-fallback-response", {
+              source: "slabFallback",
+              totalAmount: total,
+              billAccountDetails: slabFallbackBill.billDetails[0].billAccountDetails,
+            });
+            setBillData(slabFallbackBill);
           }
         } catch (slabErr) {
           console.error("Error fetching slab fallback for summary:", slabErr);
@@ -108,7 +201,19 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
 
       fetchBill(0);
     }
-  }, [consumerCode, tenantId]);
+  }, [consumerCode, tenantId, billData]);
+
+  useEffect(() => {
+    if (!paymentsHistory) {
+      return;
+    }
+
+    logPaymentDebug("payments-history-update", {
+      source: "paymentsHistory",
+      totalAmount: getTLTotalAmount({ paymentsHistory }),
+      billAccountDetails: getTLBillAccountDetails({ paymentsHistory }),
+    });
+  }, [paymentsHistory]);
 
   const fetchBreakupData = async () => {
     if (!consumerCode || breakupData) {
@@ -119,15 +224,40 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
     try {
       // Step 1: Fetch bill from billing-service
       const fetchBillRes = await Digit.TLService.fetch_bill({ tenantId, filters: { consumerCode, businessService: "TL" } });
-      const bill = fetchBillRes?.Bill?.[0];
-      const billAccountDetails = bill?.billDetails?.[0]?.billAccountDetails || [];
+      const fetchedBill = fetchBillRes?.Bill?.[0];
+      const fetchedBillSnapshot = fetchedBill
+        ? createTLPaymentSnapshot({
+            source: "fetchBreakupFetchBill",
+            billAccountDetails: getTLBillAccountDetails({ billData: fetchedBill }),
+            totalAmount: getTLTotalAmount({ billData: fetchedBill }),
+          })
+        : null;
+      const paymentHistorySnapshot = paymentsHistory
+        ? createTLPaymentSnapshot({
+            source: "paymentsHistory",
+            billAccountDetails: getTLBillAccountDetails({ paymentsHistory }),
+            totalAmount: getTLTotalAmount({ paymentsHistory }),
+          })
+        : null;
+      const modalSnapshots = [resolvedPaymentSnapshot, paymentHistorySnapshot, fetchedBillSnapshot].filter(Boolean);
+      const selectedSnapshot = modalSnapshots.reduce((bestSnapshot, candidateSnapshot) => {
+        if (!bestSnapshot) {
+          return candidateSnapshot;
+        }
 
-      // Get tax head amounts from bill
-      const tlTax = billAccountDetails.find((a) => a.taxHeadCode === "TL_TAX")?.amount || 0;
-      const rebate = billAccountDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_REBATE")?.amount || 0;
-      const penalty = billAccountDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_PENALTY")?.amount || 0;
-      const totalAmount = bill?.totalAmount || tlTax;
+        const decision = getTLPaymentSnapshotDecision(bestSnapshot, candidateSnapshot);
+        return decision.shouldReplace ? candidateSnapshot : bestSnapshot;
+      }, null);
+      const billAccountDetails = selectedSnapshot?.billAccountDetails || [];
+      const totalAmount = selectedSnapshot?.totalAmount ?? 0;
       const validityYears = tradeLicenseDetail?.additionalDetail?.validityYears || 1;
+      const breakupSummary = buildTLPaymentBreakup({
+        billAccountDetails,
+        totalAmount,
+        applicationType,
+        penaltyReason: licenseData?.adhocPenaltyReason || "",
+        rebateReason: licenseData?.adhocExemptionReason || "",
+      });
 
       // Step 2: Try TL calculator for detailed slab breakup (may fail for citizens due to role restrictions)
       let tradeUnitBreakup = [];
@@ -184,9 +314,14 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
         tradeUnitTotal,
         accessoryTotal,
         validityYears,
-        tlTax: tlTax || slabBasedTotal,
-        rebate,
-        penalty,
+        tlTax: breakupSummary.tradeLicenseTax || slabBasedTotal,
+        rebate: breakupSummary.rebate,
+        penalty: breakupSummary.penalty,
+        renewalRebate: breakupSummary.renewalRebate,
+        adhocRebate: breakupSummary.adhocRebate,
+        renewalPenalty: breakupSummary.renewalPenalty,
+        adhocPenalty: breakupSummary.adhocPenalty,
+        feeLineItems: breakupSummary.feeLineItems,
         totalAmount: totalAmount || slabBasedTotal,
         finalAmount: totalAmount || slabBasedTotal,
       });
@@ -218,10 +353,11 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
     if (value && typeof value === 'object') {
       displayValue = value.code || value.i18nKey || value.name || "NA";
     }
+    const isEmptyValue = displayValue === undefined || displayValue === null || displayValue === "";
     return (
       <div className="bpa-summary-label-field-pair">
         <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
-        <div>{displayValue || "NA"}</div>
+        <div>{isEmptyValue ? "NA" : displayValue}</div>
       </div>
     );
   };
@@ -230,10 +366,13 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
     <div className="bpa-summary-page">
       <h2 className="bpa-summary-heading">{t("Application Summary")}</h2>
       <div className="bpa-summary-section">
-        {renderLabel(t("Trade License Tax"), getTaxAmount("TAX") || "NA")}
-        {renderLabel(t("Rebate"), getTaxAmount("REBATE") || "NA")}
-        {renderLabel(t("Penalty"), getTaxAmount("PENALTY") || "NA")}
-        {renderLabel(t("Total Amount"), billAmounts?.totalAmount ? `Rs ${billAmounts.totalAmount}` : (getTaxAmount("TAX") ? `Rs ${getTaxAmount("TAX")}` : "NA"))}
+        {renderLabel(t("Trade License Tax"), getTaxAmount("TAX"))}
+        {renderLabel(t("Rebate"), getTaxAmount("REBATE"))}
+        {renderLabel(t("Penalty"), getTaxAmount("PENALTY"))}
+        {renderLabel(
+          t("Total Amount"),
+          resolvedPaymentSnapshot ? `Rs ${resolvedTotalAmount}` : `Rs ${getTaxAmount("TAX")}`
+        )}
         {renderLabel(t("Application Status"), status || "NA")}
         <div className="TL-mt-5">
           <span
@@ -310,17 +449,16 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
               </div>
             </div>
 
-            {/* Rebate & Penalty */}
-            <div className="TL-breakup-light-section">
-              <div className="TL-breakup-row">
-                <span>Rebate</span>
-                <span>Rs {breakupData.rebate}</span>
+            {breakupData.feeLineItems?.length > 0 && (
+              <div className="TL-breakup-light-section">
+                {breakupData.feeLineItems.map((item) => (
+                  <div className="TL-breakup-row" key={item.label}>
+                    <span>{item.label}</span>
+                    <span>Rs {item.amount}</span>
+                  </div>
+                ))}
               </div>
-              <div className="TL-breakup-row">
-                <span>Renewal Penalty</span>
-                <span>Rs {breakupData.penalty}</span>
-              </div>
-            </div>
+            )}
 
             {/* Grand Total */}
             <div className="TL-breakup-grand-total">

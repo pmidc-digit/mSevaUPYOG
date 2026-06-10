@@ -163,7 +163,7 @@ const UpdateNumber = ({ t, onValidation, mobileNumber, name, UpdateNumberConfig 
         return;
       }
 
-      // All validations passed, call API
+      // All validations passed,call API
       onValidation &&
         onValidation(_data, (d) => {
           compStateDispatch({ type: "success", value: "PT_MOBILE_NUM_UPDATED_SUCCESS" });

@@ -177,14 +177,15 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           {/* Email */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("NOC_APPLICANT_EMAIL_LABEL")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("NOC_APPLICANT_EMAIL_LABEL")}`}
+              {/* <span style={{ color: "red" }}>*</span> */}
             </CardLabel>
             <div className="form-field">
               <Controller
                 control={control}
                 name="emailId"
                 rules={{
-                  required: "Email is required",
+                  // required: "Email is required",
                   pattern: {
                     value: /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/,
                     message: "Invalid email format",

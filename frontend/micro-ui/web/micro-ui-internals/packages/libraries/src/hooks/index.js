@@ -17,6 +17,7 @@ import {
   usePaymentSearch,
   useBulkPdfDetails,
 } from "./payment";
+import { usePrintBillReceipt } from "./usePrintBillReceipt";
 import { useMCollectRecieptSearch } from "./mcollect/mCollect";
 import { useChallanGenerationRecieptSearch } from "./challanGeneration/challanGeneration";
 import { useRentAndLeaseRecieptSearch, useRentAndLeaseProperties } from "./rentAndLease/rentAndLease";
@@ -917,6 +918,7 @@ const Hooks = {
   useFeedBackSearch,
   useAccessControl,
   useBillSearch,
+  usePrintBillReceipt,
   useCancelBill,
   useTenantsBills,
   usePrivacyContext,

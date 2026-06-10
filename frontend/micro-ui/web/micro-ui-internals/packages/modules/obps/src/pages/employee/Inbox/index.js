@@ -130,16 +130,35 @@ const Inbox = ({ parentRoute }) => {
   const [statusData, setStatusData] = useState([]);
   const [totalCountData, setTotalCountData] = useState(0);
 
+  const getResolvedStatusIds = useCallback((applicationStatuses = []) => {
+    return [...new Set(applicationStatuses.reduce((acc, item) => {
+      if (Array.isArray(item?.statusids) && item.statusids.length) {
+        acc.push(...item.statusids);
+      } else if (item?.statusid) {
+        acc.push(item.statusid);
+      } else if (item?.code) {
+        acc.push(item.code);
+      }
+      return acc;
+    }, []))];
+  }, []);
+
   const effectiveTenantId =
     isEmployee && tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
 
   const memoizedFilters = useMemo(() => {
+    const normalizedFilterForm = {
+      ...(formState?.filterForm || filterFormDefaultValues),
+      businessService:
+        formState?.filterForm?.businessService === "BPA" ? OBPS_BPA_NOR_BUSINESS_SERVICES : formState?.filterForm?.businessService || null,
+    };
+
+    if (!normalizedFilterForm?.applicationStatus?.length) {
+      delete normalizedFilterForm.applicationStatus;
+    }
+
     return {
-      filterForm: {
-        ...(formState?.filterForm || filterFormDefaultValues),
-        businessService:
-          formState?.filterForm?.businessService === "BPA" ? OBPS_BPA_NOR_BUSINESS_SERVICES : formState?.filterForm?.businessService || null,
-      },
+      filterForm: normalizedFilterForm,
       searchForm: formState?.searchForm || searchFormDefaultValues,
       tableForm: formState?.tableForm || tableOrderFormDefaultValues,
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
@@ -155,7 +174,6 @@ const Inbox = ({ parentRoute }) => {
     selectedTenantIdDefaultValues,
   ]);
 
-
   const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.obps.useBPAInbox({
     tenantId: effectiveTenantId,
     filters: memoizedFilters,
@@ -164,7 +182,34 @@ const Inbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (inboxData) {
-      setStatusData(inboxData?.statuses || []);
+      const groupedStatuses = (inboxData?.statuses || []).reduce((acc, status) => {
+        const isApproved = status?.applicationstatus === "APPROVED";
+        if (!isApproved) {
+          acc.push(status);
+          return acc;
+        }
+
+        const existingApproved = acc.find((item) => item?.applicationstatus === "APPROVED");
+        if (existingApproved) {
+          existingApproved.totalCount = (existingApproved.totalCount || 0) + (status?.totalCount ?? status?.count ?? 0);
+          existingApproved.count = existingApproved.totalCount;
+          existingApproved.statusids = [...new Set([...(existingApproved.statusids || []), status?.statusid].filter(Boolean))];
+          return acc;
+        }
+
+        acc.push({
+          ...status,
+          statusid: "APPROVED_GROUP",
+          statusids: status?.statusid ? [status.statusid] : [],
+          totalCount: status?.totalCount ?? status?.count ?? 0,
+          count: status?.totalCount ?? status?.count ?? 0,
+          businessService: null,
+          businessservice: null,
+        });
+        return acc;
+      }, []);
+
+      setStatusData(groupedStatuses);
       setTableData(inboxData?.table || []);
       setTotalCountData(inboxData?.totalCount || 0);
     }
@@ -220,22 +265,9 @@ const Inbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
-      
-      const resolvedIds =
-        filterData.applicationStatus?.flatMap((item) =>
-          statusData?.filter((status) => status.applicationstatus === item.code)?.map((status) => status.statusid)
-        ) || filterData.applicationStatus.map((item) => item.code) || [];
+      const resolvedIds = getResolvedStatusIds(filterData.applicationStatus || []);
 
-        if (resolvedIds?.length > 0){
-          setFilterFormValue("applicationStatus", resolvedIds);
-        }
-
-      // if (filterData.applicationStatus) {
-      //   setFilterFormValue(
-      //     "applicationStatus",
-      //     filterData.applicationStatus.map((item) => item.code)
-      //   );
-      // }
+      setFilterFormValue("applicationStatus", resolvedIds);
       if (filterData.assignee) {
         setFilterFormValue("assignee", filterData.assignee);
       }
@@ -244,12 +276,12 @@ const Inbox = ({ parentRoute }) => {
         action: "mutateFilterForm",
         data: {
           ...formState?.filterForm,
-          applicationStatus: filterData.applicationStatus?.map((item) => item.code) || [],
+          applicationStatus: resolvedIds,
           assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ME",
         },
       });
     },
-    [formState?.filterForm, setFilterFormValue]
+    [formState?.filterForm, getResolvedStatusIds, setFilterFormValue]
   );
 
   const searchDebounceRef = useRef(null);
@@ -306,8 +338,8 @@ const Inbox = ({ parentRoute }) => {
   }, [formState, resetFilterForm]);
 
   const onStatusTabClick = useCallback(
-    (label, statusCode) => {
-      setActiveStatusTab(statusCode || label);
+    (label, status) => {
+      setActiveStatusTab(label);
       if (label === "CLEAR") {
         setTopBarSearch("");
         return;
@@ -317,8 +349,7 @@ const Inbox = ({ parentRoute }) => {
         handleFilterFormSubmit(onFilterFormSubmit)();
         return;
       }
-      const resolvedCode =
-        statusData?.filter((status) => status.applicationstatus === (statusCode || label))?.map((status) => status.statusid) || statusCode || label;
+      const resolvedCode = Array.isArray(status?.statusids) && status.statusids.length ? status.statusids : status?.statusid ? [status.statusid] : [];
       setFilterFormValue("applicationStatus", resolvedCode, { shouldDirty: true, shouldTouch: true });
       handleFilterFormSubmit(onFilterFormSubmit)();
     },
@@ -336,6 +367,8 @@ const Inbox = ({ parentRoute }) => {
       }, 5000);
     }
   }, [isError, t]);
+
+  console.log("yes coming here");
 
   return (
     <>

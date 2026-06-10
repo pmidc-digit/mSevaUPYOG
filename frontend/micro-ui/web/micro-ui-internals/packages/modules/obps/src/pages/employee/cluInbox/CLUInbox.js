@@ -84,8 +84,12 @@ const CLUInbox = ({ parentRoute }) => {
     if (inboxObjectInSessionStorage) {
       const sessionLimit = parseInt(inboxObjectInSessionStorage.tableForm?.limit, 10);
       const validLimit = [10, 20, 30, 40, 50].includes(sessionLimit) ? sessionLimit : tableOrderFormDefaultValues.limit;
+      const sessionFilterForm = inboxObjectInSessionStorage.filterForm || filterFormDefaultValues;
       return {
-        filterForm: inboxObjectInSessionStorage.filterForm || filterFormDefaultValues,
+        filterForm: {
+          ...sessionFilterForm,
+          applicationStatus: [],
+        },
         searchForm: inboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
         tableForm: {
           ...tableOrderFormDefaultValues,
@@ -116,13 +120,38 @@ const CLUInbox = ({ parentRoute }) => {
   const [statusData, setStatusData] = useState([]);
   const [totalCountData, setTotalCountData] = useState(0);
 
+  const getResolvedStatuses = useCallback((applicationStatuses = []) => {
+    return [
+      ...new Set(
+        applicationStatuses.reduce((acc, item) => {
+          if (item?.applicationstatus) {
+            acc.push(item.applicationstatus);
+          } else if (item?.statusCode) {
+            acc.push(item.statusCode);
+          } else if (item?.code) {
+            acc.push(item.code);
+          }
+          return acc;
+        }, [])
+      ),
+    ];
+  }, []);
+
   const setSelectedTenantIdValue = useCallback((key, value) => {
     dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
   }, [formState.selectedTenantId]);
 
   const memoizedFilters = useMemo(() => {
+    const normalizedFilterForm = {
+      ...(formState?.filterForm || filterFormDefaultValues),
+    };
+
+    if (!normalizedFilterForm?.applicationStatus?.length) {
+      delete normalizedFilterForm.applicationStatus;
+    }
+
     return {
-      filterForm: formState?.filterForm || filterFormDefaultValues,
+      filterForm: normalizedFilterForm,
       searchForm: formState?.searchForm || searchFormDefaultValues,
       tableForm: formState?.tableForm || tableOrderFormDefaultValues,
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
@@ -150,7 +179,43 @@ const CLUInbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (inboxData) {
-      setStatusData(inboxData?.statuses || []);
+      const groupedStatuses = (inboxData?.statuses || []).reduce((acc, status) => {
+        const key = status?.applicationstatus;
+
+        if (!key) {
+          acc.push(status);
+          return acc;
+        }
+
+        const count = status?.totalCount ?? status?.count ?? 0;
+        const existingStatus = acc.find((item) => item?.applicationstatus === key);
+
+        if (existingStatus) {
+          existingStatus.totalCount = (existingStatus.totalCount || 0) + count;
+          existingStatus.count = existingStatus.totalCount;
+          existingStatus.statusids = [...new Set([...(existingStatus.statusids || []), status?.statusid].filter(Boolean))];
+          return acc;
+        }
+
+        acc.push({
+          ...status,
+          selectionValue: key,
+          statusid: undefined,
+          statusids: [],
+          totalCount: count,
+          count,
+          businessService: null,
+          businessservice: null,
+        });
+        return acc;
+      }, []);
+
+      setStatusData(
+        groupedStatuses.map((status) => ({
+          ...status,
+          selectionValue: status?.applicationstatus || status?.selectionValue,
+        }))
+      );
       setTableData(inboxData?.table || []);
       setTotalCountData(inboxData?.totalCount || 0);
     }
@@ -207,12 +272,9 @@ const CLUInbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
-      if (filterData.applicationStatus) {
-        setFilterFormValue(
-          "applicationStatus",
-          filterData.applicationStatus.map((item) => item.code)
-        );
-      }
+      const resolvedStatuses = getResolvedStatuses(filterData.applicationStatus || []);
+
+      setFilterFormValue("applicationStatus", resolvedStatuses);
       if (filterData.assignee) {
         setFilterFormValue("assignee", filterData.assignee);
       }
@@ -221,12 +283,12 @@ const CLUInbox = ({ parentRoute }) => {
         action: "mutateFilterForm",
         data: {
           ...formState?.filterForm,
-          applicationStatus: filterData.applicationStatus?.map((item) => item.code) || [],
+          applicationStatus: resolvedStatuses,
           assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ME",
         },
       });
     },
-    [formState?.filterForm, setFilterFormValue]
+    [formState?.filterForm, getResolvedStatuses, setFilterFormValue]
   );
 
   const searchDebounceRef = useRef(null);
@@ -279,8 +341,8 @@ const CLUInbox = ({ parentRoute }) => {
   }, [formState, resetFilterForm]);
 
   const onStatusTabClick = useCallback(
-    (label, statusCode) => {
-      setActiveStatusTab(statusCode || label);
+    (label, status) => {
+      setActiveStatusTab(label);
       if (label === "CLEAR") {
         setTopBarSearch("");
         return;
@@ -290,8 +352,8 @@ const CLUInbox = ({ parentRoute }) => {
         handleFilterFormSubmit(onFilterFormSubmit)();
         return;
       }
-      const resolvedCode = statusCode || label;
-      setFilterFormValue("applicationStatus", [resolvedCode], { shouldDirty: true, shouldTouch: true });
+      const resolvedCode = status?.applicationstatus ? [status.applicationstatus] : [];
+      setFilterFormValue("applicationStatus", resolvedCode, { shouldDirty: true, shouldTouch: true });
       handleFilterFormSubmit(onFilterFormSubmit)();
     },
     [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]

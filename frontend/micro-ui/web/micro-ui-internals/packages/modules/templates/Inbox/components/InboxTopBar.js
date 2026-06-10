@@ -173,6 +173,15 @@ const InboxTopBar = ({
   showClearTab = true,
 }) => {
   const { t } = useTranslation();
+  const duplicateStatusCodes = React.useMemo(() => {
+    const counts = (statuses || []).reduce((acc, status) => {
+      const key = status?.applicationstatus;
+      if (!key) return acc;
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    return new Set(Object.keys(counts).filter((key) => counts[key] > 1));
+  }, [statuses]);
 
   const getStatusCount = (status) => {
     return status?.totalCount ?? status?.count ?? status?.noOfRecords ?? 0;
@@ -198,26 +207,26 @@ const InboxTopBar = ({
           </span>
         </button>
 
-        {(statuses || []).map((status) => (
+        {(statuses || []).map((status) => {
+          const businessService = status?.businessService || status?.businessservice;
+          const uniqueKey = status?.statusid || (businessService ? `${status?.applicationstatus}-${businessService}` : status?.applicationstatus);
+          const hasDuplicateName = duplicateStatusCodes.has(status?.applicationstatus);
+          return (
           <button
-            key={status?.applicationstatus}
+            key={uniqueKey}
             type="button"
             className={`new-inbox-tab ${
-              activeTab === status?.applicationstatus
+              activeTab === uniqueKey
                 ? "new-inbox-tab-active"
                 : ""
             }`}
-            onClick={() =>
-              onTabClick?.(
-                status?.applicationstatus,
-                status?.applicationstatus
-              )
-            }
+            onClick={() => onTabClick?.(uniqueKey, status)}
           >
             {t(status?.applicationstatus)}
+            {hasDuplicateName && businessService ? ` (${businessService} - ${getStatusCount(status)})` : ""}
             <span
               className={`new-inbox-tab-count ${
-                activeTab === status?.applicationstatus
+                activeTab === uniqueKey
                   ? "new-inbox-tab-count-active"
                   : ""
               }`}
@@ -225,7 +234,7 @@ const InboxTopBar = ({
               {getStatusCount(status)}
             </span>
           </button>
-        ))}
+        )})}
 
         {showClearTab && (
           <button

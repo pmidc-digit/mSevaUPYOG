@@ -41,10 +41,12 @@ const getConfig = (t, selectFile, setUploadedFile, uploadedFile, UpdateNumberCon
     {
       body: [
         {
-          label: t("PTUPNO_CURR_NO"),
+          label: t("PT_MOBILE_NO"),
           type: "mobileNumber",
+          isMandatory: true,
           populators: {
             name: "mobileNumber",
+            required: true,
             validation: {
               required: "MANDATORY_MOBILE",
               minLength: {
@@ -56,7 +58,7 @@ const getConfig = (t, selectFile, setUploadedFile, uploadedFile, UpdateNumberCon
                 message: "CORE_COMMON_MOBILE_ERROR",
               },
               pattern: {
-                value: /[6789][0-9]{9}/,
+                value: /^[4-9][0-9]{9}$/,
                 message: "CORE_COMMON_MOBILE_ERROR",
               },
             },
@@ -135,19 +137,39 @@ const UpdateNumber = ({ t, onValidation, mobileNumber, name, UpdateNumberConfig 
     async (_data) => {
       compStateDispatch({ type: "resettoast" });
 
+      // Check if mobileNumber is empty
+      if (!_data?.mobileNumber || _data.mobileNumber.trim() === "") {
+        compStateDispatch({ type: "warning", value: "PT_MOBILE_NO_MANDATORY" });
+        return;
+      }
+
+      // Validate mobile number format (4-9 start, 10 digits total)
+      const mobileRegex = /^[4-9][0-9]{9}$/;
+      if (!mobileRegex.test(_data?.mobileNumber)) {
+        compStateDispatch({ type: "warning", value: "PT_INVALID_MOBILE_NO" });
+        return;
+      }
+
+      // Check if same as current number
+      if (_data?.mobileNumber === compState.mobileNumber) {
+        compStateDispatch({ type: "warning", value: "PT_SEC_SAME_NUMBER" });
+        return;
+      }
+
+      // Check if invalid configured number
       let invalidNo = (UpdateNumberConfig?.invalidNumber === _data?.mobileNumber && "PTUPNO_INVALIDNO_HEADER") || false;
-      invalidNo = _data?.mobileNumber === compState.mobileNumber ? "PT_SEC_SAME_NUMBER" : invalidNo;
       if (invalidNo) {
         compStateDispatch({ type: "warning", value: invalidNo });
         return;
-      } else {
-        onValidation &&
-          onValidation(_data, (d) => {
-            compStateDispatch({ type: "success", value: "PT_MOBILE_NUM_UPDATED_SUCCESS" });
-          });
       }
+
+      // All validations passed, call API
+      onValidation &&
+        onValidation(_data, (d) => {
+          compStateDispatch({ type: "success", value: "PT_MOBILE_NUM_UPDATED_SUCCESS" });
+        });
     },
-    [compState]
+    [compState, UpdateNumberConfig]
   );
 
   const { register, control, handleSubmit, getValues, reset, formState } = useForm({
@@ -163,20 +185,26 @@ const UpdateNumber = ({ t, onValidation, mobileNumber, name, UpdateNumberConfig 
     UpdateNumberConfig,
   ]);
   return (
-    <div className="popup-module updateNumberEmployee">
+    <div className="popup-module updateNumberEmployee" style={{ zIndex: 100001, position: "relative", overflow: "visible" }}>
       <FormComposer
         config={config}
         noBoxShadow
         inline
         submitInForm={true}
-        onSubmit={(_data) => onSubmit({ ..._data, ...uploadedFile })}
+        onSubmit={(_data) => {
+          // Call onSubmit which handles all validation and API call
+          onSubmit({ ..._data, ...uploadedFile });
+        }}
         label={"ES_COMMON_UPDATE"}
         defaultValues={{
           mobileNumber: "",
         }}
         formId="modal-action"
+        formState={formState}
+        control={control}
+        register={register}
       >
-        <div>
+        <div style={{ paddingBottom: "20px" }}>
           <StatusTable>
             <Row label={t("PTUPNO_OWNER_NAME")} text={`${compState?.name || t("CS_NA")}`} />
             <Row label={t("PTUPNO_CURR_NO")} text={`${compState?.mobileNumber || t("CS_NA")}`} />

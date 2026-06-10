@@ -20,7 +20,7 @@ const useGCInbox = ({ tenantId, filters, config = {} }) => {
     processSearchCriteria: {
       assignee: "",
       moduleName: "gc-services",
-      businessService: ["NewGC", "DisconnectGCConnection"],
+      businessService: ["NewGC", "ModifyGCConnection", "DisconnectGCConnection"],
       ...(status && status.length > 0 ? { status: status } : {}),
       // ...(status?.length > 0 ? { status: status } : {}),
     },
@@ -53,6 +53,7 @@ const useGCInbox = ({ tenantId, filters, config = {} }) => {
     config: {
       select: (data) => {
         const tableData = data?.items?.map((application) => {
+          console.log("application===", application);
           const dataRes = application?.businessObject;
           const dataForm = application?.ProcessInstance;
           return {
@@ -61,7 +62,7 @@ const useGCInbox = ({ tenantId, filters, config = {} }) => {
             businessService: dataForm?.businessService,
             status: `${dataRes.applicationStatus}`,
             applicationStatus: dataRes?.status,
-            connectionNo: dataRes?.connectionNo,
+            connectionNo : dataRes?.connectionNo
           };
         });
 

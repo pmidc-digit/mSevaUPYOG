@@ -3,7 +3,7 @@ FROM node:14.21.3-alpine AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
 RUN echo '{"resolutions": {"node-releases": "2.0.44"}}' > package.json
-RUN yarn add @mseva/digit-ui-libraries@1.1.81
+RUN yarn add @mseva/digit-ui-libraries@1.1.82
 RUN yarn add @mseva/digit-ui-module-bills@1.0.8
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.6
 RUN yarn add @mseva/digit-ui-module-dss@1.0.6
@@ -27,7 +27,7 @@ RUN yarn add @mseva/upyog-ui-module-chb@1.1.95
 RUN yarn add @mseva/upyog-ui-module-asset@1.1.44-UAT.7
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.33-UAT.7
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.33
-RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.34
+RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.35
 RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.54
 RUN yarn add @mseva/digit-ui-module-ndc@1.0.79
 ARG WORK_DIR

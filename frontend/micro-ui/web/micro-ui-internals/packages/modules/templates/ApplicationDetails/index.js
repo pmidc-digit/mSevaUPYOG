@@ -141,6 +141,35 @@ const ApplicationDetails = (props) => {
 
   const queryClient = useQueryClient();
 
+  const refreshApplicationQueries = async (updatedData, submittedData) => {
+    const updatedApplicationNumber =
+      updatedData?.Licenses?.[0]?.applicationNumber ||
+      updatedData?.Property?.[0]?.acknowldgementNumber ||
+      updatedData?.BPA?.applicationNo ||
+      updatedData?.WaterConnection?.[0]?.applicationNo ||
+      updatedData?.SewerageConnections?.[0]?.applicationNo ||
+      applicationData?.applicationNumber ||
+      applicationData?.applicationNo ||
+      applicationNumber;
+
+    const nextBusinessService =
+      updatedData?.Licenses?.[0]?.businessService ||
+      updatedData?.BPA?.businessService ||
+      submittedData?.Licenses?.[0]?.businessService ||
+      submittedData?.BPA?.businessService ||
+      applicationData?.businessService ||
+      businessService;
+
+    await Promise.all([
+      queryClient.invalidateQueries(["APPLICATION_SEARCH"]),
+      updatedApplicationNumber ? queryClient.invalidateQueries(["APPLICATION_SEARCH", "TL_SEARCH", updatedApplicationNumber]) : Promise.resolve(),
+      updatedApplicationNumber ? queryClient.invalidateQueries(["workFlowDetails", tenantId, updatedApplicationNumber]) : Promise.resolve(),
+      updatedApplicationNumber && nextBusinessService
+        ? queryClient.invalidateQueries(["workFlowDetails", tenantId, updatedApplicationNumber, nextBusinessService])
+        : Promise.resolve(),
+    ]);
+  };
+
   const closeModal = () => {
     setSelectedAction(null);
     setShowModal(false);
@@ -207,6 +236,7 @@ const ApplicationDetails = (props) => {
           onSuccess: (data, variables) => {
             sessionStorage.removeItem("WS_SESSION_APPLICATION_DETAILS");
             setIsEnableLoader(false);
+            refreshApplicationQueries(data, variables);
             if (isOBPS?.bpa) {
               data.selectedAction = selectedAction;
               history.replace(`/digit-ui/employee/obps/response`, { data: data });
@@ -262,8 +292,6 @@ const ApplicationDetails = (props) => {
             } catch (e) {
               /* swallow */
             }
-            queryClient.clear();
-            queryClient.refetchQueries("APPLICATION_SEARCH");
             //push false status when reject
           },
         });

@@ -1,5 +1,20 @@
 import { useQuery, useQueryClient } from "react-query";
 
+const formatOwnerNames = (owners = []) => {
+  const uniqueOwnerNames = owners
+    .slice()
+    .sort((firstOwner, secondOwner) => {
+      const firstSequence = firstOwner?.additionalDetails?.ownerSequence ?? Number.MAX_SAFE_INTEGER;
+      const secondSequence = secondOwner?.additionalDetails?.ownerSequence ?? Number.MAX_SAFE_INTEGER;
+      return firstSequence - secondSequence;
+    })
+    .map((owner) => owner?.name?.trim())
+    .filter(Boolean)
+    .filter((ownerName, index, ownerNames) => ownerNames.indexOf(ownerName) === index);
+
+  return uniqueOwnerNames.join(", ");
+};
+
 const mapWfBybusinessId = (workflowData) => {
   return workflowData?.reduce((acc, item) => {
     acc[item?.businessId] = item;
@@ -30,7 +45,6 @@ const useTLSearch = (params, config) => {
 
 export const useTLSearchApplication = (params, config = {}, t) => {
   const client = useQueryClient();
-  let multiownername = "";
   const result = useQuery(["TL_APPLICATIONS_LIST", params], useTLSearch(params, config), {
     staleTime: Infinity,
     select: (data) => {
@@ -39,11 +53,7 @@ export const useTLSearchApplication = (params, config = {}, t) => {
         TL_APPLICATION_CATEGORY: "ACTION_TEST_TRADE_LICENSE",
         TL_COMMON_TABLE_COL_OWN_NAME: i?.tradeLicenseDetail?.subOwnerShipCategory.includes("INSTITUTION")
           ? i?.tradeLicenseDetail?.institution?.name
-          : i?.tradeLicenseDetail?.owners!==null ? i?.tradeLicenseDetail?.owners.sort((a,b)=>a?.additionalDetails?.ownerSequence-b?.additionalDetails?.ownerSequence)?.map((ele, index) =>
-              index == 0 ? (multiownername = ele.name) : (multiownername = multiownername + " , " + ele.name)
-            ) : i?.tradeLicenseDetail?.owners?.map((ele, index) =>
-            index == 0 ? (multiownername = ele.name) : (multiownername = multiownername + " , " + ele.name)
-          ),
+          : formatOwnerNames(i?.tradeLicenseDetail?.owners || []),
         TL_COMMON_TABLE_COL_STATUS: `WF_NEWTL_${i?.status}`,
         TL_COMMON_TABLE_COL_SLA_NAME: i?.status.match(/^(EXPIRED|APPROVED|CANCELLED)$/)? "CS_NA" : `${Math.round(i?.SLA / (1000 * 60 * 60 * 24))} ${t("TL_SLA_DAYS")}`,
         TL_COMMON_TABLE_COL_TRD_NAME: i?.tradeName,

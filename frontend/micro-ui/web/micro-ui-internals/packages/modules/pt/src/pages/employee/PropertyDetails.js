@@ -491,7 +491,8 @@ const PropertyDetails = () => {
             ></UpdatePropertyNumberComponent>
           )}
           {!showUpdateNo && <PropertyOwnerHistory propertyId={applicationNumber} userType={"employee"} />}
-        </Modal>
+          </Modal>
+       
       ) : null}
       {showDuesPopup && (
         <div style={{

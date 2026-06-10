@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
 import { Header, MultiLink, LinkButton, Loader, Toast, Card } from "@mseva/digit-ui-react-components";
 import get from "lodash/get";
 import orderBy from "lodash/orderBy";
-import getPDFData from "../../utils/getTLAcknowledgementData";
+import getPTAcknowledgementData from "../../utils/getTLAcknowledgementData";
 import BreakupModal from "../../components/BreakupModal";
 import AdhocRebatePenaltyModal from "../../components/AdhocRebatePenaltyModal";
 
@@ -357,9 +357,9 @@ const ApplicationDetails = () => {
 
   const handleDownloadPdf = async () => {
     const tenantInfo = tenants.find((tenant) => tenant.code === applicationDetails.tenantId);
-    const data = await getPDFData(applicationDetails?.applicationData, tenantInfo, t);
+    const data = await getPTAcknowledgementData(applicationDetails?.applicationData, tenantInfo, t);
     //data.then((ress) => Digit.Utils.pdf.generate(ress));
-    Digit.Utils.pdf.generate(data);
+    Digit.Utils.pdf.generateFormatted(data);
     setIsDisplayDownloadMenu(false);
   };
 

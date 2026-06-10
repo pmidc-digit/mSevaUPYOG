@@ -198,34 +198,36 @@ const InboxTopBar = ({
           </span>
         </button>
 
-        {(statuses || []).map((status) => (
-          <button
-            key={status?.applicationstatus}
-            type="button"
-            className={`new-inbox-tab ${
-              activeTab === status?.applicationstatus
-                ? "new-inbox-tab-active"
-                : ""
-            }`}
-            onClick={() =>
-              onTabClick?.(
-                status?.applicationstatus,
-                status?.applicationstatus
-              )
-            }
-          >
-            {t(status?.applicationstatus)}
-            <span
-              className={`new-inbox-tab-count ${
-                activeTab === status?.applicationstatus
-                  ? "new-inbox-tab-count-active"
+        {(statuses || []).map((status) => {
+          const tabKey = `${status?.applicationstatus}__${status?.businessservice}`
+          return (
+            <button
+              key={tabKey}
+              type="button"
+              className={`new-inbox-tab ${activeTab === tabKey
+                  ? "new-inbox-tab-active"
                   : ""
-              }`}
+                }`}
+              onClick={() =>
+                onTabClick?.(
+                  status?.applicationstatus,
+                  tabKey,
+                  status?.businessservice
+                )
+              }
             >
-              {getStatusCount(status)}
-            </span>
-          </button>
-        ))}
+              {t(status?.applicationstatus)}
+              <span
+                className={`new-inbox-tab-count ${activeTab === tabKey
+                    ? "new-inbox-tab-count-active"
+                    : ""
+                  }`}
+              >
+                {getStatusCount(status)}
+              </span>
+            </button>
+          );
+        })}
 
         {showClearTab && (
           <button

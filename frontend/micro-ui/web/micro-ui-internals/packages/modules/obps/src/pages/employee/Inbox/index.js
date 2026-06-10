@@ -220,12 +220,13 @@ const Inbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
-      
+        console.log("[DEBUG]=== PARENT handleFilterChange received ===", filterData.applicationStatus);
       const resolvedIds =
         filterData.applicationStatus?.flatMap((item) =>
-          statusData?.filter((status) => status.applicationstatus === item.code)?.map((status) => status.statusid)
+          statusData?.filter((status) => status.applicationstatus === item.code && (!item.businessService || status.businessservice === item.businessService))?.map((status) => status.statusid)
         ) || filterData.applicationStatus.map((item) => item.code) || [];
 
+        console.log("[DEBUG]=== PARENT handleFilterChange resolved to statusids ===", resolvedIds);
         if (resolvedIds?.length > 0){
           setFilterFormValue("applicationStatus", resolvedIds);
         }
@@ -244,7 +245,7 @@ const Inbox = ({ parentRoute }) => {
         action: "mutateFilterForm",
         data: {
           ...formState?.filterForm,
-          applicationStatus: filterData.applicationStatus?.map((item) => item.code) || [],
+          applicationStatus: resolvedIds || [],
           assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ME",
         },
       });
@@ -306,7 +307,7 @@ const Inbox = ({ parentRoute }) => {
   }, [formState, resetFilterForm]);
 
   const onStatusTabClick = useCallback(
-    (label, statusCode) => {
+    (label, statusCode, businessservice) => {
       setActiveStatusTab(statusCode || label);
       if (label === "CLEAR") {
         setTopBarSearch("");
@@ -318,11 +319,11 @@ const Inbox = ({ parentRoute }) => {
         return;
       }
       const resolvedCode =
-        statusData?.filter((status) => status.applicationstatus === (statusCode || label))?.map((status) => status.statusid) || statusCode || label;
+        statusData?.filter((status) => status.applicationstatus === label && (!businessservice || status.businessservice === businessservice))?.map((status) => status.statusid) || statusCode || label;
       setFilterFormValue("applicationStatus", resolvedCode, { shouldDirty: true, shouldTouch: true });
       handleFilterFormSubmit(onFilterFormSubmit)();
     },
-    [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
+    [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue, statusData]
   );
 
   useEffect(() => {

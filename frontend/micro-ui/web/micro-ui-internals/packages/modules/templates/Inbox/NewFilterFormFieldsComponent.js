@@ -43,21 +43,36 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
   const { field: licenseTypeField } = useController({ name: "licenseType", control: controlFilterForm, defaultValue: [] });
 
   const statusValues = Array.isArray(statusField.value) ? statusField.value : [];
-
+ console.log("[DEBUG]=== RENDER Filter Panel: statusValues ===", statusValues);
   const licenseTypeValues = Array.isArray(licenseTypeField.value) ? licenseTypeField.value : [];
 
-  const toggleStatus = (statusCode) => {
+  const getApplicationStatusParams = (values) => {
+    return (values || []).map((val) => {
+      // Resolve UUID to status code & business service
+      const matched = (statuses || []).find((s) => s.statusid === val);
+      if (matched) return { code: matched.applicationstatus, businessService: matched.businessservice };
+      
+      // Fallback for composite keys (e.g. LayoutInbox)
+      const [code, bs] = val.split("__");
+      return { code, businessService: bs };
+    });
+  };
+
+  const toggleStatus = (statusCode, businessService) => {
+ const compositeKey = businessService ? `${statusCode}__${businessService}` : statusCode;
+         console.log("[DEBUG]=== CLICKED Status Card ===", { statusCode, businessService, compositeKey });
+
     let newStatusValues;
-    if (statusValues.includes(statusCode)) {
-      newStatusValues = statusValues.filter((code) => code !== statusCode);
+    if (statusValues.includes(compositeKey)) {
+      newStatusValues = statusValues.filter((code) => code !== compositeKey);
     } else {
-      newStatusValues = [...statusValues, statusCode];
+      newStatusValues = [...statusValues, compositeKey];
     }
     statusField.onChange(newStatusValues);
     // Immediately notify parent of filter change
     if (typeof handleFilter === "function") {
       handleFilter({
-        applicationStatus: newStatusValues.map((code) => ({ code })),
+        applicationStatus: getApplicationStatusParams(newStatusValues),
       });
     }
   };
@@ -74,7 +89,7 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
     if (typeof handleFilter === "function") {
       handleFilter({
         licenseType: newLicenseTypeValues,
-        applicationStatus: statusValues.map((code) => ({ code })),
+        applicationStatus: getApplicationStatusParams(statusValues),
       });
     }
   };
@@ -91,15 +106,16 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
     })),
     ...(statuses || []).map((status) => {
       // Include businessService in key if available to avoid deduplication
-      const uniqueKey = status.businessService ? `${status.applicationstatus}-${status.businessService}` : status.applicationstatus;
+      const businessService = status.businessservice || status.businessService;
+      const uniqueKey = businessService ? `${status.applicationstatus}-${businessService}` : status.applicationstatus;
       return {
         key: uniqueKey,
         type: "status",
         label: t(status.applicationstatus),
-        subtitle: status.businessService ? `${status.businessService}` : null,
+        subtitle: businessService ? `${businessService}` : null,
         count: status.totalCount ?? status.count ?? status.noOfRecords ?? status.totalRecords ?? status.applicationCount ?? 0,
-        code: status.applicationstatus,
-        businessService: status.businessService,
+        code: status.statusid || status.applicationstatus,
+        businessService: status.statusid ? null : businessService,
         icon: "◎",
       };
     }),
@@ -132,7 +148,8 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
                   ? assigneeField.value === card.code
                   : card.type === "licenseType"
                   ? licenseTypeValues.includes(card.code)
-                  : statusValues.includes(card.code);
+                  : statusValues.includes(card.businessService ? `${card.code}__${card.businessService}` : card.code);
+
 
               const variant = getVariantByIndex(index, getVariantFromCode(card.code));
 
@@ -150,14 +167,14 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
                       if (typeof handleFilter === "function") {
                         handleFilter({
                           assignee: card.code,
-                          applicationStatus: statusValues.map((code) => ({ code })),
+                          applicationStatus: getApplicationStatusParams(statusValues),
                           licenseType: licenseTypeValues,
                         });
                       }
                     } else if (card.type === "licenseType") {
                       toggleLicenseType(card.code);
                     } else {
-                      toggleStatus(card.code);
+                      toggleStatus(card.code, card.businessService);
                     }
                   }}
                 >

@@ -168,7 +168,7 @@ const PropertyDetails = () => {
                         index: ind,
                       });
                     }}
-                    style={{ cursor: "pointer", display: "inline-flex", paddingLeft: "20px" }}
+                    style={{ cursor: "pointer", display: "inline-flex", paddingLeft: "20px", transform: "scale(1.5)", transformOrigin: "left center" }}
                   >
                     <EditIcon />
                   </span>
@@ -432,20 +432,21 @@ const PropertyDetails = () => {
         forcedActionPrefix={"WF_EMPLOYEE_PT.CREATE"}
       />
       {showModal ? (
-        <Modal
-          headerBarMain={<h1 className="heading-m">{showUpdateNo ? t("PTUPNO_HEADER") : t("PT_OWNER_HISTORY")}</h1>}
-          headerBarEnd={
-            <CloseBtn
-              onClick={() => {
-                setShowModal(false);
-                setShowUpdateNo(false);
-              }}
-            />
-          }
-          hideSubmit={true}
-          isDisabled={false}
-          popupStyles={showUpdateNo ? { width: isMobile ? "473px" : "50%"} : { width: "75%"}}
-        >
+  
+          <Modal
+            headerBarMain={<h1 className="heading-m">{showUpdateNo ? t("PTUPNO_HEADER") : t("PT_OWNER_HISTORY")}</h1>}
+            headerBarEnd={
+              <CloseBtn
+                onClick={() => {
+                  setShowModal(false);
+                  setShowUpdateNo(false);
+                }}
+              />
+            }
+            hideSubmit={true}
+            isDisabled={false}
+            popupStyles={showUpdateNo ? { width: isMobile ? "473px" : "50%", zIndex: 100001, overflow: "visible" } : { width: "75%", zIndex: 100001, overflow: "visible" }}
+          >
           {showUpdateNo && (
             <UpdatePropertyNumberComponent
               showPopup={setShowModal}
@@ -457,11 +458,11 @@ const PropertyDetails = () => {
                 let newProp = { ...appDetailsToShow?.applicationData };
                 newProp.owners[showUpdateNo?.index].mobileNumber = data.mobileNumber;
                 newProp.creationReason = "UPDATE";
-                newProp.workflow = null;
+                newProp.tenantId = tenantId;
                 let newDocObj = { ...data };
                 delete newDocObj.mobileNumber;
                 newProp.documents = [
-                  ...newProp.documents,
+                  ...(newProp.documents || []),
                   ...Object.keys(newDocObj).map((key) => ({
                     documentType: key,
                     documentUid: newDocObj[key],
@@ -473,8 +474,12 @@ const PropertyDetails = () => {
                     Property: newProp,
                   },
                   {
-                    onError: {},
+                    onError: (error) => {
+                      console.error("Property update failed:", error);
+                      setShowToast({ key: "error", message: "Failed to update property", type: "error" });
+                    },
                     onSuccess: async (successRes) => {
+                      console.log("Property updated successfully", successRes);
                       showToast();
                       setTimeout(() => {
                         window.location.reload();
@@ -486,7 +491,8 @@ const PropertyDetails = () => {
             ></UpdatePropertyNumberComponent>
           )}
           {!showUpdateNo && <PropertyOwnerHistory propertyId={applicationNumber} userType={"employee"} />}
-        </Modal>
+          </Modal>
+       
       ) : null}
       {showDuesPopup && (
         <div style={{

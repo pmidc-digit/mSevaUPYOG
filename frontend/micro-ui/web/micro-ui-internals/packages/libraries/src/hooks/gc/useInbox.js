@@ -53,6 +53,7 @@ const useGCInbox = ({ tenantId, filters, config = {} }) => {
     config: {
       select: (data) => {
         const tableData = data?.items?.map((application) => {
+          console.log("application===", application);
           const dataRes = application?.businessObject;
           const dataForm = application?.ProcessInstance;
           return {

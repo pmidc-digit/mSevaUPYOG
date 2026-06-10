@@ -165,6 +165,16 @@ const ChallanApplicationDetails = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const isCemp = user?.info?.roles.find((role) => role.code === "GC_CEMP")?.code;
 
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "GC.ONE_TIME_FEE",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
+
   const getAcknowledgement = async () => {
     setLoader(true);
     try {
@@ -188,7 +198,7 @@ const ChallanApplicationDetails = () => {
     onClick: () => getAcknowledgement(),
   });
 
-  if (acknowledgementIds || id) {
+  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () =>
@@ -360,6 +370,8 @@ const ChallanApplicationDetails = () => {
 
   const hideStatuses = ["INITIATED", "CONNECTION_ACTIVATED", "APPROVED"];
 
+  console.log("getChallanData", getChallanData);
+
   return (
     <React.Fragment>
       <div>
@@ -397,7 +409,7 @@ const ChallanApplicationDetails = () => {
             <Row className="border-none" label={t("APPLICATION_NUMBER")} text={t(getChallanData?.applicationNo) || t("CS_NA")} />
             <Row className="border-none" label={t("Connection Number")} text={t(getChallanData?.connectionNo) || t("CS_NA")} />
             <Row className="border-none" label={t("ACTION_TEST_APPLICATION_STATUS")} text={t(getChallanData?.applicationStatus) || t("CS_NA")} />
-            <Row className="border-none" label={t("GC_CONNECTION_TYPE")} text={getChallanData?.connectionCategory || t("CS_NA")} />
+            {/* <Row className="border-none" label={t("GC_CONNECTION_TYPE")} text={getChallanData?.connectionCategory || t("CS_NA")} /> */}
             <Row className="border-none" label={t("GC_FREQUENCY")} text={getChallanData?.frequency || t("CS_NA")} />
             <Row className="border-none" label={t("GC_WASTE_TYPE")} text={getChallanData?.typeOfWaste || t("CS_NA")} />
           </StatusTable>
@@ -512,7 +524,7 @@ const ChallanApplicationDetails = () => {
 
       {showToast && <Toast isDleteBtn={true} error={error} label={getLable} onClose={closeToast} />}
 
-      {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
+      {(loader || recieptDataLoading || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>
   );
 };

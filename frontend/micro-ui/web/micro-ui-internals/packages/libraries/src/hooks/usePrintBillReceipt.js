@@ -16,6 +16,7 @@ const cleanBillAccountDetails = (billAccountDetails = []) => {
       item?.taxHeadCode === "GC_ROUND_OFF"
     )
       return false;
+      
     // remove security deposit ONLY if arrears exist
     if (hasArrears && item?.taxHeadCode === "RL_SECURITY_DEPOSIT_FEE") {
       return false;

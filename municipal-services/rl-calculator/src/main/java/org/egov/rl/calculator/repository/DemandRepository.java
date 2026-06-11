@@ -237,4 +237,17 @@ public class DemandRepository {
 			throw new CustomException("DEMAND_FETCH_ERROR", "Failed to fetch expired unpaid demands");
 		}
 	}
+
+	public List<Demand> getAllUnpaidDemands(String tenantId, String consumerCode) {
+		List<Object> preparedStmtList = new ArrayList<>();
+		String query = "SELECT * FROM egbs_demand_v1 WHERE tenantid = ? AND consumercode = ? AND businessservice = 'rl-services' AND status = 'ACTIVE' AND ispaymentcompleted = false";
+		preparedStmtList.add(tenantId);
+		preparedStmtList.add(consumerCode);
+		try {
+			return jdbcTemplate.query(query, preparedStmtList.toArray(), demandRowMapper);
+		} catch (Exception e) {
+			log.error("Error while fetching unpaid demands for tenant: {} and consumerCode: {}", tenantId, consumerCode, e);
+			throw new CustomException("DEMAND_FETCH_ERROR", "Failed to fetch unpaid demands");
+		}
+	}
 }

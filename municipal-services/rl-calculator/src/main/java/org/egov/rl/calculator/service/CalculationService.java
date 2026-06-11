@@ -336,7 +336,7 @@ public class CalculationService {
 		}
 	}
 	
-	public List<Demand> generateMonthlyLegacyDemands(CalculationCriteria criteria, RequestInfo requestInfo) {
+	public List<Demand> generateLegacyDemands(CalculationCriteria criteria, RequestInfo requestInfo) {
 		if (criteria == null || criteria.getAllotmentRequest() == null || CollectionUtils.isEmpty(criteria.getAllotmentRequest().getAllotment())) {
 			return Collections.emptyList();
 		}
@@ -357,15 +357,26 @@ public class CalculationService {
 
 		List<Demand> generatedDemands = new ArrayList<>();
 
-        // Generate Current Month Demand
+        // Read actual billing cycle from property (fallback to MONTHLY for old data)
+        JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+        String cycle = RLConstants.RL_MONTHLY_CYCLE;
+        if (additionalDetails != null && additionalDetails.path("propertyDetails").get(0) != null) {
+            String rawCycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
+            if (rawCycle != null && !rawCycle.isEmpty() && !rawCycle.equals("null")) {
+                cycle = rawCycle;
+            }
+        }
+
+        // Generate Current Period Demand
         long taxPeriodFrom;
         long taxPeriodTo;
         
         List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
         BillingPeriod billingPeriod = null;
         if (!CollectionUtils.isEmpty(billingPeriods)) {
+            String matchCycle = cycle;
             billingPeriod = billingPeriods.stream()
-                    .filter(b -> b.getBillingCycle().equalsIgnoreCase(RLConstants.RL_MONTHLY_CYCLE))
+                    .filter(b -> b.getBillingCycle().equalsIgnoreCase(matchCycle))
                     .findFirst().orElse(null);
         }
 
@@ -378,34 +389,44 @@ public class CalculationService {
             taxPeriodTo = currentMonth.atEndOfMonth().atTime(23, 59, 59).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
         }
 
-        BigDecimal currentMonthRent = BigDecimal.ZERO;
+        BigDecimal currentPeriodRent = BigDecimal.ZERO;
         
         // Fetch dynamic due date threshold from MDMS DueDate.json (fallback 10)
         int configuredDueDay = masterDataService.getLegacyDueDate(requestInfo, tenantId);
 
-        // The dynamic threshold rule
-        if (entryDate.getDayOfMonth() <= configuredDueDay) {
-            // Fetch base rent for ONE month
+        // Due date rule: monthly uses dayOfMonth, longer cycles use days since period start
+        boolean withinDuePeriod;
+        if (RLConstants.RL_MONTHLY_CYCLE.equalsIgnoreCase(cycle)) {
+            withinDuePeriod = entryDate.getDayOfMonth() <= configuredDueDay;
+        } else {
+            LocalDate periodStart = Instant.ofEpochMilli(taxPeriodFrom)
+                    .atZone(ZoneId.of(RLConstants.TIME_ZONE)).toLocalDate();
+            long daysSinceStart = ChronoUnit.DAYS.between(periodStart, entryDate);
+            withinDuePeriod = daysSinceStart <= configuredDueDay;
+        }
+
+        if (withinDuePeriod) {
+            // Fetch base rent for the period
             List<RLProperty> calculateAmount = mdmsUtil.getCalculateAmount(allotmentDetails.getPropertyId(),
                     requestInfo, tenantId, RLConstants.RL_MASTER_MODULE_NAME);
             if (!CollectionUtils.isEmpty(calculateAmount)) {
-                currentMonthRent = new BigDecimal(calculateAmount.get(0).getBaseRent());
+                currentPeriodRent = new BigDecimal(calculateAmount.get(0).getBaseRent());
             }
         } else {
-            // Current month demand = ₹0
-            currentMonthRent = BigDecimal.ZERO;
+            // Created after due date — current period demand = ₹0
+            currentPeriodRent = BigDecimal.ZERO;
         }
 
         List<DemandDetail> details = new ArrayList<>();
-        details.add(DemandDetail.builder().taxAmount(currentMonthRent).taxHeadMasterCode(RLConstants.RENT_LEASE_FEE_RL_APPLICATION).tenantId(tenantId).build());
+        details.add(DemandDetail.builder().taxAmount(currentPeriodRent).taxHeadMasterCode(RLConstants.RENT_LEASE_FEE_RL_APPLICATION).tenantId(tenantId).build());
 
-        // Add Taxes for the month (Only if rent is > 0)
-        if (currentMonthRent.compareTo(BigDecimal.ZERO) > 0) {
+        // Add Taxes for the period (Only if rent is > 0)
+        if (currentPeriodRent.compareTo(BigDecimal.ZERO) > 0) {
             List<TaxRate> taxRates = mdmsUtil.getHeadTaxAmount(requestInfo, tenantId, RLConstants.RL_MASTER_MODULE_NAME);
             List<String> taxList = Arrays.asList(RLConstants.SGST_FEE_RL_APPLICATION, RLConstants.CGST_FEE_RL_APPLICATION, RLConstants.COWCESS_FEE_RL_APPLICATION);
             for (TaxRate t : taxRates) {
                 if (taxList.contains(t.getTaxType()) && t.isActive()) {
-                    BigDecimal taxAmt = t.getType().contains("%") ? currentMonthRent.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100)) : new BigDecimal(t.getAmount());
+                    BigDecimal taxAmt = t.getType().contains("%") ? currentPeriodRent.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100)) : new BigDecimal(t.getAmount());
                     if (taxAmt.compareTo(BigDecimal.ZERO) > 0) {
                         details.add(DemandDetail.builder().taxAmount(taxAmt).taxHeadMasterCode(t.getTaxType()).tenantId(tenantId).build());
                     }

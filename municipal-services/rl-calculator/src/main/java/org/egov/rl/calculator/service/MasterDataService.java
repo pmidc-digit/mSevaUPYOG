@@ -150,7 +150,7 @@ public class MasterDataService {
         }
     }
 
-    public Integer getLegacyDueDate(RequestInfo requestInfo, String tenantId) {
+    public Integer getLegacyDueDate(RequestInfo requestInfo, String tenantId, String billingCycle) {
         try {
             MdmsCriteriaReq mdmsCriteriaReq = getMasterRequest(requestInfo, tenantId,
                     RLConstants.RL_SERVICES_MASTER_MODULE, "DueDate", null);
@@ -168,8 +168,19 @@ public class MasterDataService {
                         new TypeReference<List<org.egov.rl.calculator.web.models.demand.DueDate>>() {}
                 );
                 
-                if (dueDates != null && !dueDates.isEmpty() && dueDates.get(0).getDueDay() != null) {
-                    return dueDates.get(0).getDueDay();
+                if (dueDates != null && !dueDates.isEmpty()) {
+                    // Try to find a matching entry for the billing cycle
+                    if (billingCycle != null) {
+                        for (org.egov.rl.calculator.web.models.demand.DueDate dd : dueDates) {
+                            if (billingCycle.equalsIgnoreCase(dd.getBillingCycle()) && dd.getDueDay() != null) {
+                                return dd.getDueDay();
+                            }
+                        }
+                    }
+                    // Fallback to first entry if no cycle match
+                    if (dueDates.get(0).getDueDay() != null) {
+                        return dueDates.get(0).getDueDay();
+                    }
                 }
             }
         } catch (Exception e) {

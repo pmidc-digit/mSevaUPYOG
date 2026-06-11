@@ -83,7 +83,7 @@ public class DemandService {
 		if (firstCriteria.isSatelment()) {
 			return createSatelmentDemand(calculationReq);
 	        } else if (firstCriteria.isLegacyArrear() || isLegacyApplication) {
-            return createMonthlyLegacyDemands(calculationReq);
+            return createLegacyDemands(calculationReq);
 		} else {
 
 			boolean isSecurityDeposite = firstCriteria.isSecurityDeposite();
@@ -168,12 +168,12 @@ public class DemandService {
 	 * Creates a single combined demand for legacy applications.
 	 * Legacy workflow should persist one demand containing RL fee, arrear and no security deposit.
      */
-    public DemandResponse createMonthlyLegacyDemands(CalculationReq calculationReq) {
-		log.info("Creating monthly legacy demands - START");
+    public DemandResponse createLegacyDemands(CalculationReq calculationReq) {
+		log.info("Creating legacy demands - START");
         List<Demand> demands = new ArrayList<>();
         RequestInfo requestInfo = calculationReq.getRequestInfo();
 		for (CalculationCriteria criteria : calculationReq.getCalculationCriteria()) {
-			List<Demand> generated = calculationService.generateMonthlyLegacyDemands(criteria, requestInfo);
+			List<Demand> generated = calculationService.generateLegacyDemands(criteria, requestInfo);
 			if (generated != null && !generated.isEmpty()) {
 				demands.addAll(generated);
 			}
@@ -575,22 +575,156 @@ public class DemandService {
 			return;
 		}
 
-		expiredDemands = expiredDemands.stream().map(d -> {
+		// Load MDMS configs first
+		List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, tenantId);
+		if (CollectionUtils.isEmpty(penaltySlabs)) {
+			log.warn("No Penalty configuration found for tenant: {}", tenantId);
+			return;
+		}
+		BigDecimal flatPenaltyRate = penaltySlabs.get(0).getRate();
+
+		List<Interest> interestSlabs = masterDataService.getInterestSlabs(requestInfo, tenantId);
+		if (CollectionUtils.isEmpty(interestSlabs)) {
+			log.warn("No Interest configuration found for tenant: {}", tenantId);
+			return;
+		}
+		BigDecimal dailyPenaltyRate = interestSlabs.get(0).getRate();
+
+		// Populate demand details for expired demands
+		expiredDemands.forEach(d -> {
 			d.setDemandDetails(demandRepository.getDemandsDetailsByDemandId(Arrays.asList(d.getId())));
-			return d;
-		}).collect(Collectors.toList());
+		});
+
+		// Step 1: group expired demands by consumerCode
+		Map<String, List<Demand>> byConsumer = expiredDemands.stream()
+				.collect(Collectors.groupingBy(Demand::getConsumerCode));
 
 		List<Demand> demandsToUpdate = new ArrayList<>();
-		expiredDemands.forEach(d -> {
+
+		for (Map.Entry<String, List<Demand>> entry : byConsumer.entrySet()) {
+			String cCode = entry.getKey();
+			List<Demand> expiredDemandsInGroup = entry.getValue();
+
 			try {
-				boolean updated = applyDailyPenaltyAndInterest(d, requestInfo);
-				if (updated) {
-					demandsToUpdate.add(d);
+				// Step 2: fetch ALL unpaid demands for this consumerCode (expired or not)
+				List<Demand> allUnpaid = demandRepository.getAllUnpaidDemands(tenantId, cCode);
+				if (CollectionUtils.isEmpty(allUnpaid)) {
+					continue;
 				}
+
+				// Populate details for all unpaid demands
+				allUnpaid.forEach(d -> {
+					d.setDemandDetails(demandRepository.getDemandsDetailsByDemandId(Arrays.asList(d.getId())));
+				});
+
+				// Step 3: calculate base outstanding across all unpaid demands (before this run's penalties)
+				BigDecimal totalOutstanding = allUnpaid.stream()
+						.flatMap(d -> d.getDemandDetails().stream())
+						.map(dd -> dd.getTaxAmount().subtract(dd.getCollectionAmount()))
+						.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+				boolean groupModified = false;
+				AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
+
+				// Step 4: apply flat penalty per expired demand (on its own base rent)
+				// Also accumulate newly added penalty amounts into totalOutstanding
+				for (Demand d : expiredDemandsInGroup) {
+					// Retrieve base rent (RENT_LEASE_FEE)
+					DemandDetail baseAmount = d.getDemandDetails().stream()
+							.filter(dt -> dt.getTaxHeadMasterCode().equals(RLConstants.RENT_LEASE_FEE_RL_APPLICATION))
+							.findFirst().orElse(null);
+
+					if (baseAmount != null) {
+						BigDecimal baseRent = baseAmount.getTaxAmount();
+						if (baseRent != null && baseRent.compareTo(BigDecimal.ZERO) > 0) {
+							boolean hasFlatPenalty = d.getDemandDetails().stream()
+									.anyMatch(dd -> dd.getTaxHeadMasterCode().equals(RLConstants.PENALTY_FEE_RL_APPLICATION));
+
+							if (!hasFlatPenalty) {
+								BigDecimal flatPenaltyAmount = baseRent.multiply(flatPenaltyRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+								if (flatPenaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
+									DemandDetail flatPenaltyDetail = DemandDetail.builder()
+											.demandId(d.getId())
+											.tenantId(d.getTenantId())
+											.taxHeadMasterCode(RLConstants.PENALTY_FEE_RL_APPLICATION)
+											.auditDetails(auditDetails)
+											.taxAmount(flatPenaltyAmount)
+											.collectionAmount(BigDecimal.ZERO)
+											.build();
+									d.getDemandDetails().add(flatPenaltyDetail);
+									d.setMinimumAmountPayable(d.getMinimumAmountPayable().add(flatPenaltyAmount));
+									// Accumulate newly added flat penalty into totalOutstanding so daily interest includes it
+									totalOutstanding = totalOutstanding.add(flatPenaltyAmount);
+									groupModified = true;
+									if (!demandsToUpdate.contains(d)) {
+										demandsToUpdate.add(d);
+									}
+									log.info("Appended flat penalty: {} to demand: {}", flatPenaltyAmount, d.getId());
+								}
+							}
+						}
+					}
+				}
+
+				// Step 5: apply daily interest once per consumerCode on the latest expired demand
+				// totalOutstanding now reflects pre-existing outstanding PLUS any flat penalties added in Step 4 this run
+				long maxDaysOverdue = -1;
+				for (Demand d : expiredDemandsInGroup) {
+					long days = getDaysOverdue(d, now);
+					if (days > maxDaysOverdue) {
+						maxDaysOverdue = days;
+					}
+				}
+
+				if (maxDaysOverdue >= 0) {
+					long expectedDailyCount = maxDaysOverdue + 1;
+
+					// Count existing RL_DAILYINTEREST lines across ALL demands for this consumerCode
+					long existingCount = allUnpaid.stream()
+							.flatMap(d -> d.getDemandDetails().stream())
+							.filter(dd -> dd.getTaxHeadMasterCode().equals(RLConstants.RL_DAILYINTEREST))
+							.count();
+
+					if (existingCount < expectedDailyCount) {
+						long linesToAppend = expectedDailyCount - existingCount;
+
+						// Daily interest runs on total outstanding including flat penalties added this run
+						BigDecimal dailyPenaltyAmount = totalOutstanding.multiply(dailyPenaltyRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+						if (dailyPenaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
+							// Find the latest expired demand (most recent taxPeriodFrom)
+							Demand latestExpiredDemand = expiredDemandsInGroup.stream()
+									.max(Comparator.comparing(Demand::getTaxPeriodFrom))
+									.orElse(null);
+
+							if (latestExpiredDemand != null) {
+								for (int i = 0; i < linesToAppend; i++) {
+									DemandDetail interestDetail = DemandDetail.builder()
+											.demandId(latestExpiredDemand.getId())
+											.tenantId(latestExpiredDemand.getTenantId())
+											.taxHeadMasterCode(RLConstants.RL_DAILYINTEREST)
+											.auditDetails(auditDetails)
+											.taxAmount(dailyPenaltyAmount)
+											.collectionAmount(BigDecimal.ZERO)
+											.build();
+									latestExpiredDemand.getDemandDetails().add(interestDetail);
+									latestExpiredDemand.setMinimumAmountPayable(latestExpiredDemand.getMinimumAmountPayable().add(dailyPenaltyAmount));
+								}
+								groupModified = true;
+								if (!demandsToUpdate.contains(latestExpiredDemand)) {
+									demandsToUpdate.add(latestExpiredDemand);
+								}
+								log.info("Appended {} daily interest lines of amount: {} each to demand: {} (totalOutstanding: {})",
+										linesToAppend, dailyPenaltyAmount, latestExpiredDemand.getId(), totalOutstanding);
+							}
+						}
+					}
+				}
+
 			} catch (Exception e) {
-				log.error("Error applying penalty/interest for demand: " + d.getId(), e);
+				log.error("Error processing penalty/interest for consumerCode: " + cCode, e);
 			}
-		});
+		}
 
 		if (!demandsToUpdate.isEmpty()) {
 			demandRepository.updateDemand(requestInfo, demandsToUpdate);
@@ -598,34 +732,7 @@ public class DemandService {
 		}
 	}
 
-	private boolean applyDailyPenaltyAndInterest(Demand demand, RequestInfo requestInfo) {
-		long now = System.currentTimeMillis();
-		DemandDetail baseAmount = demand.getDemandDetails().stream()
-				.filter(dt -> dt.getTaxHeadMasterCode().equals(RLConstants.RENT_LEASE_FEE_RL_APPLICATION))
-				.findFirst().orElse(null);
-		if (baseAmount == null) {
-			log.warn("No base rent detail found for demand: {}", demand.getId());
-			return false;
-		}
-		BigDecimal baseRent = baseAmount.getTaxAmount();
-		if (baseRent == null || baseRent.compareTo(BigDecimal.ZERO) <= 0) {
-			return false;
-		}
-
-		List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, demand.getTenantId());
-		if (CollectionUtils.isEmpty(penaltySlabs)) {
-			log.warn("No Penalty configuration found for tenant: {}", demand.getTenantId());
-			return false;
-		}
-		BigDecimal flatPenaltyRate = penaltySlabs.get(0).getRate();
-
-		List<Interest> interestSlabs = masterDataService.getInterestSlabs(requestInfo, demand.getTenantId());
-		if (CollectionUtils.isEmpty(interestSlabs)) {
-			log.warn("No Interest configuration found for tenant: {}", demand.getTenantId());
-			return false;
-		}
-		BigDecimal dailyPenaltyRate = interestSlabs.get(0).getRate();
-
+	private long getDaysOverdue(Demand demand, long now) {
 		long billExpiryTimeEpoch;
 		if (demand.getFixedbillexpirydate() != null && demand.getFixedbillexpirydate() > 0) {
 			billExpiryTimeEpoch = demand.getFixedbillexpirydate();
@@ -637,82 +744,13 @@ public class DemandService {
 			billExpiryTimeEpoch = createdTime + expiryDuration;
 		}
 		long diffMillis = now - billExpiryTimeEpoch;
-		log.info("DEBUG: Demand ID: {}, fixedbillexpirydate: {}, auditDetails: {}, createdTime: {}, billExpiryTime: {}, billExpiryTimeEpoch: {}, diffMillis: {}, now: {}", 
-				demand.getId(), 
-				demand.getFixedbillexpirydate(), 
-				demand.getAuditDetails(), 
-				(demand.getAuditDetails() != null ? demand.getAuditDetails().getCreatedTime() : null), 
-				demand.getBillExpiryTime(), 
-				billExpiryTimeEpoch, 
-				diffMillis, 
-				now);
 		if (diffMillis < 0) {
-			return false;
+			return -1;
 		}
-		long daysOverdue = diffMillis / 86400000L;
-
-		boolean demandModified = false;
-		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
-		List<DemandDetail> dataList = demand.getDemandDetails();
-
-		// Flat Penalty: one-time flat % on base rent (RL_PENALTY_FEE)
-		boolean hasFlatPenalty = dataList.stream()
-				.anyMatch(dd -> dd.getTaxHeadMasterCode().equals(RLConstants.PENALTY_FEE_RL_APPLICATION));
-		if (!hasFlatPenalty && daysOverdue >= 0) {
-			BigDecimal flatPenaltyAmount = baseRent.multiply(flatPenaltyRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-			if (flatPenaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
-				DemandDetail flatPenaltyDetail = DemandDetail.builder()
-						.demandId(demand.getId())
-						.tenantId(demand.getTenantId())
-						.taxHeadMasterCode(RLConstants.PENALTY_FEE_RL_APPLICATION)
-						.auditDetails(auditDetails)
-						.taxAmount(flatPenaltyAmount)
-						.collectionAmount(BigDecimal.ZERO)
-						.build();
-				dataList.add(flatPenaltyDetail);
-				demand.setMinimumAmountPayable(demand.getMinimumAmountPayable().add(flatPenaltyAmount));
-				demandModified = true;
-				log.info("Appended flat penalty: {} to demand: {}", flatPenaltyAmount, demand.getId());
-			}
-		}
-
-		// Daily Interest: applied EVERY day including day 0 (RL_DAILYINTEREST)
-		long existingDailyCount = dataList.stream()
-				.filter(dd -> dd.getTaxHeadMasterCode().equals(RLConstants.RL_DAILYINTEREST))
-				.count();
-		long expectedDailyCount = daysOverdue + 1;
-		if (existingDailyCount < expectedDailyCount) {
-			long linesToAppend = expectedDailyCount - existingDailyCount;
-			BigDecimal dailyPenaltyAmount = baseRent.multiply(dailyPenaltyRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-			if (dailyPenaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
-				for (int i = 0; i < linesToAppend; i++) {
-					DemandDetail interestDetail = DemandDetail.builder()
-							.demandId(demand.getId())
-							.tenantId(demand.getTenantId())
-							.taxHeadMasterCode(RLConstants.RL_DAILYINTEREST)
-							.auditDetails(auditDetails)
-							.taxAmount(dailyPenaltyAmount)
-							.collectionAmount(BigDecimal.ZERO)
-							.build();
-					dataList.add(interestDetail);
-					demand.setMinimumAmountPayable(demand.getMinimumAmountPayable().add(dailyPenaltyAmount));
-				}
-				demandModified = true;
-				log.info("Appended {} daily interest lines of amount: {} each to demand: {}", linesToAppend, dailyPenaltyAmount, demand.getId());
-			}
-		}
-
-		if (demandModified) {
-			demand.setDemandDetails(dataList);
-		}
-		return demandModified;
+		return diffMillis / 86400000L;
 	}
 
-	@Deprecated
-	public void updatePenalty(BigDecimal basicAmount, Demand demand, RequestInfo requestInfo) {
-		applyDailyPenaltyAndInterest(demand, requestInfo);
-		demandRepository.updateDemand(requestInfo, Arrays.asList(demand));
-	}
+
 
 	/**
 	 * Fetches bills from billing service for saved demands.

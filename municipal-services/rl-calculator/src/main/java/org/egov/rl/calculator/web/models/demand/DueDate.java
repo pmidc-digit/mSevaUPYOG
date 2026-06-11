@@ -12,6 +12,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DueDate {
 
+    @JsonProperty("billingCycle")
+    private String billingCycle;
+
     @JsonProperty("dueDay")
     private Integer dueDay;
 

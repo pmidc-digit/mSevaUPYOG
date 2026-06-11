@@ -11,7 +11,7 @@ import getPDFData from "../../utils/getTLAcknowledgementData";
 import BreakupModal from "../../components/BreakupModal";
 import AdhocRebatePenaltyModal from "../../components/AdhocRebatePenaltyModal";
 
-import { getReceiptUrl } from "../../utils/index";
+import { getReceiptUrl } from "../../utils";
 const ApplicationDetails = () => {
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};

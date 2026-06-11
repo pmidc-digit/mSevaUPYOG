@@ -103,6 +103,19 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
 
   const fireNOCDetails = application?.fireNOCDetails || {};
   const buildings = fireNOCDetails?.buildings || [];
+  const nocDocuments = (fireNOCDetails?.additionalDetails?.documents || fireNOCDetails?.applicantDetails?.additionalDetail?.ownerAuditionalDetail?.documents || [])
+
+  const updatedDocs = (nocDocuments || []).map((doc, idx) =>({
+    ...doc,
+    index : idx +1,
+    dropdown : {
+      ...doc?.dropdown || {},
+      value : typeof doc?.dropdown?.value === "string"
+          ? doc?.dropdown?.value?.replace(/\./g, "_")
+          : doc?.dropdown?.value || "-",
+    },
+    documentType: doc?.documentType?.replace(/\./g, "_")
+  }));
 
   const getActiveUomValue = (buildings, code) => {
     for (const b of buildings) {
@@ -134,6 +147,13 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
           },
         },
       },
+        fireNOCDetails: {
+          ...application?.fireNOCDetails,
+          additionalDetail: {
+            ...application?.fireNOCDetails?.additionalDetail || {},
+            documents: updatedDocs
+          }
+        },
       noOfFloors,
       noOfBasements,
       currentDate,

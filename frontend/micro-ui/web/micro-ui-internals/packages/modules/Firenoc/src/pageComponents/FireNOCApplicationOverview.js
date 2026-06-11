@@ -263,7 +263,7 @@ const FireNOCApplicationOverview = () => {
         try {
           const response = await Digit.PaymentService.generatePdf(
             tenantId,
-            { Payments: [{ ...payments, Noc: nocSanctionData.Noc }] },
+            { Payments: [{ ...payments, Noc: nocSanctionData.Noc , tenantId }] },
             pdfkey
           );
           filestoreID = response?.filestoreIds[0];
@@ -339,13 +339,13 @@ const FireNOCApplicationOverview = () => {
 
         {
           label: t("NOC_APPLICATION_FORM"),
-          onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-application" }),
+          onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId || tenantId, payments: payment, pdfkey: "firenoc-application" }),
         },
       ]
     : [
         {
           label: t("NOC_APPLICATION_FORM"),
-          onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: payment, pdfkey: "firenoc-application" }),
+          onClick: () => getRecieptSearch({ tenantId: paymentDetail?.tenantId || tenantId, payments: payment, pdfkey: "firenoc-application" }),
         },
       ];
 

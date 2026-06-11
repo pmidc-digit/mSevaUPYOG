@@ -392,7 +392,7 @@ public class CalculationService {
         BigDecimal currentPeriodRent = BigDecimal.ZERO;
         
         // Fetch dynamic due date threshold from MDMS DueDate.json (fallback 10)
-        int configuredDueDay = masterDataService.getLegacyDueDate(requestInfo, tenantId);
+        int configuredDueDay = masterDataService.getLegacyDueDate(requestInfo, tenantId, cycle);
 
         // Due date rule: monthly uses dayOfMonth, longer cycles use days since period start
         boolean withinDuePeriod;

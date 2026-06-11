@@ -63,6 +63,26 @@ export const PTService = {
       params: { tenantId },
       auth: true,
     }),
+  assessmentUpdate: (details, tenantId) =>
+    Request({
+      url: Urls.pt.assessment_update,
+      data: details,
+      useCache: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId },
+      auth: true,
+    }),
+  assessmentCancel: (details, tenantId) =>
+    Request({
+      url: Urls.pt.assessment_cancel,
+      data: details,
+      useCache: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId },
+      auth: true,
+    }),
     assessmentCreateUlb: (details, tenantId) =>
     Request({
       url: Urls.pt.assessment_createUlb,

@@ -267,6 +267,10 @@ const AssessmentDetails = () => {
     }
   }
   const handleReAssessment = ()=>{
+    if (AssessmentData && AssessmentData.assessmentNumber) {
+      handleUpdateAssessment(AssessmentData);
+      return;
+    }
     
      let filters={assessmentNumbers:applicationNo}
     

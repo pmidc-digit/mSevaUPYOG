@@ -1,12 +1,50 @@
 import React, { useState } from 'react'
+import { useHistory } from 'react-router-dom';
 
-const AssessmentHistory = ({ assessmentData }) => {
-
+const AssessmentHistory = ({ assessmentData, propertyId, tenantId, propertyStatus, applicationData }) => {
+    const history = useHistory();
 
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleAccordion = () => {
         setIsOpen(!isOpen);
+    };
+
+    const handleReassess = (assessment) => {
+        if (["INACTIVE", "INWORKFLOW"].includes(propertyStatus?.toUpperCase())) {
+            alert("This operation is not allowed as Property is in INWORKFLOW or Inactive.");
+            return;
+        }
+
+        const isEmployee = window.location.href.includes("employee");
+        const pathname = isEmployee
+            ? `/digit-ui/employee/pt/assessment-details/${propertyId}`
+            : `/digit-ui/citizen/pt/property/assessment-details/${propertyId}`;
+
+        history.replace({
+            pathname,
+            state: {
+                Assessment: {
+                    ...assessment,
+                    assessmentDate: Date.now(),
+                },
+                reAssess: true,
+            },
+        });
+    };
+
+    const handleCancel = async (assessment) => {
+        const confirmCancel = window.confirm("are you sure you want to cancel the assessment");
+        if (!confirmCancel) return;
+
+        try {
+            await Digit.PTService.assessmentCancel({ Assessment: assessment }, tenantId);
+            alert("Assessment cancelled successfully.");
+            window.location.reload();
+        } catch (error) {
+            console.error("Error cancelling assessment:", error);
+            alert(error?.response?.data?.Errors?.[0]?.message || error?.message || "Failed to cancel assessment.");
+        }
     };
 
     
@@ -96,8 +134,8 @@ function formatAssessmentDate(timestamp) {
                             <button onClick={() => alert(`Cancelled ${assessment.assessmentNumber}`)}>Cancel</button> */}
                             
 <div className="button-group" style={{display:'flex',gap:'10px'}}>
-          <button style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white'}} onClick={() => alert(`Re-assessing ${assessment.number}`)}>Re-assess</button>
-          <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}}onClick={() => alert(`Cancelled ${assessment.number}`)}>Cancel</button>
+          <button style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white'}} onClick={() => handleReassess(assessment)}>Re-assess</button>
+          <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}} onClick={() => handleCancel(assessment)}>Cancel</button>
         </div>
 </div>
                           {index!==(assessmentData.length - 1) &&  <hr />}

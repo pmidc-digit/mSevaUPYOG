@@ -21,6 +21,7 @@ import getPTAcknowledgementData from "../../../utils/getTLAcknowledgementData";
 // import TLWFApplicationTimeline from "../../../pageComponents/TLWFApplicationTimeline";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import TLDocument from "../../../pageComponents/TLDocumets";
+import { getReceiptUrl } from "../../utils/index";
 const getAddress = (address, t) => {
   return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${
     address?.landmark ? `${address?.landmark}, ` : ""
@@ -235,8 +236,10 @@ const TLApplicationDetails = () => {
   const downloadPaymentReceipt = async () => {
     const receiptFile = { filestoreIds: [paymentsHistory.Payments[0]?.fileStoreId] };
     if (receiptFile?.filestoreIds[0] !== null) {
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: receiptFile.filestoreIds[0] });
-      window.open(fileStore[receiptFile.filestoreIds[0]], "_blank");
+      const url = await getReceiptUrl(receiptFile.filestoreIds[0], tenantId, stateId);
+      if(url){
+        window.open(url, "_blank");
+      }
       setShowOptions(false);
     } else {
       const newResponse = await Digit.PaymentService.generatePdf(tenantId, { Payments: [paymentsHistory.Payments[0]] }, "tradelicense-receipt");

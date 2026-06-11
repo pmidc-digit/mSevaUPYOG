@@ -65,13 +65,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
     });
   }, [form, formState, setError, clearErrors]);
 
-  // Clear locality validation error when locality filter is selected
-  useEffect(() => {
-    const filterLocality = searchParams?.filters?.pgrQuery?.locality;
-    if (filterLocality && formState.errors?.ownerName?.type === "locality") {
-      clearErrors(["ownerName"]);
-    }
-  }, [searchParams?.filters?.pgrQuery?.locality]);
+
 
   const onSubmitInput = (data) => {
     if(data.mobileNumber?.length==0||data.mobileNumber?.length==10){
@@ -79,14 +73,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
       delete data.mobileNumber;
     }
 
-    // Validate: owner name search requires locality filter to be selected
-    if (data.ownerName && data.ownerName.trim()) {
-      const filterLocality = searchParams?.filters?.pgrQuery?.locality;
-      if (!filterLocality) {
-        setError("ownerName", { type: "locality", message: t("TL_OWNER_NAME_REQUIRES_LOCALITY") });
-        return;
-      }
-    }
+
 
     // Handle dropdown fields — extract code value
     searchFields.forEach((field) => {

@@ -15,6 +15,11 @@ export const getRenewalTradeDetailsValidation = (tradeDetails = {}, applicationD
 
   if (!selectedFinancialYearCode || !previousApplicationValidTo) return null;
 
+  // Only run renewal validation if the applicationData is an APPROVED or EXPIRED license
+  if (applicationData?.status !== "APPROVED" && applicationData?.status !== "EXPIRED") {
+    return null;
+  }
+
   const financialYearStart = getFinancialYearStart(selectedFinancialYearCode);
 
   if (!financialYearStart) return null;

@@ -20,8 +20,6 @@ RUN node envs.js \
 
 FROM nginx:mainline-alpine
 
-RUN apk add --no-cache font-noto font-noto-cjk
-
 RUN echo '{"resolutions": {"node-releases": "2.0.44"}}' > package.json
 
 ENV WORK_DIR=/var/web/digit-ui

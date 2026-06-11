@@ -152,6 +152,8 @@ const BpaApplicationDetail = () => {
     enabled: !!id, // 👈 only runs when valid
   });
 
+  const isSelfCertification = data?.applicationData?.additionalDetails?.isSelfCertification || null;
+
   const loading = isLoading || getLoader;
 
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
@@ -1658,6 +1660,20 @@ const BpaApplicationDetail = () => {
         }),
       };
 
+      if (isSelfCertification) {
+        if (searchChecklistData?.checkList?.length > 0) {
+          await Digit.OBPSService.BPACheckListUpdate({
+            details: checklistPayload,
+            filters: { tenantId },
+          });
+        } else {
+          await Digit.OBPSService.BPACheckListCreate({
+            details: checklistPayload,
+            filters: {},
+          });
+        }
+      }
+
       if (data?.BPA?.workflow?.action !== "UPDATE_ZONE" && appData?.applicationData?.status === "DOC_VERIFICATION_PENDING" && checklistPayload?.checkList?.length > 0) {
         if (searchChecklistData?.checkList?.length > 0) {
           await Digit.OBPSService.BPACheckListUpdate({
@@ -1913,7 +1929,7 @@ const BpaApplicationDetail = () => {
               return (
                 <div key={index}>
                   {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && <CitizenAndArchitectPhoto data={data?.applicationData} />}
-                  {!detail?.isNotAllowed ? (detail?.isFieldInspection && data?.applicationData?.additionalDetails?.isSelfCertification) ? null : (
+                  {!detail?.isNotAllowed ? (                    
                     <Card
                       key={index}
                       // style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
@@ -2111,7 +2127,26 @@ const BpaApplicationDetail = () => {
                           {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && 
                           (data?.applicationData?.additionalDetails?.isSelfCertification ? (
                             <div>
-                              {pdfLoading ? <Loader /> : <Table
+                              <StatusTable
+                                style={{
+                                  display: "flex",
+                                  gap: "20px",
+                                  flexWrap: "wrap",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                {sitePhotos?.length > 0 &&
+                                  [...sitePhotos]
+                                    .map((doc, index) => (
+                                      <NocSitePhotographsBPA
+                                        key={doc?.values?.[0]?.filestoreId}
+                                        url={doc?.values?.[0]?.fileURL}
+                                        documentType={doc?.title}
+                                        coordinates={index === 0 ? data?.applicationData?.landInfo?.address?.geoLocation : data?.applicationData?.additionalDetails?.geoLocationTwo}
+                                      />
+                                    ))}
+                              </StatusTable>
+                              {/* {pdfLoading ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
                               data={documentsData}
@@ -2121,7 +2156,17 @@ const BpaApplicationDetail = () => {
                               autoSort={false}
                               manualPagination={false}
                               isPaginationRequired={false}
-                            />}
+                            />} */}
+                              <StatusTable>
+                                {remainingDoc?.length > 0 && (
+                                  <BPADocumentChecklist
+                                    documents={remainingDoc}
+                                    applicationNo={id}
+                                    tenantId={tenantId}
+                                    onRemarksChange={setChecklistRemarks}
+                                  />
+                                )}
+                              </StatusTable>
                             {ecbcDocumentsData?.length > 0 && (
                                 <div>
                                   {pdfLoading || isFileLoading ? (
@@ -2240,6 +2285,16 @@ const BpaApplicationDetail = () => {
                           {/* to get FieldInspection values */}
                           {detail?.isFieldInspection ? (
                             <div>
+                              { data?.applicationData?.additionalDetails?.isSelfCertification &&
+                                (
+                                  <Card>
+                                    <InspectionReport
+                                      isCitizen={true}
+                                      fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
+                                      onSelect={onChangeReport}
+                                    />
+                                  </Card>
+                              )}
                               {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
                                 (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
                                   <Card>

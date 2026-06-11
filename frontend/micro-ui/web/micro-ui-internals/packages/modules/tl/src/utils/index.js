@@ -1080,6 +1080,7 @@ export const getOwnersfromProperty = (formdata) => {
   }
   return owners;
 };
+
 export const getReceiptUrl = async (fileStoreId, tenantId, stateId) => {
   let url;
 

@@ -21,7 +21,7 @@ import getPTAcknowledgementData from "../../../utils/getTLAcknowledgementData";
 // import TLWFApplicationTimeline from "../../../pageComponents/TLWFApplicationTimeline";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import TLDocument from "../../../pageComponents/TLDocumets";
-import { getReceiptUrl } from "../../utils/index";
+import { getReceiptUrl } from "../../../utils";
 const getAddress = (address, t) => {
   return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${
     address?.landmark ? `${address?.landmark}, ` : ""

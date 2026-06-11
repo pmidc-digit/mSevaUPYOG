@@ -9,7 +9,7 @@ const cleanBillAccountDetails = (billAccountDetails = []) => {
 
   return billAccountDetails?.filter((item) => {
     // remove roundoff always
-    if (item?.taxHeadCode === "RL_FEE_ROUND_OFF" || item?.taxHeadCode === "GC_FEE_ROUND_OFF") return false;
+    if (item?.taxHeadCode === "RL_FEE_ROUND_OFF" || item?.taxHeadCode === "GC_FEE_ROUND_OFF" || item?.taxHeadCode === "RL_ROUND_OFF" || item?.taxHeadCode === "GC_ROUND_OFF") return false;
 
     // remove security deposit ONLY if arrears exist
     if (hasArrears && item?.taxHeadCode === "RL_SECURITY_DEPOSIT_FEE") {
@@ -50,7 +50,7 @@ const fetchServiceSearchData = async ({ serviceType, identifier, tenantId }) => 
   try {
     switch (serviceType) {
       case "rl-services": {
-        const res = await Digit.RentAndLeaseService.search({ tenantId, filters });
+        const res = await Digit.RentAndLeaseService.search({ tenantId, filters: { applicationNumbers: identifier } });
         return res?.AllotmentDetails?.[0] || null;
       }
 

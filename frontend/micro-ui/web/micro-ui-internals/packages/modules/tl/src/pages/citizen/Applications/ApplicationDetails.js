@@ -17,7 +17,7 @@ import {
 import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory, useParams } from "react-router-dom";
-import getPDFData from "../../../utils/getTLAcknowledgementData";
+import getPTAcknowledgementData from "../../../utils/getTLAcknowledgementData";
 // import TLWFApplicationTimeline from "../../../pageComponents/TLWFApplicationTimeline";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import TLDocument from "../../../pageComponents/TLDocumets";
@@ -227,8 +227,8 @@ const TLApplicationDetails = () => {
   const handleDownloadPdf = async () => {
     const tenantInfo = tenants.find((tenant) => tenant.code === application[0]?.tenantId);
     let res = application[0];
-    const data = getPDFData({ ...res }, tenantInfo, t);
-    data.then((ress) => Digit.Utils.pdf.generate(ress));
+    const data = getPTAcknowledgementData({ ...res }, tenantInfo, t);
+    data.then((ress) => Digit.Utils.pdf.generateFormatted(ress));
     setShowOptions(false);
   };
 
@@ -522,7 +522,7 @@ const TLApplicationDetails = () => {
                           className="border-none"
                           // style={{ border: "none" }}
                           label={t("TL_REVIEWACCESSORY_TYPE_LABEL")}
-                          text={t(`TL_${ele?.accessoryCategory.split("-").join("_")}`)}
+                            text={ele?.accessoryCategory || t("CS_NA")}
                           textStyle={{ wordBreak: "break-word" }}
                         />
                         <Row
@@ -622,16 +622,6 @@ const TLApplicationDetails = () => {
                 <div id="timeline">
                   {/* <TLWFApplicationTimeline application={application} id={id} /> */}
                   <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
-                  {application?.status === "CITIZENACTIONREQUIRED" ? (
-                    <Link
-                      to={{
-                        pathname: `/digit-ui/citizen/tl/tradelicence/edit-application/${application?.applicationNumber}/${application?.tenantId}`,
-                        state: {},
-                      }}
-                    >
-                      <SubmitBar label={t("COMMON_EDIT")} />
-                    </Link>
-                  ) : null}
                 </div>
                 {/* //TODO: change the actions to be fulfilled from workflow nextactions */}
                 {/* {application?.status === "PENDINGPAYMENT" ? (
@@ -648,6 +638,24 @@ const TLApplicationDetails = () => {
             );
           })}
         </Card>
+      )}
+      {application?.[0]?.status === "CITIZENACTIONREQUIRED" && (
+        <ActionBar style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Link
+            to={`/digit-ui/citizen/tl/tradelicence/new-application?resume=${application[0]?.applicationNumber}&appTenantId=${application[0]?.tenantId}&sendback=true`}
+          >
+            <SubmitBar label={t("COMMON_EDIT")} />
+          </Link>
+        </ActionBar>
+      )}
+      {application?.[0]?.status === "INITIATED" && (
+        <ActionBar style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Link
+            to={`/digit-ui/citizen/tl/tradelicence/new-application?resume=${application[0]?.applicationNumber}&appTenantId=${application[0]?.tenantId}`}
+          >
+            <SubmitBar label={t("TL_RESUME_APPLICATION")} />
+          </Link>
+        </ActionBar>
       )}
       {/* {!workflowDetails?.isLoading && actions?.length && isActionRenew() && (
         <ActionBar>

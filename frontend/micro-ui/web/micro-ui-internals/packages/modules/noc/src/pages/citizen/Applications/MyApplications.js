@@ -9,11 +9,12 @@ const MyApplications = ({ view }) => {
   const history = useHistory();
   const userInfo = Digit.UserService.getUser()?.info || {};
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  
 
   // Local pagination state
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(window.Digit.Utils.browser.isMobile() ? 50 : 10);
-
+  
   const params = useMemo(
     () => ({
       sortBy: "createdTime",
@@ -70,11 +71,13 @@ const MyApplications = ({ view }) => {
       {
         Header: t("NOC_APPLICATION_NUMBER"),
         accessor: (row) => row?.Applications?.applicationNo,
-        Cell: ({ row }) => (
-          <Link to={`/digit-ui/citizen/noc/search/application-overview/${encodeURIComponentCustom(row.original?.Applications?.applicationNo)}`}>
+        Cell: ({ row }) => {
+          const encodedAppNo = encodeURIComponentCustom(row.original?.Applications?.applicationNo);
+          return (
+          <Link to={`/digit-ui/citizen/noc/search/application-overview/${encodedAppNo}`}>
             <b>{GetCell(row.original?.Applications?.applicationNo)}</b>
           </Link>
-        ),
+        )},
       },
       {
         Header: t("Owner Name"),
@@ -84,7 +87,7 @@ const MyApplications = ({ view }) => {
 
       {
         Header: t("NOC_APPLICATION_STATUS"),
-        accessor: (row) => row?.Applications?.applicationStatus,
+        accessor: (row) => t(row?.Applications?.applicationStatus),
         Cell: ({ row }) => GetCell(t(row.original?.Applications?.applicationStatus) || row.original?.Applications?.applicationStatus || "-"),
       },
       // {

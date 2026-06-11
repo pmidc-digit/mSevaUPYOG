@@ -34,7 +34,7 @@ const application = applicationData?.Licenses?.[0] || state?.data?.[0] || {};
   const printReciept = async () => {
     const tenantInfo = tenants.find((tenant) => tenant.code === application.tenantId);
     const data = await getPTAcknowledgementData({ ...application }, tenantInfo, t);
-    Digit.Utils.pdf.generate(data);
+    Digit.Utils.pdf.generateFormatted(data);
   };
 
   const routeToPaymentScreen = async () => {

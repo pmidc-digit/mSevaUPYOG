@@ -1,4 +1,4 @@
-import { Banner, Card, CardText, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+import { Banner, Card, CardText, ActionBar, SubmitBar , Loader } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
@@ -12,8 +12,31 @@ const Response = (props) => {
   const history = useHistory();
   const nocData = state?.data?.Noc?.[0];
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const [loading, setLoading] = useState(false);
+  const getFirenocNocApplication = async () => {
+    try {
+      setLoading(true);
+      const nocSanctionData = await getNOCSanctionLetter(nocData, t);
+      let filestoreID = null;
+        try {
+          const response = await Digit.PaymentService.generatePdf(
+            tenantId,
+            { Payments: [{ Noc: nocSanctionData.Noc , tenantId }] },
+            "firenoc-application"
+          );
+          filestoreID = response?.filestoreIds[0];
+        } finally {
+          setLoading(false);
+        }
 
-
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+        fileStoreIds: filestoreID,
+      });
+      window.open(fileStore[filestoreID], "_blank")
+    } finally {
+      setLoading(false);
+    }
+  };
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
 
@@ -48,6 +71,10 @@ const Response = (props) => {
   //   }
   // };
 
+  if (loading) {
+      return <Loader />;
+    }
+
   return (
     <div>
       <Card>
@@ -74,6 +101,9 @@ const Response = (props) => {
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_NOC")} onSubmit={onGoToNOC} />
           <SubmitBar label={t("View Application")} onSubmit={onViewApplication} />
+          {!loading && (
+            <SubmitBar label={t("Download Application")} onSubmit={() => getFirenocNocApplication()} />
+          )}
           {/* <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
         </ActionBar>
       </Card>

@@ -12,6 +12,7 @@ import BreakupModal from "../../components/BreakupModal";
 import AdhocRebatePenaltyModal from "../../components/AdhocRebatePenaltyModal";
 import { buildTLPaymentBreakup, getTLBillAccountDetails, getTLTaxHeadLabel, getTLTotalAmount } from "../../utils/paymentBreakup";
 
+import { getReceiptUrl } from "../../utils";
 const ApplicationDetails = () => {
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -393,8 +394,10 @@ const ApplicationDetails = () => {
   const printReciept = async (businessService = "TL", consumerCode = applicationDetails?.applicationData?.applicationNumber) => {
     const receiptFile = { filestoreIds: [paymentsHistory.Payments[0]?.fileStoreId] };
     if (receiptFile.filestoreIds[0] !== null) {
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: receiptFile.filestoreIds[0] });
-      window.open(fileStore[receiptFile.filestoreIds[0]], "_blank");
+      const url = await getReceiptUrl(receiptFile.filestoreIds[0], tenantId, stateId);
+      if(url){
+        window.open(url, "_blank");
+      }
     } else {
       const newResponse = await Digit.PaymentService.generatePdf(tenantId, { Payments: [paymentsHistory.Payments[0]] }, "tradelicense-receipt");
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: newResponse.filestoreIds[0] });

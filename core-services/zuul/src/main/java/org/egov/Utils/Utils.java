@@ -4,7 +4,7 @@ import com.netflix.zuul.context.RequestContext;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.entity.*;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Optional;
 

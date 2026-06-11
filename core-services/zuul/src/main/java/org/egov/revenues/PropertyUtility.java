@@ -1,6 +1,6 @@
 package org.egov.revenues;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 public class PropertyUtility {
 

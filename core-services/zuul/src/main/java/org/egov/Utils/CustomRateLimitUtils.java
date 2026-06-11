@@ -7,8 +7,8 @@ import com.netflix.zuul.context.RequestContext;
 import org.egov.contract.User;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Set;
 

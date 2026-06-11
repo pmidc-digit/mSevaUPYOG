@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.egov.model.CustomAsyncRequest;
 import org.egov.wrapper.CustomRequestWrapper;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.CharStreams;
+import org.apache.commons.io.IOUtils;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 
@@ -75,7 +75,7 @@ public class CustomAsyncFilter extends ZuulFilter {
 		try (final InputStream responseDataStream = ctx.getResponseDataStream()) {
 
 			if (responseDataStream != null)
-				responseBody = CharStreams.toString(new InputStreamReader(responseDataStream, "UTF-8"));
+				responseBody = IOUtils.toString(new InputStreamReader(responseDataStream, "UTF-8"));
 			ctx.setResponseBody(responseBody);
 		} catch (IOException e) {
 			log.error("Error reading body", e);

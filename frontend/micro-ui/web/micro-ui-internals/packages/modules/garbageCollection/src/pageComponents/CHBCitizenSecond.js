@@ -78,7 +78,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             locality: propertyDetailsFetch?.Properties?.[0]?.address?.locality?.code,
             floorNo: data?.floorNo?.floorNo,
             defAmount: data?.defAmount,
-            rentalStatus: isRented,
+            isRented: isRented,
           },
         },
       };
@@ -130,7 +130,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             locality: propertyDetailsFetch?.Properties?.[0]?.address?.locality?.code,
             floorNo: data?.floorNo?.floorNo,
             defAmount: data?.defAmount,
-            rentalStatus: isRented,
+            isRented: isRented,
           },
         },
       };
@@ -251,7 +251,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         setValue("unitId", checkUnitid || null);
         setValue("defAmount", backStepData?.additionalDetails?.defAmount || null);
         setValue("floorNo", getFloors || null);
-        setValue("termsAccepted", backStepData?.additionalDetails?.rentalStatus);
+        setValue("termsAccepted", backStepData?.additionalDetails?.isRented);
       }
     }
   }, [propertyDetailsFetch, GCData, setValue, currentStepData, getPUnits, uniqueFloors]);

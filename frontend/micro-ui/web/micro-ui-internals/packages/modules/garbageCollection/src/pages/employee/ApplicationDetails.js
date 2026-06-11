@@ -424,7 +424,7 @@ const ChallanApplicationDetails = () => {
               text={getChallanData?.plotSize || t("CS_NA")}
             />
             <Row className="border-none" label={t("GC_LOCATION")} text={getChallanData?.location || t("CS_NA")} />
-            <Row className="border-none" label={t("Rented")} text={getChallanData?.additionalDetails?.rentalStatus || t("CS_NA")} />
+            <Row className="border-none" label={t("Rented")} text={getChallanData?.additionalDetails?.isRented ? "true" : "false"} />
             <Row className="border-none" label={t("Amount")} text={getChallanData?.additionalDetails?.defAmount || t("CS_NA")} />
           </StatusTable>
 

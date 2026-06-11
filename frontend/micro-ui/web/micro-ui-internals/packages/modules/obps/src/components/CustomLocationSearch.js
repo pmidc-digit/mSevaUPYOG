@@ -211,7 +211,7 @@ const initAutocomplete = (position) => {
         // styles: mapStyles,
     }); 
 
-    
+    let singlePosition = [position[0]];
     let markers = []
 
 
@@ -225,7 +225,7 @@ const initAutocomplete = (position) => {
     //     );
     // })
 
-    position.forEach((loc, index) => {
+    singlePosition.forEach((loc, index) => {
         const marker = new window.google.maps.Marker({
             map,
             title: `SITE ${index + 1}`, // tooltip on hover

@@ -125,7 +125,7 @@ const OwnerForm = (_props) => {
       setIsSearching(false);
     }
   };
-  const { ownershipCategory: { code: keyToSearchOwnershipSubtype } = {} } = formData;
+  const { code: keyToSearchOwnershipSubtype } = formData?.ownershipCategory || {};
   // const { data: institutionOwnershipTypeOptions } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "common-masters", "TradeOwnershipSubType", {
   //   keyToSearchOwnershipSubtype : keyToSearchOwnershipSubtype ? keyToSearchOwnershipSubtype.split(".")[0]:undefined,
   // });

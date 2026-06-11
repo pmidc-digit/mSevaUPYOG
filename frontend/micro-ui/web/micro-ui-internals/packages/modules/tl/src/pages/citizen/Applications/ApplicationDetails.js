@@ -17,7 +17,7 @@ import {
 import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory, useParams } from "react-router-dom";
-import getPDFData from "../../../utils/getTLAcknowledgementData";
+import getPTAcknowledgementData from "../../../utils/getTLAcknowledgementData";
 // import TLWFApplicationTimeline from "../../../pageComponents/TLWFApplicationTimeline";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import TLDocument from "../../../pageComponents/TLDocumets";
@@ -227,8 +227,8 @@ const TLApplicationDetails = () => {
   const handleDownloadPdf = async () => {
     const tenantInfo = tenants.find((tenant) => tenant.code === application[0]?.tenantId);
     let res = application[0];
-    const data = getPDFData({ ...res }, tenantInfo, t);
-    data.then((ress) => Digit.Utils.pdf.generate(ress));
+    const data = getPTAcknowledgementData({ ...res }, tenantInfo, t);
+    data.then((ress) => Digit.Utils.pdf.generateFormatted(ress));
     setShowOptions(false);
   };
 

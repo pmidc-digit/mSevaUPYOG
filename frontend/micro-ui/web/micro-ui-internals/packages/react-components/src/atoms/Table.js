@@ -31,8 +31,6 @@ const getStatusPillStyle = (statusClass) => {
 
 const getStatusDisplayText = (value) =>
   String(value || "")
-    .toLowerCase()
-    .replace(/\s+/g, "");
 
 const extractTextValue = (value) => {
   if (value === null || value === undefined) return "";

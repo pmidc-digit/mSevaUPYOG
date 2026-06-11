@@ -114,6 +114,7 @@ const WrapPaymentComponent = (props) => {
     }
   );
 
+  console.log('reciept_data in citizen response', reciept_data)
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(newTenantId, "common-masters", "ReceiptKey", {
     select: (data) =>
       business_service === "BPA.NC_SAN_FEE"
@@ -136,6 +137,14 @@ const WrapPaymentComponent = (props) => {
   //if businessservice= san fee make bpa-receiptsecond as the generatedpdfkey
   //if businessservice = app fee make bpa-obps-receipt as generatedpdfkey
   const payments = data?.payments;
+
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({
+    tenantId,
+    setLoader: setPrinting,
+    t,
+    pdfkey : generatePdfKey
+  });
+
 
   useEffect(() => {
     return () => {
@@ -775,28 +784,6 @@ const WrapPaymentComponent = (props) => {
     }
   };
 
-  const printRLReceipt = async () => {
-    if (printing) return;
-    setPrinting(true);
-    try {
-      const applicationDetails = await Digit.RentAndLeaseService.search({ tenantId, filters: { applicationNumbers: consumerCode } });
-      let application = applicationDetails;
-      let fileStoreId = applicationDetails?.BookingApplication?.[0]?.paymentReceiptFilestoreId;
-      if (!fileStoreId) {
-        const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
-        let response = await Digit.PaymentService.generatePdf(
-          tenantId,
-          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
-          "rentandlease-receipt"
-        );
-        fileStoreId = response?.filestoreIds[0];
-      }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
-    } finally {
-      setPrinting(false);
-    }
-  };
   let bannerText;
   if (workflw) {
     bannerText = `CITIZEN_SUCCESS_UC_PAYMENT_MESSAGE`;
@@ -1184,7 +1171,7 @@ const WrapPaymentComponent = (props) => {
       ) : null}
 
       {business_service == "chb-services" ? (
-        <div style={{ marginTop:"20px",display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap:"wrap", gap:"20px" }}>
+        <div style={{ marginTop: "20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "20px" }}>
           <div style={IconWrapperStyle1} onClick={printing ? undefined : printCHBReceipt}>
             {printing ? (
               <Loader />
@@ -1272,6 +1259,22 @@ const WrapPaymentComponent = (props) => {
           </Link>
         </div>
       ) : null}
+       {business_service == "TL" ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "15px",
+            flexWrap: "wrap",
+            gap: "20px",
+          }}
+        >
+          <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
+          <Link to={`/digit-ui/citizen`}>
+            <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+          </Link>
+        </div>
+      ) : null}
 
       {business_service == "GarbageCollection" && (
         <Link to={`/digit-ui/citizen/garbagecollection-home`}>
@@ -1280,7 +1283,7 @@ const WrapPaymentComponent = (props) => {
       )}
 
       {business_service == "adv-services" ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",flexWrap:"wrap", gap:"20px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "20px" }}>
           <div style={IconWrapperStyle} onClick={printing ? undefined : printADVReceipt}>
             {printing ? (
               <Loader />
@@ -1302,31 +1305,39 @@ const WrapPaymentComponent = (props) => {
         </div>
       ) : null}
 
-      {business_service == "rl-services" ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",flexWrap:"wrap", gap:"20px" }}>
-          <div style={IconWrapperStyle} onClick={printing ? undefined : printRLReceipt}>
+      {business_service === "rl-services" || business_service === "GC.ONE_TIME_FEE" ? (
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
+          <div
+            className="primary-label-btn d-grid"
+            onClick={
+              printing
+                ? undefined
+                : () =>
+                    printBillReceipt({
+                      businessService: business_service,
+                      receiptNumber: receiptNumber || consumerCode,
+                      rootKey: "PAYMENTS",
+                      billOrPaymentResponse: reciept_data,
+                    })
+            }
+          >
             {printing ? (
               <Loader />
             ) : (
               <>
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
-                  <path d="M0 0h24v24H0V0z" fill="none" />
-                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                  <path d="M0 0h24v24H0z" fill="none" />
+                  <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
                 </svg>
                 {t("CHB_FEE_RECEIPT")}
               </>
             )}
           </div>
-          {business_service == "rl-services" && (
-            <Link to={`/digit-ui/citizen`}>
-              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "10px", marginLeft: "100px" }} />
-            </Link>
-          )}
         </div>
       ) : null}
 
       {business_service == "pet-services" ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",flexWrap:"wrap", gap:"20px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "20px" }}>
           <div style={IconWrapperStyle} onClick={printing ? undefined : printPetReceipt}>
             {printing ? (
               <Loader />
@@ -1429,7 +1440,7 @@ const WrapPaymentComponent = (props) => {
         </div>
       ) : null} */}
       {business_service === "BPAREG" ? (
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "15px",flexWrap:"wrap", gap:"20px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "15px", flexWrap: "wrap", gap: "20px" }}>
           <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
           <Link to={`/digit-ui/citizen`}>
             <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
@@ -1438,23 +1449,24 @@ const WrapPaymentComponent = (props) => {
       ) : (
         !(
           business_service === "adv-services" ||
-           business_service === "pet-services" ||
+          business_service === "pet-services" ||
           business_service === "chb-services" ||
           business_service === "NDC" ||
-          business_service === "Challan_Generation"||
-          business_service === "rl-services"
+          business_service === "TL" ||
+          business_service === "Challan_Generation" ||
+          business_service === "rl-services"||
+          business_service === "GC.ONE_TIME_FEE"
         ) && (
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               marginTop: "15px",
-              flexWrap:"wrap", gap:"20px"
+              flexWrap: "wrap",
+              gap: "20px",
             }}
           >
-            {business_service !== "TL" && (
-              printing ? <Loader /> : <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
-            )}
+            {business_service !== "TL" && (printing ? <Loader /> : <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />)}
             {/* {!(business_service === "TL") && !business_service?.includes("PT") && (
             <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />
           )}

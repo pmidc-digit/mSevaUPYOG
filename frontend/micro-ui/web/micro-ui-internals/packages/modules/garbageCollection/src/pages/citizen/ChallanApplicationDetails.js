@@ -78,6 +78,7 @@ const ChallanApplicationDetails = () => {
   const [getChallanData, setChallanData] = useState();
   const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
   const [printing, setPrinting] = useState(false);
+  
 
   const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "garbage-receipt" });
 
@@ -167,7 +168,7 @@ const ChallanApplicationDetails = () => {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
-
+  
   const dowloadOptions = [];
 
   dowloadOptions.push({
@@ -175,17 +176,19 @@ const ChallanApplicationDetails = () => {
     onClick: () => getAcknowledgement(),
   });
 
+  
   if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () =>
         printBillReceipt({
-          businessService: "GC.ONE_TIME_FEE",
+          businessService: "GC.ONE_TIME_FEE", 
           receiptNumber: acknowledgementIds,
           rootKey: "PAYMENTS",
         }),
     });
   }
+
 
   return (
     <React.Fragment>

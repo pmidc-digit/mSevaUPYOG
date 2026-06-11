@@ -176,20 +176,20 @@ const ChallanApplicationDetails = () => {
   );
 
   const getAcknowledgement = async () => {
-    setLoader(true);
-    try {
-      const applications = getChallanData;
-      const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
-      const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
-      setTimeout(() => {
-        Digit.Utils.pdf.generate(acknowldgementDataAPI);
+      setLoader(true);
+      try {
+        const applications = getChallanData;
+        const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+        const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+        setTimeout(() => {
+          Digit.Utils.pdf.generate(acknowldgementDataAPI);
+          setLoader(false);
+        }, 0);
+      } catch (error) {
+        console.error("Error generating acknowledgement:", error);
         setLoader(false);
-      }, 0);
-    } catch (error) {
-      console.error("Error generating acknowledgement:", error);
-      setLoader(false);
-    }
-  };
+      }
+    };
 
   const dowloadOptions = [];
 
@@ -198,7 +198,7 @@ const ChallanApplicationDetails = () => {
     onClick: () => getAcknowledgement(),
   });
 
-  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
+    if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () =>

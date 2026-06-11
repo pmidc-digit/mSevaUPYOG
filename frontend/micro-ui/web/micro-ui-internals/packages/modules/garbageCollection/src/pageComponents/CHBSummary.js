@@ -128,6 +128,9 @@ function CHBSummary({ formData, goNext, onGoBack }) {
         {/* {renderLabel(t("GC_CONNECTION_TYPE"), formData?.venueDetails?.connectionCategory)} */}
         {renderLabel(t("GC_FREQUENCY"), formData?.venueDetails?.frequency)}
         {renderLabel(t("GC_WASTE_TYPE"), formData?.venueDetails?.typeOfWaste)}
+        {renderLabel(t("Rented"), formData?.venueDetails?.additionalDetails?.rentalStatus)}
+        {renderLabel(t("Amount"), formData?.venueDetails?.additionalDetails?.defAmount)}
+        {/* setValue("termsAccepted", backStepData?.additionalDetails?.rentalStatus); */}
       </div>
 
       <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>

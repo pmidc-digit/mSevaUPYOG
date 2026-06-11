@@ -1105,4 +1105,3 @@ export const getReceiptUrl = async (fileStoreId, tenantId, stateId) => {
 
   return url;
 };
-``

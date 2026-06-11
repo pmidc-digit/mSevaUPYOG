@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
 import { stringReplaceAll } from "../../utils";
-import { getNOCAcknowledgementData } from "../../utils/getNOCAcknowledgementData";
+import  getNOCSanctionLetter  from "../../utils/getNOCSanctionLetter";
 
 const NOCResponseCitizen = (props) => {
   const location = useLocation();
@@ -40,20 +40,26 @@ const NOCResponseCitizen = (props) => {
     history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${nocCode}/${tenantId}?tenantId=${tenantId}`);
   };
 
-
-  const handleDownloadPdf = async (isView = false) => {
+  const getFirenocNocApplication = async () => {
     try {
       setLoading(true);
-      const Property = nocData;
-      if (!Property) {
-        setLoading(false);
-        return;
-      }
-      const tenantInfo = tenants?.find((tenant) => tenant.code === Property.tenantId);
-      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, null, null, t, isView);
-      Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
-    } catch (error) {
-      console.error("PDF generation error:", error);
+      const nocSanctionData = await getNOCSanctionLetter(nocData, t);
+      let filestoreID = null;
+        try {
+          const response = await Digit.PaymentService.generatePdf(
+            tenantId,
+            { Payments: [{ Noc: nocSanctionData.Noc , tenantId }] },
+            "firenoc-application"
+          );
+          filestoreID = response?.filestoreIds[0];
+        } finally {
+          setLoading(false);
+        }
+
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+        fileStoreIds: filestoreID,
+      });
+      window.open(fileStore[filestoreID], "_blank")
     } finally {
       setLoading(false);
     }
@@ -89,10 +95,8 @@ const NOCResponseCitizen = (props) => {
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_FIRENOC")} onSubmit={onGoToNOC} />
-          {nocData?.fireNOCDetails?.status === "INITIATED" ? (
-            <SubmitBar label={t("View Application")} onSubmit={() => handleDownloadPdf(true)} />
-          ) : (
-            <SubmitBar label={t("Download Application")} onSubmit={() => handleDownloadPdf(false)} />
+          {!loading && (
+            <SubmitBar label={t("Download Application")} onSubmit={() => getFirenocNocApplication()} />
           )}
           {/* <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
         </ActionBar>

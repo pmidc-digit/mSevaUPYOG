@@ -525,7 +525,7 @@ const TLApplicationDetails = () => {
                           className="border-none"
                           // style={{ border: "none" }}
                           label={t("TL_REVIEWACCESSORY_TYPE_LABEL")}
-                            text={ele?.accessoryCategory || t("CS_NA")}
+                          text={t(`TL_${ele?.accessoryCategory.split("-").join("_")}`)}
                           textStyle={{ wordBreak: "break-word" }}
                         />
                         <Row
@@ -625,6 +625,16 @@ const TLApplicationDetails = () => {
                 <div id="timeline">
                   {/* <TLWFApplicationTimeline application={application} id={id} /> */}
                   <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+                  {application?.status === "CITIZENACTIONREQUIRED" ? (
+                    <Link
+                      to={{
+                        pathname: `/digit-ui/citizen/tl/tradelicence/edit-application/${application?.applicationNumber}/${application?.tenantId}`,
+                        state: {},
+                      }}
+                    >
+                      <SubmitBar label={t("COMMON_EDIT")} />
+                    </Link>
+                  ) : null}
                 </div>
                 {/* //TODO: change the actions to be fulfilled from workflow nextactions */}
                 {/* {application?.status === "PENDINGPAYMENT" ? (
@@ -641,24 +651,6 @@ const TLApplicationDetails = () => {
             );
           })}
         </Card>
-      )}
-      {application?.[0]?.status === "CITIZENACTIONREQUIRED" && (
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end" }}>
-          <Link
-            to={`/digit-ui/citizen/tl/tradelicence/new-application?resume=${application[0]?.applicationNumber}&appTenantId=${application[0]?.tenantId}&sendback=true`}
-          >
-            <SubmitBar label={t("COMMON_EDIT")} />
-          </Link>
-        </ActionBar>
-      )}
-      {application?.[0]?.status === "INITIATED" && (
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end" }}>
-          <Link
-            to={`/digit-ui/citizen/tl/tradelicence/new-application?resume=${application[0]?.applicationNumber}&appTenantId=${application[0]?.tenantId}`}
-          >
-            <SubmitBar label={t("TL_RESUME_APPLICATION")} />
-          </Link>
-        </ActionBar>
       )}
       {/* {!workflowDetails?.isLoading && actions?.length && isActionRenew() && (
         <ActionBar>

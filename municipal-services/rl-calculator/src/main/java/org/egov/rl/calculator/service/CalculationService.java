@@ -1,6 +1,7 @@
 package org.egov.rl.calculator.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.egov.rl.calculator.util.Configurations;
 import org.egov.rl.calculator.util.PropertyUtil;
 import org.egov.rl.calculator.util.RLConstants;
 import org.egov.rl.calculator.web.models.AllotmentDetails;
@@ -39,6 +40,9 @@ import java.util.Collections;
 @Slf4j
 @Service
 public class CalculationService {
+
+	@Autowired
+	private Configurations config;
 
 	@Autowired
 	private PropertyUtil mdmsUtil;
@@ -342,6 +346,128 @@ public class CalculationService {
 		String tenantId = allotmentDetails.getTenantId();
 		String consumerCode = allotmentDetails.getApplicationNumber();
 		BigDecimal arrearAmount = criteria.getArrearAmount() == null ? BigDecimal.ZERO : criteria.getArrearAmount();
+
+		long entryDateEpoch = allotmentDetails.getCreatedTime() > 0 ? allotmentDetails.getCreatedTime() : System.currentTimeMillis();
+		LocalDate entryDate = Instant.ofEpochMilli(entryDateEpoch).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toLocalDate();
+
+		OwnerInfo ownerInfo = allotmentDetails.getOwnerInfo().get(0);
+		Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId())
+				.uuid(ownerInfo.getUserUuid()).mobileNumber(ownerInfo.getMobileNo()).tenantId(ownerInfo.getTenantId())
+				.build();
+
+		List<Demand> generatedDemands = new ArrayList<>();
+
+        // Generate Current Month Demand
+        long taxPeriodFrom;
+        long taxPeriodTo;
+        
+        List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
+        BillingPeriod billingPeriod = null;
+        if (!CollectionUtils.isEmpty(billingPeriods)) {
+            billingPeriod = billingPeriods.stream()
+                    .filter(b -> b.getBillingCycle().equalsIgnoreCase(RLConstants.RL_MONTHLY_CYCLE))
+                    .findFirst().orElse(null);
+        }
+
+        if (billingPeriod != null) {
+            taxPeriodFrom = billingPeriod.getTaxPeriodFrom();
+            taxPeriodTo = billingPeriod.getTaxPeriodTo();
+        } else {
+            YearMonth currentMonth = YearMonth.from(entryDate);
+            taxPeriodFrom = currentMonth.atDay(1).atStartOfDay(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
+            taxPeriodTo = currentMonth.atEndOfMonth().atTime(23, 59, 59).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
+        }
+
+        BigDecimal currentMonthRent = BigDecimal.ZERO;
+        
+        // Fetch dynamic due date threshold from MDMS DueDate.json (fallback 10)
+        int configuredDueDay = masterDataService.getLegacyDueDate(requestInfo, tenantId);
+
+        // The dynamic threshold rule
+        if (entryDate.getDayOfMonth() <= configuredDueDay) {
+            // Fetch base rent for ONE month
+            List<RLProperty> calculateAmount = mdmsUtil.getCalculateAmount(allotmentDetails.getPropertyId(),
+                    requestInfo, tenantId, RLConstants.RL_MASTER_MODULE_NAME);
+            if (!CollectionUtils.isEmpty(calculateAmount)) {
+                currentMonthRent = new BigDecimal(calculateAmount.get(0).getBaseRent());
+            }
+        } else {
+            // Current month demand = ₹0
+            currentMonthRent = BigDecimal.ZERO;
+        }
+
+        List<DemandDetail> details = new ArrayList<>();
+        details.add(DemandDetail.builder().taxAmount(currentMonthRent).taxHeadMasterCode(RLConstants.RENT_LEASE_FEE_RL_APPLICATION).tenantId(tenantId).build());
+
+        // Add Taxes for the month (Only if rent is > 0)
+        if (currentMonthRent.compareTo(BigDecimal.ZERO) > 0) {
+            List<TaxRate> taxRates = mdmsUtil.getHeadTaxAmount(requestInfo, tenantId, RLConstants.RL_MASTER_MODULE_NAME);
+            List<String> taxList = Arrays.asList(RLConstants.SGST_FEE_RL_APPLICATION, RLConstants.CGST_FEE_RL_APPLICATION, RLConstants.COWCESS_FEE_RL_APPLICATION);
+            for (TaxRate t : taxRates) {
+                if (taxList.contains(t.getTaxType()) && t.isActive()) {
+                    BigDecimal taxAmt = t.getType().contains("%") ? currentMonthRent.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100)) : new BigDecimal(t.getAmount());
+                    if (taxAmt.compareTo(BigDecimal.ZERO) > 0) {
+                        details.add(DemandDetail.builder().taxAmount(taxAmt).taxHeadMasterCode(t.getTaxType()).tenantId(tenantId).build());
+                    }
+                }
+            }
+        }
+
+        addRoundOffTaxHead(tenantId, details);
+        BigDecimal amountPayable = details.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        long demandCreationEpoch = System.currentTimeMillis();
+        long expiryDays = 10;
+        List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, tenantId);
+        if (penaltySlabs != null && !penaltySlabs.isEmpty() && penaltySlabs.get(0).getApplicableAfterDays() != null) {
+            expiryDays = penaltySlabs.get(0).getApplicableAfterDays().longValue();
+        }
+        long durationMillis = expiryDays * 24 * 60 * 60 * 1000L;
+        long calculatedExpiry = demandCreationEpoch + durationMillis;
+
+        Demand monthlyDemand = Demand.builder().consumerCode(consumerCode).demandDetails(details).payer(payerUser)
+                .minimumAmountPayable(amountPayable).tenantId(tenantId).taxPeriodFrom(taxPeriodFrom).taxPeriodTo(taxPeriodTo)
+                .fixedbillexpirydate(calculatedExpiry).billExpiryTime(durationMillis)
+                .consumerType(RLConstants.APPLICATION_TYPE_LEGACY)
+                .businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
+        generatedDemands.add(monthlyDemand);
+
+		// Arrear demand without penalty
+		if (arrearAmount.compareTo(BigDecimal.ZERO) > 0) {
+            List<DemandDetail> arrearDetails = new ArrayList<>();
+            arrearDetails.add(DemandDetail.builder().taxAmount(arrearAmount).taxHeadMasterCode(RLConstants.RL_ARREAR_FEE).tenantId(tenantId).build());
+
+            addRoundOffTaxHead(tenantId, arrearDetails);
+            BigDecimal arrearAmountPayable = arrearDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            long arrearDemandTime = entryDateEpoch;
+            
+            long arrearCalculatedExpiry = demandCreationEpoch + durationMillis;
+
+            Demand arrearDemand = Demand.builder().consumerCode(consumerCode).demandDetails(arrearDetails).payer(payerUser)
+					.minimumAmountPayable(arrearAmountPayable).tenantId(tenantId).taxPeriodFrom(arrearDemandTime).taxPeriodTo(arrearDemandTime)
+					.fixedbillexpirydate(arrearCalculatedExpiry).billExpiryTime(durationMillis)
+					.consumerType(RLConstants.APPLICATION_TYPE_LEGACY)
+					.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
+            
+            generatedDemands.add(arrearDemand);
+        }
+
+		return generatedDemands;
+	}
+
+    /*
+	// Backup: Previous algorithm that calculates historical proportional penalty and creates multiple months of demands
+	public List<Demand> generateMonthlyLegacyDemandsBackup(CalculationCriteria criteria, RequestInfo requestInfo) {
+		if (criteria == null || criteria.getAllotmentRequest() == null || CollectionUtils.isEmpty(criteria.getAllotmentRequest().getAllotment())) {
+			return Collections.emptyList();
+		}
+
+		AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+		String tenantId = allotmentDetails.getTenantId();
+		String consumerCode = allotmentDetails.getApplicationNumber();
+		BigDecimal arrearAmount = criteria.getArrearAmount() == null ? BigDecimal.ZERO : criteria.getArrearAmount();
 		Long lastBillingPeriod = criteria.getLastBillingPeriod();
 		Long arrearStartDate = criteria.getArrearStartDate();
 
@@ -424,7 +550,6 @@ public class CalculationService {
             }
 
             // Step 4: Penalty on Rent
-            // overdue if dynamic due day of the month has passed relative to entryDate
             LocalDate configuredDueDayOfMonth = month.atDay(dueDay);
             if (entryDate.isAfter(configuredDueDayOfMonth)) {
                 long daysOverdue = ChronoUnit.DAYS.between(configuredDueDayOfMonth, entryDate);
@@ -477,6 +602,7 @@ public class CalculationService {
 
 		return generatedDemands;
 	}
+    */
 	
 	private static BigDecimal safe(BigDecimal value) {
 		return value == null ? BigDecimal.ZERO : value;

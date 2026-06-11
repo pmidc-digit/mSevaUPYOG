@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useHistory } from "react-router-dom";
 
-
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -30,7 +29,7 @@ const SurveyModal = ({ isOpen, onClose }) => {
 
   const tenantId = localStorage.getItem("CITIZEN.CITY");
 
-console.log(tenantId, "TENANTTTTTT");
+  console.log(tenantId, "TENANTTTTTT");
   useEffect(() => {
     const cachedData = sessionStorage.getItem("survey_modal_data");
     if (cachedData) {
@@ -94,11 +93,7 @@ console.log(tenantId, "TENANTTTTTT");
       headerBarMain={
         <div className="survey-modal-header">
           <span>{t("Active Surveys")}</span>
-          {data?.length > 0 && (
-            <span className="survey-badge">
-              {data.length}
-            </span>
-          )}
+          {data?.length > 0 && <span className="survey-badge">{data.length}</span>}
         </div>
       }
       headerBarEnd={<CloseBtn onClick={onClose} />}
@@ -127,37 +122,52 @@ console.log(tenantId, "TENANTTTTTT");
         ) : data && data.length > 0 ? (
           <div className="new-card-cards-grid">
             {data?.map((survey, index) => (
-              <div key={index} className="new-card-option">
-                <h3 className="survey-card-title">{survey?.surveyTitle}</h3>
-                <div className="survey-card-container">
-                  <div className="survey-card-field">
-                    <span className="survey-card-label">Start Date:</span>
-                    <p className="survey-card-value">
-                      {survey?.startDate ? format(new Date(survey?.startDate), "dd/MM/yyyy") : "NA"}
-                    </p>
-                  </div>
-                  {survey?.endDate && (
+              <div>
+                <div key={index} className="new-card-option">
+                  <h3 className="survey-card-title">{survey?.surveyTitle}</h3>
+                  <div className="survey-card-container">
                     <div className="survey-card-field">
-                      <span className="survey-card-label">End Date:</span>
-                      <p className="survey-card-value">{format(new Date(survey?.endDate), "dd/MM/yyyy")}</p>
+                      <span className="survey-card-label">Start Date:</span>
+                      <p className="survey-card-value">{survey?.startDate ? format(new Date(survey?.startDate), "dd/MM/yyyy") : "NA"}</p>
                     </div>
-                  )}
-                  <div className="survey-card-field">
-                    <span className="survey-card-label">Description:</span>
-                    <p className="survey-card-value">
-                      {survey?.surveyDescription || "No description available"}
-                    </p>
+                    {survey?.endDate && (
+                      <div className="survey-card-field">
+                        <span className="survey-card-label">End Date:</span>
+                        <p className="survey-card-value">{format(new Date(survey?.endDate), "dd/MM/yyyy")}</p>
+                      </div>
+                    )}
+                    <div className="survey-card-field">
+                      <span className="survey-card-label">Description:</span>
+                      <p className="survey-card-value">{survey?.surveyDescription || "No description available"}</p>
+                    </div>
+                  </div>
+                  <SubmitBar label={t("Start Survey")} onSubmit={() => handleStartSurvey(survey)} />
+                </div>
+                <div style={{ justifyItems: "center" }}>
+                  <div
+                    style={{
+                      alignItems: "center",
+                      height: "50px",
+                      color: "white",
+                      background: "#1e50da",
+                      width: "79px",
+                      textAlign: "center",
+                      justifyContent: "center",
+                      display: "flex",
+                      borderRadius: "12px",
+                      marginTop: " 60px",
+                    }}
+                    onClick={onClose}
+                  >
+                    Close
                   </div>
                 </div>
-                <SubmitBar label={t("Start Survey")} onSubmit={() => handleStartSurvey(survey)} />
               </div>
             ))}
           </div>
         ) : (
           <div className="survey-modal-empty-state">
-            <p>
-              {t("No active surveys available at this time")}
-            </p>
+            <p>{t("No active surveys available at this time")}</p>
             <p>Please check back later for new surveys</p>
           </div>
         )}

@@ -1051,10 +1051,9 @@ const generateBillAmendPDF = async ({ tenantId, bodyDetails, headerDetails, logo
  * @param {Object} data - The timeline data prepared by getTimelineAcknowledgementData
  */
 const generateTimelinePDF = async (data) => {
-  console.log(data,"data i get ")
-  const { t, tenantId, tenantName, heading, businessId, businessService, currentStatus, generatedDate, generatedDateTime, timelineRows, totalSteps,moduleName } = data;
+  console.log(data, "data i get ")
+  const { t, tenantId, tenantName, heading, businessId, businessService, currentStatus, generatedDate, generatedDateTime, timelineRows, totalSteps, moduleName } = data;
 
-  
   let moduleNamenew = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
   // Build content for each timeline entry in eOffice style
   const addSoftBreaks = (text) => {
@@ -1088,112 +1087,127 @@ const generateTimelinePDF = async (data) => {
                   // Header: Action & Status with background pill effect
                   {
                     table: {
-                      widths: ["auto", "*", "auto"],
+                      widths: ["*", "*", "*"],
                       body: [
                         [
-                          {
-                            text: [
-                              { text: "Action: ", bold: true, color: "#555" },
-                              { text: row.action || "N/A", color: "#000", bold: true },
-                            ],
-                            fontSize: 10,
-                            border: [false, false, false, false],
-                          },
-                          { text: "", border: [false, false, false, false] },
-                          {
-                            stack: [
-                              { text: "Date & Time:", fontSize: 8, color: "#777", bold: true },
-                              { text: `${row.date} | ${row.time}`, fontSize: 9, color: "#333", bold: true, margin: [0, 2, 0, 0] },
-                            ],
-                            alignment: "right",
-                          }, // Spacer add here date and time below
+
+
+                          { text: "Date & Time of Receipt", bold: true , fillColor: "#709770" , alignment: "center"},
+
+
+
+                          { text: "Action", bold: true, fillColor: "#709770" , alignment: "center"},
+
+
+
+                          { text: "Time Taken", fillColor: "#709770", bold: true, alignment: "center" },
+
+                        ],
+                        [
+                          { text: `${row.date} | ${row.time}`, fontSize: 9, color: "#333", margin: [0, 2, 0, 0], alignment: "center" },
+
+                          { text: row.action || "N/A", color: "#333",fontSize: 9, alignment: "center" },
+
+                          { text: `${row.sla}`, fontSize: 9, color: "#333", margin: [0, 2, 0, 0], alignment: "center" },
+
                         ],
                       ],
                     },
-                    layout: "noBorders",
+                    layout: {
+                      hLineColor: () => "#99cc99",
+                      vLineColor: () => "#99cc99",
+                      hLineWidth: () => 1,
+                      vLineWidth: () => 1,
+                    },
                     margin: [0, 0, 0, 2],
                   },
 
-                  // Divider line
-                  { canvas: [{ type: "line", x1: 0, y1: 0, x2: 485, y2: 0, lineWidth: 0.5, lineColor: "#99cc99" }] },
-
+                  { text: "Comments:" , bold: true, fontSize: 11 },
                   // Comment/Remarks section
                   {
-                    columns: [
-                      // Left column: Note / Comment
-                      {
-                        stack: [
+                    table: {
+                      widths: ["*"],
+                      body: [
+                        [
                           {
-                            text:
-                              row.comment && row.comment !== "-"
-                                ? [{ text: "Note: ", bold: true }, { text: addSoftBreaks(row.comment) }]
-                                : { text: "No Comments", color: "#777" },
-                            fontSize: 11,
-                            color: row.comment && row.comment !== "-" ? "#222" : "#777",
-                            margin: [0, 5, 0, 0],
-                            lineHeight: 1.5,
-                            width: "*",
-                          },
-
-                          ...(row.hasDocuments
-                            ? [
-                                {
-                                  columns: [
-                                    {
-                                      text: "Attachments:",
-                                      fontSize: 9,
-                                      bold: true,
-                                      color: "#555",
-                                      margin: [0, 2, 0, 2],
-                                      width: "auto",
-                                    },
-                                    {
-                                      stack: row.documents.map((doc) => {
-                                        return {
-                                          columns: [
-                                            {
-                                              text: doc.name,
-                                              fontSize: 10,
-                                              color: "#555",
-                                              margin: [5, 5, 0, 0],
-                                              decoration: "underline",
-                                              listType: "none",
-                                              link: doc.link,
-                                              linkTarget: "_blank",
-                                            },
-                                          ],
-                                        };
-                                      }),
-                                      margin: [10, 0, 0, 2],
-                                      width: "*",
-                                    },
-                                  ],
-                                },
+                          text:
+                            row.comment && row.comment !== "-"
+                              ? [
+                                { text: addSoftBreaks(row.comment) }
                               ]
-                            : []),
-                        ],
-                      },
+                              : [{ text: "No Comments", color: "#777" }],
+                          fontSize: 11,
+                          color: row.comment && row.comment !== "-" ? "#222" : "#777",
+                          margin: [0, 5, 0, 0],
+                          lineHeight: 1.5,
+                          width: "*",
+                        }
+                      ],
 
-                      // Right column: Signatory details
+                        ...(row.hasDocuments
+                          ? [
+                            {
+                              columns: [
+                                {
+                                  text: "Attachments:",
+                                  fontSize: 9,
+                                  bold: true,
+                                  color: "#555",
+                                  margin: [0, 2, 0, 2],
+                                  width: "auto",
+                                },
+                                {
+                                  stack: row.documents.map((doc) => {
+                                    return {
+                                      columns: [
+                                        {
+                                          text: doc.name,
+                                          fontSize: 10,
+                                          color: "#555",
+                                          margin: [5, 5, 0, 0],
+                                          decoration: "underline",
+                                          listType: "none",
+                                          link: doc.link,
+                                          linkTarget: "_blank",
+                                        },
+                                      ],
+                                    };
+                                  }),
+                                  margin: [10, 0, 0, 2],
+                                  width: "*",
+                                },
+                              ],
+                            },
+                          ]
+                          : [])
+                      ]
+                    },
+                    margin: [0, 5, 0, 0],
+                    layout: {
+                      hLineColor: () => "#99cc99",
+                      vLineColor: () => "#99cc99",
+                      hLineWidth: () => 1,
+                      vLineWidth: () => 1,
+                    }
+                  },
+
+
+                  {
+                    stack: [
+                      { text: `${row.assignerName?.toUpperCase()} (${row.designation || row.assignerType})` || "N/A", fontSize: 10, bold: true, alignment: "right", color: "#000" },
                       {
-                        stack: [
-                          { text: row.assignerName?.toUpperCase() || "N/A", fontSize: 10, bold: true, alignment: "right", color: "#000" },
-                          { text: row.designation || row.assignerType || "N/A", fontSize: 9, color: "#444", alignment: "right" },
-                          {
-                            text: row.mobileNumber !== "N/A" ? `+91 ${row.mobileNumber}` : "",
-                            fontSize: 9,
-                            color: "#666",
-                            alignment: "right",
-                            margin: [0, 2, 0, 0],
-                          },
-                        ],
-                        width: "*",
+                        text: `${row.date} | ${row.time}`,
+                        fontSize: 9,
+                        color: "#666",
                         alignment: "right",
-                        margin: [0, 5, 0, 0],
+                        margin: [0, 2, 0, 0],
                       },
                     ],
+                    width: "*",
+                    alignment: "right",
                     margin: [0, 5, 0, 0],
                   },
+                  
                 ],
                 fillColor: "#b8ebb8",
                 margin: [15, 6, 15, 0],

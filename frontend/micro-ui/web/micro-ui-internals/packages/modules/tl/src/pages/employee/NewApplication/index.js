@@ -156,13 +156,15 @@ const NewApplication = () => {
       address.locality = { code: data?.cpt?.details?.address?.locality?.code || null };
       if (data?.cpt?.details?.address?.doorNo || data?.address?.doorNo) address.doorNo = data?.cpt?.details?.address?.doorNo || data?.address?.doorNo || null;
       if (data?.cpt?.details?.address?.street || data?.address?.street) address.street = data?.cpt?.details?.address?.street || data?.address?.street || null;
-      if (data?.cpt?.details?.address?.pincode) address.pincode = data?.cpt?.details?.address?.pincode;
+      if (data?.cpt?.details?.address?.pincode || data?.address?.pincode) address.pincode = data?.cpt?.details?.address?.pincode || data?.address?.pincode || null;
+      if (data?.address?.electricityNo || data?.cpt?.details?.address?.electricityNo) address.electricityNo = data?.address?.electricityNo || data?.cpt?.details?.address?.electricityNo || null;
     } else if (data?.address) {
       address.city = data?.address?.city?.code || null;
       address.locality = { code: data?.address?.locality?.code || null };
       if (data?.address?.doorNo) address.doorNo = data?.address?.doorNo || null;
       if (data?.address?.street) address.street = data?.address?.street || null;
       if (data?.address?.pincode) address.pincode = data?.address?.pincode;
+      if (data?.address?.electricityNo) address.electricityNo = data?.address?.electricityNo;
     }
 
     let owners = [];
@@ -194,6 +196,7 @@ const NewApplication = () => {
     let tradeName = data?.tradedetils?.["0"]?.tradeName || "";
     let subOwnerShipCategory = data?.ownershipCategory?.code || "";
     let licenseType = data?.tradedetils?.["0"]?.licenseType?.code || "PERMANENT";
+    let oldLicenseNumber = data?.tradedetils?.["0"]?.oldReceiptNo || "";
 
     let formData = {
       action: "INITIATE",
@@ -212,6 +215,7 @@ const NewApplication = () => {
       },
     };
 
+    if (oldLicenseNumber) formData.oldLicenseNumber = oldLicenseNumber;
     if (gstNo) formData.tradeLicenseDetail.additionalDetail.gstNo = gstNo;
     if (noOfEmployees) formData.tradeLicenseDetail.noOfEmployees = noOfEmployees;
     if (operationalArea) formData.tradeLicenseDetail.operationalArea = operationalArea;
@@ -235,9 +239,10 @@ const NewApplication = () => {
       formData.tradeLicenseDetail.institution["contactNo"] = data?.owners?.[0]?.altContactNumber;
     if (data?.cpt) 
     {
-      formData.tradeLicenseDetail.additionalDetail.propertyId = data?.cpt?.details?.propertyId,
-      formData.tradeLicenseDetail.additionalDetail.isSameAsPropertyOwner = isSameAsPropertyOwner
-    };
+      formData.propertyId = data?.cpt?.details?.propertyId;
+      formData.tradeLicenseDetail.additionalDetail.propertyId = data?.cpt?.details?.propertyId;
+      formData.tradeLicenseDetail.additionalDetail.isSameAsPropertyOwner = isSameAsPropertyOwner;
+    }
 
     // setFormData(formData)
     /* use customiseCreateFormData hook to make some chnages to the licence object */

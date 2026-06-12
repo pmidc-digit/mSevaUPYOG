@@ -3,15 +3,14 @@
  * Follows the same pattern as OBPS getAcknowledgementData.
  */
 
-const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = {}, t) => {
+const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = {}, deptMap = {}, t) => {
   console.log('pdfFiles', pdfFiles)
   const timeline = workflowDetails?.data?.timeline || workflowDetails?.timeline || [];
   const processInstances = workflowDetails?.data?.processInstances || workflowDetails?.processInstances || [];
-  
   const businessId = processInstances?.[0]?.businessId || "N/A";
   const businessService = processInstances?.[0]?.businessService || "N/A";
   const moduleName = processInstances?.[0]?.moduleName || "N/A";
-
+ 
   const pdfDownloadLink = (documents, fileStoreId) => {
     const downloadLink = documents?.[fileStoreId] || "";
     const formats = downloadLink?.split(",")?.filter(Boolean) || [];
@@ -21,14 +20,27 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
   // regex pattern for trimming
   const pattern = /\[#\?.*?\*\*\]/;
 
-  const timelineRows = timeline.map((item, index) => {
+  const filteredTimeLine = []
+
+  let draftFlag = false
+
+  timeline?.forEach((item) => {
+    if (item?.performedAction === "SAVE_AS_DRAFT") {
+      if (draftFlag == true) return;
+      draftFlag = true
+    }
+    filteredTimeLine.push(item)
+  });
+
+  const timelineRows = filteredTimeLine.map((item, index) => {
     const createdDate = item?.auditDetails?.created || "N/A";
     const timing = item?.auditDetails?.timing || "N/A";
-    const assignerName = item?.assigner?.name || "N/A";
+    const assignerName = item?.assigner?.name || "N/A";    
     const assignerType = item?.assigner?.type || "N/A";
     const mobileNumber = item?.assigner?.mobileNumber || "N/A";
     const action = item?.performedAction || "N/A";
     const status = item?.status || item?.state || "N/A";
+    const designation = t(deptMap[item?.assigner?.userName]) || assignerType || "N/A"
 
     // sanitize wfComment before using
     const rawComment = item?.wfComment?.[0] || "-";
@@ -45,7 +57,6 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
       assignerName,
       assignerType,
       mobileNumber,
-      designation: assignerType,
       date: createdDate,
       time: timing,
       dateTime: `${createdDate} ${timing !== "N/A" ? timing : ""}`.trim(),
@@ -58,6 +69,7 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
       })),
       hasDocuments: documents.length > 0,
       sla,
+      designation,
       assignedTo,
     };
   });

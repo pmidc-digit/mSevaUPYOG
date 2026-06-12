@@ -1,6 +1,6 @@
 package org.egov.bpa.web.model.property;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.common.contract.request.RequestInfo;
 

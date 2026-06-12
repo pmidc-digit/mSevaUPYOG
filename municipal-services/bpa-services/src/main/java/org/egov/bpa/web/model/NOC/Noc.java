@@ -3,7 +3,7 @@ package org.egov.bpa.web.model.NOC;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.egov.bpa.web.model.NOC.enums.ApplicationType;
 import org.egov.bpa.web.model.NOC.enums.Status;

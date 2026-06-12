@@ -2,8 +2,8 @@ package org.egov.bpa.web.controller;
 
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.websocket.server.PathParam;
+import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 
 import org.egov.bpa.service.BPAService;
 import org.egov.bpa.util.ResponseInfoFactory;

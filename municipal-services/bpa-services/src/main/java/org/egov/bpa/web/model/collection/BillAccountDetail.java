@@ -2,7 +2,7 @@ package org.egov.bpa.web.model.collection;
 
 import java.math.BigDecimal;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 
 import org.egov.bpa.web.model.AuditDetails;
 

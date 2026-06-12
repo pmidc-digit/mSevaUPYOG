@@ -4,16 +4,17 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotNull;
 
 import org.egov.bpa.web.model.AuditDetails;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.landInfo.*;
 import org.egov.bpa.web.model.workflow.ProcessInstance;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.bpa.web.model.SanitizeHtml;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,15 +38,15 @@ import lombok.experimental.SuperBuilder;
 public class Property extends PropertyInfo {
 
 	@JsonProperty("acknowldgementNumber")
-	@SafeHtml
+	@SanitizeHtml
 	private String acknowldgementNumber;
 
 	@JsonProperty("propertyType")
-	@SafeHtml
+	@SanitizeHtml
 	private String propertyType;
 
 	@JsonProperty("ownershipCategory")
-	@SafeHtml
+	@SanitizeHtml
 	private String ownershipCategory;
 
 	@JsonProperty("owners")
@@ -61,7 +62,7 @@ public class Property extends PropertyInfo {
 	private CreationReason creationReason = CreationReason.CREATE;
 	
 	@JsonProperty("usageCategory")
-	@SafeHtml
+	@SanitizeHtml
 	private String usageCategory;
 
 	@Max(value = 500)

@@ -2,10 +2,10 @@ package org.egov.bpa.web.model;
 
 import java.util.Objects;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
-import org.hibernate.validator.constraints.SafeHtml;
+////import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -22,42 +22,42 @@ import lombok.NoArgsConstructor;
 @Data
 public class DocumentCheckList {
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("id")
 	private String id = null;
 	
-	@SafeHtml
+	@SanitizeHtml
 	@NotNull
 	@Size(min=1, max=64)
 	@JsonProperty("documentuid")
 	private String documentuid = null;
 	
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("applicationNo")
 	@NotNull
 	private String applicationNo = null;
 	
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("tenantId")
 	@NotNull
 	private String tenantId = null;
 	
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("action")
 	@NotNull
 	private String action = null;
 	
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("remarks")
 	@NotNull
 	private String remarks = null;
 	
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("createdby")
 	@Size(max=64)
 	private String createdby = null;
 	
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("lastmodifiedby")
 	@Size(max=64)
 	private String lastmodifiedby = null;

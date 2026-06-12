@@ -24,34 +24,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.egov.bpa.web.model.AuditDetails.AuditDetailsBuilder;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.bpa.web.model.SanitizeHtml;
 import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
 /**
  * LandInfo
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:52:32.717Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:52:32.717Z[GMT]")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class LandInfo {
 	
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("id")
 	private String id = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("landUId")
 	private String landUId = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("landUniqueRegNo")
 	private String landUniqueRegNo = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("tenantId")
 	private String tenantId = null;
 
@@ -61,7 +62,7 @@ public class LandInfo {
 	@JsonProperty("address")
 	private Address address = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("ownershipCategory")
 	private String ownershipCategory = null;
 

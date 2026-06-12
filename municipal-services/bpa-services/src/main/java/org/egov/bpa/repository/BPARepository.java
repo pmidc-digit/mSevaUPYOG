@@ -88,7 +88,7 @@ public class BPARepository {
 	public List<BPA> getBPAData(BPASearchCriteria criteria, List<String> edcrNos) {
 		List<Object> preparedStmtList = new ArrayList<>();
 		String query = queryBuilder.getBPASearchQuery(criteria, preparedStmtList, edcrNos, false);
-		List<BPA> BPAData = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+		List<BPA> BPAData = jdbcTemplate.query(query, rowMapper, preparedStmtList.toArray());
 		return BPAData;
 	}
 	
@@ -102,21 +102,21 @@ public class BPARepository {
         public int getBPACount(BPASearchCriteria criteria, List<String> edcrNos) {
                 List<Object> preparedStmtList = new ArrayList<>();
                 String query = queryBuilder.getBPASearchQuery(criteria, preparedStmtList, edcrNos, true);
-                int count = jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Integer.class);
+                int count = jdbcTemplate.queryForObject(query, Integer.class, preparedStmtList.toArray());
                 return count;
         }
         
         public List<BPA> getBPADataForPlainSearch(BPASearchCriteria criteria, List<String> edcrNos) {
     		List<Object> preparedStmtList = new ArrayList<>();
     		String query = queryBuilder.getBPASearchQueryForPlainSearch(criteria, preparedStmtList, edcrNos, false);
-    		List<BPA> BPAData = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+    		List<BPA> BPAData = jdbcTemplate.query(query, rowMapper, preparedStmtList.toArray());
     		return BPAData;
     	}
         
         public List<DocumentCheckList> getDocumentCheckList(String applicationNo, String tenantId){
         	List<Object> params = new LinkedList<>();
         	String query = queryBuilder.getBPADocumantsCheckListQuery(applicationNo, tenantId, params);
-        	return jdbcTemplate.query(query, params.toArray(), checkListRowMapper);
+        	return jdbcTemplate.query(query, checkListRowMapper, params.toArray());
         }
         
         public void saveDocumentCheckList(CheckListRequest checkListRequest) {

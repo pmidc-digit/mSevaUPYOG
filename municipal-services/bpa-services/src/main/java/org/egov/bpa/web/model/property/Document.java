@@ -1,6 +1,6 @@
 package org.egov.bpa.web.model.property;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -11,8 +11,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.egov.bpa.web.model.SanitizeHtml;
+
 import org.egov.bpa.web.model.AuditDetails;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 @Getter
 @Setter
 @Data
@@ -22,21 +24,21 @@ import org.hibernate.validator.constraints.SafeHtml;
 @EqualsAndHashCode(of= {"fileStoreId","documentUid","id"})
 public class Document {
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("id")
   private String id ;
 
   @JsonProperty("documentType")
-  @SafeHtml
+  @SanitizeHtml
   @NotNull
   private String documentType ;
 
   @JsonProperty("fileStoreId")
-  @SafeHtml
+  @SanitizeHtml
   @NotNull
   private String fileStoreId ;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("documentUid")
   private String documentUid ;
 

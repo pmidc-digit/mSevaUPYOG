@@ -2,7 +2,7 @@ package org.egov.bpa.web.model.property;
 
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.bpa.web.model.NOC.enums.Status;
 import org.egov.bpa.web.model.landInfo.Address;

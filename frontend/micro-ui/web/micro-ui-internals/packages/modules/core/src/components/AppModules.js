@@ -40,7 +40,7 @@ export const AppModules = ({ stateCode, userType, modules, appTenants }) => {
 
   const userDetails = getUserDetails(employeeToken, employeeInfo);
 
-  window.Digit.SessionStorage.set("User", userDetails);
+  // window.Digit.SessionStorage.set("User", userDetails);
 
   if (!employeeInfo || !employeeToken) {
     return <Redirect to={{ pathname: "/digit-ui/employee/user/login", state: { from: location.pathname + location.search } }} />;

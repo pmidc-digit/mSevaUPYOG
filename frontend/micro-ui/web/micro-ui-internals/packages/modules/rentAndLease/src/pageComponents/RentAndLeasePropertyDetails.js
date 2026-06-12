@@ -70,8 +70,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
   const { data: dueDateRL = [], isLoading: DueDateLoading } = Digit.Hooks.useCustomMDMS(tenantId, "rl-services-masters", [{ name: "DueDate" }]);
 
-  console.log("dueDateRL", dueDateRL);
-
   const { triggerLoader, triggerToast } = config?.currStepConfig[0];
 
   // 🔹 Form setup
@@ -158,13 +156,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const minStartDate = new Date();
   minStartDate.setMonth(minStartDate.getMonth() - 11);
   const minStartDateISO = minStartDate.toISOString().split("T")[0];
-
-  useEffect(() => {
-    const startDate = watch("arrearStartDate");
-    if (startDate) {
-      setValue("arrearEndDate", todayISO, { shouldValidate: true });
-    }
-  }, [watch("arrearStartDate")]);
 
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
@@ -317,17 +308,36 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     setDocumentsData(data);
   };
 
-  useEffect(() => {
-    if (watch("arrear") <= 0) {
-      clearErrors(["arrearStartDate", "arrearEndDate", "arrearReason", "remarks"]);
-    }
-  }, [watch("arrear")]);
-
   const filterProperties = (checkProperty) => {
     const checkAllotment = watch("propertyType");
     const filteredData = rentANDLeaseProperty?.rentAndLease?.RLProperty?.filter((item) => item.areaCode == checkProperty?.code);
     const filterSet = filteredData?.filter((item) => item?.allotmentType == checkAllotment?.code);
     setPropertyFiltered(filterSet);
+  };
+
+  const handleBillingPeriod = (val) => {
+    const dueDateRLData = dueDateRL?.["rl-services-masters"]?.DueDate;
+    console.log("dueDateRL", dueDateRLData);
+    console.log("val", val);
+    const filteredRLData = dueDateRLData?.find((item) => item?.billingCycle == val?.feesPeriodCycle);
+    console.log("filteredRLData", filteredRLData);
+    const dueDay = Number(filteredRLData?.dueDay);
+    const today = new Date();
+    const currentDate = today.getDate();
+    let billingDate;
+    if (currentDate < dueDay) {
+      // Last day of previous month
+      billingDate = new Date(today.getFullYear(), today.getMonth(), 0);
+    } else {
+      // Last day of current month
+      billingDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    }
+
+    const formattedDate = billingDate.toISOString().split("T")[0];
+    setValue("lastBillingPeriod", formattedDate);
+
+    console.log("Billing Date:", billingDate);
+    // const prefillISO = prefillEnd.toISOString().split("T")[0];
   };
 
   return (
@@ -419,6 +429,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
                 // ✅ set propertyName field
                 onChange(selected.propertyName);
                 // ✅ also set propertyId field
+                handleBillingPeriod(selected);
                 handlePropertySelect(selected); // ✅ prefill all other fields
               }}
               selected={filteredProperties.find((p) => p.propertyName === value)}
@@ -649,7 +660,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       )}
       {watch("applicationType")?.code == "Legacy" && (
         <React.Fragment>
-          {/*arrear End Date */}
+          {/* Last Billing Period */}
           <LabelFieldPair>
             <CardLabel>
               {t("Last Billing Period")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
@@ -657,7 +668,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
             <div className="form-field">
               <Controller
                 control={control}
-                name="arrearEndDate"
+                name="lastBillingPeriod"
                 rules={{
                   validate: (value) => {
                     const arrear = watch("arrear");
@@ -668,12 +679,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
                   },
                 }}
                 render={({ value, onChange }) => {
-                  return <TextInput type="date" value={value || ""} onChange={(e) => onChange(e.target.value)} />;
+                  return <TextInput type="date" value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={true} />;
                 }}
               />
             </div>
           </LabelFieldPair>
-          {errors.arrearEndDate && <CardLabelError className="ral-error-label">{getErrorMessage("arrearEndDate")}</CardLabelError>}
+          {errors.lastBillingPeriod && <CardLabelError className="ral-error-label">{getErrorMessage("lastBillingPeriod")}</CardLabelError>}
 
           {/* Areas reason */}
           <LabelFieldPair>

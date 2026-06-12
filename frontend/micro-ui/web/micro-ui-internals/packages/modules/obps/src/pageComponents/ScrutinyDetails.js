@@ -243,7 +243,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   const accessData = (plot) => {
     const name = plot;
     return (originalRow, rowIndex, columns) => {
-      return originalRow[name];
+      return <div style={{overflowWrap: "break-word"}}>{originalRow[name]}</div>;
     };
   };
 

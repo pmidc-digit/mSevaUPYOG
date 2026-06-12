@@ -128,7 +128,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
         {/* {renderLabel(t("GC_CONNECTION_TYPE"), formData?.venueDetails?.connectionCategory)} */}
         {renderLabel(t("GC_FREQUENCY"), formData?.venueDetails?.frequency)}
         {renderLabel(t("GC_WASTE_TYPE"), formData?.venueDetails?.typeOfWaste)}
-        {renderLabel(t("Rented"), formData?.venueDetails?.additionalDetails?.isRented)}
+        {renderLabel(t("Rented"), formData?.venueDetails?.additionalDetails?.isRented ? "Yes" : "No")}
         {renderLabel(t("Amount"), formData?.venueDetails?.additionalDetails?.defAmount)}
       </div>
 

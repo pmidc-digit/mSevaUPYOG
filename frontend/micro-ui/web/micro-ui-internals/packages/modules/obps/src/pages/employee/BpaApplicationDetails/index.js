@@ -1973,6 +1973,25 @@ const BpaApplicationDetail = () => {
                           {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && 
                           (data?.applicationData?.additionalDetails?.isSelfCertification ? (
                             <div>
+                              <StatusTable
+                                style={{
+                                  display: "flex",
+                                  gap: "20px",
+                                  flexWrap: "wrap",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                {sitePhotos?.length > 0 &&
+                                  [...sitePhotos]
+                                    .map((doc, index) => (
+                                      <NocSitePhotographsBPA
+                                        key={doc?.values?.[0]?.filestoreId}
+                                        url={doc?.values?.[0]?.fileURL}
+                                        documentType={doc?.title}
+                                        coordinates={index === 0 ? data?.applicationData?.landInfo?.address?.geoLocation : data?.applicationData?.additionalDetails?.geoLocationTwo}
+                                      />
+                                    ))}
+                              </StatusTable>
                               {pdfLoading ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}

@@ -2257,7 +2257,8 @@ const BpaApplicationDetail = () => {
                               )}
                               {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
                                 (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
-                                  <Card>
+                                  <div>
+                                  {isMobile ? <Card>
                                     <div id="fieldInspection"></div>
                                     <SiteInspection
                                       siteImages={siteImages}
@@ -2265,7 +2266,10 @@ const BpaApplicationDetail = () => {
                                       geoLocations={geoLocations}
                                       customOpen={routeToImage}
                                     />
-                                  </Card>
+                                  </Card> : <Card>
+                                    <div id="fieldInspection">{t("Please Use Mobile Device for Field Inspection.")}</div>
+                                  </Card>}
+                                  </div>
                                 )}
 
                               {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&

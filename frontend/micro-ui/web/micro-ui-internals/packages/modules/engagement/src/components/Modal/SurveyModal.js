@@ -96,7 +96,7 @@ const SurveyModal = ({ isOpen, onClose }) => {
           {data?.length > 0 && <span className="survey-badge">{data.length}</span>}
         </div>
       }
-      headerBarEnd={<CloseBtn onClick={onClose} />}
+      headerBarEnd={<CloseBtn style={{ cursor: "pointer" }} onClick={onClose} />}
       hideSubmit={true}
       popupStyles={{
         width: "95%",
@@ -158,6 +158,7 @@ const SurveyModal = ({ isOpen, onClose }) => {
                   display: "flex",
                   borderRadius: "12px",
                   marginTop: " 60px",
+                  cursor: "pointer",
                 }}
                 onClick={onClose}
               >

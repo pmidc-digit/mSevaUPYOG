@@ -23,7 +23,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const dispatch = useDispatch();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const [documentsData, setDocumentsData] = useState([]);
-  const [getPropertyFiltered,setPropertyFiltered] = useState([])
+  const [getPropertyFiltered, setPropertyFiltered] = useState([]);
   const [error, setError] = useState(null);
   const { t } = useTranslation();
 
@@ -64,11 +64,13 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const { data, isLoading, isError } = Digit.Hooks.rentandlease.useRentAndLeaseProperties(filters);
 
   const { data: rentANDLeaseArea = [], isLoading: RLAreaLoading } = Digit.Hooks.useCustomMDMS(tenantId, "rentAndLease", [{ name: "Area" }]);
-  const { data: rentANDLeaseProperty = [], isLoading: RLPropertyLoading } = Digit.Hooks.useCustomMDMS(tenantId, "rentAndLease", [{ name: "RLProperty" }]);
+  const { data: rentANDLeaseProperty = [], isLoading: RLPropertyLoading } = Digit.Hooks.useCustomMDMS(tenantId, "rentAndLease", [
+    { name: "RLProperty" },
+  ]);
 
-console.log("rentANDLeaseArea",rentANDLeaseArea);
-console.log("rentANDLeaseProperty",rentANDLeaseProperty);
+  const { data: dueDateRL = [], isLoading: DueDateLoading } = Digit.Hooks.useCustomMDMS(tenantId, "rl-services-masters", [{ name: "DueDate" }]);
 
+  console.log("dueDateRL", dueDateRL);
 
   const { triggerLoader, triggerToast } = config?.currStepConfig[0];
 
@@ -172,14 +174,13 @@ console.log("rentANDLeaseProperty",rentANDLeaseProperty);
   const handlePropertySelect = (property) => {
     if (!property) return;
 
-    console.log("property",property);
+    console.log("property", property);
 
-    const findPropertySpecific = propertySpecificOptions?.find((item)=> item?.code == property?.propertyType)
-    const findlocationTypeOptions = locationTypeOptions?.find((item)=> item?.code == property?.locationType)
+    const findPropertySpecific = propertySpecificOptions?.find((item) => item?.code == property?.propertyType);
+    const findlocationTypeOptions = locationTypeOptions?.find((item) => item?.code == property?.locationType);
 
-    setValue("propertySpecific",findPropertySpecific)
-    setValue("locationType",findlocationTypeOptions)
-    
+    setValue("propertySpecific", findPropertySpecific);
+    setValue("locationType", findlocationTypeOptions);
 
     // List only the fields you want to prefill
     const fieldsToPrefill = [
@@ -229,10 +230,9 @@ console.log("rentANDLeaseProperty",rentANDLeaseProperty);
       return acc;
     }, {});
 
-    console.log("propertyDetails",propertyDetails);
+    console.log("propertyDetails", propertyDetails);
 
-    propertyDetails["propertyId"] = propertyDetails?.selectedProperty?.propertyId
-    
+    propertyDetails["propertyId"] = propertyDetails?.selectedProperty?.propertyId;
 
     // Dispatch to Redux under one key
     dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("propertyDetails", propertyDetails));
@@ -323,13 +323,12 @@ console.log("rentANDLeaseProperty",rentANDLeaseProperty);
     }
   }, [watch("arrear")]);
 
-  const filterProperties = (checkProperty)=>{
-const filteredData = rentANDLeaseProperty?.rentAndLease?.RLProperty
-?.filter((item)=> item.areaCode == checkProperty?.code)
-setPropertyFiltered(filteredData)
-console.log("filteredData",filteredData);
-
-  }
+  const filterProperties = (checkProperty) => {
+    const checkAllotment = watch("propertyType");
+    const filteredData = rentANDLeaseProperty?.rentAndLease?.RLProperty?.filter((item) => item.areaCode == checkProperty?.code);
+    const filterSet = filteredData?.filter((item) => item?.allotmentType == checkAllotment?.code);
+    setPropertyFiltered(filterSet);
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -359,10 +358,10 @@ console.log("filteredData",filteredData);
       </LabelFieldPair>
       {errors.applicationType && <CardLabelError className="ral-error-label">{getErrorMessage("applicationType")}</CardLabelError>}
 
-  {/* Property Type Dropdown */}
+      {/* Property Type Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_TYPE")} <span className="mandatory-asterisk">*</span>
+          {t("Allotment Type")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <Controller
           control={control}
@@ -375,8 +374,7 @@ console.log("filteredData",filteredData);
       </LabelFieldPair>
       {errors.propertyType && <CardLabelError className="ral-error-label">{getErrorMessage("propertyType")}</CardLabelError>}
 
-
-  {/* application Type */}
+      {/* application Type */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
           {t("Property Area")} <span className="mandatory-asterisk">*</span>
@@ -389,10 +387,10 @@ console.log("filteredData",filteredData);
             <Dropdown
               className="form-field"
               // select={props.onChange}
-                  select={(selected) => {
+              select={(selected) => {
                 // ✅ set propertyName field
                 props.onChange(selected);
-                filterProperties(selected)
+                filterProperties(selected);
               }}
               selected={props.value}
               option={rentANDLeaseArea?.rentAndLease?.Area}
@@ -405,9 +403,7 @@ console.log("filteredData",filteredData);
       </LabelFieldPair>
       {errors.area && <CardLabelError className="ral-error-label">{getErrorMessage("area")}</CardLabelError>}
 
-
-    
-  {/* Property Name Dropdown */}
+      {/* Property Name Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
           {t("RENT_LEASE_PROPERTY_NAME")} <span className="mandatory-asterisk">*</span>
@@ -435,9 +431,6 @@ console.log("filteredData",filteredData);
       </LabelFieldPair>
       {errors.propertyName && <CardLabelError className="ral-error-label">{getErrorMessage("propertyName")}</CardLabelError>}
 
-
-
-
       {/* Property Specific Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
@@ -455,7 +448,7 @@ console.log("filteredData",filteredData);
       {errors.propertySpecific && <CardLabelError className="ral-error-label">{getErrorMessage("propertySpecific")}</CardLabelError>}
 
       {/* Location Type Dropdown */}
-      <LabelFieldPair>
+      {/* <LabelFieldPair>
         <CardLabel className="card-label-smaller">
           {t("RENT_LEASE_LOCATION_TYPE")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
@@ -468,9 +461,8 @@ console.log("filteredData",filteredData);
           )}
         />
       </LabelFieldPair>
-      {errors.locationType && <CardLabelError className="ral-error-label">{getErrorMessage("locationType")}</CardLabelError>}
+      {errors.locationType && <CardLabelError className="ral-error-label">{getErrorMessage("locationType")}</CardLabelError>} */}
 
-    
       {/* Property ID */}
       {/* <LabelFieldPair>
         <CardLabel className="card-label-smaller">
@@ -491,108 +483,114 @@ console.log("filteredData",filteredData);
 
       {/* Hidden field for selected property */}
       <Controller control={control} name="selectedProperty" render={() => null} />
+
       {/* Start Date */}
-      <LabelFieldPair>
-        <CardLabel>
-          {t("RAL_START_DATE")} <span className="mandatory-asterisk">*</span>
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="startDate"
-            rules={{
-              required: t("PTR_FIELD_REQUIRED"),
-              validate: (value) => {
-                if (!value) return t("PTR_FIELD_REQUIRED");
-                const chosen = new Date(value);
-                const today = new Date(todayISO);
-                if (chosen > today) return t("RAL_START_DATE_CANNOT_BE_FUTURE");
-                return true;
-              },
-            }}
-            render={({ value, onChange }) => (
-              <TextInput
-                type="date"
-                max={todayISO}
-                value={value || ""}
-                onChange={(e) => {
-                  const newStart = e.target.value;
-                  onChange(newStart);
+      {watch("applicationType")?.code != "Legacy" && (
+        <React.Fragment>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("RAL_START_DATE")} <span className="mandatory-asterisk">*</span>
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="startDate"
+                rules={{
+                  required: t("PTR_FIELD_REQUIRED"),
+                  validate: (value) => {
+                    if (!value) return t("PTR_FIELD_REQUIRED");
+                    const chosen = new Date(value);
+                    const today = new Date(todayISO);
+                    if (chosen > today) return t("RAL_START_DATE_CANNOT_BE_FUTURE");
+                    return true;
+                  },
+                }}
+                render={({ value, onChange }) => (
+                  <TextInput
+                    type="date"
+                    max={todayISO}
+                    value={value || ""}
+                    onChange={(e) => {
+                      const newStart = e.target.value;
+                      onChange(newStart);
 
-                  // ✅ Prefill End Date = Start Date + 11 months
-                  if (newStart) {
-                    const startDateObj = new Date(newStart);
-                    const prefillEnd = new Date(startDateObj);
-                    prefillEnd.setMonth(prefillEnd.getMonth() + 11);
+                      // ✅ Prefill End Date = Start Date + 11 months
+                      if (newStart) {
+                        const startDateObj = new Date(newStart);
+                        const prefillEnd = new Date(startDateObj);
+                        prefillEnd.setMonth(prefillEnd.getMonth() + 11);
 
-                    // format YYYY-MM-DD
-                    const prefillISO = prefillEnd.toISOString().split("T")[0];
-                    setValue("endDate", prefillISO, { shouldValidate: true });
+                        // format YYYY-MM-DD
+                        const prefillISO = prefillEnd.toISOString().split("T")[0];
+                        setValue("endDate", prefillISO, { shouldValidate: true });
+                      }
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.startDate && <CardLabelError className="ral-error-label">{getErrorMessage("startDate")}</CardLabelError>}
+
+          {/* End Date */}
+          <LabelFieldPair>
+            <CardLabel>{t("RAL_END_DATE")}</CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="endDate"
+                rules={{
+                  validate: (value) => {
+                    if (!value) return true; // optional
+                    const start = watch("startDate");
+                    if (!start) return t("PTR_START_DATE_REQUIRED");
+
+                    const startDate = new Date(start);
+                    const endDate = new Date(value);
+
+                    if (endDate <= startDate) return t("PTR_END_DATE_AFTER_START");
+
+                    // ✅ Must be at least 11 months after Start Date
+                    const minEnd = new Date(startDate);
+                    minEnd.setMonth(minEnd.getMonth() + 11);
+                    if (endDate < minEnd) return t("PTR_MIN_DURATION_11_MONTHS");
+
+                    return true;
+                  },
+                }}
+                render={({ value, onChange }) => {
+                  const start = watch("startDate");
+                  let minEndISO = todayISO;
+                  if (start) {
+                    const minEnd = new Date(start);
+                    minEnd.setMonth(minEnd.getMonth() + 11);
+                    minEndISO = minEnd.toISOString().split("T")[0];
                   }
+
+                  return (
+                    <TextInput
+                      type="date"
+                      min={minEndISO} // ✅ restrict selectable dates
+                      value={value || ""}
+                      onChange={(e) => onChange(e.target.value)}
+                    />
+                  );
                 }}
               />
-            )}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.startDate && <CardLabelError className="ral-error-label">{getErrorMessage("startDate")}</CardLabelError>}
-
-      {/* End Date */}
-      <LabelFieldPair>
-        <CardLabel>{t("RAL_END_DATE")}</CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="endDate"
-            rules={{
-              validate: (value) => {
-                if (!value) return true; // optional
-                const start = watch("startDate");
-                if (!start) return t("PTR_START_DATE_REQUIRED");
-
-                const startDate = new Date(start);
-                const endDate = new Date(value);
-
-                if (endDate <= startDate) return t("PTR_END_DATE_AFTER_START");
-
-                // ✅ Must be at least 11 months after Start Date
-                const minEnd = new Date(startDate);
-                minEnd.setMonth(minEnd.getMonth() + 11);
-                if (endDate < minEnd) return t("PTR_MIN_DURATION_11_MONTHS");
-
-                return true;
-              },
-            }}
-            render={({ value, onChange }) => {
-              const start = watch("startDate");
-              let minEndISO = todayISO;
-              if (start) {
-                const minEnd = new Date(start);
-                minEnd.setMonth(minEnd.getMonth() + 11);
-                minEndISO = minEnd.toISOString().split("T")[0];
-              }
-
-              return (
-                <TextInput
-                  type="date"
-                  min={minEndISO} // ✅ restrict selectable dates
-                  value={value || ""}
-                  onChange={(e) => onChange(e.target.value)}
-                />
-              );
-            }}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.endDate && <CardLabelError className="ral-error-label">{getErrorMessage("endDate")}</CardLabelError>}
-
+            </div>
+          </LabelFieldPair>
+          {errors.endDate && <CardLabelError className="ral-error-label">{getErrorMessage("endDate")}</CardLabelError>}
+        </React.Fragment>
+      )}
       {/* Duration (optional, auto-filled) */}
-      <LabelFieldPair>
-        <CardLabel>{t("DURATION")}</CardLabel>
-        <div className="form-field">
-          <Controller control={control} name="duration" render={({ value }) => <TextInput type="text" value={value || ""} disabled={true} />} />
-        </div>
-      </LabelFieldPair>
+      {watch("applicationType")?.code != "Legacy" && (
+        <LabelFieldPair>
+          <CardLabel>{t("DURATION")}</CardLabel>
+          <div className="form-field">
+            <Controller control={control} name="duration" render={({ value }) => <TextInput type="text" value={value || ""} disabled={true} />} />
+          </div>
+        </LabelFieldPair>
+      )}
 
       {/* Rent Amount */}
       <LabelFieldPair>
@@ -651,59 +649,10 @@ console.log("filteredData",filteredData);
       )}
       {watch("applicationType")?.code == "Legacy" && (
         <React.Fragment>
-          {/* Arrears Amount */}
-          <LabelFieldPair>
-            <CardLabel>
-              {t("Arrears")} <span className="mandatory-asterisk">*</span>
-            </CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name="arrear"
-                rules={{ required: t("RENT_LEASE_ARREAR_REQUIRED") }}
-                render={({ value, onChange }) => <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} />}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors.arrear && <CardLabelError className="ral-error-label">{getErrorMessage("arrear")}</CardLabelError>}
-
-          {/* arrear Start Date */}
-          <LabelFieldPair>
-            <CardLabel>
-              {t("RAL_ARR_START_DATE")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
-            </CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name="arrearStartDate"
-                rules={{
-                  validate: (value) => {
-                    const arrear = watch("arrear");
-                    if (arrear > 0 && !value) {
-                      return t("RENT_LEASE_RAL_START_DATE_REQUIRED");
-                    }
-                    return true;
-                  },
-                }}
-                render={({ value, onChange }) => (
-                  <TextInput
-                    type="date"
-                    max={todayISO}
-                    value={value || ""}
-                    onChange={(e) => {
-                      onChange(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors.arrearStartDate && <CardLabelError className="ral-error-label">{getErrorMessage("arrearStartDate")}</CardLabelError>}
-
           {/*arrear End Date */}
           <LabelFieldPair>
             <CardLabel>
-              {t("RAL_ARR_END_DATE")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
+              {t("Last Billing Period")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
             </CardLabel>
             <div className="form-field">
               <Controller

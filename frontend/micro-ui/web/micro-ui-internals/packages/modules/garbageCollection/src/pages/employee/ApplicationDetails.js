@@ -176,20 +176,20 @@ const ChallanApplicationDetails = () => {
   );
 
   const getAcknowledgement = async () => {
-      setLoader(true);
-      try {
-        const applications = getChallanData;
-        const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
-        const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
-        setTimeout(() => {
-          Digit.Utils.pdf.generate(acknowldgementDataAPI);
-          setLoader(false);
-        }, 0);
-      } catch (error) {
-        console.error("Error generating acknowledgement:", error);
+    setLoader(true);
+    try {
+      const applications = getChallanData;
+      const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+      const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+      setTimeout(() => {
+        Digit.Utils.pdf.generate(acknowldgementDataAPI);
         setLoader(false);
-      }
-    };
+      }, 0);
+    } catch (error) {
+      console.error("Error generating acknowledgement:", error);
+      setLoader(false);
+    }
+  };
 
   const dowloadOptions = [];
 
@@ -198,7 +198,7 @@ const ChallanApplicationDetails = () => {
     onClick: () => getAcknowledgement(),
   });
 
-    if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
+  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () =>
@@ -424,7 +424,7 @@ const ChallanApplicationDetails = () => {
               text={getChallanData?.plotSize || t("CS_NA")}
             />
             <Row className="border-none" label={t("GC_LOCATION")} text={getChallanData?.location || t("CS_NA")} />
-            <Row className="border-none" label={t("Rented")} text={getChallanData?.additionalDetails?.isRented ? "true" : "false"} />
+            <Row className="border-none" label={t("Rented")} text={getChallanData?.additionalDetails?.isRented ? "Yes" : "No"} />
             <Row className="border-none" label={t("Amount")} text={getChallanData?.additionalDetails?.defAmount || t("CS_NA")} />
           </StatusTable>
 

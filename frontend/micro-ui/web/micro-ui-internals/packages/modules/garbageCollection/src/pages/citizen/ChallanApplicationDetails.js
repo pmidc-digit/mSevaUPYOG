@@ -78,7 +78,6 @@ const ChallanApplicationDetails = () => {
   const [getChallanData, setChallanData] = useState();
   const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
   const [printing, setPrinting] = useState(false);
-  
 
   const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "garbage-receipt" });
 
@@ -168,7 +167,7 @@ const ChallanApplicationDetails = () => {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
-  
+
   const dowloadOptions = [];
 
   dowloadOptions.push({
@@ -176,19 +175,17 @@ const ChallanApplicationDetails = () => {
     onClick: () => getAcknowledgement(),
   });
 
-  
   if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () =>
         printBillReceipt({
-          businessService: "GC.ONE_TIME_FEE", 
+          businessService: "GC.ONE_TIME_FEE",
           receiptNumber: acknowledgementIds,
           rootKey: "PAYMENTS",
         }),
     });
   }
-
 
   return (
     <React.Fragment>
@@ -239,7 +236,7 @@ const ChallanApplicationDetails = () => {
             />
             <Row className="border-none" label={t("GC_LOCATION")} text={getChallanData?.location || t("CS_NA")} />
 
-            <Row className="border-none" label={t("Rented")} text={getChallanData?.additionalDetails?.isRented ? "true" : "false"} />
+            <Row className="border-none" label={t("Rented")} text={getChallanData?.additionalDetails?.isRented ? "Yes" : "No"} />
             <Row className="border-none" label={t("Amount")} text={getChallanData?.additionalDetails?.defAmount || t("CS_NA")} />
           </StatusTable>
 

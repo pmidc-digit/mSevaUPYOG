@@ -71,7 +71,7 @@ const CLUMyApplications = ({ view }) => {
       },
       {
         Header: t("CLU_APPLICATION_STATUS"),
-        accessor: (row) => row?.Applications?.applicationStatus,
+        accessor: (row) => t(row?.Applications?.applicationStatus),
         Cell: ({ row }) => GetCell(t(row.original?.Applications?.applicationStatus) || row.original?.Applications?.applicationStatus || "-"),
       },
       {

@@ -3,7 +3,7 @@ import React, { useState, useEffect, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { ChallanData, getLocationName } from "../utils";
-import getPDFData from "../utils/getTLAcknowledgementData";
+import getPTAcknowledgementData from "../utils/getTLAcknowledgementData";
 // import { Loader } from "./Loader";
 
 const TLResponseCitizen = (props) => {
@@ -101,8 +101,8 @@ const TLResponseCitizen = (props) => {
   const handleDownloadPdf = async () => {
     const tenantInfo = tenants.find((tenant) => tenant.code === application[0]?.tenantId);
     let res = application[0];
-    const data = getPDFData({ ...res }, tenantInfo, t);
-    data.then((ress) => Digit.Utils.pdf.generate(ress));
+    const data = getPTAcknowledgementData({ ...res }, tenantInfo, t);
+    data.then((ress) => Digit.Utils.pdf.generateFormatted(ress));
   };
 
   return (

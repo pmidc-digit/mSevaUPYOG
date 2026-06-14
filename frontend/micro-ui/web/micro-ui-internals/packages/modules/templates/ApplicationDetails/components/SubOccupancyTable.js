@@ -40,7 +40,7 @@ const SubOccupancyTable = ({ edcrDetails, applicationData }) => {
   const accessData = (plot) => {
     const name = plot;
     return (originalRow, rowIndex, columns) => {
-      return originalRow[name];
+      return <div style={{overflowWrap: "break-word"}}>{originalRow[name]}</div>;
     }
   }
 

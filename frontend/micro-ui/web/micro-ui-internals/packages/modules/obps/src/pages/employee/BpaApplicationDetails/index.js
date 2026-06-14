@@ -1643,19 +1643,19 @@ const BpaApplicationDetail = () => {
         }),
       };
 
-      if (isSelfCertification) {
-        if (searchChecklistData?.checkList?.length > 0) {
-          await Digit.OBPSService.BPACheckListUpdate({
-            details: checklistPayload,
-            filters: { tenantId },
-          });
-        } else {
-          await Digit.OBPSService.BPACheckListCreate({
-            details: checklistPayload,
-            filters: {},
-          });
-        }
-      }
+      // if (isSelfCertification) {
+      //   if (searchChecklistData?.checkList?.length > 0) {
+      //     await Digit.OBPSService.BPACheckListUpdate({
+      //       details: checklistPayload,
+      //       filters: { tenantId },
+      //     });
+      //   } else {
+      //     await Digit.OBPSService.BPACheckListCreate({
+      //       details: checklistPayload,
+      //       filters: {},
+      //     });
+      //   }
+      // }
 
       if (data?.BPA?.workflow?.action !== "UPDATE_ZONE" && appData?.applicationData?.status === "DOC_VERIFICATION_PENDING" && checklistPayload?.checkList?.length > 0) {
         if (searchChecklistData?.checkList?.length > 0) {
@@ -1889,7 +1889,7 @@ const BpaApplicationDetail = () => {
               return (
                 <div key={index}>
                   {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && <CitizenAndArchitectPhoto data={data?.applicationData} />}
-                  {!detail?.isNotAllowed ? (                    
+                  {!detail?.isNotAllowed ? (detail?.isFieldInspection && data?.applicationData?.additionalDetails?.isSelfCertification) ? null : (                    
                     <Card
                       key={index}
                       // style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
@@ -2106,7 +2106,7 @@ const BpaApplicationDetail = () => {
                                       />
                                     ))}
                               </StatusTable>
-                              {/* {pdfLoading ? <Loader /> : <Table
+                              {pdfLoading ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
                               data={documentsData}
@@ -2116,8 +2116,8 @@ const BpaApplicationDetail = () => {
                               autoSort={false}
                               manualPagination={false}
                               isPaginationRequired={false}
-                            />} */}
-                              <StatusTable>
+                            />}
+                              {/* <StatusTable>
                                 {remainingDoc?.length > 0 && (
                                   <BPADocumentChecklist
                                     documents={remainingDoc}
@@ -2126,7 +2126,7 @@ const BpaApplicationDetail = () => {
                                     onRemarksChange={setChecklistRemarks}
                                   />
                                 )}
-                              </StatusTable>
+                              </StatusTable> */}
                             {ecbcDocumentsData?.length > 0 && (
                                 <div>
                                   {pdfLoading || isFileLoading ? (
@@ -2245,7 +2245,7 @@ const BpaApplicationDetail = () => {
                           {/* to get FieldInspection values */}
                           {detail?.isFieldInspection ? (
                             <div>
-                              { data?.applicationData?.additionalDetails?.isSelfCertification &&
+                              {/* { data?.applicationData?.additionalDetails?.isSelfCertification &&
                                 (
                                   <Card>
                                     <InspectionReport
@@ -2254,7 +2254,7 @@ const BpaApplicationDetail = () => {
                                       onSelect={onChangeReport}
                                     />
                                   </Card>
-                              )}
+                              )} */}
                               {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
                                 (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
                                   <div>

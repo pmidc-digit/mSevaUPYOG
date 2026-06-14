@@ -235,6 +235,52 @@ const ApplicationDetails = () => {
     });
   }
 
+  if (workflowDetails?.data) {
+    const currentStatus = applicationDetails?.applicationData?.status;
+    const isPendingDocVerification =
+      currentStatus === "APPLIED" ||
+      currentStatus === "PENDINGDOCVERIFICATION" ||
+      currentStatus === "PENDING_DOC_VERIFICATION" ||
+      workflowDetails?.data?.timeline?.[0]?.state === "APPLIED" ||
+      workflowDetails?.data?.timeline?.[0]?.state === "PENDINGDOCVERIFICATION" ||
+      workflowDetails?.data?.timeline?.[0]?.state === "PENDING_DOC_VERIFICATION";
+
+    if (isPendingDocVerification) {
+      if (!workflowDetails.data.actionState) {
+        workflowDetails.data.actionState = {};
+      }
+      if (!workflowDetails.data.actionState.nextActions) {
+        workflowDetails.data.actionState.nextActions = workflowDetails.data.nextActions || [];
+      }
+      const hasEditActionState = workflowDetails.data.actionState.nextActions.some((data) => data.action === "EDIT");
+      if (!hasEditActionState) {
+        workflowDetails.data.actionState.nextActions.push({
+          action: "EDIT",
+          redirectionUrl: {
+            pathname: `/digit-ui/employee/tl/edit-application-details/${applicationNumber}`,
+            state: applicationDetails,
+          },
+          tenantId: stateId,
+          role: [],
+        });
+      }
+      if (workflowDetails.data.nextActions) {
+        const hasEditNextAction = workflowDetails.data.nextActions.some((data) => data.action === "EDIT");
+        if (!hasEditNextAction) {
+          workflowDetails.data.nextActions.push({
+            action: "EDIT",
+            redirectionUrl: {
+              pathname: `/digit-ui/employee/tl/edit-application-details/${applicationNumber}`,
+              state: applicationDetails,
+            },
+            tenantId: stateId,
+            role: [],
+          });
+        }
+      }
+    }
+  }
+
   const userInfo = Digit.UserService.getUser();
   const rolearray = userInfo?.info?.roles.filter((item) => {
     if ((item.code == "TL_CEMP" && item.tenantId === tenantId) || item.code == "CITIZEN") return true;

@@ -244,9 +244,11 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         address.doorNo = TraidDetails.cpt.details.address.doorNo || TraidDetails.address.doorNo || null;
       if (TraidDetails.cpt.details.address.street || TraidDetails.address?.street)
         address.street = TraidDetails.cpt.details.address.street || TraidDetails.address.street || null;
-      if (TraidDetails.cpt.details.address.pincode) address.pincode = TraidDetails.cpt.details.address.pincode;
+      if (TraidDetails.cpt.details.address.pincode || TraidDetails.address?.pincode)
+        address.pincode = TraidDetails.cpt.details.address.pincode || TraidDetails.address.pincode || null;
       if (TraidDetails.address?.buildingName) address.buildingName = TraidDetails.address.buildingName;
-      if (TraidDetails.address?.electricityNo) address.electricityNo = TraidDetails.address.electricityNo;
+      if (TraidDetails.address?.electricityNo || TraidDetails.cpt?.details?.address?.electricityNo)
+        address.electricityNo = TraidDetails.address.electricityNo || TraidDetails.cpt.details.address.electricityNo || null;
     } else if (TraidDetails?.address) {
       address.city = TraidDetails.address.city?.code || null;
       if (TraidDetails?.address?.locality?.code) {

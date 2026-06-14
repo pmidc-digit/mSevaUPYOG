@@ -24,11 +24,12 @@ const convertEpochToDate = (dateEpoch) => {
     return null;
   }
 };
-const getAddress = (address, t) => {
+const getAddress = (address, t, fallbackPincode) => {
+  const pin = address?.pincode || fallbackPincode;
   return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${
     address?.landmark ? `${address?.landmark}, ` : ""
   }${t(Digit.Utils.pt.getMohallaLocale(address?.locality.code, address?.tenantId))}, ${t(Digit.Utils.pt.getCityLocale(address?.tenantId))}${
-    address?.pincode && t(address?.pincode) ? `, ${address.pincode}` : " "
+    pin && t(pin) ? `, ${pin}` : " "
   }`;
 };
 export const TLSearch = {
@@ -50,8 +51,8 @@ export const TLSearch = {
     const filter = { applicationNumber };
     const response = await TLSearch.application(tenantId, filter);
     const propertyDetails =
-      response?.tradeLicenseDetail?.additionalDetail?.propertyId &&
-      (await Digit.PTService.search({ tenantId, filters: { propertyIds: response?.tradeLicenseDetail?.additionalDetail?.propertyId } }));
+      (response?.propertyId || response?.tradeLicenseDetail?.additionalDetail?.propertyId) &&
+      (await Digit.PTService.search({ tenantId, filters: { propertyIds: response?.propertyId || response?.tradeLicenseDetail?.additionalDetail?.propertyId } }));
     let numOfApplications = [];
     if (response?.licenseNumber) {
       const licenseNumbers = response?.licenseNumber;
@@ -60,7 +61,7 @@ export const TLSearch = {
     }
     let propertyAddress = "";
     if (propertyDetails && propertyDetails?.Properties.length) {
-      propertyAddress = getAddress(propertyDetails?.Properties[0]?.address, t);
+      propertyAddress = getAddress(propertyDetails?.Properties[0]?.address, t, response?.tradeLicenseDetail?.address?.pincode);
     }
     let employeeResponse = [];
     console.log("response in TL: ", response);
@@ -91,7 +92,7 @@ export const TLSearch = {
         { title: "TL_FINANCIAL_YEAR_LABEL", value: response?.financialYear ? `FY${response?.financialYear}` : "NA" },
         { title: "TL_NEW_TRADE_DETAILS_LIC_TYPE_LABEL", value: response?.licenseType ? `TRADELICENSE_LICENSETYPE_${response?.licenseType}` : "NA" },
         { title: "TL_COMMON_TABLE_COL_TRD_NAME", value: response?.tradeName },
-        { title: "TL_OLD_RECEIPT_NO", value: response?.tradeLicenseDetail?.additionalDetail?.oldReceiptNo || "NA" },
+        { title: "TL_OLD_RECEIPT_NO", value: response?.oldLicenseNumber || response?.tradeLicenseDetail?.additionalDetail?.oldReceiptNo || "NA" },
         {
           title: "TL_NEW_TRADE_DETAILS_STRUCT_TYPE_LABEL",
           value: response?.tradeLicenseDetail?.structureType
@@ -170,6 +171,8 @@ export const TLSearch = {
         { title: "TL_PROPERTY_ID", value: propertyDetails?.Properties?.[0]?.propertyId || "NA" },
         { title: "PT_OWNER_NAME", value: reversedOwners[0]?.name || "NA" },
         { title: "PROPERTY_ADDRESS", value: propertyAddress || "NA" },
+        { title: "CORE_COMMON_PINCODE", value: response?.tradeLicenseDetail?.address?.pincode || propertyDetails?.Properties?.[0]?.address?.pincode || "NA" },
+        { title: "TL_ELECTRICITY_CONNECTION_NO", value: response?.tradeLicenseDetail?.address?.electricityNo || propertyDetails?.Properties?.[0]?.address?.electricityNo || "NA" },
         {
           title: "TL_VIEW_PROPERTY_DETAIL",
           to: `/digit-ui/employee/commonpt/view-property?propertyId=${propertyDetails?.Properties?.[0]?.propertyId}&tenantId=${propertyDetails?.Properties?.[0]?.tenantId}&from=TL_APPLICATION_DETAILS_LABEL`,
@@ -184,7 +187,7 @@ export const TLSearch = {
     const tradeAddress = {
       title: "TL_NEW_TRADE_DETAILS_HEADER_TRADE_LOC_DETAILS",
       values: [
-        { title: "TL_PROPERTY_ASSESSMENT_ID", value: response?.tradeLicenseDetail?.additionalDetail?.propertyId || "NA" },
+        { title: "TL_PROPERTY_ASSESSMENT_ID", value: response?.propertyId || response?.tradeLicenseDetail?.additionalDetail?.propertyId || "NA" },
         { title: "CORE_COMMON_PINCODE", value: response?.tradeLicenseDetail?.address?.pincode || "NA" },
         { title: "MYCITY_CODE_LABEL", value: response?.tradeLicenseDetail?.address?.city || "NA" },
         { title: "TL_LOCALIZATION_LOCALITY", value: `${stringReplaceAll(cityOfApp?.toUpperCase(), ".", "_")}_REVENUE_${localityCode}` },

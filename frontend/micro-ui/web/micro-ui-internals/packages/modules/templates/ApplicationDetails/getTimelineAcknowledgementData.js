@@ -10,7 +10,7 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
   const businessId = processInstances?.[0]?.businessId || "N/A";
   const businessService = processInstances?.[0]?.businessService || "N/A";
   const moduleName = processInstances?.[0]?.moduleName || "N/A";
- 
+  
   const pdfDownloadLink = (documents, fileStoreId) => {
     const downloadLink = documents?.[fileStoreId] || "";
     const formats = downloadLink?.split(",")?.filter(Boolean) || [];
@@ -40,8 +40,8 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
     const mobileNumber = item?.assigner?.mobileNumber || "N/A";
     const action = item?.performedAction || "N/A";
     const status = item?.status || item?.state || "N/A";
-    const designation = t(deptMap[item?.assigner?.userName]) || assignerType || "N/A"
-
+    const designationKey = item?.designationKey || null;
+    const designation = designationKey ? t(designationKey) : (assignerType || "N/A");
     // sanitize wfComment before using
     const rawComment = item?.wfComment?.[0] || "-";
     const comment = typeof rawComment === "string" ? rawComment.split(pattern)[0] : rawComment;

@@ -17,10 +17,10 @@ import org.egov.tl.web.models.AuditDetails;
 import org.egov.tl.web.models.Document;
 import org.egov.tl.web.models.OwnerInfo;
 import org.egov.tl.web.models.TradeUnit;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,7 +32,7 @@ import lombok.Builder;
  */
 @ApiModel(description = "A Object holds the basic data for a Trade License")
 @Validated
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-09-18T17:06:11.263+05:30")
+@jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-09-18T17:06:11.263+05:30")
 
 @Getter
 @Setter
@@ -42,22 +42,22 @@ import lombok.Builder;
 public class TradeLicenseDetail   {
 
         @JsonProperty("id")
-        @SafeHtml
+        @SanitizeHtml
         @Size(max=64)
         private String id;
 
         @JsonProperty("surveyNo")
-        @SafeHtml
+        @SanitizeHtml
         @Size(max=64)
         private String surveyNo = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("subOwnerShipCategory")
         private String subOwnerShipCategory = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("structureType")
         private String structureType;
 
@@ -74,12 +74,12 @@ public class TradeLicenseDetail   {
         private BigDecimal adhocPenalty;
 
         @Size(max=1024)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("adhocExemptionReason")
         private String adhocExemptionReason;
 
         @Size(max=1024)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("adhocPenaltyReason")
         private String adhocPenaltyReason;
 

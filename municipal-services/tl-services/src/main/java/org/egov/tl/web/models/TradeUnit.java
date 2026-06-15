@@ -7,17 +7,17 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import org.egov.tl.web.models.AuditDetails;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
 /**
  * A Object holds the basic data for a Trade License
  */
 @ApiModel(description = "A Object holds the basic data for a Trade License")
 @Validated
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-09-18T17:06:11.263+05:30")
+@jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-09-18T17:06:11.263+05:30")
 
 @Getter
 @Setter
@@ -28,12 +28,12 @@ import javax.validation.constraints.*;
 public class TradeUnit   {
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("id")
         private String id;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("tenantId")
         private String tenantId = null;
 
@@ -41,17 +41,17 @@ public class TradeUnit   {
         private Boolean active;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("tradeType")
         private String tradeType = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("uom")
         private String uom = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("uomValue")
         private String uomValue = null;
 

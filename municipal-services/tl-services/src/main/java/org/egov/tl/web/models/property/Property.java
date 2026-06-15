@@ -7,12 +7,12 @@ import org.egov.tl.web.models.AuditDetails;
 import org.egov.tl.web.models.Document;
 import org.egov.tl.web.models.Institution;
 import org.egov.tl.web.models.OwnerInfo;
-import org.hibernate.validator.constraints.SafeHtml;
 import org.javers.core.metamodel.annotation.DiffIgnore;
+import org.egov.tl.web.models.SanitizeHtml;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Max;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Max;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,15 +29,15 @@ import java.util.List;
 public class Property {
 
 	@JsonProperty("acknowldgementNumber")
-	@SafeHtml
+	@SanitizeHtml
 	private String acknowldgementNumber;
 
 	@JsonProperty("propertyType")
-	@SafeHtml
+	@SanitizeHtml
 	private String propertyType;
 
 	@JsonProperty("ownershipCategory")
-	@SafeHtml
+	@SanitizeHtml
 	private String ownershipCategory;
 
 	@JsonProperty("owners")
@@ -48,7 +48,7 @@ public class Property {
 	private Institution institution;
 
 	@JsonProperty("usageCategory")
-	@SafeHtml
+	@SanitizeHtml
 	private String usageCategory;
 
 	@Max(value = 500)

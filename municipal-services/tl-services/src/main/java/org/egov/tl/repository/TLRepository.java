@@ -63,7 +63,7 @@ public class TLRepository {
     public List<TradeLicense> getLicenses(TradeLicenseSearchCriteria criteria) {
         List<Object> preparedStmtList = new ArrayList<>();
         String query = queryBuilder.getTLSearchQuery(criteria, preparedStmtList,false);
-        List<TradeLicense> licenses =  jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+        List<TradeLicense> licenses =  jdbcTemplate.query(query, rowMapper, preparedStmtList.toArray());
         sortChildObjectsById(licenses);
         return licenses;
     }
@@ -71,18 +71,18 @@ public class TLRepository {
     public int getLicenseCount(TradeLicenseSearchCriteria criteria) {
     	List<Object> preparedStmtList = new ArrayList<>();
         String query = queryBuilder.getTLSearchQuery(criteria, preparedStmtList,true);
-        int licenseCount = jdbcTemplate.queryForObject(query,preparedStmtList.toArray(),Integer.class);
+        int licenseCount = jdbcTemplate.queryForObject(query,Integer.class,preparedStmtList.toArray());
         return licenseCount;
     }
     
     public Map<String,Integer> getApplicationsCount(TradeLicenseSearchCriteria criteria) {
     	List<Object> preparedStmtListIssued = new ArrayList<>();
         String query = queryBuilder.getApplicationsCountQuery(criteria, preparedStmtListIssued, TLConstants.APPLICATION_TYPE_NEW);
-        int issuedCount = jdbcTemplate.queryForObject(query,preparedStmtListIssued.toArray(),Integer.class);
+        int issuedCount = jdbcTemplate.queryForObject(query,Integer.class,preparedStmtListIssued.toArray());
         
         List<Object> preparedStmtListRenewal = new ArrayList<>();
         query = queryBuilder.getApplicationsCountQuery(criteria, preparedStmtListRenewal, TLConstants.APPLICATION_TYPE_RENEWAL);
-        int renewedCount = jdbcTemplate.queryForObject(query,preparedStmtListRenewal.toArray(),Integer.class);
+        int renewedCount = jdbcTemplate.queryForObject(query,Integer.class,preparedStmtListRenewal.toArray());
         
         Map<String,Integer> countsMap = new HashMap<String,Integer>();
         countsMap.put(TLConstants.ISSUED_COUNT, issuedCount);

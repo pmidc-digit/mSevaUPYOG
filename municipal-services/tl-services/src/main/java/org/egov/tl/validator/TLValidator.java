@@ -1,7 +1,7 @@
 package org.egov.tl.validator;
 
 import com.jayway.jsonpath.JsonPath;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.tl.config.TLConfiguration;

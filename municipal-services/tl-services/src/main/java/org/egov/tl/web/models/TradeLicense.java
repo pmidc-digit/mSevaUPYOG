@@ -2,14 +2,14 @@ package org.egov.tl.web.models;
 
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import lombok.*;
 import org.egov.tl.util.TLConstants;
 import org.egov.tl.web.models.calculation.Calculation;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -23,7 +23,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel(description = "A Object holds the basic data for a Trade License")
 @Validated
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-09-18T17:06:11.263+05:30")
+@jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-09-18T17:06:11.263+05:30")
 
 @Getter
 @Setter
@@ -32,12 +32,12 @@ import io.swagger.annotations.ApiModel;
 @Builder
 public class  TradeLicense   {
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("id")
         private String id = null;
 
         @NotNull
-        @SafeHtml
+        @SanitizeHtml
         @Size(max=64)
         @JsonProperty("tenantId")
         private String tenantId = null;
@@ -104,7 +104,7 @@ public class  TradeLicense   {
         }
     }
 
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("businessService")
         private String businessService = "TL";
 
@@ -114,43 +114,43 @@ public class  TradeLicense   {
         @JsonProperty("applicationType")
         private ApplicationTypeEnum applicationType = null;
 
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("workflowCode")
         private String workflowCode = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("licenseNumber")
         private String licenseNumber = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("applicationNumber")
         private String applicationNumber;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("oldLicenseNumber")
         private String oldLicenseNumber = null;
 
 
         @Size(max=256)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("propertyId")
         private String propertyId = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("oldPropertyId")
         private String oldPropertyId = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("accountId")
         private String accountId = null;
 
         @Size(max=256)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("tradeName")
         private String tradeName = null;
 
@@ -164,7 +164,7 @@ public class  TradeLicense   {
         private Long issuedDate = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("financialYear")
         private String financialYear = null;
 
@@ -180,7 +180,7 @@ public class  TradeLicense   {
 
         @NotNull
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("action")
         private String action = null;
 
@@ -192,7 +192,7 @@ public class  TradeLicense   {
         private List<Document> wfDocuments;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("status")
         private String status = null;
 
@@ -208,10 +208,10 @@ public class  TradeLicense   {
         private AuditDetails auditDetails = null;
 
         @Size(max=128)
-        @SafeHtml
+        @SanitizeHtml
         private String comment;
 
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("fileStoreId")
         private String fileStoreId = null;
 

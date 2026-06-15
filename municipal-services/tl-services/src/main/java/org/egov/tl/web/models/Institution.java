@@ -2,11 +2,11 @@ package org.egov.tl.web.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 @Getter
 @Setter
@@ -17,27 +17,27 @@ import javax.validation.constraints.Size;
 public class Institution {
 
   @Size(max=64)
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("id")
   private String id;
 
   @Size(max=256)
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("tenantId")
   private String tenantId;
 
   @Size(max=64)
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("name")
   private String name;
 
   @Size(max=64)
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("type")
   private String type;
 
   @Size(max=64)
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("designation")
   private String designation;
 
@@ -45,23 +45,23 @@ public class Institution {
   private Boolean active = null;
 
   @Size(max=256)
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("instituionName")
   private String instituionName;
 
   @Size(max=64)
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("contactNo")
   private String contactNo;
 
 
   @Size(max=64)
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("organisationRegistrationNo")
   private String organisationRegistrationNo;
 
   @Size(max=512)
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("address")
   private String address;
 }

@@ -66,9 +66,9 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
 
   useEffect(() => {
     setApprovers(approverData?.Employees?.map((employee) => ({ uuid: employee?.uuid, name: employee?.user?.name, designation: employee?.assignments?.[0]?.designation })));
-    if (approverData?.Employees?.length === 1) {
-      setSelectedApprover({ uuid: approverData?.Employees?.[0]?.uuid, name: approverData?.Employees?.[0]?.user?.name, designation: approverData?.Employees?.[0]?.assignments?.[0]?.designation });
-    }
+    // if (approverData?.Employees?.length === 1) {
+    //   setSelectedApprover({ uuid: approverData?.Employees?.[0]?.uuid, name: approverData?.Employees?.[0]?.user?.name, designation: approverData?.Employees?.[0]?.assignments?.[0]?.designation });
+    // }
   }, [approverData]);
 
   function selectFile(e) {

@@ -1973,6 +1973,25 @@ const BpaApplicationDetail = () => {
                           {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && 
                           (data?.applicationData?.additionalDetails?.isSelfCertification ? (
                             <div>
+                              <StatusTable
+                                style={{
+                                  display: "flex",
+                                  gap: "20px",
+                                  flexWrap: "wrap",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                {sitePhotos?.length > 0 &&
+                                  [...sitePhotos]
+                                    .map((doc, index) => (
+                                      <NocSitePhotographsBPA
+                                        key={doc?.values?.[0]?.filestoreId}
+                                        url={doc?.values?.[0]?.fileURL}
+                                        documentType={doc?.title}
+                                        coordinates={index === 0 ? data?.applicationData?.landInfo?.address?.geoLocation : data?.applicationData?.additionalDetails?.geoLocationTwo}
+                                      />
+                                    ))}
+                              </StatusTable>
                               {pdfLoading ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
@@ -2104,7 +2123,8 @@ const BpaApplicationDetail = () => {
                             <div>
                               {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
                                 (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
-                                  <Card>
+                                  <div>
+                                  {isMobile ? <Card>
                                     <div id="fieldInspection"></div>
                                     <SiteInspection
                                       siteImages={siteImages}
@@ -2112,7 +2132,10 @@ const BpaApplicationDetail = () => {
                                       geoLocations={geoLocations}
                                       customOpen={routeToImage}
                                     />
-                                  </Card>
+                                  </Card> : <Card>
+                                    <div id="fieldInspection">{t("Please Use Mobile Device for Field Inspection.")}</div>
+                                  </Card>}
+                                  </div>
                                 )}
 
                               {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&

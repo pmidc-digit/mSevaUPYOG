@@ -33,7 +33,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   const checkingFlow = formData?.uiFlow?.flow;
   const [showToast, setShowToast] = useState(null);
   const stateCode = Digit.ULBService.getStateId();
-  const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["SubOccupancyType"]);
+  const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["NewSubOccupancyType"]);
   // const { data, isLoading, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, formData?.data?.scrutinyNumbe?.edcrNumber, {
   //   enabled: true,
   // });
@@ -51,7 +51,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
 
   useEffect(() => {
     if (!isMdmsLoading && currentStepData?.createdResponse?.additionalDetails?.subcategories) {
-      const subOccupancyMaster = mdmsData?.BPA?.SubOccupancyType || [];
+      const subOccupancyMaster = mdmsData?.BPA?.NewSubOccupancyType || [];
 
       const matched = subOccupancyMaster.find((item) => item?.code === currentStepData?.createdResponse?.additionalDetails?.subcategories);
 
@@ -59,7 +59,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
         const formatted = {
           code: matched.code,
           name: matched.name,
-          i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(matched.code.toUpperCase(), "-", "_")}`,
+          i18nKey: `${matched.name}`,
         };
 
         setsubOccupancyObject({
@@ -147,7 +147,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
     const suboccoption = [];
     // data &&
     // data?.planDetail?.mdmsMasterData?.SubOccupancyType?.map((ob) => {
-    mdmsData?.BPA?.SubOccupancyType?.map((ob) => {
+    mdmsData?.BPA?.NewSubOccupancyType?.map((ob) => {
       suboccoption.push({
         code: ob.code,
         name: ob.name,
@@ -243,7 +243,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   const accessData = (plot) => {
     const name = plot;
     return (originalRow, rowIndex, columns) => {
-      return originalRow[name];
+      return <div style={{overflowWrap: "break-word"}}>{originalRow[name]}</div>;
     };
   };
 

@@ -45,7 +45,9 @@ import {
   fetchUrl,
   decryptId,
   fetchFilestoreAndTenant,
-  amountToWords
+  amountToWords,
+  fetchOnlyUrl,
+  fetchOnlyFileStore
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
@@ -1441,6 +1443,26 @@ const BpaApplicationDetail = () => {
     }
   }
 
+    async function openDrawingPopup() {
+      try {
+        setLoader(true);
+        console.log("Drawing download URL:", data?.edcrDetails?.updatedDxfFile);
+        const downloadUrl = await fetchOnlyUrl(data?.edcrDetails?.updatedDxfFile, tenantId);
+  
+        setPdfUrl(downloadUrl);
+        setShowPdfModal(true);
+      } catch (error) {
+        console.error("Drawing popup error:", error);
+        setShowToast({
+          key: "true",
+          error: true,
+          message: "Failed to open drawing. Please try again.",
+        });
+      } finally {
+        setLoader(false);
+      }
+    }
+
   function onActionSelect(action) {
     if (
       action?.action === "SEND_FOR_INSPECTION_REPORT" &&
@@ -1453,7 +1475,10 @@ const BpaApplicationDetail = () => {
     if (action) {
       if(action?.action == "ESIGN"){
         openSanctionLetterPopup();
-      }else if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
+      }else if(action?.action == "DRAWING_ESIGN"){
+        openDrawingPopup();
+      }
+      else if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
         window.location.assign(window.location.href.split("bpa")[0] + "editApplication/bpa" + window.location.href.split("bpa")[1]);
       } else if (action?.redirectionUrll) {
         window.location.assign(`${window.location.origin}/digit-ui/employee/payment/collect/${action?.redirectionUrll?.pathname}`);
@@ -1816,8 +1841,8 @@ const BpaApplicationDetail = () => {
 
       const mergedFilestore = await Digit.EDCRService.mergeSanctionLetter({additionalDetails: payload}, stateId);
 
-      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/filestore/${id}`;
-      // const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
+      // const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/filestore/${id}`;
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
       const authToken = localStorage.getItem('token');
 
       // Trigger eSign
@@ -1844,6 +1869,43 @@ const BpaApplicationDetail = () => {
       });
     }
   };
+
+  const printDrawingWithESign = async () => {
+      try {
+        // console.log("🎯 Starting certificate eSign process...");
+  
+        const { id: fileStoreId, fullTenantId: tenant } = fetchOnlyFileStore(data?.edcrDetails?.updatedDxfFile);
+  
+        // const callbackUrl = `${window.location.origin}/digit-ui/citizen/obps/bpa/esign/complete/${id}/${fileStoreId}`;
+        const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/filestore/${id}`;
+        const authToken = localStorage.getItem("token");      
+  
+        console.log("📁 FileStore ID In Drawing:", fileStoreId, tenant, callbackUrl, authToken);
+  
+        // Trigger eSign
+        eSignCertificate(
+          { fileStoreId, tenantId: tenant, callbackUrl, authToken },
+          {
+            onSuccess: () => console.log("✅ eSign initiated successfully"),
+            onError: (error) => {
+              console.error("❌ eSign failed:", error);
+              setShowToast({
+                key: "true",
+                error: true,
+                message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
+              });
+            },
+          }
+        );
+      } catch (error) {
+        console.error("❌ Certificate preparation failed:", error);
+        setShowToast({
+          key: "true",
+          error: true,
+          message: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
+        });
+      }
+    };
 
   let isSingleButton = false;
   let isMenuBotton = false;
@@ -2705,7 +2767,7 @@ const BpaApplicationDetail = () => {
           title={t("NOC_SANCTION_LETTER")}
         >
           <ActionBar>
-            <SubmitBar label={t("ESIGN")} onSubmit={printCertificateWithESign} disabled={eSignLoading} />
+            <SubmitBar label={t("ESIGN")} onSubmit={data?.applicationStatus === "DRAWING_ESIGN_PENDING" ? printDrawingWithESign :printCertificateWithESign} disabled={eSignLoading} />
           </ActionBar>
         </PdfPreviewModal>
       )}

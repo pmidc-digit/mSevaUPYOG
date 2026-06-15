@@ -168,7 +168,7 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/search/obps-application`} component={(props) => <AppContainer><Search {...props} parentRoute={path} /></AppContainer>} />
         <PrivateRoute path={`${path}/edcrscrutiny/apply`} component={(props) => <AppContainer><CreateEDCR {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/edcrscrutiny/oc-apply`} component={(props) => <AppContainer><CreateOCEDCR {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/bpa/esign/complete/:id/:file/:drawing`} component={BPAEsignResponse} />
+        <PrivateRoute path={`${path}/bpa/esign/complete/:id/:file`} component={BPAEsignResponse} />
         <PrivateRoute path={`${path}/bpa/:applicationType/:serviceType`} component={NewBuildingPermit} />
         <PrivateRoute path={`${path}/bpa/:applicationType/:serviceType/stepper`} component={SelfCertificationStepper} />
         <PrivateRoute path={`${path}/ocbpa/:applicationType/:serviceType`} component={OCBuildingPermit} />
@@ -186,7 +186,7 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/response`} component={(props) => <AppContainer><OBPSResponse {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/self-certification/response/:id`} component={(props) => <AppContainer><SelfCertificationResponse {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/ocbpa/:applicationType/:serviceType/stepper`} component={(props) => <AppContainer><OCStepperForm {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/filestore/:id/:file`} component={BPASanctionEsignResponse} />
+        <PrivateRoute path={`${path}/filestore/:id/:drawing`} component={BPASanctionEsignResponse} />
       </Switch>
     </span>
   );

@@ -234,3 +234,66 @@ export const formatDate = (dateStr) => {
   const [year, month, day] = dateStr.split("-");
   return `${day}/${month}/${year}`;
 };
+
+
+const REQUIRED_TAX_CODES = [
+  "CHB_SECURITY_DEPOSIT",
+  "SGST",
+  "CHB_COW_CESS",
+  "BOOKING_FEES",
+  "CHB_DISCOUNT",
+  "CGST",
+];
+
+const formatAmount = (value, code) => {
+  const num = Number(value) || 0;
+
+  if (code === "CHB_DISCOUNT") {
+    return Math.abs(num).toLocaleString("en-IN");
+  }
+  return Math.max(0, num).toLocaleString("en-IN");
+};
+
+export const fixAdjustedAmount = (payments = {}) => ({
+  ...payments,
+
+  totalAmountPaid: Math.max(0, Number(payments?.totalAmountPaid) || 0)
+    .toLocaleString("en-IN"),
+  totalDue: Math.max(0, Number(payments?.totalDue) || 0)
+    .toLocaleString("en-IN"),
+
+  paymentDetails: (payments?.paymentDetails || []).map((pd) => ({
+    ...pd,
+
+    totalAmountPaid: Math.max(0, Number(pd?.totalAmountPaid) || 0)
+      .toLocaleString("en-IN"),
+
+    bill: {
+      ...pd?.bill,
+      billDetails: (pd?.bill?.billDetails || []).map((bd) => {
+        const existing = bd?.billAccountDetails || [];
+
+        const existingCodes = new Set(
+          existing?.map((acc) => acc?.taxHeadCode)
+        );
+
+        const missing = REQUIRED_TAX_CODES
+          ?.filter((code) => !existingCodes.has(code))
+          ?.map((code) => ({
+            taxHeadCode: code,
+            adjustedAmount: formatAmount(0, code),
+          }));
+
+        const updatedAccounts = [...existing, ...missing]?.map((acc) => ({
+          ...acc,
+          adjustedAmount: formatAmount(acc?.adjustedAmount, acc?.taxHeadCode),
+        }));
+
+        return {
+          ...bd,
+          billAccountDetails: updatedAccounts,
+        };
+      }),
+    },
+  })),
+});

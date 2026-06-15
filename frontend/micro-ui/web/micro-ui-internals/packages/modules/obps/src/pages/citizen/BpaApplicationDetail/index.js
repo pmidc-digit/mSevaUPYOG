@@ -40,7 +40,6 @@ import {
   getDocsFromFileUrls,
   scrutinyDetailsData,
   amountToWords,
-  getBase64Img,
   getApproveRejectComments,
   fetchUrl,
 } from "../../../utils"
@@ -971,8 +970,9 @@ useEffect(() => {
        const newValidityDate = Date.now();
 
        // validity date = approval date + 3 as per feedback
-       newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
-       const approvalDatePlusThree = newValidityDate.getTime();
+       const validityDateObj = new Date(newValidityDate);
+       validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
+       const approvalDatePlusThree = validityDateObj.getTime();
        let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
 
        if (!fileStoreId) {

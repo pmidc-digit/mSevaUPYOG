@@ -22,7 +22,7 @@ import getChbAcknowledgementData from "../../getChbAcknowledgementData";
 import CHBWFApplicationTimeline from "../../pageComponents/CHBWFApplicationTimeline";
 import CHBDocument from "../../pageComponents/CHBDocument";
 import ApplicationTable from "../../components/inbox/ApplicationTable";
-import { pdfDownloadLink, formatDate } from "../../utils";
+import { pdfDownloadLink, formatDate, fixAdjustedAmount } from "../../utils";
 import NDCDocumentTimline from "../../components/NDCDocument";
 import NDCModal from "../../pageComponents/NDCModal";
 import { Loader } from "../../components/Loader";
@@ -313,7 +313,8 @@ const CHBApplicationDetails = () => {
       console.log("application", application);
       let fileStoreId = data?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
-        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
+        const pdfPayments = fixAdjustedAmount(payments);
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...pdfPayments, ...application }] }, "chbservice-receipt");
         const updatedApplication = {
           ...data?.hallsBookingApplication[0],
           paymentReceiptFilestoreId: response?.filestoreIds[0],
@@ -354,7 +355,8 @@ const CHBApplicationDetails = () => {
       let fileStoreId = data?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
       console.log("fileStoreId bef create", fileStoreId);
       if (!fileStoreId) {
-        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
+        const pdfPayments = fixAdjustedAmount(payments);
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...pdfPayments, ...application }] }, "chb-permissionletter");
 
         const updatedApplication = {
           ...data?.hallsBookingApplication[0],

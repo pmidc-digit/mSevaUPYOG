@@ -275,8 +275,21 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
                           <div className="custom-comment-text">
                             {item?.wfComment?.map((comment, idx) => {
                               const pattern = /\[#\?.*?\*\*\]/;
-                              const truncatedComment = typeof comment === "string" ? comment?.split(pattern)[0] : comment;
-                              return <p key={idx}>{truncatedComment}</p>;
+                              const parts = typeof comment === "string" ? comment?.split(pattern) : [comment];
+                              const truncatedComment = parts[0];
+                              const subComment = parts[1]?.trim() || null;
+
+                              return (
+                                <React.Fragment key={idx}>
+                                  <p>{truncatedComment}</p>
+                                  {subComment && (
+                                    <div className="custom-comment-text">
+                                      <h4 className="custom-comment-text">{t("Additional Remarks")}</h4>
+                                      <p className="custom-comment-text">{subComment}</p>
+                                    </div>
+                                  )}
+                                </React.Fragment>
+                              );
                             })}
                           </div>
                         </div>

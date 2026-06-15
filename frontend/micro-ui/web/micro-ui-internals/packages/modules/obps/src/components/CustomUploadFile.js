@@ -146,6 +146,7 @@ const CustomUploadFile = (props) => {
   const [hasFile, setHasFile] = useState(false);
   const [loader, setLoader] = useState(false);
   const [prevSate, setprevSate] = useState(null);
+  const [localError, setLocalError] = useState(null);
   const user_type = Digit.SessionStorage.get("userType");
   let extraStyles = {};
   const handleChange = () => {
@@ -182,11 +183,75 @@ const CustomUploadFile = (props) => {
     props.onDelete();
   };
 
+  const clearError = () => {
+    setLocalError(null);
+    if (props?.setError) props.setError(null);
+  };
+
   const handleEmpty = () => {
     if (inpRef?.current?.files?.length <= 0 && prevSate !== null) {
       inpRef.current.value = "";
       props.onDelete();
     }
+  };
+
+  const isFileTypeAllowed = (file, accept) => {
+    if (!accept || !file) return true; // no restriction
+    const acceptList = accept.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+    if (acceptList.length === 0) return true;
+
+    const fileName = (file.name || "").toLowerCase();
+    const fileType = (file.type || "").toLowerCase();
+
+    // Check each accept token
+    for (const token of acceptList) {
+      if (token.startsWith('.')) {
+        // extension match
+        if (fileName.endsWith(token)) return true;
+      } else if (token.includes('/')) {
+        // MIME type match (supports image/*)
+        if (token.endsWith('/*')) {
+          const prefix = token.split('/')[0];
+          if (fileType.startsWith(prefix + '/')) return true;
+        } else {
+          if (fileType === token) return true;
+        }
+      } else {
+        // fallback: treat as extension without dot
+        if (fileName.endsWith('.' + token)) return true;
+      }
+    }
+
+    return false;
+  };
+
+  const handleInputChange = (e) => {
+    clearError();
+    const file = e?.target?.files?.[0];
+    if (!file) {
+      // no file selected
+      props.onUpload && props.onUpload(e);
+      return;
+    }
+
+    const accept = props.accept || '';
+    if (!isFileTypeAllowed(file, accept)) {
+      const readableAccept = accept.replace(/,/g, ', ');
+      const msg = t('Invalid file type. Allowed: ') + readableAccept;
+      setLocalError(msg);
+      if (props?.setError) props.setError(msg);
+      // clear input so user can reselect
+      inpRef.current.value = '';
+      return;
+    }
+
+    // valid file — forward the event to parent
+    props.onUpload && props.onUpload(e);
+    // update local state
+    if (inpRef?.current?.files?.[0]) {
+      setHasFile(true);
+      setprevSate(inpRef?.current?.files?.[0]);
+    } else setHasFile(false);
   };
 
   if (props?.uploadMessage && inpRef?.current?.value) {
@@ -306,7 +371,7 @@ const CustomUploadFile = (props) => {
           multiple={props.multiple}
           accept={props.accept}
           disabled={props.disabled}
-          onChange={(e) => props.onUpload(e)}
+          onChange={handleInputChange}
           onClick={(e) => (e.target.value = "")}
         />
       </div>
@@ -331,6 +396,7 @@ const CustomUploadFile = (props) => {
     )}
 
     {props.iserror && <p className="error-text">{props.iserror}</p>}
+  {localError && <p className="error-text">{localError}</p>}
     {props?.showHintBelow && <p className="cell-text">{t(props?.hintText)}</p>}
     {loader && <LoaderNew page />}
   </Fragment>

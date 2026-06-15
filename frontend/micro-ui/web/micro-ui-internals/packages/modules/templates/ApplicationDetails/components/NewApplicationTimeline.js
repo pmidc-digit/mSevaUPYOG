@@ -112,13 +112,7 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
 
   const data = useMemo(() => normalizeTimeline(workflowDetails), [workflowDetails]);
 
-  const normalizedWorkflowDetails = {
-    ...workflowDetails,
-    data: {
-      ...(workflowDetails?.data || {}),
-      timeline: data,
-    },
-  };
+  
   // Assuming data is latest first, we don't reverse.
   const sortedData = data?.filter((val) => !(val?.performedAction === "SAVE_AS_DRAFT")) || [];
   console.log(sortedData, "sortedData")
@@ -154,6 +148,17 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
   const roleCode = user?.roles?.find((r) => BPA_ROLE_MAP[r?.code])?.code;
   return roleCode ? BPA_ROLE_MAP[roleCode] : null;
 };
+
+  const normalizedWorkflowDetails = {
+    ...workflowDetails,
+    data: {
+      ...(workflowDetails?.data || {}),
+      timeline: data?.map((item) => ({
+      ...item,
+      designationKey: getUserDesignation(item?.assigner), // ✅ attach it here
+    })),
+    },
+  };
    const handleDownloadPDF = React.useCallback(() => {
     if (!isLoading) {
       const tenantInfo = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY") || {};

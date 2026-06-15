@@ -48,13 +48,6 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
     0
   );
 
-  const handleDownloadPDF = React.useCallback(() => {
-    if (!isLoading) {
-      const tenantInfo = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY") || {};
-      const acknowledgementData = getTimelineAcknowledgementData(workflowDetails, tenantInfo, docData?.pdfFiles || {}, t);
-      Digit.Utils.pdf.generateTimelinePDF(acknowledgementData);
-    }
-  }, [workflowDetails, docData, t, isLoading]);
 
   const parseActionDateTime = (auditDetails) => {
     if (!auditDetails?.created || !auditDetails?.timing) return null;
@@ -116,15 +109,28 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
     return normalized.reverse();
   };
 
+
   const data = useMemo(() => normalizeTimeline(workflowDetails), [workflowDetails]);
+
+  
   // Assuming data is latest first, we don't reverse.
   const sortedData = data?.filter((val) => !(val?.performedAction === "SAVE_AS_DRAFT")) || [];
-
+  console.log(sortedData, "sortedData")
   const codesArray = sortedData.map((item) => item?.assigner?.userName).filter(Boolean);
 
   const uniqueCodes = [...new Set(codesArray)].join(",");
 
   const employeeData = Digit.Hooks.useEmployeeSearch(tenantId, { codes: uniqueCodes, isActive: true }, { enabled: !!uniqueCodes });
+
+  const BPA_ROLE_MAP = {
+    "BPA_ARCHITECT": "Architect",
+    "BPA_BUILDER": "Builder",
+    "BPA_ENGINEER": "Engineer",
+    "BPA_STRUCTURALENGINEER": "Structural Engineer",
+    "BPA_TOWNPLANNER": "Town Planner",
+    "BPA_DESIGNER": "Designer",
+    "BPA_SUPERVISOR": "Supervisor",
+  };
 
   const deptMap = {};
   employeeData?.data?.Employees?.forEach((emp) => {
@@ -132,6 +138,34 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
     const translationKey = `COMMON_MASTERS_DESIGNATION_${assignment?.designation}`;
     deptMap[emp?.code] = translationKey;
   });
+
+ const getUserDesignation = (user) => {
+  if (!user) return null;
+
+  const emp = deptMap[user?.userName];
+  if (emp) return emp;
+
+  const roleCode = user?.roles?.find((r) => BPA_ROLE_MAP[r?.code])?.code;
+  return roleCode ? BPA_ROLE_MAP[roleCode] : null;
+};
+
+  const normalizedWorkflowDetails = {
+    ...workflowDetails,
+    data: {
+      ...(workflowDetails?.data || {}),
+      timeline: data?.map((item) => ({
+      ...item,
+      designationKey: getUserDesignation(item?.assigner), // ✅ attach it here
+    })),
+    },
+  };
+   const handleDownloadPDF = React.useCallback(() => {
+    if (!isLoading) {
+      const tenantInfo = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY") || {};
+      const acknowledgementData = getTimelineAcknowledgementData(normalizedWorkflowDetails, tenantInfo, docData?.pdfFiles || {}, deptMap, t);
+      Digit.Utils.pdf.generateTimelinePDF(acknowledgementData);
+    }
+  }, [workflowDetails, docData, t, isLoading]);
 
   if(employeeData && empUserName){
     handleSetEmpDesignation(t(deptMap[empUserName]));
@@ -163,116 +197,142 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
         </div>
 
         <div className="custom-timeline-entries">
-          {sortedData?.map((item, index) => (
-            <div key={index} className="custom-timeline-entry">
-              <div className="custom-vertical-line"></div>
+          {sortedData?.map((item, index) => {
+            const designationKey = getUserDesignation(item?.assigner);
+            return (
+              <div key={index} className="custom-timeline-entry">
+                <div className="custom-vertical-line"></div>
 
-              {/* Date badge */}
-              <div className="custom-date-badge">
-                {item?.auditDetails?.created} {item?.auditDetails?.timing}
-              </div>
-
-              {/* Main timeline entry container */}
-              <div className="custom-entry-content">
-                {/* Left side: circular icon on vertical line */}
-                <div className="custom-icon-container">
-                  <div className="custom-circular-icon">
-                    <svg className="custom-mail-icon" viewBox="0 0 24 24">
-                      <rect x="3" y="5" width="18" height="14" rx="2" />
-                      <path d="M3 7l9 6 9-6" />
-                    </svg>
-                  </div>
+                {/* Date badge */}
+                <div className="custom-date-badge">
+                  {item?.auditDetails?.created} {item?.auditDetails?.timing}
                 </div>
 
-                {/* Right side: content card */}
-                <div className="custom-content-card">
-                  <div className="custom-card-top">
-                    {/* Column 1: Action taken by */}
-                    <div className="custom-card-column">
-                      <h3 className="custom-action-title">{t("Action taken by")}</h3>
-                      {item?.assigner && (
-                        <div className="custom-officer-info">
-                          <div className="custom-officer-name">
-                            {item?.assigner?.name || t("CS_COMMON_NA")}
-                            {deptMap[item?.assigner?.userName] && (
-                              <span className="custom-officer-name">- {t(deptMap[item?.assigner?.userName])}</span>
-                            )}
-                          </div>
-                          {item?.assigner?.emailId && (
+                {/* Main timeline entry container */}
+                <div className="custom-entry-content">
+                  {/* Left side: circular icon on vertical line */}
+                  <div className="custom-icon-container">
+                    <div className="custom-circular-icon">
+                      <svg className="custom-mail-icon" viewBox="0 0 24 24">
+                        <rect x="3" y="5" width="18" height="14" rx="2" />
+                        <path d="M3 7l9 6 9-6" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Right side: content card */}
+                  <div className="custom-content-card">
+                    <div className="custom-card-top">
+                      {/* Column 1: Action taken by */}
+                      <div className="custom-card-column">
+                        <h3 className="custom-action-title">{t("Action taken by")}</h3>
+                        {item?.assigner && (
+                          <div className="custom-officer-info">
+                            <div className="custom-officer-name">{item?.assigner?.name || t("CS_COMMON_NA")}</div>
+                            {/* {item?.assigner?.emailId && (
                             <div className="custom-officer-email">
                               <span className="custom-email-label">{t("Email")}</span> {item?.assigner?.emailId}
                             </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                          )} */}
 
-                    {/* Column 2: Time Taken (Centered/Balanced) */}
-                    <div className="custom-card-column custom-card-column-mid">
-                      {item?.sla && (
-                        <React.Fragment>
-                          <h3 className="custom-action-title">{t("Time Taken")}</h3>
-                          <div className="custom-officer-email">
-                            <span className="custom-email-label">{item?.sla}</span>
+                            {designationKey && (
+                              <div className="custom-officer-name">
+                                {t(designationKey)}
+                              </div>
+                            )}
+
                           </div>
-                        </React.Fragment>
-                      )}
-                    </div>
-
-                    {/* Column 3: Action (Right Aligned) */}
-                    <div className="custom-card-column custom-card-column-right">
-                      <h3 className="custom-action-title">{t("Action")}</h3>
-                      <div className={`custom-status-text ${item?.performedAction === "OBSERVATION" ? "chb-slot-status--unavailable" : ""}`}>
-                        {t(item?.performedAction || "CS_COMMON_NA")}
+                        )}
                       </div>
-                    </div>
-                  </div>
 
-                  {item?.wfComment && item?.wfComment?.length > 0 && item?.wfComment?.some((c) => c?.trim()) && (
-                    <div className="custom-comments-section container-full-width">
-                      <div className="custom-comments-content">
-                        <h4 className="custom-comments-title">{t("Officer Comments")}</h4>
-                        <div className="custom-comment-text">
-                          {item?.wfComment?.map((comment, idx) => {
-                            const pattern = /\[#\?.*?\*\*\]/;
-                            const truncatedComment = typeof comment === "string" ? comment?.split(pattern)[0] : comment;
-                            return <p key={idx}>{truncatedComment}</p>;
-                          })}
+                      {/* Column 2: Time Taken (Centered/Balanced) */}
+                      <div className="custom-card-column custom-card-column-mid">
+                        {item?.sla && (
+                          <React.Fragment>
+                            <h3 className="custom-action-title">{t("Time Taken")}</h3>
+                            <div className="custom-officer-email">
+                              <span className="custom-email-label">{item?.sla}</span>
+                            </div>
+                          </React.Fragment>
+                        )}
+                      </div>
+
+                      {/* Column 3: Action (Right Aligned) */}
+                      <div className="custom-card-column custom-card-column-right">
+                        <h3 className="custom-action-title">{t("Action")}</h3>
+                        <div className={`custom-status-text ${item?.performedAction === "OBSERVATION" ? "chb-slot-status--unavailable" : ""}`}>
+                          {t(item?.performedAction || "CS_COMMON_NA")}
                         </div>
                       </div>
-                      {item?.assignes?.length > 0 && (
-                        <div className="custom-assigned-to-footer">
-                          <h3 className="custom-comments-title">{t("Assigned To")}</h3>
-                          <div className="custom-officer-info">
-                            <div className="custom-officer-name">
-                              {item.assignes[0]?.name}
-                              {deptMap[item.assignes[0]?.userName] && (
-                                <span className="custom-officer-email">- {t(deptMap[item.assignes[0]?.userName])}</span>
-                              )}
-                            </div>
-                            {/* {deptMap[item.assignes[0]?.userName] && (
+                    </div>
+
+                    {item?.wfComment && item?.wfComment?.length > 0 && item?.wfComment?.some((c) => c?.trim()) && (
+                      <div className="custom-comments-section container-full-width">
+                        <div className="custom-comments-content">
+                          <h4 className="custom-comments-title">
+                            {deptMap[item?.assigner?.userName]
+                              ? t("Officer Comments")
+                              : designationKey
+                                ? `${t(designationKey)} ${t("WF_COMMON_COMMENTS")}`
+                                : t("Assigner Comments")}
+
+                          </h4>
+                          <div className="custom-comment-text">
+                            {item?.wfComment?.map((comment, idx) => {
+                              const pattern = /\[#\?.*?\*\*\]/;
+                              const parts = typeof comment === "string" ? comment?.split(pattern) : [comment];
+                              const truncatedComment = parts[0];
+                              const subComment = parts[1]?.trim() || null;
+
+                              return (
+                                <React.Fragment key={idx}>
+                                  <p>{truncatedComment}</p>
+                                  {subComment && (
+                                    <div className="custom-comment-text">
+                                      <h4 className="custom-comment-text">{t("Additional Remarks")}</h4>
+                                      <p className="custom-comment-text">{subComment}</p>
+                                    </div>
+                                  )}
+                                </React.Fragment>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        {item?.assignes?.length > 0 && (
+                          <div className="custom-assigned-to-footer">
+                            <h3 className="custom-comments-title">{t("Assigned To")}</h3>
+                            <div className="custom-officer-info">
+                              <div className="custom-officer-name">
+                                {item.assignes[0]?.name}
+                                {deptMap[item.assignes[0]?.userName] && (
+                                  <span className="custom-officer-email">- {t(deptMap[item.assignes[0]?.userName])}</span>
+                                )}
+                              </div>
+                              {/* {deptMap[item.assignes[0]?.userName] && (
                               <div className="custom-officer-email">{t(deptMap[item.assignes[0]?.userName])}</div>
                             )} */}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {item?.wfDocuments && item?.wfDocuments?.length > 0 && (
-                    <div className="custom-comments-section-no-border">
-                      <h4 className="custom-comments-title">Document Attached:</h4>
-                      <div className="custom-comment-text">
-                        {item?.wfDocuments?.map((doc, index) => (
-                          <TimelineDocument key={`${doc?.documentType}-${index}`} value={item?.wfDocuments} Code={doc?.documentType} index={index} />
-                        ))}
+                        )}
                       </div>
-                    </div>
-                  )}
+                    )}
+
+                    {item?.wfDocuments && item?.wfDocuments?.length > 0 && (
+                      <div className="custom-comments-section-no-border">
+                        <h4 className="custom-comments-title">Document Attached:</h4>
+                        <div className="custom-comment-text">
+                          {item?.wfDocuments?.map((doc, index) => (
+                            <TimelineDocument key={`${doc?.documentType}-${index}`} value={item?.wfDocuments} Code={doc?.documentType} index={index} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+
+          })}
         </div>
       </div>
     </React.Fragment>

@@ -99,7 +99,7 @@ public class MigrationUtils {
             throw new CustomException("PARSING ERROR", "Failed to parse response of workflow business service search");
         }
 
-        if (CollectionUtils.isEmpty(response.getBusinessServices()))
+        if (response == null || CollectionUtils.isEmpty(response.getBusinessServices()))
             throw new CustomException("BUSINESSSERVICE_NOT_FOUND", "The businessService " + PGR_BUSINESSSERVICE + " is not found");
 
         Map<String,String> statusToUUIDMap = response.getBusinessServices().get(0).getStates().stream()

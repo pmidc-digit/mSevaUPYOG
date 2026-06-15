@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.*;
 
 import static org.egov.pgr.util.PGRConstants.IMAGE_DOCUMENT_TYPE;
@@ -74,8 +74,12 @@ public class MigrationService {
 
     @PostConstruct
     private void setStatusToUUIDMap(){
-        this.statusToUUIDMap = migrationUtils.getStatusToUUIDMap(config.getTenantId());
-        this.serviceCodeToSLA = migrationUtils.getServiceCodeToSLAMap(config.getTenantId());
+        try {
+            this.statusToUUIDMap = migrationUtils.getStatusToUUIDMap(config.getTenantId());
+            this.serviceCodeToSLA = migrationUtils.getServiceCodeToSLAMap(config.getTenantId());
+        } catch (Exception e) {
+            log.error("Failed to initialize migration maps at startup. Dependent services might be down.", e);
+        }
     }
 
 

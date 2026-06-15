@@ -23,23 +23,33 @@ import TimeLine from "../../components/TimeLine";
 
 const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => {
   const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || complaintDetails.service.tenantId;
-  let workFlowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: tenantId, id, moduleCode: "SWACH" });
+  const resolvedId = id || complaintDetails?.service?.serviceRequestId;
+  let workFlowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: tenantId, id: resolvedId, moduleCode: "SWACH" });
   // const { data: ComplainMaxIdleTime, isLoading: ComplainMaxIdleTimeLoading } = Digit.Hooks.swach.useMDMS.ComplainClosingTime(tenantId?.split(".")[0]);
 
   // useEffect(() => {
   //   getWorkFlow(workFlowDetails.data);
   // }, []);
   useEffect(() => {
-    if (workFlowDetails) {
+    if (workFlowDetails && !workFlowDetails?.isLoading) {
       const { data: { timeline: complaintTimelineData } = {} } = workFlowDetails;
       if (complaintTimelineData) {
         // const actionByCitizenOnComplaintCreation = complaintTimelineData;
-
         const { thumbnailsToShow } = complaintTimelineData?.[0];
-        thumbnailsToShow ? getWorkFlow(thumbnailsToShow) : null;
+        const hasWorkflowImages = thumbnailsToShow?.fullImage?.filter(Boolean)?.length;
+        const complaintImages = (complaintDetails?.images || []).filter(Boolean);
+        const fallbackPayload =  complaintImages?.length>0 && !hasWorkflowImages ? {
+            thumbs: complaintImages,
+            fullImage: complaintImages,
+        } : null;
+        thumbnailsToShow?.thumbs?.length || thumbnailsToShow?.fullImage?.length
+        ? getWorkFlow(thumbnailsToShow)
+          : complaintDetails?.images?.length
+          ? getWorkFlow(fallbackPayload)
+        : console.log("no image present");
       }
     }
-  }, [workFlowDetails]);
+  }, [workFlowDetails?.data]);
 
   useEffect(() => {
     workFlowDetails.revalidate();
@@ -64,9 +74,9 @@ const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => 
 const ComplaintDetailsPage = (props) => {
   let { t } = useTranslation();
   let { id } = useParams();
-
   let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId(); // ToDo: fetch from state
   const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.swach.useComplaintDetails({ tenantId, id });
+
 
   const [imageShownBelowComplaintDetails, setImageToShowBelowComplaintDetails] = useState({});
 
@@ -200,7 +210,7 @@ const ComplaintDetailsPage = (props) => {
                   View Location on Google Maps
                 </a>
               </h1>
-              {imageShownBelowComplaintDetails?.thumbs ? (
+              {imageShownBelowComplaintDetails?.thumbs?.length > 0  ? (
                 <DisplayPhotos srcs={imageShownBelowComplaintDetails?.thumbs} onClick={(source, index) => zoomImageWrapper(source, index)} />
               ) : null}
               {imageZoom ? <ImageViewer imageSrc={imageZoom} onClose={onCloseImageZoom} /> : null}

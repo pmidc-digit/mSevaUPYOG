@@ -48,7 +48,7 @@ const App = () => {
     <React.Fragment>
       <div className="pgr-citizen-wrapper">
         <Switch>
-          {/* <AppContainer> */}
+          <AppContainer>
             {!isResponse ? (
             <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px" } : {}}>
               <SWBreadCrumbs location={location} />
@@ -72,7 +72,7 @@ const App = () => {
           {/* <Route path={`${path}/response`}>
           <Response/>
           </Route> */}
-          {/* </AppContainer> */}
+          </AppContainer>
         </Switch>
       </div>
     </React.Fragment>

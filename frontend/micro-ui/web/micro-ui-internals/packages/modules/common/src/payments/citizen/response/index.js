@@ -332,6 +332,10 @@ const WrapPaymentComponent = (props) => {
           paymentData.paymentDetails[0].businessService.includes("layout")
         ) {
           const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+          const adjustedAmounts = bpaData?.[0]?.additionalDetails?.adjustedAmounts || [];
+          const totalAdjustedAmount = adjustedAmounts?.reduce((sum, item) => sum + (item?.adjustedAmount || 0), 0);
+          const totalULBAmount = adjustedAmounts?.reduce((s,i)=>(s +(i?.amount || 0)),0)
+
           let updatedpayments;
           if (paymentData.paymentDetails[0].businessService.includes("BPAREG")) {
             updatedpayments = {
@@ -357,6 +361,14 @@ const WrapPaymentComponent = (props) => {
           } else {
             updatedpayments = {
               ...paymentData,
+               BPA: [{
+                ...bpaData?.[0],
+                additionalDetails:{
+                  ...bpaData?.[0]?.additionalDetails,
+                  totalAdjustedAmount,
+                  totalULBAmount
+                }
+              }],
               additionalDetails: {
                 ...paymentData.additionalDetails,
                 designation: designation,

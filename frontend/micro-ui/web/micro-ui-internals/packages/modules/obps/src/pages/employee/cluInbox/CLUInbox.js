@@ -119,6 +119,11 @@ const CLUInbox = ({ parentRoute }) => {
   const [tableData, setTableData] = useState([]);
   const [statusData, setStatusData] = useState([]);
   const [totalCountData, setTotalCountData] = useState(0);
+  const [assigneeCounts, setAssigneeCounts] = useState({
+    ASSIGNED_TO_ME: 0,
+    ASSIGNED_TO_ALL: 0,
+  });
+  const hasCapturedAssigneeCounts = useRef(false);
 
   const getResolvedStatuses = useCallback((applicationStatuses = []) => {
     return [
@@ -176,6 +181,65 @@ const CLUInbox = ({ parentRoute }) => {
       enabled: !!tenantId,
     },
   });
+
+  const assigneeCountBaseFilters = useMemo(() => {
+    const countFilterForm = { ...(memoizedFilters?.filterForm || {}) };
+    delete countFilterForm.applicationStatus;
+
+    return {
+      ...memoizedFilters,
+      filterForm: countFilterForm,
+    };
+  }, [memoizedFilters]);
+
+  const assignedToMeFilters = useMemo(
+    () => ({
+      ...assigneeCountBaseFilters,
+      filterForm: {
+        ...(assigneeCountBaseFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ME",
+      },
+    }),
+    [assigneeCountBaseFilters]
+  );
+
+  const assignedToAllFilters = useMemo(
+    () => ({
+      ...assigneeCountBaseFilters,
+      filterForm: {
+        ...(assigneeCountBaseFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ALL",
+      },
+    }),
+    [assigneeCountBaseFilters]
+  );
+
+  const { data: assignedToMeInboxData } = Digit.Hooks.obps.useCLUInbox({
+    tenantId: effectiveTenantId,
+    filters: assignedToMeFilters,
+    config: {
+      enabled: !!tenantId,
+    },
+  });
+
+  const { data: assignedToAllInboxData } = Digit.Hooks.obps.useCLUInbox({
+    tenantId: effectiveTenantId,
+    filters: assignedToAllFilters,
+    config: {
+      enabled: !!tenantId,
+    },
+  });
+
+  useEffect(() => {
+    if (hasCapturedAssigneeCounts.current) return;
+    if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+
+    setAssigneeCounts({
+      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
+    });
+    hasCapturedAssigneeCounts.current = true;
+  }, [assignedToAllInboxData, assignedToMeInboxData]);
 
   useEffect(() => {
     if (inboxData) {
@@ -386,6 +450,7 @@ const CLUInbox = ({ parentRoute }) => {
               getFilterFormValue={getFilterFormValue}
               statuses={statusData}
               isInboxLoading={isInboxLoading}
+              assigneeCounts={assigneeCounts}
               handleFilter={handleFilterChange}
             />
           }

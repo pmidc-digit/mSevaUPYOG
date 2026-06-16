@@ -10,6 +10,8 @@ const NewFilterFormFieldsComponent = ({
   handleFilter,
   licenseTypes,
   isInboxLoading = false,
+  assigneeCounts = {},
+  showAssigneeCards = true,
   showLicenseTypeFilter = false,
 }) => {
   const { t } = useTranslation();
@@ -24,10 +26,12 @@ const NewFilterFormFieldsComponent = ({
     return new Set(Object.keys(counts).filter((key) => counts[key] > 1));
   }, [statuses]);
 
-  const availableOptions = [
-    { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
-    { code: "ASSIGNED_TO_ALL", name: `${t("ES_INBOX_ASSIGNED_TO_ALL")}` },
-  ];
+  const availableOptions = showAssigneeCards
+    ? [
+        { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
+        { code: "ASSIGNED_TO_ALL", name: `${t("ES_INBOX_ASSIGNED_TO_ALL")}` },
+      ]
+    : [];
 
   // License Type options for BPAREG (Professional Registration) - Only shown in stakeholder inbox
   const licenseTypeOptions = showLicenseTypeFilter ? [
@@ -125,8 +129,8 @@ const NewFilterFormFieldsComponent = ({
       key: option.code,
       type: "assignee",
       label: option.name,
-      subtitle: t("ES_INBOX_ASSIGNED"),
-      count: null,
+      subtitle: null,
+      count: assigneeCounts?.[option.code] ?? null,
       code: option.code,
       icon: "⌂",
     })),

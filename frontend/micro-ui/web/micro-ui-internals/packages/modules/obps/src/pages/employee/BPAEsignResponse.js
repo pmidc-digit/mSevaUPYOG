@@ -17,7 +17,7 @@ const BPAEsignResponse = () => {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const [showToast, setShowToast] = useState(null);
-  const { id: applicationNo, file: fileStoreId, drawing } = useParams();
+  const { id: applicationNo, file: fileStoreId } = useParams();
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
@@ -59,7 +59,7 @@ const BPAEsignResponse = () => {
           additionalDetails: {
             ...application?.additionalDetails,
             sanctionLetterFilestoreId: fileStoreId,
-            drawingFilestoreId: drawing || null,
+            // drawingFilestoreId: drawing || null,
           },
           workflow: { 
             action: "ESIGN",

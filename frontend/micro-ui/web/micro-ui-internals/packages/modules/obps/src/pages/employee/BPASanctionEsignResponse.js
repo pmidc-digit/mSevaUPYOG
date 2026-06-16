@@ -18,13 +18,10 @@ const BPASanctionEsignResponse = () => {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const [showToast, setShowToast] = useState(null);
-  const { id: applicationNo, file: filestore } = useParams();
+  const { id: applicationNo, drawing } = useParams();
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
-  const [edcrData, setEDCRData] = useState(null);
-
-  const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
 
 
   useEffect(async () => {
@@ -35,28 +32,7 @@ const BPASanctionEsignResponse = () => {
           if (response?.ResponseInfo?.status === "successful") {
             // dispatch(UPDATE_OBPS_FORM("createdResponse", response?.BPA?.[0]));
             setData({ ...response })
-            if(response?.BPA?.[0]?.edcrNumber){
-              const scrutinyDetails = await Digit.OBPSService.scrutinyDetails(tenantId, { edcrNumber: response?.BPA?.[0]?.edcrNumber });
-              if(scrutinyDetails?.edcrDetail?.[0]){
-                setEDCRData(scrutinyDetails?.edcrDetail?.[0])
-                setIsLoading(false)
-                return;
-              }else{
-                setShowToast({
-                  warning: true,
-                  message: t("Some_Unknown_Error")
-                });
-                setIsLoading(false)
-                return;
-              }
-            }else{
-              setShowToast({
-                warning: true,
-                message: t("Some_Unknown_Error")
-              });
-              setIsLoading(false)
-              return
-            }
+            setIsLoading(false)
           } else {
             // setError()
             setShowToast({
@@ -76,49 +52,82 @@ const BPASanctionEsignResponse = () => {
     }, [applicationNo])
 
   useEffect(async () => {
-    if (edcrData?.updatedDxfFile){
-      setApiLoading(true);
-      printDrawingWithESign()
-    }
-  }, [isLoading, data, applicationNo, edcrData]);
+    if (!isLoading && data?.BPA?.[0] && drawing) {
+      const application = data?.BPA?.[0];
+      let payload = {
+        BPA: {
+          ...application,
+          additionalDetails: {
+            ...application?.additionalDetails,
+            // sanctionLetterFilestoreId: fileStoreId,
+            drawingFilestoreId: drawing || null,
+          },
+          workflow: { 
+            action: "DRAWING_ESIGN",
+            assignes: null
+          },
+        },
+      };
 
-  const printDrawingWithESign = async () => {
-      try {
-        // console.log("🎯 Starting certificate eSign process...");
-  
-        const { id: fileStoreId, fullTenantId: tenant} = fetchOnlyFileStore(edcrData?.updatedDxfFile)
-  
-        const callbackUrl = isCitizen ? `${window.location.origin}/digit-ui/citizen/obps/bpa/esign/complete/${applicationNo}/${filestore}` : `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${applicationNo}/${filestore}`;
-        const authToken = localStorage.getItem('token');
+      try{
+        setApiLoading(true);
+        const result = await Digit.OBPSService.update(payload, tenantId)
+        if(result?.ResponseInfo?.status === "successful"){
+          setApiLoading(false);
+          setLoading(false);
 
-        console.log("📁 FileStore ID:", fileStoreId, tenant, callbackUrl, authToken);
-  
-        // Trigger eSign
-        eSignCertificate(
-          { fileStoreId, tenantId: tenant, callbackUrl, authToken },
-          {
-            onSuccess: () => console.log("✅ eSign initiated successfully"),
-            onError: (error) => {
-              console.error("❌ eSign failed:", error);
-              setShowToast({
-                key: "true",
-                error: true,
-                message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
-              });
-              setApiLoading(false);
-            },
-          }
-        );
-      } catch (error) {
-        console.error("❌ Certificate preparation failed:", error);
+          // 🔹 Show success toast
+          setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
+          setTimeout(() => setShowToast(null), 3000);
+
+          // countdown + redirect
+          const interval = setInterval(() => {
+            setCountdown((prev) => prev - 1);
+          }, 1000);
+
+          const timeout = setTimeout(() => {
+            const encryptedID = encryptId(applicationNo);
+            history.push(isCitizen? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}`);
+          }, 10000);
+
+          return () => {
+            clearInterval(interval);
+            clearTimeout(timeout);
+          };
+        }else{
+          setShowToast({
+              error: true,
+              message: t("BPA_CREATE_APPLICATION_FAILED")
+          });
+          setApiLoading(false);
+          setTimeout(() => setShowToast(null), 3000);
+
+          // redirect after showing toast
+          const timeout = setTimeout(() => {
+            const encryptedID = encryptId(applicationNo);
+            history.push(isCitizen? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}`);
+          }, 10000);
+
+          return () => clearTimeout(timeout);          
+        }
+      }catch(e){
         setShowToast({
-          key: "true",
           error: true,
-          message: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
+          message: t(e.response?.data?.Errors?.[0]?.message) || t("BPA_CREATE_APPLICATION_FAILED")
         });
         setApiLoading(false);
-      }
-    };
+        setTimeout(() => setShowToast(null), 3000);
+
+        // redirect after showing toast
+        const timeout = setTimeout(() => {
+          const encryptedID = encryptId(applicationNo);
+          history.push(isCitizen? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}`);
+        }, 10000);
+
+        return () => clearTimeout(timeout);    
+      }   
+    }
+  }, [isLoading, data, applicationNo]);
 
   if (loading || isLoading || apiLoading) {
     return <Loader />;
@@ -128,6 +137,26 @@ const BPASanctionEsignResponse = () => {
 
   return (
     <div>
+      <Card>
+        <Banner
+          message={t("NOC_APPLICATION_ESIGN_SUCCESS_HEADER")}
+          info={t(`${stringReplaceAll(data?.BPA?.[0]?.businessService, ".", "_")}_APPLICATION_NUMBER`)}
+          successful={!!drawing}
+          style={{ padding: "10px" }}
+          headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
+        />
+        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+          {loading ? (
+            <p>{t("E-Sign in Progress. Kindly Wait...")}</p>
+          ) : (
+            drawing && (
+              <p>
+                {t("You will be redirected in")} {countdown} {t("seconds")}...
+              </p>
+            )
+          )}
+        </div>
+      </Card>
 
       {showToast && (
         <Toast success={showToast?.success} error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />

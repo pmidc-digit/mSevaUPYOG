@@ -158,6 +158,15 @@ const FeeEstimation = ({
         queryKey: ["BPA_CALCULATION", currentStepData?.createdResponse?.applicationNo, "SanctionFee"]
     });
 
+    const getOriginals = (taxHeadCode) => {
+    const apiTax = data?.Calculation?.[0]?.taxHeadEstimates?.find((t) => t.taxHeadCode === taxHeadCode);
+    const savedCalc = currentStepData?.createdResponse?.additionalDetails?.calculations?.find((c) => c.taxHeadCode === taxHeadCode);
+    return {
+      originalEstimate: apiTax?.estimateAmount || savedCalc?.estimateAmount || 0,
+      originalRemark: apiTax?.remarks || savedCalc?.remarks || "",
+    };
+  };
+
 
     // Memoized Application Fee data
     const applicationFeeData = useMemo(() => {
@@ -218,26 +227,39 @@ const FeeEstimation = ({
 
 
     useEffect(() => {
-        if (!dataSan || !dataSan?.Calculations?.[0]?.taxHeadEstimates || dataSan?.Calculations?.[0].taxHeadEstimates.length === 0) {
-            setAdjustedAmounts([]);
-            return;
-        }
+            if (!dataSan || !dataSan?.Calculations?.[0]?.taxHeadEstimates || dataSan?.Calculations?.[0].taxHeadEstimates.length === 0) {
+                setAdjustedAmounts([]);
+                return;
+            }
 
-        const mappedData = dataSan.Calculations[0].taxHeadEstimates.map((tax, index) => ({
-            index,
-            id: t(`app-${index}`),
-            title: t(tax.taxHeadCode) || t("CS_NA"),
-            taxHeadCode: tax.taxHeadCode,
-            amount: tax.estimateAmount !== undefined && tax.estimateAmount !== null ? tax.estimateAmount : t("CS_NA"),
-            category: tax.category || t("CS_NA"),
-            adjustedAmount: tax?.adjustedAmount || 0,
-            filestoreId: tax?.filestoreId || null,
-            onDocumentLoading: false,
-            remark: tax?.remark || "",
-            documentError: null,
-        }));
+            // Merge new API tax estimates with any previous adjustments the user might have made
+            setAdjustedAmounts((prev = []) => {
+                const prevByTax = (prev || []).reduce((acc, it) => {
+                    if (it?.taxHeadCode) acc[it.taxHeadCode] = it;
+                    return acc;
+                }, {});
 
-        setAdjustedAmounts(mappedData);
+                return dataSan.Calculations[0].taxHeadEstimates.map((tax, index) => {
+                    const prevItem = prevByTax[tax.taxHeadCode] || {};
+                    const isEdited = !!prevItem.edited;
+
+                    return {
+                        index,
+                        id: t(`app-${index}`),
+                        title: t(tax.taxHeadCode) || t("CS_NA"),
+                        taxHeadCode: tax.taxHeadCode,
+                        amount: tax.estimateAmount !== undefined && tax.estimateAmount !== null ? tax.estimateAmount : t("CS_NA"),
+                        category: tax.category || t("CS_NA"),
+                        // if the user edited previously, preserve their adjustedAmount/remark/filestoreId
+                        adjustedAmount: isEdited ? prevItem.adjustedAmount : (tax?.adjustedAmount || 0),
+                        filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : (tax?.filestoreId || null),
+                        onDocumentLoading: false,
+                        remark: isEdited ? prevItem.remark || "" : (tax?.remark || ""),
+                        documentError: null,
+                        edited: prevItem.edited || false,
+                    };
+                });
+            });
     }, [dataSan, t]);
 
      const feeHistory = useMemo(() => {
@@ -279,39 +301,99 @@ const FeeEstimation = ({
     // }, [recalculate, refetchSanctionFee]);
 
     const handleAdjustedAmountChange = (index, value, ammount) => {
-        if((ammount + Number(value)) < 0){
+        const normalizedValue = value === "" ? null : Number(value);
+        const taxHeadCode = adjustedAmounts?.[index]?.taxHeadCode;
+        const { originalEstimate, originalRemark } = getOriginals(taxHeadCode);
+        if ((ammount + Number(value)) < 0) {
             setShowToast({ key: "error", message: "Adjusted_Amount_More_Than_Ammount" });
             return;
         }
+
+        // Update local sanctionFeeData for immediate UI
         setSanctionFeeData((prev) =>
             prev.map((item) =>
                 item.index === index
-                    ? { ...item, adjustedAmount: Number(value) ? Number(value) : 0 } // update the adjustedAmount for the correct row
+                    ? { ...item, adjustedAmount: normalizedValue === null ? 0 : normalizedValue }
                     : item
             )
+        );
+
+        // Update adjustedAmounts (the main state) and set edited flag accordingly
+        setAdjustedAmounts((prev = []) =>
+            (prev || []).map((item) => {
+                if (item.index !== index) return item;
+                const currentRemark = (item?.remark || originalRemark || "") + "";
+                const isReverted = normalizedValue === null ? originalEstimate === 0 : normalizedValue === originalEstimate;
+                if (isReverted) {
+                    return { ...item, adjustedAmount: normalizedValue === null ? 0 : normalizedValue, edited: false, remark: originalRemark || "" };
+                }
+                const adjustedDiffers = normalizedValue !== originalEstimate;
+                const remarkEmpty = !currentRemark || currentRemark.trim() === "";
+                return {
+                    ...item,
+                    adjustedAmount: normalizedValue === null ? 0 : normalizedValue,
+                    remark: currentRemark,
+                    edited: adjustedDiffers && remarkEmpty,
+                };
+            })
         );
     };
 
     const handleAdjustedAmountChangeRegular = (index, value, ammount) => {
-        if((Number(value)) < 0){
+        const normalizedValue = value === "" ? null : Number(value);
+        if (normalizedValue !== null && Number(normalizedValue) < 0) {
             setShowToast({ key: "error", message: "Amount_less_Than_Zero" });
             return;
         }
+
         setSanctionFeeData((prev) =>
             prev.map((item) =>
                 item.index === index
-                    ? { ...item, adjustedAmount: Number(value) ? Number(value) : 0 } // update the adjustedAmount for the correct row
+                    ? { ...item, adjustedAmount: normalizedValue === null ? 0 : normalizedValue }
                     : item
             )
+        );
+
+        // Also update main adjustedAmounts state and edited flag
+        const taxHeadCode = adjustedAmounts?.[index]?.taxHeadCode;
+        const { originalEstimate, originalRemark } = getOriginals(taxHeadCode);
+        setAdjustedAmounts((prev = []) =>
+            (prev || []).map((item) => {
+                if (item.index !== index) return item;
+                const currentRemark = (item?.remark || originalRemark || "") + "";
+                const isReverted = normalizedValue === null ? originalEstimate === 0 : normalizedValue === originalEstimate;
+                if (isReverted) {
+                    return { ...item, adjustedAmount: normalizedValue === null ? 0 : normalizedValue, edited: false, remark: originalRemark || "" };
+                }
+                const adjustedDiffers = normalizedValue !== originalEstimate;
+                const remarkEmpty = !currentRemark || currentRemark.trim() === "";
+                return {
+                    ...item,
+                    adjustedAmount: normalizedValue === null ? 0 : normalizedValue,
+                    remark: currentRemark,
+                    edited: adjustedDiffers && remarkEmpty,
+                };
+            })
         );
     };
 
     const handleRemarkChange = (index, value, ammount) => {
+        const taxHeadCode = adjustedAmounts?.[index]?.taxHeadCode;
+        const { originalEstimate } = getOriginals(taxHeadCode);
+        const currentAdjusted = adjustedAmounts?.[index]?.adjustedAmount || 0;
+        const adjustedDiffers = currentAdjusted !== originalEstimate;
+        const remarkEmpty = (value || "").trim() === "";
+
         setAdjustedAmounts((prev) =>
-            prev.map((item) =>
-                item.index === index
-                    ? { ...item, remark: value } // update the adjustedAmount for the correct row
-                    : item
+            (prev || []).map((item) =>
+                item.index === index ? { ...item, remark: value, edited: adjustedDiffers && remarkEmpty } : item
+            )
+        );
+
+        // keep sanctionFeeData in sync for UI
+        setSanctionFeeData((prev) =>
+            (prev || []).map((item) =>
+                item.index === index ? { ...item, remark: value, edited: adjustedDiffers && remarkEmpty } : item
             )
         );
     };

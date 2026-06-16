@@ -106,38 +106,38 @@ public class URLConverterServiceTest {
     void testGetUserUUIDMapUser() throws RestClientException {
 
         RestTemplate restTemplate = mock(RestTemplate.class);
-        when(restTemplate.postForObject((String) any(), (Object) any(), (Class<Object>) any(), (Object[]) any()))
+        when(restTemplate.postForObject((String) any(), (Object) any(), (Class<Object>) any()))
                 .thenReturn(new HashMap<>());
         ArrayList<URLRepository> urlRepositories = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
         assertNull(
                 (new URLConverterService(urlRepositories, objectMapper, restTemplate, new Producer())).getUserUUID("foo"));
-        verify(restTemplate).postForObject((String) any(), (Object) any(), (Class<Object>) any(), (Object[]) any());
+        verify(restTemplate).postForObject((String) any(), (Object) any(), (Class<Object>) any());
     }
 
     @Test
     void testGetUserUUIDNull() throws RestClientException {
 
         RestTemplate restTemplate = mock(RestTemplate.class);
-        when(restTemplate.postForObject((String) any(), (Object) any(), (Class<Object>) any(), (Object[]) any()))
+        when(restTemplate.postForObject((String) any(), (Object) any(), (Class<Object>) any()))
                 .thenReturn(null);
         ArrayList<URLRepository> urlRepositories = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
         assertNull(
                 (new URLConverterService(urlRepositories, objectMapper, restTemplate, new Producer())).getUserUUID("foo"));
-        verify(restTemplate).postForObject((String) any(), (Object) any(), (Class<Object>) any(), (Object[]) any());
+        verify(restTemplate).postForObject((String) any(), (Object) any(), (Class<Object>) any());
     }
 
     @Test
     void testGetUserUUIDErrorOccur() throws RestClientException {
         RestTemplate restTemplate = mock(RestTemplate.class);
-        when(restTemplate.postForObject((String) any(), (Object) any(), (Class<Object>) any(), (Object[]) any()))
+        when(restTemplate.postForObject((String) any(), (Object) any(), (Class<Object>) any()))
                 .thenThrow(new CustomException("type", "An error occurred"));
         ArrayList<URLRepository> urlRepositories = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
         assertNull(
                 (new URLConverterService(urlRepositories, objectMapper, restTemplate, new Producer())).getUserUUID("foo"));
-        verify(restTemplate).postForObject((String) any(), (Object) any(), (Class<Object>) any(), (Object[]) any());
+        verify(restTemplate).postForObject((String) any(), (Object) any(), (Class<Object>) any());
     }
 
     @Test
@@ -145,13 +145,13 @@ public class URLConverterServiceTest {
         HashMap<Object, Object> objectObjectMap = new HashMap<>();
         objectObjectMap.put("Key", "Value");
         RestTemplate restTemplate = mock(RestTemplate.class);
-        when(restTemplate.postForObject((String) any(), (Object) any(), (Class<Object>) any(), (Object[]) any()))
+        when(restTemplate.postForObject((String) any(), (Object) any(), (Class<Object>) any()))
                 .thenReturn(objectObjectMap);
         ArrayList<URLRepository> urlRepositories = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
         assertNull(
                 (new URLConverterService(urlRepositories, objectMapper, restTemplate, new Producer())).getUserUUID("foo"));
-        verify(restTemplate).postForObject((String) any(), (Object) any(), (Class<Object>) any(), (Object[]) any());
+        verify(restTemplate).postForObject((String) any(), (Object) any(), (Class<Object>) any());
     }
 
     @Test

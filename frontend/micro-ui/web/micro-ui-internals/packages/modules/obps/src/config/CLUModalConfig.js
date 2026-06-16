@@ -29,21 +29,21 @@ export const CLUModalConfig = ({
     form: [
       {
         body: [
-          {
-            label: !checkCondtions ? null : `${t("WF_ASSIGNEE_NAME_LABEL")}*`,
-            placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
-            type: "dropdown",
-            populators: !checkCondtions ? null : (
-              <Dropdown
-                option={approvers}
-                autoComplete="off"
-                optionKey="name"
-                id="fieldInspector"
-                select={setSelectedApprover}
-                selected={selectedApprover}
-              />
-            ),
-          },
+          // {
+          //   label: !checkCondtions ? null : `${t("WF_ASSIGNEE_NAME_LABEL")}*`,
+          //   placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
+          //   type: "dropdown",
+          //   populators: !checkCondtions ? null : (
+          //     <Dropdown
+          //       option={approvers}
+          //       autoComplete="off"
+          //       optionKey="name"
+          //       id="fieldInspector"
+          //       select={setSelectedApprover}
+          //       selected={selectedApprover}
+          //     />
+          //   ),
+          // },
           {
             label: `${t("WF_COMMON_COMMENTS_LABEL")}*`,
             type: "textarea",

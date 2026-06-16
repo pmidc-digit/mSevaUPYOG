@@ -20,72 +20,94 @@ const [showHistory, setShowHistory] = useState(false);
         <div style={{ marginTop: "16px" }}>
           <div onClick={() => setShowHistory(!showHistory)} style={{ cursor: "pointer" }}>
             <CardSubHeader>
-              {t("FEE_HISTORY")} {showHistory ? "▲" : "▼"}
+              {t("BPA_FEE_HISTORY_LABEL")} {showHistory ? "▲" : "▼"}
             </CardSubHeader>
           </div>
 
           {showHistory && (
-            <>
-              {/* {timeObj && (
-                <div style={{ marginBottom: "8px", fontStyle: "italic" }}>
-                  {t("TOTAL_TIME_TAKEN")}: {timeObj?.days} {t("DAYS")} {timeObj?.hours} {t("HOURS")} {timeObj?.minutes} {t("MINUTES")} {timeObj?.seconds} {t("SECONDS")} 
-                </div>
-              )} */}
-              <table className="customTable table-border-style" style={{ marginTop: "8px" }}>
-                <thead>
-                  <tr>
-                    {Object.keys(feeHistory).map((taxHeadCode) => (
-                      <th key={taxHeadCode}>{t(taxHeadCode)}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: Math.max(...Object.values(feeHistory).map((rows) => rows.length)) }).map((_, rowIdx) => {
-                    // compute descending index
-                    const maxLen = Math.max(...Object.values(feeHistory).map((rows) => rows.length));
-                    const descIdx = maxLen - 1 - rowIdx;
+            <div className="custom-fix-fee-history-wrapper">
 
-                    return (
-                      <tr key={rowIdx}>
-                        {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
-                          const h = historyRows[descIdx]; // use reversed index
-                          return (
-                            <td key={taxHeadCode}>
-                              {h ? (
-                                <table className="customTable table-border-style">
-                                  <tbody>
-                                    <tr>
-                                      <td>
-                                        <strong>{t("FEE")}</strong>
-                                      </td>
-                                      <td>{h.estimateAmount}</td>
-                                    </tr>
-                                    <tr>
-                                      <td>
-                                        <strong>{t("REMARK")}</strong>
-                                      </td>
-                                      <td>{h.remarks || t("CS_NA")}</td>
-                                    </tr>
-                                    <tr>
-                                      <td>
-                                        <strong>{t("LAST_UPDATED_BY")}</strong>
-                                      </td>
-                                      <td>{h.who || t("UNKNOWN")}</td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              ) : (
-                                t("CS_NA")
-                              )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </>
+              <div className="custom-fix-fee-history-table-container">
+                {/* build table similar to CLUFeeTable.renderCustomHistory */}
+                {(() => {
+                  const feeTypes = Object.keys(feeHistory || {});
+                  if (feeTypes.length === 0) return null;
+                  const maxHistoryLength = Math.max(...feeTypes.map((ft) => (feeHistory[ft]?.length || 0)));
+                  return (
+                    <table className="custom-fix-fee-history-table">
+                      <thead>
+                        <tr>
+                          <th className="custom-fix-fee-history-table-header">Details</th>
+                          {feeTypes.map((feeType) => (
+                            <th key={feeType} className="custom-fix-fee-history-table-header-fee">
+                              {t(feeType)}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.from({ length: maxHistoryLength }).map((_, entryIndex) => (
+                          <React.Fragment key={entryIndex}>
+                            <tr>
+                              <td className="custom-fix-fee-history-table-cell-label">{t("BPA_FEE2_LABEL")}</td>
+                              {feeTypes.map((feeType) => (
+                                <td key={`${feeType}-fee-${entryIndex}`} className="custom-fix-fee-history-table-cell-value">
+                                  {feeHistory[feeType]?.[entryIndex] ? `₹ ${feeHistory[feeType][entryIndex].estimateAmount}` : ""}
+                                </td>
+                              ))}
+                            </tr>
+
+                            <tr>
+                              <td className="custom-fix-fee-history-table-cell-label">{t("BPA_REMARK_LABEL")}</td>
+                              {feeTypes.map((feeType) => (
+                                <td key={`${feeType}-remark-${entryIndex}`} className="custom-fix-fee-history-table-cell-value">
+                                  {feeHistory[feeType]?.[entryIndex]?.remarks || t("CS_NA")}
+                                </td>
+                              ))}
+                            </tr>
+
+                            {feeTypes?.some((ft) => feeHistory[ft]?.[entryIndex]?.when) && (
+                              <tr>
+                                <td className="custom-fix-fee-history-table-cell-label">{t("BPA_LAST_UPDATED_DATE_LABEL")}</td>
+                                {feeTypes?.map((feeType) => (
+                                  <td key={`${feeType}-date-${entryIndex}`} className="custom-fix-fee-history-table-cell-value">
+                                    {feeHistory[feeType]?.[entryIndex]?.when
+                                      ? new Date(feeHistory[feeType][entryIndex].when).toLocaleDateString("en-IN")
+                                      : t("CS_NA")}
+                                  </td>
+                                ))}
+                              </tr>
+                            )}
+
+                            <tr>
+                              <td
+                                className={
+                                  entryIndex < maxHistoryLength - 1
+                                    ? "custom-fix-fee-history-table-cell-separator"
+                                    : "custom-fix-fee-history-table-cell-separator-last"
+                                }
+                              >
+                                {t("BPA_UPDATED_BY_LABEL")}
+                              </td>
+                              <td
+                                colSpan={feeTypes.length}
+                                className={
+                                  entryIndex < maxHistoryLength - 1
+                                    ? "custom-fix-fee-history-table-cell-separator-value"
+                                    : "custom-fix-fee-history-table-cell-separator-value-last"
+                                }
+                              >
+                                {feeTypes.map((ft) => feeHistory[ft]?.[entryIndex]?.who).find((who) => who) || t("UNKNOWN")}
+                              </td>
+                            </tr>
+                          </React.Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  );
+                })()}
+              </div>
+            </div>
           )}
         </div>
       )}

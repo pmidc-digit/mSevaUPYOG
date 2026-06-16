@@ -746,10 +746,15 @@ useEffect(() => {
     
 
     const adjustedAmounts = data?.applicationData?.additionalDetails?.adjustedAmounts;
+    const totalAdjustedAmount = adjustedAmounts?.reduce((sum, item) => sum + (item?.adjustedAmount || 0), 0);
+    const totalULBAmount = adjustedAmounts?.reduce((s,i)=>(s +(i?.amount || 0)),0)
+
 
     data.additionalDetails = {
       ...data?.applicationData?.additionalDetails,
-      adjustedAmounts
+      adjustedAmounts,
+      totalAdjustedAmount,
+      totalULBAmount
     };
 
 

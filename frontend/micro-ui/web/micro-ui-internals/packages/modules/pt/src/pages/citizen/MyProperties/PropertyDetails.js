@@ -40,6 +40,8 @@ const PropertyDetails = () => {
   const PT_CEMP = Digit.UserService.hasAccess(["PT_CEMP"]) || false;
   const [businessService, setBusinessService] = useState("PT.CREATE");
   const history = useHistory();
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
   sessionStorage.setItem("propertyIdinPropertyDetail", applicationNumber);
   
   // const isMobile = window.Digit.Utils.browser.isMobile();
@@ -244,11 +246,10 @@ console.log("workflowDetails",workflowDetails)
        // additionalDetails:{billingInfo:fetchBillData?.Bill},
         belowComponent: () => (
           <LinkLabel
-            onClick={() => history.push({ pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`})}
+            onClick={() => history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${applicationNumber}`})}
             style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
           >
-            {/* {t("PT_VIEW_PAYMENT")} */}
-             {t("PT_PAY_PAYMENT")}
+            {t("PT_VIEW_PAYMENT")}
           </LinkLabel>
         ),
         values: [
@@ -378,21 +379,44 @@ console.log("workflow details",workflowDetails)
     appDetailsToShow?.applicationData?.owners.sort((item, item2) => { return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence })
     
   console.log("appDetailsToShow",appDetailsToShow)
-  //   const [showOptions, setShowOptions] = useState(false);
-  //   let dowloadOptions = [];
-  //     const { data: storeData } = Digit.Hooks.useStore.getInitData();
-  // const { tenants } = storeData || {};
-  // const getAcknowledgementData = async () => {
-  //   const applications = appDetailsToShow?.applicationDetails || {};
-  //   const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
-  //   const acknowldgementDataAPI = await getPTAcknowledgementData({ ...applications }, tenantInfo, t);
-  //   Digit.Utils.pdf.generate(acknowldgementDataAPI);
-  //   //setAcknowldgementData(acknowldgementDataAPI);
-  // };
-  // dowloadOptions.push({
-  //   label: appDetailsToShow?.applicationData?.creationReason === "MUTATION" ? t("MT_APPLICATION") : t("PT_APPLICATION_ACKNOWLEDGMENT"),
-  //   onClick: () => getAcknowledgementData(),
-  // });
+  const handleDownloadPdf = async () => {
+    try {
+      const Property = appDetailsToShow?.applicationData || applicationDetails?.applicationData;
+      const tenantInfo = tenants?.find((tenant) => tenant.code === Property?.tenantId);
+
+      if (!Property || !tenantInfo) {
+        setShowToast({ key: "error", error: { message: t("ERR_PDF_GEN_FAILED") } });
+        setTimeout(closeToast, 5000);
+        return;
+      }
+
+      const data = await getPTAcknowledgementData({ ...Property }, tenantInfo, t);
+      Digit.Utils.pdf.generate(data);
+    } catch (error) {
+      setShowToast({ key: "error", error: { message: error?.message || t("ERR_PDF_GEN_FAILED") } });
+      setTimeout(closeToast, 5000);
+    }
+  };
+
+  const handlePrintPdf = async () => {
+    try {
+      const Property = appDetailsToShow?.applicationData || applicationDetails?.applicationData;
+      const tenantInfo = tenants?.find((tenant) => tenant.code === Property?.tenantId);
+
+      if (!Property || !tenantInfo) {
+        setShowToast({ key: "error", error: { message: t("ERR_PDF_GEN_FAILED") } });
+        setTimeout(closeToast, 5000);
+        return;
+      }
+
+      const data = await getPTAcknowledgementData({ ...Property }, tenantInfo, t);
+      Digit.Utils.pdf.generate({ ...data, isPrint: true });
+    } catch (error) {
+      setShowToast({ key: "error", error: { message: error?.message || t("ERR_PDF_GEN_FAILED") } });
+      setTimeout(closeToast, 5000);
+    }
+  };
+
   return (
     <div>
       {/* <Header>{t("PT_PROPERTY_INFORMATION")}</Header> */}
@@ -402,17 +426,9 @@ console.log("workflow details",workflowDetails)
       <h1 style={{fontSize:'18px',border:'1px solid grey',padding:'8px',backgroundColor:'grey',color:'white'}}>Application No: {applicationNumber}</h1>
      </div>
     <div className="button-group" style={{display:'flex',gap:'10px'}}>
-          <button style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white'}} >Download</button>
-    {/* {dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-            />
-          )} */}
-          <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}}>Print</button>
-        </div>
+          <button onClick={handleDownloadPdf} style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white',cursor:'pointer'}} >Download</button>
+          <button onClick={handlePrintPdf} style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px',cursor:'pointer'}}>Print</button>
+        </div>
       </div>
    
       <ApplicationDetailsTemplate

@@ -128,6 +128,7 @@ const jsPdfGenerator = async ({
   details,
   applicationNumber,
   t = (text) => text,
+  isPrint = false,
 }) => {
   const emailLeftMargin =
     email?.length <= 15
@@ -227,7 +228,11 @@ const jsPdfGenerator = async ({
   let Hind = pdfFonts[locale] || pdfFonts["Hind"];
   pdfMake.fonts = { Hind: { ...Hind } };
   const generatedPDF = pdfMake.createPdf(dd);
-  downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
+  if (isPrint) {
+    generatedPDF.print();
+  } else {
+    downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
+  }
 };
 
 const jsPdfGeneratorFormatted = async ({

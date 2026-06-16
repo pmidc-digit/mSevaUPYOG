@@ -443,7 +443,7 @@ const ApplicationDetails = () => {
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: receiptFile.filestoreIds[0] });
       window.open(fileStore[receiptFile.filestoreIds[0]], "_blank");
-  }
+  }}
   const fetchDigiLockerDocuments = async (file) => {
     let TokenReq = {
       pdfUrl: file,

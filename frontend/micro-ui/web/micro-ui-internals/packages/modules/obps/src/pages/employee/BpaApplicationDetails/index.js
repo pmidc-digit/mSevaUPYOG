@@ -1699,6 +1699,23 @@ const BpaApplicationDetail = () => {
       }catch(err){
 
       }
+
+      const newCalculation = {
+      isLatest: true,
+      updatedBy: Digit.UserService.getUser()?.info?.name,
+      taxHeadEstimates: adjustedAmounts
+        .filter((row) => row.taxHeadCode !== "BPA_TOTAL") // exclude UI-only total row
+        .map((row) => ({
+          taxHeadCode: row.taxHeadCode,
+          estimateAmount: row.adjustedAmount || 0, // baseline + delta
+          category: row.category,
+          remarks: row.remark || null,
+          filestoreId: row.filestoreId || null,
+        })),
+    };
+
+      const oldCalculations = (data?.BPA?.additionalDetails?.calculations || [])?.map((c) => ({ ...c, isLatest: false }));;
+
       let payload = {
         ...data,
         BPA: {
@@ -1707,6 +1724,7 @@ const BpaApplicationDetail = () => {
             ...data?.BPA?.additionalDetails,
             otherFeesDiscription: otherChargesDisc || "",
             adjustedAmounts: adjustedAmounts || [],
+            calculations: [...oldCalculations, newCalculation],
             selfCertificationCharges: {
               ...data?.BPA?.additionalDetails?.selfCertificationCharges,
               BPA_MALBA_CHARGES: malbafees?.length > 0 ? malbafees : "0",

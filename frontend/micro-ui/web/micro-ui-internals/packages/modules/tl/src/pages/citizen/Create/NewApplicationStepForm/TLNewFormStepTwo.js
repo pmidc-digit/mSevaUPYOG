@@ -274,7 +274,11 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         address.doorNo = TraidDetails.cpt.details.address.doorNo || TraidDetails.address.doorNo || null;
       if (TraidDetails.cpt.details.address.street || TraidDetails.address?.street)
         address.street = TraidDetails.cpt.details.address.street || TraidDetails.address.street || null;
-      if (TraidDetails.cpt.details.address.pincode) address.pincode = TraidDetails.cpt.details.address.pincode;
+      if (TraidDetails.cpt.details.address.pincode || TraidDetails.address?.pincode)
+        address.pincode = TraidDetails.cpt.details.address.pincode || TraidDetails.address.pincode || null;
+      if (TraidDetails.address?.buildingName) address.buildingName = TraidDetails.address.buildingName;
+      if (TraidDetails.address?.electricityNo || TraidDetails.cpt?.details?.address?.electricityNo)
+        address.electricityNo = TraidDetails.address.electricityNo || TraidDetails.cpt.details.address.electricityNo || null;
     } else if (TraidDetails?.address) {
       address.city = TraidDetails.address.city?.code || null;
       if (TraidDetails?.address?.locality?.code) {
@@ -295,7 +299,18 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     if (OwnerDetails?.owners?.length > 0) {
       OwnerDetails.owners.map((owner, index) => {
         let obj = {};
-        obj.dob = owner?.dob ? convertDateToEpoch(owner.dob) : null;
+        const rawDob = owner?.dob;
+        if (rawDob) {
+          if (typeof rawDob === "string" && /^\d{4}-\d{2}-\d{2}$/.test(rawDob)) {
+            obj.dob = convertDateToEpoch(rawDob);
+          } else if (typeof rawDob === "number") {
+            obj.dob = rawDob;
+          } else {
+            obj.dob = null;
+          }
+        } else {
+          obj.dob = null;
+        }
         obj.additionalDetails = { ownerSequence: index, ownerName: owner.name };
         if (owner.fatherOrHusbandName) obj.fatherOrHusbandName = owner.fatherOrHusbandName;
         if (owner.gender?.code) {
@@ -306,20 +321,30 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
           }
           obj.gender = typeof genderCode === "string" ? genderCode : owner.gender.code;
         }
-        if (owner.mobileNumber) obj.mobileNumber = Number(owner.mobileNumber);
+        if (owner.mobileNumber) obj.mobileNumber = String(owner.mobileNumber);
         if (owner.name) obj.name = owner.name;
         if (owner.permanentAddress) obj.permanentAddress = owner.permanentAddress;
         obj.permanentAddress = obj.permanentAddress || null;
+        if (owner.correspondenceAddress) obj.correspondenceAddress = owner.correspondenceAddress;
         if (owner.relationship) {
           // Handle nested relationship objects - extract the final code string
-          let relationshipCode = owner.relationship;
-          while (relationshipCode && typeof relationshipCode === "object" && relationshipCode.code) {
-            relationshipCode = relationshipCode.code;
+          const rel = owner.relationship;
+          let relCode = "";
+          if (typeof rel === "string") {
+            relCode = rel;
+          } else if (rel && typeof rel === "object") {
+            let temp = rel;
+            while (temp && typeof temp === "object" && temp.code !== undefined) {
+              temp = temp.code;
+            }
+            relCode = typeof temp === "string" ? temp : (rel.i18nKey || rel.name || JSON.stringify(rel));
           }
-          obj.relationship = typeof relationshipCode === "string" ? relationshipCode : owner.relationship?.code;
+          obj.relationship = relCode || null;
         }
         if (owner.emailId) obj.emailId = owner.emailId;
         if (owner.ownerType?.code) obj.ownerType = owner.ownerType.code;
+        if (owner.altContactNumber) obj.altContactNumber = owner.altContactNumber;
+        if (owner.pan) obj.pan = owner.pan;
         owners.push(obj);
       });
     }
@@ -335,7 +360,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     let subOwnerShipCategory = OwnerDetails?.ownershipCategory?.code || "";
     let licenseType = TraidDetails?.tradedetils?.[0]?.licenseType?.code || "PERMANENT";
     let validityYears = TraidDetails?.validityYears?.code || 1;
-    let oldReceiptNo = Number(TraidDetails?.tradedetils?.[0]?.oldReceiptNo) || "";
+    let oldReceiptNo = TraidDetails?.tradedetils?.[0]?.oldReceiptNo || "";
 
 
     let formData = {
@@ -356,10 +381,10 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       },
     };
 
-    if (gstNo) formData.tradeLicenseDetail.gstNo = gstNo;
+    if (gstNo) formData.tradeLicenseDetail.additionalDetail.gstNo = gstNo;
     if (noOfEmployees) formData.tradeLicenseDetail.noOfEmployees = noOfEmployees;
     if (operationalArea) formData.tradeLicenseDetail.operationalArea = operationalArea;
-    if (oldReceiptNo) formData.tradeLicenseDetail.oldReceiptNo = oldReceiptNo;
+    if (oldReceiptNo) formData.oldLicenseNumber = oldReceiptNo;
     if (accessories?.length > 0) formData.tradeLicenseDetail.accessories = accessories;
     if (tradeUnits?.length > 0) formData.tradeLicenseDetail.tradeUnits = tradeUnits;
     if (owners?.length > 0) formData.tradeLicenseDetail.owners = owners;
@@ -379,6 +404,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     if (TraidDetails?.cpt) {
+      formData.propertyId = TraidDetails.cpt.details?.propertyId;
       formData.tradeLicenseDetail.additionalDetail.propertyId = TraidDetails.cpt.details?.propertyId;
       formData.tradeLicenseDetail.additionalDetail.isSameAsPropertyOwner = isSameAsPropertyOwner;
     }
@@ -506,6 +532,8 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         }
         if (owner.emailId) obj.emailId = owner.emailId;
         if (owner.ownerType?.code) obj.ownerType = owner.ownerType.code;
+        if (owner.altContactNumber) obj.altContactNumber = owner.altContactNumber;
+        if (owner.pan) obj.pan = owner.pan;
         owners.push(obj);
       });
     }

@@ -40,7 +40,7 @@ const Proof = ({ t, config, onSelect, userType, formData }) => {
     if (owners && owners.documents) {
       owners.documents["OwnerPhotoProof"] = fileDetails;
     } else {
-      owners["documents"] = [];
+      owners["documents"] = {};
       owners.documents["OwnerPhotoProof"] = fileDetails;
     }
     onSelect(config.key, owners);

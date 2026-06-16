@@ -410,7 +410,8 @@ export const convertToTrade = (data = {}) => {
 
 export const getwfdocuments = (data) => {
   let wfdoc = [];
-  let doc = data ? data.owners.documents : [];
+  let doc = data ? data.owners.documents : {};
+  let selfcareDoc = data?.documents?.documents?.find((d) => d.documentType === "SELFCAREDECLARATION");
   doc["OwnerPhotoProof"] &&
     wfdoc.push({
       fileName: doc["OwnerPhotoProof"].name,
@@ -432,49 +433,82 @@ export const getwfdocuments = (data) => {
       documentType: "OWNERSHIPPROOF",
       tenantId: data?.tenantId,
     });
+  selfcareDoc &&
+    wfdoc.push({
+      fileName: selfcareDoc.fileName || "SELFCAREDECLARATION",
+      fileStoreId: selfcareDoc.fileStoreId,
+      documentType: "SELFCAREDECLARATION",
+      tenantId: data?.tenantId,
+    });
   return wfdoc;
 };
 
 export const getEditTradeDocumentUpdate = (data) => {
   let updateddocuments = [];
-  let doc = data ? data.owners.documents : [];
+  let doc = data ? data.owners.documents : {};
+  let selfcareDoc = data?.documents?.documents?.find((d) => d.documentType === "SELFCAREDECLARATION");
   data?.tradeLicenseDetail?.applicationDocuments?.map((olddoc) => {
     if (
-      (olddoc.documentType === "OWNERPHOTO" && olddoc.fileStoreId === data.owners.documents["OwnerPhotoProof"].fileStoreId) ||
-      (olddoc.documentType === "OWNERSHIPPROOF" && olddoc.fileStoreId == data.owners.documents["ProofOfOwnership"].fileStoreId) ||
-      (olddoc.documentType === "OWNERIDPROOF" && olddoc.fileStoreId === data.owners.documents["ProofOfIdentity"].fileStoreId)
+      (olddoc.documentType === "OWNERPHOTO" && olddoc.fileStoreId === doc["OwnerPhotoProof"]?.fileStoreId) ||
+      (olddoc.documentType === "OWNERSHIPPROOF" && olddoc.fileStoreId == doc["ProofOfOwnership"]?.fileStoreId) ||
+      (olddoc.documentType === "OWNERIDPROOF" && olddoc.fileStoreId === doc["ProofOfIdentity"]?.fileStoreId) ||
+      (olddoc.documentType === "SELFCAREDECLARATION" && selfcareDoc && olddoc.fileStoreId === selfcareDoc.fileStoreId)
     ) {
       updateddocuments.push(olddoc);
     } else {
-      if (olddoc.documentType === "OWNERPHOTO" && olddoc.fileStoreId !== data.owners.documents["OwnerPhotoProof"].fileStoreId) {
-        updateddocuments.push({
-          fileName: doc["OwnerPhotoProof"].name,
-          fileStoreId: doc["OwnerPhotoProof"].fileStoreId,
-          documentType: "OWNERPHOTO",
-          tenantId: data?.tenantId,
-        });
+      if (olddoc.documentType === "OWNERPHOTO" && olddoc.fileStoreId !== doc["OwnerPhotoProof"]?.fileStoreId) {
+        if (doc["OwnerPhotoProof"]) {
+          updateddocuments.push({
+            fileName: doc["OwnerPhotoProof"].name,
+            fileStoreId: doc["OwnerPhotoProof"].fileStoreId,
+            documentType: "OWNERPHOTO",
+            tenantId: data?.tenantId,
+          });
+        }
         updateddocuments.push({ ...olddoc, active: "false" });
       }
-      if (olddoc.documentType === "OWNERSHIPPROOF" && olddoc.fileStoreId !== data.owners.documents["ProofOfOwnership"].fileStoreId) {
-        updateddocuments.push({
-          fileName: doc["ProofOfOwnership"].name,
-          fileStoreId: doc["ProofOfOwnership"].fileStoreId,
-          documentType: "OWNERSHIPPROOF",
-          tenantId: data?.tenantId,
-        });
+      if (olddoc.documentType === "OWNERSHIPPROOF" && olddoc.fileStoreId !== doc["ProofOfOwnership"]?.fileStoreId) {
+        if (doc["ProofOfOwnership"]) {
+          updateddocuments.push({
+            fileName: doc["ProofOfOwnership"].name,
+            fileStoreId: doc["ProofOfOwnership"].fileStoreId,
+            documentType: "OWNERSHIPPROOF",
+            tenantId: data?.tenantId,
+          });
+        }
         updateddocuments.push({ ...olddoc, active: "false" });
       }
-      if (olddoc.documentType === "OWNERIDPROOF" && olddoc.fileStoreId !== data.owners.documents["ProofOfIdentity"].fileStoreId) {
+      if (olddoc.documentType === "OWNERIDPROOF" && olddoc.fileStoreId !== doc["ProofOfIdentity"]?.fileStoreId) {
+        if (doc["ProofOfIdentity"]) {
+          updateddocuments.push({
+            fileName: doc["ProofOfIdentity"].name,
+            fileStoreId: doc["ProofOfIdentity"].fileStoreId,
+            documentType: "OWNERIDPROOF",
+            tenantId: data?.tenantId,
+          });
+        }
+        updateddocuments.push({ ...olddoc, active: "false" });
+      }
+      if (olddoc.documentType === "SELFCAREDECLARATION" && selfcareDoc && olddoc.fileStoreId !== selfcareDoc.fileStoreId) {
         updateddocuments.push({
-          fileName: doc["ProofOfIdentity"].name,
-          fileStoreId: doc["ProofOfIdentity"].fileStoreId,
-          documentType: "OWNERIDPROOF",
+          fileName: selfcareDoc.fileName || "SELFCAREDECLARATION",
+          fileStoreId: selfcareDoc.fileStoreId,
+          documentType: "SELFCAREDECLARATION",
           tenantId: data?.tenantId,
         });
         updateddocuments.push({ ...olddoc, active: "false" });
       }
     }
   });
+
+  if (selfcareDoc && !data?.tradeLicenseDetail?.applicationDocuments?.some(d => d.documentType === "SELFCAREDECLARATION")) {
+    updateddocuments.push({
+      fileName: selfcareDoc.fileName || "SELFCAREDECLARATION",
+      fileStoreId: selfcareDoc.fileStoreId,
+      documentType: "SELFCAREDECLARATION",
+      tenantId: data?.tenantId,
+    });
+  }
 
   if (data?.tradeLicenseDetail?.applicationDocuments?.filter((doc) => doc?.documentType === "OLDLICENCENO")?.length > 0)
     updateddocuments.push(data?.tradeLicenseDetail?.applicationDocuments?.filter((doc) => doc?.documentType === "OLDLICENCENO")?.[0]);
@@ -484,44 +518,71 @@ export const getEditTradeDocumentUpdate = (data) => {
 
 export const getEditRenewTradeDocumentUpdate = (data, datafromflow) => {
   let updateddocuments = [];
-  let doc = datafromflow ? datafromflow.owners.documents : [];
+  let doc = datafromflow ? datafromflow.owners.documents : {};
+  let selfcareDoc = datafromflow?.documents?.documents?.find((d) => d.documentType === "SELFCAREDECLARATION");
   data.tradeLicenseDetail.applicationDocuments.map((olddoc) => {
     if (
-      (olddoc.documentType === "OWNERPHOTO" && olddoc.fileStoreId === datafromflow.owners.documents["OwnerPhotoProof"].fileStoreId) ||
-      (olddoc.documentType === "OWNERSHIPPROOF" && olddoc.fileStoreId == datafromflow.owners.documents["ProofOfOwnership"].fileStoreId) ||
-      (olddoc.documentType === "OWNERIDPROOF" && olddoc.fileStoreId === datafromflow.owners.documents["ProofOfIdentity"].fileStoreId)
+      (olddoc.documentType === "OWNERPHOTO" && olddoc.fileStoreId === doc["OwnerPhotoProof"]?.fileStoreId) ||
+      (olddoc.documentType === "OWNERSHIPPROOF" && olddoc.fileStoreId == doc["ProofOfOwnership"]?.fileStoreId) ||
+      (olddoc.documentType === "OWNERIDPROOF" && olddoc.fileStoreId === doc["ProofOfIdentity"]?.fileStoreId) ||
+      (olddoc.documentType === "SELFCAREDECLARATION" && selfcareDoc && olddoc.fileStoreId === selfcareDoc.fileStoreId)
     ) {
       updateddocuments.push(olddoc);
     } else {
-      if (olddoc.documentType === "OWNERPHOTO" && olddoc.fileStoreId !== datafromflow.owners.documents["OwnerPhotoProof"].fileStoreId) {
-        updateddocuments.push({
-          fileName: doc["OwnerPhotoProof"].name,
-          fileStoreId: doc["OwnerPhotoProof"].fileStoreId,
-          documentType: "OWNERPHOTO",
-          tenantId: data?.tenantId,
-        });
+      if (olddoc.documentType === "OWNERPHOTO" && olddoc.fileStoreId !== doc["OwnerPhotoProof"]?.fileStoreId) {
+        if (doc["OwnerPhotoProof"]) {
+          updateddocuments.push({
+            fileName: doc["OwnerPhotoProof"].name,
+            fileStoreId: doc["OwnerPhotoProof"].fileStoreId,
+            documentType: "OWNERPHOTO",
+            tenantId: data?.tenantId,
+          });
+        }
         updateddocuments.push({ ...olddoc, active: "false" });
       }
-      if (olddoc.documentType === "OWNERSHIPPROOF" && olddoc.fileStoreId !== datafromflow.owners.documents["ProofOfOwnership"].fileStoreId) {
-        updateddocuments.push({
-          fileName: doc["ProofOfOwnership"].name,
-          fileStoreId: doc["ProofOfOwnership"].fileStoreId,
-          documentType: "OWNERSHIPPROOF",
-          tenantId: data?.tenantId,
-        });
+      if (olddoc.documentType === "OWNERSHIPPROOF" && olddoc.fileStoreId !== doc["ProofOfOwnership"]?.fileStoreId) {
+        if (doc["ProofOfOwnership"]) {
+          updateddocuments.push({
+            fileName: doc["ProofOfOwnership"].name,
+            fileStoreId: doc["ProofOfOwnership"].fileStoreId,
+            documentType: "OWNERSHIPPROOF",
+            tenantId: data?.tenantId,
+          });
+        }
         updateddocuments.push({ ...olddoc, active: "false" });
       }
-      if (olddoc.documentType === "OWNERIDPROOF" && olddoc.fileStoreId !== datafromflow.owners.documents["ProofOfIdentity"].fileStoreId) {
+      if (olddoc.documentType === "OWNERIDPROOF" && olddoc.fileStoreId !== doc["ProofOfIdentity"]?.fileStoreId) {
+        if (doc["ProofOfIdentity"]) {
+          updateddocuments.push({
+            fileName: doc["ProofOfIdentity"].name,
+            fileStoreId: doc["ProofOfIdentity"].fileStoreId,
+            documentType: "OWNERIDPROOF",
+            tenantId: data?.tenantId,
+          });
+        }
+        updateddocuments.push({ ...olddoc, active: "false" });
+      }
+      if (olddoc.documentType === "SELFCAREDECLARATION" && selfcareDoc && olddoc.fileStoreId !== selfcareDoc.fileStoreId) {
         updateddocuments.push({
-          fileName: doc["ProofOfIdentity"].name,
-          fileStoreId: doc["ProofOfIdentity"].fileStoreId,
-          documentType: "OWNERIDPROOF",
+          fileName: selfcareDoc.fileName || "SELFCAREDECLARATION",
+          fileStoreId: selfcareDoc.fileStoreId,
+          documentType: "SELFCAREDECLARATION",
           tenantId: data?.tenantId,
         });
         updateddocuments.push({ ...olddoc, active: "false" });
       }
     }
   });
+
+  if (selfcareDoc && !data?.tradeLicenseDetail?.applicationDocuments?.some(d => d.documentType === "SELFCAREDECLARATION")) {
+    updateddocuments.push({
+      fileName: selfcareDoc.fileName || "SELFCAREDECLARATION",
+      fileStoreId: selfcareDoc.fileStoreId,
+      documentType: "SELFCAREDECLARATION",
+      tenantId: data?.tenantId,
+    });
+  }
+
   return updateddocuments;
 };
 

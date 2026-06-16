@@ -11,8 +11,8 @@ import getPDFData from "../../utils/getTLAcknowledgementData";
 import BreakupModal from "../../components/BreakupModal";
 import AdhocRebatePenaltyModal from "../../components/AdhocRebatePenaltyModal";
 import { buildTLPaymentBreakup, getTLBillAccountDetails, getTLTaxHeadLabel, getTLTotalAmount } from "../../utils/paymentBreakup";
-
 import { getReceiptUrl } from "../../utils";
+
 const ApplicationDetails = () => {
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -240,10 +240,7 @@ const ApplicationDetails = () => {
     const isPendingDocVerification =
       currentStatus === "APPLIED" ||
       currentStatus === "PENDINGDOCVERIFICATION" ||
-      currentStatus === "PENDING_DOC_VERIFICATION" ||
-      workflowDetails?.data?.timeline?.[0]?.state === "APPLIED" ||
-      workflowDetails?.data?.timeline?.[0]?.state === "PENDINGDOCVERIFICATION" ||
-      workflowDetails?.data?.timeline?.[0]?.state === "PENDING_DOC_VERIFICATION";
+      currentStatus === "PENDING_DOC_VERIFICATION";
 
     if (isPendingDocVerification) {
       if (!workflowDetails.data.actionState) {
@@ -261,7 +258,7 @@ const ApplicationDetails = () => {
             state: applicationDetails,
           },
           tenantId: stateId,
-          role: [],
+          roles: ["TL_DOC_VERIFIER"],
         });
       }
       if (workflowDetails.data.nextActions) {
@@ -274,7 +271,7 @@ const ApplicationDetails = () => {
               state: applicationDetails,
             },
             tenantId: stateId,
-            role: [],
+            roles: ["TL_DOC_VERIFIER"],
           });
         }
       }
@@ -444,12 +441,9 @@ const ApplicationDetails = () => {
       if(url){
         window.open(url, "_blank");
       }
-    } else {
-      const newResponse = await Digit.PaymentService.generatePdf(tenantId, { Payments: [paymentsHistory.Payments[0]] }, "tradelicense-receipt");
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: newResponse.filestoreIds[0] });
-      window.open(fileStore[newResponse.filestoreIds[0]], "_blank");
-    }
-  };
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: receiptFile.filestoreIds[0] });
+      window.open(fileStore[receiptFile.filestoreIds[0]], "_blank");
+  }
   const fetchDigiLockerDocuments = async (file) => {
     let TokenReq = {
       pdfUrl: file,

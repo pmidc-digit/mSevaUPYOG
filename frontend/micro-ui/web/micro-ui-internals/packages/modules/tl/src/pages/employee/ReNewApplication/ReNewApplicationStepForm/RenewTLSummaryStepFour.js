@@ -13,6 +13,23 @@ const RenewTLSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   const [error, setError] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
+  const isEditApplication = window.location.href.includes("edit-application-details");
+  const currentStatus = formData?.applicationData?.status;
+  const { data: inspectorData } = Digit.Hooks.useEmployeeSearch(
+    tenantId,
+    {
+      roles: [{ code: "TL_FIELD_INSPECTOR" }],
+      isActive: true,
+    },
+    {
+      enabled: isEditApplication && (
+        currentStatus === "APPLIED" ||
+        currentStatus === "PENDINGDOCVERIFICATION" ||
+        currentStatus === "PENDING_DOC_VERIFICATION"
+      ),
+    }
+  );
+
   // Monitor checkbox state and enable/disable button
   useEffect(() => {
     const interval = setInterval(() => {
@@ -63,6 +80,19 @@ const RenewTLSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
     // ─── EDIT PATH: use the pre-built EditPayload from Step 2 ───
     if (formData?.EditPayload) {
       const editPayload = { ...formData.EditPayload };
+
+      // Update action and assignee dynamically based on current status
+      const currentStatus = formData?.applicationData?.status;
+      if (
+        currentStatus === "APPLIED" ||
+        currentStatus === "PENDINGDOCVERIFICATION" ||
+        currentStatus === "PENDING_DOC_VERIFICATION"
+      ) {
+        editPayload.action = "FORWARD";
+        const firstInspector = inspectorData?.Employees?.[0]?.uuid;
+        editPayload.assignee = firstInspector ? [firstInspector] : null;
+      }
+
       // Overlay documents from Step 3
       if (formData?.Documents?.documents?.documents?.length > 0) {
         editPayload.tradeLicenseDetail.applicationDocuments = formData.Documents.documents.documents;

@@ -36,7 +36,7 @@ const SelectOwnershipProof = ({ t, config, onSelect, userType, formData }) => {
     if (owners && owners.documents) {
       owners.documents["ProofOfOwnership"] = fileDetails;
     } else {
-      owners["documents"] = [];
+      owners["documents"] = {};
       owners.documents["ProofOfOwnership"] = fileDetails;
     }
     onSelect(config.key, owners);

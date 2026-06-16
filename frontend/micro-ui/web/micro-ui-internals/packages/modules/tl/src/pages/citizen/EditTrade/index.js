@@ -47,7 +47,7 @@ const getTradeEditDetails = (data,t,wfdata) => {
   };
 
   const gettradedocuments = (docs) => {
-    let documents = [];
+    let documents = {};
     docs &&
       docs.map((ob) => {
         if (ob.documentType.includes("OWNERPHOTO")) {
@@ -158,6 +158,9 @@ const getTradeEditDetails = (data,t,wfdata) => {
     owners: data?.tradeLicenseDetail?.institution?.id ? getInsitutionaltradeowners(data?.tradeLicenseDetail?.owners,data?.tradeLicenseDetail?.institution) :  gettradeowners(data?.tradeLicenseDetail?.owners),
     permanentAddress: data?.tradeLicenseDetail?.owners[0].permanentAddress,
     isCorrespondenceAddress: false,
+  };
+  data.documents = {
+    documents: data?.tradeLicenseDetail?.applicationDocuments || [],
   };
   data.ownershipCategory = {
     code: `${data?.tradeLicenseDetail?.subOwnerShipCategory}`,

@@ -42,6 +42,8 @@ import {
   amountToWords,
   getApproveRejectComments,
   fetchUrl,
+  fetchOnlyFileStore,
+  fetchOnlyUrl,
 } from "../../../utils"
 import cloneDeep from "lodash/cloneDeep"
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview"
@@ -1199,8 +1201,8 @@ useEffect(() => {
       // console.log("🎯 Starting certificate eSign process...");
 
       const fileStoreId = await getPermitOccupancyOrderSearchReturnFilestore({tenantId}, "buildingpermit");
-
-      const callbackUrl = `${window.location.origin}/digit-ui/citizen/obps/filestore/${id}`;
+      const callbackUrl = `${window.location.origin}/digit-ui/citizen/obps/bpa/esign/complete/${id}`;
+      // const callbackUrl = `${window.location.origin}/digit-ui/citizen/obps/filestore/${id}`;
       const authToken = localStorage.getItem('token');
 
       // Trigger eSign
@@ -1225,6 +1227,45 @@ useEffect(() => {
         error: true,
         message: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
       });
+    }
+  };
+  
+  const printDrawingWithESign = async () => {
+    try {
+      // console.log("🎯 Starting certificate eSign process...");
+
+      const { id: fileStoreId, fullTenantId: tenant } = fetchOnlyFileStore(data?.edcrDetails?.updatedDxfFile);
+
+      // const callbackUrl = `${window.location.origin}/digit-ui/citizen/obps/bpa/esign/complete/${id}/${fileStoreId}`;
+      const callbackUrl = `${window.location.origin}/digit-ui/citizen/obps/filestore/${id}`;
+      const authToken = localStorage.getItem("token");      
+
+      console.log("📁 FileStore ID In Drawing:", fileStoreId, tenant, callbackUrl, authToken);
+
+      // Trigger eSign
+      eSignCertificate(
+        { fileStoreId, tenantId: tenant, callbackUrl, authToken },
+        {
+          onSuccess: () => console.log("✅ eSign initiated successfully"),
+          onError: (error) => {
+            console.error("❌ eSign failed:", error);
+            setShowToast({
+              key: "true",
+              error: true,
+              message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
+            });
+            setApiLoading(false);
+          },
+        }
+      );
+    } catch (error) {
+      console.error("❌ Certificate preparation failed:", error);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
+      });
+      setApiLoading(false);
     }
   };
 
@@ -1254,7 +1295,26 @@ useEffect(() => {
       setLoader(false);
     }
   }
+  
+    async function openDrawingPopup() {
+    try {
+      setLoader(true);
+      const downloadUrl = await fetchOnlyUrl(data?.edcrDetails?.updatedDxfFile, tenantId);
 
+      setPdfUrl(downloadUrl);
+      setShowPdfModal(true);
+    } catch (error) {
+      console.error("Drawing popup error:", error);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: "Failed to open drawing. Please try again.",
+      });
+    } finally {
+      setLoader(false);
+    }
+  }
+  
   function onActionSelect(action) {
     const path = data?.applicationData?.additionalDetails?.applicationType == "BUILDING_OC_PLAN_SCRUTINY" ? "ocbpa" : "bpa";
     // if(!agree || !isCitizenDeclared || !isTocAccepted){
@@ -1316,6 +1376,9 @@ useEffect(() => {
     }
     if (action === "ESIGN") {
       openSanctionLetterPopup();
+    }
+    if(action === "DRAWING_ESIGN") {
+      openDrawingPopup();
     }
     setSelectedAction(action)
     setDisplayMenu(false)
@@ -2611,7 +2674,7 @@ useEffect(() => {
           title={t("NOC_SANCTION_LETTER")}
         >
           <ActionBar>
-            <SubmitBar label={t("ESIGN")} onSubmit={printCertificateWithESign} disabled={eSignLoading} />
+            <SubmitBar label={t("ESIGN")} onSubmit={data?.applicationStatus === "DRAWING_ESIGN_PENDING" ? printDrawingWithESign : printCertificateWithESign} disabled={eSignLoading} />
           </ActionBar>
         </PdfPreviewModal>
       )}

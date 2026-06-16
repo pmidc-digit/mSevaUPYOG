@@ -1141,3 +1141,29 @@ export const getOwnersfromProperty = (formdata) => {
   }
   return owners;
 };
+
+export const getReceiptUrl = async (fileStoreId, tenantId, stateId) => {
+  let url;
+
+  try {
+    const res = await Digit.PaymentService.printReciept(tenantId, {
+      fileStoreIds: fileStoreId,
+    });
+    url = res?.[fileStoreId];
+  } catch (e) {
+    console.log("Tenant fetch failed");
+  }
+
+  if (!url) {
+    try {
+      const res = await Digit.PaymentService.printReciept(stateId, {
+        fileStoreIds: fileStoreId,
+      });
+      url = res?.[fileStoreId];
+    } catch (e) {
+      console.log("State fetch failed");
+    }
+  }
+
+  return url;
+};

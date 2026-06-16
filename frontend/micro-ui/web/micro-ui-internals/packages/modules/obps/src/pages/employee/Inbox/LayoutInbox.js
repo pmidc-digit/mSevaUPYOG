@@ -139,6 +139,46 @@ const LayoutInbox = ({ parentRoute }) => {
     filters: memoizedFilters,
   });
 
+  const assignedToMeFilters = useMemo(
+    () => ({
+      ...memoizedFilters,
+      filterForm: {
+        ...(memoizedFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ME",
+      },
+    }),
+    [memoizedFilters]
+  );
+
+  const assignedToAllFilters = useMemo(
+    () => ({
+      ...memoizedFilters,
+      filterForm: {
+        ...(memoizedFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ALL",
+      },
+    }),
+    [memoizedFilters]
+  );
+
+  const { data: assignedToMeInboxData } = Digit.Hooks.obps.useLayoutInbox({
+    tenantId,
+    filters: assignedToMeFilters,
+  });
+
+  const { data: assignedToAllInboxData } = Digit.Hooks.obps.useLayoutInbox({
+    tenantId,
+    filters: assignedToAllFilters,
+  });
+
+  const assigneeCounts = useMemo(
+    () => ({
+      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
+    }),
+    [assignedToAllInboxData?.totalCount, assignedToMeInboxData?.totalCount]
+  );
+
   useEffect(() => {
     if (inboxData) {
       setStatusData(inboxData?.statuses || []);
@@ -314,6 +354,7 @@ const LayoutInbox = ({ parentRoute }) => {
           getFilterFormValue={getFilterFormValue}
           statuses={statusData}
           isInboxLoading={isInboxLoading}
+          assigneeCounts={assigneeCounts}
           handleFilter={handleFilterChange}
         />
       }

@@ -133,6 +133,48 @@ const Inbox = ({ parentRoute }) => {
     config: { enabled: !!tenantId },
   });
 
+  const assignedToMeFilters = useMemo(
+    () => ({
+      ...memoizedFilters,
+      filterForm: {
+        ...(memoizedFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ME",
+      },
+    }),
+    [memoizedFilters]
+  );
+
+  const assignedToAllFilters = useMemo(
+    () => ({
+      ...memoizedFilters,
+      filterForm: {
+        ...(memoizedFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ALL",
+      },
+    }),
+    [memoizedFilters]
+  );
+
+  const { data: assignedToMeInboxData } = Digit.Hooks.noc.useInbox({
+    tenantId: effectiveTenantId,
+    filters: assignedToMeFilters,
+    config: { enabled: !!tenantId },
+  });
+
+  const { data: assignedToAllInboxData } = Digit.Hooks.noc.useInbox({
+    tenantId: effectiveTenantId,
+    filters: assignedToAllFilters,
+    config: { enabled: !!tenantId },
+  });
+
+  const assigneeCounts = useMemo(
+    () => ({
+      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
+    }),
+    [assignedToAllInboxData?.totalCount, assignedToMeInboxData?.totalCount]
+  );
+
   useEffect(() => {
     if (inboxData) {
       const groupedStatuses = (inboxData?.statuses || []).reduce((acc, status) => {
@@ -344,6 +386,7 @@ const Inbox = ({ parentRoute }) => {
               getFilterFormValue={getFilterFormValue}
               statuses={statusData}
               isInboxLoading={isInboxLoading}
+              assigneeCounts={assigneeCounts}
               handleFilter={handleFilterChange}
             />
           }

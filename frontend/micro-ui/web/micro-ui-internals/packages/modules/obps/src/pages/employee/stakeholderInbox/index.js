@@ -129,6 +129,54 @@ const Inbox = ({ parentRoute }) => {
     },
   });
 
+  const assignedToMeFilters = useMemo(
+    () => ({
+      ...formState,
+      filterForm: {
+        ...(formState?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ME",
+      },
+      searchForm: {
+        ...(formState?.searchForm || {}),
+        ...(topBarSearch && { applicationNo: topBarSearch }),
+      },
+    }),
+    [formState, topBarSearch]
+  );
+
+  const assignedToAllFilters = useMemo(
+    () => ({
+      ...formState,
+      filterForm: {
+        ...(formState?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ALL",
+      },
+      searchForm: {
+        ...(formState?.searchForm || {}),
+        ...(topBarSearch && { applicationNo: topBarSearch }),
+      },
+    }),
+    [formState, topBarSearch]
+  );
+
+  const { data: assignedToMeInboxData = {} } = Digit.Hooks.obps.useBPAInbox({
+    tenantId: tenantId === "pb" ? "pb.punjab" : tenantId,
+    filters: assignedToMeFilters,
+  });
+
+  const { data: assignedToAllInboxData = {} } = Digit.Hooks.obps.useBPAInbox({
+    tenantId: tenantId === "pb" ? "pb.punjab" : tenantId,
+    filters: assignedToAllFilters,
+  });
+
+  const assigneeCounts = useMemo(
+    () => ({
+      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
+    }),
+    [assignedToAllInboxData?.totalCount, assignedToMeInboxData?.totalCount]
+  );
+
   console.log("isInboxLoading", isInboxLoading, "table", table, "statuses", statuses, "totalCount", totalCount);
 
   const onNextPage = () => {
@@ -209,6 +257,7 @@ const Inbox = ({ parentRoute }) => {
                     getFilterFormValue={getFilterFormValue}
                     statuses={statuses}
                     isInboxLoading={isInboxLoading}
+                    assigneeCounts={assigneeCounts}
                     showLicenseTypeFilter={true}
                     handleFilter={(filterData) => {
                       dispatch({
@@ -246,6 +295,7 @@ const Inbox = ({ parentRoute }) => {
                   getFilterFormValue={getFilterFormValue}
                   statuses={statuses}
                   isInboxLoading={isInboxLoading}
+                  assigneeCounts={assigneeCounts}
                   showLicenseTypeFilter={true}
                   handleFilter={(filterData) => {
                     dispatch({

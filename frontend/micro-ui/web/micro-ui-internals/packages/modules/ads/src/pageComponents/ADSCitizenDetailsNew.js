@@ -4,21 +4,30 @@ import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../../../challanGeneration/src/components/Loader";
 import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
 import { useDispatch } from "react-redux";
+import CitizenConsent from "../components/CitizenConsent";
 
-const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack, onChange = () => {} }) => {
+
+const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack, onChange = () => { } }) => {
   const dispatch = useDispatch();
   const userInfo = Digit.UserService.getUser();
+
   const isCitizen = window.location.href.includes("citizen");
   const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : window.localStorage.getItem("Employee.tenant-id");
   const { mobileNumber, emailId, name } = userInfo?.info;
   const [showToast, setShowToast] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showTermsPopup, setShowTermsPopup] = useState(false);
+  const [getModalData, setModalData] = useState();
+  const [getUser, setUser] = useState(null);
+  const [getShowOtp, setShowOtp] = useState(false);
 
   const {
     control,
     handleSubmit,
     setValue,
     formState: { errors },
+    getValues,
+    watch,
     trigger,
   } = useForm({
     mode: "onChange",
@@ -44,6 +53,8 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     setIsLoading(true);
     try {
       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
+      sessionStorage.removeItem("CitizenConsentdocFilestoreidADS");
+
       const user = userData?.user?.[0] || {};
       if (user?.name) {
         setValue("name", user.name || "", { shouldValidate: true });
@@ -83,6 +94,13 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   }, [currentStepData, setValue]);
 
   const onSubmit = async (data) => {
+    const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidADS");
+
+    if (!isCitizenDeclared) {
+      alert("Please upload Self Certificate");
+      return;
+    }
+
     const applicationDate = Date.now();
     const cartDetails = currentStepData?.ads?.flatMap((item) =>
       item.slots.map((slot) => ({
@@ -185,6 +203,55 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       return () => clearTimeout(timer);
     }
   }, [showToast]);
+
+  const updateUser = async () => {
+    const checkData = getValues();
+    setLoader(true);
+    const tenantId = "pb";
+    const payload = {
+      otp: {
+        tenantId,
+        mobileNumber: checkData?.mobileNumber || null,
+        name: checkData?.name || null,
+        emailId: checkData?.emailId || null,
+        type: "register",
+      },
+    };
+
+    try {
+      const response = await Digit.UserService.sendOtp(payload, tenantId);
+      setLoader(false);
+      setShowOtp(true);
+    } catch (err) {
+      setLoader(false);
+    }
+  };
+
+  const handleModalData = (e) => {
+    if (!getUser && !isCitizen) {
+      updateUser();
+      // alert("first update user");
+    }
+    const mapData = currentStepData?.ownerDetails?.applicantDetail;
+
+    const payload = {
+      address: getValues()?.address,
+      emailId: getValues()?.emailId,
+      mobileNumber: getValues()?.mobileNumber,
+      name: getValues()?.name,
+      communityHallName: mapData?.communityHallName,
+      purpose: mapData?.purpose?.purpose,
+      days: mapData?.bookingSlotDetails?.length,
+      bookingDate: mapData?.bookingSlotDetails?.[0]?.bookingDate,
+      bookingEndDate: mapData?.bookingSlotDetails?.at(-1)?.bookingEndDate,
+      ulbName: mapData?.tenantId,
+      security: 5000,
+      rent: mapData?.amount,
+    };
+
+    setModalData(payload);
+    if (e.target.checked) setShowTermsPopup(true);
+  };
 
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>
@@ -329,19 +396,46 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
             render={({ value, onChange, onBlur }) => (
               <TextInput
                 value={value}
+                max={6}
+                maxlength={6}
                 onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
                 onBlur={(e) => {
                   onBlur(e);
                   trigger("pincode");
                 }}
                 t={t}
-                maxLength={6}
+
               />
             )}
           />
           {errors.pincode && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors?.pincode?.message}</p>}
         </div>
       </LabelFieldPair>
+
+      {/* checkbox self declaration */}
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+        <Controller
+          control={control}
+          name="termsAccepted"
+          rules={{ required: t("PLEASE_ACCEPT_TERMS_CONDITIONS") }}
+          render={(props) => (
+            <input
+              id="termsAccepted"
+              type="checkbox"
+              checked={props.value || false}
+              onChange={(e) => {
+                props.onChange(e.target.checked);
+                handleModalData(e);
+              }}
+              style={{ width: "18px", height: "18px", cursor: "pointer" }}
+            />
+          )}
+        />
+        <label htmlFor="termsAccepted" style={{ cursor: "pointer", color: "#007bff", textDecoration: "underline", margin: 0 }}>
+          {t("CHB_SELF_LABEL")}
+        </label>
+      </div>
+      {errors.termsAccepted && <p style={{ color: "red" }}>{errors.termsAccepted.message}</p>}
 
       <ActionBar>
         <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />
@@ -357,6 +451,18 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
             setShowToast(null);
           }}
           isDleteBtn={true}
+        />
+      )}
+      {showTermsPopup && (
+        <CitizenConsent
+          showTermsPopupOwner={showTermsPopup}
+          setShowTermsPopupOwner={setShowTermsPopup}
+          getModalData={getModalData}
+          getUser={getUser}
+          getShowOtp={getShowOtp}
+          // otpVerifiedTimestamp={null} // Pass timestamp as a prop
+          // bpaData={data?.applicationData} // Pass the complete BPA application data
+          tenantId={tenantId} // Pass tenant ID for API calls
         />
       )}
 

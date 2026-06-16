@@ -161,31 +161,26 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
     trigger("ownerShip");
   }, [ownersLength]);
 
-useEffect(() => {
-  // Don't reset while restoring edit data
-  if (isRestoredRef.current) return;
+  useEffect(() => {
+    // Don't reset while restoring edit data
+    if (isRestoredRef.current) return;
 
-  const currentOwners = watch("owners") || [];
-
-  // Single owner → keep first owner, don't wipe fields
-  if (!isMultiple) {
-    setValue("owners", [
-      currentOwners[0] || {
-        name: "",
-        mobileNumber: "",
-        emailId: "",
-        address: "",
-        designation: "",
-        altContactNumber: "",
-        gender: "",
-        fatherOrHusbandName: "",
-        relationship: "",
-        ownerType: "",
-        ownershipPercentage: "",
-      },
-    ]);
-  }
-}, [ownerTypeCode]);
+    // Reset the field array to exactly 1 empty owner
+    remove([...Array(fields.length).keys()]);
+    append({
+      name: "",
+      mobileNumber: "",
+      emailId: "",
+      address: "",
+      designation: "",
+      altContactNumber: "",
+      gender: "",
+      fatherOrHusbandName: "",
+      relationship: "",
+      ownerType: "",
+      ownershipPercentage: ownerTypeCode === "SINGLEOWNER" ? "100" : "",
+    });
+  }, [ownerTypeCode, remove, append]);
 
 
 
@@ -218,7 +213,7 @@ useEffect(() => {
   const formattedAddress = buildPropertyAddress(propertyAddress);
   if (!formattedAddress) return;
 
-  (getValues("owners") || []).forEach((owner, index) => {
+  (getValues({ nest: true })?.owners || []).forEach((owner, index) => {
     if (owner?.isSamePropertyAddress && owner?.address !== formattedAddress) {
       setValue(`owners.${index}.address`, formattedAddress);
     }
@@ -273,6 +268,7 @@ useEffect(() => {
     isRestoredRef.current = true;
   }
 }, [ownerShip, SubOwnerShipCategory, stateDataCheck, ownerTypeDocuments]);
+
   return (
     <form  onSubmit={handleSubmit(onSubmit)}>
       {/* city */}
@@ -458,14 +454,25 @@ useEffect(() => {
                       control={control}
                       name={`owners.${index}.altContactNumber`}
                       defaultValue={item?.altContactNumber || ""}
+                      rules={{
+                        validate: {
+                          validLandline: (v) => !v || /^\d{11}$/.test(v) || "Please enter a valid 11-digit landline number",
+                        }
+                      }}
                       render={(props) => (
                         <TextInput
                           value={props.value}
-                          onChange={(e) => props.onChange(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                            props.onChange(val);
+                          }}
                           disable={isEditMode}
                         />
                       )}
                     />
+                    {errors?.owners?.[index]?.altContactNumber && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].altContactNumber.message}</p>
+                    )}
                   </LabelFieldPair>
                 </div>
               )}
@@ -537,8 +544,21 @@ useEffect(() => {
                       control={control}
                       name={`owners.${index}.fatherOrHusbandName`}
                       defaultValue={item?.fatherOrHusbandName || ""}
-                      rules={{ required: "Guardian name is required" }}
-                      render={(props) => <TextInput {...props} disable={isEditMode} />}
+                      rules={{
+                        required: "Guardian name is required",
+                        pattern: {
+                          value: /^[a-zA-Z ]*$/,
+                          message: "Guardian name should contain only alphabets and spaces",
+                        },
+                      }}
+                      render={(props) => (
+                        <TextInput
+                          value={props.value}
+                          onChange={(e) => props.onChange(e.target.value.replace(/[^a-zA-Z ]/g, ""))}
+                          onBlur={props.onBlur}
+                          disable={isEditMode}
+                        />
+                      )}
                     />
                     {errors?.owners?.[index]?.fatherOrHusbandName && (
                       <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].fatherOrHusbandName.message}</p>
@@ -583,7 +603,8 @@ useEffect(() => {
               {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (() => {
                 const ownerTypeVal = watch(`owners.${index}.ownerType`);
                 const ownerTypeCode = ownerTypeVal?.code;
-                const showDocFields = !!(ownerTypeCode && ownerTypeDocuments.some((d) => d.ownerTypeCode === ownerTypeCode));
+                const matched = ownerTypeDocuments.find((d) => d.ownerTypeCode === ownerTypeCode);
+                const showDocFields = !!matched;
                 return (
                   <React.Fragment>
                     <div style={twoColRow}>
@@ -599,9 +620,9 @@ useEffect(() => {
                               select={(selectedType) => {
                                 props.onChange(selectedType);
                                 const code = selectedType?.code;
-                                const matched = ownerTypeDocuments.find((d) => d.ownerTypeCode === code);
-                                if (matched) {
-                                  setValue(`owners.${index}.docIdType`, matched);
+                                const localMatched = ownerTypeDocuments.find((d) => d.ownerTypeCode === code);
+                                if (localMatched) {
+                                  setValue(`owners.${index}.docIdType`, localMatched);
                                 } else {
                                   setValue(`owners.${index}.docIdType`, null);
                                   setValue(`owners.${index}.docIdNo`, "");
@@ -638,7 +659,7 @@ useEffect(() => {
                                 option={ownerTypeDocuments}
                                 optionKey="name"
                                 t={t}
-                                disable={isEditMode}
+                                disable={isEditMode || !!matched}
                               />
                             )}
                           />
@@ -684,16 +705,48 @@ useEffect(() => {
                       name={`owners.${index}.ownershipPercentage`}
                       defaultValue={item?.ownershipPercentage || ""}
                       rules={{
+                        required: "Ownership percentage is required",
                         validate: {
                           maxHundred: (v) => !v || Number(v) <= 100 || "Ownership percentage cannot exceed 100%",
                           minZero: (v) => !v || Number(v) >= 0 || "Ownership percentage cannot be negative",
                           isNumber: (v) => !v || !isNaN(Number(v)) || "Must be a valid number",
+                          checkPercentage: (v) => {
+                            const ownershipType = getValues("ownerShip")?.code;
+                            if (ownershipType === "SINGLEOWNER") {
+                              return Number(v) === 100 || "Ownership percentage for single owner must be 100%";
+                            }
+                            if (ownershipType === "INDIVIDUAL.MULTIPLEOWNERS") {
+                              const allOwners = getValues({ nest: true })?.owners || [];
+                              const total = allOwners.reduce((sum, owner) => {
+                                const val = String(owner.ownershipPercentage || "").trim();
+                                const num = val ? Number(val) : 0;
+                                return sum + (isNaN(num) ? 0 : num);
+                              }, 0);
+                              console.log("PT checkPercentage Debug:", {
+                                allOwners,
+                                total,
+                                v,
+                                isValid: total === 100
+                              });
+                              return total === 100 || `Sum of all ownership percentages must be 100%`;
+                            }
+                            return true;
+                          }
                         },
                       }}
                       render={(props) => (
                         <TextInput
                           value={props.value}
-                          onChange={(e) => props.onChange(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "");
+                            props.onChange(val);
+                            setTimeout(() => {
+                              const allOwners = getValues({ nest: true })?.owners || [];
+                              allOwners.forEach((_, idx) => {
+                                trigger(`owners.${idx}.ownershipPercentage`);
+                              });
+                            }, 0);
+                          }}
                           disable={isEditMode}
                           placeholder="0-100"
                         />

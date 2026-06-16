@@ -143,6 +143,11 @@ const Inbox = ({ parentRoute }) => {
   const [tableData, setTableData] = useState([]);
   const [statusData, setStatusData] = useState([]);
   const [totalCountData, setTotalCountData] = useState(0);
+  const [assigneeCounts, setAssigneeCounts] = useState({
+    ASSIGNED_TO_ME: 0,
+    ASSIGNED_TO_ALL: 0,
+  });
+  const hasCapturedAssigneeCounts = useRef(false);
 
   const getResolvedStatusIds = useCallback((applicationStatuses = []) => {
     return [...new Set(applicationStatuses.reduce((acc, item) => {
@@ -194,47 +199,61 @@ const Inbox = ({ parentRoute }) => {
     config: { enabled: !!tenantId },
   });
 
+  const assigneeCountBaseFilters = useMemo(() => {
+    const countFilterForm = { ...(memoizedFilters?.filterForm || {}) };
+    delete countFilterForm.applicationStatus;
+
+    return {
+      ...memoizedFilters,
+      filterForm: countFilterForm,
+    };
+  }, [memoizedFilters]);
+
   const assignedToMeFilters = useMemo(
     () => ({
-      ...memoizedFilters,
+      ...assigneeCountBaseFilters,
       filterForm: {
-        ...(memoizedFilters?.filterForm || {}),
+        ...(assigneeCountBaseFilters?.filterForm || {}),
         assignee: "ASSIGNED_TO_ME",
       },
     }),
-    [memoizedFilters]
+    [assigneeCountBaseFilters]
   );
 
   const assignedToAllFilters = useMemo(
     () => ({
-      ...memoizedFilters,
+      ...assigneeCountBaseFilters,
       filterForm: {
-        ...(memoizedFilters?.filterForm || {}),
+        ...(assigneeCountBaseFilters?.filterForm || {}),
         assignee: "ASSIGNED_TO_ALL",
       },
     }),
-    [memoizedFilters]
+    [assigneeCountBaseFilters]
   );
 
   const { data: assignedToMeInboxData } = Digit.Hooks.obps.useBPAInbox({
     tenantId: effectiveTenantId,
     filters: assignedToMeFilters,
-    config: { enabled: !!tenantId },
+    config: { enabled: !!tenantId && isEmployee },
   });
 
   const { data: assignedToAllInboxData } = Digit.Hooks.obps.useBPAInbox({
     tenantId: effectiveTenantId,
     filters: assignedToAllFilters,
-    config: { enabled: !!tenantId },
+    config: { enabled: !!tenantId && isEmployee },
   });
 
-  const assigneeCounts = useMemo(
-    () => ({
+  useEffect(() => {
+    if (!isEmployee) return;
+    if (hasCapturedAssigneeCounts.current) return;
+    if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+
+    setAssigneeCounts({
       ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
-    }),
-    [assignedToAllInboxData?.totalCount, assignedToMeInboxData?.totalCount]
-  );
+    });
+    hasCapturedAssigneeCounts.current = true;
+  }, [assignedToAllInboxData, assignedToMeInboxData, isEmployee]);
 
   useEffect(() => {
     if (inboxData) {

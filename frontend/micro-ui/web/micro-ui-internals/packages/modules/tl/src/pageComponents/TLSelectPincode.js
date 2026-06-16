@@ -36,7 +36,7 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
       label: "CORE_COMMON_PINCODE",
       type: "text",
       name: "pincode",
-      disable: isEdit,
+      disable: false,
       validation: {
         minlength: 6,
         maxlength: 7,
@@ -111,20 +111,20 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
     const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item == data?.pincode));
     if (foundValue) {
       setPincodeServicability(null);
-      onSelect(config.key.pincode, { pincode: data.pincode });
+      onSelect(config.key, { ...formData[config.key], pincode: data.pincode });
     } else {
       // Show warning but still allow to proceed if user confirms
       console.warn("Pincode not found in master data:", data.pincode);
       setPincodeServicability("TL_COMMON_PINCODE_NOT_IN_MASTER");
       // Still allow selection - validation will be done at city level
-      onSelect(config.key.pincode, { pincode: data.pincode });
+      onSelect(config.key, { ...formData[config.key], pincode: data.pincode });
     }
   };
 
   if (userType === "employee") {
     return inputs?.map((input, index) => {
       const isDisabledByProperty = !!formData?.cpt?.details?.address?.pincode;
-      const isFieldDisabled = isDisabledByProperty || isRenewal;
+      const isFieldDisabled = isDisabledByProperty;
 
       return (
         <div style={twoColRow} key={index}>
@@ -184,7 +184,7 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
         onChange={onChange}
         onSkip={onSkip}
         forcedError={t(pincodeServicability)}
-        isDisabled={!pincode || isEdit}
+        isDisabled={!pincode}
       ></FormStep>
     </React.Fragment>
   );

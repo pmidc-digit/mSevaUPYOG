@@ -154,7 +154,7 @@ const formatFinancialYear = (year) => ({
             gstNo: tradeLicenseDetail?.additionalDetail?.gstNo || tradeLicenseDetail?.additionalDetail?.tradeGstNo || "",
             operationalArea: tradeLicenseDetail?.operationalArea || "",
             noOfEmployees: tradeLicenseDetail?.noOfEmployees || "",
-            oldReceiptNo: "",
+            oldReceiptNo: applicationData?.oldLicenseNumber || "",
             key: Date.now()
           }
         ],
@@ -180,6 +180,7 @@ const formatFinancialYear = (year) => ({
             i18nkey: tradeLicenseDetail?.address?.locality?.name || "",
             label: "Locality",
           },
+          pincode: tradeLicenseDetail?.address?.pincode || "",
           street: tradeLicenseDetail?.address?.street || "",
           doorNo: tradeLicenseDetail?.address?.doorNo || "",
           electricityNo: tradeLicenseDetail?.address?.electricityNo || "",

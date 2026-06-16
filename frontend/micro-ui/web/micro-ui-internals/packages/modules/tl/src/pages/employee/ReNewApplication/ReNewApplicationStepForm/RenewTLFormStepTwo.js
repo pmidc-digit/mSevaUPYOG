@@ -30,6 +30,23 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   
   const [localStepData, setLocalStepData] = useState(reduxStepData);
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
+
+  const isEditApplication = window.location.href.includes("edit-application-details");
+  const currentStatus = formData?.applicationData?.status;
+  const { data: inspectorData } = Digit.Hooks.useEmployeeSearch(
+    tenantId,
+    {
+      roles: [{ code: "TL_FIELD_INSPECTOR" }],
+      isActive: true,
+    },
+    {
+      enabled: isEditApplication && (
+        currentStatus === "APPLIED" ||
+        currentStatus === "PENDINGDOCVERIFICATION" ||
+        currentStatus === "PENDING_DOC_VERIFICATION"
+      ),
+    }
+  );
 useEffect(() => {
       if (showToast) {
         const timer = setTimeout(() => {
@@ -108,11 +125,29 @@ useEffect(() => {
 
       // Workflow fields — will be submitted at Step 4
       // Use APPLY for INITIATED applications, RESUBMIT for sent-back applications
-      resubmitPayload.action = applicationData?.status === "INITIATED" ? "APPLY" : "RESUBMIT";
+      let action = "RESUBMIT";
+      if (applicationData?.status === "INITIATED") {
+        action = "APPLY";
+      } else if (
+        applicationData?.status === "APPLIED" ||
+        applicationData?.status === "PENDINGDOCVERIFICATION" ||
+        applicationData?.status === "PENDING_DOC_VERIFICATION"
+      ) {
+        action = "FORWARD";
+      }
+      resubmitPayload.action = action;
       resubmitPayload.comment = "";
       resubmitPayload.wfDocuments = null;
-      const currentUserUuid = Digit.UserService.getUser()?.info?.uuid;
-      resubmitPayload.assignee = currentUserUuid ? [currentUserUuid] : null;
+
+      let assignee = null;
+      if (action === "FORWARD") {
+        const firstInspector = inspectorData?.Employees?.[0]?.uuid;
+        assignee = firstInspector ? [firstInspector] : null;
+      } else {
+        const currentUserUuid = Digit.UserService.getUser()?.info?.uuid;
+        assignee = currentUserUuid ? [currentUserUuid] : null;
+      }
+      resubmitPayload.assignee = assignee;
 
       // Overlay owner edits while keeping full original owner objects (with roles, userName, etc.)
       if (OwnerDetails?.owners?.length > 0) {

@@ -117,13 +117,13 @@ export const RenewTLStepForm = (props) => {
 
 
   useEffect(() => {
-    if (defaultValues) {
+    if (defaultValues && !formData?.TraidDetails) {
       const updatedDefaultValues = JSON.parse(JSON.stringify(defaultValues));
       Object.entries(updatedDefaultValues).forEach(([key, value]) => {
         dispatch(UPDATE_tlNewApplication(key, value));
       });
     }
-  }, [applicationData, propertyId, propertyDetails]); // Important to depend on defaultValues
+  }, [applicationData, propertyId, propertyDetails, formData?.TraidDetails]); // Important to depend on defaultValues
 
   useEffect(() => {
   }, [formData]);

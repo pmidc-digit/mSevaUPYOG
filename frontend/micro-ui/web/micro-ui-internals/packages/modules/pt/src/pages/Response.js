@@ -101,14 +101,29 @@ const Response = (props) => {
     const Property = (Properties && Properties[0]) || {};
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
     
-    let tenantId = Property.tenantId || tenantId;
-    const propertyDetails = await Digit.PTService.search({ tenantId, filters: { propertyIds: Property?.propertyId, status: "INACTIVE" } });
+    let propertyTenantId = Property.tenantId || tenantId;
+    const propertyDetails = await Digit.PTService.search({ tenantId: propertyTenantId, filters: { propertyIds: Property?.propertyId, status: "INACTIVE" } });
     Property.transferorDetails = propertyDetails?.Properties?.[0] || [];
     Property.isTransferor = true;
     Property.transferorOwnershipCategory = propertyDetails?.Properties?.[0]?.ownershipCategory
     
     const data = await getPTAcknowledgementData({ ...Property, auditData }, tenantInfo, t);
     Digit.Utils.pdf.generate(data);
+  };
+
+  const handlePrintPdf = async () => {
+    const { Properties = [] } = mutation.data || successData;
+    const Property = (Properties && Properties[0]) || {};
+    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+    
+    let propertyTenantId = Property.tenantId || tenantId;
+    const propertyDetails = await Digit.PTService.search({ tenantId: propertyTenantId, filters: { propertyIds: Property?.propertyId, status: "INACTIVE" } });
+    Property.transferorDetails = propertyDetails?.Properties?.[0] || [];
+    Property.isTransferor = true;
+    Property.transferorOwnershipCategory = propertyDetails?.Properties?.[0]?.ownershipCategory
+    
+    const data = await getPTAcknowledgementData({ ...Property, auditData }, tenantInfo, t);
+    Digit.Utils.pdf.generate({ ...data, isPrint: true });
   };
 
   if (mutation.isLoading || (mutation.isIdle && !mutationHappened)) {
@@ -130,7 +145,10 @@ const Response = (props) => {
           {DisplayText(state.action, (mutation.isSuccess || !!successData) && !mutation.isError, props.parentRoute.includes("employee"), t)}
         </CardText>
         {(mutation.isSuccess || !!successData) && !mutation.isError && (
-          <SubmitBar style={{ overflow: "hidden" }} label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={handleDownloadPdf} />
+          <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
+            <SubmitBar style={{ flex: 1, overflow: "hidden" }} label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={handleDownloadPdf} />
+            <SubmitBar style={{ flex: 1, overflow: "hidden", backgroundColor: "white", color: "#f47738", border: "1px solid #f47738" }} label={t("PT_PRINT_ACK_FORM") !== "PT_PRINT_ACK_FORM" ? t("PT_PRINT_ACK_FORM") : "Print"} onSubmit={handlePrintPdf} />
+          </div>
         )}
       </Card>
       {showToast && <Toast error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}

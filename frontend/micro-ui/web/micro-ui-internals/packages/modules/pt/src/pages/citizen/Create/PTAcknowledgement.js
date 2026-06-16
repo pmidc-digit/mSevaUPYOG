@@ -67,13 +67,26 @@ const PTAcknowledgement = ({ data, onSuccess }) => {
     const { Properties = [] } = mutation.data;
     let Property = (Properties && Properties[0]) || {};
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-    let tenantId = Property.tenantId || tenantId;
-    const propertyDetails = await Digit.PTService.search({ tenantId, filters: { propertyIds: Property?.propertyId, status: "INACTIVE" } });
+    let propertyTenantId = Property.tenantId || tenantId;
+    const propertyDetails = await Digit.PTService.search({ tenantId: propertyTenantId, filters: { propertyIds: Property?.propertyId, status: "INACTIVE" } });
     Property.transferorDetails = propertyDetails?.Properties?.[0] || [];
     Property.isTransferor = true;
     Property.transferorOwnershipCategory = propertyDetails?.Properties?.[0]?.ownershipCategory
     const data = await getPTAcknowledgementData({ ...Property }, tenantInfo, t);
     Digit.Utils.pdf.generate(data);
+  };
+
+  const handlePrintPdf = async () => {
+    const { Properties = [] } = mutation.data;
+    let Property = (Properties && Properties[0]) || {};
+    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+    let propertyTenantId = Property.tenantId || tenantId;
+    const propertyDetails = await Digit.PTService.search({ tenantId: propertyTenantId, filters: { propertyIds: Property?.propertyId, status: "INACTIVE" } });
+    Property.transferorDetails = propertyDetails?.Properties?.[0] || [];
+    Property.isTransferor = true;
+    Property.transferorOwnershipCategory = propertyDetails?.Properties?.[0]?.ownershipCategory
+    const data = await getPTAcknowledgementData({ ...Property }, tenantInfo, t);
+    Digit.Utils.pdf.generate({ ...data, isPrint: true });
   };
 
   return mutation.isLoading || mutation.isIdle ? (
@@ -112,7 +125,12 @@ const PTAcknowledgement = ({ data, onSuccess }) => {
       {/* {mutation.isSuccess && <Link to={`/digit-ui/citizen/feedback?redirectedFrom=${match.path}&propertyId=${mutation.isSuccess ? mutation?.data?.Properties[0]?.propertyId : ""}&acknowldgementNumber=${mutation.isSuccess ? mutation?.data?.Properties[0]?.acknowldgementNumber : ""}&creationReason=${mutation.isSuccess ? mutation?.data?.Properties[0]?.creationReason : ""}&tenantId=${mutation.isSuccess ? mutation?.data?.Properties[0]?.tenantId : ""}&locality=${mutation.isSuccess ? mutation?.data?.Properties[0]?.address?.locality?.code : ""}`}>
           <SubmitBar label={t("CS_REVIEW_AND_FEEDBACK")}/>
       </Link>} */}
-      {mutation.isSuccess && <SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={handleDownloadPdf} />}
+      {mutation.isSuccess && (
+        <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
+          <SubmitBar style={{ flex: 1, overflow: "hidden" }} label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={handleDownloadPdf} />
+          <SubmitBar style={{ flex: 1, overflow: "hidden", backgroundColor: "white", color: "#f47738", border: "1px solid #f47738" }} label={t("PT_PRINT_ACK_FORM") !== "PT_PRINT_ACK_FORM" ? t("PT_PRINT_ACK_FORM") : "Print"} onSubmit={handlePrintPdf} />
+        </div>
+      )}
       <Link to={`/digit-ui/citizen`}>
         <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>

@@ -209,10 +209,7 @@ const PTSummary = ({ formData, t }) => {
             <CardLabel>{t("Plot Size (sq. yards)")}</CardLabel>
             <div style={styles.value}>{propertyDetails?.plotSize || "NA"}</div>
           </LabelFieldPair>
-          <LabelFieldPair style={styles.labelFieldPair}>
-            <CardLabel>{t("Plot Size (sq. yards)")}</CardLabel>
-            <div style={styles.value}>{SummaryData?.propertyDetails?.plotSize || "NA"}</div>
-          </LabelFieldPair>
+         
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("No. of Floors")}</CardLabel>
             <div style={styles.value}>{SummaryData?.propertyDetails?.noOfFloors?.code || "NA"}</div>

@@ -28,7 +28,7 @@ const RALApplicationDetails = () => {
     }
   };
 
-  console.log('applicationData', applicationData)
+  console.log("applicationData", applicationData);
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -40,7 +40,7 @@ const RALApplicationDetails = () => {
     { enabled: acknowledgementIds ? true : false }
   );
 
-  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rentandlease-receipt"});
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rentandlease-receipt" });
 
   const getAcknowledgement = async () => {
     setLoader(true);
@@ -63,7 +63,6 @@ const RALApplicationDetails = () => {
     label: t("CHB_DOWNLOAD_ACK_FORM"),
     onClick: () => getAcknowledgement(),
   });
-
 
   if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
@@ -155,15 +154,15 @@ const RALApplicationDetails = () => {
             )}
           </StatusTable>
 
-          <CardSubHeader className="ral-card-subheader-24">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ral-card-subheader-24">{t("Building/Plot/Shop Details")}</CardSubHeader>
           <StatusTable>
             <Row label={t("APPLICATION_NUMBER")} text={tValue(applicationData?.applicationNumber)} />
             <Row label={t("RENT_LEASE_PROPERTY_ID")} text={tValue(propertyDetails?.propertyId)} />
-            <Row label={t("RENT_LEASE_PROPERTY_NAME")} text={tValue(propertyDetails?.propertyName)} />
+            <Row label={t("Building/Plot/Shop Name")} text={tValue(propertyDetails?.propertyName)} />
             <Row label={t("RAL_ALLOTMENT_TYPE")} text={tValue(propertyDetails?.allotmentType)} />
-            <Row label={t("RENT_LEASE_PROPERTY_TYPE")} text={tValue(propertyDetails?.propertyType)} />
-            <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={tValue(propertyDetails?.address)} />
-            <Row label={t("RAL_PROPERTY_AMOUNT")} text={tValue(propertyDetails?.baseRent)} />
+            <Row label={t("Building/Plot/Shop Type")} text={tValue(propertyDetails?.propertyType)} />
+            <Row label={t("Building/Plot/Shop Address")} text={tValue(propertyDetails?.address)} />
+            <Row label={t("Rent Amount")} text={tValue(propertyDetails?.baseRent)} />
             <Row label={t("PENALTY_TYPE")} text={tValue(propertyDetails?.penaltyType)} />
             <Row
               label={t("RAL_FEE_CYCLE")}
@@ -173,7 +172,7 @@ const RALApplicationDetails = () => {
                   : t("CS_NA")
               }
             />
-            <Row label={t("PROPERTY_SIZE")} text={tValue(propertyDetails?.propertySizeOrArea)} />
+            <Row label={t("Building/Plot/Shop Size")} text={tValue(propertyDetails?.propertySizeOrArea)} />
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={tValue(propertyDetails?.locationType)} />
             <Row label={t("RAL_START_DATE")} text={tValue(getDate(applicationData?.startDate))} />
             <Row label={t("RAL_END_DATE")} text={tValue(getDate(applicationData?.endDate))} />
@@ -200,12 +199,8 @@ const RALApplicationDetails = () => {
               <StatusTable>
                 <Row label={t("Arrears")} text={tValue(rawAdditionalDetails?.arrear)} />
                 <Row
-                  label={t("RAL_START_DATE")}
-                  text={rawAdditionalDetails?.arrearStartDate ? getDate(rawAdditionalDetails.arrearStartDate) : t("CS_NA")}
-                />
-                <Row
-                  label={t("RAL_END_DATE")}
-                  text={rawAdditionalDetails?.arrearEndDate ? getDate(rawAdditionalDetails.arrearEndDate) : t("CS_NA")}
+                  label={t("Last Billing Period")}
+                  text={rawAdditionalDetails?.lastBillingPeriod ? new Date(rawAdditionalDetails.lastBillingPeriod).toLocaleDateString("en-IN") : "-"}
                 />
                 <Row label={t("Reason")} text={tValue(rawAdditionalDetails?.arrearReason)} />
                 <Row label={t("Remarks")} text={tValue(rawAdditionalDetails?.remarks)} />

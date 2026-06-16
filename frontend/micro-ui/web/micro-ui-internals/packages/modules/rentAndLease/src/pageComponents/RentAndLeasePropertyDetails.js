@@ -374,7 +374,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       </LabelFieldPair>
       {errors.applicationType && <CardLabelError className="ral-error-label">{getErrorMessage("applicationType")}</CardLabelError>}
 
-      {/* Property Type Dropdown */}
+      {/* Allotment Type */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
           {t("Allotment Type")} <span className="mandatory-asterisk">*</span>
@@ -382,7 +382,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         <Controller
           control={control}
           name="propertyType"
-          rules={{ required: t("RENT_LEASE_PROPERTY_TYPE_REQUIRED") }}
+          rules={{ required: t("Allotment Type is required") }}
           render={(props) => (
             <Dropdown className="form-field" select={props.onChange} selected={props.value} option={propertyTypeOptions} optionKey="name" t={t} />
           )}
@@ -390,15 +390,15 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       </LabelFieldPair>
       {errors.propertyType && <CardLabelError className="ral-error-label">{getErrorMessage("propertyType")}</CardLabelError>}
 
-      {/* application Type */}
+      {/* Building/Plot/Shop Area */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("Property Area")} <span className="mandatory-asterisk">*</span>
+          {t("Building/Plot/Shop Area")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <Controller
           control={control}
           name="area"
-          rules={{ required: t("Property Area is required") }}
+          rules={{ required: t("Building/Plot/Shop Area is required") }}
           render={(props) => (
             <Dropdown
               className="form-field"
@@ -419,15 +419,15 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       </LabelFieldPair>
       {errors.area && <CardLabelError className="ral-error-label">{getErrorMessage("area")}</CardLabelError>}
 
-      {/* Property Name Dropdown */}
+      {/* Building/Plot/Shop Name Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_NAME")} <span className="mandatory-asterisk">*</span>
+          {t("Building/Plot/Shop Name")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <Controller
           control={control}
           name="propertyName"
-          rules={{ required: t("RENT_LEASE_PROPERTY_NAME_REQUIRED") }}
+          rules={{ required: t("Building/Plot/Shop Name is required") }}
           render={({ value, onChange }) => (
             <Dropdown
               className="form-field"
@@ -448,15 +448,15 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       </LabelFieldPair>
       {errors.propertyName && <CardLabelError className="ral-error-label">{getErrorMessage("propertyName")}</CardLabelError>}
 
-      {/* Property Specific Dropdown */}
+      {/* Building/Plot/Shop Specific Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_SPECIFIC")} <span className="mandatory-asterisk">*</span>
+          {t("Building/Plot/Shop Specific")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <Controller
           control={control}
           name="propertySpecific"
-          rules={{ required: t("RENT_LEASE_PROPERTY_SPECIFIC_REQUIRED") }}
+          rules={{ required: t("Building/Plot/Shop Specific is required") }}
           render={(props) => (
             <Dropdown className="form-field" select={props.onChange} selected={props.value} option={propertySpecificOptions} optionKey="name" t={t} />
           )}
@@ -680,7 +680,18 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
                 control={control}
                 name="arrear"
                 rules={{ required: t("RENT_LEASE_ARREAR_REQUIRED") }}
-                render={({ value, onChange }) => <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} />}
+                render={({ value, onChange, onBlur }) => (
+                  <input
+                    className="employee-card-input undefined focus-visible undefined"
+                    type="number"
+                    value={value || ""}
+                    onChange={(e) => onChange(e.target.value)}
+                    onWheel={(e) => e.currentTarget.blur()}
+                    onBlur={(e) => {
+                      onBlur(e);
+                    }}
+                  />
+                )}
               />
             </div>
           </LabelFieldPair>

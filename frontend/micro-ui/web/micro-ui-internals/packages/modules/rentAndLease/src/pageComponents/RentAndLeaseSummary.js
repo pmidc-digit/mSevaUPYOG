@@ -39,7 +39,7 @@ function RentAndLeaseSummary({ t }) {
     propertySizeOrArea: t("RAL_LEASE_PROPERTY_AREA"),
     address: t("RAL_LEASE_PROPERTY_ADDRESS"),
     propertySpecific: t("RENT_LEASE_PROPERTY_SPECIFIC"),
-    locationType: t("RENT_LEASE_LOCATION_TYPE"),
+    // locationType: t("RENT_LEASE_LOCATION_TYPE"),
     baseRent: t("RENT_AMOUNT "),
     securityDeposit: t("SECURITY_DEPOSIT"),
     tax_applicable: t("GST_APPLICABLE"),
@@ -49,6 +49,8 @@ function RentAndLeaseSummary({ t }) {
     endDate: t("RAL_END_DATE"),
     // latePayment: t("LATE_PAYMENT_PERCENT"),
   };
+
+  console.log("property", property);
 
   return (
     <div className="application-summary">
@@ -107,7 +109,11 @@ function RentAndLeaseSummary({ t }) {
                 value = Digit.DateUtils.ConvertEpochToDate(value);
               }
 
-              return renderRow(label, value || "NA");
+              if (value === undefined || value === null || value === "") {
+                return null;
+              }
+
+              return renderRow(label, value);
             })}
         </div>
       </Card>
@@ -125,11 +131,13 @@ function RentAndLeaseSummary({ t }) {
                 t("RAL_START_DATE"),
                 typeof property.arrearStartDate === "number" ? Digit.DateUtils.ConvertEpochToDate(property.arrearStartDate) : property.arrearStartDate
               )} */}
-            {property?.arrearEndDate &&
+            {property?.lastBillingPeriod && renderRow(t("Last Billing Period"), property.lastBillingPeriod)}
+
+            {/* {property?.arrearEndDate &&
               renderRow(
                 t("RAL_ARR_END_DATE"),
                 typeof property.arrearEndDate === "number" ? Digit.DateUtils.ConvertEpochToDate(property.arrearEndDate) : property.arrearEndDate
-              )}
+              )} */}
             {property?.arrearReason?.name && renderRow(t("Reason"), property?.arrearReason?.name)}
             {property?.remarks && renderRow(t("Remarks"), property?.remarks)}
           </div>

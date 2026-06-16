@@ -319,21 +319,27 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     const dueDateRLData = dueDateRL?.["rl-services-masters"]?.DueDate;
     console.log("dueDateRL", dueDateRLData);
     console.log("val", val);
+
     const filteredRLData = dueDateRLData?.find((item) => item?.billingCycle == val?.feesPeriodCycle);
+
     console.log("filteredRLData", filteredRLData);
+
     const dueDay = Number(filteredRLData?.dueDay);
     const today = new Date();
     const currentDate = today.getDate();
+
     let billingDate;
-    if (currentDate < dueDay) {
-      // Last day of previous month
-      billingDate = new Date(today.getFullYear(), today.getMonth(), 0);
+
+    if (currentDate >= dueDay) {
+      billingDate = new Date(today.getFullYear(), today.getMonth(), 0); // last day previous month
     } else {
-      // Last day of current month
-      billingDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      billingDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // last day current month
     }
 
-    const formattedDate = billingDate.toISOString().split("T")[0];
+    const formattedDate = `${billingDate.getFullYear()}-${String(billingDate.getMonth() + 1).padStart(2, "0")}-${String(
+      billingDate.getDate()
+    ).padStart(2, "0")}`;
+
     setValue("lastBillingPeriod", formattedDate);
 
     console.log("Billing Date:", billingDate);
@@ -658,8 +664,28 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
           {errors.securityDeposit && <CardLabelError className="ral-error-label">{getErrorMessage("securityDeposit")}</CardLabelError>}
         </React.Fragment>
       )}
+
       {watch("applicationType")?.code == "Legacy" && (
         <React.Fragment>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("Arrears")} <span className="mandatory-asterisk">*</span>
+            </CardLabel>
+
+            <div className="form-field">
+              <div style={{ fontSize: "13px", color: "green", paddingBottom: "10px" }}>
+                Please add Arrears including penalty until last billing period.
+              </div>
+              <Controller
+                control={control}
+                name="arrear"
+                rules={{ required: t("RENT_LEASE_ARREAR_REQUIRED") }}
+                render={({ value, onChange }) => <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} />}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.arrear && <CardLabelError className="ral-error-label">{getErrorMessage("arrear")}</CardLabelError>}
+
           {/* Last Billing Period */}
           <LabelFieldPair>
             <CardLabel>

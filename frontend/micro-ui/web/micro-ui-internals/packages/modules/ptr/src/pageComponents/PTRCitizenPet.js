@@ -9,6 +9,7 @@ import {
   LabelFieldPair,
   CardSectionHeader,
 } from "@mseva/digit-ui-react-components";
+import { useLocation } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { UPDATE_PTRNewApplication_FORM } from "../redux/action/PTRNewApplicationActions";
@@ -18,16 +19,20 @@ import { Loader } from "../components/Loader";
 const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isEdit }) => {
   const stateId = Digit.ULBService.getStateId();
   let user = Digit.UserService.getUser();
+  const location = useLocation();
   const dispatch = useDispatch();
   const [loader, setLoader] = useState(false);
   const [minDate, setMinDate] = useState("");
   const [maxDate, setMaxDate] = useState("");
+
+  const OGapplicationNumber = location.state?.applicationNumber;
 
   const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
 
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
+
   const { data: mdmsPetData, isLoading } = Digit.Hooks.ptr.usePTRPetMDMS(tenantId);
 
   const petTypeObj = mdmsPetData?.petTypes?.find((pt) => pt.name === apiDataCheck?.[0]?.petDetails?.petType) || null;
@@ -36,26 +41,6 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
 
   const genderTypeObj = mdmsPetData?.genderTypes?.find((gt) => gt.name === apiDataCheck?.[0]?.petDetails?.petGender) || null;
 
-  const pathParts = window.location.pathname.split("/");
-  const startIndex = pathParts.findIndex((part) => part === "new-application");
-  let id = null;
-  if (startIndex !== -1) {
-    const nextPart = pathParts[startIndex + 1];
-
-    // ✅ Case 1: PB-PTR format
-    if (nextPart?.startsWith("PB-PTR-")) {
-      id = nextPart;
-    }
-    // ✅ Case 2: PL/.../.../... format
-    else if (nextPart === "PL") {
-      id = pathParts.slice(startIndex + 1, startIndex + 5).join("/");
-    }
-  }
-
-  id = id ? decodeURIComponent(id) : null;
-
-  // const id = pathParts[pathParts.length - 1];
-  const checkNumber = pathParts[pathParts.length - 2];
   const checkForRenew = window.location.pathname.includes("renew-application");
 
   const today = new Date();
@@ -125,7 +110,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
         pincode,
         addressLine1: currentStepData?.ownerDetails?.address,
       },
-      previousApplicationNumber: id ? id : null,
+      previousApplicationNumber: OGapplicationNumber ? OGapplicationNumber : null,
       applicationType: checkForRenew ? "RENEWAPPLICATION" : "NEWAPPLICATION",
       ownerName: name, //change to ownerName
       fatherName: filteredOwnerDetails?.fatherOrHusbandName,
@@ -210,6 +195,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       }
     } else {
       // No existing application -> create (unchanged)
+
       setLoader(true);
       try {
         const response = await Digit.PTRService.create({ petRegistrationApplications: [formData] }, formData.tenantId);
@@ -251,25 +237,26 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           setValue(key, genderTypeObj);
         } else if (key === "petAge") {
           // 🧠 Handle pet age increment logic
-          if (value) {
-            const [yearsStr, monthsStr] = value.toString().split(".");
-            let years = parseInt(yearsStr, 10);
-            let months = parseInt(monthsStr || 0, 10);
+          // if (value) {
+          //   const [yearsStr, monthsStr] = value.toString().split(".");
+          //   let years = parseInt(yearsStr, 10);
+          //   let months = parseInt(monthsStr || 0, 10);
 
-            // Add the months passed since creation
-            months += monthsDiff;
+          //   // Add the months passed since creation
+          //   months += monthsDiff;
 
-            // Convert months overflow to years
-            if (months >= 12) {
-              years += Math.floor(months / 12);
-              months = months % 12;
-            }
+          //   // Convert months overflow to years
+          //   if (months >= 12) {
+          //     years += Math.floor(months / 12);
+          //     months = months % 12;
+          //   }
 
-            const updatedAge = `${years}.${months}`;
-            setValue(key, updatedAge);
-          } else {
-            setValue(key, value);
-          }
+          //   const updatedAge = `${years}.${months}`;
+          //   setValue(key, updatedAge);
+          // }
+          // else {
+          setValue(key, value);
+          // }
         } else {
           setValue(key, value);
         }

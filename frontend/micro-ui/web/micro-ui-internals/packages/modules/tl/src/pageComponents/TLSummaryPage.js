@@ -33,8 +33,10 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const address = tradeLicenseDetail?.address || {};
   const taxHeads = calculation?.taxHeadEstimates || [];
 
-  // Fallback address data from Redux form (for fields API doesn't return)
-  const reduxAddress = formData?.TraidDetails?.address || {};
+  const reduxAddress = formData?.TraidDetails?.address || formData?.TraidDetailsRenew?.address || formData?.address || {};
+  const resolvedPincode = address?.pincode || reduxAddress?.pincode || "NA";
+  const resolvedElectricityNo = address?.electricityNo || reduxAddress?.electricityNo || "NA";
+  const resolvedOldLicenseNumber = createdResponse?.oldLicenseNumber || formData?.TraidDetails?.tradedetils?.[0]?.oldReceiptNo || formData?.TraidDetailsRenew?.tradedetils?.[0]?.oldReceiptNo || "NA";
 
   const tenantId = createdResponse?.tenantId || Digit.ULBService.getCurrentTenantId();
   const consumerCode = createdResponse?.applicationNumber;
@@ -480,7 +482,7 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
         {renderLabel(t("Trade GST No."), tradeLicenseDetail?.additionalDetail?.gstNo)}
         {renderLabel(t("Operational Area (Sq Ft)"), tradeLicenseDetail?.operationalArea)}
         {renderLabel(t("No. Of Employees"), tradeLicenseDetail?.noOfEmployees)}
-        {renderLabel(t("Old Receipt No."), createdResponse?.oldLicenseNumber)}
+        {renderLabel(t("Old Receipt No."), resolvedOldLicenseNumber)}
         {renderLabel(t("Validity (In Years)"), tradeLicenseDetail?.additionalDetail?.validityYears)}
       </div>
 
@@ -523,8 +525,8 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
         {renderLabel(t("Building/Colony Name"), address?.buildingName || reduxAddress?.buildingName)}
         {renderLabel(t("Street Name"), address?.street)}
         {renderLabel(t("Mohalla"), address?.locality?.name)}
-        {renderLabel(t("Pincode"), address?.pincode)}
-        {renderLabel(t("Electricity Connection No."), address?.electricityNo || reduxAddress?.electricityNo)}
+        {renderLabel(t("Pincode"), resolvedPincode)}
+        {renderLabel(t("Electricity Connection No."), resolvedElectricityNo)}
       </div>
 
       <h2 className="bpa-summary-heading">{t("Owner Details")}</h2>

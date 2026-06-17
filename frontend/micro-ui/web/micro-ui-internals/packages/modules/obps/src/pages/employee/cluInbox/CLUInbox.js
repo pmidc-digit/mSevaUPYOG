@@ -118,6 +118,7 @@ const CLUInbox = ({ parentRoute }) => {
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
   const [tableData, setTableData] = useState([]);
   const [statusData, setStatusData] = useState([]);
+  const [topBarStatusData, setTopBarStatusData] = useState([]);
   const [totalCountData, setTotalCountData] = useState(0);
   const [assigneeCounts, setAssigneeCounts] = useState({
     ASSIGNED_TO_ME: 0,
@@ -243,6 +244,13 @@ const CLUInbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (inboxData) {
+      const duplicateStatusCounts = (inboxData?.statuses || []).reduce((acc, status) => {
+        const statusKey = status?.applicationstatus;
+        if (!statusKey) return acc;
+        acc[statusKey] = (acc[statusKey] || 0) + 1;
+        return acc;
+      }, {});
+
       const groupedStatuses = (inboxData?.statuses || []).reduce((acc, status) => {
         const key = status?.applicationstatus;
 
@@ -278,6 +286,12 @@ const CLUInbox = ({ parentRoute }) => {
         groupedStatuses.map((status) => ({
           ...status,
           selectionValue: status?.applicationstatus || status?.selectionValue,
+        }))
+      );
+      setTopBarStatusData(
+        (inboxData?.statuses || []).map((status) => ({
+          ...status,
+          hasDuplicateName: (duplicateStatusCounts?.[status?.applicationstatus] || 0) > 1,
         }))
       );
       setTableData(inboxData?.table || []);
@@ -354,6 +368,29 @@ const CLUInbox = ({ parentRoute }) => {
     },
     [formState?.filterForm, getResolvedStatuses, setFilterFormValue]
   );
+
+  const filteredTopBarStatuses = useMemo(() => {
+    const selectedStatusCodes = formState?.filterForm?.applicationStatus || [];
+
+    if (!selectedStatusCodes.length) {
+      return topBarStatusData;
+    }
+
+    const selectedStatusKeys = [
+      ...new Set(
+        statusData
+          .filter((status) => selectedStatusCodes.includes(status?.applicationstatus))
+          .map((status) => status?.applicationstatus)
+          .filter(Boolean)
+      ),
+    ];
+
+    if (!selectedStatusKeys.length) {
+      return topBarStatusData;
+    }
+
+    return topBarStatusData.filter((status) => selectedStatusKeys.includes(status?.applicationstatus));
+  }, [formState?.filterForm?.applicationStatus, statusData, topBarStatusData]);
 
   const searchDebounceRef = useRef(null);
   const hasInitializedFilterForm = useRef(false);
@@ -456,7 +493,7 @@ const CLUInbox = ({ parentRoute }) => {
           }
           topBar={
             <InboxTopBar
-              statuses={statusData}
+              statuses={filteredTopBarStatuses}
               activeTab={activeStatusTab}
               onTabClick={onStatusTabClick}
               searchValue={topBarSearch}

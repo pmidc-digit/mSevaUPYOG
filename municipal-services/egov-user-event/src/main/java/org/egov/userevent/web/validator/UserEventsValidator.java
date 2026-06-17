@@ -36,6 +36,7 @@ public class UserEventsValidator {
 	private MDMSService mdmsService;
 
 	@Autowired
+	@org.springframework.context.annotation.Lazy
 	private UserEventsService service;
 
 	/**

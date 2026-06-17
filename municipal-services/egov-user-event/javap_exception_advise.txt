@@ -1,0 +1,611 @@
+Compiled from "ExceptionAdvise.java"
+public class org.egov.tracer.ExceptionAdvise {
+  private static final org.slf4j.Logger log;
+
+  private boolean provideExceptionInDetails;
+
+  private org.egov.tracer.kafka.ErrorQueueProducer errorQueueProducer;
+
+  private org.egov.tracer.config.TracerProperties tracerProperties;
+
+  public org.egov.tracer.ExceptionAdvise();
+    Code:
+       0: aload_0
+       1: invokespecial #2                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public org.springframework.http.ResponseEntity<?> exceptionHandler(javax.servlet.http.HttpServletRequest, java.lang.Exception);
+    Code:
+       0: aload_1
+       1: invokeinterface #3,  1            // InterfaceMethod javax/servlet/http/HttpServletRequest.getContentType:()Ljava/lang/String;
+       6: astore_3
+       7: aload_3
+       8: ifnull        27
+      11: aload_3
+      12: invokevirtual #4                  // Method java/lang/String.toLowerCase:()Ljava/lang/String;
+      15: ldc           #5                  // String application/json
+      17: invokevirtual #6                  // Method java/lang/String.contains:(Ljava/lang/CharSequence;)Z
+      20: ifeq          27
+      23: iconst_1
+      24: goto          28
+      27: iconst_0
+      28: istore        4
+      30: getstatic     #7                  // Field log:Lorg/slf4j/Logger;
+      33: ldc           #8                  // String Exception caught in tracer
+      35: aload_2
+      36: invokeinterface #9,  3            // InterfaceMethod org/slf4j/Logger.error:(Ljava/lang/String;Ljava/lang/Throwable;)V
+      41: ldc           #10                 // String
+      43: astore        5
+      45: aload_1
+      46: instanceof    #11                 // class org/egov/tracer/http/filters/MultiReadRequestWrapper
+      49: ifeq          73
+      52: aload_1
+      53: invokeinterface #12,  1           // InterfaceMethod javax/servlet/http/HttpServletRequest.getInputStream:()Ljavax/servlet/ServletInputStream;
+      58: astore        6
+      60: aload         6
+      62: getstatic     #13                 // Field java/nio/charset/StandardCharsets.UTF_8:Ljava/nio/charset/Charset;
+      65: invokestatic  #14                 // Method org/apache/commons/io/IOUtils.toString:(Ljava/io/InputStream;Ljava/nio/charset/Charset;)Ljava/lang/String;
+      68: astore        5
+      70: goto          77
+      73: ldc           #15                 // String Unable to retrieve request body
+      75: astore        5
+      77: goto          86
+      80: astore        6
+      82: ldc           #15                 // String Unable to retrieve request body
+      84: astore        5
+      86: new           #17                 // class org/egov/tracer/model/ErrorRes
+      89: dup
+      90: invokespecial #18                 // Method org/egov/tracer/model/ErrorRes."<init>":()V
+      93: astore        6
+      95: new           #19                 // class java/util/ArrayList
+      98: dup
+      99: invokespecial #20                 // Method java/util/ArrayList."<init>":()V
+     102: astore        7
+     104: aload_2
+     105: instanceof    #21                 // class org/springframework/web/HttpMediaTypeNotSupportedException
+     108: ifeq          164
+     111: aload         6
+     113: new           #19                 // class java/util/ArrayList
+     116: dup
+     117: new           #22                 // class org/egov/tracer/model/Error
+     120: dup
+     121: ldc           #23                 // String UnsupportedMediaType
+     123: new           #24                 // class java/lang/StringBuilder
+     126: dup
+     127: invokespecial #25                 // Method java/lang/StringBuilder."<init>":()V
+     130: ldc           #26                 // String An unsupported media Type was used -
+     132: invokevirtual #27                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     135: aload_1
+     136: invokeinterface #3,  1            // InterfaceMethod javax/servlet/http/HttpServletRequest.getContentType:()Ljava/lang/String;
+     141: invokevirtual #27                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     144: invokevirtual #28                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+     147: aconst_null
+     148: aconst_null
+     149: invokespecial #29                 // Method org/egov/tracer/model/Error."<init>":(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
+     152: invokestatic  #30                 // Method java/util/Collections.singletonList:(Ljava/lang/Object;)Ljava/util/List;
+     155: invokespecial #31                 // Method java/util/ArrayList."<init>":(Ljava/util/Collection;)V
+     158: invokevirtual #32                 // Method org/egov/tracer/model/ErrorRes.setErrors:(Ljava/util/List;)V
+     161: goto          739
+     164: aload_2
+     165: instanceof    #33                 // class org/springframework/web/client/ResourceAccessException
+     168: ifeq          214
+     171: new           #22                 // class org/egov/tracer/model/Error
+     174: dup
+     175: invokespecial #34                 // Method org/egov/tracer/model/Error."<init>":()V
+     178: astore        8
+     180: aload         8
+     182: ldc           #35                 // String ResourceAccessError
+     184: invokevirtual #36                 // Method org/egov/tracer/model/Error.setCode:(Ljava/lang/String;)V
+     187: aload         8
+     189: ldc           #37                 // String An error occurred while accessing a underlying resource
+     191: invokevirtual #38                 // Method org/egov/tracer/model/Error.setMessage:(Ljava/lang/String;)V
+     194: aload         7
+     196: aload         8
+     198: invokeinterface #39,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     203: pop
+     204: aload         6
+     206: aload         7
+     208: invokevirtual #32                 // Method org/egov/tracer/model/ErrorRes.setErrors:(Ljava/util/List;)V
+     211: goto          739
+     214: aload_2
+     215: instanceof    #40                 // class org/springframework/http/converter/HttpMessageNotReadableException
+     218: ifeq          459
+     221: new           #22                 // class org/egov/tracer/model/Error
+     224: dup
+     225: invokespecial #34                 // Method org/egov/tracer/model/Error."<init>":()V
+     228: astore        8
+     230: aload_2
+     231: invokevirtual #41                 // Method java/lang/Exception.getMessage:()Ljava/lang/String;
+     234: astore        9
+     236: aload_2
+     237: invokevirtual #42                 // Method java/lang/Exception.getCause:()Ljava/lang/Throwable;
+     240: instanceof    #43                 // class com/fasterxml/jackson/databind/JsonMappingException
+     243: ifeq          341
+     246: ldc           #44                 // String (.+)Can not deserialize instance of ([a-z]+\\.){1,}(?<objecttype>[^ ]+).*\\[\"(?<objectname>[^\"]+)\"].*
+     248: bipush        34
+     250: invokestatic  #46                 // Method java/util/regex/Pattern.compile:(Ljava/lang/String;I)Ljava/util/regex/Pattern;
+     253: astore        10
+     255: aload         10
+     257: aload         9
+     259: invokevirtual #47                 // Method java/util/regex/Pattern.matcher:(Ljava/lang/CharSequence;)Ljava/util/regex/Matcher;
+     262: astore        11
+     264: aload         11
+     266: invokevirtual #48                 // Method java/util/regex/Matcher.find:()Z
+     269: istore        12
+     271: iload         12
+     273: ifeq          324
+     276: aload         8
+     278: new           #24                 // class java/lang/StringBuilder
+     281: dup
+     282: invokespecial #25                 // Method java/lang/StringBuilder."<init>":()V
+     285: ldc           #49                 // String Failed to parse field -
+     287: invokevirtual #27                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     290: aload         11
+     292: ldc           #50                 // String objectname
+     294: invokevirtual #51                 // Method java/util/regex/Matcher.group:(Ljava/lang/String;)Ljava/lang/String;
+     297: invokevirtual #27                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     300: ldc           #52                 // String . Expected type is
+     302: invokevirtual #27                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     305: aload         11
+     307: ldc           #53                 // String objecttype
+     309: invokevirtual #51                 // Method java/util/regex/Matcher.group:(Ljava/lang/String;)Ljava/lang/String;
+     312: invokevirtual #27                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     315: invokevirtual #28                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+     318: invokevirtual #38                 // Method org/egov/tracer/model/Error.setMessage:(Ljava/lang/String;)V
+     321: goto          331
+     324: aload         8
+     326: ldc           #54                 // String Failed to deserialize certain JSON fields
+     328: invokevirtual #38                 // Method org/egov/tracer/model/Error.setMessage:(Ljava/lang/String;)V
+     331: aload         8
+     333: ldc           #55                 // String JsonMappingException
+     335: invokevirtual #36                 // Method org/egov/tracer/model/Error.setCode:(Ljava/lang/String;)V
+     338: goto          439
+     341: aload_2
+     342: invokevirtual #42                 // Method java/lang/Exception.getCause:()Ljava/lang/Throwable;
+     345: instanceof    #56                 // class com/fasterxml/jackson/core/JsonParseException
+     348: ifeq          398
+     351: aload         8
+     353: ldc           #57                 // String JsonParseException
+     355: invokevirtual #36                 // Method org/egov/tracer/model/Error.setCode:(Ljava/lang/String;)V
+     358: aload_2
+     359: invokevirtual #42                 // Method java/lang/Exception.getCause:()Ljava/lang/Throwable;
+     362: invokevirtual #58                 // Method java/lang/Throwable.getMessage:()Ljava/lang/String;
+     365: ldc           #59                 // String Source: [^;]+;
+     367: ldc           #10                 // String
+     369: invokevirtual #60                 // Method java/lang/String.replaceAll:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+     372: ldc           #61                 // String  \\(code \\d+\\)
+     374: ldc           #10                 // String
+     376: invokevirtual #60                 // Method java/lang/String.replaceAll:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+     379: ldc           #62                 // String \\n
+     381: ldc           #10                 // String
+     383: invokevirtual #60                 // Method java/lang/String.replaceAll:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+     386: astore        9
+     388: aload         8
+     390: aload         9
+     392: invokevirtual #38                 // Method org/egov/tracer/model/Error.setMessage:(Ljava/lang/String;)V
+     395: goto          439
+     398: aload         8
+     400: ldc           #63                 // String JSON body has errors or is missing
+     402: invokevirtual #38                 // Method org/egov/tracer/model/Error.setMessage:(Ljava/lang/String;)V
+     405: aload_1
+     406: invokestatic  #64                 // Method com/jayway/jsonpath/JsonPath.parse:(Ljava/lang/Object;)Lcom/jayway/jsonpath/DocumentContext;
+     409: invokeinterface #65,  1           // InterfaceMethod com/jayway/jsonpath/DocumentContext.json:()Ljava/lang/Object;
+     414: pop
+     415: goto          432
+     418: astore        10
+     420: getstatic     #7                  // Field log:Lorg/slf4j/Logger;
+     423: ldc           #67                 // String Error while parsing JSON
+     425: aload         10
+     427: invokeinterface #68,  3           // InterfaceMethod org/slf4j/Logger.warn:(Ljava/lang/String;Ljava/lang/Throwable;)V
+     432: aload         8
+     434: ldc           #69                 // String MissingJsonException
+     436: invokevirtual #36                 // Method org/egov/tracer/model/Error.setCode:(Ljava/lang/String;)V
+     439: aload         7
+     441: aload         8
+     443: invokeinterface #39,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     448: pop
+     449: aload         6
+     451: aload         7
+     453: invokevirtual #32                 // Method org/egov/tracer/model/ErrorRes.setErrors:(Ljava/util/List;)V
+     456: goto          739
+     459: aload_2
+     460: instanceof    #70                 // class org/springframework/web/bind/MethodArgumentNotValidException
+     463: ifeq          491
+     466: aload_2
+     467: checkcast     #70                 // class org/springframework/web/bind/MethodArgumentNotValidException
+     470: astore        8
+     472: aload         6
+     474: aload_0
+     475: aload         8
+     477: invokevirtual #71                 // Method org/springframework/web/bind/MethodArgumentNotValidException.getBindingResult:()Lorg/springframework/validation/BindingResult;
+     480: aload         7
+     482: invokespecial #72                 // Method getBindingErrors:(Lorg/springframework/validation/BindingResult;Ljava/util/List;)Ljava/util/List;
+     485: invokevirtual #32                 // Method org/egov/tracer/model/ErrorRes.setErrors:(Ljava/util/List;)V
+     488: goto          739
+     491: aload_2
+     492: instanceof    #73                 // class org/egov/tracer/model/CustomBindingResultExceprion
+     495: ifeq          523
+     498: aload_2
+     499: checkcast     #73                 // class org/egov/tracer/model/CustomBindingResultExceprion
+     502: astore        8
+     504: aload         6
+     506: aload_0
+     507: aload         8
+     509: invokevirtual #74                 // Method org/egov/tracer/model/CustomBindingResultExceprion.getBindingResult:()Lorg/springframework/validation/BindingResult;
+     512: aload         7
+     514: invokespecial #72                 // Method getBindingErrors:(Lorg/springframework/validation/BindingResult;Ljava/util/List;)Ljava/util/List;
+     517: invokevirtual #32                 // Method org/egov/tracer/model/ErrorRes.setErrors:(Ljava/util/List;)V
+     520: goto          739
+     523: aload_2
+     524: instanceof    #75                 // class org/egov/tracer/model/CustomException
+     527: ifeq          554
+     530: aload_2
+     531: checkcast     #75                 // class org/egov/tracer/model/CustomException
+     534: astore        8
+     536: aload_0
+     537: aload         8
+     539: aload         7
+     541: invokespecial #76                 // Method populateCustomErrors:(Lorg/egov/tracer/model/CustomException;Ljava/util/List;)V
+     544: aload         6
+     546: aload         7
+     548: invokevirtual #32                 // Method org/egov/tracer/model/ErrorRes.setErrors:(Ljava/util/List;)V
+     551: goto          739
+     554: aload_2
+     555: instanceof    #77                 // class org/egov/tracer/model/ServiceCallException
+     558: ifeq          622
+     561: aload_2
+     562: checkcast     #77                 // class org/egov/tracer/model/ServiceCallException
+     565: astore        8
+     567: aload_0
+     568: aload         5
+     570: aload_2
+     571: aload_1
+     572: invokeinterface #78,  1           // InterfaceMethod javax/servlet/http/HttpServletRequest.getRequestURL:()Ljava/lang/StringBuffer;
+     577: invokevirtual #79                 // Method java/lang/StringBuffer.toString:()Ljava/lang/String;
+     580: aload         6
+     582: iload         4
+     584: invokevirtual #80                 // Method sendErrorMessage:(Ljava/lang/String;Ljava/lang/Exception;Ljava/lang/String;Lorg/egov/tracer/model/ErrorRes;Z)V
+     587: aload         8
+     589: invokevirtual #81                 // Method org/egov/tracer/model/ServiceCallException.getError:()Ljava/lang/String;
+     592: invokestatic  #82                 // Method com/jayway/jsonpath/JsonPath.parse:(Ljava/lang/String;)Lcom/jayway/jsonpath/DocumentContext;
+     595: astore        9
+     597: aload         9
+     599: invokeinterface #65,  1           // InterfaceMethod com/jayway/jsonpath/DocumentContext.json:()Ljava/lang/Object;
+     604: checkcast     #83                 // class java/util/LinkedHashMap
+     607: astore        10
+     609: new           #84                 // class org/springframework/http/ResponseEntity
+     612: dup
+     613: aload         10
+     615: getstatic     #85                 // Field org/springframework/http/HttpStatus.BAD_REQUEST:Lorg/springframework/http/HttpStatus;
+     618: invokespecial #86                 // Method org/springframework/http/ResponseEntity."<init>":(Ljava/lang/Object;Lorg/springframework/http/HttpStatus;)V
+     621: areturn
+     622: aload_2
+     623: instanceof    #87                 // class org/springframework/web/bind/MissingServletRequestParameterException
+     626: ifeq          710
+     629: aload_2
+     630: checkcast     #87                 // class org/springframework/web/bind/MissingServletRequestParameterException
+     633: astore        8
+     635: new           #22                 // class org/egov/tracer/model/Error
+     638: dup
+     639: invokespecial #34                 // Method org/egov/tracer/model/Error."<init>":()V
+     642: astore        9
+     644: aload         9
+     646: ldc           #10                 // String
+     648: invokevirtual #36                 // Method org/egov/tracer/model/Error.setCode:(Ljava/lang/String;)V
+     651: aload         9
+     653: aload         8
+     655: invokevirtual #88                 // Method org/springframework/web/bind/MissingServletRequestParameterException.getMessage:()Ljava/lang/String;
+     658: invokevirtual #38                 // Method org/egov/tracer/model/Error.setMessage:(Ljava/lang/String;)V
+     661: new           #19                 // class java/util/ArrayList
+     664: dup
+     665: invokespecial #20                 // Method java/util/ArrayList."<init>":()V
+     668: astore        10
+     670: aload         10
+     672: aload         8
+     674: invokevirtual #89                 // Method org/springframework/web/bind/MissingServletRequestParameterException.getParameterName:()Ljava/lang/String;
+     677: invokeinterface #39,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     682: pop
+     683: aload         9
+     685: aload         10
+     687: invokevirtual #90                 // Method org/egov/tracer/model/Error.setParams:(Ljava/util/List;)V
+     690: aload         7
+     692: aload         9
+     694: invokeinterface #39,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     699: pop
+     700: aload         6
+     702: aload         7
+     704: invokevirtual #32                 // Method org/egov/tracer/model/ErrorRes.setErrors:(Ljava/util/List;)V
+     707: goto          739
+     710: aload_2
+     711: instanceof    #91                 // class org/springframework/validation/BindException
+     714: ifeq          739
+     717: aload_2
+     718: checkcast     #91                 // class org/springframework/validation/BindException
+     721: astore        8
+     723: aload         6
+     725: aload_0
+     726: aload         8
+     728: invokevirtual #92                 // Method org/springframework/validation/BindException.getBindingResult:()Lorg/springframework/validation/BindingResult;
+     731: aload         7
+     733: invokespecial #72                 // Method getBindingErrors:(Lorg/springframework/validation/BindingResult;Ljava/util/List;)Ljava/util/List;
+     736: invokevirtual #32                 // Method org/egov/tracer/model/ErrorRes.setErrors:(Ljava/util/List;)V
+     739: aload_2
+     740: invokevirtual #93                 // Method java/lang/Object.getClass:()Ljava/lang/Class;
+     743: invokevirtual #94                 // Method java/lang/Class.getSimpleName:()Ljava/lang/String;
+     746: astore        8
+     748: aload_2
+     749: invokevirtual #41                 // Method java/lang/Exception.getMessage:()Ljava/lang/String;
+     752: astore        9
+     754: aload         6
+     756: invokevirtual #95                 // Method org/egov/tracer/model/ErrorRes.getErrors:()Ljava/util/List;
+     759: ifnull        775
+     762: aload         6
+     764: invokevirtual #95                 // Method org/egov/tracer/model/ErrorRes.getErrors:()Ljava/util/List;
+     767: invokeinterface #96,  1           // InterfaceMethod java/util/List.size:()I
+     772: ifne          807
+     775: aload         6
+     777: new           #19                 // class java/util/ArrayList
+     780: dup
+     781: new           #22                 // class org/egov/tracer/model/Error
+     784: dup
+     785: aload         8
+     787: ldc           #97                 // String An unhandled exception occurred on the server
+     789: aload         9
+     791: aconst_null
+     792: invokespecial #29                 // Method org/egov/tracer/model/Error."<init>":(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
+     795: invokestatic  #30                 // Method java/util/Collections.singletonList:(Ljava/lang/Object;)Ljava/util/List;
+     798: invokespecial #31                 // Method java/util/ArrayList."<init>":(Ljava/util/Collection;)V
+     801: invokevirtual #32                 // Method org/egov/tracer/model/ErrorRes.setErrors:(Ljava/util/List;)V
+     804: goto          877
+     807: aload_0
+     808: getfield      #98                 // Field provideExceptionInDetails:Z
+     811: ifeq          877
+     814: aload         6
+     816: invokevirtual #95                 // Method org/egov/tracer/model/ErrorRes.getErrors:()Ljava/util/List;
+     819: ifnull        877
+     822: aload         6
+     824: invokevirtual #95                 // Method org/egov/tracer/model/ErrorRes.getErrors:()Ljava/util/List;
+     827: invokeinterface #96,  1           // InterfaceMethod java/util/List.size:()I
+     832: ifle          877
+     835: new           #99                 // class java/io/StringWriter
+     838: dup
+     839: invokespecial #100                // Method java/io/StringWriter."<init>":()V
+     842: astore        10
+     844: new           #101                // class java/io/PrintWriter
+     847: dup
+     848: aload         10
+     850: invokespecial #102                // Method java/io/PrintWriter."<init>":(Ljava/io/Writer;)V
+     853: astore        11
+     855: aload         6
+     857: invokevirtual #95                 // Method org/egov/tracer/model/ErrorRes.getErrors:()Ljava/util/List;
+     860: iconst_0
+     861: invokeinterface #103,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     866: checkcast     #22                 // class org/egov/tracer/model/Error
+     869: aload         10
+     871: invokevirtual #104                // Method java/io/StringWriter.toString:()Ljava/lang/String;
+     874: invokevirtual #105                // Method org/egov/tracer/model/Error.setDescription:(Ljava/lang/String;)V
+     877: aload_0
+     878: aload         5
+     880: aload_2
+     881: aload_1
+     882: invokeinterface #78,  1           // InterfaceMethod javax/servlet/http/HttpServletRequest.getRequestURL:()Ljava/lang/StringBuffer;
+     887: invokevirtual #79                 // Method java/lang/StringBuffer.toString:()Ljava/lang/String;
+     890: aload         6
+     892: iload         4
+     894: invokevirtual #80                 // Method sendErrorMessage:(Ljava/lang/String;Ljava/lang/Exception;Ljava/lang/String;Lorg/egov/tracer/model/ErrorRes;Z)V
+     897: goto          942
+     900: astore        8
+     902: getstatic     #7                  // Field log:Lorg/slf4j/Logger;
+     905: ldc           #106                // String Error in tracer
+     907: aload         8
+     909: invokeinterface #9,  3            // InterfaceMethod org/slf4j/Logger.error:(Ljava/lang/String;Ljava/lang/Throwable;)V
+     914: aload         6
+     916: new           #19                 // class java/util/ArrayList
+     919: dup
+     920: new           #22                 // class org/egov/tracer/model/Error
+     923: dup
+     924: ldc           #107                // String TracerException
+     926: ldc           #108                // String An unhandled exception occurred in tracer handler
+     928: aconst_null
+     929: aconst_null
+     930: invokespecial #29                 // Method org/egov/tracer/model/Error."<init>":(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
+     933: invokestatic  #30                 // Method java/util/Collections.singletonList:(Ljava/lang/Object;)Ljava/util/List;
+     936: invokespecial #31                 // Method java/util/ArrayList."<init>":(Ljava/util/Collection;)V
+     939: invokevirtual #32                 // Method org/egov/tracer/model/ErrorRes.setErrors:(Ljava/util/List;)V
+     942: new           #84                 // class org/springframework/http/ResponseEntity
+     945: dup
+     946: aload         6
+     948: getstatic     #85                 // Field org/springframework/http/HttpStatus.BAD_REQUEST:Lorg/springframework/http/HttpStatus;
+     951: invokespecial #86                 // Method org/springframework/http/ResponseEntity."<init>":(Ljava/lang/Object;Lorg/springframework/http/HttpStatus;)V
+     954: areturn
+    Exception table:
+       from    to  target type
+          45    77    80   Class java/io/IOException
+         398   415   418   Class java/lang/Exception
+         104   621   900   Class java/lang/Exception
+         622   897   900   Class java/lang/Exception
+
+  private java.util.List<org.egov.tracer.model.Error> getBindingErrors(org.springframework.validation.BindingResult, java.util.List<org.egov.tracer.model.Error>);
+    Code:
+       0: aload_1
+       1: invokeinterface #109,  1          // InterfaceMethod org/springframework/validation/BindingResult.getAllErrors:()Ljava/util/List;
+       6: astore_3
+       7: aload_3
+       8: invokeinterface #110,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      13: astore        4
+      15: aload         4
+      17: invokeinterface #111,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      22: ifeq          129
+      25: aload         4
+      27: invokeinterface #112,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      32: checkcast     #113                // class org/springframework/validation/ObjectError
+      35: astore        5
+      37: new           #22                 // class org/egov/tracer/model/Error
+      40: dup
+      41: invokespecial #34                 // Method org/egov/tracer/model/Error."<init>":()V
+      44: astore        6
+      46: aload         5
+      48: invokevirtual #114                // Method org/springframework/validation/ObjectError.getCodes:()[Ljava/lang/String;
+      51: astore        7
+      53: aload         6
+      55: aload         7
+      57: ifnonnull     64
+      60: aconst_null
+      61: goto          68
+      64: aload         7
+      66: iconst_0
+      67: aaload
+      68: invokevirtual #36                 // Method org/egov/tracer/model/Error.setCode:(Ljava/lang/String;)V
+      71: aload         5
+      73: instanceof    #115                // class org/springframework/validation/FieldError
+      76: ifeq          99
+      79: aload         5
+      81: checkcast     #115                // class org/springframework/validation/FieldError
+      84: astore        8
+      86: aload         6
+      88: aload         8
+      90: invokevirtual #116                // Method org/springframework/validation/FieldError.getDefaultMessage:()Ljava/lang/String;
+      93: invokevirtual #38                 // Method org/egov/tracer/model/Error.setMessage:(Ljava/lang/String;)V
+      96: goto          117
+      99: aload         6
+     101: aload         7
+     103: ifnonnull     110
+     106: aconst_null
+     107: goto          114
+     110: aload         7
+     112: iconst_0
+     113: aaload
+     114: invokevirtual #38                 // Method org/egov/tracer/model/Error.setMessage:(Ljava/lang/String;)V
+     117: aload_2
+     118: aload         6
+     120: invokeinterface #39,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     125: pop
+     126: goto          15
+     129: aload_2
+     130: areturn
+
+  private void populateCustomErrors(org.egov.tracer.model.CustomException, java.util.List<org.egov.tracer.model.Error>);
+    Code:
+       0: aload_1
+       1: invokevirtual #117                // Method org/egov/tracer/model/CustomException.getErrors:()Ljava/util/Map;
+       4: astore_3
+       5: aload_3
+       6: ifnull        107
+       9: aload_3
+      10: invokeinterface #118,  1          // InterfaceMethod java/util/Map.isEmpty:()Z
+      15: ifne          107
+      18: aload_3
+      19: invokeinterface #119,  1          // InterfaceMethod java/util/Map.entrySet:()Ljava/util/Set;
+      24: invokeinterface #120,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+      29: astore        4
+      31: aload         4
+      33: invokeinterface #111,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      38: ifeq          104
+      41: aload         4
+      43: invokeinterface #112,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      48: checkcast     #121                // class java/util/Map$Entry
+      51: astore        5
+      53: new           #22                 // class org/egov/tracer/model/Error
+      56: dup
+      57: invokespecial #34                 // Method org/egov/tracer/model/Error."<init>":()V
+      60: astore        6
+      62: aload         6
+      64: aload         5
+      66: invokeinterface #122,  1          // InterfaceMethod java/util/Map$Entry.getKey:()Ljava/lang/Object;
+      71: checkcast     #123                // class java/lang/String
+      74: invokevirtual #36                 // Method org/egov/tracer/model/Error.setCode:(Ljava/lang/String;)V
+      77: aload         6
+      79: aload         5
+      81: invokeinterface #124,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+      86: checkcast     #123                // class java/lang/String
+      89: invokevirtual #38                 // Method org/egov/tracer/model/Error.setMessage:(Ljava/lang/String;)V
+      92: aload_2
+      93: aload         6
+      95: invokeinterface #39,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     100: pop
+     101: goto          31
+     104: goto          143
+     107: new           #22                 // class org/egov/tracer/model/Error
+     110: dup
+     111: invokespecial #34                 // Method org/egov/tracer/model/Error."<init>":()V
+     114: astore        4
+     116: aload         4
+     118: aload_1
+     119: invokevirtual #125                // Method org/egov/tracer/model/CustomException.getCode:()Ljava/lang/String;
+     122: invokevirtual #36                 // Method org/egov/tracer/model/Error.setCode:(Ljava/lang/String;)V
+     125: aload         4
+     127: aload_1
+     128: invokevirtual #126                // Method org/egov/tracer/model/CustomException.getMessage:()Ljava/lang/String;
+     131: invokevirtual #38                 // Method org/egov/tracer/model/Error.setMessage:(Ljava/lang/String;)V
+     134: aload_2
+     135: aload         4
+     137: invokeinterface #39,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     142: pop
+     143: return
+
+  void sendErrorMessage(java.lang.String, java.lang.Exception, java.lang.String, org.egov.tracer.model.ErrorRes, boolean);
+    Code:
+       0: aload_0
+       1: getfield      #127                // Field tracerProperties:Lorg/egov/tracer/config/TracerProperties;
+       4: invokevirtual #128                // Method org/egov/tracer/config/TracerProperties.isErrorsPublish:()Z
+       7: ifeq          126
+      10: aload_1
+      11: astore        7
+      13: iload         5
+      15: ifeq          41
+      18: aload_1
+      19: invokestatic  #82                 // Method com/jayway/jsonpath/JsonPath.parse:(Ljava/lang/String;)Lcom/jayway/jsonpath/DocumentContext;
+      22: astore        6
+      24: aload         6
+      26: invokeinterface #65,  1           // InterfaceMethod com/jayway/jsonpath/DocumentContext.json:()Ljava/lang/Object;
+      31: astore        7
+      33: goto          41
+      36: astore        8
+      38: aload_1
+      39: astore        7
+      41: aload_2
+      42: invokevirtual #129                // Method java/lang/Exception.getStackTrace:()[Ljava/lang/StackTraceElement;
+      45: astore        8
+      47: invokestatic  #130                // Method org/egov/tracer/model/ErrorQueueContract.builder:()Lorg/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder;
+      50: invokestatic  #131                // Method java/util/UUID.randomUUID:()Ljava/util/UUID;
+      53: invokevirtual #132                // Method java/util/UUID.toString:()Ljava/lang/String;
+      56: invokevirtual #133                // Method org/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder.id:(Ljava/lang/String;)Lorg/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder;
+      59: ldc           #134                // String CORRELATION_ID
+      61: invokestatic  #135                // Method org/slf4j/MDC.get:(Ljava/lang/String;)Ljava/lang/String;
+      64: invokevirtual #136                // Method org/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder.correlationId:(Ljava/lang/String;)Lorg/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder;
+      67: aload         7
+      69: invokevirtual #137                // Method org/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder.body:(Ljava/lang/Object;)Lorg/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder;
+      72: aload_3
+      73: invokevirtual #138                // Method org/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder.source:(Ljava/lang/String;)Lorg/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder;
+      76: new           #139                // class java/util/Date
+      79: dup
+      80: invokespecial #140                // Method java/util/Date."<init>":()V
+      83: invokevirtual #141                // Method java/util/Date.getTime:()J
+      86: invokestatic  #142                // Method java/lang/Long.valueOf:(J)Ljava/lang/Long;
+      89: invokevirtual #143                // Method org/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder.ts:(Ljava/lang/Long;)Lorg/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder;
+      92: aload         4
+      94: invokevirtual #144                // Method org/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder.errorRes:(Lorg/egov/tracer/model/ErrorRes;)Lorg/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder;
+      97: aload         8
+      99: invokestatic  #145                // Method java/util/Arrays.asList:([Ljava/lang/Object;)Ljava/util/List;
+     102: invokevirtual #146                // Method org/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder.exception:(Ljava/util/List;)Lorg/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder;
+     105: aload_2
+     106: invokevirtual #41                 // Method java/lang/Exception.getMessage:()Ljava/lang/String;
+     109: invokevirtual #147                // Method org/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder.message:(Ljava/lang/String;)Lorg/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder;
+     112: invokevirtual #148                // Method org/egov/tracer/model/ErrorQueueContract$ErrorQueueContractBuilder.build:()Lorg/egov/tracer/model/ErrorQueueContract;
+     115: astore        9
+     117: aload_0
+     118: getfield      #149                // Field errorQueueProducer:Lorg/egov/tracer/kafka/ErrorQueueProducer;
+     121: aload         9
+     123: invokevirtual #150                // Method org/egov/tracer/kafka/ErrorQueueProducer.sendMessage:(Lorg/egov/tracer/model/ErrorQueueContract;)V
+     126: return
+    Exception table:
+       from    to  target type
+          18    33    36   Class java/lang/Exception
+
+  static {};
+    Code:
+       0: ldc           #151                // class org/egov/tracer/ExceptionAdvise
+       2: invokestatic  #152                // Method org/slf4j/LoggerFactory.getLogger:(Ljava/lang/Class;)Lorg/slf4j/Logger;
+       5: putstatic     #7                  // Field log:Lorg/slf4j/Logger;
+       8: return
+}

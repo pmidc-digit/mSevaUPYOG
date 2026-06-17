@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.userevent.model.Document;
-import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.userevent.validator.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import lombok.AllArgsConstructor;

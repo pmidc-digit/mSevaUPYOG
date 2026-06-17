@@ -42,7 +42,7 @@ package org.egov;
 
 import java.util.TimeZone;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.egov.tracer.config.TracerConfiguration;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +50,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -77,6 +78,54 @@ public class UserEventsApp {
 
 		return mapper;
 	}
+
+    @Bean
+    public org.springframework.boot.restclient.RestTemplateBuilder customRestTemplateBuilder() {
+        return new org.springframework.boot.restclient.RestTemplateBuilder();
+    }
+
+    @Bean
+    public org.springframework.boot.web.servlet.FilterRegistrationBean tracerFilter(
+            org.egov.tracer.config.ObjectMapperFactory objectMapperFactory,
+            org.egov.tracer.config.TracerProperties tracerProperties) {
+        org.egov.tracer.http.filters.TracerFilter filter = new org.egov.tracer.http.filters.TracerFilter(tracerProperties, objectMapperFactory);
+        org.springframework.boot.web.servlet.FilterRegistrationBean registrationBean = new org.springframework.boot.web.servlet.FilterRegistrationBean(filter);
+        registrationBean.addUrlPatterns("/*");
+        registrationBean.setName("TracerFilter");
+        registrationBean.setOrder(1);
+        return registrationBean;
+    }
+
+    @Bean
+    @Primary
+    public org.springframework.web.client.RestTemplate logAwareRestTemplate(org.egov.tracer.config.TracerProperties tracerProperties) {
+        org.springframework.http.client.SimpleClientHttpRequestFactory requestFactory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        org.springframework.http.client.BufferingClientHttpRequestFactory bufferingFactory = new org.springframework.http.client.BufferingClientHttpRequestFactory(requestFactory);
+        org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate(bufferingFactory);
+        restTemplate.setInterceptors(java.util.Collections.singletonList(new org.egov.tracer.http.RestTemplateLoggingInterceptor(tracerProperties)));
+        return restTemplate;
+    }
+    @Bean
+    @Primary
+    public org.egov.tracer.ExceptionAdvise exceptionAdvise() {
+        return new org.egov.tracer.ExceptionAdvise();
+    }
+
+    @Bean
+    public static org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor removeKafkaConsumerErrorHandler() {
+        return new org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor() {
+            @Override
+            public void postProcessBeanDefinitionRegistry(org.springframework.beans.factory.support.BeanDefinitionRegistry registry) throws org.springframework.beans.BeansException {
+                if (registry.containsBeanDefinition("kafkaConsumerErrorHandler")) {
+                    registry.removeBeanDefinition("kafkaConsumerErrorHandler");
+                }
+            }
+
+            @Override
+            public void postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory beanFactory) throws org.springframework.beans.BeansException {
+            }
+        };
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(UserEventsApp.class, args);

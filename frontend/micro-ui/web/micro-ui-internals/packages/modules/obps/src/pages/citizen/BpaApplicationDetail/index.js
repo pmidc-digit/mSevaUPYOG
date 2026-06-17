@@ -57,6 +57,7 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew"
 import { decryptId } from "../../../utils/index";
 import PdfPreviewModal from "../../../components/PdfPreviewModal"
+import getBPAAcknowledgement from "../../../../getBPAAcknowledgement"
 
 
 const BpaApplicationDetail = () => {
@@ -1779,7 +1780,35 @@ useEffect(() => {
     return <Loader />
   }
 
+  const handleDownloadPdf = async () => {
+      try{
+        setApiLoading(true)
+        const tenantInfo = cities.data.find((city) => city.code === data.applicationData.tenantId)
+        const ulbName = tenantInfo?.ulbName || tenantInfo?.name;
+        const acknowledgementData = await getBPAAcknowledgement(data?.applicationData, tenantInfo, t, ulbType, ulbName, data?.edcrDetails);
+        Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+      }catch(error){
+        setShowToast({
+          key: "error",
+          action: error?.response?.data?.Errors?.[0]?.message
+            ? error?.response?.data?.Errors?.[0]?.message
+            : error?.message || "Failed to download application form. Please try again.",
+        });
+        setTimeout(closeToast, 5000);
+      }finally{
+        setApiLoading(false)
+      }
+    };
+
   const dowloadOptions = []
+
+  if (data?.applicationData && cities?.data?.length > 0) {
+    dowloadOptions.push({
+      order: 0,
+      label: t("Application Form"),
+      onClick: () => handleDownloadPdf(),
+    });
+  }
 
   if (data?.collectionBillDetails?.length > 0) {
     const bpaPayments = cloneDeep(data?.collectionBillDetails)

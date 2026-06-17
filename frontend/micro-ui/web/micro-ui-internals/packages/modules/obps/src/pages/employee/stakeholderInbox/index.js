@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect } from "react";
+import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect, useRef } from "react";
 import { CaseIcon, Header, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
@@ -16,6 +16,11 @@ const Inbox = ({ parentRoute }) => {
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
+  const [assigneeCounts, setAssigneeCounts] = useState({
+    ASSIGNED_TO_ME: 0,
+    ASSIGNED_TO_ALL: 0,
+  });
+  const hasCapturedAssigneeCounts = useRef(false);
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   // const tenantId = Digit.ULBService.getStateId();
@@ -129,6 +134,64 @@ const Inbox = ({ parentRoute }) => {
     },
   });
 
+  const assigneeCountBaseFilters = useMemo(
+    () => ({
+      ...formState,
+      filterForm: {
+        ...(formState?.filterForm || {}),
+        applicationStatus: [],
+      },
+      searchForm: {
+        ...(formState?.searchForm || {}),
+        ...(topBarSearch && { applicationNo: topBarSearch }),
+      },
+    }),
+    [formState, topBarSearch]
+  );
+
+  const assignedToMeFilters = useMemo(
+    () => ({
+      ...assigneeCountBaseFilters,
+      filterForm: {
+        ...(assigneeCountBaseFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ME",
+      },
+    }),
+    [assigneeCountBaseFilters]
+  );
+
+  const assignedToAllFilters = useMemo(
+    () => ({
+      ...assigneeCountBaseFilters,
+      filterForm: {
+        ...(assigneeCountBaseFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ALL",
+      },
+    }),
+    [assigneeCountBaseFilters]
+  );
+
+  const { data: assignedToMeInboxData = {} } = Digit.Hooks.obps.useBPAInbox({
+    tenantId: tenantId === "pb" ? "pb.punjab" : tenantId,
+    filters: assignedToMeFilters,
+  });
+
+  const { data: assignedToAllInboxData = {} } = Digit.Hooks.obps.useBPAInbox({
+    tenantId: tenantId === "pb" ? "pb.punjab" : tenantId,
+    filters: assignedToAllFilters,
+  });
+
+  useEffect(() => {
+    if (hasCapturedAssigneeCounts.current) return;
+    if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+
+    setAssigneeCounts({
+      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
+    });
+    hasCapturedAssigneeCounts.current = true;
+  }, [assignedToAllInboxData, assignedToMeInboxData]);
+
   console.log("isInboxLoading", isInboxLoading, "table", table, "statuses", statuses, "totalCount", totalCount);
 
   const onNextPage = () => {
@@ -209,6 +272,7 @@ const Inbox = ({ parentRoute }) => {
                     getFilterFormValue={getFilterFormValue}
                     statuses={statuses}
                     isInboxLoading={isInboxLoading}
+                    assigneeCounts={assigneeCounts}
                     showLicenseTypeFilter={true}
                     handleFilter={(filterData) => {
                       dispatch({
@@ -246,6 +310,7 @@ const Inbox = ({ parentRoute }) => {
                   getFilterFormValue={getFilterFormValue}
                   statuses={statuses}
                   isInboxLoading={isInboxLoading}
+                  assigneeCounts={assigneeCounts}
                   showLicenseTypeFilter={true}
                   handleFilter={(filterData) => {
                     dispatch({

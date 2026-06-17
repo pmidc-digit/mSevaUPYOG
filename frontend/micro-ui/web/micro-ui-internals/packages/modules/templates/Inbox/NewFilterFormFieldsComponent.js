@@ -3,14 +3,16 @@ import { FilterFormField } from "@mseva/digit-ui-react-components";
 import { useController } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, applicationTypesOfBPA, handleFilter, licenseTypes, showLicenseTypeFilter = false }) => {
+const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, applicationTypesOfBPA, handleFilter, licenseTypes, showLicenseTypeFilter = false, assigneeOptions }) => {
   const { t } = useTranslation();
   const [showAllStatuses, setShowAllStatuses] = useState(false);
 
-  const availableOptions = [
+  const defaultAssigneeOptions = [
     { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
     { code: "ASSIGNED_TO_ALL", name: `${t("ES_INBOX_ASSIGNED_TO_ALL")}` },
   ];
+
+  const availableOptions = assigneeOptions || defaultAssigneeOptions;
 
   // License Type options for BPAREG (Professional Registration) - Only shown in stakeholder inbox
   const licenseTypeOptions = showLicenseTypeFilter ? [

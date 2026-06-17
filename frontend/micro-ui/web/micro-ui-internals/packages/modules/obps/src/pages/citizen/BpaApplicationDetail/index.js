@@ -1788,7 +1788,6 @@ useEffect(() => {
         const tenantInfo = cities.data.find((city) => city.code === data.applicationData.tenantId)
         const ulbName = tenantInfo?.ulbName || tenantInfo?.name;
         const acknowledgementData = await getBPAAcknowledgement(data?.applicationData, tenantInfo, t, ulbType, ulbName, data?.edcrDetails);
-        console.log("acknowledgementData", acknowledgementData)
         Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
       }catch(error){
         setShowToast({

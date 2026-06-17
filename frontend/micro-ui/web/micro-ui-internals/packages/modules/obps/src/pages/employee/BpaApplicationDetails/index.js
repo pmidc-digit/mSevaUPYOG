@@ -70,6 +70,7 @@ import BPASitePhotographs from "../../../components/BPASitePhotographs";
 import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew";
 import BPADocumentChecklist from "../../../pageComponents/BPADocumentChecklist";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
+import getBPAAcknowledgement from "../../../../getBPAAcknowledgement";
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -856,6 +857,34 @@ const BpaApplicationDetail = () => {
   }
 
   const dowloadOptions = []
+
+    const handleDownloadPdf = async () => {
+        try{
+          setLoader(true)
+          const tenantInfo = cities.data.find((city) => city.code === data.applicationData.tenantId)
+          const ulbName = tenantInfo?.ulbName || tenantInfo?.name;
+          const acknowledgementData = await getBPAAcknowledgement(data?.applicationData, tenantInfo, t, ulbType, ulbName, data?.edcrDetails);
+          Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+        }catch(error){
+          setShowToast({
+            error: true,
+            label: error?.response?.data?.Errors?.[0]?.message
+              ? error?.response?.data?.Errors?.[0]?.message
+              : error?.message || "Failed to download application form. Please try again.",
+          });
+          setTimeout(closeToast, 5000);
+        }finally{
+          setLoader(false)
+        }
+      };
+
+    if (data?.applicationData && cities?.data?.length > 0) {
+      dowloadOptions.push({
+        order: 0,
+        label: t("Application Form"),
+        onClick: () => handleDownloadPdf(),
+      });
+    }
   
     if (data?.collectionBillDetails?.length > 0) {
       const bpaPayments = cloneDeep(data?.collectionBillDetails)

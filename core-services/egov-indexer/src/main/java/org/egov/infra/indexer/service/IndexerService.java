@@ -177,8 +177,9 @@ public class IndexerService {
 			else
 				indexWithESId(index, finalJson);
 		} else {
-			log.error("Indexing will not be done, please modify the data and retry.");
-			log.error("Object: " + finalJson);
+			log.error("Indexing will not be done, finalJson is empty. Index: {}", index.getName());
+			throw new IndexerException("Empty JSON produced for index: " + index.getName() + " - please modify the data and retry",
+					new RuntimeException("Empty/null JSON for index: " + index.getName()));
 		}
 	}
 

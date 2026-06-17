@@ -206,12 +206,12 @@ const LayoutInbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
+      const resolvedStatuses =
+        filterData.applicationStatus?.map((item) => item.applicationstatus || item.statusCode || item.code) || [];
+
       // Update form values
       if (filterData.applicationStatus) {
-        setFilterFormValue(
-          "applicationStatus",
-          filterData.applicationStatus.map((item) => item.code)
-        );
+        setFilterFormValue("applicationStatus", resolvedStatuses);
       }
       if (filterData.assignee) {
         setFilterFormValue("assignee", filterData.assignee);
@@ -221,7 +221,7 @@ const LayoutInbox = ({ parentRoute }) => {
         action: "mutateFilterForm",
         data: {
           ...formState?.filterForm,
-          applicationStatus: filterData.applicationStatus?.map((item) => item.code) || [],
+          applicationStatus: resolvedStatuses,
           assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ALL",
         },
       });
@@ -283,8 +283,8 @@ const LayoutInbox = ({ parentRoute }) => {
   }, [formState, resetFilterForm]);
 
   const onStatusTabClick = useCallback(
-    (label, statusCode) => {
-      setActiveStatusTab(statusCode || label);
+    (label, status) => {
+      setActiveStatusTab(label);
       if (label === "CLEAR") {
         setTopBarSearch("");
         return;
@@ -294,7 +294,7 @@ const LayoutInbox = ({ parentRoute }) => {
         handleFilterFormSubmit(onFilterFormSubmit)();
         return;
       }
-      const resolvedCode = statusCode || label;
+      const resolvedCode = status?.applicationstatus || label;
       setFilterFormValue("applicationStatus", [resolvedCode], { shouldDirty: true, shouldTouch: true });
       handleFilterFormSubmit(onFilterFormSubmit)();
     },

@@ -100,7 +100,7 @@ const Table = ({
       columns,
       data,
       initialState: { pageIndex: currentPage, pageSize: pageSizeLimit, sortBy: autoSort ? [{ id: initSortId, desc: false }] : sortParams },
-      pageCount: manualPagination && totalRecords > 0 ? Math.ceil(totalRecords / pageSizeLimit) : -1,
+      pageCount: totalRecords > 0 ? Math.ceil(totalRecords / pageSizeLimit) : -1,
       manualPagination: manualPagination,
       disableMultiSort: false,
       disableSortBy: disableSort,
@@ -223,7 +223,7 @@ const Table = ({
                   ? totalRecords
                   : (currentPage + 1) * pageSizeLimit
                 : pageIndex * pageSize + page?.length}{" "}
-              {manualPagination ? (totalRecords ? `of ${totalRecords}` : "") : `of ${rows.length}`}
+              {totalRecords ? `of ${manualPagination ? totalRecords : rows.length}` : ""}
             </span>
             <div className="pagination-controls">
               {!manualPagination && pageIndex !== 0 && <ArrowToFirst onClick={() => gotoPage(0)} />}
@@ -419,7 +419,7 @@ const Table = ({
                   : (currentPage + 1) * pageSizeLimit
                 : pageIndex * pageSize + page?.length}{" "}
               {/* {(pageIndex + 1) * pageSizeLimit > rows.length ? rows.length : (pageIndex + 1) * pageSizeLimit}{" "} */}
-              {manualPagination ? (totalRecords ? `of ${totalRecords}` : "") : `of ${rows.length}`}
+              {totalRecords ? `of ${manualPagination ? totalRecords : rows.length}` : ""}
             </span>{" "}
           </span>
           {/* to go to first and last page we need to do a manual pagination , it can be updated later*/}

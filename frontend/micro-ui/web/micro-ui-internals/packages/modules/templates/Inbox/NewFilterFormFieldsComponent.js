@@ -1,11 +1,28 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { FilterFormField } from "@mseva/digit-ui-react-components";
+import { FilterFormField, Loader } from "@mseva/digit-ui-react-components";
 import { useController } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, applicationTypesOfBPA, handleFilter, licenseTypes, showLicenseTypeFilter = false }) => {
+const NewFilterFormFieldsComponent = ({
+  statuses,
+  controlFilterForm,
+  applicationTypesOfBPA,
+  handleFilter,
+  licenseTypes,
+  isInboxLoading = false,
+  showLicenseTypeFilter = false,
+}) => {
   const { t } = useTranslation();
   const [showAllStatuses, setShowAllStatuses] = useState(false);
+  const duplicateStatusCodes = useMemo(() => {
+    const counts = (statuses || []).reduce((acc, status) => {
+      const key = status?.applicationstatus;
+      if (!key) return acc;
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    return new Set(Object.keys(counts).filter((key) => counts[key] > 1));
+  }, [statuses]);
 
   const availableOptions = [
     { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
@@ -37,6 +54,7 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
 
   const colorVariants = ["primary", "success", "warning", "danger", "info", "indigo", "teal", "pink", "amber", "slate"];
   const getVariantByIndex = (index, fallback) => colorVariants[index % colorVariants.length] || fallback;
+  const getStatusCount = (status) => status?.totalCount ?? status?.count ?? status?.noOfRecords ?? status?.totalRecords ?? status?.applicationCount ?? 0;
 
   const { field: assigneeField } = useController({ name: "assignee", control: controlFilterForm });
   const { field: statusField } = useController({ name: "applicationStatus", control: controlFilterForm, defaultValue: [] });
@@ -46,18 +64,41 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
 
   const licenseTypeValues = Array.isArray(licenseTypeField.value) ? licenseTypeField.value : [];
 
-  const toggleStatus = (statusCode) => {
+  const getCardSelectionCodes = (statusCard) => {
+    if (Array.isArray(statusCard?.selectionValues) && statusCard.selectionValues.length) return statusCard.selectionValues;
+    if (statusCard?.selectionValue) return [statusCard.selectionValue];
+    if (Array.isArray(statusCard?.statusids) && statusCard.statusids.length) return statusCard.statusids;
+    return [statusCard.code];
+  };
+
+  const toggleStatus = (statusCard) => {
+    const statusCodes = getCardSelectionCodes(statusCard);
+    const isSelected = statusCodes.every((code) => statusValues.includes(code));
     let newStatusValues;
-    if (statusValues.includes(statusCode)) {
-      newStatusValues = statusValues.filter((code) => code !== statusCode);
+    if (isSelected) {
+      newStatusValues = statusValues.filter((code) => !statusCodes.includes(code));
     } else {
-      newStatusValues = [...statusValues, statusCode];
+      newStatusValues = [...new Set([...statusValues, ...statusCodes])];
     }
     statusField.onChange(newStatusValues);
     // Immediately notify parent of filter change
     if (typeof handleFilter === "function") {
       handleFilter({
-        applicationStatus: newStatusValues.map((code) => ({ code })),
+        applicationStatus: newStatusValues.map((code) => {
+          const matchedStatus = (statuses || []).find(
+            (status) =>
+              (status?.selectionValue || status?.statusid || status?.applicationstatus) === code ||
+              (Array.isArray(status?.selectionValues) && status.selectionValues.includes(code)) ||
+              (Array.isArray(status?.statusids) && status.statusids.includes(code))
+          );
+          return {
+            code,
+            statusid: matchedStatus?.statusid || code,
+            statusids: matchedStatus?.statusids || (matchedStatus?.statusid ? [matchedStatus.statusid] : []),
+            applicationstatus: matchedStatus?.applicationstatus,
+            businessService: matchedStatus?.businessService || matchedStatus?.businessservice,
+          };
+        }),
       });
     }
   };
@@ -91,15 +132,23 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
     })),
     ...(statuses || []).map((status) => {
       // Include businessService in key if available to avoid deduplication
-      const uniqueKey = status.businessService ? `${status.applicationstatus}-${status.businessService}` : status.applicationstatus;
+      const businessService = status.businessService || status.businessservice;
+      const uniqueKey = status.statusid || (businessService ? `${status.applicationstatus}-${businessService}` : status.applicationstatus);
+      const hasDuplicateName = duplicateStatusCodes.has(status.applicationstatus);
+      const count = getStatusCount(status);
       return {
         key: uniqueKey,
         type: "status",
         label: t(status.applicationstatus),
-        subtitle: status.businessService ? `${status.businessService}` : null,
-        count: status.totalCount ?? status.count ?? status.noOfRecords ?? status.totalRecords ?? status.applicationCount ?? 0,
-        code: status.applicationstatus,
-        businessService: status.businessService,
+        subtitle: hasDuplicateName && businessService ? `${businessService} (${count})` : null,
+        count,
+        code: status.selectionValue || status.statusid || status.applicationstatus,
+        statusCode: status.applicationstatus,
+        statusid: status.statusid,
+        statusids: status.statusids || (status.statusid ? [status.statusid] : []),
+        selectionValue: status.selectionValue,
+        selectionValues: status.selectionValues,
+        businessService,
         icon: "◎",
       };
     }),
@@ -116,10 +165,9 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
 
   const visibleCards = showAllStatuses ? cards : cards.slice(0, 6);
 
-  // For stakeholder inbox, show assignee + license type cards only
-  const displayCards = showLicenseTypeFilter 
-    ? cards.filter(card => card.type === "assignee" || card.type === "licenseType")
-    : visibleCards;
+  const stakeholderPrimaryCards = cards.filter((card) => card.type === "assignee" || card.type === "licenseType");
+  const stakeholderStatusCards = cards.filter((card) => card.type === "status");
+  const displayCards = showLicenseTypeFilter ? stakeholderPrimaryCards : visibleCards;
 
   return (
     <div className="ndc-new-inbox-filter-card" style={{ marginTop: 16, marginBottom: 16 }}>
@@ -127,12 +175,13 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
         <div className="ndc-new-filter-status-wrapper">
           <div className="ndc-new-filter-status-grid ndc-new-filter-card-grid">
             {displayCards.map((card, index) => {
+              const selectedStatusCodes = getCardSelectionCodes(card);
               const isActive =
                 card.type === "assignee"
                   ? assigneeField.value === card.code
                   : card.type === "licenseType"
                   ? licenseTypeValues.includes(card.code)
-                  : statusValues.includes(card.code);
+                  : selectedStatusCodes.every((code) => statusValues.includes(code));
 
               const variant = getVariantByIndex(index, getVariantFromCode(card.code));
 
@@ -157,7 +206,7 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
                     } else if (card.type === "licenseType") {
                       toggleLicenseType(card.code);
                     } else {
-                      toggleStatus(card.code);
+                      toggleStatus(card);
                     }
                   }}
                 >
@@ -179,6 +228,52 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
               );
             })}
           </div>
+          {showLicenseTypeFilter && (stakeholderStatusCards.length > 0 || isInboxLoading) ? (
+            <>
+              <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600", marginTop: 16 }}>
+                {t("ACTION_TEST_APPLICATION_STATUS")}
+              </div>
+              {isInboxLoading ? (
+                <div style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
+                  <Loader />
+                </div>
+              ) : (
+                <div className="ndc-new-filter-status-grid ndc-new-filter-card-grid">
+                  {stakeholderStatusCards.map((card, index) => {
+                    const selectedStatusCodes = getCardSelectionCodes(card);
+                    const isActive = selectedStatusCodes.every((code) => statusValues.includes(code));
+                    const variant = getVariantByIndex(index + stakeholderPrimaryCards.length, getVariantFromCode(card.code));
+
+                    return (
+                      <button
+                        key={card.key}
+                        type="button"
+                        className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card ${variant} ${
+                          isActive ? "active" : ""
+                        }`}
+                        onClick={() => toggleStatus(card)}
+                      >
+                        {isActive ? (
+                          <span className="ndc-new-filter-card-check" aria-hidden="true">
+                            ✓
+                          </span>
+                        ) : null}
+                        <div className="ndc-new-filter-status-title ndc-new-filter-option-title">{card.label}</div>
+                        {card.subtitle ? (
+                          <div className="ndc-new-filter-option-subtitle">{card.subtitle}</div>
+                        ) : (
+                          <div className="ndc-new-filter-status-count">{card.count !== null && card.count !== undefined ? card.count : ""}</div>
+                        )}
+                        <span className="ndc-new-filter-card-icon" aria-hidden="true">
+                          <span>{card.icon}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          ) : null}
           {!showLicenseTypeFilter && cards.length > 6 ? (
             <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
               <button

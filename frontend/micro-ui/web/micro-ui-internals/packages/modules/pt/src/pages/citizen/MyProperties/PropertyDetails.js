@@ -439,6 +439,7 @@ console.log("workflow details",workflowDetails)
         mutate={null}
         workflowDetails={appDetailsToShow?.applicationData?.status === "ACTIVE" ? workflowDetails : {}}
         businessService="PT"
+        moduleCode="PT"
         showToast={showToast}
         setShowToast={setShowToast}
         closeToast={closeToast}

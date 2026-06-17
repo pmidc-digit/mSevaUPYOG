@@ -796,9 +796,20 @@ console.log("isCheck",isCheck)
         setIsCheck={setIsCheck}
         isCheck={isCheck}
       />
-      {/* {popup && (<RebatePenalityPoPup/>)} */}
-       {/* <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                   <CheckBox onChange={}/><p>{t("PT_FINAL_DECLARATION_MESSAGE")}</p></div> */}
+      {!queryClient.getQueryData(["PT_ASSESSMENT", AssessmentData?.propertyId, location?.state?.Assessment?.financialYear]) && (
+        <Card style={{ marginTop: '16px' }}>
+          <CardSubHeader style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>
+            {t("DECLARATION")}
+          </CardSubHeader>
+          <CheckBox
+            checked={isCheck}
+            value={isCheck}
+            onChange={(e) => setIsCheck(e.target.checked)}
+            label={t("PT_FINAL_DECLARATION_MESSAGE") !== "PT_FINAL_DECLARATION_MESSAGE" ? t("PT_FINAL_DECLARATION_MESSAGE") : "I hereby declare and affirm that the above-furnished information is true and correct and nothing has been concealed therefrom. I am also aware of the fact that in case this information is found false/incorrect, the authorities are at liberty to initiate recovery of amount/interest/penalty/fine as provided in Punjab Municipal Act 1911 or Punjab Municipal Corporation Act 1976."}
+            styles={{ height: "auto" }}
+          />
+        </Card>
+      )}
       {showCalc && <Modal
         headerBarMain={<Heading label={t("PT_CALC_DETAILS")} />}
         headerBarEnd={<CloseBtn onClick={() => { setShowCalc(false) }} />}

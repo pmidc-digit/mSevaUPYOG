@@ -206,7 +206,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
 
   const updateUser = async () => {
     const checkData = getValues();
-    setLoader(true);
+    setIsLoading(true);
     const tenantId = "pb";
     const payload = {
       otp: {
@@ -220,10 +220,10 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
 
     try {
       const response = await Digit.UserService.sendOtp(payload, tenantId);
-      setLoader(false);
+      setIsLoading(false);
       setShowOtp(true);
     } catch (err) {
-      setLoader(false);
+      setIsLoading(false);
     }
   };
 

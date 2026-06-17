@@ -466,6 +466,10 @@ const Inbox = ({ parentRoute }) => {
               assigneeCounts={assigneeCounts}
               showAssigneeCards={isEmployee}
               handleFilter={handleFilterChange}
+              assigneeOptions={[
+                { code: "ASSIGNED_TO_ME", name: t("OBPS_INBOX_ASSIGNED_TO_ME") !== "OBPS_INBOX_ASSIGNED_TO_ME" ? t("OBPS_INBOX_ASSIGNED_TO_ME") : "Pending Files" },
+                { code: "ASSIGNED_TO_ALL", name: t("OBPS_INBOX_ASSIGNED_TO_ALL") !== "OBPS_INBOX_ASSIGNED_TO_ALL" ? t("OBPS_INBOX_ASSIGNED_TO_ALL") : "All Files" },
+              ]}
             />
           }
           topBar={

@@ -1,4 +1,4 @@
-FROM  maven:3.9.11-eclipse-temurin-21 AS build
+FROM  amazoncorretto:21-alpine3.21 AS build
 ARG WORK_DIR
 ARG nexusUsername=deployment
 ARG nexusPassword=egovnexus7918

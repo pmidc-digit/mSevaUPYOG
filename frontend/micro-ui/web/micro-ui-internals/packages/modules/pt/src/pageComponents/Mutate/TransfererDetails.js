@@ -43,7 +43,8 @@ const TransfererDetails = ({ userType, formData, config, onSelect }) => {
                       let noteValue = label?.keyPath
                         ?.filter((e) => !["searchResult", "property"].includes(e))
                         ?.reduce((acc, curr) => (curr === "_index_" ? acc?.[index] : acc?.[curr]), propertyDetails);
-                      return <Row key={label.label} label={t(label.label)} text={noteValue || "N/A"} />;
+                      let displayValue = typeof noteValue === "object" ? noteValue?.code || noteValue?.value : noteValue;
+                      return <Row key={label.label} label={t(label.label)} text={t(displayValue) || displayValue || "N/A"} />;
                     })}
                 </React.Fragment>
               );
@@ -72,11 +73,12 @@ const TransfererDetails = ({ userType, formData, config, onSelect }) => {
                   ?.filter((e) => e.ownershipType === "ALL" || ownershipType?.[0].includes(e.ownershipType) || e.ownershipType === ownershipType?.[0])
                   .map((label) => {
                     let noteValue = label?.keyPath?.reduce((acc, curr) => (curr === "_index_" ? acc?.[index] : acc?.[curr]), formData);
+                    let displayValue = typeof noteValue === "object" ? noteValue?.code || noteValue?.value : noteValue;
                     return (
                       <KeyNote
                         key={label.label}
                         keyValue={t(label.label)}
-                        note={typeof noteValue === "string" || typeof noteValue === "number" ? t(noteValue) : "N/A"}
+                        note={typeof displayValue === "string" || typeof displayValue === "number" ? t(displayValue) : "N/A"}
                         noteStyle={label.noteStyle}
                       />
                     );

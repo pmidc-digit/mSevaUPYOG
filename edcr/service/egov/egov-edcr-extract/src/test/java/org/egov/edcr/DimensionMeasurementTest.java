@@ -50,15 +50,15 @@
  * iterator.next(); List<DXFLine> lines = new ArrayList<>(); List<BigDecimal>
  * dims = new ArrayList<>(); BigDecimal dim = BigDecimal.ZERO; String text2 =
  * "0";
- * System.out.println(" ==================================================== ");
- * System.out.println("Layer = " + dxfLayer.getName() + " Id :" +
+ * LOG.info(" ==================================================== ");
+ * LOG.info("Layer = " + dxfLayer.getName() + " Id :" +
  * dimension.getID() + "   Inset pt:   " + dimension.getInsertPoint()); String
  * dimensionBlock = dimension.getDimensionBlock(); DXFBlock dxfBlock =
  * doc.getDXFBlock(dimensionBlock);
  * 
  * DXFDimensionStyle dxfDimensionStyle =
  * doc.getDXFDimensionStyle(dimension.getDimensionStyleID());
- * System.out.println( "Property 42---" +
+ * LOG.info( "Property 42---" +
  * dxfDimensionStyle.getProperty(DXFDimensionStyle.PROPERTY_DIMEXO));
  * 
  * Iterator entitiesIterator = dxfBlock.getDXFEntitiesIterator(); while
@@ -70,7 +70,7 @@
  * BigDecimal(line.getLength()); dub1 =
  * dub1.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
  * DcrConstants.ROUNDMODE_MEASUREMENTS); dims.add(dub1);
- * System.out.println("line length=" + line.getLength()); } if
+ * LOG.info("line length=" + line.getLength()); } if
  * (e.getType().equals(DXFConstants.ENTITY_TYPE_MTEXT)) { DXFMText text =
  * (DXFMText) e; text2 = text.getText();
  * 
@@ -86,13 +86,13 @@
  * 
  * if (length >= 1) { int index = length - 1; text2 = textSplit[index]; text2 =
  * text2.replaceAll("[^\\d.]", ""); } else text2 = text2.replaceAll("[^\\d.]",
- * ""); } System.out.println("Text2= " + text2); }
+ * ""); } LOG.info("Text2= " + text2); }
  * 
  * } BigDecimal dub = new BigDecimal(text2); dim =
  * dub.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
  * DcrConstants.ROUNDMODE_MEASUREMENTS); if (dims.contains(dim)) {
- * System.out.println("\n Accepted Dimension found " + dim + " List: " + dims +
- * "\n"); } else { System.out.println("\nEdited Dimension found " + dim +
+ * LOG.info("\n Accepted Dimension found " + dim + " List: " + dims +
+ * "\n"); } else { LOG.info("\nEdited Dimension found " + dim +
  * " List:" + dims + "\n"); } } } }
  * 
  * }

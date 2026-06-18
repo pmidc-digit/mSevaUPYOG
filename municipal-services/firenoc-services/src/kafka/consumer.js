@@ -1,16 +1,27 @@
 const kafka = require("kafka-node");
 import envVariables from "../envVariables";
-import producer from "./producer";
+import logger from "../config/logger";
+//import producer from "./producer";
+//const { producer } = require("./producer");
 import get from "lodash/get";
 import set from "lodash/set";
 import { searchApiResponse } from "../api/search";
 import { updateApiResponse } from "../api/update";
 // import { httpRequest } from "../api";
+const { initializeProducer } = require("../kafka/producer");
+let producer;
+initializeProducer().then((p) => {
+   producer = p;
 
+  logger.info('Kafka producer connected');
+}).catch((error) => {
+  logger.error(error.stack || error);
+  process.exit(1);
+});
 var options = {
   // connect directly to kafka broker (instantiates a KafkaClient)
   kafkaHost: envVariables.KAFKA_BROKER_HOST,
-  groupId: "firenoc-consumer-grp",
+  groupId: "firenoc-consumer-group",
   autoCommit: true,
   autoCommitIntervalMs: 5000,
   sessionTimeout: 15000,
@@ -20,7 +31,7 @@ var options = {
   protocol: ["roundrobin"],
   // Offsets to use for new groups other options could be 'earliest' or 'none'
   // (none will emit an error if no offsets were saved) equivalent to Java client's auto.offset.reset
-  fromOffset: "latest",
+  fromOffset: "earliest",
   // how to recover from OutOfRangeOffset error (where save offset is past server retention)
   // accepts same value as fromOffset
   outOfRangeOffset: "earliest"
@@ -40,23 +51,24 @@ consumerGroup.on("message", function(message) {
   // console.log("consumer-value", JSON.parse(message.value));
   const value = JSON.parse(message.value);
 
-  let payloads = [];
+  let payloads={};
+  payloads.messages =[];
   const topic = envVariables.KAFKA_TOPICS_NOTIFICATION;
   let smsRequest = {};
   let fireNOCRequest = {};
   let events = [];
   let { RequestInfo } = value;
-
   const sendEventNotificaiton = () => {
     let requestPayload = {
       // RequestInfo,
       events
     };
-
-    payloads.push({
-      topic: envVariables.KAFKA_TOPICS_EVENT_NOTIFICATION,
-      messages: JSON.stringify(requestPayload)
-    });
+    payloads.topic = envVariables.KAFKA_TOPICS_EVENT_NOTIFICATION;
+    payloads.messages.push({ value: JSON.stringify(requestPayload) })
+    // payloads.push({
+    //   topic: envVariables.KAFKA_TOPICS_EVENT_NOTIFICATION,
+    //   messages: JSON.stringify(requestPayload)
+    // });
     // httpRequest({
     //   hostURL: envVariables.EGOV_EVENT_HOST,
     //   endPoint: `${envVariables.EGOV_EVENT_CONTEXT_PATH}${envVariables.EGOV_EVENT_CREATE_ENPOINT}`,
@@ -72,7 +84,6 @@ consumerGroup.on("message", function(message) {
   };
 
   const sendFireNOCSMSRequest = (FireNOCs,RequestInfo) => {
-    
     for (let i = 0; i < FireNOCs.length; i++) {
       smsRequest["mobileNumber"] = get(
         FireNOCs[i],
@@ -207,10 +218,14 @@ consumerGroup.on("message", function(message) {
         //   break;
         default:
       }
-      payloads.push({
-        topic,
-        messages: JSON.stringify(smsRequest)
-      });
+      // payloads.push({
+      //   topic,
+      //   messages: [{ value: JSON.stringify(smsRequest)}]
+      // });
+
+       payloads.topic = topic;
+      payloads.messages.push({ value: JSON.stringify(smsRequest)})
+
        console.log("smsRequest is",smsRequest);
       if (smsRequest.message) {
         events.push({
@@ -260,10 +275,14 @@ consumerGroup.on("message", function(message) {
     The payment receipt no. is  ${receiptNumber} and you can download your receipt by clicking on the below link:
     ${downLoadLink}|1301157492438182299|1407161407392327147`;
 
-    payloads.push({
-      topic,
-      messages: JSON.stringify(smsRequest)
-    });
+
+    payloads.topic = topic;
+    payloads.messages.push({ value: JSON.stringify(smsRequest)})
+    // payloads.push({
+    //   topic,
+    //   //messages: JSON.stringify(smsRequest)
+    //    messages: [{ value: JSON.stringify(smsRequest)}]
+    // });
   } 
   }
   const FireNOCPaymentStatus = async value => {
@@ -348,22 +367,63 @@ consumerGroup.on("message", function(message) {
     //     console.log("reciept hit");
     //   }
     //   break;
-    case envVariables.KAFKA_TOPICS_RECEIPT_CREATE:
-      {
-        sendPaymentMessage(value);
-        FireNOCPaymentStatus(value);
-      }
-      break;
+       case envVariables.KAFKA_TOPICS_RECEIPT_CREATE:
+        {
+          const detail = get(value, "Payment.paymentDetails[0]");
+
+          // 1. Extract Business Service (Universal Path)
+          let businessService = get(detail, "businessService") || 
+                                get(detail, "bill.businessService") || 
+                                get(detail, "Bill[0].businessService");
+
+          // 2. Extract Application Number (Universal Path)
+          let applicationNumber = get(detail, "bill.consumerCode") || 
+                                  get(detail, "Bill[0].billDetails[0].consumerCode") ||
+                                  get(detail, "Bill[0].consumerCode");
+
+          // 3. LOGGING: This is the critical part for your Production debugging
+          console.log("-----------------------------------------");
+          console.log("KAFKA RECEIPT TOPIC HIT");
+          console.log("Business Service Found: ", businessService);
+          console.log("Application Number Found: ", applicationNumber);
+          console.log("Target Service Expected: ", envVariables.BUSINESS_SERVICE);
+          console.log("-----------------------------------------");
+
+          // 4. Processing Logic
+          if (businessService && businessService.toUpperCase() === envVariables.BUSINESS_SERVICE.toUpperCase()) {
+            logger.info(`Processing FireNOC Payment for App: ${applicationNumber}`);
+            
+            sendPaymentMessage(value);
+            FireNOCPaymentStatus(value);
+          } else {
+            logger.info(`Skipping Receipt: ${applicationNumber} is for ${businessService}`);
+          }
+        }
+        break;   
   }
 
 	console.log("payloads is",payloads);
-  producer.send(payloads, function(err, data) {
-    if (!err) {
-      console.log("sucessfully pushed" + data);
-    } else {
-      console.log("failed to push " + err);
-    }
-  });
+  // producer.send(payloads, function(err, data) {
+  //   if (!err) {
+  //     console.log("sucessfully pushed" + data);
+  //   } else {
+  //     console.log("failed to push " + err);
+  //   }
+  // });
+
+  producer.send(payloads).then((data) => {
+    logger.info('Message sent to Kafka:', data);
+    //logger.info("jobid: " + jobid + ": published to kafka successfully");
+    //  successCallback({
+    //      message: "Success"
+    //     //jobid: jobid,
+    //  })
+  }).catch(err => {
+    logger.error(err.stack || err);
+    // errorCallback({
+    //   message: `error while publishing to kafka: ${err.message}`
+    // });
+  })
 });
 
 consumerGroup.on("error", function(err) {

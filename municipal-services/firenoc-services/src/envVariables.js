@@ -27,6 +27,9 @@ const envVariables = {
     process.env.KAFKA_TOPICS_NOTIFICATION || "egov.core.notification.sms",
   KAFKA_TOPICS_EVENT_NOTIFICATION:
     process.env.KAFKA_TOPICS_EVENT_NOTIFICATION || "persist-events-async",
+  KAFKA_OFFSET: process.env.KAFKA_OFFSET || "earliest",
+  KAFKA_CONCURRENCY: process.env.KAFKA_CONCURRENCY || "3",
+  KAFKA_TOPICS_FIRENOC_DLQ: process.env.KAFKA_TOPICS_FIRENOC_DLQ || "firenoc.dlq",
 
   //tracer configurations
   TRACER_ENABLE_REQUEST_LOGGING:

@@ -31,6 +31,8 @@ public class SurveyResponseNew {
     private String coordinates = "";
     @JsonProperty("status")
     private SurveyStatus status;
+    @JsonProperty("comments")
+    private String comments;
     @JsonProperty("answers")
     private List<AnswerNew> answers;
     @JsonProperty("userDetails")

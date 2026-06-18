@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -30,18 +32,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ticket.configuration.FileStore;
 import com.ticket.configuration.S3Bucket;
 import com.ticket.daoImpl.TicketDaoImpl;
 import com.ticket.model.Ticket;
 import com.ticket.model.User;
 
 @Controller
+@Configuration
 public class TicketController {
 
 	private static final String BUCKET_DIR = "https://pmidc-ticket-images.s3.ap-south-1.amazonaws.com/ticket-images/";
 
 	@Autowired
 	TicketDaoImpl ticketDao;
+	
+	
+	@Autowired
+	FileStore filestore;
 	
 	
 	
@@ -52,6 +60,7 @@ public class TicketController {
 		StringBuffer imagePathAttach=new StringBuffer();
 		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyyMMddHHmmss");
 	    Date now = new Date();
+		String imageUrl = null;
 	    String strDate = sdfDate.format(now);
 		if (session.getAttribute("userObj") == null) {
 			return "login";
@@ -75,7 +84,12 @@ public class TicketController {
 					Path path = Paths.get(imgPath);
 					Files.write(path, bytes);
 					imagePathAttach.append(imgPath+",");
-					new S3Bucket().uploadFileS3Bucket(imgPath,path.toString(), "ticket");
+					//new S3Bucket().uploadFileS3Bucket(imgPath,path.toString(), "ticket");
+					List<MultipartFile> fileList = Arrays.asList(ticket.getFiles());
+					
+			
+						imageUrl = filestore.uploadToFileStore(fileList, "ticket","ticket-images");
+					
 					
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -83,7 +97,7 @@ public class TicketController {
 
 			}
 					ticket.setAttachment(imagePathAttach.toString());
-					ticketDao.insertTicketWithImg(ticket,user);
+					ticketDao.insertTicketWithImg(ticket,user, imageUrl);
 		}
 			
 		}

@@ -66,7 +66,8 @@ import org.egov.edcr.contract.ComparisonDetail;
 import org.egov.edcr.contract.ComparisonRequest;
 import org.egov.edcr.contract.ComparisonResponse;
 import org.egov.edcr.contract.EdcrDetail;
-import org.egov.edcr.contract.EdcrRequest;
+//import org.egov.edcr.contract.EdcrRequest;
+import org.egov.common.edcr.model.EdcrRequest;
 import org.egov.edcr.contract.EdcrResponse;
 import org.egov.edcr.contract.PlanResponse;
 import org.egov.edcr.entity.ApplicationType;
@@ -75,6 +76,7 @@ import org.egov.edcr.service.EdcrValidator;
 import org.egov.edcr.service.FetchEdcrRulesMdms;
 import org.egov.edcr.service.OcComparisonService;
 import org.egov.edcr.service.PlanService;
+import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.microservice.contract.RequestInfoWrapper;
 import org.egov.infra.microservice.contract.ResponseInfo;
 import org.egov.infra.microservice.models.RequestInfo;
@@ -234,6 +236,9 @@ public class RestEdcrApplicationController {
                 enrichUser.setUuid(userInfoReq.getUuid());
                 enrichUser.setMobile(userInfoReq.getMobile());
                 enrichUser.setTenantId(userInfoReq.getTenantId());
+                enrichUser.setRoles(userInfoReq.getRoles());
+                enrichUser.setName(userInfoReq.getName());
+                LOGGER.info("###Professional's name from Req. Info : ####"+ userInfoReq.getName());
                 edcr.getRequestInfo().setUserInfo(enrichUser);
             }
             ErrorDetail edcRes = edcrValidator.validate(edcr);
@@ -248,7 +253,7 @@ public class RestEdcrApplicationController {
             Map<String, List<Object>> masterData = new HashMap<>();
             Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
             if (mdmsEnabled != null && mdmsEnabled) {
-                Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), edcr.getTenantId());
+                Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), ApplicationThreadLocals.getStateName());
                 HashMap<String, String> data = new HashMap<>();
                 data.put("applicationType", applicationType);
                 data.put("serviceType", serviceType);
@@ -276,8 +281,8 @@ public class RestEdcrApplicationController {
                     ErrorDetail validateEdcrRequest = edcrRestService.validateEdcrRequest(edcr, planFile);
                     if (validateEdcrRequest != null)
                         errorResponses = Arrays.asList(validateEdcrRequest);
-
                     edcr.setAppliactionType(ApplicationType.PERMIT.toString());
+                    //edcr.setAppliactionType(ApplicationType.BUILDING_PLAN_SCRUTINY.toString());
                 }
             }
 

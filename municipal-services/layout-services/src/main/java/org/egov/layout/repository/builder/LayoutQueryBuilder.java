@@ -45,7 +45,7 @@ public class LayoutQueryBuilder {
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'uuid', layoutdoc.uuid, " +
 					"'documentType', layoutdoc.documenttype, " +
-					"'documentAttachment', layoutdoc.documentAttachment)) AS documents, " +
+					"'documentAttachment', layoutdoc.documentAttachment, 'order', layoutdoc.doc_order)) AS documents, " +
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'additionalDetails', layoutowner.additionalDetails, " +
 					"'uuid', layoutowner.uuid " +
@@ -193,6 +193,19 @@ public class LayoutQueryBuilder {
                         addToPreparedStatement(preparedStmtList, approvalNos);
                     }
                 }
+
+		String applicationStatus = criteria.getApplicationStatus();
+		if (applicationStatus != null) {
+			List<String> applicationStatuses = Arrays.asList(applicationStatus.split(","));
+			addClauseIfRequired(builder);
+			if (isFuzzyEnabled) {
+				builder.append(" layout.applicationstatus LIKE ANY(ARRAY[ ").append(createQuery(applicationStatuses)).append("])");
+				addToPreparedStatementForFuzzySearch(preparedStmtList, applicationStatuses);
+			} else {
+				builder.append(" layout.applicationstatus IN (").append(createQuery(applicationStatuses)).append(")");
+				addToPreparedStatement(preparedStmtList, applicationStatuses);
+			}
+		}
 
 		
 //		String source = criteria.getSource();

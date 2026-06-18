@@ -266,6 +266,7 @@ function genrateTicketForm() {
 
 function viewAssignedTicket(tktId, userId, tyId, tyVal, userType, location, operation)
 {
+	debugger
 	var htm1 = '';
 	$('#loading').show();
 	$("#comment").val('');
@@ -298,7 +299,7 @@ function viewAssignedTicket(tktId, userId, tyId, tyVal, userType, location, oper
 					
         	if(obj.attachment==null || obj.attachment=="null")
     		{
-    		htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='#'><img src='"+BUCKET_URL+""+obj.attachment+"' alt='image' width='80px' height='90px'/></a></td> ";
+    		//htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='#'><img src='"+BUCKET_URL+""+obj.attachment+"' alt='image' width='80px' height='90px'/></a></td> ";
     		}
     	else
     		{
@@ -309,12 +310,12 @@ function viewAssignedTicket(tktId, userId, tyId, tyVal, userType, location, oper
     		if(ext=="jpg" || ext=="JPG" || ext=="png" || ext=="PNG")
 			{
 			
-			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='download/"+array[i]+"'><img src='"+BUCKET_URL+""+array[i]+"' alt='image' width='110px' height='120px'/></a></td> ";
+			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+obj.imageUrl+"' target='_blank'><img src='"+obj.imageUrl+"' alt='image' width='110px' height='120px'/></a></td> ";
     		
 			}
 		else
 			{
-			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='download/"+array[i]+"'><img src='"+BUCKET_URL+""+array[i]+"' alt='image' width='110px' height='120px'/></a></td> ";
+			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+obj.imageUrl+"' target='_blank'><img src='"+obj.imageUrl+"' alt='image' width='110px' height='120px'/></a></td> ";
     		
 			}
 			});
@@ -478,12 +479,12 @@ function viewRaisdTicket(tktId, userId, tyId, tyVal, userType, location)
         		//ext = (obj.attachment).substr(((obj.attachment).lastIndexOf('.') + 1));
         		if(ext=="jpg" || ext=="JPG" || ext=="png" || ext=="PNG")
         			{
-        			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='download/"+array[i]+"'><img src='"+BUCKET_URL+""+array[i]+"' alt='image' width='110px' height='120px'/></a></td> ";
+        			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+obj.imageUrl+"' target='_blank'><img src='"+obj.imageUrl+"' alt='image' width='110px' height='120px'/></a></td> ";
             		
         			}
         		else
         			{
-        			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='download/"+array[i]+"'><img src='"+BUCKET_URL+""+array[i]+"' alt='image' width='110px' height='120px'/></a></td> ";
+        			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+obj.imageUrl+"' target='_blank'><img src='"+obj.imageUrl+"' alt='image' width='110px' height='120px'/></a></td> ";
             		
 							}
 						});
@@ -664,7 +665,7 @@ function getAllComments(tktId,userID)
 									}
 								else
 								{
-									htm1 = htm1+"<li class='left'><h4><i class='fa fa-user avatar' aria-hidden='true'></i>"+value.userName+"</h4><div class='commentText'><pre class='chat'>"+value.commentDesc+"<br><span class='cmtattachment'><a href='download-cmt/"+value.attachment+"'>"+value.attachment+"</a></span><br><span class='spdate'>"+(value.dateTime).slice(0, -2)+"</span></pre></div></li><div class='clear'></div>";
+									htm1 = htm1+"<li class='left'><h4><i class='fa fa-user avatar' aria-hidden='true'></i>"+value.userName+"</h4><div class='commentText'><pre class='chat'>"+value.commentDesc+"<br><span class='cmtattachment'><a href='"+value.imageUrl+"' target='_blank'>"+value.attachment+"</a></span><br><span class='spdate'>"+(value.dateTime).slice(0, -2)+"</span></pre></div></li><div class='clear'></div>";
 							}
 						}
         		  else
@@ -675,7 +676,7 @@ function getAllComments(tktId,userID)
 									}
 									else
 									{
-										htm1 = htm1+"<li class='right'><h4><i class='fa fa-user-plus' aria-hidden='true'></i>"+value.userName+"</h4><div class='commentText'><pre class='chat'>"+value.commentDesc+"<br><span class='cmtattachment'><a href='download-cmt/"+value.attachment+"'>"+value.attachment+"</a></span><br> <span class='spdate'>"+(value.dateTime).slice(0, -2)+"</span></pre></div></li><div class='clear'></div>";
+										htm1 = htm1+"<li class='right'><h4><i class='fa fa-user-plus' aria-hidden='true'></i>"+value.userName+"</h4><div class='commentText'><pre class='chat'>"+value.commentDesc+"<br><span class='cmtattachment'><a href='"+value.imageUrl+"' target='_blank'>"+value.attachment+"</a></span><br> <span class='spdate'>"+(value.dateTime).slice(0, -2)+"</span></pre></div></li><div class='clear'></div>";
 									}
 							}
         		});
@@ -705,7 +706,6 @@ function validateCommentForm(tktId,userId)
 	else
 		{
 		$('#loading').show();
-		debugger;
 		var data = new FormData();
 		data.append("tktId",tktId);
 		data.append("userId",userId);

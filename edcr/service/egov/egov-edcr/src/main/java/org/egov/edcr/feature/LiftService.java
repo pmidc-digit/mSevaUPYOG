@@ -73,6 +73,8 @@ public class LiftService extends FeatureProcess {
     private static final String SUBRULE_118 = "118";
     private static final String SUBRULE_118_DESCRIPTION = "Dimension Of lift";
     private static final String SUBRULE_118_DESC = "Minimum dimension Of lift";
+    private Boolean DISPLAY_LIFT_DIMENSION = false;
+    
 
     @Override
     public Plan validate(Plan plan) {
@@ -116,16 +118,19 @@ public class LiftService extends FeatureProcess {
                     if ((DxfFileConstants.A
                             .equals(plan.getVirtualBuilding().getMostRestrictiveFarHelper().getType().getCode())
                             || DxfFileConstants.B.equals(
-                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getSubtype().getCode())
+                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getType().getCode())
                             || DxfFileConstants.E.equals(
-                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getSubtype().getCode())
+                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getType().getCode())
                             || DxfFileConstants.F.equals(
-                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getSubtype().getCode()))) {
+                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getType().getCode())
+                            || DxfFileConstants.G.equals(
+                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getType().getCode()))
+                    		) {
                         noOfLiftsRqrd = BigDecimal.valueOf(1);
                         boolean valid = BigDecimal.valueOf(Double.valueOf(block.getNumberOfLifts()))
                                 .compareTo(noOfLiftsRqrd) >= 0;
-                        setReportOutputDetails(plan, SUBRULE_48, SUBRULE_48_DESCRIPTION, noOfLiftsRqrd.toString(),
-                                block.getNumberOfLifts(), valid ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal(), scrutinyDetail);
+                        //setReportOutputDetails(plan, SUBRULE_48, SUBRULE_48_DESCRIPTION, noOfLiftsRqrd.toString(),
+                          //      block.getNumberOfLifts(), valid ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal(), scrutinyDetail);
                     }
 
                     // Process Lift Dimensions
@@ -143,16 +148,52 @@ public class LiftService extends FeatureProcess {
                                             liftWidth = measurement.getWidth().setScale(2, BigDecimal.ROUND_HALF_UP);
                                             break flr;
                                         }
+                                    }else {
+                                    	HashMap<String, String> errors = new HashMap<>();
+                                        String errorMsg = "Lift Polyline is not closed for block "
+                                                + block.getNumber() + " floor "
+                                                + floor.getNumber() + " lift "
+                                                + lift.getNumber();
+
+                                        errors.put(errorMsg, errorMsg);
+                                        plan.addErrors(errors);
                                     }
                                 }
                             }
-                            setReportOutputDetails(plan, SUBRULE_118,
-                                    String.format(SUBRULE_118_DESCRIPTION, "",
-                                            ""),
-                                    "",
-                                    liftHeight + " * " + liftWidth,
-                                    Result.Accepted.getResultVal(), // Assuming dimensions are always accepted for now
-                                    scrutinyDetail);
+//                            setReportOutputDetails(plan, SUBRULE_118,
+//                                    SUBRULE_118_DESCRIPTION,
+//                                    liftHeight + " * " + liftWidth,
+//                                    Result.Accepted.getResultVal(), // Assuming dimensions are always accepted for now
+//                                    scrutinyDetail);
+                            String result;
+                            if ((DxfFileConstants.L_NH
+                                    .equals(plan.getVirtualBuilding().getMostRestrictiveFarHelper()
+                                    		.getSubtype().getCode()))) {
+                            	DISPLAY_LIFT_DIMENSION = true;
+                            }
+
+                            if (liftHeight.compareTo(BigDecimal.ZERO) > 0
+                                    && liftWidth.compareTo(BigDecimal.ZERO) > 0) {
+                                result = Result.Accepted.getResultVal();
+                            } else {
+                                result = Result.Not_Accepted.getResultVal();
+                            }
+                            if(DISPLAY_LIFT_DIMENSION) {
+                            	setReportOutputDetails(plan,
+                                        SUBRULE_118,
+                                        SUBRULE_118_DESCRIPTION,
+                                        "1.7m × 1.7m",
+                                        liftHeight + " * " + liftWidth,
+                                        result,
+                                        scrutinyDetail);
+                            }else {
+	                            setReportOutputDetails(plan,
+	                                    SUBRULE_118,
+	                                    SUBRULE_118_DESCRIPTION,	                                   
+	                                    liftHeight + " * " + liftWidth,
+	                                    result,
+	                                    scrutinyDetail);
+                            }
                         }
                     }
                 }
@@ -174,6 +215,16 @@ public class LiftService extends FeatureProcess {
         details.put(STATUS, status);
         scrutinyDetail.getDetail().add(details);
     }
+    
+    private void setReportOutputDetails(Plan plan, String ruleNo, String ruleDesc, String actual,
+            String status, ScrutinyDetail scrutinyDetail) {
+			Map<String, String> details = new HashMap<>();
+			details.put(RULE_NO, ruleNo);
+			details.put(DESCRIPTION, ruleDesc);			
+			details.put(PROVIDED, actual);
+			details.put(STATUS, status);
+			scrutinyDetail.getDetail().add(details);
+	}
 
     private void validateDimensions(Plan plan, String blockNo, int floorNo, String liftNo,
                                     List<Measurement> liftPolylines) {

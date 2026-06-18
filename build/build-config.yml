@@ -167,6 +167,12 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "core-services/egov-location/src/main/resources/db"
         image-name: "egov-location-db"
+  
+  - name: "builds/upyog/core-services/egov-pb-digilocker"
+    build:
+      - work-dir: "core-services/egov-pb-digilocker"
+        image-name: "egov-pb-digilocker"
+        dockerfile: "build/maven/Dockerfile"
 
   - name: "builds/upyog/core-services/egov-mdms-service"
     build:
@@ -614,7 +620,8 @@ config:
     build:
       - work-dir: "municipal-services/noc-calculator"
         image-name: "noc-calculator"
-      - work-dir: "municipal-services/noc-calculator/migration"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/noc-services/src/main/resources/db"
         image-name: "noc-calculator-db"
         
   - name: "builds/upyog/municipal-services/echallan-services"
@@ -1074,3 +1081,16 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "core-services/egov-indexer-v2/src/main/resources/db"
         image-name: "egov-indexer-v2-db"
+
+  - name: "builds/upyog/utilities/search-api"
+    build:
+      - work-dir: "utilities/search-api"
+        image-name: "search-api"
+        dockerfile: 'build/Dockerfile'
+
+  - name: "builds/upyog/business-services/dashboard-ingest-v2"
+    build:
+      - work-dir: "business-services/dashboard-ingest-v2"
+        image-name: "dashboard-ingest-v2"
+        dockerfile: "build/maven/Dockerfile"
+

@@ -44,6 +44,10 @@ public class LayoutSearchCriteria {
     @JsonProperty("CluNo")
     private String cluNo;
 
+
+    @JsonProperty("applicationStatus")
+    private String applicationStatus;
+
     @SafeHtml
     @JsonProperty("source")
     private String source;

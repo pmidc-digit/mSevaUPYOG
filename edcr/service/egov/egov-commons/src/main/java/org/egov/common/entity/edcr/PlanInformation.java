@@ -66,11 +66,23 @@ public class PlanInformation implements Serializable {
     private Long id;
     // Plot area defined in PLAN_INFO layer. Using the same to measure coverage and small plot condition.This is the declared plot area in the plan.
     private BigDecimal plotArea = BigDecimal.ZERO;
+    
+    private BigDecimal plotBndryWallLength = BigDecimal.ZERO;
+    
     // Temporary field used to capture Owner Name
     private String ownerName;
     //Temporary field used to auto populate occupancy detail.
     private String occupancy;
-    //Temporary field used for service type.
+    
+    public BigDecimal getPlotBndryWallLength() {
+		return plotBndryWallLength;
+	}
+
+	public void setPlotBndryWallLength(BigDecimal plotBndryWallLength) {
+		this.plotBndryWallLength = plotBndryWallLength;
+	}
+
+	//Temporary field used for service type.
     private String serviceType;
     //Temporary field used to show amenities used in application.
     private String amenities;

@@ -29,8 +29,9 @@ public class PlantationGreenStripExtract extends FeatureExtract {
     @Override
     public PlanDetail extract(PlanDetail planDetail) {
         for (Block block : planDetail.getBlocks()) {
-            String plantationGreenStrip = String.format(layerNames.getLayerName("LAYER_NAME_PLANTATION_GREENSTRIP"),
-                    block.getNumber());
+//            String plantationGreenStrip = String.format(layerNames.getLayerName("LAYER_NAME_PLANTATION_GREENSTRIP"),
+//                    block.getNumber());
+        	String plantationGreenStrip = "PLANTATION_GREENSTRIP";
             List<DXFLWPolyline> plantationGreenStripes = Util.getPolyLinesByLayer(planDetail.getDoc(),
                     plantationGreenStrip);
             List<Measurement> plantationGreenStripeMeasurements = plantationGreenStripes.stream()

@@ -60,7 +60,12 @@ public class SWCalculatorQueryBuilder {
 
 	private static final String BILL_SCHEDULER_STATUS_UPDATE_QUERY = "UPDATE eg_sw_scheduler SET status=? where id=?";
 
-	private static final String connectionNoByLocality = "SELECT distinct(conn.connectionno) FROM eg_sw_connection conn INNER JOIN eg_sw_service ws ON conn.id = ws.connection_id ";
+//	private static final String connectionNoByLocality = "SELECT distinct(conn.connectionno) FROM eg_sw_connection conn INNER JOIN eg_sw_service ws ON conn.id = ws.connection_id ";
+	
+	private static final String connectionNoByLocality = "SELECT distinct(conn.connectionno) FROM eg_sw_connection conn " +
+		    "INNER JOIN eg_sw_service ws ON conn.id = ws.connection_id " +
+		    "INNER JOIN eg_pt_property p ON conn.property_id = p.propertyid " +
+		    "INNER JOIN eg_pt_address a ON a.propertyid = p.id ";
 
 	private static final String fiterConnectionBasedOnTaxPeriod =" AND conn.connectionno not in (select distinct consumercode from egbs_demand_v1 d ";
 
@@ -411,54 +416,59 @@ public class SWCalculatorQueryBuilder {
 		}
 	}
 	
-	public String getConnectionsNoByLocality(String tenantId, String connectionType,String status,String locality, String groups,List<Object> preparedStatement) {
-		StringBuilder query = new StringBuilder(connectionNoByLocality);
-		// add tenantid
-		if(tenantId != null) {
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" conn.tenantid = ? ");
-			preparedStatement.add(tenantId);
-		}
-		
-		// Add connection type
-		if(connectionType != null) {
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" ws.connectiontype = ? ");
-			preparedStatement.add(connectionType);
-		}
 
-		//Active status	
-		if(status != null) {
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" conn.status = ? ");
-			preparedStatement.add(status);			
-		}
+	
+	public String getConnectionsNoByLocality(String tenantId, String connectionType, String status, String locality, String groups, List<Object> preparedStatement) {
+	    StringBuilder query = new StringBuilder(connectionNoByLocality);
 
-//		addClauseIfRequired(preparedStatement, query);
-//		query.append(" conn.connectionno = ? ");
-//		preparedStatement.add("SW/107/2020-21/000018");
+	    // 1. Tenant ID
+	    if(tenantId != null) {
+	        addClauseIfRequired(preparedStatement, query);
+	        query.append(" conn.tenantid = ? ");
+	        preparedStatement.add(tenantId);
+	    }
+	    
+	    // 2. Connection Type
+	    if(connectionType != null) {
+	        addClauseIfRequired(preparedStatement, query);
+	        query.append(" ws.connectiontype = ? ");
+	        preparedStatement.add(connectionType);
+	    }
 
-		if (locality != null) {
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" conn.locality = ? ");
-			preparedStatement.add(locality);
-		}
-		
-		
-		if (groups != null) {
+	    // 3. Connection Status
+	    if(status != null) {
+	        addClauseIfRequired(preparedStatement, query);
+	        query.append(" conn.status = ? ");
+	        preparedStatement.add(status);          
+	    }
+
+	    // 4. Locality (Modified to use table 'a' from eg_pt_address)
+	    if (locality != null) {
+	        addClauseIfRequired(preparedStatement, query);
+	        query.append(" a.locality = ? ");
+	        preparedStatement.add(locality);
+	    }
+	    
+	    // 5. Property Status (To ensure valid connections)
+	    addClauseIfRequired(preparedStatement, query);
+	    query.append(" p.status != 'INACTIVE' ");
+	    
+	    // 6. Groups JSONB Filter
+	    if (groups != null) {
 	        addClauseIfRequired(preparedStatement, query);
 	        query.append(" conn.additionaldetails->>'groups' = ? ");
-	        preparedStatement.add(groups); // Exact match
+	        preparedStatement.add(groups);
 	    }
-		
-		//Getting only non exempted connection to generate bill
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" (conn.additionaldetails->>'isexempted')::boolean is not true ");
+	    
+	    // 7. Exemption Filter
+	    addClauseIfRequired(preparedStatement, query);
+	    query.append(" (conn.additionaldetails->>'isexempted')::boolean is not true ");
 
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" conn.connectionno is not null");
-		return query.toString();
+	    // 8. Connection Number Null Check
+	    addClauseIfRequired(preparedStatement, query);
+	    query.append(" conn.connectionno is not null");
 
+	    return query.toString();
 	}
 	
 	public String getBillSchedulerSearchQuery(String locality, Long billFromDate, Long billToDate, String tenantId,String group,

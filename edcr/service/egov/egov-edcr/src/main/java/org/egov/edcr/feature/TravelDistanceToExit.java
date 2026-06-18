@@ -56,6 +56,7 @@ import static org.egov.edcr.constants.DxfFileConstants.H;
 import static org.egov.edcr.constants.DxfFileConstants.I;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -91,8 +92,8 @@ public class TravelDistanceToExit extends FeatureProcess {
                 !pl.getVirtualBuilding().getOccupancyTypes().isEmpty() && !pl.getBlocks().isEmpty()) {
             boolean floorsAboveGroundLessThanOrEqualTo3ForAllBlks = true;
             for (Block block : pl.getBlocks()) {
-                if (block.getBuilding() != null && block.getBuilding().getFloorsAboveGround() != null &&
-                        block.getBuilding().getFloorsAboveGround().compareTo(BigDecimal.valueOf(3)) > 0) {
+                if (block.getBuilding() != null && block.getBuilding().getFloorsAboveGround() != null){
+                		//&& block.getBuilding().getFloorsAboveGround().compareTo(BigDecimal.valueOf(3)) >= 0) {
                     floorsAboveGroundLessThanOrEqualTo3ForAllBlks = false;
                     break;
                 }
@@ -106,22 +107,22 @@ public class TravelDistanceToExit extends FeatureProcess {
             HashMap<String, String> errors = new HashMap<>();
             if (pl != null) {
                 if (pl.getTravelDistancesToExit().isEmpty()) {
-                    errors.put(DcrConstants.TRAVEL_DIST_EXIT,
-                            edcrMessageSource.getMessage(DcrConstants.OBJECTNOTDEFINED, new String[] {
-                                    DcrConstants.TRAVEL_DIST_EXIT }, LocaleContextHolder.getLocale()));
-                    pl.addErrors(errors);
+//                    errors.put(DcrConstants.TRAVEL_DIST_EXIT,
+//                            edcrMessageSource.getMessage(DcrConstants.OBJECTNOTDEFINED, new String[] {
+//                                    DcrConstants.TRAVEL_DIST_EXIT }, LocaleContextHolder.getLocale()));
+//                    pl.addErrors(errors);
                     return pl;
                 }
             }
             String subRule = SUBRULE_42_2;
-            String subRuleDesc = SUBRULE_42_2_DESC;
+            //String subRuleDesc = SUBRULE_42_2_DESC;
             scrutinyDetail = new ScrutinyDetail();
             scrutinyDetail.setKey("Common_Travel Distance To Emergency Exits");
             scrutinyDetail.addColumnHeading(1, RULE_NO);
-            scrutinyDetail.addColumnHeading(2, REQUIRED);
+            scrutinyDetail.addColumnHeading(2, PERMISSIBLE);
             scrutinyDetail.addColumnHeading(3, PROVIDED);
             scrutinyDetail.addColumnHeading(4, STATUS);
-            scrutinyDetail.setSubHeading(SUBRULE_42_2_DESC);
+            //scrutinyDetail.setSubHeading(SUBRULE_42_2_DESC);
             if (pl != null && pl.getVirtualBuilding() != null) {
 
                 OccupancyTypeHelper mostRestrictiveFarHelper = pl.getVirtualBuilding().getMostRestrictiveFarHelper();
@@ -132,16 +133,17 @@ public class TravelDistanceToExit extends FeatureProcess {
                 BigDecimal requiredValue = occupancyValues.get(code);
                 if (requiredValue != null) {
                     for (BigDecimal maximumTravelDistance : pl.getTravelDistancesToExit()) {
+                    	maximumTravelDistance = maximumTravelDistance.setScale(2, RoundingMode.HALF_UP);
                         boolean valid = false;
                         if (maximumTravelDistance.compareTo(requiredValue) <= 0) {
                             valid = true;
                         }
                         if (valid) {
-                            setReportOutputDetails(pl, subRule, requiredValue + DcrConstants.IN_METER, maximumTravelDistance +
-                                    DcrConstants.IN_METER, Result.Accepted.getResultVal());
+                            setReportOutputDetails(pl, subRule, requiredValue + DcrConstants.IN_M, maximumTravelDistance +
+                                    DcrConstants.IN_M, Result.Accepted.getResultVal());
                         } else {
                             setReportOutputDetails(pl,
-                                    subRule, requiredValue + DcrConstants.IN_METER, maximumTravelDistance + DcrConstants.IN_METER,
+                                    subRule, requiredValue + DcrConstants.IN_M, maximumTravelDistance + DcrConstants.IN_M,
                                     Result.Not_Accepted.getResultVal());
                         }
                     }
@@ -155,7 +157,7 @@ public class TravelDistanceToExit extends FeatureProcess {
     private void setReportOutputDetails(Plan pl, String ruleNo, String expected, String actual, String status) {
         Map<String, String> details = new HashMap<>();
         details.put(RULE_NO, ruleNo);
-        details.put(REQUIRED, expected);
+        details.put(PERMISSIBLE, expected);
         details.put(PROVIDED, actual);
         details.put(STATUS, status);
         scrutinyDetail.getDetail().add(details);

@@ -45,7 +45,7 @@ public class CluQueryBuilder {
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'uuid', cludoc.uuid, " +
 					"'documentType', cludoc.documenttype, " +
-					"'documentAttachment', cludoc.documentAttachment)) AS documents, " +
+					"'documentAttachment', cludoc.documentAttachment, 'order', cludoc.doc_order)) AS documents, " +
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'additionalDetails', cluowner.additionalDetails, " +
 					"'uuid', cluowner.uuid " +
@@ -192,7 +192,18 @@ public class CluQueryBuilder {
                         addToPreparedStatement(preparedStmtList, approvalNos);
                     }
                 }
-
+		String applicationStatus = criteria.getApplicationStatus();
+		if (applicationStatus != null) {
+			List<String> applicationStatuses = Arrays.asList(applicationStatus.split(","));
+			addClauseIfRequired(builder);
+			if (isFuzzyEnabled) {
+				builder.append(" clu.applicationstatus LIKE ANY(ARRAY[ ").append(createQuery(applicationStatuses)).append("])");
+				addToPreparedStatementForFuzzySearch(preparedStmtList, applicationStatuses);
+			} else {
+				builder.append(" clu.applicationstatus IN (").append(createQuery(applicationStatuses)).append(")");
+				addToPreparedStatement(preparedStmtList, applicationStatuses);
+			}
+		}
 		
 //		String source = criteria.getSource();
 //		if (source!=null) {

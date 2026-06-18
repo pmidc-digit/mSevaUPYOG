@@ -9,12 +9,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -27,20 +33,33 @@ import org.egov.common.entity.edcr.EdcrPdfDetail;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.PlanFeature;
 import org.egov.common.entity.edcr.PlanInformation;
+import org.egov.commons.edcr.mdms.filter.MdmsFilter;
+import org.egov.commons.mdms.BpaMdmsUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.contract.ComparisonRequest;
-import org.egov.edcr.contract.EdcrRequest;
+//import org.egov.edcr.contract.EdcrRequest;
+import org.egov.common.edcr.model.EdcrRequest;
 import org.egov.edcr.entity.Amendment;
 import org.egov.edcr.entity.AmendmentDetails;
 import org.egov.edcr.entity.ApplicationType;
 import org.egov.edcr.entity.EdcrApplication;
 import org.egov.edcr.entity.EdcrApplicationDetail;
 import org.egov.edcr.entity.OcComparisonDetail;
+import org.egov.edcr.entity.blackbox.PlanDetail;
+import org.egov.edcr.feature.Coverage;
 import org.egov.edcr.feature.FeatureProcess;
+import org.egov.edcr.feature.FrontYardService;
+import org.egov.edcr.feature.Parking;
+import org.egov.edcr.feature.PlanInfoFeature;
+import org.egov.edcr.feature.PlotArea;
+import org.egov.edcr.feature.RoadWidth;
 import org.egov.edcr.utility.DcrConstants;
+import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.custom.CustomImplProvider;
 import org.egov.infra.filestore.entity.FileStoreMapper;
 import org.egov.infra.filestore.service.FileStoreService;
+import org.egov.infra.microservice.models.RequestInfo;
+import org.egov.infra.microservice.models.Role;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -71,6 +90,9 @@ public class PlanService {
     private OcComparisonService ocComparisonService;
     @Autowired
     private OcComparisonDetailService ocComparisonDetailService;
+    
+    @Autowired
+    private BpaMdmsUtil bpaMdmsUtil;
 
     public Plan process(EdcrApplication dcrApplication, String applicationType) {
         Map<String, String> cityDetails = specificRuleService.getCityDetails();
@@ -88,11 +110,13 @@ public class PlanService {
         Amendment amd = repo.getAmendments();
 
         Plan plan = extractService.extract(dcrApplication.getSavedDxfFile(), amd, asOnDate,
-                featureService.getFeatures());
+                featureService.getFeatures(),ApplicationThreadLocals.getTenantID());
         plan.setCoreArea(dcrApplication.getCoreArea());
-        System.out.println("coreArea" + plan.getCoreArea());
+        LOG.info("coreArea : " + plan.getCoreArea());
 
+       
         plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
+        
         plan = applyRules(plan, amd, cityDetails);
       
         String comparisonDcrNumber = dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();
@@ -101,6 +125,265 @@ public class PlanService {
                 || (ApplicationType.OCCUPANCY_CERTIFICATE.getApplicationTypeVal()
                         .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
                         && StringUtils.isBlank(comparisonDcrNumber))) {
+            InputStream reportStream = generateReport(plan, amd, dcrApplication);
+            saveOutputReport(dcrApplication, reportStream, plan);
+        } else if (ApplicationType.OCCUPANCY_CERTIFICATE.getApplicationTypeVal()
+                .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
+                && StringUtils.isNotBlank(comparisonDcrNumber)) {
+            ComparisonRequest comparisonRequest = new ComparisonRequest();
+            EdcrApplicationDetail edcrApplicationDetail = dcrApplication.getEdcrApplicationDetails().get(0);
+            comparisonRequest.setEdcrNumber(edcrApplicationDetail.getComparisonDcrNumber());
+            comparisonRequest.setTenantId(edcrApplicationDetail.getApplication().getThirdPartyUserTenant());
+            edcrApplicationDetail.setPlan(plan);
+         
+            OcComparisonDetail processCombinedStatus = ocComparisonService.processCombinedStatus(comparisonRequest,
+                    edcrApplicationDetail);
+
+            dcrApplication.setDeviationStatus(processCombinedStatus.getStatus());
+
+            InputStream reportStream = generateReport(plan, amd, dcrApplication);
+            saveOutputReport(dcrApplication, reportStream, plan);
+            final List<InputStream> pdfs = new ArrayList<>();
+            Path path = fileStoreService.fetchAsPath(
+                    dcrApplication.getEdcrApplicationDetails().get(0).getReportOutputId().getFileStoreId(),
+                    "Digit DCR");
+            byte[] convertedDigitDcr = null;
+            try {
+                convertedDigitDcr = Files.readAllBytes(path);
+            } catch (IOException e) {
+                LOG.error("Error occurred while reading file!!!", e);
+            }
+            ByteArrayInputStream dcrReport = new ByteArrayInputStream(convertedDigitDcr);
+            pdfs.add(dcrReport);
+
+            if (Boolean.TRUE.equals(plan.getMainDcrPassed())) {
+                OcComparisonDetail ocComparisonE = ocComparisonService.processCombined(processCombinedStatus,
+                        edcrApplicationDetail);
+
+                String fileName;
+                if(StringUtils.isBlank(ocComparisonE.getOcdcrNumber()))
+                    fileName = ocComparisonE.getDcrNumber() + "-comparison" + ".pdf";
+                else
+                    fileName = ocComparisonE.getOcdcrNumber() + "-" + ocComparisonE.getDcrNumber() +
+                        "-comparison" + ".pdf";
+                final FileStoreMapper fileStoreMapper = fileStoreService.store(ocComparisonE.getOutput(), fileName,
+                        "application/pdf",
+                        DcrConstants.FILESTORE_MODULECODE);
+                ocComparisonE.setOcComparisonReport(fileStoreMapper);
+                if (StringUtils.isNotBlank(dcrApplication.getEdcrApplicationDetails().get(0).getDcrNumber())) {
+                    ocComparisonE.setOcdcrNumber(dcrApplication.getEdcrApplicationDetails().get(0).getDcrNumber());
+                }
+                ocComparisonDetailService.saveAndFlush(ocComparisonE);
+
+                Path ocPath = fileStoreService.fetchAsPath(ocComparisonE.getOcComparisonReport().getFileStoreId(),
+                        "Digit DCR");
+                byte[] convertedComparison = null;
+                try {
+                    convertedComparison = Files.readAllBytes(ocPath);
+                } catch (IOException e) {
+                    LOG.error("Error occurred while reading file!!!", e);
+                }
+                ByteArrayInputStream comparisonReport = new ByteArrayInputStream(convertedComparison);
+                pdfs.add(comparisonReport);
+            }
+
+            final byte[] data = appendFiles(pdfs);
+            InputStream targetStream = new ByteArrayInputStream(data);
+            saveOutputReport(dcrApplication, targetStream, plan);
+            updateFinalReport(dcrApplication.getEdcrApplicationDetails().get(0).getReportOutputId());
+        }
+        return plan;
+    }
+    
+    public Plan process(EdcrApplication dcrApplication, String applicationType,EdcrRequest edcrRequest) {
+        Map<String, String> cityDetails = specificRuleService.getCityDetails();
+      
+        Date asOnDate = null;
+        if (dcrApplication.getPermitApplicationDate() != null) {
+            asOnDate = dcrApplication.getPermitApplicationDate();
+        } else if (dcrApplication.getApplicationDate() != null) {
+            asOnDate = dcrApplication.getApplicationDate();
+        } else {
+            asOnDate = new Date();
+        }
+
+        AmendmentService repo = (AmendmentService) specificRuleService.find("amendmentService");
+        Amendment amd = repo.getAmendments();
+
+		List<PlanFeature> features = featureService.getFeatures();		
+
+//		if (edcrRequest.getAreaType().equalsIgnoreCase("SCHEME_AREA")) {
+//			// Get scheme name
+//			if (edcrRequest.getSchName() != null && !edcrRequest.getSchName().isEmpty()) {
+//				// Upload or Select layout + control sheet
+//				// Master is created for scheme-wise layout and control sheets for all ULBs
+//				if (edcrRequest.getSiteReserved()) {
+//					if (edcrRequest.getApprovedCS()) {
+//						// Exempt scrutiny
+//						// uploadPDF();
+//						// proceedToFormFill();
+//						// as of now not implemented the code for control sheet
+//					} else {
+//						// No approved control sheet
+//						// min plot area and road width not required
+//						// uploadDXF();
+//						Set<Class<?>> classesToRemove = new HashSet<>(Arrays.asList(PlotArea.class, RoadWidth.class));
+//
+//						features.removeIf(feature -> feature.getRuleClass() != null
+//								&& classesToRemove.contains(feature.getRuleClass()));
+//					}
+//				} else {
+//					// Not reserved
+//					// Mark as "Scrutiny as per PMBL"
+//					// uploadDXF();
+//					// process file normally
+//				}
+//			} else {
+//				LOG.info("Error: Scheme Name is required");
+//			}
+//
+//		} else if (edcrRequest.getAreaType().equalsIgnoreCase("NON_SCHEME_AREA")) {
+//			Set<Class<?>> classesToRemove = new HashSet<>();
+//			if (edcrRequest.getCluApprove()) {
+//				// Check for min plot area and road width
+//				// If both present, no scrutiny needed
+//				LOG.info("Min plot area and road width met. No scrutiny required.");
+//				classesToRemove.addAll(Arrays.asList(PlotArea.class, RoadWidth.class));
+//			}
+//
+//			if ("yes".equalsIgnoreCase(edcrRequest.getCoreArea())) {
+//				// Exempt plot coverage, front setback and ECS
+//				LOG.info("Core area: coverage, setback and ECS exempted.");
+//				classesToRemove.addAll(Arrays.asList(Coverage.class, Parking.class, FrontYardService.class));
+//			} else {
+//				// Not a core area
+//				// Scrutiny will be done as per PMBL
+//				LOG.info("Scrutiny as per PMBL.");
+//				// process normally
+//			}
+//
+//			features.removeIf(
+//					feature -> feature.getRuleClass() != null && classesToRemove.contains(feature.getRuleClass()));
+//
+//		} else {
+//			// Not CLU approved
+//			// Scrutiny will be done as per PMBL
+//			LOG.info("Scrutiny as per PMBL.");
+//			// process normally
+//		}
+//		
+//		LOG.info("*** Features for Processing Plan file start *** ");
+//		
+//		features.forEach(feature -> {
+//		    if (feature.getRuleClass() != null) {
+//		    	LOG.info("Feature name : " + feature.getRuleClass().getSimpleName());
+//		    } else {
+//		    	LOG.info("Feature name : " + feature.getName());
+//		    }
+//		});
+		
+		LOG.info("*** Features for Processing Plan file end *** ");
+        Plan plan = extractService.extract(dcrApplication.getSavedDxfFile(), amd, asOnDate,
+                features, edcrRequest.getTenantId());
+        plan.setCoreArea(dcrApplication.getCoreArea());
+        LOG.info("coreArea : -> " + plan.getCoreArea());
+        plan.setEdcrRequest(edcrRequest);
+        LOG.info("Competency Check Role Wise");
+        BigDecimal plotArea = (plan.getPlot() != null) ? plan.getPlot().getArea() : null;
+
+        if (plotArea != null && plotArea.compareTo(BigDecimal.ZERO) > 0) {
+            // Valid case → pass actual plot area
+            extractService.validateRolesWisePlotArea(
+                    dcrApplication.getSavedDxfFile(),
+                    asOnDate,
+                    plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles(),
+                    plotArea,
+                    plan
+            );
+        } else {
+            // Invalid case → pass ZERO explicitly
+            extractService.validateRolesWisePlotArea(
+                    dcrApplication.getSavedDxfFile(),
+                    asOnDate,
+                    plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles(),
+                    BigDecimal.ZERO,
+                    plan
+            );
+        }
+
+        
+
+            //return (Plan) planDetail;
+        // remove requestInfo before plan processing
+        //edcrRequest.setRequestInfo(null);
+        //Setting edcr Data to Plan        
+        //plan.setEdcrRequest(edcrRequest);
+        // validate planInfo city and tenantId city
+        
+        String cityName = getCityFromTenant(plan.getEdcrRequest().getTenantId());
+        
+        if (plan.getPlanInformation().getCity() == null 
+                || !plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
+
+            plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
+        }        
+       
+        String ulbType = "";
+        String districtName = "";
+        try {
+            Object mdmsData = bpaMdmsUtil.getUlbTypeFromMdms(
+                    new RequestInfo(), plan.getEdcrRequest()
+            );
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> cityInfo =
+                    (Map<String, Object>) BpaMdmsUtil
+                            .extractMdmsValue(mdmsData,
+                                    MdmsFilter.ULB_TYPE_AND_DISTRICT_FILTER,
+                                    Map.class)
+                            .orElse(Collections.emptyMap());
+
+            ulbType = String.valueOf(cityInfo.getOrDefault("ulbType", ""));
+            districtName = String.valueOf(cityInfo.getOrDefault("districtName", ""));
+
+            if (ulbType.isEmpty()) {
+                LOG.warn("ULB Type not found in MDMS response for tenant : {}",
+                        plan.getEdcrRequest().getTenantId());
+            }
+
+        } catch (Exception e) {
+            LOG.error("Error while fetching ULB Type and District from MDMS", e);
+        }
+
+        plan.getPlanInformation().setUlbType(ulbType);
+        plan.getPlanInformation().setDistrict(districtName);
+
+        LOG.info("ULB Type value from MDMS : {}", ulbType);
+        LOG.info("District value from MDMS : {}", districtName);
+        
+        LOG.info("Setting mdms master data");
+        plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
+        LOG.info("mdms master data set successfully");
+//        plan = applyRules(plan, amd, cityDetails);
+        if(plan.getErrors().containsKey("Not authorized to scrutinize") || plan.getErrors().containsKey("Invalid ULB")) {
+        	
+        }else {
+        	plan = applyRules(plan, amd, cityDetails,features);
+        }
+        
+        LOG.info("Competency Role Checked successfully ");
+        
+      
+        String comparisonDcrNumber = dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();
+        if (ApplicationType.PERMIT.getApplicationTypeVal()
+                .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
+                || (ApplicationType.OCCUPANCY_CERTIFICATE.getApplicationTypeVal()
+                        .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
+                        && StringUtils.isBlank(comparisonDcrNumber))
+               || (ApplicationType.BUILDING_PLAN_SCRUTINY.getApplicationTypeVal()
+                        .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
+                        && StringUtils.isBlank(comparisonDcrNumber))
+                ) {
             InputStream reportStream = generateReport(plan, amd, dcrApplication);
             saveOutputReport(dcrApplication, reportStream, plan);
         } else if (ApplicationType.OCCUPANCY_CERTIFICATE.getApplicationTypeVal()
@@ -192,6 +475,7 @@ public class PlanService {
     }
 
     private Plan applyRules(Plan plan, Amendment amd, Map<String, String> cityDetails) {
+    	LOG.info("Inside apply Rules");
 
         // check whether valid amendments are present
         int index = -1;
@@ -244,8 +528,154 @@ public class PlanService {
                     || plan.getErrors().containsKey(DxfFileConstants.OCCUPANCY_PO_NOT_ALLOWED_KEY))
                 return plan;
         }
+        LOG.info("Exit from apply Rules");
         return plan;
     }
+    
+//    private Plan applyRules(Plan plan, Amendment amd, Map<String, String> cityDetails, List<PlanFeature> feature) {
+//
+//        // check whether valid amendments are present
+//       int index = -1;
+//        AmendmentDetails[] a = null;
+//        int length = amd.getDetails().size();
+//        if (!amd.getDetails().isEmpty()) {
+//            index = amd.getIndex(plan.getApplicationDate());
+//            a = new AmendmentDetails[amd.getDetails().size()];
+//            amd.getDetails().toArray(a);
+//        }
+//
+//        for (PlanFeature ruleClass : feature) {
+//
+//            FeatureProcess rule = null;
+//            String str = ruleClass.getRuleClass().getSimpleName();
+//            str = str.substring(0, 1).toLowerCase() + str.substring(1);
+//            LOG.info("Looking for bean " + str);
+//            // when amendments are not present
+//            if (amd.getDetails().isEmpty() || index == -1)
+//                rule = (FeatureProcess) specificRuleService.find(ruleClass.getRuleClass().getSimpleName());
+//            // when amendments are present
+//            else {
+//                if (index >= 0) {
+//                    // find amendment specific beans
+//                    for (int i = index; i < length; i++) {
+//                        if (a[i].getChanges().keySet().contains(ruleClass.getRuleClass().getSimpleName())) {
+//                            String strNew = str + "_" + a[i].getDateOfBylawString();
+//                            rule = (FeatureProcess) specificRuleService.find(strNew);
+//                            if (rule != null)
+//                                break;
+//                        }
+//                    }
+//                    // when amendment specific beans not found
+//                    if (rule == null) {
+//                        rule = (FeatureProcess) specificRuleService.find(ruleClass.getRuleClass().getSimpleName());
+//                    }
+//
+//                }
+//
+//            }
+//
+//            if (rule != null) {
+//                LOG.info("Looking for bean resulted in " + rule.getClass().getSimpleName());
+//                rule.process(plan);
+//                LOG.info("Completed Process " + rule.getClass().getSimpleName() + "  " + new Date());
+//            }
+//
+//            if (plan.getErrors().containsKey(DxfFileConstants.OCCUPANCY_ALLOWED_KEY)
+//                    || plan.getErrors().containsKey("units not in meters")
+//                    || plan.getErrors().containsKey(DxfFileConstants.OCCUPANCY_PO_NOT_ALLOWED_KEY))
+//                return plan;
+//        }
+//        return plan;
+//    }
+    
+    private Plan applyRules(Plan plan, Amendment amd, Map<String, String> cityDetails, List<PlanFeature> feature) {
+    try {
+        int index = -1;
+        AmendmentDetails[] amendmentArray = null;
+        int length = 0;
+
+        if (amd != null && amd.getDetails() != null && !amd.getDetails().isEmpty()) {
+            length = amd.getDetails().size();
+            index = amd.getIndex(plan.getApplicationDate());
+            amendmentArray = amd.getDetails().toArray(new AmendmentDetails[0]);
+        }
+
+        if (feature != null) {
+            for (PlanFeature ruleClass : feature) {
+                String featureName = "UnknownFeature";
+
+                try {
+                    if (ruleClass == null || ruleClass.getRuleClass() == null) {
+                        continue;
+                    }
+
+                    featureName = ruleClass.getRuleClass().getSimpleName();
+                    FeatureProcess rule = null;
+
+                    String beanName =
+                            featureName.substring(0, 1).toLowerCase() + featureName.substring(1);
+
+                    LOG.info("Looking for bean {}", beanName);
+
+                    // When amendments are NOT present
+                    if (amd == null || amd.getDetails() == null || amd.getDetails().isEmpty() || index == -1) {
+                        rule = (FeatureProcess) specificRuleService.find(featureName);
+                    }
+                    // When amendments ARE present
+                    else {
+                        for (int i = index; i < length; i++) {
+                            if (amendmentArray[i].getChanges().containsKey(featureName)) {
+                                String amendedBean = beanName + "_" + amendmentArray[i].getDateOfBylawString();
+                                rule = (FeatureProcess) specificRuleService.find(amendedBean);
+
+                                if (rule != null) {
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Fallback to default rule
+                        if (rule == null) {
+                            rule = (FeatureProcess) specificRuleService.find(featureName);
+                        }
+                    }
+
+                    if (rule != null) {
+                        LOG.info("Processing rule {}", rule.getClass().getSimpleName());
+                        rule.process(plan);
+                        LOG.info("Completed rule {} at {}", rule.getClass().getSimpleName(), new Date());
+                    }
+
+                    if (plan.getErrors().containsKey(DxfFileConstants.OCCUPANCY_ALLOWED_KEY)
+                            || plan.getErrors().containsKey("units not in meters")
+                            || plan.getErrors().containsKey(DxfFileConstants.OCCUPANCY_PO_NOT_ALLOWED_KEY)) {
+                        return plan;
+                    }
+
+                } catch (Exception e) {
+                    // FULL STACKTRACE logged
+                    LOG.error("Exception while processing feature: {}", featureName, e);
+
+                    plan.getErrors().put(
+                            "Errors in \"" + featureName + "\"",
+                            "Errors in " + featureName + ". Please correct the file and try again."
+                    );
+                }
+            }
+        }
+    } catch (Exception e) {
+        // FULL STACKTRACE logged
+        LOG.error("Critical error in applyRules()", e);
+
+        plan.getErrors().put(
+                "System Error",
+                "Please correct the file and try again."
+        );
+    }
+
+    return plan;
+}
+
 
     private InputStream generateReport(Plan plan, Amendment amd, EdcrApplication dcrApplication) {
 
@@ -375,7 +805,7 @@ public class PlanService {
         AmendmentService repo = (AmendmentService) specificRuleService.find(AmendmentService.class.getSimpleName());
         Amendment amd = repo.getAmendments();
 
-        Plan plan = extractService.extract(planFile, amd, asOnDate, featureService.getFeatures());
+        Plan plan = extractService.extract(planFile, amd, asOnDate, featureService.getFeatures(), edcrRequest.getTenantId());
         if (StringUtils.isNotBlank(edcrRequest.getApplicantName()))
             plan.getPlanInformation().setApplicantName(edcrRequest.getApplicantName());
         else
@@ -423,4 +853,15 @@ public class PlanService {
             LOG.error("error", e);
         }
     }
+    
+    public static String getCityFromTenant(String tenantId) {
+        if (tenantId != null && tenantId.contains(".")) {
+            String[] parts = tenantId.split("\\.");
+            return parts.length > 1 ? parts[1] : tenantId;
+        }
+        return tenantId;
+    }
+    
 }
+
+

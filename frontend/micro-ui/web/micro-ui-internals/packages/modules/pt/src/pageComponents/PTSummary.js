@@ -1,9 +1,8 @@
-import React, { Fragment, useState } from "react";
-import { Card, CardLabel, LabelFieldPair, CardSubHeader, StatusTable, CardSectionHeader, EditIcon, LinkButton, TextInput } from "@mseva/digit-ui-react-components";
+import React, { Fragment } from "react";
+import { Card, CardLabel, LabelFieldPair, CardSubHeader, StatusTable, CardSectionHeader } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import CHBDocument from "../components/ChallanDocument";
-import { SET_PTNewApplication_STEP, UPDATE_PTNewApplication_FORM } from "../redux/action/PTNewApplicationActions";
 
 const PTSummary = ({ formData, t }) => {
   console.log("form data in summary component", formData);
@@ -15,30 +14,6 @@ const PTSummary = ({ formData, t }) => {
   const SummaryData = useSelector(function (state) {
     return state.pt.PTNewApplicationFormReducer.formData;
   });
-
-  const [isEditingSurveyId, setIsEditingSurveyId] = useState(false);
-  const [editedSurveyId, setEditedSurveyId] = useState(
-    SummaryData?.propertyAddress?.surveyId || SummaryData?.surveyId || ""
-  );
-
-  const handleEditSurveyId = () => {
-    setEditedSurveyId(SummaryData?.propertyAddress?.surveyId || SummaryData?.surveyId || "");
-    setIsEditingSurveyId(true);
-  };
-
-  const handleSaveSurveyId = () => {
-    const updatedPropertyAddress = {
-      ...(SummaryData?.propertyAddress || {}),
-      surveyId: editedSurveyId,
-    };
-    dispatch(UPDATE_PTNewApplication_FORM("propertyAddress", updatedPropertyAddress));
-    dispatch(UPDATE_PTNewApplication_FORM("surveyId", editedSurveyId));
-    setIsEditingSurveyId(false);
-  };
-
-  const handleCancelSurveyId = () => {
-    setIsEditingSurveyId(false);
-  };
 
   console.log("SummaryData", SummaryData);
 
@@ -304,58 +279,7 @@ const PTSummary = ({ formData, t }) => {
           </LabelFieldPair>
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Survey ID")}</CardLabel>
-            {isEditingSurveyId ? (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", width: "100%" }}>
-                <TextInput
-                  t={t}
-                  type="text"
-                  name="editedSurveyId"
-                  value={editedSurveyId}
-                  onChange={(e) => setEditedSurveyId(e.target.value)}
-                  style={{ width: "150px", height: "30px", margin: 0, padding: "0 8px", marginRight: "10px", textAlign: "right" }}
-                />
-                <span
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleSaveSurveyId();
-                  }}
-                  style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="#24b15c" style={{ marginRight: "10px" }}>
-                    <path d="M0 0h24v24H0V0z" fill="none"/>
-                    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
-                  </svg>
-                </span>
-                <span
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleCancelSurveyId();
-                  }}
-                  style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="#a82227">
-                    <path d="M0 0h24v24H0V0z" fill="none"/>
-                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
-                  </svg>
-                </span>
-              </div>
-            ) : (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", width: "100%" }}>
-                <div style={{ ...styles.value, width: "auto" }}>{SummaryData?.propertyAddress?.surveyId || "NA"}</div>
-                <span
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleEditSurveyId();
-                  }}
-                  style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }}
-                >
-                  <EditIcon style={{ width: "16px", height: "16px", marginLeft: "10px" }} />
-                </span>
-              </div>
-            )}
+            <div style={styles.value}>{SummaryData?.propertyAddress?.surveyId || "NA"}</div>
           </LabelFieldPair>
 
           <LabelFieldPair style={styles.labelFieldPair}>

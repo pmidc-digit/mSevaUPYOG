@@ -227,26 +227,57 @@ const Search = () => {
     else {
       setFormData(_data);   
       console.log("_data5",formData)  
-      if (Object.keys(_data).filter((k) => _data[k] && typeof _data[k] !== "object")) {
-       const finalPayload = Object.keys(_data)
-  .filter((k) => _data[k])
-  .reduce((acc, key) => ({
-    ...acc,
-    [key]:
-      key === "tenantId"
-        ? _data[key]?.code
-        : typeof _data[key] === "object"
-        ? _data[key]?.code
-        : _data[key],
-  }), {});
 
-console.log("FINAL PAYLOAD", finalPayload);
+      const hasOwnerName = typeof _data?.name === "string" ? !!_data.name.trim() : !!_data?.name;
+      const hasPropertyId = typeof _data?.propertyIds === "string" ? !!_data.propertyIds.trim() : !!_data?.propertyIds;
+      const hasMobileNumber = typeof _data?.mobileNumber === "string" ? !!_data.mobileNumber.trim() : !!_data?.mobileNumber;
+      const hasOldPropertyId = typeof _data?.oldpropertyids === "string" ? !!_data.oldpropertyids.trim() : !!_data?.oldpropertyids;
+      const hasLocality = !!(_data?.locality?.code || (typeof _data?.locality === "string" && _data.locality.trim()));
+      const hasSurveyId = typeof _data?.surveyId === "string" ? !!_data.surveyId.trim() : !!_data?.surveyId;
 
-setPayload(finalPayload);
+      const isOnlyNameFilled = 
+        hasOwnerName &&
+        !hasPropertyId &&
+        !hasMobileNumber &&
+        !hasOldPropertyId &&
+        !hasLocality &&
+        !hasSurveyId;
+
+      const hasAnyField =
+        hasOwnerName ||
+        hasPropertyId ||
+        hasMobileNumber ||
+        hasOldPropertyId ||
+        hasLocality ||
+        hasSurveyId;
+
+      if (!hasAnyField) {
+        setShowToast({ warning: true, label: "ERR_PT_FILL_VALID_FIELDS" });
+      } else if (isOnlyNameFilled) {
+        setShowToast({
+          warning: true,
+          label: t("ERR_PT_PROVIDE_ONE_MORE_FIELD") !== "ERR_PT_PROVIDE_ONE_MORE_FIELD"
+            ? "ERR_PT_PROVIDE_ONE_MORE_FIELD"
+            : "Please provide at least one more additional field (Property ID, Mobile Number, Existing Property ID, Locality, or Survey ID)"
+        });
+      } else {
+        const finalPayload = Object.keys(_data)
+          .filter((k) => _data[k])
+          .reduce((acc, key) => ({
+            ...acc,
+            [key]:
+              key === "tenantId"
+                ? _data[key]?.code
+                : typeof _data[key] === "object"
+                ? _data[key]?.code
+                : _data[key],
+          }), {});
+
+        console.log("FINAL PAYLOAD", finalPayload);
+
+        setPayload(finalPayload);
         setSearchTenantId(selectedTenantId);
         setShowToast(null);
-      } else {
-        setShowToast({ warning: true, label: "ERR_PT_FILL_VALID_FIELDS" });
       }
     }
   

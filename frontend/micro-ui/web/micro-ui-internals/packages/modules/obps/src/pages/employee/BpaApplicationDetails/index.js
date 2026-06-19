@@ -50,7 +50,7 @@ import {
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
 import BPADocuments from "../../../../../templates/ApplicationDetails/components/BPADocuments";
-import SubOccupancyTable from "../../../../../templates/ApplicationDetails/components/SubOccupancyTable";
+import SubOccupancyTable , {getFloorData, getSubOccupancyValues , tableHeader} from "../../../../../templates/ApplicationDetails/components/SubOccupancyTable"
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview";
 import TLCaption from "../../../../../templates/ApplicationDetails/components/TLCaption";
 import PropertyOwners from "../../../../../templates/ApplicationDetails/components/PropertyOwners";
@@ -69,6 +69,7 @@ import BPASitePhotographs from "../../../components/BPASitePhotographs";
 import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew";
 import BPADocumentChecklist from "../../../pageComponents/BPADocumentChecklist";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
+import getBPAAcknowledgement from "../../../../getBPAAcknowledgement";
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -451,10 +452,15 @@ const BpaApplicationDetail = () => {
       
   
       const adjustedAmounts = data?.applicationData?.additionalDetails?.adjustedAmounts;
+      const totalAdjustedAmount = adjustedAmounts?.reduce((sum, item) => sum + (item?.adjustedAmount || 0), 0);
+      const totalULBAmount = adjustedAmounts?.reduce((s,i)=>(s +(i?.amount || 0)),0)
+
   
       data.additionalDetails = {
         ...data?.applicationData?.additionalDetails,
-        adjustedAmounts
+        adjustedAmounts,
+        totalAdjustedAmount,
+        totalULBAmount
       };
   
   
@@ -492,11 +498,32 @@ const BpaApplicationDetail = () => {
     // validity date = approval date + 3 as per feedback
     newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
     const approvalDatePlusThree = newValidityDate.getTime();
+         let currentDate = new Date();
+         data.applicationData.additionalDetails.runDate = convertDateToEpoch(
+           currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
+         );
+        const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+        const requestData = {
+          ...data?.applicationData,
+          edcrDetail: [{ ...data?.edcrDetails }],
+          subjectLine,
+          fileno,
+          newValidityDate: approvalDatePlusThree,
+          designation,
+          approverComment: comments,
+        };
+        if (requestData?.landInfo?.owners) {
+          requestData.landInfo = {
+            ...requestData.landInfo,
+            owners: requestData.landInfo.owners.map((owner) => ({
+              ...owner,
+              permanentPinCode: owner?.permanentPinCode || " ",
+            })),
+          };
+        }
 
 
-    const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation , approverComment: comments}
-    let count = 0
+        let count = 0
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
       if (
         (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
@@ -841,6 +868,44 @@ const BpaApplicationDetail = () => {
   }
 
   const dowloadOptions = []
+
+    const handleDownloadPdf = async () => {
+        try{
+          setLoader(true)
+          const tenantInfo = cities.data.find((city) => city.code === data.applicationData.tenantId)
+          const ulbName = tenantInfo?.ulbName || tenantInfo?.name;
+          const acknowledgementData = await getBPAAcknowledgement(data?.applicationData, tenantInfo, t, ulbType, ulbName, data?.edcrDetails, data?.collectionBillDetails);
+          const colHeaders = tableHeader?.map(h => t(h.name));
+          const preComputedBlocks = (data?.edcrDetails?.planDetail?.blocks || []).map((block, i) => ({
+            subOccupancy: getSubOccupancyValues(i, data?.applicationData, t),
+            floors: getFloorData(block, t)  // returns [{Floor, Level, Occupancy, BuildupArea, Deduction, FloorArea}] + totals row
+          }));
+          acknowledgementData.details = acknowledgementData?.details.map(d =>
+            d?.isSubOccupancyTable
+              ? { ...d, additionalDetails: { ...d.additionalDetails, preComputedBlocks, colHeaders } }
+              : d
+          );
+          Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+        }catch(error){
+          setShowToast({
+            error: true,
+            label: error?.response?.data?.Errors?.[0]?.message
+              ? error?.response?.data?.Errors?.[0]?.message
+              : error?.message || "Failed to download application form. Please try again.",
+          });
+          setTimeout(closeToast, 5000);
+        }finally{
+          setLoader(false)
+        }
+      };
+
+    if (data?.applicationData && cities?.data?.length > 0) {
+      dowloadOptions.push({
+        order: 0,
+        label: t("Application Form"),
+        onClick: () => handleDownloadPdf(),
+      });
+    }
   
     if (data?.collectionBillDetails?.length > 0) {
       const bpaPayments = cloneDeep(data?.collectionBillDetails)
@@ -1146,38 +1211,47 @@ const BpaApplicationDetail = () => {
 
       const approvalDatePlusThree = validityDateObj.getTime();
 
-      const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-      const requestData = {
-        ...data?.applicationData,
-        edcrDetail: [{ ...data?.edcrDetails }],
-        subjectLine,
-        fileno,
-        nowIST,
-        newValidityDate: approvalDatePlusThree,
-        designation,
-        combinedOwnersName,
-        approverComment: comments,
-      };
-      let count = 0;
-      for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
-        if (
-          (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
-            workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
-          workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
-          count == 0
-        ) {
-          requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
-          count = 1;
+       const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+       const requestData = {
+         ...data?.applicationData,
+         edcrDetail: [{ ...data?.edcrDetails }],
+         subjectLine,
+         fileno,
+         nowIST,
+         newValidityDate: approvalDatePlusThree,
+         designation,
+         combinedOwnersName,
+         approverComment: comments,
+       };
+       if (requestData?.landInfo?.owners) {
+          requestData.landInfo = {
+            ...requestData.landInfo,
+            owners: requestData.landInfo.owners.map((owner) => ({
+              ...owner,
+              permanentPinCode: owner?.permanentPinCode || " ",
+            })),
+          };
         }
-      }
-      if (data?.applicationData?.additionalDetails?.stakeholderAddress && requestData && requestData?.additionalDetails) {
-        requestData.additionalDetails.stakeholderAddress = data?.applicationData?.additionalDetails?.stakeholderAddress;
-      }
-      // if (requestData && requestData?.additionalDetails?.signature?.signURL) {
-      //   const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, stateId);
-      //   requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
-      // }
-      if (requestData?.additionalDetails?.approvedColony == "NO") {
+       let count = 0;
+       for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+         if (
+           (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+             workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+           workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+           count == 0
+         ) {
+           requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+           count = 1;
+         }
+       }
+       if (data?.applicationData?.additionalDetails?.stakeholderAddress && requestData && requestData?.additionalDetails) {
+         requestData.additionalDetails.stakeholderAddress = data?.applicationData?.additionalDetails?.stakeholderAddress;
+       }
+       // if (requestData && requestData?.additionalDetails?.signature?.signURL) {
+       //   const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, stateId);
+       //   requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
+       // }
+       if (requestData?.additionalDetails?.approvedColony == "NO") {
         requestData.additionalDetails.permitData =
           "The plot has been officially regularized under No. " +
           requestData?.additionalDetails?.NocNumber +
@@ -1242,6 +1316,15 @@ const BpaApplicationDetail = () => {
            combinedOwnersName,
            approverComment: comments,
          };
+         if (requestData?.landInfo?.owners) {
+          requestData.landInfo = {
+            ...requestData.landInfo,
+            owners: requestData.landInfo.owners.map((owner) => ({
+              ...owner,
+              permanentPinCode: owner?.permanentPinCode || " ",
+            })),
+          };
+        }
          let count = 0;
          for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
            if (

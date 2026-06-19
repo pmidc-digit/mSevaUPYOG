@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, CardHeader } from "@mseva/digit-ui-react-components";
-
+import { amountToWords, buildFeeHistoryByTax } from "./src/utils";
+import EXIF from "./src/utils/exif-compat";
 const getMohallaLocale = (value = "", tenantId = "") => {
     let convertedValue = convertDotValues(tenantId);
     if (convertedValue == "-" || !checkForNotNull(value)) {
@@ -262,7 +263,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
             { title: t("BPA_NOC_APPLICANT_NAME"), value: BPA?.additionalDetails?.nocObject?.applicantOwnerOrFirmName || "-", isNotTranslated: true },
             { title: t("BPA_NOC_ULB_NAME"), value: BPA?.additionalDetails?.nocObject?.ulbName || "-", isNotTranslated: true },
             { title: t("BPA_NOC_ULB_TYPE"), value: BPA?.additionalDetails?.nocObject?.ulbType || "-", isNotTranslated: true },
-            { title: t("BPA_NOC_APPROVED_ON"), value: nocApprovedDate || "-", isNotTranslated: true },
+            // { title: t("BPA_NOC_APPROVED_ON"), value: nocApprovedDate || "-", isNotTranslated: true },
           ]
           : []),
         // { title: t("BPA_NOC_NUMBER"), value: BPA?.additionalDetails?.NocNumber || "-", isNotTranslated: true },
@@ -341,10 +342,277 @@ const getMohallaLocale = (value = "", tenantId = "") => {
     };
   };
   
+  const pdfDownloadLink = (documents = {}, fileStoreId = "") => {
+    let downloadLink = documents[fileStoreId] || "";
+    let differentFormats = downloadLink?.split(",") || [];
+    let fileURL = "";
+    differentFormats.length > 0 &&
+      differentFormats.map((link) => {
+        if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
+          fileURL = link;
+        }
+      });
+    return fileURL;
+  };
 
-  const getBPAAcknowledgement = async (application, tenantInfo, t, ulbType, ulbName, edcr) => {
+  async function getExifDataFromUrl(fileUrl) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = function () {
+        EXIF.getData(img, function () {
+          resolve(EXIF.getAllTags(this));
+        });
+      };
+      img.onerror = (err) => resolve({});
+      img.src = fileUrl;
+    });
+  }
+
+  const getDocuments = async (appData, t) => {
+    const filteredDocs =
+      appData?.documents?.filter((doc) => doc?.documentType !== "SITEPHOTOGRAPH_ONE" && doc?.documentType !== "SITEPHOTOGRAPH_TWO") || [];
+
+    const sortedDocs = filteredDocs?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
+
+    const filesArray = sortedDocs?.map((value) => value?.uuid || value?.fileStoreId);
+
+    const res = filesArray.length > 0 && (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
+
+    return {
+      title: t("BPA_TITILE_DOCUMENT_UPLOADED"),
+      values:
+        sortedDocs.length > 0
+          ? sortedDocs?.map((document, index) => ({
+              title: `${index + 1}. ${t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")}`,
+              value: " ",
+              link: pdfDownloadLink(res?.data, document?.uuid || document?.fileStoreId) || "",
+            }))
+          : [
+              {
+                title: t("PT_NO_DOCUMENTS"),
+                value: "NA",
+              },
+            ],
+    };
+  };
+
+  const getSitePhotographs = async (appData, t, stateCode) => {
+    const sitePhotoDocs = appData?.documents
+      ?.filter((doc) => doc?.documentType === "SITEPHOTOGRAPH_ONE" || doc?.documentType === "SITEPHOTOGRAPH_TWO")
+      ?.sort((a, b) => a?.order - b?.order);
+
+    const fileStoreIds = sitePhotoDocs?.map((doc) => doc?.uuid || doc?.fileStoreId);
+    const res = fileStoreIds?.length > 0 && (await Digit.UploadServices.Filefetch(fileStoreIds, Digit.ULBService.getStateId()));
+
+
+    let values = [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }];
+
+    if (sitePhotoDocs?.length > 0) {
+      values = await Promise.all(
+        sitePhotoDocs.map(async (doc, index) => {
+          const docStoreId = doc?.documentAttachment || doc?.fileStoreId || doc?.uuid;
+          const documentLink = pdfDownloadLink(res?.data, doc?.uuid || doc?.fileStoreId);
+          const exiflink = `${window.origin}/filestore/v1/files/id?fileStoreId=${docStoreId}&tenantId=${stateCode}`;
+
+          const exifData = await getExifDataFromUrl(exiflink);
+          console.log("exifData in sitephotos", exifData);
+          if ([3, 6, 8].includes(exifData?.Orientation)) {
+            exifData.Orientation = 1;
+          }
+          const geoLocation = index === 0 
+            ? appData?.landInfo?.address?.geoLocation 
+            : appData?.additionalDetails?.geoLocationTwo;
+          const lat = geoLocation?.latitude || "N/A";
+          const long = geoLocation?.longitude || "N/A";
+
+          return {
+            title: (t(doc.documentType.replace(/\./g, "_")) || t("CS_NA")) + ` (Lat: ${lat}, Long: ${long})`,
+            value: " ",
+            link: documentLink || "",
+            exiflink: exiflink || "",
+            orientation: exifData?.Orientation || 1,
+          };
+        })
+      );
+    }
+
+    return {
+      title: t("BPA_LOC_SITE_PHOTOGRAPH_PREVIEW"),
+      isAttachments: true,
+      values,
+    };
+  };
+
+  const getJESiteImages = async (appData, t, stateCode) => {
+    const siteImages = appData?.additionalDetails?.siteImages || [];
+
+    const fileStoreIds = siteImages?.map((img) => img?.filestoreId);
+
+    const res = fileStoreIds?.length > 0 && (await Digit.UploadServices.Filefetch(fileStoreIds, Digit.ULBService.getStateId()));
+
+    let values = [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }];
+
+    if (siteImages?.length > 0) {
+      values = await Promise.all(
+        siteImages.map(async (img) => {
+          const documentLink = pdfDownloadLink(res?.data, img?.filestoreId);
+          const exiflink = `${window.origin}/filestore/v1/files/id?fileStoreId=${img?.filestoreId}&tenantId=${stateCode}`;
+
+          const exifData = await getExifDataFromUrl(exiflink);
+          console.log("exifData in siteImages", exifData);
+          if ([3, 6, 8].includes(exifData?.Orientation)) {
+            exifData.Orientation = 1;
+          }
+
+          const lat = img?.latitude || "N/A";
+          const long = img?.longitude || "N/A";
+
+          return {
+            title: (t(img?.documentType?.replace(/\./g, "_")) || t("CS_NA")) + ` (Lat: ${lat}, Long: ${long})`,
+            value: " ",
+            link: documentLink || "",
+            exiflink: exiflink || "",
+            orientation: exifData?.Orientation || 1,
+          };
+        })
+      );
+    }
+
+    return {
+      title: t("SITE_INPECTION_IMAGES"),
+      isAttachments: true,
+      values,
+    };
+  };
+
+  const getInspectionReport = (appData, t) => {
+    const inspectionData = appData?.additionalDetails?.fieldinspection_pending?.[0] || {};
+    const remarksKeys = Object.keys(inspectionData).filter((key) => key.startsWith("Remarks_"));
+
+    const remarksValues = remarksKeys.map((key, index) => {
+      const question = inspectionData?.questionList?.[index]?.question || key;
+      return {
+        title: `${t(question)}`,
+        value: inspectionData[key] || "N/A",
+      };
+    });
+
+    return {
+      title: t("BPA_FI_REPORT"),
+      values: remarksValues.length > 0 ? remarksValues : [{ title: t("No Remarks"), value: "NA" }],
+    };
+  };
+
+  const getApplicationFeeDetails = (application, collectionData, t) => {
+    const appPayment = collectionData.find(p => {
+      const bs = p.paymentDetails?.[0]?.businessService || "";
+      return bs.includes("APP_FEE") || bs === "BPA.LOW_RISK_PERMIT_FEE";
+    });
+    let appFeeValues = [];
+    if (appPayment) {
+      const billAccountDetails = appPayment?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.billAccountDetails || [];
+      if (billAccountDetails.length > 0) {
+        billAccountDetails.forEach((bad) => {
+          appFeeValues.push({
+            title: t(bad.taxHeadCode) || t("CS_NA"),
+            value: `₹ ${(bad.amount || 0).toLocaleString("en-IN")}`
+          });
+        });
+        const totalAmount = billAccountDetails.reduce((acc, item) => acc + (item.amount || 0), 0);
+        appFeeValues.push({
+          title: t("BPA_TOTAL"),
+          value: `₹ ${totalAmount.toLocaleString("en-IN")}`
+        });
+      }
+    }
+
+    return appFeeValues.length > 0 ? {
+      title: t("BPA_APPLICATION_FEE"),
+      values: appFeeValues
+    } : null;
+  };
+
+  const getPaymentHistoryDetails = (collectionData, t) => {
+    let paymentHistoryValues = [];
+    if (Array.isArray(collectionData) && collectionData?.length > 0) {
+      collectionData.forEach((payment, index) => {
+        if (collectionData?.length > 1) {
+          paymentHistoryValues.push({
+            title: `--- ${t("Payment")} ${index + 1} ---`,
+            value: ""
+          });
+        }
+        paymentHistoryValues.push(
+          { title: t("Receipt Number") || "Receipt Number", value: payment?.paymentDetails?.[0]?.receiptNumber || payment.receiptNumber || 'N/A' },
+          { title: t("Transaction Date") || "Transaction Date", value: payment?.transactionDate ? new Date(payment.transactionDate).toLocaleDateString("en-IN") : 'N/A' },
+          { title: t("Amount Paid") || "Amount Paid", value: `₹ ${Number(payment?.totalAmountPaid || payment.amount || 0).toLocaleString("en-IN")}` },
+          { title: t("Payment Mode") || "Payment Mode", value: payment?.paymentMode || payment.instrumentType || 'N/A' },
+          { title: t("Transaction ID") || "Transaction ID", value: payment?.transactionNumber || payment.instrumentNumber || 'N/A' },
+          { title: t("Status") || "Status", value: payment?.paymentStatus || 'N/A' }
+        );
+      });
+    }
+
+    return paymentHistoryValues.length > 0 ? {
+      title: t("Payment History") || "Payment History",
+      values: paymentHistoryValues
+    } : null;
+  };
+
+  const getSanctionFeeDetails = (application, t) => {
+    const adjustedAmounts = application?.additionalDetails?.adjustedAmounts || [];
+    let sanctionFeeValues = [];
+    if (adjustedAmounts?.length > 0) {
+      adjustedAmounts.forEach((item) => {
+        const title = t(item?.taxHeadCode) || item?.title || t("CS_NA");
+        const detailParts = [];
+        if (item.amount) detailParts.push(`${t("Amount")}: ₹${item?.amount?.toLocaleString("en-IN")}`);
+        if (item.adjustedAmount) detailParts.push(`${t("Adjusted")}: ₹${item?.adjustedAmount.toLocaleString("en-IN")}`);
+        if (item.remark) detailParts.push(`${t("Remarks")}: ${item?.remark}`);
+        
+        sanctionFeeValues.push({
+          title: title,
+          value: detailParts.length > 0 ? detailParts.join(", ") : "₹ 0"
+        });
+      });
+      const totalAmount = adjustedAmounts?.reduce((acc, item) => acc + (item.amount || 0), 0);
+      const totalDeduction = adjustedAmounts?.reduce((acc, item) => acc + (item.adjustedAmount || 0), 0);
+      const grandTotal = totalAmount + totalDeduction;
+      sanctionFeeValues.push(
+        { title: t("BPA_TOTAL"), value: `₹ ${totalAmount.toLocaleString("en-IN")}` },
+        { title: t("BPA_ADJUSTED_AMOUNT"), value: `₹ ${totalDeduction.toLocaleString("en-IN")}` },
+        { title: t("BPA_GRAND_TOTAL") || "Grand Total", value: `₹ ${grandTotal.toLocaleString("en-IN")} (${amountToWords(grandTotal)})` }
+      );
+    }
+
+    return sanctionFeeValues.length > 0 ? {
+      title: t("BPA_SANCTION_FEE"),
+      values: sanctionFeeValues
+    } : null;
+  };
+
+  const getFeeHistoryDetails = (application, t) => {
+    const calculations = application?.additionalDetails?.calculations || [];
+    let feeHistory = null;
+    const filteredCalcs = calculations?.filter(calc =>
+      (calc?.taxHeadEstimates || []).some(tax => tax?.estimateAmount > 0)
+    );
+    if (filteredCalcs?.length > 0) {
+      feeHistory = buildFeeHistoryByTax(filteredCalcs, { newestFirst: true });
+    }
+
+    return feeHistory && Object.keys(feeHistory).length > 0 ? {
+      title: t("BPA_FEE_HISTORY_LABEL"),
+      isPayTwoHistoryTable: true,
+      values: feeHistory
+    } : null;
+  };
+
+  const getBPAAcknowledgement = async (application, tenantInfo, t, ulbType, ulbName, edcr, collectionData = []) => {
     const user = Digit.UserService.getUser();
     const stateCode = Digit.ULBService.getStateId();
+    const isEmployee = window.location.href.includes("/employee");
 
     let OwnerPhoto = "";
     let primaryOwner = application?.landInfo?.owners?.find((owner) => owner?.isPrimaryOwner === true);
@@ -353,6 +621,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
       const result = await Digit.UploadServices.Filefetch([ownerPhotoId], stateCode);
       if (result?.data?.fileStoreIds) OwnerPhoto = result?.data?.fileStoreIds[0]?.url;
     } 
+
 
     
 
@@ -394,6 +663,28 @@ const getMohallaLocale = (value = "", tenantId = "") => {
         getScrutinyDetails(application, edcr, t),
         getBuildingExtractionDetails(application, edcr, t),
         getDemolitionAreaDetails(application, edcr, t),
+        // Sub-occupancy floor table — only rendered for OBPS PDFs via isSubOccupancyTable flag
+        ...(edcr?.planDetail?.blocks?.length > 0 ? [{
+          title: "Occupancy / Sub-Occupancy Details",
+          isSubOccupancyTable: true,
+          additionalDetails: {
+            applicationData: application,
+            subOccupancyTableDetails: [
+              { title: "BPA_APPLICATION_DEMOLITION_AREA_LABEL", value: edcr }
+            ]
+          }
+        }] : []),
+
+       // Add the new sections here:
+        getApplicationFeeDetails(application, collectionData, t),
+        getPaymentHistoryDetails(collectionData, t),
+        getSanctionFeeDetails(application, t),
+        getFeeHistoryDetails(application, t),
+        await getDocuments(application, t),
+        await getSitePhotographs(application, t, stateCode),
+        ...(isEmployee && (application?.additionalDetails?.siteImages?.length > 0) ? [await getJESiteImages(application, t, stateCode)] : []),
+        ...(isEmployee && application?.additionalDetails?.fieldinspection_pending?.[0] ? [getInspectionReport(application, t)] : []),
+      ].filter(Boolean),
         // {
         //   title: t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS"),
         //   values: [
@@ -472,7 +763,6 @@ const getMohallaLocale = (value = "", tenantId = "") => {
         //     },
         //   ],
         // },
-      ],
       imageURL: OwnerPhoto || "",
       ulbType,
       ulbName

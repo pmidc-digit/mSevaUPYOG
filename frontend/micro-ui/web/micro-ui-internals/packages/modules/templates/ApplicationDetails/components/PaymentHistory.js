@@ -32,24 +32,27 @@ const PaymentHistory = ({ payments }) => {
     try {
       const tenantId = payment?.tenantId || Digit.ULBService.getCurrentTenantId();
       const businessService = payment?.paymentDetails?.[0]?.businessService || "PT";
-      
-      let fileStoreId = payment?.fileStoreId || payment?.paymentDetails?.[0]?.fileStoreId;
-      
-      if (!fileStoreId) {
-        let pdfKey = "consolidatedreceipt";
-        if (businessService === "PT") {
-          pdfKey = "property-receipt";
-        } else if (businessService === "TL") {
-          pdfKey = "tl-receipt";
-        }
-        
-        const response = await Digit.PaymentService.generatePdf(
-          tenantId,
-          { Payments: [payment] },
-          pdfKey
-        );
-        fileStoreId = response?.filestoreIds?.[0];
+      const receiptNo = payment.paymentDetails?.[0]?.receiptNumber || payment.receiptNumber;
+
+      // 1. Fetch latest payment details from /collection-services/payments/{businessService}/_search
+      const searchResponse = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNo });
+      const latestPayment = searchResponse?.Payments?.[0] || payment;
+
+      // 2. Generate PDF using the fetched payment object
+      let pdfKey = "consolidatedreceipt";
+      if (businessService === "PT") {
+        pdfKey = "property-receipt";
+      } else if (businessService === "TL") {
+        pdfKey = "tl-receipt";
       }
+
+      const response = await Digit.PaymentService.generatePdf(
+        tenantId,
+        { Payments: [latestPayment] },
+        pdfKey
+      );
+      
+      const fileStoreId = response?.filestoreIds?.[0];
       
       if (fileStoreId) {
         const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
@@ -63,7 +66,7 @@ const PaymentHistory = ({ payments }) => {
   };
 
   return (
-    <div className="accordion" style={{
+    <div id="payment-history" className="accordion" style={{
       width: "100%",
       margin: "auto",
       fontFamily: "Roboto, sans-serif",
@@ -97,149 +100,81 @@ const PaymentHistory = ({ payments }) => {
             <div style={{ color: 'red', fontSize: '16px' }}>{t("PT_NO_PAYMENTS_FOUND") || "No Payments found"}</div>
           )}
           {payments?.length > 0 && (
-            isCitizen ? (
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                {payments.map((payment, index) => {
-                  const receiptNo = payment.paymentDetails?.[0]?.receiptNumber || payment.receiptNumber || 'N/A';
-                  const amountPaid = payment.totalAmountPaid !== undefined ? payment.totalAmountPaid : (payment.amount !== undefined ? payment.amount : '0');
-                  const rawStatus = payment.paymentStatus || 'N/A';
-                  const status = rawStatus === 'DEPOSITED' ? 'Deposited' : (rawStatus === 'SUCCESSFUL' ? 'Successful' : rawStatus);
-                  const paymentDate = payment.transactionDate || payment.paymentDetails?.[0]?.receiptDate || payment.receiptDate;
-                  const billNo = payment.paymentDetails?.[0]?.bill?.billNumber || 'N/A';
-                  const billDetails = payment.paymentDetails?.[0]?.bill?.billDetails?.[0];
-                  const fromPeriod = billDetails?.fromPeriod;
-                  const toPeriod = billDetails?.toPeriod;
-                  const billPeriodStr = fromPeriod && toPeriod ? `${formatDate(fromPeriod)} to ${formatDate(toPeriod)}` : 'N/A';
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {payments.map((payment, index) => {
+                const receiptNo = payment.paymentDetails?.[0]?.receiptNumber || payment.receiptNumber || 'N/A';
+                const amountPaid = payment.totalAmountPaid !== undefined ? payment.totalAmountPaid : (payment.amount !== undefined ? payment.amount : '0');
+                const rawStatus = payment.paymentStatus || 'N/A';
+                const status = rawStatus === 'DEPOSITED' ? 'Deposited' : (rawStatus === 'SUCCESSFUL' ? 'Successful' : rawStatus);
+                const paymentDate = payment.transactionDate || payment.paymentDetails?.[0]?.receiptDate || payment.receiptDate;
+                const billNo = payment.paymentDetails?.[0]?.bill?.billNumber || 'N/A';
+                const billDetails = payment.paymentDetails?.[0]?.bill?.billDetails?.[0];
+                const fromPeriod = billDetails?.fromPeriod;
+                const toPeriod = billDetails?.toPeriod;
+                const billPeriodStr = fromPeriod && toPeriod ? `${formatDate(fromPeriod)} to ${formatDate(toPeriod)}` : 'N/A';
 
-                  return (
-                    <div key={payment.id || index} style={{
-                      padding: "20px 0",
-                      borderBottom: index === payments.length - 1 ? "none" : "1px solid #E3E3E3",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "12px",
-                      position: "relative"
-                    }}>
-                      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: isMobile ? "flex-start" : "center" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "12px", flex: 1 }}>
-                          <div style={{ display: "flex", flexDirection: "row" }}>
-                            <div style={{ width: isMobile ? "150px" : "250px", color: "#656565", fontSize: "16px" }}>
-                              {t("PT_RECEIPT_NO") || "Receipt No"}
-                            </div>
-                            <div style={{ color: "#0b0c0c", fontSize: "16px", fontWeight: "400" }}>{receiptNo}</div>
+                return (
+                  <div key={payment.id || index} style={{
+                    padding: "20px 0",
+                    borderBottom: index === payments.length - 1 ? "none" : "1px solid #E3E3E3",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "12px",
+                    position: "relative"
+                  }}>
+                    <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: isMobile ? "flex-start" : "center" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "12px", flex: 1 }}>
+                        <div style={{ display: "flex", flexDirection: "row" }}>
+                          <div style={{ width: isMobile ? "150px" : "250px", color: "#656565", fontSize: "16px" }}>
+                            {t("PT_RECEIPT_NO") || "Receipt No"}
                           </div>
-                          <div style={{ display: "flex", flexDirection: "row" }}>
-                            <div style={{ width: isMobile ? "150px" : "250px", color: "#656565", fontSize: "16px" }}>
-                              {t("PT_AMOUNT_PAID") || "Amount Paid"}
-                            </div>
-                            <div style={{ color: "#0b0c0c", fontSize: "16px", fontWeight: "400" }}>Rs {amountPaid}</div>
-                          </div>
-                          <div style={{ display: "flex", flexDirection: "row" }}>
-                            <div style={{ width: isMobile ? "150px" : "250px", color: "#656565", fontSize: "16px" }}>
-                              {t("PT_PAYMENT_STATUS") || "Payment Status"}
-                            </div>
-                            <div style={{ color: "#0b0c0c", fontSize: "16px", fontWeight: "400" }}>{t(status)}</div>
-                          </div>
-                          <div style={{ display: "flex", flexDirection: "row" }}>
-                            <div style={{ width: isMobile ? "150px" : "250px", color: "#656565", fontSize: "16px" }}>
-                              {t("PT_PAYMENT_DATE") || "Payment Date"}
-                            </div>
-                            <div style={{ color: "#0b0c0c", fontSize: "16px", fontWeight: "400" }}>{formatDate(paymentDate)}</div>
-                          </div>
-                          <div style={{ display: "flex", flexDirection: "row" }}>
-                            <div style={{ width: isMobile ? "150px" : "250px", color: "#656565", fontSize: "16px" }}>
-                              {t("PT_BILL_NO") || "Bill No."}
-                            </div>
-                            <div style={{ color: "#0b0c0c", fontSize: "16px", fontWeight: "400" }}>{billNo}</div>
-                          </div>
-                          <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", alignItems: "center" }}>
-                            <div style={{ width: isMobile ? "150px" : "250px", color: "#656565", fontSize: "16px" }}>
-                              {t("PT_BILL_PERIOD") || "Bill Period"}
-                            </div>
-                            <div style={{ color: "#0b0c0c", fontSize: "16px", fontWeight: "400" }}>{billPeriodStr}</div>
-                          </div>
+                          <div style={{ color: "#0b0c0c", fontSize: "16px", fontWeight: "400" }}>{receiptNo}</div>
                         </div>
-                        <div style={{ marginTop: isMobile ? "15px" : "0", alignSelf: isMobile ? "flex-start" : "center" }}>
-                          <button
-                            onClick={() => handleDownloadReceipt(payment)}
-                            style={{
-                              border: "1px solid #f47738",
-                              color: "#f47738",
-                              background: "transparent",
-                              padding: "8px 16px",
-                              cursor: "pointer",
-                              fontSize: "14px",
-                              fontWeight: "600",
-                              borderRadius: "3px",
-                              textTransform: "uppercase",
-                              transition: "all 0.2s ease"
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.background = "#f47738";
-                              e.target.style.color = "#ffffff";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.background = "transparent";
-                              e.target.style.color = "#f47738";
-                            }}
-                          >
-                            {t("PT_DOWNLOAD_RECEIPT") || "Download Receipt"}
-                          </button>
+                        <div style={{ display: "flex", flexDirection: "row" }}>
+                          <div style={{ width: isMobile ? "150px" : "250px", color: "#656565", fontSize: "16px" }}>
+                            {t("PT_AMOUNT_PAID") || "Amount Paid"}
+                          </div>
+                          <div style={{ color: "#0b0c0c", fontSize: "16px", fontWeight: "400" }}>Rs {amountPaid}</div>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "row" }}>
+                          <div style={{ width: isMobile ? "150px" : "250px", color: "#656565", fontSize: "16px" }}>
+                            {t("PT_PAYMENT_STATUS") || "Payment Status"}
+                          </div>
+                          <div style={{ color: "#0b0c0c", fontSize: "16px", fontWeight: "400" }}>{t(status)}</div>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "row" }}>
+                          <div style={{ width: isMobile ? "150px" : "250px", color: "#656565", fontSize: "16px" }}>
+                            {t("PT_PAYMENT_DATE") || "Payment Date"}
+                          </div>
+                          <div style={{ color: "#0b0c0c", fontSize: "16px", fontWeight: "400" }}>{formatDate(paymentDate)}</div>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "row" }}>
+                          <div style={{ width: isMobile ? "150px" : "250px", color: "#656565", fontSize: "16px" }}>
+                            {t("PT_BILL_NO") || "Bill No."}
+                          </div>
+                          <div style={{ color: "#0b0c0c", fontSize: "16px", fontWeight: "400" }}>{billNo}</div>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", alignItems: "center" }}>
+                          <div style={{ width: isMobile ? "150px" : "250px", color: "#656565", fontSize: "16px" }}>
+                            {t("PT_BILL_PERIOD") || "Bill Period"}
+                          </div>
+                          <div style={{ color: "#0b0c0c", fontSize: "16px", fontWeight: "400" }}>{billPeriodStr}</div>
                         </div>
                       </div>
+                      <div style={{ marginTop: isMobile ? "15px" : "0", alignSelf: isMobile ? "flex-start" : "center" }}>
+                        <button
+                          onClick={() => handleDownloadReceipt(payment)}
+                         
+                          
+                        >
+                          {t("PT_DOWNLOAD_RECEIPT") || "Download Receipt"}
+                        </button>
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div>
-                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#f5f5f5' }}>
-                      <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>{t("PT_RECEIPT_NUMBER") || "Receipt Number"}</th>
-                      <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>{t("PT_TRANSACTION_DATE") || "Transaction Date"}</th>
-                      <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>{t("PT_AMOUNT_PAID") || "Amount Paid"}</th>
-                      <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>{t("PT_PAYMENT_MODE") || "Payment Mode"}</th>
-                      <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>{t("PT_TRANSACTION_ID") || "Transaction ID"}</th>
-                      <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>{t("PT_STATUS") || "Status"}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {payments.map((payment, index) => (
-                      <tr key={payment.id || index}>
-                        <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                          {payment.paymentDetails?.[0]?.receiptNumber || payment.receiptNumber || 'N/A'}
-                        </td>
-                        <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                          {payment.transactionDate ? new Date(payment.transactionDate).toLocaleDateString() : 'N/A'}
-                        </td>
-                        <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                          ₹{payment.totalAmountPaid || payment.amount || '0'}
-                        </td>
-                        <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                          {payment.paymentMode || payment.instrumentType || 'N/A'}
-                        </td>
-                        <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                          {payment.transactionNumber || payment.instrumentNumber || 'N/A'}
-                        </td>
-                        <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                          <span style={{
-                            color: payment.paymentStatus === 'NEW' || payment.paymentStatus === 'SUCCESSFUL' || payment.paymentStatus === 'DEPOSITED' ? 'green' :
-                              payment.paymentStatus === 'FAILED' ? 'red' : 'orange',
-                            fontWeight: 'bold'
-                          }}>
-                            {payment.paymentStatus === "DEPOSITED" ? <p style={{ margin: 0 }}>Deposited</p> : payment.paymentStatus || 'N/A'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div style={{ marginTop: '10px', fontSize: '14px', color: '#666' }}>
-                  {t("PT_TOTAL_PAYMENTS") || "Total Payments"}: {payments.length}
-                </div>
-              </div>
-            )
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       )}

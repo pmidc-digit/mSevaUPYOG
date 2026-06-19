@@ -325,7 +325,21 @@ const PropertyDetails = () => {
           isDuesSection: true,
           belowComponent: () => (
             <LinkLabel
-              onClick={() => history.push({ pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`})}
+              onClick={() => {
+                const element = document.getElementById("payment-history");
+                if (element) {
+                  const header = element.querySelector(".accordion-header");
+                  const body = element.querySelector(".accordion-body");
+                  if (header && !body) {
+                    header.click();
+                  }
+                  setTimeout(() => {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }, 100);
+                } else {
+                  history.push({ pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`});
+                }
+              }}
               style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
             >
               {t("PT_VIEW_PAYMENT")}
@@ -449,12 +463,14 @@ const PropertyDetails = () => {
         mutate={null}
         workflowDetails={appDetailsToShow?.applicationData?.status === "ACTIVE" ? workflowDetails : {}}
         businessService="PT"
+        moduleCode="PT"
         showToast={showToast}
         setShowToast={setShowToast}
         closeToast={closeToast}
         showTimeLine={false}
         timelineStatusPrefix={"ES_PT_COMMON_STATUS_"}
         forcedActionPrefix={"WF_EMPLOYEE_PT.CREATE"}
+        propertyId={applicationNumber}
       />      {showModal ? (
    
           <Modal

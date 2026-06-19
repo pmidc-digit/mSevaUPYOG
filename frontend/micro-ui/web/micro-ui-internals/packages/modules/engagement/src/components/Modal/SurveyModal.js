@@ -158,6 +158,7 @@ const SurveyModal = ({ isOpen, onClose }) => {
                   display: "flex",
                   borderRadius: "12px",
                   marginTop: " 60px",
+                  cursor: "pointer",
                 }}
                 onClick={onClose}
               >

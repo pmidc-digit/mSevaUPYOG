@@ -14,8 +14,6 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
   const formData = useSelector((state) => state.ndc.NDCForm.formData || {});
   // Function to handle the "Next" button click
 
-  console.log("formData 4th step", formData);
-
   const goNext = async (action) => {
     const actionStatus = action?.action;
     console.log("actionStatus", actionStatus);
@@ -33,30 +31,47 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
   };
 
   function mapToNDCPayload(inputData, actionStatus) {
-    const applicant = Digit.UserService.getUser()?.info || {};
-    console.log("inputData", inputData);
-
-    // const owners = (inputData?.apiData?.Applications?.[0]?.owners || [])?.map(({ status, ...rest }) => rest);
     const owners = (inputData?.apiData?.Applications?.[0]?.owners || []).map((item) => {
       const obj = JSON.parse(JSON.stringify(item));
       delete obj.status;
       return obj;
     });
-    // const owners = [
-    //   {
-    //     // name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
-    //     name: user?.info?.name,
-    //     mobileNumber: user?.info?.mobileNumber,
-    //     gender: formData?.NDCDetails?.PropertyDetails?.gender,
-    //     emailId: user?.info?.emailId,
-    //     type: user?.info?.type,
-    //   },
-    // ];
 
-    // Pick the source of truth for the application
     const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
 
-    console.log("baseApplication", baseApplication);
+    const existingDocuments = baseApplication?.Documents || [];
+    const uploadedDocuments = inputData?.DocummentDetails?.documents?.documents || [];
+
+    const docs =
+      existingDocuments.length > 0
+        ? uploadedDocuments.map((doc) => {
+            const nextDocumentAttachment = doc?.documentAttachment;
+            const matchingExistingDocument = existingDocuments.find((existingDoc) => existingDoc?.documentType === doc?.documentType);
+
+            if (matchingExistingDocument) {
+              return {
+                ...matchingExistingDocument,
+                documentAttachment: nextDocumentAttachment,
+              };
+            }
+
+            return {
+              uuid: doc?.uuid,
+              documentType: doc?.documentType,
+              documentAttachment: nextDocumentAttachment,
+            };
+          })
+        : uploadedDocuments.map((doc) => ({
+            uuid: doc?.uuid,
+            documentType: doc?.documentType,
+            documentAttachment: doc?.documentAttachment,
+          }));
+
+    console.log("docs", docs);
+    console.log("baseApplication docs", baseApplication?.Documents);
+    console.log("og docs", inputData?.DocummentDetails?.documents?.documents);
+
+    // return;
 
     // Clone and modify workflow action
     const updatedApplication = {
@@ -67,16 +82,8 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
       },
       owners: owners,
       NdcDetails: baseApplication?.NdcDetails,
-      Documents: [], // We'll populate below
+      Documents: docs,
     };
-
-    (inputData?.DocummentDetails?.documents?.documents || []).forEach((doc) => {
-      updatedApplication.Documents.push({
-        uuid: doc?.documentUid,
-        documentType: doc?.documentType,
-        documentAttachment: doc?.filestoreId,
-      });
-    });
 
     // Final payload matches update API structure
     const payload = {
@@ -90,7 +97,6 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
 
   const onSubmit = async (data, actionStatus) => {
     const finalPayload = mapToNDCPayload(data, actionStatus);
-    console.log("finalPayload", finalPayload);
     // return;
     const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
     dispatch(resetNDCForm());

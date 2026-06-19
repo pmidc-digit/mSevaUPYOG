@@ -641,13 +641,14 @@ const propertyDocuments = propertyDocumentValues.length
     }
 
     // Only proceed for PT and BPREG modules
-    if (!propertyId) {
+    if (!currentPropertyId && !propertyId) {
       return;
     }
 
     try {
+      const consumerCodesList = [currentPropertyId, propertyId].filter((value, index, self) => value && self.indexOf(value) === index);
       let filters = {
-        consumerCodes: propertyId,
+        consumerCodes: consumerCodesList.join(","),
       };
       const auth = true;
 
@@ -663,7 +664,7 @@ const propertyDocuments = propertyDocumentValues.length
     } catch (error) {
       console.error("❌ Payment search error for PT/BPREG:", error);
     }
-  }, [moduleCode, propertyId, tenantId, applicationData?.applicationNumber]);
+  }, [moduleCode, currentPropertyId, propertyId, tenantId, applicationData?.applicationNumber]);
   return (
     <Card style={{ position: "relative" }}>
       {/* For UM-4418 changes */}

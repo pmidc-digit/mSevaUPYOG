@@ -161,26 +161,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
     trigger("ownerShip");
   }, [ownersLength]);
 
-  useEffect(() => {
-    // Don't reset while restoring edit data
-    if (isRestoredRef.current) return;
-
-    // Reset the field array to exactly 1 empty owner
-    remove([...Array(fields.length).keys()]);
-    append({
-      name: "",
-      mobileNumber: "",
-      emailId: "",
-      address: "",
-      designation: "",
-      altContactNumber: "",
-      gender: "",
-      fatherOrHusbandName: "",
-      relationship: "",
-      ownerType: "",
-      ownershipPercentage: ownerTypeCode === "SINGLEOWNER" ? "100" : "",
-    });
-  }, [ownerTypeCode, remove, append]);
+  // useEffect removed to handle reset during manual selection only
 
 
 
@@ -298,8 +279,20 @@ useEffect(() => {
               <Dropdown
                 select={(e) => {
                   props.onChange(e);
-                  // const findData = SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item?.ownerShipCategory == e?.code);
-                  // setInstType(findData);
+                  remove([...Array(fields.length).keys()]);
+                  append({
+                    name: "",
+                    mobileNumber: "",
+                    emailId: "",
+                    address: "",
+                    designation: "",
+                    altContactNumber: "",
+                    gender: "",
+                    fatherOrHusbandName: "",
+                    relationship: "",
+                    ownerType: "",
+                    ownershipPercentage: e?.code === "SINGLEOWNER" ? "100" : "",
+                  });
                 }}
                 selected={props.value}
                 option={owners}
@@ -396,8 +389,35 @@ useEffect(() => {
                         value: /^[6-9]\d{9}$/,
                         message: "Enter valid number",
                       },
+                      validate: {
+                        uniqueMobileNumber: (val) => {
+                          const ownershipType = getValues("ownerShip")?.code;
+                          if (ownershipType === "INDIVIDUAL.MULTIPLEOWNERS") {
+                            const allOwners = getValues({ nest: true })?.owners || [];
+                            const count = allOwners.filter(owner => owner.mobileNumber && owner.mobileNumber === val).length;
+                            if (count > 1) {
+                              return "Duplicate Owners number are not allowed";
+                            }
+                          }
+                          return true;
+                        }
+                      }
                     }}
-                    render={(props) => <MobileNumber {...props} disable={isEditMode} />}
+                    render={(props) => (
+                      <MobileNumber
+                        {...props}
+                        onChange={(e) => {
+                          props.onChange(e);
+                          setTimeout(() => {
+                            const allOwners = getValues({ nest: true })?.owners || [];
+                            allOwners.forEach((_, idx) => {
+                              trigger(`owners.${idx}.mobileNumber`);
+                            });
+                          }, 0);
+                        }}
+                        disable={isEditMode}
+                      />
+                    )}
                   />
                   {errors?.owners?.[index]?.mobileNumber && (
                     <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].mobileNumber.message}</p>
@@ -411,14 +431,15 @@ useEffect(() => {
                     defaultValue={item?.name || ""}
                     rules={{
                       required: "Name required",
-                      validate: {
-                        noNumbers: (value) => !/\d/.test(value || "") || "Numeric values are not allowed in name",
+                      pattern: {
+                        value: /^[a-zA-Z\s.!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/,
+                        message: "Invalid name. Only alphabets and special characters.",
                       },
                     }}
                     render={(props) => (
                       <TextInput
                         value={props.value}
-                        onChange={(e) => props.onChange(e.target.value.replace(/\d/g, ""))}
+                        onChange={(e) => props.onChange(e.target.value.replace(/[0-9]/g, ""))}
                         onBlur={props.onBlur}
                         disable={isEditMode}
                       />
@@ -547,14 +568,14 @@ useEffect(() => {
                       rules={{
                         required: "Guardian name is required",
                         pattern: {
-                          value: /^[a-zA-Z ]*$/,
-                          message: "Guardian name should contain only alphabets and spaces",
+                          value: /^[a-zA-Z\s.!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/,
+                          message: "Invalid name. Only alphabets and special characters.",
                         },
                       }}
                       render={(props) => (
                         <TextInput
                           value={props.value}
-                          onChange={(e) => props.onChange(e.target.value.replace(/[^a-zA-Z ]/g, ""))}
+                          onChange={(e) => props.onChange(e.target.value.replace(/[0-9]/g, ""))}
                           onBlur={props.onBlur}
                           disable={isEditMode}
                         />
@@ -622,10 +643,10 @@ useEffect(() => {
                                 const code = selectedType?.code;
                                 const localMatched = ownerTypeDocuments.find((d) => d.ownerTypeCode === code);
                                 if (localMatched) {
-                                  setValue(`owners.${index}.docIdType`, localMatched);
+                                  setValue(`owners.${index}.docIdType`, localMatched, { shouldValidate: true });
                                 } else {
-                                  setValue(`owners.${index}.docIdType`, null);
-                                  setValue(`owners.${index}.docIdNo`, "");
+                                  setValue(`owners.${index}.docIdType`, null, { shouldValidate: true });
+                                  setValue(`owners.${index}.docIdNo`, "", { shouldValidate: true });
                                 }
                               }}
                               selected={props.value}
@@ -641,56 +662,54 @@ useEffect(() => {
                         )}
                       </LabelFieldPair>
                     </div>
-                    {showDocFields && (
-                      <div style={twoColRow}>
-                        <LabelFieldPair style={colItem}>
-                          <CardLabel className="card-label-smaller">
-                            {t("Document ID Type")} <span style={{ color: "red" }}>*</span>
-                          </CardLabel>
-                          <Controller
-                            control={control}
-                            name={`owners.${index}.docIdType`}
-                            defaultValue={item?.docIdType || null}
-                            rules={{ required: "Document ID Type is required" }}
-                            render={(props) => (
-                              <Dropdown
-                                select={props.onChange}
-                                selected={props.value}
-                                option={ownerTypeDocuments}
-                                optionKey="name"
-                                t={t}
-                                disable={isEditMode || !!matched}
-                              />
-                            )}
-                          />
-                          {errors?.owners?.[index]?.docIdType && (
-                            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].docIdType.message}</p>
+                    <div style={{ ...twoColRow, display: showDocFields ? "flex" : "none" }}>
+                      <LabelFieldPair style={colItem}>
+                        <CardLabel className="card-label-smaller">
+                          {t("Document ID Type")} <span style={{ color: "red" }}>*</span>
+                        </CardLabel>
+                        <Controller
+                          control={control}
+                          name={`owners.${index}.docIdType`}
+                          defaultValue={item?.docIdType || null}
+                          rules={{ required: showDocFields ? "Document ID Type is required" : false }}
+                          render={(props) => (
+                            <Dropdown
+                              select={props.onChange}
+                              selected={props.value}
+                              option={ownerTypeDocuments}
+                              optionKey="name"
+                              t={t}
+                              disable={isEditMode || !!matched}
+                            />
                           )}
-                        </LabelFieldPair>
-                        <LabelFieldPair style={colItem}>
-                          <CardLabel className="card-label-smaller">
-                            {t("Document ID no.")} <span style={{ color: "red" }}>*</span>
-                          </CardLabel>
-                          <Controller
-                            control={control}
-                            name={`owners.${index}.docIdNo`}
-                            defaultValue={item?.docIdNo || ""}
-                            rules={{ required: "Document ID no. is required" }}
-                            render={(props) => (
-                              <TextInput
-                                value={props.value}
-                                onChange={(e) => props.onChange(e.target.value)}
-                                placeholder={t("Enter identification no.")}
-                                disable={isEditMode}
-                              />
-                            )}
-                          />
-                          {errors?.owners?.[index]?.docIdNo && (
-                            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].docIdNo.message}</p>
+                        />
+                        {errors?.owners?.[index]?.docIdType && (
+                          <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].docIdType.message}</p>
+                        )}
+                      </LabelFieldPair>
+                      <LabelFieldPair style={colItem}>
+                        <CardLabel className="card-label-smaller">
+                          {t("Document ID no.")} <span style={{ color: "red" }}>*</span>
+                        </CardLabel>
+                        <Controller
+                          control={control}
+                          name={`owners.${index}.docIdNo`}
+                          defaultValue={item?.docIdNo || ""}
+                          rules={{ required: showDocFields ? "Document ID no. is required" : false }}
+                          render={(props) => (
+                            <TextInput
+                              value={props.value}
+                              onChange={(e) => props.onChange(e.target.value)}
+                              placeholder={t("Enter identification no.")}
+                              disable={isEditMode}
+                            />
                           )}
-                        </LabelFieldPair>
-                      </div>
-                    )}
+                        />
+                        {errors?.owners?.[index]?.docIdNo && (
+                          <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].docIdNo.message}</p>
+                        )}
+                      </LabelFieldPair>
+                    </div>
                   </React.Fragment>
                 );
               })()}

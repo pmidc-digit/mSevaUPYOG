@@ -124,6 +124,23 @@ const LayoutInbox = ({ parentRoute }) => {
   });
   const hasCapturedAssigneeCounts = useRef(false);
 
+  const getResolvedStatusIds = useCallback((applicationStatuses = []) => {
+    return [
+      ...new Set(
+        applicationStatuses.reduce((acc, item) => {
+          if (Array.isArray(item?.statusids) && item.statusids.length) {
+            acc.push(...item.statusids);
+          } else if (item?.statusid) {
+            acc.push(item.statusid);
+          } else if (item?.code) {
+            acc.push(item.code);
+          }
+          return acc;
+        }, [])
+      ),
+    ];
+  }, []);
+
   const memoizedFilters = useMemo(() => {
     return {
       filterForm: formState?.filterForm || filterFormDefaultValues,
@@ -199,7 +216,37 @@ const LayoutInbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (inboxData) {
-      setStatusData(inboxData?.statuses || []);
+      const groupedStatuses = (inboxData?.statuses || []).reduce((acc, status) => {
+        const statusKey = status?.applicationstatus;
+
+        if (!statusKey) {
+          acc.push(status);
+          return acc;
+        }
+
+        const count = status?.totalCount ?? status?.count ?? 0;
+        const existingStatus = acc.find((item) => item?.applicationstatus === statusKey);
+
+        if (existingStatus) {
+          existingStatus.totalCount = (existingStatus.totalCount || 0) + count;
+          existingStatus.count = existingStatus.totalCount;
+          existingStatus.statusids = [...new Set([...(existingStatus.statusids || []), status?.statusid].filter(Boolean))];
+          return acc;
+        }
+
+        acc.push({
+          ...status,
+          statusid: `${statusKey}_GROUP`,
+          statusids: status?.statusid ? [status.statusid] : [],
+          totalCount: count,
+          count,
+          businessService: null,
+          businessservice: null,
+        });
+        return acc;
+      }, []);
+
+      setStatusData(groupedStatuses);
       setTableData(inboxData?.table || []);
       setTotalCountData(inboxData?.totalCount || 0);
     }
@@ -264,8 +311,7 @@ const LayoutInbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
-      const resolvedStatuses =
-        filterData.applicationStatus?.map((item) => item.applicationstatus || item.statusCode || item.code) || [];
+      const resolvedStatuses = getResolvedStatusIds(filterData.applicationStatus || []);
 
       // Update form values
       if (filterData.applicationStatus) {
@@ -284,7 +330,7 @@ const LayoutInbox = ({ parentRoute }) => {
         },
       });
     },
-    [formState?.filterForm, setFilterFormValue]
+    [formState?.filterForm, getResolvedStatusIds, setFilterFormValue]
   );
 
   const searchDebounceRef = useRef(null);
@@ -352,8 +398,8 @@ const LayoutInbox = ({ parentRoute }) => {
         handleFilterFormSubmit(onFilterFormSubmit)();
         return;
       }
-      const resolvedCode = status?.applicationstatus || label;
-      setFilterFormValue("applicationStatus", [resolvedCode], { shouldDirty: true, shouldTouch: true });
+      const resolvedCode = Array.isArray(status?.statusids) && status.statusids.length ? status.statusids : status?.statusid ? [status.statusid] : [];
+      setFilterFormValue("applicationStatus", resolvedCode, { shouldDirty: true, shouldTouch: true });
       handleFilterFormSubmit(onFilterFormSubmit)();
     },
     [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
@@ -376,17 +422,17 @@ const LayoutInbox = ({ parentRoute }) => {
           handleFilter={handleFilterChange}
         />
       }
-      topBar={
-        <InboxTopBar
-          statuses={statusData}
-          activeTab={activeStatusTab}
-          onTabClick={onStatusTabClick}
-          searchValue={topBarSearch}
-          onSearchChange={(e) => setTopBarSearch(e.target.value)}
-          searchPlaceholder="Search by application number..."
-          totalCount={totalCountData}
-        />
-      }
+      // topBar={
+      //   <InboxTopBar
+      //     statuses={statusData}
+      //     activeTab={activeStatusTab}
+      //     onTabClick={onStatusTabClick}
+      //     searchValue={topBarSearch}
+      //     onSearchChange={(e) => setTopBarSearch(e.target.value)}
+      //     searchPlaceholder="Search by application number..."
+      //     totalCount={totalCountData}
+      //   />
+      // }
       isLoading={isInboxLoading}
       tableData={tableData}
       tableProps={propsForInboxTable}

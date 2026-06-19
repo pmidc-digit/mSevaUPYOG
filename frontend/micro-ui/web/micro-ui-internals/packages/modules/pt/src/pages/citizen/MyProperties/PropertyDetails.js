@@ -271,7 +271,21 @@ console.log("workflowDetails",workflowDetails)
        // additionalDetails:{billingInfo:fetchBillData?.Bill},
         belowComponent: () => (
           <LinkLabel
-            onClick={() => history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${applicationNumber}`})}
+            onClick={() => {
+              const element = document.getElementById("payment-history");
+              if (element) {
+                const header = element.querySelector(".accordion-header");
+                const body = element.querySelector(".accordion-body");
+                if (header && !body) {
+                  header.click();
+                }
+                setTimeout(() => {
+                  element.scrollIntoView({ behavior: "smooth" });
+                }, 100);
+              } else {
+                history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${applicationNumber}`});
+              }
+            }}
             style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
           >
             {t("PT_VIEW_PAYMENT")}

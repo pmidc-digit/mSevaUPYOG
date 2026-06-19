@@ -166,6 +166,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const EditPropertyStepForm = Digit?.ComponentRegistryService?.getComponent("EditPropertyStepForm");
   const OwnerTransfershipStepForm = Digit?.ComponentRegistryService?.getComponent("OwnerTransfershipStepForm");
   const ApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ApplicationDetails");
+  const PropertyApplicationDetails = Digit?.ComponentRegistryService?.getComponent("PropertyApplicationDetails");
   const PropertyDetails = Digit?.ComponentRegistryService?.getComponent("PTPropertyDetails");
   const AssessmentDetails = Digit?.ComponentRegistryService?.getComponent("PTAssessmentDetails");
   const EditApplication = Digit?.ComponentRegistryService?.getComponent("NewPTStepperForm");
@@ -229,6 +230,10 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseEmployee {...props} t={t} parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/gis-values`} component={() => <GISIntegrationEmployee />} />
+          <PrivateRoute
+            path={`${path}/property/application-preview/:id`}
+            component={(props) => <PropertyApplicationDetails {...props} t={t} parentRoute={path} />}
+          />
     
            <PrivateRoute path={`${path}/new-application`} component={() => <CreatePropertyForm parentUrl={url} />} />
 

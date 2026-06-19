@@ -173,6 +173,12 @@ const InboxTopBar = ({
   showClearTab = true,
 }) => {
   const { t } = useTranslation();
+  const businessServiceLabelMap = React.useMemo(
+    () => ({
+      BPA_LOW: "Self certification",
+    }),
+    []
+  );
   const duplicateStatusCodes = React.useMemo(() => {
     const counts = (statuses || []).reduce((acc, status) => {
       const key = status?.applicationstatus;
@@ -209,8 +215,9 @@ const InboxTopBar = ({
 
         {(statuses || []).map((status) => {
           const businessService = status?.businessService || status?.businessservice;
+          const businessServiceLabel = status?.businessServiceLabel || businessServiceLabelMap?.[businessService] || businessService;
           const uniqueKey = status?.statusid || (businessService ? `${status?.applicationstatus}-${businessService}` : status?.applicationstatus);
-          const hasDuplicateName = duplicateStatusCodes.has(status?.applicationstatus);
+          const hasDuplicateName = status?.hasDuplicateName ?? duplicateStatusCodes.has(status?.applicationstatus);
           return (
           <button
             key={uniqueKey}
@@ -223,7 +230,7 @@ const InboxTopBar = ({
             onClick={() => onTabClick?.(uniqueKey, status)}
           >
             {t(status?.applicationstatus)}
-            {hasDuplicateName && businessService ? ` (${businessService} - ${getStatusCount(status)})` : ""}
+            {hasDuplicateName && businessServiceLabel ? ` (${businessServiceLabel})` : ""}
             <span
               className={`new-inbox-tab-count ${
                 activeTab === uniqueKey

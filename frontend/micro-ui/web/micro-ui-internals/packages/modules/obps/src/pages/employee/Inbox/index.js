@@ -142,6 +142,7 @@ const Inbox = ({ parentRoute }) => {
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
   const [tableData, setTableData] = useState([]);
   const [statusData, setStatusData] = useState([]);
+  const [topBarStatusData, setTopBarStatusData] = useState([]);
   const [totalCountData, setTotalCountData] = useState(0);
   const [assigneeCounts, setAssigneeCounts] = useState({
     ASSIGNED_TO_ME: 0,
@@ -150,16 +151,20 @@ const Inbox = ({ parentRoute }) => {
   const hasCapturedAssigneeCounts = useRef(false);
 
   const getResolvedStatusIds = useCallback((applicationStatuses = []) => {
-    return [...new Set(applicationStatuses.reduce((acc, item) => {
-      if (Array.isArray(item?.statusids) && item.statusids.length) {
-        acc.push(...item.statusids);
-      } else if (item?.statusid) {
-        acc.push(item.statusid);
-      } else if (item?.code) {
-        acc.push(item.code);
-      }
-      return acc;
-    }, []))];
+    return [
+      ...new Set(
+        applicationStatuses.reduce((acc, item) => {
+          if (Array.isArray(item?.statusids) && item.statusids.length) {
+            acc.push(...item.statusids);
+          } else if (item?.statusid) {
+            acc.push(item.statusid);
+          } else if (item?.code) {
+            acc.push(item.code);
+          }
+          return acc;
+        }, [])
+      ),
+    ];
   }, []);
 
   const effectiveTenantId =
@@ -257,6 +262,50 @@ const Inbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (inboxData) {
+      const duplicateStatusCounts = (inboxData?.statuses || []).reduce((acc, status) => {
+        const statusKey = status?.applicationstatus;
+        if (!statusKey) return acc;
+        acc[statusKey] = (acc[statusKey] || 0) + 1;
+        return acc;
+      }, {});
+
+      const topBarStatuses = (inboxData?.statuses || []).reduce((acc, status) => {
+        const statusKey = status?.applicationstatus;
+        const businessService = status?.businessService || status?.businessservice;
+        const isDuplicateStatus = (duplicateStatusCounts?.[statusKey] || 0) > 1;
+
+        if (!statusKey || !isDuplicateStatus) {
+          acc.push({
+            ...status,
+            hasDuplicateName: isDuplicateStatus,
+          });
+          return acc;
+        }
+
+        const bucketType = businessService === "BPA_LOW" ? "SELF_CERTIFICATION" : "OTHERS";
+        const existingStatus = acc.find((item) => item?.applicationstatus === statusKey && item?.bucketType === bucketType);
+        const count = status?.totalCount ?? status?.count ?? 0;
+
+        if (existingStatus) {
+          existingStatus.totalCount = (existingStatus.totalCount || 0) + count;
+          existingStatus.count = existingStatus.totalCount;
+          existingStatus.statusids = [...new Set([...(existingStatus.statusids || []), status?.statusid].filter(Boolean))];
+          return acc;
+        }
+
+        acc.push({
+          ...status,
+          statusid: `${statusKey}_${bucketType}`,
+          statusids: status?.statusid ? [status.statusid] : [],
+          totalCount: count,
+          count,
+          hasDuplicateName: true,
+          bucketType,
+          businessServiceLabel: bucketType === "SELF_CERTIFICATION" ? "Self Certification" : "Others",
+        });
+        return acc;
+      }, []);
+
       const groupedStatuses = (inboxData?.statuses || []).reduce((acc, status) => {
         const statusKey = status?.applicationstatus;
         if (!statusKey) {
@@ -287,6 +336,7 @@ const Inbox = ({ parentRoute }) => {
       }, []);
 
       setStatusData(groupedStatuses);
+      setTopBarStatusData(topBarStatuses);
       setTableData(inboxData?.table || []);
       setTotalCountData(inboxData?.totalCount || 0);
     }
@@ -361,6 +411,31 @@ const Inbox = ({ parentRoute }) => {
     [defaultAssignee, formState?.filterForm, getResolvedStatusIds, setFilterFormValue]
   );
 
+  const filteredTopBarStatuses = useMemo(() => {
+    const selectedStatusIds = formState?.filterForm?.applicationStatus || [];
+
+    if (!selectedStatusIds.length) {
+      return topBarStatusData;
+    }
+
+    const selectedStatusKeys = [
+      ...new Set(
+        statusData
+          .filter((status) => (status?.statusids || []).some((statusId) => selectedStatusIds.includes(statusId)))
+          .map((status) => status?.applicationstatus)
+          .filter(Boolean)
+      ),
+    ];
+
+    if (!selectedStatusKeys.length) {
+      return topBarStatusData;
+    }
+
+    return topBarStatusData.filter((status) => {
+      return selectedStatusKeys.includes(status?.applicationstatus);
+    });
+  }, [formState?.filterForm?.applicationStatus, topBarStatusData]);
+
   const searchDebounceRef = useRef(null);
   const hasInitializedFilterForm = useRef(false);
 
@@ -424,14 +499,28 @@ const Inbox = ({ parentRoute }) => {
       }
       if (label === "ALL") {
         setFilterFormValue("applicationStatus", [], { shouldDirty: true, shouldTouch: true });
-        handleFilterFormSubmit(onFilterFormSubmit)();
+        dispatch({
+          action: "mutateTableForm",
+          data: { ...formState.tableForm, offset: 0 },
+        });
+        dispatch({
+          action: "mutateFilterForm",
+          data: { ...formState.filterForm, applicationStatus: [] },
+        });
         return;
       }
       const resolvedCode = Array.isArray(status?.statusids) && status.statusids.length ? status.statusids : status?.statusid ? [status.statusid] : [];
       setFilterFormValue("applicationStatus", resolvedCode, { shouldDirty: true, shouldTouch: true });
-      handleFilterFormSubmit(onFilterFormSubmit)();
+      dispatch({
+        action: "mutateTableForm",
+        data: { ...formState.tableForm, offset: 0 },
+      });
+      dispatch({
+        action: "mutateFilterForm",
+        data: { ...formState.filterForm, applicationStatus: resolvedCode },
+      });
     },
-    [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
+    [formState.filterForm, formState.tableForm, setFilterFormValue]
   );
 
   useEffect(() => {
@@ -466,15 +555,11 @@ const Inbox = ({ parentRoute }) => {
               assigneeCounts={assigneeCounts}
               showAssigneeCards={isEmployee}
               handleFilter={handleFilterChange}
-              assigneeOptions={[
-                { code: "ASSIGNED_TO_ME", name: t("OBPS_INBOX_ASSIGNED_TO_ME") !== "OBPS_INBOX_ASSIGNED_TO_ME" ? t("OBPS_INBOX_ASSIGNED_TO_ME") : "Pending Files" },
-                { code: "ASSIGNED_TO_ALL", name: t("OBPS_INBOX_ASSIGNED_TO_ALL") !== "OBPS_INBOX_ASSIGNED_TO_ALL" ? t("OBPS_INBOX_ASSIGNED_TO_ALL") : "All Files" },
-              ]}
             />
           }
           topBar={
             <InboxTopBar
-              statuses={statusData}
+              statuses={filteredTopBarStatuses}
               activeTab={activeStatusTab}
               onTabClick={onStatusTabClick}
               searchValue={topBarSearch}

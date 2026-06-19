@@ -64,11 +64,7 @@ const useCLUInbox = ({ tenantId, filters, config = {} }) => {
         });
 
         return {
-          statuses: (data.statusMap || []).map((status) => ({
-            ...status,
-            totalCount: status?.totalCount ?? status?.count ?? 0,
-            businessService: status?.businessService || status?.businessservice,
-          })),
+          statuses: data?.statusMap || [],
           table: tableData || [],
           totalCount: data.totalCount || 0,
           nearingSlaCount: data.nearingSlaCount || 0,

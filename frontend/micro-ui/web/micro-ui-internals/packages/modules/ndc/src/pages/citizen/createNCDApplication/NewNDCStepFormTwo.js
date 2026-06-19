@@ -31,7 +31,6 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
   }, [applicationDetails]);
 
   function goNext(finaldata) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, finaldata);
     const missingFields = validation(finaldata);
     if (missingFields.length > 0) {
       setError(`${t("NDC_MESSAGE_" + missingFields[0].replace(".", "_").toUpperCase())}`);
@@ -72,40 +71,10 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
       Documents: [], // We'll populate below
     };
 
-    // const existingDocuments = baseApplication?.Documents || [];
-
-    console.log("data?.documents", data?.documents);
-
-    // (data?.documents?.documents || [])?.forEach((doc) => {
-    //   const nextDocumentAttachment = doc?.fileStoreId;
-    //   const matchingExistingDocument = existingDocuments.find(
-    //     (existingDoc) =>
-    //       existingDoc?.documentType === doc?.documentType &&
-    //       (existingDoc?.documentAttachment === nextDocumentAttachment || existingDoc?.uuid === nextDocumentAttachment)
-    //   );
-
-    //   console.log("matchingExistingDocument", matchingExistingDocument);
-
-    //   const updatedDocument = {
-    //     uuid: doc?.documentUid,
-    //     documentType: doc?.documentType,
-    //     documentAttachment: nextDocumentAttachment,
-    //   };
-
-    //   if (matchingExistingDocument) {
-    //     updatedDocument.applicationId =
-    //       matchingExistingDocument?.applicationId || baseApplication?.applicationId || matchingExistingDocument?.applicationNumber;
-    //   }
-
-    //   updatedApplication.Documents?.push(updatedDocument);
-    // });
-
     // Final payload matches update API structure
     const payload = {
       Applications: [updatedApplication],
     };
-    console.log("updatedApplication", updatedApplication);
-    return;
 
     const response = await Digit.NDCService.NDCUpdate({ tenantId, details: payload });
 
@@ -134,8 +103,6 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
       // Step 2: Extract uploaded documentTypes
       const uploadedDocs = documentsData.map((doc) => doc.documentType);
 
-      console.log("DocumentsObject", requiredDocs);
-
       // Step 3: Identify missing required document codes
       const missingDocs = requiredDocs.filter((reqDoc) => !uploadedDocs.includes(reqDoc));
 
@@ -148,13 +115,10 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    // console.log("onFormValueChange data in document detilas in step 4  ", data,"\n Bool: ",!_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateNDCForm(config.key, data));
     }
   };
-
-  // console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>

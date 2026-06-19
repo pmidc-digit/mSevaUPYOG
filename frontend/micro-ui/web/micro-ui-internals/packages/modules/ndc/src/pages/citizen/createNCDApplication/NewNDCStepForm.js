@@ -70,7 +70,6 @@ export const NewNDCStepForm = () => {
   const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ applicationNo: id }, tenantId);
 
   useEffect(() => {
-    console.log("applicationDetails", applicationDetails);
     if (applicationDetails?.Applications.length) {
       dispatch(updateNDCForm("responseData", applicationDetails?.Applications));
     }
@@ -94,8 +93,8 @@ export const NewNDCStepForm = () => {
   }, [history, dispatch]);
 
   return (
-    <div className="employeeCard" >
-      <CardHeader className="ndc-step-form"  divider={true}>
+    <div className="employeeCard">
+      <CardHeader className="ndc-step-form" divider={true}>
         {t("ndc_header_application")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />

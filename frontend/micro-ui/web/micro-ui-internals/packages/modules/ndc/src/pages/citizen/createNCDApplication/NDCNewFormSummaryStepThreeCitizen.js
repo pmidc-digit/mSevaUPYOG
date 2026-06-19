@@ -16,7 +16,6 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
 
   const goNext = async (action) => {
     const actionStatus = action?.action;
-    console.log("actionStatus", actionStatus);
     try {
       const res = await onSubmit(formData, actionStatus); // wait for the API response
       // Check if the API call was successful
@@ -67,12 +66,6 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
             documentAttachment: doc?.documentAttachment,
           }));
 
-    console.log("docs", docs);
-    console.log("baseApplication docs", baseApplication?.Documents);
-    console.log("og docs", inputData?.DocummentDetails?.documents?.documents);
-
-    // return;
-
     // Clone and modify workflow action
     const updatedApplication = {
       ...baseApplication,
@@ -89,8 +82,6 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
     const payload = {
       Applications: [updatedApplication],
     };
-
-    console.log("updatedApplication", updatedApplication);
 
     return payload;
   }

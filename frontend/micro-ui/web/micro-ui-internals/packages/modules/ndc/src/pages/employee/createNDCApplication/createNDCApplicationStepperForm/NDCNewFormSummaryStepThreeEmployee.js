@@ -12,12 +12,8 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
   const checkFormData = useSelector((state) => state.ndc.NDCForm.formData || {});
 
   const formData = useSelector((state) => state.ndc.NDCForm.formData || {});
-  // console.log("state.pt.PTNewApplicationForm Form data in Summary Step: ", useSelector((state) => state.pt.PTNewApplicationForm.formData));
   // Function to handle the "Next" button click
-  console.log("formData", formData);
   const goNext = async (action) => {
-    console.log("yeah", action);
-    console.log("formData", formData);
     const actionStatus = action?.action;
     try {
       const res = await onSubmit(formData, actionStatus); // wait for the API response
@@ -34,32 +30,42 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
   };
 
   function mapToNDCPayload(inputData, actionStatus) {
-    const applicant = Digit.UserService.getUser()?.info || {};
-    const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
-    
-    // const owners = (inputData?.apiData?.Applications?.[0]?.owners || [])?.map(({ status, ...rest }) => rest);
     const owners = (inputData?.apiData?.Applications?.[0]?.owners || baseApplication?.owners)?.map((item) => {
       const obj = JSON.parse(JSON.stringify(item));
       delete obj.status;
       return obj;
     });
-    // const owners = [
-    //   {
-    //     name: `${formData?.NDCDetails?.PropertyDetails?.firstName} ${formData?.NDCDetails?.PropertyDetails?.lastName}`.trim(),
-    //     mobileNumber: formData?.NDCDetails?.PropertyDetails?.mobileNumber,
-    //     gender: formData?.NDCDetails?.PropertyDetails?.gender,
-    //     emailId: formData?.NDCDetails?.PropertyDetails?.email,
-    //     type: "CITIZEN",
-    //   },
-    // ];
 
-    // return
-    
+    const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
 
-    // Pick the source of truth for the application
+    const existingDocuments = baseApplication?.Documents || [];
+    const uploadedDocuments = inputData?.DocummentDetails?.documents?.documents || [];
 
-    // Clone and modify workflow action
-    // Clone and modify workflow action
+    const docs =
+      existingDocuments.length > 0
+        ? uploadedDocuments.map((doc) => {
+            const nextDocumentAttachment = doc?.documentAttachment;
+            const matchingExistingDocument = existingDocuments.find((existingDoc) => existingDoc?.documentType === doc?.documentType);
+
+            if (matchingExistingDocument) {
+              return {
+                ...matchingExistingDocument,
+                documentAttachment: nextDocumentAttachment,
+              };
+            }
+
+            return {
+              uuid: doc?.uuid,
+              documentType: doc?.documentType,
+              documentAttachment: nextDocumentAttachment,
+            };
+          })
+        : uploadedDocuments.map((doc) => ({
+            uuid: doc?.uuid,
+            documentType: doc?.documentType,
+            documentAttachment: doc?.documentAttachment,
+          }));
+
     const updatedApplication = {
       ...baseApplication,
       workflow: {
@@ -82,16 +88,16 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
         return detail;
       }),
       reason: formData?.NDCDetails?.NDCReason?.code, // Update selected reason code from correct path
-      Documents: [], // We'll populate below
+      Documents: docs,
     };
 
-    (inputData?.DocummentDetails?.documents?.documents || []).forEach((doc) => {
-      updatedApplication.Documents.push({
-        uuid: doc?.documentUid,
-        documentType: doc?.documentType,
-        documentAttachment: doc?.fileStoreId,
-      });
-    });
+    // (inputData?.DocummentDetails?.documents?.documents || []).forEach((doc) => {
+    //   updatedApplication.Documents.push({
+    //     uuid: doc?.documentUid,
+    //     documentType: doc?.documentType,
+    //     documentAttachment: doc?.fileStoreId,
+    //   });
+    // });
 
     // Final payload matches update API structure
     const payload = {
@@ -102,7 +108,6 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
   }
 
   const onSubmit = async (data, actionStatus) => {
-    console.log("coming here btw");
     const finalPayload = mapToNDCPayload(data, actionStatus);
 
     const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
@@ -117,7 +122,6 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
 
   // Function to handle the "Back" button click
   const onGoBack = (data) => {
-    console.log("here", data);
     onBackClick(config.key, data);
   };
 

@@ -42,41 +42,25 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    const isRealId = id && id.startsWith("NDC-");
+    // const isRealId = id && id.startsWith("NDC-");
 
-    console.log("here", isRealId);
-
-    if (isRealId) {
-      // onGoNext();
-      console.log("here bab");
-      updateApplication(finaldata);
-    } else {
-      console.log("go next");
-      onGoNext();
-    }
-    // onGoNext();
+    // if (isRealId) {
+    //   // onGoNext();
+    //   updateApplication(finaldata);
+    // } else {
+    //   onGoNext();
+    // }
+    onGoNext();
     //}
   }
 
   const updateApplication = async (data) => {
-    const applicant = Digit.UserService.getUser()?.info || {};
-    const auditDetails = data?.cpt?.details?.auditDetails;
-    const applicantId = applicant?.uuid;
+    // const applicant = Digit.UserService.getUser()?.info || {};
+    // const auditDetails = data?.cpt?.details?.auditDetails;
+    // const applicantId = applicant?.uuid;
 
     // Pick the source of truth for the application
     const baseApplication = checkFormData?.responseData?.[0] || {};
-
-    // Build owners array
-    const owners = [
-      {
-        // name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
-        name: user?.info?.name,
-        mobileNumber: user?.info?.mobileNumber,
-        gender: checkFormData?.NDCDetails?.PropertyDetails?.gender,
-        emailId: user?.info?.emailId,
-        type: user?.info?.type,
-      },
-    ];
 
     // Clone and modify workflow action
     const updatedApplication = {
@@ -84,27 +68,44 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
       workflow: {
         action: "DRAFT",
       },
-      // owners: owners,
       NdcDetails: baseApplication?.NdcDetails,
       Documents: [], // We'll populate below
     };
 
-    (data?.documents?.documents || [])?.forEach((doc) => {
-      updatedApplication.Documents?.push({
-        uuid: doc?.documentUid,
-        documentType: doc?.documentType,
-        documentAttachment: doc?.fileStoreId,
-      });
-    });
+    // const existingDocuments = baseApplication?.Documents || [];
+
+    console.log("data?.documents", data?.documents);
+
+    // (data?.documents?.documents || [])?.forEach((doc) => {
+    //   const nextDocumentAttachment = doc?.fileStoreId;
+    //   const matchingExistingDocument = existingDocuments.find(
+    //     (existingDoc) =>
+    //       existingDoc?.documentType === doc?.documentType &&
+    //       (existingDoc?.documentAttachment === nextDocumentAttachment || existingDoc?.uuid === nextDocumentAttachment)
+    //   );
+
+    //   console.log("matchingExistingDocument", matchingExistingDocument);
+
+    //   const updatedDocument = {
+    //     uuid: doc?.documentUid,
+    //     documentType: doc?.documentType,
+    //     documentAttachment: nextDocumentAttachment,
+    //   };
+
+    //   if (matchingExistingDocument) {
+    //     updatedDocument.applicationId =
+    //       matchingExistingDocument?.applicationId || baseApplication?.applicationId || matchingExistingDocument?.applicationNumber;
+    //   }
+
+    //   updatedApplication.Documents?.push(updatedDocument);
+    // });
 
     // Final payload matches update API structure
     const payload = {
       Applications: [updatedApplication],
     };
-
-    console.log("payload", payload);
-
-    // return;
+    console.log("updatedApplication", updatedApplication);
+    return;
 
     const response = await Digit.NDCService.NDCUpdate({ tenantId, details: payload });
 

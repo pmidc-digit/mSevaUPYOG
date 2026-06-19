@@ -28,7 +28,7 @@ import { useQueryClient } from "react-query"
 import { useTranslation } from "react-i18next"
 import BPAApplicationTimeline from "./BPAApplicationTimeline"
 import ActionModal from "./Modal"
-import SubOccupancyTable from "../../../../../templates/ApplicationDetails/components/SubOccupancyTable"
+import SubOccupancyTable , {getFloorData, getSubOccupancyValues , tableHeader} from "../../../../../templates/ApplicationDetails/components/SubOccupancyTable"
 import InspectionReport from "../../../../../templates/ApplicationDetails/components/InspectionReport"
 import {
   getBusinessServices,
@@ -55,6 +55,7 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew"
 import { decryptId } from "../../../utils/index";
 import PdfPreviewModal from "../../../components/PdfPreviewModal"
+import getBPAAcknowledgement from "../../../../getBPAAcknowledgement"
 
 
 const BpaApplicationDetail = () => {
@@ -814,6 +815,15 @@ useEffect(() => {
           designation,
           approverComment: comments,
         };
+        if (requestData?.landInfo?.owners) {
+          requestData.landInfo = {
+            ...requestData.landInfo,
+            owners: requestData.landInfo.owners.map((owner) => ({
+              ...owner,
+              permanentPinCode: owner?.permanentPinCode || " ",
+            })),
+          };
+        }
         let count = 0;
         for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
           if (
@@ -901,6 +911,15 @@ useEffect(() => {
         designation,
         approverComment: comments,
       };
+      if (requestData?.landInfo?.owners) {
+          requestData.landInfo = {
+            ...requestData.landInfo,
+            owners: requestData.landInfo.owners.map((owner) => ({
+              ...owner,
+              permanentPinCode: owner?.permanentPinCode || " ",
+            })),
+          };
+        }
       let count = 0;
       for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
         if (
@@ -993,6 +1012,15 @@ useEffect(() => {
            combinedOwnersName,
            approverComment: comments,
          };
+         if (requestData?.landInfo?.owners) {
+          requestData.landInfo = {
+            ...requestData.landInfo,
+            owners: requestData.landInfo.owners.map((owner) => ({
+              ...owner,
+              permanentPinCode: owner?.permanentPinCode || " ",
+            })),
+          };
+        }
          let count = 0;
          for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
            if (
@@ -1714,7 +1742,45 @@ useEffect(() => {
     return <Loader />
   }
 
+  const handleDownloadPdf = async () => {
+      try{
+        setApiLoading(true)
+        const tenantInfo = cities.data.find((city) => city.code === data.applicationData.tenantId)
+        const ulbName = tenantInfo?.ulbName || tenantInfo?.name;
+        const acknowledgementData = await getBPAAcknowledgement(data?.applicationData, tenantInfo, t, ulbType, ulbName, data?.edcrDetails, data?.collectionBillDetails);
+        const colHeaders = tableHeader.map(h => t(h.name)); 
+        const preComputedBlocks = (data?.edcrDetails?.planDetail?.blocks || []).map((block, i) => ({
+          subOccupancy: getSubOccupancyValues(i, data?.applicationData, t),
+          floors: getFloorData(block, t)  // returns [{Floor, Level, Occupancy, BuildupArea, Deduction, FloorArea}] + totals row
+        }));
+        acknowledgementData.details = acknowledgementData?.details.map(d =>
+          d?.isSubOccupancyTable
+            ? { ...d, additionalDetails: { ...d.additionalDetails, preComputedBlocks, colHeaders } }
+            : d
+        );
+        Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+      }catch(error){
+        setShowToast({
+          key: "error",
+          action: error?.response?.data?.Errors?.[0]?.message
+            ? error?.response?.data?.Errors?.[0]?.message
+            : error?.message || "Failed to download application form. Please try again.",
+        });
+        setTimeout(closeToast, 5000);
+      }finally{
+        setApiLoading(false)
+      }
+    };
+
   const dowloadOptions = []
+
+  if (data?.applicationData && cities?.data?.length > 0) {
+    dowloadOptions.push({
+      order: 0,
+      label: t("Application Form"),
+      onClick: () => handleDownloadPdf(),
+    });
+  }
 
   if (data?.collectionBillDetails?.length > 0) {
     const bpaPayments = cloneDeep(data?.collectionBillDetails)

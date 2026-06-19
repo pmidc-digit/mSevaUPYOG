@@ -285,8 +285,7 @@ const Inbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
-      const resolvedStatuses =
-        filterData.applicationStatus?.map((item) => item.applicationstatus || item.statusCode || item.code) || [];
+      const resolvedStatuses = filterData.applicationStatus?.map((item) => item.applicationstatus || item.statusCode || item.code) || [];
 
       if (filterData.applicationStatus) {
         setFilterFormValue("applicationStatus", resolvedStatuses);
@@ -408,17 +407,17 @@ const Inbox = ({ parentRoute }) => {
               handleFilter={handleFilterChange}
             />
           }
-          topBar={
-            <InboxTopBar
-              statuses={statusData}
-              activeTab={activeStatusTab}
-              onTabClick={onStatusTabClick}
-              searchValue={topBarSearch}
-              onSearchChange={(e) => setTopBarSearch(e.target.value)}
-              searchPlaceholder="Search by application number..."
-              totalCount={totalCountData}
-            />
-          }
+          // topBar={
+          //   <InboxTopBar
+          //     statuses={statusData}
+          //     activeTab={activeStatusTab}
+          //     onTabClick={onStatusTabClick}
+          //     searchValue={topBarSearch}
+          //     onSearchChange={(e) => setTopBarSearch(e.target.value)}
+          //     searchPlaceholder="Search by application number..."
+          //     totalCount={totalCountData}
+          //   />
+          // }
           isLoading={isInboxLoading}
           tableData={tableData}
           tableProps={propsForInboxTable}

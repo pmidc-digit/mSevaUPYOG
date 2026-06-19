@@ -107,13 +107,7 @@ const CLUInbox = ({ parentRoute }) => {
       tableForm: tableOrderFormDefaultValues,
       selectedTenantId: selectedTenantIdDefaultValues,
     };
-  }, [
-    inboxObjectInSessionStorage,
-    filterFormDefaultValues,
-    searchFormDefaultValues,
-    tableOrderFormDefaultValues,
-    selectedTenantIdDefaultValues,
-  ]);
+  }, [inboxObjectInSessionStorage, filterFormDefaultValues, searchFormDefaultValues, tableOrderFormDefaultValues, selectedTenantIdDefaultValues]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
   const [tableData, setTableData] = useState([]);
@@ -130,10 +124,10 @@ const CLUInbox = ({ parentRoute }) => {
     return [
       ...new Set(
         applicationStatuses.reduce((acc, item) => {
-          if (item?.applicationstatus) {
-            acc.push(item.applicationstatus);
-          } else if (item?.statusCode) {
-            acc.push(item.statusCode);
+          if (Array.isArray(item?.statusids) && item.statusids.length) {
+            acc.push(...item.statusids);
+          } else if (item?.statusid) {
+            acc.push(item.statusid);
           } else if (item?.code) {
             acc.push(item.code);
           }
@@ -143,9 +137,12 @@ const CLUInbox = ({ parentRoute }) => {
     ];
   }, []);
 
-  const setSelectedTenantIdValue = useCallback((key, value) => {
-    dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
-  }, [formState.selectedTenantId]);
+  const setSelectedTenantIdValue = useCallback(
+    (key, value) => {
+      dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
+    },
+    [formState.selectedTenantId]
+  );
 
   const memoizedFilters = useMemo(() => {
     const normalizedFilterForm = {
@@ -271,9 +268,10 @@ const CLUInbox = ({ parentRoute }) => {
 
         acc.push({
           ...status,
-          selectionValue: key,
-          statusid: undefined,
-          statusids: [],
+          selectionValue: undefined,
+          selectionValues: status?.statusid ? [status.statusid] : [],
+          statusid: `${key}_GROUP`,
+          statusids: status?.statusid ? [status.statusid] : [],
           totalCount: count,
           count,
           businessService: null,
@@ -285,7 +283,8 @@ const CLUInbox = ({ parentRoute }) => {
       setStatusData(
         groupedStatuses.map((status) => ({
           ...status,
-          selectionValue: status?.applicationstatus || status?.selectionValue,
+          selectionValue: status?.selectionValue,
+          selectionValues: status?.statusids || status?.selectionValues || [],
         }))
       );
       setTopBarStatusData(
@@ -379,7 +378,7 @@ const CLUInbox = ({ parentRoute }) => {
     const selectedStatusKeys = [
       ...new Set(
         statusData
-          .filter((status) => selectedStatusCodes.includes(status?.applicationstatus))
+          .filter((status) => (status?.statusids || []).some((statusId) => selectedStatusCodes.includes(statusId)))
           .map((status) => status?.applicationstatus)
           .filter(Boolean)
       ),
@@ -453,7 +452,7 @@ const CLUInbox = ({ parentRoute }) => {
         handleFilterFormSubmit(onFilterFormSubmit)();
         return;
       }
-      const resolvedCode = status?.applicationstatus ? [status.applicationstatus] : [];
+      const resolvedCode = Array.isArray(status?.statusids) && status.statusids.length ? status.statusids : status?.statusid ? [status.statusid] : [];
       setFilterFormValue("applicationStatus", resolvedCode, { shouldDirty: true, shouldTouch: true });
       handleFilterFormSubmit(onFilterFormSubmit)();
     },
@@ -491,17 +490,17 @@ const CLUInbox = ({ parentRoute }) => {
               handleFilter={handleFilterChange}
             />
           }
-          topBar={
-            <InboxTopBar
-              statuses={filteredTopBarStatuses}
-              activeTab={activeStatusTab}
-              onTabClick={onStatusTabClick}
-              searchValue={topBarSearch}
-              onSearchChange={(e) => setTopBarSearch(e.target.value)}
-              searchPlaceholder="Search by application number..."
-              totalCount={totalCountData}
-            />
-          }
+          // topBar={
+          //   // <InboxTopBar
+          //   //   statuses={filteredTopBarStatuses}
+          //   //   activeTab={activeStatusTab}
+          //   //   onTabClick={onStatusTabClick}
+          //   //   searchValue={topBarSearch}
+          //   //   onSearchChange={(e) => setTopBarSearch(e.target.value)}
+          //   //   searchPlaceholder="Search by application number..."
+          //   //   totalCount={totalCountData}
+          //   // />
+          // }
           isLoading={isInboxLoading}
           tableData={tableData}
           tableProps={propsForInboxTable}

@@ -305,7 +305,7 @@ const handleClick=()=>{
                   element.scrollIntoView({ behavior: "smooth" });
                 }, 100);
               } else {
-                history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${property?.propertyId}`});
+                history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${property?.propertyId}`, state: { tenantId: property?.tenantId } });
               }
             }}
             style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}

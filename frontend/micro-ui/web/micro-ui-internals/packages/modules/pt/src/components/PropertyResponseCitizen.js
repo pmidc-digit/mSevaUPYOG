@@ -2,6 +2,7 @@ import { Banner, Card, ActionBar, SubmitBar, Toast } from "@mseva/digit-ui-react
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
+import getPTAcknowledgementData from "../getPTAcknowledgementData";
 import { getAcknowledgementData } from "../utils";
 import { Loader } from "./Loader";
 
@@ -13,7 +14,7 @@ const PropertyResponseCitizen = (props) => {
   const isCitizen = window.location.href.includes("citizen");
   const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
   const [loader, setLoader] = useState(false);
-  const [getChallanData, setChallanData] = useState();
+  const [propertyData, setPropertyData] = useState();
   const [getLable, setLable] = useState(false);
   const [error, setError] = useState(null);
   const [showToast, setShowToast] = useState(null);
@@ -34,25 +35,50 @@ const PropertyResponseCitizen = (props) => {
   const pathname = history?.location?.pathname || "";
   const applicationNumber = pathname?.split("/").pop(); // ✅ Extracts the last segment
 
-  const fetchChallans = async (filters) => {
+  const fetchProperty = async () => {
     setLoader(true);
     try {
-      const responseData = await Digit.GCService.search({ tenantId, filters });
-      console.log("search ", responseData);
-      setChallanData(responseData?.GarbageConnection?.[0]);
+      let responseData = await Digit.PTService.search({ tenantId, filters: { propertyIds: applicationNumber, status: "INACTIVE" } });
+      if (!responseData?.Properties?.length) {
+        responseData = await Digit.PTService.search({ tenantId, filters: { propertyIds: applicationNumber } });
+      }
+      if (!responseData?.Properties?.length) {
+        responseData = await Digit.PTService.search({ tenantId, filters: { acknowledgementIds: applicationNumber, status: "INACTIVE" } });
+      }
+      if (!responseData?.Properties?.length) {
+        responseData = await Digit.PTService.search({ tenantId, filters: { acknowledgementIds: applicationNumber } });
+      }
+      console.log("property search response", responseData);
+      const property = responseData?.Properties?.[0];
+      if (property) {
+        if (property.creationReason === "MUTATION") {
+          const propertyDetails = await Digit.PTService.search({
+            tenantId,
+            filters: { propertyIds: property?.propertyId, status: "INACTIVE" }
+          });
+          property.transferorDetails = propertyDetails?.Properties?.[0] || [];
+          property.isTransferor = true;
+          property.transferorOwnershipCategory = propertyDetails?.Properties?.[0]?.ownershipCategory;
+        }
+        setPropertyData(property);
+      }
       setLoader(false);
     } catch (error) {
-      console.log("error", error);
+      console.error("error fetching property details", error);
       setLoader(false);
     }
   };
+
   const getAcknowledgement = async () => {
     try {
       setLoader(true);
-      const applications = getChallanData;
-      console.log("applications for garbage", applications);
+      const applications = propertyData;
+      console.log("applications for property acknowledgement", applications);
+      if (!applications) {
+        throw new Error("No property details found to generate acknowledgement.");
+      }
       const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
-      const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+      const acknowldgementDataAPI = await getPTAcknowledgementData({ ...applications }, tenantInfo, t);
       setTimeout(() => {
         Digit.Utils.pdf.generate(acknowldgementDataAPI);
         setLoader(false);
@@ -69,9 +95,7 @@ const PropertyResponseCitizen = (props) => {
 
   useEffect(() => {
     if (applicationNumber) {
-      const filters = {};
-      filters.applicationNumber = applicationNumber;
-      fetchChallans(filters);
+      fetchProperty();
     }
   }, []);
 
@@ -111,7 +135,7 @@ const PropertyResponseCitizen = (props) => {
             <path d="M0 0h24v24H0z" fill="none" />
             <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
           </svg>
-          {t("CHB_DOWNLOAD_ACK_FORM")}
+          {t("PT_DOWNLOAD_ACK_FORM")}
         </div>
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: " 20px" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />

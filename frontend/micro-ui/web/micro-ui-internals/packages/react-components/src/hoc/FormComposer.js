@@ -300,7 +300,7 @@ export const FormComposer = (props) => {
                     </div>
                   </LabelFieldPair>
                   {field?.populators?.name && errors && errors[field?.populators?.name] && Object.keys(errors[field?.populators?.name]).length ? (
-                    <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+                    <CardLabelError style={window.location.href.includes("/citizen") ? { width: "100%", fontSize: "12px", margin: "4px 0px 8px 0px" } : { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
                       {t(field?.populators?.error)}
                     </CardLabelError>
                   ) : null}

@@ -1,7 +1,7 @@
 import { Card, CardText, Header, LinkLabel, Loader, Row, StatusTable } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 
 const convertEpochToDate = dateEpoch => {
   if (dateEpoch) {
@@ -232,18 +232,29 @@ const getBillPeriod = (billDetails = []) => {
 
 const PaymentDetails = () => {
   const { t } = useTranslation();
+  const location = useLocation();
+  const stateTenantId = location.state?.tenantId;
   const tenantId = Digit.ULBService.getCurrentTenantId();
   let { id: applicationNumber } = useParams();
-  const index = applicationNumber.indexOf("?")
-  if(index!=-1) applicationNumber = applicationNumber.slice(0,index)
+  const index = applicationNumber.indexOf("?");
+  if (index != -1) applicationNumber = applicationNumber.slice(0, index);
   const [paymentObject, setPaymentObject] = useState([]);
   const isMobile = window.Digit.Utils.browser.isMobile();
 
+  // If tenantId is not present in location state (e.g. direct page refresh), fetch property to get correct tenantId
+  const { data: propertyData, isLoading: propertyLoading } = Digit.Hooks.pt.usePropertySearch(
+    { tenantId, filters: { propertyIds: applicationNumber } },
+    { enabled: !stateTenantId }
+  );
+
+  const actualTenantId = stateTenantId || propertyData?.Properties?.[0]?.tenantId || tenantId;
+
   const { isLoading, isError, error, data } = Digit.Hooks.receipts.useReceiptsSearch(
     { businessServices: "PT", consumerCodes: applicationNumber },
-    tenantId,
+    actualTenantId,
     [],
-    false
+    false,
+    { enabled: !!actualTenantId }
   );
   useEffect(() => {
     if (data) {
@@ -258,19 +269,19 @@ const PaymentDetails = () => {
             amountPaid: payment.totalAmountPaid === 0 ? "0" : payment.totalAmountPaid,
             tenantId: payment.tenantId,
             paymentDetails: payment.paymentDetails,
-            mobileNumber:payment.mobileNumber,
-            paidBy:payment.paidBy,
-            payerName:payment.payerName,
-            paymentMode:payment.paymentMode,
+            mobileNumber: payment.mobileNumber,
+            paidBy: payment.paidBy,
+            payerName: payment.payerName,
+            paymentMode: payment.paymentMode,
             payerEmail: payment.payerEmail,
-            transactionNumber:payment.transactionNumber,
-            fileStoreId:payment.fileStoreId
+            transactionNumber: payment.transactionNumber,
+            fileStoreId: payment.fileStoreId
           };
         })
       );
     }
   }, [data]);
-  if (isLoading) {
+  if (isLoading || (!stateTenantId && propertyLoading)) {
     return <Loader />;
   }
 

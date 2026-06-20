@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import _ from "lodash";
-import { FormComposer } from "@mseva/digit-ui-react-components";
+import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 // import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
 import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
 
@@ -22,6 +22,23 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
 
     // prevent moving if no data
     if (!data || _.isEmpty(data)) {
+      return;
+    }
+
+    // Validation: Transferor and Transferee should not have the same mobile number
+    const transferorOwners = defaultStepData?.originalData?.owners || [];
+    const transferorMobiles = transferorOwners
+      .filter((o) => o?.status === "ACTIVE" && o?.mobileNumber)
+      .map((o) => o.mobileNumber.trim());
+
+    const transfereeOwners = data?.owners || [];
+    const hasSameMobile = transfereeOwners.some((transferee) => {
+      const transMobile = transferee?.mobileNumber?.trim();
+      return transMobile && transferorMobiles.includes(transMobile);
+    });
+
+    if (hasSameMobile) {
+      setShowToast({ key: "error", label: "PT_MUTATION_TRANSFEROR_TRANSFEREE_SAME_MOBILE_ERROR" });
       return;
     }
 
@@ -155,6 +172,7 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
   const latestStepData = useRef(defaultStepData);
   console.log("reduxStepData in step one: +", localStepData);
   const dispatch = useDispatch();
+  const [showToast, setShowToast] = useState(null);
 
   useEffect(() => {
     if (!_.isEqual(defaultStepData, localStepData)) {
@@ -165,6 +183,10 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
   if (!defaultStepData?.originalData) {
     return null;
   }
+
+  const closeToast = () => {
+    setShowToast(null);
+  };
 
   return (
     <React.Fragment>
@@ -180,6 +202,14 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
       />
+      {showToast && (
+        <Toast
+          error={showToast.key === "error"}
+          label={t(showToast.label)}
+          onClose={closeToast}
+          isDleteBtn={true}
+        />
+      )}
     </React.Fragment>
   );
 };

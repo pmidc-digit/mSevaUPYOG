@@ -780,12 +780,20 @@ button.card-link.submit-bar {
   /* Error label - positioned below the input field (aligned with field, not label) */
   /* Target error labels both inside and after label-field-pair */
   .employee .employeeCard .label-field-pair .card-label-error,
-  .employee .employeeCard .label-field-pair + .card-label-error,
-  .citizen .employeeCard .label-field-pair .card-label-error,
-  .citizen .employeeCard .label-field-pair + .card-label-error {
+  .employee .employeeCard .label-field-pair + .card-label-error {
     width: 50% !important;
     margin-left: 50% !important;
     margin-top: -10px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .citizen .employeeCard .label-field-pair .card-label-error,
+  .citizen .employeeCard .label-field-pair + .card-label-error,
+  .citizen .card .label-field-pair .card-label-error,
+  .citizen .card .label-field-pair + .card-label-error {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-top: 4px !important;
     margin-bottom: 8px !important;
   }
 
@@ -967,3 +975,14 @@ button.card-link.submit-bar {
   }
 
 }
+
+/* Global override for card-label-error in citizen portal/stacked layouts to prevent hiding/overlapping and truncation */
+.citizen .card-label-error,
+.citizen-form-wrapper .card-label-error,
+.card-label-error-citizen {
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-top: 4px !important;
+  margin-bottom: 8px !important;
+}
+

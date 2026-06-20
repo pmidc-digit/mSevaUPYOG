@@ -627,7 +627,7 @@ const propertyDocuments = propertyDocumentValues.length
     if (moduleCode === "TL") {
       const appNo = applicationData?.applicationNumber;
       if (!appNo) return;
-      Digit.PaymentService.recieptSearch(tenantId, "TL", { consumerCodes: appNo })
+      Digit.PaymentService.recieptSearch(applicationData?.tenantId || tenantId, "TL", { consumerCodes: appNo })
         .then((response) => {
           console.log("TL Payment History response:", response);
           if (response?.Payments?.length > 0) {
@@ -652,19 +652,21 @@ const propertyDocuments = propertyDocumentValues.length
       };
       const auth = true;
 
+      const actualQueryTenantId = applicationData?.tenantId || tenantId;
+
       if (moduleCode === "BPAREG") {
-        Digit.OBPSService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
+        Digit.OBPSService.paymentsearch({ tenantId: actualQueryTenantId, filters: filters, auth: auth }).then((response) => {
           setPayments(response?.Payments);
         });
       } else if (moduleCode === "PT") {
-        Digit.PTService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
+        Digit.PTService.paymentsearch({ tenantId: actualQueryTenantId, filters: filters, auth: auth }).then((response) => {
           setPayments(response?.Payments);
         });
       }
     } catch (error) {
       console.error("❌ Payment search error for PT/BPREG:", error);
     }
-  }, [moduleCode, currentPropertyId, propertyId, tenantId, applicationData?.applicationNumber]);
+  }, [moduleCode, propertyId, tenantId, applicationData?.applicationNumber, applicationData?.tenantId]);
   return (
     <Card style={{ position: "relative" }}>
       {/* For UM-4418 changes */}

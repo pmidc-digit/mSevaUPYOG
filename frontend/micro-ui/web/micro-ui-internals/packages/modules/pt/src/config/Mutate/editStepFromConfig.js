@@ -323,7 +323,6 @@ export const editStepFormConfig = [
           },
           {
             type: "component",
-            key: "address",
             // "isMandatory": true,
             component: "VasikaDetails",
             key: "vasikaDetails",

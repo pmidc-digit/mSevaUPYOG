@@ -49,7 +49,7 @@ const MyProperty = ({ application }) => {
       <Link to={`/digit-ui/citizen/pt/property/my-property/${application.propertyId}`}>
         <SubmitBar label={t("PT_VIEW_DETAILS")} />
       </Link>
-      {billData?.Bill?.length > 0  ? (
+      {billData?.Bill?.[0]?.totalAmount > 0  ? (
       <Link to={`/digit-ui/citizen/payment/my-bills/PT/${application?.propertyId}`}>
     
         <div style={{marginTop:"10px"}}><SubmitBar label={t("COMMON_MAKE_PAYMENT")}/></div>

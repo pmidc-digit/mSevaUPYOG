@@ -50,10 +50,21 @@ const PropertyDetails = () => {
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 780);
 
   let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, 'pb', applicationNumber);
-  const { data: fetchBillData, isLoading: fetchBillLoading, revalidate } = Digit.Hooks.useFetchBillsForBuissnessService({
-    businessService: "PT",
-    consumerCode: applicationNumber,
-  });
+
+  useEffect(() => {
+    sessionStorage.removeItem("revalidateddone");
+  }, []);
+
+  const { data: fetchBillData, isLoading: fetchBillLoading, revalidate } = Digit.Hooks.useFetchBillsForBuissnessService(
+    {
+      businessService: "PT",
+      consumerCode: applicationNumber,
+      tenantId,
+    },
+    {
+      refetchOnMount: "always",
+    }
+  );
   // useEffect(()=>{
   //   let consumerCodes=applicationNumber
   //   try{
@@ -258,7 +269,7 @@ console.log("workflowDetails",workflowDetails)
   }
   useEffect(() => {
     // if (appDetailsToShow?.applicationDetails?.[0]?.values?.[1].title !== "PT_TOTAL_DUES") {
-     if (fetchBillData && fetchBillData?.Bill?.length>0) {
+     if (fetchBillData && fetchBillData?.Bill?.length>0 && fetchBillData?.Bill?.[0]?.totalAmount > 0) {
       let dateString=fetchBillData?.Bill?.[0]?.billDetails?.map(detail => {
     const fromYear = new Date(detail.fromPeriod).getFullYear();
     const toYear = new Date(detail.toPeriod).getFullYear();

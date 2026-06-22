@@ -1446,6 +1446,10 @@ export function formatDuration(totalTimeMs) {
 }
 
 export function getApproveRejectComments(workflowDetails) {
+  const defaultReturn = {
+    approverCommentLine: " ",
+    approverComment: " ",
+  };
   try {
     const processInstances =
       workflowDetails?.data?.processInstances || [];
@@ -1465,16 +1469,16 @@ export function getApproveRejectComments(workflowDetails) {
     // ✅ Normalize comment safely
     const rawComment = decisionInstance?.comment || "";
 
-    let actualComment = "";
+    let actualComment = " ";
 
     if (rawComment?.includes(delimiter)) {
       actualComment = rawComment?.split(delimiter)[1] || "";
     } else {
       // If REJECT, keep rawComment. If APPROVE, keep it empty.
-      actualComment = decisionInstance?.action === "REJECT" ? rawComment : "";
+      actualComment = decisionInstance?.action === "REJECT" ? rawComment : " ";
     }
 
-    const commentLine = actualComment
+    const commentLine = actualComment?.trim()!== ""
       ? `16. The Approval is subjected to the following conditions:`
       : " ";
  
@@ -1485,7 +1489,7 @@ export function getApproveRejectComments(workflowDetails) {
     
   } catch (e) {
     console.error("comments error", e);
-    return null; // ✅ ALWAYS return something
+    return defaultReturn;
   }
 }
 

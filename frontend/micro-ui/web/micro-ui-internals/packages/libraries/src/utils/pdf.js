@@ -265,7 +265,7 @@ const jsPdfGeneratorFormatted = async ({
   const qrImg = await generateQRCodeDataUrl(qrFallback)
   const base64Image = await fetchImageWithFallback(finalUrl, qrImg);
   
-  const contentFormatted = await createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit);
+  const contentFormatted = await createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, t, breakPageLimit);
   const dd = {
     
 background: [
@@ -321,9 +321,9 @@ const jsPdfGeneratorFormattedNOC = async ({
   imageURL,
   ulbType,
   ulbName,
-  openInNewTab = false 
+  openInNewTab = false
 }) => {
-  console.log("ulbType",ulbType)
+  console.log("ulbType", ulbType)
   const baseUrl = window.location.origin;
   let finalUrl;
 
@@ -339,10 +339,10 @@ const jsPdfGeneratorFormattedNOC = async ({
     ? await getBase64FromUrl(finalUrl)
     : baseUrl;
 
-  const contentFormatted = await createContentFormatted( details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit );
+  const contentFormatted = await createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, t, breakPageLimit);
   const dd = {
-    
-background: [
+
+    background: [
       {
         image: AcknowledgmentPage,
         width: 595,
@@ -353,7 +353,7 @@ background: [
 
     header: {},
     content: [
-      ...createHeaderFormattedNOC(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName),
+      ...createHeaderFormattedNOC(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber, ulbType, ulbName),
       ...contentFormatted
     ],
     footer: function (currentPage, pageCount) {
@@ -367,7 +367,7 @@ background: [
         };
       }
       return null; // no footer on other pages
-    },    
+    },
     defaultStyle: {
       font: "Hind",
       margin: [20, 10, 20, 10],
@@ -378,7 +378,7 @@ background: [
   let Hind = pdfFonts[locale] || pdfFonts["Hind"];
   pdfMake.fonts = { Hind: { ...Hind } };
   const generatedPDF = pdfMake.createPdf(dd);
-   if (openInNewTab) {
+  if (openInNewTab) {
     generatedPDF.getBlob((blob) => {
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank");
@@ -2192,7 +2192,7 @@ async function buildAttachment(doc) {
 
 
 
-async function createContentFormatted(details, applicationNumber, logo, tenantId, phoneNumber, breakPageLimit = null) {
+async function createContentFormatted(details, applicationNumber, logo, tenantId, phoneNumber, t, breakPageLimit = null) {
   const detailsHeaders = [];
 
   console.log("details here are: ", details);
@@ -2217,11 +2217,11 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
       let valueRows;
 
       if (detail?.isAttachments) {
-        console.log(detail ,"detail rn")
+        console.log(detail, "detail rn")
         valueRows = [];
         for (let i = 0; i < detail.values.length; i++) {
           const doc = detail.values[i];
-          console.log("doc passed to buildattachment",doc)
+          console.log("doc passed to buildattachment", doc)
           const isLast = i === detail.values.length - 1;
 
           const base64Image = await buildAttachment(doc);
@@ -2235,7 +2235,7 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
                 border: isLast ? [true, false, false, true] : [true, false, false, false]
               },
               {
-                image: base64Image, 
+                image: base64Image,
                 width: 100,
                 height: 100,
                 margin: [0, 2, 0, 2],
@@ -2297,15 +2297,7 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
         });
       }
 
-      // 1. After valueRows is built (both branches)
-
-// 2. Inside the attachment loop, after buildAttachment
-
-// 3. Just before detailsHeaders.push
-console.log("=== table body ===");
-console.log(" === widths:", [225, 250]);
-console.log("=== body:", JSON.stringify([headerRow, ...valueRows], null, 2));
-      detailsHeaders.push({
+    detailsHeaders.push({
         table: {
           widths: [225, 250],
           body: [headerRow, ...valueRows]
@@ -2321,8 +2313,141 @@ console.log("=== body:", JSON.stringify([headerRow, ...valueRows], null, 2));
         },
         margin: [10, 2, 10, 2]
       });
-    }
-  }
+    } else if (detail?.isPayTwoHistoryTable) {
+      const feeHistory = detail.values;
+      const feeTypes = Object.keys(feeHistory || {});
+      if (feeTypes.length > 0) {
+        const maxHistoryLength = Math.max(...feeTypes.map((ft) => (feeHistory[ft]?.length || 0)));
+        const widths = [100, 150, "auto", "auto"];
+
+        const headerRow = [
+          { text: t("BPA_UPDATED_BY_LABEL") || "Updated By", bold: true, fontSize: 8, fillColor: "#e3e3e3", margin: [2, 4, 2, 4], alignment: "center" },
+          { text: t("BPA_FEE_HEAD_LABEL") || "Fee Head", bold: true, fontSize: 8, fillColor: "#e3e3e3", margin: [2, 4, 2, 4], alignment: "center" },
+          { text: t("BPA_FEE2_LABEL") || "Fee (Rs.)", bold: true, fontSize: 8, fillColor: "#e3e3e3", margin: [2, 4, 2, 4], alignment: "center" },
+          { text: t("BPA_REMARK_LABEL") || "Remarks", bold: true, fontSize: 8, fillColor: "#e3e3e3", margin: [2, 4, 2, 4], alignment: "center" }
+        ];
+
+        const bodyRows = [];
+        for (let entryIndex = 0; entryIndex < maxHistoryLength; entryIndex++) {
+          const updatedByVal = feeTypes.map((ft) => feeHistory[ft]?.[entryIndex]?.who).find((who) => who) || t("UNKNOWN");
+          
+          feeTypes?.forEach((ft, ftIndex) => {
+            const isFirst = ftIndex === 0;
+            bodyRows.push([
+              isFirst 
+                ? { text: updatedByVal, rowSpan: feeTypes.length, fontSize: 8, margin: [2, 4, 2, 4], alignment: "left" }
+                : { text: "" },
+              { text: t(ft), fontSize: 8, margin: [2, 4, 2, 4], bold: true, alignment: "left" },
+              {
+                text: feeHistory[ft]?.[entryIndex] ? `₹ ${Number(feeHistory[ft][entryIndex].estimateAmount).toLocaleString("en-IN")}` : "-",
+                fontSize: 8,
+                margin: [2, 4, 2, 4],
+                alignment: "left"
+              },
+              {
+                text: feeHistory[ft]?.[entryIndex]?.remarks || t("CS_NA"),
+                fontSize: 8,
+                margin: [2, 4, 2, 4],
+                alignment: "left"
+              }
+            ]);
+          });
+        }
+
+        detailsHeaders.push({
+          text: detail.title,
+          fontSize: 14,
+          bold: true,
+          color: "#454545",
+          margin: [10, 10, 10, 2]
+        });
+        detailsHeaders.push({
+          table: {
+            widths: widths,
+            body: [headerRow, ...bodyRows]
+          },
+          layout: {
+            hLineWidth: () => 1,
+            vLineWidth: () => 1,
+            hLineColor: () => "#cccccc",
+            vLineColor: () => "#cccccc"
+          },
+          margin: [10, 2, 10, 10]
+        });
+      }
+    } else if (detail?.isSubOccupancyTable) {
+      const preComputedBlocks = detail?.additionalDetails?.preComputedBlocks || [];
+
+      if (preComputedBlocks.length > 0) {
+        // Section title
+        detailsHeaders.push({
+          text: t("BPA_OCC_SUBOCC_HEADER") || "Occupancy / Sub-Occupancy Details",
+          fontSize: 14,
+          bold: true,
+          color: "#454545",
+          margin: [10, 6, 10, 2]
+        });
+
+        preComputedBlocks?.forEach((block, blockIndex) => {
+          // Block sub-header
+          detailsHeaders.push({
+            text: `${t("BPA_BLOCK_SUBHEADER") || "Block"} ${blockIndex + 1}`,
+            fontSize: 11,
+            bold: true,
+            margin: [10, 4, 10, 2]
+          });
+
+          detailsHeaders.push({
+            columns: [
+              { text: t("BPA_SUB_OCCUPANCY_LABEL") || "Sub Occupancy", bold: true, fontSize: 9, width: "40%", margin: [10, 2, 0, 2] },
+              { text: block.subOccupancy, fontSize: 9, width: "*", margin: [0, 2, 10, 2] }
+            ],
+            margin: [10, 0, 10, 4]
+          });
+
+          const colHeaders = detail?.additionalDetails?.colHeaders || [];
+          const headerRow = colHeaders.map((col) => ({
+            text: t(col),
+            bold: true,
+            fontSize: 8,
+            fillColor: "#d9d9d9",
+            margin: [2, 2, 2, 2],
+            alignment: "center"
+          }));
+
+          // block.floors comes from getFloorData(block, t)
+          // keys: Floor, Level, Occupancy, BuildupArea, Deduction, FloorArea
+          // last element is the totals row (Level === "")
+          const dataRows = block.floors.map((fl) => {
+            const isTotalsRow = fl.Level === "";
+            const bg = isTotalsRow ? "#f0f0f0" : null;
+            return [
+              { text: fl.Floor, fontSize: 8, bold: isTotalsRow, fillColor: bg, margin: [2, 2, 2, 2] },
+              { text: String(fl.Level), fontSize: 8, bold: isTotalsRow, fillColor: bg, margin: [2, 2, 2, 2], alignment: "center" },
+              { text: fl.Occupancy, fontSize: 8, bold: isTotalsRow, fillColor: bg, margin: [2, 2, 2, 2] },
+              { text: fl.BuildupArea, fontSize: 8, bold: isTotalsRow, fillColor: bg, margin: [2, 2, 2, 2], alignment: "right" },
+              { text: fl.Deduction, fontSize: 8, bold: isTotalsRow, fillColor: bg, margin: [2, 2, 2, 2], alignment: "right" },
+              { text: fl.FloorArea, fontSize: 8, bold: isTotalsRow, fillColor: bg, margin: [2, 2, 2, 2], alignment: "right" }
+            ];
+          });
+
+          detailsHeaders.push({
+            table: {
+              widths: ["auto", "auto", "auto", "auto", "auto", "auto"],
+              body: [headerRow, ...dataRows]
+            },
+            layout: {
+              hLineWidth: () => 1,
+              vLineWidth: () => 1,
+              hLineColor: () => "#cccccc",
+              vLineColor: () => "#cccccc"
+            },
+            margin: [10, 2, 10, 6]
+          });
+        });
+      }
+    } 
+}
 
   return detailsHeaders;
 }

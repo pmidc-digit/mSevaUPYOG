@@ -262,7 +262,18 @@ public class InboxService {
         if (allActionableStatuses != null && !allActionableStatuses.isEmpty()) {
             statusCountCriteria.setStatus(new ArrayList<>(allActionableStatuses.keySet()));
         }
-        List<HashMap<String, Object>> fullStatusCountMap = workflowService.getProcessStatusCount(requestInfo, statusCountCriteria);
+        List<HashMap<String, Object>> fullStatusCountMap;
+        List<String> roles = requestInfo.getUserInfo().getRoles().stream().map(Role::getCode).collect(Collectors.toList());
+        if (criteria.getProcessSearchCriteria() != null 
+                && !ObjectUtils.isEmpty(criteria.getProcessSearchCriteria().getModuleName())
+                && (criteria.getProcessSearchCriteria().getModuleName().equalsIgnoreCase("BPA") 
+                    || criteria.getProcessSearchCriteria().getModuleName().equalsIgnoreCase("bpa-service")
+                    || criteria.getProcessSearchCriteria().getModuleName().equalsIgnoreCase("bpa-services"))
+                && roles.contains(BpaConstants.CITIZEN)) {
+            fullStatusCountMap = getBPACitizenStatusCount(criteria, allActionableStatuses, requestInfo, statusCountCriteria);
+        } else {
+            fullStatusCountMap = workflowService.getProcessStatusCount(requestInfo, statusCountCriteria);
+        }
         
         Map<String, Object> updatedMap =
                 handleModuleSearchCriteria(moduleName, criteria, statusIdNameMap, requestInfo,
@@ -385,6 +396,72 @@ public class InboxService {
         response.setStatusMap(statusMap);
 
         return response;
+    }
+
+    private List<HashMap<String, Object>> getBPACitizenStatusCount(
+            InboxSearchCriteria criteria,
+            Map<String, String> allActionableStatuses,
+            RequestInfo requestInfo,
+            ProcessInstanceSearchCriteria statusCountCriteria) {
+        
+        List<HashMap<String, Object>> fullStatusCountMap = new ArrayList<>();
+        List<Map<String, String>> tenantWiseApplns = bpaInboxFilterService.fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(
+                criteria, allActionableStatuses, requestInfo);
+        
+        Map<String, List<String>> tenantAndApplnNumbersMap = new HashMap<>();
+        for (Map<String, String> tenantAppln : tenantWiseApplns) {
+            String tenant = tenantAppln.get("tenantid");
+            String applnNo = tenantAppln.get("applicationno");
+            if (tenantAndApplnNumbersMap.containsKey(tenant)) {
+                tenantAndApplnNumbersMap.get(tenant).add(applnNo);
+            } else {
+                List<String> l = new ArrayList<>();
+                l.add(applnNo);
+                tenantAndApplnNumbersMap.put(tenant, l);
+            }
+        }
+        
+        String inputTenantID = statusCountCriteria.getTenantId();
+        List<String> inputBusinessIds = statusCountCriteria.getBusinessIds();
+        List<String> inputStatus = statusCountCriteria.getStatus();
+        
+        for (Map.Entry<String, List<String>> t : tenantAndApplnNumbersMap.entrySet()) {
+            statusCountCriteria.setTenantId(t.getKey());
+            statusCountCriteria.setBusinessIds(t.getValue());
+            if (allActionableStatuses != null && !allActionableStatuses.isEmpty()) {
+                statusCountCriteria.setStatus(new ArrayList<>(allActionableStatuses.keySet()));
+            } else {
+                statusCountCriteria.setStatus(null);
+            }
+            
+            List<HashMap<String, Object>> tenantWiseStatusCount = workflowService.getProcessStatusCount(requestInfo, statusCountCriteria);
+            if (fullStatusCountMap.isEmpty()) {
+                fullStatusCountMap.addAll(tenantWiseStatusCount);
+            } else {
+                for (HashMap<String, Object> tenantStatusMap : tenantWiseStatusCount) {
+                    boolean matched = false;
+                    for (HashMap<String, Object> bpaStatusMap : fullStatusCountMap) {
+                        String statusId1 = bpaStatusMap.get(STATUS_ID) != null ? String.valueOf(bpaStatusMap.get(STATUS_ID)) : null;
+                        String statusId2 = tenantStatusMap.get(STATUS_ID) != null ? String.valueOf(tenantStatusMap.get(STATUS_ID)) : null;
+                        if (statusId1 != null && statusId1.equalsIgnoreCase(statusId2)) {
+                            bpaStatusMap.put(COUNT, Integer.parseInt(String.valueOf(bpaStatusMap.get(COUNT)))
+                                    + Integer.parseInt(String.valueOf(tenantStatusMap.get(COUNT))));
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if (!matched) {
+                        fullStatusCountMap.add(tenantStatusMap);
+                    }
+                }
+            }
+        }
+        
+        statusCountCriteria.setTenantId(inputTenantID);
+        statusCountCriteria.setBusinessIds(inputBusinessIds);
+        statusCountCriteria.setStatus(inputStatus);
+        
+        return fullStatusCountMap;
     }
     /**
      * Returns a searcher-based total count for modules that cannot rely on the WF processInstanceMap size

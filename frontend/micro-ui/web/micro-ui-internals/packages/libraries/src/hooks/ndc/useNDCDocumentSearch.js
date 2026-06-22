@@ -6,7 +6,7 @@ const useNDCDocumentSearch = (data1 = {}, config = {}) => {
   const tenant = Digit.ULBService.getStateId();
 
   let filesArray = [];
-  if (data1?.value?.workflowDocs) filesArray = data1?.value?.workflowDocs?.map((ob) => ob?.uuid);
+  if (data1?.value?.workflowDocs) filesArray = data1?.value?.workflowDocs?.map((ob) => ob?.documentAttachment);
   //   if (data1?.value?.owners?.documents["OwnerPhotoProof"]?.fileStoreId) filesArray.push(data1.value.owners.documents["OwnerPhotoProof"].fileStoreId);
   //   if (data1?.value?.owners?.documents["ProofOfIdentity"]?.fileStoreId) filesArray.push(data1.value.owners.documents["ProofOfIdentity"].fileStoreId);
   //   if (data1?.value?.owners?.documents["ProofOfOwnership"]?.fileStoreId) filesArray.push(data1.value.owners.documents["ProofOfOwnership"].fileStoreId);

@@ -23,8 +23,8 @@ const CloseBtn = (props) => {
   );
 };
 
-const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, applicationDetails, applicationData, businessService, moduleCode,workflowDetails,blockReason }) => {
-  console.log("applicationData_BPAACTIONMODAL",applicationData)
+const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, applicationDetails, applicationData, businessService, moduleCode,workflowDetails,blockReason, draftComment }) => {
+  console.log("applicationData_BPAACTIONMODAL",applicationData) 
   const uniqueRoles = [...new Set(
   workflowDetails?.data?.initialActionState?.nextActions
     ?.find(ele => ele?.action === action?.action)
@@ -49,7 +49,6 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     { enabled: !action?.isTerminateState }
   );
 
-  console.log("approverData",approverData)
 
   const queryClient = useQueryClient();
   const [config, setConfig] = useState({});
@@ -311,6 +310,8 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
 
   useEffect(() => {
     setFilteredBlockReason(blockReason?.map((blockReason) => ({ code: blockReason?.code, name: blockReason?.value })));
+    // Initialize form default values so FormComposer's defaultValues picks up draftComment for comments
+    setDefaultValues({ comments: draftComment || "" });
     if (action) {
       setConfig(
         configBPAApproverApplication({

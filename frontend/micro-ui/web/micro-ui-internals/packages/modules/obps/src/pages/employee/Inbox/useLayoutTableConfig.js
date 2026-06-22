@@ -72,7 +72,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
         accessor: "status",
         Cell: ({ row }) => {
-          const statusValue = row.original?.status || row.original?.applicationStatus || "-";
+          const statusValue = t(row.original?.status) || t(row.original?.applicationStatus) || "-";
           const statusClass = getStatusClass(statusValue);
           return (
             <span className={`ndc-new-status-pill ${statusClass}`}>

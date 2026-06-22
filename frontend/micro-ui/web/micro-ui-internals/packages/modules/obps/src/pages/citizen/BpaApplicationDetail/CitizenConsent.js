@@ -52,6 +52,7 @@ console.log('data for ownerconsent', data)
   const stakeholderName = data?.applicationData?.additionalDetails?.stakeholderName || "NA";
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid");
   const address = data?.applicationData?.landInfo?.owners?.[0]?.permanentAddress || "NA";
+  const proposedSiteAddress = data?.applicationData?.additionalDetails?.registrationDetails || address;
   const [showOTPInput, setShowOTPInput] = useState(false)
   const [otp, setOTP] = useState("");
   const [otpError, setOTPError] = useState("");
@@ -219,7 +220,7 @@ console.log('data for ownerconsent', data)
     <p style="margin-top:-50px;"><strong>Dear Sir/Madam,</strong></p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;margin-left-5px; text-align:justify;">
-  I/We, Shri/Smt/Kum <b>${data?.applicationData?.landInfo?.owners.map(item => item?.name).join(", ") || "<Owner Name>"}</b>, undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ${data?.applicationData?.additionalDetails?.Ulblisttype} - <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.), address <b>${address || "NA"}</b>, Ward Number <b>${ward}</b>, Zone Number <b>${data?.applicationData?.additionalDetails?.zonenumber}</b>, City <b>${data?.applicationData?.additionalDetails?.District || "<City>"}</b>.
+  I/We, Shri/Smt/Kum <b>${data?.applicationData?.landInfo?.owners.map(item => item?.name).join(", ") || "<Owner Name>"}</b>, undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ${data?.applicationData?.additionalDetails?.Ulblisttype} - <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.), address <b>${proposedSiteAddress || "NA"}</b>, Ward Number <b>${ward}</b>, Zone Number <b>${data?.applicationData?.additionalDetails?.zonenumber}</b>, City <b>${data?.applicationData?.additionalDetails?.District || "<City>"}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">

@@ -34,12 +34,12 @@ function RentAndLeaseSummary({ t }) {
   const propertyLabels = {
     // propertyType: t("RENT_LEASE_PROPERTY_TYPE"),
     propertyId: t("RENT_LEASE_PROPERTY_ID"),
-    propertyName: t("RAL_LEASE_SELECTED_PROPERTY"),
+    propertyName: t("Building/Plot/Shop Name"),
     allotmentType: t("RAL_LEASE_USAGE_CATEGORY"),
-    propertySizeOrArea: t("RAL_LEASE_PROPERTY_AREA"),
-    address: t("RAL_LEASE_PROPERTY_ADDRESS"),
-    propertySpecific: t("RENT_LEASE_PROPERTY_SPECIFIC"),
-    locationType: t("RENT_LEASE_LOCATION_TYPE"),
+    propertySizeOrArea: t("Building/Plot/Shop Area"),
+    address: t("Building/Plot/Shop Address"),
+    propertySpecific: t("Building/Plot/Shop Specific"),
+    // locationType: t("RENT_LEASE_LOCATION_TYPE"),
     baseRent: t("RENT_AMOUNT "),
     securityDeposit: t("SECURITY_DEPOSIT"),
     tax_applicable: t("GST_APPLICABLE"),
@@ -49,6 +49,8 @@ function RentAndLeaseSummary({ t }) {
     endDate: t("RAL_END_DATE"),
     // latePayment: t("LATE_PAYMENT_PERCENT"),
   };
+
+  console.log("property", property);
 
   return (
     <div className="application-summary">
@@ -82,11 +84,11 @@ function RentAndLeaseSummary({ t }) {
         </div>
       </Card>
 
-      {/* Property Details Section */}
+      {/* Building/Plot/Shop Details Section */}
       <Card className="summary-section">
         <div>
           <div className="ral-summary-header-row">
-            <h3 className="ral-summary-heading">{t("Properties Details")}</h3>
+            <h3 className="ral-summary-heading">{t("Building/Plot/Shop Details")}</h3>
           </div>
           {Object.entries(propertyLabels)
             .filter(([key]) => property?.applicationType?.code !== "Legacy" || key !== "securityDeposit")
@@ -107,7 +109,11 @@ function RentAndLeaseSummary({ t }) {
                 value = Digit.DateUtils.ConvertEpochToDate(value);
               }
 
-              return renderRow(label, value || "NA");
+              if (value === undefined || value === null || value === "") {
+                return null;
+              }
+
+              return renderRow(label, value);
             })}
         </div>
       </Card>
@@ -120,16 +126,7 @@ function RentAndLeaseSummary({ t }) {
               <h3 className="ral-summary-heading">{t("Additional Details")}</h3>
             </div>
             {renderRow(t("Arrears"), property?.arrear)}
-            {/* {property?.arrearStartDate &&
-              renderRow(
-                t("RAL_START_DATE"),
-                typeof property.arrearStartDate === "number" ? Digit.DateUtils.ConvertEpochToDate(property.arrearStartDate) : property.arrearStartDate
-              )} */}
-            {property?.arrearEndDate &&
-              renderRow(
-                t("RAL_ARR_END_DATE"),
-                typeof property.arrearEndDate === "number" ? Digit.DateUtils.ConvertEpochToDate(property.arrearEndDate) : property.arrearEndDate
-              )}
+            {property?.lastBillingPeriod && renderRow(t("Last Billing Period"), property.lastBillingPeriod)}
             {property?.arrearReason?.name && renderRow(t("Reason"), property?.arrearReason?.name)}
             {property?.remarks && renderRow(t("Remarks"), property?.remarks)}
           </div>

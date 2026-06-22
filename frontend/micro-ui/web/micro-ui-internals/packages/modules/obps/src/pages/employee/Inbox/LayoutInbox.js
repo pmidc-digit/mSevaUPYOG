@@ -1,5 +1,5 @@
 import React, { Fragment, useCallback, useEffect, useMemo, useReducer, useState, useRef } from "react";
-import { Loader, Card, Table, CaseIcon } from "@mseva/digit-ui-react-components";
+import { Loader, Card, Table, CaseIcon, Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
@@ -18,6 +18,7 @@ const LayoutInbox = ({ parentRoute }) => {
   }, []);
 
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const { data: cities } = Digit.Hooks.useTenants();
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
 
@@ -38,6 +39,13 @@ const LayoutInbox = ({ parentRoute }) => {
       // businessServiceArray: businessServiceListLayout(true) || [],
     }),
     []
+  );
+
+  const selectedTenantIdDefaultValues = useMemo(
+    () => ({
+      tenantId: cities?.[0]?.code || null,
+    }),
+    [cities]
   );
 
   const isMobileDevice = Digit.Utils.browser.isMobile();
@@ -63,6 +71,9 @@ const LayoutInbox = ({ parentRoute }) => {
       case "mutateTableForm":
         Digit.SessionStorage.set("LAYOUT.INBOX", { ...state, tableForm: payload.data });
         return { ...state, tableForm: payload.data };
+      case "mutateSelectedTenantId":
+        Digit.SessionStorage.set("LAYOUT.INBOX", { ...state, selectedTenantId: payload.data });
+        return { ...state, selectedTenantId: payload.data };
       default:
         break;
     }
@@ -103,14 +114,22 @@ const LayoutInbox = ({ parentRoute }) => {
           limit: validLimit,
           offset: 0,
         },
+        selectedTenantId: InboxObjectInSessionStorage.selectedTenantId || selectedTenantIdDefaultValues,
       };
     }
     return {
       filterForm: filterFormDefaultValues,
       searchForm: searchFormDefaultValues,
       tableForm: tableOrderFormDefaultValues,
+      selectedTenantId: selectedTenantIdDefaultValues,
     };
-  }, [InboxObjectInSessionStorage]);
+  }, [
+    InboxObjectInSessionStorage,
+    filterFormDefaultValues,
+    searchFormDefaultValues,
+    selectedTenantIdDefaultValues,
+    tableOrderFormDefaultValues,
+  ]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
 
@@ -118,30 +137,166 @@ const LayoutInbox = ({ parentRoute }) => {
   const [tableData, setTableData] = useState([]);
   const [statusData, setStatusData] = useState([]);
   const [totalCountData, setTotalCountData] = useState(0);
+  const [assigneeCounts, setAssigneeCounts] = useState({
+    ASSIGNED_TO_ME: 0,
+    ASSIGNED_TO_ALL: 0,
+  });
+  const capturedAssigneeCountsTenant = useRef(null);
+
+  const setSelectedTenantIdValue = useCallback(
+    (key, value) => {
+      dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
+    },
+    [formState.selectedTenantId]
+  );
+
+  const getResolvedStatusIds = useCallback((applicationStatuses = []) => {
+    return [
+      ...new Set(
+        applicationStatuses.reduce((acc, item) => {
+          if (Array.isArray(item?.statusids) && item.statusids.length) {
+            acc.push(...item.statusids);
+          } else if (item?.statusid) {
+            acc.push(item.statusid);
+          } else if (item?.code) {
+            acc.push(item.code);
+          }
+          return acc;
+        }, [])
+      ),
+    ];
+  }, []);
+
+  const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+
+  useEffect(() => {
+    if (tenantId !== "pb.punjab") return;
+    if (!cities?.length) return;
+    if (formState?.selectedTenantId?.tenantId) return;
+
+    dispatch({
+      action: "mutateSelectedTenantId",
+      data: { ...(formState?.selectedTenantId || {}), tenantId: cities[0].code },
+    });
+  }, [cities, formState?.selectedTenantId, tenantId]);
 
   const memoizedFilters = useMemo(() => {
     return {
       filterForm: formState?.filterForm || filterFormDefaultValues,
       searchForm: formState?.searchForm || searchFormDefaultValues,
       tableForm: formState?.tableForm || tableOrderFormDefaultValues,
+      selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
   }, [
     formState?.filterForm,
     formState?.searchForm,
     formState?.tableForm,
+    formState?.selectedTenantId,
+    selectedTenantIdDefaultValues,
     filterFormDefaultValues,
     searchFormDefaultValues,
     tableOrderFormDefaultValues,
   ]);
 
   const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useLayoutInbox({
-    tenantId,
+    tenantId: effectiveTenantId,
     filters: memoizedFilters,
   });
 
+  const assigneeCountBaseFilters = useMemo(() => {
+    const countFilterForm = { ...(memoizedFilters?.filterForm || {}) };
+    delete countFilterForm.applicationStatus;
+
+    return {
+      ...memoizedFilters,
+      filterForm: countFilterForm,
+    };
+  }, [memoizedFilters]);
+
+  const assignedToMeFilters = useMemo(
+    () => ({
+      ...assigneeCountBaseFilters,
+      filterForm: {
+        ...(assigneeCountBaseFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ME",
+      },
+    }),
+    [assigneeCountBaseFilters]
+  );
+
+  const assignedToAllFilters = useMemo(
+    () => ({
+      ...assigneeCountBaseFilters,
+      filterForm: {
+        ...(assigneeCountBaseFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ALL",
+      },
+    }),
+    [assigneeCountBaseFilters]
+  );
+
+  const { data: assignedToMeInboxData } = Digit.Hooks.obps.useLayoutInbox({
+    tenantId: effectiveTenantId,
+    filters: assignedToMeFilters,
+  });
+
+  const { data: assignedToAllInboxData } = Digit.Hooks.obps.useLayoutInbox({
+    tenantId: effectiveTenantId,
+    filters: assignedToAllFilters,
+  });
+
+  useEffect(() => {
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
+    setAssigneeCounts({
+      ASSIGNED_TO_ME: 0,
+      ASSIGNED_TO_ALL: 0,
+    });
+  }, [effectiveTenantId]);
+
+  useEffect(() => {
+    if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
+
+    setAssigneeCounts({
+      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
+    });
+    capturedAssigneeCountsTenant.current = effectiveTenantId;
+  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId]);
+
   useEffect(() => {
     if (inboxData) {
-      setStatusData(inboxData?.statuses || []);
+      const groupedStatuses = (inboxData?.statuses || []).reduce((acc, status) => {
+        const statusKey = status?.applicationstatus;
+
+        if (!statusKey) {
+          acc.push(status);
+          return acc;
+        }
+
+        const count = status?.totalCount ?? status?.count ?? 0;
+        const existingStatus = acc.find((item) => item?.applicationstatus === statusKey);
+
+        if (existingStatus) {
+          existingStatus.totalCount = (existingStatus.totalCount || 0) + count;
+          existingStatus.count = existingStatus.totalCount;
+          existingStatus.statusids = [...new Set([...(existingStatus.statusids || []), status?.statusid].filter(Boolean))];
+          return acc;
+        }
+
+        acc.push({
+          ...status,
+          statusid: `${statusKey}_GROUP`,
+          statusids: status?.statusid ? [status.statusid] : [],
+          totalCount: count,
+          count,
+          businessService: null,
+          businessservice: null,
+        });
+        return acc;
+      }, []);
+
+      setStatusData(groupedStatuses);
       setTableData(inboxData?.table || []);
       setTotalCountData(inboxData?.totalCount || 0);
     }
@@ -206,12 +361,11 @@ const LayoutInbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
+      const resolvedStatuses = getResolvedStatusIds(filterData.applicationStatus || []);
+
       // Update form values
       if (filterData.applicationStatus) {
-        setFilterFormValue(
-          "applicationStatus",
-          filterData.applicationStatus.map((item) => item.code)
-        );
+        setFilterFormValue("applicationStatus", resolvedStatuses);
       }
       if (filterData.assignee) {
         setFilterFormValue("assignee", filterData.assignee);
@@ -221,12 +375,12 @@ const LayoutInbox = ({ parentRoute }) => {
         action: "mutateFilterForm",
         data: {
           ...formState?.filterForm,
-          applicationStatus: filterData.applicationStatus?.map((item) => item.code) || [],
+          applicationStatus: resolvedStatuses,
           assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ALL",
         },
       });
     },
-    [formState?.filterForm, setFilterFormValue]
+    [formState?.filterForm, getResolvedStatusIds, setFilterFormValue]
   );
 
   const searchDebounceRef = useRef(null);
@@ -283,8 +437,8 @@ const LayoutInbox = ({ parentRoute }) => {
   }, [formState, resetFilterForm]);
 
   const onStatusTabClick = useCallback(
-    (label, statusCode) => {
-      setActiveStatusTab(statusCode || label);
+    (label, status) => {
+      setActiveStatusTab(label);
       if (label === "CLEAR") {
         setTopBarSearch("");
         return;
@@ -294,8 +448,8 @@ const LayoutInbox = ({ parentRoute }) => {
         handleFilterFormSubmit(onFilterFormSubmit)();
         return;
       }
-      const resolvedCode = statusCode || label;
-      setFilterFormValue("applicationStatus", [resolvedCode], { shouldDirty: true, shouldTouch: true });
+      const resolvedCode = Array.isArray(status?.statusids) && status.statusids.length ? status.statusids : status?.statusid ? [status.statusid] : [];
+      setFilterFormValue("applicationStatus", resolvedCode, { shouldDirty: true, shouldTouch: true });
       handleFilterFormSubmit(onFilterFormSubmit)();
     },
     [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
@@ -305,6 +459,23 @@ const LayoutInbox = ({ parentRoute }) => {
     <InboxWrapper
       title={t("ES_COMMON_INBOX")}
       totalCount={totalCountData}
+      tenantSelector={
+        tenantId === "pb.punjab" && cities?.length ? (
+          <div className="new-inbox-tenant-selector">
+            <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>
+              {t("BPA_CITIES_DROPDOWN_LABEL")}
+            </div>
+            <div className="new-inbox-tenant-dropdown">
+              <Dropdown
+                option={cities}
+                selected={cities.find((city) => city.code === effectiveTenantId)}
+                select={(value) => setSelectedTenantIdValue("tenantId", value.code)}
+                optionKey="name"
+              />
+            </div>
+          </div>
+        ) : null
+      }
       filterSection={
         <NewFilterFormFieldComponent
           registerRef={() => {}}
@@ -314,20 +485,21 @@ const LayoutInbox = ({ parentRoute }) => {
           getFilterFormValue={getFilterFormValue}
           statuses={statusData}
           isInboxLoading={isInboxLoading}
+          assigneeCounts={assigneeCounts}
           handleFilter={handleFilterChange}
         />
       }
-      topBar={
-        <InboxTopBar
-          statuses={statusData}
-          activeTab={activeStatusTab}
-          onTabClick={onStatusTabClick}
-          searchValue={topBarSearch}
-          onSearchChange={(e) => setTopBarSearch(e.target.value)}
-          searchPlaceholder="Search by application number..."
-          totalCount={totalCountData}
-        />
-      }
+      // topBar={
+      //   <InboxTopBar
+      //     statuses={statusData}
+      //     activeTab={activeStatusTab}
+      //     onTabClick={onStatusTabClick}
+      //     searchValue={topBarSearch}
+      //     onSearchChange={(e) => setTopBarSearch(e.target.value)}
+      //     searchPlaceholder="Search by application number..."
+      //     totalCount={totalCountData}
+      //   />
+      // }
       isLoading={isInboxLoading}
       tableData={tableData}
       tableProps={propsForInboxTable}

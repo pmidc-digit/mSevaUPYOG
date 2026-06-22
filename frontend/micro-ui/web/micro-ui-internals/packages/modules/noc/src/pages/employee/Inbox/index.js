@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { Toast } from "@mseva/digit-ui-react-components";
+import { Toast, Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
@@ -106,8 +106,31 @@ const Inbox = ({ parentRoute }) => {
   const [tableData, setTableData] = useState([]);
   const [statusData, setStatusData] = useState([]);
   const [totalCountData, setTotalCountData] = useState(0);
+  const [assigneeCounts, setAssigneeCounts] = useState({
+    ASSIGNED_TO_ME: 0,
+    ASSIGNED_TO_ALL: 0,
+  });
+  const capturedAssigneeCountsTenant = useRef(null);
+
+  const setSelectedTenantIdValue = useCallback(
+    (key, value) => {
+      dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
+    },
+    [formState.selectedTenantId]
+  );
 
   const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+
+  useEffect(() => {
+    if (tenantId !== "pb.punjab") return;
+    if (!cities?.length) return;
+    if (formState?.selectedTenantId?.tenantId) return;
+
+    dispatch({
+      action: "mutateSelectedTenantId",
+      data: { ...(formState?.selectedTenantId || {}), tenantId: cities[0].code },
+    });
+  }, [cities, formState?.selectedTenantId, tenantId]);
 
   const memoizedFilters = useMemo(() => {
     return {
@@ -133,9 +156,105 @@ const Inbox = ({ parentRoute }) => {
     config: { enabled: !!tenantId },
   });
 
+  const assigneeCountBaseFilters = useMemo(() => {
+    const countFilterForm = { ...(memoizedFilters?.filterForm || {}) };
+    delete countFilterForm.applicationStatus;
+
+    return {
+      ...memoizedFilters,
+      filterForm: countFilterForm,
+    };
+  }, [memoizedFilters]);
+
+  const assignedToMeFilters = useMemo(
+    () => ({
+      ...assigneeCountBaseFilters,
+      filterForm: {
+        ...(assigneeCountBaseFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ME",
+      },
+    }),
+    [assigneeCountBaseFilters]
+  );
+
+  const assignedToAllFilters = useMemo(
+    () => ({
+      ...assigneeCountBaseFilters,
+      filterForm: {
+        ...(assigneeCountBaseFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ALL",
+      },
+    }),
+    [assigneeCountBaseFilters]
+  );
+
+  const { data: assignedToMeInboxData } = Digit.Hooks.noc.useInbox({
+    tenantId: effectiveTenantId,
+    filters: assignedToMeFilters,
+    config: { enabled: !!tenantId },
+  });
+
+  const { data: assignedToAllInboxData } = Digit.Hooks.noc.useInbox({
+    tenantId: effectiveTenantId,
+    filters: assignedToAllFilters,
+    config: { enabled: !!tenantId },
+  });
+
+  useEffect(() => {
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
+    setAssigneeCounts({
+      ASSIGNED_TO_ME: 0,
+      ASSIGNED_TO_ALL: 0,
+    });
+  }, [effectiveTenantId]);
+
+  useEffect(() => {
+    if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
+
+    setAssigneeCounts({
+      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
+    });
+    capturedAssigneeCountsTenant.current = effectiveTenantId;
+  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId]);
+
   useEffect(() => {
     if (inboxData) {
-      setStatusData(inboxData?.statuses || []);
+      const groupedStatuses = (inboxData?.statuses || []).reduce((acc, status) => {
+        const key = status?.applicationstatus || status?.statusCode;
+        const count = status?.totalCount ?? status?.count ?? status?.noOfRecords ?? status?.totalRecords ?? status?.applicationCount ?? 0;
+
+        if (!key) {
+          acc.push(status);
+          return acc;
+        }
+
+        const existingStatus = acc.find((item) => (item?.applicationstatus || item?.statusCode) === key);
+
+        if (existingStatus) {
+          existingStatus.totalCount = (existingStatus.totalCount || 0) + count;
+          existingStatus.count = existingStatus.totalCount;
+          existingStatus.noOfRecords = existingStatus.totalCount;
+          existingStatus.totalRecords = existingStatus.totalCount;
+          existingStatus.applicationCount = existingStatus.totalCount;
+          return acc;
+        }
+
+        acc.push({
+          ...status,
+          totalCount: count,
+          count,
+          noOfRecords: count,
+          totalRecords: count,
+          applicationCount: count,
+          selectionValue: key,
+          selectionValues: [key],
+        });
+        return acc;
+      }, []);
+
+      setStatusData(groupedStatuses);
       setTableData(inboxData?.table || []);
       setTotalCountData(inboxData?.totalCount || 0);
     }
@@ -192,11 +311,10 @@ const Inbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
+      const resolvedStatuses = filterData.applicationStatus?.map((item) => item.applicationstatus || item.statusCode || item.code) || [];
+
       if (filterData.applicationStatus) {
-        setFilterFormValue(
-          "applicationStatus",
-          filterData.applicationStatus.map((item) => item.code)
-        );
+        setFilterFormValue("applicationStatus", resolvedStatuses);
       }
       if (filterData.assignee) {
         setFilterFormValue("assignee", filterData.assignee);
@@ -206,7 +324,7 @@ const Inbox = ({ parentRoute }) => {
         action: "mutateFilterForm",
         data: {
           ...formState?.filterForm,
-          applicationStatus: filterData.applicationStatus?.map((item) => item.code) || [],
+          applicationStatus: resolvedStatuses,
           assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ME",
         },
       });
@@ -266,8 +384,8 @@ const Inbox = ({ parentRoute }) => {
   }, [formState, resetFilterForm]);
 
   const onStatusTabClick = useCallback(
-    (label, statusCode) => {
-      setActiveStatusTab(statusCode || label);
+    (label, status) => {
+      setActiveStatusTab(label);
       if (label === "CLEAR") {
         setTopBarSearch("");
         return;
@@ -277,7 +395,7 @@ const Inbox = ({ parentRoute }) => {
         handleFilterFormSubmit(onFilterFormSubmit)();
         return;
       }
-      const resolvedCode = statusCode || label;
+      const resolvedCode = status?.applicationstatus || label;
       setFilterFormValue("applicationStatus", [resolvedCode], { shouldDirty: true, shouldTouch: true });
       handleFilterFormSubmit(onFilterFormSubmit)();
     },
@@ -302,6 +420,23 @@ const Inbox = ({ parentRoute }) => {
         <InboxWrapper
           title={t("ES_COMMON_INBOX")}
           totalCount={totalCountData}
+          tenantSelector={
+            tenantId === "pb.punjab" && cities?.length ? (
+              <div className="new-inbox-tenant-selector">
+                <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>
+                  {t("BPA_CITIES_DROPDOWN_LABEL")}
+                </div>
+                <div className="new-inbox-tenant-dropdown">
+                  <Dropdown
+                    option={cities}
+                    selected={cities.find((city) => city.code === effectiveTenantId)}
+                    select={(value) => setSelectedTenantIdValue("tenantId", value.code)}
+                    optionKey="name"
+                  />
+                </div>
+              </div>
+            ) : null
+          }
           filterSection={
             <NewFilterFormFieldComponent
               registerRef={() => {}}
@@ -311,20 +446,21 @@ const Inbox = ({ parentRoute }) => {
               getFilterFormValue={getFilterFormValue}
               statuses={statusData}
               isInboxLoading={isInboxLoading}
+              assigneeCounts={assigneeCounts}
               handleFilter={handleFilterChange}
             />
           }
-          topBar={
-            <InboxTopBar
-              statuses={statusData}
-              activeTab={activeStatusTab}
-              onTabClick={onStatusTabClick}
-              searchValue={topBarSearch}
-              onSearchChange={(e) => setTopBarSearch(e.target.value)}
-              searchPlaceholder="Search by application number..."
-              totalCount={totalCountData}
-            />
-          }
+          // topBar={
+          //   <InboxTopBar
+          //     statuses={statusData}
+          //     activeTab={activeStatusTab}
+          //     onTabClick={onStatusTabClick}
+          //     searchValue={topBarSearch}
+          //     onSearchChange={(e) => setTopBarSearch(e.target.value)}
+          //     searchPlaceholder="Search by application number..."
+          //     totalCount={totalCountData}
+          //   />
+          // }
           isLoading={isInboxLoading}
           tableData={tableData}
           tableProps={propsForInboxTable}

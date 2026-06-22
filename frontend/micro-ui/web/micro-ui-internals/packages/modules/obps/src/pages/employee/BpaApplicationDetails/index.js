@@ -154,6 +154,7 @@ const BpaApplicationDetail = () => {
     enabled: !!id, // 👈 only runs when valid
   });
 
+  const addressPincode = data?.applicationData?.landInfo?.address?.pincode;
   const isSelfCertification = data?.applicationData?.additionalDetails?.isSelfCertification || null;
 
   const loading = isLoading || getLoader;
@@ -522,7 +523,7 @@ const BpaApplicationDetail = () => {
             ...requestData.landInfo,
             owners: requestData.landInfo.owners.map((owner) => ({
               ...owner,
-              permanentPinCode: owner?.permanentPinCode || " ",
+              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
             })),
           };
         }
@@ -1232,7 +1233,7 @@ const BpaApplicationDetail = () => {
             ...requestData.landInfo,
             owners: requestData.landInfo.owners.map((owner) => ({
               ...owner,
-              permanentPinCode: owner?.permanentPinCode || " ",
+              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
             })),
           };
         }
@@ -1327,7 +1328,7 @@ const BpaApplicationDetail = () => {
             ...requestData.landInfo,
             owners: requestData.landInfo.owners.map((owner) => ({
               ...owner,
-              permanentPinCode: owner?.permanentPinCode || " ",
+              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
             })),
           };
         }

@@ -273,6 +273,9 @@ public class WorkflowService {
                 List<BusinessService> businessServicesByTenantId = new ArrayList();
                 if(requestInfo.getUserInfo().getTenantId().equalsIgnoreCase("pb.punjab")||entry.getKey().split("\\.").length==1){
                     businessServicesByTenantId = tenantIdToBuisnessSevicesMap.get(criteria.getTenantId());
+                    if (businessServicesByTenantId == null) {
+                        businessServicesByTenantId = tenantIdToBuisnessSevicesMap.get(entry.getKey());
+                    }
               }else{
                     businessServicesByTenantId = tenantIdToBuisnessSevicesMap.get(entry.getKey());
               }

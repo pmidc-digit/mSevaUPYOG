@@ -244,6 +244,10 @@ public class InboxService {
         // Load actionable statuses
         HashMap<String, String> statusIdNameMap =
                 workflowService.getActionableStatusesForRole(requestInfo, businessSrvs, processCriteria);
+                
+        // Preserve all actionable statuses before any filtering
+        Map<String, String> allActionableStatuses = new HashMap<>(statusIdNameMap);
+
         if (!CollectionUtils.isEmpty(inputStatuses)) {
             statusIdNameMap.entrySet().removeIf(entry -> !inputStatuses.contains(entry.getValue()));
         }
@@ -255,6 +259,9 @@ public class InboxService {
         statusCountCriteria.setTenantId(criteria.getTenantId());
         statusCountCriteria.setBusinessService(businessServiceName);
         statusCountCriteria.setModuleName(moduleName);
+        if (allActionableStatuses != null && !allActionableStatuses.isEmpty()) {
+            statusCountCriteria.setStatus(new ArrayList<>(allActionableStatuses.keySet()));
+        }
         List<HashMap<String, Object>> fullStatusCountMap = workflowService.getProcessStatusCount(requestInfo, statusCountCriteria);
         
         Map<String, Object> updatedMap =

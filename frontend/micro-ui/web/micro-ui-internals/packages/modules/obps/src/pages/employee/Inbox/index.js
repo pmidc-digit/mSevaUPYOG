@@ -148,7 +148,7 @@ const Inbox = ({ parentRoute }) => {
     ASSIGNED_TO_ME: 0,
     ASSIGNED_TO_ALL: 0,
   });
-  const hasCapturedAssigneeCounts = useRef(false);
+  const capturedAssigneeCountsTenant = useRef(null);
 
   const setSelectedTenantIdValue = useCallback(
     (key, value) => {
@@ -176,6 +176,17 @@ const Inbox = ({ parentRoute }) => {
 
   const effectiveTenantId =
     isEmployee && tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+
+  useEffect(() => {
+    if (!(isEmployee && tenantId === "pb.punjab")) return;
+    if (!cities?.length) return;
+    if (formState?.selectedTenantId?.tenantId) return;
+
+    dispatch({
+      action: "mutateSelectedTenantId",
+      data: { ...(formState?.selectedTenantId || {}), tenantId: cities[0].code },
+    });
+  }, [cities, formState?.selectedTenantId, isEmployee, tenantId]);
 
   const memoizedFilters = useMemo(() => {
     const normalizedFilterForm = {
@@ -257,15 +268,24 @@ const Inbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (!isEmployee) return;
-    if (hasCapturedAssigneeCounts.current) return;
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
+    setAssigneeCounts({
+      ASSIGNED_TO_ME: 0,
+      ASSIGNED_TO_ALL: 0,
+    });
+  }, [effectiveTenantId, isEmployee]);
+
+  useEffect(() => {
+    if (!isEmployee) return;
     if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
 
     setAssigneeCounts({
       ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
     });
-    hasCapturedAssigneeCounts.current = true;
-  }, [assignedToAllInboxData, assignedToMeInboxData, isEmployee]);
+    capturedAssigneeCountsTenant.current = effectiveTenantId;
+  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId, isEmployee]);
 
   useEffect(() => {
     if (inboxData) {
@@ -557,12 +577,12 @@ const Inbox = ({ parentRoute }) => {
                   {t("BPA_CITIES_DROPDOWN_LABEL")}
                 </div>
                 <div className="new-inbox-tenant-dropdown">
-                  <Dropdown
-                    option={cities}
-                    selected={cities.find((city) => city.code === formState?.selectedTenantId?.tenantId)}
-                    select={(value) => setSelectedTenantIdValue("tenantId", value.code)}
-                    optionKey="name"
-                  />
+                <Dropdown
+                  option={cities}
+                  selected={cities.find((city) => city.code === effectiveTenantId)}
+                  select={(value) => setSelectedTenantIdValue("tenantId", value.code)}
+                  optionKey="name"
+                />
                 </div>
               </div>
             ) : null

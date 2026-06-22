@@ -118,7 +118,7 @@ const CLUInbox = ({ parentRoute }) => {
     ASSIGNED_TO_ME: 0,
     ASSIGNED_TO_ALL: 0,
   });
-  const hasCapturedAssigneeCounts = useRef(false);
+  const capturedAssigneeCountsTenant = useRef(null);
 
   const getResolvedStatuses = useCallback((applicationStatuses = []) => {
     return [
@@ -171,6 +171,17 @@ const CLUInbox = ({ parentRoute }) => {
   ]);
 
   const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+
+  useEffect(() => {
+    if (tenantId !== "pb.punjab") return;
+    if (!cities?.length) return;
+    if (formState?.selectedTenantId?.tenantId) return;
+
+    dispatch({
+      action: "mutateSelectedTenantId",
+      data: { ...(formState?.selectedTenantId || {}), tenantId: cities[0].code },
+    });
+  }, [cities, formState?.selectedTenantId, tenantId]);
 
   const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.obps.useCLUInbox({
     tenantId: effectiveTenantId,
@@ -229,15 +240,23 @@ const CLUInbox = ({ parentRoute }) => {
   });
 
   useEffect(() => {
-    if (hasCapturedAssigneeCounts.current) return;
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
+    setAssigneeCounts({
+      ASSIGNED_TO_ME: 0,
+      ASSIGNED_TO_ALL: 0,
+    });
+  }, [effectiveTenantId]);
+
+  useEffect(() => {
     if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
 
     setAssigneeCounts({
       ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
     });
-    hasCapturedAssigneeCounts.current = true;
-  }, [assignedToAllInboxData, assignedToMeInboxData]);
+    capturedAssigneeCountsTenant.current = effectiveTenantId;
+  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId]);
 
   useEffect(() => {
     if (inboxData) {
@@ -486,7 +505,7 @@ const CLUInbox = ({ parentRoute }) => {
                 <div className="new-inbox-tenant-dropdown">
                   <Dropdown
                     option={cities}
-                    selected={cities.find((city) => city.code === formState?.selectedTenantId?.tenantId)}
+                    selected={cities.find((city) => city.code === effectiveTenantId)}
                     select={(value) => setSelectedTenantIdValue("tenantId", value.code)}
                     optionKey="name"
                   />

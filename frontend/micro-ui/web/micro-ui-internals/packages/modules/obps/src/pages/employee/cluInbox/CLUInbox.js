@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { Toast } from "@mseva/digit-ui-react-components";
+import { Toast, Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
@@ -477,6 +477,23 @@ const CLUInbox = ({ parentRoute }) => {
         <InboxWrapper
           title={t("ES_COMMON_INBOX")}
           totalCount={totalCountData}
+          tenantSelector={
+            tenantId === "pb.punjab" && cities?.length ? (
+              <div className="new-inbox-tenant-selector">
+                <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>
+                  {t("BPA_CITIES_DROPDOWN_LABEL")}
+                </div>
+                <div className="new-inbox-tenant-dropdown">
+                  <Dropdown
+                    option={cities}
+                    selected={cities.find((city) => city.code === formState?.selectedTenantId?.tenantId)}
+                    select={(value) => setSelectedTenantIdValue("tenantId", value.code)}
+                    optionKey="name"
+                  />
+                </div>
+              </div>
+            ) : null
+          }
           filterSection={
             <NewFilterFormFieldComponent
               registerRef={() => {}}

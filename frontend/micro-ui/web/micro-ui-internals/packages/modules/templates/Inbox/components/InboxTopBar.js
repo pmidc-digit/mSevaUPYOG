@@ -157,10 +157,8 @@
 
 // export default InboxTopBar;
 
-
 import React from "react";
 import { useTranslation } from "react-i18next";
-
 
 const InboxTopBar = ({
   statuses = [],
@@ -195,7 +193,7 @@ const InboxTopBar = ({
 
   return (
     <div className="new-inbox-topbar">
-      <div className="new-inbox-tabs">
+      {/* <div className="new-inbox-tabs">
         <button
           type="button"
           className={`new-inbox-tab ${
@@ -254,37 +252,17 @@ const InboxTopBar = ({
             {t("CLEAR")}
           </button>
         )}
-      </div>
+      </div> */}
 
       <div className="new-inbox-search">
         <span aria-hidden="true" className="new-inbox-search-icon">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="11" cy="11" r="7" stroke="#6B7280" strokeWidth="2" />
-            <line
-              x1="16.65"
-              y1="16.65"
-              x2="21"
-              y2="21"
-              stroke="#6B7280"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
+            <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </span>
 
-        <input
-          type="text"
-          className="new-inbox-search-input"
-          value={searchValue}
-          onChange={onSearchChange}
-          placeholder={searchPlaceholder}
-        />
+        <input type="text" className="new-inbox-search-input" value={searchValue} onChange={onSearchChange} placeholder={searchPlaceholder} />
       </div>
     </div>
   );

@@ -10,6 +10,8 @@ const NewFilterFormFieldsComponent = ({
   handleFilter,
   licenseTypes,
   isInboxLoading = false,
+  assigneeCounts = {},
+  showAssigneeCards = true,
   showLicenseTypeFilter = false,
 }) => {
   const { t } = useTranslation();
@@ -24,10 +26,12 @@ const NewFilterFormFieldsComponent = ({
     return new Set(Object.keys(counts).filter((key) => counts[key] > 1));
   }, [statuses]);
 
-  const availableOptions = [
-    { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
-    { code: "ASSIGNED_TO_ALL", name: `${t("ES_INBOX_ASSIGNED_TO_ALL")}` },
-  ];
+  const availableOptions = showAssigneeCards
+    ? [
+        { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
+        { code: "ASSIGNED_TO_ALL", name: `${t("ES_INBOX_ASSIGNED_TO_ALL")}` },
+      ]
+    : [];
 
   // License Type options for BPAREG (Professional Registration) - Only shown in stakeholder inbox
   const licenseTypeOptions = showLicenseTypeFilter ? [
@@ -69,6 +73,15 @@ const NewFilterFormFieldsComponent = ({
     if (statusCard?.selectionValue) return [statusCard.selectionValue];
     if (Array.isArray(statusCard?.statusids) && statusCard.statusids.length) return statusCard.statusids;
     return [statusCard.code];
+  };
+
+  const isStatusCardActive = (statusCard) => {
+    const statusCodes = getCardSelectionCodes(statusCard);
+    if (!statusCodes.length) return false;
+    if (Array.isArray(statusCard?.statusids) && statusCard.statusids.length > 1) {
+      return statusCodes.some((code) => statusValues.includes(code));
+    }
+    return statusCodes.every((code) => statusValues.includes(code));
   };
 
   const toggleStatus = (statusCard) => {
@@ -125,8 +138,8 @@ const NewFilterFormFieldsComponent = ({
       key: option.code,
       type: "assignee",
       label: option.name,
-      subtitle: t("ES_INBOX_ASSIGNED"),
-      count: null,
+      subtitle: null,
+      count: assigneeCounts?.[option.code] ?? null,
       code: option.code,
       icon: "⌂",
     })),
@@ -181,7 +194,7 @@ const NewFilterFormFieldsComponent = ({
                   ? assigneeField.value === card.code
                   : card.type === "licenseType"
                   ? licenseTypeValues.includes(card.code)
-                  : selectedStatusCodes.every((code) => statusValues.includes(code));
+                  : isStatusCardActive(card);
 
               const variant = getVariantByIndex(index, getVariantFromCode(card.code));
 
@@ -241,7 +254,7 @@ const NewFilterFormFieldsComponent = ({
                 <div className="ndc-new-filter-status-grid ndc-new-filter-card-grid">
                   {stakeholderStatusCards.map((card, index) => {
                     const selectedStatusCodes = getCardSelectionCodes(card);
-                    const isActive = selectedStatusCodes.every((code) => statusValues.includes(code));
+                    const isActive = isStatusCardActive(card);
                     const variant = getVariantByIndex(index + stakeholderPrimaryCards.length, getVariantFromCode(card.code));
 
                     return (

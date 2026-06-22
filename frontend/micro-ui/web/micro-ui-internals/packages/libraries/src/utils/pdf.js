@@ -262,7 +262,7 @@ const jsPdfGeneratorFormatted = async ({
   const qrImg = await generateQRCodeDataUrl(qrFallback)
   const base64Image = await fetchImageWithFallback(finalUrl, qrImg);
   
-  const contentFormatted = await createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit);
+  const contentFormatted = await createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, t, breakPageLimit);
   const dd = {
 
     background: [
@@ -336,7 +336,7 @@ const jsPdfGeneratorFormattedNOC = async ({
     ? await getBase64FromUrl(finalUrl)
     : baseUrl;
 
-  const contentFormatted = await createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit);
+  const contentFormatted = await createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, t, breakPageLimit);
   const dd = {
 
     background: [
@@ -1058,7 +1058,6 @@ const generateTimelinePDF = async (data) => {
   console.log(data, "data i get ")
   const { t, tenantId, tenantName, heading, businessId, businessService, currentStatus, generatedDate, generatedDateTime, timelineRows, totalSteps, moduleName } = data;
 
-
   let moduleNamenew = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
   // Build content for each timeline entry in eOffice style
   const addSoftBreaks = (text) => {
@@ -1092,112 +1091,127 @@ const generateTimelinePDF = async (data) => {
                   // Header: Action & Status with background pill effect
                   {
                     table: {
-                      widths: ["auto", "*", "auto"],
+                      widths: ["*", "*", "*"],
                       body: [
                         [
-                          {
-                            text: [
-                              { text: "Action: ", bold: true, color: "#555" },
-                              { text: row.action || "N/A", color: "#000", bold: true },
-                            ],
-                            fontSize: 10,
-                            border: [false, false, false, false],
-                          },
-                          { text: "", border: [false, false, false, false] },
-                          {
-                            stack: [
-                              { text: "Date & Time:", fontSize: 8, color: "#777", bold: true },
-                              { text: `${row.date} | ${row.time}`, fontSize: 9, color: "#333", bold: true, margin: [0, 2, 0, 0] },
-                            ],
-                            alignment: "right",
-                          }, // Spacer add here date and time below
+
+
+                          { text: "Date & Time of Receipt", bold: true , fillColor: "#709770" , alignment: "center"},
+
+
+
+                          { text: "Action", bold: true, fillColor: "#709770" , alignment: "center"},
+
+
+
+                          { text: "Time Taken", fillColor: "#709770", bold: true, alignment: "center" },
+
+                        ],
+                        [
+                          { text: `${row.date} | ${row.time}`, fontSize: 9, color: "#333", margin: [0, 2, 0, 0], alignment: "center" },
+
+                          { text: row.action || "N/A", color: "#333",fontSize: 9, alignment: "center" },
+
+                          { text: `${row.sla}`, fontSize: 9, color: "#333", margin: [0, 2, 0, 0], alignment: "center" },
+
                         ],
                       ],
                     },
-                    layout: "noBorders",
+                    layout: {
+                      hLineColor: () => "#99cc99",
+                      vLineColor: () => "#99cc99",
+                      hLineWidth: () => 1,
+                      vLineWidth: () => 1,
+                    },
                     margin: [0, 0, 0, 2],
                   },
 
-                  // Divider line
-                  { canvas: [{ type: "line", x1: 0, y1: 0, x2: 485, y2: 0, lineWidth: 0.5, lineColor: "#99cc99" }] },
-
+                  { text: "Comments:" , bold: true, fontSize: 11 },
                   // Comment/Remarks section
                   {
-                    columns: [
-                      // Left column: Note / Comment
-                      {
-                        stack: [
+                    table: {
+                      widths: ["*"],
+                      body: [
+                        [
                           {
-                            text:
-                              row.comment && row.comment !== "-"
-                                ? [{ text: "Note: ", bold: true }, { text: addSoftBreaks(row.comment) }]
-                                : { text: "No Comments", color: "#777" },
-                            fontSize: 11,
-                            color: row.comment && row.comment !== "-" ? "#222" : "#777",
-                            margin: [0, 5, 0, 0],
-                            lineHeight: 1.5,
-                            width: "*",
-                          },
-
-                          ...(row.hasDocuments
-                            ? [
-                                {
-                                  columns: [
-                                    {
-                                      text: "Attachments:",
-                                      fontSize: 9,
-                                      bold: true,
-                                      color: "#555",
-                                      margin: [0, 2, 0, 2],
-                                      width: "auto",
-                                    },
-                                    {
-                                      stack: row.documents.map((doc) => {
-                                        return {
-                                          columns: [
-                                            {
-                                              text: doc.name,
-                                              fontSize: 10,
-                                              color: "#555",
-                                              margin: [5, 5, 0, 0],
-                                              decoration: "underline",
-                                              listType: "none",
-                                              link: doc.link,
-                                              linkTarget: "_blank",
-                                            },
-                                          ],
-                                        };
-                                      }),
-                                      margin: [10, 0, 0, 2],
-                                      width: "*",
-                                    },
-                                  ],
-                                },
+                          text:
+                            row.comment && row.comment !== "-"
+                              ? [
+                                { text: addSoftBreaks(row.comment) }
                               ]
-                            : []),
-                        ],
-                      },
+                              : [{ text: "No Comments", color: "#777" }],
+                          fontSize: 11,
+                          color: row.comment && row.comment !== "-" ? "#222" : "#777",
+                          margin: [0, 5, 0, 0],
+                          lineHeight: 1.5,
+                          width: "*",
+                        }
+                      ],
 
-                      // Right column: Signatory details
+                        ...(row.hasDocuments
+                          ? [
+                            {
+                              columns: [
+                                {
+                                  text: "Attachments:",
+                                  fontSize: 9,
+                                  bold: true,
+                                  color: "#555",
+                                  margin: [0, 2, 0, 2],
+                                  width: "auto",
+                                },
+                                {
+                                  stack: row.documents.map((doc) => {
+                                    return {
+                                      columns: [
+                                        {
+                                          text: doc.name,
+                                          fontSize: 10,
+                                          color: "#555",
+                                          margin: [5, 5, 0, 0],
+                                          decoration: "underline",
+                                          listType: "none",
+                                          link: doc.link,
+                                          linkTarget: "_blank",
+                                        },
+                                      ],
+                                    };
+                                  }),
+                                  margin: [10, 0, 0, 2],
+                                  width: "*",
+                                },
+                              ],
+                            },
+                          ]
+                          : [])
+                      ]
+                    },
+                    margin: [0, 5, 0, 0],
+                    layout: {
+                      hLineColor: () => "#99cc99",
+                      vLineColor: () => "#99cc99",
+                      hLineWidth: () => 1,
+                      vLineWidth: () => 1,
+                    }
+                  },
+
+
+                  {
+                    stack: [
+                      { text: `${row.assignerName?.toUpperCase()} (${row.designation || row.assignerType})` || "N/A", fontSize: 10, bold: true, alignment: "right", color: "#000" },
                       {
-                        stack: [
-                          { text: row.assignerName?.toUpperCase() || "N/A", fontSize: 10, bold: true, alignment: "right", color: "#000" },
-                          { text: row.designation || row.assignerType || "N/A", fontSize: 9, color: "#444", alignment: "right" },
-                          {
-                            text: row.mobileNumber !== "N/A" ? `+91 ${row.mobileNumber}` : "",
-                            fontSize: 9,
-                            color: "#666",
-                            alignment: "right",
-                            margin: [0, 2, 0, 0],
-                          },
-                        ],
-                        width: "*",
+                        text: `${row.date} | ${row.time}`,
+                        fontSize: 9,
+                        color: "#666",
                         alignment: "right",
-                        margin: [0, 5, 0, 0],
+                        margin: [0, 2, 0, 0],
                       },
                     ],
+                    width: "*",
+                    alignment: "right",
                     margin: [0, 5, 0, 0],
                   },
+                  
                 ],
                 fillColor: "#b8ebb8",
                 margin: [15, 6, 15, 0],
@@ -2176,7 +2190,7 @@ async function buildAttachment(doc) {
 
 
 
-async function createContentFormatted(details, applicationNumber, logo, tenantId, phoneNumber, breakPageLimit = null) {
+async function createContentFormatted(details, applicationNumber, logo, tenantId, phoneNumber, t, breakPageLimit = null) {
   const detailsHeaders = [];
 
   console.log("details here are: ", details);
@@ -2281,15 +2295,7 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
         });
       }
 
-      // 1. After valueRows is built (both branches)
-
-// 2. Inside the attachment loop, after buildAttachment
-
-// 3. Just before detailsHeaders.push
-console.log("=== table body ===");
-console.log(" === widths:", [225, 250]);
-console.log("=== body:", JSON.stringify([headerRow, ...valueRows], null, 2));
-      detailsHeaders.push({
+    detailsHeaders.push({
         table: {
           widths: [225, 250],
           body: [headerRow, ...valueRows]
@@ -2305,8 +2311,149 @@ console.log("=== body:", JSON.stringify([headerRow, ...valueRows], null, 2));
         },
         margin: [10, 2, 10, 2]
       });
-    }
-  }
+    } else if (detail?.isPayTwoHistoryTable) {
+      const feeHistory = detail.values;
+      const feeTypes = Object.keys(feeHistory || {});
+      if (feeTypes.length > 0) {
+        const maxHistoryLength = Math.max(...feeTypes.map((ft) => (feeHistory[ft]?.length || 0)));
+        const widths = [25, ...Array(feeTypes.length).fill(Math.floor(375 / feeTypes.length))];
+
+        const headerRow = [
+          { text: "Details", bold: true, fontSize: 8, fillColor: "#e3e3e3", margin: [2, 4, 2, 4] },
+          ...feeTypes.map((ft) => ({ text: t(ft), bold: true, fontSize: 8, fillColor: "#e3e3e3", margin: [2, 4, 2, 4] }))
+        ];
+        const bodyRows = [];
+        for (let entryIndex = 0; entryIndex < maxHistoryLength; entryIndex++) {
+          bodyRows.push([
+            { text: t("BPA_FEE2_LABEL") || "Fee (Rs.)", fontSize: 8, margin: [2, 4, 2, 4], bold: true },
+            ...feeTypes.map((ft) => ({
+              text: feeHistory[ft]?.[entryIndex] ? `₹ ${Number(feeHistory[ft][entryIndex].estimateAmount).toLocaleString("en-IN")}` : "",
+              fontSize: 8,
+              margin: [2, 4, 2, 4]
+            }))
+          ]);
+          bodyRows.push([
+            { text: t("BPA_REMARK_LABEL") || "Remarks", fontSize: 8, margin: [2, 4, 2, 4], bold: true },
+            ...feeTypes.map((ft) => ({
+              text: feeHistory[ft]?.[entryIndex]?.remarks || t("CS_NA"),
+              fontSize: 8,
+              margin: [2, 4, 2, 4]
+            }))
+          ]);
+          const updatedByVal = feeTypes.map((ft) => feeHistory[ft]?.[entryIndex]?.who).find((who) => who) || t("UNKNOWN");
+          const isLastEntry = entryIndex === maxHistoryLength - 1;
+          bodyRows.push([
+            {
+              text: t("BPA_UPDATED_BY_LABEL") || "Updated By",
+              fontSize: 8,
+              margin: [2, 4, 2, 4],
+              bold: true,
+              border: isLastEntry ? [true, false, false, true] : [true, false, false, false]
+            },
+            {
+              text: updatedByVal,
+              colSpan: feeTypes.length,
+              fontSize: 8,
+              margin: [2, 4, 2, 4],
+              border: isLastEntry ? [false, false, true, true] : [false, false, true, false]
+            },
+            ...Array(feeTypes.length - 1).fill({ text: "", border: isLastEntry ? [false, false, true, true] : [false, false, true, false] })
+          ]);
+        }
+        detailsHeaders.push({
+          text: detail.title,
+          fontSize: 14,
+          bold: true,
+          color: "#454545",
+          margin: [10, 10, 10, 2]
+        });
+        detailsHeaders.push({
+          table: {
+            widths: widths,
+            body: [headerRow, ...bodyRows]
+          },
+          layout: {
+            hLineWidth: () => 1,
+            vLineWidth: () => 1,
+            hLineColor: () => "#cccccc",
+            vLineColor: () => "#cccccc"
+          },
+          margin: [-4, 2, 10, 10]
+        });
+      }
+    } else if (detail?.isSubOccupancyTable) {
+      const preComputedBlocks = detail?.additionalDetails?.preComputedBlocks || [];
+
+      if (preComputedBlocks.length > 0) {
+        // Section title
+        detailsHeaders.push({
+          text: t("BPA_OCC_SUBOCC_HEADER") || "Occupancy / Sub-Occupancy Details",
+          fontSize: 14,
+          bold: true,
+          color: "#454545",
+          margin: [10, 6, 10, 2]
+        });
+
+        preComputedBlocks?.forEach((block, blockIndex) => {
+          // Block sub-header
+          detailsHeaders.push({
+            text: `${t("BPA_BLOCK_SUBHEADER") || "Block"} ${blockIndex + 1}`,
+            fontSize: 11,
+            bold: true,
+            margin: [10, 4, 10, 2]
+          });
+
+          detailsHeaders.push({
+            columns: [
+              { text: t("BPA_SUB_OCCUPANCY_LABEL") || "Sub Occupancy", bold: true, fontSize: 9, width: "40%", margin: [10, 2, 0, 2] },
+              { text: block.subOccupancy, fontSize: 9, width: "*", margin: [0, 2, 10, 2] }
+            ],
+            margin: [10, 0, 10, 4]
+          });
+
+          const colHeaders = detail?.additionalDetails?.colHeaders || [];
+          const headerRow = colHeaders.map((col) => ({
+            text: t(col),
+            bold: true,
+            fontSize: 8,
+            fillColor: "#d9d9d9",
+            margin: [2, 2, 2, 2],
+            alignment: "center"
+          }));
+
+          // block.floors comes from getFloorData(block, t)
+          // keys: Floor, Level, Occupancy, BuildupArea, Deduction, FloorArea
+          // last element is the totals row (Level === "")
+          const dataRows = block.floors.map((fl) => {
+            const isTotalsRow = fl.Level === "";
+            const bg = isTotalsRow ? "#f0f0f0" : null;
+            return [
+              { text: fl.Floor, fontSize: 8, bold: isTotalsRow, fillColor: bg, margin: [2, 2, 2, 2] },
+              { text: String(fl.Level), fontSize: 8, bold: isTotalsRow, fillColor: bg, margin: [2, 2, 2, 2], alignment: "center" },
+              { text: fl.Occupancy, fontSize: 8, bold: isTotalsRow, fillColor: bg, margin: [2, 2, 2, 2] },
+              { text: fl.BuildupArea, fontSize: 8, bold: isTotalsRow, fillColor: bg, margin: [2, 2, 2, 2], alignment: "right" },
+              { text: fl.Deduction, fontSize: 8, bold: isTotalsRow, fillColor: bg, margin: [2, 2, 2, 2], alignment: "right" },
+              { text: fl.FloorArea, fontSize: 8, bold: isTotalsRow, fillColor: bg, margin: [2, 2, 2, 2], alignment: "right" }
+            ];
+          });
+
+          detailsHeaders.push({
+            table: {
+              widths: ["auto", "auto", "auto", "auto", "auto", "auto"],
+              body: [headerRow, ...dataRows]
+            },
+            layout: {
+              hLineWidth: () => 1,
+              vLineWidth: () => 1,
+              hLineColor: () => "#cccccc",
+              vLineColor: () => "#cccccc"
+            },
+            margin: [10, 2, 10, 6]
+          });
+        });
+      }
+    } 
+}
 
   return detailsHeaders;
 }

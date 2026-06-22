@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { Toast } from "@mseva/digit-ui-react-components";
+import { Toast, Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
@@ -106,6 +106,18 @@ const Inbox = ({ parentRoute }) => {
   const [tableData, setTableData] = useState([]);
   const [statusData, setStatusData] = useState([]);
   const [totalCountData, setTotalCountData] = useState(0);
+  const [assigneeCounts, setAssigneeCounts] = useState({
+    ASSIGNED_TO_ME: 0,
+    ASSIGNED_TO_ALL: 0,
+  });
+  const hasCapturedAssigneeCounts = useRef(false);
+
+  const setSelectedTenantIdValue = useCallback(
+    (key, value) => {
+      dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
+    },
+    [formState.selectedTenantId]
+  );
 
   const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
 
@@ -132,6 +144,61 @@ const Inbox = ({ parentRoute }) => {
     filters: memoizedFilters,
     config: { enabled: !!tenantId },
   });
+
+  const assigneeCountBaseFilters = useMemo(() => {
+    const countFilterForm = { ...(memoizedFilters?.filterForm || {}) };
+    delete countFilterForm.applicationStatus;
+
+    return {
+      ...memoizedFilters,
+      filterForm: countFilterForm,
+    };
+  }, [memoizedFilters]);
+
+  const assignedToMeFilters = useMemo(
+    () => ({
+      ...assigneeCountBaseFilters,
+      filterForm: {
+        ...(assigneeCountBaseFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ME",
+      },
+    }),
+    [assigneeCountBaseFilters]
+  );
+
+  const assignedToAllFilters = useMemo(
+    () => ({
+      ...assigneeCountBaseFilters,
+      filterForm: {
+        ...(assigneeCountBaseFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ALL",
+      },
+    }),
+    [assigneeCountBaseFilters]
+  );
+
+  const { data: assignedToMeInboxData } = Digit.Hooks.noc.useInbox({
+    tenantId: effectiveTenantId,
+    filters: assignedToMeFilters,
+    config: { enabled: !!tenantId },
+  });
+
+  const { data: assignedToAllInboxData } = Digit.Hooks.noc.useInbox({
+    tenantId: effectiveTenantId,
+    filters: assignedToAllFilters,
+    config: { enabled: !!tenantId },
+  });
+
+  useEffect(() => {
+    if (hasCapturedAssigneeCounts.current) return;
+    if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+
+    setAssigneeCounts({
+      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
+    });
+    hasCapturedAssigneeCounts.current = true;
+  }, [assignedToAllInboxData, assignedToMeInboxData]);
 
   useEffect(() => {
     if (inboxData) {
@@ -225,8 +292,7 @@ const Inbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
-      const resolvedStatuses =
-        filterData.applicationStatus?.map((item) => item.applicationstatus || item.statusCode || item.code) || [];
+      const resolvedStatuses = filterData.applicationStatus?.map((item) => item.applicationstatus || item.statusCode || item.code) || [];
 
       if (filterData.applicationStatus) {
         setFilterFormValue("applicationStatus", resolvedStatuses);
@@ -335,6 +401,23 @@ const Inbox = ({ parentRoute }) => {
         <InboxWrapper
           title={t("ES_COMMON_INBOX")}
           totalCount={totalCountData}
+          tenantSelector={
+            tenantId === "pb.punjab" && cities?.length ? (
+              <div className="new-inbox-tenant-selector">
+                <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>
+                  {t("BPA_CITIES_DROPDOWN_LABEL")}
+                </div>
+                <div className="new-inbox-tenant-dropdown">
+                  <Dropdown
+                    option={cities}
+                    selected={cities.find((city) => city.code === formState?.selectedTenantId?.tenantId)}
+                    select={(value) => setSelectedTenantIdValue("tenantId", value.code)}
+                    optionKey="name"
+                  />
+                </div>
+              </div>
+            ) : null
+          }
           filterSection={
             <NewFilterFormFieldComponent
               registerRef={() => {}}
@@ -344,20 +427,21 @@ const Inbox = ({ parentRoute }) => {
               getFilterFormValue={getFilterFormValue}
               statuses={statusData}
               isInboxLoading={isInboxLoading}
+              assigneeCounts={assigneeCounts}
               handleFilter={handleFilterChange}
             />
           }
-          topBar={
-            <InboxTopBar
-              statuses={statusData}
-              activeTab={activeStatusTab}
-              onTabClick={onStatusTabClick}
-              searchValue={topBarSearch}
-              onSearchChange={(e) => setTopBarSearch(e.target.value)}
-              searchPlaceholder="Search by application number..."
-              totalCount={totalCountData}
-            />
-          }
+          // topBar={
+          //   <InboxTopBar
+          //     statuses={statusData}
+          //     activeTab={activeStatusTab}
+          //     onTabClick={onStatusTabClick}
+          //     searchValue={topBarSearch}
+          //     onSearchChange={(e) => setTopBarSearch(e.target.value)}
+          //     searchPlaceholder="Search by application number..."
+          //     totalCount={totalCountData}
+          //   />
+          // }
           isLoading={isInboxLoading}
           tableData={tableData}
           tableProps={propsForInboxTable}

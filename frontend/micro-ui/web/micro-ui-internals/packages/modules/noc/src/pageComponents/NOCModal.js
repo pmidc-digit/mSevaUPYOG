@@ -163,14 +163,14 @@ const NOCModal = ({
       finalComments = `${commentsText}[#?..**]${conditionalText}`;
     }
 
-    if (action?.action !== "APPROVE" && action?.action !== "UPDATE_FEE" && action?.action !== "REJECT" && action?.action !== "SEND_FOR_INSPECTION_REPORT" && !selectedApprover?.uuid) {
-      setTimeout(() => {
-        closeToast();
-      }, 2000);
+    // if (action?.action !== "APPROVE" && action?.action !== "UPDATE_FEE" && action?.action !== "REJECT" && action?.action !== "SEND_FOR_INSPECTION_REPORT"  && !selectedApprover?.uuid) {
+    //   setTimeout(()=>{
+    //     closeToast();
+    //   },2000);
 
-      setShowToast({ key: "true", error: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
-      return;
-    }
+    //   setShowToast({ key: "true", error:true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
+    //   return;
+    // }
 
     if (checkCommentsMandatory && !commentsText) {
       setTimeout(() => {

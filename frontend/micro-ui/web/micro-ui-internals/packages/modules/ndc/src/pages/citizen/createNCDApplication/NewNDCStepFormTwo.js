@@ -31,7 +31,6 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
   }, [applicationDetails]);
 
   function goNext(finaldata) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, finaldata);
     const missingFields = validation(finaldata);
     if (missingFields.length > 0) {
       setError(`${t("NDC_MESSAGE_" + missingFields[0].replace(".", "_").toUpperCase())}`);
@@ -42,41 +41,25 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    const isRealId = id && id.startsWith("NDC-");
+    // const isRealId = id && id.startsWith("NDC-");
 
-    console.log("here", isRealId);
-
-    if (isRealId) {
-      // onGoNext();
-      console.log("here bab");
-      updateApplication(finaldata);
-    } else {
-      console.log("go next");
-      onGoNext();
-    }
-    // onGoNext();
+    // if (isRealId) {
+    //   // onGoNext();
+    //   updateApplication(finaldata);
+    // } else {
+    //   onGoNext();
+    // }
+    onGoNext();
     //}
   }
 
   const updateApplication = async (data) => {
-    const applicant = Digit.UserService.getUser()?.info || {};
-    const auditDetails = data?.cpt?.details?.auditDetails;
-    const applicantId = applicant?.uuid;
+    // const applicant = Digit.UserService.getUser()?.info || {};
+    // const auditDetails = data?.cpt?.details?.auditDetails;
+    // const applicantId = applicant?.uuid;
 
     // Pick the source of truth for the application
     const baseApplication = checkFormData?.responseData?.[0] || {};
-
-    // Build owners array
-    const owners = [
-      {
-        // name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
-        name: user?.info?.name,
-        mobileNumber: user?.info?.mobileNumber,
-        gender: checkFormData?.NDCDetails?.PropertyDetails?.gender,
-        emailId: user?.info?.emailId,
-        type: user?.info?.type,
-      },
-    ];
 
     // Clone and modify workflow action
     const updatedApplication = {
@@ -84,27 +67,14 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
       workflow: {
         action: "DRAFT",
       },
-      // owners: owners,
       NdcDetails: baseApplication?.NdcDetails,
       Documents: [], // We'll populate below
     };
-
-    (data?.documents?.documents || [])?.forEach((doc) => {
-      updatedApplication.Documents?.push({
-        uuid: doc?.documentUid,
-        documentType: doc?.documentType,
-        documentAttachment: doc?.fileStoreId,
-      });
-    });
 
     // Final payload matches update API structure
     const payload = {
       Applications: [updatedApplication],
     };
-
-    console.log("payload", payload);
-
-    // return;
 
     const response = await Digit.NDCService.NDCUpdate({ tenantId, details: payload });
 
@@ -133,8 +103,6 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
       // Step 2: Extract uploaded documentTypes
       const uploadedDocs = documentsData.map((doc) => doc.documentType);
 
-      console.log("DocumentsObject", requiredDocs);
-
       // Step 3: Identify missing required document codes
       const missingDocs = requiredDocs.filter((reqDoc) => !uploadedDocs.includes(reqDoc));
 
@@ -147,13 +115,10 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    // console.log("onFormValueChange data in document detilas in step 4  ", data,"\n Bool: ",!_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateNDCForm(config.key, data));
     }
   };
-
-  // console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>

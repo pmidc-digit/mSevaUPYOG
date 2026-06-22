@@ -43,9 +43,9 @@ export const configBPAApproverApplication = ({
       {
         body: [
           {
-            label: action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="SEND_FOR_INSPECTION_REPORT") || (action?.action=="ESIGN") || (action?.action=="UPDATE_FEE") || (action?.action=="SEND_BACK") || (action?.action=="UPDATE_ZONE") ? null : t(assigneeLabel || `WF_ROLE_${action.assigneeRoles?.[0]}`),
+            label: businessService === "BPA_LOW" ? ((action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="SEND_FOR_INSPECTION_REPORT") || (action?.action=="ESIGN") || (action?.action=="UPDATE_FEE") || (action?.action=="SEND_BACK") || (action?.action=="UPDATE_ZONE")) ? null : t(assigneeLabel || `WF_ROLE_${action.assigneeRoles?.[0]}`)) : null,
             type: "dropdown",
-            populators: (action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="SEND_FOR_INSPECTION_REPORT")) || (action?.action=="ESIGN") || (action?.action=="UPDATE_FEE") || (action?.action=="SEND_BACK") || (action?.action=="UPDATE_ZONE") ? null : (
+            populators: businessService === "BPA_LOW" ? ((action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="SEND_FOR_INSPECTION_REPORT")) || (action?.action=="ESIGN") || (action?.action=="UPDATE_FEE") || (action?.action=="SEND_BACK") || (action?.action=="UPDATE_ZONE") ? null : (
               <DropdownWithDesignation
                 option={approvers}
                 autoComplete="off"
@@ -55,7 +55,7 @@ export const configBPAApproverApplication = ({
                 selected={selectedApprover}
                 t={t}
               />
-            ),
+            )) : null,
           },
           {
             label: (action?.action=="BLOCK") ? t(`BLOCK_REASON`):null  ,

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { Toast } from "@mseva/digit-ui-react-components";
+import { Toast, Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
@@ -84,8 +84,12 @@ const CLUInbox = ({ parentRoute }) => {
     if (inboxObjectInSessionStorage) {
       const sessionLimit = parseInt(inboxObjectInSessionStorage.tableForm?.limit, 10);
       const validLimit = [10, 20, 30, 40, 50].includes(sessionLimit) ? sessionLimit : tableOrderFormDefaultValues.limit;
+      const sessionFilterForm = inboxObjectInSessionStorage.filterForm || filterFormDefaultValues;
       return {
-        filterForm: inboxObjectInSessionStorage.filterForm || filterFormDefaultValues,
+        filterForm: {
+          ...sessionFilterForm,
+          applicationStatus: [],
+        },
         searchForm: inboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
         tableForm: {
           ...tableOrderFormDefaultValues,
@@ -103,26 +107,54 @@ const CLUInbox = ({ parentRoute }) => {
       tableForm: tableOrderFormDefaultValues,
       selectedTenantId: selectedTenantIdDefaultValues,
     };
-  }, [
-    inboxObjectInSessionStorage,
-    filterFormDefaultValues,
-    searchFormDefaultValues,
-    tableOrderFormDefaultValues,
-    selectedTenantIdDefaultValues,
-  ]);
+  }, [inboxObjectInSessionStorage, filterFormDefaultValues, searchFormDefaultValues, tableOrderFormDefaultValues, selectedTenantIdDefaultValues]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
   const [tableData, setTableData] = useState([]);
   const [statusData, setStatusData] = useState([]);
+  const [topBarStatusData, setTopBarStatusData] = useState([]);
   const [totalCountData, setTotalCountData] = useState(0);
+  const [assigneeCounts, setAssigneeCounts] = useState({
+    ASSIGNED_TO_ME: 0,
+    ASSIGNED_TO_ALL: 0,
+  });
+  const capturedAssigneeCountsTenant = useRef(null);
 
-  const setSelectedTenantIdValue = useCallback((key, value) => {
-    dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
-  }, [formState.selectedTenantId]);
+  const getResolvedStatuses = useCallback((applicationStatuses = []) => {
+    return [
+      ...new Set(
+        applicationStatuses.reduce((acc, item) => {
+          if (Array.isArray(item?.statusids) && item.statusids.length) {
+            acc.push(...item.statusids);
+          } else if (item?.statusid) {
+            acc.push(item.statusid);
+          } else if (item?.code) {
+            acc.push(item.code);
+          }
+          return acc;
+        }, [])
+      ),
+    ];
+  }, []);
+
+  const setSelectedTenantIdValue = useCallback(
+    (key, value) => {
+      dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
+    },
+    [formState.selectedTenantId]
+  );
 
   const memoizedFilters = useMemo(() => {
+    const normalizedFilterForm = {
+      ...(formState?.filterForm || filterFormDefaultValues),
+    };
+
+    if (!normalizedFilterForm?.applicationStatus?.length) {
+      delete normalizedFilterForm.applicationStatus;
+    }
+
     return {
-      filterForm: formState?.filterForm || filterFormDefaultValues,
+      filterForm: normalizedFilterForm,
       searchForm: formState?.searchForm || searchFormDefaultValues,
       tableForm: formState?.tableForm || tableOrderFormDefaultValues,
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
@@ -140,6 +172,17 @@ const CLUInbox = ({ parentRoute }) => {
 
   const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
 
+  useEffect(() => {
+    if (tenantId !== "pb.punjab") return;
+    if (!cities?.length) return;
+    if (formState?.selectedTenantId?.tenantId) return;
+
+    dispatch({
+      action: "mutateSelectedTenantId",
+      data: { ...(formState?.selectedTenantId || {}), tenantId: cities[0].code },
+    });
+  }, [cities, formState?.selectedTenantId, tenantId]);
+
   const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.obps.useCLUInbox({
     tenantId: effectiveTenantId,
     filters: memoizedFilters,
@@ -148,9 +191,127 @@ const CLUInbox = ({ parentRoute }) => {
     },
   });
 
+  const assigneeCountBaseFilters = useMemo(() => {
+    const countFilterForm = { ...(memoizedFilters?.filterForm || {}) };
+    delete countFilterForm.applicationStatus;
+
+    return {
+      ...memoizedFilters,
+      filterForm: countFilterForm,
+    };
+  }, [memoizedFilters]);
+
+  const assignedToMeFilters = useMemo(
+    () => ({
+      ...assigneeCountBaseFilters,
+      filterForm: {
+        ...(assigneeCountBaseFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ME",
+      },
+    }),
+    [assigneeCountBaseFilters]
+  );
+
+  const assignedToAllFilters = useMemo(
+    () => ({
+      ...assigneeCountBaseFilters,
+      filterForm: {
+        ...(assigneeCountBaseFilters?.filterForm || {}),
+        assignee: "ASSIGNED_TO_ALL",
+      },
+    }),
+    [assigneeCountBaseFilters]
+  );
+
+  const { data: assignedToMeInboxData } = Digit.Hooks.obps.useCLUInbox({
+    tenantId: effectiveTenantId,
+    filters: assignedToMeFilters,
+    config: {
+      enabled: !!tenantId,
+    },
+  });
+
+  const { data: assignedToAllInboxData } = Digit.Hooks.obps.useCLUInbox({
+    tenantId: effectiveTenantId,
+    filters: assignedToAllFilters,
+    config: {
+      enabled: !!tenantId,
+    },
+  });
+
+  useEffect(() => {
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
+    setAssigneeCounts({
+      ASSIGNED_TO_ME: 0,
+      ASSIGNED_TO_ALL: 0,
+    });
+  }, [effectiveTenantId]);
+
+  useEffect(() => {
+    if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
+
+    setAssigneeCounts({
+      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
+    });
+    capturedAssigneeCountsTenant.current = effectiveTenantId;
+  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId]);
+
   useEffect(() => {
     if (inboxData) {
-      setStatusData(inboxData?.statuses || []);
+      const duplicateStatusCounts = (inboxData?.statuses || []).reduce((acc, status) => {
+        const statusKey = status?.applicationstatus;
+        if (!statusKey) return acc;
+        acc[statusKey] = (acc[statusKey] || 0) + 1;
+        return acc;
+      }, {});
+
+      const groupedStatuses = (inboxData?.statuses || []).reduce((acc, status) => {
+        const key = status?.applicationstatus;
+
+        if (!key) {
+          acc.push(status);
+          return acc;
+        }
+
+        const count = status?.totalCount ?? status?.count ?? 0;
+        const existingStatus = acc.find((item) => item?.applicationstatus === key);
+
+        if (existingStatus) {
+          existingStatus.totalCount = (existingStatus.totalCount || 0) + count;
+          existingStatus.count = existingStatus.totalCount;
+          existingStatus.statusids = [...new Set([...(existingStatus.statusids || []), status?.statusid].filter(Boolean))];
+          return acc;
+        }
+
+        acc.push({
+          ...status,
+          selectionValue: undefined,
+          selectionValues: status?.statusid ? [status.statusid] : [],
+          statusid: `${key}_GROUP`,
+          statusids: status?.statusid ? [status.statusid] : [],
+          totalCount: count,
+          count,
+          businessService: null,
+          businessservice: null,
+        });
+        return acc;
+      }, []);
+
+      setStatusData(
+        groupedStatuses.map((status) => ({
+          ...status,
+          selectionValue: status?.selectionValue,
+          selectionValues: status?.statusids || status?.selectionValues || [],
+        }))
+      );
+      setTopBarStatusData(
+        (inboxData?.statuses || []).map((status) => ({
+          ...status,
+          hasDuplicateName: (duplicateStatusCounts?.[status?.applicationstatus] || 0) > 1,
+        }))
+      );
       setTableData(inboxData?.table || []);
       setTotalCountData(inboxData?.totalCount || 0);
     }
@@ -207,12 +368,9 @@ const CLUInbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
-      if (filterData.applicationStatus) {
-        setFilterFormValue(
-          "applicationStatus",
-          filterData.applicationStatus.map((item) => item.code)
-        );
-      }
+      const resolvedStatuses = getResolvedStatuses(filterData.applicationStatus || []);
+
+      setFilterFormValue("applicationStatus", resolvedStatuses);
       if (filterData.assignee) {
         setFilterFormValue("assignee", filterData.assignee);
       }
@@ -221,13 +379,36 @@ const CLUInbox = ({ parentRoute }) => {
         action: "mutateFilterForm",
         data: {
           ...formState?.filterForm,
-          applicationStatus: filterData.applicationStatus?.map((item) => item.code) || [],
+          applicationStatus: resolvedStatuses,
           assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ME",
         },
       });
     },
-    [formState?.filterForm, setFilterFormValue]
+    [formState?.filterForm, getResolvedStatuses, setFilterFormValue]
   );
+
+  const filteredTopBarStatuses = useMemo(() => {
+    const selectedStatusCodes = formState?.filterForm?.applicationStatus || [];
+
+    if (!selectedStatusCodes.length) {
+      return topBarStatusData;
+    }
+
+    const selectedStatusKeys = [
+      ...new Set(
+        statusData
+          .filter((status) => (status?.statusids || []).some((statusId) => selectedStatusCodes.includes(statusId)))
+          .map((status) => status?.applicationstatus)
+          .filter(Boolean)
+      ),
+    ];
+
+    if (!selectedStatusKeys.length) {
+      return topBarStatusData;
+    }
+
+    return topBarStatusData.filter((status) => selectedStatusKeys.includes(status?.applicationstatus));
+  }, [formState?.filterForm?.applicationStatus, statusData, topBarStatusData]);
 
   const searchDebounceRef = useRef(null);
   const hasInitializedFilterForm = useRef(false);
@@ -279,8 +460,8 @@ const CLUInbox = ({ parentRoute }) => {
   }, [formState, resetFilterForm]);
 
   const onStatusTabClick = useCallback(
-    (label, statusCode) => {
-      setActiveStatusTab(statusCode || label);
+    (label, status) => {
+      setActiveStatusTab(label);
       if (label === "CLEAR") {
         setTopBarSearch("");
         return;
@@ -290,8 +471,8 @@ const CLUInbox = ({ parentRoute }) => {
         handleFilterFormSubmit(onFilterFormSubmit)();
         return;
       }
-      const resolvedCode = statusCode || label;
-      setFilterFormValue("applicationStatus", [resolvedCode], { shouldDirty: true, shouldTouch: true });
+      const resolvedCode = Array.isArray(status?.statusids) && status.statusids.length ? status.statusids : status?.statusid ? [status.statusid] : [];
+      setFilterFormValue("applicationStatus", resolvedCode, { shouldDirty: true, shouldTouch: true });
       handleFilterFormSubmit(onFilterFormSubmit)();
     },
     [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
@@ -315,6 +496,23 @@ const CLUInbox = ({ parentRoute }) => {
         <InboxWrapper
           title={t("ES_COMMON_INBOX")}
           totalCount={totalCountData}
+          tenantSelector={
+            tenantId === "pb.punjab" && cities?.length ? (
+              <div className="new-inbox-tenant-selector">
+                <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>
+                  {t("BPA_CITIES_DROPDOWN_LABEL")}
+                </div>
+                <div className="new-inbox-tenant-dropdown">
+                  <Dropdown
+                    option={cities}
+                    selected={cities.find((city) => city.code === effectiveTenantId)}
+                    select={(value) => setSelectedTenantIdValue("tenantId", value.code)}
+                    optionKey="name"
+                  />
+                </div>
+              </div>
+            ) : null
+          }
           filterSection={
             <NewFilterFormFieldComponent
               registerRef={() => {}}
@@ -324,20 +522,21 @@ const CLUInbox = ({ parentRoute }) => {
               getFilterFormValue={getFilterFormValue}
               statuses={statusData}
               isInboxLoading={isInboxLoading}
+              assigneeCounts={assigneeCounts}
               handleFilter={handleFilterChange}
             />
           }
-          topBar={
-            <InboxTopBar
-              statuses={statusData}
-              activeTab={activeStatusTab}
-              onTabClick={onStatusTabClick}
-              searchValue={topBarSearch}
-              onSearchChange={(e) => setTopBarSearch(e.target.value)}
-              searchPlaceholder="Search by application number..."
-              totalCount={totalCountData}
-            />
-          }
+          // topBar={
+          //   // <InboxTopBar
+          //   //   statuses={filteredTopBarStatuses}
+          //   //   activeTab={activeStatusTab}
+          //   //   onTabClick={onStatusTabClick}
+          //   //   searchValue={topBarSearch}
+          //   //   onSearchChange={(e) => setTopBarSearch(e.target.value)}
+          //   //   searchPlaceholder="Search by application number..."
+          //   //   totalCount={totalCountData}
+          //   // />
+          // }
           isLoading={isInboxLoading}
           tableData={tableData}
           tableProps={propsForInboxTable}

@@ -157,10 +157,8 @@
 
 // export default InboxTopBar;
 
-
 import React from "react";
 import { useTranslation } from "react-i18next";
-
 
 const InboxTopBar = ({
   statuses = [],
@@ -173,6 +171,21 @@ const InboxTopBar = ({
   showClearTab = true,
 }) => {
   const { t } = useTranslation();
+  const businessServiceLabelMap = React.useMemo(
+    () => ({
+      BPA_LOW: "Self certification",
+    }),
+    []
+  );
+  const duplicateStatusCodes = React.useMemo(() => {
+    const counts = (statuses || []).reduce((acc, status) => {
+      const key = status?.applicationstatus;
+      if (!key) return acc;
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    return new Set(Object.keys(counts).filter((key) => counts[key] > 1));
+  }, [statuses]);
 
   const getStatusCount = (status) => {
     return status?.totalCount ?? status?.count ?? status?.noOfRecords ?? 0;
@@ -180,7 +193,7 @@ const InboxTopBar = ({
 
   return (
     <div className="new-inbox-topbar">
-      <div className="new-inbox-tabs">
+      {/* <div className="new-inbox-tabs">
         <button
           type="button"
           className={`new-inbox-tab ${
@@ -198,26 +211,27 @@ const InboxTopBar = ({
           </span>
         </button>
 
-        {(statuses || []).map((status) => (
+        {(statuses || []).map((status) => {
+          const businessService = status?.businessService || status?.businessservice;
+          const businessServiceLabel = status?.businessServiceLabel || businessServiceLabelMap?.[businessService] || businessService;
+          const uniqueKey = status?.statusid || (businessService ? `${status?.applicationstatus}-${businessService}` : status?.applicationstatus);
+          const hasDuplicateName = status?.hasDuplicateName ?? duplicateStatusCodes.has(status?.applicationstatus);
+          return (
           <button
-            key={status?.applicationstatus}
+            key={uniqueKey}
             type="button"
             className={`new-inbox-tab ${
-              activeTab === status?.applicationstatus
+              activeTab === uniqueKey
                 ? "new-inbox-tab-active"
                 : ""
             }`}
-            onClick={() =>
-              onTabClick?.(
-                status?.applicationstatus,
-                status?.applicationstatus
-              )
-            }
+            onClick={() => onTabClick?.(uniqueKey, status)}
           >
             {t(status?.applicationstatus)}
+            {hasDuplicateName && businessServiceLabel ? ` (${businessServiceLabel})` : ""}
             <span
               className={`new-inbox-tab-count ${
-                activeTab === status?.applicationstatus
+                activeTab === uniqueKey
                   ? "new-inbox-tab-count-active"
                   : ""
               }`}
@@ -225,7 +239,7 @@ const InboxTopBar = ({
               {getStatusCount(status)}
             </span>
           </button>
-        ))}
+        )})}
 
         {showClearTab && (
           <button
@@ -238,37 +252,17 @@ const InboxTopBar = ({
             {t("CLEAR")}
           </button>
         )}
-      </div>
+      </div> */}
 
       <div className="new-inbox-search">
         <span aria-hidden="true" className="new-inbox-search-icon">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="11" cy="11" r="7" stroke="#6B7280" strokeWidth="2" />
-            <line
-              x1="16.65"
-              y1="16.65"
-              x2="21"
-              y2="21"
-              stroke="#6B7280"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
+            <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </span>
 
-        <input
-          type="text"
-          className="new-inbox-search-input"
-          value={searchValue}
-          onChange={onSearchChange}
-          placeholder={searchPlaceholder}
-        />
+        <input type="text" className="new-inbox-search-input" value={searchValue} onChange={onSearchChange} placeholder={searchPlaceholder} />
       </div>
     </div>
   );

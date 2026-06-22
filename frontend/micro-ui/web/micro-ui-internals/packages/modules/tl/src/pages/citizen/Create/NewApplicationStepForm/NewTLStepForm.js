@@ -128,7 +128,7 @@ const NewTLStepForm = () => {
   if (resumeAppNo && (isResumeLoading || !isReduxReady)) return <Loader page={true} />;
 
   return (
-    <div className="employeeCard">
+    <div className="card">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
         {t("New Trade License Application")}
       </CardHeader>

@@ -145,7 +145,7 @@ const CreateTradeLicence = ({ parentRoute }) => {
         const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
         return (
           <Route path={`${match.path}/${routeObj.route}`} key={index}>
-            <div className="card">
+            <div className="employeeCard">
               <h1 className="TL-card-title">
                 {t("Trade Licence New Application")}
               </h1>

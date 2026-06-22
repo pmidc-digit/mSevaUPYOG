@@ -174,23 +174,28 @@ function SelectDocument({
         }
 
         const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile);
+        const originalDoc = prev?.find((item) => item?.documentType === selectedDocument?.documentType) || {};
         if (selectedDocument?.id) {
           return [
             ...filteredDocumentsByFileStoreId,
             {
+              ...originalDoc,
               documentType: selectedDocument?.documentType,
               fileStoreId: uploadedFile,
               tenantId: tenantId,
               id: selectedDocument?.id,
+              active: originalDoc && originalDoc.active !== undefined ? originalDoc.active : true,
             },
           ];
         } else {
           return [
             ...filteredDocumentsByFileStoreId,
             {
+              ...originalDoc,
               documentType: selectedDocument?.documentType,
               fileStoreId: uploadedFile,
               tenantId: tenantId,
+              active: originalDoc && originalDoc.active !== undefined ? originalDoc.active : true,
             },
           ];
         }

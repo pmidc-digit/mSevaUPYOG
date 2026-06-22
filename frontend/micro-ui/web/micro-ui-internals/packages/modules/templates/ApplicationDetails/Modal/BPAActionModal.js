@@ -39,7 +39,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
    const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
-      roles: uniqueRoles?.map(role=>({code:role})),
+      roles: uniqueRoles?.filter(role => role !== "OBPAS_UPDATE_ZONE")?.map(role => ({ code: role })),
       zones: applicationData?.additionalDetails?.zonenumber,
       categories: applicationData?.additionalDetails?.categories,
       subcategories: applicationData?.additionalDetails?.subcategories,

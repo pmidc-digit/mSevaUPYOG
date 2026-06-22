@@ -30,13 +30,13 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
   };
 
   function mapToNDCPayload(inputData, actionStatus) {
+    const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
+
     const owners = (inputData?.apiData?.Applications?.[0]?.owners || baseApplication?.owners)?.map((item) => {
       const obj = JSON.parse(JSON.stringify(item));
       delete obj.status;
       return obj;
     });
-
-    const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
 
     const existingDocuments = baseApplication?.Documents || [];
     const uploadedDocuments = inputData?.DocummentDetails?.documents?.documents || [];

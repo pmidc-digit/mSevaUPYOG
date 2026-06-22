@@ -1,5 +1,5 @@
 import React, { Fragment, useCallback, useEffect, useMemo, useReducer, useState, useRef } from "react";
-import { Loader, Card, Table, CaseIcon } from "@mseva/digit-ui-react-components";
+import { Loader, Card, Table, CaseIcon, Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
@@ -18,6 +18,7 @@ const LayoutInbox = ({ parentRoute }) => {
   }, []);
 
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const { data: cities } = Digit.Hooks.useTenants();
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
 
@@ -38,6 +39,13 @@ const LayoutInbox = ({ parentRoute }) => {
       // businessServiceArray: businessServiceListLayout(true) || [],
     }),
     []
+  );
+
+  const selectedTenantIdDefaultValues = useMemo(
+    () => ({
+      tenantId: cities?.[0]?.code || null,
+    }),
+    [cities]
   );
 
   const isMobileDevice = Digit.Utils.browser.isMobile();
@@ -63,6 +71,9 @@ const LayoutInbox = ({ parentRoute }) => {
       case "mutateTableForm":
         Digit.SessionStorage.set("LAYOUT.INBOX", { ...state, tableForm: payload.data });
         return { ...state, tableForm: payload.data };
+      case "mutateSelectedTenantId":
+        Digit.SessionStorage.set("LAYOUT.INBOX", { ...state, selectedTenantId: payload.data });
+        return { ...state, selectedTenantId: payload.data };
       default:
         break;
     }
@@ -103,14 +114,22 @@ const LayoutInbox = ({ parentRoute }) => {
           limit: validLimit,
           offset: 0,
         },
+        selectedTenantId: InboxObjectInSessionStorage.selectedTenantId || selectedTenantIdDefaultValues,
       };
     }
     return {
       filterForm: filterFormDefaultValues,
       searchForm: searchFormDefaultValues,
       tableForm: tableOrderFormDefaultValues,
+      selectedTenantId: selectedTenantIdDefaultValues,
     };
-  }, [InboxObjectInSessionStorage]);
+  }, [
+    InboxObjectInSessionStorage,
+    filterFormDefaultValues,
+    searchFormDefaultValues,
+    selectedTenantIdDefaultValues,
+    tableOrderFormDefaultValues,
+  ]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
 
@@ -122,7 +141,14 @@ const LayoutInbox = ({ parentRoute }) => {
     ASSIGNED_TO_ME: 0,
     ASSIGNED_TO_ALL: 0,
   });
-  const hasCapturedAssigneeCounts = useRef(false);
+  const capturedAssigneeCountsTenant = useRef(null);
+
+  const setSelectedTenantIdValue = useCallback(
+    (key, value) => {
+      dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
+    },
+    [formState.selectedTenantId]
+  );
 
   const getResolvedStatusIds = useCallback((applicationStatuses = []) => {
     return [
@@ -141,23 +167,39 @@ const LayoutInbox = ({ parentRoute }) => {
     ];
   }, []);
 
+  const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+
+  useEffect(() => {
+    if (tenantId !== "pb.punjab") return;
+    if (!cities?.length) return;
+    if (formState?.selectedTenantId?.tenantId) return;
+
+    dispatch({
+      action: "mutateSelectedTenantId",
+      data: { ...(formState?.selectedTenantId || {}), tenantId: cities[0].code },
+    });
+  }, [cities, formState?.selectedTenantId, tenantId]);
+
   const memoizedFilters = useMemo(() => {
     return {
       filterForm: formState?.filterForm || filterFormDefaultValues,
       searchForm: formState?.searchForm || searchFormDefaultValues,
       tableForm: formState?.tableForm || tableOrderFormDefaultValues,
+      selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
   }, [
     formState?.filterForm,
     formState?.searchForm,
     formState?.tableForm,
+    formState?.selectedTenantId,
+    selectedTenantIdDefaultValues,
     filterFormDefaultValues,
     searchFormDefaultValues,
     tableOrderFormDefaultValues,
   ]);
 
   const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useLayoutInbox({
-    tenantId,
+    tenantId: effectiveTenantId,
     filters: memoizedFilters,
   });
 
@@ -194,25 +236,33 @@ const LayoutInbox = ({ parentRoute }) => {
   );
 
   const { data: assignedToMeInboxData } = Digit.Hooks.obps.useLayoutInbox({
-    tenantId,
+    tenantId: effectiveTenantId,
     filters: assignedToMeFilters,
   });
 
   const { data: assignedToAllInboxData } = Digit.Hooks.obps.useLayoutInbox({
-    tenantId,
+    tenantId: effectiveTenantId,
     filters: assignedToAllFilters,
   });
 
   useEffect(() => {
-    if (hasCapturedAssigneeCounts.current) return;
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
+    setAssigneeCounts({
+      ASSIGNED_TO_ME: 0,
+      ASSIGNED_TO_ALL: 0,
+    });
+  }, [effectiveTenantId]);
+
+  useEffect(() => {
     if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
 
     setAssigneeCounts({
       ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
     });
-    hasCapturedAssigneeCounts.current = true;
-  }, [assignedToAllInboxData, assignedToMeInboxData]);
+    capturedAssigneeCountsTenant.current = effectiveTenantId;
+  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId]);
 
   useEffect(() => {
     if (inboxData) {
@@ -409,6 +459,23 @@ const LayoutInbox = ({ parentRoute }) => {
     <InboxWrapper
       title={t("ES_COMMON_INBOX")}
       totalCount={totalCountData}
+      tenantSelector={
+        tenantId === "pb.punjab" && cities?.length ? (
+          <div className="new-inbox-tenant-selector">
+            <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>
+              {t("BPA_CITIES_DROPDOWN_LABEL")}
+            </div>
+            <div className="new-inbox-tenant-dropdown">
+              <Dropdown
+                option={cities}
+                selected={cities.find((city) => city.code === effectiveTenantId)}
+                select={(value) => setSelectedTenantIdValue("tenantId", value.code)}
+                optionKey="name"
+              />
+            </div>
+          </div>
+        ) : null
+      }
       filterSection={
         <NewFilterFormFieldComponent
           registerRef={() => {}}

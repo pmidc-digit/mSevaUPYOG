@@ -110,7 +110,7 @@ const Inbox = ({ parentRoute }) => {
     ASSIGNED_TO_ME: 0,
     ASSIGNED_TO_ALL: 0,
   });
-  const hasCapturedAssigneeCounts = useRef(false);
+  const capturedAssigneeCountsTenant = useRef(null);
 
   const setSelectedTenantIdValue = useCallback(
     (key, value) => {
@@ -120,6 +120,17 @@ const Inbox = ({ parentRoute }) => {
   );
 
   const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+
+  useEffect(() => {
+    if (tenantId !== "pb.punjab") return;
+    if (!cities?.length) return;
+    if (formState?.selectedTenantId?.tenantId) return;
+
+    dispatch({
+      action: "mutateSelectedTenantId",
+      data: { ...(formState?.selectedTenantId || {}), tenantId: cities[0].code },
+    });
+  }, [cities, formState?.selectedTenantId, tenantId]);
 
   const memoizedFilters = useMemo(() => {
     return {
@@ -190,15 +201,23 @@ const Inbox = ({ parentRoute }) => {
   });
 
   useEffect(() => {
-    if (hasCapturedAssigneeCounts.current) return;
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
+    setAssigneeCounts({
+      ASSIGNED_TO_ME: 0,
+      ASSIGNED_TO_ALL: 0,
+    });
+  }, [effectiveTenantId]);
+
+  useEffect(() => {
     if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
 
     setAssigneeCounts({
       ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
     });
-    hasCapturedAssigneeCounts.current = true;
-  }, [assignedToAllInboxData, assignedToMeInboxData]);
+    capturedAssigneeCountsTenant.current = effectiveTenantId;
+  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId]);
 
   useEffect(() => {
     if (inboxData) {
@@ -410,7 +429,7 @@ const Inbox = ({ parentRoute }) => {
                 <div className="new-inbox-tenant-dropdown">
                   <Dropdown
                     option={cities}
-                    selected={cities.find((city) => city.code === formState?.selectedTenantId?.tenantId)}
+                    selected={cities.find((city) => city.code === effectiveTenantId)}
                     select={(value) => setSelectedTenantIdValue("tenantId", value.code)}
                     optionKey="name"
                   />

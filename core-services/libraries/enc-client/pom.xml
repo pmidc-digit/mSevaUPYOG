@@ -17,7 +17,7 @@
     <repository>
       <id>repo.digit.org</id>
       <name>eGov ERP Releases Repository</name>
-      <url>https://nexus-repo.digit.org/nexus/content/repositories/releases/</url>
+      <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-releases/</url>
     </repository>
     <snapshotRepository>
       <id>repo.digit.org</id>
@@ -96,12 +96,12 @@
     <repository>
       <id>repo.egovernments.org</id>
       <name>eGov ERP Releases Repository</name>
-      <url>https://nexus-repo.egovernments.org/nexus/content/repositories/releases/</url>
+      <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-releases/</url>
     </repository>
     <repository>
       <id>snapshots.repo.egovernments.org</id>
       <name>eGov ERP Snapshots Repository</name>
-      <url>https://nexus-repo.egovernments.org/nexus/content/repositories/snapshots/</url>
+      <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/</url>
     </repository>
     <repository>
 			<id>repo.digit.org.snapshot</id>
@@ -118,17 +118,6 @@
           <source>21</source>
           <target>21</target>
         </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-source-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

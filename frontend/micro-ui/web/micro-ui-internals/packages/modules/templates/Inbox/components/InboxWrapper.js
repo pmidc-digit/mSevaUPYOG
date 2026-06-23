@@ -120,6 +120,7 @@ import { Loader, Card, Table } from "@mseva/digit-ui-react-components";
 const InboxWrapper = ({
   title,
   totalCount = 0,
+  tenantSelector,
   filterSection,
   topBar,
   isLoading = false,
@@ -142,6 +143,12 @@ const InboxWrapper = ({
       </div>
 
       <div className="new-inbox-layout">
+        {tenantSelector && (
+          <div className="new-inbox-top-filters">
+            {tenantSelector}
+          </div>
+        )}
+
         {filterSection && (
           <div className="new-inbox-top-filters">
             {filterSection}

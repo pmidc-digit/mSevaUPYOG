@@ -118,7 +118,9 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         missingFields.push(`PAN (Owner ${index}) must be a valid 10-character format (e.g., AAAAA9999A)`);
       }
 
-      if (!owner?.ownerType?.code) missingFields.push(`Special Category (Owner ${index})`);
+      if (!ownershipCode?.includes("INSTITUTIONAL") && !owner?.ownerType?.code) {
+        missingFields.push(`Special Category (Owner ${index})`);
+      }
     };
 
     if (isSingleOwner) {

@@ -96,7 +96,7 @@ const SurveyModal = ({ isOpen, onClose }) => {
           {data?.length > 0 && <span className="survey-badge">{data.length}</span>}
         </div>
       }
-      headerBarEnd={<CloseBtn onClick={onClose} />}
+      headerBarEnd={<CloseBtn style={{ cursor: "pointer" }} onClick={onClose} />}
       hideSubmit={true}
       popupStyles={{
         width: "95%",
@@ -120,9 +120,9 @@ const SurveyModal = ({ isOpen, onClose }) => {
             <Loader />
           </div>
         ) : data && data.length > 0 ? (
-          <div className="new-card-cards-grid">
-            {data?.map((survey, index) => (
-              <div>
+          <div>
+            <div className="new-card-cards-grid">
+              {data?.map((survey, index) => (
                 <div key={index} className="new-card-option">
                   <h3 className="survey-card-title">{survey?.surveyTitle}</h3>
                   <div className="survey-card-container">
@@ -143,27 +143,28 @@ const SurveyModal = ({ isOpen, onClose }) => {
                   </div>
                   <SubmitBar label={t("Start Survey")} onSubmit={() => handleStartSurvey(survey)} />
                 </div>
-                <div style={{ justifyItems: "center" }}>
-                  <div
-                    style={{
-                      alignItems: "center",
-                      height: "50px",
-                      color: "white",
-                      background: "#1e50da",
-                      width: "79px",
-                      textAlign: "center",
-                      justifyContent: "center",
-                      display: "flex",
-                      borderRadius: "12px",
-                      marginTop: " 60px",
-                    }}
-                    onClick={onClose}
-                  >
-                    Close
-                  </div>
-                </div>
+              ))}
+            </div>
+            <div style={{ justifyItems: "center" }}>
+              <div
+                style={{
+                  alignItems: "center",
+                  height: "50px",
+                  color: "white",
+                  background: "#1e50da",
+                  width: "79px",
+                  textAlign: "center",
+                  justifyContent: "center",
+                  display: "flex",
+                  borderRadius: "12px",
+                  marginTop: " 60px",
+                  cursor: "pointer",
+                }}
+                onClick={onClose}
+              >
+                Close
               </div>
-            ))}
+            </div>
           </div>
         ) : (
           <div className="survey-modal-empty-state">

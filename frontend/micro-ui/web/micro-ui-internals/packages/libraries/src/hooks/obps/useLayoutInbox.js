@@ -76,28 +76,9 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
         })
 
         console.log(" Transformed table data:", tableData)
-              const statusMapData = Object.values(
-          data?.statusMap?.reduce((acc, { applicationstatus, businessservice, count }) => {
-            const key = applicationstatus;
-            if (!acc[key]) {
-              acc[key] = {
-                applicationstatus: key,
-                totalCount: 0,
-                byBusinessservice: {},
-              };
-            }
-
-            acc[key].totalCount += count || 0;
-
-            if (businessservice) {
-              acc[key].byBusinessservice[businessservice] = (acc[key].byBusinessservice[businessservice] || 0) + (count || 0);
-            }
-            return acc;
-          }, {})
-        );
 
         return {
-          statuses: statusMapData || [],
+          statuses: data?.statusMap || [],
           table: tableData || [],
           totalCount: data.totalCount || 0,
           nearingSlaCount: data.nearingSlaCount || 0,

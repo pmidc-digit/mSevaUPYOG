@@ -36,6 +36,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidADS");
   const DateOnly = new Date();
 
+  console.log('getModalData :>> ', getModalData);
   const formatUlbName = (ulbName = "") => {
     if (!ulbName) return "";
     const parts = ulbName.split(".");

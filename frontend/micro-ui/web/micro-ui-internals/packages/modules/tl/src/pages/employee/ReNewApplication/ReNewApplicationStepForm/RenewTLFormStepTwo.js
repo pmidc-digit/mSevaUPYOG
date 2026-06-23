@@ -204,6 +204,36 @@ useEffect(() => {
         resubmitPayload.tradeLicenseDetail.accessories = null;
       }
 
+      // Overlay address if form-edited
+      const originalAddress = applicationData?.tradeLicenseDetail?.address || {};
+      let address = {};
+      if (Traid?.cpt?.details?.address) {
+        const addr = Traid.cpt.details.address;
+        address.id = originalAddress?.id || undefined;
+        address.tenantId = originalAddress?.tenantId || tenantId;
+        address.city = addr.city || addr.tenantId || tenantId;
+        address.locality = { code: addr.locality?.code || null, name: addr.locality?.name || null, label: addr.locality?.label || "Locality" };
+        if (addr.doorNo) address.doorNo = addr.doorNo;
+        if (addr.street) address.street = addr.street;
+        if (addr.pincode) address.pincode = addr.pincode;
+      } else if (Traid?.address) {
+        address.id = originalAddress?.id || undefined;
+        address.tenantId = originalAddress?.tenantId || tenantId;
+        address.city = Traid.address.city?.code || tenantId;
+        address.locality = { code: Traid.address.locality?.code || null, name: Traid.address.locality?.name || null, label: Traid.address.locality?.label || "Locality" };
+        if (Traid.address.doorNo) address.doorNo = Traid.address.doorNo;
+        if (Traid.address.street) address.street = Traid.address.street;
+        if (Traid.address.pincode) address.pincode = Traid.address.pincode;
+        if (Traid.address.buildingName) address.buildingName = Traid.address.buildingName;
+      }
+      if (TraidDetails?.address?.geoLocation?.latitude) {
+        address.latitude = TraidDetails?.address?.geoLocation?.latitude;
+        address.longitude = TraidDetails.address.geoLocation?.longitude;
+      }
+      if (address.city) {
+        resubmitPayload.tradeLicenseDetail.address = address;
+      }
+
       // Save the built payload to Redux — Step 4 (Summary) will submit it with documents
       dispatch(UPDATE_tlNewApplication("EditPayload", resubmitPayload));
       return true; // proceed to next step without API call

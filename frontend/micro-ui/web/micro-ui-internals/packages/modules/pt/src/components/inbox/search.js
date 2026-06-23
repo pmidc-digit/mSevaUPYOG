@@ -208,7 +208,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                     submit
                   />
                   {/* style={{ paddingTop: "16px", textAlign: "center" }} className="clear-search" */}
-                  <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
+                  <div style={{ width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
                     {clearAll()}
                   </div>
                 </div>

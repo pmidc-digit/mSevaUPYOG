@@ -14,7 +14,7 @@ import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setNDCStep } from "../redux/actions/NDCFormActions";
 import { useTranslation } from "react-i18next";
-import NDCDocument from "../components/NDCDocument";
+import NDCDocument from "../pageComponents/NDCDocument";
 
 const NDCSummary = ({ formData, goNext, onGoBack }) => {
   const { pathname: url } = useLocation();
@@ -159,17 +159,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
       {/* Documents Section */}
       <h2 className="bpa-summary-heading">{t("Documents Uploaded")}</h2>
       <div className="bpa-summary-section">
-        {docs?.length > 0 ? (
-          <div className="ndc-doc-view-comp">
-            {docs?.map((doc, index) => (
-              <div key={index} style={documentCardStyle}>
-                <NDCDocument value={docs} Code={doc?.documentType} index={index} formData={formData} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
-        )}
+        {Array.isArray(docs) && docs?.length > 0 ? <NDCDocument value={{ workflowDocs: docs }} /> : <div>{t("TL_NO_DOCUMENTS_MSG")}</div>}
       </div>
 
       {/* Action Section */}

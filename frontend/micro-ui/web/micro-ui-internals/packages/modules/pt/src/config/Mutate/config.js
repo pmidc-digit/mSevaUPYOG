@@ -201,6 +201,16 @@ export const newConfigMutate = [
             keyPath: ["searchResult", "property", "owners", "_index_", "correspondenceAddress"],
             ownershipType: "ALL",
           },
+          {
+            label: "PT_FORM3_GENDER",
+            keyPath: ["searchResult", "property", "owners", "_index_", "gender"],
+            ownershipType: "INDIVIDUAL",
+          },
+          {
+            label: "PT_OWNER_PERCENTAGE",
+            keyPath: ["searchResult", "property", "owners", "_index_", "ownerShipPercentage"],
+            ownershipType: "INDIVIDUAL",
+          },
           
         ],
       },

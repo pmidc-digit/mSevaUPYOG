@@ -128,6 +128,8 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
       const rawAdditionalDetails = CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails || {};
       const originalAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
+      const checkBillingPeriod = updatedPropertyDetails?.lastBillingPeriod || originalAdditionalDetails?.lastBillingPeriod;
+      const lastBillingPeriodData = new Date(checkBillingPeriod).getTime();
 
       const applicationType = updatedPropertyDetails?.applicationType?.code || originalAdditionalDetails?.applicationType;
       const additionalDetails =
@@ -147,6 +149,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
               locationType: updatedPropertyDetails?.locationType?.code || originalAdditionalDetails?.locationType,
               applicationType: applicationType,
               securityDeposit: null,
+              lastBillingPeriod: lastBillingPeriodData,
             }
           : null;
 
@@ -187,31 +190,6 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
             };
           }),
         }),
-        // Document: updatedDocuments.map((doc) => {
-        //   const originalDoc =
-        //     (CreatedResponse?.AllotmentDetails?.[0]?.Document || [])?.find(
-        //       (d) => d.documentUid === doc?.documentUid || d.fileStoreId === doc?.fileStoreId || d.documentType === doc?.documentType
-        //     ) || {};
-
-        //   // Check if this is a new document (not found in original documents)
-        //   const isNewDocument = !originalDoc?.documentUid && !originalDoc?.fileStoreId;
-
-        //   // Get docId and allotmentId
-        //   const docId = doc?.docId || originalDoc?.docId;
-        //   const allotmentId = doc?.allotmentId || originalDoc?.allotmentId || (isNewDocument ? allotmentIdForNewDocs : undefined);
-
-        //   return {
-        //     documentType: doc?.documentType || originalDoc?.documentType || "",
-        //     fileStoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
-        //     documentUid: doc?.documentUid || originalDoc?.documentUid,
-        //     id: doc?.id || originalDoc?.id,
-        //     // Only include docId if it exists (backend generates it for new documents)
-        //     ...(docId ? { docId } : {}),
-        //     // Always include allotmentId (use parent allotment ID for new documents)
-        //     ...(allotmentId ? { allotmentId } : {}),
-        //     active: true,
-        //   };
-        // }),
         workflow: {
           ...existingWorkflow,
           action: selectedAction?.action || "",
@@ -250,6 +228,8 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       const rawAdditionalDetails = CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails || {};
       const originalAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
 
+      const checkBillingPeriod = updatedPropertyDetails?.lastBillingPeriod || originalAdditionalDetails?.lastBillingPeriod;
+      const lastBillingPeriodData = new Date(checkBillingPeriod).getTime();
       const applicationType = updatedPropertyDetails?.applicationType?.code || originalAdditionalDetails?.applicationType;
       const additionalDetails =
         applicationType === "Legacy"
@@ -267,6 +247,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
               propertyType: updatedPropertyDetails?.propertySpecific?.code || originalAdditionalDetails?.propertyType,
               locationType: updatedPropertyDetails?.locationType?.code || originalAdditionalDetails?.locationType,
               applicationType: applicationType,
+              lastBillingPeriod: lastBillingPeriodData,
             }
           : null;
 
@@ -304,23 +285,6 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
             };
           }),
         }),
-        // Document: updatedDocuments?.map((doc) => {
-        //   const originalDoc =
-        //     (CreatedResponse?.AllotmentDetails?.[0]?.Document || [])?.find(
-        //       (d) => d.documentUid === doc?.documentUid || d.fileStoreId === doc?.fileStoreId || d.documentType === doc?.documentType
-        //     ) || {};
-
-        //   const docId = doc?.docId || originalDoc?.docId;
-        //   const allotmentId = doc?.allotmentId || originalDoc?.allotmentId;
-
-        //   return {
-        //     documentType: doc?.documentType || originalDoc?.documentType || "",
-        //     fileStoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
-        //     ...(docId ? { docId } : {}),
-        //     ...(allotmentId ? { allotmentId } : {}),
-        //     active: true,
-        //   };
-        // }),
         workflow: {
           ...existingWorkflow,
           action: selectedAction?.action || "",

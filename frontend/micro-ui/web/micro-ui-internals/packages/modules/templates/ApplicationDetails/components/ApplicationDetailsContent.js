@@ -486,20 +486,22 @@ function ApplicationDetailsContent({
         moduleName: "PT",
       },
     };
-    // try {
-    const response = await Digit.PTService.update({ Property: { ...payload } }, tenantId, propertyIds);
-    //   const result = await response.json();
-    //   if (response.ok) {
-    //     alert(`Property marked as ${status} successfully!`);
-    //   } else {
-    //     alert("Failed to update property status.");
-    //     console.error(result);
-    //   }
-    // }
-    //  catch (err) {
-    //   console.error("Error inactivating property:", err);
-    //   alert(`Something went wrong while making the property ${status}.`);
-    // }
+    try {
+      const response = await Digit.PTService.update({ Property: { ...payload } }, tenantId, propertyIds);
+      if (response && response.Properties && response.Properties.length > 0) {
+        if (status === "INACTIVE") {
+          alert("Application is in workflow first approve the application");
+        } else {
+          alert(`Property marked as ${status} successfully!`);
+        }
+        window.location.reload();
+      } else {
+        alert("Failed to update property status.");
+      }
+    } catch (err) {
+      console.error("Error updating property status:", err);
+      alert(`Something went wrong while making the property ${status}.`);
+    }
   };
 
   const applicationData_pt = applicationDetails?.applicationData;
@@ -625,7 +627,7 @@ const propertyDocuments = propertyDocumentValues.length
     if (moduleCode === "TL") {
       const appNo = applicationData?.applicationNumber;
       if (!appNo) return;
-      Digit.PaymentService.recieptSearch(tenantId, "TL", { consumerCodes: appNo })
+      Digit.PaymentService.recieptSearch(applicationData?.tenantId || tenantId, "TL", { consumerCodes: appNo })
         .then((response) => {
           console.log("TL Payment History response:", response);
           if (response?.Payments?.length > 0) {
@@ -639,29 +641,32 @@ const propertyDocuments = propertyDocumentValues.length
     }
 
     // Only proceed for PT and BPREG modules
-    if (!propertyId) {
+    if (!currentPropertyId && !propertyId) {
       return;
     }
 
     try {
+      const consumerCodesList = [currentPropertyId, propertyId].filter((value, index, self) => value && self.indexOf(value) === index);
       let filters = {
-        consumerCodes: propertyId,
+        consumerCodes: consumerCodesList.join(","),
       };
       const auth = true;
 
+      const actualQueryTenantId = applicationData?.tenantId || tenantId;
+
       if (moduleCode === "BPAREG") {
-        Digit.OBPSService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
+        Digit.OBPSService.paymentsearch({ tenantId: actualQueryTenantId, filters: filters, auth: auth }).then((response) => {
           setPayments(response?.Payments);
         });
       } else if (moduleCode === "PT") {
-        Digit.PTService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
+        Digit.PTService.paymentsearch({ tenantId: actualQueryTenantId, filters: filters, auth: auth }).then((response) => {
           setPayments(response?.Payments);
         });
       }
     } catch (error) {
       console.error("❌ Payment search error for PT/BPREG:", error);
     }
-  }, [moduleCode, propertyId, tenantId, applicationData?.applicationNumber]);
+  }, [moduleCode, propertyId, tenantId, applicationData?.applicationNumber, applicationData?.tenantId]);
   return (
     <Card style={{ position: "relative" }}>
       {/* For UM-4418 changes */}

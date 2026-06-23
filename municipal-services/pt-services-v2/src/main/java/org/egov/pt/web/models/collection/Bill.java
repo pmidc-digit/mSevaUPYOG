@@ -8,7 +8,7 @@ import lombok.*;
 import org.egov.pt.web.models.AuditDetails;
 import org.springframework.util.CollectionUtils;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;

@@ -3,12 +3,12 @@ package org.egov.pt.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.egov.pt.repository.ServiceRequestRepository;
 import org.egov.pt.util.FileUtils;
 import org.egov.pt.web.models.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -24,10 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +40,7 @@ public class UserServiceTest {
     @InjectMocks
     private UserService userServiceMock;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
        MockitoAnnotations.initMocks(this);
        ReflectionTestUtils.setField(userServiceMock, "userHost", "http://localhost:8081");
@@ -55,7 +54,7 @@ public class UserServiceTest {
     public void testUserCreateIfUserPresent(){
         PropertyRequest request = null;
         UserDetailResponse userDetailResponse = null;
-        LinkedHashMap responseWithUser = new LinkedHashMap();
+        Map<String, Object> responseWithUser = new LinkedHashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         try{
             request = getObject("src/test/PropertyRequest.json",PropertyRequest.class);
@@ -67,7 +66,7 @@ public class UserServiceTest {
             fail();
         }
 
-        when(serviceRequestRepositoryMock.fetchResult(any(StringBuilder.class),anyObject())).thenReturn(responseWithUser);
+        when(serviceRequestRepositoryMock.fetchResult(any(StringBuilder.class),any())).thenReturn(responseWithUser);
         userServiceMock.createUser(request);
 
         userDetailResponse = mapper.convertValue(responseWithUser,UserDetailResponse.class);
@@ -84,8 +83,8 @@ public class UserServiceTest {
     public void testUserCreateIfUserNotPresent(){
         PropertyRequest request = null;
         UserDetailResponse userDetailResponse = null;
-        LinkedHashMap responseWithUser = new LinkedHashMap();
-        LinkedHashMap emptyResponseMap = new LinkedHashMap();
+        Map<String, Object> responseWithUser = new LinkedHashMap<>();
+        Map<String, Object> emptyResponseMap = new LinkedHashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         try{
             request = getObject("src/test/PropertyRequest.json",PropertyRequest.class);
@@ -105,7 +104,7 @@ public class UserServiceTest {
 //                    log.error("Object class: "+invocationOnMock.getArguments()[1].getClass());
                     throw new IllegalArgumentException("unexpected type");
                 }
-            }).when(serviceRequestRepositoryMock).fetchResult(any(),anyObject());
+            }).when(serviceRequestRepositoryMock).fetchResult(any(),any());
         }
         catch(Exception e){
             e.printStackTrace();
@@ -127,8 +126,8 @@ public class UserServiceTest {
     public void updateUserWhenUserNotPresentTest(){
         PropertyRequest request = null;
         UserDetailResponse userDetailResponse = null;
-        LinkedHashMap responseWithUser = new LinkedHashMap();
-        LinkedHashMap emptyResponseMap = new LinkedHashMap();
+        Map<String, Object> responseWithUser = new LinkedHashMap<>();
+        Map<String, Object> emptyResponseMap = new LinkedHashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         try{
             request = getObject("src/test/PropertyRequest.json",PropertyRequest.class);
@@ -147,7 +146,7 @@ public class UserServiceTest {
                 else {
                     throw new IllegalArgumentException("unexpected type");
                 }
-            }).when(serviceRequestRepositoryMock).fetchResult(any(),anyObject());
+            }).when(serviceRequestRepositoryMock).fetchResult(any(),any());
         }
         catch(Exception e){
             e.printStackTrace();
@@ -169,7 +168,7 @@ public class UserServiceTest {
     public void updateUserWhenUserPresentTest(){
         PropertyRequest request = null;
         UserDetailResponse userDetailResponse = null;
-        LinkedHashMap responseWithUser = new LinkedHashMap();
+        Map<String, Object> responseWithUser = new LinkedHashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         try{
             request = getObject("src/test/PropertyRequest.json",PropertyRequest.class);
@@ -180,7 +179,8 @@ public class UserServiceTest {
             e.printStackTrace();
             fail();
         }
-        when(serviceRequestRepositoryMock.fetchResult(any(StringBuilder.class),anyObject())).thenReturn((LinkedHashMap)SerializationUtils.clone(responseWithUser));
+        when(serviceRequestRepositoryMock.fetchResult(any(StringBuilder.class),any()))
+        	.thenReturn(new LinkedHashMap<>(responseWithUser));
         userServiceMock.updateUser(request);
 
         userDetailResponse = mapper.convertValue(responseWithUser,UserDetailResponse.class);
@@ -205,7 +205,7 @@ public class UserServiceTest {
      * @param responeMap LinkedHashMap got from user api response
      * @param dobFormat dob format (required because dob is returned in different format's in search and create response in user service)
      */
-    private void parseResponse(LinkedHashMap responeMap,String dobFormat){
+    private void parseResponse(Map<String, Object> responeMap,String dobFormat){
         List<LinkedHashMap> users = (List<LinkedHashMap>)responeMap.get("user");
         String format1 = "dd-MM-yyyy HH:mm:ss";
         users.forEach( map -> {

@@ -3,7 +3,7 @@ package org.egov.pt.web.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class SearchCriteria {

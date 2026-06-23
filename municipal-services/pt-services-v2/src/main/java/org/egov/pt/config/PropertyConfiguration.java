@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.TimeZone;
 
 
@@ -29,14 +29,6 @@ public class PropertyConfiguration {
     @PostConstruct
     public void initialize() {
         TimeZone.setDefault(TimeZone.getTimeZone(timeZone));
-    }
-
-    @Bean
-    @Autowired
-    public MappingJackson2HttpMessageConverter jacksonConverter(ObjectMapper objectMapper) {
-    MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-    converter.setObjectMapper(objectMapper);
-    return converter;
     }
 
 

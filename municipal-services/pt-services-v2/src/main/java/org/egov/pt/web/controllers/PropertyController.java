@@ -1,6 +1,6 @@
 package org.egov.pt.web.controllers;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.pt.service.PropertyService;
 import org.egov.pt.util.ResponseInfoFactory;

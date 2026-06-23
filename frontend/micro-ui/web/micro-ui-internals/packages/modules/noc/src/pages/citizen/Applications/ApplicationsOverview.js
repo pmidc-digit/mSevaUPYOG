@@ -927,7 +927,7 @@ const CitizenApplicationOverview = () => {
         </div>
       </Card> */}
 
-      {applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" && (
+      {(applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") && (
         <Card>
           <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
           {applicationDetails?.Noc?.[0]?.nocDetails && (

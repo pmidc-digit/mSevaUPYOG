@@ -7,7 +7,7 @@
         <mirror>
             <id>nexus</id>
             <mirrorOf>central</mirrorOf>
-            <url>https://mseva.lgpunjab.gov.in/nexus/content/groups/public/</url>
+            <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-public/</url>
         </mirror>
     </mirrors>
     <servers>

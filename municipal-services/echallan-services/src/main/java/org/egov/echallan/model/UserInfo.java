@@ -25,12 +25,12 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import org.egov.common.contract.request.Role;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 
 /**
  * This is acting ID token of the authenticated user on the server. Any value provided by the clients will be ignored and actual user based on authtoken will be used on the server.
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-08-10T16:46:24.044+05:30[Asia/Calcutta]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-08-10T16:46:24.044+05:30[Asia/Calcutta]")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -38,27 +38,27 @@ import org.hibernate.validator.constraints.SafeHtml;
 public class UserInfo extends User {
 
   @JsonProperty("tenantId")
-  @SafeHtml
+  @SanitizeHtml
   private String tenantId;
 
   @JsonProperty("uuid")
-  @SafeHtml
+  @SanitizeHtml
   private String uuid;
 
   @JsonProperty("userName")
-  @SafeHtml
+  @SanitizeHtml
   private String userName;
 
   @JsonProperty("password")
-  @SafeHtml
+  @SanitizeHtml
   private String password;
 
   @JsonProperty("idToken")
-  @SafeHtml
+  @SanitizeHtml
   private String idToken;
 
   @JsonProperty("email")
-  @SafeHtml
+  @SanitizeHtml
   private String email;
 
   @JsonProperty("primaryrole")

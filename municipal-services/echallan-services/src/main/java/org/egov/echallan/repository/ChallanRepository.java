@@ -112,7 +112,7 @@ public class ChallanRepository {
         List<Object> preparedStmtList = new ArrayList<>();
         String query = queryBuilder.getChallanSearchQuery(criteria, preparedStmtList,true);
 
-        int count = jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Integer.class);
+        int count = jdbcTemplate.queryForObject(query, Integer.class, preparedStmtList.toArray());
         return count;
     }
 
@@ -190,12 +190,14 @@ public class ChallanRepository {
 		List<Object> preparedStmtListTotalCollection = new ArrayList<>();
 		String query = queryBuilder.getTotalCollectionQuery(tenantId, preparedStmtListTotalCollection);
 		
-		int totalCollection = jdbcTemplate.queryForObject(query,preparedStmtListTotalCollection.toArray(),Integer.class);
+		Integer totalCollectionRes = jdbcTemplate.queryForObject(query,Integer.class,preparedStmtListTotalCollection.toArray());
+		int totalCollection = (totalCollectionRes != null) ? totalCollectionRes : 0;
 		
 		List<Object> preparedStmtListTotalServices = new ArrayList<>();
 		query = queryBuilder.getTotalServicesQuery(tenantId, preparedStmtListTotalServices);
 		
-		int totalServices = jdbcTemplate.queryForObject(query,preparedStmtListTotalServices.toArray(),Integer.class);
+		Integer totalServicesRes = jdbcTemplate.queryForObject(query,Integer.class,preparedStmtListTotalServices.toArray());
+		int totalServices = (totalServicesRes != null) ? totalServicesRes : 0;
 		
 		Map<String, Integer> dynamicData = new HashMap<String,Integer>();
 		dynamicData.put(ChallanConstants.TOTAL_COLLECTION, totalCollection);

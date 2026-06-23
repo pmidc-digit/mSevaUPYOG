@@ -26,16 +26,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Capture the challan details 
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-08-10T16:46:24.044+05:30[Asia/Calcutta]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-08-10T16:46:24.044+05:30[Asia/Calcutta]")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -48,31 +48,31 @@ public class Challan {
   private UserInfo citizen = null;
 
   @JsonProperty("id")
-  @SafeHtml
+  @SanitizeHtml
   private String id = null;
 
   @JsonProperty("tenantId")
-  @SafeHtml
+  @SanitizeHtml
   private String tenantId = null;
 
   @JsonProperty("businessService")
-  @SafeHtml
+  @SanitizeHtml
   private String businessService = null;
 
   @JsonProperty("challanNo")
-  @SafeHtml
+  @SanitizeHtml
   private String challanNo = null;
 
   @JsonProperty("referenceId")
-  @SafeHtml
+  @SanitizeHtml
   private String referenceId = null;
 
   @JsonProperty("description")
-  @SafeHtml
+  @SanitizeHtml
   private String description = null;
 
   @JsonProperty("accountId")
-  @SafeHtml
+  @SanitizeHtml
   private String accountId = null;
 
   @JsonProperty("additionalDetail")
@@ -80,7 +80,7 @@ public class Challan {
   private Object additionalDetail = null;
 
   @JsonProperty("source")
-  @SafeHtml
+  @SanitizeHtml
   private String source = null;
   
   @JsonProperty("taxPeriodFrom")
@@ -100,7 +100,7 @@ public class Challan {
   private Address address = null;
   
   @JsonProperty("filestoreid")
-  @SafeHtml
+  @SanitizeHtml
   private String filestoreid = null;
 
   @JsonProperty("auditDetails")

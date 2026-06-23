@@ -12,10 +12,10 @@
 
 package org.egov.echallan.model;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,7 +32,7 @@ import lombok.Setter;
  */
 @ApiModel(description = "Representation of a address. Indiavidual APIs may choose to extend from this using allOf if more details needed to be added in their case. ")
 @Validated
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-09-18T17:06:11.263+05:30")
+@jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-09-18T17:06:11.263+05:30")
 
 @Getter
 @Setter
@@ -42,17 +42,17 @@ import lombok.Setter;
 public class Address   {
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("id")
         private String id;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("tenantId")
         private String tenantId = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("doorNo")
         private String doorNo = null;
 
@@ -63,56 +63,56 @@ public class Address   {
         private Double longitude = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("addressId")
         private String addressId = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("addressNumber")
         private String addressNumber = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("type")
         private String type = null;
 
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("addressLine1")
         private String addressLine1 = null;
 
-        @SafeHtml
+        @SanitizeHtml
         @Size(max=256)
         @JsonProperty("addressLine2")
         private String addressLine2 = null;
 
-        @SafeHtml
+        @SanitizeHtml
         @Size(max=64)
         @JsonProperty("landmark")
         private String landmark = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("city")
         private String city = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("pincode")
         private String pincode = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("detail")
         private String detail = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("buildingName")
         private String buildingName = null;
 
         @Size(max=64)
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("street")
         private String street = null;
 
@@ -120,23 +120,23 @@ public class Address   {
         @JsonProperty("locality")
         private Boundary locality = null;
 
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("plotNo")
         private String plotNo = null;
 
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("district")
         private String district = null;
 
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("state")
         private String state = null;
 
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("country")
         private String country = null;
 
-        @SafeHtml
+        @SanitizeHtml
         @JsonProperty("region")
         private String region = null;
 }

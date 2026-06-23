@@ -38,6 +38,7 @@ import org.egov.swcalculation.web.models.TaxPeriodResponse;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -63,6 +64,7 @@ public class MasterDataService {
 	private CalculatorUtils calculatorUtils;
 	
 	@Autowired
+	@Lazy
 	private EstimationService estimationService;
 	
 	/**

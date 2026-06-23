@@ -64,6 +64,7 @@ import org.egov.swcalculation.web.models.TaxHeadEstimate;
 import org.egov.swcalculation.web.models.TaxPeriod;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.egov.swcalculation.web.models.SingleDemand;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -85,6 +86,7 @@ public class DemandService {
 	private SWCalculationUtil utils;
 
 	@Autowired
+	@Lazy
 	private MasterDataService masterDataService;
 
 	@Autowired

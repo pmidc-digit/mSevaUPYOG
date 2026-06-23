@@ -12,6 +12,7 @@ import org.egov.swcalculation.service.DemandService;
 import org.egov.swcalculation.web.models.BillGeneratorReq;
 import org.egov.swcalculation.web.models.BillScheduler.StatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,7 @@ public class BillGenerationConsumer {
 	private ObjectMapper mapper;
 
 	@Autowired
+	@Lazy
 	private DemandService demandService;
 
 	@Autowired

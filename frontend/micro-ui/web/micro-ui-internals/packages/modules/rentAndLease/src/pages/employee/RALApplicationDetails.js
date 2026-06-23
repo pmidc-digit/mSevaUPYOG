@@ -446,7 +446,7 @@ const RALApplicationDetails = () => {
             <Row label={t("Building/Plot/Shop Name")} text={tValue(propertyDetails?.propertyName)} />
             <Row label={t("RAL_ALLOTMENT_TYPE")} text={tValue(propertyDetails?.allotmentType)} />
             <Row label={t("Building/Plot/Shop Type")} text={tValue(propertyDetails?.propertyType)} />
-            <Row label={t("Building/Plot/Shop Address")} text={tValue(propertyDetails?.address)} />
+            <Row label={t("Building/Plot/Shop Locality")} text={tValue(propertyDetails?.address)} />
             <Row label={t("RAL_PROPERTY_AMOUNT")} text={tValue(propertyDetails?.baseRent)} />
             <Row label={t("PENALTY_TYPE")} text={tValue(propertyDetails?.penaltyType)} />
             <Row

@@ -41,7 +41,7 @@ package org.egov;
 
 import java.util.TimeZone;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -52,6 +52,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @SpringBootApplication
 public class FinanceCollectionsVoucherConsumerApplication{
@@ -84,6 +85,20 @@ public class FinanceCollectionsVoucherConsumerApplication{
         objectMapper.setTimeZone(TimeZone.getTimeZone(timeZone));
         converter.setObjectMapper(objectMapper);
         return converter;
+    }
+
+    @Bean
+    public org.springframework.kafka.core.ProducerFactory<String, Object> producerFactory() {
+        java.util.Map<String, Object> configProps = new java.util.HashMap<>();
+        configProps.put(org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        configProps.put(org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
+        configProps.put(org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
+        return new org.springframework.kafka.core.DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public org.springframework.kafka.core.KafkaTemplate<String, Object> kafkaTemplate() {
+        return new org.springframework.kafka.core.KafkaTemplate<>(producerFactory());
     }
 
 }

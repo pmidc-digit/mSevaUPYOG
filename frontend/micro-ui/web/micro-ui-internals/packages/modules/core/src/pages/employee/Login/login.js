@@ -1,4 +1,4 @@
-import { BackButton, Dropdown, Loader, LoginIcon, Toast } from "@mseva/digit-ui-react-components";
+import { BackButton, Dropdown, Loader, LoginIcon, Toast, Modal } from "@mseva/digit-ui-react-components";
 import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
 import PropTypes from "prop-types";
 import React, { useEffect, useState } from "react";
@@ -33,6 +33,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   const [otp, setOtp] = useState("");
   const [isOtpValid, setIsOtpValid] = useState(true);
   const [canSubmit, setCanSubmit] = useState(true);
+  const [isError, setIsError] = useState(true);
 
   const history = useHistory();
   // const getUserType = () => "EMPLOYEE" || Digit.UserService.getType();
@@ -88,18 +89,23 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
         userType: "EMPLOYEE",
         type: "login",
       };
+
       setShowOTP(true);
+      setIsError(false);
+      setShowToast(`OTP has been successfully sent to Mob No: ${info?.mobileNumber}`);
       sendOtp({ otp: data });
       Digit.SessionStorage.set("Employee.tenantId", info?.tenantId);
       setUser({ info, ...tokens });
     } catch (err) {
       setDisable(false);
+      setIsError(true);
       setShowToast(err?.response?.data?.error_description || "Invalid login credentials!");
       setTimeout(closeToast, 5000);
     }
   };
 
   const closeToast = () => {
+    setIsError(true);
     setShowToast(null);
   };
 
@@ -250,33 +256,26 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   return isLoading || isStoreLoading ? (
     <Loader />
   ) : (
-    // <Background>
-
-    //   <FormComposer
-    //     onSubmit={onLogin}
-    //     isDisabled={isDisabled || disable}
-    //     noBoxShadow
-    //     inline
-    //     submitInForm
-    //     config={config}
-    //     label={propsConfig.texts.submitButtonLabel}
-    //     secondaryActionLabel={propsConfig.texts.secondaryButtonLabel}
-    //     onSecondayActionClick={onForgotPassword}
-    //     heading={propsConfig.texts.header}
-    //     description={"Login to access your account"}
-    //     headingStyle={{ textAlign: "center" }}
-    //     className="loginFormStyleEmployeeNew"
-    //     buttonStyle={{ maxWidth: "100%", width: "100%" ,backgroundColor:"#2947A3"}}
-    //   >
-
-    //   </FormComposer>
-    //   {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true}/>}
-
-    // </Background>
     <Background>
       <div className="language-plugin">
         <div className="bhashini-plugin-container"></div>
       </div>
+
+      {/* NEW LEFT SIDE HERO PANEL */}
+      <div className="employee-login-left-panel">
+        <div className="employee-login-logo-wrap">
+          {/* A sleek, generic architectural logo SVG */}
+          <svg viewBox="0 0 24 24" width="36" height="36" fill="white">
+            <path d="M12 2L2 22h20L12 2z" />
+          </svg>
+          <span>UPYOG ENTERPRISE</span>
+        </div>
+
+        <h1>Welcome back to the unified platform for municipal operations and citizen management.</h1>
+        <div style={{ flexGrow: 1 }}></div>
+        <div className="employee-login-left-footer">Driving digital transformation for urban governance across India.</div>
+      </div>
+
       <div className="employee-login-container">
         <div className="employee-login-content">
           <div className="employee-login-icon-circle">
@@ -284,8 +283,8 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
           </div>
 
           <div className="employee-login-branding">
-            <h1 className="employee-upyog-title">UPYOG</h1>
-            <p className="employee-upyog-subtitle">Urban Governance Platform</p>
+            <h1 className="employee-upyog-title">Sign In to UPYOG</h1>
+            <p className="employee-upyog-subtitle">Enter your credentials below to access your account.</p>
           </div>
 
           <div className="employee-login-card">
@@ -321,14 +320,28 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
                   }}
                 />
                 {showOTP && (
-                  <OtpInput
-                    otp={otp}
-                    onOtpChange={setOtp}
-                    onVerifyOtp={onVerifyOtp}
-                    onResendOtp={resendOtp}
-                    canSubmit={canSubmit}
-                    isOtpValid={isOtpValid}
-                  />
+                  <Modal
+                    headerBarMain={<h1 style={{ fontSize: "20px", fontWeight: "600", margin: 0 }}>OTP Verification</h1>}
+                    headerBarEnd={
+                      <div onClick={() => setShowOTP(false)} style={{ cursor: "pointer", padding: "4px" }}>
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="#0f172a">
+                          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                        </svg>
+                      </div>
+                    }
+                    hideSubmit={true}
+                  >
+                    <div style={{ padding: "16px 0" }}>
+                      <OtpInput
+                        otp={otp}
+                        onOtpChange={setOtp}
+                        onVerifyOtp={onVerifyOtp}
+                        onResendOtp={resendOtp}
+                        canSubmit={canSubmit}
+                        isOtpValid={isOtpValid}
+                      />
+                    </div>
+                  </Modal>
                 )}
               </React.Fragment>
             ) : (
@@ -355,7 +368,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
         </div>
       </div>
 
-      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true} />}
+      {showToast && <Toast error={isError} label={showToast} onClose={closeToast} isDleteBtn={true} />}
     </Background>
   );
 };

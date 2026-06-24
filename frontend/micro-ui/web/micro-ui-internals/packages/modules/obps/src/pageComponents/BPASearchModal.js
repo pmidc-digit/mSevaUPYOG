@@ -54,7 +54,7 @@ export const BPASearchModal = ({ closeModal, edcrData }) => {
             setShowToast({ error: true, label: "CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID" });
             return;
         }
-        if(!mobileNumber && !applicationNumber){
+        if(!mobileNumber.trim() && !applicationNumber.trim()){
             setShowToast({ error: true, label: "CORE_COMMON_NO_MOBILE_NUMBER_AND_APPLICATION_NUMBER_MESSAGE" });
             return;
         }
@@ -62,9 +62,9 @@ export const BPASearchModal = ({ closeModal, edcrData }) => {
         try {
             setIsLoading(true);
             const response = await Digit.OBPSService.BPASearch(tenantId, { 
-                ...(mobileNumber?.length>0? {mobileNumber: mobileNumber} : {}),
-                ...(applicationNumber?.length>0?{ applicationNo: applicationNumber} : {}),
-                status: "BLOCKED,INITIATED",                
+                ...(mobileNumber.trim()?.length>0? {mobileNumber: mobileNumber.trim()} : {}),
+                ...(applicationNumber.trim()?.length>0?{ applicationNo: applicationNumber.trim()} : {}),
+                status: "BLOCKED,INITIATED,PROFESSIONAL_ACTION_REQUIRED",                
             });
             setIsLoading(false);
             if(response?.BPA?.length>0){
@@ -200,8 +200,8 @@ export const BPASearchModal = ({ closeModal, edcrData }) => {
                     <Toast
                         isDleteBtn={true}
                         labelstyle={{ width: "100%" }}
-                        error={showToast.error}
-                        warning={showToast.warning}
+                        error={t(showToast.error)}
+                        warning={t(showToast.warning)}
                         label={t(showToast.label)}
                         onClose={() => {
                             setShowToast(null);

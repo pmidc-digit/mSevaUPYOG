@@ -10,15 +10,18 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
 );
 
 function NDCDocument({ value = {}, Code, index }) {
+  console.log("value", value);
   const { t } = useTranslation();
-  const { isLoading, isError, error, data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
+  const { isLoading, isError, error, data } = Digit.Hooks.ndc.useNDCDocumentSearch(
+    {
+      value,
+    },
+    { value }
+  );
   console.log("dataInNDCDocument", data);
 
-  const documents = value?.documents
-    ? value.documents.documents
-        .filter((doc) => doc.documentType === Code)
-        .map((doc) => ({ ...doc, documentType: doc.documentType.replace(/\./g, "_") }))
-    : value.filter((doc) => doc.documentType === Code).map((doc) => ({ ...doc, documentType: doc.documentType.replace(/\./g, "_") }));
+  let documents = [];
+  if (value?.workflowDocs) documents = value?.workflowDocs;
 
   if (isLoading) {
     return <Loader />;
@@ -31,29 +34,22 @@ function NDCDocument({ value = {}, Code, index }) {
           {data?.pdfFiles && (
             <div>
               {documents?.map((document, index) => {
-                let documentLink = pdfDownloadLink(data.pdfFiles, document?.fileStoreId);
+                console.log("document", document);
+
+                let documentLink = pdfDownloadLink(data.pdfFiles, document?.documentAttachment);
                 return (
-                  <a
-                    className="document-link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href={documentLink}
-                  
-                    key={index}
-                  >
+                  <a className="document-link" target="_blank" rel="noopener noreferrer" href={documentLink} key={index}>
                     <div className="document-card">
                       <div className="document-icon-wrapper">
                         <PDFSvg width={80} height={100} />
                       </div>
                       {/* <p className="document-name">{value?.workflowDocs ? t(`${document?.documentType}`) : t(`${document?.documentType}`)}</p> */}
-                       <p className="document-name" title={t(document?.documentType)}>
-                    {(() => {
-                      const text = t(document?.documentType);
-                      return text?.length > 7
-                        ? `${text.substring(0, 7)}...`
-                        : text;
-                    })()}
-                  </p>
+                      <p className="document-name" title={t(document?.documentType)}>
+                        {(() => {
+                          const text = t(document?.documentType);
+                          return text?.length > 7 ? `${text.substring(0, 7)}...` : text;
+                        })()}
+                      </p>
                       <div className="document-action-label">View</div>
                     </div>
                   </a>

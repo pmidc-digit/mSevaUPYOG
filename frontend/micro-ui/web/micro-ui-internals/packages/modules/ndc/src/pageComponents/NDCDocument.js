@@ -13,28 +13,27 @@ function NDCDocument({ value = {} }) {
   const { t } = useTranslation();
   const isMobile = window.Digit.Utils.browser.isMobile();
 
+  console.log("value", value);
+
   const { isLoading, isError, error, data } = Digit.Hooks.ndc.useNDCDocumentSearch(
     {
       value,
     },
     { value }
   );
+
   let documents = [];
   if (value?.workflowDocs) documents = value?.workflowDocs;
-  //   if(value?.owners?.documents["ProofOfIdentity"]) documents.push(value.owners.documents["ProofOfIdentity"]);
-  //   if(value?.owners?.documents["ProofOfOwnership"]) documents.push(value.owners.documents["ProofOfOwnership"]);
-  //   if(value?.owners?.documents["OwnerPhotoProof"]) documents.push(value.owners.documents["OwnerPhotoProof"]);
-
-  //   if (isLoading) {
-  //     return <Loader />;
-  //   }
 
   return (
     <div className="document-container">
       <React.Fragment>
         <div className="document-grid">
           {documents?.map((document, index) => {
-            let documentLink = pdfDownloadLink(data.pdfFiles, document?.uuid);
+            let documentLink = pdfDownloadLink(data.pdfFiles, document?.documentAttachment);
+            // console.log("data", data?.pdfFiles);
+            // console.log("document", document);
+
             return (
               <a target="_blank" rel="noopener noreferrer" href={documentLink} className="document-link" key={index}>
                 <div className="document-card">
@@ -48,9 +47,7 @@ function NDCDocument({ value = {} }) {
                       return text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
                     })()}
                   </p>
-                  <div className="document-action-label">
-                    View
-                  </div>
+                  <div className="document-action-label">View</div>
                 </div>
               </a>
             );

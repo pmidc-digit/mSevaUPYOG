@@ -19,8 +19,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
   const checkNDCData = useSelector((state) => state.ndc.NDCForm.formData);
 
-  console.log("checkApiDataCheck", checkApiDataCheck);
-
   const [getLoader, setLoader] = useState(false);
   const checkFormData = useSelector((state) => state.ndc.NDCForm.formData || {});
 
@@ -40,16 +38,11 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    console.log("checkFormData", checkFormData);
-
     const isRealId = id && id.startsWith("NDC-");
-
-    console.log("isRealId", isRealId);
 
     if (checkFormData?.apiData?.Applications?.[0]?.applicationNo || checkFormData?.responseData?.[0]?.applicationNo || isRealId) {
       // onGoNext();
       updateApplication(data);
-      console.log("here bab");
     } else createApplication(data);
 
     // onGoNext();
@@ -59,8 +52,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     setLoader(true);
     const applicant = Digit.UserService.getUser()?.info || {};
     const applicantId = applicant?.uuid;
-
-    console.log("data?.cpt?.details?.owners", data?.cpt?.details?.owners);
 
     const owners = (data?.cpt?.details?.owners || []).map((owner) => {
       const newOwner = JSON.parse(JSON.stringify(owner));
@@ -150,7 +141,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     try {
       const response = await Digit.NDCService.NDCcreate({ tenantId, details: payload });
       setLoader(false);
-      console.log("response", response);
       if (response?.ResponseInfo?.status === "successful") {
         dispatch(updateNDCForm("apiData", response));
         onGoNext();
@@ -250,8 +240,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       ],
     };
 
-    console.log("payload", payload);
-
     const response = await Digit.NDCService.NDCUpdate({ tenantId, details: payload });
 
     if (response?.ResponseInfo?.status === "successful") {
@@ -349,7 +337,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    // console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateNDCForm(config.key, data));
     }

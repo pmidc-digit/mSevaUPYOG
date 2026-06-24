@@ -2288,7 +2288,7 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
               border: isLast ? [true, false, false, true] : [true, false, false, false]
             },
             {
-              text: indData?.value && String(indData.value).trim() !== "" ? `${indData.value}` : "",
+              text: indData?.value && String(indData.value).trim() !== "" ? `${indData.value} ${indData?.isUnit ? ` ${t(indData.isUnit)}` : ""}` : "",
               fontSize: 9,
               margin: [0, 2, 0, 2],
               border: isLast ? [false, false, true, true] : [false, false, true, false]

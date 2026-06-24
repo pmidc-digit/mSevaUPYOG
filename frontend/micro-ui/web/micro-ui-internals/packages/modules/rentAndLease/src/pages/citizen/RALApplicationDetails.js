@@ -28,8 +28,6 @@ const RALApplicationDetails = () => {
     }
   };
 
-  console.log("applicationData", applicationData);
-
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
@@ -157,7 +155,7 @@ const RALApplicationDetails = () => {
           <CardSubHeader className="ral-card-subheader-24">{t("Building/Plot/Shop Details")}</CardSubHeader>
           <StatusTable>
             <Row label={t("APPLICATION_NUMBER")} text={tValue(applicationData?.applicationNumber)} />
-            <Row label={t("RENT_LEASE_PROPERTY_ID")} text={tValue(propertyDetails?.propertyId)} />
+            <Row label={t("Unit Id")} text={tValue(propertyDetails?.propertyId)} />
             <Row label={t("Building/Plot/Shop Name")} text={tValue(propertyDetails?.propertyName)} />
             <Row label={t("RAL_ALLOTMENT_TYPE")} text={tValue(propertyDetails?.allotmentType)} />
             <Row label={t("Building/Plot/Shop Type")} text={tValue(propertyDetails?.propertyType)} />

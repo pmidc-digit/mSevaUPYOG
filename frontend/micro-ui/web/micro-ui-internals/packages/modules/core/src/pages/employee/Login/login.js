@@ -33,6 +33,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   const [otp, setOtp] = useState("");
   const [isOtpValid, setIsOtpValid] = useState(true);
   const [canSubmit, setCanSubmit] = useState(true);
+  const [isError, setIsError] = useState(true);
 
   const history = useHistory();
   // const getUserType = () => "EMPLOYEE" || Digit.UserService.getType();
@@ -88,18 +89,23 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
         userType: "EMPLOYEE",
         type: "login",
       };
+
       setShowOTP(true);
+      setIsError(false);
+      setShowToast(`OTP has been successfully sent to Mob No: ${info?.mobileNumber}`);
       sendOtp({ otp: data });
       Digit.SessionStorage.set("Employee.tenantId", info?.tenantId);
       setUser({ info, ...tokens });
     } catch (err) {
       setDisable(false);
+      setIsError(true);
       setShowToast(err?.response?.data?.error_description || "Invalid login credentials!");
       setTimeout(closeToast, 5000);
     }
   };
 
   const closeToast = () => {
+    setIsError(true);
     setShowToast(null);
   };
 
@@ -250,29 +256,6 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   return isLoading || isStoreLoading ? (
     <Loader />
   ) : (
-    // <Background>
-
-    //   <FormComposer
-    //     onSubmit={onLogin}
-    //     isDisabled={isDisabled || disable}
-    //     noBoxShadow
-    //     inline
-    //     submitInForm
-    //     config={config}
-    //     label={propsConfig.texts.submitButtonLabel}
-    //     secondaryActionLabel={propsConfig.texts.secondaryButtonLabel}
-    //     onSecondayActionClick={onForgotPassword}
-    //     heading={propsConfig.texts.header}
-    //     description={"Login to access your account"}
-    //     headingStyle={{ textAlign: "center" }}
-    //     className="loginFormStyleEmployeeNew"
-    //     buttonStyle={{ maxWidth: "100%", width: "100%" ,backgroundColor:"#2947A3"}}
-    //   >
-
-    //   </FormComposer>
-    //   {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true}/>}
-
-    // </Background>
     <Background>
       <div className="language-plugin">
         <div className="bhashini-plugin-container"></div>
@@ -287,12 +270,10 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
           </svg>
           <span>UPYOG ENTERPRISE</span>
         </div>
-        
+
         <h1>Welcome back to the unified platform for municipal operations and citizen management.</h1>
         <div style={{ flexGrow: 1 }}></div>
-        <div className="employee-login-left-footer">
-          Driving digital transformation for urban governance across India.
-        </div>
+        <div className="employee-login-left-footer">Driving digital transformation for urban governance across India.</div>
       </div>
 
       <div className="employee-login-container">
@@ -387,7 +368,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
         </div>
       </div>
 
-      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true} />}
+      {showToast && <Toast error={isError} label={showToast} onClose={closeToast} isDleteBtn={true} />}
     </Background>
   );
 };

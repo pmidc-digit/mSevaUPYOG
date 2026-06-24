@@ -21,6 +21,7 @@ const NewLogin = ({ stateCode }) => {
   const [error, setError] = useState(null);
   const [canSubmit, setCanSubmit] = useState(true);
   const [isOtpValid, setIsOtpValid] = useState(true);
+  const [isError, setIsError] = useState(true);
   const [user, setUser] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState(() => location.state?.selectedLanguage || Digit.StoreData.getCurrentLanguage());
   // const [selectedCity, setSelectedCity] = useState(() => ({ code: Digit.ULBService.getCitizenCurrentTenant(true) }));
@@ -64,7 +65,6 @@ const NewLogin = ({ stateCode }) => {
   const getFromLocation = (state) => {
     const userRoles = user?.info?.roles?.map((roleData) => roleData?.code);
     // const isUserBPA = userRoles?.some((role) => role?.includes("BPA"));
-    console.log("StateAtTimeOfLogin", state, selectedCity);
     const isUserBPA =
       user?.info?.roles?.some((role) => role?.code === "BPA_ARCHITECT") ||
       user?.info?.roles?.some((role) => role?.code?.includes("BPA") && role?.tenantId === selectedCity?.code);
@@ -93,6 +93,8 @@ const NewLogin = ({ stateCode }) => {
       const [res, err] = await sendOtp({ otp: data });
       if (!err) {
         setStep("OTP");
+        setError(`OTP has been successfully sent to Mob No: ${mobileNumber}`);
+        setIsError(false);
         setLastSubmittedMobile(mobileNumber);
       } else {
         // Check if user is not registered using new API response format
@@ -194,45 +196,10 @@ const NewLogin = ({ stateCode }) => {
     }
   }, []);
 
+  // setError(`testing`);
+  // setShowToast(true);
+
   return (
-    // <div className="login-page-cover">
-
-    //   <div className="login-container" >
-
-    //      <div className="login-wrapper" >
-    //        <div className="login-circle"> <LoginIcon  /> </div>
-    //     <div className="login-title" >{t("CORE_COMMON_LOGIN")}</div>
-
-    //       <LanguageSelect onLanguageChange={setSelectedLanguage} />
-    //       <LocationSelect onLocationChange={setSelectedCity} selectedCity={selectedCity} />
-
-    //       <MobileInput
-    //         mobileNumber={mobileNumber}
-    //         onMobileChange={handleMobileChange}
-    //         onSendOtp={onSendOtp}
-    //         canSubmit={canSubmit && (lastSubmittedMobile ? mobileNumber !== lastSubmittedMobile : true)}
-    //         step={step}
-    //       />
-
-    //       {step === "OTP" && (
-    //         <OtpInput otp={otp} onOtpChange={setOtp} onVerifyOtp={onVerifyOtp} onResendOtp={resendOtp} canSubmit={canSubmit} isOtpValid={isOtpValid} />
-    //       )}
-
-    //       {step !== "OTP" && (
-    //         <div className="account-link">
-    //           <span>
-    //             {t("CS_COMMON_DONT_HAVE_ACCOUNT")}
-    //           </span>
-    //           <span className="link" onClick={handleRegisterClick}>
-    //             {t("CS_COMMON_REGISTER")}
-    //           </span>
-    //         </div>
-    //       )}
-    //       {error && <Toast error={true} label={error} onClose={() => setError(null)} isDleteBtn={true} />}
-    //     </div>
-    //   </div>
-    // </div>
-
     <div className="login-page-cover">
       <div className="login-container">
         {/* Left Panel - Hero Section */}
@@ -321,7 +288,7 @@ const NewLogin = ({ stateCode }) => {
               </div>
             )}
 
-            {error && <Toast error={true} label={error} onClose={() => setError(null)} isDleteBtn={true} />}
+            {error && <Toast error={isError} label={error} onClose={() => setError(null)} isDleteBtn={true} />}
           </div>
         </div>
       </div>

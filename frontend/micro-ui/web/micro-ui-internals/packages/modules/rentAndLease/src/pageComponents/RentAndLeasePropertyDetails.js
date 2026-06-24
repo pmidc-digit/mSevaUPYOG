@@ -317,23 +317,22 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
   const handleBillingPeriod = (val) => {
     const dueDateRLData = dueDateRL?.["rl-services-masters"]?.DueDate;
-    console.log("dueDateRL", dueDateRLData);
-    console.log("val", val);
 
     const filteredRLData = dueDateRLData?.find((item) => item?.billingCycle == val?.feesPeriodCycle);
 
-    console.log("filteredRLData", filteredRLData);
-
     const dueDay = Number(filteredRLData?.dueDay);
+
     const today = new Date();
     const currentDate = today.getDate();
 
     let billingDate;
 
-    if (currentDate >= dueDay) {
-      billingDate = new Date(today.getFullYear(), today.getMonth(), 0); // last day previous month
+    if (dueDay >= currentDate) {
+      // Last day of previous month
+      billingDate = new Date(today.getFullYear(), today.getMonth(), 0);
     } else {
-      billingDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // last day current month
+      // Last day of current month
+      billingDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
     }
 
     const formattedDate = `${billingDate.getFullYear()}-${String(billingDate.getMonth() + 1).padStart(2, "0")}-${String(
@@ -341,11 +340,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     ).padStart(2, "0")}`;
 
     setValue("lastBillingPeriod", formattedDate);
-
-    console.log("Billing Date:", billingDate);
-    // const prefillISO = prefillEnd.toISOString().split("T")[0];
   };
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <CardSectionHeader className="card-section-header">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSectionHeader>

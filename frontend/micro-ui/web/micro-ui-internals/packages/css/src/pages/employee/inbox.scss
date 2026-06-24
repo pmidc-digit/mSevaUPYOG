@@ -1108,3 +1108,28 @@ max-width: 960px;
 .ndc-search-action-wrapper{
   width: 100%;
 }
+
+          
+.inline-search-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  justify-content: flex-end;
+}
+
+.inline-search-complaint-container {
+  width: 40%;
+  min-width: 250px;
+  margin-left: auto;
+  flex: 0 0 auto;
+  background: #fafafa;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid #e8e8e8;
+}

@@ -288,8 +288,8 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
                                 <React.Fragment key={idx}>
                                   <p>{truncatedComment}</p>
                                   {subComment && (
-                                    <div className="custom-comment-text">
-                                      <h4 className="custom-comment-text">{t("Additional Remarks")}</h4>
+                                    <div className="custom-comment-text tableClass">
+                                      <h4 className="custom-comments-title">{t("Additional Remarks")}</h4>
                                       <p className="custom-comment-text">{subComment}</p>
                                     </div>
                                   )}

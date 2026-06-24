@@ -442,7 +442,7 @@ const RALApplicationDetails = () => {
           <StatusTable>
             {applicationData?.registrationNumber && <Row label={t("RAL_REGISTRATION_NUMBER")} text={tValue(applicationData?.registrationNumber)} />}
             <Row label={t("APPLICATION_NUMBER")} text={tValue(applicationData?.applicationNumber)} />
-            <Row label={t("RENT_LEASE_PROPERTY_ID")} text={tValue(propertyDetails?.propertyId)} />
+            <Row label={t("Unit Id")} text={tValue(propertyDetails?.propertyId)} />
             <Row label={t("Building/Plot/Shop Name")} text={tValue(propertyDetails?.propertyName)} />
             <Row label={t("RAL_ALLOTMENT_TYPE")} text={tValue(propertyDetails?.allotmentType)} />
             <Row label={t("Building/Plot/Shop Type")} text={tValue(propertyDetails?.propertyType)} />

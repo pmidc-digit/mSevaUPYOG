@@ -393,12 +393,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       {/* Building/Plot/Shop Area */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("Building/Plot/Shop Area")} <span className="mandatory-asterisk">*</span>
+          {t("Building/Plot/Shop Locality")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <Controller
           control={control}
           name="area"
-          rules={{ required: t("Building/Plot/Shop Area is required") }}
+          rules={{ required: t("Building/Plot/Shop Locality is required") }}
           render={(props) => (
             <Dropdown
               className="form-field"

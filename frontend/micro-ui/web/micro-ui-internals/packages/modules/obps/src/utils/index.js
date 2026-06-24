@@ -1221,6 +1221,7 @@ export const scrutinyDetailsData = async (edcrNumber, tenantId) => {
     (bpaDetails?.BPA?.[0]?.status == "INITIATED" ||
       bpaDetails?.BPA?.[0]?.status == "REJECTED" ||
       bpaDetails?.BPA?.[0]?.status == "PERMIT REVOCATION" ||
+      bpaDetails?.BPA?.[0]?.status == "PROFESSIONAL_ACTION_REQUIRED" ||
       bpaDetails?.BPA?.[0]?.status == "BLOCKED")
   ) {
     return scrutinyDetails?.edcrDetail?.[0] ? scrutinyDetails?.edcrDetail?.[0] : { type: "ERROR", message: "BPA_NO_RECORD_FOUND" };

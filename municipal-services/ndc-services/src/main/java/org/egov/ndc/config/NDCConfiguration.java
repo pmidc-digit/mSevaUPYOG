@@ -2,8 +2,8 @@ package org.egov.ndc.config;
 
 import java.util.TimeZone;
 
-import javax.annotation.PostConstruct;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.PostConstruct;
+import jakarta.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

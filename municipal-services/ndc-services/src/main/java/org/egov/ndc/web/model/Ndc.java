@@ -13,34 +13,33 @@ import java.util.List;
 
 import org.egov.ndc.web.model.enums.ApplicationType;
 import org.egov.ndc.web.model.enums.Status;
-import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
 /**
  * NDC applications object to capture the details of ndc related information, landid and related documents.
  */
 @ApiModel(description = "NDC applications object to capture the details of ndc related information, landid and related documents.")
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class Ndc {
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("id")
   private String id = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("tenantId")
   private String tenantId = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("applicationNo")
   private String applicationNo = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("ndcNo")
   private String ndcNo = null;
 
@@ -48,23 +47,23 @@ public class Ndc {
   @JsonProperty("applicationType")
   private ApplicationType applicationType = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("ndcType")
   private String ndcType = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("accountId")
   private String accountId = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("source")
   private String source = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("sourceRefId")
   private String sourceRefId = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("landId")
   private String landId = null;
 
@@ -72,7 +71,7 @@ public class Ndc {
   @JsonProperty("status")
   private Status status = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("applicationStatus")
   private String applicationStatus = null;
 

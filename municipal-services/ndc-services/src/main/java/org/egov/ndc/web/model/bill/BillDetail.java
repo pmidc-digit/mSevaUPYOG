@@ -45,7 +45,7 @@ import lombok.*;
 import org.egov.ndc.web.model.AuditDetails;
 import org.springframework.util.CollectionUtils;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;

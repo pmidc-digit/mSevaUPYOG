@@ -106,6 +106,7 @@ public class UserService {
 		else if(uri.toString().contains(userCreateEndpoint))
 			dobFormat = "dd/MM/yyyy";
 		try {
+			log.info("uri and request: " + uri + "\n" + "request: " + userRequest);
 			LinkedHashMap responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(uri, userRequest);
 			parseResponse(responseMap, dobFormat);
 			UserResponse userDetailResponse = mapper.convertValue(responseMap, UserResponse.class);

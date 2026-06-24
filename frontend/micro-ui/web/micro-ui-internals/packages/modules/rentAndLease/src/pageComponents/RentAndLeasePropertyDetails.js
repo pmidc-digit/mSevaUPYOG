@@ -198,11 +198,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const onSubmit = async (data) => {
     const applicationType = data?.applicationType?.code;
 
-    if (applicationType === "Legacy" && data?.arrear > 0 && !documentsData?.[0]?.filestoreId) {
-      alert("Please upload arrear document");
-      return;
-    }
-
     if (applicationType === "Legacy") {
       data["arrearDoc"] = documentsData?.[0]?.filestoreId;
     } else {

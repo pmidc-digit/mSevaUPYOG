@@ -55,7 +55,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
 
     return {
       propertyId: propertyDetails.propertyId,
-      applicationType:additionalDetails?.applicationType,
+      applicationType: additionalDetails?.applicationType,
       tenantId,
       previousApplicationNumber,
       startDate: startDateEpoch,
@@ -111,22 +111,27 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     }
 
     const applicationType = currentStepData?.propertyDetails?.applicationType?.code;
+    const lastBillingPeriodData = new Date(currentStepData?.propertyDetails?.lastBillingPeriod).getTime();
     const additionalDetails =
       applicationType === "Legacy"
         ? {
             arrear: currentStepData?.propertyDetails?.arrear,
             arrearDoc: currentStepData?.propertyDetails?.arrearDoc,
-            arrearEndDate: currentStepData?.propertyDetails?.arrearEndDate
-              ? new Date(currentStepData?.propertyDetails?.arrearEndDate).getTime()
-              : null,
-            arrearStartDate: currentStepData?.propertyDetails?.arrearStartDate
-              ? new Date(currentStepData?.propertyDetails?.arrearStartDate).getTime()
-              : null,
+            // arrearEndDate: currentStepData?.propertyDetails?.arrearEndDate
+            //   ? new Date(currentStepData?.propertyDetails?.arrearEndDate).getTime()
+            //   : null,
+            // arrearStartDate: currentStepData?.propertyDetails?.arrearStartDate
+            //   ? new Date(currentStepData?.propertyDetails?.arrearStartDate).getTime()
+            //   : null,
             arrearReason: currentStepData?.propertyDetails?.arrearReason?.code,
             applicationType: applicationType,
             remarks: currentStepData?.propertyDetails?.remarks,
+            lastBillingPeriod: lastBillingPeriodData,
           }
         : null;
+
+    console.log("currentStepData", currentStepData);
+    // return;
 
     const payload = buildAllotmentPayload({
       propertyDetails: currentStepData?.propertyDetails,
@@ -143,8 +148,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       return;
     }
 
-    console.log("PAYLOAD",payload);
-    
+    console.log("PAYLOAD", payload);
 
     triggerLoader(true);
     try {

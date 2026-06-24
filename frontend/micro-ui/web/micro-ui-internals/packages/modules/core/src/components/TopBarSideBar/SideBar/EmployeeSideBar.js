@@ -101,7 +101,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
     const keys = Object.keys(configEmployeeSideBar);
     keys.sort((a, b) => a.orderNumber - b.orderNumber);
     for (let i = 0; i < keys.length; i++) {
-      if (configEmployeeSideBar[keys[i]][0].path.indexOf(".") === -1) {
+      if (configEmployeeSideBar[keys[i]][0].path.indexOf(".") === -1 || keys[i] === "KibanaDashboard") {
         if (configEmployeeSideBar[keys[i]][0].displayName === "Home") {
           const homeURL = "/digit-ui/employee";
           res.unshift({
@@ -116,6 +116,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
             type: "single",
             icon: configEmployeeSideBar[keys[i]][0],
             navigationURL: configEmployeeSideBar[keys[i]][0].navigationURL,
+            isKibana: keys[i] === "KibanaDashboard",
           });
         }
       } else {
@@ -354,19 +355,22 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
 
           {/* Profile header */}
           <div style={mobileHeaderStyle}>
-            <button style={closeButtonStyle} onClick={closeSidebar}>×</button>
-            {user?.access_token
-              ? <SidebarProfile info={user?.info} stateName={storeData?.stateInfo?.name} t={t} />
-              : (
-                <div style={{
+            <button style={closeButtonStyle} onClick={closeSidebar}>
+              ×
+            </button>
+            {user?.access_token ? (
+              <SidebarProfile info={user?.info} stateName={storeData?.stateInfo?.name} t={t} />
+            ) : (
+              <div
+                style={{
                   background: "linear-gradient(140deg, #003C71 0%, #1A5CA8 100%)",
                   padding: "1.25rem 1.25rem 1rem",
-                }}>
-                  <div style={{ fontSize: "1rem", fontWeight: "700", color: "#ffffff" }}>Employee Portal</div>
-                  <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.75)", marginTop: "2px" }}>mSeva Punjab</div>
-                </div>
-              )
-            }
+                }}
+              >
+                <div style={{ fontSize: "1rem", fontWeight: "700", color: "#ffffff" }}>Employee Portal</div>
+                <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.75)", marginTop: "2px" }}>mSeva Punjab</div>
+              </div>
+            )}
           </div>
 
           {/* Menu items */}
@@ -376,11 +380,13 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
           </div>
 
           {/* Footer + Logout */}
-          <div style={{
-            borderTop: "2px solid #DEE0E2",
-            backgroundColor: "#F3F2F1",
-            flexShrink: 0,
-          }}>
+          <div
+            style={{
+              borderTop: "2px solid #DEE0E2",
+              backgroundColor: "#F3F2F1",
+              flexShrink: 0,
+            }}
+          >
             {handleLogout && (
               <button
                 onClick={handleLogout}
@@ -399,8 +405,19 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
                   fontWeight: "600",
                 }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
                 </svg>
                 {t("CORE_COMMON_LOGOUT")}
               </button>

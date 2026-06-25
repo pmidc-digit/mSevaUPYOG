@@ -151,6 +151,7 @@ const enabledModules = [
   "CLU",
   "Layout",
   "GarbageCollection",
+  "KibanaDashboard",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,

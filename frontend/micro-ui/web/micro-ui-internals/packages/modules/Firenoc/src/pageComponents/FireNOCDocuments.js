@@ -115,7 +115,7 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
           {doc.required && <span className="requiredField">*</span>}
         </CardLabel>
 
-        <div className="bpa-doc-required-field">
+        <div className="fire-noc-doc-required-field" style={{width: "100%"}}>
           {/* Dropdown for documents with multiple options (e.g., Identity Proof) */}
           {doc.hasDropdown && dropdownOptions.length > 0 && (
             <div style={{ marginBottom: "8px" }}>
@@ -147,12 +147,12 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
           />
-        </div>
-      </LabelFieldPair>
 
-      <p style={{ padding: "10px", fontSize: "14px" }}>
-        {t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
-      </p>
+          <p style={{ padding: "10px", fontSize: "14px" }}>
+            {t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
+          </p>
+        </div>
+      </LabelFieldPair>   
 
       {doc.description && (
         <p style={{ padding: "0 10px 10px", fontSize: "13px", color: "#717171" }}>
@@ -218,7 +218,7 @@ const FireNOCDocuments = ({ t, config, onSelect, formData }) => {
       <FormStep t={t} config={config} onSelect={handleSubmit} isDisabled={enableSubmit}>
         {/* <CardSectionHeader>{t("ES_TITILE_DOCUMENT_DETAILS")}</CardSectionHeader> */}
         {docConfig?.map((doc) => (
-          <div key={doc.code} className="bpa-doc-required-card">
+          <div key={doc.code} className="fire-noc-doc-required-card">
             <FireNOCSelectDocument
               doc={doc}
               t={t}

@@ -41,6 +41,7 @@ const ApplicationDetails = () => {
   const docs = Array.isArray(displayData?.Documents) ? displayData.Documents : Array.isArray(displayData?.documents) ? displayData.documents : [];
   const [pdfFiles, setPdfFiles] = useState({});
   const [filesLoading, setFilesLoading] = useState(false);
+  const [documentsData, setDocumentsData] = useState([]);
 
   function normalizeAssignees(assignee) {
     if (!assignee) return null;
@@ -270,7 +271,9 @@ const ApplicationDetails = () => {
     setShowModal(true);
   }
 
-  const submitAction = async (dataPayload) => {
+  const submitAction = async (dataPayload, data) => {
+    console.log("data====", data);
+
     const payloadSource = applicationDetails?.Applications?.[0] || applicationDetails?.data?.[0] || applicationDetails?.[0] || bookingObj;
 
     if (!payloadSource) {
@@ -300,7 +303,7 @@ const ApplicationDetails = () => {
       workflow: {
         businessService,
         action: filtData.action,
-        comments: filtData.comment || filtData.action || "",
+        comment: filtData.comment || filtData.action || "",
         documents: filtData?.wfDocuments ? filtData?.wfDocuments : null,
         ...(normalizedAssignee ? { assignes: normalizedAssignee } : {}),
       },
@@ -316,6 +319,9 @@ const ApplicationDetails = () => {
       setError("Assignee is mandatory");
       return;
     }
+
+    console.log("formData", formData);
+    // return;
 
     try {
       if (!Digit?.ADSServices || typeof Digit.ADSServices.update !== "function") {
@@ -389,7 +395,7 @@ const ApplicationDetails = () => {
     });
 
     window.open(fileStore[fileStoreId], "_blank");
-  };
+  }
   async function getAcknowledgementLetter({ tenantId, payments, ...params }) {
     let application = new_data;
     let fileStoreId = application?.permissionLetterFilestoreId;
@@ -404,7 +410,7 @@ const ApplicationDetails = () => {
     });
 
     window.open(fileStore[fileStoreId], "_blank");
-  };
+  }
 
   // ADDED: build download options from receipt hook
   let downloadOptions = [];
@@ -433,13 +439,16 @@ const ApplicationDetails = () => {
     return <Loader />;
   }
 
-  const handleCancelBooking = async () => {
+  const handleCancelBooking = async (data) => {
+    // console.log("data", data);
+
     setShowCancelModal(false);
     const payloadAction = {
       action: "CANCEL",
-      comment: "CANCEL",
+      comment: data?.reason,
+      wfDocuments: data?.documents,
     };
-    return submitAction({ Licenses: [payloadAction] });
+    return submitAction({ Licenses: [payloadAction] }, data);
   };
 
   return (
@@ -591,11 +600,13 @@ const ApplicationDetails = () => {
         <ADSCancelBooking
           t={t}
           closeModal={() => setShowCancelModal(false)}
-          actionCancelLabel={"BACK"}
+          actionCancelLabel={"Cancel"}
           actionCancelOnSubmit={() => setShowCancelModal(false)}
-          actionSaveLabel={"ADS_CANCEL"}
+          actionSaveLabel={"Submit"}
           actionSaveOnSubmit={handleCancelBooking}
           onSubmit={handleCancelBooking}
+          // documentsData={documentsData}
+          // setDocumentsData={setDocumentsData}
         />
       )}
 

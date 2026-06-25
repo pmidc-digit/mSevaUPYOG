@@ -82,6 +82,8 @@ const NewLogin = ({ stateCode }) => {
       return;
     }
 
+    const maskedMobile = `+91 ${info?.mobileNumber.substring(0, 2)}******${info?.mobileNumber.substring(info?.mobileNumber.length - 2)}`;
+
     try {
       setCanSubmit(false);
       const data = {
@@ -93,7 +95,7 @@ const NewLogin = ({ stateCode }) => {
       const [res, err] = await sendOtp({ otp: data });
       if (!err) {
         setStep("OTP");
-        setError(`OTP has been successfully sent to Mob No: ${mobileNumber}`);
+        setError(`OTP has been successfully sent to Mob No: ${maskedMobile}`);
         setIsError(false);
         setLastSubmittedMobile(mobileNumber);
       } else {

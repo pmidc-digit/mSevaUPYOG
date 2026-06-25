@@ -304,12 +304,12 @@ export const quickServiceModules = {
     },
     {
       moduleCode: "KibanaDashboard",
-      moduleName: "Kibana Dashboard",
+      moduleName: "Dashboard",
       bgColor: "#3e4b5b",
       labelKey: "",
       icon: "",
       routes:
-        "https://sdc-uat.lgpunjab.gov.in/kibana-v2/s/anonymous-user/app/dashboards?auth_provider_hint=anonymous1#/view/389a13c6-ae5e-45b2-99ac-2ae4a431b50f?embed=true&hide-filter-bar=true&_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:now-15m,to:now))",
+        "https://mseva.lgpunjab.gov.in/kibana-v2/s/anonymous-user/app/dashboards?auth_provider_hint=anonymous1#/view/e5ec2ebd-660c-4d95-90f2-1353c1849b4d?embed=true&hide-filter-bar=true&_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:now-15m,to:now))",
       isCitizen: false,
       description: "",
       subHeading: "",

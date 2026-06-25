@@ -71,7 +71,7 @@ const SubMenu = ({ item, onLinkClick }) => {
                 data-tip="React-tooltip"
                 data-for={`jk-side-${getModuleName}`}
                 className="custom-link kibana-link"
-                href={`https://sdc-uat.lgpunjab.gov.in${item.navigationURL}`}
+                href={`https://mseva.lgpunjab.gov.in${item.navigationURL}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={onLinkClick}

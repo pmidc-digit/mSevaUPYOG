@@ -451,6 +451,8 @@ const ApplicationDetails = () => {
     return submitAction({ Licenses: [payloadAction] }, data);
   };
 
+  console.log("applicationDetails", applicationDetails?.bookingApplication[0]?.workflow);
+
   return (
     <div className={"employee-main-application-details"}>
       {/* Header with MultiLink download dropdown (merged old feature) */}
@@ -520,6 +522,28 @@ const ApplicationDetails = () => {
         <CardSubHeader>{t("ADS_APPLICATION_ADS_DETAILS_OVERVIEW")}</CardSubHeader>
         <ADSCartDetails cartDetails={cartData || []} t={t} />
       </Card>
+
+      {applicationDetails?.bookingApplication[0]?.workflow?.documents?.length > 0 && (
+        <Card>
+          <CardSubHeader>{t("Application Cancellation Section")}</CardSubHeader>
+          <StatusTable>
+            <Row label={t("Reason")} text={applicationDetails?.bookingApplication[0]?.workflow?.comment} />
+          </StatusTable>
+
+          {applicationDetails?.bookingApplication[0]?.workflow?.documents?.length > 0 ? (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
+              {applicationDetails?.bookingApplication[0]?.workflow?.documents.map((doc, idx) => (
+                <div key={idx}>
+                  <ADSDocument value={applicationDetails?.bookingApplication[0]?.workflow?.documents} Code={doc?.documentType} index={idx} />
+                  {"Cancel Document"}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ padding: "0 1.5rem" }}>{t("TL_NO_DOCUMENTS_MSG")}</div>
+          )}
+        </Card>
+      )}
 
       <Card>
         <CardSubHeader>{t("ADS_APPLICATION_DOCUMENTS_OVERVIEW")}</CardSubHeader>

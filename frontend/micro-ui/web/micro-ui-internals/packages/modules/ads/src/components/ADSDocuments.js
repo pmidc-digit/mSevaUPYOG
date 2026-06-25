@@ -135,7 +135,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     setDocuments(() => [
       {
         documentType: "ADSCancelDocument", // fixed type as per backend
-        filestoreId: extraFields.filestoreId || null,
+        fileStoreId: extraFields.filestoreId || null,
         documentUid: extraFields.documentUid || null,
       },
     ]);

@@ -41,6 +41,16 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         </div>
       )}
 
+      {/* {thumbnailsToShow?.thumbs?.length > 0 && (
+        <DisplayPhotos
+          srcs={thumbnailsToShow.thumbs}
+          onClick={(src, idx) => {
+            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
+            Digit.Utils.zoomImage(fullImage);
+          }}
+        />
+      )} */}
+
       {wfDocuments?.length > 0 && (
         <div>
           {wfDocuments?.map((doc, index) => (

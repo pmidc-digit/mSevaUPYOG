@@ -59,7 +59,6 @@ const SubMenu = ({ item, onLinkClick }) => {
   // console.log("SubMenu item", item);
   if (item.type === "single") {
     const getOrigin = window.location.origin;
-    console.log("test====", item);
     return (
       <div className="submenu-container">
         <div className={`sidebar-link  ${pathname === item?.navigationURL ? "active" : ""}`}>
@@ -72,7 +71,7 @@ const SubMenu = ({ item, onLinkClick }) => {
                 data-tip="React-tooltip"
                 data-for={`jk-side-${getModuleName}`}
                 className="custom-link kibana-link"
-                href={`https://mseva.lgpunjab.gov.in${item.navigationURL}`}
+                href={`https://sdc-uat.lgpunjab.gov.in${item.navigationURL}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={onLinkClick}

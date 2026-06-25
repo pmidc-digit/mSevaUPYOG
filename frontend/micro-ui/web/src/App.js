@@ -1,4 +1,4 @@
-import React,{useEffect} from "react";
+import React, { useEffect } from "react";
 import { initPGRComponents, PGRReducers } from "@mseva/digit-ui-module-pgr";
 import {
   initSWACHComponents,
@@ -151,6 +151,7 @@ const enabledModules = [
   "CLU",
   "Layout",
   "GarbageCollection",
+  "KibanaDashboard",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -268,23 +269,19 @@ const loadBhashiniSafely = () => {
   };
 
   // If window is already loaded, load immediately, otherwise wait for load event
-  if (document.readyState === 'complete') {
+  if (document.readyState === "complete") {
     loadScript();
   } else {
     window.addEventListener("load", loadScript);
   }
 };
 
-
 function App() {
-
-
-    useEffect(() => {
+  useEffect(() => {
     // Load Bhashini after 5 seconds (one time only)
     const timerId = setTimeout(() => {
       loadBhashiniSafely();
     }, 5000);
-
   }, []);
 
   const stateCode =

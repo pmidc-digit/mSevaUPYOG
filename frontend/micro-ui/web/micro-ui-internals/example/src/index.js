@@ -21,7 +21,7 @@ import {
   initGarbageCollectionComponents,
   GarbageReducers,
 } from "@mseva/digit-ui-module-garbagecollection";
-import { RentAndLeaseModule, RentAndLeaseLinks,RentAndLeaseReducers } from "@mseva/digit-ui-module-rentandlease";
+import { RentAndLeaseModule, RentAndLeaseLinks, RentAndLeaseReducers } from "@mseva/digit-ui-module-rentandlease";
 import { TLModule, TLLinks, initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
 import { initPGRComponents } from "@mseva/digit-ui-module-pgr";
@@ -95,6 +95,7 @@ const enabledModules = [
   "BPAStakeholder",
   "Layout",
   "GarbageCollection",
+  "KibanaDashboard",
   "CLU",
 ];
 

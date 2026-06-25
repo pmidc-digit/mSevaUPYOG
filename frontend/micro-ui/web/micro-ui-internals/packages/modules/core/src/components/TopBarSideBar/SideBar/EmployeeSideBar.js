@@ -98,7 +98,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
     const keys = Object.keys(configEmployeeSideBar);
     keys.sort((a, b) => a.orderNumber - b.orderNumber);
     for (let i = 0; i < keys.length; i++) {
-      if (configEmployeeSideBar[keys[i]][0].path.indexOf(".") === -1) {
+      if (configEmployeeSideBar[keys[i]][0].path.indexOf(".") === -1 || keys[i] === "KibanaDashboard") {
         if (configEmployeeSideBar[keys[i]][0].displayName === "Home") {
           const homeURL = "/digit-ui/employee";
           res.unshift({
@@ -113,6 +113,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
             type: "single",
             icon: configEmployeeSideBar[keys[i]][0],
             navigationURL: configEmployeeSideBar[keys[i]][0].navigationURL,
+            isKibana: keys[i] === "KibanaDashboard",
           });
         }
       } else {
@@ -308,7 +309,9 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
           </style>
           <div style={mobileHeaderStyle}>
             <span style={{ fontWeight: 600, fontSize: "16px", color: "#1f2937" }}>{t("")}</span>
-            <button style={closeButtonStyle} onClick={closeSidebar}>×</button>
+            <button style={closeButtonStyle} onClick={closeSidebar}>
+              ×
+            </button>
           </div>
           <div style={{ padding: "8px 0" }}>
             {renderSearch()}
@@ -321,13 +324,13 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
                 style={{
                   width: "100%",
                   padding: "12px",
-                  
+
                   color: "black",
                   border: "none",
                   borderRadius: "6px",
                   cursor: "pointer",
                   fontWeight: 500,
-                  marginTop:"-1rem"
+                  marginTop: "-1rem",
                 }}
               >
                 {t("CORE_COMMON_LOGOUT")}

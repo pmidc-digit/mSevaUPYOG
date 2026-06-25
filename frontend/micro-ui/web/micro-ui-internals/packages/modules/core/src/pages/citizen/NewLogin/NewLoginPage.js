@@ -81,6 +81,7 @@ const NewLogin = ({ stateCode }) => {
       setError(t("CS_COMMON_CHOOSE_LOCATION"));
       return;
     }
+    const maskedMobile = `+91 ${mobileNumber.substring(0, 2)}******${mobileNumber.substring(mobileNumber.length - 2)}`;
 
     try {
       setCanSubmit(false);
@@ -93,7 +94,7 @@ const NewLogin = ({ stateCode }) => {
       const [res, err] = await sendOtp({ otp: data });
       if (!err) {
         setStep("OTP");
-        setError(`OTP has been successfully sent to Mob No: ${mobileNumber}`);
+        setError(`OTP has been successfully sent to Mob No: ${maskedMobile}`);
         setIsError(false);
         setLastSubmittedMobile(mobileNumber);
       } else {

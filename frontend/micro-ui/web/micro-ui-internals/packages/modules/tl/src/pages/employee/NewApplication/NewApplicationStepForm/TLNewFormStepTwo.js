@@ -121,6 +121,10 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (!ownershipCode?.includes("INSTITUTIONAL") && !owner?.ownerType?.code) {
         missingFields.push(`Special Category (Owner ${index})`);
       }
+      if (owner?.altContactNumber && !/^[0-9]{6,11}$/.test(String(owner.altContactNumber))) {
+        missingFields.push(`Official Telephone No. (Owner ${index}) must be a valid 6-11 digit number`);
+      }
+
     };
 
     if (isSingleOwner) {

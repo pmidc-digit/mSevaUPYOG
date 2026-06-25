@@ -23,7 +23,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { update } from "lodash";
 const EmployeeQuickServicesCard = ({ moduleData }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   // const userRoles = Digit.UserService.getUser().info.roles
   const [userInfoData, setUserInfoData] = useState(() => JSON.parse(sessionStorage.getItem("userInfoData") || "{}"));
   const userRoles = userInfoData?.roles || [];
@@ -48,78 +48,90 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
     };
   }, []);
 
-  const [isHovered, setIsHovered] = useState(false)
+  const [isHovered, setIsHovered] = useState(false);
 
   const updatedModuleData = quickServiceModules.modules
     .filter((item) => item.moduleCode === moduleData.code)
     .map((item) => ({
       ...item,
       Access: moduleData.access,
-    }))
+    }));
 
   const iconSelector = (code) => {
     switch (code) {
       case "PT":
-        return <PTIcon />
+        return <PTIcon />;
       case "WS":
-        return <WSICon />
+        return <WSICon />;
       case "FSM":
-        return <FSMIcon className="fill-path-primary-main" />
+        return <FSMIcon className="fill-path-primary-main" />;
       case "MCollect":
-        return <MCollectIcon />
+        return <MCollectIcon />;
       case "ChallanGeneration":
-        return <MCollectIcon />
+        return <MCollectIcon />;
       case "RentAndLease":
-        return <MCollectIcon />
+        return <MCollectIcon />;
       case "PGR":
-        return <PGRIcon />
+        return <PGRIcon />;
       case "NDC":
-        return <PGRIcon />
+        return <PGRIcon />;
       case "TL":
-        return <TLIcon />
+        return <TLIcon />;
       case "OBPS":
-        return <OBPSIcon />
+        return <OBPSIcon />;
       case "BPAStakeholder":
-        return <OBPSIcon />
+        return <OBPSIcon />;
       case "Layout":
-        return <OBPSIcon />
+        return <OBPSIcon />;
       case "Bills":
-        return <BillsIcon />
+        return <BillsIcon />;
       case "PTR":
-        return <PTIcon />
+        return <PTIcon />;
       case "Swach":
-        return <PGRIcon />
+        return <PGRIcon />;
       case "HRMS":
-        return <WSICon />
+        return <WSICon />;
       case "SV":
-        return <BillsIcon />
+        return <BillsIcon />;
       case "ADS":
-        return <BillsIcon />
+        return <BillsIcon />;
       case "CHB":
-        return <BillsIcon />
+        return <BillsIcon />;
       case "ASSET":
-        return <BillsIcon />
+        return <BillsIcon />;
       case "NOC":
-        return <BillsIcon />
+        return <BillsIcon />;
       case "GarbageCollection":
-        return <BillsIcon />
+        return <BillsIcon />;
+      case "KibanaDashboard":
+        return <BillsIcon />;
       case "CLU":
-        return <OBPSIcon />
+        return <OBPSIcon />;
       default:
-        return <PTIcon />
+        return <PTIcon />;
     }
-  }
+  };
+
+  const route = updatedModuleData[0]?.routes;
+
+  const handleCardClick = (e) => {
+    if (route?.includes("kibana-v2")) {
+      e.preventDefault();
+      window.open(`${route}`, "_blank", "noopener,noreferrer");
+      return;
+    }
+  };
 
   return userRoles.some((item) => item.code === updatedModuleData[0]?.Access) ? (
     <Link
-      to={`${updatedModuleData[0]?.routes}`}
+      to={route}
+      onClick={handleCardClick}
+      // to={`${updatedModuleData[0]?.routes}`}
       className="employee-quick-service-link"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div
-        className={`employee-quick-service-card ${isHovered ? 'hovered' : ''}`}
-      >
+      <div className={`employee-quick-service-card ${isHovered ? "hovered" : ""}`}>
         {/* Icon Container with Gradient Background */}
         <div
           className="card-icon-container"
@@ -131,20 +143,14 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
           <div className="card-background-circle" />
 
           {/* Icon with Scale Animation */}
-          <div className="card-icon-wrapper">
-            {iconSelector(moduleData.code)}
-          </div>
+          <div className="card-icon-wrapper">{iconSelector(moduleData.code)}</div>
         </div>
 
         {/* Module Name Container */}
         <div className="card-content-container">
           <div className="card-text-content">
-            <h3 className="card-module-title">
-              {updatedModuleData[0]?.moduleName}
-            </h3>
-            <p className="card-module-description">
-              Quick access to module
-            </p>
+            <h3 className="card-module-title">{updatedModuleData[0]?.moduleName}</h3>
+            <p className="card-module-description">Quick access to module</p>
           </div>
 
           {/* Arrow Icon with Animation */}
@@ -156,10 +162,7 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
               fill="none"
               className="card-arrow-svg"
             >
-              <path
-                d="M7.5 15L12.5 10L7.5 5"
-                className="card-arrow-path"
-              />
+              <path d="M7.5 15L12.5 10L7.5 5" className="card-arrow-path" />
             </svg>
           </div>
         </div>
@@ -168,7 +171,7 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         {isHovered && <div className="card-shine-effect" />}
       </div>
     </Link>
-  ) : null
-}
+  ) : null;
+};
 
 export default EmployeeQuickServicesCard;

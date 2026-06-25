@@ -83,13 +83,14 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     try {
       const { user: users, ...tokens } = await Digit.UserService.authenticateV1(requestData);
       const info = users[0];
+      const maskedMobile = `+91 ${info?.mobileNumber.substring(0, 2)}******${info?.mobileNumber.substring(info?.mobileNumber.length - 2)}`;
       const data = {
         mobileNumber: info?.mobileNumber,
         tenantId: info?.tenantId,
         userType: "EMPLOYEE",
         type: "login",
       };
-      setShowToast(`OTP has been successfully sent to Mob No: ${info?.mobileNumber}`);
+      setShowToast(`OTP has been successfully sent to Mob No: ${maskedMobile}`);
       setIsError(false);
       setShowOTP(true);
       sendOtp({ otp: data });

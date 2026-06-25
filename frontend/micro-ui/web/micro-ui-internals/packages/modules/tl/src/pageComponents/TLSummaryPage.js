@@ -380,7 +380,7 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
       <h2 className="bpa-summary-heading">{t("Property Address")}</h2>
       <div className="bpa-summary-section">
         {renderLabel(t("Property Id"), propertyId || "NA")}
-        {renderLabel(t("City"), address?.city?.split(".")[1]?.toUpperCase() || "NA")}
+        {renderLabel(t("City"), address?.city?.split(".")[1]?.toUpperCase() || address?.city ||"NA")}
         {renderLabel(t("Door/House No."), address?.doorNo)}
         {renderLabel(t("Building/Colony Name"), address?.buildingName || reduxAddress?.buildingName)}
         {renderLabel(t("Street Name"), address?.street)}

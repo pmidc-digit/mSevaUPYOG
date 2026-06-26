@@ -82,7 +82,7 @@ const NewLogin = ({ stateCode }) => {
       return;
     }
 
-    const maskedMobile = `+91 ${info?.mobileNumber.substring(0, 2)}******${info?.mobileNumber.substring(info?.mobileNumber.length - 2)}`;
+    const maskedMobile = `+91 ${mobileNumber.substring(0, 2)}******${mobileNumber.substring(mobileNumber.length - 2)}`;
 
     try {
       setCanSubmit(false);

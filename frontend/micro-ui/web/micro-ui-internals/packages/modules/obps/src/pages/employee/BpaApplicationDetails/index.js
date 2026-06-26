@@ -452,7 +452,7 @@ const BpaApplicationDetail = () => {
   }, [data?.applicationData?.landInfo?.owners]);
 
   const onChangeReport = (key, value) => {
-    setFieldInspectionPending(value);
+    if(value?.length>0)setFieldInspectionPending(value);
   };
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
@@ -1919,6 +1919,11 @@ const BpaApplicationDetail = () => {
   //     action: "EMPLOYEE_SAVE_AS_DRAFT"
   //   })
   // }
+  // if(actions?.length > 0){
+  //   actions.push({
+  //     action: "EMPLOYEE_SAVE_AS_DRAFT"
+  //   })
+  // }
 
   console.log("actionsforlogs",actions)
 
@@ -2653,7 +2658,7 @@ const BpaApplicationDetail = () => {
                                   <Card>
                                     <InspectionReport
                                       isCitizen={true}
-                                      fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
+                                      fiReport={fieldInspectionPending?.length > 0 ? fieldInspectionPending : data?.applicationData?.additionalDetails?.fieldinspection_pending}
                                       onSelect={onChangeReport}
                                     />
                                     {/* <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} /> */}

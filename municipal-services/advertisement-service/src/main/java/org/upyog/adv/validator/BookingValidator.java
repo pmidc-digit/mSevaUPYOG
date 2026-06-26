@@ -123,8 +123,8 @@ public class BookingValidator {
                     "Booking with status " + currentStatus + " cannot be cancelled");
         }
 
-        // Check if booking dates haven't started yet (business rule) can comment it if no need
-
+        // Check if booking dates haven't started yet (business rule) — commented out, cancellations always allowed
+		/*
 		List<CartDetail> cartDetails = bookingRequest.getBookingApplication().getCartDetails();
 		if (cartDetails != null && !cartDetails.isEmpty()) {
 			LocalDate today = BookingUtil.getCurrentDate();
@@ -139,6 +139,7 @@ public class BookingValidator {
 					"Cannot cancel booking after booking dates have started");
 			}
 		}
+		*/
 
 
         log.info("Cancellation validation passed for booking no: " + bookingRequest.getBookingApplication().getBookingNo());

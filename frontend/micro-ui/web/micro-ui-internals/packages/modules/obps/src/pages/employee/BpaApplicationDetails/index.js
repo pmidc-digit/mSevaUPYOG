@@ -443,7 +443,7 @@ const BpaApplicationDetail = () => {
   }, [data?.applicationData?.landInfo?.owners]);
 
   const onChangeReport = (key, value) => {
-    setFieldInspectionPending(value);
+    if(value?.length>0)setFieldInspectionPending(value);
   };
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
@@ -1941,11 +1941,11 @@ const BpaApplicationDetail = () => {
     isSingleButton = false;
   }
 
-  if(actions?.length > 0){
-    actions.push({
-      action: "EMPLOYEE_SAVE_AS_DRAFT"
-    })
-  }
+  // if(actions?.length > 0){
+  //   actions.push({
+  //     action: "EMPLOYEE_SAVE_AS_DRAFT"
+  //   })
+  // }
 
   console.log("actionsforlogs",actions)
 
@@ -2149,6 +2149,7 @@ const BpaApplicationDetail = () => {
               } else if (variables?.AmendmentUpdate?.workflow?.action.includes("REJECT")) {
                 setShowToast({ key: "success", label: t("ES_MODIFYWSCONNECTION_REJECT_UPDATE_SUCCESS") });
               }
+              refetch();
               return;
             }
             if (data?.Licenses?.length > 0 && data?.Licenses[0]?.applicationNumber) {
@@ -2171,7 +2172,7 @@ const BpaApplicationDetail = () => {
           },
         });
       }
-      closeModal();
+      // closeModal();
     // }
   };
 
@@ -2678,9 +2679,10 @@ const BpaApplicationDetail = () => {
                                   <Card>
                                     <InspectionReport
                                       isCitizen={true}
-                                      fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
+                                      fiReport={fieldInspectionPending?.length > 0 ? fieldInspectionPending : data?.applicationData?.additionalDetails?.fieldinspection_pending}
                                       onSelect={onChangeReport}
                                     />
+                                    <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
                                   </Card>
                                 )}
                               {data?.applicationData?.status != "INSPECTION_REPORT_PENDING" &&
@@ -3004,10 +3006,10 @@ const BpaApplicationDetail = () => {
           )}
         </Card>
 
-  {actions?.length > 0 && <Card>
-          {/* <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
+        {actions?.length > 0 && !(data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length === 0) && <Card>
+          <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
             {t("Add Comments")}
-          </CardSectionHeader> */}
+          </CardSectionHeader>
           <RichTextBox
             value={draftComment}
             onChange={(e) => setDraftComment(e.target.value)}
@@ -3016,6 +3018,7 @@ const BpaApplicationDetail = () => {
             style={{ overflow: "hidden", maxHeight: "1500px" }}
             maxLength={5000}
           />
+          <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
         </Card>}
 
         {showPdfModal && (

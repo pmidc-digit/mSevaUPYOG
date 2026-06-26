@@ -33,6 +33,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   const [otp, setOtp] = useState("");
   const [isOtpValid, setIsOtpValid] = useState(true);
   const [canSubmit, setCanSubmit] = useState(true);
+  const [isError, setIsError] = useState(true);
 
   const history = useHistory();
   // const getUserType = () => "EMPLOYEE" || Digit.UserService.getType();
@@ -82,24 +83,29 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     try {
       const { user: users, ...tokens } = await Digit.UserService.authenticateV1(requestData);
       const info = users[0];
+      const maskedMobile = `+91 ${info?.mobileNumber.substring(0, 2)}******${info?.mobileNumber.substring(info?.mobileNumber.length - 2)}`;
       const data = {
         mobileNumber: info?.mobileNumber,
         tenantId: info?.tenantId,
         userType: "EMPLOYEE",
         type: "login",
       };
+      setShowToast(`OTP has been successfully sent to Mob No: ${maskedMobile}`);
+      setIsError(false);
       setShowOTP(true);
       sendOtp({ otp: data });
       Digit.SessionStorage.set("Employee.tenantId", info?.tenantId);
       setUser({ info, ...tokens });
     } catch (err) {
       setDisable(false);
+      setIsError(true);
       setShowToast(err?.response?.data?.error_description || "Invalid login credentials!");
       setTimeout(closeToast, 5000);
     }
   };
 
   const closeToast = () => {
+    setIsError(true);
     setShowToast(null);
   };
 
@@ -355,7 +361,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
         </div>
       </div>
 
-      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true} />}
+      {showToast && <Toast error={isError} label={showToast} onClose={closeToast} isDleteBtn={true} />}
     </Background>
   );
 };

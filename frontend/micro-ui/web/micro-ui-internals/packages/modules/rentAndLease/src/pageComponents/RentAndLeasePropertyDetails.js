@@ -198,11 +198,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const onSubmit = async (data) => {
     const applicationType = data?.applicationType?.code;
 
-    if (applicationType === "Legacy" && data?.arrear > 0 && !documentsData?.[0]?.filestoreId) {
-      alert("Please upload arrear document");
-      return;
-    }
-
     if (applicationType === "Legacy") {
       data["arrearDoc"] = documentsData?.[0]?.filestoreId;
     } else {
@@ -317,23 +312,22 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
   const handleBillingPeriod = (val) => {
     const dueDateRLData = dueDateRL?.["rl-services-masters"]?.DueDate;
-    console.log("dueDateRL", dueDateRLData);
-    console.log("val", val);
 
     const filteredRLData = dueDateRLData?.find((item) => item?.billingCycle == val?.feesPeriodCycle);
 
-    console.log("filteredRLData", filteredRLData);
-
     const dueDay = Number(filteredRLData?.dueDay);
+
     const today = new Date();
     const currentDate = today.getDate();
 
     let billingDate;
 
-    if (currentDate >= dueDay) {
-      billingDate = new Date(today.getFullYear(), today.getMonth(), 0); // last day previous month
+    if (dueDay >= currentDate) {
+      // Last day of previous month
+      billingDate = new Date(today.getFullYear(), today.getMonth(), 0);
     } else {
-      billingDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // last day current month
+      // Last day of current month
+      billingDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
     }
 
     const formattedDate = `${billingDate.getFullYear()}-${String(billingDate.getMonth() + 1).padStart(2, "0")}-${String(
@@ -341,11 +335,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     ).padStart(2, "0")}`;
 
     setValue("lastBillingPeriod", formattedDate);
-
-    console.log("Billing Date:", billingDate);
-    // const prefillISO = prefillEnd.toISOString().split("T")[0];
   };
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <CardSectionHeader className="card-section-header">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSectionHeader>
@@ -393,12 +383,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       {/* Building/Plot/Shop Area */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {t("Building/Plot/Shop Area")} <span className="mandatory-asterisk">*</span>
+          {t("Building/Plot/Shop Locality")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
         <Controller
           control={control}
           name="area"
-          rules={{ required: t("Building/Plot/Shop Area is required") }}
+          rules={{ required: t("Building/Plot/Shop Locality is required") }}
           render={(props) => (
             <Dropdown
               className="form-field"

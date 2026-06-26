@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
 import { stringReplaceAll } from "../../utils";
+import getNOCSanctionLetter from "../../utils/getNOCSanctionLetter";
 // import { getNOCAcknowledgementData } from "../../utils/getNOCAcknowledgementData";
 
 const Response = (props) => {
@@ -10,7 +11,7 @@ const Response = (props) => {
   const { pathname, state } = location;
   const { t } = useTranslation();
   const history = useHistory();
-  const nocData = state?.data?.Noc?.[0];
+  const nocData = state?.data?.FireNOCs?.[0];
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const [loading, setLoading] = useState(false);
   const getFirenocNocApplication = async () => {

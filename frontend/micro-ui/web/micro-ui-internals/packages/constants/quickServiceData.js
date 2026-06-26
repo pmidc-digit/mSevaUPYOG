@@ -302,5 +302,18 @@ export const quickServiceModules = {
       subHeading: "",
       roles: [],
     },
+    {
+      moduleCode: "KibanaDashboard",
+      moduleName: "Dashboard",
+      bgColor: "#3e4b5b",
+      labelKey: "",
+      icon: "",
+      routes:
+        "https://mseva.lgpunjab.gov.in/kibana-v2/s/anonymous-user/app/dashboards?auth_provider_hint=anonymous1#/view/e5ec2ebd-660c-4d95-90f2-1353c1849b4d?embed=true&hide-filter-bar=true&_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:now-15m,to:now))",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+      roles: [],
+    },
   ],
 };

@@ -74,7 +74,7 @@ const Details = () => {
               <Row
                 label={<CardSubHeader className="card-section-header">{t("HR_EMP_STATUS_LABEL")} </CardSubHeader>}
                 text={
-                  data?.Employees?.[0]?.isActive ? <div className="sla-cell-success"> {t("ACTIVE")} </div> : <div className="sla-cell-error">{t("INACTIVE")}</div>
+                  data?.Employees?.[0]?.isActive ? <div className="sla-cell-success"> {t("ACTIVE")} </div> : <div className="sla-cell-error text-body-l">{t("INACTIVE")}</div>
                 }
                 textStyle={{ fontWeight: "bold", maxWidth: "6.5rem" }}
               />

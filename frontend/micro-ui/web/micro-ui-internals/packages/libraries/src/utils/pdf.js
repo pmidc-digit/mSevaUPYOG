@@ -2288,7 +2288,7 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
               border: isLast ? [true, false, false, true] : [true, false, false, false]
             },
             {
-              text: indData?.value && String(indData.value).trim() !== "" ? `${indData.value}` : "",
+              text: indData?.value && String(indData.value).trim() !== "" ? `${indData.value} ${indData?.isUnit ? ` ${t(indData.isUnit)}` : ""}` : "",
               fontSize: 9,
               margin: [0, 2, 0, 2],
               border: isLast ? [false, false, true, true] : [false, false, true, false]
@@ -2318,50 +2318,42 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
       const feeTypes = Object.keys(feeHistory || {});
       if (feeTypes.length > 0) {
         const maxHistoryLength = Math.max(...feeTypes.map((ft) => (feeHistory[ft]?.length || 0)));
-        const widths = [25, ...Array(feeTypes.length).fill(Math.floor(375 / feeTypes.length))];
+        const widths = [100, 150, "auto", "auto"];
 
         const headerRow = [
-          { text: "Details", bold: true, fontSize: 8, fillColor: "#e3e3e3", margin: [2, 4, 2, 4] },
-          ...feeTypes.map((ft) => ({ text: t(ft), bold: true, fontSize: 8, fillColor: "#e3e3e3", margin: [2, 4, 2, 4] }))
+          { text: t("BPA_UPDATED_BY_LABEL") || "Updated By", bold: true, fontSize: 8, fillColor: "#e3e3e3", margin: [2, 4, 2, 4], alignment: "center" },
+          { text: t("BPA_FEE_HEAD_LABEL") || "Fee Head", bold: true, fontSize: 8, fillColor: "#e3e3e3", margin: [2, 4, 2, 4], alignment: "center" },
+          { text: t("BPA_FEE2_LABEL") || "Fee (Rs.)", bold: true, fontSize: 8, fillColor: "#e3e3e3", margin: [2, 4, 2, 4], alignment: "center" },
+          { text: t("BPA_REMARK_LABEL") || "Remarks", bold: true, fontSize: 8, fillColor: "#e3e3e3", margin: [2, 4, 2, 4], alignment: "center" }
         ];
+
         const bodyRows = [];
         for (let entryIndex = 0; entryIndex < maxHistoryLength; entryIndex++) {
-          bodyRows.push([
-            { text: t("BPA_FEE2_LABEL") || "Fee (Rs.)", fontSize: 8, margin: [2, 4, 2, 4], bold: true },
-            ...feeTypes.map((ft) => ({
-              text: feeHistory[ft]?.[entryIndex] ? `₹ ${Number(feeHistory[ft][entryIndex].estimateAmount).toLocaleString("en-IN")}` : "",
-              fontSize: 8,
-              margin: [2, 4, 2, 4]
-            }))
-          ]);
-          bodyRows.push([
-            { text: t("BPA_REMARK_LABEL") || "Remarks", fontSize: 8, margin: [2, 4, 2, 4], bold: true },
-            ...feeTypes.map((ft) => ({
-              text: feeHistory[ft]?.[entryIndex]?.remarks || t("CS_NA"),
-              fontSize: 8,
-              margin: [2, 4, 2, 4]
-            }))
-          ]);
           const updatedByVal = feeTypes.map((ft) => feeHistory[ft]?.[entryIndex]?.who).find((who) => who) || t("UNKNOWN");
-          const isLastEntry = entryIndex === maxHistoryLength - 1;
-          bodyRows.push([
-            {
-              text: t("BPA_UPDATED_BY_LABEL") || "Updated By",
-              fontSize: 8,
-              margin: [2, 4, 2, 4],
-              bold: true,
-              border: isLastEntry ? [true, false, false, true] : [true, false, false, false]
-            },
-            {
-              text: updatedByVal,
-              colSpan: feeTypes.length,
-              fontSize: 8,
-              margin: [2, 4, 2, 4],
-              border: isLastEntry ? [false, false, true, true] : [false, false, true, false]
-            },
-            ...Array(feeTypes.length - 1).fill({ text: "", border: isLastEntry ? [false, false, true, true] : [false, false, true, false] })
-          ]);
+          
+          feeTypes?.forEach((ft, ftIndex) => {
+            const isFirst = ftIndex === 0;
+            bodyRows.push([
+              isFirst 
+                ? { text: updatedByVal, rowSpan: feeTypes.length, fontSize: 8, margin: [2, 4, 2, 4], alignment: "left" }
+                : { text: "" },
+              { text: t(ft), fontSize: 8, margin: [2, 4, 2, 4], bold: true, alignment: "left" },
+              {
+                text: feeHistory[ft]?.[entryIndex] ? `₹ ${Number(feeHistory[ft][entryIndex].estimateAmount).toLocaleString("en-IN")}` : "-",
+                fontSize: 8,
+                margin: [2, 4, 2, 4],
+                alignment: "left"
+              },
+              {
+                text: feeHistory[ft]?.[entryIndex]?.remarks || t("CS_NA"),
+                fontSize: 8,
+                margin: [2, 4, 2, 4],
+                alignment: "left"
+              }
+            ]);
+          });
         }
+
         detailsHeaders.push({
           text: detail.title,
           fontSize: 14,
@@ -2380,7 +2372,7 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
             hLineColor: () => "#cccccc",
             vLineColor: () => "#cccccc"
           },
-          margin: [-4, 2, 10, 10]
+          margin: [10, 2, 10, 10]
         });
       }
     } else if (detail?.isSubOccupancyTable) {

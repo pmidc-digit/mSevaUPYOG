@@ -33,11 +33,11 @@ function RentAndLeaseSummary({ t }) {
 
   const propertyLabels = {
     // propertyType: t("RENT_LEASE_PROPERTY_TYPE"),
-    propertyId: t("RENT_LEASE_PROPERTY_ID"),
+    propertyId: t("Unit Id"),
     propertyName: t("Building/Plot/Shop Name"),
     allotmentType: t("RAL_LEASE_USAGE_CATEGORY"),
-    propertySizeOrArea: t("Building/Plot/Shop Area"),
-    address: t("Building/Plot/Shop Address"),
+    // propertySizeOrArea: t("Building/Plot/Shop Area"),
+    address: t("Building/Plot/Shop Locality"),
     propertySpecific: t("Building/Plot/Shop Specific"),
     // locationType: t("RENT_LEASE_LOCATION_TYPE"),
     baseRent: t("RENT_AMOUNT "),
@@ -49,8 +49,6 @@ function RentAndLeaseSummary({ t }) {
     endDate: t("RAL_END_DATE"),
     // latePayment: t("LATE_PAYMENT_PERCENT"),
   };
-
-  console.log("property", property);
 
   return (
     <div className="application-summary">
@@ -90,10 +88,12 @@ function RentAndLeaseSummary({ t }) {
           <div className="ral-summary-header-row">
             <h3 className="ral-summary-heading">{t("Building/Plot/Shop Details")}</h3>
           </div>
+
           {Object.entries(propertyLabels)
             .filter(([key]) => property?.applicationType?.code !== "Legacy" || key !== "securityDeposit")
             .map(([key, label]) => {
               let value = property?.selectedProperty?.[key] || property?.[key];
+
               if (value?.name) value = value.name;
               else if (value?.code) value = value.code;
 
@@ -103,6 +103,10 @@ function RentAndLeaseSummary({ t }) {
               }
               if (key === "tax_applicable") {
                 value = value === true ? t("YES") : t("NO");
+              }
+
+              if (key === "address") {
+                value = property?.area?.name;
               }
 
               if (typeof value === "number" && (key === "startDate" || key === "endDate")) {

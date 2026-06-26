@@ -92,6 +92,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   }, [file]);
 
   function submit(data) {
+    let Property = { ...applicationData };
     if (action?.action == "INACTIVE_PROPERTY"){
       // console.log("dataaaaa123",data)
       let workflow = { action: "OPEN", comment: data?.comments, businessService:"PT.CREATE", moduleName: "PT" };
@@ -116,9 +117,22 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
           },
         ];
 
+      if (
+        Property?.creationReason === "STATUS" &&
+        action?.action === "APPROVE" &&
+        (Property?.status === "INWORKFLOW" || Property?.isinactive === true)
+      ) {
+        if (!Property.additionalDetails) {
+          Property.additionalDetails = {};
+        }
+        Property.additionalDetails.propertytobestatus = "ACTIVE";
+        Property.isactive = true;
+        Property.isinactive = false;
+      }
+
       submitAction({
         Property: {
-          ...applicationData,
+          ...Property,
           workflow,
         },
       });

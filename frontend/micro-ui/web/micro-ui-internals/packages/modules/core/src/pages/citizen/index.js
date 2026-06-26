@@ -1,5 +1,5 @@
 import { BackButton, WhatsappIcon, Card, CitizenInfoLabel, PrivateRoute } from "@mseva/digit-ui-react-components";
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Route, Switch, useRouteMatch, useHistory, Link } from "react-router-dom";
 import ErrorBoundary from "../../components/ErrorBoundaries";
@@ -79,11 +79,7 @@ const Home = ({
     {
       select: (data) => {
         const formattedData = data?.["ACCESSCONTROL-ACTIONS-TEST"]?.["actions-test"]
-          ?.filter(
-            (el) =>
-              el.enabled === true &&
-              (el.url === "digit-ui-card" || (el.url === "mseva-ui-card" && el.name === "PT_MY_PROPERTIES"))
-          )
+          ?.filter((el) => el.enabled === true && (el.url === "digit-ui-card" || (el.url === "mseva-ui-card" && el.name === "PT_MY_PROPERTIES")))
           .reduce((a, b) => {
             a[b.parentModule] = a[b.parentModule]?.length > 0 ? [b, ...a[b.parentModule]] : [b];
             return a;
@@ -109,7 +105,7 @@ const Home = ({
   const hideTopSidebar = topSidebarHiddenFor.some((e) => window.location.href.includes(e));
   const appRoutes = modules.map(({ code, tenants }, index) => {
     const Module = Digit.ComponentRegistryService.getComponent(`${code}Module`);
-    console.log("➡️",Module)
+    console.log("➡️", Module);
     return Module ? (
       <Route key={index} path={`${path}/${code.toLowerCase()}`}>
         <Module stateCode={stateCode} moduleCode={code} userType="citizen" tenants={getTenants(tenants, appTenants)} />
@@ -126,7 +122,6 @@ const Home = ({
         return a.orderNumber - b.orderNumber;
       });
     // }
-{console.log("****",mdmsDataObj)}
     return (
       <React.Fragment key={index}>
         <Route key={index} path={`${path}/${code.toLowerCase()}-home`}>
@@ -136,7 +131,7 @@ const Home = ({
               width: "100%",
               minHeight: "100vh",
               backgroundColor: "#F9FAFB",
-            
+
               paddingBottom: "80px",
               marginTop: "3rem",
             }}
@@ -229,7 +224,6 @@ const Home = ({
               {/* Service Cards */}
               <div className="moduleLinkHomePageModuleLinks">
                 {mdmsDataObj && code != "OBPS" && (
-                  
                   <CitizenHomeCardSecond
                     header=""
                     links={mdmsDataObj?.links}
@@ -283,11 +277,12 @@ const Home = ({
       </React.Fragment>
     );
   });
-   useEffect(() => {
-      const script = document.createElement("script");
-      script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
-      script.async = true;document.body.appendChild(script);
-    }, []);
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
   return (
     <div className={classname}>
       {hideTopSidebar ? null : (
@@ -305,7 +300,7 @@ const Home = ({
           islinkDataLoading={islinkDataLoading}
         />
       )}
-       <div className='language-plugin'>
+      <div className="language-plugin">
         <div className="bhashini-plugin-container"></div>
       </div>
       <div className={`main center-container citizen-home-container mb-25`}>
@@ -409,7 +404,8 @@ const Home = ({
           </Route>
           <Route path={`${path}/firenoc`}>
             {(() => {
-              const FireNocMod = Digit.ComponentRegistryService.getComponent("FIRENOCModule") || Digit.ComponentRegistryService.getComponent("FireNOCModule");
+              const FireNocMod =
+                Digit.ComponentRegistryService.getComponent("FIRENOCModule") || Digit.ComponentRegistryService.getComponent("FireNOCModule");
               return FireNocMod ? <FireNocMod stateCode={stateCode} moduleCode="FIRENOC" userType="citizen" tenants={appTenants} /> : null;
             })()}
           </Route>

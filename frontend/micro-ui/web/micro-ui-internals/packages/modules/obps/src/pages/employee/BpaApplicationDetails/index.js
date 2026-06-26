@@ -455,7 +455,7 @@ const BpaApplicationDetail = () => {
   }, [data?.applicationData?.landInfo?.owners]);
 
   const onChangeReport = (key, value) => {
-    setFieldInspectionPending(value);
+    if(value?.length>0)setFieldInspectionPending(value);
   };
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
@@ -1908,11 +1908,11 @@ const BpaApplicationDetail = () => {
     isSingleButton = false;
   }
 
-  if(actions?.length > 0){
-    actions.push({
-      action: "EMPLOYEE_SAVE_AS_DRAFT"
-    })
-  }
+  // if(actions?.length > 0){
+  //   actions.push({
+  //     action: "EMPLOYEE_SAVE_AS_DRAFT"
+  //   })
+  // }
 
   console.log("actionsforlogs",actions)
 
@@ -2116,6 +2116,7 @@ const BpaApplicationDetail = () => {
               } else if (variables?.AmendmentUpdate?.workflow?.action.includes("REJECT")) {
                 setShowToast({ key: "success", label: t("ES_MODIFYWSCONNECTION_REJECT_UPDATE_SUCCESS") });
               }
+              refetch();
               return;
             }
             if (data?.Licenses?.length > 0 && data?.Licenses[0]?.applicationNumber) {
@@ -2138,7 +2139,7 @@ const BpaApplicationDetail = () => {
           },
         });
       }
-      closeModal();
+      // closeModal();
     // }
   };
 
@@ -2645,9 +2646,10 @@ const BpaApplicationDetail = () => {
                                   <Card>
                                     <InspectionReport
                                       isCitizen={true}
-                                      fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
+                                      fiReport={fieldInspectionPending?.length > 0 ? fieldInspectionPending : data?.applicationData?.additionalDetails?.fieldinspection_pending}
                                       onSelect={onChangeReport}
                                     />
+                                    <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
                                   </Card>
                                 )}
                               {data?.applicationData?.status != "INSPECTION_REPORT_PENDING" &&
@@ -3027,6 +3029,7 @@ const BpaApplicationDetail = () => {
             style={{ overflow: "hidden", maxHeight: "1500px" }}
             maxLength={5000}
           />
+          <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
         </Card>}
 
         {showPdfModal && (

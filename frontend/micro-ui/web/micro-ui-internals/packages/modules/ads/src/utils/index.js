@@ -137,7 +137,7 @@ function normalizeDate(d) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
-export const validateSchedule = ({ startDate, endDate, scheduleType }) => {
+export const validateSchedule = ({ startDate, endDate }, scheduleType) => {
   if (!startDate || !endDate) {
     return "Start and end date are required.";
   }

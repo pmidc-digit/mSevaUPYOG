@@ -452,7 +452,7 @@ const BpaApplicationDetail = () => {
   }, [data?.applicationData?.landInfo?.owners]);
 
   const onChangeReport = (key, value) => {
-    setFieldInspectionPending(value);
+    if(value?.length>0)setFieldInspectionPending(value);
   };
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
@@ -1902,6 +1902,241 @@ const BpaApplicationDetail = () => {
     isSingleButton = false;
   }
 
+  // if(actions?.length > 0){
+  //   actions.push({
+  //     action: "EMPLOYEE_SAVE_AS_DRAFT"
+  //   })
+  // }
+
+  console.log("actionsforlogs",actions)
+
+  const employeeDraftSave = async (data, nocData = false, isOBPS = {}) => {
+    // if(appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !canSubmit){
+    //   alert(t("Please fill in the comments before submitting  "))
+    // }
+    // if (data?.BPA?.status === "INSPECTION_REPORT_PENDING") {
+    //   const recommendation = fieldInspectionPending?.[0]?.Recommendations || "";
+    //   if (fieldInspectionPending?.length === 0) {
+    //     closeModal();
+    //     setShowToast({ error: true, label: t("Please fill in the Field Inspection Report before submitting") });
+    //     return;
+    //   } else if (recommendation.trim().length < 20) {
+    //     closeModal();
+    //     setShowToast({ error: true, label: t("Please fill in the Field Inspection Report with at least 20 characters before submitting") });
+    //     return;
+    //   } else if (fieldInspectionPending?.[0]?.questionLength === 0) {
+    //     closeModal();
+    //     setShowToast({ error: true, label: t("Please fill in the Field Inspection Report before submitting") });
+    //     return;
+    //   } else {
+    //     const isQuestionEmpty = fieldInspectionPending?.[0]?.questionList?.some((q, index) => !fieldInspectionPending?.[0]?.["Remarks_" + index]);
+    //     if (isQuestionEmpty) {
+    //       closeModal();
+    //       setShowToast({ error: true, label: t("Please fill in all the questions in Field Inspection Report before submitting") });
+    //       return;
+    //     }
+    //   }
+    // }
+
+    // if (data?.BPA?.workflow?.action !== "UPDATE_ZONE" && appData?.applicationData?.status === "DOC_VERIFICATION_PENDING") {
+    //   const allRemarksFilled = areAllRemarksFilledForDocumentCheckList(checklistRemarks);
+
+    //   if (!allRemarksFilled) {
+    //     closeModal();
+    //     setTimeout(() => {
+    //       setShowToast(null);
+    //     }, 3000);
+    //     setShowToast({ key: "true", error: true, label: t("BPA_DOCUMENT_VERIFICATION_VALIDATION_LABEL") });
+    //     return;
+    //   }
+    // }
+
+
+    // if (data?.BPA?.comment?.length == 0) {
+    //   closeModal();
+    //   setShowToast({ error: true, label: t("Please fill in the comments before submitting") });
+    // } else if (!data?.BPA?.additionalDetails?.blockingReason && data?.BPA?.workflow?.action == "BLOCK") {
+    //   closeModal();
+    //   setShowToast({ error: true, label: t("Please select Blocking reason") });
+    // } else {
+      setIsEnableLoader(true);
+      if (typeof data?.customFunctionToExecute === "function") {
+        data?.customFunctionToExecute({ ...data });
+      }
+      if (nocData !== false && nocMutation) {
+        const nocPrmomises = nocData?.map((noc) => {
+          return nocMutation?.mutateAsync(noc);
+        });
+        try {
+          setIsEnableLoader(true);
+          const values = await Promise.all(nocPrmomises);
+          values &&
+            values.map((ob) => {
+              Digit.SessionStorage.del(ob?.Noc?.[0]?.nocType);
+            });
+        } catch (err) {
+          setIsEnableLoader(false);
+          let errorValue = err?.response?.data?.Errors?.[0]?.code
+            ? t(err?.response?.data?.Errors?.[0]?.code)
+            : err?.response?.data?.Errors?.[0]?.message || err;
+          closeModal();
+          setShowToast({ key: "error", error: { message: errorValue } });
+          setTimeout(closeToast, 5000);
+          return;
+        }
+      }
+      try{
+        const nonNullEntries = remainingDoc.filter((value) => !!value?.fileURL);
+        const checklistPayload = {
+        checkList: (nonNullEntries || []).map((doc) => {
+          const existing = searchChecklistData?.checkList?.find((c) => c.documentuid === doc.id);
+          return {
+            id: existing?.id, // include if updating
+            documentuid: doc?.id,
+            applicationNo: id,
+            tenantId,
+            action: existing ? "update" : "INITIATE",
+            remarks: checklistRemarks[doc?.id] || "",
+          };
+        }),
+      };
+
+      // if (isSelfCertification) {
+      //   if (searchChecklistData?.checkList?.length > 0) {
+      //     await Digit.OBPSService.BPACheckListUpdate({
+      //       details: checklistPayload,
+      //       filters: { tenantId },
+      //     });
+      //   } else {
+      //     await Digit.OBPSService.BPACheckListCreate({
+      //       details: checklistPayload,
+      //       filters: {},
+      //     });
+      //   }
+      // }
+
+      if (data?.BPA?.workflow?.action !== "UPDATE_ZONE" && appData?.applicationData?.status === "DOC_VERIFICATION_PENDING" && checklistPayload?.checkList?.length > 0) {
+        if (searchChecklistData?.checkList?.length > 0) {
+          await Digit.OBPSService.BPACheckListUpdate({
+            details: checklistPayload,
+            filters: { tenantId },
+          });
+        } else {
+          await Digit.OBPSService.BPACheckListCreate({
+            details: checklistPayload,
+            filters: {},
+          });
+        }
+      }
+
+      }catch(err){
+
+      }
+
+    //   const newCalculation = {
+    //   isLatest: true,
+    //   updatedBy: Digit.UserService.getUser()?.info?.name,
+    //   taxHeadEstimates: adjustedAmounts
+    //     .filter((row) => row.taxHeadCode !== "BPA_TOTAL") // exclude UI-only total row
+    //     .map((row) => ({
+    //       taxHeadCode: row.taxHeadCode,
+    //       estimateAmount: row.adjustedAmount || 0, // baseline + delta
+    //       category: row.category,
+    //       remarks: row.remark || null,
+    //       filestoreId: row.filestoreId || null,
+    //     })),
+    // };
+
+    //   const oldCalculations = (data?.BPA?.additionalDetails?.calculations || [])?.map((c) => ({ ...c, isLatest: false }));;
+
+      console.log("draftComment", draftComment)
+      let payload = {
+        ...data,
+        BPA: {
+          ...data?.BPA,
+          additionalDetails: {
+            ...data?.BPA?.additionalDetails,
+            otherFeesDiscription: otherChargesDisc || "",
+            adjustedAmounts: adjustedAmounts || [],
+            // calculations: [...oldCalculations, newCalculation],
+            // selfCertificationCharges: {
+            //   ...data?.BPA?.additionalDetails?.selfCertificationCharges,
+            //   BPA_MALBA_CHARGES: malbafees?.length > 0 ? malbafees : "0",
+            //   BPA_LABOUR_CESS: labourCess?.length > 0 ? labourCess : "0",
+            //   BPA_WATER_CHARGES: waterCharges?.length > 0 ? waterCharges : "0",
+            //   BPA_GAUSHALA_CHARGES_CESS: gaushalaFees?.length > 0 ? gaushalaFees : "0",
+            //   BPA_LESS_ADJUSMENT_PLOT: lessAdjusment?.length > 0 ? lessAdjusment : "0",
+            //   BPA_DEVELOPMENT_CHARGES: development?.length > 0 ? development : "0",
+            //   BPA_OTHER_CHARGES: otherCharges?.length > 0 ? otherCharges : "0",
+            // },
+            siteImages:
+              data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" &&
+              (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0
+                ? siteImages?.documents
+                : data?.BPA?.additionalDetails?.siteImages,
+            // geoLocations: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? geoLocations : data?.BPA?.additionalDetails?.geoLocations,
+            // FieldReports: appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 ? canSubmit : null,
+            fieldinspection_pending: fieldInspectionPending,
+            draftComment: draftComment
+          },
+          workflow: null
+        },
+      };
+      if (mutate) {
+        setIsEnableLoader(true);
+        mutate(payload, {
+          onError: (error, variables) => {
+            setIsEnableLoader(false);
+            setShowToast({ key: "error", error });
+            setTimeout(closeToast, 5000);
+          },
+          onSuccess: (data, variables) => {
+            sessionStorage.removeItem("WS_SESSION_APPLICATION_DETAILS");
+            setIsEnableLoader(false);
+            if (isOBPS?.bpa) {
+              data.selectedAction = selectedAction;
+              history.replace(`/digit-ui/employee/obps/response`, { data: data });
+            }
+            if (isOBPS?.isNoc) {
+              history.push(`/digit-ui/employee/noc/response`, { data: data });
+            }
+            if (data?.Amendments?.length > 0) {
+              if (variables?.AmendmentUpdate?.workflow?.action.includes("SEND_BACK")) {
+                setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_SEND_BACK_UPDATE_SUCCESS") });
+              } else if (variables?.AmendmentUpdate?.workflow?.action.includes("RE-SUBMIT")) {
+                setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_RE_SUBMIT_UPDATE_SUCCESS") });
+              } else if (variables?.AmendmentUpdate?.workflow?.action.includes("APPROVE")) {
+                setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_APPROVE_UPDATE_SUCCESS") });
+              } else if (variables?.AmendmentUpdate?.workflow?.action.includes("REJECT")) {
+                setShowToast({ key: "success", label: t("ES_MODIFYWSCONNECTION_REJECT_UPDATE_SUCCESS") });
+              }
+              refetch();
+              return;
+            }
+            if (data?.Licenses?.length > 0 && data?.Licenses[0]?.applicationNumber) {
+              if (data?.Licenses[0]?.businessService?.includes("BPAREG")) {
+                setShowToast({ key: "success", action: selectedAction });
+                data.selectedAction = selectedAction;
+                history.push(`/digit-ui/employee/obps/stakeholder-response`, { data: data });
+                return;
+              }
+              setShowToast({ key: "success", action: selectedAction });
+              history.replace(`/digit-ui/employee/tl/application-details/${data?.Licenses[0]?.applicationNumber}`);
+              return;
+            }
+            setShowToast({ key: "success", label: "Application Saved" });
+            // clearDataDetails && setTimeout(clearDataDetails, 3000);
+            setTimeout(closeToast, 5000);
+            // queryClient.clear();
+            // queryClient.refetchQueries("APPLICATION_SEARCH");
+            //push false status when reject
+          },
+        });
+      }
+      // closeModal();
+    // }
+  };
+
 
   if (isLoading || bpaDocsLoading || isEnableLoader || loading) return <Loader />;
 
@@ -2405,9 +2640,10 @@ const BpaApplicationDetail = () => {
                                   <Card>
                                     <InspectionReport
                                       isCitizen={true}
-                                      fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
+                                      fiReport={fieldInspectionPending?.length > 0 ? fieldInspectionPending : data?.applicationData?.additionalDetails?.fieldinspection_pending}
                                       onSelect={onChangeReport}
                                     />
+                                    <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
                                   </Card>
                                 )}
                               {data?.applicationData?.status != "INSPECTION_REPORT_PENDING" &&
@@ -2774,6 +3010,21 @@ const BpaApplicationDetail = () => {
             </React.Fragment>
           )}
         </Card>
+
+  {actions?.length > 0 && <Card>
+          <CardSectionHeader>
+            {t("Saved Comments")}
+          </CardSectionHeader>
+          <RichTextBox
+            value={draftComment}
+            onChange={(e) => setDraftComment(e.target.value)}
+            placeholder={t("Add Comments")}
+            className="checklist-table-textarea"
+            style={{ overflow: "hidden", maxHeight: "1500px" }}
+            maxLength={5000}
+          />
+          <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
+        </Card>}
 
         {showPdfModal && (
         <PdfPreviewModal

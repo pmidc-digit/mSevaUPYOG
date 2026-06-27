@@ -30,7 +30,7 @@ const PropertyMarketValue = (props) => {
             {t("PT_MUTATION_MARKET_VALUE") + " *"}
           </CardLabel>
           <div className="field">
-            <TextInput type={"number"} min={0} onChange={(e) => setSelected(e.target.value)} value={marketValue} />
+            <TextInput type={"number"} min={1} onChange={(e) => setSelected(e.target.value)} value={marketValue} />
           </div>
         </LabelFieldPair>
         {formState?.submitCount > 0 && !marketValue && (

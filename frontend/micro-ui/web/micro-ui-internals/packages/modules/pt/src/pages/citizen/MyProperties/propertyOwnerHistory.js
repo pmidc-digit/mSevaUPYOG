@@ -28,6 +28,7 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
   };
   const transformData = (property) => {
     const { owners, institution, ownershipCategory } = property;
+    console.log('owners :>> ', owners);
     let itemKey = [];
     owners.map((item) => {
       let owner = {};

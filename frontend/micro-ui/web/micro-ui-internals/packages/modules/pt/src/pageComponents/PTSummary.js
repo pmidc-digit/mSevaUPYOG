@@ -268,10 +268,10 @@ const PTSummary = ({ formData, t }) => {
             <CardLabel>{t("Locality")}</CardLabel>
             <div style={styles.value}>{getDisplayValue(propertyAddress?.locality)}</div>
           </LabelFieldPair>
-          <LabelFieldPair style={styles.labelFieldPair}>
+          {/* <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Pincode")}</CardLabel>
-            <div style={styles.value}>{propertyAddress?.pincode || "NA"}</div>
-          </LabelFieldPair>
+            <div style={styles.value}>{SummaryData?.propertyAddress?.pincode || "NA"}</div>
+          </LabelFieldPair> */}
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Survey ID")}</CardLabel>
             <div style={styles.value}>{propertyAddress?.surveyId || "NA"}</div>

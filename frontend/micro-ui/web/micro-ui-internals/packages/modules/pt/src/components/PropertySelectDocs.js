@@ -3,7 +3,11 @@ import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair } from
 import { Loader } from "../components/Loader";
 
 const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
-  const [documents, setDocuments] = useState(formData?.documents?.documents);
+  const [documents, setDocuments] = useState(
+    Array.isArray(formData?.documents)
+      ? formData.documents
+      : formData?.documents?.documents || []
+  );
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
@@ -16,6 +20,13 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
   // const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
 
   console.log("data=====", data);
+
+  const getIsRequired = (doc) => {
+    if (doc?.code === "OWNER.SPECIALCATEGORYPROOF") {
+      return config?.isSpecialCategoryRequired;
+    }
+    return doc?.required;
+  };
 
   const handleSubmit = () => {
     let document = formData.documents;
@@ -33,25 +44,30 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
     data?.PropertyTax?.Documents?.map((doc) => {
       doc.hasDropdown = true;
 
+      const isDocRequired = getIsRequired(doc);
       let isRequired = false;
       documents?.map((data) => {
-        if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
+        if (isDocRequired && data?.documentType.includes(doc.code)) isRequired = true;
       });
-      if (!isRequired && doc.required) count = count + 1;
+      if (!isRequired && isDocRequired) count = count + 1;
     });
     if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);
     else setEnableSubmit(true);
-  }, [documents, checkRequiredFields]);
+  }, [documents, checkRequiredFields, config?.isSpecialCategoryRequired]);
 
   return (
     <React.Fragment>
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
           {data?.PropertyTax?.Documents?.map((document, index) => {
+            const resolvedDocument = {
+              ...document,
+              required: getIsRequired(document),
+            };
             return (
               <PTRSelectDocument
                 key={index}
-                document={document}
+                document={resolvedDocument}
                 t={t}
                 error={error}
                 setError={setError}
@@ -96,7 +112,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   });
 
   const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.filestoreId || null);
+  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.filestoreId || filteredDocument?.fileStoreId || null);
 
   const handlePTRSelectDocument = (value) => setSelectedDocument(value);
 
@@ -167,8 +183,14 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
       setError(null);
       if (file) {
         setLoading(true);
-        if (file.size >= 5242880) {
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        const allowedExtensions = ["pdf", "jpeg", "jpg", "png"];
+        if (!allowedExtensions.includes(fileExtension)) {
+          setError(t(`Pile Format Not supported accepted file types: ${allowedExtensions.join(", ")}`));
+          setLoading(false);
+        } else if (file.size >= 5242880) {
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+          setLoading(false);
           // if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
         } else {
           try {

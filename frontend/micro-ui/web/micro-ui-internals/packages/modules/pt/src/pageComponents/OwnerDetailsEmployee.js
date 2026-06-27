@@ -191,7 +191,8 @@ const [showToast, setShowToast] = useState(null);
   const { errors } = localFormState;
   console.log("institution",institution)
   console.log("owner",owner)
-const formState2 = useSelector((state) => state.pt.PTNewApplicationForm);
+const formState2 = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData);
+console.log('formState2 :>> ', formState2);
 console.log("man",formData?.ownerShipCategory)
 const [isSamePropAddress,setIsSamePropAddress] = useState(false)
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -233,7 +234,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
     });
     ownerTypesMenu.sort(function (a, b) { return a.order - b.order; });
   }
-  const isIndividualTypeOwner = useMemo(() => formData?.ownershipCategory?.code.includes("INDIVIDUAL"), [formData?.ownershipCategory?.code]);
+  const isIndividualTypeOwner = useMemo(() => formData?.ownershipCategory?.code?.includes("INDIVIDUAL"), [formData?.ownershipCategory?.code]);
 
   // const institutionTypeMenu = useMemo(() => {
   //   const code = formData?.ownershipCategory?.code;
@@ -283,30 +284,25 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
   }, [uuid])
 
 
-  function getAddressEmployee () {
-    let str = "";
-    str = formState2?.formData?.LocationDetails?.address?.doorNo? str + formState2?.formData?.LocationDetails?.address?.doorNo + ",": str
-    str = formState2?.formData?.LocationDetails?.address?.buildingName? str + " " + formState2?.formData?.LocationDetails?.address?.buildingName + ",": str
-    str = formState2?.formData?.LocationDetails?.address?.street? str + " " + formState2?.formData?.LocationDetails?.address?.street + ",": str
-    str = formState2?.formData?.LocationDetails?.address?.locality?.name? str + " " + formState2?.formData?.LocationDetails?.address?.locality?.name + ",": str
-    str = formState2?.formData?.LocationDetails?.address?.city?.name? str + " " + formState2?.formData?.LocationDetails?.address?.city?.name + ",": str
-    str = formState2?.formData?.LocationDetails?.address?.pincode? str + " " + formState2?.formData?.LocationDetails?.address?.pincode  : str
-    
-    return str;
+  function buildAddressString(address) {
+    const parts = [
+      address?.doorNo,
+      address?.buildingName,
+      address?.street,
+      address?.locality?.name,
+      address?.city,
+      address?.pincode,
+    ].filter(Boolean);
+  return parts.join(", ");
   }
 
-  function getAddressCitizen () {
-    let str = "";
-    str = formState2?.formData?.PersonalDetails?.address?.doorNo? str + formState2?.formData?.PersonalDetails?.address?.doorNo + ",": str
-    str = formState2?.formData?.PersonalDetails?.address?.buildingName? str + " " + formState2?.formData?.PersonalDetails?.address?.buildingName + ",": str
-    str = formState2?.formData?.PersonalDetails?.address?.street? str + " " + formState2?.formData?.PersonalDetails?.address?.street + ",": str
-    str = formState2?.formData?.PersonalDetails?.address?.locality?.name? str + " " + formState2?.formData?.PersonalDetails?.address?.locality?.name + ",": str
-    str = formState2?.formData?.PersonalDetails?.address?.city?.name? str + " " + formState2?.formData?.PersonalDetails?.address?.city?.name + ",": str
-    str = formState2?.formData?.PersonalDetails?.address?.pincode? str + " " + formState2?.formData?.PersonalDetails?.address?.pincode  : str
-    
-    return str;
+  function getAddressEmployee() {
+    return buildAddressString(formState2?.formData?.LocationDetails?.address || formState2?.originalData?.address);
   }
 
+  function getAddressCitizen() {
+    return buildAddressString(formState2?.formData?.PersonalDetails?.address || formState2?.originalData?.address);
+  }
 
   return (
     <React.Fragment>
@@ -790,15 +786,29 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   />
                 )}
           />
-{(formState2?.formData?.ownerShipDetails?.ownershipCategory?.code==="INDIVIDUAL.MULTIPLEOWNERS" || formState2?.formData?.ownerShipDetails?.ownershipCategory?.code==="INDIVIDUAL.SINGLEOWNER") &&(
+{((formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" || formData?.ownershipCategory?.code === "INDIVIDUAL.SINGLEOWNER")) &&(
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("Ownership Percentage")} {isIndividualTypeOwner ? "" : <span style={{ color: 'red' }}>*</span>}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("Ownership Percentage")} {!isIndividualTypeOwner ? "" : <span style={{ color: 'red' }}>*</span>}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name={"ownershipPercentage"}
                 defaultValue={owner?.ownershipPercentage}
-                // rules={isIndividualTypeOwner ? {} : { required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                rules={{
+                  required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                  validate: {
+                    maxHundred: (v) => !v || Number(v) <= 100 || t("PT_PERCENTAGE_CANNOT_EXCEED_100"),
+                    minZero: (v) => !v || Number(v) >= 0 || t("PT_PERCENTAGE_CANNOT_BE_NEGATIVE"),
+                    isNumber: (v) => !v || !isNaN(Number(v)) || t("PT_MUST_BE_A_VALID_NUMBER"),
+                    checkPercentage: (v) => {
+                      const ownershipType = formData?.ownershipCategory?.code;
+                      if (ownershipType === "INDIVIDUAL.SINGLEOWNER") {
+                        return Number(v) === 100 || t("PT_SINGLE_OWNER_PERCENTAGE_MUST_BE_100");
+                      }
+                      return true;
+                    }
+                  }
+                }}
                 render={(props) => (
                   <TextInput
                     value={props.value}
@@ -809,16 +819,15 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                       setFocusIndex({ index: owner.key, type: "ownershipPercentage" });
                     }}
                     onBlur={props.onBlur}
-                    // isRequired={true}
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
 )}
-{formData?.ownershipCategory?.code.includes("INDIVIDUAL") || formData?.ownershipCategory?.code.includes("SINGLE") &&(
+{(formData?.ownershipCategory?.code?.includes("INDIVIDUAL") || formData?.ownershipCategory?.code?.includes("SINGLE")) && (
           <CardLabelError style={errorStyle}>
-            {localFormState.touched.ownershipPercentage ? errors?.ownershipPercentage?.message : ""}
+            {errors?.ownershipPercentage?.message}
           </CardLabelError>
 )}
         </div>

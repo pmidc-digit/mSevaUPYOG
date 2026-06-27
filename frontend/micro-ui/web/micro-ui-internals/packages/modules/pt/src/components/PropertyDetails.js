@@ -154,13 +154,24 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   });
 
   const onSubmit = async (data) => {
+    if (data?.vasikaDate && data?.allotmentDate && new Date(data?.allotmentDate) < new Date(data?.vasikaDate)) {
+      alert(t("PT_ALLOTMENT_DATE_ERROR"));
+      return;
+    }
     goNext(data);
     // return;
   };
 
   const selectedPropertyType = watch("propertyType")?.code;
+  const isBusinessNameRequired = selectedPropertyType && selectedPropertyType !== "VACANT"
   const selectedpropertyUsageType = watch("propertyUsageType")?.code;
   const isResidentialFlat = selectedpropertyUsageType === "RESIDENTIAL" && selectedPropertyType === "BUILTUP.SHAREDPROPERTY";
+  const hideSubUsageType =
+    isResidentialFlat ||
+    (selectedpropertyUsageType === "RESIDENTIAL" &&
+      selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY");
+  const allUsageOptions = useMemo(() => UsageCategoryNewData?.PropertyTax?.UsageCategory || [], [UsageCategoryNewData]);
+  const today = new Date().toISOString().split("T")[0];
 
   // Memoize floorOptions to prevent new [] reference each render (was causing infinite loop)
   const floorOptionsRaw = FloorData?.PropertyTax?.Floor;
@@ -263,6 +274,20 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
     trigger(); // revalidate
   }, [selectedFloors]);
 
+  const plotSizeWatch = watch("plotSize");
+  useEffect(() => {
+    if (plotSizeWatch) {
+      trigger();
+    }
+  }, [plotSizeWatch]);
+
+  const vasikaDateWatch = watch("vasikaDate");
+  useEffect(() => {
+    if (vasikaDateWatch && watch("allotmentDate")) {
+      trigger("allotmentDate");
+    }
+  }, [vasikaDateWatch]);
+
   return (
     <form  onSubmit={handleSubmit(onSubmit)}>
       {/* Row 1: Property Usage Type + Property Type */}
@@ -333,6 +358,7 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
           <TextInput
             type="date"
             value={props.value}
+            max={today}
             onChange={(e) => props.onChange(e.target.value)}
             t={t}
           />
@@ -366,6 +392,7 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
           <TextInput
             type="date"
             value={props.value}
+            max={today}
             onChange={(e) => props.onChange(e.target.value)}
             t={t}
           />
@@ -378,12 +405,12 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
       {/* Row 2: Business Name + Remarks */}
       <div style={twoColRow}>
         <LabelFieldPair style={colItem}>
-          <CardLabel className="card-label-smaller">{t("Business Name")}*</CardLabel>
+          <CardLabel className="card-label-smaller">{t("Business Name")}{isBusinessNameRequired && '*'}</CardLabel>
           <div className="form-field">
             <Controller
               control={control}
               name="businessName"
-              rules={{ required: t("Business Name is required") }}
+              rules={{ required: isBusinessNameRequired ? t("Business Name is required"): false }}
               render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />}
             />
             {errors.businessName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.businessName?.message}</p>}

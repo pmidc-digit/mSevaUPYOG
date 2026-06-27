@@ -94,6 +94,26 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
             return;
           }
         }
+
+        if (
+          ownershipCategory.code === "INDIVIDUAL.MULTIPLEOWNERS" ||
+          ownershipCategory.code === "INDIVIDUAL.SINGLEOWNER"
+        ) {
+          if (
+            !owner?.ownershipPercentage ||
+            isNaN(Number(owner.ownershipPercentage)) ||
+            Number(owner.ownershipPercentage) < 0 ||
+            Number(owner.ownershipPercentage) > 100
+          ) {
+            return;
+          }
+          if (
+            ownershipCategory.code === "INDIVIDUAL.SINGLEOWNER" &&
+            Number(owner.ownershipPercentage) !== 100
+          ) {
+            return;
+          }
+        }
       } else {
         // Institutional fields validation
         if (!owner.institutionName || (typeof owner.institutionName === "string" && !owner.institutionName.trim())) {
@@ -113,6 +133,13 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
         if (!owner.correspondenceAddress || (typeof owner.correspondenceAddress === "string" && !owner.correspondenceAddress.trim())) {
           return;
         }
+      }
+    }
+    if (ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS") {
+      const totalPercentage = owners?.reduce((sum, owner) => sum + Number(owner.ownershipPercentage || 0), 0);
+      if (totalPercentage !== 100) {
+        setShowToast({ key: "error", label: "PT_PERCENTAGE_SUM_MUST_BE_100" });
+        return;
       }
     }
 

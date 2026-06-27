@@ -174,6 +174,7 @@ const CreateEmployeeStepForm = ({ applicationData, responsePath = "/digit-ui/emp
               relationship,
               institutionType,
               landlineNumber: owner?.altContactNumber,
+              ownerShipPercentage: owner?.ownershipPercentage ? Number(owner.ownershipPercentage) : owner?.ownerShipPercentage,
               ...obj,
               status: "ACTIVE",
               additionalDetails: additionalOwnerDetails,

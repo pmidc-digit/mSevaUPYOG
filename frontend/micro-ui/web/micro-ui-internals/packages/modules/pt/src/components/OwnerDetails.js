@@ -237,8 +237,12 @@ useEffect(() => {
           ? ownerTypeDocuments.find((d) => d.code === owner.docIdType.code) ||
             owner.docIdType
           : owner.docIdType;
+      const resolvedOwnerType = ownerTypesMenu?.find(
+        (menuItem) => menuItem?.code === (owner?.ownerType?.code || owner?.ownerType)
+      ) || owner?.ownerType;
 
-      append({ ...owner, docIdType: resolvedDocIdType });
+
+      append({ ...owner, ownerType: resolvedOwnerType, docIdType: resolvedDocIdType });
     });
 
     trigger();

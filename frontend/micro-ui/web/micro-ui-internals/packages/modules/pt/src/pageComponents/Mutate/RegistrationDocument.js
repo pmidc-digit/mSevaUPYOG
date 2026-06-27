@@ -65,7 +65,7 @@ const RegistrationDocument = (props) => {
             {t("PT_MUTATION_DOCUMENT_NO") + " *"}
           </CardLabel>
           <div className="field">
-            <TextInput type={"number"} min={0} value={documentNumber} onChange={(e) => setDocNo(e.target.value)} />
+            <TextInput type={"number"} min={1} value={documentNumber} onChange={(e) => setDocNo(e.target.value)} />
           </div>
         </LabelFieldPair>
         {formState?.submitCount > 0 && !documentNumber && (
@@ -78,7 +78,7 @@ const RegistrationDocument = (props) => {
             {t("PT_MUTATION_DOCUMENT_VALUE") + " *"}
           </CardLabel>
           <div className="field">
-            <TextInput type={"number"} min={0} value={documentValue} onChange={(e) => setDocValue(e.target.value)} />
+            <TextInput type={"number"} min={1} value={documentValue} onChange={(e) => setDocValue(e.target.value)} />
           </div>
         </LabelFieldPair>
         {formState?.submitCount > 0 && !documentValue && (
@@ -113,9 +113,9 @@ const RegistrationDocument = (props) => {
       <Timeline currentStep={2} flow="PT_MUTATE" />
       <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!(documentNumber && documentValue && documentDate)}>
         <CardLabel>{t("PT_MUTATION_DOCUMENT_NO")}</CardLabel>
-        <TextInput type={"number"} min={0} value={documentNumber} onChange={(e) => setDocNo(e.target.value)} />
+        <TextInput type={"number"} min={1} value={documentNumber} onChange={(e) => setDocNo(e.target.value)} />
         <CardLabel>{t("PT_MUTATION_DOCUMENT_VALUE")}</CardLabel>
-        <TextInput type={"number"} min={0} value={documentValue} onChange={(e) => setDocValue(e.target.value)} />
+        <TextInput type={"number"} min={1} value={documentValue} onChange={(e) => setDocValue(e.target.value)} />
         <CardLabel>{t("PT_MUTATION_DOCUMENT_ISSUE_DATE")}</CardLabel>
         <DatePicker max={new Date().toLocaleDateString()} date={documentDate} onChange={selectDocDate} style={{maxWidth: 540}} />
         {error ? <CardLabelError>{t(error)}</CardLabelError> : null}

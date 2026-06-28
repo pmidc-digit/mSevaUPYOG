@@ -187,7 +187,7 @@ const getAssessmentInfo = (application, t) => {
       value:
         (flrno = unit?.floorNo) > -3
           ? t(getPropertyOccupancyTypeLocale(unit?.occupancyType)) === "Rented"
-            ? (application?.additionalDetails?.unit[0]?.rentedMonths ) || t("CS_NA")
+            ? (application?.additionalDetails?.unit?.[0]?.rentedMonths ) || t("CS_NA")
             : t("")
           : "",
     })
@@ -203,7 +203,7 @@ const getAssessmentInfo = (application, t) => {
       value:
         (flrno = unit?.floorNo) > -3
           ? t(getPropertyOccupancyTypeLocale(unit?.occupancyType)) === "Rented"
-            ? (application?.additionalDetails?.unit[0]?.nonRentedMonthsUsage ) || t("CS_NA")
+            ? (application?.additionalDetails?.unit?.[0]?.nonRentedMonthsUsage ) || t("CS_NA")
             : t("")
           : "",
     })

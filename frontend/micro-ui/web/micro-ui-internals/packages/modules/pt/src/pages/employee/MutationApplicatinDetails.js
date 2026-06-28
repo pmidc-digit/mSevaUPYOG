@@ -324,7 +324,7 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
     const applications = application || {};
     const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
     const acknowldgementDataAPI = await getPTAcknowledgementData({ ...applications }, tenantInfo, t);
-    Digit.Utils.pdf.generate(acknowldgementDataAPI);
+    Digit.Utils.pdf.generateFormatted(acknowldgementDataAPI);
   };
 
   let documentDate = t("CS_NA");

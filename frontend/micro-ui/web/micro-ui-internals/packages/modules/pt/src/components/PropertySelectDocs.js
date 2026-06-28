@@ -187,7 +187,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
         const fileExtension = file.name.split('.').pop().toLowerCase();
         const allowedExtensions = ["pdf", "jpeg", "jpg", "png"];
         if (!allowedExtensions.includes(fileExtension)) {
-          setError(t(`Pile Format Not supported accepted file types: ${allowedExtensions.join(", ")}`));
+          setError(`${t("File format not supported. Accepted file types")}:  ${allowedExtensions.join(", ")}`);
           setLoading(false);
         } else if (file.size >= 5242880) {
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));

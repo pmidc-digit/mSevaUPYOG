@@ -19,18 +19,30 @@ const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ")
 
 const getOwner = (application, t, customTitle) => {
   let owners = [];
-  if(customTitle && customTitle.includes("TRANSFEROR")){
-  if (application?.isTransferor && application?.transferorDetails) {
-    application.ownershipCategory = application?.transferorDetails?.ownershipCategory
-  } else if(application?.ownersInit){
-    owners = [...(application?.ownersInit) || []];
+  let ownershipCategory = application?.ownershipCategory;
+  if (customTitle?.includes("TRANSFEROR")) {
+    if (application?.ownersInit) {
+      ownershipCategory = application?.ownershipCategoryInit || application?.ownershipCategory;
+      const transfereeMobiles = application?.ownersTemp?.map(o => o.mobileNumber).filter(Boolean) || [];
+      owners = [...(application?.ownersInit || [])].filter((owner) => {
+        const mobileMatch = owner.mobileNumber && transfereeMobiles.includes(owner.mobileNumber);
+        return !mobileMatch; //return owner if mobile number is not matching to transferee
+      });
+    } else if (application?.isTransferor && application?.transferorDetails) {
+      ownershipCategory = application?.transferorDetails?.ownershipCategory;
+      owners = [...(application?.transferorDetails?.owners || [])];
+    } else {
+      owners = [...(application?.owners.filter((owner) => owner.status == "INACTIVE") || [])];
+    }
   } else {
-    owners = [...(application?.owners.filter((owner) => owner.status == "INACTIVE") || [])];
-  }}
-  else{
-  owners = [...(application?.owners.filter((owner) => owner.status == "ACTIVE") || [])];
+    if (application?.ownersTemp) {
+      ownershipCategory = application?.ownershipCategoryTemp || application?.ownershipCategory;
+      owners = [...(application?.ownersTemp || [])];
+    } else {
+      owners = [...(application?.owners.filter((owner) => owner.status == "ACTIVE") || [])];
+    }
   }
-  if (application?.ownershipCategory == "INDIVIDUAL.SINGLEOWNER") {
+  if (ownershipCategory == "INDIVIDUAL.SINGLEOWNER" && !application?.ownersInit) {    
     return {
       title: t(customTitle || "PT_OWNERSHIP_INFO_SUB_HEADER"),
       values: [
@@ -38,32 +50,32 @@ const getOwner = (application, t, customTitle) => {
         { title: t("PT_OWNERSHIP_INFO_MOBILE_NO"), value: owners[0]?.mobileNumber || t("CS_NA") },
         { title: t("PT_SEARCHPROPERTY_TABEL_GUARDIANNAME"), value: owners[0]?.fatherOrHusbandName || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_GENDER"), value: t(owners[0]?.gender) || t("CS_NA") },
-        { title: t("PT_FORM3_OWNERSHIP_TYPE"), value: t(application?.ownershipCategory) || t("CS_NA") },
+        { title: t("PT_FORM3_OWNERSHIP_TYPE"), value: t(ownershipCategory) || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_EMAIL_ID"), value: owners[0]?.emailId || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_USER_CATEGORY"), value: t(getPropertyOwnerTypeLocale(owners[0]?.ownerType)) || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_CORR_ADDR"), value: owners[0]?.permanentAddress || t("CS_NA") },
       ],
     };
-  } else if (application?.ownershipCategory.includes("INDIVIDUAL")) {
+  } else if (ownershipCategory && ownershipCategory.includes("INDIVIDUAL")) {
     let values = [];
     owners.map((owner) => {
       let doc = [
-                { title: t("PT_OWNERSHIP_INFO_NAME"), value: owner?.name || t("CS_NA") },
+        { title: t("PT_OWNERSHIP_INFO_NAME"), value: owner?.name || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_MOBILE_NO"), value: owner?.mobileNumber || t("CS_NA") },
         { title: t("PT_SEARCHPROPERTY_TABEL_GUARDIANNAME"), value: owner?.fatherOrHusbandName || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_GENDER"), value: t(owner?.gender) || t("CS_NA") },
-        { title: t("PT_FORM3_OWNERSHIP_TYPE"), value: t(application?.ownershipCategory) || t("CS_NA") },
+        { title: t("PT_FORM3_OWNERSHIP_TYPE"), value: t(ownershipCategory) || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_EMAIL_ID"), value: owner?.emailId || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_USER_CATEGORY"), value: t(getPropertyOwnerTypeLocale(owner?.ownerType)) || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_CORR_ADDR"), value: owner?.permanentAddress || t("CS_NA") },
       ];
-         values.push(...doc);
+      values.push(...doc);
     });
     return {
       title: t(customTitle || "PT_OWNERSHIP_INFO_SUB_HEADER"),
       values: values,
     };
-    } else if (application?.ownershipCategory.includes("INSTITUTIONAL")) {
+  } else if (ownershipCategory && ownershipCategory.includes("INSTITUTIONAL")) {
     return {
       title: t("PT_OWNERSHIP_INFO_SUB_HEADER"),
       values: [
@@ -74,7 +86,7 @@ const getOwner = (application, t, customTitle) => {
         { title: t("PT_FORM3_MOBILE_NUMBER"), value: owners[0]?.mobileNumber || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_TEL_PHONE_NO"), value: owners[0]?.altContactNumber || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_CORR_ADDR"), value: owners[0]?.correspondenceAddress || t("CS_NA") },
-        { title: t("PT_FORM3_OWNERSHIP_TYPE"), value: t(application?.ownershipCategory) || t("CS_NA") },
+        { title: t("PT_FORM3_OWNERSHIP_TYPE"), value: t(ownershipCategory) || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_EMAIL_ID"), value: owners[0]?.emailId || t("CS_NA") },
       ],
     };
@@ -260,7 +272,6 @@ const mutationRegistrationDetails = (application, t) => {
 const getPTAcknowledgementData = async (application, tenantInfo, t) => {
   const filesArray = application?.documents?.map((value) => value?.fileStoreId);
   const res = filesArray?.length>0 && await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId());
-
   if (application.creationReason === "MUTATION") {
     return {
       t: t,

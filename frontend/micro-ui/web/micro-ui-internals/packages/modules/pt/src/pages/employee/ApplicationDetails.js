@@ -38,7 +38,7 @@ const ApplicationDetails = () => {
   const [businessService, setBusinessService] = useState("PT.CREATE");
   sessionStorage.setItem("applicationNoinAppDetails", propertyId);
   const [viewTimeline, setViewTimeline] = useState(false);
-  const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, tenantId, propertyId);
+  const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, tenantId, propertyId, { staleTime: 0, cacheTime: 0 });
   const history = useHistory();
 
   const {

@@ -264,7 +264,7 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
   (watch("propertyUsageType") && watch("propertyUsageType").name === "Mixed" &&
    watch("propertyType") && watch("propertyType").code === "BUILTUP.SHAREDPROPERTY")
     ? ""
-    : (watch("propertyUsageType") && watch("propertyUsageType").name) || "",
+    : (watch("propertyUsageType") && watch("propertyUsageType").code) || "",
       occupancy: null,
       floor: index === 0 ? groundFloor : null, // ✅ First is Ground Floor
     }));
@@ -555,7 +555,7 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                       (watch("propertyUsageType") && watch("propertyUsageType").name === "Mixed" &&
                         watch("propertyType") && watch("propertyType").code === "BUILTUP.SHAREDPROPERTY")
                         ? (item && item.unitUsageType) || ""
-                        : (item && item.unitUsageType) || (watch("propertyUsageType") && watch("propertyUsageType").name) || ""
+                        : (item && item.unitUsageType) || (watch("propertyUsageType") && watch("propertyUsageType").code) || ""
                     }
                     rules={{ required: t("Unit Usage Type is required") }}
                     render={function (props) {

@@ -108,7 +108,7 @@ const Response = (props) => {
     Property.transferorOwnershipCategory = propertyDetails?.Properties?.[0]?.ownershipCategory
     
     const data = await getPTAcknowledgementData({ ...Property, auditData }, tenantInfo, t);
-    Digit.Utils.pdf.generate(data);
+    Digit.Utils.pdf.generateFormatted(data);
   };
 
   const handlePrintPdf = async () => {

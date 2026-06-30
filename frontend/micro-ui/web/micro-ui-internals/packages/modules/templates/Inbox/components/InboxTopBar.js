@@ -193,22 +193,10 @@ const InboxTopBar = ({
 
   return (
     <div className="new-inbox-topbar">
-      {/* <div className="new-inbox-tabs">
-        <button
-          type="button"
-          className={`new-inbox-tab ${
-            activeTab === "ALL" ? "new-inbox-tab-active" : ""
-          }`}
-          onClick={() => onTabClick?.("ALL")}
-        >
+      <div className="new-inbox-tabs">
+        <button type="button" className={`new-inbox-tab ${activeTab === "ALL" ? "new-inbox-tab-active" : ""}`} onClick={() => onTabClick?.("ALL")}>
           {t("ALL")}
-          <span
-            className={`new-inbox-tab-count ${
-              activeTab === "ALL" ? "new-inbox-tab-count-active" : ""
-            }`}
-          >
-            {totalCount || 0}
-          </span>
+          <span className={`new-inbox-tab-count ${activeTab === "ALL" ? "new-inbox-tab-count-active" : ""}`}>{totalCount || 0}</span>
         </button>
 
         {(statuses || []).map((status) => {
@@ -217,42 +205,29 @@ const InboxTopBar = ({
           const uniqueKey = status?.statusid || (businessService ? `${status?.applicationstatus}-${businessService}` : status?.applicationstatus);
           const hasDuplicateName = status?.hasDuplicateName ?? duplicateStatusCodes.has(status?.applicationstatus);
           return (
-          <button
-            key={uniqueKey}
-            type="button"
-            className={`new-inbox-tab ${
-              activeTab === uniqueKey
-                ? "new-inbox-tab-active"
-                : ""
-            }`}
-            onClick={() => onTabClick?.(uniqueKey, status)}
-          >
-            {t(status?.applicationstatus)}
-            {hasDuplicateName && businessServiceLabel ? ` (${businessServiceLabel})` : ""}
-            <span
-              className={`new-inbox-tab-count ${
-                activeTab === uniqueKey
-                  ? "new-inbox-tab-count-active"
-                  : ""
-              }`}
+            <button
+              key={uniqueKey}
+              type="button"
+              className={`new-inbox-tab ${activeTab === uniqueKey ? "new-inbox-tab-active" : ""}`}
+              onClick={() => onTabClick?.(uniqueKey, status)}
             >
-              {getStatusCount(status)}
-            </span>
-          </button>
-        )})}
+              {t(status?.applicationstatus)}
+              {hasDuplicateName && businessServiceLabel ? ` (${businessServiceLabel})` : ""}
+              <span className={`new-inbox-tab-count ${activeTab === uniqueKey ? "new-inbox-tab-count-active" : ""}`}>{getStatusCount(status)}</span>
+            </button>
+          );
+        })}
 
         {showClearTab && (
           <button
             type="button"
-            className={`new-inbox-tab ${
-              activeTab === "CLEAR" ? "new-inbox-tab-active" : ""
-            }`}
+            className={`new-inbox-tab ${activeTab === "CLEAR" ? "new-inbox-tab-active" : ""}`}
             onClick={() => onTabClick?.("CLEAR")}
           >
             {t("CLEAR")}
           </button>
         )}
-      </div> */}
+      </div>
 
       <div className="new-inbox-search">
         <span aria-hidden="true" className="new-inbox-search-icon">

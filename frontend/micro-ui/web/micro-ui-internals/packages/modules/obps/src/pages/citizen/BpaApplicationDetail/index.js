@@ -114,7 +114,8 @@ const BpaApplicationDetail = () => {
   const { data, isLoading, refetch } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
     enabled: !!id, // 👈 only runs when valid
   })
-  console.log('data for obps inbox', data)
+  
+  const addressPincode = data?.applicationData?.landInfo?.address?.pincode;
   const { isMdmsLoadingFees, data: mdmsDataFees } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["GaushalaFees", "MalbaCharges", "LabourCess"]);
   const isUserCitizen = data?.applicationData?.landInfo?.owners?.find((item) => item.mobileNumber === citizenmobilenumber) || false;
   const cities = Digit.Hooks.useTenants();
@@ -825,7 +826,7 @@ useEffect(() => {
             ...requestData.landInfo,
             owners: requestData.landInfo.owners.map((owner) => ({
               ...owner,
-              permanentPinCode: owner?.permanentPinCode || " ",
+              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
             })),
           };
         }
@@ -921,7 +922,7 @@ useEffect(() => {
             ...requestData.landInfo,
             owners: requestData.landInfo.owners.map((owner) => ({
               ...owner,
-              permanentPinCode: owner?.permanentPinCode || " ",
+              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
             })),
           };
         }
@@ -1021,7 +1022,7 @@ useEffect(() => {
             ...requestData.landInfo,
             owners: requestData.landInfo.owners.map((owner) => ({
               ...owner,
-              permanentPinCode: owner?.permanentPinCode || " ",
+              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
             })),
           };
         }
@@ -1819,7 +1820,7 @@ useEffect(() => {
         setApiLoading(true)
         const tenantInfo = cities.data.find((city) => city.code === data.applicationData.tenantId)
         const ulbName = tenantInfo?.ulbName || tenantInfo?.name;
-        const acknowledgementData = await getBPAAcknowledgement(data?.applicationData, tenantInfo, t, ulbType, ulbName, data?.edcrDetails, data?.collectionBillDetails);
+        const acknowledgementData = await getBPAAcknowledgement(data?.applicationData, data, tenantInfo, t, ulbType, ulbName, data?.edcrDetails, data?.collectionBillDetails);
         const colHeaders = tableHeader.map(h => t(h.name)); 
         const preComputedBlocks = (data?.edcrDetails?.planDetail?.blocks || []).map((block, i) => ({
           subOccupancy: getSubOccupancyValues(i, data?.applicationData, t),

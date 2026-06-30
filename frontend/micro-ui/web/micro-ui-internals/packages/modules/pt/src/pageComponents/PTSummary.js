@@ -265,18 +265,18 @@ const PTSummary = ({ formData, t }) => {
             <CardLabel>{t("Street Name")}</CardLabel>
             <div style={styles.value}>{propertyAddress?.streetName || "NA"}</div>
           </LabelFieldPair>
-          <LabelFieldPair style={styles.labelFieldPair}>
+          {/* <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Street Name")}</CardLabel>
             <div style={styles.value}>{SummaryData?.propertyAddress?.streetName || "NA"}</div>
-          </LabelFieldPair>
+          </LabelFieldPair> */}
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Locality")}</CardLabel>
             <div style={styles.value}>{getDisplayValue(propertyAddress?.locality)}</div>
           </LabelFieldPair>
-          <LabelFieldPair style={styles.labelFieldPair}>
+          {/* <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Pincode")}</CardLabel>
             <div style={styles.value}>{SummaryData?.propertyAddress?.pincode || "NA"}</div>
-          </LabelFieldPair>
+          </LabelFieldPair> */}
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("Survey ID")}</CardLabel>
             <div style={styles.value}>{SummaryData?.propertyAddress?.surveyId || "NA"}</div>

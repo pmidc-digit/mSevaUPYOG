@@ -80,7 +80,7 @@ const PropertyResponseCitizen = (props) => {
       const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
       const acknowldgementDataAPI = await getPTAcknowledgementData({ ...applications }, tenantInfo, t);
       setTimeout(() => {
-        Digit.Utils.pdf.generate(acknowldgementDataAPI);
+        Digit.Utils.pdf.generateFormatted(acknowldgementDataAPI);
         setLoader(false);
       }, 0);
     } catch (error) {

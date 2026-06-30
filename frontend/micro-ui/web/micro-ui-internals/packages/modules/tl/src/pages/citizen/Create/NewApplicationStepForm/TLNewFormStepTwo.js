@@ -150,6 +150,10 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (owner?.emailId && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(owner.emailId)) {
         missingFields.push(`Email (Owner ${index}) is not valid`);
       }
+
+      if (owner?.altContactNumber && !/^[0-9]{6,11}$/.test(String(owner.altContactNumber))) {
+        missingFields.push(`Official Telephone No. (Owner ${index}) must be a valid 6-11 digit number`);
+      }
     };
 
     if (ownershipCode === "INDIVIDUAL.SINGLEOWNER") {

@@ -220,7 +220,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
         { title: t("BPA_IS_CLUBBED_PLOT_LABEL"), value: BPA?.additionalDetails?.isClubbedPlot ? "YES" : "NO", isNotTranslated: true },
         ...(BPA?.additionalDetails?.isSelfCertification != null ? [{ title: t("BPA_IS_SELF_CERTIFICATION_REQUIRED"), value: BPA?.additionalDetails?.isSelfCertification? "YES" : "NO" , isNotTranslated: true }] : []),
         { title: t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL"), value: BPA?.additionalDetails?.registrationDetails || "-", isNotTranslated: true },
-        { title: t("BPA_BOUNDARY_WALL_LENGTH_LABEL"), value: BPA?.additionalDetails?.boundaryWallLength || "-", isNotTranslated: true },
+        { title: t("BPA_BOUNDARY_WALL_LENGTH_LABEL"), value: BPA?.additionalDetails?.boundaryWallLength || "-", isNotTranslated: true, isUnit: "BPA_MTRS_LABEL" },
         { title: t("BPA_DETAILS_PIN_LABEL"), value: BPA?.landInfo?.address?.pincode },
         { title: t("BPA_CITY_LABEL"), value: BPA?.landInfo?.address?.city },
         { title: t("BPA_LOC_MOHALLA_LABEL"), value: BPA?.landInfo?.address?.locality?.name },
@@ -309,6 +309,45 @@ const getMohallaLocale = (value = "", tenantId = "") => {
     return {
       title: t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER"),
       values: values,
+    };
+  };
+
+  const getScrutinyDetailsForPDF = (allData, t) => {
+    const detail = allData?.applicationDetails || [];
+
+    const scrutinySection = detail?.find(
+      (item) => item?.isScrutinyDetails === true
+    );
+    const scrutinyDetails = scrutinySection?.additionalDetails?.scruntinyDetails || [];
+    if (!(scrutinySection?.isScrutinyDetails && scrutinyDetails.length > 0)) {
+      return null;
+    }
+
+    return {
+      title: t("Scrutiny Documents"),
+      values: scrutinyDetails.map((item, index) => ({
+        title: t(item?.text || item?.title) || `Document ${index + 1}`,
+        value: " "
+      }))
+    };
+  };
+  const getOLDEDCRScrutinyDetailsForPDF = (allData, t) => {
+    const detail = allData?.applicationDetails || [];
+
+    const scrutinySection = detail?.find(
+      (item) => item?.isScrutinyDetails === true
+    );
+    const scrutinyDetails = scrutinySection?.additionalDetails?.oldEDCR || [];
+    if (!(scrutinySection?.isScrutinyDetails && scrutinyDetails.length > 0)) {
+      return null;
+    }
+
+    return {
+      title: t("Old EDCR Details Header"),
+      values: scrutinyDetails.map((item, index) => ({
+        title: t(item?.text || item?.title) || `Document ${index + 1}`,
+        value: " "
+      }))
     };
   };
   
@@ -609,11 +648,10 @@ const getMohallaLocale = (value = "", tenantId = "") => {
     } : null;
   };
 
-  const getBPAAcknowledgement = async (application, tenantInfo, t, ulbType, ulbName, edcr, collectionData = []) => {
+  const getBPAAcknowledgement = async (application, allData, tenantInfo, t, ulbType, ulbName, edcr, collectionData = []) => {
     const user = Digit.UserService.getUser();
     const stateCode = Digit.ULBService.getStateId();
     const isEmployee = window.location.href.includes("/employee");
-
     let OwnerPhoto = "";
     let primaryOwner = application?.landInfo?.owners?.find((owner) => owner?.isPrimaryOwner === true);
     const ownerPhotoId = primaryOwner?.additionalDetails?.ownerPhoto || null;
@@ -661,6 +699,8 @@ const getMohallaLocale = (value = "", tenantId = "") => {
         },
         getAdditionalDetails(application, edcr, t),
         getScrutinyDetails(application, edcr, t),
+        getScrutinyDetailsForPDF(allData, t),
+        getOLDEDCRScrutinyDetailsForPDF(allData, t),
         getBuildingExtractionDetails(application, edcr, t),
         getDemolitionAreaDetails(application, edcr, t),
         // Sub-occupancy floor table — only rendered for OBPS PDFs via isSubOccupancyTable flag

@@ -155,6 +155,7 @@ const BpaApplicationDetail = () => {
     enabled: !!id, // 👈 only runs when valid
   });
 
+  const addressPincode = data?.applicationData?.landInfo?.address?.pincode;
   const isSelfCertification = data?.applicationData?.additionalDetails?.isSelfCertification || null;
 
   const loading = isLoading || getLoader;
@@ -525,7 +526,7 @@ const BpaApplicationDetail = () => {
             ...requestData.landInfo,
             owners: requestData.landInfo.owners.map((owner) => ({
               ...owner,
-              permanentPinCode: owner?.permanentPinCode || " ",
+              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
             })),
           };
         }
@@ -881,7 +882,7 @@ const BpaApplicationDetail = () => {
           setLoader(true)
           const tenantInfo = cities.data.find((city) => city.code === data.applicationData.tenantId)
           const ulbName = tenantInfo?.ulbName || tenantInfo?.name;
-          const acknowledgementData = await getBPAAcknowledgement(data?.applicationData, tenantInfo, t, ulbType, ulbName, data?.edcrDetails, data?.collectionBillDetails);
+          const acknowledgementData = await getBPAAcknowledgement(data?.applicationData, data, tenantInfo, t, ulbType, ulbName, data?.edcrDetails, data?.collectionBillDetails);
           const colHeaders = tableHeader?.map(h => t(h.name));
           const preComputedBlocks = (data?.edcrDetails?.planDetail?.blocks || []).map((block, i) => ({
             subOccupancy: getSubOccupancyValues(i, data?.applicationData, t),
@@ -1235,7 +1236,7 @@ const BpaApplicationDetail = () => {
             ...requestData.landInfo,
             owners: requestData.landInfo.owners.map((owner) => ({
               ...owner,
-              permanentPinCode: owner?.permanentPinCode || " ",
+              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
             })),
           };
         }
@@ -1330,7 +1331,7 @@ const BpaApplicationDetail = () => {
             ...requestData.landInfo,
             owners: requestData.landInfo.owners.map((owner) => ({
               ...owner,
-              permanentPinCode: owner?.permanentPinCode || " ",
+              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
             })),
           };
         }

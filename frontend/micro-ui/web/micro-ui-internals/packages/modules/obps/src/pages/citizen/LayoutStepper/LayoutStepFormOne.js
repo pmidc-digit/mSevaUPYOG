@@ -164,7 +164,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
       if (!applicant.photoUploadedFiles) {
         setError(`applicants.${applicant?.actualIndex}.photo`, {
           type: "manual",
-          message: t("BPA_PASSPORT_PHOTO_REQUIRED"),
+          message: t("REQUIRED_FIELD"),
         });
         hasError = true;
         //console.log("errorFound: photo error for applicant index",index)
@@ -174,7 +174,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
       if (!applicant.documentUploadedFiles) {
         setError(`applicants.${applicant?.actualIndex}.document`, {
           type: "manual",
-          message: t("BPA_ID_PROOF_REQUIRED"),
+          message: t("REQUIRED_FIELD"),
         });
         hasError = true;
         //console.log("errorFound: id proof error for applicant index",index)
@@ -184,7 +184,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
       if (!applicant.panDocumentUploadedFiles) {
         setError(`applicants.${applicant?.actualIndex}.panDocument`, {
           type: "manual",
-          message: t("PAN_DOCUMENT_REQUIRED"),
+          message: t("REQUIRED_FIELD"),
         });
         hasError = true;
         //console.log("errorFound: panDocument error for applicant index",index)

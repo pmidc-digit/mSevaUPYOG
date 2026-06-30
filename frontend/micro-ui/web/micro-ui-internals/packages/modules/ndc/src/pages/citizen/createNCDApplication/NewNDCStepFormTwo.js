@@ -19,10 +19,9 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
   const id = window.location.pathname.split("/").pop();
   const user = Digit.UserService.getUser();
 
-  const { isLoading: propertyLoading, data: applicationDetails, refetch } = Digit.Hooks.ndc.useSearchEmployeeApplication(
-    { applicationNo: id },
-    tenantId
-  );
+  // console.log("checkFormData=====", checkFormData);
+
+  const { isLoading: propertyLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ applicationNo: id }, tenantId);
 
   useEffect(() => {
     if (applicationDetails?.Applications.length) {
@@ -41,51 +40,8 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    // const isRealId = id && id.startsWith("NDC-");
-
-    // if (isRealId) {
-    //   // onGoNext();
-    //   updateApplication(finaldata);
-    // } else {
-    //   onGoNext();
-    // }
     onGoNext();
-    //}
   }
-
-  const updateApplication = async (data) => {
-    // const applicant = Digit.UserService.getUser()?.info || {};
-    // const auditDetails = data?.cpt?.details?.auditDetails;
-    // const applicantId = applicant?.uuid;
-
-    // Pick the source of truth for the application
-    const baseApplication = checkFormData?.responseData?.[0] || {};
-
-    // Clone and modify workflow action
-    const updatedApplication = {
-      ...baseApplication,
-      workflow: {
-        action: "DRAFT",
-      },
-      NdcDetails: baseApplication?.NdcDetails,
-      Documents: [], // We'll populate below
-    };
-
-    // Final payload matches update API structure
-    const payload = {
-      Applications: [updatedApplication],
-    };
-
-    const response = await Digit.NDCService.NDCUpdate({ tenantId, details: payload });
-
-    if (response?.ResponseInfo?.status === "successful") {
-      dispatch(updateNDCForm("apiData", response));
-      onGoNext();
-      return { isSuccess: true, response };
-    } else {
-      return { isSuccess: false, response };
-    }
-  };
 
   const closeToast = () => {
     setShowToast(false);

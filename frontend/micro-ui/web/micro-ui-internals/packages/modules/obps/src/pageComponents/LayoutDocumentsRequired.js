@@ -290,7 +290,9 @@ function LayoutSelectDocument({
     setFile(selectedFile)
     // console.log("selectedFile here", selectedFile, doc, selectedDocument)
 
-    if (selectedFile && selectedFile.type === "image/jpeg") {
+    const fileType = selectedFile?.type?.toLowerCase();
+
+    if (selectedFile && (fileType?.includes("image/jpeg") || fileType?.includes("image/jpg") || fileType?.includes("image/png"))) {
       extractGeoLocation(selectedFile).then((location) => {
         // console.log("Latitude:", location.latitude)
         // console.log("Longitude:", location.longitude)
@@ -341,7 +343,9 @@ function LayoutSelectDocument({
   function selectfileWithCordinates(e) {
     const selectedFile = e.target.files[0]
 
-    if (selectedFile && selectedFile.type === "image/jpeg") {
+    const fileType = selectedFile?.type?.toLowerCase();
+
+    if (selectedFile && (fileType?.includes("image/jpeg") || fileType?.includes("image/jpg") || fileType?.includes("image/png"))) {
       extractGeoLocation(selectedFile).then((location) => {
         // console.log("Latitude:", location.latitude)
         // console.log("Longitude:", location.longitude)        
@@ -505,36 +509,61 @@ function LayoutSelectDocument({
   // }, [isHidden])
 
   function convertToDecimal(coordinate) {
-    const degrees = coordinate[0]
-    const minutes = coordinate[1]
-    const seconds = coordinate[2]
-    return degrees + minutes / 60 + seconds / 3600
+    // Accept either a DMS array (with numerator/denominator objects) or a direct numeric coordinate
+    // If `ref` is provided, caller should apply sign separately. This helper will only convert magnitude.
+    if (!coordinate) return 0;
+
+    const toNumber = (part) => {
+      if (part == null) return 0;
+      if (typeof part === "object" && part !== null && "numerator" in part && "denominator" in part) {
+        return part.numerator / (part.denominator || 1);
+      }
+      if (typeof part === "number") return part;
+      return Number(part) || 0;
+    };
+
+    if (!Array.isArray(coordinate)) {
+      // already a decimal number
+      return Number(coordinate) || 0;
+    }
+
+    const degrees = toNumber(coordinate[0]);
+    const minutes = toNumber(coordinate[1]);
+    const seconds = toNumber(coordinate[2]);
+
+    const decimal = degrees + minutes / 60 + seconds / 3600;
+    return decimal;
   }
 
   function extractGeoLocation(file) {
     return new Promise((resolve) => {
       try {
         EXIF.getData(file, function () {
-          const lat = EXIF.getTag(this, "GPSLatitude")
-          const lon = EXIF.getTag(this, "GPSLongitude")
+          const lat = EXIF.getTag(this, "GPSLatitude");
+          const lon = EXIF.getTag(this, "GPSLongitude");
+          const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+          const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
 
-          // console.log("lat====", lat)
-          if (lat && lon) {
-            const latDecimal = convertToDecimal(lat).toFixed(6)
-            const lonDecimal = convertToDecimal(lon).toFixed(6)
-            resolve({ latitude: latDecimal, longitude: lonDecimal })
+          console.log("Extracted EXIF GPS tags:", { lat, lon, latRef, lonRef });
+
+          if (lat && lon && latRef && lonRef) {
+            // Convert GPS coordinates to decimal format and apply sign from refs
+            const latDecimal = convertToDecimal(lat);
+            const lonDecimal = convertToDecimal(lon);
+            const latitude = latRef === "S" ? -Math.abs(latDecimal) : Math.abs(latDecimal);
+            const longitude = lonRef === "W" ? -Math.abs(lonDecimal) : Math.abs(lonDecimal);
+
+            resolve({ latitude: latitude.toFixed(6), longitude: longitude.toFixed(6) });
           } else {
-            resolve({ latitude: null, longitude: null })
-            if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
-              alert("Please Upload a Photo with Location Details")
-            }
+            console.warn("No GPS EXIF tags (lat/lon/refs) found on file");
+            resolve({ latitude: null, longitude: null });
           }
-        })
+        });
       } catch (error) {
-        //console.log("EXIF parsing failed:", error)
-        resolve({ latitude: null, longitude: null })
+        console.error("EXIF parsing failed:", error);
+        resolve({ latitude: null, longitude: null });
       }
-    })
+    });
   }
 
   return (
@@ -559,9 +588,7 @@ function LayoutSelectDocument({
             textStyles={{ width: "100%" }}
             accept=".jpeg, .jpg, .png"
           />
-          <p className="advisory-text">              
-              {t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5MB")}
-          </p>
+            <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           </div>
         ):(
           <div>
@@ -576,9 +603,7 @@ function LayoutSelectDocument({
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
           />
-          <p className="advisory-text">              
-              {t("Only .png, .jpeg, .jpg, .pdf files are accepted with maximum size of 5MB")}
-          </p>
+             <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           </div>
         )}
 

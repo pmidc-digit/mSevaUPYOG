@@ -130,7 +130,6 @@ const ApplicationOverview = () => {
       setLoader(true);
       WorkflowService = await Digit.WorkflowService.init(tenantId, "ndc-services");
       setLoader(false);
-      console.log("WorkflowService====", WorkflowService?.BusinessServices?.[0]?.states);
       setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
       // setComplaintStatus(applicationStatus);
     })();
@@ -138,13 +137,7 @@ const ApplicationOverview = () => {
 
   const empData = EmployeeData(tenantId, approver);
 
-  console.log("approver for ndc", approver);
-
-  console.log("officerData", empData);
-
   // const WorkflowService = Digit.WorkflowService.init(tenantId, "ndc-services");
-
-  // console.log("WorkflowService====", WorkflowService);
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -214,13 +207,21 @@ const ApplicationOverview = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const isCemp = user?.info?.roles.find((role) => role.code === "NDCCEMP")?.code;
 
+  // let actions =
+  //   workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+  //     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  //   }) ||
+  //   workflowDetailsTemp?.data?.nextActions?.filter((e) => {
+  //     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  //   });
+
   let actions =
-    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    }) ||
-    workflowDetailsTemp?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    });
+    workflowDetails?.data?.actionState?.nextActions
+      ?.filter((e) => userRoles?.some((role) => e.roles?.includes(role)) || !e.roles)
+      ?.filter((e) => e.action !== "EDIT") ||
+    workflowDetailsTemp?.data?.nextActions
+      ?.filter((e) => userRoles?.some((role) => e.roles?.includes(role)) || !e.roles)
+      ?.filter((e) => e.action !== "EDIT");
 
   const closeMenu = () => {
     setDisplayMenu(false);
@@ -298,16 +299,13 @@ const ApplicationOverview = () => {
 
       Property.propertyOwnerNames = propertyOwnerNames;
 
-      console.log("propertyOwnerNames", propertyOwnerNames);
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
-      console.log("tenantInfo", tenantInfo);
       const ulbType = tenantInfo?.city?.ulbType;
       let acknowledgementData;
 
       if (empData) {
         acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData, approverStatement);
       }
-      console.log("acknowledgementData", acknowledgementData);
       setTimeout(() => {
         Digit.Utils.pdf.generateNDC(acknowledgementData);
         setLoader(false);
@@ -318,27 +316,16 @@ const ApplicationOverview = () => {
     }
   };
   function onActionSelect(action) {
-    console.log("action====||?", action?.state?.actions);
     const ndcDetails = applicationDetails?.Applications?.[0]?.NdcDetails || [];
     const hasDuePending = ndcDetails?.some((item) => item.isDuePending === true);
 
-    console.log("hasDuePending", hasDuePending);
-
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
-
-    console.log("filterNexState====||?", filterNexState[0]?.nextState);
 
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
 
-    console.log("filterRoles====||?", filterRoles);
-    console.log("action test", action?.action);
-
     const checkactionApp = action?.action == "APPROVE";
 
-    console.log("filterRoles && checkactionApp", filterRoles && checkactionApp, checkactionApp, filterRoles);
-
     if (hasDuePending && checkactionApp) {
-      console.log("alwasy coming appprve");
       setLable("You Can Not Approve This Application, Because It Has Pending Dues. Please Send It To Required Department");
       setError(true);
       setShowToast(true);
@@ -487,8 +474,6 @@ const ApplicationOverview = () => {
       privacy: Digit.Utils.getPrivacyObject(),
     }
   );
-
-  console.log("applicationDetails", applicationDetails?.Applications?.[0]?.NdcDetails);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -734,7 +719,7 @@ const ApplicationOverview = () => {
         </ActionBar>
       )}
 
-      {applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" && (
+      {applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" && isCemp && (
         <ActionBar>
           <SubmitBar
             label={t("COMMON_EDIT")}

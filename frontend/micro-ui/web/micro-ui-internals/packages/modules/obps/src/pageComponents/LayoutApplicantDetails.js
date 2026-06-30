@@ -883,11 +883,9 @@ const LayoutApplicantDetails = (_props) => {
               justifyContent: "end",
             }}
           >
-            <p className="advisory-text">
-              {/* Accepted File Types: JPEG, JPG, PNG */}
-              Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
-            </p>
+           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           </div>
+          
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
             <CardLabel className="card-label-smaller">
               {t("BPA_APPLICANT_ID_PROOF")}
@@ -930,10 +928,7 @@ const LayoutApplicantDetails = (_props) => {
               marginTop: "10px",
             }}
           >
-            <p className="advisory-text">
-              {/* Accepted File Types: PDF */}
-              Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
-            </p>
+           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           </div>
           {/* PAN Document */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
@@ -978,10 +973,7 @@ const LayoutApplicantDetails = (_props) => {
               marginTop: "10px",
             }}
           >
-            <p className="advisory-text">
-              {/* Accepted File Types: PDF */}
-              Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
-            </p>
+            <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           </div>
 
           {/* PAN Number */}
@@ -1023,8 +1015,8 @@ const LayoutApplicantDetails = (_props) => {
 
           {/* Hidden Controllers for document validation */}
           <div style={{ display: "none" }}>
-            <Controller control={control} name="primaryOwnerPhoto" rules={{ required: t("BPA_PASSPORT_PHOTO_REQUIRED") }} render={() => null} />
-            <Controller control={control} name="primaryOwnerDocument" rules={{ required: t("BPA_ID_PROOF_REQUIRED") }} render={() => null} />
+            <Controller control={control} name="primaryOwnerPhoto" rules={{ required: t("REQUIRED_FIELD") }} render={() => null} />
+            <Controller control={control} name="primaryOwnerDocument" rules={{ required: t("REQUIRED_FIELD") }} render={() => null} />
           </div>
 
           {/* Additional Applicants Section */}

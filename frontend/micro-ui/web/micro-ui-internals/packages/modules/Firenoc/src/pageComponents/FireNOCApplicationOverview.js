@@ -599,7 +599,7 @@ const FireNOCApplicationOverview = () => {
         if (appStatus === "INITIATED") {
           filteredActions = filteredActions.filter((a) => a.action === "APPLY");
         }
-        const menuActions = [...editItem, ...filteredActions];
+        const menuActions = [...editItem, ...filteredActions]?.filter((action) => action?.action != "ADHOC");
         if (menuActions.length === 0) return null;
         return (
           <ActionBar>

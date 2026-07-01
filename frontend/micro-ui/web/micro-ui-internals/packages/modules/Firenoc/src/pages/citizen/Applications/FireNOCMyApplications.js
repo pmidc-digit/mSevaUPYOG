@@ -44,6 +44,11 @@ const FireNOCMyApplications = () => {
 
   const { isLoading, data: applications = [], isError } = Digit.Hooks.firenoc.useFIRENOCMyApplications(mobileNumber);
 
+  const handlePayment = (application) => {
+    const appNo = application?.fireNOCDetails?.applicationNumber;
+    const tenantId = application?.tenantId;
+    history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${appNo}?tenantId=${tenantId}`);
+  };
   if (isLoading) return <Loader />;
 
   return (
@@ -109,6 +114,9 @@ const FireNOCMyApplications = () => {
                   label={t("CS_COMMON_RESUBMIT")}
                   onSubmit={() => history.push(`/digit-ui/citizen/firenoc/edit-application/${appNo}?tenantId=${app?.tenantId || ""}`)}
                 />
+              )}
+              {status === "PENDINGPAYMENT" && (
+                <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handlePayment(app)} />
               )}
             </div>
           </Card>

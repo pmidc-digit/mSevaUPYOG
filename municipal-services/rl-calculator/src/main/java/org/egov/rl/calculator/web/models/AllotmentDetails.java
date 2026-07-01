@@ -106,6 +106,9 @@ public class AllotmentDetails {
 	
 	@JsonProperty("tradeLicenseNumber")
 	private String tradeLicenseNumber;
+
+	@JsonProperty("rentRevisions")
+	private List<RentRevision> rentRevisions;
 	
 	public AllotmentDetails addOwnersItem(OwnerInfo ownersItem) {
 		if (this.ownerInfo == null) {
@@ -125,6 +128,15 @@ public class AllotmentDetails {
 		if (null != documentsItem)
 			this.documents.add(documentsItem);
 		return this;
+	}
+
+	public void addRentRevisionsItem(RentRevision rentRevisionItem) {
+		if (this.rentRevisions == null) {
+			this.rentRevisions = new ArrayList<>();
+		}
+		if (null != rentRevisionItem) {
+			this.rentRevisions.add(rentRevisionItem);
+		}
 	}
 	
 	public Long getStartDate() {

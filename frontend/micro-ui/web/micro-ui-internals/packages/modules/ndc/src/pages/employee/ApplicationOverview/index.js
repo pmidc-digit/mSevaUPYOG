@@ -467,7 +467,7 @@ const ApplicationOverview = () => {
       const name = approveInstance?.assigner?.name || "NA";
       const status = applicationDetails?.Applications?.[0]?.applicationStatus;
       setApproverStatement(status ? `${t(status)} By` : "");
-      setApproverComment(comment!=null ? `Comments : ${comment}` : "");
+      setApproverComment(comment !== null ? `Comments : ${comment}` : "");
       setApprover(name);
     }
   }, [workflowDetails]);

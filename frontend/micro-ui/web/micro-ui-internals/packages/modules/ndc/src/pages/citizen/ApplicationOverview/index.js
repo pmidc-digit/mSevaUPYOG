@@ -41,6 +41,7 @@ const CitizenApplicationOverview = () => {
   const [showToast, setShowToast] = useState(null);
   const [approver, setApprover] = useState(null);
   const [approverStatement, setApproverStatement] = useState(null);
+  const [approverComment, setApproverComment] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
 
   const [ndcDatils, setNdcDetails] = useState([]);
@@ -65,7 +66,9 @@ const CitizenApplicationOverview = () => {
       const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
       const name = approveInstance?.assigner?.name || "NA";
       const status = applicationDetails?.Applications?.[0]?.applicationStatus;
+      const comment = approveInstance?.comment;
       setApproverStatement(status ? `${t(status)} By` : "");
+      setApproverComment(comment !== null ? `Comments : ${comment}` : "");
       setApprover(name);
     }
   }, [workflowDetails]);
@@ -210,7 +213,7 @@ const CitizenApplicationOverview = () => {
       const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
 
       Property.propertyOwnerNames = propertyOwnerNames;
-
+      const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea
       console.log("propertyOwnerNames", propertyOwnerNames);
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
       console.log("tenantInfo", tenantInfo);
@@ -218,7 +221,7 @@ const CitizenApplicationOverview = () => {
       let acknowledgementData;
 
       if (empData) {
-        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData, approverStatement);
+        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData, approverStatement, landArea, approverComment);
       }
       console.log("acknowledgementData", acknowledgementData);
       setTimeout(() => {

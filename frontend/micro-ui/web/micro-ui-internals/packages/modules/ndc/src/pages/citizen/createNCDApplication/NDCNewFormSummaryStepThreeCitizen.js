@@ -60,11 +60,7 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
               documentAttachment: nextDocumentAttachment,
             };
           })
-        : uploadedDocuments.map((doc) => ({
-            uuid: doc?.uuid,
-            documentType: doc?.documentType,
-            documentAttachment: doc?.documentAttachment,
-          }));
+        : uploadedDocuments;
 
     // Clone and modify workflow action
     const updatedApplication = {

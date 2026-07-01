@@ -3,9 +3,13 @@ package org.egov.pgr.service;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.pgr.config.PGRConfiguration;
+import org.egov.pgr.models.ExtRequest;
+import org.egov.pgr.models.PmidcStatusUpdateWrapper;
 import org.egov.pgr.producer.Producer;
 import org.egov.pgr.repository.PGRRepository;
+import org.egov.pgr.repository.ServiceRequestRepository;
 import org.egov.pgr.util.MDMSUtils;
+import org.egov.pgr.util.NotificationUtil;
 import org.egov.pgr.validator.ServiceRequestValidator;
 import org.egov.pgr.web.models.ServiceWrapper;
 import org.egov.pgr.web.models.AuditDetails;
@@ -18,11 +22,11 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @org.springframework.stereotype.Service
 public class PGRService {
-
 
 
     private EnrichmentService enrichmentService;
@@ -43,11 +47,15 @@ public class PGRService {
 
     private MDMSUtils mdmsUtils;
 
+    private ServiceRequestRepository serviceRequestRepository;
+
+    private NotificationUtil notificationUtil;
+
 
     @Autowired
     public PGRService(EnrichmentService enrichmentService, UserService userService, WorkflowService workflowService,
                       ServiceRequestValidator serviceRequestValidator, ServiceRequestValidator validator, Producer producer,
-                      PGRConfiguration config, PGRRepository repository, MDMSUtils mdmsUtils) {
+                      PGRConfiguration config, PGRRepository repository, MDMSUtils mdmsUtils, ServiceRequestRepository serviceRequestRepository,NotificationUtil notificationUtil) {
         this.enrichmentService = enrichmentService;
         this.userService = userService;
         this.workflowService = workflowService;
@@ -57,6 +65,9 @@ public class PGRService {
         this.config = config;
         this.repository = repository;
         this.mdmsUtils = mdmsUtils;
+        this.serviceRequestRepository=serviceRequestRepository;
+        this.notificationUtil=notificationUtil;
+
     }
 
 
@@ -72,6 +83,23 @@ public class PGRService {
         enrichmentService.enrichCreateRequest(request);
         workflowService.updateWorkflowStatus(request);
         producer.push(config.getCreateTopic(),request);
+
+        ExtRequest pmidcRequest = ExtRequest.builder()
+                .pmidcComplaintNumber(request.getService().getServiceRequestId())
+                .pmidcStatus(request.getService().getApplicationStatus())
+                .build();
+
+        RequestInfo requestInfo = RequestInfo.builder()
+                        .apiId("Rainmaker")
+                        .authToken(config.getExtKey())
+                        .build();
+
+        PmidcStatusUpdateWrapper wrapper = PmidcStatusUpdateWrapper.builder()
+                        .requestInfo(requestInfo)
+                        .request(pmidcRequest)
+                        .build();
+
+        serviceRequestRepository.fetchResult(notificationUtil.getExtURI(),wrapper);
         return request;
     }
     

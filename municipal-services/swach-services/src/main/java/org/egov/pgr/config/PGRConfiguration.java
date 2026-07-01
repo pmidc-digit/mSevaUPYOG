@@ -221,5 +221,14 @@ public class PGRConfiguration {
     @Value("${egov.complaints.category}")
     private String complaintTypes;
 
+    //Api Call
+    @Value("${ext.host}")
+    private String extHost;
+
+    @Value("${ext.endpoint}")
+    private String extLink;
+
+    @Value("${ext.api.key}")
+    private String extKey;
 
 }

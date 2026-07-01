@@ -618,27 +618,7 @@ const LayoutApplicantDetails = (_props) => {
 
           
 
-          {/* Applicant Name */}
-          <LabelFieldPair style={{ marginBottom: "15px" }}>
-            <CardLabel className="card-label-smaller">
-              {`${(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")}`}
-              <span className="requiredField">*</span>
-            </CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="applicantOwnerOrFirmName"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
-                }}
-                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} 
-                // disabled={isEdit}
-                 t={t} />}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.applicantOwnerOrFirmName ? errors.applicantOwnerOrFirmName.message : ""}</CardLabelError>
+      
 
           <LabelFieldPair style={{ marginBottom: "15px" }}>
             <CardLabel className="card-label-smaller">
@@ -671,6 +651,8 @@ const LayoutApplicantDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
+        
+
           {(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") &&<React.Fragment> <LabelFieldPair style={{ marginBottom: "15px" }}>
             <CardLabel className="card-label-smaller">
               {t("NEW_LAYOUT_FIRM_NAME_LABEL")}
@@ -692,6 +674,28 @@ const LayoutApplicantDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.authorisedPerson ? errors.authorisedPerson.message : ""}</CardLabelError>
           </React.Fragment>}
+
+                {/* Applicant Name */}
+          <LabelFieldPair style={{ marginBottom: "15px" }}>
+            <CardLabel className="card-label-smaller">
+              {`${(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="applicantOwnerOrFirmName"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
+                }}
+                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} 
+                // disabled={isEdit}
+                 t={t} />}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.applicantOwnerOrFirmName ? errors.applicantOwnerOrFirmName.message : ""}</CardLabelError>
 
           {/* Father/Husband Name */}
           <LabelFieldPair  >

@@ -33,7 +33,7 @@ const LayoutDocumentsRequired = ({
   formState,
 }) => {
   const tenantId = Digit.ULBService.getStateId()
-  const [documents, setDocuments] = useState([])
+  const [documents, setDocuments] = useState(formData?.documents?.documents || [])
   console.log("documents in childStep three", documents, formData)
   const [error, setError] = useState(null)
   const [enableSubmit, setEnableSubmit] = useState(true)
@@ -61,10 +61,7 @@ const LayoutDocumentsRequired = ({
   //console.log("geocoordinates", geocoordinates)
 
   const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
-
-  useEffect(()=>{
-    setDocuments(currentStepData?.documents?.documents?.documents)
-  },[currentStepData])
+  const applicantType = currentStepData?.applicationDetails?.aplicantType?.code;
 
   const [applicationNo, setApplicationNo] = useState("");
   const [isVacant, setIsVacant] = useState(false);
@@ -154,6 +151,14 @@ const LayoutDocumentsRequired = ({
         else if (doc.code === "OWNER.NATIONALHIGHWAYNOC") {
           isRequired = isNationalHighway
         }        
+        // Ownership document is mandatory for FIRM and NOT mandatory for INDIVIDUAL
+        else if (doc.code === "OWNER.OWNERSHIPDOCUMENT") {
+          if (applicantType === "FIRM") {
+            isRequired = true;
+          } else if (applicantType === "INDIVIDUAL") {
+            isRequired = false;
+          }
+        }
         
         // Filter out building drawing if vacant
         if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
@@ -166,7 +171,7 @@ const LayoutDocumentsRequired = ({
     
     
     return processedDocs
-  }, [isVacant, isCluApproved, isNationalHighway, isInstitution, data?.LAYOUT?.LayoutDocuments?.length])
+  }, [isVacant, isCluApproved, isNationalHighway, isInstitution, applicantType, data?.LAYOUT?.LayoutDocuments?.length])
 
   // console.log("filteredDocs and documents", filteredDocuments, documents)
 
@@ -199,7 +204,7 @@ const LayoutDocumentsRequired = ({
     const currentStatus = currentStepData?.siteDetails?.buildingStatus?.code
 
     if (currentStatus === "VACANT") {
-      setDocuments((prevDocs) => (prevDocs || []).filter((doc) => doc.documentType !== "OWNER.BUILDINGDRAWING"))
+      setDocuments((prevDocs) => Array.isArray(prevDocs) ? prevDocs.filter((doc) => doc.documentType !== "OWNER.BUILDINGDRAWING") : [])
     }
   }, [currentStepData?.siteDetails?.buildingStatus?.code])
 

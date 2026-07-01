@@ -283,13 +283,14 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
 
   const dowloadOptions = []
-  if (applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED") {
-
+  if (applicationDetails?.Layout?.[0]) {
     dowloadOptions.push({
       label: t("Download Application"),
       onClick: handleDownloadPdf,
     });
+  }
 
+  if (applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED") {
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CLU_FEE_RECEIPT_1"),
@@ -298,7 +299,6 @@ const [viewTimeline, setViewTimeline] = useState(false);
     }
     if (reciept_data_pay && reciept_data_pay?.Payments.length > 0 && !recieptDataLoadingPay) {
       dowloadOptions.push({
-        label: t("Pay 2 Fee"),
         label: t("CLU_FEE_RECEIPT_2"),
         onClick: () => getRecieptSearch({ tenantId: reciept_data_pay?.Payments[0]?.tenantId, payments: reciept_data_pay?.Payments[0], pdfkey:"layoutreceipt-second" }),
       });
@@ -581,29 +581,40 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
   return (
     <div className={"employee-main-application-details"}>
-      <CustomOwnerImage
-        ownerFileStoreId={findOwnerDocument(0, "OWNERPHOTO")}
-        ownerName={applicationDetails?.Layout?.[0]?.owners?.[0]?.name}
-      />
-      <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+      <div className="cardHeaderWithOptions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Header styles={{ fontSize: "32px" }}>{t("Application Overview")}</Header>
-         <LinkButton  label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
-        {loading && <Loader />}
-        {dowloadOptions && dowloadOptions.length > 0 && (
-          (recieptDataLoading || recieptDataLoadingPay)? 
-          <Loader /> :
-          <div>
-
-          <MultiLink
-            className="multilinkWrapper"
-            onHeadClick={() => setShowOptions(!showOptions)}
-            displayOptions={showOptions}
-            options={dowloadOptions}
-          />
-
-           </div>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginLeft: "auto" }}>
+          <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
+          {loading && <Loader />}
+          {dowloadOptions && dowloadOptions.length > 0 && (
+            (recieptDataLoading || recieptDataLoadingPay)? 
+            <Loader /> :
+            <div>
+              <MultiLink
+                className="multilinkWrapper"
+                onHeadClick={() => setShowOptions(!showOptions)}
+                displayOptions={showOptions}
+                options={dowloadOptions}
+              />
+            </div>
+          )}
+        </div>
       </div>
+
+      <Card>
+        <CardSubHeader>{t("OWNER_OWNERPHOTO") || "OWNER'S PHOTO"}</CardSubHeader>
+        <CustomOwnerImage
+          ownerFileStoreId={findOwnerDocument(0, "OWNERPHOTO")}
+          ownerName={applicationDetails?.Layout?.[0]?.owners?.[0]?.name}
+        />
+      </Card>
+
+      <Card>
+        <StatusTable>
+          <Row label={t("BPA_APPLICATION_NUMBER_LABEL") || t("Application No")} text={id} />
+          <Row label={t("Application Date")} text={applicationDetails?.Layout?.[0]?.auditDetails?.createdTime ? Digit.DateUtils.ConvertTimestampToDate(applicationDetails?.Layout?.[0]?.auditDetails?.createdTime, "dd/MM/yyyy") : "N/A"} />
+        </StatusTable>
+      </Card>
        
 
     {/* -------------------- APPLICANTS/OWNERS DETAILS -------------------- */}
@@ -613,9 +624,10 @@ const [viewTimeline, setViewTimeline] = useState(false);
         {applicationDetails?.Layout?.[0]?.owners?.map((applicant, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
-              <RenderRow label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${applicant?.additionalDetails?.aplicantType?.code === "FIRM"? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") :t("APPLICANT_NAME")}`} value={applicant?.name} />
+         
               {index === 0 && <RenderRow label={t(`CLU_OWNER_TYPE_LABEL`)} value={applicant?.additionalDetails?.aplicantType?.name} />}
               {applicant?.additionalDetails?.aplicantType?.code === "FIRM" && <RenderRow label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} value={applicant?.additionalDetails?.authorisedPerson} />}
+              <RenderRow label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${applicant?.additionalDetails?.aplicantType?.code === "FIRM"? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") :t("APPLICANT_NAME")}`} value={applicant?.name} />
               <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
               <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
               <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={applicant?.mobileNumber} />
@@ -625,7 +637,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
               <RenderRow label={t("BPA_PAN_NUMBER_LABEL")} value={applicant?.pan || "N/A"} />
               <Row label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
               <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
-              <Row label={t("Pan") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />
+              <Row label={t("BPA_PAN_DOCUMENT") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />
             </StatusTable>
           </div>
         ))}

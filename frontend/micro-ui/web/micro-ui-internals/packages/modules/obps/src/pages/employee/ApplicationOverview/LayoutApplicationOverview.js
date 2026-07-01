@@ -368,10 +368,18 @@ const LayoutEmployeeApplicationOverview = () => {
   const { tenants } = storeData || {};
 
   const handleDownloadPdf = async () => {
-    const Property = applicationDetails?.Layout?.[0];
-    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-    const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, t);
-    Digit.Utils.pdf.generate(acknowledgementData);
+    try {
+      setLoader(true);
+      const Property = applicationDetails?.Layout?.[0];
+      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+      const ulbType = tenantInfo?.city?.ulbType;
+      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t);
+      await Digit.Utils.pdf.generateFormatted(acknowledgementData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoader(false);
+    }
   };
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
@@ -401,18 +409,25 @@ const LayoutEmployeeApplicationOverview = () => {
   };
 
   const dowloadOptions = [];
+  if (applicationDetails?.Layout?.[0]) {
+    dowloadOptions.push({
+      label: t("Download Application"),
+      onClick: handleDownloadPdf,
+    });
+  }
+
   if (applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") {
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
       onClick: handleDownloadPdf,
     });
+  }
 
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
-      dowloadOptions.push({
-        label: t("CHB_FEE_RECEIPT"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
-      });
-    }
+  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+    dowloadOptions.push({
+      label: t("CHB_FEE_RECEIPT"),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+    });
   }
 
   useEffect(() => {
@@ -883,26 +898,37 @@ const LayoutEmployeeApplicationOverview = () => {
 
   return (
     <div className={"employee-main-application-details"}>
-      <CustomOwnerImage ownerFileStoreId={displayData?.owners?.[0]?.additionalDetails?.ownerPhoto} ownerName={displayData?.owners?.[0]?.name} />
-      <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+      {/* <CustomOwnerImage ownerFileStoreId={displayData?.owners?.[0]?.additionalDetails?.ownerPhoto} ownerName={displayData?.owners?.[0]?.name} /> */}
+      <div className="cardHeaderWithOptions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Header styles={{ fontSize: "32px" }}>{t("LAYOUT_APP_OVER_VIEW_HEADER")}</Header>
-        <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
-        {dowloadOptions && dowloadOptions.length > 0 && (
-          <div>
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-            />
-          </div>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginLeft: "auto" }}>
+          <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
+          {getLoader && <Loader />}
+          {dowloadOptions && dowloadOptions.length > 0 && (
+            recieptDataLoading ? 
+            <Loader /> :
+            <div>
+              <MultiLink
+                className="multilinkWrapper"
+                onHeadClick={() => setShowOptions(!showOptions)}
+                displayOptions={showOptions}
+                options={dowloadOptions}
+              />
+            </div>
+          )}
+        </div>
       </div>
+
+       <Card>
+              <CardSubHeader>{t("OWNER_OWNERPHOTO") || "OWNER'S PHOTO"}</CardSubHeader>
+             <CustomOwnerImage ownerFileStoreId={displayData?.owners?.[0]?.additionalDetails?.ownerPhoto} ownerName={displayData?.owners?.[0]?.name} />
+            </Card>
 
       <Card>
         <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
         <StatusTable>
           <Row label={t("Application Number")} text={applicationDetails?.Layout?.[0]?.applicationNo || "N/A"} />
+          <Row label={t("Application Date")} text={applicationDetails?.Layout?.[0]?.auditDetails?.createdTime ? Digit.DateUtils.ConvertTimestampToDate(applicationDetails?.Layout?.[0]?.auditDetails?.createdTime, "dd/MM/yyyy") : "N/A"} />
         </StatusTable>
       </Card>
 
@@ -936,16 +962,17 @@ const LayoutEmployeeApplicationOverview = () => {
               <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
               <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
+                  
+                  {index === 0 && <Row label={t(`CLU_OWNER_TYPE_LABEL`)} text={applicant?.additionalDetails?.aplicantType?.name} />}
+                  {applicant?.additionalDetails?.aplicantType?.code === "FIRM" && (
+                    <Row label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} text={applicant?.additionalDetails?.authorisedPerson} />
+                  )}
                   <Row
                     label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${
                       applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")
                     }`}
                     text={applicant?.name}
                   />
-                  {index === 0 && <Row label={t(`CLU_OWNER_TYPE_LABEL`)} text={applicant?.additionalDetails?.aplicantType?.name} />}
-                  {applicant?.additionalDetails?.aplicantType?.code === "FIRM" && (
-                    <Row label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} text={applicant?.additionalDetails?.authorisedPerson} />
-                  )}
                   <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={applicant?.emailId} />
                   <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={applicant?.fatherOrHusbandName} />
                   <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={applicant?.mobileNumber} />
@@ -962,7 +989,7 @@ const LayoutEmployeeApplicationOverview = () => {
                     text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />}
                   />
                   <Row
-                    label={t("Pan") || "Pan"}
+                    label={t("BPA_PAN_DOCUMENT") || "Pan"}
                     text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />}
                   />
                 </StatusTable>

@@ -575,52 +575,66 @@ const LayoutSiteDetails = (_props) => {
                   
 
                   {/* Validate Button for Online CLU */}
-                  <LabelFieldPair style={{display:"flex", justifyContent:"end", gap: "12px", alignItems: "center"}}>
-                    <div className="field">
-                    {isCluValidated && (
-                      <span style={{ color: "#00703c", fontWeight: 500 }}>✓ CLU Validated</span>
-                    )}
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      disabled={cluValidationLoading || !watch("cluNumber")}
-                      onClick={async () => {
-                        const cluNumber = watch("cluNumber");
-                        if (!cluNumber) {
-                          setCluValidationError("Please enter CLU Number");
-                          return;
-                        }
-                        
-                        setCluValidationLoading(true);
-                        setCluValidationError(null);
-                        
-                        try {
-                          // Search for CLU by applicationNo
-                          const result = await Digit.OBPSService.CLUSearch({
-                            filters: { applicationNo: cluNumber },
-                            tenantId: tenantId
-                          });
-                          
-                          if (result?.Clu && result.Clu.length > 0) {
-                            // CLU found and validated
-                            setIsCluValidated(true);
-                            setCluValidationError(null);
-                          } else {
-                            // CLU not found
-                            setCluValidationError("CLU Number not found. Please check and try again.");
-                            setIsCluValidated(false);
+                  <LabelFieldPair style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px", marginBottom: "8px" }}>
+                    <CardLabel className="card-label-smaller" style={{ visibility: "hidden" }}>
+                      Placeholder
+                    </CardLabel>
+                    <div className="field" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "12px" }}>
+                      {isCluValidated && (
+                        <span style={{ color: "#00703c", fontWeight: 500 }}>✓ CLU Validated</span>
+                      )}
+                      <button
+                        type="button"
+                        style={{
+                          padding: "8px 16px",
+                          background: "transparent",
+                          color: "#a82227",
+                          border: "1.5px solid #a82227",
+                          borderRadius: "4px",
+                          fontWeight: "600",
+                          fontSize: "14px",
+                          cursor: (cluValidationLoading || !watch("cluNumber")) ? "not-allowed" : "pointer",
+                          opacity: (cluValidationLoading || !watch("cluNumber")) ? 0.5 : 1,
+                          minWidth: "120px"
+                        }}
+                        disabled={cluValidationLoading || !watch("cluNumber")}
+                        onClick={async () => {
+                          const cluNumber = watch("cluNumber");
+                          if (!cluNumber) {
+                            setCluValidationError("Please enter CLU Number");
+                            return;
                           }
-                        } catch (error) {
-                          console.error("CLU Validation Error:", error);
-                          setCluValidationError("Error validating CLU. Please try again.");
-                          setIsCluValidated(false);
-                        } finally {
-                          setCluValidationLoading(false);
-                        }
-                      }}
-                    >
-                      {cluValidationLoading ? "Validating..." : "Validate CLU"}
-                    </button>
+                          
+                          setCluValidationLoading(true);
+                          setCluValidationError(null);
+                          
+                          try {
+                            // Search for CLU by applicationNo
+                            const result = await Digit.OBPSService.CLUSearch({
+                              filters: { applicationNo: cluNumber },
+                              tenantId: tenantId
+                            });
+                            
+                            if (result?.Clu && result.Clu.length > 0) {
+                              // CLU found and validated
+                              setIsCluValidated(true);
+                              setCluValidationError(null);
+                            } else {
+                              // CLU not found
+                              setCluValidationError("CLU Number not found. Please check and try again.");
+                              setIsCluValidated(false);
+                            }
+                          } catch (error) {
+                            console.error("CLU Validation Error:", error);
+                            setCluValidationError("Error validating CLU. Please try again.");
+                            setIsCluValidated(false);
+                          } finally {
+                            setCluValidationLoading(false);
+                          }
+                        }}
+                      >
+                        {cluValidationLoading ? "Validating..." : "Validate CLU"}
+                      </button>
                     </div>
                   </LabelFieldPair>
                   

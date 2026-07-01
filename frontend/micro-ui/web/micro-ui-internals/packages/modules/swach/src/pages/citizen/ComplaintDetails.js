@@ -181,7 +181,7 @@ const ComplaintDetailsPage = (props) => {
             <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline}></LinkButton>
           </div>
         </div>
-        {Object.keys(complaintDetails).length > 0 ? (
+        {Object.keys(complaintDetails)?.length > 0 ? (
           <React.Fragment>
             <Card>
               <CardSubHeader>{t(`SERVICEDEFS.${complaintDetails.audit.serviceCode.toUpperCase()}`)}</CardSubHeader>

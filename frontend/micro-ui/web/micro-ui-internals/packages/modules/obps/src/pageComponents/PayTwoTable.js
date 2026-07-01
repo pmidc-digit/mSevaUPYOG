@@ -20,7 +20,8 @@ export const PayTwoTable = ({
     handleFileDelete,
     routeTo,
     t,
-    handleRemarkChange
+    handleRemarkChange,
+    enabledEmployee
 }) => {
     return (
         <div className="bpa-table-container">
@@ -62,7 +63,7 @@ export const PayTwoTable = ({
                                             handleAdjustedAmountChange(row.index, e.target.value, row.amount)
                                         }
                                         onBlur={onAdjustedAmountBlur}
-                                        disable={disable}
+                                        disable={isEmployee ? !enabledEmployee : disable}
                                         step={1}
                                     />
                                 )}
@@ -81,7 +82,7 @@ export const PayTwoTable = ({
                                                     : t("ES_NO_FILE_SELECTED_LABEL")
                                             }
                                             uploadedFile={row.filestoreId}
-                                            disabled={disable}
+                                            disabled={isEmployee ? !enabledEmployee : disable}
                                         />
                                     )}
                                 </td>
@@ -104,7 +105,7 @@ export const PayTwoTable = ({
                                         handleRemarkChange(row.index, e.target.value, row.amount)
                                     }
                                     // onBlur={onAdjustedAmountBlur}
-                                    disable={disable}
+                                    disable={isEmployee ? !enabledEmployee : disable}
                                     // step={1}                                                
                                     style={{
                                         width: "100%",

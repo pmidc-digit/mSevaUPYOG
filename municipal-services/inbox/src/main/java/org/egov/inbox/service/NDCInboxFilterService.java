@@ -140,15 +140,12 @@ public class NDCInboxFilterService {
             searchCriteria.put(ASSIGNEE_PARAM, processCriteria.getAssignee());
         }
         if (!ObjectUtils.isEmpty(processCriteria.getStatus())) {
-            searchCriteria.put(STATUS_PARAM, processCriteria.getStatus());
+            searchCriteria.put(NdcConstants.WF_STATUS, processCriteria.getStatus());
+        } else if (moduleSearchCriteria == null || !moduleSearchCriteria.containsKey(NdcConstants.WF_STATUS)) {
+            if (StatusIdNameMap != null && !StatusIdNameMap.isEmpty()) {
+                searchCriteria.put(NdcConstants.WF_STATUS, StatusIdNameMap.keySet());
+            }
         }
-//        else {
-//            if (StatusIdNameMap != null && StatusIdNameMap.values().size() > 0) {
-//                if (CollectionUtils.isEmpty(processCriteria.getStatus())) {
-//                    searchCriteria.put(STATUS_PARAM, StatusIdNameMap.keySet());
-//                }
-//            }
-//        }
         return searchCriteria;
     }
 

@@ -44,7 +44,7 @@ const LayoutSpecificationDetails = (_props) => {
 
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("Net Plot Area As Per Jamabandi")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("Net Plot Area As Per Jamabandi")}`}<span className="requiredField">*</span></CardLabel>
           <div className="field">
             <Controller
               control={control}

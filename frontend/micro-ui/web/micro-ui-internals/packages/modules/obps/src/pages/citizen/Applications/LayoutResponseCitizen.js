@@ -143,17 +143,18 @@ const LayoutResponseCitizen = (props) => {
         />
         {downloading && <Loader />}
         {layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" ? (
-          <div>
+            <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
             <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
             {(layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" || layoutData?.applicationStatus === "PENDINGSANCTIONPAYMENT") && <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />}
-          </div>
+          </ActionBar>
         ) : null}
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+        {/* <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("My Application")} onSubmit={onGoToLayout} />
+        
+        </ActionBar> */}
           {/* <SubmitBar label={t(" New Application")} onSubmit={onGoToNewLayoutApplication} />
           <SubmitBar label={t(" Search Application")} onSubmit={onGoToSearchApplication} /> */}
-        </ActionBar>
       </Card>
     </div>
   )

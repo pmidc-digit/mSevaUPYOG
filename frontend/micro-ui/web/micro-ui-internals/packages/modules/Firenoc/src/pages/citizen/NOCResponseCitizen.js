@@ -37,7 +37,7 @@ const NOCResponseCitizen = (props) => {
   };
 
   const handlePayment = () => {
-    history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${nocCode}/${tenantId}?tenantId=${tenantId}`);
+    history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${nocCode}?tenantId=${tenantId}`);
   };
 
   const getFirenocNocApplication = async () => {
@@ -98,7 +98,7 @@ const NOCResponseCitizen = (props) => {
           {!loading && (
             <SubmitBar label={t("Download Application")} onSubmit={() => getFirenocNocApplication()} />
           )}
-          {/* <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
+          <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />
         </ActionBar>
       </Card>
     </div>

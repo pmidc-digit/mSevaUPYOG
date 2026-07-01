@@ -138,6 +138,20 @@ console.log("sessionStorageData",currentStepData, userDetails);
     }
   },[oldEDCR])
 
+    const { data: commonmasterFields, isLoading: commonmasterFieldsLoading, error } = Digit.Hooks.useCustomMDMS(
+    Digit.ULBService.getStateId(),
+    "BPA",
+    [{ name: "MasterFields" }],
+    {
+      select: (data) => {
+        const formattedData = data?.["BPA"]?.["MasterFields"]
+        return formattedData
+      },
+    },
+  )
+
+  console.log("commonmasterFields", commonmasterFields, error)
+
   async function fetchPropertyDetails(propertyId){
     try {
             const fetchedData = await Digit.PTService.search({

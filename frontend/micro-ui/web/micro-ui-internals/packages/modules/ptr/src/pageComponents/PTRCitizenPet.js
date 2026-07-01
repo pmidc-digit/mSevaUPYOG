@@ -10,6 +10,7 @@ import {
   CardSectionHeader,
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
+import { useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { UPDATE_PTRNewApplication_FORM } from "../redux/action/PTRNewApplicationActions";
 import { convertEpochToDateInput } from "../utils/index";
@@ -18,6 +19,7 @@ import { Loader } from "../components/Loader";
 const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isEdit }) => {
   const stateId = Digit.ULBService.getStateId();
   let user = Digit.UserService.getUser();
+  const location = useLocation();
   const dispatch = useDispatch();
   const [loader, setLoader] = useState(false);
   const [minDate, setMinDate] = useState("");
@@ -36,27 +38,29 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
 
   const genderTypeObj = mdmsPetData?.genderTypes?.find((gt) => gt.name === apiDataCheck?.[0]?.petDetails?.petGender) || null;
 
-  const pathParts = window.location.pathname.split("/");
-  const startIndex = pathParts.findIndex((part) => part === "new-application");
-  let id = null;
-  if (startIndex !== -1) {
-    const nextPart = pathParts[startIndex + 1];
+  const id = location.state?.applicationNumber;
 
-    // ✅ Case 1: PB-PTR format
-    if (nextPart?.startsWith("PB-PTR-")) {
-      id = nextPart;
-    }
-    // ✅ Case 2: PL/.../.../... format
-    else if (nextPart === "PL") {
-      id = pathParts.slice(startIndex + 1, startIndex + 5).join("/");
-    }
-  }
+  // const pathParts = window.location.pathname.split("/");
+  // const startIndex = pathParts.findIndex((part) => part === "new-application");
+  // let id = null;
+  // if (startIndex !== -1) {
+  //   const nextPart = pathParts[startIndex + 1];
 
-  id = id ? decodeURIComponent(id) : null;
+  //   // ✅ Case 1: PB-PTR format
+  //   if (nextPart?.startsWith("PB-PTR-")) {
+  //     id = nextPart;
+  //   }
+  //   // ✅ Case 2: PL/.../.../... format
+  //   else if (nextPart === "PL") {
+  //     id = pathParts.slice(startIndex + 1, startIndex + 5).join("/");
+  //   }
+  // }
+
+  // id = id ? decodeURIComponent(id) : null;
 
   // const id = pathParts[pathParts.length - 1];
-  const checkNumber = pathParts[pathParts.length - 2];
-  const checkForRenew = window.location.pathname.includes("renew-application");
+  // const checkNumber = pathParts[pathParts.length - 2];
+  const checkForRenew = location.state?.status.includes("renew-application");
 
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // yyyy-mm-dd for max

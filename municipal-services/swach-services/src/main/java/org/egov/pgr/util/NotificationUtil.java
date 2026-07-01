@@ -193,7 +193,7 @@ public class NotificationUtil {
         return message;
     }
 
-    public StringBuilder getExtURI() {
+    public StringBuilder getApiUri() {
         StringBuilder builder = new StringBuilder(config.getExtHost());
         builder.append(config.getExtLink());
         return builder;

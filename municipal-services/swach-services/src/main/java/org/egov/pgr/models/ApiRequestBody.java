@@ -5,17 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.egov.common.contract.request.RequestInfo;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PmidcStatusUpdateWrapper {
+public class ApiRequestBody {
+    @JsonProperty("pmidc_complaint_number")
+    private String pmidcComplaintNumber;
 
-    @JsonProperty("RequestInfo")
-    private RequestInfo requestInfo;
+    @JsonProperty("pmidc_status")
+    private String pmidcStatus;
 
-    @JsonProperty("request")
-    private ExtRequest request;
 }

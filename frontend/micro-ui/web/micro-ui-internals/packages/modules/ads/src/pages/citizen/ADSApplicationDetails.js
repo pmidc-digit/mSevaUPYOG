@@ -324,7 +324,7 @@ const ADSApplicationDetails = () => {
   const cartData = transformAdsData(ads_details?.cartDetails);
   dowloadOptions.push({
     label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
-      onClick: () => getAcknowledgementLetter({ tenantId: tenantId, payments: reciept_data?.Payments[0] }),
+    onClick: () => getAcknowledgementLetter({ tenantId: tenantId, payments: reciept_data?.Payments[0] }),
   });
 
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
@@ -371,6 +371,28 @@ const ADSApplicationDetails = () => {
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_APPLICATION_ADS_DETAILS_OVERVIEW")}</CardSubHeader>
           <ADSCartDetails cartDetails={cartData || []} t={t} />
 
+          {ads_details?.workflow?.documents?.length > 0 && (
+            <Card>
+              <CardSubHeader>{t("Application Cancellation Section")}</CardSubHeader>
+              <StatusTable>
+                <Row label={t("Reason")} text={ads_details?.workflow?.comment} />
+              </StatusTable>
+
+              {ads_details?.workflow?.documents?.length > 0 ? (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
+                  {ads_details?.workflow?.documents.map((doc, idx) => (
+                    <div key={idx}>
+                      <ADSDocument value={ads_details?.workflow?.documents} Code={doc?.documentType} index={idx} />
+                      {"Cancel Document"}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ padding: "0 1.5rem" }}>{t("TL_NO_DOCUMENTS_MSG")}</div>
+              )}
+            </Card>
+          )}
+
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_DOCUMENTS_DETAILS")}</CardSubHeader>
           <StatusTable>
             {docs?.length > 0 ? (
@@ -386,6 +408,7 @@ const ADSApplicationDetails = () => {
               <div style={{ padding: "0 1.5rem" }}>{t("TL_NO_DOCUMENTS_MSG")}</div>
             )}
           </StatusTable>
+
           <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
         </Card>
 

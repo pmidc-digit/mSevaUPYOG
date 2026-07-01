@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-import { Modal, Card, CheckBox } from "@mseva/digit-ui-react-components";
-import { useForm } from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import { Modal, Card, CheckBox, TextArea, LabelFieldPair, CardLabel, SubmitBar } from "@mseva/digit-ui-react-components";
+import { useForm, Controller } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import ADSDocuments from "./ADSDocuments";
 
 const Heading = (props) => {
   return <h1 className="heading-m">{props.t("ADS_CANCEL_BOOKING")}</h1>;
@@ -26,11 +28,71 @@ const CloseBtn = (props) => {
 
 const ADSCancelBooking = ({ t, closeModal, actionCancelLabel, actionCancelOnSubmit, actionSaveLabel, actionSaveOnSubmit, onSubmit }) => {
   const [agree, setAgree] = useState(false);
+  const [documentsData, setDocumentsData] = useState([]);
+  const [error, setError] = useState(null);
+  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+
+  // const { t } = useTranslation();
+
+  const filters = {
+    tenantId,
+    searchType: "1",
+  };
+
+  const { data, isLoading, isError } = Digit.Hooks.rentandlease.useRentAndLeaseProperties(filters);
+
   const setdeclarationhandler = () => {
     setAgree(!agree);
   };
 
-  const { handleSubmit } = useForm();
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm();
+
+  const handleDocumentsSelect = (data) => {
+    setDocumentsData(data);
+    if (data?.length > 0) {
+      setError(null);
+    }
+  };
+
+  const docUploadData = {
+    Challan: {
+      Documents: [
+        {
+          code: "ADSCancelDocument",
+          documentType: "ID_PROOF",
+          required: true,
+          active: true,
+          description: "ID proof of offender",
+          maxSizeMB: 2,
+          hasDropdown: true,
+        },
+      ],
+    },
+  };
+
+  const handleFormSubmit = (data) => {
+    if (!documentsData?.length) {
+      setError("Document is Required");
+      return;
+    }
+
+    setError(null);
+
+    const payload = {
+      ...data,
+      documents: documentsData,
+    };
+
+    actionSaveOnSubmit(payload);
+  };
+
+  useEffect(() => {
+    console.log("documentsData", documentsData);
+  }, [documentsData]);
 
   return (
     <Modal
@@ -39,15 +101,96 @@ const ADSCancelBooking = ({ t, closeModal, actionCancelLabel, actionCancelOnSubm
       actionCancelLabel={t(actionCancelLabel)}
       actionCancelOnSubmit={actionCancelOnSubmit}
       actionSaveLabel={t(actionSaveLabel)}
-      actionSaveOnSubmit={handleSubmit(actionSaveOnSubmit)}
-      isDisabled={!agree}
+      actionSaveOnSubmit={handleSubmit(handleFormSubmit)}
+      // isDisabled={!agree}
       formId="modal-action"
     >
-      <Card style={{ boxShadow: "none" }}>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CheckBox label={t("ADS_CANCEL_BOOKING")} onChange={setdeclarationhandler} style={{ height: "auto" }} />
-        </form>
-      </Card>
+      {/* <Card style={{ boxShadow: "none" }}> */}
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <div style={{ width: "80%", justifySelf: "center" }}>
+          {/* reason */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("Reason")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="reason"
+                rules={{
+                  required: "Reason is required",
+                  minLength: { value: 5, message: "Reason must be at least 5 characters" },
+                }}
+                render={(props) => (
+                  <TextArea
+                    name="reason"
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.reason && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.reason.message}</p>}
+            </div>
+          </LabelFieldPair>
+
+          {/* remarks */}
+          {/* <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("Remarks")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="remarks"
+                rules={{
+                  required: "Remarks is required",
+                  minLength: { value: 5, message: "Remarks must be at least 5 characters" },
+                }}
+                render={(props) => (
+                  <TextArea
+                    name="reason"
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.remarks && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.remarks.message}</p>}
+            </div>
+          </LabelFieldPair> */}
+          <div>
+            <ADSDocuments
+              t={t}
+              config={{ key: "documents" }}
+              onSelect={handleDocumentsSelect}
+              userType="CITIZEN"
+              formData={{ documents: { documents: documentsData } }}
+              setError={setError}
+              error={error}
+              clearErrors={() => {}}
+              formState={{}}
+              data={docUploadData}
+              isLoading={isLoading}
+            />
+            {/* {error === "DOCUMENT_REQUIRED" && <p style={{ color: "red", marginTop: "4px" }}>{t("ADS_DOCUMENT_UPLOAD_REQUIRED")}</p>} */}
+          </div>
+          {/* <SubmitBar label={t("Submit")} submit="submit" /> */}
+          {/* <CheckBox label={t("ADS_CANCEL_BOOKING")} onChange={setdeclarationhandler} style={{ height: "auto" }} /> */}
+          {/* </Card> */}
+        </div>
+      </form>
+      {/* </Card> */}
     </Modal>
   );
 };

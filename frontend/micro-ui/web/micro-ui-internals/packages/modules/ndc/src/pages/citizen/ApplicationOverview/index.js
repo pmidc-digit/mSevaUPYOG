@@ -68,7 +68,7 @@ const CitizenApplicationOverview = () => {
       const status = applicationDetails?.Applications?.[0]?.applicationStatus;
       const comment = approveInstance?.comment;
       setApproverStatement(status ? `${t(status)} By` : "");
-      setApproverComment(comment!= null ? `Comments : ${comment}` : "");
+      setApproverComment(comment !== null ? `Comments : ${comment}` : "");
       setApprover(name);
     }
   }, [workflowDetails]);

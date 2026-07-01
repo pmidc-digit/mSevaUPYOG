@@ -11,20 +11,16 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log("coming here again", checkFormData);
-
-    if (checkFormData?.responseData?.[0]?.Documents?.length && documents.length === 0) {
-      console.log("here yes");
+    if (checkFormData?.responseData?.[0]?.Documents?.length || checkFormData?.DocummentDetails?.documents?.documents) {
+      const docsMap = checkFormData?.responseData?.[0]?.Documents || checkFormData?.DocummentDetails?.documents?.documents;
 
       // Map API response into the structure your UploadFile expects
-      const apiDocs = checkFormData?.responseData?.[0]?.Documents?.map((doc) => ({
+      const apiDocs = docsMap?.map((doc) => ({
         documentType: doc?.documentType,
-        fileStoreId: doc?.uuid, // 👈 key mapping
-        documentUid: doc?.uuid, // 👈 key mapping
+        uuid: doc?.uuid, // 👈 key mapping
+        documentAttachment: doc?.documentAttachment, // 👈 key mapping
         applicationId: doc?.applicationId,
       }));
-
-      console.log("apiDocs", apiDocs);
 
       setDocuments(apiDocs);
     }
@@ -85,22 +81,20 @@ function SelectDocument({ t, document: doc, setDocuments, setError, documents, s
   const [getLoader, setLoader] = useState(false);
 
   const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
+  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.documentAttachment || null);
 
   function selectfile(e) {
     setFile(e.target.files[0]);
   }
 
   useEffect(() => {
-    if (filteredDocument?.fileStoreId && !file) {
-      setUploadedFile(filteredDocument.fileStoreId);
+    if (filteredDocument?.documentAttachment && !file) {
+      setUploadedFile(filteredDocument.documentAttachment);
     }
   }, [filteredDocument]);
 
   useEffect(() => {
     if (uploadedFile) {
-      console.log("not uploading");
-
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
 
@@ -108,7 +102,7 @@ function SelectDocument({ t, document: doc, setDocuments, setError, documents, s
           return filteredDocumentsByDocumentType;
         }
 
-        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile);
+        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.documentAttachment !== uploadedFile);
         return [
           ...filteredDocumentsByFileStoreId,
           {

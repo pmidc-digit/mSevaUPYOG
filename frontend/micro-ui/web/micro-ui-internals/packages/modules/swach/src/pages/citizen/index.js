@@ -56,7 +56,7 @@ const App = () => {
           ) : null}
           <PrivateRoute path={`${path}/create-complaint`} component={CreateComplaint} />
           <PrivateRoute path={`${path}/complaints`} exact component={ComplaintsList} />
-          <PrivateRoute path={`${path}/complaints/:id*`} component={ComplaintDetailsPage} />
+          <PrivateRoute path={`${path}/complaints/:id+`} component={ComplaintDetailsPage} />
           <PrivateRoute path={`${path}/Attendence`} component={AttendencePage} />
           <PrivateRoute path={`${path}/ViewAttendence`} component={ViewAttendence} />
           <PrivateRoute

@@ -64,7 +64,8 @@ const FeeEstimation = ({
     setAdjustedAmounts,
     disable = false,
     hidePayTwo = false,
-    collectionData = null
+    collectionData = null,
+    actions = []
 }) => {
     const [showToast, setShowToast] = useState(null);
     const [isDisabled, setIsDisabled] = useState();
@@ -85,6 +86,8 @@ const FeeEstimation = ({
     const isCitizen = window.location.href.includes("citizen");
     const isEmployee = window.location.href.includes("employee");
     const isNewConstructionPage = window.location.href.includes("bpa/building_plan_scrutiny/new_construction/");
+
+    const enabledEmployee = isEmployee ? actions?.length > 0 : true
 
     const isEditable =
         (isCitizen && isNewConstructionPage) || isEmployee;
@@ -554,7 +557,7 @@ const FeeEstimation = ({
 
             {collectionData?.length > 0 && <PaymentHistory payments={collectionData} t={t} />}
 
-            {!hidePayTwo && currentStepData?.createdResponse?.additionalDetails?.isSelfCertification && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
+            {!hidePayTwo && currentStepData?.createdResponse?.additionalDetails?.isSelfCertification && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange, enabledEmployee}}/>)}
             
             {shouldShowCitizenSanctionFee && (bpaCalculatorLoadingSan ? <Loader /> :<div><CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>
                 {t("BPA_SANCTION_FEE")}
@@ -574,7 +577,7 @@ const FeeEstimation = ({
             </div>)}
 
             {/* {!hidePayTwo && isEmployee && currentStepData?.createdResponse?.businessService != "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTableRegular {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange: handleAdjustedAmountChangeRegular,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)} */}
-            {shouldShowEmployeeSanctionFee && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
+            {shouldShowEmployeeSanctionFee && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange, enabledEmployee}}/>)}
 
             <FeeHistoryTable feeHistory={feeHistory} t={t} />
 

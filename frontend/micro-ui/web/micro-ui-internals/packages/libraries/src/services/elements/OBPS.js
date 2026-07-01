@@ -695,6 +695,32 @@ const getFormattedULBName = (ulbCode = "") => {
       day = (day > 9 ? "" : "0") + day;
       return `${day}/${month}/${year}`;
     }
+    
+    function ConvertEpochToValidityFromApprovedDate(dateEpoch) {
+      if (dateEpoch == null || dateEpoch == undefined || dateEpoch == "") {
+        return "NA";
+      }
+      const dateFromApi = new Date(dateEpoch-86400000);
+      let month = dateFromApi.getMonth() + 1;
+      let day = dateFromApi.getDate();
+      let year = dateFromApi.getFullYear() +3;
+      month = (month > 9 ? "" : "0") + month;
+      day = (day > 9 ? "" : "0") + day;
+      return `${day}/${month}/${year}`;
+    }
+
+    function ConvertEpochToApprovedDate(dateEpoch) {
+      if (dateEpoch == null || dateEpoch == undefined || dateEpoch == "") {
+        return "NA";
+      }
+      const dateFromApi = new Date(dateEpoch);
+      let month = dateFromApi.getMonth()+1;
+      let day = dateFromApi.getDate();
+      let year = dateFromApi.getFullYear();
+      month = (month > 9 ? "" : "0") + month;
+      day = (day > 9 ? "" : "0") + day;
+      return `${day}/${month}/${year}`;
+    }
 
     const nocDetails = noc?.map((nocDetails, index) => ({
       title: index === 0 ? "BPA_NOC_DETAILS_SUMMARY" : "",
@@ -861,13 +887,20 @@ const getFormattedULBName = (ulbCode = "") => {
       // });
       applicationDetailsInfo?.values?.push({
         title: BPA?.businessService !== "BPA_OC" ? "BPA_PERMIT_VALIDITY" : "BPA_OC_PERMIT_VALIDITY",
-        value: BPA?.additionalDetails?.validityDate
-          ? `${ConvertEpochToValidityDate(BPA?.additionalDetails?.validityDate)} - ${format(
+        value: `${ConvertEpochToApprovedDate(BPA?.approvalDate)} - ${BPA?.additionalDetails?.validityDate ? format(
             new Date(BPA?.additionalDetails?.validityDate),
             "dd/MM/yyyy"
-          )}`
-          : "NA",
+          ) : ConvertEpochToValidityFromApprovedDate(BPA?.approvalDate)}`,
       });
+      // applicationDetailsInfo?.values?.push({
+      //   title: BPA?.businessService !== "BPA_OC" ? "BPA_PERMIT_VALIDITY" : "BPA_OC_PERMIT_VALIDITY",
+      //   value: BPA?.additionalDetails?.validityDate
+      //     ? `${ConvertEpochToValidityDate(BPA?.additionalDetails?.validityDate)} - ${format(
+      //       new Date(BPA?.additionalDetails?.validityDate),
+      //       "dd/MM/yyyy"
+      //     )}`
+      //     : "NA",
+      // });
     }
 
     console.log("Log 5");

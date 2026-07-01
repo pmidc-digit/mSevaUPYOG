@@ -105,7 +105,7 @@ const Response = (props) => {
           {!loading && (
             <SubmitBar label={t("Download Application")} onSubmit={() => getFirenocNocApplication()} />
           )}
-          {/* <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
+          <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />
         </ActionBar>
       </Card>
     </div>

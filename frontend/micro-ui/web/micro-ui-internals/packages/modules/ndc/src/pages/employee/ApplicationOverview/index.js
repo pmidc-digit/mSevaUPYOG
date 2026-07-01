@@ -55,6 +55,7 @@ const ApplicationOverview = () => {
   const [getPropertyId, setPropertyId] = useState(null);
   const [approver, setApprover] = useState(null);
   const [approverStatement, setApproverStatement] = useState(null);
+  const [approverComment, setApproverComment] = useState(null);
 
   const [showOptions, setShowOptions] = useState(false);
   const handleMarkPending = (consumerCode, value, index) => {
@@ -295,9 +296,9 @@ const ApplicationOverview = () => {
       const Property = applicationDetails;
       const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
       const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
-
+      
       Property.propertyOwnerNames = propertyOwnerNames;
-
+      const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea
       console.log("propertyOwnerNames", propertyOwnerNames);
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
       console.log("tenantInfo", tenantInfo);
@@ -305,7 +306,7 @@ const ApplicationOverview = () => {
       let acknowledgementData;
 
       if (empData) {
-        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData, approverStatement);
+        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData, approverStatement, landArea, approverComment);
       }
       console.log("acknowledgementData", acknowledgementData);
       setTimeout(() => {
@@ -462,10 +463,11 @@ const ApplicationOverview = () => {
   useEffect(() => {
     if (workflowDetails) {
       const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
-
+      const comment = approveInstance?.comment;
       const name = approveInstance?.assigner?.name || "NA";
       const status = applicationDetails?.Applications?.[0]?.applicationStatus;
       setApproverStatement(status ? `${t(status)} By` : "");
+      setApproverComment(comment!=null ? `Comments : ${comment}` : "");
       setApprover(name);
     }
   }, [workflowDetails]);

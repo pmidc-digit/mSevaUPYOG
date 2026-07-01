@@ -223,6 +223,13 @@ const ApplicationOverview = () => {
       ?.filter((e) => userRoles?.some((role) => e.roles?.includes(role)) || !e.roles)
       ?.filter((e) => e.action !== "EDIT");
 
+  if (applicationDetails?.Applications?.[0]?.applicationStatus == "CITIZENACTIONREQUIRED" && isCemp) {
+    actions?.push({
+      action: "EDIT",
+      state: actions?.[0]?.state,
+    });
+  }
+
   const closeMenu = () => {
     setDisplayMenu(false);
   };
@@ -720,15 +727,15 @@ const ApplicationOverview = () => {
       )}
 
       {applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" && isCemp && (
-        <ActionBar>
-          <SubmitBar
-            label={t("COMMON_EDIT")}
-            onSubmit={() => {
-              const id = applicationDetails?.Applications?.[0]?.applicationNo;
-              history.push(`/digit-ui/employee/ndc/create/${id}`);
-            }}
-          />
-        </ActionBar>
+        // <ActionBar>
+        <SubmitBar
+          label={t("COMMON_EDIT")}
+          onSubmit={() => {
+            const id = applicationDetails?.Applications?.[0]?.applicationNo;
+            history.push(`/digit-ui/employee/ndc/create/${id}`);
+          }}
+        />
+        // </ActionBar>
       )}
 
       {showModal ? (

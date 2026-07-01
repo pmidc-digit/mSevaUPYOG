@@ -72,10 +72,18 @@ const LayoutMyApplications = ({ view }) => {
         ),
       },
       {
-        Header: t("Owner"),
-        // accessor: (row) => row?.Applications?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName || "",
-        accessor: (row) => row?.Applications?.owners?.[0]?.name || "",
-        Cell: ({ row }) => GetCell(row.original?.Applications?.owners?.[0]?.name || "-"),
+        Header: t("firm/owner") === "firm/owner" ? "Firm / Owner" : t("firm/owner"),
+        accessor: (row) => {
+          const owner = row?.Applications?.owners?.[0];
+          const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
+          return isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name;
+        },
+        Cell: ({ row }) => {
+          const owner = row.original?.Applications?.owners?.[0];
+          const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
+          const displayName = isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name;
+          return GetCell(displayName || "-");
+        },
       },
       {
         Header: t("TL_COMMON_TABLE_COL_STATUS"),
@@ -86,6 +94,23 @@ const LayoutMyApplications = ({ view }) => {
               row.original?.Applications?.applicationStatus ||
               "-"
           ),
+      },
+      {
+        Header: t("Application Date"),
+        accessor: (row) => row?.Applications?.auditDetails?.createdTime,
+        Cell: ({ row }) => {
+          const createdTime = row?.original?.Applications?.auditDetails?.createdTime;
+          if (!createdTime) {
+            return GetCell("-");
+          }
+
+          const date = new Date(Number(createdTime));
+          if (isNaN(date?.getTime())) {
+            return GetCell("-");
+          }
+
+          return GetCell(format(date, "dd/MM/yyyy"));
+        },
       },
       // {
       //   Header: t("Action"),
@@ -123,8 +148,12 @@ const LayoutMyApplications = ({ view }) => {
               <Card key={index} style={{ padding: "12px", borderRadius: "8px", boxShadow: "0px 2px 6px rgba(0,0,0,0.1)" }}>
                 <h3 style={{ fontSize: "16px", marginBottom: "8px" }}>{application?.Applications?.applicationNo}</h3>
                 <p style={{ margin: "4px 0" }}>
-                  <b>{t("Owner")}:</b>{" "}
-                  {application?.Applications?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName || t("CS_NA")}
+                  <b>{t("form/owner") === "form/owner" ? "Firm / Owner" : t("form/owner")}:</b>{" "}
+                  {(() => {
+                    const owner = application?.Applications?.owners?.[0];
+                    const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
+                    return (isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name) || t("CS_NA");
+                  })()}
                 </p>
                 <p style={{ margin: "4px 0" }}>
                   <b>{t("Status")}:</b>{" "}

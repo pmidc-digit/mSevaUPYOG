@@ -21,6 +21,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   )
 
   const currentStepDataNew = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
+  const applicantType = currentStepDataNew?.applicationDetails?.aplicantType?.code;
 
   const [applicationNo, setApplicationNo] = useState("");
     const [isVacant, setIsVacant] = useState(false);
@@ -114,6 +115,14 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
           else if (doc.code === "OWNER.NATIONALHIGHWAYNOC") {
             isRequired = isNationalHighway
           }
+          // Ownership document is mandatory for FIRM and NOT mandatory for INDIVIDUAL
+          else if (doc.code === "OWNER.OWNERSHIPDOCUMENT") {
+            if (applicantType === "FIRM") {
+              isRequired = true;
+            } else if (applicantType === "INDIVIDUAL") {
+              isRequired = false;
+            }
+          }
           // When CLU = YES: Make specific CLU documents mandatory
           // else if (isCluApproved && doc.cluRequired) {
           //   isRequired = true
@@ -137,7 +146,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       //console.log("=== END DEBUG ===")
       
       return processedDocs
-    }, [isVacant, isCluApproved, isNationalHighway, isInstitution, docData?.LAYOUT?.LayoutDocuments?.length])
+    }, [isVacant, isCluApproved, isNationalHighway, isInstitution, applicantType, docData?.LAYOUT?.LayoutDocuments?.length])
 
 
 
@@ -275,7 +284,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
           defaultValues={currentStepData}
           config={config.currStepConfig}
           onSubmit={goNext}
-          // onFormValueChange={onFormValueChange}
+          onFormValueChange={onFormValueChange}
           label={t(`${config.texts.submitBarLabel}`)}
           currentStep={config.currStepNumber}
           onBackClick={onGoBack}

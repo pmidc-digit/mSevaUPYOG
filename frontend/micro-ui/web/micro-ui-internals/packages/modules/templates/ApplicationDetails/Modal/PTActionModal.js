@@ -117,19 +117,6 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
           },
         ];
 
-      if (
-        Property?.creationReason === "STATUS" &&
-        action?.action === "APPROVE" &&
-        (Property?.status === "INWORKFLOW" || Property?.isinactive === true)
-      ) {
-        if (!Property.additionalDetails) {
-          Property.additionalDetails = {};
-        }
-        Property.additionalDetails.propertytobestatus = "ACTIVE";
-        Property.isactive = true;
-        Property.isinactive = false;
-      }
-
       submitAction({
         Property: {
           ...Property,

@@ -250,26 +250,27 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
         } else if (key === "petGender") {
           setValue(key, genderTypeObj);
         } else if (key === "petAge") {
+          setValue(key, value);
           // 🧠 Handle pet age increment logic
-          if (value) {
-            const [yearsStr, monthsStr] = value.toString().split(".");
-            let years = parseInt(yearsStr, 10);
-            let months = parseInt(monthsStr || 0, 10);
+          // if (value) {
+          //   const [yearsStr, monthsStr] = value.toString().split(".");
+          //   let years = parseInt(yearsStr, 10);
+          //   let months = parseInt(monthsStr || 0, 10);
 
-            // Add the months passed since creation
-            months += monthsDiff;
+          //   // Add the months passed since creation
+          //   months += monthsDiff;
 
-            // Convert months overflow to years
-            if (months >= 12) {
-              years += Math.floor(months / 12);
-              months = months % 12;
-            }
+          //   // Convert months overflow to years
+          //   if (months >= 12) {
+          //     years += Math.floor(months / 12);
+          //     months = months % 12;
+          //   }
 
-            const updatedAge = `${years}.${months}`;
-            setValue(key, updatedAge);
-          } else {
-            setValue(key, value);
-          }
+          //   const updatedAge = `${years}.${months}`;
+          //   setValue(key, updatedAge);
+          // } else {
+          //   setValue(key, value);
+          // }
         } else {
           setValue(key, value);
         }

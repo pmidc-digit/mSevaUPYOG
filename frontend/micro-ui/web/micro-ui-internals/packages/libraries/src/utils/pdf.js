@@ -566,6 +566,7 @@ const jsPdfGeneratorNDC = async ({
   approver,
   designation,
   approverStatement,
+  approverComment,
   ulbType,
   t = (text) => text,
   imageURL,
@@ -626,7 +627,8 @@ const jsPdfGeneratorNDC = async ({
         stack: [
           { text: `${approverStatement}  `, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true },
           { text: approver, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] },
-          { text: designation, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] }
+          { text: designation, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] },
+          { text: `${approverComment}  `, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] },
         ],
         alignment: "right",
         margin: [9, 5, 20, 5],

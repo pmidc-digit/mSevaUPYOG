@@ -62,7 +62,7 @@ const getReadableCity = (tenantId = "") => {
 
 const capitalize = (text) => text?.charAt(0).toUpperCase() + text?.slice(1);
 
-const getAcknowledgementData = async (application, formattedAddress, tenantInfo, t, approver,ulbType, empData, approverStatement) => {
+const getAcknowledgementData = async (application, formattedAddress, tenantInfo, t, approver,ulbType, empData, approverStatement, landArea, approverComment) => {
   const appData = application?.Applications?.[0] || {};
   const owner = appData?.owners?.[0] || {};
   const ndc = appData?.NdcDetails?.[0] || {};
@@ -99,8 +99,9 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   { text: ", Property ID: ", bold: false , fontSize: 9,},
   { text: `${propertyId}`, bold: true ,  fontSize: 9,},
   { text: ", Property Type: ", bold: false ,  fontSize: 9, },
-  { text: `${propertyType}\n`, bold: true ,  fontSize: 9, },
-
+  { text: `${propertyType}`, bold: true ,  fontSize: 9, },
+  { text: ", Land Area: ", bold: false ,  fontSize: 9, },
+  { text: `${landArea}\n`, bold: true ,  fontSize: 9, },
   { text: "Property Address: ", bold: false ,  fontSize: 9, },
   { text: `${formattedAddress}`, bold: true ,  fontSize: 9, }, { text: " Owned by: ", bold: false , fontSize: 9, }, { text: `${ownerNames}\n`, bold: true ,  fontSize: 9,},
   { text: "Applicant Name: ", bold: false , fontSize: 9},
@@ -164,6 +165,7 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
     approver,
     designation,
     approverStatement,
+    approverComment,
     ulbType,
     tenantId: appData?.tenantId,
     // Use readable city dynamically

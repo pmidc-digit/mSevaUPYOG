@@ -479,6 +479,10 @@ function ApplicationDetailsContent({
       isactive: status === "ACTIVE",
       isinactive: status === "INACTIVE",
       creationReason: "STATUS",
+      additionalDetails: {
+        ...(propertyData.additionalDetails || {}),
+        propertytobestatus: status,   // "ACTIVE" or "INACTIVE" based on what's being triggered
+      },
       workflow: {
         ...propertyData.workflow,
         businessService: "PT.CREATE",

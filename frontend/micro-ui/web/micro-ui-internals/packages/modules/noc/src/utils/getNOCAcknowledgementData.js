@@ -1,7 +1,7 @@
 import React from "react";
 import { pdfDownloadLink, pdfDocumentName } from "./index";
 import { Loader } from "@mseva/digit-ui-react-components";
-import EXIF from "exif-js";
+import EXIF from "./exif-compat";
 
 const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");

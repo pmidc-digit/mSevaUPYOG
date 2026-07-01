@@ -23,7 +23,9 @@ const FillQuestions = (props) => {
   const [localityList, setLocalityList] = useState(null);
   const [openQuesDetailsDialog, setOpenQuesDetailsDialog] = useState(false);
   const [getFetchAnswers, setFetchAnswers] = useState();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
+
   const prevProps = props.location.state;
   let data = prevProps?.surveyDetails;
   const [hasCitizenDetails, setHasCitizenDetails] = useState(null);
@@ -39,7 +41,8 @@ const FillQuestions = (props) => {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      let response = await Digit.LocationService.getLocalities("pb.testing");
+      let response = await Digit.LocationService.getLocalities(tenantId);
+
       setLoading(false);
       let __localityList = [];
       if (response && response.TenantBoundary?.length > 0) {
@@ -1020,7 +1023,7 @@ const FillQuestions = (props) => {
                 <option value="">--Please choose a locality--</option>
                 {city !== null && localityList !== null && (
                   <>
-                    {localityList.map((option, index) => (
+                    {localityList?.map((option, index) => (
                       <option key={index} value={option.name}>
                         {option?.name}
                       </option>

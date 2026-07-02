@@ -413,44 +413,61 @@ function LayoutSelectDocument({
 
   useEffect(() => {
     if (doc?.code) {
-      if(uploadedFile){
-      setDocuments((prev) => {
-        const filteredDocumentsByDocumentType = (prev || []).filter(
-          (item) => item?.documentType !== doc?.code,
-        )
+      if (uploadedFile) {
+        setDocuments((prev) => {
+          const filteredDocumentsByDocumentType = (prev || []).filter(
+            (item) => item?.documentType !== doc?.code,
+          )
 
-        const selectedDocument = (prev || []).filter(
-          (item) => item?.documentType === doc?.code
-        )
+          const selectedDocument = (prev || []).filter(
+            (item) => item?.documentType === doc?.code
+          )
 
-        // console.log("All Docs filteredDocumentsByDocumentType", filteredDocumentsByDocumentType)
-        if (uploadedFile?.length === 0 || uploadedFile === null) {
-          return filteredDocumentsByDocumentType
+          if (uploadedFile?.length === 0 || uploadedFile === null) {
+            return filteredDocumentsByDocumentType
+          }
+
+          return [
+            ...filteredDocumentsByDocumentType,
+            {
+              ...selectedDocument?.[0],
+              documentType: doc?.code,
+              filestoreId: uploadedFile,
+              documentUid: uploadedFile,
+              documentAttachment: uploadedFile,
+              order: doc?.order
+            },
+          ]
+        })
+      } else if (uploadedFile === "") {
+        const selectedDoc = (documents || [])?.find((item) => item?.documentType === doc?.code);
+        if (!selectedDoc?.layoutId) {
+          setDocuments((prev) => (prev || []).filter((item) => item?.documentType !== doc?.code));
+        } else {
+          setDocuments((prev) => {
+            const filteredDocumentsByDocumentType = (prev || []).filter((item) => item?.documentType !== doc?.code);
+
+            const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
+            return [
+              ...filteredDocumentsByFileStoreId,
+              {
+                ...selectedDoc,
+                documentType: doc?.code,
+                filestoreId: "",
+                documentUid: filteredDocument?.documentUid || "",
+                documentAttachment: "",
+                order: doc?.order,
+              },
+            ];
+          });
         }
-
-        // const filteredDocumentsByFileStoreId =
-        //   filteredDocumentsByDocumentType.filter((item) => item?.filestoreId !== uploadedFile) || []
-
-        // console.log("All Docs filteredDocumentsByFileStoreId", filteredDocumentsByFileStoreId)
-        return [
-          ...filteredDocumentsByDocumentType,
-          {
-            ...selectedDocument?.[0],
-            documentType: doc?.code,
-            filestoreId: uploadedFile,
-            documentUid: uploadedFile,
-            documentAttachment: uploadedFile,
-            order: doc?.order
-          },
-        ]
-      })
-    }
+      }
     }
   }, [uploadedFile, doc])
 
   useEffect(() => {
-    if(value && value != uploadedFile){
-      setUploadedFile(value);
+    if (value !== uploadedFile) {
+      setUploadedFile(value || null);
     }
   }, [value])
 
@@ -586,7 +603,7 @@ function LayoutSelectDocument({
             id={"clu-doc"}
             onUpload={selectfileWithCordinates}
             onDelete={() => {
-              setUploadedFile(null);
+              setUploadedFile("");
             }}
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
@@ -601,12 +618,14 @@ function LayoutSelectDocument({
             id={"clu-doc"}
             onUpload={selectfile}
             onDelete={() => {
-              setUploadedFile(null);
+              setUploadedFile("");
             }}
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
+            required={doc?.required}
+            isRemovable={!doc?.required}
           />
              <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           </div>

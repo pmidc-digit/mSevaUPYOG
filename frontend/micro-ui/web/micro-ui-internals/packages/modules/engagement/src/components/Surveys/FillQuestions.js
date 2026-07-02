@@ -1,8 +1,9 @@
 import React, { useEffect, useState, Fragment, useRef } from "react";
-import { useForm } from "react-hook-form";
-import { CardLabelError, TextArea, TextInput, Toast, CardLabel, Loader } from "@mseva/digit-ui-react-components";
+import { useForm, Controller } from "react-hook-form";
+import { CardLabelError, TextArea, TextInput, Toast, CardLabel, Loader, LabelFieldPair, Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
+
 import Dialog from "../Modal/Dialog";
 import { ChevronIcon } from "../../components/SvgIndex";
 import UpdateProfile from "../../components/UpdateProfile";
@@ -589,6 +590,11 @@ const FillQuestions = (props) => {
     }
   };
 
+  const getErrorMessage = (fieldName) => {
+    if (!errors[fieldName]) return null;
+    return errors[fieldName]?.message || t("PTR_FIELD_REQUIRED");
+  };
+
   const displayAnswerField = (answerType, question, section) => {
     switch (answerType) {
       case "SHORT_ANSWER_TYPE":
@@ -896,7 +902,7 @@ const FillQuestions = (props) => {
   }, [getFetchAnswers]);
 
   const handleLocalityChangeCitizen = (e) => {
-    setLocality(e.target.value);
+    setLocality(e.name);
   };
 
   useEffect(() => {
@@ -1009,11 +1015,45 @@ const FillQuestions = (props) => {
             </div>
 
             <div style={{ width: "70%" }}>
-              <CardLabel>
-                {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
-              </CardLabel>
+              <LabelFieldPair>
+                <CardLabel>
+                  {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
+                </CardLabel>
+                <Controller
+                  control={control}
+                  name="locality"
+                  // rules={{
+                  //   validate: (value) => {
+                  //     const arrear = watch("arrear");
+                  //     if (arrear > 0 && !value) {
+                  //       return t("RENT_LEASE_REASON_REQUIRED");
+                  //     }
+                  //     return true;
+                  //   },
+                  // }}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      select={(e) => {
+                        handleLocalityChangeCitizen(e);
+                        props.onChange;
+                      }}
+                      selected={props.value}
+                      option={localityList}
+                      defaultValues
+                      optionKey="name"
+                      t={t}
+                    />
+                  )}
+                />
+              </LabelFieldPair>
+              {errors.locality && <CardLabelError className="ral-error-label">{getErrorMessage("locality")}</CardLabelError>}
 
-              <select
+              {/* <CardLabel>
+                {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
+              </CardLabel> */}
+
+              {/* <select
                 id="dropdown"
                 value={locality}
                 onChange={(e) => {
@@ -1035,7 +1075,7 @@ const FillQuestions = (props) => {
                 <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
                   {errors?.["locality"].answerRequired}
                 </CardLabelError>
-              )}
+              )} */}
             </div>
           </>
         )}

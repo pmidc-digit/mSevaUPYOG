@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-// import {
-//   addCategory,
-//   autoCalculateCategoriesWeight,
-//   deleteCategory,
-//   recalculateWeightage,
-//   updateWeightage,
-// } from "../../../redux/actions/surveyFormActions";
 import {
   addCategory,
   autoCalculateCategoriesWeight,

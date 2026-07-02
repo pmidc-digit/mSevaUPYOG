@@ -1047,7 +1047,11 @@ const FillQuestions = (props) => {
                 )}
               />
               {/* </LabelFieldPair> */}
-              {errors.locality && <CardLabelError className="ral-error-label">{getErrorMessage("locality")}</CardLabelError>}
+              {errors?.locality && (
+                <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
+                  {getErrorMessage("locality")}
+                </CardLabelError>
+              )}
 
               {/* <CardLabel>
                 {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>

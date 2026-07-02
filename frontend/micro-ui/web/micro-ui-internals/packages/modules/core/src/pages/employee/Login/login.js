@@ -201,6 +201,12 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
         userType: "EMPLOYEE",
       };
       const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData);
+      if (info?.roles && info.roles.some((role) => role.code === "API_ONLY")) {
+        await Digit.UserService.logout();
+        setShowToast("API_ONLY users cannot access the portal!");
+        setCanSubmit(true);
+        return;
+      }
       setUser({ info, ...tokens });
       history.push("/digit-ui/employee");
       // Role-based access control

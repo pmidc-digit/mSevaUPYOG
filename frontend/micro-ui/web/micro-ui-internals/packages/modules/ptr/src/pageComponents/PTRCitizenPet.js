@@ -459,7 +459,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
                 onChange={(e) => props.onChange(e.target.value)}
                 onBlur={(e) => props.onBlur(e)}
                 t={t}
-                disabled={checkForRenew}
+                // disabled={checkForRenew}
               />
             )}
           />

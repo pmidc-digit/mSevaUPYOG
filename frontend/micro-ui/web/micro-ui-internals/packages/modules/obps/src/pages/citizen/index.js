@@ -28,31 +28,37 @@ import LayoutApplicationDetails from "./Applications/LayoutApplicationSummary";
 import { OCStepperForm } from "./OcupationalCertificateStepper/OCStepperForm";
 import BPAEsignResponse from "../employee/BPAEsignResponse";
 import BPASanctionEsignResponse from "../employee/BPASanctionEsignResponse";
-
-
-
+import CLUInbox from "../employee/cluInbox/CLUInbox";
 
 const OBPSBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
   const user = Digit.UserService.getUser();
   const tenantId = localStorage.getItem("CITIZEN.CITY");
-  const isUserRegistered = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT" ) || user?.info?.roles?.some(role => (role?.code?.includes("BPA") && role?.tenantId === tenantId));
+  const isUserRegistered =
+    user?.info?.roles?.some((role) => role?.code === "BPA_ARCHITECT") ||
+    user?.info?.roles?.some((role) => role?.code?.includes("BPA") && role?.tenantId === tenantId);
 
   const getBreadcrumbs = () => {
     const breadcrumbs = [];
-    const hasSecondBreadcrumb = location.pathname.includes("obps/bpa") ||
-        location.pathname.includes("obps/ocbpa") ||
-        location.pathname.includes("obps/my-applications") ||
-        location.pathname.includes("obps/stakeholder") ||
-        location.pathname.includes("obps/edcrscrutiny") ||
-        location.pathname.includes("obps/layout") ||
-        location.pathname.includes("obps/clu") ||
-        location.pathname.includes("obps/edcr") ||
-        location.pathname.includes("/response") ||
-        location.pathname.includes("obps/search");
+    const hasSecondBreadcrumb =
+      location.pathname.includes("obps/bpa") ||
+      location.pathname.includes("obps/ocbpa") ||
+      location.pathname.includes("obps/my-applications") ||
+      location.pathname.includes("obps/stakeholder") ||
+      location.pathname.includes("obps/edcrscrutiny") ||
+      location.pathname.includes("obps/layout") ||
+      location.pathname.includes("obps/clu") ||
+      location.pathname.includes("obps/edcr") ||
+      location.pathname.includes("/response") ||
+      location.pathname.includes("obps/search");
 
-    const bpainbox = location.pathname.includes("obps/bpa-app") || location.pathname.includes("obps/bpa/building_plan_scrutiny") || location.pathname.includes("obps/self-certification/response") || location.pathname.includes("obps/ocbpa/PB") || location.pathname.includes("/obps/search/application");
-    
+    const bpainbox =
+      location.pathname.includes("obps/bpa-app") ||
+      location.pathname.includes("obps/bpa/building_plan_scrutiny") ||
+      location.pathname.includes("obps/self-certification/response") ||
+      location.pathname.includes("obps/ocbpa/PB") ||
+      location.pathname.includes("/obps/search/application");
+
     breadcrumbs.push(
       <span key="home">
         <Link to="/digit-ui/citizen" style={{ textDecoration: "none", marginRight: "5px" }}>
@@ -65,7 +71,10 @@ const OBPSBreadCrumbs = ({ location }) => {
     if (hasSecondBreadcrumb) {
       breadcrumbs.push(
         <span key="obps">
-          <Link to={isUserRegistered ? "/digit-ui/citizen/obps/home" : "/digit-ui/citizen/obps-home"} style={{ textDecoration: "none", marginRight: "5px" }}>
+          <Link
+            to={isUserRegistered ? "/digit-ui/citizen/obps/home" : "/digit-ui/citizen/obps-home"}
+            style={{ textDecoration: "none", marginRight: "5px" }}
+          >
             {t("OBAPS Home")}
           </Link>
           {bpainbox && isUserRegistered && <span style={{ marginRight: "5px" }}>/</span>}
@@ -73,16 +82,15 @@ const OBPSBreadCrumbs = ({ location }) => {
       );
     }
 
-    if(bpainbox && isUserRegistered){
+    if (bpainbox && isUserRegistered) {
       breadcrumbs.push(
         <span key="bpa-inbox">
           <Link to="/digit-ui/citizen/obps/bpa/inbox" style={{ textDecoration: "none" }}>
             {t("CS_COMMON_INBOX")}
           </Link>
-         {/* {hasThirdBreadcrumb && <span style={{ marginRight: "5px" }}>/</span>} */}
+          {/* {hasThirdBreadcrumb && <span style={{ marginRight: "5px" }}>/</span>} */}
         </span>
       );
-
     }
 
     return breadcrumbs;
@@ -120,9 +128,9 @@ const App = ({ path }) => {
   const LayoutApplicationSummary = Digit.ComponentRegistryService.getComponent("LayoutApplicationSummary");
   const NewLayoutEditLayoutApplication = Digit.ComponentRegistryService.getComponent("NewLayoutEditLayoutApplication");
   const LayoutSearchApplication = Digit?.ComponentRegistryService?.getComponent("LayoutSearchApplication");
-  const LayoutMyApplications = Digit?.ComponentRegistryService?.getComponent("LayoutMyApplications"); 
-  const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse")
-  const OCStepperForm = Digit?.ComponentRegistryService?.getComponent("OCStepperForm")
+  const LayoutMyApplications = Digit?.ComponentRegistryService?.getComponent("LayoutMyApplications");
+  const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse");
+  const OCStepperForm = Digit?.ComponentRegistryService?.getComponent("OCStepperForm");
 
   const getBackPageNumber = () => {
     let goBacktoFromProperty = -1;
@@ -141,51 +149,287 @@ const App = ({ path }) => {
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
   return (
-    <span className={"ws-citizen-wrapper"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px",  ...((window.location.href.includes("inbox") || window.location.href.includes("search/application") || window.location.href.includes("search/clu-application")) ? { paddingTop:"56px" } : {} ) }}>
-        <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop:"20px" } : {}}>
-          <OBPSBreadCrumbs location={location} />
-        </div>
+    <span
+      className={"ws-citizen-wrapper"}
+      style={{
+        width: "100%",
+        paddingRight: "25px",
+        paddingLeft: "25px",
+        ...(window.location.href.includes("inbox") ||
+        window.location.href.includes("search/application") ||
+        window.location.href.includes("search/clu-application")
+          ? { paddingTop: "56px" }
+          : {}),
+      }}
+    >
+      <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop: "20px" } : {}}>
+        <OBPSBreadCrumbs location={location} />
+      </div>
       <Switch>
-
-        <PrivateRoute path={`${path}/layout/search-application`} component={(props) => <AppContainer><LayoutSearchApplication {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/layout/application-overview/:id`} component={(props) => <AppContainer><LayoutApplicationSummary {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/layout/my-applications`} component={(props) => <AppContainer><LayoutMyApplications {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/layout/edit-application/:id`} component={(props) => <AppContainer><NewLayoutEditLayoutApplication {...props} /></AppContainer>} />
+        <PrivateRoute
+          path={`${path}/layout/search-application`}
+          component={(props) => (
+            <AppContainer>
+              <LayoutSearchApplication {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/layout/application-overview/:id`}
+          component={(props) => (
+            <AppContainer>
+              <LayoutApplicationSummary {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/layout/my-applications`}
+          component={(props) => (
+            <AppContainer>
+              <LayoutMyApplications {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/layout/edit-application/:id`}
+          component={(props) => (
+            <AppContainer>
+              <NewLayoutEditLayoutApplication {...props} />
+            </AppContainer>
+          )}
+        />
         <PrivateRoute path={`${path}/layout/apply`} component={LayoutStepperForm} />
-        <PrivateRoute path={`${path}/layout/response/:id`} component={(props) => <AppContainer><LayoutResponseCitizen {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/layout/response/:id`} component={(props) => <AppContainer><LayoutResponseEmployee {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/layout/:id`} component={(props) => <AppContainer><LayoutApplicationSummary {...props} /></AppContainer>} />
+        <PrivateRoute
+          path={`${path}/layout/response/:id`}
+          component={(props) => (
+            <AppContainer>
+              <LayoutResponseCitizen {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/layout/response/:id`}
+          component={(props) => (
+            <AppContainer>
+              <LayoutResponseEmployee {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/layout/:id`}
+          component={(props) => (
+            <AppContainer>
+              <LayoutApplicationSummary {...props} />
+            </AppContainer>
+          )}
+        />
 
         <PrivateRoute path={`${path}/clu/apply`} component={CLUStepperForm} />
-        <PrivateRoute path={`${path}/clu/response/:id`} component={(props) => <AppContainer><CLUResponse {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/clu/my-applications`} component={(props) => <AppContainer><CLUMyApplications {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/clu/application-overview/:cluid`} component={(props) => <AppContainer><CLUApplicationDetails {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/search/clu-application`} component={(props) => <AppContainer><CLUSearchApplication {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/clu/edit-application/:cluid`} component={(props) => <AppContainer><CLUEditApplication {...props} /></AppContainer>} />
+        <PrivateRoute
+          path={`${path}/clu/response/:id`}
+          component={(props) => (
+            <AppContainer>
+              <CLUResponse {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/clu/my-applications`}
+          component={(props) => (
+            <AppContainer>
+              <CLUMyApplications {...props} />
+            </AppContainer>
+          )}
+        />
+        {/* <PrivateRoute
+          path={`${path}/clu/my-applications`}
+          component={(props) => (
+            <AppContainer>
+              <CLUInbox {...props} />
+            </AppContainer>
+          )}
+        /> */}
+        <PrivateRoute
+          path={`${path}/clu/application-overview/:cluid`}
+          component={(props) => (
+            <AppContainer>
+              <CLUApplicationDetails {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/search/clu-application`}
+          component={(props) => (
+            <AppContainer>
+              <CLUSearchApplication {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/clu/edit-application/:cluid`}
+          component={(props) => (
+            <AppContainer>
+              <CLUEditApplication {...props} />
+            </AppContainer>
+          )}
+        />
 
-        <PrivateRoute path={`${path}/home`} component={(props) => <AppContainer><BPACitizenHomeScreen {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/search/application`} component={(props) => <AppContainer><Search {...props} parentRoute={path} /></AppContainer>} />
-        <PrivateRoute path={`${path}/search/obps-application`} component={(props) => <AppContainer><Search {...props} parentRoute={path} /></AppContainer>} />
-        <PrivateRoute path={`${path}/edcrscrutiny/apply`} component={(props) => <AppContainer><CreateEDCR {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/edcrscrutiny/oc-apply`} component={(props) => <AppContainer><CreateOCEDCR {...props} /></AppContainer>} />
+        <PrivateRoute
+          path={`${path}/home`}
+          component={(props) => (
+            <AppContainer>
+              <BPACitizenHomeScreen {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/search/application`}
+          component={(props) => (
+            <AppContainer>
+              <Search {...props} parentRoute={path} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/search/obps-application`}
+          component={(props) => (
+            <AppContainer>
+              <Search {...props} parentRoute={path} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/edcrscrutiny/apply`}
+          component={(props) => (
+            <AppContainer>
+              <CreateEDCR {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/edcrscrutiny/oc-apply`}
+          component={(props) => (
+            <AppContainer>
+              <CreateOCEDCR {...props} />
+            </AppContainer>
+          )}
+        />
         <PrivateRoute path={`${path}/bpa/esign/complete/:id/:file`} component={BPAEsignResponse} />
         <PrivateRoute path={`${path}/bpa/:applicationType/:serviceType`} component={NewBuildingPermit} />
         <PrivateRoute path={`${path}/bpa/:applicationType/:serviceType/stepper`} component={SelfCertificationStepper} />
         <PrivateRoute path={`${path}/ocbpa/:applicationType/:serviceType`} component={OCBuildingPermit} />
-        <PrivateRoute path={`${path}/stakeholder/apply`} component={(props) => <AppContainer><StakeholderRegistration {...props} /></AppContainer>} />
-        <Route path={`${path}/openlink/stakeholder/apply`} component={(props) => <AppContainer><StakeholderRegistration {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/my-applications`} component={(props) => <AppContainer><MyApplication {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/bpa/inbox`} component={(props) => <AppContainer><Inbox {...props} parentRoute={path} /></AppContainer>} />
-        <PrivateRoute path={`${path}/edcr/inbox`} component={(props) => <AppContainer><EdcrInbox {...props} parentRoute={path} /></AppContainer>} />
-        <PrivateRoute path={`${path}/stakeholder/:id`} component={(props) => <AppContainer><ApplicationDetails {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/bpa-app/:bpaid`} component={(props) => <AppContainer><BpaApplicationDetail {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/editApplication/bpa/:tenantId/:applicationNo`} component={(props) => <AppContainer><BPASendToArchitect {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/editApplication/ocbpa/:tenantId/:applicationNo`} component={(props) => <AppContainer><OCSendToArchitect {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/sendbacktocitizen/bpa/:tenantId/:applicationNo`} component={(props) => <AppContainer><BPASendBackToCitizen {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/sendbacktocitizen/ocbpa/:tenantId/:applicationNo`} component={(props) => <AppContainer><OCSendBackToCitizen {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/response`} component={(props) => <AppContainer><OBPSResponse {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/self-certification/response/:id`} component={(props) => <AppContainer><SelfCertificationResponse {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/ocbpa/:applicationType/:serviceType/stepper`} component={(props) => <AppContainer><OCStepperForm {...props} /></AppContainer>} />
+        <PrivateRoute
+          path={`${path}/stakeholder/apply`}
+          component={(props) => (
+            <AppContainer>
+              <StakeholderRegistration {...props} />
+            </AppContainer>
+          )}
+        />
+        <Route
+          path={`${path}/openlink/stakeholder/apply`}
+          component={(props) => (
+            <AppContainer>
+              <StakeholderRegistration {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/my-applications`}
+          component={(props) => (
+            <AppContainer>
+              <MyApplication {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/bpa/inbox`}
+          component={(props) => (
+            <AppContainer>
+              <Inbox {...props} parentRoute={path} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/edcr/inbox`}
+          component={(props) => (
+            <AppContainer>
+              <EdcrInbox {...props} parentRoute={path} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/stakeholder/:id`}
+          component={(props) => (
+            <AppContainer>
+              <ApplicationDetails {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/bpa-app/:bpaid`}
+          component={(props) => (
+            <AppContainer>
+              <BpaApplicationDetail {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/editApplication/bpa/:tenantId/:applicationNo`}
+          component={(props) => (
+            <AppContainer>
+              <BPASendToArchitect {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/editApplication/ocbpa/:tenantId/:applicationNo`}
+          component={(props) => (
+            <AppContainer>
+              <OCSendToArchitect {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/sendbacktocitizen/bpa/:tenantId/:applicationNo`}
+          component={(props) => (
+            <AppContainer>
+              <BPASendBackToCitizen {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/sendbacktocitizen/ocbpa/:tenantId/:applicationNo`}
+          component={(props) => (
+            <AppContainer>
+              <OCSendBackToCitizen {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/response`}
+          component={(props) => (
+            <AppContainer>
+              <OBPSResponse {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/self-certification/response/:id`}
+          component={(props) => (
+            <AppContainer>
+              <SelfCertificationResponse {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/ocbpa/:applicationType/:serviceType/stepper`}
+          component={(props) => (
+            <AppContainer>
+              <OCStepperForm {...props} />
+            </AppContainer>
+          )}
+        />
         <PrivateRoute path={`${path}/filestore/:id/:drawing`} component={BPASanctionEsignResponse} />
       </Switch>
     </span>

@@ -18,7 +18,9 @@ const CLUInbox = ({ parentRoute }) => {
   }, []);
 
   const { data: cities } = Digit.Hooks.useTenants();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  // const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
+
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
 

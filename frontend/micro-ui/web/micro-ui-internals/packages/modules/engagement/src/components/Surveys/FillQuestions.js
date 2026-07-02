@@ -1015,38 +1015,38 @@ const FillQuestions = (props) => {
             </div>
 
             <div style={{ width: "70%" }}>
-              <LabelFieldPair>
-                <CardLabel>
-                  {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
-                </CardLabel>
-                <Controller
-                  control={control}
-                  name="locality"
-                  // rules={{
-                  //   validate: (value) => {
-                  //     const arrear = watch("arrear");
-                  //     if (arrear > 0 && !value) {
-                  //       return t("RENT_LEASE_REASON_REQUIRED");
-                  //     }
-                  //     return true;
-                  //   },
-                  // }}
-                  render={(props) => (
-                    <Dropdown
-                      className="form-field"
-                      select={(e) => {
-                        handleLocalityChangeCitizen(e);
-                        props.onChange;
-                      }}
-                      selected={props.value}
-                      option={localityList}
-                      defaultValues
-                      optionKey="name"
-                      t={t}
-                    />
-                  )}
-                />
-              </LabelFieldPair>
+              {/* <LabelFieldPair> */}
+              <CardLabel>
+                {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
+              </CardLabel>
+              <Controller
+                control={control}
+                name="locality"
+                // rules={{
+                //   validate: (value) => {
+                //     const arrear = watch("arrear");
+                //     if (arrear > 0 && !value) {
+                //       return t("RENT_LEASE_REASON_REQUIRED");
+                //     }
+                //     return true;
+                //   },
+                // }}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    select={(e) => {
+                      handleLocalityChangeCitizen(e);
+                      props.onChange;
+                    }}
+                    selected={props.value}
+                    option={localityList}
+                    defaultValues
+                    optionKey="name"
+                    t={t}
+                  />
+                )}
+              />
+              {/* </LabelFieldPair> */}
               {errors.locality && <CardLabelError className="ral-error-label">{getErrorMessage("locality")}</CardLabelError>}
 
               {/* <CardLabel>

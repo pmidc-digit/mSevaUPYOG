@@ -25,7 +25,7 @@
 			<id>repo.egovernments.org</id>
 			<name>eGov ERP Snapshots Repository</name>
 			<url>
-				https://nexus-repo.egovernments.org/nexus/content/repositories/snapshots/</url>
+				https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
 	<properties>
@@ -190,7 +190,7 @@
 			<id>repo.egovernments.org.snapshots</id>
 			<name>eGov ERP Releases Repository</name>
 			<url>
-				https://nexus-repo.egovernments.org/nexus/content/repositories/snapshots/</url>
+				https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/</url>
 		</repository>
 		<repository>
 			<id>repo.egovernments.org.public</id>

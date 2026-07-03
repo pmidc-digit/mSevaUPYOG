@@ -3,7 +3,7 @@ package org.egov.collection.service;
 import org.egov.collection.web.contract.Bill;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -15,13 +15,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 class ApportionerServiceTest {
-    @MockBean
+    @MockitoBean
     private boolean aBoolean;
 
     @Autowired
     private ApportionerService apportionerService;
 
-    @MockBean
+    @MockitoBean
     private RestTemplate restTemplate;
 
     @Test

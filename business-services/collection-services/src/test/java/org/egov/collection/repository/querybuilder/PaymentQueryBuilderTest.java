@@ -12,7 +12,7 @@ import org.egov.collection.web.contract.BillDetail;
 import org.junit.jupiter.api.Test;
 import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 import java.io.UnsupportedEncodingException;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.*;
 
 class PaymentQueryBuilderTest {
-    @MockBean
+    @MockitoBean
     private boolean aBoolean;
 
     @Autowired

@@ -9,7 +9,7 @@ import org.egov.collection.service.v1.CollectionService_v1;
 import org.egov.common.contract.request.RequestInfo;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.ArrayList;
@@ -17,25 +17,25 @@ import java.util.ArrayList;
 import static org.mockito.Mockito.*;
 
 class MigrationServiceTest {
-    @MockBean
+    @MockitoBean
     private boolean aBoolean;
 
-    @MockBean
+    @MockitoBean
     private CollectionProducer collectionProducer;
 
-    @MockBean
+    @MockitoBean
     private CollectionService_v1 collectionService_v1;
 
-    @MockBean
+    @MockitoBean
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
     private MigrationService migrationService;
 
-    @MockBean
+    @MockitoBean
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private ServiceRequestRepository serviceRequestRepository;
 
     @Test

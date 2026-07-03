@@ -136,8 +136,9 @@ class PaymentValidatorTest {
 
         PaymentValidator paymentValidator = new PaymentValidator(paymentRepository, paymentWorkflowService,
                 new ApplicationProperties(), mock(ServiceRequestRepository.class));
-        RequestInfo requestInfo = new RequestInfo("42", "INVALID_USER_INFO", 1L, "INVALID_USER_INFO", "INVALID_USER_INFO",
-                "INVALID_USER_INFO", "42", "ABC123", "42", new User());
+        RequestInfo requestInfo = RequestInfo.builder().apiId("42").ver("INVALID_USER_INFO")
+    			.ts(4L).action("INVALID_USER_INFO").did("INVALID_USER_INFO").key("INVALID_USER_INFO")
+    		    .msgId("42").authToken("ABC123").correlationId("42").userInfo(new User()).build();
 
         HashMap<String, String> stringStringMap = new HashMap<>();
         paymentValidator.validateUserInfo(requestInfo, stringStringMap);
@@ -336,8 +337,9 @@ class PaymentValidatorTest {
         PaymentSearchCriteria paymentSearchCriteria = new PaymentSearchCriteria();
         assertThrows(CustomException.class,
                 () -> paymentValidator.validateAndUpdateSearchRequestFromConfig(paymentSearchCriteria,
-                        new RequestInfo("42", "INVALID_USER_INFO", 1L, "INVALID_USER_INFO", "INVALID_USER_INFO",
-                                "INVALID_USER_INFO", "42", "ABC123", "42", new User()),
+                		RequestInfo.builder().apiId("42").ver("INVALID_USER_INFO")
+            			.ts(4L).action("INVALID_USER_INFO").did("INVALID_USER_INFO").key("INVALID_USER_INFO")
+            		    .msgId("42").authToken("ABC123").correlationId("42").userInfo(new User()).build(),
                         "Module Name"));
     }
 

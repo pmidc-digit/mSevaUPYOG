@@ -19,7 +19,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestClientException;
@@ -28,16 +28,16 @@ import org.springframework.web.client.RestTemplate;
 @ContextConfiguration(classes = {NotificationConsumer.class})
 @ExtendWith(SpringExtension.class)
 class NotificationConsumerTest {
-    @MockBean
+    @MockitoBean
     private CollectionProducer collectionProducer;
 
     @Autowired
     private NotificationConsumer notificationConsumer;
 
-    @MockBean
+    @MockitoBean
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private RestTemplate restTemplate;
 
     @Test

@@ -7,7 +7,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
@@ -21,13 +21,13 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(classes = {CollectionService_v1.class})
 @ExtendWith(SpringExtension.class)
 class CollectionService_v1Test {
-    @MockBean
+    @MockitoBean
     private CollectionResultSetExtractor_v1 collectionResultSetExtractor_v1;
 
     @Autowired
     private CollectionService_v1 collectionService_v1;
 
-    @MockBean
+    @MockitoBean
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Test

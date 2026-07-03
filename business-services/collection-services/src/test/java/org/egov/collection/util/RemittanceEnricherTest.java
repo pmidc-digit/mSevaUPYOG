@@ -40,8 +40,9 @@ class emittanceEnricherTest {
         User user = new User();
         user.setId(123L);
         RemittanceRequest remittanceRequest = mock(RemittanceRequest.class);
-        when(remittanceRequest.getRequestInfo())
-                .thenReturn(new RequestInfo("42", "-", 4L, "-", "-", "-", "42", "ABC123", "42", user));
+        when(remittanceRequest.getRequestInfo()).thenReturn(RequestInfo.builder()
+        		.apiId("42").ver("-").ts(4L).action("-").did("-").key("-").msgId("42")
+        	    .authToken("ABC123").correlationId("42").userInfo(user).build());
         when(remittanceRequest.getRemittances()).thenReturn(remittanceList);
         this.remittanceEnricher.enrichRemittancePreValidate(remittanceRequest);
         verify(remittanceRequest).getRemittances();
@@ -75,8 +76,9 @@ class RemittanceEnricherTest {
         User user = new User();
         user.setId(123L);
         RemittanceRequest remittanceRequest = mock(RemittanceRequest.class);
-        when(remittanceRequest.getRequestInfo())
-                .thenReturn(new RequestInfo("42", "-", 4L, "-", "-", "-", "42", "ABC123", "42", user));
+        when(remittanceRequest.getRequestInfo()).thenReturn(RequestInfo.builder()
+        		.apiId("42").ver("-").ts(4L).action("-").did("-").key("-").msgId("42")
+        	    .authToken("ABC123").correlationId("42").userInfo(user).build());
         when(remittanceRequest.getRemittances()).thenReturn(remittanceList);
         this.remittanceEnricher.enrichRemittancePreValidate(remittanceRequest);
         verify(remittanceRequest).getRemittances();

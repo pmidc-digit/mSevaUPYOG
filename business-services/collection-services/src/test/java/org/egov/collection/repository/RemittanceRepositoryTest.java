@@ -8,7 +8,7 @@ import org.egov.tracer.model.CustomException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
@@ -23,13 +23,13 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(classes = {RemittanceRepository.class})
 @ExtendWith(SpringExtension.class)
 class RemittanceRepositoryTest {
-    @MockBean
+    @MockitoBean
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Autowired
     private RemittanceRepository remittanceRepository;
 
-    @MockBean
+    @MockitoBean
     private RemittanceResultSetExtractor remittanceResultSetExtractor;
 
     @Test

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.postgresql.util.PGInterval;
 import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(classes = {PaymentRowMapper.class})
 @ExtendWith(SpringExtension.class)
 class PaymentRowMapperTest {
-    @MockBean
+    @MockitoBean
     private ObjectMapper objectMapper;
 
     @Autowired

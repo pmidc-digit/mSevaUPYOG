@@ -15,7 +15,7 @@ import org.egov.tracer.model.ServiceCallException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
@@ -27,7 +27,7 @@ import org.springframework.web.client.RestTemplate;
 @ContextConfiguration(classes = {ServiceRequestRepository.class})
 @ExtendWith(SpringExtension.class)
 class ServiceRequestRepositoryTest {
-    @MockBean
+    @MockitoBean
     private RestTemplate restTemplate;
 
     @Autowired

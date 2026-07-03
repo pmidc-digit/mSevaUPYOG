@@ -10,8 +10,9 @@ import org.egov.tracer.config.TracerProperties;
 import org.egov.tracer.kafka.LogAwareKafkaTemplate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.web.reactive.context.StandardReactiveWebEnvironment;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+//import org.springframework.boot.web.reactive.context.StandardReactiveWebEnvironment;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 
@@ -23,16 +24,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 class BankAccountMappingServiceTest {
-    @MockBean
+    @MockitoBean
     private boolean aBoolean;
 
-    @MockBean
+    @MockitoBean
     private BankAccountMappingRepository bankAccountMappingRepository;
 
     @Autowired
     private BankAccountMappingService bankAccountMappingService;
 
-    @MockBean
+    @MockitoBean
     private LogAwareKafkaTemplate<String, Object> logAwareKafkaTemplate;
 
     @Test
@@ -48,7 +49,7 @@ class BankAccountMappingServiceTest {
         TracerProperties tracerProperties1 = new TracerProperties();
         BankAccountMappingService bankAccountMappingService = new BankAccountMappingService(bankAccountMappingRepository,
                 new LogAwareKafkaTemplate<>(tracerProperties, kafkaTemplate,
-                        new ObjectMapperFactory(tracerProperties1, new StandardReactiveWebEnvironment())));
+                        new ObjectMapperFactory(tracerProperties1, new StandardEnvironment())));
         ArrayList<BankAccountServiceMapping> bankAccountServiceMappingList = new ArrayList<>();
         List<BankAccountServiceMapping> actualCreateBankAccountToServiceMappingResult = bankAccountMappingService
                 .createBankAccountToServiceMapping(bankAccountServiceMappingList);
@@ -81,8 +82,8 @@ class BankAccountMappingServiceTest {
         TracerProperties tracerProperties = new TracerProperties();
         TracerProperties tracerProperties1 = new TracerProperties();
         BankAccountMappingService bankAccountMappingService = new BankAccountMappingService(bankAccountMappingRepository,
-                new LogAwareKafkaTemplate<>(tracerProperties, kafkaTemplate,
-                        new ObjectMapperFactory(tracerProperties1, new StandardReactiveWebEnvironment())));
+        		new LogAwareKafkaTemplate<String, Object>(tracerProperties,kafkaTemplate,
+        			    new ObjectMapperFactory(tracerProperties1, new StandardEnvironment())));
         List<BankAccountServiceMapping> actualSearchBankAccountServiceResult = bankAccountMappingService
                 .searchBankAccountService(new BankAccountServiceMappingSearchCriteria());
         assertSame(bankAccountServiceMappingList, actualSearchBankAccountServiceResult);
@@ -106,7 +107,7 @@ class BankAccountMappingServiceTest {
         List<Long> actualSearchBankAccountsMappedToServicesResult = (new BankAccountMappingService(
                 bankAccountMappingRepository,
                 new LogAwareKafkaTemplate<>(tracerProperties, kafkaTemplate,
-                        new ObjectMapperFactory(tracerProperties1, new StandardReactiveWebEnvironment()))))
+                        new ObjectMapperFactory(tracerProperties1, new StandardEnvironment()))))
                 .searchBankAccountsMappedToServices("foo");
         assertSame(resultLongList, actualSearchBankAccountsMappedToServicesResult);
         assertTrue(actualSearchBankAccountsMappedToServicesResult.isEmpty());

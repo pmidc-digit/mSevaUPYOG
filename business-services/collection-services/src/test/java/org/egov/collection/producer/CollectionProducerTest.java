@@ -13,7 +13,7 @@ import org.egov.tracer.model.CustomException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -24,7 +24,7 @@ class CollectionProducerTest {
     @Autowired
     private CollectionProducer collectionProducer;
 
-    @MockBean(name = "customKafkaTemplate")
+    @MockitoBean(name = "customKafkaTemplate")
     private CustomKafkaTemplate<String, Object> customKafkaTemplate;
 
     @Test
@@ -32,7 +32,8 @@ class CollectionProducerTest {
         ProducerRecord<String, Object> producerRecord = new ProducerRecord<>("Topic", "Value");
 
         when(this.customKafkaTemplate.send((String) any(), (Object) any())).thenReturn(
-                new SendResult<>(producerRecord, new RecordMetadata(new TopicPartition("Topic", 1), 1L, 1L, 10L, 1L, 3, 3)));
+                new SendResult<>(producerRecord, new RecordMetadata(new TopicPartition("Topic", 1),
+                	    1L,0,System.currentTimeMillis(),3,3)));
         this.collectionProducer.producer("Topic Name", "Value");
         verify(this.customKafkaTemplate).send((String) any(), (Object) any());
     }

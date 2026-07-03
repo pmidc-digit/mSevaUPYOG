@@ -6,20 +6,20 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class InstrumentRepositoryTest {
-    @MockBean
+    @MockitoBean
     private boolean aBoolean;
 
     @Autowired
     private InstrumentRepository instrumentRepository;
 
-    @MockBean
+    @MockitoBean
     private RestTemplate restTemplate;
 
 

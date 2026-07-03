@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.postgresql.util.PGInterval;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
@@ -27,7 +27,7 @@ class CollectionResultSetExtractor_v1Test {
     @Autowired
     private CollectionResultSetExtractor_v1 collectionResultSetExtractor_v1;
 
-    @MockBean
+    @MockitoBean
     private ObjectMapper objectMapper;
 
     @Test

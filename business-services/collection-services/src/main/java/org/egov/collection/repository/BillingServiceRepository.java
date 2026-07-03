@@ -66,7 +66,7 @@ public class BillingServiceRepository {
         queryParams.add("billId", StringUtils.join(billIds,","));
 
         String uri = UriComponentsBuilder
-                .fromHttpUrl(applicationProperties.getBillingServiceHostName())
+                .fromUriString(applicationProperties.getBillingServiceHostName())
                 .path(applicationProperties.getSearchBill())
                 .queryParams(queryParams)
                 .build()

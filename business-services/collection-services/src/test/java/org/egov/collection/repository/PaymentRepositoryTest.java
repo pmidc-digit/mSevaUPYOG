@@ -16,7 +16,7 @@ import org.egov.tracer.model.CustomException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
@@ -31,19 +31,19 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(classes = {PaymentRepository.class})
 @ExtendWith(SpringExtension.class)
 class PaymentRepositoryTest {
-    @MockBean
+    @MockitoBean
     private BillRowMapper billRowMapper;
 
-    @MockBean
+    @MockitoBean
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    @MockBean
+    @MockitoBean
     private PaymentQueryBuilder paymentQueryBuilder;
 
     @Autowired
     private PaymentRepository paymentRepository;
 
-    @MockBean
+    @MockitoBean
     private PaymentRowMapper paymentRowMapper;
 
     @Test

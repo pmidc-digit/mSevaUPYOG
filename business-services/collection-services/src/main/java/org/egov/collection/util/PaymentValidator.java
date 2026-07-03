@@ -47,8 +47,13 @@ import org.egov.collection.web.contract.Bill;
 import org.egov.collection.web.contract.BillDetail;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
-import org.joda.time.DateTime;
-import org.joda.time.Days;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.Duration;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -236,10 +241,19 @@ public class PaymentValidator {
     }
 
 
-    private void validateNEFTAndRTGS(Payment payment, Map<String, String> errorMap){
-
-        DateTime instrumentDate = new DateTime(payment.getInstrumentDate());
-        if (instrumentDate.isAfter(System.currentTimeMillis())) {
+//    private void validateNEFTAndRTGS(Payment payment, Map<String, String> errorMap){
+//
+//        DateTime instrumentDate = new DateTime(payment.getInstrumentDate());
+//        if (instrumentDate.isAfter(System.currentTimeMillis())) {
+//            errorMap.put(RECEIPT_NEFT_OR_RTGS_DATE, RECEIPT_NEFT_OR_RTGS_DATE_MESSAGE);
+//        }
+//    }
+    
+    private void validateNEFTAndRTGS(Payment payment, Map<String, String> errorMap) {
+        LocalDate instrumentDate = Instant.ofEpochMilli(payment.getInstrumentDate())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+        if (instrumentDate.isAfter(LocalDate.now())) {
             errorMap.put(RECEIPT_NEFT_OR_RTGS_DATE, RECEIPT_NEFT_OR_RTGS_DATE_MESSAGE);
         }
     }
@@ -247,29 +261,33 @@ public class PaymentValidator {
 
     private void validateChequeDD(Payment payment, Map<String, String> errorMap) {
 
-        DateTime instrumentDate = new DateTime(payment.getInstrumentDate());
+        LocalDate instrumentDate = Instant.ofEpochMilli(payment.getInstrumentDate())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
 
-        if (payment.getTransactionDate()!=null) {
-            if (instrumentDate.isAfter(payment.getTransactionDate())) {
+        if (payment.getTransactionDate() != null) {
+            LocalDate transactionDate = Instant.ofEpochMilli(payment.getTransactionDate())
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
+            if (instrumentDate.isAfter(transactionDate)) {
                 errorMap.put(RECEIPT_CHEQUE_OR_DD_DATE, RECEIPT_CHEQUE_OR_DD_DATE_MESSAGE);
             }
-
-            Days daysDiff = Days.daysBetween(instrumentDate, new DateTime(payment.getTransactionDate()));
-            if (daysDiff.getDays() > Integer.valueOf(INSTRUMENT_DATE_DAYS)) {
-                errorMap.put("CHEQUE_DD_DATE_WITH_MANUAL_RECEIPT_DATE",
-                        CHEQUE_DD_DATE_WITH_MANUAL_RECEIPT_DATE_MESSAGE);
+            long daysDiff = ChronoUnit.DAYS.between(instrumentDate, transactionDate);
+            if (daysDiff > Integer.parseInt(INSTRUMENT_DATE_DAYS)) {
+                errorMap.put(
+                        "CHEQUE_DD_DATE_WITH_MANUAL_RECEIPT_DATE",CHEQUE_DD_DATE_WITH_MANUAL_RECEIPT_DATE_MESSAGE);
             }
-
         } else {
-            Days daysDiff = Days.daysBetween(instrumentDate, new DateTime());
-            if (daysDiff.getDays() > Integer.valueOf(INSTRUMENT_DATE_DAYS)) {
-                errorMap.put("CHEQUE_DD_DATE_WITH_RECEIPT_DATE", CHEQUE_DD_DATE_WITH_RECEIPT_DATE_MESSAGE);
+            long daysDiff = ChronoUnit.DAYS.between(instrumentDate, LocalDate.now());
+            if (daysDiff > Integer.parseInt(INSTRUMENT_DATE_DAYS)) {
+                errorMap.put(
+                        "CHEQUE_DD_DATE_WITH_RECEIPT_DATE",CHEQUE_DD_DATE_WITH_RECEIPT_DATE_MESSAGE);
             }
-            if (instrumentDate.isAfter(new DateTime().getMillis())) {
-                errorMap.put("CHEQUE_DD_DATE_WITH_FUTURE_DATE", CHEQUE_DD_DATE_WITH_FUTURE_DATE_MESSAGE);
+            if (instrumentDate.isAfter(LocalDate.now())) {
+                errorMap.put(
+                        "CHEQUE_DD_DATE_WITH_FUTURE_DATE",CHEQUE_DD_DATE_WITH_FUTURE_DATE_MESSAGE);
             }
         }
-
     }
 
     public List<Payment> validateAndEnrichPaymentsForUpdate(List<Payment> payments, RequestInfo requestInfo) {

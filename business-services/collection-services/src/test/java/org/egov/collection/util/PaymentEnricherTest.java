@@ -18,7 +18,7 @@ import org.egov.tracer.model.CustomException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -31,13 +31,13 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(classes = {PaymentEnricher.class})
 @ExtendWith(SpringExtension.class)
 class PaymentEnricherTest {
-    @MockBean
+    @MockitoBean
     private BillingServiceRepository billingServiceRepository;
 
-    @MockBean
+    @MockitoBean
     private IdGenRepository idGenRepository;
 
-    @MockBean
+    @MockitoBean
     private MDMSService mDMSService;
 
     @Autowired
@@ -75,8 +75,9 @@ class PaymentEnricherTest {
         when(payment.getPaymentDetails()).thenReturn(new ArrayList<>());
 
         PaymentRequest paymentRequest = new PaymentRequest();
-        paymentRequest.setRequestInfo(new RequestInfo("42", "USER_INFO_INVALID", 4L, "USER_INFO_INVALID",
-                "USER_INFO_INVALID", "USER_INFO_INVALID", "42", "ABC123", "42", new User()));
+        paymentRequest.setRequestInfo(RequestInfo.builder().apiId("42").ver("INVALID_USER_INFO")
+    			.ts(4L).action("INVALID_USER_INFO").did("INVALID_USER_INFO").key("INVALID_USER_INFO")
+    		    .msgId("42").authToken("ABC123").correlationId("42").userInfo(new User()).build());
         paymentRequest.setPayment(payment);
         assertThrows(CustomException.class, () -> this.paymentEnricher.enrichPaymentPreValidate(paymentRequest, false));
         verify(payment).getTenantId();

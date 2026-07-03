@@ -6,7 +6,7 @@ import org.egov.collection.repository.querybuilder.BankAccountServiceQueryBuilde
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -26,13 +26,13 @@ class BankAccountMappingRepositoryTest {
     @Autowired
     private BankAccountMappingRepository bankAccountMappingRepository;
 
-    @MockBean
+    @MockitoBean
     private BankAccountServiceQueryBuilder bankAccountServiceQueryBuilder;
 
-    @MockBean
+    @MockitoBean
     private JdbcTemplate jdbcTemplate;
 
-    @MockBean
+    @MockitoBean
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Test

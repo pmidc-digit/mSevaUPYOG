@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 // import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
 import { citizenConfig } from "../../config/Create/citizenStepperConfig";
@@ -82,6 +82,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 
 const NewPTRStepperForm = () => {
   const history = useHistory();
+  const location = useLocation();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
@@ -90,32 +91,33 @@ const NewPTRStepperForm = () => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
+  const id = location.state?.applicationNumber;
+
   // const id = window.location.pathname.split("/").pop();
 
-  const pathParts = window.location.pathname.split("/");
-  const startIndex = pathParts.findIndex((part) => part === "new-application");
-  let id = null;
-  if (startIndex !== -1) {
-  const nextPart = pathParts[startIndex + 1];
+  // const pathParts = window.location.pathname.split("/");
+  // const startIndex = pathParts.findIndex((part) => part === "new-application");
+  // let id = null;
+  // if (startIndex !== -1) {
+  //   const nextPart = pathParts[startIndex + 1];
 
-  // ✅ Case 1: PB-PTR format
-  if (nextPart?.startsWith("PB-PTR-")) {
-    id = nextPart;
-  } 
-  // ✅ Case 2: PL/.../.../... format
-  else if (nextPart === "PL") {
-    id = pathParts.slice(startIndex + 1, startIndex + 5).join("/");
-  }
-}
+  //   // ✅ Case 1: PB-PTR format
+  //   if (nextPart?.startsWith("PB-PTR-")) {
+  //     id = nextPart;
+  //   }
+  //   // ✅ Case 2: PL/.../.../... format
+  //   else if (nextPart === "PL") {
+  //     id = pathParts.slice(startIndex + 1, startIndex + 5).join("/");
+  //   }
+  // }
 
-id = id ? decodeURIComponent(id) : null;
+  // id = id ? decodeURIComponent(id) : null;
 
-console.log("id:", id);
-
+  console.log("id:", id);
 
   // const id = pathParts.find((part) => part.startsWith("PB-PTR-"));
 
-const shouldEnableSearch = Boolean(id);
+  const shouldEnableSearch = Boolean(id);
   console.log("shouldEnableSearch", shouldEnableSearch);
 
   // const isEdit = !!id;
@@ -128,8 +130,7 @@ const shouldEnableSearch = Boolean(id);
 
   useEffect(() => {
     console.log("applicationData for hereee:>> ", applicationData);
-    console.log("id",id);
-    
+
     if (id && applicationData?.PetRegistrationApplications?.length) {
       dispatch(UPDATE_PTRNewApplication_FORM("responseData", applicationData.PetRegistrationApplications));
     }

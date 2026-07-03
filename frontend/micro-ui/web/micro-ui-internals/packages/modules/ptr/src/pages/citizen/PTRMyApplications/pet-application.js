@@ -57,14 +57,25 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
           <SubmitBar
             label={t("COMMON_EDIT")}
             onSubmit={() => {
-              history.push(`/digit-ui/citizen/ptr/petservice/new-application/${application?.applicationNumber}`);
+              history.push({
+                pathname: `/digit-ui/citizen/ptr/petservice/new-application`,
+                state: {
+                  applicationNumber: application?.applicationNumber,
+                },
+              });
             }}
           />
         )}
 
         {checkRenewal && checkDuration && (
           <Link
-            to={`/digit-ui/citizen/ptr/petservice/new-application/${application?.applicationNumber}/renew-application`}
+            to={{
+              pathname: `/digit-ui/citizen/ptr/petservice/new-application`,
+              state: {
+                applicationNumber: application?.applicationNumber,
+                status: "renew-application",
+              },
+            }}
             // {`/digit-ui/citizen/ptr/petservice/application/${application?.applicationNumber}/${application?.tenantId}`}
           >
             <SubmitBar label={t("PT_RENEW_HEADER")} />

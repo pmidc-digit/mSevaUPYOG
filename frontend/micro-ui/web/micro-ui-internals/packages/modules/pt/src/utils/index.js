@@ -1226,3 +1226,40 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     imageURL,
   };
 };
+
+  export const deduplicateUsageOptions = (options) => {
+    const uniqueOptions = [];
+    const nameMap = new Map();
+    
+    options?.forEach((item) => {
+      if (!nameMap.has(item?.name)) {
+        nameMap.set(item.name, item);
+        uniqueOptions.push(item);
+      } else {
+        const existing = nameMap.get(item.name);
+        let shouldReplace = false;
+
+        // 1. Prefer the object that explicitly has the 'usageCategoryMinor' key
+        if (item.usageCategoryMinor && !existing.usageCategoryMinor) {
+          shouldReplace = true;
+        } 
+        else if (!item.usageCategoryMinor && existing.usageCategoryMinor) {
+          shouldReplace = false;
+        } 
+        // 2. Fallback (e.g. for usagecategorymajor where it doesn't exist on either): prefer the longer code
+        else if (item?.code?.length > existing?.code?.length) {
+          shouldReplace = true;
+        }
+
+        if (shouldReplace) {
+          const index = uniqueOptions?.findIndex((opt) => opt?.name === item?.name);
+          uniqueOptions[index] = item;
+          nameMap.set(item?.name, item);
+        }
+      }
+    });
+
+    return uniqueOptions;
+  };
+
+ 

@@ -80,7 +80,7 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   const applicantName = owner?.name || "NA";
   // const address = owner?.permanentAddress || owner?.correspondenceAddress || "NA";
   const address = appData?.NdcDetails?.[0]?.additionalDetails?.propertyAddress || owner?.permanentAddress || owner?.correspondenceAddress || "NA";
-  const remarks = appData?.NdcDetails?.[0]?.additionalDetails?.remarks || null;
+  const remarks = appData?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails?.remarks || null;
   const reason = t(appData?.reason) || null;
   const ulbName = tenantInfo?.name || appData?.tenantId || "NA";
   const duesAmount = add?.duesAmount || appData?.additionalDetails?.duesAmount || "0";

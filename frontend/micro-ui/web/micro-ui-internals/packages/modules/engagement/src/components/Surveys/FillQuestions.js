@@ -51,17 +51,20 @@ const FillQuestions = (props) => {
         __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
         setLoading(false);
       }
-      const localityDropdownOptions = (__localityList || [])
-        ?.map((item) => {
-          const wardMatch = item.name.match(/Ward\s(\d+)/);
-          const wardNumber = wardMatch ? Number(wardMatch[1]) : Infinity;
 
-          return {
-            ...item,
-            wardNumber,
-          };
-        })
-        ?.sort((a, b) => a.wardNumber - b.wardNumber);
+      const localityDropdownOptions = (__localityList || [])?.sort((a, b) => a.name.localeCompare(b.name));
+
+      // const localityDropdownOptions = (__localityList || [])
+      //   ?.map((item) => {
+      //     const wardMatch = item.name.match(/Ward\s(\d+)/);
+      //     const wardNumber = wardMatch ? Number(wardMatch[1]) : Infinity;
+
+      //     return {
+      //       ...item,
+      //       wardNumber,
+      //     };
+      //   })
+      //   ?.sort((a, b) => a.wardNumber - b.wardNumber);
 
       setLocalityList(localityDropdownOptions);
     })();

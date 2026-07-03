@@ -2,6 +2,7 @@ package org.upyog.adv.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -48,12 +49,18 @@ public class CalculationService {
 		String tenantId = bookingRequest.getBookingApplication().getTenantId();
 		Map<String, Object> mdmsDataMap = (Map<String, Object>) mdmsData;
 
+		List<CartDetail> cartDetails = bookingRequest.getBookingApplication().getCartDetails();
+		if (cartDetails == null || cartDetails.isEmpty()) {
+			throw new CustomException("EMPTY_CART", "Cart details cannot be empty for demand calculation");
+		}
+
 		List<Map<String, Object>> taxRateList = (List<Map<String, Object>>) ((Map<String, Object>) ((Map<String, Object>) mdmsDataMap
 				.get("MdmsRes")).get("Advertisement")).get("TaxAmount");
 
 		List<TaxHeadMaster> headMasters = mdmsUtil.getTaxHeadMasterList(bookingRequest.getRequestInfo(), tenantId, BookingConstants.BILLING_SERVICE);
 
-		List<Advertisements> calculationTypes = mdmsUtil.getAdvertisements(bookingRequest.getRequestInfo(), tenantId, config.getModuleName(), bookingRequest.getBookingApplication().getCartDetails().get(0));
+		// Fetch ALL advertisements from MDMS — the cartDetail parameter is unused by the method (no per-item filtering)
+		List<Advertisements> calculationTypes = mdmsUtil.getAdvertisements(bookingRequest.getRequestInfo(), tenantId, config.getModuleName(), null);
 
 		log.info("Retrieved calculation types: {}", calculationTypes);
 
@@ -104,6 +111,11 @@ public class CalculationService {
 
 		// Sum per-day rate for each cart detail using its OWN advertisement's rate
 		// Handles multi-month ranges correctly (e.g. June has 30 days, July has 31)
+		Map<String, Long> daysPerAd = cartDetails.stream()
+				.map(CartDetail::getAdvertisementId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.groupingBy(id -> id, Collectors.counting()));
+
 		BigDecimal totalTaxBaseAmount = cartDetails.stream()
 				.map(cd -> {
 					if (cd.getAdvertisementId() == null) return null;
@@ -112,7 +124,8 @@ public class CalculationService {
 						throw new CustomException("ADVERTISEMENT_NOT_FOUND",
 								"No advertisement found with id: " + cd.getAdvertisementId());
 					}
-					return BookingUtil.getPerDayRate(adv, cd.getBookingDate(), cartDetails.size());
+					long bookingDaysForAd = daysPerAd.getOrDefault(cd.getAdvertisementId(), 0L);
+					return BookingUtil.getPerDayRate(adv, cd.getBookingDate(), bookingDaysForAd);
 				})
 				.filter(amount -> amount != null)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -124,14 +137,22 @@ public class CalculationService {
 		log.info("totalTaxBaseAmount={} (from {} cart entries across {} unique ads)",
 				totalTaxBaseAmount, cartDetails.size(), bookedAdIds.size());
 
-		// Taxable demand — one entry per unique ad's fee type
-		final BigDecimal taxBase = totalTaxBaseAmount;
-		List<DemandDetail> taxableDemands = bookedAdIds.stream()
-				.map(advById::get)
-				.filter(adv -> adv != null && taxHeadCodes.contains(adv.getFeeType()) && adv.isTaxApplicable())
-				.map(data -> DemandDetail.builder()
-						.taxAmount(taxBase)
-						.taxHeadMasterCode(data.getFeeType())
+		Map<String, BigDecimal> taxableByFeeType = cartDetails.stream()
+				.filter(cd -> cd.getAdvertisementId() != null)
+				.map(cd -> {
+					Advertisements adv = advById.get(Integer.parseInt(cd.getAdvertisementId()));
+					if (adv == null || !adv.isTaxApplicable() || !taxHeadCodes.contains(adv.getFeeType())) return null;
+					long daysForAd = daysPerAd.getOrDefault(cd.getAdvertisementId(), 0L);
+					BigDecimal rate = BookingUtil.getPerDayRate(adv, cd.getBookingDate(), daysForAd);
+					return (rate == null) ? null : new java.util.AbstractMap.SimpleEntry<>(adv.getFeeType(), rate);
+				})
+				.filter(Objects::nonNull)
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, BigDecimal::add));
+
+		List<DemandDetail> taxableDemands = taxableByFeeType.entrySet().stream()
+				.map(e -> DemandDetail.builder()
+						.taxAmount(e.getValue())
+						.taxHeadMasterCode(e.getKey())
 						.tenantId(tenantId)
 						.build())
 				.collect(Collectors.toList());
@@ -195,16 +216,24 @@ public class CalculationService {
 	 * Returns 0 if booking hasn't ended yet
 	 */
 	private int calculateDaysAfterBooking(BookingRequest bookingRequest) {
-		// Get booking end date from first cart detail
-		CartDetail firstCart = bookingRequest.getBookingApplication()
-				.getCartDetails().get(0);
+		List<CartDetail> cartDetails = bookingRequest.getBookingApplication().getCartDetails();
+		if (cartDetails == null || cartDetails.isEmpty()) {
+			throw new CustomException("EMPTY_CART", "Cart details cannot be empty for demand calculation");
+		}
+
+		LocalDate bookingEndDate = cartDetails.stream()
+				.map(CartDetail::getBookingDate)
+				.filter(Objects::nonNull)
+				.max(LocalDate::compareTo)
+				.orElseThrow(() -> new CustomException("BOOKING_DATE_NOT_FOUND",
+						"Booking date is required for demand calculation"));
 
 		/*
 		 * Assuming CartDetail.getBookingDate() returns a java.time.LocalDate (or similar)
 		 * Convert to epoch-day then to milliseconds (start of day), like CHB implementation.
 		 * Use long literals to avoid int overflow.
 		 */
-		long bookingEndDateMillis = firstCart.getBookingDate().toEpochDay() * 24L * 60 * 60 * 1000;
+		long bookingEndDateMillis = bookingEndDate.toEpochDay() * 24L * 60 * 60 * 1000;
 		long currentTimeMillis = System.currentTimeMillis();
 		long elapsedMillis = currentTimeMillis - bookingEndDateMillis;
 		int daysAfterBooking = (int) (elapsedMillis / (24L * 60 * 60 * 1000));
@@ -219,27 +248,49 @@ public class CalculationService {
 	 */
 	private BigDecimal getBaseAmountFromMDMS(BookingRequest bookingRequest) {
 		String tenantId = bookingRequest.getBookingApplication().getTenantId();
-		CartDetail cartDetail = bookingRequest.getBookingApplication().getCartDetails().get(0);
+		List<CartDetail> cartDetails = bookingRequest.getBookingApplication().getCartDetails();
+		if (cartDetails == null || cartDetails.isEmpty()) {
+			throw new CustomException("EMPTY_CART", "Cart details cannot be empty for demand calculation");
+		}
 
+		// Fetch ALL advertisements from MDMS — the cartDetail parameter is unused (no per-item filtering)
 		List<Advertisements> advertisements = null;
 		try {
 			advertisements = mdmsUtil.getAdvertisements(
 					bookingRequest.getRequestInfo(),
 					tenantId,
 					config.getModuleName(),
-					cartDetail);
+					null);
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
 
-		String advertisementId = cartDetail.getAdvertisementId();
+		Map<Integer, Advertisements> advById = advertisements.stream()
+				.filter(ad -> ad.getId() != null)
+				.collect(Collectors.toMap(Advertisements::getId, ad -> ad, (existing, replacement) -> existing));
 
-		return advertisements.stream()
-				.filter(ad -> ad.getId().equals(Integer.parseInt(advertisementId)) &&
-						"BOOKING_FEES".equals(ad.getFeeType()))
-				.findFirst()
-				.map(Advertisements::getAmount)
-				.orElse(BigDecimal.ZERO);
+		Map<String, Long> daysPerAd = cartDetails.stream()
+				.map(CartDetail::getAdvertisementId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.groupingBy(id -> id, Collectors.counting()));
+
+		return cartDetails.stream()
+				.filter(cartDetail -> cartDetail.getAdvertisementId() != null)
+				.map(cartDetail -> {
+					Advertisements advertisement = advById.get(Integer.parseInt(cartDetail.getAdvertisementId()));
+					if (advertisement == null) {
+						throw new CustomException("ADVERTISEMENT_NOT_FOUND",
+								"No advertisement found with id: " + cartDetail.getAdvertisementId());
+					}
+					if (!"BOOKING_FEES".equals(advertisement.getFeeType())) {
+						return BigDecimal.ZERO;
+					}
+					long bookingDaysForAd = daysPerAd.getOrDefault(cartDetail.getAdvertisementId(), 0L);
+					BigDecimal rate = BookingUtil.getPerDayRate(advertisement,
+							cartDetail.getBookingDate(), bookingDaysForAd);
+					return rate == null ? BigDecimal.ZERO : rate;
+				})
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	/**

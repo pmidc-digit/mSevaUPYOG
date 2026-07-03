@@ -69,7 +69,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         },
       },
       {
-        Header: t("firm/owner") === "firm/owner" ? "Firm / Owner" : t("firm/owner"),
+        Header: t("Owner Name"),
         accessor: "owner",
         Cell: ({ row }) => {
           return row.original?.owner || "-";

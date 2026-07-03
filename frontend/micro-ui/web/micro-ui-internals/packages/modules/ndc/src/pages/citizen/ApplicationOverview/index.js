@@ -190,6 +190,7 @@ const CitizenApplicationOverview = () => {
         status: item?.status || "",
         dueAmount: item?.dueAmount || 0,
         propertyType: item?.additionalDetails?.propertyType || "",
+        remarks: item?.additionalDetails?.remarks,
       }));
 
       setDisplayData({ applicantData, Documents, NdcDetails });
@@ -213,7 +214,7 @@ const CitizenApplicationOverview = () => {
       const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
 
       Property.propertyOwnerNames = propertyOwnerNames;
-      const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea
+      const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea;
       console.log("propertyOwnerNames", propertyOwnerNames);
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
       console.log("tenantInfo", tenantInfo);
@@ -221,7 +222,18 @@ const CitizenApplicationOverview = () => {
       let acknowledgementData;
 
       if (empData) {
-        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData, approverStatement, landArea, approverComment);
+        acknowledgementData = await getAcknowledgementData(
+          Property,
+          formattedAddress,
+          tenantInfo,
+          t,
+          approver,
+          ulbType,
+          empData,
+          approverStatement,
+          landArea,
+          approverComment
+        );
       }
       console.log("acknowledgementData", acknowledgementData);
       setTimeout(() => {
@@ -384,7 +396,7 @@ const CitizenApplicationOverview = () => {
                         }`
                       )}
                     />
-                    <Row label={t("Area")} text={propertyDetailsFetch?.Properties?.[0]?.landArea || "N/A"} />
+                    <Row label={t("Area")} text={`${propertyDetailsFetch?.Properties?.[0]?.landArea} sq. yd.` || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city || "N/A"} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo || "N/A"} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName || "N/A"} />
@@ -397,13 +409,7 @@ const CitizenApplicationOverview = () => {
                       label={t("Year of creation of Property")}
                       text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
                     />
-                    <Row
-                      label={t("Remarks")}
-                      text={
-                        applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
-                          ?.remarks || "N/A"
-                      }
-                    />
+                    {detail?.remarks && <Row label={t("Remarks")} text={detail?.remarks ? detail?.remarks : "N/A"} />}
                   </>
                 )}
               </StatusTable>

@@ -60,7 +60,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
 
   // const id = pathParts[pathParts.length - 1];
   // const checkNumber = pathParts[pathParts.length - 2];
-  const checkForRenew = location.state?.status.includes("renew-application");
+  const checkForRenew = location.state?.status?.includes("renew-application");
 
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // yyyy-mm-dd for max

@@ -446,6 +446,14 @@ public class InboxService {
             allApplications = cluInboxFilterService
                     .fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(
                             criteria, allActionableStatuses, requestInfo);
+        } else if (moduleName.equalsIgnoreCase("layout-service")) {
+            allApplications = layoutInboxFilterService
+                    .fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(
+                            criteria, allActionableStatuses, requestInfo);
+        } else if (moduleName.equalsIgnoreCase("noc-service")) {
+            allApplications = nocInboxFilterService
+                    .fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(
+                            criteria, allActionableStatuses, requestInfo);
         } else {
             allApplications = bpaInboxFilterService
                     .fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(
@@ -1002,8 +1010,17 @@ public class InboxService {
             
             Map<String, List<String>> tenantAndApplnNumbersMap = new HashMap<>();
             if(processCriteria != null && !ObjectUtils.isEmpty(processCriteria.getModuleName())
-                    && processCriteria.getModuleName().equals(BPA) && roles.contains(BpaConstants.CITIZEN)) {
-                List<Map<String, String>> tenantWiseApplns = bpaInboxFilterService.fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(criteria, StatusIdNameMap, requestInfo);
+                    && isCitizenInboxSupportAvailable(processCriteria.getModuleName(), roles)) {
+                List<Map<String, String>> tenantWiseApplns;
+                if (moduleName.equalsIgnoreCase("clu-service")) {
+                    tenantWiseApplns = cluInboxFilterService.fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(criteria, StatusIdNameMap, requestInfo);
+                } else if (moduleName.equalsIgnoreCase("layout-service")) {
+                    tenantWiseApplns = layoutInboxFilterService.fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(criteria, StatusIdNameMap, requestInfo);
+                } else if (moduleName.equalsIgnoreCase("noc-service")) {
+                    tenantWiseApplns = nocInboxFilterService.fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(criteria, StatusIdNameMap, requestInfo);
+                } else {
+                    tenantWiseApplns = bpaInboxFilterService.fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(criteria, StatusIdNameMap, requestInfo);
+                }
                 if (moduleSearchCriteria == null || moduleSearchCriteria.isEmpty()) {
                     moduleSearchCriteria = new HashMap<>();
                     moduleSearchCriteria.put(MOBILE_NUMBER_PARAM, requestInfo.getUserInfo().getMobileNumber());
@@ -2361,5 +2378,7 @@ public class InboxService {
         return roles.contains(BpaConstants.CITIZEN) && 
             (moduleName.equalsIgnoreCase("bpa-service") || 
              moduleName.equalsIgnoreCase("BPA") || 
-             moduleName.equalsIgnoreCase("clu-service"));
+             moduleName.equalsIgnoreCase("clu-service") ||
+             moduleName.equalsIgnoreCase("layout-service") ||
+             moduleName.equalsIgnoreCase("noc-service"));
     }}

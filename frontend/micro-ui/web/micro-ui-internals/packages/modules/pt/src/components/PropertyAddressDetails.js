@@ -17,7 +17,7 @@ import { Loader } from "../components/Loader";
 import { useTranslation } from "react-i18next";
 
 const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
-const colItem = { flex: 1, minWidth: "250px", flexDirection: "column", alignItems: "stretch" };
+const colItem = { flex: 1, minWidth: "250px", flexDirection: "column", alignItems: "stretch" , alignContent: "center" };
 const punjabPincodePattern = /^((14|15)\d{4}|160\d{3})$/;
 
 const PropertyAddressDetails = ({ goNext }) => {
@@ -109,8 +109,8 @@ const PropertyAddressDetails = ({ goNext }) => {
       console.log("getLocality", getLocality);
       const checkYearOfCreation = getYearCreation?.find((item) => item?.code == stateDataCheck?.yearOfCreation?.code);
       const checkCity = tenants?.find((item) => item?.name === stateDataCheck?.city?.name)
-        || tenants?.find((item) => item?.code === stateDataCheck?.city?.code);
-      setValue("city", checkCity);
+        || tenants?.find((item) => item?.code === stateDataCheck?.city?.code) ||tenants?.find((item) => item?.code === tenantId);
+      if (checkCity) setValue("city", checkCity);
       setValue("surveyId", checkSurveyId);
       setValue("houseNo", checkHouseNo);
       setValue("buildingName", checkBuildingName);

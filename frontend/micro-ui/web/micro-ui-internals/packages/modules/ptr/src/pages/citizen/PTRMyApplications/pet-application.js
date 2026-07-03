@@ -64,7 +64,13 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
 
         {checkRenewal && checkDuration && (
           <Link
-            to={`/digit-ui/citizen/ptr/petservice/new-application/${application?.applicationNumber}/renew-application`}
+            to={{
+              pathname: `/digit-ui/citizen/ptr/petservice/new-application`,
+              state: {
+                applicationNumber: application?.applicationNumber,
+                status: "renew-application",
+              },
+            }}
             // {`/digit-ui/citizen/ptr/petservice/application/${application?.applicationNumber}/${application?.tenantId}`}
           >
             <SubmitBar label={t("PT_RENEW_HEADER")} />

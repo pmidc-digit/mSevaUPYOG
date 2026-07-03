@@ -660,7 +660,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 </div>
               </LabelFieldPair>
               <LabelFieldPair style={colItem}>
-                <CardLabel className="card-label-smaller">{t("Built-up area (sq yards)")}*</CardLabel>
+                <CardLabel className="card-label-smaller">{t("Built-up area (sq ft)")}*</CardLabel>
                 <div className="form-field">
                   <Controller
                     control={control}

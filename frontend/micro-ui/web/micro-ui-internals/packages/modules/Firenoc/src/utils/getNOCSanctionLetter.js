@@ -102,7 +102,7 @@ const getNOCSanctionLetter = async ({application, t,EmpData,approverComment,matc
   const sanctionKeys =
   nocTypeUpper === "NEW"
     ? [
-        ...baseSanctionKeys.slice(0, -2).map(key => `NEW_${key}`),
+        ...baseSanctionKeys.slice(0, 10).map(key => `NEW_${key}`),
         ...baseSanctionKeys.slice(-2),
       ]
     : baseSanctionKeys;
@@ -112,7 +112,10 @@ const getNOCSanctionLetter = async ({application, t,EmpData,approverComment,matc
     text: t(key),
   }));
 
-  ;
+  const sanctionHeading =
+    nocTypeUpper === "PROVISIONAL"
+      ? `${fireNOCDetails?.fireNOCType} NOC is issued subject to following conditions:`
+      : " ";
   const buildings = fireNOCDetails?.buildings || [];
   const nocDocuments = (fireNOCDetails?.additionalDetails?.documents || fireNOCDetails?.applicantDetails?.additionalDetail?.ownerAuditionalDetail?.documents || [])
 
@@ -150,7 +153,6 @@ console.log(ulbName, ulbType ,  "ULBBB");
 const zoneLabel = fireNOCDetails?.zone || " ";
 const validityPeriod = fireNOCDetails?.validityPeriod || "1 Year(s)";
 
-console.log("application", application);
 
 const locality = addr?.locality?.code;
 const doorNo = addr?.doorNo;
@@ -162,7 +164,7 @@ const ulb = ulbName;
 const ulbCategory = ulbType;
 
 const floors = noOfFloors || " ";
-const basements = noOfBasements || " ";
+const basements = noOfBasements !== "NA" ?`${noOfBasements} basements and,` : " " ;
 
 const submittedDate =  new Date(Number(fireNOCDetails?.issuedDate))?.toLocaleDateString("en-GB") || " "
 
@@ -173,8 +175,8 @@ const joinAddress = (...parts) => parts?.filter(Boolean).join(", ");
 
 const certificateTextEn =
   nocTypeUpper === "PROVISIONAL"
-    ? `Certified that the ${buildingNamesStr}, at ${joinAddress(doorNo, street, locality, landmark && `${landmark} landmark`, ulb, pincode)}, has been inspected by the fire officer. This site is vacant/under-construction and is accessible to fire brigade. As per proposed drawing, building is to be constructed with ${basements} basements and ${floors} (Upper floor). Fire department has examined the fire safety layout plan/drawing and found it fit for occupancy of ${zone} (as per NBC). Issued on ${submittedDate} at ${joinAddress(ulb, ulbCategory)}.`
-    : `Certified that the ${buildingNamesStr} at ${joinAddress(locality, ulbCategory, ulb)} comprised of ${basements} basements and ${floors} (Upper floor) owned/occupied by ${ownersString} have complied with the fire prevention and fire safety requirements of National Building Code and verified by the officer concerned of fire service on ${submittedDate} in the presence of ${ownersString} and that the building/premises is fit for occupancy ${zone} (As per NBC) for period of ${validity} from issue date. Subject to the following conditions. Issued on ${submittedDate} at ${joinAddress(ulb, ulbCategory)}.`;
+    ? `Certified that the ${buildingNamesStr}, at ${joinAddress(doorNo, street, locality, landmark && `${landmark} landmark`, ulb, pincode)}, has been inspected by the fire officer. This site is vacant/under-construction and is accessible to fire brigade. As per proposed drawing, building is to be constructed with ${basements} ${floors} (Upper floor). Fire department has examined the fire safety layout plan/drawing and found it fit for occupancy of ${zone} (as per NBC). Issued on ${submittedDate} at ${joinAddress(ulb, ulbCategory)}.`
+    : `Certified that the ${buildingNamesStr} at ${joinAddress(locality, ulbCategory, ulb)} comprised of ${basements} ${floors} (Upper floor) owned/occupied by ${ownersString} have complied with the fire prevention and fire safety requirements of National Building Code and verified by the officer concerned of fire service on ${submittedDate} in the presence of ${ownersString} and that the building/premises is fit for occupancy ${zone} (As per NBC) for period of ${validity} from issue date. Subject to the following conditions. Issued on ${submittedDate} at ${joinAddress(ulb, ulbCategory)}.`;
 
     const certificateTextPb =
   nocTypeUpper === "PROVISIONAL"
@@ -209,6 +211,7 @@ const certificateTextEn =
       certificateTextPb,
       currentDate,
       sanctionTerms,
+      sanctionHeading,
       ...EmpData,
       approverComment,
       regularized_label,

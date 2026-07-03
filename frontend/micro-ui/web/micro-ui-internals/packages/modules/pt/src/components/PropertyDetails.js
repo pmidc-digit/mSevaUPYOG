@@ -490,7 +490,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 name={`plotSize`}
                 rules={{
                   required: t("Plot Size is required"),
-                  validate: (value) => parseFloat(value) >= 2.0 || t("Land Area cannot be lesser that minimum value : 2.0 sq yard")
+                  validate: (value) => parseFloat(value) >= 2.0 || t("Land Area cannot be lesser than minimum value : 2.0 sq yard")
                 }}
                 render={(props) => (
                   <TextInput
@@ -669,11 +669,12 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     rules={{
                       required: t("Area is required"),
                       validate: {
-                        minArea: (value) => parseFloat(value) >= 1 || t("BuiltUpArea cannot be lesser that minimum values of : 1 sq yard"),
+                        minArea: (value) => parseFloat(value) >= 1 || t("BuiltUpArea cannot be lesser than minimum values of : 1 sq ft"),
                         lessThanPlotSize: (value) => {
                           const plotSize = watch("plotSize");
-                          if (plotSize && parseFloat(value) > parseFloat(plotSize)) {
-                            return t("Built-up area cannot be greater than plot size");
+                          const builtUpAreaYard = parseFloat(value) / 9
+                          if (plotSize && builtUpAreaYard > parseFloat(plotSize)) {
+                            return `Built-up area entered (${parseFloat(value)} sq ft =  ${builtUpAreaYard?.toFixed(2)} Yards) cannot be greater than the plot size : (${plotSize} Yards)`;
                           }
                           return true;
                         }

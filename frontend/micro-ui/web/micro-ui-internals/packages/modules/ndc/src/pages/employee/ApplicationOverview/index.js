@@ -305,8 +305,9 @@ const ApplicationOverview = () => {
       const Property = applicationDetails;
       const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
       const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
-
+      const propertyOwnerMobiles = owners.map((owner) => owner?.mobileNumber).filter(Boolean);
       Property.propertyOwnerNames = propertyOwnerNames;
+      Property.propertyOwnerMobiles = propertyOwnerMobiles;
       const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea;
       console.log("propertyOwnerNames", propertyOwnerNames);
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);

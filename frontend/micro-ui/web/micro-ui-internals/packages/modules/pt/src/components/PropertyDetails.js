@@ -482,7 +482,10 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
               <Controller
                 control={control}
                 name={`plotSize`}
-                rules={{ required: t("Plot Size is required") }}
+                rules={{
+                  required: t("Plot Size is required"),
+                  validate: (value) => parseFloat(value) >= 2.0 || t("Land Area cannot be lesser than minimum value : 2.0 sq yard")
+                }}
                 render={(props) => (
                   <TextInput
                     type={"number"}
@@ -712,9 +715,22 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                 <div className="form-field">
                   <Controller
                     control={control}
-                    name={`unitDetails.${index}.totalRent`}
-                    defaultValue={item?.totalRent || ""}
-                    rules={{ required: t("Total Rent is required") }}
+                    name={`unitDetails.${index}.area`}
+                    defaultValue={item?.area || ""}
+                    rules={{
+                      required: t("Area is required"),
+                      validate: {
+                        minArea: (value) => parseFloat(value) >= 1 || t("BuiltUpArea cannot be lesser than minimum values of : 1 sq ft"),
+                        lessThanPlotSize: (value) => {
+                          const plotSize = watch("plotSize");
+                          const builtUpAreaYard = parseFloat(value) / 9
+                          if (plotSize && builtUpAreaYard > parseFloat(plotSize)) {
+                            return `Built-up area entered (${parseFloat(value)} sq ft =  ${builtUpAreaYard?.toFixed(2)} Yards) cannot be greater than the plot size : (${plotSize} Yards)`;
+                          }
+                          return true;
+                        }
+                      }
+                    }}
                     render={(props) => (
                       <TextInput
                         type={"number"}

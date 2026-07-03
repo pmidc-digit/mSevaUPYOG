@@ -69,7 +69,11 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
               ? `${application.businessObject.tenantId.toUpperCase().split(".").join("_")}`
               : "-",
             status: application?.businessObject?.applicationStatus,
-            owner: application?.businessObject?.owners?.[0]?.name,
+            owner: (() => {
+              const owner = application?.businessObject?.owners?.[0];
+              const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
+              return isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name;
+            })(),
             applicationType: application?.businessObject?.applicationType,
             documents: application?.businessObject?.documents || application?.documents,
           }

@@ -660,7 +660,7 @@ const ApplicationOverview = () => {
                         }`
                       )}
                     />
-                    <Row label={t("Area")} text={propertyDetailsFetch?.Properties?.[0]?.landArea || "N/A"} />
+                    <Row label={t("Area")} text={`${propertyDetailsFetch?.Properties?.[0]?.landArea} sq. yd.` || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />

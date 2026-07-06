@@ -496,6 +496,7 @@ function PTRSelectDocument({
               message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
               textStyles={{ width: "100%" }}
               accept=".jpg, .jpeg, .png"
+              isRemovable={!doc?.required}
             />
           ) : (
             <NOCCustomUploadFile
@@ -508,6 +509,7 @@ function PTRSelectDocument({
               message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
               textStyles={{ width: "100%" }}
               accept=".pdf, .jpeg, .jpg, .png"
+              isRemovable={!doc?.required}
             />
           )}
         </div>

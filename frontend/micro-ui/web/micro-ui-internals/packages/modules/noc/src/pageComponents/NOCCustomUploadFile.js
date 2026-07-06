@@ -7,6 +7,14 @@ const getRandomId = () => {
   return Math.floor((Math.random() || 1) * 139);
 };
 
+const CloseBtn = (props) => {
+  return (
+    <div className="close-btn" onClick={props.onClick}>      
+      <Close style={{ fill: "red" }}  />
+    </div>
+  );
+};
+
 const getCitizenStyles = (value) => {
   let citizenStyles = {};
   if (value == "propertyCreate") {
@@ -264,6 +272,9 @@ const NOCCustomUploadFile = (props) => {
               />
             </div>
           )}
+          {(props.uploadedFile && props?.isRemovable) ? (
+            <CloseBtn onClick={() => props.onDelete(props.uploadedFile)} />
+          ) : null}
         </div>
         <input
           className={props.disabled ? "disabled" : "" + "input-mirror-selector-button"}

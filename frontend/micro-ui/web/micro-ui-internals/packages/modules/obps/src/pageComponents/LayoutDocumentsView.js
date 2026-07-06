@@ -9,25 +9,31 @@ const LayoutDocumentTableView = ({documents}) => {
     window.open(jumpTo, "_blank");
   }
 
- const documentsColumns = [
-        {
-          Header: t("BPA_DOCUMENT_NAME"),
-          accessor: "title",
-          Cell: (value) => <strong>{(parseInt(value?.row?.id)+1) + ". " +t(value?.value)}</strong> || t("CS_NA"),
-        },
-        {
-          Header: t("BPA_DOCUMENT_FILE"),
-          accessor: "fileUrl",
-          Cell: ({ value }) =>
-            value ? (
-              <LinkButton style={{ float: "right", display: "inline" }}
-                label={t("View")}
-                onClick={() => routeTo(value)}
-              />
-            ) : (
-              t("CS_NA")
-            ),
-        },
+  const documentsColumns = [
+    {
+      Header: t("SR_NO"),
+      accessor: "srNo",
+      width: "20px",
+      Cell: ({ row }) => <div style={{ width: "20px" }}>{row.index + 1}</div>,
+    },
+    {
+      Header: t("BPA_DOCUMENT_NAME"),
+      accessor: "title",
+      Cell: ({ value }) => <strong>{t(value)}</strong> || t("CS_NA"),
+    },
+    {
+      Header: t("BPA_DOCUMENT_FILE"),
+      accessor: "fileUrl",
+      Cell: ({ value }) =>
+        value ? (
+          <LinkButton style={{ float: "right", display: "inline" }}
+            label={t("View")}
+            onClick={() => routeTo(value)}
+          />
+        ) : (
+          t("CS_NA")
+        ),
+    },
   ];
 
  const documentObj = {
@@ -62,6 +68,7 @@ const LayoutDocumentTableView = ({documents}) => {
   const documentsData = useMemo(() => {
      return (mappedDocuments)?.map((doc, index) => ({
       id: index,
+      srNo: index + 1,
       title: t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA"),
       fileUrl: doc.url,
      }));

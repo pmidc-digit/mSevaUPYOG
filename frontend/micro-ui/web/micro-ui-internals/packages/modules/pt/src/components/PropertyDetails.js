@@ -15,6 +15,7 @@ import { useLocation } from "react-router-dom";
 import { UPDATE_PTNewApplication_FORM } from "../redux/action/PTNewApplicationActions";
 import { Loader } from "../components/Loader";
 import { useTranslation } from "react-i18next";
+import {deduplicateUsageOptions} from "../utils";
 
 const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
 const colItem = { flex: 1, minWidth: "250px", flexDirection: "column", alignItems: "stretch" };
@@ -79,6 +80,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   const isCitizen = window.location.href.includes("citizen");
   const getCity = localStorage.getItem("CITIZEN.CITY");
   const stateDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData?.propertyDetails);
+  const surveyData = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData?.propertyAddress?.surveyData);
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
@@ -148,7 +150,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, insert  } = useFieldArray({
     control,
     name: "unitDetails",
   });
@@ -163,8 +165,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   };
 
   const selectedPropertyType = watch("propertyType")?.code;
-  const isBusinessNameRequired = selectedPropertyType && selectedPropertyType !== "VACANT"
   const selectedpropertyUsageType = watch("propertyUsageType")?.code;
+  const isBusinessNameRequired = selectedPropertyType && selectedpropertyUsageType && (selectedpropertyUsageType !== "RESIDENTIAL" && selectedPropertyType !== "VACANT")
   const isResidentialFlat = selectedpropertyUsageType === "RESIDENTIAL" && selectedPropertyType === "BUILTUP.SHAREDPROPERTY";
   const hideSubUsageType =
     isResidentialFlat ||
@@ -176,6 +178,19 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   // Memoize floorOptions to prevent new [] reference each render (was causing infinite loop)
   const floorOptionsRaw = FloorData?.PropertyTax?.Floor;
   const floorOptions = useMemo(() => floorOptionsRaw || [], [floorOptionsRaw]);
+
+  const getUsageOptionsByCode = (usageCode) => {
+    if (!usageCode) return [];
+    
+    if (usageCode === "MIXED") {
+      const allExceptMixed = allUsageOptions?.filter((item) => item?.code !== "MIXED");
+      return deduplicateUsageOptions(allExceptMixed);
+    }
+    const filteredOptions = allUsageOptions.filter((item) => {
+      return item?.code && item.code.split(".").indexOf(usageCode) !== -1;
+    });
+    return deduplicateUsageOptions(filteredOptions);
+  };
 
   const tesFloorOptions = useMemo(() => {
     return [...floorOptions].sort((a, b) => {
@@ -238,6 +253,27 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
   }, [location, getUsageData, stateDataCheck, getPropertyTypeData, UsageCategoryNewData, floorOptions]);
 
   const propertyType = watch("propertyType");
+
+  useEffect(() => {
+    if (surveyData) {
+      if (surveyData?.useType && !watch("propertyUsageType")) {
+        const matchingUsage = getUsageData?.find(
+          (u) => u.name.toLowerCase() === surveyData?.useType.toLowerCase()
+        );
+        if (matchingUsage) setValue("propertyUsageType", matchingUsage);
+      }
+
+      if (surveyData.floor && !watch("noOfFloors")) {
+        const floorCount = surveyData?.floor === "G+1" ? "2" : "1";
+        const matchingFloor = tesFloorOptions?.find((f) => f.code === floorCount);
+        if (matchingFloor) setValue("noOfFloors", matchingFloor);
+      }
+
+      if (surveyData.area) {
+        setValue("unitDetails.0.area", surveyData.area);
+      }
+    }
+  }, [surveyData, getUsageData, tesFloorOptions]);
 
   useEffect(() => {
     if (!stateDataCheck || !propertyType) return;
@@ -482,7 +518,10 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
               <Controller
                 control={control}
                 name={`plotSize`}
-                rules={{ required: t("Plot Size is required") }}
+                rules={{
+                  required: t("Plot Size is required"),
+                  validate: (value) => parseFloat(value) >= 2.0 || t("Land Area cannot be lesser than minimum value : 2.0 sq yard")
+                }}
                 render={(props) => (
                   <TextInput
                     type={"number"}
@@ -539,6 +578,8 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
               padding: "16px",
               marginBottom: "16px",
               borderRadius: "4px",
+              marginLeft: item.isAddedUnit ? "40px" : "0px",
+              borderLeft: item.isAddedUnit ? "4px solid #F47738" : "1px solid #e0e0e0",
             }}
           >
             {/* Row 1: Unit Usage Type + Sub Usage Type */}
@@ -560,10 +601,10 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                     rules={{ required: t("Unit Usage Type is required") }}
                     render={function (props) {
                       if (
-                        watch("propertyUsageType") &&
-                        watch("propertyUsageType").name === "Mixed" &&
-                        watch("propertyType") &&
-                        watch("propertyType").code === "BUILTUP.SHAREDPROPERTY"
+                        (selectedpropertyUsageType &&
+                        selectedpropertyUsageType === "MIXED") ||
+                       ( selectedPropertyType &&
+                        selectedPropertyType === "BUILTUP.SHAREDPROPERTY")
                       ) {
                         // Show dropdown — look up full MDMS object so Dropdown can display name correctly
                         return (
@@ -712,9 +753,22 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                 <div className="form-field">
                   <Controller
                     control={control}
-                    name={`unitDetails.${index}.totalRent`}
-                    defaultValue={item?.totalRent || ""}
-                    rules={{ required: t("Total Rent is required") }}
+                    name={`unitDetails.${index}.area`}
+                    defaultValue={item?.area || ""}
+                    rules={{
+                      required: t("Area is required"),
+                      validate: {
+                        minArea: (value) => parseFloat(value) >= 1 || t("BuiltUpArea cannot be lesser than minimum values of : 1 sq ft"),
+                        lessThanPlotSize: (value) => {
+                          const plotSize = watch("plotSize");
+                          const builtUpAreaYard = parseFloat(value) / 9
+                          if (plotSize && builtUpAreaYard > parseFloat(plotSize)) {
+                            return `Built-up area entered (${parseFloat(value)} sq ft =  ${builtUpAreaYard?.toFixed(2)} Yards) cannot be greater than the plot size : (${plotSize} Yards)`;
+                          }
+                          return true;
+                        }
+                      }
+                    }}
                     render={(props) => (
                       <TextInput
                         type={"number"}
@@ -745,10 +799,27 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                 <div className="form-field">
                   <Controller
                     control={control}
-                    name={`unitDetails.${index}.rentMonths`}
-                    defaultValue={months?.find((m) => m.code === item?.rentMonths?.code || m.code === item?.rentMonths) || null}
-                    rules={{ required: t("This field is required") }}
-                    render={(props) => <Dropdown select={props.onChange} selected={props.value} option={months} optionKey="name" t={t} />}
+                    name={`unitDetails.${index}.floor`}
+                    rules={{ required: t("Floor is required") }}
+                    defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || null}
+                    // defaultValue={item?.floor || ""}
+                    render={(props) => {
+                      const isLockedGroundFloorUnit =
+                        selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY" &&
+                        index === 0 &&
+                        (props.value?.code === "0" || props.value === "0");
+
+                      return (
+                        <Dropdown
+                          select={props.onChange}
+                          selected={props.value}
+                          option={tesFloorOptions}
+                          optionKey="name"
+                          t={t}
+                          disable={isLockedGroundFloorUnit || item.isAddedUnit}
+                        />
+                      );
+                    }}
                   />
                   {errors?.unitDetails?.[index]?.rentMonths && (
                     <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].rentMonths.message}</p>
@@ -780,22 +851,36 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
             </div>
 
             {/* Remove button */}
-            {fields.length > 1 && (
-              <div style={{ textAlign: "right" }}>
+            <div className="pt-application-download-btn primary-label-btn">
+              {fields.length > 1 && (
                 <button
                   type="button"
                   onClick={() => remove(index)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "#d32f2f",
-                    cursor: "pointer",
-                  }}
+                  className="download-button"
                 >
-                  {t("Remove")}
+                  - {t("Remove Unit")}
                 </button>
-              </div>
-            )}
+              )}
+              {/* Add Unit Button (For Independent Property) */}
+              {selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY" && watch(`unitDetails.${index}.floor`) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    insert(index + 1,{
+                      unitUsageType: watch(`unitDetails.${index}.unitUsageType`),
+                      occupancy: null,
+                      floor: watch(`unitDetails.${index}.floor`),
+                      area: "",
+                      subUsageType: null,
+                      isAddedUnit: true
+                    });
+                  }}
+                  className="download-button"
+                >
+                  + {t("Add Unit to this Floor")}
+                </button>
+              )}
+            </div>
           </div>
         ))}
 

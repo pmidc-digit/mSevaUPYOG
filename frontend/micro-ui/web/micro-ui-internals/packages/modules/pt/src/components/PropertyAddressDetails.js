@@ -48,6 +48,9 @@ const PropertyAddressDetails = ({ goNext }) => {
   } = useForm();
 
   const onSubmit = async (data) => {
+    if(location?.state){
+      data.surveyData = location.state;
+    }
     goNext(data);
   };
 

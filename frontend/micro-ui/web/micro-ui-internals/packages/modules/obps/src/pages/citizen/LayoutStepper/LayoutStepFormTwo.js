@@ -39,6 +39,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     trigger,
     watch,
     getValues,
+    clearErrors,
   } = useForm({
     defaultValues: {
       floorArea: [{ value: "" }],
@@ -116,7 +117,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
-  const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch, getValues };
+  const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch, getValues, clearErrors };
 
   let tenantId;
 

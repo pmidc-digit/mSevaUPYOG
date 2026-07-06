@@ -481,6 +481,7 @@ const LayoutInbox = ({ parentRoute }) => {
           filterFormState={formState?.filterForm}
           getFilterFormValue={getFilterFormValue}
           statuses={statusData}
+          showAssigneeCards={isEmployee}
           isInboxLoading={isInboxLoading}
           assigneeCounts={assigneeCounts}
           handleFilter={handleFilterChange}

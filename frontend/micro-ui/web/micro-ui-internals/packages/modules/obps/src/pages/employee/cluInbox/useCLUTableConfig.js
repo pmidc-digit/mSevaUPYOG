@@ -1,24 +1,13 @@
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
+import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { encryptId } from "../../../utils";
 
-import React,{ useMemo } from "react"
-import { Link } from "react-router-dom"
-import { format } from "date-fns"
-import { useTranslation } from "react-i18next"
-import { encryptId } from "../../../utils"
+const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId }) => {
+  const { t } = useTranslation();
 
-const useCLUTableConfig = ({
-  parentRoute,
-  onPageSizeChange,
-  formState,
-  totalCount,
-  table,
-  dispatch,
-  onSortingByData,
-  tenantId
-}) => {
-
-  const { t } = useTranslation()
-
-  const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>
+  const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
 
   const tableColumnConfig = useMemo(() => {
     return [
@@ -28,21 +17,34 @@ const useCLUTableConfig = ({
         disableSortBy: true,
         Cell: ({ row }) => {
           console.log("row-route", row);
-          const encryptID = encryptId(row.original["applicationId"])
+          const encryptID = encryptId(row.original["applicationId"]);
           return (
             <div>
-              <Link to={tenantId === "pb.punjab" ? `${parentRoute}/clu/application-overview/${encryptID}/${row?.original?.tenantId}`: `${parentRoute}/clu/application-overview/${encryptID}`}>
+              <Link
+                //  window.location.href.includes("/citizen")
+                //       ? `${parentRoute}/bpa-app/${encryptedId}`
+                //       : tenantId === "pb.punjab"
+                //       ? `${parentRoute}/inbox/bpa/${encryptedId}/${row.original["tenantId"]}`
+                //       : `${parentRoute}/inbox/bpa/${encryptedId}`
+
+                to={
+                  window.location.href.includes("/citizen")
+                    ? `${parentRoute}/clu/application-overview/${encryptID}`
+                    : tenantId === "pb.punjab"
+                    ? `${parentRoute}/clu/application-overview/${encryptID}/${row?.original?.tenantId}`
+                    : `${parentRoute}/clu/application-overview/${encryptID}`
+                }
+              >
                 <span className="link">{row.original["applicationId"]}</span>
               </Link>
             </div>
-          )
+          );
         },
       },
       {
         Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
         accessor: "date",
-        Cell: ({ row }) =>
-          row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), "dd/MM/yyyy")) : "",
+        Cell: ({ row }) => (row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), "dd/MM/yyyy")) : ""),
       },
       {
         Header: t("BPA_PRIMARY_OWNER_NAME_LABEL"),
@@ -60,8 +62,8 @@ const useCLUTableConfig = ({
         accessor: (row) => t(`BPA_STATUS_${row?.status}`),
         disableSortBy: true,
       },
-    ]
-  }, [])
+    ];
+  }, []);
 
   return {
     getCellProps: (cellInfo) => {
@@ -70,7 +72,7 @@ const useCLUTableConfig = ({
           padding: "20px 18px",
           fontSize: "16px",
         },
-      }
+      };
     },
     disableSort: false,
     autoSort: false,
@@ -109,8 +111,7 @@ const useCLUTableConfig = ({
     onFirstPage: () => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } }),
     data: table,
     columns: tableColumnConfig,
-  }
-}
+  };
+};
 
 export default useCLUTableConfig;
-

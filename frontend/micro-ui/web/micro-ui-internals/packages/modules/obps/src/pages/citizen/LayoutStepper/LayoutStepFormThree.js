@@ -30,6 +30,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     const [isUnderMasterPlan, setIsUnderMasterPlan] = useState(false);
     const [isNationalHighway, setIsNationalHighway] = useState(false);
     const [isInstitution, setIsInstitution] = useState(false);
+    const [isIndustrial, setIsIndustrial] = useState(false);
   
     useEffect(() => {
       if (!currentStepDataNew) return;
@@ -74,17 +75,30 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
         roadType.toLowerCase().includes("nh")
       );
   
-      // Institution
-      const buildingCategory =
-        currentStepDataNew?.siteDetails?.buildingCategory?.code ||
-        currentStepDataNew?.siteDetails?.buildingCategory ||
-        "";
-  
-      setIsInstitution(
-        buildingCategory === "INSTITUTION" ||
-        buildingCategory.toLowerCase().includes("institution")
-      );
-  
+      // Institution and Industrial checks
+      const bc = currentStepDataNew?.siteDetails?.buildingCategory;
+
+      const isInstitutionVal = bc ? (
+        typeof bc === "object" ? (
+          (bc.code || "").toLowerCase().includes("institution") || 
+          (bc.name || "").toLowerCase().includes("institution")
+        ) : (
+          bc.toLowerCase().includes("institution")
+        )
+      ) : false;
+
+      const isIndustrialVal = bc ? (
+        typeof bc === "object" ? (
+          (bc.code || "").toLowerCase().includes("industrial") || 
+          (bc.name || "").toLowerCase().includes("industrial")
+        ) : (
+          bc.toLowerCase().includes("industrial")
+        )
+      ) : false;
+
+      setIsInstitution(isInstitutionVal);
+      setIsIndustrial(isIndustrialVal);
+
     }, [currentStepDataNew]);
 
   const { isLoading: isDocLoading, data: docData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "LAYOUT", ["LayoutDocuments"])
@@ -123,6 +137,10 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
               isRequired = false;
             }
           }
+          // Industry Category Supporting Document is mandatory when building category is industrial
+          else if (doc.code === "OWNER.INDUSTRYCATEGORYDOCUMENT") {
+            isRequired = isIndustrial;
+          }
           // When CLU = YES: Make specific CLU documents mandatory
           // else if (isCluApproved && doc.cluRequired) {
           //   isRequired = true
@@ -146,7 +164,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       //console.log("=== END DEBUG ===")
       
       return processedDocs
-    }, [isVacant, isCluApproved, isNationalHighway, isInstitution, applicantType, docData?.LAYOUT?.LayoutDocuments?.length])
+    }, [isVacant, isCluApproved, isNationalHighway, isInstitution, isIndustrial, applicantType, docData?.LAYOUT?.LayoutDocuments?.length])
 
 
 

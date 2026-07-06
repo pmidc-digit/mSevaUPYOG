@@ -29,6 +29,7 @@ import { OCStepperForm } from "./OcupationalCertificateStepper/OCStepperForm";
 import BPAEsignResponse from "../employee/BPAEsignResponse";
 import BPASanctionEsignResponse from "../employee/BPASanctionEsignResponse";
 import CLUInbox from "../employee/cluInbox/CLUInbox";
+import LayoutInbox from "../employee/Inbox/LayoutInbox";
 
 const OBPSBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
@@ -182,11 +183,19 @@ const App = ({ path }) => {
             </AppContainer>
           )}
         />
-        <PrivateRoute
+        {/* <PrivateRoute
           path={`${path}/layout/my-applications`}
           component={(props) => (
             <AppContainer>
               <LayoutMyApplications {...props} />
+            </AppContainer>
+          )}
+        /> */}
+        <PrivateRoute
+          path={`${path}/layout/my-applications`}
+          component={(props) => (
+            <AppContainer>
+              <LayoutInbox {...props} />
             </AppContainer>
           )}
         />
@@ -233,22 +242,22 @@ const App = ({ path }) => {
             </AppContainer>
           )}
         />
-        <PrivateRoute
+        {/* <PrivateRoute
           path={`${path}/clu/my-applications`}
           component={(props) => (
             <AppContainer>
               <CLUMyApplications {...props} />
             </AppContainer>
           )}
-        />
-        {/* <PrivateRoute
+        /> */}
+        <PrivateRoute
           path={`${path}/clu/my-applications`}
           component={(props) => (
             <AppContainer>
               <CLUInbox {...props} />
             </AppContainer>
           )}
-        /> */}
+        />
         <PrivateRoute
           path={`${path}/clu/application-overview/:cluid`}
           component={(props) => (

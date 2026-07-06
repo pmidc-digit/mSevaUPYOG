@@ -65,7 +65,7 @@ function NOCSummary({ currentStepData: formData, t }) {
   );
   const remainingDocs = formData?.documents?.documents?.documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
-  );
+  )?.filter((doc) => !!doc?.documentAttachment);
   const primaryOwner = formData?.applicationDetails?.owners?.[0];
   const propertyId = formData?.applicationDetails?.owners?.[0]?.propertyId;
   const applicationNo = formData?.apiData?.Noc?.[0]?.applicationNo;

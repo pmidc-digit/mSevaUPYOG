@@ -259,12 +259,12 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
       const updatedApiResponseDocuments = apiResponseDocuments?.map((doc) => {
         const fileStoreId =
-          docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.uuid ||
+          docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.documentUid ||
           docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.documentAttachment;
         return {
           ...doc,
-          uuid: fileStoreId,
           documentAttachment: fileStoreId,
+          documentUid: fileStoreId,
         };
       });
 

@@ -163,8 +163,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   };
 
   const selectedPropertyType = watch("propertyType")?.code;
-  const isBusinessNameRequired = selectedPropertyType && selectedPropertyType !== "VACANT"
   const selectedpropertyUsageType = watch("propertyUsageType")?.code;
+  const isBusinessNameRequired = selectedPropertyType && selectedpropertyUsageType && (selectedpropertyUsageType !== "RESIDENTIAL" && selectedPropertyType !== "VACANT")
   const isResidentialFlat = selectedpropertyUsageType === "RESIDENTIAL" && selectedPropertyType === "BUILTUP.SHAREDPROPERTY";
   const hideSubUsageType =
     isResidentialFlat ||
@@ -560,10 +560,10 @@ setValue("allotmentDate", stateDataCheck?.allotmentDate || "");
                     rules={{ required: t("Unit Usage Type is required") }}
                     render={function (props) {
                       if (
-                        watch("propertyUsageType") &&
-                        watch("propertyUsageType").name === "Mixed" &&
-                        watch("propertyType") &&
-                        watch("propertyType").code === "BUILTUP.SHAREDPROPERTY"
+                        (selectedpropertyUsageType &&
+                        selectedpropertyUsageType === "MIXED") ||
+                       ( selectedPropertyType &&
+                        selectedPropertyType === "BUILTUP.SHAREDPROPERTY")
                       ) {
                         // Show dropdown — look up full MDMS object so Dropdown can display name correctly
                         return (

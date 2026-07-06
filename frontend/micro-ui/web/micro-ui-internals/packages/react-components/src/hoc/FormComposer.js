@@ -101,7 +101,13 @@ export const FormComposer = (props) => {
       case "textarea":
         // if (populators.defaultValue) setTimeout(setValue(populators?.name, populators.defaultValue));
         return (
-          <TextArea className="form-field" name={populators?.name || ""} {...populators} inputRef={register(populators.validation)} disable={disable} />
+          <TextArea
+            className="form-field"
+            name={populators?.name || ""}
+            {...populators}
+            inputRef={register(populators.validation)}
+            disable={disable}
+          />
         );
       case "mobileNumber":
         return (
@@ -327,7 +333,6 @@ export const FormComposer = (props) => {
       e.preventDefault();
     }
   };
-  console.log(props);
 
   const buttonStyle = {
     next: {
@@ -361,7 +366,12 @@ export const FormComposer = (props) => {
             {props.heading}{" "}
           </CardSubHeader>
         )}
-        {props.description && <CardLabelDesc style={{fontSize:"16px"}} className="descStyle"> {props.description} </CardLabelDesc>}
+        {props.description && (
+          <CardLabelDesc style={{ fontSize: "16px" }} className="descStyle">
+            {" "}
+            {props.description}{" "}
+          </CardLabelDesc>
+        )}
         {props.text && <CardText className="labelStyle">{props.text}</CardText>}
         {formFields}
         {props.childrenAtTheBottom && props.children}

@@ -125,7 +125,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
     // Extract remarks from PT NdcDetails
     const ptDetail = apiDataCheck?.[0]?.NdcDetails?.find((detail) => detail.businessService === "PT");
-    console.log("ptDetail", ptDetail);
 
     // Only update remarks from API if formData doesn't already have them (prevents overwriting on back navigation)
     if (ptDetail?.additionalDetails?.remarks && !formData?.PropertyDetails?.remarks) {
@@ -135,8 +134,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     if (ptDetail?.additionalDetails?.vashikaNumber && !formData?.PropertyDetails?.vashikaNumber) {
       combinedObject.vashikaNumber = ptDetail.additionalDetails.vashikaNumber;
     }
-
-    console.log("combinedObject", combinedObject);
 
     setPropertyDetails((prev) => {
       return {

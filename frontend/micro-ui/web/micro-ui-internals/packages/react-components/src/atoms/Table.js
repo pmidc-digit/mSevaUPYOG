@@ -29,8 +29,7 @@ const getStatusPillStyle = (statusClass) => {
   return { background: "#e2e8f0", color: "#1e293b" };
 };
 
-const getStatusDisplayText = (value) =>
-  String(value || "")
+const getStatusDisplayText = (value) => String(value || "");
 
 const extractTextValue = (value) => {
   if (value === null || value === undefined) return "";
@@ -43,8 +42,6 @@ const extractTextValue = (value) => {
   if (React.isValidElement(value)) return extractTextValue(value.props?.children);
   return "";
 };
-
-console.log("TABLE_JS_LOADED_FROM_REACT_COMPONENTS_ATOMS");
 
 const Table = ({
   className = "table",
@@ -142,10 +139,6 @@ const Table = ({
     background: "#ffffff",
     ...styles,
   };
-
-  console.log(isMobile, "IS MOBILE RENDER");
-
-  console.log("loovvvvv1233", rows);
 
   if (isMobile) {
     return (
@@ -379,7 +372,7 @@ const Table = ({
                                     ...pillStyle,
                                   }}
                                 >
-                                  {t ? getStatusDisplayText(t(cellValue)) : getStatusDisplayText((cellValue))}
+                                  {t ? getStatusDisplayText(t(cellValue)) : getStatusDisplayText(cellValue)}
                                 </span>
                               );
                             })()

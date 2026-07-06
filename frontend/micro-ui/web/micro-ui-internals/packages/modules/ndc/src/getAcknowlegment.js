@@ -40,7 +40,7 @@ const convertToLocale = (value = "", key = "") => {
   return `${key}_${convertedValue}`;
 };
 // const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
-const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
+const ulbCamel = (ulb) => ulb.toLowerCase().split(" ")?.map(capitalize)?.join(" ");
 
 const getReadableCity = (tenantId = "") => {
   if (!tenantId) return "NA";
@@ -86,7 +86,9 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   const duesAmount = add?.duesAmount || appData?.additionalDetails?.duesAmount || "0";
   const dateOfApplication = add?.dateOfApplication || "NA";
   const dateOfApproval = add?.dateOfApproval || "NA";
-  const ownerNames = (application?.propertyOwnerNames || []).join(", ") || "NA";
+  const ownerNames = (application?.propertyOwnerNames || [])?.join(", ") || "NA";
+  const ownerMobiles = (application?.propertyOwnerMobiles || [])?.join(", ") || "NA";
+
   console.log(appData, "APPDATA");
 
   const readableCity = getReadableCity(appData?.tenantId);
@@ -101,9 +103,9 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   { text: ", Property Type: ", bold: false ,  fontSize: 9, },
   { text: `${propertyType}`, bold: true ,  fontSize: 9, },
   { text: ", Land Area: ", bold: false ,  fontSize: 9, },
-  { text: `${landArea}\n`, bold: true ,  fontSize: 9, },
+  { text: `${landArea} Sq. Yards \n`, bold: true ,  fontSize: 9, },
   { text: "Property Address: ", bold: false ,  fontSize: 9, },
-  { text: `${formattedAddress}`, bold: true ,  fontSize: 9, }, { text: " Owned by: ", bold: false , fontSize: 9, }, { text: `${ownerNames}\n`, bold: true ,  fontSize: 9,},
+  { text: `${formattedAddress}`, bold: true ,  fontSize: 9, }, { text: " Owned by: ", bold: false , fontSize: 9, }, { text: `${ownerNames}`, bold: true ,  fontSize: 9,},{ text: `, ${ownerMobiles}\n`, bold: true ,  fontSize: 9,},
   { text: "Applicant Name: ", bold: false , fontSize: 9},
   { text: `${applicantName}`, bold: true , fontSize: 9},
   { text: " (s/o, d/o, w/o) ", bold: false , fontSize: 9 },

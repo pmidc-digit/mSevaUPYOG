@@ -110,6 +110,18 @@ public class CLUConstants {
 
 	public static final String CLU_URBAN_DEVELOPMENT_CESS = "CLU_URBAN_DEVELOPMENT_CESS";
 
+	public static final String CLU_CLU_FEE = "CLU_CLU_FEE";
+
+	public static final String CLU_EDC_FEE = "CLU_EDC_FEE";
+
+	public static final String CLU_UDC_FEE = "CLU_UDC_FEE";
+
+	public static final String CLU_LF_FEE = "CLU_LF_FEE";
+
+	public static final String CLU_OTHER1_FEE = "CLU_OTHER1_FEE";
+
+	public static final String CLU_OTHER2_FEE = "CLU_OTHER2_FEE";
+
 
 	
 	public static final BigDecimal SQYARD_TO_SQFEET = BigDecimal.valueOf(9.0);

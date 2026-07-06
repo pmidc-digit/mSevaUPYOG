@@ -99,14 +99,10 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       ?.filter(Boolean)
       ?.join(", ");
 
-    console.log("formData====????", formData);
-
     const ownerObj = selectedRow;
 
     const emailApi = apiDataCheck?.[0]?.owners?.[0]?.emailId;
     const firstName = ownerObj?.name;
-
-    console.log("ownerObj", ownerObj);
 
     const email = ownerObj?.emailId || emailApi || "";
     const mobileNumber = ownerObj?.mobileNumber;
@@ -129,11 +125,18 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
     // Extract remarks from PT NdcDetails
     const ptDetail = apiDataCheck?.[0]?.NdcDetails?.find((detail) => detail.businessService === "PT");
+    console.log("ptDetail", ptDetail);
 
     // Only update remarks from API if formData doesn't already have them (prevents overwriting on back navigation)
     if (ptDetail?.additionalDetails?.remarks && !formData?.PropertyDetails?.remarks) {
       combinedObject.remarks = ptDetail.additionalDetails.remarks;
     }
+
+    if (ptDetail?.additionalDetails?.vashikaNumber && !formData?.PropertyDetails?.vashikaNumber) {
+      combinedObject.vashikaNumber = ptDetail.additionalDetails.vashikaNumber;
+    }
+
+    console.log("combinedObject", combinedObject);
 
     setPropertyDetails((prev) => {
       return {
@@ -349,7 +352,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         // setError(t("Invalid Consumer Number"));
       }
     } catch (error) {
-      console.log("error", error?.response?.data);
       const checkError = error?.response?.data?.Errors[0]?.code;
 
       if (checkError == "EMPTY_DEMANDS") {
@@ -459,8 +461,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     }
   }
 
-  console.log("propertyDetails", propertyDetails);
-
   const PayWSBillModal = Digit?.ComponentRegistryService?.getComponent("PayWSBillModal");
 
   useEffect(() => {
@@ -506,6 +506,32 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                   props.onBlur(e);
                 }}
                 disabled={formData?.cpt?.details?.landArea}
+              />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+
+      {/* Vashika Number */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Vashika Number")}`}</CardLabel>
+        <div className="form-field">
+          <Controller
+            control={control}
+            name={"vashikaNumber"}
+            defaultValue={propertyDetails?.vashikaNumber || ""}
+            render={(props) => (
+              <TextInput
+                value={propertyDetails?.vashikaNumber}
+                onChange={(e) => {
+                  setPropertyDetails((prev) => ({ ...prev, vashikaNumber: e.target.value }));
+                  props.onChange(e.target.value);
+                }}
+                onBlur={(e) => {
+                  // setFocusIndex({ index: -1 });
+                  props.onBlur(e);
+                }}
+                disabled={formData?.cpt?.details?.vashikaNumber}
               />
             )}
           />

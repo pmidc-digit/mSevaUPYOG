@@ -1942,7 +1942,7 @@ const LayoutSiteDetails = (_props) => {
 
           {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
             selectedBuildingCategory?.name?.toLowerCase().includes("warehouse") ||
-            selectedBuildingCategory?.name?.toLowerCase().includes("institutional")) && (
+            selectedBuildingCategory?.name?.toLowerCase().includes("institution")) && (
             <React.Fragment>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">

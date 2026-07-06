@@ -132,6 +132,7 @@ const LayoutApplicationOverview = () => {
   // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, { cacheTime: 0 })
   const applicationDetails = data?.resData
+  const { isLoading: mdmsLoading, data: mdmsDocsData } = Digit.Hooks.pt.usePropertyMDMS(stateCode, "LAYOUT", ["LayoutDocuments"]);
   const layoutDocuments = applicationDetails?.Layout?.[0]?.documents || [];
   const sitePhotos = layoutDocuments?.filter(
     (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
@@ -374,6 +375,96 @@ const LayoutApplicationOverview = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
     })
 
+  const isApplicationComplete = () => {
+    const layout = applicationDetails?.Layout?.[0];
+    if (!layout) return false;
+
+    // 1. Check declaration checkbox
+    if (!layout?.layoutDetails?.additionalDetails?.selectedCheckBox) {
+      return false;
+    }
+
+    // 2. Check owner-level mandatory documents (Photo, ID Proof) for all active owners
+    const owners = layout?.owners || [];
+    const allOwnerDocsUploaded = owners.every((owner, idx) => {
+      if (owner?.status === false) return true;
+      const photo = findOwnerDocument(idx, "OWNERPHOTO");
+      const idProof = findOwnerDocument(idx, "OWNERVALIDID");
+      return photo && idProof;
+    });
+    if (!allOwnerDocsUploaded) return false;
+
+    // 3. Check MDMS required documents
+    if (mdmsDocsData?.LAYOUT?.LayoutDocuments) {
+      const siteDetails = layout?.layoutDetails?.additionalDetails?.siteDetails;
+      const isVacant = siteDetails?.buildingStatus?.code === "VACANT" || siteDetails?.buildingStatus === "VACANT";
+      const isCluApproved = siteDetails?.isCluRequired?.code === "YES" || siteDetails?.isCluRequired === "YES" || siteDetails?.isCluRequired === true;
+      const roadType = siteDetails?.roadType?.name || siteDetails?.roadType || "";
+      const isNationalHighway = roadType.toLowerCase().includes("national") || roadType.toLowerCase().includes("nh");
+      const buildingCategory = siteDetails?.buildingCategory?.code || siteDetails?.buildingCategory || "";
+      const isInstitution = buildingCategory === "INSTITUTION" || buildingCategory.toLowerCase().includes("institution");
+      const applicantType = owners?.[0]?.additionalDetails?.aplicantType?.code || owners?.[0]?.additionalDetails?.aplicantType;
+
+      const docs = mdmsDocsData?.LAYOUT?.LayoutDocuments || [];
+      const requiredDocs = docs
+        .map((doc) => {
+          let isRequired = doc.required || false;
+          if (doc.code === "OWNER.SITEPHOTOGRAPHONE" || doc.code === "OWNER.SITEPHOTOGRAPHTWO") {
+            isRequired = true;
+          } else if (doc.code === "OWNER.NATIONALHIGHWAYNOC") {
+            isRequired = isNationalHighway;
+          } else if (doc.code === "OWNER.OWNERSHIPDOCUMENT") {
+            if (applicantType === "FIRM") {
+              isRequired = true;
+            } else if (applicantType === "INDIVIDUAL") {
+              isRequired = false;
+            }
+          }
+
+          if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
+            return null;
+          }
+
+          return { ...doc, required: isRequired };
+        })
+        .filter(doc => !(doc?.cluRequired && !isCluApproved))
+        .filter(doc => doc !== null && doc.required);
+
+      const allRequiredDocsUploaded = requiredDocs.every((reqDoc) => {
+        return layoutDocuments.some(
+          (appDoc) =>
+            appDoc?.documentType?.includes(reqDoc.code) &&
+            (appDoc?.fileStoreId || appDoc?.uuid || appDoc?.documentAttachment)
+        );
+      });
+
+      if (!allRequiredDocsUploaded) return false;
+    }
+
+    // 4. Check other mandatory site details
+    const siteDetails = layout?.layoutDetails?.additionalDetails?.siteDetails;
+    if (!siteDetails) return false;
+
+    const getVal = (val) => {
+      if (!val) return "";
+      if (typeof val === "object") return val.name || val.code || "";
+      return val;
+    };
+
+    if (!getVal(siteDetails.proposedSiteAddress)) return false;
+    if (!getVal(siteDetails.wardNo)) return false;
+    if (!getVal(siteDetails.khasraNo)) return false;
+    if (!getVal(siteDetails.hadbastNo)) return false;
+    if (!getVal(siteDetails.villageName)) return false;
+    if (!getVal(siteDetails.district)) return false;
+    if (!getVal(siteDetails.ulbName)) return false;
+
+    const area = getVal(siteDetails.areaLeftForRoadWidening);
+    if (!area || area === "0.00" || area === "0" || parseFloat(area) === 0) return false;
+
+    return true;
+  };
+
   function onActionSelect(action) {
     const appNo = applicationDetails?.Layout?.[0]?.applicationNo
 
@@ -386,13 +477,13 @@ const LayoutApplicationOverview = () => {
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" })
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
-      // if(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.selectedCheckBox){
-      //   submitAction(payload)
-      // }
-      // else {
-      //   setShowToast({ key: "true", warning: true, message: "APPLICATION_INCOMPLETE" })
-      // }
-      submitAction(payload)
+      if (action?.action === "CANCEL") {
+        submitAction(payload)
+      } else if (isApplicationComplete()) {
+        submitAction(payload)
+      } else {
+        setShowToast({ key: "true", warning: true, message: "APPLICATION_INCOMPLETE" })
+      }
     } else if (action?.action == "PAY") {
       let businessService
       if (applicationDetails?.Layout?.[0]?.applicationStatus === "PENDINGAPPLICATIONPAYMENT") {
@@ -574,7 +665,7 @@ const LayoutApplicationOverview = () => {
   };
 
 
-  if (isLoading || loading) {
+  if (isLoading || loading || mdmsLoading) {
     return <LoaderNew page={true} />;
   }
 

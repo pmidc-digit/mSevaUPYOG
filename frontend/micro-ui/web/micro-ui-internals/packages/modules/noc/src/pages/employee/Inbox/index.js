@@ -7,6 +7,8 @@ import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templ
 import useInboxTableConfig from "./useInboxTableConfig";
 
 const Inbox = ({ parentRoute }) => {
+  console.log("here");
+
   const { t } = useTranslation();
   const [error, setError] = useState({
     error: false,
@@ -17,7 +19,9 @@ const Inbox = ({ parentRoute }) => {
     window.scroll(0, 0);
   }, []);
 
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
+  const isEmployee = window.location.href.includes("employee");
+  const defaultAssignee = isEmployee ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL";
   const { data: cities } = Digit.Hooks.useTenants();
 
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
@@ -31,7 +35,8 @@ const Inbox = ({ parentRoute }) => {
       applicationStatus: [],
       businessService: "obpas_noc",
       locality: [],
-      assignee: "ASSIGNED_TO_ME",
+      // assignee: "ASSIGNED_TO_ME",
+      assignee: defaultAssignee,
       businessServiceArray: [],
     }),
     []
@@ -201,14 +206,16 @@ const Inbox = ({ parentRoute }) => {
   });
 
   useEffect(() => {
+    if (!isEmployee) return;
     if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
     setAssigneeCounts({
       ASSIGNED_TO_ME: 0,
       ASSIGNED_TO_ALL: 0,
     });
-  }, [effectiveTenantId]);
+  }, [effectiveTenantId, isEmployee]);
 
   useEffect(() => {
+    if (!isEmployee) return;
     if (!assignedToMeInboxData || !assignedToAllInboxData) return;
     if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
 
@@ -217,7 +224,7 @@ const Inbox = ({ parentRoute }) => {
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
     });
     capturedAssigneeCountsTenant.current = effectiveTenantId;
-  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId]);
+  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId, isEmployee]);
 
   useEffect(() => {
     if (inboxData) {
@@ -445,6 +452,7 @@ const Inbox = ({ parentRoute }) => {
               filterFormState={formState?.filterForm}
               getFilterFormValue={getFilterFormValue}
               statuses={statusData}
+              showAssigneeCards={isEmployee}
               isInboxLoading={isInboxLoading}
               assigneeCounts={assigneeCounts}
               handleFilter={handleFilterChange}

@@ -72,7 +72,7 @@ const LayoutMyApplications = ({ view }) => {
         ),
       },
       {
-        Header: t("firm/owner") === "firm/owner" ? "Firm / Owner" : t("firm/owner"),
+        Header: t("Owner Name"),
         accessor: (row) => {
           const owner = row?.Applications?.owners?.[0];
           const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
@@ -148,7 +148,7 @@ const LayoutMyApplications = ({ view }) => {
               <Card key={index} style={{ padding: "12px", borderRadius: "8px", boxShadow: "0px 2px 6px rgba(0,0,0,0.1)" }}>
                 <h3 style={{ fontSize: "16px", marginBottom: "8px" }}>{application?.Applications?.applicationNo}</h3>
                 <p style={{ margin: "4px 0" }}>
-                  <b>{t("form/owner") === "form/owner" ? "Firm / Owner" : t("form/owner")}:</b>{" "}
+                  <b>{t("Owner Name")}:</b>{" "}
                   {(() => {
                     const owner = application?.Applications?.owners?.[0];
                     const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";

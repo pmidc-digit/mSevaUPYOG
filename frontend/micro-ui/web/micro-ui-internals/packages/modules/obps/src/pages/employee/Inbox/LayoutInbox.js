@@ -17,7 +17,10 @@ const LayoutInbox = ({ parentRoute }) => {
     window.scroll(0, 0);
   }, []);
 
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  // const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
+  const isEmployee = window.location.href.includes("employee");
+  const defaultAssignee = isEmployee ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL";
   const { data: cities } = Digit.Hooks.useTenants();
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
@@ -123,13 +126,7 @@ const LayoutInbox = ({ parentRoute }) => {
       tableForm: tableOrderFormDefaultValues,
       selectedTenantId: selectedTenantIdDefaultValues,
     };
-  }, [
-    InboxObjectInSessionStorage,
-    filterFormDefaultValues,
-    searchFormDefaultValues,
-    selectedTenantIdDefaultValues,
-    tableOrderFormDefaultValues,
-  ]);
+  }, [InboxObjectInSessionStorage, filterFormDefaultValues, searchFormDefaultValues, selectedTenantIdDefaultValues, tableOrderFormDefaultValues]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
 

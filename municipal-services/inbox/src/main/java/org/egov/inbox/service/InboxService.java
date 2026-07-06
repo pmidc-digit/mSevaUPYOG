@@ -274,6 +274,8 @@ public class InboxService {
             fullStatusCountMap = workflowService.getProcessStatusCount(requestInfo, statusCountCriteria);
         }
         
+        int searcherCount = resolveSearcherCount(moduleName, criteria, statusIdNameMap, requestInfo);
+
         Map<String, Object> updatedMap =
                 handleModuleSearchCriteria(moduleName, criteria, statusIdNameMap, requestInfo,
                         moduleSearchCriteria, businessKeys);
@@ -322,7 +324,6 @@ public class InboxService {
 
         // Modules that require a searcher-based count override (e.g. multi-tenant, citizen/stakeholder aggregation).
         // For all other modules, fall back to the WF processInstanceMap size.
-        int searcherCount = resolveSearcherCount(moduleName, criteria, statusIdNameMap, requestInfo);
         int totalCount = (searcherCount >= 0) ? searcherCount : processInstanceMap.size();
 
         // Translate applicationNo to UUID for firenoc if mapping is available, so we search by UUIDs instead of applicationNo

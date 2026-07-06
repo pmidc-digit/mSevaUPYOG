@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-//import org.apache.commons.lang.StringUtils;
+//import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.User;
 import org.egov.swservice.config.SWConfiguration;
 import org.egov.swservice.util.NotificationUtil;
@@ -211,7 +211,7 @@ public class EditNotificationService {
 			//send the notification to the connection holders
 			if (!CollectionUtils.isEmpty(sewerageConnectionRequest.getSewerageConnection().getConnectionHolders())) {
 				sewerageConnectionRequest.getSewerageConnection().getConnectionHolders().forEach(holder -> {
-					if (!org.apache.commons.lang.StringUtils.isEmpty(holder.getUuid())) {
+					if (!org.apache.commons.lang3.StringUtils.isEmpty(holder.getUuid())) {
 						ownersUuids.add(holder.getUuid());
 					}
 				});
@@ -223,7 +223,7 @@ public class EditNotificationService {
 				mobileNumbersAndNames.put(user.getMobileNumber(),user.getName());
 			}
 			//Send the notification to applicant
-			if(!org.apache.commons.lang.StringUtils.isEmpty(sewerageConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber()))
+			if(!org.apache.commons.lang3.StringUtils.isEmpty(sewerageConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber()))
 			{
 				mobileNumbersAndNames.put(sewerageConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber(), sewerageConnectionRequest.getRequestInfo().getUserInfo().getName());
 			}

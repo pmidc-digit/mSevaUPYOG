@@ -2,7 +2,7 @@ package org.egov.swservice.web.controller;
 
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.swservice.service.SewerageEncryptionService;
 import org.egov.swservice.service.DocumentService;

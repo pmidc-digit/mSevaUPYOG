@@ -53,7 +53,16 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         className: "ndc-new-table-app",
         Cell: ({ row }) => (
           <div className="ndc-new-cell-stack">
-            <Link to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`} className="ndc-new-app-link">
+            <Link
+              to={
+                // /digit-ui/citizen/obps/layout/application-overview/${row.original?.Applications?.applicationNo}
+                window.location.href.includes("/citizen")
+                  ? `${parentRoute}/layout/application-overview/${row.original?.applicationId}`
+                  : `${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`
+              }
+              // to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`}
+              className="ndc-new-app-link"
+            >
               {row.original?.applicationId || row.original?.applicationNo || "-"}
             </Link>
             {/* {row.original?.locality ? <div className="ndc-new-cell-secondary">{row.original?.locality}</div> : null} */}

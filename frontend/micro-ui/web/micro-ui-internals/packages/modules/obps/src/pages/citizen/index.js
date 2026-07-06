@@ -195,7 +195,7 @@ const App = ({ path }) => {
           path={`${path}/layout/my-applications`}
           component={(props) => (
             <AppContainer>
-              <LayoutInbox {...props} />
+              <LayoutInbox {...props} parentRoute={path} />
             </AppContainer>
           )}
         />
@@ -254,7 +254,7 @@ const App = ({ path }) => {
           path={`${path}/clu/my-applications`}
           component={(props) => (
             <AppContainer>
-              <CLUInbox {...props} />
+              <CLUInbox {...props} parentRoute={path} />
             </AppContainer>
           )}
         />

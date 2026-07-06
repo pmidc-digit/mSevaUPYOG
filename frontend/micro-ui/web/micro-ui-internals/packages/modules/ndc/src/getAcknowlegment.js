@@ -40,7 +40,7 @@ const convertToLocale = (value = "", key = "") => {
   return `${key}_${convertedValue}`;
 };
 // const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
-const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
+const ulbCamel = (ulb) => ulb.toLowerCase().split(" ")?.map(capitalize)?.join(" ");
 
 const getReadableCity = (tenantId = "") => {
   if (!tenantId) return "NA";
@@ -86,8 +86,8 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   const duesAmount = add?.duesAmount || appData?.additionalDetails?.duesAmount || "0";
   const dateOfApplication = add?.dateOfApplication || "NA";
   const dateOfApproval = add?.dateOfApproval || "NA";
-  const ownerNames = (application?.propertyOwnerNames || []).join(", ") || "NA";
-  const ownerMobiles = (application?.propertyOwnerMobiles || []).join(", ") || "NA";
+  const ownerNames = (application?.propertyOwnerNames || [])?.join(", ") || "NA";
+  const ownerMobiles = (application?.propertyOwnerMobiles || [])?.join(", ") || "NA";
 
   console.log(appData, "APPDATA");
 

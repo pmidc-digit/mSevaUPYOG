@@ -27,7 +27,7 @@ const LayoutSiteDetails = (_props) => {
 
   const stateId = Digit.ULBService.getStateId();
 
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch, cluValidationRef, getValues } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch, cluValidationRef, getValues, clearErrors } = _props;
   const applicationNo = currentStepData?.applicationNo || watch("applicationNo");
   //console.log(applicationNo, getValues("vasikaDate"), "applicationNo in layout site details");
   const isEditMode = !!applicationNo;
@@ -62,8 +62,8 @@ const LayoutSiteDetails = (_props) => {
   useEffect(() => {
     const roadwidningArea = getValues("netPlotAreaAfterWidening");
     const tpArea = getValues("areaLeftForRoadWidening");
-    if(roadwidningArea) setAreaLeftforRoadWidning(roadwidningArea)
-    if(tpArea) setTotalPlotArea(tpArea)
+    if (roadwidningArea) setAreaLeftforRoadWidning(roadwidningArea)
+    if (tpArea) setTotalPlotArea(tpArea)
   }, [currentStepData])
 
   // Restore CLU document from edit data
@@ -290,7 +290,7 @@ const LayoutSiteDetails = (_props) => {
   ];
 
   // Zone mapping logic (same as CLU)
-  const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
+  const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{ name: "zoneMaster", filter: `$.[?(@.tanentId == '${tenantId}')]` }]);
   const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
 
   const [selectedBuildingCategory, setSelectedBuildingCategory] = useState(currentStepData?.siteDetails?.buildingCategory || null);
@@ -368,9 +368,9 @@ const LayoutSiteDetails = (_props) => {
     const totalSiteAreaNum = parseFloat(total) || 0;
     const tolerance = 0.01; // Allow small rounding differences
 
-    if (Math.abs(netArea-totalSiteArea) !== 0) {
+    if (Math.abs(balanceArea - totalSiteAreaNum) > tolerance) {
       setAreaMismatchNotification(
-        `Area Mismatch: Total Site Area (${totalSiteArea} Sq M) does not match Net Site Area (${netArea} Sq M)`
+        `Area Mismatch: Total Site Area (${total} Sq M) does not match Net Site Area (${netArea} Sq M)`
       );
     } else {
       setAreaMismatchNotification(null);
@@ -384,8 +384,7 @@ const LayoutSiteDetails = (_props) => {
     watchedRoadArea,
     watchedParkingArea,
     watchedOtherAmenitiesArea,
-    netArea,
-    totalSiteArea
+    netArea
   ]);
 
   // Watch all SqM fields for auto-calculation of percentages
@@ -460,42 +459,42 @@ const LayoutSiteDetails = (_props) => {
       <div style={{ marginBottom: "16px" }}>
         <div>
 
-                    {/* ===== SECTION: CLU (Comprehensive Layout Undertaking) ===== */}
+          {/* ===== SECTION: CLU (Comprehensive Layout Undertaking) ===== */}
           <CardSectionHeader>CLU Details</CardSectionHeader>
 
-          {/* Is CLU Required? - Yes/No Dropdown */}          
+          {/* Is CLU Required? - Yes/No Dropdown */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               {`Is CLU Required?`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
-            <Controller
-              control={control}
-              name={"isCluRequired"}
-              rules={{
-                required: t("REQUIRED_FIELD"),
-              }}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={(e) => {
-                    props.onChange(e);
-                    setIsCluRequired(e.code);
-                  }}
-                  selected={props.value}
-                  option={options}
-                  optionKey="i18nKey"
-                  t={t}
-                  disable={isEditMode}
-                />
-              )}
-            />
+              <Controller
+                control={control}
+                name={"isCluRequired"}
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                }}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    select={(e) => {
+                      props.onChange(e);
+                      setIsCluRequired(e.code);
+                    }}
+                    selected={props.value}
+                    option={options}
+                    optionKey="i18nKey"
+                    t={t}
+                    disable={isEditMode}
+                  />
+                )}
+              />
             </div>
             {errors?.isCluRequired && (
-            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isCluRequired.message}</p>
-          )}
-          </LabelFieldPair>  
-      
+              <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isCluRequired.message}</p>
+            )}
+          </LabelFieldPair>
+
 
           {/* ===== CLU Details Section (when isCluRequired = NO) ===== */}
           {getValues("isCluRequired") === "NO" || getValues("isCluRequired")?.code === "NO" || isCluRequired?.code === "NO" || isCluRequired === "NO" ? (
@@ -506,29 +505,29 @@ const LayoutSiteDetails = (_props) => {
                   {`CLU Type`} <span className="requiredField">*</span>
                 </CardLabel>
                 <div className="field">
-                <Controller
-                  control={control}
-                  name={"cluType"}
-                  rules={{
-                    required: t("REQUIRED_FIELD"),
-                  }}
-                  render={(props) => (
-                    <Dropdown
-                      className="form-field"
-                      select={(e) => {
-                        props.onChange(e);
-                        setCluType(e.code);
-                      }}
-                      selected={props.value}
-                      option={[
-                        { code: "ONLINE", i18nKey: "Online" },
-                        { code: "OFFLINE", i18nKey: "Offline" },
-                      ]}
-                      optionKey="i18nKey"
-                      t={t}
-                    />
-                  )}
-                />
+                  <Controller
+                    control={control}
+                    name={"cluType"}
+                    rules={{
+                      required: t("REQUIRED_FIELD"),
+                    }}
+                    render={(props) => (
+                      <Dropdown
+                        className="form-field"
+                        select={(e) => {
+                          props.onChange(e);
+                          setCluType(e.code);
+                        }}
+                        selected={props.value}
+                        option={[
+                          { code: "ONLINE", i18nKey: "Online" },
+                          { code: "OFFLINE", i18nKey: "Offline" },
+                        ]}
+                        optionKey="i18nKey"
+                        t={t}
+                      />
+                    )}
+                  />
                 </div>
               </LabelFieldPair>
               {errors?.cluType && (
@@ -566,13 +565,13 @@ const LayoutSiteDetails = (_props) => {
                             }}
                           />
                         )}
-                      />                      
+                      />
                     </div>
                     {errors?.cluNumber && (
-                        <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.cluNumber.message}</p>
-                      )}
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.cluNumber.message}</p>
+                    )}
                   </LabelFieldPair>
-                  
+
 
                   {/* Validate Button for Online CLU */}
                   <LabelFieldPair style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px", marginBottom: "8px" }}>
@@ -604,17 +603,17 @@ const LayoutSiteDetails = (_props) => {
                             setCluValidationError("Please enter CLU Number");
                             return;
                           }
-                          
+
                           setCluValidationLoading(true);
                           setCluValidationError(null);
-                          
+
                           try {
                             // Search for CLU by applicationNo
                             const result = await Digit.OBPSService.CLUSearch({
                               filters: { applicationNo: cluNumber },
                               tenantId: tenantId
                             });
-                            
+
                             if (result?.Clu && result.Clu.length > 0) {
                               // CLU found and validated
                               setIsCluValidated(true);
@@ -637,10 +636,10 @@ const LayoutSiteDetails = (_props) => {
                       </button>
                     </div>
                   </LabelFieldPair>
-                  
+
                   {cluValidationError && (
                     <p style={{ color: "red", marginTop: "4px", marginBottom: "16px" }}>{cluValidationError}</p>
-                  )}                  
+                  )}
                 </React.Fragment>
               ) : null}
 
@@ -648,7 +647,7 @@ const LayoutSiteDetails = (_props) => {
               {getValues("cluType") === "OFFLINE" || getValues("cluType")?.code === "OFFLINE" || cluType?.code === "OFFLINE" || cluType === "OFFLINE" ? (
                 <React.Fragment>
                   {/* CLU Document Upload - Offline */}
-                  <LabelFieldPair>
+                  <LabelFieldPair className="upload-label-field-pair">
                     <CardLabel className="card-label-smaller">
                       {`Upload Approved CLU Copy`} <span className="requiredField">*</span>
                     </CardLabel>
@@ -659,25 +658,25 @@ const LayoutSiteDetails = (_props) => {
                             // Extract file from event object
                             const file = event?.target?.files?.[0];
                             if (!file) return;
-                            
+
                             // Validate file size (5MB)
                             if (file.size > 5 * 1024 * 1024) {
                               setCluDocumentError("File size exceeds 5MB limit");
                               return;
                             }
-                            
+
                             // Validate file type is PDF
                             if (file.type !== "application/pdf") {
                               setCluDocumentError("Only PDF files are allowed");
                               return;
                             }
-                            
+
                             setCluDocumentLoader(true);
                             setCluDocumentError(null);
-                            
+
                             const response = await Digit.UploadServices.Filestorage("Layout", file, stateId);
                             setCluDocumentLoader(false);
-                            
+
                             if (response?.data?.files?.length > 0) {
                               const fileStoreId = response.data.files[0].fileStoreId;
                               //console.log("✅ CLU Document uploaded successfully:", fileStoreId);
@@ -786,7 +785,7 @@ const LayoutSiteDetails = (_props) => {
                       )}
                     </div>
                   </LabelFieldPair>
-                  
+
                   {/* Hidden field to store CLU Document in form data */}
                   <Controller
                     control={control}
@@ -802,9 +801,9 @@ const LayoutSiteDetails = (_props) => {
                       }
                     }}
                     render={(props) => (
-                      <input 
-                        type="hidden" 
-                        value={cluDocumentUploadedFile?.fileStoreId || ""} 
+                      <input
+                        type="hidden"
+                        value={cluDocumentUploadedFile?.fileStoreId || ""}
                         onChange={() => props.onChange(cluDocumentUploadedFile)}
                       />
                     )}
@@ -815,12 +814,12 @@ const LayoutSiteDetails = (_props) => {
           ) : null}
 
           {/* ===== Application Applied Under Section (when isCluRequired = YES) ===== */}
-          {isCluRequired?.code === "YES" || isCluRequired === "YES" ? (          
-              <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
-                  {`Application Applied Under`} <span className="requiredField">*</span>
-                </CardLabel>
-                <div className="field">
+          {isCluRequired?.code === "YES" || isCluRequired === "YES" ? (
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">
+                {`Application Applied Under`} <span className="requiredField">*</span>
+              </CardLabel>
+              <div className="field">
                 <Controller
                   control={control}
                   name={"applicationAppliedUnder"}
@@ -840,18 +839,18 @@ const LayoutSiteDetails = (_props) => {
                         { code: "TOWN_PLANNING", name: "TOWN PLANNING", i18nKey: "Town Planning" },
                         { code: "AFFORDABLE", name: "AFFORDABLE", i18nKey: "Affordable" },
                         { code: "DEVELOPMENT", name: "DEVELOPMENT", i18nKey: "Development" },
-             
+
                       ]}
                       optionKey="name"
                       t={t}
                     />
                   )}
                 />
-                </div>
-                {errors?.applicationAppliedUnder && (
+              </div>
+              {errors?.applicationAppliedUnder && (
                 <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.applicationAppliedUnder.message}</p>
               )}
-              </LabelFieldPair>          
+            </LabelFieldPair>
           ) : null}
           {/* ===== TYPE OF APPLICATION ===== */}
 
@@ -962,25 +961,25 @@ const LayoutSiteDetails = (_props) => {
             </CardLabel>
             {!isUlbListLoading && (
               <div className="field">
-              <Controller
-                control={control}
-                name={"ulbName"}
-                rules={{ required: t("REQUIRED_FIELD") }}
-                defaultValue={ulbName}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    select={(e) => {
-                      props.onChange(e);
-                    }}
-                    selected={props.value}
-                    option={ulbListOptions}
-                    optionKey="name"
-                    t={t}
-                    disable="true"
-                  />
-                )}
-              />
+                <Controller
+                  control={control}
+                  name={"ulbName"}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  defaultValue={ulbName}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      select={(e) => {
+                        props.onChange(e);
+                      }}
+                      selected={props.value}
+                      option={ulbListOptions}
+                      optionKey="name"
+                      t={t}
+                      disable="true"
+                    />
+                  )}
+                />
               </div>
             )}
             {errors?.ulbName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.ulbName.message}</p>}
@@ -993,37 +992,37 @@ const LayoutSiteDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
-            <Controller
-              control={control}
-              name={"district"}
-              rules={{
-                required: t("REQUIRED_FIELD"),
-                validate: (value) => {
-                  // Validate that district is an object or has required properties
-                  if (!value || (typeof value === 'string' && value.trim() === '')) {
-                    return t("REQUIRED_FIELD");
-                  }
-                  return true;
-                }
-              }}
-              render={(props) => (
-                <TextInput
-                  className="form-field"
-                  value={selectedCity?.city?.districtName || selectedCity?.districtName || selectedCity}
-                  onChange={(e) => {
-                    // Don't actually change the value on text input since it's disabled
-                    // Just use the selectedCity object
-                  }}
-                  onBlur={(e) => {
-                    // Ensure the form field has the district object
-                    if (selectedCity) {
-                      props.onChange(selectedCity);
+              <Controller
+                control={control}
+                name={"district"}
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  validate: (value) => {
+                    // Validate that district is an object or has required properties
+                    if (!value || (typeof value === 'string' && value.trim() === '')) {
+                      return t("REQUIRED_FIELD");
                     }
-                  }}
-                  disable="true"
-                />
-              )}
-            />
+                    return true;
+                  }
+                }}
+                render={(props) => (
+                  <TextInput
+                    className="form-field"
+                    value={selectedCity?.city?.districtName || selectedCity?.districtName || selectedCity}
+                    onChange={(e) => {
+                      // Don't actually change the value on text input since it's disabled
+                      // Just use the selectedCity object
+                    }}
+                    onBlur={(e) => {
+                      // Ensure the form field has the district object
+                      if (selectedCity) {
+                        props.onChange(selectedCity);
+                      }
+                    }}
+                    disable="true"
+                  />
+                )}
+              />
             </div>
           </LabelFieldPair>
           {errors?.district && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.district.message}</p>}
@@ -1333,29 +1332,29 @@ const LayoutSiteDetails = (_props) => {
           </LabelFieldPair>
 
           {/* Is Area Under Master Plan - Yes/No Dropdown */}
-          
+
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               {`${t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
-            <Controller
-              control={control}
-              name={"isAreaUnderMasterPlan"}
-              rules={{
-                required: t("REQUIRED_FIELD"),
-              }}
-              render={(props) => (
-                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={options} optionKey="i18nKey" t={t} />
-              )}
-            />
+              <Controller
+                control={control}
+                name={"isAreaUnderMasterPlan"}
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                }}
+                render={(props) => (
+                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={options} optionKey="i18nKey" t={t} />
+                )}
+              />
             </div>
             {errors?.isAreaUnderMasterPlan && (
-            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isAreaUnderMasterPlan.message}</p>
-          )}
+              <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isAreaUnderMasterPlan.message}</p>
+            )}
           </LabelFieldPair>
-          
-          
+
+
 
 
 
@@ -1371,8 +1370,8 @@ const LayoutSiteDetails = (_props) => {
                 name="ulbType"
                 defaultValue={ulbType || ""}
                 render={(props) => (
-                  <TextInput 
-                    value={ulbType || props.value || ""} 
+                  <TextInput
+                    value={ulbType || props.value || ""}
                     disabled={true}
                     onChange={(e) => props.onChange(e.target.value)}
                   />
@@ -1484,8 +1483,8 @@ const LayoutSiteDetails = (_props) => {
                   },
                 }}
                 render={(props) => ( */}
-              <TextInput className="form-field"  value={parseFloat(totalPlotArea-areaLeftforRoadWidning).toFixed(2) || "0.00"} disable="true" />
-               {/* )}
+              <TextInput className="form-field" value={parseFloat(totalPlotArea - areaLeftforRoadWidning).toFixed(2) || "0.00"} disable="true" />
+              {/* )}
                /> */}
             </div>
           </LabelFieldPair>
@@ -1495,74 +1494,74 @@ const LayoutSiteDetails = (_props) => {
             <CardLabel className="card-label-smaller">
               {t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL")}<span className="requiredField">*</span>
             </CardLabel>
-      
-              {/* EWS Area Input */}
-      <div className="field">
-                  <Controller
-                    control={control}
-                    name="areaUnderEWS"
-                    defaultValue=""
-                    rules={{
-                      required: t("REQUIRED_FIELD"),
-                      pattern: {
-                        value: /^[0-9]*\.?[0-9]+$/,
-                        message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                      },
-                      validate: (value) => {
-                        const ewsArea = parseFloat(value) || 0;
-                        const totalArea = parseFloat(totalPlotArea-areaLeftforRoadWidning) || 0;
-                        const ewsPercentage = totalArea > 0 ? (ewsArea / totalArea) * 100 : 0;
 
-                        if (ewsPercentage < 5 && ewsArea > 0) {
-                          return "EWS Area must be at least 5% of total area";
-                        }
-                        return true;
-                      },
+            {/* EWS Area Input */}
+            <div className="field">
+              <Controller
+                control={control}
+                name="areaUnderEWS"
+                defaultValue=""
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  validate: (value) => {
+                    const ewsArea = parseFloat(value) || 0;
+                    const totalArea = parseFloat(totalPlotArea - areaLeftforRoadWidning) || 0;
+                    const ewsPercentage = totalArea > 0 ? (ewsArea / totalArea) * 100 : 0;
+
+                    if (ewsPercentage < 5 && ewsArea > 0) {
+                      return "EWS Area must be at least 5% of total area";
+                    }
+                    return true;
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    className="form-field"
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
                     }}
-                    render={(props) => (
-                      <TextInput
-                        className="form-field"
-                        value={props.value}
-                        onChange={(e) => {
-                          props.onChange(e.target.value);
-                        }}
-                        onBlur={(e) => {
-                          props.onBlur(e);
-                        }}
-                        // placeholder="Sq M"
-                        disable={currentStepData?.apiData?.applicationNo ? true : false}
-                      />
-                    )}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    // placeholder="Sq M"
+                    disable={currentStepData?.apiData?.applicationNo ? true : false}
                   />
-                  {errors?.areaUnderEWS && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.areaUnderEWS.message}</p>}
-                </div>
+                )}
+              />
+              {errors?.areaUnderEWS && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.areaUnderEWS.message}</p>}
+            </div>
           </LabelFieldPair>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               {`${t("Total Area Percentage (EWS)")}`} <span className="requiredField">*</span>
             </CardLabel>
-               
-            
-               
-                <div className="field">
-                  <Controller
-                    control={control}
-                    name="areaUnderEWSInPct"
-                    defaultValue=""
-                    render={(props) => (
+
+
+
+            <div className="field">
+              <Controller
+                control={control}
+                name="areaUnderEWSInPct"
+                defaultValue=""
+                render={(props) => (
                   <TextInput
                     className="form-field"
                     value={
                       parseFloat(AreaLeftForRoadWidening) > 0
-                        ? ((parseFloat(EWSArea || 0) / parseFloat(totalPlotArea-areaLeftforRoadWidning)) * 100).toFixed(2)
+                        ? ((parseFloat(EWSArea || 0) / parseFloat(totalPlotArea - areaLeftforRoadWidning)) * 100).toFixed(2)
                         : "0.00"
                     }
                     disabled={true}
                     placeholder="%"
-                  />)} 
-                  />
-                </div>
+                  />)}
+              />
+            </div>
           </LabelFieldPair>
 
           {/* Add Net Total Area field (A-B-C) - disabled/readonly */}
@@ -1691,6 +1690,27 @@ const LayoutSiteDetails = (_props) => {
                       setBuildingCategoryMain(e);
                       setSelectedBuildingCategory(e);
                       props.onChange(e);
+
+                      // Reset all dependent fields on building category change
+                      setValue("areaUnderResidentialUseInSqM", "");
+                      setValue("areaUnderResidentialUseInPct", "");
+                      setValue("areaUnderCommercialUseInSqM", "");
+                      setValue("areaUnderCommercialUseInPct", "");
+                      setValue("areaUnderInstutionalUseInSqM", "");
+                      setValue("areaUnderInstutionalUseInPct", "");
+                      setValue("residentialType", "");
+
+                      if (clearErrors) {
+                        clearErrors([
+                          "areaUnderResidentialUseInSqM",
+                          "areaUnderResidentialUseInPct",
+                          "areaUnderCommercialUseInSqM",
+                          "areaUnderCommercialUseInPct",
+                          "areaUnderInstutionalUseInSqM",
+                          "areaUnderInstutionalUseInPct",
+                          "residentialType"
+                        ]);
+                      }
                     }}
                     selected={props.value}
                     option={[
@@ -1741,7 +1761,7 @@ const LayoutSiteDetails = (_props) => {
           )}
 
           {/* Sub-category for Commercial */}
-          {(getValues("buildingCategory")?.code === "COMMERCIAL"|| buildingCategoryMain?.code === "COMMERCIAL") && (
+          {(getValues("buildingCategory")?.code === "COMMERCIAL" || buildingCategoryMain?.code === "COMMERCIAL") && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{t("BPA_BUILDING_CATEGORY_LABEL_TYPE")}</CardLabel>
               <div className="field">
@@ -1943,111 +1963,111 @@ const LayoutSiteDetails = (_props) => {
           {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
             selectedBuildingCategory?.name?.toLowerCase().includes("warehouse") ||
             selectedBuildingCategory?.name?.toLowerCase().includes("institution")) && (
-            <React.Fragment>
-              <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
-                  {`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL")}`}
-                  {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                    selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) && <span className="requiredField">*</span>}
-                </CardLabel>
-                <div className="field">
-                  <Controller
-                    control={control}
-                    name="areaUnderInstutionalUseInSqM"
-                    defaultValue=""
-                    rules={{
-                      required:
-                        selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                        selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
-                          ? t("REQUIRED_FIELD")
-                          : false,
-                      validate: (value) => {
-                        if (!value)
-                          return (
-                            !(
-                              selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                              selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
-                            ) || t("REQUIRED_FIELD")
-                          );
-                        const regex = /^\d+(\.\d{1,2})?$/;
-                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                      },
-                    }}
-                    render={(props) => (
-                      <TextInput
-                        className="form-field"
-                        value={props.value}
-                        onChange={(e) => {
-                          props.onChange(e.target.value);
-                        }}
-                        onBlur={(e) => {
-                          props.onBlur(e);
-                        }}
-                      />
+              <React.Fragment>
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">
+                    {`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL")}`}
+                    {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
+                      selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) && <span className="requiredField">*</span>}
+                  </CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name="areaUnderInstutionalUseInSqM"
+                      defaultValue=""
+                      rules={{
+                        required:
+                          selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
+                            selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
+                            ? t("REQUIRED_FIELD")
+                            : false,
+                        validate: (value) => {
+                          if (!value)
+                            return (
+                              !(
+                                selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
+                                selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
+                              ) || t("REQUIRED_FIELD")
+                            );
+                          const regex = /^\d+(\.\d{1,2})?$/;
+                          return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                        },
+                      }}
+                      render={(props) => (
+                        <TextInput
+                          className="form-field"
+                          value={props.value}
+                          onChange={(e) => {
+                            props.onChange(e.target.value);
+                          }}
+                          onBlur={(e) => {
+                            props.onBlur(e);
+                          }}
+                        />
+                      )}
+                    />
+
+                    {errors?.areaUnderInstutionalUseInSqM && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderInstutionalUseInSqM.message}</p>
                     )}
-                  />
+                  </div>
+                </LabelFieldPair>
 
-                  {errors?.areaUnderInstutionalUseInSqM && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderInstutionalUseInSqM.message}</p>
-                  )}
-                </div>
-              </LabelFieldPair>
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">
+                    {`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL")}`}
+                    {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
+                      selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) && <span className="requiredField">*</span>}
+                  </CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name="areaUnderInstutionalUseInPct"
+                      rules={{
+                        required:
+                          selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
+                            selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
+                            ? t("REQUIRED_FIELD")
+                            : false,
+                        validate: (value) => {
+                          if (!value)
+                            return (
+                              !(
+                                selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
+                                selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
+                              ) || t("REQUIRED_FIELD")
+                            );
+                          const regex = /^\d+(\.\d{1,2})?$/;
+                          const isValidFormat = regex.test(value);
+                          const isWithinRange = Number.parseFloat(value) <= 100;
+                          if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                          if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
+                          return true;
+                        },
+                      }}
+                      render={(props) => (
+                        <TextInput
+                          className="form-field"
+                          value={watchedInstitutionalPct || ""}
+                          onChange={(e) => {
+                            props.onChange(e.target.value);
+                          }}
+                          onBlur={(e) => {
+                            props.onBlur(e);
+                          }}
+                          readOnly={true}
+                          disabled={true}
+                        />
+                      )}
+                    />
 
-              <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
-                  {`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL")}`}
-                  {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                    selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) && <span className="requiredField">*</span>}
-                </CardLabel>
-                <div className="field">
-                  <Controller
-                    control={control}
-                    name="areaUnderInstutionalUseInPct"
-                    rules={{
-                      required:
-                        selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                        selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
-                          ? t("REQUIRED_FIELD")
-                          : false,
-                      validate: (value) => {
-                        if (!value)
-                          return (
-                            !(
-                              selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                              selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
-                            ) || t("REQUIRED_FIELD")
-                          );
-                        const regex = /^\d+(\.\d{1,2})?$/;
-                        const isValidFormat = regex.test(value);
-                        const isWithinRange = Number.parseFloat(value) <= 100;
-                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
-                        return true;
-                      },
-                    }}
-                    render={(props) => (
-                      <TextInput
-                        className="form-field"
-                        value={watchedInstitutionalPct || ""}
-                        onChange={(e) => {
-                          props.onChange(e.target.value);
-                        }}
-                        onBlur={(e) => {
-                          props.onBlur(e);
-                        }}
-                        readOnly={true}
-                        disabled={true}
-                      />
+                    {errors?.areaUnderInstutionalUseInPct && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderInstutionalUseInPct.message}</p>
                     )}
-                  />
-
-                  {errors?.areaUnderInstutionalUseInPct && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderInstutionalUseInPct.message}</p>
-                  )}
-                </div>
-              </LabelFieldPair>
-            </React.Fragment>
-          )}
+                  </div>
+                </LabelFieldPair>
+              </React.Fragment>
+            )}
 
           {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
             <LabelFieldPair>
@@ -2464,7 +2484,7 @@ const LayoutSiteDetails = (_props) => {
                     }}
                     readOnly={true}
                     disabled={true}
-                    
+
                   />
                 )}
               />
@@ -2573,7 +2593,7 @@ const LayoutSiteDetails = (_props) => {
           </LabelFieldPair> */}
         </div>
         <BreakLine />
-        {}
+        { }
       </div>
     </React.Fragment>
   );

@@ -431,3 +431,7 @@ a:hover {
     color: #0b0c0c;
     color: rgba(11, 12, 12, var(--text-opacity));
   }
+
+.upload-label-field-pair {
+  margin-bottom: 10px;
+}

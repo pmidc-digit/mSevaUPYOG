@@ -850,6 +850,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
               },
             }}
             feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
+            hasPayments={reciept_data?.Payments?.length > 0}
           />
         </Card>
       )}

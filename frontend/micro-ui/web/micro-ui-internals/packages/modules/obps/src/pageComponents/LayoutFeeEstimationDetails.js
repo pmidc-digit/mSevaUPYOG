@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import _ from "lodash";
 
 
-const LayoutFeeEstimationDetails = ({ formData, feeType }) => {
+const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
   const { t } = useTranslation()
   
   // Handle multiple data formats:
@@ -168,8 +168,17 @@ const LayoutFeeEstimationDetails = ({ formData, feeType }) => {
     // Ensure totalAmount is a valid number
     const finalAmount = isNaN(totalAmount) ? 0 : totalAmount;
 
-    return [{ id: "1", title: t("Layout Processing Fee"), amount: finalAmount }];
-  }, [data, t]);
+    const rows = [{ id: "1", title: t("Layout Processing Fee"), amount: finalAmount }];
+
+    rows.push({
+      id: "status",
+      title: t("BPA_STATUS_LABEL"),
+      amount: hasPayments ? t("BPA_PAID_LABEL") : t("BPA_UNPAID_LABEL"),
+      isStatus: true
+    });
+
+    return rows;
+  }, [data, t, hasPayments]);
 
   const applicationFeeColumns = [
     {
@@ -180,7 +189,10 @@ const LayoutFeeEstimationDetails = ({ formData, feeType }) => {
     {
       Header: t("LAYOUT_AMOUNT_LABEL"),
       accessor: "amount",
-      Cell: ({ value }) => {
+      Cell: ({ row, value }) => {
+        if (row.original.isStatus) {
+          return <span style={{ color: "green", fontWeight: "bold" }}>{value}</span>;
+        }
         if (value === null || value === undefined || isNaN(value)) {
           return t("CS_NA");
         }

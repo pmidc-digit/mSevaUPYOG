@@ -567,7 +567,7 @@ const NOCEmployeeApplicationOverview = () => {
   // console.log('sitePhotos', sitePhotos)
   const remainingDocs = displayData?.Documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
-  );
+  )?.filter((doc) => !!doc?.documentAttachment);
   const coordinates = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.coordinates;
   // console.log('coordinates', coordinates)
 

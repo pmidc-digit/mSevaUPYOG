@@ -1,6 +1,6 @@
 package com.cdac.esign.xmlparser;
 
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 import java.util.List;
 
 @XmlRootElement(name = "EsignResp")

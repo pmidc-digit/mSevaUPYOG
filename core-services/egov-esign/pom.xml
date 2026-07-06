@@ -5,7 +5,7 @@
 
 	<groupId>com.cdac</groupId>
 	<artifactId>eSign</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>eSign Microservice</name>
@@ -14,16 +14,14 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.0.4.RELEASE</version>
+		<version>4.0.2</version>
 		<relativePath/> 
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>1.8</java.version>
-		<jaxb-impl>2.2.7</jaxb-impl>
-		<jaxb-api>2.2.11</jaxb-api>
+		<java.version>21</java.version>
 	</properties>
 
 	<dependencies>
@@ -40,7 +38,6 @@
 		<dependency>
 		    <groupId>commons-codec</groupId>
 		    <artifactId>commons-codec</artifactId>
-		    <version>1.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
@@ -49,14 +46,12 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>javax.xml.bind</groupId>
-		    <artifactId>jaxb-api</artifactId>
-		    <version>${jaxb-api}</version>
+		    <groupId>jakarta.xml.bind</groupId>
+		    <artifactId>jakarta.xml.bind-api</artifactId>
 		</dependency>
 		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-impl</artifactId>
-		    <version>${jaxb-impl}</version>
+		    <groupId>org.glassfish.jaxb</groupId>
+		    <artifactId>jaxb-runtime</artifactId>
 		</dependency>
 		<dependency>
 		    <groupId>xml-security</groupId>
@@ -145,7 +140,6 @@
 		<dependency>
 		    <groupId>com.fasterxml.jackson.core</groupId>
 		    <artifactId>jackson-databind</artifactId>
-		    <version>2.9.6</version>
 		</dependency>
 	</dependencies>
 

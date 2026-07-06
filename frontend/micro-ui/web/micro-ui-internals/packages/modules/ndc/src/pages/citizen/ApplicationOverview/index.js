@@ -191,6 +191,7 @@ const CitizenApplicationOverview = () => {
         dueAmount: item?.dueAmount || 0,
         propertyType: item?.additionalDetails?.propertyType || "",
         remarks: item?.additionalDetails?.remarks,
+        vashikaNumber: item?.additionalDetails?.vashikaNumber,
       }));
 
       setDisplayData({ applicantData, Documents, NdcDetails });
@@ -399,6 +400,7 @@ const CitizenApplicationOverview = () => {
                       )}
                     />
                     <Row label={t("Area")} text={`${propertyDetailsFetch?.Properties?.[0]?.landArea} sq. yd.` || "N/A"} />
+                    <Row label={t("Vashika Number")} text={detail?.vashikaNumber || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city || "N/A"} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo || "N/A"} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName || "N/A"} />

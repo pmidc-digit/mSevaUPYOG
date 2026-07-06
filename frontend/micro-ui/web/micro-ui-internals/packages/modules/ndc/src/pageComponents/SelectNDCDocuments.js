@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState, useRef } from "react";
 import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast } from "@mseva/digit-ui-react-components";
 import { useSelector } from "react-redux";
 import { Loader } from "../components/Loader";
@@ -10,19 +10,24 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
   const [documents, setDocuments] = useState(formData?.documents?.documents || []);
   const [error, setError] = useState(null);
 
+  const initialized = useRef(false);
+
   useEffect(() => {
-    if (checkFormData?.responseData?.[0]?.Documents?.length || checkFormData?.DocummentDetails?.documents?.documents) {
-      const docsMap = checkFormData?.responseData?.[0]?.Documents || checkFormData?.DocummentDetails?.documents?.documents;
+    if (initialized.current) return;
 
-      // Map API response into the structure your UploadFile expects
-      const apiDocs = docsMap?.map((doc) => ({
-        documentType: doc?.documentType,
-        uuid: doc?.uuid, // 👈 key mapping
-        documentAttachment: doc?.documentAttachment, // 👈 key mapping
-        applicationId: doc?.applicationId,
-      }));
+    const docs = checkFormData?.responseData?.[0]?.Documents || checkFormData?.DocummentDetails?.documents?.documents;
 
-      setDocuments(apiDocs);
+    if (docs?.length) {
+      initialized.current = true;
+
+      setDocuments(
+        docs.map((doc) => ({
+          documentType: doc.documentType,
+          uuid: doc.uuid,
+          documentAttachment: doc.documentAttachment,
+          applicationId: doc.applicationId,
+        }))
+      );
     }
   }, [checkFormData]);
 
@@ -33,11 +38,17 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
   const ndcDocuments = data?.NDC?.Documents;
 
   const goNext = () => {
-    onSelect(config.key, { documents, ndcDocumentsLength: ndcDocuments?.length });
+    let document = formData.documents;
+    let documentStep;
+    documentStep = { ...document, documents: documents };
+    onSelect(config.key, documentStep);
+    // onSelect(config.key, { documents, ndcDocumentsLength: ndcDocuments?.length });
   };
 
   useEffect(() => {
-    goNext();
+    if (JSON.stringify(formData?.documents?.documents) !== JSON.stringify(documents)) {
+      goNext();
+    }
   }, [documents]);
 
   if (isLoading) {
@@ -76,7 +87,7 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
 };
 
 function SelectDocument({ t, document: doc, setDocuments, setError, documents, setFormError, config, formState }) {
-  const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
+  const filteredDocument = documents?.find((item) => item?.documentType === doc?.code);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [getLoader, setLoader] = useState(false);
 
@@ -88,33 +99,24 @@ function SelectDocument({ t, document: doc, setDocuments, setError, documents, s
   }
 
   useEffect(() => {
-    if (filteredDocument?.documentAttachment && !file) {
-      setUploadedFile(filteredDocument.documentAttachment);
-    }
-  }, [filteredDocument]);
+    setUploadedFile(filteredDocument?.documentAttachment || null);
+  }, [filteredDocument?.documentAttachment]);
 
   useEffect(() => {
-    if (uploadedFile) {
-      setDocuments((prev) => {
-        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
+    setDocuments((prev) => {
+      const remaining = prev.filter((item) => item.documentType !== doc.code);
 
-        if (uploadedFile?.length === 0 || uploadedFile === null) {
-          return filteredDocumentsByDocumentType;
-        }
+      if (!uploadedFile) return remaining;
 
-        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.documentAttachment !== uploadedFile);
-        return [
-          ...filteredDocumentsByFileStoreId,
-          {
-            documentType: doc?.code,
-            uuid: uploadedFile,
-            documentAttachment: uploadedFile,
-          },
-        ];
-      });
-    } else if (uploadedFile === null) {
-      setDocuments((prev) => prev.filter((item) => item?.documentType !== doc?.code));
-    }
+      return [
+        ...remaining,
+        {
+          documentType: doc.code,
+          uuid: uploadedFile,
+          documentAttachment: uploadedFile,
+        },
+      ];
+    });
   }, [uploadedFile]);
 
   useEffect(() => {

@@ -36,6 +36,8 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
       return obj;
     });
 
+    // console.log("formData", formData);
+
     const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
 
     const existingDocuments = baseApplication?.Documents || [];
@@ -62,6 +64,15 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
           })
         : uploadedDocuments;
 
+    const ndcDetails = baseApplication?.NdcDetails?.map((item) => ({
+      ...item,
+      additionalDetails: {
+        ...(item.additionalDetails || {}),
+        remarks: formData?.NDCDetails?.PropertyDetails?.remarks,
+        vashikaNumber: formData?.NDCDetails?.PropertyDetails?.vashikaNumber,
+      },
+    }));
+
     // Clone and modify workflow action
     const updatedApplication = {
       ...baseApplication,
@@ -70,7 +81,8 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
         action: actionStatus,
       },
       owners: owners,
-      NdcDetails: baseApplication?.NdcDetails,
+      // NdcDetails: baseApplication?.NdcDetails,
+      NdcDetails: ndcDetails,
       Documents: docs,
     };
 
@@ -84,6 +96,8 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
 
   const onSubmit = async (data, actionStatus) => {
     const finalPayload = mapToNDCPayload(data, actionStatus);
+    // console.log("finalPayload", finalPayload);
+
     // return;
     const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
     dispatch(resetNDCForm());

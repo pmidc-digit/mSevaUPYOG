@@ -1259,6 +1259,7 @@ const LayoutEmployeeApplicationOverview = () => {
             }}
             feeType="PAY1"
             disable={isFeeDisabled}
+            hasPayments={reciept_data?.Payments?.length > 0}
           />
         )}
       </Card>

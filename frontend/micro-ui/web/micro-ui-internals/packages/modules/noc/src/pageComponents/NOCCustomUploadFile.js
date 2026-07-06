@@ -7,6 +7,14 @@ const getRandomId = () => {
   return Math.floor((Math.random() || 1) * 139);
 };
 
+const CloseBtn = (props) => {
+  return (
+    <div className="close-btn" onClick={props.onClick}>      
+      <Close style={{ fill: "red" }}  />
+    </div>
+  );
+};
+
 const getCitizenStyles = (value) => {
   let citizenStyles = {};
   if (value == "propertyCreate") {
@@ -221,21 +229,26 @@ const NOCCustomUploadFile = (props) => {
     <Fragment>
       {showHint && <p className="cell-text">{t(props?.hintText)}</p>}
       {!props?.disabled && <div
-        className={`upload-file ${user_type === "employee" ? "" : "upload-file-max-width"} ${props.disabled ? " disabled" : ""}`}
-        style={extraStyles?.uploadFile ? extraStyles?.uploadFile : {}}
+        className={`upload-file-new upload-file-min-height ${user_type === "employee" ? "" : "upload-file-max-width"
+          } ${props.disabled ? "disabled" : ""}`}
       >
-        <div style={extraStyles ? extraStyles?.containerStyles : null}>
-          <ButtonSelector
+        <div className="upload-container-flex">
+          {/* <ButtonSelector
             theme="border"
             label={t("CS_COMMON_CHOOSE_FILE")}
             style={{ ...(extraStyles ? extraStyles?.buttonStyles : {}), ...(props.disabled ? { display: "none" } : {}) }}
             textStyles={props?.textStyles}
             type={props.buttonType}
+          /> */}
+          <SubmitBar
+            className={`upload-file-button ${props.disabled ? "upload-hidden" : ""}`}
+            // onSubmit={() => routeTo(props.uploadedFile)}
+            label={t("CS_COMMON_CHOOSE_FILE")}
           />
           {props?.uploadedFiles?.map((file, index) => {
             const fileDetailsData = file[1];
             return (
-              <div className="tag-container" style={extraStyles ? extraStyles?.tagContainerStyles : null}>
+              <div className="upload-tag-container">
                 <RemoveableTag extraStyles={extraStyles} key={index} text={file[0]} onClick={(e) => props?.removeTargetedFile(fileDetailsData, e)} />
               </div>
             );
@@ -244,18 +257,7 @@ const NOCCustomUploadFile = (props) => {
           {!props.uploadedFile || props.error ? (
             <h2 className="file-upload-status">{t("ES_NO_FILE_SELECTED_LABEL")}</h2>
           ) : (
-            <div
-              style={
-                !isMobile
-                  ? extraStyles?.tagContainerStyles
-                  : {
-                      width: "80%",
-                      display: "flex",
-                      marginBottom: "10px",
-                      justifyContent: "center",
-                    }
-              }
-            >
+            <div className="upload-tag-container">
               <SubmitBar
                 onSubmit={() => {
                   routeTo(props.uploadedFile);
@@ -264,10 +266,12 @@ const NOCCustomUploadFile = (props) => {
               />
             </div>
           )}
+          {(props.uploadedFile && props?.isRemovable) ? (
+            <CloseBtn onClick={() => props.onDelete(props.uploadedFile)} />
+          ) : null}
         </div>
         <input
-          className={props.disabled ? "disabled" : "" + "input-mirror-selector-button"}
-          style={extraStyles ? { ...extraStyles?.inputStyles, ...props?.inputStyles } : { ...props?.inputStyles }}
+          className={`upload-file-input ${props.disabled ? "upload-hidden" : ""}`}
           ref={inpRef}
           type="file"
           id={props.id || `document-${getRandomId()}`}
@@ -282,19 +286,22 @@ const NOCCustomUploadFile = (props) => {
           }}
         />
       </div>}
-      {props?.disabled && (props.uploadedFile ? 
-      <div className={`upload-file ${user_type === "employee" ? "" : "upload-file-max-width"}`} style={extraStyles?.uploadFile ? extraStyles?.uploadFile : {}}>
-        <SubmitBar
-        onSubmit={() => {
-          routeTo(props.uploadedFile);
-        }}
-        label={t("CS_VIEW_DOCUMENT")}
-      /> 
-      </div>
-      : <div className={`upload-file ${user_type === "employee" ? "" : "upload-file-max-width"} ${props.disabled ? " disabled" : ""}`} style={extraStyles?.uploadFile ? extraStyles?.uploadFile : {}}>
-        <h2 className="file-upload-status">{t("ES_NO_FILE_SELECTED_LABEL")}</h2>
-      </div>)
-      }
+      {props?.disabled && (
+            <div
+              className={`upload-file upload-file-min-height ${user_type === "employee" ? "" : "upload-file-max-width"} disabled-CustomUpload`}
+            >
+              {props.uploadedFile ? (
+                <SubmitBar
+                  onSubmit={() => routeTo(props.uploadedFile)}
+                  label={t("CS_VIEW_DOCUMENT")}
+                />
+              ) : (
+                <h2 className="file-upload-status">
+                  {t("ES_NO_FILE_SELECTED_LABEL")}
+                </h2>
+              )}
+            </div>
+          )}
       {props.iserror && <p style={{ color: "red" }}>{props.iserror}</p>}
       {props?.showHintBelow && <p className="cell-text">{t(props?.hintText)}</p>}
       {loader && <Loader page={true} />}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_PTNewApplication_FORM } from "../../redux/action/PTNewApplicationActions";
@@ -12,6 +12,8 @@ const NewPTStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const PTNewApplicationModal = Digit?.ComponentRegistryService?.getComponent("PTNewApplicationModal");
 
   const currentStepData = useSelector(function (state) {
     return state.pt.PTNewApplicationFormReducer.formData;
@@ -30,12 +32,16 @@ const NewPTStepFormOne = ({ config, onGoNext, onBackClick }) => {
     setShowToast(false);
     setError("");
   };
+  useEffect(() => {
+      setShowApplicationModal(true);
+    }, []);
 
   return (
     <React.Fragment>
       <div className="employeeCard">
         <PropertyAddressDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
         {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+        {showApplicationModal ? <PTNewApplicationModal /> : null}
       </div>
     </React.Fragment>
   );

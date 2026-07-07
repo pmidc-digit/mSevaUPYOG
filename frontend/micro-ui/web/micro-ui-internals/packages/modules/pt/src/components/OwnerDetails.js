@@ -459,10 +459,11 @@ useEffect(() => {
               {(ownerShip?.code === "INSTITUTIONALGOVERNMENT" || ownerShip?.code === "INSTITUTIONALPRIVATE") && (
                 <div style={twoColRow}>
                   <LabelFieldPair style={colItem}>
-                    <CardLabel className="card-label-smaller">{t("Designation")}</CardLabel>
+                    <CardLabel className="card-label-smaller">{t("Designation")}*</CardLabel>
                     <Controller
                       control={control}
                       name={`owners.${index}.designation`}
+                      rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                       defaultValue={item?.designation || ""}
                       render={(props) => (
                         <TextInput
@@ -472,16 +473,20 @@ useEffect(() => {
                         />
                       )}
                     />
+                    {errors?.owners?.[index]?.designation && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].designation.message}</p>
+                   )}
                   </LabelFieldPair>
                   <LabelFieldPair style={colItem}>
-                    <CardLabel className="card-label-smaller">{t("Landline Number")}</CardLabel>
+                    <CardLabel className="card-label-smaller">{t("Landline Number")}*</CardLabel>
                     <Controller
                       control={control}
                       name={`owners.${index}.altContactNumber`}
                       defaultValue={item?.altContactNumber || ""}
-                      rules={{
-                        validate: {
-                          validLandline: (v) => !v || /^\d{11}$/.test(v) || "Please enter a valid 11-digit landline number",
+                      rules={{ 
+                        required: t("CORE_COMMON_REQUIRED_ERRMSG") ,
+                        validate: { 
+                          pattern: (e) => (/^\d{10,11}$/.test(e) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) 
                         }
                       }}
                       render={(props) => (
@@ -523,13 +528,17 @@ useEffect(() => {
                 )}
               </LabelFieldPair>
               <LabelFieldPair style={colItem}>
-                <CardLabel className="card-label-smaller">{t("Address")}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("Address")}*</CardLabel>
                 <Controller
                   control={control}
                   name={`owners.${index}.address`}
+                  rules={{required: t("CORE_COMMON_REQUIRED_ERRMSG")}}
                   defaultValue={item?.address || ""}
                   render={(props) => <TextInput {...props} />}
                 />
+                {errors?.owners?.[index]?.address && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].address.message}</p>
+                  )}
               </LabelFieldPair>
               </div>
 

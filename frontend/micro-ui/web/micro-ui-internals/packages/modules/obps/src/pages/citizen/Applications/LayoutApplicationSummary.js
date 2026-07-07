@@ -650,14 +650,29 @@ const LayoutApplicationOverview = () => {
   };
 
   const convertDateToISO = (dateStr) => {
-    if (!dateStr) return "";
+  if (!dateStr) return "";
 
-    const parts = dateStr.split("-");
+  if (typeof dateStr !== "string") {
+    try {
+      return new Date(dateStr).toLocaleDateString();
+    } catch (e) {
+      return "";
+    }
+  }
 
-    // yyyy-mm-dd (already ISO)
-    if (parts[2].length === 4) {
+  const parts = dateStr.split("-");
+  if (parts.length < 3) {
+    try {
+      return new Date(dateStr).toLocaleDateString();
+    } catch (e) {
       return dateStr;
     }
+  }
+
+  // yyyy-mm-dd (already ISO)
+  if (parts[2] && parts[2].length === 4) {
+    return dateStr;
+  }
 
     // dd-mm-yyyy → yyyy-mm-dd
     const [yyyy, mm, dd,] = parts;

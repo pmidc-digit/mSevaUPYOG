@@ -107,7 +107,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         disableSortBy: true,
       },
       {
-        Header: t("Owner Name"),
+        Header: t("Primary Owner Name"),
         accessor: "owner",
         Cell: ({ row }) => {
           return row.original?.owner || "-";

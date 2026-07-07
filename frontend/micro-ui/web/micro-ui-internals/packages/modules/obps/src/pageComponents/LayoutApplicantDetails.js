@@ -873,22 +873,10 @@ const LayoutApplicantDetails = (_props) => {
                   />
               )}
               />
+              <p className="upload-file-message">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerPhoto?.message || ""}</CardLabelError>
-          <div
-            style={{
-              padding: "10px 12px",
-
-              borderRadius: "4px",
-              marginBottom: "10px",
-              marginTop: "10px",
-              display: "flex",
-              justifyContent: "end",
-            }}
-          >
-           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
           
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
             <CardLabel className="card-label-smaller">
@@ -917,23 +905,10 @@ const LayoutApplicantDetails = (_props) => {
                   />
                   )}
               />
+              <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerDocument?.message || ""}</CardLabelError>
-
-          <div
-            style={{
-              padding: "10px 12px",
-              display: "flex",
-              justifyContent: "end",
-
-              borderRadius: "4px",
-              marginBottom: "10px",
-              marginTop: "10px",
-            }}
-          >
-           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
           {/* PAN Document */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
             <CardLabel className="card-label-smaller">
@@ -962,23 +937,10 @@ const LayoutApplicantDetails = (_props) => {
                 />
                 )}
               />
+              <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.panDocumentUploadedFiles?.message || ""}</CardLabelError>
-
-          <div
-            style={{
-              padding: "10px 12px",
-              display: "flex",
-              justifyContent: "end",
-
-              borderRadius: "4px",
-              marginBottom: "10px",
-              marginTop: "10px",
-            }}
-          >
-            <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
 
           {/* PAN Number */}
           <LabelFieldPair  >
@@ -1201,22 +1163,10 @@ const LayoutApplicantDetails = (_props) => {
                             uploadMessage=""
                             accept="image/*"
                           />
+                          <p className="upload-file-message">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.photo?.message || ""}</CardLabelError>
-                     <div
-            style={{
-              padding: "10px 12px",
-
-              borderRadius: "4px",
-              marginBottom: "10px",
-              marginTop: "10px",
-              display: "flex",
-              justifyContent: "end",
-            }}
-          >
-           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
                         <CardLabel className="card-label-smaller">
@@ -1238,22 +1188,10 @@ const LayoutApplicantDetails = (_props) => {
                             uploadMessage=""
                             accept="image/*, .pdf"
                           />
+                          <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.document?.message || ""}</CardLabelError>
-                      <div
-            style={{
-              padding: "10px 12px",
-
-              borderRadius: "4px",
-              marginBottom: "10px",
-              marginTop: "10px",
-              display: "flex",
-              justifyContent: "end",
-            }}
-          >
-           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
 
                       {/* PAN Number */}
 
@@ -1278,22 +1216,10 @@ const LayoutApplicantDetails = (_props) => {
                             uploadMessage=""
                             accept="image/*, .pdf"
                           />
+                          <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.panDocument?.message || ""}</CardLabelError>
-                      <div
-            style={{
-              padding: "10px 12px",
-
-              borderRadius: "4px",
-              marginBottom: "10px",
-              marginTop: "10px",
-              display: "flex",
-              justifyContent: "end",
-            }}
-          >
-           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
 
                       <LabelFieldPair  >
                         <CardLabel className="card-label-smaller">

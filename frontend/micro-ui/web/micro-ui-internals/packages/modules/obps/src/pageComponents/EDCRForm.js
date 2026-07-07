@@ -73,11 +73,14 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     ulb,
     uploadMessage,
     uploadedFile,
+    roadType,
+    selectRoadType
   } = useEDCRForm({ formData });
   let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId(); 
   const { data: cities } = Digit.Hooks.useTenants();
 
   const stateId = Digit.ULBService.getStateId();
+  const { data: roadTypeOptions, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
   console.log(stateId, tenantId, t, "TEN STATE");
 
   let validation = {};
@@ -180,6 +183,7 @@ useEffect(() => {
     data.cluApprove = cluApprove;
     data.purchasableFar = purchasableFar;
     data.layoutFile = layoutFile;
+    data.roadType = roadType;
 
     if (areaType?.code === "SCHEME_AREA") {
       data.coreArea = "NO";
@@ -190,7 +194,7 @@ useEffect(() => {
     onSelect(config.key, data);
   };
 
-  if (isLoading ) {
+  if (isLoading || isRoadTypeLoading) {
     return <Loader />;
   }
   // if(isSubmitBtnDisable){
@@ -330,6 +334,12 @@ useEffect(() => {
                 <CardLabel>{t("EDCR_IS_PURCHASABLEFAR")}</CardLabel>
                 <Dropdown t={t} isMandatory={true} option={purchasableFarOptions} selected={purchasableFar} optionKey="value" select={setPurchasableFar} />
               </React.Fragment>
+
+        
+          <React.Fragment>
+            <CardLabel>{t("BPA_ROAD_TYPE")}</CardLabel>
+            <Dropdown t={t} isMandatory={true} option={roadTypeOptions} selected={roadType} optionKey="name" select={selectRoadType} />
+          </React.Fragment>
 
         {approvedCS?.code !== "YES" && (
           <React.Fragment>

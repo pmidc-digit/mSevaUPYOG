@@ -292,6 +292,22 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
       };
     });
 
+    const getRank = (taxHeadCode) => {
+      const code = taxHeadCode || "";
+
+      if (code === "LAYOUT_LAYOUT_FEE") return 1;
+      if (code === "LAYOUT_UDC_FEE") return 2;
+      if (code === "LAYOUT_EDC_FEE") return 3;
+      if (code === "LAYOUT_PF_FEE") return 4;
+      if (code === "LAYOUT_CLU_FEE") return 5;
+      if (code === "LAYOUT_OTHERCHARGES1_FEE") return 6;
+      if (code === "LAYOUT_OTHERCHARGES2_FEE") return 7;
+
+      return 100;
+    };
+
+    rows.sort((a, b) => getRank(a.taxHeadCode) - getRank(b.taxHeadCode));
+
     const totalAmount = rows.reduce((acc, item) => acc + (item.adjustedAmount || 0), 0);
 
     return [

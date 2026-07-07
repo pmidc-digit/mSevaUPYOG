@@ -178,11 +178,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   };
 
   const handlePropertySelect = (property) => {
-    console.log("comgere");
-
     if (!property) return;
-
-    console.log("property", property);
 
     const findPropertySpecific = propertySpecificOptions?.find((item) => item?.code == property?.propertyType);
     const findlocationTypeOptions = locationTypeOptions?.find((item) => item?.code == property?.locationType);
@@ -233,8 +229,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       return acc;
     }, {});
 
-    console.log("propertyDetails", propertyDetails);
-
     propertyDetails["propertyId"] = propertyDetails?.selectedProperty?.propertyId;
 
     // Dispatch to Redux under one key
@@ -243,18 +237,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     goNext(propertyDetails);
   };
 
-  const applicationType = watch("applicationType");
-
   useEffect(() => {
-    console.log("currentStepData", currentStepData);
-
     if (currentStepData?.propertyDetails) {
-      console.log("currentStepData?.propertyDetails", currentStepData?.propertyDetails);
-      console.log("securityDeposit", currentStepData?.propertyDetails?.securityDeposit);
       setValue("securityDeposit", currentStepData?.propertyDetails?.securityDeposit);
-      // setValue("duration", currentStepData?.propertyDetails?.duration);
-      // setValue("endDate", currentStepData?.propertyDetails?.endDate);
-
       const propertyDetails = currentStepData.propertyDetails;
 
       Object.keys(propertyDetails)?.forEach((key) => {
@@ -311,8 +296,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
       setValue("duration", durationText, { shouldValidate: true });
     } else {
-      console.log("yes here coming");
-
       setValue("duration", "", { shouldValidate: false });
     }
   }, [watch("startDate"), watch("endDate")]);
@@ -528,12 +511,25 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
               control={control}
               name="startDate"
               rules={{
-                required: t("PTR_FIELD_REQUIRED"),
+                required: watch("applicationType")?.code !== "Legacy" ? t("PTR_FIELD_REQUIRED") : false,
                 validate: (value) => {
+                  // Skip validation for Legacy
+                  if (watch("applicationType")?.code === "Legacy") {
+                    return true;
+                  }
+
                   if (!value) return t("PTR_FIELD_REQUIRED");
+
                   const chosen = new Date(value);
                   const today = new Date(todayISO);
-                  if (chosen > today) return t("RAL_START_DATE_CANNOT_BE_FUTURE");
+
+                  if (chosen > today) {
+                    return t("RAL_START_DATE_CANNOT_BE_FUTURE");
+                  }
+                  // if (!value) return t("PTR_FIELD_REQUIRED");
+                  // const chosen = new Date(value);
+                  // const today = new Date(todayISO);
+                  // if (chosen > today) return t("RAL_START_DATE_CANNOT_BE_FUTURE");
                   return true;
                 },
               }}

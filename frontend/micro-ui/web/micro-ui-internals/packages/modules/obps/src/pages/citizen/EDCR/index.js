@@ -106,6 +106,10 @@ const CreateEDCR = ({ parentRoute }) => {
     const transactionNumber = uuidv4();
     const appliactionType = "BUILDING_PLAN_SCRUTINY";
     const applicationSubType = "NEW_CONSTRUCTION";
+    const additionalDetails = {
+      roadType: data?.roadType?.name || null,
+      source: "OBPAS"
+    };
 
     console.log("tenantIdInEDCR", tenantId);
     console.log("tenantIdInEDCR-DATA", data);
@@ -126,6 +130,7 @@ const CreateEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, schemeArea };
     edcrRequest = { ...edcrRequest, cluApprove };
     edcrRequest = {...edcrRequest, purchasableFar};
+    edcrRequest = {...edcrRequest, additionalDetails};
 
     console.log("tenantIdInEDCR-Request", edcrRequest);
 

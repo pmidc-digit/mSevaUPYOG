@@ -1235,15 +1235,15 @@ const LayoutSiteDetails = (_props) => {
                 control={control}
                 name="vasikaNumber"
                 defaultValue=""
-                rules={{
+                   rules={{
                   required: t("REQUIRED_FIELD"),
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
                   maxLength: {
-                    value: 15,
-                    message: "Vasika number should not exceed 15 digits",
-                  },
-                  pattern: {
-                    value: /^[0-9]{1,15}$/,
-                    message: "Vasika number should be numeric only and max 15 digits",
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
                   },
                 }}
                 render={(props) => (

@@ -235,6 +235,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
     ownerTypesMenu.sort(function (a, b) { return a.order - b.order; });
   }
   const isIndividualTypeOwner = useMemo(() => formData?.ownershipCategory?.code?.includes("INDIVIDUAL"), [formData?.ownershipCategory?.code]);
+    
 
   // const institutionTypeMenu = useMemo(() => {
   //   const code = formData?.ownershipCategory?.code;

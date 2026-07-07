@@ -214,7 +214,7 @@ const CitizenApplicationOverview = () => {
       const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
       const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
       const propertyOwnerMobiles = owners.map((owner) => owner?.mobileNumber).filter(Boolean);
-
+      const vasikaNo = displayData?.NdcDetails?.find((item) => item?.businessService === "NDC_PROPERTY_TAX")?.vashikaNumber|| propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.vasikaNo;
       Property.propertyOwnerNames = propertyOwnerNames;
       Property.propertyOwnerMobiles = propertyOwnerMobiles;
       const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea;
@@ -235,7 +235,8 @@ const CitizenApplicationOverview = () => {
           empData,
           approverStatement,
           landArea,
-          approverComment
+          approverComment,
+          vasikaNo
         );
       }
       console.log("acknowledgementData", acknowledgementData);

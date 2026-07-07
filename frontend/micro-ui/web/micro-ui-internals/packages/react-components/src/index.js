@@ -53,6 +53,7 @@ import MultiLink from "./atoms/MultiLink";
 import MultiSelectDropdown from "./atoms/MultiSelectDropdown";
 import NavBar from "./atoms/NavBar";
 import OTPInput from "./atoms/OTPInput";
+import OTPVerifier from "./atoms/OTPVerifier";
 import PopUp from "./atoms/PopUp";
 import { PrivateRoute } from "./atoms/PrivateRoute";
 import RadioButtons from "./atoms/RadioButtons";
@@ -276,6 +277,7 @@ export {
   Rating,
   CheckBox,
   OTPInput,
+  OTPVerifier,
   LocationSearch,
   UploadFile,
   UploadImages,

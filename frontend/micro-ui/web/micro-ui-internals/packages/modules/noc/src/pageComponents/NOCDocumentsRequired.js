@@ -68,19 +68,19 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
 
   console.log("filteredDocuments", filteredDocuments);
 
-  useEffect(() => {
-    setDocuments((prev) => {
-      const arr = Array.isArray(prev) ? prev : [];
-      const hasAuth = arr.some((d) => d.documentType === "OWNER.AUTHORIZATIONLETTER");
-      if (isFirm && !hasAuth) {
-        return [...arr, { documentType: "OWNER.AUTHORIZATIONLETTER", filestoreId: "", documentUid: "", documentAttachment: "" }];
-      } else if (!isFirm && hasAuth) {
-        return arr.filter((d) => d.documentType !== "OWNER.AUTHORIZATIONLETTER");
-      }
+  // useEffect(() => {
+  //   setDocuments((prev) => {
+  //     const arr = Array.isArray(prev) ? prev : [];
+  //     const hasAuth = arr.some((d) => d.documentType === "OWNER.AUTHORIZATIONLETTER");
+  //     if (isFirm && !hasAuth) {
+  //       return [...arr, { documentType: "OWNER.AUTHORIZATIONLETTER", filestoreId: "", documentUid: "", documentAttachment: "" }];
+  //     } else if (!isFirm && hasAuth) {
+  //       return arr.filter((d) => d.documentType !== "OWNER.AUTHORIZATIONLETTER");
+  //     }
 
-      return arr;
-    });
-  }, [isFirm]);
+  //     return arr;
+  //   });
+  // }, [isFirm]);
 
   const handleSubmit = () => {
     let document = formData.documents;
@@ -281,28 +281,55 @@ function PTRSelectDocument({
   const [getLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (selectedDocument?.code) {
-      setDocuments((prev) => {
-        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
-
-        if (uploadedFile?.length === 0 || uploadedFile === null) {
-          return filteredDocumentsByDocumentType;
+      // if (selectedDocument?.code) {
+        if(uploadedFile){
+        setDocuments((prev) => {
+          const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
+          const selectedDoc = documents?.find((item) => item?.documentType === doc?.code);
+  
+          if (uploadedFile === null) {
+            return filteredDocumentsByDocumentType;
+          }
+  
+          const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
+          return [
+            ...filteredDocumentsByFileStoreId,
+            {
+              ...selectedDoc,
+              documentType: doc?.code,
+              filestoreId: uploadedFile,
+              documentUid: uploadedFile,
+              documentAttachment: uploadedFile,
+              order: doc?.order,
+            },
+          ];
+        });
+        }else if(uploadedFile === ""){
+          console.log("uploadedFile is empty string, removing document from state", uploadedFile);
+          const selectedDoc = documents?.find((item) => item?.documentType === doc?.code);
+          if(!selectedDoc?.uuid){
+            setDocuments((prev) => prev.filter((item) => item?.documentType !== doc?.code));
+          }else{
+            setDocuments((prev) => {
+          const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
+  
+          const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
+          return [
+            ...filteredDocumentsByFileStoreId,
+            {
+              ...selectedDoc,
+              documentType: doc?.code,
+              filestoreId: "",
+              documentUid: "",
+              documentAttachment: "",
+              order: doc?.order,
+            },
+          ];
+        });
+          }
         }
-
-        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
-        return [
-          ...filteredDocumentsByFileStoreId,
-          {
-            documentType: selectedDocument?.code,
-            filestoreId: uploadedFile,
-            documentUid: uploadedFile,
-            documentAttachment: uploadedFile,
-            order: doc?.order,
-          },
-        ];
-      });
-    }
-  }, [uploadedFile, selectedDocument]);
+      // }
+    }, [uploadedFile]);
 
   useEffect(() => {
     if (documents?.length > 0) {
@@ -434,7 +461,7 @@ function PTRSelectDocument({
               id={"noc-doc"}
               onUpload={selectfile}
               onDelete={() => {
-                setUploadedFile(null);
+                setUploadedFile("");
               }}
               uploadedFile={uploadedFile}
               message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
@@ -447,7 +474,7 @@ function PTRSelectDocument({
               id={"noc-doc"}
               onUpload={selectfile}
               onDelete={() => {
-                setUploadedFile(null);
+                setUploadedFile("");
               }}
               uploadedFile={uploadedFile}
               message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}

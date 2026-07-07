@@ -99,7 +99,7 @@ public class BillGeneratorDao {
 	
 	/**
 	 * executes query to update bill scheduler status 
-	 * @param billIds
+//	 * @param billIds
 	 */
 	public void updateBillSchedularStatus(String schedulerId, StatusEnum status) {
 

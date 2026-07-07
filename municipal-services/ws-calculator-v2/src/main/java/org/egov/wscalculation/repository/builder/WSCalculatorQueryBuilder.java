@@ -304,7 +304,7 @@ public class WSCalculatorQueryBuilder {
 	/**
 	 * Bill expire query builder
 	 * 
-	 * @param billIds
+//	 * @param billIds
 	 * @param preparedStmtList
 	 */
 	public String getBillSchedulerUpdateQuery(String schedulerId, List<Object> preparedStmtList) {
@@ -355,7 +355,7 @@ public class WSCalculatorQueryBuilder {
 		return query.toString();
 	}
 
-	public String getConnectionNumberList(String tenantId, String connectionType, String status, Long taxPeriodFrom,
+	public String getConnectionNumberList(String tenantId, String locality, String connectionType, String status, Long taxPeriodFrom,
 			Long taxPeriodTo, String cone, List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(connectionNoListQuery);
 
@@ -380,6 +380,11 @@ public class WSCalculatorQueryBuilder {
 		query.append(" conn.tenantid = ? ");
 		preparedStatement.add(tenantId);
 
+        if (locality != null) {
+            addClauseIfRequired(preparedStatement, query);
+            query.append(" conn.locality = ? ");
+            preparedStatement.add(locality);
+        }
 //		 Test with connection number
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" conn.connectionno = '0603000900' ");
@@ -436,6 +441,7 @@ public class WSCalculatorQueryBuilder {
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" conn.tenantid = ? ");
 		preparedStatement.add(tenantId);
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" conn.connectionno is not null");
 
@@ -686,7 +692,7 @@ public class WSCalculatorQueryBuilder {
 	}
 
 	/**
-	 * @param billIds
+//	 * @param billIds
 	 * @param preparedStmtList
 	 * @param builder
 	 */

@@ -313,6 +313,7 @@ const ApplicationOverview = () => {
       console.log("propertyOwnerNames", propertyOwnerNames);
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
+      const vasikaNo = displayData?.NdcDetails?.find((item) => item?.businessService === "NDC_PROPERTY_TAX")?.vashikaNumber || propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.vasikaNo;
       let acknowledgementData;
 
       if (empData) {
@@ -326,7 +327,8 @@ const ApplicationOverview = () => {
           empData,
           approverStatement,
           landArea,
-          approverComment
+          approverComment,
+          vasikaNo
         );
       }
       setTimeout(() => {

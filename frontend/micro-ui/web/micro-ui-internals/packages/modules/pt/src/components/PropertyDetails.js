@@ -113,7 +113,6 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
 
 
-
   useEffect(() => {
     if (PropertyTypeData) {
       const checkPropertyTypeData = PropertyTypeData?.PropertyTax?.PropertyType?.filter((item) => item?.code != "BUILTUP");

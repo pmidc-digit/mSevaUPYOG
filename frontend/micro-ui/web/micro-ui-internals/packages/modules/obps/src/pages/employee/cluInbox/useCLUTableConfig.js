@@ -47,8 +47,31 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
         Cell: ({ row }) => (row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), "dd/MM/yyyy")) : ""),
       },
       {
+        Header: t("CS_APPLICATION_DETAILS_SUBMISSION_DATE"),
+        accessor: "submissionDate",
+        Cell: ({ row }) => {
+          const value = Number(row.original?.submissionDate);
+
+          return Number.isFinite(value) ? GetCell(format(new Date(value), "dd/MM/yyyy")) : "-";
+        },
+        disableSortBy: true,
+      },
+      {
+        Header: t("CS_APPLICATION_DETAILS_APPROVAL_DATE"),
+        accessor: "approvalDate",
+        Cell: ({ row }) => {
+          return row.original?.["approvalDate"] ? GetCell(format(new Date(row.original?.["approvalDate"]), "dd/MM/yyyy")) : "-";
+        },
+        disableSortBy: true,
+      },
+      {
         Header: t("BPA_PRIMARY_OWNER_NAME_LABEL"),
         accessor: (row) => t(`${row?.owner}`),
+        disableSortBy: true,
+      },
+      {
+        Header: t("CATEGORY"),
+        accessor: (row) => row?.category,
         disableSortBy: true,
       },
       {
@@ -60,6 +83,21 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
         Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
         // accessor: (row) => t(row?.status),
         accessor: (row) => t(`BPA_STATUS_${row?.status}`),
+        disableSortBy: true,
+      },
+      {
+        Header: t("ZONE"),
+        accessor: (row) => t(row?.zone),
+        disableSortBy: true,
+      },
+      {
+        Header: t("BPA_SEARCH_APPLICATION_TYPE_LABEL"),
+        accessor: (row) => t(row?.applicationType),
+        disableSortBy: true,
+      },
+      {
+        Header: t("TIME_TAKEN"),
+        accessor: (row) => row?.sla,
         disableSortBy: true,
       },
     ];

@@ -178,6 +178,8 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   };
 
   const handlePropertySelect = (property) => {
+    console.log("comgere");
+
     if (!property) return;
 
     console.log("property", property);
@@ -241,11 +243,22 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     goNext(propertyDetails);
   };
 
+  const applicationType = watch("applicationType");
+
   useEffect(() => {
+    console.log("currentStepData", currentStepData);
+
     if (currentStepData?.propertyDetails) {
+      console.log("currentStepData?.propertyDetails", currentStepData?.propertyDetails);
+      console.log("securityDeposit", currentStepData?.propertyDetails?.securityDeposit);
+      setValue("securityDeposit", currentStepData?.propertyDetails?.securityDeposit);
+      // setValue("duration", currentStepData?.propertyDetails?.duration);
+      // setValue("endDate", currentStepData?.propertyDetails?.endDate);
+
       const propertyDetails = currentStepData.propertyDetails;
 
       Object.keys(propertyDetails)?.forEach((key) => {
+        if (key === "securityDeposit" || key === "duration") return; // Skip this field
         setValue(key, propertyDetails[key], { shouldValidate: true });
       });
 
@@ -298,6 +311,8 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
       setValue("duration", durationText, { shouldValidate: true });
     } else {
+      console.log("yes here coming");
+
       setValue("duration", "", { shouldValidate: false });
     }
   }, [watch("startDate"), watch("endDate")]);
@@ -354,7 +369,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <CardSectionHeader className="card-section-header">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSectionHeader>
-
       {/* application Type */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
@@ -378,7 +392,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         />
       </LabelFieldPair>
       {errors.applicationType && <CardLabelError className="ral-error-label">{getErrorMessage("applicationType")}</CardLabelError>}
-
       {/* Allotment Type */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
@@ -394,7 +407,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         />
       </LabelFieldPair>
       {errors.propertyType && <CardLabelError className="ral-error-label">{getErrorMessage("propertyType")}</CardLabelError>}
-
       {/* Building/Plot/Shop Area */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
@@ -423,7 +435,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         />
       </LabelFieldPair>
       {errors.area && <CardLabelError className="ral-error-label">{getErrorMessage("area")}</CardLabelError>}
-
       {/* Building/Plot/Shop Name Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
@@ -452,7 +463,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         />
       </LabelFieldPair>
       {errors.propertyName && <CardLabelError className="ral-error-label">{getErrorMessage("propertyName")}</CardLabelError>}
-
       {/* Building/Plot/Shop Specific Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
@@ -468,7 +478,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         />
       </LabelFieldPair>
       {errors.propertySpecific && <CardLabelError className="ral-error-label">{getErrorMessage("propertySpecific")}</CardLabelError>}
-
       {/* Location Type Dropdown */}
       {/* <LabelFieldPair>
         <CardLabel className="card-label-smaller">
@@ -484,7 +493,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         />
       </LabelFieldPair>
       {errors.locationType && <CardLabelError className="ral-error-label">{getErrorMessage("locationType")}</CardLabelError>} */}
-
       {/* Property ID */}
       {/* <LabelFieldPair>
         <CardLabel className="card-label-smaller">
@@ -502,118 +510,125 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         </div>
       </LabelFieldPair>
       {errors.propertyId && <CardLabelError className="ral-error-label">{getErrorMessage("propertyId")}</CardLabelError>} */}
-
       {/* Hidden field for selected property */}
       <Controller control={control} name="selectedProperty" render={() => null} />
-
       {/* Start Date */}
-      {watch("applicationType")?.code != "Legacy" && (
-        <React.Fragment>
-          <LabelFieldPair>
-            <CardLabel>
-              {t("RAL_START_DATE")} <span className="mandatory-asterisk">*</span>
-            </CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name="startDate"
-                rules={{
-                  required: t("PTR_FIELD_REQUIRED"),
-                  validate: (value) => {
-                    if (!value) return t("PTR_FIELD_REQUIRED");
-                    const chosen = new Date(value);
-                    const today = new Date(todayISO);
-                    if (chosen > today) return t("RAL_START_DATE_CANNOT_BE_FUTURE");
-                    return true;
-                  },
-                }}
-                render={({ value, onChange }) => (
+      {/* {watch("applicationType")?.code != "Legacy" && ( */}
+      <div
+        style={{
+          display: watch("applicationType")?.code === "Legacy" ? "none" : "block",
+        }}
+      >
+        <LabelFieldPair>
+          <CardLabel>
+            {t("RAL_START_DATE")} <span className="mandatory-asterisk">*</span>
+          </CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="startDate"
+              rules={{
+                required: t("PTR_FIELD_REQUIRED"),
+                validate: (value) => {
+                  if (!value) return t("PTR_FIELD_REQUIRED");
+                  const chosen = new Date(value);
+                  const today = new Date(todayISO);
+                  if (chosen > today) return t("RAL_START_DATE_CANNOT_BE_FUTURE");
+                  return true;
+                },
+              }}
+              render={({ value, onChange }) => (
+                <TextInput
+                  type="date"
+                  max={todayISO}
+                  value={value || ""}
+                  onChange={(e) => {
+                    const newStart = e.target.value;
+                    onChange(newStart);
+
+                    // ✅ Prefill End Date = Start Date + 11 months
+                    if (newStart) {
+                      const startDateObj = new Date(newStart);
+                      const prefillEnd = new Date(startDateObj);
+                      prefillEnd.setMonth(prefillEnd.getMonth() + 11);
+
+                      // format YYYY-MM-DD
+                      const prefillISO = prefillEnd.toISOString().split("T")[0];
+                      setValue("endDate", prefillISO, { shouldValidate: true });
+                    }
+                  }}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.startDate && <CardLabelError className="ral-error-label">{getErrorMessage("startDate")}</CardLabelError>}
+
+        {/* End Date */}
+        <LabelFieldPair>
+          <CardLabel>{t("RAL_END_DATE")}</CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="endDate"
+              rules={{
+                validate: (value) => {
+                  if (!value) return true; // optional
+                  const start = watch("startDate");
+                  if (!start) return t("PTR_START_DATE_REQUIRED");
+
+                  const startDate = new Date(start);
+                  const endDate = new Date(value);
+
+                  if (endDate <= startDate) return t("PTR_END_DATE_AFTER_START");
+
+                  // ✅ Must be at least 11 months after Start Date
+                  const minEnd = new Date(startDate);
+                  minEnd.setMonth(minEnd.getMonth() + 11);
+                  if (endDate < minEnd) return t("PTR_MIN_DURATION_11_MONTHS");
+
+                  return true;
+                },
+              }}
+              render={({ value, onChange }) => {
+                const start = watch("startDate");
+                let minEndISO = todayISO;
+                if (start) {
+                  const minEnd = new Date(start);
+                  minEnd.setMonth(minEnd.getMonth() + 11);
+                  minEndISO = minEnd.toISOString().split("T")[0];
+                }
+
+                return (
                   <TextInput
                     type="date"
-                    max={todayISO}
+                    min={minEndISO} // ✅ restrict selectable dates
                     value={value || ""}
-                    onChange={(e) => {
-                      const newStart = e.target.value;
-                      onChange(newStart);
-
-                      // ✅ Prefill End Date = Start Date + 11 months
-                      if (newStart) {
-                        const startDateObj = new Date(newStart);
-                        const prefillEnd = new Date(startDateObj);
-                        prefillEnd.setMonth(prefillEnd.getMonth() + 11);
-
-                        // format YYYY-MM-DD
-                        const prefillISO = prefillEnd.toISOString().split("T")[0];
-                        setValue("endDate", prefillISO, { shouldValidate: true });
-                      }
-                    }}
+                    onChange={(e) => onChange(e.target.value)}
                   />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors.startDate && <CardLabelError className="ral-error-label">{getErrorMessage("startDate")}</CardLabelError>}
-
-          {/* End Date */}
-          <LabelFieldPair>
-            <CardLabel>{t("RAL_END_DATE")}</CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name="endDate"
-                rules={{
-                  validate: (value) => {
-                    if (!value) return true; // optional
-                    const start = watch("startDate");
-                    if (!start) return t("PTR_START_DATE_REQUIRED");
-
-                    const startDate = new Date(start);
-                    const endDate = new Date(value);
-
-                    if (endDate <= startDate) return t("PTR_END_DATE_AFTER_START");
-
-                    // ✅ Must be at least 11 months after Start Date
-                    const minEnd = new Date(startDate);
-                    minEnd.setMonth(minEnd.getMonth() + 11);
-                    if (endDate < minEnd) return t("PTR_MIN_DURATION_11_MONTHS");
-
-                    return true;
-                  },
-                }}
-                render={({ value, onChange }) => {
-                  const start = watch("startDate");
-                  let minEndISO = todayISO;
-                  if (start) {
-                    const minEnd = new Date(start);
-                    minEnd.setMonth(minEnd.getMonth() + 11);
-                    minEndISO = minEnd.toISOString().split("T")[0];
-                  }
-
-                  return (
-                    <TextInput
-                      type="date"
-                      min={minEndISO} // ✅ restrict selectable dates
-                      value={value || ""}
-                      onChange={(e) => onChange(e.target.value)}
-                    />
-                  );
-                }}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors.endDate && <CardLabelError className="ral-error-label">{getErrorMessage("endDate")}</CardLabelError>}
-        </React.Fragment>
-      )}
+                );
+              }}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.endDate && <CardLabelError className="ral-error-label">{getErrorMessage("endDate")}</CardLabelError>}
+      </div>
+      {/* )} */}
       {/* Duration (optional, auto-filled) */}
-      {watch("applicationType")?.code != "Legacy" && (
+      {/* {watch("applicationType")?.code != "Legacy" && ( */}
+      <div
+        style={{
+          display: watch("applicationType")?.code === "Legacy" ? "none" : "block",
+        }}
+      >
         <LabelFieldPair>
           <CardLabel>{t("DURATION")}</CardLabel>
           <div className="form-field">
             <Controller control={control} name="duration" render={({ value }) => <TextInput type="text" value={value || ""} disabled={true} />} />
           </div>
         </LabelFieldPair>
-      )}
-
+      </div>
+      {/* )} */}
       {/* Rent Amount */}
       <LabelFieldPair>
         <CardLabel>
@@ -629,7 +644,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         </div>
       </LabelFieldPair>
       {errors.baseRent && <CardLabelError className="ral-error-label">{getErrorMessage("baseRent")}</CardLabelError>}
-
       {/* Penalty Type */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
@@ -647,29 +661,31 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         </div>
       </LabelFieldPair>
       {errors.penaltyType && <CardLabelError>{getErrorMessage("penaltyType")}</CardLabelError>}
-
       {/* Security Amount */}
-      {watch("applicationType")?.code != "Legacy" && (
-        <React.Fragment>
-          <LabelFieldPair>
-            <CardLabel>
-              {t("RAL_SECURITY_AMOUNT")} <span className="mandatory-asterisk">*</span>
-            </CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name="securityDeposit"
-                rules={{ required: t("PTR_FIELD_REQUIRED") }}
-                render={({ value, onChange }) => (
-                  <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors.securityDeposit && <CardLabelError className="ral-error-label">{getErrorMessage("securityDeposit")}</CardLabelError>}
-        </React.Fragment>
-      )}
-
+      {/* {watch("applicationType")?.code != "Legacy" && ( */}
+      <div
+        style={{
+          display: watch("applicationType")?.code === "Legacy" ? "none" : "block",
+        }}
+      >
+        <LabelFieldPair>
+          <CardLabel>
+            {t("RAL_SECURITY_AMOUNT")} <span className="mandatory-asterisk">*</span>
+          </CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="securityDeposit"
+              rules={{ required: t("PTR_FIELD_REQUIRED") }}
+              render={({ value, onChange }) => (
+                <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.securityDeposit && <CardLabelError className="ral-error-label">{getErrorMessage("securityDeposit")}</CardLabelError>}
+      </div>
+      {/* )} */}
       {watch("applicationType")?.code == "Legacy" && (
         <React.Fragment>
           <LabelFieldPair>
@@ -897,7 +913,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
           </div>
         </React.Fragment>
       )}
-
       {/* Action Bar */}
       <ActionBar>
         <SubmitBar label={t("Back")} className="ral-back-btn" onSubmit={onGoBack} />

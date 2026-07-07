@@ -113,7 +113,6 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
 
 
-
   useEffect(() => {
     if (PropertyTypeData) {
       const checkPropertyTypeData = PropertyTypeData?.PropertyTax?.PropertyType?.filter((item) => item?.code != "BUILTUP");
@@ -652,7 +651,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                         
                         var rowOptions = unitCode
                           ? getUsageOptionsByCode(unitCode)
-                          : getSubUsageData;
+                          : getSubUsageData?.filter((o) => o.code !== "MIXED");
                         console.log("rowOptions", rowOptions)
                         var selectedCode = props.value?.code || props.value;
                         var selectedValue = rowOptions?.find((o) => o.code === selectedCode) || props.value;

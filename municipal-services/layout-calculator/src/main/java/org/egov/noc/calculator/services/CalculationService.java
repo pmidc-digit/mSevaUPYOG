@@ -114,7 +114,7 @@ public class CalculationService {
 					basementArea = new BigDecimal(siteDetails.getOrDefault("basementArea", "0").toString().trim());
 				if(siteDetails.get("buildingCategory") != null) {
 					LinkedHashMap<String, Object> buildingCategory = (LinkedHashMap<String, Object>) siteDetails.get("buildingCategory");
-					category = (String) buildingCategory.get("name");
+					category = (String) buildingCategory.get("code");
 				}
 				if(siteDetails.get("typeOfApplication") != null) {
 					landType = siteDetails.getOrDefault("typeOfApplication", "PROPOSED").toString();
@@ -224,15 +224,28 @@ public class CalculationService {
 
 				break;
 			case LAYOUTConstants.NOC_CLU_CHARGES:
+			case "LAYOUT_CLU_FEE":
 				if(chargesType.containsKey("slabs")) {
 					Map<String,Double> slabAmountMap = ((List<Map<String, Object>>)chargesType.get("slabs")).stream()
-							.collect(Collectors.toMap(slab -> slab.get("roadType").toString(), slab -> (Double)slab.get("rate")));
-					Double cluSlabAmount = slabAmountMap.containsKey(roadType) ? slabAmountMap.get(roadType) : slabAmountMap.get("Other Road");
+							.collect(Collectors.toMap(slab -> slab.get("roadType").toString().toUpperCase().replace(" ", "_"), slab -> (Double)slab.get("rate")));
+					String searchRoadType = roadType != null ? roadType.toUpperCase().replace(" ", "_") : "OTHER_ROAD";
+					Double cluSlabAmount = slabAmountMap.containsKey(searchRoadType) ? slabAmountMap.get(searchRoadType) : slabAmountMap.get("OTHER_ROAD");
+					if (cluSlabAmount == null) {
+						cluSlabAmount = 0.0;
+					}
 					amount = BigDecimal.valueOf(cluSlabAmount).multiply(plotArea).setScale(0, RoundingMode.HALF_UP);
 				}
 				break;
 			case LAYOUTConstants.NOC_EXTERNAL_DEVELOPMENT_CHARGES:
 				amount=rate.multiply(builtUpArea).setScale(0, RoundingMode.HALF_UP);
+				break;
+			case "LAYOUT_EDC_FEE":
+			case "LAYOUT_PF_FEE":
+			case "LAYOUT_LAYOUT_FEE":
+			case "LAYOUT_UDC_FEE":
+			case "LAYOUT_OTHERCHARGES1_FEE":
+			case "LAYOUT_OTHERCHARGES2_FEE":
+				amount = rate.multiply(plotArea).setScale(0, RoundingMode.HALF_UP);
 				break;
 
 

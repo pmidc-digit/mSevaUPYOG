@@ -651,10 +651,25 @@ const [viewTimeline, setViewTimeline] = useState(false);
   const convertDateToISO = (dateStr) => {
   if (!dateStr) return "";
 
+  if (typeof dateStr !== "string") {
+    try {
+      return new Date(dateStr).toLocaleDateString();
+    } catch (e) {
+      return "";
+    }
+  }
+
   const parts = dateStr.split("-");
+  if (parts.length < 3) {
+    try {
+      return new Date(dateStr).toLocaleDateString();
+    } catch (e) {
+      return dateStr;
+    }
+  }
 
   // yyyy-mm-dd (already ISO)
-  if (parts[2].length === 4) {
+  if (parts[2] && parts[2].length === 4) {
     return dateStr;
   }
 

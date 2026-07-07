@@ -69,7 +69,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         },
       },
       {
-        Header: t("Owner Name"),
+        Header: t("Primary Owner Name"),
         accessor: "owner",
         Cell: ({ row }) => {
           return row.original?.owner || "-";
@@ -90,7 +90,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         },
       },
       {
-        Header: t("CS_COMMON_ACTION"),
+        Header: t("Action Taken"),
         accessor: "action",
         disableSortBy: true,
         className: "ndc-new-table-action",

@@ -37,7 +37,7 @@ import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspec
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
-import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
+
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   //console.log("checkpoint here", checkpoint);
@@ -878,10 +878,25 @@ const LayoutEmployeeApplicationOverview = () => {
   const convertDateToISO = (dateStr) => {
     if (!dateStr) return "";
 
+    if (typeof dateStr !== "string") {
+      try {
+        return new Date(dateStr).toLocaleDateString();
+      } catch (e) {
+        return "";
+      }
+    }
+
     const parts = dateStr.split("-");
+    if (parts.length < 3) {
+      try {
+        return new Date(dateStr).toLocaleDateString();
+      } catch (e) {
+        return dateStr;
+      }
+    }
 
     // yyyy-mm-dd (already ISO)
-    if (parts[2].length === 4) {
+    if (parts[2] && parts[2].length === 4) {
       return dateStr;
     }
 
@@ -916,6 +931,24 @@ const LayoutEmployeeApplicationOverview = () => {
     }
 
     return null;
+  };
+
+  const getApplicantNamesForDeclaration = () => {
+    const owners = displayData?.owners || [];
+    if (owners.length === 0) return "";
+
+    return owners
+      .map((applicant, index) => {
+        if (index === 0) {
+          const aplicantType = applicant?.additionalDetails?.aplicantType?.code;
+          if (aplicantType === "FIRM") {
+            return applicant?.additionalDetails?.authorisedPerson || applicant?.name;
+          }
+        }
+        return applicant?.name;
+      })
+      .filter(Boolean)
+      .join(", ");
   };
 
   if (isLoading) {
@@ -1288,11 +1321,7 @@ const LayoutEmployeeApplicationOverview = () => {
             hasPayments={hasPayments}
           />
         )}
-        {hasPayments && (
-          <div style={{ marginTop: "16px" }}>
-            <PaymentHistory payments={combinedPayments} />
-          </div>
-        )}
+        
       </Card>
 
       {/* FEE DETAILS TABLE CARD - CLU STYLE PART 2 */}
@@ -1344,11 +1373,7 @@ const LayoutEmployeeApplicationOverview = () => {
       )} */}
 
       <CheckBox
-        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant ( ${displayData?.owners
-          ?.map((applicant) => applicant?.name)
-          ?.join(
-            ", "
-          )} ). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant( ${getApplicantNamesForDeclaration()} ). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         checked="true"
       />
       <div id="timeline">

@@ -372,6 +372,7 @@ const LayoutApplicantDetails = (_props) => {
       address: "",
       dob: "",
       gender: "",
+      panNumber:"",
       status: true,
     };
     setApplicants([...applicants, newApplicant]);

@@ -51,6 +51,24 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: "applicationDate",
         Cell: ({ row }) => (row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), "dd/MM/yyyy")) : ""),
       },
+      {
+        Header: t("CS_APPLICATION_DETAILS_SUBMISSION_DATE"),
+        accessor: "submissionDate",
+        Cell: ({ row }) => {
+          const value = Number(row.original?.submissionDate);
+
+          return Number.isFinite(value) ? GetCell(format(new Date(value), "dd/MM/yyyy")) : "-";
+        },
+        disableSortBy: true,
+      },
+      {
+        Header: t("CS_APPLICATION_DETAILS_APPROVAL_DATE"),
+        accessor: "approvalDate",
+        Cell: ({ row }) => {
+          return row.original?.["approvalDate"] ? GetCell(format(new Date(row.original?.["approvalDate"]), "dd/MM/yyyy")) : "-";
+        },
+        disableSortBy: true,
+      },
       // {
       //   Header: t("ES_INBOX_LOCALITY"),
       //   accessor: (row) => t(row?.locality),
@@ -68,15 +86,35 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         disableSortBy: true,
       },
       {
+        Header: t("CATEGORY"),
+        accessor: (row) => row?.category,
+        disableSortBy: true,
+      },
+      {
         Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
         accessor: (row) => t(row?.status),
         disableSortBy: true,
       },
       {
-        Header: t("CM_TIMELINE_ACTION_TAKEN"),
-        accessor: (row) => t(row?.action),
+        Header: t("ZONE"),
+        accessor: (row) => t(row?.zone),
         disableSortBy: true,
       },
+      {
+        Header: t("BPA_SEARCH_APPLICATION_TYPE_LABEL"),
+        accessor: (row) => t(row?.applicationType),
+        disableSortBy: true,
+      },
+      {
+        Header: t("TIME_TAKEN"),
+        accessor: (row) => row?.sla,
+        disableSortBy: true,
+      },
+      // {
+      //   Header: t("CM_TIMELINE_ACTION_TAKEN"),
+      //   accessor: (row) => t(row?.action),
+      //   disableSortBy: true,
+      // },
       // {
       //   Header: t("ES_INBOX_LOCALITY"),
       //   accessor: (row) => t(row?.locality),

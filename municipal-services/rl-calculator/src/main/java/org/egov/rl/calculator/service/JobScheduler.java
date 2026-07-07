@@ -63,8 +63,8 @@ public class JobScheduler {
 		
 	}
 
-//	@Scheduled(cron = "${scheduler.rent.revision.cron:0 0 4 * * *}", zone = RLConstants.TIME_ZONE)
-	@Scheduled(cron = "0 * * * * *", zone = RLConstants.TIME_ZONE)
+	@Scheduled(cron = "${scheduler.rent.revision.cron:0 0 4 * * *}", zone = RLConstants.TIME_ZONE)
+	// @Scheduled(cron = "0 * * * * *", zone = RLConstants.TIME_ZONE)
 	public void autoEscalationCronJob() {
 		log.info("Scheduler Start Every day at 04:00 AM for Rent Revision Escalation");
 		log.info("Escalation Scheduler Start Date Time: {}", LocalDateTime.now());

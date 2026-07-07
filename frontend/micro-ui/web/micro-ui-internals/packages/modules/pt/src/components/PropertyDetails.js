@@ -650,7 +650,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                         
                         var rowOptions = unitCode
                           ? getUsageOptionsByCode(unitCode)
-                          : getSubUsageData?.filter((o) => o.code !== "MIXED");;
+                          : getSubUsageData?.filter((o) => o.code !== "MIXED");
                         console.log("rowOptions", rowOptions)
                         var selectedCode = props.value?.code || props.value;
                         var selectedValue = rowOptions?.find((o) => o.code === selectedCode) || props.value;

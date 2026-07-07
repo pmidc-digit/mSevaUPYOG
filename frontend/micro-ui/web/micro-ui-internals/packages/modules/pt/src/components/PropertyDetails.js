@@ -108,7 +108,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   const { data: FloorData = [], isLoading: FloorLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [{ name: "Floor" }]);
 
   const { data: UsageCategoryNewData = [], isLoading: UsageCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
-    { name: "UsageCategory" },
+    { name: "UsageCategorySubMinor" },
+    { name: "UsageCategoryDetail" }
   ]);
 
 
@@ -153,13 +154,28 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     control,
     name: "unitDetails",
   });
+  const buildFullUsageCode = (code, subMinor, detail) => {
+    if (!code || code.includes(".")) return code;
+    const d = detail?.find((x) => x.code === code);
+    const sm = subMinor?.find((x) => x.code === (d?.usageCategorySubMinor ?? code));
+    return sm ? `NONRESIDENTIAL.${sm.usageCategoryMinor}.${sm.code}${d ? `.${code}` : ""}` : code;
+};
 
   const onSubmit = async (data) => {
     if (data?.vasikaDate && data?.allotmentDate && new Date(data?.allotmentDate) < new Date(data?.vasikaDate)) {
       alert(t("PT_ALLOTMENT_DATE_ERROR"));
       return;
     }
-    goNext(data);
+    const { subMinor, detail } = allUsageOptions;
+    goNext({
+      ...data,
+    unitDetails: data?.unitDetails?.map((unit) => ({
+      ...unit,
+      ...(unit?.subUsageType?.code && {
+        subUsageType: { ...unit.subUsageType, code: buildFullUsageCode(unit.subUsageType.code, subMinor, detail) },
+      }),
+    })),
+   });
     // return;
   };
 
@@ -174,25 +190,48 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     isResidentialFlat ||
     (selectedpropertyUsageType === "RESIDENTIAL" &&
       selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY");
-  const allUsageOptions = useMemo(() => UsageCategoryNewData?.PropertyTax?.UsageCategory || [], [UsageCategoryNewData]);
+      
+  const allUsageOptions = useMemo(() => {
+      return {
+        subMinor: UsageCategoryNewData?.PropertyTax?.UsageCategorySubMinor || [],
+        detail: UsageCategoryNewData?.PropertyTax?.UsageCategoryDetail || []
+      };
+    }, [UsageCategoryNewData]);  
   const today = new Date().toISOString().split("T")[0];
 
   // Memoize floorOptions to prevent new [] reference each render (was causing infinite loop)
   const floorOptionsRaw = FloorData?.PropertyTax?.Floor;
   const floorOptions = useMemo(() => floorOptionsRaw || [], [floorOptionsRaw]);
 
+  const getFloorTotalSqFt = (unitDetails, index, currentValue) => {
+    const floorCode = unitDetails[index]?.floor?.code || unitDetails[index]?.floor;
+    const getFloor = (unit) => unit?.floor?.code || unit?.floor;
+    const othersSqFt = unitDetails?.reduce((sum, unit, idx) => {
+      if (idx === index || getFloor(unit) !== floorCode) return sum;
+      return sum + parseFloat(unit?.area || 0);
+    }, 0);
+    return { totalSqFt: othersSqFt + parseFloat(currentValue || 0), othersSqFt };
+};
+
   const getUsageOptionsByCode = (usageCode) => {
-    if (!usageCode) return [];
-    
-    if (usageCode === "MIXED") {
-      const allExceptMixed = allUsageOptions?.filter((item) => item?.code !== "MIXED");
-      return deduplicateUsageOptions(allExceptMixed);
-    }
-    const filteredOptions = allUsageOptions.filter((item) => {
-      return item?.code && item.code.split(".").indexOf(usageCode) !== -1;
-    });
-    return deduplicateUsageOptions(filteredOptions);
+      if (!usageCode) return [];
+      const { subMinor = [], detail = [] } = allUsageOptions;
+      if (usageCode === "MIXED") return deduplicateUsageOptions(subMinor);
+
+      // 1. Get sub-minors matching this minor category (e.g. COMMERCIAL)
+      const filteredSubMinors = subMinor?.filter((sm) => sm?.usageCategoryMinor === usageCode);
+
+      // 2. Filter details under these sub-minors (e.g., MALLS, Pharmacy)
+      const filteredDetails = detail?.filter((d) => filteredSubMinors?.some((sm) => sm.code === d.usageCategorySubMinor));
+
+      // 3. Exclude parent sub-minors if they have child details in the master list
+      const finalSubMinors = filteredSubMinors?.filter((sm) => !detail?.some((d) => d.usageCategorySubMinor === sm.code));
+
+    return deduplicateUsageOptions([...finalSubMinors, ...filteredDetails]);
   };
+
+
+
 
   const tesFloorOptions = useMemo(() => {
     return [...floorOptions].sort((a, b) => {
@@ -206,7 +245,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
   useEffect(() => {
     if (!(location?.state || stateDataCheck)) return;
-    if (!getUsageData?.length || !getPropertyTypeData?.length || !allUsageOptions?.length) return; // wait for MDMS
+    if (!getUsageData?.length || !getPropertyTypeData?.length || !allUsageOptions?.subMinor?.length) return; // wait for MDMS
 
     setIsRestoring(true);
 
@@ -590,8 +629,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     control={control}
                     name={`unitDetails.${index}.unitUsageType`}
                     defaultValue={
-                      (watch("propertyUsageType") && watch("propertyUsageType").name === "Mixed" &&
-                        watch("propertyType") && watch("propertyType").code === "BUILTUP.SHAREDPROPERTY")
+                      (watch("propertyUsageType") && watch("propertyUsageType").code === "MIXED")
                         ? (item && item.unitUsageType) || ""
                         : (item && item.unitUsageType) || (watch("propertyUsageType") && watch("propertyUsageType").code) || ""
                     }
@@ -599,16 +637,17 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     render={function (props) {
                       if (
                         (selectedpropertyUsageType &&
-                        selectedpropertyUsageType === "MIXED") ||
-                       ( selectedPropertyType &&
-                        selectedPropertyType === "BUILTUP.SHAREDPROPERTY")
+                        selectedpropertyUsageType === "MIXED")
                       ) {
                         // Show dropdown — look up full MDMS object so Dropdown can display name correctly
                         return (
                           <Dropdown
-                            select={props.onChange}
+                            select={(val) => {
+                              props.onChange(val);
+                              setValue(`unitDetails.${index}.subUsageType`, null);
+                            }}
                             selected={getUsageData?.find((u) => u.code === (props.value?.code || props.value)) || props.value}
-                            option={getUsageData}
+                            option={getUsageData?.filter((o) => o.code !== "MIXED")}
                             optionKey="name"
                             t={t}
                           />
@@ -656,7 +695,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                         var selectedCode = props.value?.code || props.value;
                         var selectedValue = rowOptions?.find((o) => o.code === selectedCode) || props.value;
                         // Look up full MDMS object so Dropdown can display name correctly
-                        return <Dropdown select={props.onChange} selected={selectedValue} option={rowOptions} optionKey="name" t={t} />;
+                        return <Dropdown key={unitCode} select={props.onChange} selected={selectedValue} option={rowOptions} optionKey="name" t={t} />;
                       }}
                     />
                     {errors?.unitDetails?.[index]?.subUsageType && (
@@ -701,9 +740,11 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                         minArea: (value) => parseFloat(value) >= 1 || t("BuiltUpArea cannot be lesser than minimum values of : 1 sq ft"),
                         lessThanPlotSize: (value) => {
                           const plotSize = watch("plotSize");
-                          const builtUpAreaYard = parseFloat(value) / 9
-                          if (plotSize && builtUpAreaYard > parseFloat(plotSize)) {
-                            return `Built-up area entered (${parseFloat(value)} sq ft =  ${builtUpAreaYard?.toFixed(2)} Yards) cannot be greater than the plot size : (${plotSize} Yards)`;
+                          if (!plotSize) return true;
+                          const { totalSqFt, othersSqFt } = getFloorTotalSqFt(watch("unitDetails") || [], index, value);
+                          const totalYard = totalSqFt / 9;
+                          if (othersSqFt / 9 <= parseFloat(plotSize) && totalYard > parseFloat(plotSize)) {
+                            return `Floor cumulative area (${totalSqFt} sq ft = ${totalYard.toFixed(2)} Yards) cannot exceed plot size (${plotSize} Yards)`;
                           }
                           return true;
                         }

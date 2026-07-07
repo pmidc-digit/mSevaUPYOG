@@ -147,26 +147,26 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         accessor: (row) => row?.sla,
         disableSortBy: true,
       },
-      {
-        Header: t("CS_COMMON_ACTION"),
-        accessor: "action",
-        disableSortBy: true,
-        className: "ndc-new-table-action",
-        Cell: ({ row }) => (
-          <span className="ndc-new-action-group">
-            <Link
-              to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`}
-              className="ndc-new-icon ndc-new-icon-link"
-              aria-label={t("ES_COMMON_VIEW")}
-            >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-            </Link>
-          </span>
-        ),
-      },
+      // {
+      //   Header: t("CS_COMMON_ACTION"),
+      //   accessor: "action",
+      //   disableSortBy: true,
+      //   className: "ndc-new-table-action",
+      //   Cell: ({ row }) => (
+      //     <span className="ndc-new-action-group">
+      //       <Link
+      //         to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`}
+      //         className="ndc-new-icon ndc-new-icon-link"
+      //         aria-label={t("ES_COMMON_VIEW")}
+      //       >
+      //         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+      //           <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+      //           <circle cx="12" cy="12" r="3" />
+      //         </svg>
+      //       </Link>
+      //     </span>
+      //   ),
+      // },
     ];
   }, [parentRoute, t]);
 

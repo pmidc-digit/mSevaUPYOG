@@ -37,6 +37,7 @@ import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspec
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
+import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   //console.log("checkpoint here", checkpoint);
@@ -354,15 +355,33 @@ const LayoutEmployeeApplicationOverview = () => {
     [siteImages]
   );
 
-  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+  const { data: reciept_data2, isLoading: recieptDataLoading2 } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
-      businessService: "layout",
+      businessService: "LAYOUT.PAY2",
       consumerCodes: id,
       isEmployee: true,
     },
     { enabled: id ? true : false }
   );
+
+  const { data: reciept_data1, isLoading: recieptDataLoading1 } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "LAYOUT.PAY1",
+      consumerCodes: id,
+      isEmployee: true,
+    },
+    { enabled: id ? true : false }
+  );
+
+  const combinedPayments = useMemo(() => {
+    const p1 = reciept_data1?.Payments || [];
+    const p2 = reciept_data2?.Payments || [];
+    return [...p1, ...p2];
+  }, [reciept_data1, reciept_data2]);
+
+  const hasPayments = combinedPayments.length > 0;
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -382,9 +401,9 @@ const LayoutEmployeeApplicationOverview = () => {
     }
   };
 
-  async function getRecieptSearch({ tenantId, payments, ...params }) {
+  async function getRecieptSearch({ tenantId, payments, pdfkey = "layout-receipt", ...params }) {
     let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "layout-receipt");
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, pdfkey);
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
@@ -423,10 +442,17 @@ const LayoutEmployeeApplicationOverview = () => {
     });
   }
 
-  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+  if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
     dowloadOptions.push({
-      label: t("CHB_FEE_RECEIPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      label: t("LAYOUT_FEE_RECEIPT_1"),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey: "layout-receipt" }),
+    });
+  }
+
+  if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
+    dowloadOptions.push({
+      label: t("LAYOUT_FEE_RECEIPT_2"),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey: "layoutreceipt-second" }),
     });
   }
 
@@ -905,7 +931,7 @@ const LayoutEmployeeApplicationOverview = () => {
           <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
           {getLoader && <Loader />}
           {dowloadOptions && dowloadOptions.length > 0 && (
-            recieptDataLoading ? 
+            (recieptDataLoading1 || recieptDataLoading2) ? 
             <Loader /> :
             <div>
               <MultiLink
@@ -1259,12 +1285,18 @@ const LayoutEmployeeApplicationOverview = () => {
             }}
             feeType="PAY1"
             disable={isFeeDisabled}
-            hasPayments={reciept_data?.Payments?.length > 0}
+            hasPayments={hasPayments}
           />
+        )}
+        {hasPayments && (
+          <div style={{ marginTop: "16px" }}>
+            <PaymentHistory payments={combinedPayments} />
+          </div>
         )}
       </Card>
 
       {/* FEE DETAILS TABLE CARD - CLU STYLE PART 2 */}
+         {applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && (
       <Card>
         <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
         {applicationDetails?.Layout?.[0]?.layoutDetails && (
@@ -1282,6 +1314,7 @@ const LayoutEmployeeApplicationOverview = () => {
           />
         )}
       </Card>
+         )}
 
       {/* {siteImages?.documents?.length > 0 && (
         <Card>
@@ -1365,7 +1398,7 @@ const LayoutEmployeeApplicationOverview = () => {
       {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} />}
 
       {/* {(isLoading || getLoader) && <Loader page={true} />} */}
-      {(isLoading || isDetailsLoading || getLoader) && <Loader page={true} />}
+      {(isLoading || isDetailsLoading || getLoader || recieptDataLoading1 || recieptDataLoading2) && <Loader page={true} />}
     </div>
   );
 };

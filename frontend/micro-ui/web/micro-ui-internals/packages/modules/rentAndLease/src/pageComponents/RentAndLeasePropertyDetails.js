@@ -39,6 +39,21 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     { name: t("New"), code: "new" },
   ];
 
+  const incrementPeriodMonthsValues = [
+    { name: 1, code: "1" },
+    { name: 2, code: "2" },
+    { name: 3, code: "3" },
+    { name: 4, code: "4" },
+    { name: 5, code: "5" },
+    { name: 6, code: "6" },
+    { name: 7, code: "7" },
+    { name: 8, code: "8" },
+    { name: 9, code: "9" },
+    { name: 10, code: "10" },
+    { name: 11, code: "11" },
+    { name: 12, code: "12" },
+  ];
+
   const propertySpecificOptions = [
     { name: t("COMMERCIAL"), code: "Commercial", i18nKey: "Commercial" },
     { name: t("RESIDENTIAL"), code: "Residential", i18nKey: "Residential" },
@@ -712,6 +727,102 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
             </div>
           </LabelFieldPair>
           {errors.lastBillingPeriod && <CardLabelError className="ral-error-label">{getErrorMessage("lastBillingPeriod")}</CardLabelError>}
+
+          {/* last Rent Revised Date */}
+          <LabelFieldPair>
+            <CardLabel>
+              {t("Last Rent Revised Date")}
+              {/* {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>} */}
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="lastRentRevisedDate"
+                // rules={{
+                //   validate: (value) => {
+                //     const arrear = watch("arrear");
+                //     if (arrear > 0 && !value) {
+                //       return t("RENT_LEASE_RAL_END_DATE_REQUIRED");
+                //     }
+                //     return true;
+                //   },
+                // }}
+                render={({ value, onChange }) => {
+                  return (
+                    <TextInput
+                      type="date"
+                      value={value || ""}
+                      onChange={(e) => onChange(e.target.value)}
+                      // disabled={true}
+                    />
+                  );
+                }}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.lastRentRevisedDate && <CardLabelError className="ral-error-label">{getErrorMessage("lastRentRevisedDate")}</CardLabelError>}
+
+          {/* Increment Period Months */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {t("Increment Period Months")}
+              {/* {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>} */}
+            </CardLabel>
+            <Controller
+              control={control}
+              name="incrementPeriodMonths"
+              // rules={{
+              //   validate: (value) => {
+              //     const arrear = watch("arrear");
+              //     if (arrear > 0 && !value) {
+              //       return t("RENT_LEASE_REASON_REQUIRED");
+              //     }
+              //     return true;
+              //   },
+              // }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={incrementPeriodMonthsValues}
+                  defaultValues
+                  optionKey="name"
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          {errors.incrementPeriodMonths && <CardLabelError className="ral-error-label">{getErrorMessage("incrementPeriodMonths")}</CardLabelError>}
+
+          {/* increment Percentage */}
+          <LabelFieldPair>
+            <CardLabel>
+              {t("Increment Percentage")}
+              {/* <span className="mandatory-asterisk">*</span> */}
+            </CardLabel>
+
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="incrementPercentage"
+                // rules={{ required: t("RENT_LEASE_ARREAR_REQUIRED") }}
+                render={({ value, onChange, onBlur }) => (
+                  <input
+                    className="employee-card-input undefined focus-visible undefined"
+                    type="number"
+                    value={value || ""}
+                    onChange={(e) => onChange(e.target.value)}
+                    onWheel={(e) => e.currentTarget.blur()}
+                    onBlur={(e) => {
+                      onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.incrementPercentage && <CardLabelError className="ral-error-label">{getErrorMessage("incrementPercentage")}</CardLabelError>}
 
           {/* Areas reason */}
           <LabelFieldPair>

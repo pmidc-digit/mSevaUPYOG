@@ -131,6 +131,9 @@ function RentAndLeaseSummary({ t }) {
             </div>
             {renderRow(t("Arrears"), property?.arrear)}
             {property?.lastBillingPeriod && renderRow(t("Last Billing Period"), property.lastBillingPeriod)}
+            {property?.lastRentRevisedDate && renderRow(t("Last Rent Revised Date"), property.lastRentRevisedDate)}
+            {property?.incrementPeriodMonths && renderRow(t("Increment Period Months"), property.incrementPeriodMonths?.code)}
+            {property?.incrementPercentage && renderRow(t("Increment Percentage"), property.incrementPercentage)}
             {property?.arrearReason?.name && renderRow(t("Reason"), property?.arrearReason?.name)}
             {property?.remarks && renderRow(t("Remarks"), property?.remarks)}
           </div>

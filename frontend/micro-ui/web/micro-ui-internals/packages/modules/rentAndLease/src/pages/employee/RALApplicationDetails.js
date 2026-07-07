@@ -486,6 +486,20 @@ const RALApplicationDetails = () => {
                   label={t("Last Billing Period")}
                   text={rawAdditionalDetails?.lastBillingPeriod ? new Date(rawAdditionalDetails.lastBillingPeriod).toLocaleDateString("en-IN") : "-"}
                 />
+                {rawAdditionalDetails?.lastRentRevisedDate && (
+                  <Row
+                    label={t("Last Rent Revised Date")}
+                    text={
+                      rawAdditionalDetails?.lastRentRevisedDate ? new Date(rawAdditionalDetails.lastRentRevisedDate).toLocaleDateString("en-IN") : "-"
+                    }
+                  />
+                )}
+                {rawAdditionalDetails?.incrementPeriodMonths && (
+                  <Row label={t("Increment Period Months")} text={rawAdditionalDetails?.incrementPeriodMonths} />
+                )}
+                {rawAdditionalDetails?.incrementPercentage && (
+                  <Row label={t("Increment Percentage")} text={rawAdditionalDetails?.incrementPercentage} />
+                )}
                 <Row label={t("Reason")} text={tValue(rawAdditionalDetails?.arrearReason)} />
                 <Row label={t("Remarks")} text={tValue(rawAdditionalDetails?.remarks)} />
               </StatusTable>

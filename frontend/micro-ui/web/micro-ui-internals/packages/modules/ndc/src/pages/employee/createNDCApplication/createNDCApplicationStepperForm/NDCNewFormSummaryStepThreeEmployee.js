@@ -82,6 +82,7 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
               ...detail.additionalDetails,
               reason: formData?.NDCDetails?.NDCReason?.reason, // Update custom reason text from correct path
               remarks: formData?.NDCDetails?.PropertyDetails?.remarks, // Update remarks from correct path
+              vashikaNumber: formData?.NDCDetails?.PropertyDetails?.vashikaNumber, // Update vashikaNumber from correct path
             },
           };
         }

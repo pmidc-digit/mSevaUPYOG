@@ -127,6 +127,8 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
           ? renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.reason))
           : renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))}
         {renderLabel(t("Remarks"), formData?.NDCDetails?.PropertyDetails?.remarks)}
+        {renderLabel(t("Vashika Number"), formData?.NDCDetails?.PropertyDetails?.vashikaNumber)}
+        {/* {renderLabel(t("Remarks"), formData?.NDCDetails?.PropertyDetails?.remarks)} */}
 
         {renderLabel(
           t("Water Connection"),
@@ -143,7 +145,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
         )}
 
         {renderLabel(t("Property ID"), formData?.NDCDetails?.cpt?.id)}
-        {renderLabel(t("Area"), formData?.NDCDetails?.PropertyDetails?.landArea)}
+        {renderLabel(t("Area"), `${formData?.NDCDetails?.PropertyDetails?.landArea} sq. yd.`)}
 
         {renderLabel(
           t("Application Fees"),

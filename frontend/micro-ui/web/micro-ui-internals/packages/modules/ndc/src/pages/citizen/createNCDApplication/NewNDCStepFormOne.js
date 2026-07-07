@@ -79,8 +79,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
         additionalDetails: {
           propertyAddress: data?.PropertyDetails?.address,
           propertyType: data?.cpt?.details?.usageCategory,
-          // connectionType: wc?.billData,
-          // meterNumber: "NOT_AVAILABLE"
         },
         dueAmount: wc?.billData?.totalAmount || 0,
         status: wc?.billData?.status,
@@ -115,6 +113,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
           propertyType: data?.cpt?.details?.usageCategory,
           reason: data?.NDCReason?.reason,
           remarks: data?.PropertyDetails?.remarks,
+          vashikaNumber: data?.PropertyDetails?.vashikaNumber,
         },
         dueAmount: billData?.totalAmount || 0,
         status: billData?.status,
@@ -143,6 +142,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       setLoader(false);
       if (response?.ResponseInfo?.status === "successful") {
         dispatch(updateNDCForm("apiData", response));
+        dispatch(updateNDCForm("responseData", response?.Applications));
         onGoNext();
         return { isSuccess: true, response };
       } else {
@@ -165,7 +165,14 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     let ndcDetails = [];
 
     if (checkFormData?.responseData?.[0]?.NdcDetails?.length > 0) {
-      ndcDetails = checkFormData.responseData[0].NdcDetails;
+      ndcDetails = checkFormData.responseData[0].NdcDetails.map((item) => ({
+        ...item,
+        additionalDetails: {
+          ...(item.additionalDetails || {}),
+          remarks: data?.PropertyDetails?.remarks,
+          vashikaNumber: data?.PropertyDetails?.vashikaNumber,
+        },
+      }));
     } else {
       // Add each water connection to NdcDetails
       (data?.PropertyDetails?.waterConnection || [])?.forEach((wc) => {
@@ -213,6 +220,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
             propertyType: data?.cpt?.details?.usageCategory,
             reason: data?.NDCReason?.reason,
             remarks: data?.PropertyDetails?.remarks,
+            vashikaNumber: data?.PropertyDetails?.vashikaNumber,
           },
           dueAmount: billData?.totalAmount || 0,
           status: billData?.status,
@@ -246,6 +254,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
     if (response?.ResponseInfo?.status === "successful") {
       dispatch(updateNDCForm("apiData", response));
+      dispatch(updateNDCForm("responseData", response?.Applications));
       onGoNext();
       return { isSuccess: true, response };
     } else {

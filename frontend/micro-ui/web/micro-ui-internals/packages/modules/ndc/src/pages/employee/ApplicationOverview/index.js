@@ -285,6 +285,7 @@ const ApplicationOverview = () => {
         propertyType: item?.additionalDetails?.propertyType || "",
         isDuePending: item?.isDuePending,
         remarks: item?.additionalDetails?.remarks,
+        vashikaNumber: item?.additionalDetails?.vashikaNumber,
       }));
 
       setDisplayData({ applicantData, Documents, NdcDetails });
@@ -662,6 +663,7 @@ const ApplicationOverview = () => {
                       )}
                     />
                     <Row label={t("Area")} text={`${propertyDetailsFetch?.Properties?.[0]?.landArea} sq. yd.` || "N/A"} />
+                    <Row label={t("Vashika Number")} text={detail?.vashikaNumber || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />

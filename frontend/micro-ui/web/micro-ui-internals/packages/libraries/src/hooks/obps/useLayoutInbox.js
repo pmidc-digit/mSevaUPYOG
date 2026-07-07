@@ -57,14 +57,14 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
 
         const tableData = (data?.items || [])?.map((application) => {
           const submittedOn = Number(application?.businessObject?.layoutDetails?.additionalDetails?.SubmittedOn); // or submissionDate
-          const endDate = application.businessObject?.layoutDetails?.additionalDetails?.siteDetails?.cluApprovalDate
-            ? new Date(application.businessObject?.layoutDetails?.additionalDetails?.siteDetails?.cluApprovalDate).getTime()
+          const endDate = application.businessObject?.layoutDetails?.additionalDetails?.siteDetails?.approvalDate
+            ? new Date(application.businessObject?.layoutDetails?.additionalDetails?.siteDetails?.approvalDate).getTime()
             : Date.now();
           return {
             applicationId: application?.businessObject?.applicationNo || application?.businessObject?.applicationNumber,
             date: application?.businessObject?.auditDetails?.createdTime ? Number.parseInt(application.businessObject.auditDetails.createdTime) : 0,
             submissionDate: application?.businessObject?.layoutDetails?.additionalDetails?.SubmittedOn,
-            approvalDate: application.businessObject?.layoutDetails?.additionalDetails?.siteDetails?.cluApprovalDate,
+            approvalDate: application.businessObject?.layoutDetails?.additionalDetails?.siteDetails?.approvalDate,
             businessService: application?.ProcessInstance?.businessService,
             locality: application?.businessObject?.tenantId ? `${application.businessObject.tenantId.toUpperCase().split(".").join("_")}` : "-",
             status: application?.businessObject?.applicationStatus,

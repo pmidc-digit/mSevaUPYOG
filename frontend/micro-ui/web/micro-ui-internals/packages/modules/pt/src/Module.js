@@ -157,7 +157,7 @@ import PTSummary from "../src/pageComponents/PTSummary";
 import getRootReducer from "./redux/reducer";
 import PropertyResponseCitizen from "./components/PropertyResponseCitizen";
 import CitizenTransferOwnership from "./pages/citizen/TransferOwnership";
-
+import PTNewApplicationModal from "./components/PTNewApplicationModal"
 export const PTReducers = getRootReducer;
 
 const componentsToRegister = {
@@ -307,6 +307,7 @@ const componentsToRegister = {
   PropertyResponseCitizen,
   PTImportantDates,
   PTCitizenTransferOwnership: CitizenTransferOwnership,
+  PTNewApplicationModal
 };
 
 const addComponentsToRegistry = () => {

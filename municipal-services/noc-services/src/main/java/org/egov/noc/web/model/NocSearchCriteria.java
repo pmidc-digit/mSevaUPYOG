@@ -2,8 +2,8 @@ package org.egov.noc.web.model;
 
 import java.util.List;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,7 +13,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-//import org.hibernate.validator.constraints.SafeHtml;
+import org.hibernate.validator.constraints.SafeHtml;
 
 @Getter
 @Setter
@@ -23,34 +23,37 @@ import lombok.Setter;
 public class NocSearchCriteria {
 
     @NotNull
-    @SanitizeHtml
+    @SafeHtml
     @JsonProperty("tenantId")
     private String tenantId;
 
     @JsonProperty("ids")
     private List<String> ids;
 
-    @SanitizeHtml
+    @SafeHtml
     @JsonProperty("applicationNo")
     private String applicationNo;
 
-    @SanitizeHtml
+    @SafeHtml
     @JsonProperty("mobileNumber")
     private String mobileNumber;
 
-    @SanitizeHtml
+    @SafeHtml
     @JsonProperty("nocNo")
     private String nocNo;
 
-    @SanitizeHtml
+    @SafeHtml
     @JsonProperty("source")
     private String source;
 
-    @SanitizeHtml
+    @SafeHtml
     @JsonProperty("nocType")
     private String nocType;
 
-    @SanitizeHtml
+    @JsonProperty("applicationStatus")
+    private String applicationStatus;
+
+    @SafeHtml
     @JsonProperty("sourceRefId")
     private String sourceRefId;
 
@@ -72,8 +75,8 @@ public class NocSearchCriteria {
     @JsonProperty("createdBy")
     private String createdBy;
 
-    @SanitizeHtml
-    @Size(min = 1, max = 15)
+    @SafeHtml
+//    @Size(min = 1, max = 15)
     @JsonProperty("vasikaNumber")
     private String vasikaNumber = null;
     

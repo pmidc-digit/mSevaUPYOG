@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
@@ -122,18 +123,22 @@ public class PaymentUpdateService {
 								.filter(act -> act.getAction().equalsIgnoreCase(bpa.getWorkflow().getAction()))
 								.findFirst().orElse(new Action()).getNextState();
 						State nextState = busSer.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
-						
-						String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";
-						
+												
+						List<String> roles = new ArrayList<String>();
+		    			if(nextState != null && !CollectionUtils.isEmpty(nextState.getActions()))
+		    				roles = nextState.getActions().stream()
+		    				.filter(stateAction -> !stateAction.getNextState().equalsIgnoreCase(nextStateId))
+		    				.flatMap(stateAction -> stateAction.getRoles().stream())
+		    				.distinct()
+		    				.filter(r -> !r.equalsIgnoreCase("OBPAS_UPDATE_ZONE")
+		    						&& !r.equalsIgnoreCase("SYSTEM"))
+		    				.collect(Collectors.toList());
 						if (nextState != null 
-								&& (nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE) 
-										|| nextState.getState().equalsIgnoreCase(BPAConstants.FI_STATUS))
-								&& BPAConstants.ACTION_PAY.equalsIgnoreCase(action)) {
-							List<String> roles = new ArrayList<>();
-							nextState.getActions().forEach(stateAction -> {
-								roles.addAll(stateAction.getRoles());
-							});
-							List<String> assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo);
+								&& CollectionUtils.isEmpty(bpa.getWorkflow().getAssignes())
+								&& !CollectionUtils.isEmpty(nextState.getActions())) {
+							List<String> assignee = null;
+							if(!CollectionUtils.isEmpty(roles))
+								assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo, false);
 							bpa.getWorkflow().setAssignes(assignee);
 							
 						}

@@ -1,6 +1,6 @@
 package org.egov.infra.indexer.controller;
 
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 
 import org.egov.infra.indexer.producer.IndexerProducer;
 import org.egov.infra.indexer.service.LegacyIndexService;

@@ -348,7 +348,7 @@ public class FrontYardService_Citya extends GeneralRule {
 			HashMap<String, String> errors, Plan pl, String occupancyName, Map<String,List<Map<String,Object>>> edcrRuleList ) {
 
 	   BigDecimal  plotArea = pl.getPlot().getArea();
-		System.out.println("plotarea" + plotArea);
+	   LOG.info("plotarea" + plotArea);
 	
 		
 		String feature = "FrontSetBack";
@@ -387,7 +387,7 @@ public class FrontYardService_Citya extends GeneralRule {
 			meanVal = BigDecimal.valueOf(Double.valueOf(permissibleValue.get(0).get("permissibleValue").toString()));
 	
 		} 
-      System.out.println("meanVllll" + meanVal);
+		LOG.info("meanVllll : - " + meanVal);
 		/*
 		 * if (-1 == level) { rule = BSMT_FRONT_YARD_DESC; subRuleDesc =
 		 * SUB_RULE_24_12_DESCRIPTION; subRule = SUB_RULE_24_12; }

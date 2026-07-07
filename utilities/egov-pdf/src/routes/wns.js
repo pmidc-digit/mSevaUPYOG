@@ -6,6 +6,11 @@ var producer = require("../producer").producer ;
 var logger = require("../logger").logger;
 const uuidv4 = require("uuid/v4");
 const { Pool } = require('pg');
+var {createNewJobId} = require("../api")
+var ssl = config.DB_SSL;
+if(typeof ssl =="string")
+  ssl = (ssl.toLowerCase() == "true");
+const sslConfig = ssl ? { rejectUnauthorized: false } : false;
 
 const pool = new Pool({
   user: config.DB_USER,
@@ -13,13 +18,12 @@ const pool = new Pool({
   database: config.DB_NAME,
   password: config.DB_PASSWORD,
   port: config.DB_PORT,
+  ssl: sslConfig,
 });
 
 var {
   search_water,
   search_sewerage,
-  search_water_propertyId,
-  search_sewerage_propertyId,
   search_waterOpenSearch,
   search_sewerageOpenSearch,
   search_bill_genie_water_bills,
@@ -37,6 +41,8 @@ function renderError(res, errorMessage, errorCode) {
   if (errorCode == undefined) errorCode = 500;
   res.status(errorCode).send({ errorMessage });
 }
+
+
 router.post(
     "/wnsbill",
     asyncMiddleware(async function (req, res, next) {
@@ -44,6 +50,9 @@ router.post(
       var applicationNumber = req.query.applicationNumber;
       var bussinessService = req.query.bussinessService;
       var requestinfo = req.body;
+      var headers = JSON.parse(JSON.stringify(req.headers));
+      headers['tenantId']=headers.tenantid;
+
       var restWns;
       if (requestinfo == undefined) {
         return renderError(res, "requestinfo can not be null");
@@ -62,7 +71,8 @@ router.post(
                     applicationNumber,
                     tenantId,
                     {RequestInfo:requestinfo.RequestInfo},
-                    true
+                    true,
+                    headers
                   );
             }
             else{
@@ -70,7 +80,8 @@ router.post(
                     applicationNumber,
                     tenantId,
                     {RequestInfo:requestinfo.RequestInfo},
-                    true
+                    true,
+                    headers
                   );
             }
           
@@ -98,7 +109,8 @@ router.post(
               tenantId,
               consumerCode,
               bussinessService,
-              {RequestInfo:requestinfo.RequestInfo}
+              {RequestInfo:requestinfo.RequestInfo},
+               headers
             );
           } catch (ex) {
             if (ex.response && ex.response.data) console.log(ex.response.data);
@@ -120,7 +132,8 @@ router.post(
                 tenantId,
                 pdfkey,
                 billArray,
-                {RequestInfo:requestinfo.RequestInfo}
+                {RequestInfo:requestinfo.RequestInfo},
+                 headers
               );
             } catch (ex) {
               let errorMessage;
@@ -162,7 +175,8 @@ router.post(
               tenantId,
               consumerCode,
               bussinessService,
-              {RequestInfo:requestinfo.RequestInfo}
+              {RequestInfo:requestinfo.RequestInfo},
+               headers
             );
           } catch (ex) {
             if (ex.response && ex.response.data) console.log(ex.response.data);
@@ -184,7 +198,8 @@ router.post(
                 tenantId,
                 pdfkey,
                 billArray,
-                {RequestInfo:requestinfo.RequestInfo}
+                {RequestInfo:requestinfo.RequestInfo},
+                 headers
               );
             } catch (ex) {
               let errorMessage;
@@ -228,6 +243,9 @@ router.post(
       var applicationNumber = req.query.applicationNumber;
       var bussinessService = req.query.bussinessService;
       var requestinfo = req.body;
+      var headers = JSON.parse(JSON.stringify(req.headers));
+      headers['tenantId']=headers.tenantid;
+
       var restWns;
       if (requestinfo == undefined) {
         return renderError(res, "requestinfo can not be null");
@@ -246,7 +264,8 @@ router.post(
                     applicationNumber,
                     tenantId,
                     {RequestInfo:requestinfo.RequestInfo},
-                    false
+                    false,
+                    headers
                   );
             }
             else{
@@ -254,7 +273,8 @@ router.post(
                     applicationNumber,
                     tenantId,
                     {RequestInfo:requestinfo.RequestInfo},
-                    false
+                    false,
+                    headers
                   );
             }
           
@@ -276,7 +296,8 @@ router.post(
                 consumerCode,
                 tenantId,
                 {RequestInfo:requestinfo.RequestInfo},
-                bussinessService
+                bussinessService,
+                headers
               );
           } catch (ex) {
             if (ex.response && ex.response.data) console.log(ex.response.data);
@@ -292,7 +313,8 @@ router.post(
                 tenantId,
                 pdfkey,
                 payments,
-                {RequestInfo:requestinfo.RequestInfo}
+                {RequestInfo:requestinfo.RequestInfo},
+                headers
               );
             } catch (ex) {
               let errorMessage;
@@ -329,7 +351,8 @@ router.post(
                 consumerCode,
                 tenantId,
                 {RequestInfo:requestinfo.RequestInfo},
-                bussinessService
+                bussinessService,
+                headers
               );
           } catch (ex) {
             if (ex.response && ex.response.data) console.log(ex.response.data);
@@ -345,7 +368,8 @@ router.post(
                 tenantId,
                 pdfkey,
                 payments,
-                {RequestInfo:requestinfo.RequestInfo}
+                {RequestInfo:requestinfo.RequestInfo},
+                headers 
               );
             } catch (ex) {
               let errorMessage;
@@ -383,63 +407,65 @@ router.post(
   );  
 
   router.post(
-    "/wnsgroupbill",
-    asyncMiddleware(async function (req, res, next) {
-      var tenantId=null;
-      var locality=null;
-      var bussinessService=null;
-      var isConsolidated = (req.query.isConsolidated != undefined && req.query.isConsolidated.toLowerCase() === 'true' ? true : false)
-      var consumerCode = null;
-      var propertyId=null;
-      var requestinfo = req.body;
-      var restWater;
-      var restSewerage;
-      var consolidatedResult = {Bill:[]};
-  var propertyIdSet = [];
-  var connectionnoToPropertyMap = {};
+  "/wnsgroupbill",
+  asyncMiddleware(async function (req, res, next) {
 
-      if(req.query.bussinessService)
-        bussinessService = req.query.bussinessService;
-      if(req.query.tenantId)
-        tenantId = req.query.tenantId;
-      if(req.query.locality)
-        locality = req.query.locality;
-        
-      if(req.query.consumerCode)
-        consumerCode = req.query.consumerCode;
-        
-      if(req.query.propertyId)
-        propertyId = req.query.propertyId;
+    const requestinfo = req.body;
 
-      var requestinfo = req.body;
-      
-      if (requestinfo == undefined) {
-        return renderError(res, "requestinfo can not be null");
+    if (!requestinfo) {
+      return renderError(res, "RequestInfo is required");
+    }
+
+    // ✅ Read from QUERY (as per your curl)
+    const tenantId = req.query.tenantId;
+    const bussinessService = req.query.businesService;
+    const batchType = req.query.batchType;
+    const group = req.query.group;
+    const url = req.query.url;
+    const pdfKey = req.query.key;
+
+    let locality = req.query.locality; // string OR array
+
+    const isConsolidated =
+      req.query.isConsolidated &&
+      req.query.isConsolidated.toLowerCase() === "true";
+
+    const consumerCode = req.query.consumerCode || null;
+
+    const headers = { ...req.headers, tenantId: req.headers.tenantid };
+
+    // ✅ Normalize locality (important)
+    if (locality) {
+      if (!Array.isArray(locality)) {
+        locality = [locality];
       }
-      
+    }
 
-      if(propertyId==null){
+    // ✅ Flexible validation (FIXED)
+    if (!tenantId || !bussinessService || (!group && !locality)) {
+      return renderError(
+        res,
+        "tenantId, businesService and either group or locality is required"
+      );
+    }
 
-        if (!tenantId || !locality || !bussinessService) {
-          return renderError(
-            res,
-            "Bussiness Service, TenantId and Locality are mandatory to generate the water and sewerage bill"
-          );
-        }
-      var id = uuidv4();
-      var jobid = `${config.pdf.wns_bill}-${new Date().getTime()}-${id}`;
+    const jobid = await createNewJobId(bussinessService);
 
-      var kafkaData = {
-        requestinfo: requestinfo,
-        tenantId: tenantId,
-        locality: locality,
-        bussinessService: bussinessService,
-        isConsolidated: isConsolidated,
-        consumerCode: consumerCode,
-        jobid: jobid,
-        propertyId: propertyId
-      };
-
+    // ✅ Build Kafka Payload
+    const kafkaData = {
+      requestinfo,
+      tenantId,
+      bussinessService,
+      batchType,
+      group: group || null,
+      locality: locality || [],
+      url, 
+      isConsolidated,
+      consumerCode,
+      jobid,
+      pdfkey: pdfKey,
+      headers
+    };
       try {
         var payloads = [];
         payloads.push({
@@ -461,10 +487,10 @@ router.post(
           const result = await pool.query('select * from egov_bulk_pdf_info where jobid = $1', [jobid]);
           if(result.rowCount<1){
             var userid = requestinfo.RequestInfo.userInfo.uuid;
-            const insertQuery = 'INSERT INTO egov_bulk_pdf_info(jobid, uuid, recordscompleted, totalrecords, createdtime, filestoreid, lastmodifiedby, lastmodifiedtime, tenantid, locality, businessservice, consumercode, isconsolidated, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)';
+            const insertQuery = 'INSERT INTO egov_bulk_pdf_info(jobid, uuid, recordscompleted, totalrecords, createdtime, filestoreid, lastmodifiedby, lastmodifiedtime, tenantid, locality, businessservice, consumercode, isconsolidated, status, group_name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,$15)';
             const curentTimeStamp = new Date().getTime();
             const status = 'INPROGRESS';
-            await pool.query(insertQuery,[jobid, userid, 0, 0, curentTimeStamp, null, userid, curentTimeStamp, tenantId, locality, bussinessService, consumerCode, isConsolidated, status]);
+            await pool.query(insertQuery,[jobid, userid, 0, 0, curentTimeStamp, null, userid, curentTimeStamp, tenantId, locality, bussinessService, consumerCode, isConsolidated, status, group]);
           }
         } catch (err) {
           logger.error(err.stack || err);
@@ -480,176 +506,6 @@ router.post(
       } catch (error) {
         return renderError(res, `Failed to query bill for water and sewerage application`);
       }
-    }
-    else
-    {
-      try{
-        try {
-        restWater = await search_water_propertyId(propertyId, tenantId,
-                  {RequestInfo:requestinfo.RequestInfo},
-                  true
-                );
-       
-                restWater = restWater.data.WaterConnection;
-                logger.info("Water Connection :::::: " + restWater.length);
-
-          restSewerage = await search_sewerage_propertyId(
-                    propertyId,
-                    tenantId,
-                    {RequestInfo:requestinfo.RequestInfo},
-                    true
-                  );
-           
-
-       
-          if(restWater.length>0){
-            for(let water of restWater){
-              if(water.connectionNo){
-                if(!connectionnoToPropertyMap[water.propertyId]){
-                  connectionnoToPropertyMap[water.propertyId] = [];
-                }
-                  connectionnoToPropertyMap[water.propertyId].push(water.connectionNo);
-              }
-              if(!propertyIdSet.includes(water.propertyId)){
-                propertyIdSet.push(water.propertyId);
-              }
-            }
-          }
-          restSewerage = restSewerage.data.SewerageConnections;
-          logger.info("Sewerage Connection :::::: " + restSewerage.length);
-          if(restSewerage.length>0){
-            for(let sewerage of restSewerage){
-              if(sewerage.connectionNo){
-                if(!connectionnoToPropertyMap[sewerage.propertyId]){
-                  connectionnoToPropertyMap[sewerage.propertyId] = [];
-                }
-                  connectionnoToPropertyMap[sewerage.propertyId].push(sewerage.connectionNo);
-              }
-              if(!propertyIdSet.includes(sewerage.propertyId)){
-                  propertyIdSet.push(sewerage.propertyId);
-              }
-            }   
-          }
-        }
-          
-        catch (ex) {
-          if (ex.response && ex.response.data) console.log(ex.response.data);
-          return renderError(res, "Failed to query details of water and sewerage application");
-        }
-        try{
-          for(let sewerage of restSewerage){
-              var billresponse = await fetch_bill(
-              tenantId, sewerage.connectionNo,
-              'SW', {RequestInfo:requestinfo.RequestInfo});
-              if(billresponse.data.Bill[0]!=undefined)
-              consolidatedResult.Bill.push(billresponse.data.Bill[0]);
-            }
-
-            for(let water of restWater){
-              var billresponse = await fetch_bill(
-              tenantId, water.connectionNo,
-              'WS', {RequestInfo:requestinfo.RequestInfo});
-              logger.info("ddd-----"+billresponse.data.Bill[0]);
-              if(billresponse.data.Bill[0]!=undefined)
-              consolidatedResult.Bill.push(billresponse.data.Bill[0]);
-            }
-            logger.info("Total Bills:::::: " + (consolidatedResult.Bill && consolidatedResult.Bill[0]!=undefined?consolidatedResult.Bill.length:0));
-
-        }
-        catch (ex) {
-          if (ex.response && ex.response.data) logger.error(ex.response.data);
-          throw new Error('Failed to query bills for water and sewerage connection');
-        }
-        var propertyDetails = await getPropertyDeatils({RequestInfo:requestinfo.RequestInfo}, tenantId, propertyIdSet, connectionnoToPropertyMap);
-
-         if(restWater.length>0 || restSewerage.length>0){
-          if (consolidatedResult && consolidatedResult.Bill && consolidatedResult.Bill.length > 0 && consolidatedResult.Bill[0] !=undefined ) {
-            try {
-              consolidatedResult.Bill = consolidatedResult.Bill.filter(function(e){return e});
-              for(let i=0;i<consolidatedResult.Bill.length;i++){
-                let consumerCode = consolidatedResult.Bill[i].consumerCode;
-                let data = propertyDetails[consumerCode];
-                if(data){
-                  consolidatedResult.Bill[0].owners = data.owners;
-                  consolidatedResult.Bill[0].propertyUniqueId = data.propertyUniqueId;
-                  consolidatedResult.Bill[0].propertyAddress = data.propertyAddress;
-                  consolidatedResult.Bill[0].locality = data.locality;
-
-                }
-              }
-            }
-            catch (ex) {
-              let errorMessage= "Failed to generate PDF"; 
-              if (ex.response && ex.response.data) logger.error(ex.response.data);
-              throw new Error(errorMessage);
-            }
-          
-  
-            var pdfResponse;
-            var pdfkey = config.pdf.pt_group_bill;
-            logger.info("About to call pdf-service with key as  " + pdfkey);
-            var Bills=[];
-            var BillA={};
-            BillA.tenantId=tenantId;
-            BillA.Bill=consolidatedResult.Bill;
-            Bills.push(BillA);
-            try {
-              var billArray = { Bill: Bills };
-              logger.info("Bill Array is");
-              logger.info("Bills "+billArray.Bill.length);
-              logger.info("Bill " +billArray.Bill[0].Bill.length);
-              pdfResponse = await create_pdf(
-                'pg',
-                pdfkey,
-                billArray,
-                {RequestInfo:requestinfo.RequestInfo}
-              );
-              logger.info("pdfResponse " + pdfResponse);
-
-            } catch (ex) {
-              let errorMessage;
-              if(bussinessService == 'WS')
-                errorMessage = "Failed to generate PDF for water connection bill";
-              if(bussinessService == 'WS.ONE_TIME_FEE')
-                errorMessage = "Failed to generate PDF for water one time fees bill"; 
-                if(propertyId != null)
-                errorMessage = "Failed to generate PDF PT wise WS Bills"; 
-              if (ex.response && ex.response.data) console.log(ex.response.data);
-              return renderError(
-                res,
-                errorMessage
-              );
-            }
-            var filename = `${pdfkey}_${new Date().getTime()}`;
-            res.writeHead(200, {
-              "Content-Type": "application/pdf",
-              "Content-Disposition": `attachment; filename=${filename}.pdf`,
-            });
-            pdfResponse.data.pipe(res);
-          } else {
-            res.status(201);
-            res.json({
-              ResponseInfo: requestinfo.RequestInfo,
-              message: "There is no bill present for Water or Sewerage Connections associated with this Property Id",
-            });
-           // return "There is no bill present for Water or Sewerage Connections associated with this Property Id";
-          }
-        }
-      
-      else
-      {
-        res.status(201);
-        res.json({
-          ResponseInfo: requestinfo.RequestInfo,
-          message: "There is no connection associated with this Property Id",
-        });
-       // return "There is no connection associated with this Property Id";
-      }
-      }
-      catch (ex) {
-        return renderError(res, 'Some Unknown error Occured!!'+ex.message);
-      }
-    }
 
     })
   );

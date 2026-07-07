@@ -4,14 +4,19 @@ import static org.egov.edcr.utility.DcrConstants.MORETHANONEPOLYLINEDEFINED;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.egov.common.entity.edcr.Block;
+import org.egov.common.entity.edcr.Measurement;
+import org.egov.common.entity.edcr.NotifiedRoad;
+import org.egov.common.entity.edcr.RainWaterHarvesting;
 import org.egov.common.entity.edcr.SetBack;
 import org.egov.edcr.constants.DxfFileConstants;
+import org.egov.edcr.entity.blackbox.MeasurementDetail;
 import org.egov.edcr.entity.blackbox.PlanDetail;
 import org.egov.edcr.entity.blackbox.YardDetail;
 import org.egov.edcr.service.LayerNames;
@@ -122,6 +127,12 @@ public class SetBackServiceExtract extends FeatureExtract {
                             minDistance.getYardMinDistance(pl, yardName, String.valueOf(setBack.getLevel()), doc));
                 }
                 setYardHeight(doc, yardName, yard);
+                List<DXFLWPolyline> sideYardMinWidths = Util.getPolyLinesByLayer(pl.getDoc(), yardName );
+                //Code added for the layername with colorCode match
+    			Util.validateLayerColor(yardName, Util.getColorByPolyLine(sideYardMinWidths), pl);
+                sideYardMinWidths.stream()
+                	.map(YardWidth -> new MeasurementDetail(YardWidth, true))
+                	.forEach(measurement -> yard.setWidth(measurement.getWidth().setScale(2, RoundingMode.HALF_UP)));
             }
         }
     }
@@ -142,8 +153,7 @@ public class SetBackServiceExtract extends FeatureExtract {
 
     private YardDetail getYard(PlanDetail pl, DXFDocument doc, String yardName, Integer level) {
         YardDetail yard = new YardDetail();
-        List<DXFLWPolyline> frontYardLines = Util.getPolyLinesByLayer(doc, yardName);
-
+        List<DXFLWPolyline> frontYardLines = Util.getPolyLinesByLayer(doc, yardName);                
         // VALIDATE WHETHER ONE SINGLE POLYLINE PRESENT.
         if (frontYardLines != null && frontYardLines.size() > 1)
             pl.addError("", edcrMessageSource.getMessage(MORETHANONEPOLYLINEDEFINED, new String[] { yardName }, null));
@@ -200,6 +210,12 @@ public class SetBackServiceExtract extends FeatureExtract {
                             minDistance.getYardMinDistance(pl, yardName, String.valueOf(setBack.getLevel()), doc));
                 }
                 setYardHeight(doc, yardName, sideYard1);
+                List<DXFLWPolyline> sideYardMinWidths = Util.getPolyLinesByLayer(pl.getDoc(), yardName );
+                //Code added for the layername with colorCode match
+    			Util.validateLayerColor(yardName, Util.getColorByPolyLine(sideYardMinWidths), pl);
+                sideYardMinWidths.stream()
+                	.map(YardWidth -> new MeasurementDetail(YardWidth, true))
+                	.forEach(measurement -> sideYard1.setWidth(measurement.getWidth().setScale(2, RoundingMode.HALF_UP)));
             } 
         }
     }
@@ -232,6 +248,13 @@ public class SetBackServiceExtract extends FeatureExtract {
                             minDistance.getYardMinDistance(pl, yardName, String.valueOf(setBack.getLevel()), doc));
                 }
                 setYardHeight(doc, yardName, rearYard);
+                
+                List<DXFLWPolyline> rearYardMinWidths = Util.getPolyLinesByLayer(pl.getDoc(), yardName );
+              //Code added for the layername with colorCode match
+    			Util.validateLayerColor(yardName, Util.getColorByPolyLine(rearYardMinWidths), pl);
+                rearYardMinWidths.stream()
+                	.map(rearYardWidth -> new MeasurementDetail(rearYardWidth, true))
+                	.forEach(measurement -> rearYard.setWidth(measurement.getWidth().setScale(2, RoundingMode.HALF_UP)));
             }
         }
     }
@@ -258,6 +281,14 @@ public class SetBackServiceExtract extends FeatureExtract {
                             minDistance.getYardMinDistance(pl, yardName, String.valueOf(setBack.getLevel()), doc));
                 }
                 setYardHeight(doc, yardName, frontYard);
+                List<DXFLWPolyline> frontYardMinWidths = Util.getPolyLinesByLayer(pl.getDoc(), yardName );
+                
+                //Code added for the layername with colorCode match
+    			Util.validateLayerColor(yardName, Util.getColorByPolyLine(frontYardMinWidths), pl);
+    			
+    			frontYardMinWidths.stream()
+                	.map(frontYardWidth -> new MeasurementDetail(frontYardWidth, true))
+                	.forEach(measurement -> frontYard.setWidth(measurement.getWidth().setScale(2, RoundingMode.HALF_UP)));
             } else
                 yardNotDefined(pl, yardName);
         }

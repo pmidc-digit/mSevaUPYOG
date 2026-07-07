@@ -3,7 +3,7 @@
 # -   name: < Name of the job, foo/bar would create job named bar inside folder foo >
 #     build:
 #     - work-dir: < Working directory of the app to be built >
-#       dockerfile: < Path to the dockerfile, optional, assumes dockerfile in working directory if not provided >
+#       dockerfile: < Path to the dockerfile, optional, assumes dockerfile in working directory if not provided>
 #       image-name: < Docker image name  >
 # -
 # -
@@ -167,6 +167,12 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "core-services/egov-location/src/main/resources/db"
         image-name: "egov-location-db"
+  
+  - name: "builds/upyog/core-services/egov-pb-digilocker"
+    build:
+      - work-dir: "core-services/egov-pb-digilocker"
+        image-name: "egov-pb-digilocker"
+        dockerfile: "build/maven/Dockerfile"
 
   - name: "builds/upyog/core-services/egov-mdms-service"
     build:
@@ -965,7 +971,7 @@ config:
       - work-dir: "core-services/egov-gisintegration"
         image-name: "egov-gisintegration"
         dockerfile: "build/maven/Dockerfile"
-      - work-dir: "core-services/egov-gisintegration/src/main/resources/db"
+      - work-dir: "core-services/egov-gisintegration/db"
         image-name: "egov-gisintegration-db"
 
   - name: "builds/upyog/municipal-services/challan-generation"
@@ -1081,4 +1087,34 @@ config:
       - work-dir: "utilities/search-api"
         image-name: "search-api"
         dockerfile: 'build/Dockerfile'
+
+  - name: "builds/upyog/business-services/dashboard-ingest-v2"
+    build:
+      - work-dir: "business-services/dashboard-ingest-v2"
+        image-name: "dashboard-ingest-v2"
+        dockerfile: "build/maven/Dockerfile"
+
+  - name: "builds/upyog/business-services/billing-service-v2"
+    build:
+      - work-dir: "business-services/billing-service-v2"
+        image-name: "billing-service-v2"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "business-services/billing-service-v2/src/main/resources/db"
+        image-name: "billing-service-v2-db"
+
+  - name: "builds/upyog/municipal-services/sw-calculator-v2"
+    build:
+      - work-dir: "municipal-services/sw-calculator-v2"
+        image-name: "sw-calculator-v2"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/sw-calculator-v2/src/main/resources/db"
+        image-name: "sw-calculator-v2-db" 
+
+  - name: "builds/upyog/municipal-services/ws-calculator-v2"
+    build:
+      - work-dir: "municipal-services/ws-calculator-v2"
+        image-name: "ws-calculator-v2"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/ws-calculator-v2/src/main/resources/db"
+        image-name: "ws-calculator-v2-db"
 

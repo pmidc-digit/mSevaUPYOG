@@ -220,6 +220,9 @@ public class WSCalculationConfiguration {
 
 	@Value("${egov.bill.search.endpoint}")
 	private String searchBillEndPoint;
+	
+	@Value("${egov.bill.search.endpoints}")
+	private String searchBillEndPoints;
 
 	@Value("${egov.ws.view.history.link}")
 	private String viewHistoryLink;
@@ -232,5 +235,8 @@ public class WSCalculationConfiguration {
 	
 	@Value("${kafka.topics.save.demand}")
 	private String saveDemand;
+	
+	@Value("${egov.ws_calculation.bulkMeterReading.default.limit}")
+	private String bulkMeterLimit;
 
 }

@@ -62,10 +62,15 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import org.egov.commons.mdms.BpaMdmsUtil;
+import org.egov.commons.mdms.config.MdmsConfiguration;
+import org.egov.commons.service.RestCallService;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -82,7 +87,8 @@ import org.egov.common.entity.edcr.PlanInformation;
 import org.egov.edcr.config.properties.EdcrApplicationSettings;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.contract.EdcrDetail;
-import org.egov.edcr.contract.EdcrRequest;
+//import org.egov.edcr.contract.EdcrRequest;
+import org.egov.common.edcr.model.EdcrRequest;
 import org.egov.edcr.entity.ApplicationType;
 import org.egov.edcr.entity.EdcrApplication;
 import org.egov.edcr.entity.EdcrApplicationDetail;
@@ -138,9 +144,19 @@ public class EdcrRestService {
 
     private static final String BPA_05 = "BPA-05";
 
-    private static Logger LOG = LogManager.getLogger(EdcrApplicationService.class);
+    private static Logger LOG = LogManager.getLogger(EdcrRestService.class);
 
     public static final String FILE_DOWNLOAD_URL = "%s/edcr/rest/dcr/downloadfile";
+    
+    // Define the BPA roles that require UUID-scoped filtering
+    private static final Set<String> BPA_STAKEHOLDER_ROLES = new HashSet<>(Arrays.asList(
+        "BPA_ARCHITECT",
+        "BPA_ENGINEER",
+        "BPA_BUILDER",
+        "BPA_STRUCTURALENGINEER",
+        "BPA_TOWNPLANNER",
+        "BPA_DESIGNER"
+    ));
 
     @Autowired
     protected SecurityUtils securityUtils;
@@ -181,14 +197,14 @@ public class EdcrRestService {
     public Session getCurrentSession() {
         return entityManager.unwrap(Session.class);
     }
-
+    
     @Transactional
     public EdcrDetail createEdcr(final EdcrRequest edcrRequest, final MultipartFile file,
             Map<String, List<Object>> masterData){
         EdcrApplication edcrApplication = new EdcrApplication();
         edcrApplication.setMdmsMasterData(masterData);
         
-        System.out.println("coeArea " + edcrRequest.getCoreArea());
+        LOG.info("coeArea : " + edcrRequest.getCoreArea());
         EdcrApplicationDetail edcrApplicationDetail = new EdcrApplicationDetail();
         if (ApplicationType.OCCUPANCY_CERTIFICATE.toString().equalsIgnoreCase(edcrRequest.getAppliactionType())) {
             edcrApplicationDetail.setComparisonDcrNumber(edcrRequest.getComparisonEdcrNumber());
@@ -198,12 +214,18 @@ public class EdcrRestService {
         edcrApplicationDetails.add(edcrApplicationDetail);
         edcrApplication.setTransactionNumber(edcrRequest.getTransactionNumber());
         edcrApplication.setCoreArea(edcrRequest.getCoreArea());
-        System.out.println("-----"+ edcrApplication.getCoreArea());
+        LOG.info("-----"+ edcrApplication.getCoreArea());
         if (isNotBlank(edcrRequest.getApplicantName()))
             edcrApplication.setApplicantName(edcrRequest.getApplicantName());
         else
-            edcrApplication.setApplicantName(DxfFileConstants.ANONYMOUS_APPLICANT);
-        edcrApplication.setArchitectInformation(DxfFileConstants.ANONYMOUS_APPLICANT);
+            edcrApplication.setApplicantName(DxfFileConstants.ANONYMOUS_APPLICANT);        
+        if(edcrRequest.getApplicantName()!=null) {
+        	//edcrApplication.setArchitectInformation(edcrRequest.getApplicantName());
+        	LOG.info("###Professional's name fro edcr report ####"+ edcrRequest.getRequestInfo().getUserInfo().getName());
+        	edcrApplication.setArchitectInformation(edcrRequest.getRequestInfo().getUserInfo().getName());
+        }else {
+        	edcrApplication.setArchitectInformation(DxfFileConstants.ANONYMOUS_APPLICANT);
+        }
         edcrApplication.setServiceType(edcrRequest.getApplicationSubType());
         if (edcrRequest.getAppliactionType() == null)
             edcrApplication.setApplicationType(ApplicationType.PERMIT);
@@ -224,6 +246,11 @@ public class EdcrRestService {
                     ? edcrRequest.getRequestInfo().getUserInfo().getUuid()
                     : edcrRequest.getRequestInfo().getUserInfo().getId());
             String tenantId = "";
+            LOG.info("ApplicationThreadLocals.getTenantID() ---> " + ApplicationThreadLocals.getTenantID());
+            if(edcrRequest.getTenantId()!=null) {
+            	 LOG.info("edcrRequest tenant id  ---> " +  edcrRequest.getTenantId() );
+            }
+           
             if (StringUtils.isNotBlank(edcrRequest.getTenantId())) {
                 String[] tenantArr = edcrRequest.getTenantId().split("\\.");
                 String tenantFromReq;
@@ -231,6 +258,7 @@ public class EdcrRestService {
                     tenantFromReq = tenantArr[0];
                 else
                     tenantFromReq = tenantArr[1];
+                LOG.info("tenantFromReq : " + tenantFromReq);
                 if (tenantFromReq.equalsIgnoreCase(ApplicationThreadLocals.getTenantID()))
                     tenantId = edcrRequest.getTenantId();
             }
@@ -242,10 +270,12 @@ public class EdcrRestService {
             } else if (StringUtils.isBlank(tenantId)) {
                 tenantId = ApplicationThreadLocals.getTenantID();
             }
+            // setting setThirdPartyUserTenant
+            LOG.info("ThirdPartyUserTenant : " + tenantId);
             edcrApplication.setThirdPartyUserTenant(tenantId);
         }
 
-        edcrApplication = edcrApplicationService.createRestEdcr(edcrApplication);
+        edcrApplication = edcrApplicationService.createRestEdcr(edcrApplication,edcrRequest);
         
         //Code to push the data of edcr application to kafka index
         EdcrIndexData edcrIndexData = new EdcrIndexData();
@@ -407,11 +437,38 @@ public class EdcrRestService {
         if (edcrApplnDtl.getApplication().getServiceType() != null)
             edcrDetail.setApplicationSubType(edcrApplnDtl.getApplication().getServiceType());
         String tenantId;
-        String[] tenantArr = edcrApplnDtl.getApplication().getThirdPartyUserTenant().split("\\.");
-        if (tenantArr.length == 1)
+//        String[] tenantArr = edcrApplnDtl.getApplication().getThirdPartyUserTenant().split("\\.");
+//        if (tenantArr.length == 1)
+//            tenantId = tenantArr[0];
+//        else
+//            tenantId = tenantArr[1];
+        String thirdPartyTenant = edcrApplnDtl.getApplication().getThirdPartyUserTenant();
+        LOG.info("Third party tenant received: {}", thirdPartyTenant);
+
+        // Split tenant string
+        String[] tenantArr = thirdPartyTenant.split("\\.");
+
+        LOG.info("tenantArr length = {}", tenantArr.length);
+
+        // Print each array value
+        for (int i = 0; i < tenantArr.length; i++) {
+            LOG.info("tenantArr[{}] = {}", i, tenantArr[i]);
+        }
+
+        // Resolve tenantId
+        if (tenantArr.length == 1) {
             tenantId = tenantArr[0];
-        else
+            LOG.info("Resolved tenantId from tenantArr[0]: {}", tenantId);
+        } else {
             tenantId = tenantArr[1];
+            LOG.info("Resolved tenantId from tenantArr[1]: {}", tenantId);
+        }
+
+        // Final print
+//        LOG.info("Final tenantId after resolution: {}", tenantId);
+        tenantId=thirdPartyTenant;        
+        LOG.info("Final tenantId after resolution: {}", tenantId);        
+
         if (edcrApplnDtl.getDxfFileId() != null)
             edcrDetail.setDxfFile(format(getFileDownloadUrl(edcrApplnDtl.getDxfFileId().getFileStoreId(), tenantId)));
 
@@ -499,7 +556,9 @@ public class EdcrRestService {
         }
         edcrDetail.setApplicationSubType(String.valueOf(applnDtls[12]));
         edcrDetail.setPermitNumber(String.valueOf(applnDtls[13]));
-        String tenantId = String.valueOf(applnDtls[0]);
+//        String tenantId = String.valueOf(applnDtls[0]);
+        String tenantId = String.valueOf(applnDtls[15]);
+        LOG.info("Full tenant id : " + tenantId);
         if (applnDtls[14] != null)
             edcrDetail.setPermitDate(new LocalDate(String.valueOf(applnDtls[14])).toDate());
 
@@ -554,65 +613,320 @@ public class EdcrRestService {
         return edcrDetail;
     }
 
+    
+    /**
+     * Extracts city-level tenant from full tenantId.
+     * "pb.lalru" → "lalru"
+     * "pb"       → null (state level, search all tenants)
+     */
+    private String resolveSpecificTenant(String tenantId) {
+        if (isNotBlank(tenantId) && tenantId.contains(".")) {
+            String city = tenantId.substring(tenantId.lastIndexOf('.') + 1).toLowerCase();
+            LOG.info("[resolveSpecificTenant] Input tenantId: '{}', Resolved city tenant: '{}'", tenantId, city);
+            return city;
+        }
+        LOG.info("[resolveSpecificTenant] Input tenantId: '{}' is state-level, returning null", tenantId);
+        return null;
+    }
+    
+//    @SuppressWarnings("unchecked")
+//    public List<EdcrDetail> fetchEdcr(final EdcrRequest edcrRequest, final RequestInfoWrapper reqInfoWrapper) {
+//        LOG.info("[fetchEdcr] ========== START fetchEdcr ==========");
+//        LOG.info("[fetchEdcr] Incoming edcrRequest tenantId    : {}", edcrRequest.getTenantId());
+//        LOG.info("[fetchEdcr] Incoming edcrRequest edcrNumber  : {}", edcrRequest.getEdcrNumber());
+//        LOG.info("[fetchEdcr] Incoming edcrRequest txnNumber   : {}", edcrRequest.getTransactionNumber());
+//        LOG.info("[fetchEdcr] Incoming edcrRequest appNumber   : {}", edcrRequest.getApplicationNumber());
+//
+//        List<EdcrApplicationDetail> edcrApplications = new ArrayList<>();
+//
+//        UserInfo userInfo = reqInfoWrapper.getRequestInfo() == null ? null
+//                : reqInfoWrapper.getRequestInfo().getUserInfo();
+//
+//        String userId = "";
+//        if (userInfo != null && StringUtils.isNoneBlank(userInfo.getUuid()))
+//            userId = userInfo.getUuid();
+//        else if (userInfo != null && StringUtils.isNoneBlank(userInfo.getId()))
+//            userId = userInfo.getId();
+//
+//        LOG.info("[fetchEdcr] Resolved userId from userInfo    : '{}'", userId);
+//
+//        // When the user is ANONYMOUS, clear userId
+////        if (userInfo != null && StringUtils.isNoneBlank(userId) && userInfo.getRoles() != null
+////                && !userInfo.getRoles().isEmpty()) {
+////            List<String> roles = userInfo.getRoles().stream().map(Role::getCode).collect(Collectors.toList());
+////            LOG.info("[fetchEdcr] User roles : {}", roles);
+////            if (roles.contains("ANONYMOUS")) {
+////                LOG.info("[fetchEdcr] User is ANONYMOUS, clearing userId for open search");
+////                userId = "";
+////            }
+////        }
+//        
+//        List<String> roles = (userInfo != null && userInfo.getRoles() != null)
+//        	    ? userInfo.getRoles().stream().map(Role::getCode).collect(Collectors.toList())
+//        	    : Collections.emptyList();
+//
+//        	boolean isBpaStakeholderRole = roles.stream().anyMatch(BPA_STAKEHOLDER_ROLES::contains);
+//
+//        	LOG.info("[fetchEdcr] isBpaStakeholderRole flag          : {}", isBpaStakeholderRole);
+//
+//
+//        if (edcrRequest.getLimit() == null)
+//            edcrRequest.setLimit(-1);
+//        if (edcrRequest.getOffset() == null)
+//            edcrRequest.setOffset(0);
+//
+////        boolean onlyTenantId = edcrRequest != null && isBlank(edcrRequest.getEdcrNumber())
+////                && isBlank(edcrRequest.getTransactionNumber()) && isBlank(edcrRequest.getAppliactionType())
+////                && isBlank(edcrRequest.getApplicationSubType()) && isBlank(edcrRequest.getStatus())
+////                && edcrRequest.getFromDate() == null && edcrRequest.getToDate() == null
+////                && isBlank(edcrRequest.getApplicationNumber())
+////                && isNotBlank(edcrRequest.getTenantId());
+//        
+//        boolean onlyTenantId = edcrRequest != null 
+//        		&& isNotBlank(edcrRequest.getEdcrNumber())
+//                && isNotBlank(edcrRequest.getTenantId());
+//
+//        boolean isStakeholder = edcrRequest != null && (isNotBlank(edcrRequest.getAppliactionType())
+//                || isNotBlank(edcrRequest.getApplicationSubType()) || isNotBlank(edcrRequest.getStatus())
+//                || edcrRequest.getFromDate() != null || edcrRequest.getToDate() != null);
+//
+//        LOG.info("[fetchEdcr] onlyTenantId flag                : {}", onlyTenantId);
+//        LOG.info("[fetchEdcr] isStakeholder flag               : {}", isStakeholder);
+//
+//        City stateCity = cityService.fetchStateCityDetails();
+//        LOG.info("[fetchEdcr] State city code                  : {}", stateCity.getCode());
+//
+//        int limit = Integer.parseInt(environmentSettings.getProperty("egov.edcr.default.limit"));
+//        int offset = Integer.parseInt(environmentSettings.getProperty("egov.edcr.default.offset"));
+//        int maxLimit = Integer.parseInt(environmentSettings.getProperty("egov.edcr.max.limit"));
+//
+//        if (edcrRequest.getLimit() != null && edcrRequest.getLimit() <= maxLimit)
+//            limit = edcrRequest.getLimit();
+//        if (edcrRequest.getLimit() != null && (edcrRequest.getLimit() > maxLimit || edcrRequest.getLimit() == -1))
+//            limit = maxLimit;
+//        if (edcrRequest.getLimit() != null)
+//            offset = edcrRequest.getOffset();
+//
+//        LOG.info("[fetchEdcr] Pagination — limit: {}, offset: {}", limit, offset);
+//
+//        // -----------------------------------------------------------------------
+//        // BRANCH DECISION
+//        // -----------------------------------------------------------------------
+//        boolean isStateLevelRequest = edcrRequest != null
+//                && edcrRequest.getTenantId().equalsIgnoreCase(stateCity.getCode());
+//
+//        LOG.info("[fetchEdcr] Is state-level request (tenantId == stateCode)? : {}", isStateLevelRequest);
+//
+//        if (isStateLevelRequest) {
+//            // -------------------------------------------------------------------
+//            // STATE LEVEL PATH — tenantId = "pb"
+//            // -------------------------------------------------------------------
+//            LOG.info("[fetchEdcr] Taking STATE-LEVEL path");
+//
+//            final Map<String, String> params = new ConcurrentHashMap<>();
+//
+//            // Resolve specific tenant: "pb.lalru" → "lalru", "pb" → null
+//            String specificTenant = resolveSpecificTenant(edcrRequest.getTenantId());
+//            LOG.info("[fetchEdcr] specificTenant after resolve     : '{}'", specificTenant);
+//
+////            String queryString = searchAtStateTenantLevel(
+////                    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant);
+//            String queryString = searchAtStateTenantLevel(
+//            	    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant, isBpaStakeholderRole);
+//
+//            LOG.info("[fetchEdcr] Generated SQL query :\n{}", queryString);
+//
+//            final Query query = getCurrentSession().createSQLQuery(queryString)
+//                    .setFirstResult(offset)
+//                    .setMaxResults(limit);
+//
+//            for (final Map.Entry<String, String> param : params.entrySet()) {
+//                LOG.info("[fetchEdcr] SQL param — key: '{}', value: '{}'", param.getKey(), param.getValue());
+//                query.setParameter(param.getKey(), param.getValue());
+//            }
+//
+//            List<Object[]> applns = query.list();
+//            LOG.info("[fetchEdcr] Records returned from state-level query: {}", applns.size());
+//
+//            if (applns.isEmpty()) {
+//                LOG.info("[fetchEdcr] No records found in state-level search. Returning error response.");
+//                EdcrDetail edcrDetail = new EdcrDetail();
+//                edcrDetail.setErrors("No Record Found");
+//                return Arrays.asList(edcrDetail);
+//            } else {
+//                List<EdcrDetail> edcrDetails2 = new ArrayList<>();
+//                for (Object[] appln : applns)
+//                    edcrDetails2.add(setEdcrResponseForAcrossTenants(appln, stateCity.getCode()));
+//
+//                List<EdcrDetail> sortedList;
+//                String orderBy = isNotBlank(edcrRequest.getOrderBy()) ? edcrRequest.getOrderBy() : "desc";
+//                LOG.info("[fetchEdcr] Sorting result by applicationDate — order: {}", orderBy);
+//
+//                if (orderBy.equalsIgnoreCase("asc"))
+//                    sortedList = edcrDetails2.stream()
+//                            .sorted(Comparator.comparing(EdcrDetail::getApplicationDate))
+//                            .collect(Collectors.toList());
+//                else
+//                    sortedList = edcrDetails2.stream()
+//                            .sorted(Comparator.comparing(EdcrDetail::getApplicationDate).reversed())
+//                            .collect(Collectors.toList());
+//
+//                LOG.info("[fetchEdcr] Total records returned (state-level): {}", sortedList.size());
+//                LOG.info("[fetchEdcr] ========== END fetchEdcr ==========");
+//                return sortedList;
+//            }
+//
+//        } else {
+//            // -------------------------------------------------------------------
+//            // SINGLE TENANT PATH — tenantId = "pb.lalru" or similar
+//            // -------------------------------------------------------------------
+//            LOG.info("[fetchEdcr] Taking SINGLE-TENANT path for tenantId: '{}'", edcrRequest.getTenantId());
+//
+//            final Criteria criteria = getCriteriaofSingleTenant(
+//                    edcrRequest, userInfo, userId, onlyTenantId, isStakeholder);
+//
+//            LOG.info("[fetchEdcr] Criteria query                   : {}", criteria.toString());
+//            criteria.setFirstResult(offset);
+//            criteria.setMaxResults(limit);
+//            edcrApplications = criteria.list();
+//
+//            LOG.info("[fetchEdcr] Records returned from single-tenant query: {}", edcrApplications.size());
+//        }
+//
+//        if (edcrApplications.isEmpty()) {
+//            LOG.info("[fetchEdcr] No records found in single-tenant search. Returning error response.");
+//            LOG.info("[fetchEdcr] ========== END fetchEdcr ==========");
+//            EdcrDetail edcrDetail = new EdcrDetail();
+//            edcrDetail.setErrors("No Record Found");
+//            return Arrays.asList(edcrDetail);
+//        } else {
+//            LOG.info("[fetchEdcr] Returning {} records from single-tenant search.", edcrApplications.size());
+//            LOG.info("[fetchEdcr] ========== END fetchEdcr ==========");
+//            return edcrDetailsResponse(edcrApplications, edcrRequest);
+//        }
+//    }
+    
     @SuppressWarnings("unchecked")
     public List<EdcrDetail> fetchEdcr(final EdcrRequest edcrRequest, final RequestInfoWrapper reqInfoWrapper) {
+        LOG.info("[fetchEdcr] ========== START fetchEdcr ==========");
+        LOG.info("[fetchEdcr] Incoming edcrRequest tenantId    : {}", edcrRequest.getTenantId());
+        LOG.info("[fetchEdcr] Incoming edcrRequest edcrNumber  : {}", edcrRequest.getEdcrNumber());
+        LOG.info("[fetchEdcr] Incoming edcrRequest txnNumber   : {}", edcrRequest.getTransactionNumber());
+        LOG.info("[fetchEdcr] Incoming edcrRequest appNumber   : {}", edcrRequest.getApplicationNumber());
+
         List<EdcrApplicationDetail> edcrApplications = new ArrayList<>();
+
         UserInfo userInfo = reqInfoWrapper.getRequestInfo() == null ? null
                 : reqInfoWrapper.getRequestInfo().getUserInfo();
+
         String userId = "";
         if (userInfo != null && StringUtils.isNoneBlank(userInfo.getUuid()))
             userId = userInfo.getUuid();
         else if (userInfo != null && StringUtils.isNoneBlank(userInfo.getId()))
             userId = userInfo.getId();
-        // When the user is ANONYMOUS, then search application by edcrno or transaction
-        // number
-        if (userInfo != null && StringUtils.isNoneBlank(userId) && userInfo.getPrimaryrole() != null
-                && !userInfo.getPrimaryrole().isEmpty()) {
-            List<String> roles = userInfo.getPrimaryrole().stream().map(Role::getCode).collect(Collectors.toList());
-            LOG.info("****Roles***" + roles);
-            if (roles.contains("ANONYMOUS"))
-                userId = "";
-        }
+
+        LOG.info("[fetchEdcr] Resolved userId from userInfo    : '{}'", userId);
+
+        // When the user is ANONYMOUS, clear userId
+//        if (userInfo != null && StringUtils.isNoneBlank(userId) && userInfo.getRoles() != null
+//                && !userInfo.getRoles().isEmpty()) {
+//            List<String> roles = userInfo.getRoles().stream().map(Role::getCode).collect(Collectors.toList());
+//            LOG.info("[fetchEdcr] User roles : {}", roles);
+//            if (roles.contains("ANONYMOUS")) {
+//                LOG.info("[fetchEdcr] User is ANONYMOUS, clearing userId for open search");
+//                userId = "";
+//            }
+//        }
+        
+        List<String> roles = (userInfo != null && userInfo.getRoles() != null)
+        	    ? userInfo.getRoles().stream().map(Role::getCode).collect(Collectors.toList())
+        	    : Collections.emptyList();
+
+        	boolean isBpaStakeholderRole = roles.stream().anyMatch(BPA_STAKEHOLDER_ROLES::contains);
+
+        	LOG.info("[fetchEdcr] isBpaStakeholderRole flag          : {}", isBpaStakeholderRole);
+
+
         if (edcrRequest.getLimit() == null)
             edcrRequest.setLimit(-1);
         if (edcrRequest.getOffset() == null)
             edcrRequest.setOffset(0);
-        boolean onlyTenantId = edcrRequest != null && isBlank(edcrRequest.getEdcrNumber())
-                && isBlank(edcrRequest.getTransactionNumber()) && isBlank(edcrRequest.getAppliactionType())
-                && isBlank(edcrRequest.getApplicationSubType()) && isBlank(edcrRequest.getStatus())
-                && edcrRequest.getFromDate() == null && edcrRequest.getToDate() == null
-                && isBlank(edcrRequest.getApplicationNumber())
-                && isNotBlank(edcrRequest.getTenantId());
+
+//        boolean onlyTenantId = edcrRequest != null && isBlank(edcrRequest.getEdcrNumber())
+//                && isBlank(edcrRequest.getTransactionNumber()) && isBlank(edcrRequest.getAppliactionType())
+//                && isBlank(edcrRequest.getApplicationSubType()) && isBlank(edcrRequest.getStatus())
+//                && edcrRequest.getFromDate() == null && edcrRequest.getToDate() == null
+//                && isBlank(edcrRequest.getApplicationNumber())
+//                && isNotBlank(edcrRequest.getTenantId());
         
+        boolean onlyTenantId = edcrRequest != null 
+        		&& isNotBlank(edcrRequest.getEdcrNumber())
+                && isNotBlank(edcrRequest.getTenantId());
+
         boolean isStakeholder = edcrRequest != null && (isNotBlank(edcrRequest.getAppliactionType())
                 || isNotBlank(edcrRequest.getApplicationSubType()) || isNotBlank(edcrRequest.getStatus())
                 || edcrRequest.getFromDate() != null || edcrRequest.getToDate() != null);
 
+        LOG.info("[fetchEdcr] onlyTenantId flag                : {}", onlyTenantId);
+        LOG.info("[fetchEdcr] isStakeholder flag               : {}", isStakeholder);
+
         City stateCity = cityService.fetchStateCityDetails();
+        LOG.info("[fetchEdcr] State city code                  : {}", stateCity.getCode());
 
         int limit = Integer.parseInt(environmentSettings.getProperty("egov.edcr.default.limit"));
         int offset = Integer.parseInt(environmentSettings.getProperty("egov.edcr.default.offset"));
         int maxLimit = Integer.parseInt(environmentSettings.getProperty("egov.edcr.max.limit"));
+
         if (edcrRequest.getLimit() != null && edcrRequest.getLimit() <= maxLimit)
             limit = edcrRequest.getLimit();
-        if (edcrRequest.getLimit() != null && (edcrRequest.getLimit() > maxLimit || edcrRequest.getLimit() == -1)) {
+        if (edcrRequest.getLimit() != null && (edcrRequest.getLimit() > maxLimit || edcrRequest.getLimit() == -1))
             limit = maxLimit;
-        }
         if (edcrRequest.getLimit() != null)
             offset = edcrRequest.getOffset();
 
-        if (edcrRequest != null && edcrRequest.getTenantId().equalsIgnoreCase(stateCity.getCode())) {
+        LOG.info("[fetchEdcr] Pagination — limit: {}, offset: {}", limit, offset);
+
+        // -----------------------------------------------------------------------
+        // BRANCH DECISION
+        // -----------------------------------------------------------------------
+        boolean isStateLevelRequest = edcrRequest != null
+                && edcrRequest.getTenantId().equalsIgnoreCase(stateCity.getCode());
+
+        LOG.info("[fetchEdcr] Is state-level request (tenantId == stateCode)? : {}", isStateLevelRequest);
+
+        if (isStateLevelRequest) {
+            // -------------------------------------------------------------------
+            // STATE LEVEL PATH — tenantId = "pb"
+            // -------------------------------------------------------------------
+            LOG.info("[fetchEdcr] Taking STATE-LEVEL path");
+
             final Map<String, String> params = new ConcurrentHashMap<>();
 
+            // Resolve specific tenant: "pb.lalru" → "lalru", "pb" → null
+            String specificTenant = resolveSpecificTenant(edcrRequest.getTenantId());
+            LOG.info("[fetchEdcr] specificTenant after resolve     : '{}'", specificTenant);
 
-            String queryString = searchAtStateTenantLevel(edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder);
-            LOG.info(queryString);
-            final Query query = getCurrentSession().createSQLQuery(queryString).setFirstResult(offset)
+//            String queryString = searchAtStateTenantLevel(
+//                    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant);
+            String queryString = searchAtStateTenantLevel(
+            	    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant, isBpaStakeholderRole);
+
+            LOG.info("[fetchEdcr] Generated SQL query              :\n{}", queryString);
+
+            final Query query = getCurrentSession().createSQLQuery(queryString)
+                    .setFirstResult(offset)
                     .setMaxResults(limit);
-            for (final Map.Entry<String, String> param : params.entrySet())
+
+            for (final Map.Entry<String, String> param : params.entrySet()) {
+                LOG.info("[fetchEdcr] SQL param — key: '{}', value: '{}'", param.getKey(), param.getValue());
                 query.setParameter(param.getKey(), param.getValue());
+            }
+
             List<Object[]> applns = query.list();
+            LOG.info("[fetchEdcr] Records returned from state-level query: {}", applns.size());
+
             if (applns.isEmpty()) {
+                LOG.info("[fetchEdcr] No records found in state-level search. Returning error response.");
                 EdcrDetail edcrDetail = new EdcrDetail();
                 edcrDetail.setErrors("No Record Found");
                 return Arrays.asList(edcrDetail);
@@ -620,84 +934,144 @@ public class EdcrRestService {
                 List<EdcrDetail> edcrDetails2 = new ArrayList<>();
                 for (Object[] appln : applns)
                     edcrDetails2.add(setEdcrResponseForAcrossTenants(appln, stateCity.getCode()));
-                List<EdcrDetail> sortedList = new ArrayList<>();
-                String orderBy = "desc";
-                if (isNotBlank(edcrRequest.getOrderBy()))
-                    orderBy = edcrRequest.getOrderBy();
+
+                List<EdcrDetail> sortedList;
+                String orderBy = isNotBlank(edcrRequest.getOrderBy()) ? edcrRequest.getOrderBy() : "desc";
+                LOG.info("[fetchEdcr] Sorting result by applicationDate — order: {}", orderBy);
+
                 if (orderBy.equalsIgnoreCase("asc"))
-                    sortedList = edcrDetails2.stream().sorted(Comparator.comparing(EdcrDetail::getApplicationDate))
+                    sortedList = edcrDetails2.stream()
+                            .sorted(Comparator.comparing(EdcrDetail::getApplicationDate))
                             .collect(Collectors.toList());
                 else
-                    sortedList = edcrDetails2.stream().sorted(Comparator.comparing(EdcrDetail::getApplicationDate).reversed())
+                    sortedList = edcrDetails2.stream()
+                            .sorted(Comparator.comparing(EdcrDetail::getApplicationDate).reversed())
                             .collect(Collectors.toList());
 
-                LOG.info("The number of records = " + edcrDetails2.size());
+                LOG.info("[fetchEdcr] Total records returned (state-level): {}", sortedList.size());
+                LOG.info("[fetchEdcr] ========== END fetchEdcr ==========");
                 return sortedList;
             }
-        } else {
-            final Criteria criteria = getCriteriaofSingleTenant(edcrRequest, userInfo, userId, onlyTenantId, isStakeholder);
 
-            LOG.info(criteria.toString());
+        } else {
+            // -------------------------------------------------------------------
+            // SINGLE TENANT PATH — tenantId = "pb.lalru" or similar
+            // -------------------------------------------------------------------
+            LOG.info("[fetchEdcr] Taking SINGLE-TENANT path for tenantId: '{}'", edcrRequest.getTenantId());
+
+            final Criteria criteria = getCriteriaofSingleTenant(
+                    edcrRequest, userInfo, userId, onlyTenantId, isStakeholder);
+
+            LOG.info("[fetchEdcr] Criteria query : {}", criteria.toString());
             criteria.setFirstResult(offset);
             criteria.setMaxResults(limit);
             edcrApplications = criteria.list();
+
+            LOG.info("[fetchEdcr] Records returned from single-tenant query: {}", edcrApplications.size());
         }
 
-        LOG.info("The number of records = " + edcrApplications.size());
         if (edcrApplications.isEmpty()) {
+            LOG.info("[fetchEdcr] No records found in single-tenant search. Returning error response.");
+            LOG.info("[fetchEdcr] ========== END fetchEdcr ==========");
             EdcrDetail edcrDetail = new EdcrDetail();
             edcrDetail.setErrors("No Record Found");
             return Arrays.asList(edcrDetail);
         } else {
+            LOG.info("[fetchEdcr] Returning {} records from single-tenant search.", edcrApplications.size());
+            LOG.info("[fetchEdcr] ========== END fetchEdcr ==========");
             return edcrDetailsResponse(edcrApplications, edcrRequest);
         }
     }
 
     public Integer fetchCount(final EdcrRequest edcrRequest, final RequestInfoWrapper reqInfoWrapper) {
+        LOG.info("[fetchCount] ========== START fetchCount ==========");
+        LOG.info("[fetchCount] Incoming edcrRequest tenantId    : {}", edcrRequest.getTenantId());
+        LOG.info("[fetchCount] Incoming edcrRequest edcrNumber  : {}", edcrRequest.getEdcrNumber());
+
         UserInfo userInfo = reqInfoWrapper.getRequestInfo() == null ? null
                 : reqInfoWrapper.getRequestInfo().getUserInfo();
+
         String userId = "";
         if (userInfo != null && StringUtils.isNoneBlank(userInfo.getUuid()))
             userId = userInfo.getUuid();
         else if (userInfo != null && StringUtils.isNoneBlank(userInfo.getId()))
             userId = userInfo.getId();
-        
-        // When the user is ANONYMOUS, then search application by edcrno or transaction
-        // number
-        if (userInfo != null && StringUtils.isNoneBlank(userId) && userInfo.getPrimaryrole() != null
-                && !userInfo.getPrimaryrole().isEmpty()) {
-            List<String> roles = userInfo.getPrimaryrole().stream().map(Role::getCode).collect(Collectors.toList());
-            LOG.info("****Roles***" + roles);
-            if (roles.contains("ANONYMOUS"))
-                userId = "";
-        }
+
+        LOG.info("[fetchCount] Resolved userId from userInfo    : '{}'", userId);
+
+        // When the user is ANONYMOUS, clear userId
+//        if (userInfo != null && StringUtils.isNoneBlank(userId) && userInfo.getRoles() != null
+//                && !userInfo.getRoles().isEmpty()) {
+//            List<String> roles = userInfo.getRoles().stream().map(Role::getCode).collect(Collectors.toList());
+//            LOG.info("[fetchCount] User roles                       : {}", roles);
+//            if (roles.contains("ANONYMOUS")) {
+//                LOG.info("[fetchCount] User is ANONYMOUS, clearing userId");
+//                userId = "";
+//            }
+//        }
+        List<String> roles = (userInfo != null && userInfo.getRoles() != null)
+        	    ? userInfo.getRoles().stream().map(Role::getCode).collect(Collectors.toList())
+        	    : Collections.emptyList();
+
+        	boolean isBpaStakeholderRole = roles.stream().anyMatch(BPA_STAKEHOLDER_ROLES::contains);
+
         boolean onlyTenantId = edcrRequest != null && isBlank(edcrRequest.getEdcrNumber())
                 && isBlank(edcrRequest.getTransactionNumber()) && isBlank(edcrRequest.getAppliactionType())
                 && isBlank(edcrRequest.getApplicationSubType()) && isBlank(edcrRequest.getStatus())
                 && edcrRequest.getFromDate() == null && edcrRequest.getToDate() == null
                 && isBlank(edcrRequest.getApplicationNumber())
                 && isNotBlank(edcrRequest.getTenantId());
-        
+
         boolean isStakeholder = edcrRequest != null && (isNotBlank(edcrRequest.getAppliactionType())
                 || isNotBlank(edcrRequest.getApplicationSubType()) || isNotBlank(edcrRequest.getStatus())
                 || edcrRequest.getFromDate() != null || edcrRequest.getToDate() != null);
 
+        LOG.info("[fetchCount] onlyTenantId flag                : {}", onlyTenantId);
+        LOG.info("[fetchCount] isStakeholder flag               : {}", isStakeholder);
+
         City stateCity = cityService.fetchStateCityDetails();
-        if (edcrRequest != null && edcrRequest.getTenantId().equalsIgnoreCase(stateCity.getCode())) {
+        LOG.info("[fetchCount] State city code                  : {}", stateCity.getCode());
+
+        boolean isStateLevelRequest = edcrRequest != null
+                && edcrRequest.getTenantId().equalsIgnoreCase(stateCity.getCode());
+
+        LOG.info("[fetchCount] Is state-level request           : {}", isStateLevelRequest);
+
+        if (isStateLevelRequest) {
+            LOG.info("[fetchCount] Taking STATE-LEVEL path for count");
+
             final Map<String, String> params = new ConcurrentHashMap<>();
 
+            String specificTenant = resolveSpecificTenant(edcrRequest.getTenantId());
+            LOG.info("[fetchCount] specificTenant after resolve     : '{}'", specificTenant);
 
-            String queryString = searchAtStateTenantLevel(edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder);
+            String queryString = searchAtStateTenantLevel(
+            	    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant, isBpaStakeholderRole);
+
+            LOG.info("[fetchCount] Generated SQL query for count   :\n{}", queryString);
 
             final Query query = getCurrentSession().createSQLQuery(queryString);
-            for (final Map.Entry<String, String> param : params.entrySet())
+            for (final Map.Entry<String, String> param : params.entrySet()) {
+                LOG.info("[fetchCount] SQL param — key: '{}', value: '{}'", param.getKey(), param.getValue());
                 query.setParameter(param.getKey(), param.getValue());
-            return query.list().size();
-        } else {
-            final Criteria criteria = getCriteriaofSingleTenant(edcrRequest, userInfo, userId, onlyTenantId, isStakeholder);
-            return criteria.list().size();
-        }
+            }
 
+            int count = query.list().size();
+            LOG.info("[fetchCount] Count result (state-level)      : {}", count);
+            LOG.info("[fetchCount] ========== END fetchCount ==========");
+            return count;
+
+        } else {
+            LOG.info("[fetchCount] Taking SINGLE-TENANT path for count, tenantId: '{}'", edcrRequest.getTenantId());
+
+            final Criteria criteria = getCriteriaofSingleTenant(
+                    edcrRequest, userInfo, userId, onlyTenantId, isStakeholder);
+
+            int count = criteria.list().size();
+            LOG.info("[fetchCount] Count result (single-tenant)    : {}", count);
+            LOG.info("[fetchCount] ========== END fetchCount ==========");
+            return count;
+        }
     }
 
 
@@ -803,65 +1177,680 @@ public class EdcrRestService {
             query = orderByWrapperDesc.replace("{}", queryStr);
         return query;
     }
+    
+//    private String searchAtStateTenantLevel(final EdcrRequest edcrRequest, UserInfo userInfo, String userId,
+//            boolean onlyTenantId, final Map<String, String> params, boolean isStakeholder,
+//            String specificTenant, boolean isBpaStakeholderRole) {
+//
+//        LOG.info("[searchAtStateTenantLevel] ========== START ==========");
+//        LOG.info("[searchAtStateTenantLevel] specificTenant               : '{}'", specificTenant);
+//        LOG.info("[searchAtStateTenantLevel] userId                       : '{}'", userId);
+//        LOG.info("[searchAtStateTenantLevel] onlyTenantId                 : {}", onlyTenantId);
+//        LOG.info("[searchAtStateTenantLevel] isStakeholder                : {}", isStakeholder);
+//        LOG.info("[searchAtStateTenantLevel] edcrNumber                   : '{}'", edcrRequest.getEdcrNumber());
+//        LOG.info("[searchAtStateTenantLevel] transactionNumber            : '{}'", edcrRequest.getTransactionNumber());
+//
+//        StringBuilder queryStr = new StringBuilder();
+//        Map<String, String> allTenants = tenantUtils.tenantsMap();
+//
+//        // Scope to single tenant if specificTenant resolved, else search all
+//        Map<String, String> tenants;
+//        if (isNotBlank(specificTenant) && allTenants.containsKey(specificTenant)) {
+//            LOG.info("[searchAtStateTenantLevel] Scoping to single tenant: '{}'", specificTenant);
+//            tenants = Collections.singletonMap(specificTenant, allTenants.get(specificTenant));
+//        } else {
+//            LOG.info("[searchAtStateTenantLevel] specificTenant not found or null. Searching ALL {} tenants", allTenants.size());
+//            tenants = allTenants;
+//        }
+//
+//        LOG.info("[searchAtStateTenantLevel] Total tenants to search      : {}", tenants.size());
+//
+//        Iterator<Map.Entry<String, String>> tenantItr = tenants.entrySet().iterator();
+//
+//        String orderByWrapperDesc = "select * from ({}) as result order by result.applicationDate desc";
+//        String orderByWrapperAsc  = "select * from ({}) as result order by result.applicationDate asc";
+//
+//        while (tenantItr.hasNext()) {
+//            Map.Entry<String, String> value = tenantItr.next();
+//            LOG.info("[searchAtStateTenantLevel] Building query for tenant : '{}'", value.getKey());
+//
+//            queryStr.append("(select '")
+//                    .append(value.getKey())
+//                    .append("' as tenantId,appln.transactionNumber,dtl.dcrNumber,dtl.status,appln.applicantName,")
+//                    .append("dxf.fileStoreId as dxfFileId,scrudxf.fileStoreId as scrutinizedDxfFileId,")
+//                    .append("rofile.fileStoreId as reportOutputId,pdfile.fileStoreId as planDetailFileStore,")
+//                    .append("appln.applicationDate,appln.applicationNumber,appln.applicationType,")
+//                    .append("appln.serviceType,appln.planPermitNumber,appln.permitApplicationDate , appln.thirdpartyusertenant from ")
+//                    .append(value.getKey()).append(".edcr_application appln, ")
+//                    .append(value.getKey()).append(".edcr_application_detail dtl, ")
+//                    .append(value.getKey()).append(".eg_filestoremap dxf, ")
+//                    .append(value.getKey()).append(".eg_filestoremap scrudxf, ")
+//                    .append(value.getKey()).append(".eg_filestoremap rofile, ")
+//                    .append(value.getKey()).append(".eg_filestoremap pdfile ")
+//                    .append("where appln.id = dtl.application ")
+//                    .append("and dtl.dxfFileId=dxf.id ")
+//                    .append("and dtl.scrutinizedDxfFileId=scrudxf.id ")
+//                    .append("and dtl.reportOutputId=rofile.id ")
+//                    .append("and dtl.planDetailFileStore=pdfile.id ");
+//
+//            if (isNotBlank(edcrRequest.getEdcrNumber())) {
+//                LOG.info("[searchAtStateTenantLevel] Adding filter — edcrNumber: '{}'", edcrRequest.getEdcrNumber());
+//                queryStr.append("and dtl.dcrNumber=:dcrNumber ");
+//                params.put("dcrNumber", edcrRequest.getEdcrNumber());
+//            }
+//
+//            if (isNotBlank(edcrRequest.getTransactionNumber())) {
+//                LOG.info("[searchAtStateTenantLevel] Adding filter — transactionNumber: '{}'", edcrRequest.getTransactionNumber());
+//                queryStr.append("and appln.transactionNumber=:transactionNumber ");
+//                params.put("transactionNumber", edcrRequest.getTransactionNumber());
+//            }
+//
+//            if (isNotBlank(edcrRequest.getApplicationNumber())) {
+//                LOG.info("[searchAtStateTenantLevel] Adding filter — applicationNumber: '{}'", edcrRequest.getApplicationNumber());
+//                queryStr.append("and appln.applicationNumber=:applicationNumber ");
+//                params.put("applicationNumber", edcrRequest.getApplicationNumber());
+//            }
+//
+//            // UUID filter:
+//            // Case 1: onlyTenantId or isStakeholder — existing behavior
+//            // Case 2: specificTenant + userId present — new condition (scope by uuid)
+//         // UUID filter is ONLY applied when the user holds one of the designated BPA stakeholder roles.
+//         // All other roles (e.g. CITIZEN, EMPLOYEE, ANONYMOUS, etc.) skip this filter entirely.
+//         if (isBpaStakeholderRole && userInfo != null && isNotBlank(userId)) {
+//             if ((onlyTenantId || isStakeholder)) {
+//                 LOG.info("[searchAtStateTenantLevel] Adding uuid filter (onlyTenantId/isStakeholder + BPA role) — userId: '{}'", userId);
+//                 queryStr.append("and appln.thirdPartyUserCode=:thirdPartyUserCode ");
+//                 params.put("thirdPartyUserCode", userId);
+//             } else if (isNotBlank(specificTenant)) {
+//                 LOG.info("[searchAtStateTenantLevel] Adding uuid filter (specificTenant + BPA role) — userId: '{}'", userId);
+//                 queryStr.append("and appln.thirdPartyUserCode=:thirdPartyUserCode ");
+//                 params.put("thirdPartyUserCode", userId);
+//             } else {
+//                 LOG.info("[searchAtStateTenantLevel] BPA role present but no matching scope condition — uuid filter skipped");
+//             }
+//         } else {
+//             LOG.info("[searchAtStateTenantLevel] Non-BPA role or missing userId — uuid filter NOT applied. roles qualify: {}", isBpaStakeholderRole);
+//         }
+//
+//            String appliactionType = edcrRequest.getAppliactionType();
+//            if (isNotBlank(appliactionType)) {
+//                ApplicationType applicationType;
+//                if ("BUILDING_PLAN_SCRUTINY".equalsIgnoreCase(appliactionType)) {
+//                    applicationType = ApplicationType.PERMIT;
+//                } else if ("BUILDING_OC_PLAN_SCRUTINY".equalsIgnoreCase(appliactionType)) {
+//                    applicationType = ApplicationType.OCCUPANCY_CERTIFICATE;
+//                } else if ("Occupancy certificate".equalsIgnoreCase(appliactionType)) {
+//                    applicationType = ApplicationType.OCCUPANCY_CERTIFICATE;
+//                } else {
+//                    applicationType = ApplicationType.PERMIT;
+//                }
+//                LOG.info("[searchAtStateTenantLevel] Adding filter — applicationType: '{}'", applicationType);
+//                queryStr.append("and appln.applicationType=:applicationtype ");
+//                params.put("applicationtype", applicationType.toString());
+//            }
+//
+//            if (isNotBlank(edcrRequest.getApplicationSubType())) {
+//                LOG.info("[searchAtStateTenantLevel] Adding filter — serviceType: '{}'", edcrRequest.getApplicationSubType());
+//                queryStr.append("and appln.serviceType=:servicetype ");
+//                params.put("servicetype", edcrRequest.getApplicationSubType());
+//            }
+//
+//            if (isNotBlank(edcrRequest.getStatus())) {
+//                LOG.info("[searchAtStateTenantLevel] Adding filter — status: '{}'", edcrRequest.getStatus());
+//                queryStr.append("and dtl.status=:status ");
+//                params.put("status", edcrRequest.getStatus());
+//            }
+//
+//            if (edcrRequest.getFromDate() != null) {
+//                LOG.info("[searchAtStateTenantLevel] Adding filter — fromDate: '{}'", edcrRequest.getFromDate());
+//                queryStr.append("and appln.applicationDate>=to_timestamp(:fromDate, 'yyyy-MM-dd')");
+//                params.put("fromDate", sf.format(resetFromDateTimeStamp(edcrRequest.getFromDate())));
+//            }
+//
+//            if (edcrRequest.getToDate() != null) {
+//                LOG.info("[searchAtStateTenantLevel] Adding filter — toDate: '{}'", edcrRequest.getToDate());
+//                queryStr.append("and appln.applicationDate<=to_timestamp(:toDate ,'yyyy-MM-dd')");
+//                params.put("toDate", sf.format(resetToDateTimeStamp(edcrRequest.getToDate())));
+//            }
+//
+//            String orderBy = isNotBlank(edcrRequest.getOrderBy()) ? edcrRequest.getOrderBy() : "desc";
+//            if (orderBy.equalsIgnoreCase("asc"))
+//                queryStr.append(" order by appln.createddate asc)");
+//            else
+//                queryStr.append(" order by appln.createddate desc)");
+//
+//            if (tenantItr.hasNext())
+//                queryStr.append(" union ");
+//        }
+//
+//        String orderBy = isNotBlank(edcrRequest.getOrderBy()) ? edcrRequest.getOrderBy() : "desc";
+//        String query;
+//        if (orderBy.equalsIgnoreCase("asc"))
+//            query = orderByWrapperAsc.replace("{}", queryStr);
+//        else
+//            query = orderByWrapperDesc.replace("{}", queryStr);
+//
+//        LOG.info("[searchAtStateTenantLevel] Final query built successfully");
+//        LOG.info("[searchAtStateTenantLevel] ========== END ==========");
+//        return query;
+//    }
 
-    private Criteria getCriteriaofSingleTenant(final EdcrRequest edcrRequest, UserInfo userInfo, String userId,
-            boolean onlyTenantId, boolean isStakeholder) {
-        final Criteria criteria = getCurrentSession().createCriteria(EdcrApplicationDetail.class,
-                "edcrApplicationDetail");
+    private String searchAtStateTenantLevel(final EdcrRequest edcrRequest, UserInfo userInfo, String userId,
+            boolean onlyTenantId, final Map<String, String> params, boolean isStakeholder,
+            String specificTenant, boolean isBpaStakeholderRole) {
+
+        LOG.info("[searchAtStateTenantLevel] ========== START ==========");
+        LOG.info("[searchAtStateTenantLevel] specificTenant               : '{}'", specificTenant);
+        LOG.info("[searchAtStateTenantLevel] userId                       : '{}'", userId);
+        LOG.info("[searchAtStateTenantLevel] onlyTenantId                 : {}", onlyTenantId);
+        LOG.info("[searchAtStateTenantLevel] isStakeholder                : {}", isStakeholder);
+        LOG.info("[searchAtStateTenantLevel] edcrNumber                   : '{}'", edcrRequest.getEdcrNumber());
+        LOG.info("[searchAtStateTenantLevel] transactionNumber            : '{}'", edcrRequest.getTransactionNumber());
+
+        StringBuilder queryStr = new StringBuilder();
+        Map<String, String> allTenants = tenantUtils.tenantsMap();
+
+        // Scope to single tenant if specificTenant resolved, else search all
+        Map<String, String> tenants;
+        if (isNotBlank(specificTenant) && allTenants.containsKey(specificTenant)) {
+            LOG.info("[searchAtStateTenantLevel] Scoping to single tenant: '{}'", specificTenant);
+            tenants = Collections.singletonMap(specificTenant, allTenants.get(specificTenant));
+        } else {
+            LOG.info("[searchAtStateTenantLevel] specificTenant not found or null. Searching ALL {} tenants", allTenants.size());
+            tenants = allTenants;
+        }
+
+        LOG.info("[searchAtStateTenantLevel] Total tenants to search      : {}", tenants.size());
+
+        Iterator<Map.Entry<String, String>> tenantItr = tenants.entrySet().iterator();
+
+        String orderByWrapperDesc = "select * from ({}) as result order by result.applicationDate desc";
+        String orderByWrapperAsc  = "select * from ({}) as result order by result.applicationDate asc";
+
+        while (tenantItr.hasNext()) {
+            Map.Entry<String, String> value = tenantItr.next();
+            LOG.info("[searchAtStateTenantLevel] Building query for tenant : '{}'", value.getKey());
+
+            queryStr.append("(select '")
+                    .append(value.getKey())
+                    .append("' as tenantId,appln.transactionNumber,dtl.dcrNumber,dtl.status,appln.applicantName,")
+                    .append("dxf.fileStoreId as dxfFileId,scrudxf.fileStoreId as scrutinizedDxfFileId,")
+                    .append("rofile.fileStoreId as reportOutputId,pdfile.fileStoreId as planDetailFileStore,")
+                    .append("appln.applicationDate,appln.applicationNumber,appln.applicationType,")
+                    .append("appln.serviceType,appln.planPermitNumber,appln.permitApplicationDate , appln.thirdpartyusertenant from ")
+                    .append(value.getKey()).append(".edcr_application appln, ")
+                    .append(value.getKey()).append(".edcr_application_detail dtl, ")
+                    .append(value.getKey()).append(".eg_filestoremap dxf, ")
+                    .append(value.getKey()).append(".eg_filestoremap scrudxf, ")
+                    .append(value.getKey()).append(".eg_filestoremap rofile, ")
+                    .append(value.getKey()).append(".eg_filestoremap pdfile ")
+                    .append("where appln.id = dtl.application ")
+                    .append("and dtl.dxfFileId=dxf.id ")
+                    .append("and dtl.scrutinizedDxfFileId=scrudxf.id ")
+                    .append("and dtl.reportOutputId=rofile.id ")
+                    .append("and dtl.planDetailFileStore=pdfile.id ");
+
+            if (isNotBlank(edcrRequest.getEdcrNumber())) {
+                LOG.info("[searchAtStateTenantLevel] Adding filter — edcrNumber: '{}'", edcrRequest.getEdcrNumber());
+                queryStr.append("and dtl.dcrNumber=:dcrNumber ");
+                params.put("dcrNumber", edcrRequest.getEdcrNumber());
+            }
+
+            if (isNotBlank(edcrRequest.getTransactionNumber())) {
+                LOG.info("[searchAtStateTenantLevel] Adding filter — transactionNumber: '{}'", edcrRequest.getTransactionNumber());
+                queryStr.append("and appln.transactionNumber=:transactionNumber ");
+                params.put("transactionNumber", edcrRequest.getTransactionNumber());
+            }
+
+            if (isNotBlank(edcrRequest.getApplicationNumber())) {
+                LOG.info("[searchAtStateTenantLevel] Adding filter — applicationNumber: '{}'", edcrRequest.getApplicationNumber());
+                queryStr.append("and appln.applicationNumber=:applicationNumber ");
+                params.put("applicationNumber", edcrRequest.getApplicationNumber());
+            }
+
+            // UUID filter:
+            // Case 1: onlyTenantId or isStakeholder — existing behavior
+            // Case 2: specificTenant + userId present — new condition (scope by uuid)
+         // UUID filter is ONLY applied when the user holds one of the designated BPA stakeholder roles.
+         // All other roles (e.g. CITIZEN, EMPLOYEE, ANONYMOUS, etc.) skip this filter entirely.
+         if (isBpaStakeholderRole && userInfo != null && isNotBlank(userId)) {
+             if ((onlyTenantId || isStakeholder)) {
+                 LOG.info("[searchAtStateTenantLevel] Adding uuid filter (onlyTenantId/isStakeholder + BPA role) — userId: '{}'", userId);
+                 queryStr.append("and (appln.thirdPartyUserCode=:thirdPartyUserCode OR appln.applicantName=:applicantName) ");
+                 params.put("thirdPartyUserCode", userId);
+                 params.put("applicantName", userInfo.getName());
+             } else if (isNotBlank(specificTenant)) {
+                 LOG.info("[searchAtStateTenantLevel] Adding uuid filter (specificTenant + BPA role) — userId: '{}'", userId);
+                 queryStr.append("and (appln.thirdPartyUserCode=:thirdPartyUserCode OR appln.applicantName=:applicantName) ");
+                 params.put("thirdPartyUserCode", userId);
+                 params.put("applicantName", userInfo.getName());
+             } else {
+                 LOG.info("[searchAtStateTenantLevel] BPA role present but no matching scope condition — uuid filter skipped");
+             }
+         } else {
+             LOG.info("[searchAtStateTenantLevel] Non-BPA role or missing userId — uuid filter NOT applied. roles qualify: {}", isBpaStakeholderRole);
+         }
+
+            String appliactionType = edcrRequest.getAppliactionType();
+            if (isNotBlank(appliactionType)) {
+                ApplicationType applicationType;
+                if ("BUILDING_PLAN_SCRUTINY".equalsIgnoreCase(appliactionType)) {
+                    applicationType = ApplicationType.PERMIT;
+                } else if ("BUILDING_OC_PLAN_SCRUTINY".equalsIgnoreCase(appliactionType)) {
+                    applicationType = ApplicationType.OCCUPANCY_CERTIFICATE;
+                } else if ("Occupancy certificate".equalsIgnoreCase(appliactionType)) {
+                    applicationType = ApplicationType.OCCUPANCY_CERTIFICATE;
+                } else {
+                    applicationType = ApplicationType.PERMIT;
+                }
+                LOG.info("[searchAtStateTenantLevel] Adding filter — applicationType: '{}'", applicationType);
+                queryStr.append("and appln.applicationType=:applicationtype ");
+                params.put("applicationtype", applicationType.toString());
+            }
+
+            if (isNotBlank(edcrRequest.getApplicationSubType())) {
+                LOG.info("[searchAtStateTenantLevel] Adding filter — serviceType: '{}'", edcrRequest.getApplicationSubType());
+                queryStr.append("and appln.serviceType=:servicetype ");
+                params.put("servicetype", edcrRequest.getApplicationSubType());
+            }
+
+            if (isNotBlank(edcrRequest.getStatus())) {
+                LOG.info("[searchAtStateTenantLevel] Adding filter — status: '{}'", edcrRequest.getStatus());
+                queryStr.append("and dtl.status=:status ");
+                params.put("status", edcrRequest.getStatus());
+            }
+
+            if (edcrRequest.getFromDate() != null) {
+                LOG.info("[searchAtStateTenantLevel] Adding filter — fromDate: '{}'", edcrRequest.getFromDate());
+                queryStr.append("and appln.applicationDate>=to_timestamp(:fromDate, 'yyyy-MM-dd')");
+                params.put("fromDate", sf.format(resetFromDateTimeStamp(edcrRequest.getFromDate())));
+            }
+
+            if (edcrRequest.getToDate() != null) {
+                LOG.info("[searchAtStateTenantLevel] Adding filter — toDate: '{}'", edcrRequest.getToDate());
+                queryStr.append("and appln.applicationDate<=to_timestamp(:toDate ,'yyyy-MM-dd')");
+                params.put("toDate", sf.format(resetToDateTimeStamp(edcrRequest.getToDate())));
+            }
+
+            String orderBy = isNotBlank(edcrRequest.getOrderBy()) ? edcrRequest.getOrderBy() : "desc";
+            if (orderBy.equalsIgnoreCase("asc"))
+                queryStr.append(" order by appln.createddate asc)");
+            else
+                queryStr.append(" order by appln.createddate desc)");
+
+            if (tenantItr.hasNext())
+                queryStr.append(" union ");
+        }
+
+        String orderBy = isNotBlank(edcrRequest.getOrderBy()) ? edcrRequest.getOrderBy() : "desc";
+        String query;
+        if (orderBy.equalsIgnoreCase("asc"))
+            query = orderByWrapperAsc.replace("{}", queryStr);
+        else
+            query = orderByWrapperDesc.replace("{}", queryStr);
+
+        LOG.info("[searchAtStateTenantLevel] Final query built successfully");
+        LOG.info("[searchAtStateTenantLevel] ========== END ==========");
+        return query;
+    }
+    
+//    private Criteria getCriteriaofSingleTenant(final EdcrRequest edcrRequest, UserInfo userInfo, String userId,
+//            boolean onlyTenantId, boolean isStakeholder) {
+//        final Criteria criteria = getCurrentSession().createCriteria(EdcrApplicationDetail.class,
+//                "edcrApplicationDetail");
+//        criteria.createAlias("edcrApplicationDetail.application", "application");
+//        if (edcrRequest != null && isNotBlank(edcrRequest.getEdcrNumber())) {
+//            criteria.add(Restrictions.eq("edcrApplicationDetail.dcrNumber", edcrRequest.getEdcrNumber()));
+//        }
+//        if (edcrRequest != null && isNotBlank(edcrRequest.getTransactionNumber())) {
+//            criteria.add(Restrictions.eq("application.transactionNumber", edcrRequest.getTransactionNumber()));
+//        }
+//        if (edcrRequest != null && isNotBlank(edcrRequest.getApplicationNumber())) {
+//            criteria.add(Restrictions.eq("application.applicationNumber", edcrRequest.getApplicationNumber()));
+//        }
+//
+//        String appliactionType = edcrRequest.getAppliactionType();
+//
+//        if (edcrRequest != null && isNotBlank(appliactionType)) {
+//            ApplicationType applicationType = null;
+//            if ("BUILDING_PLAN_SCRUTINY".equalsIgnoreCase(appliactionType)) {
+//                applicationType = ApplicationType.PERMIT;
+//            } else if ("BUILDING_OC_PLAN_SCRUTINY".equalsIgnoreCase(appliactionType)) {
+//                applicationType = ApplicationType.OCCUPANCY_CERTIFICATE;
+//            }
+//            if ("Permit".equalsIgnoreCase(appliactionType)) {
+//                applicationType = ApplicationType.PERMIT;
+//            } else if ("Occupancy certificate".equalsIgnoreCase(appliactionType)) {
+//                applicationType = ApplicationType.OCCUPANCY_CERTIFICATE;
+//            }
+//            criteria.add(Restrictions.eq("application.applicationType", applicationType));
+//        }
+//
+//        if (edcrRequest != null && isNotBlank(edcrRequest.getApplicationSubType())) {
+//            criteria.add(Restrictions.eq("application.serviceType", edcrRequest.getApplicationSubType()));
+//        }
+//
+//        if ((onlyTenantId || isStakeholder) &&  userInfo != null && isNotBlank(userId)) {
+//            criteria.add(Restrictions.eq("application.thirdPartyUserCode", userId));
+//        }
+//
+//        if (isNotBlank(edcrRequest.getStatus()))
+//            criteria.add(Restrictions.eq("edcrApplicationDetail.status", edcrRequest.getStatus()));
+//        if (edcrRequest.getFromDate() != null)
+//            criteria.add(Restrictions.ge("application.applicationDate", edcrRequest.getFromDate()));
+//        if (edcrRequest.getToDate() != null)
+//            criteria.add(Restrictions.le("application.applicationDate", edcrRequest.getToDate()));
+//        String orderBy = "desc";
+//        if (isNotBlank(edcrRequest.getOrderBy()))
+//            orderBy = edcrRequest.getOrderBy();
+//        if (orderBy.equalsIgnoreCase("asc"))
+//            criteria.addOrder(Order.asc("edcrApplicationDetail.createdDate"));
+//        else
+//            criteria.addOrder(Order.desc("edcrApplicationDetail.createdDate"));
+//
+//        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+//        return criteria;
+//    }
+//    private Criteria getCriteriaofSingleTenant(final EdcrRequest edcrRequest,
+//            UserInfo userInfo,
+//            String userId,
+//            boolean onlyTenantId,
+//            boolean isStakeholder) {
+//
+//    	LOG.info("============== SINGLE TENANT CRITERIA START ==============");
+//
+//        final Criteria criteria = getCurrentSession()
+//                .createCriteria(EdcrApplicationDetail.class, "edcrApplicationDetail");
+//
+//        criteria.createAlias("edcrApplicationDetail.application", "application");
+//
+//        if (edcrRequest != null && isNotBlank(edcrRequest.getEdcrNumber())) {
+//
+//        	LOG.info("Adding filter -> dcrNumber : {}", edcrRequest.getEdcrNumber());
+//
+//            criteria.add(Restrictions.eq(
+//                    "edcrApplicationDetail.dcrNumber",
+//                    edcrRequest.getEdcrNumber()));
+//        }
+//
+//        if (edcrRequest != null && isNotBlank(edcrRequest.getTransactionNumber())) {
+//
+//        	LOG.info("Adding filter -> transactionNumber : {}",
+//                    edcrRequest.getTransactionNumber());
+//
+//            criteria.add(Restrictions.eq(
+//                    "application.transactionNumber",
+//                    edcrRequest.getTransactionNumber()));
+//        }
+//
+//        if (edcrRequest != null && isNotBlank(edcrRequest.getApplicationNumber())) {
+//
+//        	LOG.info("Adding filter -> applicationNumber : {}",
+//                    edcrRequest.getApplicationNumber());
+//
+//            criteria.add(Restrictions.eq(
+//                    "application.applicationNumber",
+//                    edcrRequest.getApplicationNumber()));
+//        }
+//
+//        String appliactionType = edcrRequest.getAppliactionType();
+//
+//        LOG.info("Application Type received : {}", appliactionType);
+//
+//        if (edcrRequest != null && isNotBlank(appliactionType)) {
+//
+//            ApplicationType applicationType = null;
+//
+//            if ("BUILDING_PLAN_SCRUTINY".equalsIgnoreCase(appliactionType)) {
+//                applicationType = ApplicationType.PERMIT;
+//            } else if ("BUILDING_OC_PLAN_SCRUTINY".equalsIgnoreCase(appliactionType)) {
+//                applicationType = ApplicationType.OCCUPANCY_CERTIFICATE;
+//            }
+//
+//            if ("Permit".equalsIgnoreCase(appliactionType)) {
+//                applicationType = ApplicationType.PERMIT;
+//            } else if ("Occupancy certificate".equalsIgnoreCase(appliactionType)) {
+//                applicationType = ApplicationType.OCCUPANCY_CERTIFICATE;
+//            }
+//
+//            LOG.info("Resolved ApplicationType : {}", applicationType);
+//
+//            criteria.add(Restrictions.eq(
+//                    "application.applicationType",
+//                    applicationType));
+//        }
+//
+//        if (edcrRequest != null
+//                && isNotBlank(edcrRequest.getApplicationSubType())) {
+//
+//        	LOG.info("Adding filter -> serviceType : {}",
+//                    edcrRequest.getApplicationSubType());
+//
+//            criteria.add(Restrictions.eq(
+//                    "application.serviceType",
+//                    edcrRequest.getApplicationSubType()));
+//        }
+//
+//        LOG.info("onlyTenantId : {}", onlyTenantId);
+//        LOG.info("isStakeholder : {}", isStakeholder);
+//        LOG.info("userId : {}", userId);
+//
+//        if ((onlyTenantId || isStakeholder)
+//                && userInfo != null
+//                && isNotBlank(userId)) {
+//
+//        	LOG.info("Adding filter -> thirdPartyUserCode : {}", userId);
+//
+//            criteria.add(Restrictions.eq(
+//                    "application.thirdPartyUserCode",
+//                    userId));
+//        }
+//
+//        if (isNotBlank(edcrRequest.getStatus())) {
+//
+//        	LOG.info("Adding filter -> status : {}",
+//                    edcrRequest.getStatus());
+//
+//            criteria.add(Restrictions.eq(
+//                    "edcrApplicationDetail.status",
+//                    edcrRequest.getStatus()));
+//        }
+//
+//        if (edcrRequest.getFromDate() != null) {
+//
+//        	LOG.info("Adding filter -> fromDate : {}",
+//                    edcrRequest.getFromDate());
+//
+//            criteria.add(Restrictions.ge(
+//                    "application.applicationDate",
+//                    edcrRequest.getFromDate()));
+//        }
+//
+//        if (edcrRequest.getToDate() != null) {
+//
+//        	LOG.info("Adding filter -> toDate : {}",
+//                    edcrRequest.getToDate());
+//
+//            criteria.add(Restrictions.le(
+//                    "application.applicationDate",
+//                    edcrRequest.getToDate()));
+//        }
+//
+//        String orderBy = "desc";
+//
+//        if (isNotBlank(edcrRequest.getOrderBy())) {
+//            orderBy = edcrRequest.getOrderBy();
+//        }
+//
+//        LOG.info("Order By : {}", orderBy);
+//
+//        if (orderBy.equalsIgnoreCase("asc")) {
+//            criteria.addOrder(Order.asc("edcrApplicationDetail.createdDate"));
+//        } else {
+//            criteria.addOrder(Order.desc("edcrApplicationDetail.createdDate"));
+//        }
+//
+//        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+//
+//        LOG.info("Final Hibernate Criteria Query : {}", criteria);
+//
+//        LOG.info("============== SINGLE TENANT CRITERIA END ==============");
+//
+//        return criteria;
+//    }
+
+    
+    private Criteria getCriteriaofSingleTenant(final EdcrRequest edcrRequest,
+            UserInfo userInfo,
+            String userId,
+            boolean onlyTenantId,
+            boolean isStakeholder) {
+
+    	LOG.info("============== SINGLE TENANT CRITERIA START ==============");
+
+        final Criteria criteria = getCurrentSession()
+                .createCriteria(EdcrApplicationDetail.class, "edcrApplicationDetail");
+
         criteria.createAlias("edcrApplicationDetail.application", "application");
+
         if (edcrRequest != null && isNotBlank(edcrRequest.getEdcrNumber())) {
-            criteria.add(Restrictions.eq("edcrApplicationDetail.dcrNumber", edcrRequest.getEdcrNumber()));
+
+        	LOG.info("Adding filter -> dcrNumber : {}", edcrRequest.getEdcrNumber());
+
+            criteria.add(Restrictions.eq(
+                    "edcrApplicationDetail.dcrNumber",
+                    edcrRequest.getEdcrNumber()));
         }
+
         if (edcrRequest != null && isNotBlank(edcrRequest.getTransactionNumber())) {
-            criteria.add(Restrictions.eq("application.transactionNumber", edcrRequest.getTransactionNumber()));
+
+        	LOG.info("Adding filter -> transactionNumber : {}",
+                    edcrRequest.getTransactionNumber());
+
+            criteria.add(Restrictions.eq(
+                    "application.transactionNumber",
+                    edcrRequest.getTransactionNumber()));
         }
+
         if (edcrRequest != null && isNotBlank(edcrRequest.getApplicationNumber())) {
-            criteria.add(Restrictions.eq("application.applicationNumber", edcrRequest.getApplicationNumber()));
+
+        	LOG.info("Adding filter -> applicationNumber : {}",
+                    edcrRequest.getApplicationNumber());
+
+            criteria.add(Restrictions.eq(
+                    "application.applicationNumber",
+                    edcrRequest.getApplicationNumber()));
         }
 
         String appliactionType = edcrRequest.getAppliactionType();
 
+        LOG.info("Application Type received : {}", appliactionType);
+
         if (edcrRequest != null && isNotBlank(appliactionType)) {
+
             ApplicationType applicationType = null;
+
             if ("BUILDING_PLAN_SCRUTINY".equalsIgnoreCase(appliactionType)) {
                 applicationType = ApplicationType.PERMIT;
             } else if ("BUILDING_OC_PLAN_SCRUTINY".equalsIgnoreCase(appliactionType)) {
                 applicationType = ApplicationType.OCCUPANCY_CERTIFICATE;
             }
+
             if ("Permit".equalsIgnoreCase(appliactionType)) {
                 applicationType = ApplicationType.PERMIT;
             } else if ("Occupancy certificate".equalsIgnoreCase(appliactionType)) {
                 applicationType = ApplicationType.OCCUPANCY_CERTIFICATE;
             }
-            criteria.add(Restrictions.eq("application.applicationType", applicationType));
+
+            LOG.info("Resolved ApplicationType : {}", applicationType);
+
+            criteria.add(Restrictions.eq(
+                    "application.applicationType",
+                    applicationType));
         }
 
-        if (edcrRequest != null && isNotBlank(edcrRequest.getApplicationSubType())) {
-            criteria.add(Restrictions.eq("application.serviceType", edcrRequest.getApplicationSubType()));
+        if (edcrRequest != null
+                && isNotBlank(edcrRequest.getApplicationSubType())) {
+
+        	LOG.info("Adding filter -> serviceType : {}",
+                    edcrRequest.getApplicationSubType());
+
+            criteria.add(Restrictions.eq(
+                    "application.serviceType",
+                    edcrRequest.getApplicationSubType()));
         }
 
-        if ((onlyTenantId || isStakeholder) &&  userInfo != null && isNotBlank(userId)) {
-            criteria.add(Restrictions.eq("application.thirdPartyUserCode", userId));
+        LOG.info("onlyTenantId : {}", onlyTenantId);
+        LOG.info("isStakeholder : {}", isStakeholder);
+        LOG.info("userId : {}", userId);
+
+        if ((onlyTenantId || isStakeholder)
+                && userInfo != null
+                && isNotBlank(userId)) {
+
+        	LOG.info("Adding filter -> thirdPartyUserCode : {}", userId);
+
+        	criteria.add(
+        		    Restrictions.or(
+        		        Restrictions.eq("application.thirdPartyUserCode", userId),
+        		        Restrictions.eq("application.applicantName", userInfo.getName())
+        		    )
+        		);
         }
 
-        if (isNotBlank(edcrRequest.getStatus()))
-            criteria.add(Restrictions.eq("edcrApplicationDetail.status", edcrRequest.getStatus()));
-        if (edcrRequest.getFromDate() != null)
-            criteria.add(Restrictions.ge("application.applicationDate", edcrRequest.getFromDate()));
-        if (edcrRequest.getToDate() != null)
-            criteria.add(Restrictions.le("application.applicationDate", edcrRequest.getToDate()));
+        if (isNotBlank(edcrRequest.getStatus())) {
+
+        	LOG.info("Adding filter -> status : {}",
+                    edcrRequest.getStatus());
+
+            criteria.add(Restrictions.eq(
+                    "edcrApplicationDetail.status",
+                    edcrRequest.getStatus()));
+        }
+
+        if (edcrRequest.getFromDate() != null) {
+
+        	LOG.info("Adding filter -> fromDate : {}",
+                    edcrRequest.getFromDate());
+
+            criteria.add(Restrictions.ge(
+                    "application.applicationDate",
+                    edcrRequest.getFromDate()));
+        }
+
+        if (edcrRequest.getToDate() != null) {
+
+        	LOG.info("Adding filter -> toDate : {}",
+                    edcrRequest.getToDate());
+
+            criteria.add(Restrictions.le(
+                    "application.applicationDate",
+                    edcrRequest.getToDate()));
+        }
+
         String orderBy = "desc";
-        if (isNotBlank(edcrRequest.getOrderBy()))
+
+        if (isNotBlank(edcrRequest.getOrderBy())) {
             orderBy = edcrRequest.getOrderBy();
-        if (orderBy.equalsIgnoreCase("asc"))
+        }
+
+        LOG.info("Order By : {}", orderBy);
+
+        if (orderBy.equalsIgnoreCase("asc")) {
             criteria.addOrder(Order.asc("edcrApplicationDetail.createdDate"));
-        else
+        } else {
             criteria.addOrder(Order.desc("edcrApplicationDetail.createdDate"));
+        }
 
         criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+
+        LOG.info("Final Hibernate Criteria Query : {}", criteria);
+
+        LOG.info("============== SINGLE TENANT CRITERIA END ==============");
+
         return criteria;
     }
-
+    
     public ErrorDetail validatePlanFile(final MultipartFile file) {
         List<String> dcrAllowedExtenstions = new ArrayList<>(
                 Arrays.asList(edcrApplicationSettings.getValue("dcr.dxf.allowed.extenstions").split(",")));
@@ -956,7 +1945,7 @@ public class EdcrRestService {
             errorDetails.add(new ErrorDetail("BPA-29", "Comparison eDcr number is mandatory"));
         } else {
             EdcrApplicationDetail permitDcr = applicationDetailService.findByDcrNumberAndTPUserTenant(dcrNo,
-                    edcrRequest.getTenantId());
+            		edcrRequest.getTenantId());
 
             if (permitDcr != null && permitDcr.getApplication() != null
                     && StringUtils.isBlank(permitDcr.getApplication().getServiceType())) {
@@ -985,18 +1974,78 @@ public class EdcrRestService {
         return errorDetails;
     }
 
+//    public List<ErrorDetail> validateEdcrMandatoryFields(final EdcrRequest edcrRequest) {
+//        List<ErrorDetail> errors = new ArrayList<>();
+//        if (StringUtils.isBlank(edcrRequest.getAppliactionType())) {
+//            errors.add(new ErrorDetail("BPA-10", "Application type is missing"));
+//        }
+//
+//        if (StringUtils.isBlank(edcrRequest.getApplicationSubType())) {
+//            errors.add(new ErrorDetail("BPA-11", "Service type is missing"));
+//        }
+//
+//        return errors;
+//    }
+    
     public List<ErrorDetail> validateEdcrMandatoryFields(final EdcrRequest edcrRequest) {
         List<ErrorDetail> errors = new ArrayList<>();
+
+        // Application Type
         if (StringUtils.isBlank(edcrRequest.getAppliactionType())) {
             errors.add(new ErrorDetail("BPA-10", "Application type is missing"));
         }
 
+        // Application Sub Type
         if (StringUtils.isBlank(edcrRequest.getApplicationSubType())) {
             errors.add(new ErrorDetail("BPA-11", "Service type is missing"));
         }
 
+        // Applicant Name
+        if (StringUtils.isBlank(edcrRequest.getApplicantName())) {
+            errors.add(new ErrorDetail("BPA-12", "Applicant name is required"));
+        }
+
+        // ULB
+        if (StringUtils.isBlank(edcrRequest.getUlb())) {
+            errors.add(new ErrorDetail("BPA-13", "ULB name is required"));
+        }
+
+        // Area Type
+        if (StringUtils.isBlank(edcrRequest.getAreaType())) {
+            errors.add(new ErrorDetail("BPA-14", "Area type is required"));
+            return errors; // Can't continue further without area type
+        }
+
+        if ("SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
+            // Scheme Area Validations
+            if (StringUtils.isBlank(edcrRequest.getSchemeArea())) {
+                errors.add(new ErrorDetail("BPA-15", "Scheme type is required for Scheme Area"));
+            }
+            if (StringUtils.isBlank(edcrRequest.getSchName())) {
+                errors.add(new ErrorDetail("BPA-16", "Scheme name is required for Scheme Area"));
+            }
+            if (edcrRequest.getSiteReserved() == null) {
+                errors.add(new ErrorDetail("BPA-17", "Site reserved selection is required for Scheme Area"));
+            } else {
+                if (edcrRequest.getSiteReserved() && edcrRequest.getApprovedCS() == null) {
+                    errors.add(new ErrorDetail("BPA-18", "Approved control sheet selection is required when site is reserved"));
+                }
+            }
+        } else if ("NON_SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
+            // Non-Scheme Area Validations
+            if (edcrRequest.getCluApprove() == null) {
+                errors.add(new ErrorDetail("BPA-19", "CLU approval selection is required for Non-Scheme Area"));
+            }
+            if (edcrRequest.getCoreArea() == null) {
+                errors.add(new ErrorDetail("BPA-20", "Core area selection is required for Non-Scheme Area"));
+            }
+        } else {
+            errors.add(new ErrorDetail("BPA-21", "Invalid Area Type value"));
+        }
+
         return errors;
     }
+
 
     public ErrorDetail validateSearchRequest(final String edcrNumber, final String transactionNumber) {
         ErrorDetail errorDetail = null;
@@ -1081,4 +2130,5 @@ public class EdcrRestService {
         cal1.set(Calendar.MILLISECOND, 999);
         return cal1.getTime();
     }
+    
 }

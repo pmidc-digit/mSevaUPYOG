@@ -21,6 +21,7 @@ import org.egov.wscalculation.repository.rowmapper.MeterReadingRowMapper;
 import org.egov.wscalculation.repository.rowmapper.WaterConnectionRowMapper;
 import org.egov.wscalculation.repository.rowmapper.WaterDemandRowMapper;
 import org.egov.wscalculation.repository.rowmapper.WaterRowMapper;
+import org.egov.wscalculation.web.models.BulkMeterReading;
 import org.egov.wscalculation.web.models.BillSearch;
 import org.egov.wscalculation.web.models.BillSearchs;
 import org.egov.wscalculation.web.models.CancelDemand;
@@ -37,6 +38,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Repository;
+import org.egov.wscalculation.repository.rowmapper.BulkMeterReadingRowMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,6 +60,9 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 
 	@Autowired
 	private MeterReadingCurrentReadingRowMapper currentMeterReadingRowMapper;
+	
+	@Autowired
+	private BulkMeterReadingRowMapper bulkMeterReadingRowMapper;
 
 	@Autowired
 	private DemandSchedulerRowMapper demandSchedulerRowMapper;
@@ -513,6 +518,22 @@ public List<BillSearchs> getBillss(String tenantId, String demandid) {
 	        log.error("Error executing query", e);
 	        throw e; 
 	    }
+	}
+	
+	/**
+	 * 
+	 * @param criteria would be meter reading criteria
+	 * @return List of meter readings based on criteria
+	 */
+	@Override
+	public List<BulkMeterReading> searchMeterReadingsV2(MeterReadingSearchCriteria criteria) {
+		List<Object> preparedStatement = new ArrayList<>();
+		String query = queryBuilder.getSearchQueryStringV2(criteria, preparedStatement);
+		if (query == null)
+			return Collections.emptyList();
+		log.debug("Query: " + query);
+		log.debug("Prepared Statement" + preparedStatement.toString());
+		return jdbcTemplate.query(query, preparedStatement.toArray(), bulkMeterReadingRowMapper);
 	}
 
 

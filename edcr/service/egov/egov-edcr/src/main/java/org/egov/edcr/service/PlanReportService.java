@@ -9,6 +9,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,8 +18,10 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -53,6 +57,7 @@ import org.egov.infra.admin.master.service.CityService;
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.reporting.util.ReportUtil;
 import org.egov.infra.utils.DateUtils;
+import org.jfree.util.Log;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -73,6 +78,7 @@ import ar.com.fdvs.dj.domain.builders.FastReportBuilder;
 import ar.com.fdvs.dj.domain.constants.Font;
 import ar.com.fdvs.dj.domain.constants.HorizontalAlign;
 import ar.com.fdvs.dj.domain.constants.Page;
+import ar.com.fdvs.dj.domain.constants.Transparency;
 import ar.com.fdvs.dj.domain.constants.VerticalAlign;
 import ar.com.fdvs.dj.domain.entities.Subreport;
 import ar.com.fdvs.dj.domain.entities.columns.AbstractColumn;
@@ -93,6 +99,17 @@ public class PlanReportService {
     public static final String STATUS = "Status";
     @Value("${edcr.client.subreport}")
     private boolean clientSpecificSubReport;
+    
+    
+    @Value("${edcr.service.url:}")
+    private String edcr_internal_service_url;
+    
+    @Value("${edcr.report.mseva.logo.url:}")
+    private String edcr_mseva_logo_url;
+    
+    @Value("${edcr.report.logodep.url:}")
+    private String edcr_logodep_url;
+    
     @Autowired
     private CityService cityService;
     @Autowired
@@ -118,6 +135,31 @@ public class PlanReportService {
     private static final String LEVEL = "Level";
     private static final String COMBINED_BLOCKS_SUMMARY_DETAILS = "Overall Summary";
     private static final String BLOCK_WISE_SUMMARY = "Block Wise Summary";
+    private static final BigDecimal Fire_Tender_Movement = BigDecimal.valueOf(21);
+    
+    private static final List<String> MANDATORY_KEYS = new ArrayList<>(Arrays.asList(
+    	    "1General Stair - Mid landing",
+    	    "1General Stair - Number of risers",
+    	    "1General Stair - Riser Height",
+    	    "1General Stair - Width",
+    	    "1General Stair - Tread width",
+    	    "1Height of Building",
+    	    "1Height of Floor",
+    	    //"1Number of Floors",
+    	    "1Plantation Area",
+    	    "1Plinth",
+    	    "Coverage",
+    	    "FAR",
+    	    "Green buildings and sustainability provisions",
+    	    "Location Plan",
+    	    "MainGate",
+    	    "North Direction",
+    	    "Parking",
+    	    "Travel Distance To Emergency Exits",
+    	    //"1Fire Tender Movement",
+    	    "1FrontRearSideYardDetails"
+    	));
+
 
     public InputStream generateDynamicReport(Plan plan, EdcrApplication dcrApplication) {
         FastReportBuilder drb = new FastReportBuilder();
@@ -242,10 +284,12 @@ public class PlanReportService {
 
             if (subheading != null)
                 frb.setSubtitle("\t" + subheading);
-
+            
             frb.setTitleStyle(reportService.getTitleStyle());
             frb.setHeaderHeight(5);
-            frb.setDefaultStyles(reportService.getTitleStyle(), reportService.getSubTitleStyle(),
+//            frb.setDefaultStyles(reportService.getTitleStyle(), reportService.getSubTitleStyle(),
+//                    reportService.getColumnHeaderStyle(), reportService.getDetailStyle());
+            frb.setDefaultStyles(reportService.getSubTitleStyleWithColor(), reportService.getSubTitleStyle(),
                     reportService.getColumnHeaderStyle(), reportService.getDetailStyle());
             frb.setAllowDetailSplit(false);
             frb.setPageSizeAndOrientation(Page.Page_A4_Portrait());
@@ -280,11 +324,11 @@ public class PlanReportService {
 
             AbstractColumn builtUpArea = ColumnBuilder.getNew()
                     .setColumnProperty("builtUpArea", BigDecimal.class.getName()).setTitle("Built Up Area in m²")
-                    .setWidth(120).setStyle(reportService.getNumberStyle()).build();
+                    .setWidth(132).setStyle(reportService.getNumberStyle()).build();
             frb.addGlobalFooterVariable(builtUpArea, DJCalculation.SUM, reportService.getTotalNumberStyle());
             
             AbstractColumn builtUpDeductionArea = ColumnBuilder.getNew().setColumnProperty("builtUpDeductionArea", BigDecimal.class.getName())
-                    .setTitle("Deduction").setWidth(120).setStyle(reportService.getNumberStyle()).build();
+                    .setTitle("Deduction Area in m²").setWidth(120).setStyle(reportService.getNumberStyle()).build();
             frb.addGlobalFooterVariable(builtUpDeductionArea, DJCalculation.SUM, reportService.getTotalNumberStyle());
 
 
@@ -310,7 +354,11 @@ public class PlanReportService {
 
                     StringBuilder text = new StringBuilder();
 
-                    String coveredAreaText = "1. Plot Coverage Area is " + (dcrReportBlockDetail.getCoverageArea() != null
+//                    String coveredAreaText = "1. Plot Coverage Area is " + (dcrReportBlockDetail.getCoverageArea() != null
+//                            ? dcrReportBlockDetail.getCoverageArea().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+//                                    DcrConstants.ROUNDMODE_MEASUREMENTS)
+//                            : BigDecimal.ZERO) + " m²";
+                    String coveredAreaText = "1. Ground Coverage Area is " + (dcrReportBlockDetail.getCoverageArea() != null
                             ? dcrReportBlockDetail.getCoverageArea().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
                                     DcrConstants.ROUNDMODE_MEASUREMENTS)
                             : BigDecimal.ZERO) + " m²";
@@ -339,7 +387,7 @@ public class PlanReportService {
                     }
 
                     AutoText autoText = new AutoText(text.toString(), AutoText.POSITION_FOOTER,
-                            HorizontalBandAlignment.LEFT, 530);
+                            HorizontalBandAlignment.LEFT, 542);
 
                     autoText.setHeight(40);
                     autoText.setStyle(reportService.getTotalNumberStyle());
@@ -353,7 +401,7 @@ public class PlanReportService {
             frb.setHeaderHeight(5);
             frb.setTopMargin(10);
             frb.setBottomMargin(0);
-            frb.setDefaultStyles(reportService.getTitleStyle(), reportService.getSubTitleStyle(),
+            frb.setDefaultStyles(reportService.getSubTitleStyleWithColor(), reportService.getSubTitleStyle(),
                     reportService.getColumnHeaderStyle(), reportService.getDetailStyle());
             frb.setAllowDetailSplit(false);
             frb.setPageSizeAndOrientation(Page.Page_A4_Portrait());
@@ -449,21 +497,21 @@ public class PlanReportService {
                     && virtualBuildingReport.getTotalConstructedArea().compareTo(BigDecimal.ZERO) > 0) {
 
                 AbstractColumn floorArea = ColumnBuilder.getNew()
-                        .setColumnProperty("totalFloorArea", BigDecimal.class.getName()).setTitle("Plot Area")
-                        .setWidth(100).setStyle(reportService.getTotalNumberStyle()).build();
+                        .setColumnProperty("totalFloorArea", BigDecimal.class.getName()).setTitle("Total Plot Area")
+                        .setWidth(181).setStyle(reportService.getTotalNumberStyle()).build();
 
 //                AbstractColumn carpetArea = ColumnBuilder.getNew()
 //                        .setColumnProperty("totalCarpetArea", BigDecimal.class.getName()).setTitle("Carpet Area in m²")
 //                        .setWidth(100).setStyle(reportService.getTotalNumberStyle()).build();
 
                 AbstractColumn coverageArea = ColumnBuilder.getNew()
-                        .setColumnProperty("totalCoverageArea", BigDecimal.class.getName()).setTitle("Plot Coverage")
-                        .setWidth(100).setStyle(reportService.getTotalNumberStyle()).build();
+                        .setColumnProperty("totalCoverageArea", BigDecimal.class.getName()).setTitle("Ground Coverage")
+                        .setWidth(180).setStyle(reportService.getTotalNumberStyle()).build();
                 
 
                 AbstractColumn builtUpArea = ColumnBuilder.getNew()
                         .setColumnProperty("totalBuitUpArea", BigDecimal.class.getName()).setTitle("Built Up Area")
-                        .setWidth(100).setStyle(reportService.getTotalNumberStyle()).build();
+                        .setWidth(181).setStyle(reportService.getTotalNumberStyle()).build();
 
                 AbstractColumn constructedArea = ColumnBuilder.getNew()
                         .setColumnProperty("totalConstructedArea", BigDecimal.class.getName())
@@ -478,21 +526,24 @@ public class PlanReportService {
             } else {
 
                 AbstractColumn floorArea = ColumnBuilder.getNew()
-                        .setColumnProperty("totalFloorArea", BigDecimal.class.getName()).setTitle("Plot Area")
-                        .setWidth(120).setStyle(reportService.getTotalNumberStyle()).build();
+                        .setColumnProperty("totalFloorArea", BigDecimal.class.getName()).setTitle("Total Plot Area")
+                        .setWidth(181).setStyle(reportService.getTotalNumberStyle()).build();
 
 //                AbstractColumn carpetArea = ColumnBuilder.getNew()
 //                        .setColumnProperty("totalCarpetArea", BigDecimal.class.getName()).setTitle("Carpet Area in m²")
 //                        .setWidth(120).setStyle(reportService.getTotalNumberStyle()).build();
 
+//                AbstractColumn coverageArea = ColumnBuilder.getNew()
+//                        .setColumnProperty("totalCoverageArea", BigDecimal.class.getName()).setTitle("Plot Coverage")
+//                        .setWidth(120).setStyle(reportService.getTotalNumberStyle()).build();
                 AbstractColumn coverageArea = ColumnBuilder.getNew()
-                        .setColumnProperty("totalCoverageArea", BigDecimal.class.getName()).setTitle("Plot Coverage")
-                        .setWidth(120).setStyle(reportService.getTotalNumberStyle()).build();
+                        .setColumnProperty("totalCoverageArea", BigDecimal.class.getName()).setTitle("Ground Coverage")
+                        .setWidth(180).setStyle(reportService.getTotalNumberStyle()).build();
                 
 
                 AbstractColumn builtUpArea = ColumnBuilder.getNew()
                         .setColumnProperty("totalBuitUpArea", BigDecimal.class.getName()).setTitle("Built Up Area")
-                        .setWidth(120).setStyle(reportService.getTotalNumberStyle()).build();
+                        .setWidth(181).setStyle(reportService.getTotalNumberStyle()).build();
 
                 frb.addColumn(floorArea);
                 frb.addColumn(coverageArea);
@@ -500,11 +551,11 @@ public class PlanReportService {
               //  frb.addColumn(carpetArea);
             }
 
-            frb.setTitle("Plot Area (in m²)");
+            frb.setTitle("Ground Coverage (in m²)");
             frb.setTitleStyle(reportService.getTitleStyle());
             frb.setHeaderHeight(5);
             frb.setTopMargin(5);
-            frb.setDefaultStyles(reportService.getTitleStyle(), reportService.getSubTitleStyle(),
+            frb.setDefaultStyles(reportService.getSubTitleStyleWithColor(), reportService.getSubTitleStyle(),
                     reportService.getColumnHeaderStyle(), reportService.getDetailStyle());
             frb.setAllowDetailSplit(false);
             frb.setPageSizeAndOrientation(Page.Page_A4_Portrait());
@@ -601,11 +652,35 @@ public class PlanReportService {
 
         if (plan.getVirtualBuilding() != null && !plan.getVirtualBuilding().getOccupancyTypes().isEmpty()) {
             List<String> occupancies = new ArrayList<>();
-            plan.getVirtualBuilding().getOccupancyTypes().forEach(occ -> {
-                if (occ.getType() != null)
-                    occupancies.add(occ.getType().getName());
+//            plan.getVirtualBuilding().getOccupancyTypes().forEach(occ -> {
+//                if (occ.getType() != null)
+//                    occupancies.add(occ.getType().getName());
+//            });
+//            plan.getVirtualBuilding().getOccupancyTypes().forEach(occ -> {
+//                if (occ.getSubtype() != null)
+//                    occupancies.add(occ.getSubtype().getName());
+//            });
+            plan.getVirtualBuilding()
+            .getOccupancyTypes()
+            .forEach(occ -> {
+
+                String occType = occ.getType() != null ? occ.getType().getName() : "";
+                String subOccType = occ.getSubtype() != null ? occ.getSubtype().getName() : "";
+
+                if (!occType.isEmpty() && !subOccType.isEmpty()) {
+                    occupancies.add(occType + " (" + subOccType + ")");
+                } else if (!occType.isEmpty()) {
+                    occupancies.add(occType);
+                }
             });
-            Set<String> distinctOccupancies = new HashSet<>(occupancies);
+
+//            Set<String> distinctOccupancies = new HashSet<>(occupancies);
+            Set<String> distinctOccupancies = new HashSet<>();
+
+            if (occupancies != null && !occupancies.isEmpty()) {
+                distinctOccupancies.add(occupancies.get(0));
+            }
+
             plan.getPlanInformation()
                     .setOccupancy(distinctOccupancies.stream().map(String::new).collect(Collectors.joining(",")));
         }
@@ -677,10 +752,16 @@ public class PlanReportService {
         valuesMap.put("blockCount",
                 plan.getBlocks() != null && !plan.getBlocks().isEmpty() ? plan.getBlocks().size() : 0);
         valuesMap.put("surrenderRoadArea", plan.getTotalSurrenderRoadArea());
-        String imageURL = ReportUtil.getImageURL("/egi/resources/global/images/mseva.png");
-        valuesMap.put("egovLogo", imageURL);
-        String domainurl = ReportUtil.getImageURL("/egi/resources/global/images/logo_dep.png");
-        valuesMap.put("cityLogo", domainurl);
+        LOG.info("mseva logo url : " + edcr_mseva_logo_url);
+        //String imageURL = ReportUtil.getImageURL("/egi/resources/global/images/mseva.png");
+        //LOG.info("edcr internal service url : " + edcr_internal_service_url);
+
+        //String imageURL = edcr_internal_service_url +"/egi/resources/global/images/mseva.png";
+        valuesMap.put("egovLogo", edcr_mseva_logo_url);
+        LOG.info("logo dept url : " + edcr_logodep_url);
+        //String domainurl = ReportUtil.getImageURL("/egi/resources/global/images/logo_dep.png");
+        //String domainurl = edcr_internal_service_url + "/egi/resources/global/images/logo_dep.png";
+        valuesMap.put("cityLogo", edcr_logodep_url);
         //new fields added into Plot Details
         valuesMap.put("numberOfFloors", plan.getPlanInformation().getNumberOfFloors());
         valuesMap.put("ulbType", plan.getPlanInformation().getUlbType());
@@ -696,7 +777,18 @@ public class PlanReportService {
 
             List<String> combinedSummary = new ArrayList<>();
             combinedSummary.add(COMBINED_BLOCKS_SUMMARY_DETAILS);
-            drb.addConcatenatedReport(createHeaderSubreport(COMBINED_BLOCKS_SUMMARY_DETAILS, COMBINED_BLOCKS_SUMMARY_DETAILS));
+//            drb.addConcatenatedReport(createHeaderSubreport(COMBINED_BLOCKS_SUMMARY_DETAILS, COMBINED_BLOCKS_SUMMARY_DETAILS));
+//            valuesMap.put(COMBINED_BLOCKS_SUMMARY_DETAILS, combinedSummary);
+            Subreport overallSummarySub = 
+                    createHeaderSubreport(
+                        COMBINED_BLOCKS_SUMMARY_DETAILS,
+                        COMBINED_BLOCKS_SUMMARY_DETAILS
+                    );
+
+            // 🔴 Page break ONLY here
+            overallSummarySub.setStartInNewPage(true);
+
+            drb.addConcatenatedReport(overallSummarySub);
             valuesMap.put(COMBINED_BLOCKS_SUMMARY_DETAILS, combinedSummary);
 
             // Add total area details
@@ -789,64 +881,414 @@ public class PlanReportService {
                 ScrutinyDetail front = null;
                 ScrutinyDetail rear = null;
                 ScrutinyDetail side = null;
+                ScrutinyDetail side2 = null;
+
+//                for (String blkFeature : blocks.get(blkName)) {
+//                	  LOG.info("Generate Report......."+blkFeature);
+//                    if (blkFeature.equals(FRONT_YARD_DESC) || blkFeature.equals(REAR_YARD_DESC)
+//                            || blkFeature.equals(SIDE_YARD_DESC)) {
+//
+//                        if (blkFeature.equals(FRONT_YARD_DESC)) {
+//                            front = allMap.get(blkName + blkFeature);
+//                            front.getDetail().get(0).put(SIDENUMBER_NAME, "Front");
+//                           // continue;
+//                        }
+//                        if (blkFeature.equals(REAR_YARD_DESC)) {
+//                            rear = allMap.get(blkName + blkFeature);
+//                            rear.getDetail().get(0).put(SIDENUMBER_NAME, "Rear");
+//                           // continue;
+//                        }
+//
+//                        side = allMap.get(blkName + blkFeature);
+////                         List<Map<String, String>> detail = allMap.get(blkName +
+////                         blkFeature).getDetail();
+//                        List<Map<String, String>> detail = side.getDetail();
+////
+////                        if (front != null)
+////                            detail.add(0, front.getDetail().get(0));
+////                        if (rear != null)
+////                            detail.add(1, rear.getDetail().get(0));
+////
+//                        for (Map<String, String> d : detail) {
+//                            String sideNumber = d.get(SIDENUMBER);
+//                            if (StringUtils.isNotBlank(sideNumber)) {
+//                                d.remove(SIDENUMBER);
+//                                d.put(SIDENUMBER_NAME, sideNumber);
+//                            }
+//                        }
+//                        side.addColumnHeading(2, SIDENUMBER_NAME);
+//                        side.addColumnHeading(4, LEVEL);
+//                         allMap.get(blkName + blkFeature).setHeading(SIDENUMBER_NAME);
+//
+//                        j++;
+//                        drb.addConcatenatedReport(
+//                                getSub(allMap.get(blkName + blkFeature), j, j + "." + blkFeature, SIDENUMBER_NAME,
+//                                        allMap.get(blkName + blkFeature).getSubHeading(), blkName + blkFeature));
+//                        valuesMap.put(blkName + blkFeature, allMap.get(blkName + blkFeature).getDetail());
+//
+//                        List featureFooter = new ArrayList();
+//                        if (allMap.get(blkName + blkFeature).getRemarks() != null) {
+//                            drb.addConcatenatedReport(
+//                                    createFooterSubreport("Remarks :  " + allMap.get(blkName + blkFeature).getRemarks(),
+//                                            "Remarks_" + blkName + blkFeature));
+//                            featureFooter.add(allMap.get(blkName + blkFeature).getRemarks());
+//                            valuesMap.put("Remarks_" + blkName + blkFeature, featureFooter);
+//                        }
+//                    } else {
+//                        continue;
+//                    }
+//
+//                }
+                
+//                for (String blkFeature : blocks.get(blkName)) {
+//
+//                    LOG.info("Generate Report......." + blkFeature);
+//
+//                    if (blkFeature.equals(FRONT_YARD_DESC) || blkFeature.equals(REAR_YARD_DESC)
+//                            || blkFeature.equals(SIDE_YARD_DESC)) {
+//
+//                        if (blkFeature.equals(FRONT_YARD_DESC)) {
+//                            front = allMap.get(blkName + blkFeature);
+//                            if (front != null && !front.getDetail().isEmpty()) {
+//                                front.getDetail().get(0).put(SIDENUMBER_NAME, "Front");
+//                            }
+//                        }
+//
+//                        if (blkFeature.equals(REAR_YARD_DESC)) {
+//                            rear = allMap.get(blkName + blkFeature);
+//                            if (rear != null && !rear.getDetail().isEmpty()) {
+//                                rear.getDetail().get(0).put(SIDENUMBER_NAME, "Rear");
+//                            }
+//                        }
+//
+//                        if (blkFeature.equals(SIDE_YARD_DESC)) {
+//                            side = allMap.get(blkName + blkFeature);
+//                        }
+//                    }
+//                }
+//
+//                // ✅ Combine FRONT + REAR in one table
+//                if (front != null && rear != null) {
+//                    List<Map<String, String>> combinedDetails = new ArrayList<>();
+//                    combinedDetails.addAll(front.getDetail());
+//                    combinedDetails.addAll(rear.getDetail());
+//
+//                    // Update column headings once
+//                    front.addColumnHeading(2, SIDENUMBER_NAME);
+//                    front.addColumnHeading(4, LEVEL);
+//
+//                    // Create a single combined report
+//                    j++;
+//                    drb.addConcatenatedReport(
+//                          getSub(allMap.get(blkName + blkFeature), j, j + "." + blkFeature, SIDENUMBER_NAME,
+//                                  allMap.get(blkName + blkFeature).getSubHeading(), blkName + blkFeature));
+////                    drb.addConcatenatedReport(
+////                            getSub(allMap.get(blkName + blkFeature),j, j + "."+ blkFeature, SIDENUMBER_NAME,
+////                                    "Front & Rear Yard Details", blkName + "FrontRearYardDetails"));
+//                    valuesMap.put(blkName + "FrontRearYardDetails", combinedDetails);
+//
+//                    // Add remarks (combined)
+//                    List<String> featureFooter = new ArrayList<>();
+//                    if (front.getRemarks() != null) featureFooter.add(front.getRemarks());
+//                    if (rear.getRemarks() != null) featureFooter.add(rear.getRemarks());
+//                    if (!featureFooter.isEmpty()) {
+//                        drb.addConcatenatedReport(
+//                                createFooterSubreport("Remarks :  " + String.join("\n", featureFooter),
+//                                        "Remarks_" + blkName + "FrontRearYardDetails"));
+//                        valuesMap.put("Remarks_" + blkName + "FrontRearYardDetails", featureFooter);
+//                    }
+//                }
+//
+//                // ✅ Process SIDE yard separately (as before)
+//                if (side != null && !side.getDetail().isEmpty()) {
+//                    for (Map<String, String> d : side.getDetail()) {
+//                        String sideNumber = d.get(SIDENUMBER);
+//                        if (StringUtils.isNotBlank(sideNumber)) {
+//                            d.remove(SIDENUMBER);
+//                            d.put(SIDENUMBER_NAME, sideNumber);
+//                        }
+//                    }
+//                    side.addColumnHeading(2, SIDENUMBER_NAME);
+//                    side.addColumnHeading(4, LEVEL);
+//
+//                    j++;
+//                    drb.addConcatenatedReport(
+//                            getSub(side, j, j + ".Side Yard Details", SIDENUMBER_NAME,
+//                                    "Side Yard Details", blkName + "SideYardDetails"));
+//                    valuesMap.put(blkName + "SideYardDetails", side.getDetail());
+//
+//                    if (side.getRemarks() != null) {
+//                        List<String> featureFooter = new ArrayList<>();
+//                        featureFooter.add(side.getRemarks());
+//                        drb.addConcatenatedReport(
+//                                createFooterSubreport("Remarks :  " + side.getRemarks(),
+//                                        "Remarks_" + blkName + "SideYardDetails"));
+//                        valuesMap.put("Remarks_" + blkName + "SideYardDetails", featureFooter);
+//                    }
+//                }
+
+//                for (String blkFeature : blocks.get(blkName)) {
+//
+//                    LOG.info("Generate Report......." + blkFeature);
+//
+//                    if (blkFeature.equals(FRONT_YARD_DESC) || blkFeature.equals(REAR_YARD_DESC)
+//                            || blkFeature.equals(SIDE_YARD_DESC)) {
+//
+//                        if (blkFeature.equals(FRONT_YARD_DESC)) {
+//                            front = allMap.get(blkName + blkFeature);
+//                            if (front != null && !front.getDetail().isEmpty()) {
+//                                front.getDetail().get(0).put(SIDENUMBER_NAME, "Front");
+//                            }
+//                        }
+//
+//                        if (blkFeature.equals(REAR_YARD_DESC)) {
+//                            rear = allMap.get(blkName + blkFeature);
+//                            if (rear != null && !rear.getDetail().isEmpty()) {
+//                                rear.getDetail().get(0).put(SIDENUMBER_NAME, "Rear and Side");
+//                            }
+//                        }
+//
+//                        if (blkFeature.equals(SIDE_YARD_DESC)) {
+//                            side = allMap.get(blkName + blkFeature);
+//                        }
+//                    }
+//                }
+//
+//                // ----------------- Combine FRONT + REAR into single ScrutinyDetail -----------------
+//                ScrutinyDetail combined = null;
+//                List<Map<String, String>> combinedDetails = new ArrayList<>();
+//
+//                if (front != null && front.getDetail() != null && !front.getDetail().isEmpty()) {
+//                    combinedDetails.addAll(front.getDetail());
+//                }
+//                if (rear != null && rear.getDetail() != null && !rear.getDetail().isEmpty()) {
+//                    combinedDetails.addAll(rear.getDetail());
+//                }
+//
+//                // Only create a combined report if there's at least one detail
+//                if (!combinedDetails.isEmpty()) {
+//                    // Prefer to reuse 'front' as the base ScrutinyDetail if available, otherwise reuse 'rear'
+//                    if (front != null) {
+//                        combined = front;
+//                    } else {
+//                        combined = rear;
+//                    }
+//
+//                    // Ensure combined ScrutinyDetail contains the merged details
+//                    combined.setDetail(combinedDetails);
+//
+//                    // Add column headings once
+//                    combined.addColumnHeading(2, SIDENUMBER_NAME);
+//                    combined.addColumnHeading(4, LEVEL);
+//
+//                    // Create a single combined report entry
+//                    j++;
+//                    drb.addConcatenatedReport(
+//                            getSub(combined, j, j + ".Front/Rear Yard Details", SIDENUMBER_NAME,
+//                                    "", blkName + "FrontRearYardDetails"));
+//
+//                    // Put combined details into valuesMap (used by report engine)
+//                    valuesMap.put(blkName + "FrontRearYardDetails", combinedDetails);
+//
+//                    // Combine remarks (if any) and add footer
+//                    List<String> featureFooter = new ArrayList<>();
+//                    if (front != null && StringUtils.isNotBlank(front.getRemarks())) featureFooter.add(front.getRemarks());
+//                    if (rear != null && StringUtils.isNotBlank(rear.getRemarks())) featureFooter.add(rear.getRemarks());
+//                    if (!featureFooter.isEmpty()) {
+//                        drb.addConcatenatedReport(
+//                                createFooterSubreport("Remarks :  " + String.join("\n", featureFooter),
+//                                        "Remarks_" + blkName + "FrontRearYardDetails"));
+//                        valuesMap.put("Remarks_" + blkName + "FrontRearYardDetails", featureFooter);
+//                    }
+//                }
+//
+//                // ----------------- Process SIDE yard separately -----------------
+//                if (side != null && side.getDetail() != null && !side.getDetail().isEmpty()) {
+//                    for (Map<String, String> d : side.getDetail()) {
+//                        String sideNumber = d.get(SIDENUMBER);
+//                        if (StringUtils.isNotBlank(sideNumber)) {
+//                            d.remove(SIDENUMBER);
+//                            d.put(SIDENUMBER_NAME, sideNumber);
+//                        }
+//                    }
+//                    side.addColumnHeading(2, SIDENUMBER_NAME);
+//                    side.addColumnHeading(4, LEVEL);
+//
+//                    j++;
+//                    drb.addConcatenatedReport(
+//                            getSub(side, j, j + ".Side Yard Details", SIDENUMBER_NAME,
+//                                    "Side Yard Details", blkName + "SideYardDetails"));
+//                    valuesMap.put(blkName + "SideYardDetails", side.getDetail());
+//
+//                    if (StringUtils.isNotBlank(side.getRemarks())) {
+//                        List<String> featureFooter = new ArrayList<>();
+//                        featureFooter.add(side.getRemarks());
+//                        drb.addConcatenatedReport(
+//                                createFooterSubreport("Remarks :  " + side.getRemarks(),
+//                                        "Remarks_" + blkName + "SideYardDetails"));
+//                        valuesMap.put("Remarks_" + blkName + "SideYardDetails", featureFooter);
+//                    }
+//                }
 
                 for (String blkFeature : blocks.get(blkName)) {
-                	  LOG.info("Generate Report......."+blkFeature);
+
+                    LOG.info("Generate Report......." + blkFeature);
+
                     if (blkFeature.equals(FRONT_YARD_DESC) || blkFeature.equals(REAR_YARD_DESC)
-                            || blkFeature.equals(SIDE_YARD_DESC)) {
+                            || blkFeature.equals(SIDE_YARD_DESC) || blkFeature.equals("Side Setback1") || blkFeature.equals("Side Setback2")) {
 
                         if (blkFeature.equals(FRONT_YARD_DESC)) {
                             front = allMap.get(blkName + blkFeature);
-                            front.getDetail().get(0).put(SIDENUMBER_NAME, "Front");
-                           // continue;
-                        }
-                        if (blkFeature.equals(REAR_YARD_DESC)) {
-                            rear = allMap.get(blkName + blkFeature);
-                            rear.getDetail().get(0).put(SIDENUMBER_NAME, "Rear");
-                           // continue;
-                        }
-
-                        side = allMap.get(blkName + blkFeature);
-//                         List<Map<String, String>> detail = allMap.get(blkName +
-//                         blkFeature).getDetail();
-                        List<Map<String, String>> detail = side.getDetail();
-//
-//                        if (front != null)
-//                            detail.add(0, front.getDetail().get(0));
-//                        if (rear != null)
-//                            detail.add(1, rear.getDetail().get(0));
-//
-                        for (Map<String, String> d : detail) {
-                            String sideNumber = d.get(SIDENUMBER);
-                            if (StringUtils.isNotBlank(sideNumber)) {
-                                d.remove(SIDENUMBER);
-                                d.put(SIDENUMBER_NAME, sideNumber);
+                            if (front != null && !front.getDetail().isEmpty()) {
+                                front.getDetail().get(0).put(SIDENUMBER_NAME, "Front");
                             }
                         }
-                        side.addColumnHeading(2, SIDENUMBER_NAME);
-                        side.addColumnHeading(4, LEVEL);
-                         allMap.get(blkName + blkFeature).setHeading(SIDENUMBER_NAME);
 
-                        j++;
-                        drb.addConcatenatedReport(
-                                getSub(allMap.get(blkName + blkFeature), j, j + "." + blkFeature, SIDENUMBER_NAME,
-                                        allMap.get(blkName + blkFeature).getSubHeading(), blkName + blkFeature));
-                        valuesMap.put(blkName + blkFeature, allMap.get(blkName + blkFeature).getDetail());
-
-                        List featureFooter = new ArrayList();
-                        if (allMap.get(blkName + blkFeature).getRemarks() != null) {
-                            drb.addConcatenatedReport(
-                                    createFooterSubreport("Remarks :  " + allMap.get(blkName + blkFeature).getRemarks(),
-                                            "Remarks_" + blkName + blkFeature));
-                            featureFooter.add(allMap.get(blkName + blkFeature).getRemarks());
-                            valuesMap.put("Remarks_" + blkName + blkFeature, featureFooter);
+                        if (blkFeature.equals(REAR_YARD_DESC)) {
+                            rear = allMap.get(blkName + blkFeature);
+                            if (rear != null && !rear.getDetail().isEmpty()) {
+                                rear.getDetail().get(0).put(SIDENUMBER_NAME, "Rear");
+                            }
                         }
+
+//                        if (blkFeature.equals(SIDE_YARD_DESC)) {
+                        if (blkFeature.equals("Side Setback1")) {
+                            side = allMap.get(blkName + blkFeature);
+                            if (side != null && !side.getDetail().isEmpty()) {
+                                int count = 1;
+                                for (Map<String, String> d : side.getDetail()) {
+                                    String sideNumber = d.get(SIDENUMBER);
+                                    if (StringUtils.isNotBlank(sideNumber)) {
+                                        d.remove(SIDENUMBER);
+                                        d.put(SIDENUMBER_NAME, "Side Setback " + sideNumber.trim().charAt(sideNumber.length() - 1));
+                                    } else {
+                                        d.put(SIDENUMBER_NAME, "Side Setback " + sideNumber.trim().charAt(sideNumber.length() - 1));
+                                    }
+                                    count++;
+                                }
+                            }
+                        }
+                        
+                        if (blkFeature.equals("Side Setback2")) {
+                            side2 = allMap.get(blkName + blkFeature);
+                            if (side2 != null && !side2.getDetail().isEmpty()) {
+                                int count = 1;
+                                for (Map<String, String> d : side2.getDetail()) {
+                                    String sideNumber = d.get(SIDENUMBER);
+                                    if (StringUtils.isNotBlank(sideNumber)) {
+                                        d.remove(SIDENUMBER);
+                                        d.put(SIDENUMBER_NAME, "Side Setback " + sideNumber.trim().charAt(sideNumber.length() - 1));
+                                    } else {
+                                        d.put(SIDENUMBER_NAME, "Side Setback " + sideNumber.trim().charAt(sideNumber.length() - 1));
+                                    }
+                                    count++;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Determine Occupancy Type
+             // Determine Occupancy Type (from any available detail)
+                String occupancyType = "";
+		Boolean isSetbackCombine = false;
+                if (front != null && !front.getDetail().isEmpty() && front.getDetail().get(0).get("Occupancy") != null) {
+                    occupancyType = front.getDetail().get(0).get("Occupancy");
+                } else if (rear != null && !rear.getDetail().isEmpty() && rear.getDetail().get(0).get("Occupancy") != null) {
+                    occupancyType = rear.getDetail().get(0).get("Occupancy");
+                } else if (side != null && !side.getDetail().isEmpty() && side.getDetail().get(0).get("Occupancy") != null) {
+                    occupancyType = side.getDetail().get(0).get("Occupancy");
+                }else if (side2 != null && !side2.getDetail().isEmpty() && side2.getDetail().get(0).get("Occupancy") != null) {
+                    occupancyType = side2.getDetail().get(0).get("Occupancy");
+                }
+
+                LOG.info("Occupancy Type Detected for [{}] = {}", blkName, occupancyType);
+
+                // ----------------- COMMON STRUCTURE -----------------
+                ScrutinyDetail combined = null;
+                List<Map<String, String>> combinedDetails = new ArrayList<>();
+
+                // For Residential → include Front + Rear + Side
+                // For Non-Residential → include only Front + Rear
+                boolean isResidential = StringUtils.containsIgnoreCase(occupancyType, "residential");
+                if (rear != null && !rear.getDetail().isEmpty() && rear.getDetail().get(0).get("isSetbackCombine") != null) {
+                	isSetbackCombine = Boolean.valueOf(rear.getDetail().get(0).get("isSetbackCombine"));
+                }
+                
+                if(!isSetbackCombine) {
+                	isResidential=true;
+                }
+
+                if (front != null && front.getDetail() != null && !front.getDetail().isEmpty()) {
+                    combinedDetails.addAll(front.getDetail());
+                }
+                if (rear != null && rear.getDetail() != null && !rear.getDetail().isEmpty()) {
+                    combinedDetails.addAll(rear.getDetail());
+                }
+                if (isResidential && side != null && side.getDetail() != null && !side.getDetail().isEmpty()) {
+                    combinedDetails.addAll(side.getDetail());
+                }
+                if (isResidential && side2 != null && side2.getDetail() != null && !side2.getDetail().isEmpty()) {
+                    combinedDetails.addAll(side2.getDetail());
+                }
+
+                // Only create a combined report if there's at least one detail
+                if (!combinedDetails.isEmpty()) {
+                    // Prefer to reuse 'front' as the base ScrutinyDetail if available, otherwise reuse 'rear' or 'side'
+                    if (front != null) {
+                        combined = front;
+                    } else if (rear != null) {
+                        combined = rear;
                     } else {
-                        continue;
+                        combined = side;
                     }
 
+                    // Ensure combined ScrutinyDetail contains the merged details
+                    combined.setDetail(combinedDetails);
+
+                    // Add column headings once
+                    combined.addColumnHeading(2, SIDENUMBER_NAME);
+                    combined.addColumnHeading(4, LEVEL);
+
+                    // Create a single combined report entry
+                    j++;
+
+                    if (isResidential) {
+                        // 🏠 RESIDENTIAL → include all (Front, Rear, and Side)
+                        drb.addConcatenatedReport(
+                                getSub(combined, j, j + ".Front/Rear/Side Yard Details", SIDENUMBER_NAME,
+                                        "", blkName + "FrontRearSideYardDetails"));
+                        valuesMap.put(blkName + "FrontRearSideYardDetails", combinedDetails);
+                    } else {
+                    	if(rear!=null) {
+                    		rear.getDetail().get(0).put(SIDENUMBER_NAME, "Rear and Side");
+                            // 🏢 NON-RESIDENTIAL → same as your old behavior (Front + Rear only)
+                            drb.addConcatenatedReport(
+                                    getSub(combined, j, j + ".Front/Rear Yard Details", SIDENUMBER_NAME,
+                                            "", blkName + "FrontRearYardDetails"));
+                            valuesMap.put(blkName + "FrontRearYardDetails", combinedDetails);
+                    	}
+                    	
+                    }
+
+                    // Combine remarks (if any) and add footer
+                    List<String> featureFooter = new ArrayList<>();
+                    if (front != null && StringUtils.isNotBlank(front.getRemarks())) featureFooter.add(front.getRemarks());
+                    if (rear != null && StringUtils.isNotBlank(rear.getRemarks())) featureFooter.add(rear.getRemarks());
+                    if (isResidential && side != null && StringUtils.isNotBlank(side.getRemarks())) featureFooter.add(side.getRemarks());
+
+                    if (!featureFooter.isEmpty()) {
+                        drb.addConcatenatedReport(
+                                createFooterSubreport("Remarks :  " + String.join("\n", featureFooter),
+                                        "Remarks_" + blkName + (isResidential ? "FrontRearSideYardDetails" : "FrontRearYardDetails")));
+                        valuesMap.put("Remarks_" + blkName + (isResidential ? "FrontRearSideYardDetails" : "FrontRearYardDetails"),
+                                featureFooter);
+                    }
                 }
-            
+
+
+
+                
 //            for (String blkName : blocks.keySet()) {
 //                List blkHeading = new ArrayList();
 //                blkHeading.add(BLOCK + blkName);
@@ -957,7 +1399,7 @@ public class PlanReportService {
                 // This is only for rest
                 for (String blkFeature : blocks.get(blkName)) {
                     if (blkFeature.equals(FRONT_YARD_DESC) || blkFeature.equals(REAR_YARD_DESC)
-                            || blkFeature.equals(SIDE_YARD_DESC)) {
+                            || blkFeature.equals(SIDE_YARD_DESC) || blkFeature.equals("Side Setback1") || blkFeature.equals("Side Setback2")) {
                         continue;
                     } else {
                         j++;
@@ -982,14 +1424,52 @@ public class PlanReportService {
             }
             
             try {
-		            if (finalReportStatus)
-		                for (String cmnFeature : common) {
-		                    for (Map<String, String> commonStatus : allMap.get(cmnFeature).getDetail()) {
-		                        if (commonStatus.get(STATUS).equalsIgnoreCase(Result.Not_Accepted.getResultVal())) {
-		                            finalReportStatus = false;
-		                        }
-		                    }
-		                }
+//		            if (finalReportStatus)
+//		                for (String cmnFeature : common) {
+//		                	LOG.info("Checking final report status for : " + cmnFeature);
+//		                    for (Map<String, String> commonStatus : allMap.get(cmnFeature).getDetail()) {
+//		                        if (commonStatus.get(STATUS).equalsIgnoreCase(Result.Not_Accepted.getResultVal())) {
+//		                            finalReportStatus = false;
+//		                        }
+//		                    }
+//		                }
+            	
+            	if(finalReportStatus) {
+            		if (common != null && !common.isEmpty() && allMap != null) {
+				    for (String cmnFeature : common) {				
+				        if (cmnFeature == null) {
+				            LOG.warn("Skipping null common feature");
+				            continue;
+				        }
+				
+				        LOG.info("Checking final report status for : {}", cmnFeature);
+				
+				        if (allMap.get(cmnFeature) == null ||
+				            allMap.get(cmnFeature).getDetail() == null) {
+				
+				            LOG.warn("No detail data found for feature : {}", cmnFeature);
+				            continue;
+				        }
+				
+				        for (Map<String, String> commonStatus
+				                : allMap.get(cmnFeature).getDetail()) {				
+				            if (commonStatus == null) {
+				                continue;
+				            }				
+				            String status = commonStatus.get(STATUS);				
+				            if (Result.Not_Accepted.getResultVal().equalsIgnoreCase(status)) {
+				                finalReportStatus = false;				
+				                LOG.info(
+				                    "Final report marked as NOT ACCEPTED due to feature : {}",
+				                    cmnFeature
+				                );
+				            }
+				        }
+				    }
+				
+				} else {
+				    LOG.warn("Common list or allMap is null / empty. Skipping final report status check.");
+				}            	}
 			}catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -1032,6 +1512,9 @@ public class PlanReportService {
             valuesMap.put("planPermissionNumber", dcrApplication.getPlanPermitNumber());
             valuesMap.put("bpaApplicationDate", DateUtils.toDefaultDateFormat(dcrApplication.getPermitApplicationDate()));
         }
+        
+        //finalReportStatus = processComplianceReport(valuesMap);
+        
         if (finalReportStatus) {
             String dcrApplicationNumber = "";
             if (ApplicationType.OCCUPANCY_CERTIFICATE.equals(dcrApplication.getApplicationType()))
@@ -1062,6 +1545,10 @@ public class PlanReportService {
         final DynamicReport dr = drb.build();
         plan.setEdcrPassed(finalReportStatus);
         InputStream exportPdf = null;
+        
+     // Now update the terminology
+        replaceStatusWithFulfillTerms(valuesMap);
+        
         try {
             JasperPrint generateJasperPrint = DynamicJasperHelper.generateJasperPrint(dr, new ClassicLayoutManager(),
                     ds, valuesMap);
@@ -1072,7 +1559,267 @@ public class PlanReportService {
         return exportPdf;
 
     }
+    
+    public static void replaceStatusWithFulfillTerms(Map<String, Object> valuesMap) {
+    	LOG.info("Replacing 'Accepted/Not Accepted' with 'Fulfilled/Not Fulfilled' terminology...");
 
+        // Step 1: Update direct reportStatus if exists
+        if (valuesMap.containsKey("reportStatus")) {
+            Object reportObj = valuesMap.get("reportStatus");
+            if (reportObj instanceof String) {
+                String oldStatus = (String) reportObj;
+                String newStatus = oldStatus
+                        .replace("Accepted", "Fulfilled")
+                        .replace("Not Accepted", "Not Fulfilled");
+                valuesMap.put("reportStatus", newStatus);
+                LOG.info("Updated reportStatus: " + oldStatus + " → " + newStatus);
+            }
+        }
+
+        // Step 2: Traverse all entries and update nested "Status" fields
+        for (Map.Entry<String, Object> entry : valuesMap.entrySet()) {
+            Object value = entry.getValue();
+
+            if (value instanceof List) {
+                List<?> list = (List<?>) value;
+                if (!list.isEmpty() && list.get(0) instanceof Map) {
+                    for (Object item : list) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> itemMap = (Map<String, Object>) item;
+
+                        if (itemMap.containsKey("Status")) {
+                            Object statusObj = itemMap.get("Status");
+                            if (statusObj instanceof String) {
+                                String oldStatus = (String) statusObj;
+                                String newStatus = oldStatus
+                                        .replace("Accepted", "Fulfilled")
+                                        .replace("Not Accepted", "Not Fulfilled");
+                                itemMap.put("Status", newStatus);
+
+                                // Optional: log changes for debugging
+                                if (!oldStatus.equals(newStatus)) {
+                                	LOG.info("Updated in '" + entry.getKey() + "': " + oldStatus + " → " + newStatus);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        LOG.info("Status terminology update completed.\n");
+    }
+    
+    /**
+     * Processes the compliance report based on MANDATORY_KEYS only.
+     * Updates reportStatus and clears errors if all mandatory checks are Accepted.
+     * 
+     * @param valuesMap the map containing all scrutiny data
+     * @return true if all mandatory checks passed (final report can be Accepted), false otherwise
+     */
+    public boolean processComplianceReport(Map<String, Object> valuesMap) {
+        boolean allMandatoryAccepted = true;
+        List<String> failedMandatory = new ArrayList<>();
+        printAllKeysWithStatusSorted(valuesMap);
+        // Step 1: Check each mandatory key
+        for (String key : MANDATORY_KEYS) {
+            if (!valuesMap.containsKey(key)) {
+                allMandatoryAccepted = false;
+                failedMandatory.add(key + " (Missing)");
+                continue;
+            }
+            Object value = valuesMap.get(key);
+            String sectionStatus = getSectionStatus(value);
+            if (!"Accepted".equals(sectionStatus)) {
+                allMandatoryAccepted = false;
+                failedMandatory.add(key + " (" + sectionStatus + ")");
+            }
+        }
+        // Step 2: Update map and determine final result
+        boolean finalReportStatus; // This is the value you wanted
+        if (allMandatoryAccepted) {
+            valuesMap.put("reportStatus", "Accepted");
+            valuesMap.put("errors", new HashMap<>()); // Clear errors
+            finalReportStatus = true;
+            LOG.info("All MANDATORY checks PASSED → Report Status: Accepted | Errors cleared");
+        } else {
+        	valuesMap.put("reportStatus", "Not Accepted");
+            finalReportStatus = false;            
+            @SuppressWarnings("unchecked")
+            Map<String, String> errors = (Map<String, String>) valuesMap.get("errors");            
+            if (errors == null) {
+                errors = new LinkedHashMap<>();
+            }
+            for (String failedCheck : failedMandatory) {                
+                String errorKey = failedCheck.substring(0, failedCheck.indexOf(" (")).trim() + " Error";
+                String errorMessage = getErrorMessageForFailedCheck(failedCheck); // Custom message logic
+                errors.put(errorKey, errorMessage);
+            }
+            LOG.info("MANDATORY checks FAILED: " + failedMandatory);
+            LOG.info("Added mandatory failure errors to errors map.");
+            LOG.info("Report Status remains: Not Accepted");
+            valuesMap.put("errors", errors);
+        }
+        return finalReportStatus;
+    }
+
+    private static String getErrorMessageForFailedCheck(String failedCheck) {
+        // Extract the key and status
+        String keyPart = failedCheck.substring(0, failedCheck.indexOf(" (")).trim();
+        String statusPart = failedCheck.contains("Missing") ? "Missing" : 
+                           failedCheck.substring(failedCheck.indexOf("(") + 1, failedCheck.indexOf(")"));
+
+        if ("Missing".equals(statusPart)) {
+            return keyPart + " details are missing in the plan.";
+        } else if ("Not Accepted".equals(statusPart) || "Mixed".equals(statusPart)) {
+            return "The submitted " + formatKeyName(keyPart) + " does not comply with regulations.";
+        }
+        return "Failed to meet requirement: " + keyPart;
+    }
+
+    private static String formatKeyName(String key) {
+        // Convert "1Height of Building" → "Height of Building"
+        return key.replaceFirst("^1", "").trim();
+    }
+    
+//    public void processComplianceReport(Map<String, Object> valuesMap, Boolean finalReportStatus) {
+//
+//        // Step 1: Determine status of each mandatory key
+//        boolean allMandatoryAccepted = true;
+//        List<String> failedMandatory = new ArrayList<>();
+//
+//        for (String key : MANDATORY_KEYS) {
+//            if (!valuesMap.containsKey(key)) {
+//                allMandatoryAccepted = false;
+//                failedMandatory.add(key + " (Missing)");
+//                continue;
+//            }
+//
+//            Object value = valuesMap.get(key);
+//            String sectionStatus = getSectionStatus(value);
+//
+//            if (!"Accepted".equals(sectionStatus)) {
+//                allMandatoryAccepted = false;
+//                failedMandatory.add(key + " (" + sectionStatus + ")");
+//            }
+//        }
+//
+//        // Step 2: Update reportStatus and errors based on mandatory checks
+//        if (allMandatoryAccepted) {
+//            valuesMap.put("reportStatus", "Accepted");
+//            valuesMap.put("errors", new HashMap<>()); // Clear errors
+//            finalReportStatus=true;
+//            LOG.info("All MANDATORY checks PASSED → Report Status: Accepted | Errors cleared");
+//        } else {
+//            valuesMap.put("reportStatus", "Not Accepted");
+//            LOG.info("MANDATORY checks FAILED: " + failedMandatory);
+//            LOG.info("Report Status remains: Not Accepted");
+//        }
+//
+//        // Step 3: Print sorted summary
+//        printAllKeysWithStatusSorted(valuesMap);
+//    }
+    
+    /**
+     * Returns the status of a section: Accepted / Not Accepted / Mixed / N/A
+     */
+    private String getSectionStatus(Object value) {
+        String status = "N/A (Info only)";
+
+        if (value instanceof List) {
+            List<?> list = (List<?>) value;
+            if (!list.isEmpty() && list.get(0) instanceof Map) {
+                boolean allAccepted = true;
+                boolean allNotAccepted = true;
+                boolean hasStatus = false;
+
+                for (Object item : list) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> itemMap = (Map<String, Object>) item;
+                    if (itemMap.containsKey("Status")) {
+                        hasStatus = true;
+                        String itemStatus = (String) itemMap.get("Status");
+                        if ("Accepted".equals(itemStatus)) {
+                            allNotAccepted = false;
+                        } else if ("Not Accepted".equals(itemStatus)) {
+                            allAccepted = false;
+                        }
+                    }
+                }
+
+                if (hasStatus) {
+                    if (allAccepted) return "Accepted";
+                    if (allNotAccepted) return "Not Accepted";
+                    return "Mixed";
+                }
+            }
+        }
+        return status;
+    }
+    
+    /**
+     * Prints full summary: Accepted → Failed/Mixed → N/A (Info only)
+     */
+    public void printAllKeysWithStatusSorted(Map<String, Object> valuesMap) {
+    	LOG.info("\n=== FINAL COMPLIANCE CHECK SUMMARY (Sorted: Accepted → Failed → N/A) ===\n");
+    	LOG.info("%-55s %-15s %s%n", "Key / Section", "Status", "Notes");
+    	LOG.info("----------------------------------------------------------------------------------------------------");
+
+        List<Map.Entry<String, String>> acceptedList = new ArrayList<>();
+        List<Map.Entry<String, String>> failedList = new ArrayList<>();
+        List<Map.Entry<String, String>> naList = new ArrayList<>();
+
+        for (Map.Entry<String, Object> entry : valuesMap.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            String status = "N/A (Info only)";
+            String notes = "";
+
+            if ("reportStatus".equals(key) && value instanceof String) {
+                status = (String) value;
+                notes = "Overall application status";
+            } else {
+                status = getSectionStatus(value);
+                if ("Accepted".equals(status)) notes = "All items compliant";
+                else if ("Not Accepted".equals(status)) notes = "All items failed";
+                else if ("Mixed".equals(status)) notes = "Some accepted, some not";
+            }
+
+            Map.Entry<String, String> displayEntry = new AbstractMap.SimpleEntry<>(key, status + " | " + notes);
+
+            if ("Accepted".equals(status)) {
+                acceptedList.add(displayEntry);
+            } else if ("Not Accepted".equals(status) || "Mixed".equals(status)) {
+                failedList.add(displayEntry);
+            } else {
+                naList.add(displayEntry);
+            }
+        }
+
+        // Sort all lists alphabetically
+        Collections.sort(acceptedList, Comparator.comparing(Map.Entry::getKey));
+        Collections.sort(failedList, Comparator.comparing(Map.Entry::getKey));
+        Collections.sort(naList, Comparator.comparing(Map.Entry::getKey));
+
+        // Print in order: Accepted → Failed/Mixed → N/A
+        printList(acceptedList);
+        printList(failedList);
+        printList(naList);
+
+        LOG.info("\n=== END OF SUMMARY ===");
+    }
+
+    private void printList(List<Map.Entry<String, String>> list) {
+        for (Map.Entry<String, String> entry : list) {
+            String key = entry.getKey();
+            String[] parts = entry.getValue().split(" \\| ", 2);
+            String status = parts[0];
+            String notes = parts.length > 1 ? parts[1] : "";
+            System.out.printf("%-55s %-15s %s%n", key, status, notes);
+        }
+    }
+    
     public Subreport generateDcrSubReport(final List<DcrReportOutput> dcrReportOutputs) {
         FastReportBuilder drb = new FastReportBuilder();
 
@@ -1158,6 +1905,16 @@ public class PlanReportService {
                     dcrReportBlockDetail.setBuildingHeightExcludingMPt(building.getBuildingHeightExcludingMP());
                     dcrReportBlockDetail.setConstructedArea(building.getTotalConstructedArea());
                     List<Floor> floors = building.getFloors();
+                    BigDecimal buildingHeightExMumpty = building.getBuildingHeightExcludingMP().setScale(2, RoundingMode.HALF_UP);
+                    if (buildingHeightExMumpty != null &&
+                    		buildingHeightExMumpty.compareTo(Fire_Tender_Movement) > 0) {   
+                    	LOG.info("building height exclude mumpty : " + buildingHeightExMumpty);
+                    	    //MANDATORY_KEYS.add("1Fire Tender Movement");
+                    }
+                    
+//                    if(building.getMostRestrictiveFarHelper().getType()!=null && building.getMostRestrictiveFarHelper().getType().equals("A")) {
+//                    	MANDATORY_KEYS.add("1Number of Floors");
+//                    }
 
                     if (!floors.isEmpty()) {
                         List<DcrReportFloorDetail> dcrReportFloorDetails = new ArrayList<>();
@@ -1197,11 +1954,19 @@ public class PlanReportService {
                             	            : occupancy.getBuiltUpArea();
                             	    dcrReportFloorDetail.setBuiltUpArea(builtUpArea.setScale(2, BigDecimal.ROUND_HALF_UP));
                             	    
-                            	    // Floor Area
-                            	    BigDecimal floorArea = occupancy.getExistingFloorArea().compareTo(BigDecimal.ZERO) > 0
-                            	            ? occupancy.getFloorArea().subtract(occupancy.getExistingFloorArea())
-                            	            : occupancy.getFloorArea();
-                            	    dcrReportFloorDetail.setFloorArea(floorArea.setScale(2, BigDecimal.ROUND_HALF_UP));
+                            	    if(floor.getIsStiltFloor()) {
+                            	    	// Floor Area                                	   
+                                	    dcrReportFloorDetail.setFloorArea(BigDecimal.valueOf(0.0));
+                                	    dcrReportFloorDetail.setOccupancy(occupancyName + "(Stilt)");
+                            	    }else {
+                            	    	// Floor Area
+                            	    	dcrReportFloorDetail.setOccupancy(occupancyName);
+                                	    BigDecimal floorArea = occupancy.getExistingFloorArea().compareTo(BigDecimal.ZERO) > 0
+                                	            ? occupancy.getFloorArea().subtract(occupancy.getExistingFloorArea())
+                                	            : occupancy.getFloorArea();
+                                	    dcrReportFloorDetail.setFloorArea(floorArea.setScale(2, BigDecimal.ROUND_HALF_UP));
+                            	    }
+                            	    
                             	    
                             	    // Built-up Deduction Area
                             	    BigDecimal builtUpDeductionArea = occupancy.getDeduction() == null ? BigDecimal.ZERO : occupancy.getDeduction();
@@ -1329,14 +2094,34 @@ public class PlanReportService {
         return virtualBuildingReport;
     }
 
+//    private List<ConditionalStyle> getConditonalStyles() {
+//        List<ConditionalStyle> conditionalStyles = new ArrayList<>();
+//        FetchCondition fc = new FetchCondition(STATUS, "Not Accepted");
+//
+//        ConditionalStyle cs = new ConditionalStyle(fc, reportService.getDetailStyle(Color.RED));
+//        conditionalStyles.add(cs);
+//
+//        fc = new FetchCondition(STATUS, "Accepted");
+//
+//        cs = new ConditionalStyle(fc, reportService.getDetailStyle(new Color(0, 128, 0)));
+//        conditionalStyles.add(cs);
+//
+//        fc = new FetchCondition(STATUS, "Verify");
+//
+//        cs = new ConditionalStyle(fc, reportService.getDetailStyle(new Color(30, 144, 255)));
+//        conditionalStyles.add(cs);
+//
+//        return conditionalStyles;
+//    }
+    
     private List<ConditionalStyle> getConditonalStyles() {
         List<ConditionalStyle> conditionalStyles = new ArrayList<>();
-        FetchCondition fc = new FetchCondition(STATUS, "Not Accepted");
+        FetchCondition fc = new FetchCondition(STATUS, "Not Fulfilled");
 
         ConditionalStyle cs = new ConditionalStyle(fc, reportService.getDetailStyle(Color.RED));
         conditionalStyles.add(cs);
 
-        fc = new FetchCondition(STATUS, "Accepted");
+        fc = new FetchCondition(STATUS, "Fulfilled");
 
         cs = new ConditionalStyle(fc, reportService.getDetailStyle(new Color(0, 128, 0)));
         conditionalStyles.add(cs);

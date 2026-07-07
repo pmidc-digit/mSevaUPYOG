@@ -26,7 +26,6 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
-import org.springframework.context.annotation.Lazy;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,7 +53,6 @@ public class ReindexConsumerConfig implements ApplicationRunner {
     private StoppingErrorHandler stoppingErrorHandler;
     
     @Autowired
-    @Lazy
     private ReindexMessageListener indexerMessageListener;
     
 	@Autowired
@@ -110,7 +108,7 @@ public class ReindexConsumerConfig implements ApplicationRunner {
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, String>> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
-        factory.setCommonErrorHandler(stoppingErrorHandler);
+        factory.setErrorHandler(stoppingErrorHandler);
         factory.setConcurrency(3);
         factory.getContainerProperties().setPollTimeout(30000);
         

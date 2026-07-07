@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.context.annotation.Lazy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
@@ -28,20 +27,19 @@ public class BulkIndexer {
 	private RestTemplate restTemplate;
 
 	@Autowired
-	@Lazy
 	private IndexerUtils indexerUtils;
 	
-//	@Value("${elasticsearch.username}")
-//	private String username;
-//
-//	@Value("${elasticsearch.password}")
-//	private String password;
-//	
-//	@Value("${egov.elasticsearch.api.auth}")
-//	private String apiAuth;
-//
-//	@Value("${egov.elasticsearch.api.type.auth}")
-//	private String typeAuth;
+	@Value("${elasticsearch.username}")
+	private String username;
+
+	@Value("${elasticsearch.password}")
+	private String password;
+
+	@Value("${egov.elasticsearch.api.auth}")
+	private String apiAuth;
+
+	@Value("${egov.elasticsearch.api.type.auth}")
+	private String typeAuth;
 
 	/**
 	 * Methods that makes a REST API call to /_bulk API of the ES. This method
@@ -56,11 +54,8 @@ public class BulkIndexer {
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			log.debug("Record being indexed: " + indexJson);
-			final HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-//			headers.setContentType(MediaType.APPLICATION_JSON);
-//	        String base64Creds = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-//	        headers.add(apiAuth, typeAuth + " " + base64Creds);
+			final HttpHeaders headers = buildAuthHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
 			final HttpEntity<String> entity = new HttpEntity<>(indexJson, headers);
 			Object response = restTemplate.postForObject(url.toString(), entity, Map.class);
 			if (url.contains("_bulk")) {
@@ -87,7 +82,8 @@ public class BulkIndexer {
 		Object response = null;
 		try {
 			log.debug("URI: " + url.toString());
-			response = restTemplate.getForObject(url.toString(), Map.class);
+			HttpEntity<Void> entity = new HttpEntity<>(buildAuthHeaders());
+			response = restTemplate.exchange(url, org.springframework.http.HttpMethod.GET, entity, Map.class).getBody();
 		} catch (final ResourceAccessException e) {
 			log.error("ES is DOWN, Pausing kafka listener.......");
 			indexerUtils.orchestrateListenerOnESHealth();
@@ -114,13 +110,19 @@ public class BulkIndexer {
 		if (null != body) {
 			if (httpMethod.equals("POST")) {
 				try {
-					response = restTemplate.postForObject(url, body, Map.class);
+					HttpHeaders headers = buildAuthHeaders();
+					headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+					HttpEntity<Object> entity = new HttpEntity<>(body, headers);
+					response = restTemplate.exchange(url, org.springframework.http.HttpMethod.POST, entity, Map.class).getBody();
 				} catch (Exception e) {
 					log.error("POST: Exception while fetching from es: " + e);
 				}
 			} else if (httpMethod.equals("PUT")) {
 				try {
-					restTemplate.put(url, body);
+					HttpHeaders headers = buildAuthHeaders();
+					headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+					HttpEntity<Object> entity = new HttpEntity<>(body, headers);
+					restTemplate.exchange(url, org.springframework.http.HttpMethod.PUT, entity, Map.class);
 					response = "OK";
 				} catch (Exception e) {
 					log.error("PUT: Exception while updating settings on es: " + e);
@@ -128,12 +130,23 @@ public class BulkIndexer {
 			}
 		} else {
 			try {
-				response = restTemplate.getForObject(url, Map.class);
+				HttpEntity<Void> entity = new HttpEntity<>(buildAuthHeaders());
+				response = restTemplate.exchange(url, org.springframework.http.HttpMethod.GET, entity, Map.class).getBody();
 			} catch (Exception e) {
 				log.error("GET: Exception while fetching from es: " + e);
 			}
 		}
 		return response;
+	}
+
+	/**
+	 * Builds HttpHeaders containing the Basic Auth credentials for Elasticsearch.
+	 */
+	private HttpHeaders buildAuthHeaders() {
+		HttpHeaders headers = new HttpHeaders();
+		String base64Creds = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+		headers.add(apiAuth, typeAuth + " " + base64Creds);
+		return headers;
 	}
 
 }

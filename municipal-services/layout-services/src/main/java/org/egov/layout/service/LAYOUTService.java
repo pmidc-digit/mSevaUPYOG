@@ -224,15 +224,16 @@ public class LAYOUTService {
 				.findFirst().orElse(new Action()).getNextState();
 		State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
 
-		String action = layout.getWorkflow() != null ? layout.getWorkflow().getAction() : "";
-
-		if (nextState != null && nextState.getState().equalsIgnoreCase(LAYOUTConstants.FI_STATUS)
-				&& (LAYOUTConstants.ACTION_PAY.equalsIgnoreCase(action) || LAYOUTConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
+		if (nextState != null && CollectionUtils.isEmpty(layout.getWorkflow().getAssignes())
+				&& !CollectionUtils.isEmpty(nextState.getActions())) {
 			List<String> roles = new ArrayList<>();
-			nextState.getActions().forEach(stateAction -> {
-				roles.addAll(stateAction.getRoles());
-			});
-			List<String> assignee = userService.getAssigneeFromLayout(layout, roles, nocRequest.getRequestInfo());
+			nextState.getActions().stream()
+			.filter(stateAction -> !stateAction.getNextState().equalsIgnoreCase(nextStateId)).forEach(stateAction -> 
+				roles.addAll(stateAction.getRoles())
+			);
+			List<String> assignee = null;
+			if(!CollectionUtils.isEmpty(roles))
+				assignee = userService.getAssigneeFromLayout(layout, roles, nocRequest.getRequestInfo());
 			layout.getWorkflow().setAssignes(assignee);
 		}
 		if(nocRequest.getLayout().getWorkflow().getAction().equals(LAYOUTConstants.ACTION_INITIATE) || nocRequest.getLayout().getWorkflow().getAction().equals(LAYOUTConstants.ACTION_APPLY)){

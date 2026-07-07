@@ -3,6 +3,7 @@ package org.egov.ndc.service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -270,5 +271,80 @@ public class UserService {
 		user.setActive(userFromSearchResult.getActive());
 		user.setPassword(userFromSearchResult.getPassword());
 	}
+
+		/**
+	 * Resolves the correct citizen UUID(s) to use as workflow assignees for the
+	 * SENDBACKTOCITIZEN action.
+	 *
+	 * The problem: multiple owner records can share the same mobile number but have
+	 * different UUIDs. Using isPrimaryOwner is unreliable because the citizen who
+	 * logs in is identified by the user whose username == mobileNumber (DIGIT's
+	 * canonical citizen account for that phone).
+	 *
+	 * Strategy per unique mobile number:
+	 *   1. Search user-service by mobileNumber.
+	 *   2. Among results, prefer the user whose username == mobileNumber (the login
+	 *      account used by the citizen).
+	 *   3. If still multiple candidates, take the most recently modified one to
+	 *      ensure we get the active account.
+	 *
+	 * @param owners      The list of owner infos on the application.
+	 * @param tenantId    The state-level tenantId for the user search.
+	 * @param requestInfo The requestInfo of the current request.
+	 * @return A list of UUIDs to set as workflow assignees.
+	 */
+	public List<String> resolveAssigneeUuidsForSendBack(List<OwnerInfo> owners, String tenantId, RequestInfo requestInfo) {
+		if (CollectionUtils.isEmpty(owners)) {
+			return Collections.emptyList();
+		}
+
+		// Collect distinct mobile numbers from the application owners.
+		Set<String> uniqueMobiles = owners.stream()
+				.map(OwnerInfo::getMobileNumber)
+				.filter(StringUtils::isNotBlank)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+
+		List<String> assigneeUuids = new ArrayList<>();
+		String stateLevelTenant = tenantId.split("\\.")[0];
+
+		for (String mobile : uniqueMobiles) {
+			UserSearchRequest searchRequest = new UserSearchRequest();
+			searchRequest.setRequestInfo(requestInfo);
+			searchRequest.setTenantId(stateLevelTenant);
+			searchRequest.setMobileNumber(mobile);
+			searchRequest.setActive(true);
+			searchRequest.setUserType("CITIZEN");
+
+			StringBuilder uri = new StringBuilder(userHost).append(userSearchEndpoint);
+			UserResponse response = userCall(searchRequest, uri);
+
+			if (response == null || CollectionUtils.isEmpty(response.getUser())) {
+				log.warn("No citizen user found for mobile: {} during SENDBACKTOCITIZEN assignee resolution", mobile);
+				continue;
+			}
+
+			List<OwnerInfo> candidates = response.getUser();
+
+			// Step 1: prefer users whose username == mobileNumber (canonical DIGIT login).
+			List<OwnerInfo> canonicalMatches = candidates.stream()
+					.filter(u -> StringUtils.equals(u.getUserName(), mobile))
+					.collect(Collectors.toList());
+
+			List<OwnerInfo> pool = canonicalMatches.isEmpty() ? candidates : canonicalMatches;
+
+			// Step 2: if still multiple, take the most recently modified one.
+			OwnerInfo resolved = pool.stream()
+					.max(Comparator.comparingLong(u -> u.getLastModifiedDate() != null ? u.getLastModifiedDate() : 0L))
+					.orElse(null);
+
+			if (resolved != null && StringUtils.isNotBlank(resolved.getUuid())) {
+				log.info("Resolved assignee UUID {} for mobile {} during SENDBACKTOCITIZEN", resolved.getUuid(), mobile);
+				assigneeUuids.add(resolved.getUuid());
+			}
+		}
+
+		return assigneeUuids;
+	}
+
 
 }

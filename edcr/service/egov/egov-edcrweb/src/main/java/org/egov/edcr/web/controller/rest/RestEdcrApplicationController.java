@@ -47,9 +47,12 @@
 
 package org.egov.edcr.web.controller.rest;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,15 +69,19 @@ import org.egov.edcr.contract.ComparisonDetail;
 import org.egov.edcr.contract.ComparisonRequest;
 import org.egov.edcr.contract.ComparisonResponse;
 import org.egov.edcr.contract.EdcrDetail;
-import org.egov.edcr.contract.EdcrRequest;
+//import org.egov.edcr.contract.EdcrRequest;
+import org.egov.common.edcr.model.EdcrRequest;
 import org.egov.edcr.contract.EdcrResponse;
 import org.egov.edcr.contract.PlanResponse;
 import org.egov.edcr.entity.ApplicationType;
+import org.egov.edcr.service.EdcrApplicationService;
 import org.egov.edcr.service.EdcrRestService;
 import org.egov.edcr.service.EdcrValidator;
 import org.egov.edcr.service.FetchEdcrRulesMdms;
 import org.egov.edcr.service.OcComparisonService;
 import org.egov.edcr.service.PlanService;
+import org.egov.infra.config.core.ApplicationThreadLocals;
+import org.egov.infra.filestore.entity.FileStoreMapper;
 import org.egov.infra.microservice.contract.RequestInfoWrapper;
 import org.egov.infra.microservice.contract.ResponseInfo;
 import org.egov.infra.microservice.models.RequestInfo;
@@ -82,6 +89,7 @@ import org.egov.infra.microservice.models.UserInfo;
 import org.egov.infra.utils.FileStoreUtils;
 import org.egov.infra.utils.StringUtils;
 import org.egov.infra.web.rest.error.ErrorResponse;
+import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,8 +110,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 
 @RestController
 @RequestMapping(value = "/rest/dcr")
@@ -142,6 +153,9 @@ public class RestEdcrApplicationController {
 
     @Autowired
     private EdcrValidator edcrValidator;
+    
+    @Autowired
+    private EdcrApplicationService edcrApplicationService;
 
     @PostMapping(value = "/scrutinizeplan", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -234,8 +248,13 @@ public class RestEdcrApplicationController {
                 enrichUser.setUuid(userInfoReq.getUuid());
                 enrichUser.setMobile(userInfoReq.getMobile());
                 enrichUser.setTenantId(userInfoReq.getTenantId());
+                enrichUser.setRoles(userInfoReq.getRoles());
+                enrichUser.setName(userInfoReq.getName());
+                LOGGER.info("###Professional's name from Req. Info : ####"+ userInfoReq.getName());
+                LOGGER.info("###Professional's mobile no from Req. Info : ####"+ userInfoReq.getMobile());
                 edcr.getRequestInfo().setUserInfo(enrichUser);
             }
+            
             ErrorDetail edcRes = edcrValidator.validate(edcr);
             if (edcRes != null && StringUtils.isNotBlank(edcRes.getErrorMessage()))
                 return new ResponseEntity<>(edcRes, HttpStatus.BAD_REQUEST);
@@ -248,7 +267,7 @@ public class RestEdcrApplicationController {
             Map<String, List<Object>> masterData = new HashMap<>();
             Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
             if (mdmsEnabled != null && mdmsEnabled) {
-                Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), edcr.getTenantId());
+                Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), ApplicationThreadLocals.getStateName());
                 HashMap<String, String> data = new HashMap<>();
                 data.put("applicationType", applicationType);
                 data.put("serviceType", serviceType);
@@ -276,8 +295,8 @@ public class RestEdcrApplicationController {
                     ErrorDetail validateEdcrRequest = edcrRestService.validateEdcrRequest(edcr, planFile);
                     if (validateEdcrRequest != null)
                         errorResponses = Arrays.asList(validateEdcrRequest);
-
                     edcr.setAppliactionType(ApplicationType.PERMIT.toString());
+                    //edcr.setAppliactionType(ApplicationType.BUILDING_PLAN_SCRUTINY.toString());
                 }
             }
 
@@ -533,5 +552,261 @@ public class RestEdcrApplicationController {
         return true;
     }
     
- 
+
+    
+
+    @PostMapping(value = "/mergeSanctionLetter", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<?> mergeSanctionLetter(@RequestBody JsonNode request) {
+    	LOGGER.info("Received mergeSanctionLetter request");
+    		    try {
+    		        // Extract request nodes
+    		        JsonNode requestInfoNode = request.get("RequestInfo");
+    		        JsonNode additionalDetails = request.get("additionalDetails");
+
+    		        if (requestInfoNode == null || additionalDetails == null) {
+
+    		        	LOGGER.warn("Invalid request structure. RequestInfo or additionalDetails missing");
+
+    		            Map<String, Object> errorResponse = new HashMap<>();
+    		            errorResponse.put("message", "Invalid request structure");
+    		            errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
+
+    		            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    		        }
+    		        
+
+    		        String tenantId = requestInfoNode
+    		                .path("userInfo")
+    		                .path("tenantId")
+    		                .asText();
+
+    		        String uploadedFileId = additionalDetails
+    		                .path("uploadedDiagram")
+    		                .path("filestoreId")
+    		                .asText();
+
+    		        String uploadedDiagramTenantId = additionalDetails
+    		                .path("uploadedDiagram")
+    		                .path("tenantId")
+    		                .asText();
+
+    		        String sanctionFileId = additionalDetails
+    		                .path("sanctionLetter")
+    		                .path("filestoreId")
+    		                .asText();
+
+    		        String sanctionLetterTenantId = additionalDetails
+    		                .path("sanctionLetter")
+    		                .path("tenantId")
+    		                .asText();
+
+    		        JsonNode details = additionalDetails.path("details");
+
+    		        String ulbName = details.path("ulbName").asText();
+
+    		        LOGGER.info("📄 TenantId                : {}", tenantId);
+    		        LOGGER.info("📄 UploadedDiagram FileId : {}", uploadedFileId);
+    		        LOGGER.info("📄 UploadedDiagram Tenant : {}", uploadedDiagramTenantId);
+    		        LOGGER.info("📄 SanctionLetter FileId  : {}", sanctionFileId);
+    		        LOGGER.info("📄 SanctionLetter Tenant  : {}", sanctionLetterTenantId);
+    		        LOGGER.info("📄 ULB Name               : {}", ulbName);
+
+    		        if (StringUtils.isBlank(uploadedFileId)
+    		                || StringUtils.isBlank(uploadedDiagramTenantId)
+    		                || StringUtils.isBlank(sanctionFileId)
+    		                || StringUtils.isBlank(sanctionLetterTenantId)) {
+
+    		            LOGGER.warn("Missing filestoreId or tenantId in additionalDetails");
+
+    		            Map<String, Object> errorResponse = new HashMap<>();
+
+    		            errorResponse.put(
+    		                    "message",
+    		                    "uploadedDiagram/sanctionLetter filestoreId or tenantId is missing"
+    		            );
+    		            
+    		            Map<String, Object> uploadedDiagramMap = new HashMap<>();
+    		            uploadedDiagramMap.put("filestoreId", uploadedFileId);
+    		            uploadedDiagramMap.put("tenantId", uploadedDiagramTenantId);
+
+    		            Map<String, Object> sanctionLetterMap = new HashMap<>();
+    		            sanctionLetterMap.put("filestoreId", sanctionFileId);
+    		            sanctionLetterMap.put("tenantId", sanctionLetterTenantId);
+
+    		            errorResponse.put("uploadedDiagram", uploadedDiagramMap);
+    		            errorResponse.put("sanctionLetter", sanctionLetterMap);
+    		            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    		        }
+
+    		        LOGGER.info("Starting sanction letter merge process");
+
+    		        FileStoreMapper fileStoreMapper =
+    		                edcrApplicationService.mergeSanctionLetter(additionalDetails);
+
+    		        LOGGER.info("Merge completed successfully");
+    		        LOGGER.info("Stored FileStoreId: {}", fileStoreMapper.getFileStoreId());
+
+    		        Map<String, Object> response = new HashMap<>();
+//    		        response.put("tenantId", tenantId);
+//    		        response.put("uploadedDiagram", uploadedFileId);
+//    		        response.put("sanctionLetter", sanctionFileId);
+    		        response.put("mergedFileStoreId", fileStoreMapper);
+//    		        response.put("ulbName", ulbName);
+    		        response.put("message", "Sanction letter merged successfully");
+
+    		        return new ResponseEntity<>(response, HttpStatus.OK);
+
+    		    } catch (FileNotFoundException e) {
+
+    		        LOGGER.error("File not found during merge process", e);
+
+    		        Map<String, Object> errorResponse = new HashMap<>();
+    		        errorResponse.put("message", "Required PDF file not found");
+    		        errorResponse.put("error", e.getMessage());
+
+    		        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+
+    		    } catch (IllegalArgumentException e) {
+
+    		        LOGGER.error("Invalid input provided", e);
+
+    		        Map<String, Object> errorResponse = new HashMap<>();
+    		        errorResponse.put("message", "Invalid input");
+    		        errorResponse.put("error", e.getMessage());
+
+    		        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+
+    		    } catch (IOException e) {
+
+    		        LOGGER.error("IO Exception occurred while processing PDFs", e);
+
+    		        Map<String, Object> errorResponse = new HashMap<>();
+    		        errorResponse.put("message", "PDF processing failed");
+    		        errorResponse.put("error", e.getMessage());
+
+    		        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+
+    		    } catch (Exception e) {
+
+    		        LOGGER.error("Unexpected error occurred during mergeSanctionLetter", e);
+
+    		        Map<String, Object> errorResponse = new HashMap<>();
+    		        errorResponse.put("message", "Internal server error");
+    		        errorResponse.put("error", e.getMessage());
+
+    		        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    		    }
+    		}
+    		    
+    
+   
+    @PostMapping(value = "/updateBPADetails", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<?> updateBPADetails(@RequestBody Object bpaObject) {
+    	Map<String, Object> response = new HashMap<>();
+        try {
+            String applicationNo = getJsonValue(bpaObject, "$.BPA[0].applicationNo");
+            if (applicationNo == null || applicationNo.trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Application number is mandatory.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            String examinedBy = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.approvedBy");
+            String approvedBy = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.approvedBy");
+            String approvedDate = getJsonValue(bpaObject, "$.BPA[0].approvalDate");
+            String validDate = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.validityDate");
+            String edcrNo = getJsonValue(bpaObject, "$.BPA[0].edcrNumber");
+            String zone = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.zonenumber");
+            Boolean isSelfCertification = JsonPath.read(
+                    bpaObject,
+                    "$.BPA[0].additionalDetails.isSelfCertification"
+            );
+            String tenantId = getJsonValue(bpaObject, "$.BPA[0].tenantId");
+
+            String eSign;
+            String eSignName;
+
+            if (Boolean.TRUE.equals(isSelfCertification)) {
+                eSign = "Licensed professional";
+                eSignName = getJsonValue(bpaObject,
+                        "$.BPA[0].additionalDetails.stakeholderName");
+            } else {
+                eSign = "Competent Authority";
+                eSignName = getJsonValue(bpaObject,
+                        "$.BPA[0].additionalDetails.approvedBy");
+            }
+
+            approvedDate = formatEpochDate(approvedDate);
+            validDate = formatEpochDate(validDate);
+
+            edcrApplicationService.updateDXFOutput(
+                    applicationNo,
+                    examinedBy,
+                    approvedBy,
+                    approvedDate,
+                    validDate,
+                    edcrNo,
+                    isSelfCertification,
+                    eSign,
+                    eSignName,
+                    tenantId,
+                    zone
+            );
+
+            response.put("success", true);
+            response.put("message", "BPA details updated successfully.");
+            return ResponseEntity.ok(response);
+
+        } catch (PathNotFoundException ex) {
+            LOGGER.error("Required JSON path not found in BPA request.", ex);
+            response.put("success", false);
+            response.put("message", "Invalid BPA request payload.");
+            return ResponseEntity.badRequest().body(response);
+
+        } catch (IllegalArgumentException ex) {
+            LOGGER.error("Validation failed while processing BPA details.", ex);
+            response.put("success", false);
+            response.put("message", ex.getMessage());
+            return ResponseEntity.badRequest().body(response);
+
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error while updating BPA details.", ex);
+            response.put("success", false);
+            response.put("message", "Internal server error occurred while processing BPA details.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(response);
+        }
+    }
+
+    private String getJsonValue(Object json, String path) {
+        try {
+            Object value = JsonPath.read(json, path);
+            return value != null ? value.toString() : "";
+        } catch (Exception e) {
+            return "";
+        }
+    }
+    
+
+
+	public static String formatEpochDate(String epochMillis) {
+
+    	    if (epochMillis == null) {
+    	        return "-";
+    	    }
+    	    Long date = Long.parseLong(epochMillis);
+    	    if(date == 0) {
+		        return "-";
+		    }
+    	    try {
+    	        Date date1 = new Date(date);
+    	        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMMM-yyyy");
+    	        return sdf.format(date1);
+    	    } catch (Exception e) {
+    	        return "";
+    	    }
+	}
+    
 }

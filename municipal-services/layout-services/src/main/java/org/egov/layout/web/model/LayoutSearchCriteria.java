@@ -2,8 +2,8 @@ package org.egov.layout.web.model;
 
 import java.util.List;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.SafeHtml;
 
 @Getter
 @Setter
@@ -22,34 +23,34 @@ import lombok.Setter;
 public class LayoutSearchCriteria {
 
     @NotNull
-    @SanitizeHtml
+    @SafeHtml
     @JsonProperty("tenantId")
     private String tenantId;
 
     @JsonProperty("ids")
     private List<String> ids;
 
-    @SanitizeHtml
+    @SafeHtml
     @JsonProperty("applicationNo")
     private String applicationNo;
 
-    @SanitizeHtml
+    @SafeHtml
     @JsonProperty("mobileNumber")
     private String mobileNumber;
 
-    @SanitizeHtml
+    @SafeHtml
     @JsonProperty("layoutNo")
     private String layoutNo;
 
-    @SanitizeHtml
+    @SafeHtml
     @JsonProperty("source")
     private String source;
 
-    @SanitizeHtml
+    @SafeHtml
     @JsonProperty("nocType")
     private String nocType;
 
-    @SanitizeHtml
+    @SafeHtml
     @JsonProperty("sourceRefId")
     private String sourceRefId;
 
@@ -68,11 +69,14 @@ public class LayoutSearchCriteria {
     @JsonProperty("accountId")
     private List<String> accountId;
     
+    @JsonProperty("applicationStatus")
+    private String applicationStatus;
+
     @JsonProperty("status")
     private List<String> status;
 
-    @SanitizeHtml
-    @Size(min = 1, max = 15)
+    @SafeHtml
+//    @Size(min = 1, max = 15)
     @JsonProperty("vasikaNumber")
     private String vasikaNumber = null;
 

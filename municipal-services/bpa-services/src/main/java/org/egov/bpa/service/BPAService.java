@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
@@ -409,12 +410,22 @@ public class BPAService {
 			throw new CustomException(BPAErrorConstants.UPDATE_ERROR, "Application Not found in the System" + bpa);
 		}
 
-		Map<String, String> edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(), bpaRequest.getBPA());
+		Map<String, String> edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(), bpaRequest.getBPA(), mdmsData);
+		String workflowName = edcrResponse.getOrDefault("businessService", "");
 		String applicationType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);
-		bpa.setApplicationType(applicationType);
+		if (bpa.getApplicationType() == null) {
+			bpa.setApplicationType(applicationType);
+		} else {
+			applicationType = bpa.getApplicationType();
+		}
 		log.debug("applicationType is " + applicationType);
 		BusinessService businessService = workflowService.getBusinessService(bpa, bpaRequest.getRequestInfo(),
 				bpa.getApplicationNo());
+		
+		if(!bpaRequest.getBPA().getBusinessService().equalsIgnoreCase(workflowName)) {
+			bpaRequest.getBPA().getWorkflow().setAction(BPAConstants.ACTION_CANCEL);
+			bpaRequest.getBPA().getWorkflow().setAssignes(null);
+		}
 		
 		List<BPA> searchResult = getBPAWithBPAId(bpaRequest);
 		if (CollectionUtils.isEmpty(searchResult) || searchResult.size() > 1) {
@@ -424,6 +435,7 @@ public class BPAService {
 		
 		Map<String, String> additionalDetails = bpa.getAdditionalDetails() != null ? (Map<String, String>)bpa.getAdditionalDetails()
 				: new HashMap<String, String>();
+
 		
 		if (bpa.getStatus().equalsIgnoreCase(BPAConstants.FI_STATUS)
 				&& bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_SENDBACKTOCITIZEN)) {
@@ -493,18 +505,32 @@ public class BPAService {
         				.findFirst().orElse(new Action()).getNextState();
         		State nextState = businessService.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
         		
-        		String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";
+        		List<String> roles = new ArrayList<String>();
+    			if(nextState != null && !CollectionUtils.isEmpty(nextState.getActions()))
+    				roles = nextState.getActions().stream()
+    				.filter(stateAction -> !stateAction.getNextState().equalsIgnoreCase(nextStateId))
+    				.flatMap(stateAction -> stateAction.getRoles().stream())
+    				.distinct()
+    				.filter(role -> !role.equalsIgnoreCase("OBPAS_UPDATE_ZONE")
+    						&& !role.equalsIgnoreCase("SYSTEM"))
+    				.collect(Collectors.toList());
         		
-        		if (nextState != null && (nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE) || nextState.getState().equalsIgnoreCase(BPAConstants.FI_STATUS))
-        				&& (BPAConstants.ACTION_PAY.equalsIgnoreCase(action) || BPAConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
-        			List<String> roles = new ArrayList<>();
-        			nextState.getActions().forEach(stateAction -> {
-        				roles.addAll(stateAction.getRoles());
-        			});
-        			List<String> assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo);
-        			bpa.getWorkflow().setAssignes(assignee);
-        		}
-                
+        		if (nextState != null 
+						&& CollectionUtils.isEmpty(bpa.getWorkflow().getAssignes())
+						&& !CollectionUtils.isEmpty(nextState.getActions())) {
+					List<String> assignee = null;
+					if(!CollectionUtils.isEmpty(roles))
+						assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo, false);
+					bpa.getWorkflow().setAssignes(assignee);
+					
+				}
+        		
+        		if(!CollectionUtils.isEmpty(roles)) {
+    				List<String> assignee = null;
+    				assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo, true);
+    				bpa.getWorkflow().setAssignes(assignee);
+    			}
+        		
 		wfIntegrator.callWorkFlow(bpaRequest);
 		log.debug("===> workflow done =>" +bpaRequest.getBPA().getStatus()  );
 		enrichmentService.postStatusEnrichment(bpaRequest);
@@ -519,6 +545,26 @@ public class BPAService {
 
 		
 		repository.update(bpaRequest, workflowService.isStateUpdatable(bpa.getStatus(), businessService));
+		
+		if(!bpaRequest.getBPA().getBusinessService().equalsIgnoreCase(workflowName)) {
+			bpaRequest.getBPA().getWorkflow().setAction(BPAConstants.ACTION_INITIATE);
+			bpaRequest.getBPA().getWorkflow().setAssignes(Collections.singletonList(bpa.getAccountId()));
+			bpaRequest.getBPA().setLandId(null);
+			if(bpaRequest.getBPA().getLandInfo() != null) {
+				bpaRequest.getBPA().getLandInfo().setId(null);
+				if(bpaRequest.getBPA().getLandInfo().getAddress() != null) {
+					bpaRequest.getBPA().getLandInfo().getAddress().setId(null);
+					if(bpaRequest.getBPA().getLandInfo().getAddress().getGeoLocation() != null)
+						bpaRequest.getBPA().getLandInfo().getAddress().getGeoLocation().setId(null);
+				}
+				if(!CollectionUtils.isEmpty(bpaRequest.getBPA().getLandInfo().getOwners()))
+					bpaRequest.getBPA().getLandInfo().getOwners().stream().forEach(owner -> owner.setOwnerId(null));
+				if(!CollectionUtils.isEmpty(bpaRequest.getBPA().getLandInfo().getUnit()))
+					bpaRequest.getBPA().getLandInfo().getUnit().stream().forEach(unit -> unit.setId(null));
+			}
+			this.create(bpaRequest);
+		}
+		
 		return bpaRequest.getBPA();
 
 	}

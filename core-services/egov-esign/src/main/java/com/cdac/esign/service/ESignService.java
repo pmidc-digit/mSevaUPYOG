@@ -9,46 +9,57 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
+import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.egov.common.contract.request.RequestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.NodeList;
 
 import com.cdac.esign.encryptor.RSAKeyUtil;
 import com.cdac.esign.form.FormXmlDataAsp;
 import com.cdac.esign.form.RequestXmlForm;
+import com.cdac.esign.repository.ImageStoreRepositry;
 import com.cdac.esign.xmlparser.AspXmlGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
 // iText 7 Imports
 import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDictionary;
+import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfName;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.StampingProperties;
+import com.itextpdf.kernel.pdf.canvas.parser.PdfCanvasProcessor;
 import com.itextpdf.signatures.IExternalSignatureContainer;
 import com.itextpdf.signatures.PdfSignatureAppearance;
 import com.itextpdf.signatures.PdfSigner;
+import com.jayway.jsonpath.JsonPath;
+import com.cdac.esign.eventListener.LastPositionListener;
 
 @Service
 public class ESignService {
@@ -60,11 +71,20 @@ public class ESignService {
 
     @Autowired
     private Environment env;
+    
+    @Autowired
+    private MDMSService mdmsService;
+    
+    @Autowired
+    private UserService userService;
 
+    @Autowired
+    private ImageStoreRepositry imageStoreRepositry;
+    
     /**
      * PHASE 1: Prepare PDF with Dynamic Location & Custom TXN ID
      */
-    public RequestXmlForm processDocumentUpload(String fileStoreId, String tenantId, String signerName) throws Exception {
+    public RequestXmlForm processDocumentUpload(String fileStoreId, String tenantId, String signerName, String callbackUrl, RequestInfo requestInfo) throws Exception {
 
         logger.info("Processing Phase 1 for tenant: {}, signer: {}", tenantId, signerName);
 
@@ -72,6 +92,12 @@ public class ESignService {
             signerName = "Authorized Signatory"; 
         }
 
+        String responseUrl = env.getProperty("esign.response.host") + env.getProperty("esign.response.url");
+        
+        //Added Custome response Url logic
+        if(!StringUtils.isEmpty(callbackUrl))
+        	responseUrl += "?callbackUrl=" + callbackUrl;
+        
         // 1. Get Original PDF
         String pdfUrl = getPdfUrlFromFilestore(fileStoreId, tenantId);
         byte[] originalPdfBytes = downloadPdfFromUrlAsBytes(pdfUrl);
@@ -80,10 +106,16 @@ public class ESignService {
         ByteArrayOutputStream preparedPdfStream = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new ByteArrayInputStream(originalPdfBytes));
         PdfSigner signer = new PdfSigner(reader, preparedPdfStream, new StampingProperties());
-
+        
+        Map<String, Object> positionMap = getEsignPosition(originalPdfBytes);
+        
         PdfSignatureAppearance appearance = signer.getSignatureAppearance();
-        appearance.setPageRect(new Rectangle(330, 50, 200, 80));
-        appearance.setPageNumber(1);
+        float width = 160;
+        float height = 64;
+        Float lastTextY = (Float)positionMap.getOrDefault("lastY", 50) - height;
+        Float textX = (Float)positionMap.getOrDefault("pageWidth", 540.0) - width;
+        appearance.setPageRect(new Rectangle(textX, lastTextY < 0 ? 0 : lastTextY, width, height));
+        appearance.setPageNumber((Integer)positionMap.getOrDefault("lastPage", 1));
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z");
         dateFormat.setTimeZone(TimeZone.getTimeZone("IST"));
@@ -97,9 +129,54 @@ public class ESignService {
                             "Date: " + dateFormat.format(new Date()) + "\n" +
                             "Reason: mSeva eSign\n" + 
                             "Location: " + locationText; // <--- DYNAMIC LOCATION
-                            
-        appearance.setLayer2Text(layer2Text);
-        appearance.setRenderingMode(PdfSignatureAppearance.RenderingMode.DESCRIPTION); // Text Only
+        
+        if(requestInfo.getUserInfo() != null) {
+        	Object mdmsData = mdmsService.mDMSCall(requestInfo, tenantId.split("\\.")[0]);
+        	String designation = userService.getEmployeeDesignation(requestInfo, requestInfo.getUserInfo().getUuid(), tenantId);
+        	List<String> designations = JsonPath.read(mdmsData, "$.MdmsRes.common-masters.Designation.[?(@.code == '" + designation + "')].name");
+        	if(CollectionUtils.isEmpty(designations))
+        		designation = "Citizen";
+        	else
+        		designation = designations.get(0);
+        	
+        	if("Citizen".equalsIgnoreCase(designation)) {
+        		List<String> roles = requestInfo.getUserInfo().getRoles().stream()
+        		.filter(role -> (role.getTenantId().equalsIgnoreCase("pb")
+        				|| role.getTenantId().equalsIgnoreCase(tenantId)) 
+        				&& !role.getCode().equalsIgnoreCase("CITIZEN"))
+        		.map(role -> {
+        			String[] roleNameAr = role.getName().split(" ");
+        			return roleNameAr[roleNameAr.length - 1];
+        			
+        		})
+        		.collect(Collectors.toList());
+        		
+        		if(!CollectionUtils.isEmpty(roles))
+        			designation = roles.get(0);
+        		
+        	}
+        	
+        	List<String> ulbTypeList = JsonPath.read(mdmsData, "$.MdmsRes.tenant.tenants.[?(@.code == '" + tenantId + "')].city.ulbType");
+			String ulbType = CollectionUtils.isEmpty(ulbTypeList) ? "" : ulbTypeList.get(0);
+        	
+//        	layer2Text = "Digitally Signed by " + requestInfo.getUserInfo().getName() + "\n" +
+//                    "Date: " + dateFormat.format(new Date()) + "\n" +
+//                    ulbType + ", " + city +"\n" + 
+//                    designation; // <--- DYNAMIC LOCATION
+        	
+			layer2Text = "Digitally Signed by " + requestInfo.getUserInfo().getName() +"\n" + 
+							designation + "\n" + 
+							ulbType + "\n" + 
+							city + "\n" + 
+							dateFormat.format(new Date());
+        }
+
+        ImageData baseImageData = ImageDataFactory.create(imageStoreRepositry.getBaseImageBytes());
+
+        appearance.setLayer2Text(layer2Text); // Set the dynamic text (with location) as Layer 2 of the signature
+        appearance.setImage(baseImageData); // Set the base image (e.g. "esign.jpeg") as the background of the signature
+        appearance.setImageScale(0.3f); // Scale down the image to fit within the signature rectangle
+        appearance.setRenderingMode(PdfSignatureAppearance.RenderingMode.DESCRIPTION);
 
         signer.setFieldName("Signature1");
 
@@ -136,7 +213,7 @@ public class ESignService {
         formXmlDataAsp.setAspId(env.getProperty("esign.asp.id"));
         formXmlDataAsp.setAuthMode(env.getProperty("esign.auth.mode"));
         formXmlDataAsp.setResponseSigType(env.getProperty("esign.response.sig.type"));
-        formXmlDataAsp.setResponseUrl(env.getProperty("esign.response.host") + env.getProperty("esign.response.url"));
+        formXmlDataAsp.setResponseUrl(responseUrl);
         formXmlDataAsp.setId("1");
         formXmlDataAsp.setHashAlgorithm(env.getProperty("esign.hash.algorithm"));
         formXmlDataAsp.setDocInfo(env.getProperty("esign.doc.info"));
@@ -423,5 +500,36 @@ public class ESignService {
             logger.error("Error extracting fileStoreId", e);
         }
         return response;
+    }
+    
+    /**
+     * Get last page and last X and Y of the Pdf file content
+     * 
+     * @param originalPdfBytes
+     * @return
+     * @throws Exception
+     */
+    private Map<String, Object> getEsignPosition(byte[] originalPdfBytes) throws Exception{
+    	Map<String, Object> positionMap = new HashMap<>();
+    	
+    	PdfReader pdfReader = new PdfReader(new ByteArrayInputStream(originalPdfBytes));
+        PdfDocument document = new PdfDocument(pdfReader);
+        int totalPages = document.getNumberOfPages();
+        
+        LastPositionListener listener = new LastPositionListener();
+        PdfCanvasProcessor processor = new PdfCanvasProcessor(listener);
+        processor.processPageContent(document.getLastPage());
+        
+        if(listener.hasPosition()) {
+        	positionMap.put("lastX", listener.getLastX());
+        	positionMap.put("lastY", listener.getLastY());
+        }
+        positionMap.put("pageWidth", document.getLastPage().getPageSizeWithRotation().getWidth());
+        
+        document.close();
+        pdfReader.close();
+    	
+        positionMap.put("lastPage", totalPages);       
+    	return positionMap;
     }
 }

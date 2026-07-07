@@ -159,84 +159,110 @@ export async function insertRecords(bulkPdfJobId, totalPdfRecords, currentPdfRec
   } 
 }
 
-export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mobileNumber){
+export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mobileNumber) {
 
   try {
-    const updateResult = await pool.query('select * from egov_bulk_pdf_info where jobid = $1', [bulkPdfJobId]);
-    var recordscompleted = parseInt(updateResult.rows[0].recordscompleted);
-    var totalrecords = parseInt(updateResult.rows[0].totalrecords);
-    var baseFolder = envVariables.SAVE_PDF_DIR + bulkPdfJobId + '/';
-    //var baseFolder = process.cwd() + '/' + bulkPdfJobId + '/';
-    
-    let fileNames = fs.readdirSync(baseFolder);
-    
-    if(recordscompleted >= totalrecords && fileNames.length == numberOfFiles){
-      var merger = new PDFMerger();
-    
-      logger.info('Files to be merged: ',fileNames);
-      (async () => {
-        var processStatus = updateResult.rows[0].status;
-        if(processStatus != 'CANCEL'){
-          try {
-            for (let i = 0; i < fileNames.length; i++){
-              logger.info(baseFolder+fileNames[i]);
-              merger.add(baseFolder+fileNames[i]);            //merge all pages. parameter is the path to file and filename.
+    const updateResult = await pool.query(
+      'select * from egov_bulk_pdf_info where jobid = $1',
+      [bulkPdfJobId]
+    );
+
+    const recordscompleted = parseInt(updateResult.rows[0].recordscompleted);
+    const totalrecords = parseInt(updateResult.rows[0].totalrecords);
+    const processStatus = updateResult.rows[0].status;
+
+    const baseFolder = envVariables.SAVE_PDF_DIR + bulkPdfJobId + '/';
+    const fileNames = fs.readdirSync(baseFolder);
+
+    if (recordscompleted >= totalrecords && fileNames.length === numberOfFiles) {
+
+      if (processStatus === 'CANCEL') return;
+
+      const merger = new PDFMerger();
+      logger.info('Files to be merged:', fileNames);
+
+      for (let i = 0; i < fileNames.length; i++) {
+        const filePath = baseFolder + fileNames[i];
+        logger.info(filePath);
+        merger.add(filePath);
+      }
+
+      const outputFile = baseFolder + 'output.pdf';
+
+      await merger.save(outputFile);
+
+      // 🔥 ensure file is fully written
+      await new Promise(res => setTimeout(res, 300));
+
+      // 🔍 validation
+      if (!fs.existsSync(outputFile)) {
+        throw new Error("Output PDF not created");
+      }
+
+      const stats = fs.statSync(outputFile);
+      logger.info(`Output file size: ${stats.size / (1024 * 1024)} MB`);
+
+      if (stats.size === 0) {
+        throw new Error("Output PDF is empty");
+      }
+
+      // 🔥 FIXED upload
+      const filestoreid = await fileStoreAPICall(outputFile, tenantId);
+
+      const updateQuery = `
+        UPDATE egov_bulk_pdf_info 
+        SET filestoreid = $1, lastmodifiedby = $2, lastmodifiedtime = $3, status = $5 
+        WHERE jobid = $4
+      `;
+
+      const currentTime = new Date().getTime();
+      const status = 'DONE';
+
+      // 🔥 await DB + notification
+      await pool.query(updateQuery, [
+        filestoreid,
+        userid,
+        currentTime,
+        bulkPdfJobId,
+        status
+      ]);
+
+      await sendNoitification(filestoreid, mobileNumber, tenantId);
+
+      // 🔥 cleanup (same logic, just runs AFTER everything)
+      try {
+        if (fs.existsSync(baseFolder)) {
+          fs.readdirSync(baseFolder).forEach(file => {
+            const curPath = baseFolder + file;
+
+            if (fs.lstatSync(curPath).isDirectory()) {
+              deleteFolderRecursive(curPath);
+            } else {
+              fs.unlinkSync(curPath);
             }
-            await merger.save(baseFolder+'/output.pdf');        //save under given name and reset the internal document
-          } catch (err) {
+          });
+
+          fs.rmdirSync(baseFolder);
+        }
+      } catch (error) {
+        logger.error(error.stack || error);
+
+        const errorPlayloads = [{
+          topic: envVariables.KAFKA_PDF_ERROR_TOPIC,
+          messages: error
+        }];
+
+        producer.send(errorPlayloads, function(err) {
+          if (err) {
             logger.error(err.stack || err);
           }
-      
-          var mergePdfData = fs.createReadStream(baseFolder+'output.pdf');
-          await fileStoreAPICall('output.pdf', tenantId, mergePdfData).then((filestoreid) => {
-            const updateQuery = 'UPDATE egov_bulk_pdf_info SET filestoreid = $1, lastmodifiedby = $2, lastmodifiedtime = $3, status = $5 WHERE jobid = $4';
-            const curentTimeStamp = new Date().getTime();
-            const status = 'DONE';
-            pool.query(updateQuery,[filestoreid, userid, curentTimeStamp, bulkPdfJobId, status]);
-            sendNoitification(filestoreid, mobileNumber, tenantId);
-        
-          }).catch((err) => {
-            logger.error(err.stack || err);
-          });
-        }
-
-        try {
-          if( fs.existsSync(baseFolder) ) {
-            fs.readdirSync(baseFolder).forEach(function(file,index){
-              var curPath = baseFolder + file;
-              if(fs.lstatSync(curPath).isDirectory()) { // recurse
-                deleteFolderRecursive(curPath);
-              } else { // delete file
-                fs.unlinkSync(curPath);
-              }
-            });
-            fs.rmdirSync(baseFolder);
-          }
-        } catch (error) {
-          logger.error(error.stack || error);
-          var errorPlayloads = [];
-          
-          errorPlayloads.push({
-            topic: envVariables.KAFKA_PDF_ERROR_TOPIC,
-            messages: error
-          });
-          producer.send(errorPlayloads, function(err, data) {
-            if (err) {
-              logger.error(err.stack || err);
-              errorCallback({
-                message: `error while publishing to kafka: ${err.message}`
-              });
-            } 
-          });
-        }
-        
-
-      })();
+        });
+      }
     }
+
   } catch (err) {
     logger.error(err.stack || err);
   }
-  
 }
 
 export async function sendNoitification(filestoreid, mobileNumber, tenantId){

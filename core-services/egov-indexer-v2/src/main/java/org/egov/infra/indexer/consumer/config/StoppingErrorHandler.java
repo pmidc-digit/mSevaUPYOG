@@ -1,24 +1,20 @@
 package org.egov.infra.indexer.consumer.config;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.Consumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
-import org.springframework.kafka.listener.CommonErrorHandler;
-import org.springframework.kafka.listener.MessageListenerContainer;
+import org.springframework.kafka.listener.ErrorHandler;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StoppingErrorHandler implements CommonErrorHandler {
+public class StoppingErrorHandler implements ErrorHandler {
 
   @Autowired
   private KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
   
   @Override
-  public void handleRemaining(Exception thrownException, java.util.List<ConsumerRecord<?, ?>> records, 
-          Consumer<?, ?> consumer, MessageListenerContainer container) {
-	// This is the modern equivalent of the handle method
-	kafkaListenerEndpointRegistry.stop();
-	}
+  public void handle(Exception thrownException, ConsumerRecord<?, ?> record) {
+    kafkaListenerEndpointRegistry.stop();
+  }
 
 }

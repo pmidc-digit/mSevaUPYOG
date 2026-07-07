@@ -136,9 +136,7 @@ public class EnrichmentService {
 //		 BPA Documents
 		if (!CollectionUtils.isEmpty(bpaRequest.getBPA().getDocuments()))
 			bpaRequest.getBPA().getDocuments().forEach(document -> {
-				if (document.getId() == null) {
-					document.setId(UUID.randomUUID().toString());
-				}
+				document.setId(UUID.randomUUID().toString());
 			});
 		setIdgenIds(bpaRequest);
 	}
@@ -307,11 +305,44 @@ public class EnrichmentService {
 		if(bpaRequest.getBPA().getStatus().equalsIgnoreCase(BPAConstants.APPL_FEE_STATE))
 			calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
 		
-		// Generate the sanction Fees Demand
+		// Generate the sanction Fees Demand and Generate Approval Date
 		if(bpaRequest.getBPA().getStatus().equalsIgnoreCase(BPAConstants.SANC_FEE_STATE))
 			calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
-				
-				
+		
+		if ((BPAConstants.BPA_LOW_MODULE_CODE.equalsIgnoreCase(bpa.getBusinessService())
+				&& BPAConstants.ACTION_VERIFY.equalsIgnoreCase(action))
+				|| (BPAConstants.STATUS_ESIGN_PENDING.equalsIgnoreCase(state)
+						&& BPAConstants.ACTION_APPROVE.equalsIgnoreCase(action))
+				|| BPAConstants.STATUS_DRAWING_ESIGN_PENDING.equalsIgnoreCase(state)
+				&& BPAConstants.ACTION_APPROVE.equalsIgnoreCase(action)) {
+
+			int vailidityInMonths = config.getValidityInMonths();
+			Calendar calendar = Calendar.getInstance();
+			bpa.setApprovalDate(Calendar.getInstance().getTimeInMillis());
+
+			// Adding 3years (36 months) to Current Date
+			calendar.add(Calendar.MONTH, vailidityInMonths);
+			calendar.add(Calendar.DATE, -1);
+			Map<String, Object> additionalDetail = null;
+			if (bpa.getAdditionalDetails() != null) {
+				additionalDetail = (Map) bpa.getAdditionalDetails();
+			} else {
+				additionalDetail = new HashMap<String, Object>();
+				bpa.setAdditionalDetails(additionalDetail);
+			}
+
+			additionalDetail.put("validityDate", calendar.getTimeInMillis());
+			additionalDetail.put("approvedBy", bpaRequest.getRequestInfo().getUserInfo().getName());
+
+			edcrService.updateEDCRBpaDetails(bpaRequest);
+			
+			if(StringUtils.isEmpty(bpa.getApprovalNo())) {
+				List<IdResponse> idResponses = idGenRepository.getId(bpaRequest.getRequestInfo(), bpa.getTenantId(),
+						config.getPermitNoIdgenName(), config.getPermitNoIdgenFormat(), 1).getIdResponses();
+				bpa.setApprovalNo(idResponses.get(0).getId());
+			}
+		}
+		
 //		nocService.initiateNocWorkflow(bpaRequest, mdmsData);
 
 	}
@@ -332,12 +363,7 @@ public class EnrichmentService {
 								&& state.equalsIgnoreCase(BPAConstants.APPROVED_STATE))
 								|| (state.equalsIgnoreCase(BPAConstants.APPROVED_STATE) && bpa.getRiskType()
 										.toString().equalsIgnoreCase(BPAConstants.LOW_RISKTYPE))))) {
-			int vailidityInMonths = config.getValidityInMonths();
-			Calendar calendar = Calendar.getInstance();
-			bpa.setApprovalDate(Calendar.getInstance().getTimeInMillis());
-
-			// Adding 3years (36 months) to Current Date
-			calendar.add(Calendar.MONTH, vailidityInMonths);
+			
 			Map<String, Object> additionalDetail = null;
 			if (bpa.getAdditionalDetails() != null) {
 				additionalDetail = (Map) bpa.getAdditionalDetails();
@@ -345,8 +371,7 @@ public class EnrichmentService {
 				additionalDetail = new HashMap<String, Object>();
 				bpa.setAdditionalDetails(additionalDetail);
 			}
-
-			additionalDetail.put("validityDate", calendar.getTimeInMillis());
+			
 			if(StringUtils.isEmpty(bpa.getApprovalNo())) {
 				List<IdResponse> idResponses = idGenRepository.getId(bpaRequest.getRequestInfo(), bpa.getTenantId(),
 						config.getPermitNoIdgenName(), config.getPermitNoIdgenFormat(), 1).getIdResponses();
@@ -357,7 +382,7 @@ public class EnrichmentService {
 
 				Object mdmsData = bpaUtil.mDMSCall(bpaRequest.getRequestInfo(), bpaRequest.getBPA().getTenantId());
 				Map<String, String> edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(),
-						bpaRequest.getBPA());
+						bpaRequest.getBPA(), null);
 				log.debug("applicationType is " + edcrResponse.get(BPAConstants.APPLICATIONTYPE));
 				log.debug("serviceType is " + edcrResponse.get(BPAConstants.SERVICETYPE));
 
@@ -452,5 +477,9 @@ public class EnrichmentService {
 		if(!landInfos.isEmpty()) {
 			bpaRequest.getBPA().setLandInfo(landInfos.get(0));
 		}
+	}
+	
+	public void setApplicationNo(BPARequest bpaRequest) {
+		setIdgenIds(bpaRequest);
 	}
 }

@@ -193,6 +193,19 @@ public class NDCService {
 			NdcApplicationRequest requestTobeUpdated = NdcApplicationRequest.builder().requestInfo(requestInfo).applications(Collections.singletonList(application)).build();
 			log.info("ndc request with current applications :", requestTobeUpdated);
 			if (!skipWorkFlow) {
+				// For SENDBACKTOCITIZEN, auto-resolve the assignee UUID from the application
+				// owners so the workflow can match the logged-in citizen correctly.
+				if (NDCConstants.ACTION_SENDBACKTOCITIZEN.equalsIgnoreCase(application.getWorkflow().getAction())) {
+					List<String> assigneeUuids = userService.resolveAssigneeUuidsForSendBack(
+							application.getOwners(), application.getTenantId(), requestInfo);
+					if (!assigneeUuids.isEmpty()) {
+						application.getWorkflow().setAssignes(assigneeUuids);
+						log.info("Auto-resolved SENDBACKTOCITIZEN assignees: {}", assigneeUuids);
+					} else {
+						log.warn("Could not resolve any assignee UUID for SENDBACKTOCITIZEN on application: {}",
+								application.getApplicationNo());
+					}
+				}
                 workflowIntegrator.callWorkFlow(requestTobeUpdated, NDCConstants.NDC_BUSINESS_SERVICE);
             }
             if (application.getWorkflow().getAction().equalsIgnoreCase("APPLY")) {
@@ -320,6 +333,14 @@ public class NDCService {
 		String mappedFeeType = NDCConstants.RESIDENTIAL.equalsIgnoreCase(propertyType)
 				? NDCConstants.RESIDENTIAL
 				: NDCConstants.COMMERCIAL;
+
+		// Ensure processInstance.action reflects the actual workflow action being performed
+		if (request.getApplications() != null && !request.getApplications().isEmpty()) {
+			Application app = request.getApplications().get(0);
+			if (app.getProcessInstance() != null && app.getWorkflow() != null && app.getWorkflow().getAction() != null) {
+				app.getProcessInstance().setAction(app.getWorkflow().getAction());
+			}
+		}
 
 		CalculationCriteria calculationCriteria = CalculationCriteria.builder()
 				.ndcApplicationRequest(request)

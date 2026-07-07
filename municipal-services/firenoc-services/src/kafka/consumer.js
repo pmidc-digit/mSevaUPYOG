@@ -21,7 +21,7 @@ initializeProducer().then((p) => {
 var options = {
   // connect directly to kafka broker (instantiates a KafkaClient)
   kafkaHost: envVariables.KAFKA_BROKER_HOST,
-  groupId: "firenoc-consumer-grp",
+  groupId: "firenoc-consumer-group",
   autoCommit: true,
   autoCommitIntervalMs: 5000,
   sessionTimeout: 15000,
@@ -31,7 +31,7 @@ var options = {
   protocol: ["roundrobin"],
   // Offsets to use for new groups other options could be 'earliest' or 'none'
   // (none will emit an error if no offsets were saved) equivalent to Java client's auto.offset.reset
-  fromOffset: "latest",
+  fromOffset: "earliest",
   // how to recover from OutOfRangeOffset error (where save offset is past server retention)
   // accepts same value as fromOffset
   outOfRangeOffset: "earliest"
@@ -367,13 +367,39 @@ consumerGroup.on("message", function(message) {
     //     console.log("reciept hit");
     //   }
     //   break;
-    case envVariables.KAFKA_TOPICS_RECEIPT_CREATE:
-      {
-        console.log("reciept hit");
-        sendPaymentMessage(value);
-        FireNOCPaymentStatus(value);
-      }
-      break;
+       case envVariables.KAFKA_TOPICS_RECEIPT_CREATE:
+        {
+          const detail = get(value, "Payment.paymentDetails[0]");
+
+          // 1. Extract Business Service (Universal Path)
+          let businessService = get(detail, "businessService") || 
+                                get(detail, "bill.businessService") || 
+                                get(detail, "Bill[0].businessService");
+
+          // 2. Extract Application Number (Universal Path)
+          let applicationNumber = get(detail, "bill.consumerCode") || 
+                                  get(detail, "Bill[0].billDetails[0].consumerCode") ||
+                                  get(detail, "Bill[0].consumerCode");
+
+          // 3. LOGGING: This is the critical part for your Production debugging
+          console.log("-----------------------------------------");
+          console.log("KAFKA RECEIPT TOPIC HIT");
+          console.log("Business Service Found: ", businessService);
+          console.log("Application Number Found: ", applicationNumber);
+          console.log("Target Service Expected: ", envVariables.BUSINESS_SERVICE);
+          console.log("-----------------------------------------");
+
+          // 4. Processing Logic
+          if (businessService && businessService.toUpperCase() === envVariables.BUSINESS_SERVICE.toUpperCase()) {
+            logger.info(`Processing FireNOC Payment for App: ${applicationNumber}`);
+            
+            sendPaymentMessage(value);
+            FireNOCPaymentStatus(value);
+          } else {
+            logger.info(`Skipping Receipt: ${applicationNumber} is for ${businessService}`);
+          }
+        }
+        break;   
   }
 
 	console.log("payloads is",payloads);

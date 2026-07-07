@@ -1,6 +1,6 @@
 package org.egov.infra.indexer.custom.pgr;
 
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

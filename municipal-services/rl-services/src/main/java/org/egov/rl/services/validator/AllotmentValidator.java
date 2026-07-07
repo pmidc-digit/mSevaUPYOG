@@ -130,13 +130,15 @@ public class AllotmentValidator {
 //		long uniquePanNumberSet = owners.stream().map(owner -> owner.getPanCardNumber().trim()).distinct().count();
 //	    Set<String> uniquePanNumberSet = owners.stream()
 //				.map(owner -> owner.getPanNumber()).collect(Collectors.toSet());
-		long uniqueEmailSet = owners.stream().map(owner -> owner.getEmailId().trim()).distinct().count();
-//		if (uniqueAadharNumberSet != owners.size())
-//			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate AadharCard Number in the request");
-//		if (uniquePanNumberSet != owners.size())
-//			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate PAN Card Number in the request");
-		if (uniqueEmailSet != owners.size())
+		List<String> emails = owners.stream()
+				.map(OwnerInfo::getEmailId)
+				.filter(email -> email != null && !email.trim().isEmpty())
+				.map(String::trim)
+				.collect(java.util.stream.Collectors.toList());
+		long uniqueEmailCount = emails.stream().distinct().count();
+		if (emails.size() != uniqueEmailCount) {
 			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate Email ID in the request");
+		}
 
 		long uniqueOwnerSet = owners.stream()
 				.map(owner -> (owner.getName() + owner.getMobileNo())
@@ -236,13 +238,15 @@ public class AllotmentValidator {
 //		long uniquePanNumberSet = owners.stream().map(owner -> owner.getPanCardNumber().trim()).distinct().count();
 //	    Set<String> uniquePanNumberSet = owners.stream()
 //				.map(owner -> owner.getPanNumber()).collect(Collectors.toSet());
-		long uniqueEmailSet = owners.stream().map(owner -> owner.getEmailId().trim()).distinct().count();
-//		if (uniqueAadharNumberSet != owners.size())
-//			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate AadharCard Number in the request");
-//		if (uniquePanNumberSet != owners.size())
-//			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate PAN Card Number in the request");
-		if (uniqueEmailSet != owners.size())
+		List<String> emails = owners.stream()
+				.map(OwnerInfo::getEmailId)
+				.filter(email -> email != null && !email.trim().isEmpty())
+				.map(String::trim)
+				.collect(java.util.stream.Collectors.toList());
+		long uniqueEmailCount = emails.stream().distinct().count();
+		if (emails.size() != uniqueEmailCount) {
 			throw new CustomException("EG_RL_OWNER INFO ERROR", "Duplicate Email ID in the request");
+		}
 
 		long uniqueOwnerSet = owners.stream()
 				.map(owner -> (owner.getName() + owner.getMobileNo())
@@ -324,7 +328,7 @@ public class AllotmentValidator {
 //			if(!isValidPAN( u.getPanCardNumber())){
 //				errorMap.put("OWNER INFORMATION ERROR", "Please enter valid PAN Card number");
 //			}
-			if (!isValidEmail(u.getEmailId())) {
+			if (u.getEmailId() != null && !u.getEmailId().trim().isEmpty() && !isValidEmail(u.getEmailId())) {
 				errorMap.put("OWNER INFORMATION ERROR", "Please enter valid EMAIL ID");
 			}
 			if (!isValidMobileNo(u.getMobileNo())) {

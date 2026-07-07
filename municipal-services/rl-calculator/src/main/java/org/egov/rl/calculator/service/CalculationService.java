@@ -6,7 +6,7 @@ import org.egov.rl.calculator.util.PropertyUtil;
 import org.egov.rl.calculator.util.RLConstants;
 import org.egov.rl.calculator.web.models.AllotmentDetails;
 import org.egov.rl.calculator.web.models.AllotmentRequest;
-
+import org.egov.rl.calculator.web.models.RentRevision;
 import org.egov.rl.calculator.web.models.RLProperty;
 import org.egov.rl.calculator.web.models.TaxRate;
 import org.egov.rl.calculator.web.models.demand.BillingPeriod;
@@ -36,6 +36,7 @@ import java.time.ZoneId;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.Comparator;
 
 @Slf4j
 @Service
@@ -91,8 +92,11 @@ public class CalculationService {
 				String cycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
 
 				List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(allotmentRequest.getRequestInfo(), tenantId);
-				BillingPeriod billingPeriod = billingPeriods.stream()
-						.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle)).findFirst().orElse(null); // Assuming
+				BillingPeriod billingPeriod = billingPeriods != null ? billingPeriods.stream()
+						.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle)).findFirst().orElse(null) : null;
+				//Basically getting the rent fromt the table otherwise we fallback to the original additional details
+				BigDecimal activeRent = getActiveRent(allotmentDetails, billingPeriod != null ? billingPeriod.getTaxPeriodFrom() : System.currentTimeMillis(), fee);
+
 				if (billingPeriod != null) {
 					long startDay = billingPeriod.getTaxPeriodFrom() <= allotmentDetails.getStartDate()
 							? allotmentDetails.getStartDate()
@@ -101,7 +105,9 @@ public class CalculationService {
 					long endDay = billingPeriod.getTaxPeriodTo() <= allotmentDetails.getEndDate()
 							? billingPeriod.getTaxPeriodTo()
 							: allotmentDetails.getEndDate();
-					fee = calculatePaybleAmount(startDay, endDay, fee, cycle);
+					fee = calculatePaybleAmount(startDay, endDay, activeRent, cycle);
+				} else {
+					fee = activeRent;
 				}
 				
 				
@@ -410,7 +416,8 @@ public class CalculationService {
             List<RLProperty> calculateAmount = mdmsUtil.getCalculateAmount(allotmentDetails.getPropertyId(),
                     requestInfo, tenantId, RLConstants.RL_MASTER_MODULE_NAME);
             if (!CollectionUtils.isEmpty(calculateAmount)) {
-                currentPeriodRent = new BigDecimal(calculateAmount.get(0).getBaseRent());
+                BigDecimal fallbackRent = new BigDecimal(calculateAmount.get(0).getBaseRent());
+                currentPeriodRent = getActiveRent(allotmentDetails, taxPeriodFrom, fallbackRent);
             }
         } else {
             // Created after due date — current period demand = ₹0
@@ -625,6 +632,17 @@ public class CalculationService {
 	}
     */
 	
+	private BigDecimal getActiveRent(AllotmentDetails allotmentDetails, long taxPeriodFrom, BigDecimal fallbackRent) {
+		if (allotmentDetails != null && !CollectionUtils.isEmpty(allotmentDetails.getRentRevisions())) {
+			return allotmentDetails.getRentRevisions().stream()
+					.filter(r -> r.getRevisionDate() != null && r.getRevisionDate() <= taxPeriodFrom)
+					.max(Comparator.comparing(RentRevision::getRevisionDate))
+					.map(RentRevision::getRevisedRent)
+					.orElse(fallbackRent);
+		}
+		return fallbackRent;
+	}
+
 	private static BigDecimal safe(BigDecimal value) {
 		return value == null ? BigDecimal.ZERO : value;
 	}

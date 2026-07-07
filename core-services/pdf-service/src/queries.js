@@ -277,7 +277,7 @@ export async function getBulkPdfRecordsDetails(userid, offset, limit, jobId){
       param = userid;
     }
 
-    query = query + 'limit $2 offset $3';
+    query = query + 'order by lastmodifiedtime DESC limit $2 offset $3';
 
     const result = await pool.query(query, [param, limit, offset]);
     if(result.rowCount>=1){
@@ -297,6 +297,7 @@ export async function getBulkPdfRecordsDetails(userid, offset, limit, jobId){
           bussinessService: row.businessservice,
           consumercode: row.consumercode,
           isConsolidated: row.isconsolidated,
+          group: row.group_name,
           status: row.status
         };
         data.push(value);

@@ -18,7 +18,9 @@ import {
   SubmitBar,
   CustomButton,
   TextArea,
-  MobileNumber
+  MobileNumber,
+  OTPVerifier,
+  Modal
 } from "@mseva/digit-ui-react-components";
 import { stringReplaceAll, getPattern, convertDateTimeToEpoch, convertDateToEpoch } from "../utils";
 import Timeline from "../components/Timeline";
@@ -26,6 +28,21 @@ import cloneDeep from "lodash/cloneDeep";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { LoaderNew } from "../components/LoaderNew";
 
+
+const Close = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF" style={{ width: "24px", height: "24px" }}>
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+  </svg>
+);
+
+const CloseBtn = (props) => {
+  return (
+    <div className="icon-bg-secondary" onClick={props.onClick} style={{ cursor: "pointer" }}>
+      <Close />
+    </div>
+  );
+};
 
 const ErrorMessage = ({ message }) => {
   if (!message) return null;
@@ -56,6 +73,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
   const [errors, setErrors] = useState({})
   const [ownerRoleCheck, setOwnerRoleCheck] = useState(null) // Declare ownerRoleCheck variable
+  const [activeOtpIndex, setActiveOtpIndex] = useState(null)
 
   const setDocumentFile = (index, file) => {
     console.log("OwnerDoc DocumentFile FileUploader", index, file)
@@ -237,6 +255,10 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           ...item,
           dob: Digit.Utils.date.getDate(item?.dob),
           isPrimaryOwner: item?.isPrimaryOwner === "true" ? true : false,
+          additionalDetails: {
+            ...(item?.additionalDetails || {}),
+            isMobileVerified: true
+          }
         }
       });
     } else if (currentStepData?.PlotDetails?.landInfo?.owners?.length > 0) {
@@ -245,13 +267,17 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           ...item,
           dob: Digit.Utils.date.getDate(item?.dob),
           isPrimaryOwner: item?.isPrimaryOwner === "true" ? true : false,
+          additionalDetails: {
+            ...(item?.additionalDetails || {}),
+            isMobileVerified: true
+          }
         }
       });
     }
     if(owners?.length > 0){
       return [...owners]
     }
-    return [{ name: "", gender: "", mobileNumber: null, isPrimaryOwner: true },]
+    return [{ name: "", gender: "", mobileNumber: null, isPrimaryOwner: true, additionalDetails: { isMobileVerified: false } },]
   })
 
   const user = Digit.UserService.getUser()
@@ -392,7 +418,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
   function handleAdd() {
     const values = [...fields]
-    values.push({ name: "", gender: "", mobileNumber: null, isPrimaryOwner: false })
+    values.push({ name: "", gender: "", mobileNumber: null, isPrimaryOwner: false, additionalDetails: { isMobileVerified: false } })
     setFeilds(values)
     setCanmovenext(true)
   }
@@ -456,7 +482,10 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       dob: units[i].dob,
       authorizedPerson: units[i].authorizedPerson,
       permanentAddress: units[i].permanentAddress,
-      additionalDetails: units[i].additionalDetails,
+      additionalDetails: {
+        ...(units[i].additionalDetails || {}),
+        isMobileVerified: false
+      },
       authorizationLetter: units[i].authorizationLetter,
       isPrimaryOwner: units[i].isPrimaryOwner,
       ownerId: units[i]?.ownerId || null
@@ -517,14 +546,14 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     setShowToast(null)
   }
 
-  const getOwnerDetails = async (indexValue, eData) => {
+  const startMobileVerification = async (indexValue, e) => {
+    if (e && e.preventDefault) e.preventDefault();
     const ownersCopy = cloneDeep(fields)
     const ownerNo = ownersCopy?.[indexValue]?.mobileNumber || ""
-    const ownerId = ownersCopy?.[indexValue]?.ownerId || null
-    console.log("ownerNo", ownerNo, indexValue, ownersCopy, eData)
+    console.log("ownerNo to verify:", ownerNo, indexValue)
     setShowToast(null)
 
-    if (!ownerNo.match(getPattern("MobileNo"))) {
+    if (!ownerNo || !ownerNo.match(getPattern("MobileNo"))) {
       setShowToast({ key: "true", error: true, message: "ERR_MOBILE_NUMBER_INCORRECT" })
       return
     }
@@ -547,24 +576,43 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     ) {
       setShowToast({ key: "true", error: true, message: "ERR_OWNER_ALREADY_ADDED" })
       return
-    } else {
+    }
+
+    // Pass verification check, open the OTP modal
+    setActiveOtpIndex(indexValue);
+  }
+
+  const handleOtpSuccess = async (indexValue) => {
+    setActiveOtpIndex(null);
+    const ownersCopy = cloneDeep(fields)
+    const ownerNo = ownersCopy?.[indexValue]?.mobileNumber || ""
+    const ownerId = ownersCopy?.[indexValue]?.ownerId || null
+
+    try {
+      setApiLoading(true);
       const usersResponse = await Digit.UserService.userSearch(
         Digit.ULBService.getStateId(),
-        { userName: fields?.[indexValue]?.mobileNumber },
+        { userName: ownerNo },
         {},
       )
-      // const found = usersResponse?.user?.[0]?.roles?.filter(
-      //   (el) => el.code === "BPA_ARCHITECT" || el.code === "BPA_SUPERVISOR",
-      // )?.[0]
+
       if (ownerNo === user?.info?.mobileNumber) {
-          setCanmovenext(false)
-          //setownerRoleCheck(found);
-          setShowToast({ key: "true", error: true, message: `BPA_OWNER_VALIDATION` })
-          return
-      }
-      if (usersResponse?.user?.length === 0) {
-        setShowToast({ key: "true", warning: true, message: "ERR_MOBILE_NUMBER_NOT_REGISTERED" })
+        setCanmovenext(false)
+        setShowToast({ key: "true", error: true, message: `BPA_OWNER_VALIDATION` })
         return
+      }
+
+      if (usersResponse?.user?.length === 0) {
+        // Still verified, but let them fill the details manually
+        const values = [...ownersCopy]
+        if (values[indexValue]) {
+          values[indexValue].additionalDetails = {
+            ...(values[indexValue].additionalDetails || {}),
+            isMobileVerified: true
+          }
+        }
+        setFeilds(values)
+        setShowToast({ key: "true", warning: true, message: "ERR_MOBILE_NUMBER_NOT_REGISTERED" })
       } else {
         const userData = usersResponse?.user?.[0]
         userData.gender = userData.gender
@@ -579,11 +627,17 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
         const values = [...ownersCopy]
         if (values[indexValue]) {
-          values[indexValue] = userData
-          values[indexValue].isPrimaryOwner = fields[indexValue]?.isPrimaryOwner || false
+          values[indexValue] = {
+            ...userData,
+            isPrimaryOwner: fields[indexValue]?.isPrimaryOwner || false,
+            additionalDetails: {
+              ...(fields[indexValue]?.additionalDetails || {}),
+              isMobileVerified: true
+            }
+          }
         }
         const updatedValues = values?.map((item, index) => {
-          if((index === indexValue) && ownerId){
+          if ((index === indexValue) && ownerId) {
             return {
               ...item,
               ownerId,
@@ -599,8 +653,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         if (values[indexValue]?.mobileNumber && values[indexValue]?.name && values[indexValue]?.gender?.code)
           setCanmovenext(true)
         else setCanmovenext(false)
-
       }
+    } catch (err) {
+      console.error("Error verifying OTP and searching user:", err)
+      setShowToast({ key: "true", error: true, message: "ERR_USER_SEARCH_FAILED" })
+    } finally {
+      setApiLoading(false);
     }
   }
 
@@ -754,6 +812,19 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       // window.scrollTo(0, 0);
       return;
     }
+
+    // Validation: check that each owner's mobile number is verified
+    let allVerified = true;
+    fields?.forEach((owner) => {
+      if (!owner?.additionalDetails?.isMobileVerified) {
+        allVerified = false;
+      }
+    });
+
+    if (!allVerified) {
+      setShowToast({ key: "true", error: true, message: "ERR_OWNER_MOBILE_NOT_VERIFIED" });
+      return;
+    }
     setApiLoading(true);
     const userresponse = await getUserData()
 
@@ -787,7 +858,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
               permanentAddress: item?.permanentAddress || userData?.permanentAddress || "",
               additionalDetails: {
                 documentFile: item?.additionalDetails?.documentFile || null,
-                ownerPhoto: item?.additionalDetails?.ownerPhoto || null
+                ownerPhoto: item?.additionalDetails?.ownerPhoto || null,
+                isMobileVerified: item?.additionalDetails?.isMobileVerified || false
               },
               authorizationLetter: item?.authorizationLetter || null,
             }
@@ -827,7 +899,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           permanentAddress: owner?.permanentAddress || "",
           additionalDetails: {
             documentFile: owner?.additionalDetails?.documentFile || null,
-            ownerPhoto: owner?.additionalDetails?.ownerPhoto || null
+            ownerPhoto: owner?.additionalDetails?.ownerPhoto || null,
+            isMobileVerified: owner?.additionalDetails?.isMobileVerified || false
           },
           authorizationLetter: owner?.authorizationLetter || null,
           photo:null
@@ -976,9 +1049,20 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                             maxLength={10}
                             disable={currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.mobileNumber ? true : false}
                           />
-                          {currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.mobileNumber ? null : <div className="bpa-owner-search-icon-container" onClick={(e) => getOwnerDetails(index, e)}>
-                            <SearchIcon />
-                          </div>}
+                          {currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.mobileNumber ? null : (
+                            field?.additionalDetails?.isMobileVerified ? (
+                              <div className="bpa-owner-verified-container" style={{ display: "flex", alignItems: "center", padding: "0 8px", color: "green", fontWeight: "bold", gap: "4px" }}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="green"/>
+                                </svg>
+                                {t("CS_MOBILE_VERIFIED")}
+                              </div>
+                            ) : (
+                              <div className="bpa-owner-search-icon-container" onClick={(e) => startMobileVerification(index, e)}>
+                                <SearchIcon />
+                              </div>
+                            )
+                          )}
                       </div>
                       <ErrorMessage message={errors[`mobileNumber_${index}`]} />
                     </div>
@@ -1146,6 +1230,21 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         />
       )}
       {loader && <LoaderNew page={true} />}
+      {activeOtpIndex !== null && activeOtpIndex !== undefined && (
+        <Modal
+          headerBarMain={<h1 className="heading-m">{t("BPA_OWNER_OTP_VERIFICATION")}</h1>}
+          headerBarEnd={<CloseBtn onClick={() => setActiveOtpIndex(null)} />}
+          hideSubmit={true}
+        >
+          <OTPVerifier
+            mobileNumber={fields[activeOtpIndex]?.mobileNumber}
+            onSuccess={() => handleOtpSuccess(activeOtpIndex)}
+            onError={(err) => {
+              setShowToast({ key: "true", error: true, message: err?.message || t("CS_OTP_VERIFICATION_FAILED") });
+            }}
+          />
+        </Modal>
+      )}
     </div>
 
 

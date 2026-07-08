@@ -394,10 +394,13 @@ const LayoutApplicantDetails = (_props) => {
     // Remove associated files
     {const newDocFiles = { ...documentUploadedFiles };
     const newPhotoFiles = { ...photoUploadedFiles };
-    delete newDocFiles[index];
-    delete newPhotoFiles[index];
+    const newPanFiles = { ...panDocumentUploadedFiles };
+    delete newDocFiles[index + 1];
+    delete newPhotoFiles[index + 1];
+    delete newPanFiles[index + 1];
     setDocumentUploadedFiles(newDocFiles);
-    setPhotoUploadedFiles(newPhotoFiles);}
+    setPhotoUploadedFiles(newPhotoFiles);
+    setPanDocumentUploadedFiles(newPanFiles);}
 
     // Remove errors for this applicant
     const newErrors = { ...applicantErrors };
@@ -990,7 +993,7 @@ const LayoutApplicantDetails = (_props) => {
           {applicants.length > 0 && (
             <React.Fragment>
               <CardSectionHeader className="card-section-header" style={{ marginTop: "30px", marginBottom: "20px" }}>
-                {t("Additional Applicants")}
+                {t("Additional Owners")}
               </CardSectionHeader>
 
               {applicants?.map(
@@ -1011,7 +1014,7 @@ const LayoutApplicantDetails = (_props) => {
                         }}
                       >
                         <CardLabel className="card-label-smaller" style={{ fontSize: "16px", fontWeight: "600" }}>
-                          {`${t("Applicant")} ${visibleIndex + 2}`}
+                          {`${t("Owner")} ${visibleIndex + 2}`}
                         </CardLabel>
                         {/* {!isEditMode && ( */}
                         {(
@@ -1154,8 +1157,15 @@ const LayoutApplicantDetails = (_props) => {
                             id={`passport-photo-${index}`}
                             onUpload={selectPhotoFile(index+1)}
                             onDelete={() => {
-                              deletePhoto(index);
-                              setPhotoUploadedFiles((prev) => ({ ...prev, [index]: null }));
+                              deletePhoto(index + 1);
+                              setPhotoUploadedFiles((prev) => ({ ...prev, [index + 1]: null }));
+                              setApplicants((prev) => {
+                                const updated = [...prev];
+                                if (updated[index]) {
+                                  updated[index].photoUploadedFiles = null;
+                                }
+                                return updated;
+                              });
                               setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], photo: "Passport photo is required" } }));
                             }}
                             uploadedFile={applicant.photoUploadedFiles}
@@ -1179,8 +1189,15 @@ const LayoutApplicantDetails = (_props) => {
                             id={`id-proof-${index}`}
                             onUpload={selectDocumentFile(index+1)}
                             onDelete={() => {
-                              deleteDocument(index);
-                              setDocumentUploadedFiles((prev) => ({ ...prev, [index]: null }));
+                              deleteDocument(index + 1);
+                              setDocumentUploadedFiles((prev) => ({ ...prev, [index + 1]: null }));
+                              setApplicants((prev) => {
+                                const updated = [...prev];
+                                if (updated[index]) {
+                                  updated[index].documentUploadedFiles = null;
+                                }
+                                return updated;
+                              });
                               setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], document: "Document upload is required" } }));
                             }}
                             uploadedFile={applicant.documentUploadedFiles}
@@ -1207,8 +1224,15 @@ const LayoutApplicantDetails = (_props) => {
                             id={`pan-document-${index}`}
                             onUpload={selectPanDocumentFile(index+1)}
                             onDelete={() => {
-                              deletePanDocument(index);
-                              setPanDocumentUploadedFiles((prev) => ({ ...prev, [index]: null }));
+                              deletePanDocument(index + 1);
+                              setPanDocumentUploadedFiles((prev) => ({ ...prev, [index + 1]: null }));
+                              setApplicants((prev) => {
+                                const updated = [...prev];
+                                if (updated[index]) {
+                                  updated[index].panDocumentUploadedFiles = null;
+                                }
+                                return updated;
+                              });
                               setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], panDocument: "PAN document is required" } }));
                             }}
                             uploadedFile={applicant.panDocumentUploadedFiles}
@@ -1275,7 +1299,7 @@ const LayoutApplicantDetails = (_props) => {
                   display: "inline-block",
                 }}
               >
-                + Add Applicant
+                + Add Owner
               </div>
             </div>
           )}

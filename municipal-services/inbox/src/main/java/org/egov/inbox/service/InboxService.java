@@ -249,6 +249,10 @@ public class InboxService {
         HashMap<String, String> statusIdNameMap = isCitizenInboxCall
                 ? workflowService.getAllStatuses(businessSrvs)
                 : workflowService.getActionableStatusesForRole(requestInfo, businessSrvs, processCriteria);
+
+        if (CollectionUtils.isEmpty(statusIdNameMap) && isReadOnlyOrReportingUser(roles)) {
+            statusIdNameMap = workflowService.getAllStatuses(businessSrvs);
+        }
                 
         // Preserve all actionable statuses before any filtering
         Map<String, String> allActionableStatuses = new HashMap<>(statusIdNameMap);
@@ -770,9 +774,33 @@ public class InboxService {
         return null;
     }
 
-    
-    public InboxResponse fetchInboxDataBackup(InboxSearchCriteria criteria, RequestInfo requestInfo) {
-    	
+    private boolean isCitizenInboxSupportAvailable(String moduleName, List<String> roles) {
+        if (ObjectUtils.isEmpty(moduleName) || CollectionUtils.isEmpty(roles)) {
+            return false;
+        }
+        return roles.contains(BpaConstants.CITIZEN) &&
+                (moduleName.equalsIgnoreCase("bpa-service") ||
+                        moduleName.equalsIgnoreCase("BPA") ||
+                        moduleName.equalsIgnoreCase("clu-service") ||
+                        moduleName.equalsIgnoreCase("layout-service") ||
+                        moduleName.equalsIgnoreCase("noc-service"));
+    }
+
+    private boolean isReadOnlyOrReportingUser(List<String> roles) {
+        if (CollectionUtils.isEmpty(roles)) {
+            return false;
+        }
+        return roles.stream().anyMatch(role ->
+                role.contains("READ") ||
+                        role.contains("VIEW") ||
+                        role.contains("REPORT") ||
+                        role.contains("SUPERUSER")
+        );
+    }
+
+
+        public InboxResponse fetchInboxDataBackup(InboxSearchCriteria criteria, RequestInfo requestInfo) {
+
         ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
         HashMap moduleSearchCriteria = criteria.getModuleSearchCriteria();
         processCriteria.setTenantId(criteria.getTenantId());
@@ -817,10 +845,10 @@ public class InboxService {
         // Since we want the whole status count map regardless of the status filter and assignee filter being passed
         processCriteria.setAssignee(null);
         processCriteria.setStatus(null);
-        
+
         List<HashMap<String, Object>> bpaCitizenStatusCountMap = new ArrayList<HashMap<String,Object>>();
         List<String> roles = requestInfo.getUserInfo().getRoles().stream().map(Role::getCode).collect(Collectors.toList());
-        
+
          String moduleName = processCriteria.getModuleName();
 			/*
 			 * SAN-920: Commenting out this code as Module name will now be passed for FSM
@@ -1008,7 +1036,7 @@ public class InboxService {
                             StringUtils.arrayToDelimitedString(StatusIdNameMap.values().toArray(), ","));
                 }
             }
-            
+
             Map<String, List<String>> tenantAndApplnNumbersMap = new HashMap<>();
             if(processCriteria != null && !ObjectUtils.isEmpty(processCriteria.getModuleName())
                     && isCitizenInboxSupportAvailable(processCriteria.getModuleName(), roles)) {
@@ -1026,7 +1054,7 @@ public class InboxService {
                     moduleSearchCriteria = new HashMap<>();
                     moduleSearchCriteria.put(MOBILE_NUMBER_PARAM, requestInfo.getUserInfo().getMobileNumber());
                     criteria.setModuleSearchCriteria(moduleSearchCriteria);
-                } 
+                }
                 for(Map<String, String> tenantAppln : tenantWiseApplns) {
                     String tenant = tenantAppln.get("tenantid");
                     String applnNo = tenantAppln.get("applicationno");
@@ -1068,7 +1096,7 @@ public class InboxService {
                 processCriteria.setBusinessIds(inputBusinessIds);
                 processCriteria.setStatus(inputStatus);
             }
-            
+
             /*
              * In the WF statuscount API, locality based fileter is not supported.
              * To support status wise count based on locality, with status and locality API
@@ -1085,7 +1113,7 @@ public class InboxService {
                         if(count == 0) {
                             statusWiseCount.clear();
                         } else {
-                            statusWiseCount.put(COUNT, count); 
+                            statusWiseCount.put(COUNT, count);
                         }
                     }
                     criteria.getProcessSearchCriteria().setStatus(inputStatuses);
@@ -1205,7 +1233,7 @@ public class InboxService {
                     isSearchResultEmpty = true;
                 }
             }
-            
+
             if (processCriteria != null && !ObjectUtils.isEmpty(processCriteria.getModuleName())
                     && processCriteria.getModuleName().equals(NDC_MODULE)) {
                 totalCount = ndcInboxFilterService.fetchApplicationCountFromSearcher(criteria, StatusIdNameMap, requestInfo);
@@ -1636,12 +1664,12 @@ public class InboxService {
 			moduleSearchCriteria.remove("searchType");
 			moduleSearchCriteria.put(BS_BUSINESS_SERVICE_PARAM, businessService);
 		}
-				
+
 	    }
 	    serviceSearchMap = StreamSupport.stream(serviceSearchObject.spliterator(), false)
 	         .collect(Collectors.toMap(s1 -> ((JSONObject) s1).get("connectionNo").toString(),
 	                s1 -> s1, (e1, e2) -> e1, LinkedHashMap::new));
-			 
+
 	    ProcessInstanceResponse processInstanceResponse;
             /*
              * In BPA, the stakeholder can able to submit applications for multiple cities
@@ -1751,7 +1779,7 @@ public class InboxService {
                     processInstanceResponse = workflowService.getProcessInstance(processCriteria, requestInfo);
             	}
             }
-            
+
             List<ProcessInstance> processInstances = processInstanceResponse.getProcessInstances();
 
             Map<String, ProcessInstance> processInstanceMap = new HashMap<>();
@@ -1862,9 +1890,9 @@ public class InboxService {
             }
 
         }
-        
+
        // log.info("businessServiceName.contains(FSM_MODULE) ::: " + businessServiceName.contains(FSM_MODULE));
-        
+
 		if (!ObjectUtils.isEmpty(processCriteria.getModuleName())
 				&& processCriteria.getModuleName().equalsIgnoreCase(FSMConstants.FSM_MODULE)) {
 
@@ -1896,9 +1924,9 @@ public class InboxService {
 				}
 			});
 			//log.info("requiredApplications :::: " + requiredApplications);
-			
+
 			List<VehicleTripDetail> vehicleTripDetail = fetchVehicleStatusForApplication(requiredApplications,requestInfo,criteria.getTenantId());
-			//log.info("vehicleTripDetail :::: " + vehicleTripDetail);			
+			//log.info("vehicleTripDetail :::: " + vehicleTripDetail);
 			inboxes.forEach(inbox -> {
 				if (null != inbox && null != inbox.getProcessInstance()
 						&& null != inbox.getProcessInstance().getBusinessId()) {
@@ -1936,7 +1964,7 @@ public class InboxService {
 				//log.info("businessIdParam :::: " + businessIdParam);
 				//log.info("vehicleBusinessObjects.length() :::: " + vehicleBusinessObjects.length());
 				//log.info("vehicleProcessInstances.size() :::: " + vehicleProcessInstances.size());
-				
+
 				if (vehicleBusinessObjects.length() > 0 && vehicleProcessInstances.size() > 0) {
 					//log.info("vehicleBusinessObjects.length() :::: " + vehicleBusinessObjects.length());
 					//log.info("vehicleProcessInstances.size() :::: " + vehicleProcessInstances.size());
@@ -1945,22 +1973,22 @@ public class InboxService {
 							Inbox inbox = new Inbox();
 							inbox.setProcessInstance(vehicleProcessInstanceMap.get(busiessKey));
 							inbox.setBusinessObject(toMap((JSONObject) vehicleBusinessMap.get(busiessKey)));
-							inboxes.add(inbox);	
+							inboxes.add(inbox);
 //						}
 					});
 				}
 			}
-			
+
 			//SAN-920: Logic for aggregating the statuses of Pay now and post pay application
 			List<HashMap<String, Object>> aggregateStatusCountMap = new ArrayList<>();
 			for (HashMap<String, Object> statusCountEntry : statusCountMap) {
 				 HashMap<String, Object> tempStatusMap = new HashMap<>();
 				 boolean matchFound=false;
 					for (HashMap<String, Object> aggrMapInstance : aggregateStatusCountMap) {
-	
+
 						String statusMapAppStatus = (String) statusCountEntry.get("applicationstatus");
 						String aggrMapAppStatus = (String) aggrMapInstance.get("applicationstatus");
-	
+
 	 					if (aggrMapAppStatus.equalsIgnoreCase(statusMapAppStatus)) {
 							aggrMapInstance.put(COUNT,
 									((Integer) statusCountEntry.get(COUNT) + (Integer) aggrMapInstance.get(COUNT)));
@@ -1976,7 +2004,7 @@ public class InboxService {
 							tempStatusMap.put(APPLICATIONSTATUS, (String) statusCountEntry.get(APPLICATIONSTATUS));
 							tempStatusMap.put(BUSINESS_SERVICE_PARAM, (String) statusCountEntry.get(BUSINESS_SERVICE_PARAM));
 							tempStatusMap.put(STATUSID, (String) statusCountEntry.get(STATUSID));
-							
+
 						}
 				 }
 					if (ObjectUtils.isEmpty(aggregateStatusCountMap)) {
@@ -1987,7 +2015,7 @@ public class InboxService {
 						}
 					}
 			}
-			
+
 			statusCountMap=	aggregateStatusCountMap;
 			//log.info("removeStatusCountMap:: "+ new Gson().toJson(statusCountMap));
 
@@ -2371,15 +2399,4 @@ public class InboxService {
 
 		return results;
 	}
-
-    private boolean isCitizenInboxSupportAvailable(String moduleName, List<String> roles) {
-        if (ObjectUtils.isEmpty(moduleName) || CollectionUtils.isEmpty(roles)) {
-            return false;
-        }
-        return roles.contains(BpaConstants.CITIZEN) && 
-            (moduleName.equalsIgnoreCase("bpa-service") || 
-             moduleName.equalsIgnoreCase("BPA") || 
-             moduleName.equalsIgnoreCase("clu-service") ||
-             moduleName.equalsIgnoreCase("layout-service") ||
-             moduleName.equalsIgnoreCase("noc-service"));
-    }}
+}

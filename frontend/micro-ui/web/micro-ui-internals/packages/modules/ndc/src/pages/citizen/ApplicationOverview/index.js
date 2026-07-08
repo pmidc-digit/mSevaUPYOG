@@ -191,6 +191,7 @@ const CitizenApplicationOverview = () => {
         dueAmount: item?.dueAmount || 0,
         propertyType: item?.additionalDetails?.propertyType || "",
         remarks: item?.additionalDetails?.remarks,
+        vashikaNumber: item?.additionalDetails?.vashikaNumber,
       }));
 
       setDisplayData({ applicantData, Documents, NdcDetails });
@@ -213,7 +214,7 @@ const CitizenApplicationOverview = () => {
       const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
       const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
       const propertyOwnerMobiles = owners.map((owner) => owner?.mobileNumber).filter(Boolean);
-
+      const vasikaNo = displayData?.NdcDetails?.find((item) => item?.businessService === "NDC_PROPERTY_TAX")?.vashikaNumber|| propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.vasikaNo;
       Property.propertyOwnerNames = propertyOwnerNames;
       Property.propertyOwnerMobiles = propertyOwnerMobiles;
       const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea;
@@ -234,7 +235,8 @@ const CitizenApplicationOverview = () => {
           empData,
           approverStatement,
           landArea,
-          approverComment
+          approverComment,
+          vasikaNo
         );
       }
       console.log("acknowledgementData", acknowledgementData);
@@ -399,6 +401,7 @@ const CitizenApplicationOverview = () => {
                       )}
                     />
                     <Row label={t("Area")} text={`${propertyDetailsFetch?.Properties?.[0]?.landArea} sq. yd.` || "N/A"} />
+                    <Row label={t("Vashika Number")} text={detail?.vashikaNumber || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city || "N/A"} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo || "N/A"} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName || "N/A"} />

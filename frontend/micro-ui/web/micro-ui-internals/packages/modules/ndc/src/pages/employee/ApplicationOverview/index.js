@@ -285,6 +285,7 @@ const ApplicationOverview = () => {
         propertyType: item?.additionalDetails?.propertyType || "",
         isDuePending: item?.isDuePending,
         remarks: item?.additionalDetails?.remarks,
+        vashikaNumber: item?.additionalDetails?.vashikaNumber,
       }));
 
       setDisplayData({ applicantData, Documents, NdcDetails });
@@ -312,6 +313,7 @@ const ApplicationOverview = () => {
       console.log("propertyOwnerNames", propertyOwnerNames);
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
+      const vasikaNo = displayData?.NdcDetails?.find((item) => item?.businessService === "NDC_PROPERTY_TAX")?.vashikaNumber || propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.vasikaNo;
       let acknowledgementData;
 
       if (empData) {
@@ -325,7 +327,8 @@ const ApplicationOverview = () => {
           empData,
           approverStatement,
           landArea,
-          approverComment
+          approverComment,
+          vasikaNo
         );
       }
       setTimeout(() => {
@@ -662,6 +665,7 @@ const ApplicationOverview = () => {
                       )}
                     />
                     <Row label={t("Area")} text={`${propertyDetailsFetch?.Properties?.[0]?.landArea} sq. yd.` || "N/A"} />
+                    <Row label={t("Vashika Number")} text={detail?.vashikaNumber || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />

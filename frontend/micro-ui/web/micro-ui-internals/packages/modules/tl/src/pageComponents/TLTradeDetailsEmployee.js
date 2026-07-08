@@ -285,7 +285,7 @@ const OwnerForm1 = (_props) => {
       let selectedOption = tradedetail?.structureType?.code?.split(".")[0];
       let structureSubTypeOption = [];
       structureTypeOptions.map((data) => {
-        if (selectedOption === data?.code?.split(".")[0]) {
+        if (selectedOption === data?.code?.split(".")[0] && data?.code !== "MOVABLE.MDV") {
           structureSubTypeOption.push({
             code: data?.code,
             i18nKey: t(`COMMON_MASTERS_STRUCTURETYPE_${stringReplaceAll(data?.code?.toUpperCase(), ".", "_")}`),
@@ -492,7 +492,7 @@ const OwnerForm1 = (_props) => {
                   let selectedOption = e?.code?.split(".")[0];
                   let structureSubTypeOption = [];
                   structureTypeOptions.map((data) => {
-                    if (selectedOption === data?.code?.split(".")[0]) {
+                    if (selectedOption === data?.code?.split(".")[0] && data?.code !== "MOVABLE.MDV") {
                       structureSubTypeOption.push({
                         code: data?.code,
                         i18nKey: t(`COMMON_MASTERS_STRUCTURETYPE_${stringReplaceAll(data?.code?.toUpperCase(), ".", "_")}`),

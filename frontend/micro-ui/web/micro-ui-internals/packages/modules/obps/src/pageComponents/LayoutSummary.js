@@ -334,7 +334,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
             <Card key={index + 1} style={{ marginBottom: "1.5rem" }}>
               <div style={sectionStyle}>
                 <div style={headerRow}>
-                  <CardSubHeader>{t("Additional Owner") || "Additional Owner"} {visibleIndex + 1}</CardSubHeader>
+                  <CardSubHeader>{`${t("Owner") || "Owner"} ${visibleIndex + 2}`}</CardSubHeader>
                 </div>
                 {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owner?.name)}
                 {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}

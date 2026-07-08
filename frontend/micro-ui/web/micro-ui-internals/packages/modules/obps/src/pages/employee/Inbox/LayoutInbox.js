@@ -12,12 +12,20 @@ import { businessServiceListLayout } from "../../../utils";
 
 const LayoutInbox = ({ parentRoute }) => {
   const { t } = useTranslation();
+  let user = Digit.UserService.getUser();
 
   useEffect(() => {
     window.scroll(0, 0);
   }, []);
 
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const userRoles = user?.info?.roles?.map((role) => role.code) || [];
+
+  const hasViewOBPSCardRole = userRoles.includes("OBPAS_READ_ONLY");
+
+  // const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
+  const isEmployee = window.location.href.includes("employee");
+  const defaultAssignee = isEmployee && !hasViewOBPSCardRole ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL";
   const { data: cities } = Digit.Hooks.useTenants();
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
@@ -123,13 +131,7 @@ const LayoutInbox = ({ parentRoute }) => {
       tableForm: tableOrderFormDefaultValues,
       selectedTenantId: selectedTenantIdDefaultValues,
     };
-  }, [
-    InboxObjectInSessionStorage,
-    filterFormDefaultValues,
-    searchFormDefaultValues,
-    selectedTenantIdDefaultValues,
-    tableOrderFormDefaultValues,
-  ]);
+  }, [InboxObjectInSessionStorage, filterFormDefaultValues, searchFormDefaultValues, selectedTenantIdDefaultValues, tableOrderFormDefaultValues]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
 
@@ -484,6 +486,7 @@ const LayoutInbox = ({ parentRoute }) => {
           filterFormState={formState?.filterForm}
           getFilterFormValue={getFilterFormValue}
           statuses={statusData}
+          showAssigneeCards={isEmployee && !hasViewOBPSCardRole}
           isInboxLoading={isInboxLoading}
           assigneeCounts={assigneeCounts}
           handleFilter={handleFilterChange}

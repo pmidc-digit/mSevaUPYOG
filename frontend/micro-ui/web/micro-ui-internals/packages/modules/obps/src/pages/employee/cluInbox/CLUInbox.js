@@ -8,17 +8,27 @@ import useCLUTableConfig from "./useCLUTableConfig";
 
 const CLUInbox = ({ parentRoute }) => {
   const { t } = useTranslation();
+  let user = Digit.UserService.getUser();
+
   const [error, setError] = useState({
     error: false,
     label: "",
   });
+
+  const userRoles = user?.info?.roles?.map((role) => role.code) || [];
+
+  const hasViewOBPSCardRole = userRoles.includes("OBPAS_READ_ONLY");
 
   useEffect(() => {
     window.scroll(0, 0);
   }, []);
 
   const { data: cities } = Digit.Hooks.useTenants();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  // const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
+  const isEmployee = window.location.href.includes("employee");
+  const defaultAssignee = isEmployee && !hasViewOBPSCardRole ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL";
+
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
 
@@ -35,7 +45,8 @@ const CLUInbox = ({ parentRoute }) => {
       moduleName: "clu-service",
       applicationStatus: [],
       businessService: "clu_mcl",
-      assignee: "ASSIGNED_TO_ME",
+      assignee: defaultAssignee,
+      // assignee: "ASSIGNED_TO_ME",
     }),
     []
   );
@@ -240,14 +251,16 @@ const CLUInbox = ({ parentRoute }) => {
   });
 
   useEffect(() => {
+    if (!isEmployee) return;
     if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
     setAssigneeCounts({
       ASSIGNED_TO_ME: 0,
       ASSIGNED_TO_ALL: 0,
     });
-  }, [effectiveTenantId]);
+  }, [effectiveTenantId, isEmployee]);
 
   useEffect(() => {
+    if (!isEmployee) return;
     if (!assignedToMeInboxData || !assignedToAllInboxData) return;
     if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
 
@@ -256,7 +269,7 @@ const CLUInbox = ({ parentRoute }) => {
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
     });
     capturedAssigneeCountsTenant.current = effectiveTenantId;
-  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId]);
+  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId, isEmployee]);
 
   useEffect(() => {
     if (inboxData) {
@@ -521,6 +534,7 @@ const CLUInbox = ({ parentRoute }) => {
               filterFormState={formState?.filterForm}
               getFilterFormValue={getFilterFormValue}
               statuses={statusData}
+              showAssigneeCards={isEmployee && !hasViewOBPSCardRole}
               isInboxLoading={isInboxLoading}
               assigneeCounts={assigneeCounts}
               handleFilter={handleFilterChange}

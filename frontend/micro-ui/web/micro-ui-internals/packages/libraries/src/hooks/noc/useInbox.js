@@ -3,26 +3,23 @@ import { useQueryClient } from "react-query";
 
 const useNOCInbox = ({ tenantId, filters, config = {} }) => {
   const queryClient = useQueryClient();
-  console.log("filters in useInbox hook", filters);
-  
+
   const { filterForm, searchForm, tableForm, getFilter } = filters;
   let { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray } = filterForm;
   const { mobileNumber, applicationNo } = searchForm;
   const { sortBy, limit, offset, sortOrder } = tableForm;
   const user = Digit.UserService.getUser();
-  
-  console.log("user here in useInbox", user);
 
   const _filters = {
     tenantId,
     processSearchCriteria: {
       assignee: assignee === "ASSIGNED_TO_ME" ? user?.info?.uuid : "",
       moduleName: "noc-service",
-    //   businessService: businessService?.code ? [businessService?.code] : businessServiceArray,
+      //   businessService: businessService?.code ? [businessService?.code] : businessServiceArray,
       ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
-      businessService:["NOC_NP", "NOC_MC"],
+      businessService: ["NOC_NP", "NOC_MC"],
     },
-    
+
     moduleSearchCriteria: {
       ...(mobileNumber ? { mobileNumber } : {}),
       ...(applicationNo ? { applicationNo } : {}),
@@ -46,6 +43,9 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
         const tableData = data?.items?.map((application) => {
           const ownerObj = application?.businessObject?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0];
           const displayOwner = ownerObj?.firmName?.trim?.() || ownerObj?.ownerOrFirmName?.trim?.() || "-";
+          const submittedOn = Number(application?.businessObject?.nocDetails?.additionalDetails?.SubmittedOn); // or submissionDate
+          const approvalDate = application.businessObject?.nocDetails?.additionalDetails?.approvalDate;
+          const endDate = approvalDate ? Number(approvalDate) : Date.now();
 
           return {
             applicationId: application.businessObject?.applicationNo,
@@ -55,17 +55,23 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
             status: `${application.businessObject.applicationStatus}`,
             owner: displayOwner,
             action: `${application?.ProcessInstance?.action}`,
-            tenantId:application.businessObject?.tenantId
+            tenantId: application.businessObject?.tenantId,
+            submissionDate: application?.businessObject?.nocDetails?.additionalDetails?.SubmittedOn,
+            approvalDate: approvalDate,
+            category: application.businessObject?.nocDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory,
+            zone: application.businessObject?.nocDetails?.additionalDetails?.siteDetails?.zone,
+            applicationType: application?.businessObject?.applicationType,
+            sla: Math.floor((endDate - submittedOn) / (1000 * 60 * 60 * 24)),
           };
         });
 
         return {
-        statuses: data.statusMap,
-        table: tableData,
-        totalCount: data.totalCount,
-        nearingSlaCount: data.nearingSlaCount,
-        revalidate: () => queryClient.invalidateQueries(queryKey)
-       }
+          statuses: data.statusMap,
+          table: tableData,
+          totalCount: data.totalCount,
+          nearingSlaCount: data.nearingSlaCount,
+          revalidate: () => queryClient.invalidateQueries(queryKey),
+        };
       },
       ...config,
     },

@@ -35,7 +35,7 @@ export const LayoutModalConfig = ({
     form: [
       {
         body: [
-          {
+          /* {
             label: !checkCondtions ? null : `${t("WF_ASSIGNEE_NAME_LABEL")}*`,
             placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
             type: "dropdown",
@@ -50,7 +50,7 @@ export const LayoutModalConfig = ({
                  t={t}
               />
             ),
-          },
+          }, */
           {
             label: `${t("WF_COMMON_COMMENTS_LABEL")}*`,
             type: "textarea",

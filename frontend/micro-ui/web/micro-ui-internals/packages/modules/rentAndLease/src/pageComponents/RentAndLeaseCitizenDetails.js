@@ -112,11 +112,15 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
 
     const applicationType = currentStepData?.propertyDetails?.applicationType?.code;
     const lastBillingPeriodData = new Date(currentStepData?.propertyDetails?.lastBillingPeriod).getTime();
+    const lastRentRevisedDate = new Date(currentStepData?.propertyDetails?.lastRentRevisedDate).getTime();
     const additionalDetails =
       applicationType === "Legacy"
         ? {
             arrear: currentStepData?.propertyDetails?.arrear,
             arrearDoc: currentStepData?.propertyDetails?.arrearDoc,
+            lastRentRevisedDate: lastRentRevisedDate,
+            incrementPeriodMonths: currentStepData?.propertyDetails?.incrementPeriodMonths?.code,
+            incrementPercentage: currentStepData?.propertyDetails?.incrementPercentage,
             // arrearEndDate: currentStepData?.propertyDetails?.arrearEndDate
             //   ? new Date(currentStepData?.propertyDetails?.arrearEndDate).getTime()
             //   : null,
@@ -344,13 +348,14 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
             {/* Email */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {t("NOC_APPLICANT_EMAIL_LABEL")} <span className="mandatory-asterisk">*</span>
+                {t("NOC_APPLICANT_EMAIL_LABEL")}
+                {/* <span className="mandatory-asterisk">*</span> */}
               </CardLabel>
               <div className="form-field">
                 <Controller
                   control={control}
                   name={`applicants.${index}.emailId`}
-                  rules={{ required: t("PTR_EMAIL_REQUIRED") }}
+                  // rules={{ required: t("PTR_EMAIL_REQUIRED") }}
                   render={({ value, onChange, onBlur }) => (
                     <TextInput
                       value={value}
@@ -365,7 +370,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
                 />
               </div>
             </LabelFieldPair>
-            {getErrorMessage("emailId", index) && <CardLabelError className="ral-error-label">{getErrorMessage("emailId", index)}</CardLabelError>}
+            {/* {getErrorMessage("emailId", index) && <CardLabelError className="ral-error-label">{getErrorMessage("emailId", index)}</CardLabelError>} */}
 
             {/* Address */}
             <LabelFieldPair>

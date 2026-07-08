@@ -41,6 +41,7 @@ const CitizenApplicationOverview = () => {
   const [showToast, setShowToast] = useState(null);
   const [approver, setApprover] = useState(null);
   const [approverStatement, setApproverStatement] = useState(null);
+  const [approverComment, setApproverComment] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
 
   const [ndcDatils, setNdcDetails] = useState([]);
@@ -65,7 +66,9 @@ const CitizenApplicationOverview = () => {
       const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
       const name = approveInstance?.assigner?.name || "NA";
       const status = applicationDetails?.Applications?.[0]?.applicationStatus;
+      const comment = approveInstance?.comment;
       setApproverStatement(status ? `${t(status)} By` : "");
+      setApproverComment(comment !== null ? `Comments : ${comment}` : "");
       setApprover(name);
     }
   }, [workflowDetails]);
@@ -187,6 +190,8 @@ const CitizenApplicationOverview = () => {
         status: item?.status || "",
         dueAmount: item?.dueAmount || 0,
         propertyType: item?.additionalDetails?.propertyType || "",
+        remarks: item?.additionalDetails?.remarks,
+        vashikaNumber: item?.additionalDetails?.vashikaNumber,
       }));
 
       setDisplayData({ applicantData, Documents, NdcDetails });
@@ -208,9 +213,11 @@ const CitizenApplicationOverview = () => {
       const Property = applicationDetails;
       const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
       const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
+      const propertyOwnerMobiles = owners.map((owner) => owner?.mobileNumber).filter(Boolean);
 
       Property.propertyOwnerNames = propertyOwnerNames;
-
+      Property.propertyOwnerMobiles = propertyOwnerMobiles;
+      const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea;
       console.log("propertyOwnerNames", propertyOwnerNames);
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
       console.log("tenantInfo", tenantInfo);
@@ -218,7 +225,18 @@ const CitizenApplicationOverview = () => {
       let acknowledgementData;
 
       if (empData) {
-        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData, approverStatement);
+        acknowledgementData = await getAcknowledgementData(
+          Property,
+          formattedAddress,
+          tenantInfo,
+          t,
+          approver,
+          ulbType,
+          empData,
+          approverStatement,
+          landArea,
+          approverComment
+        );
       }
       console.log("acknowledgementData", acknowledgementData);
       setTimeout(() => {
@@ -381,7 +399,8 @@ const CitizenApplicationOverview = () => {
                         }`
                       )}
                     />
-                    <Row label={t("Area")} text={propertyDetailsFetch?.Properties?.[0]?.landArea || "N/A"} />
+                    <Row label={t("Area")} text={`${propertyDetailsFetch?.Properties?.[0]?.landArea} sq. yd.` || "N/A"} />
+                    <Row label={t("Vashika Number")} text={detail?.vashikaNumber || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city || "N/A"} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo || "N/A"} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName || "N/A"} />
@@ -394,13 +413,7 @@ const CitizenApplicationOverview = () => {
                       label={t("Year of creation of Property")}
                       text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
                     />
-                    <Row
-                      label={t("Remarks")}
-                      text={
-                        applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
-                          ?.remarks || "N/A"
-                      }
-                    />
+                    {detail?.remarks && <Row label={t("Remarks")} text={detail?.remarks ? detail?.remarks : "N/A"} />}
                   </>
                 )}
               </StatusTable>

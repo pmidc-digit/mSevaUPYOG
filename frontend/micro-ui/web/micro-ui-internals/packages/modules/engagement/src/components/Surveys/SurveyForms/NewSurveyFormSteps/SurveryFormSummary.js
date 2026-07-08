@@ -5,6 +5,8 @@ import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { resetForm } from "../../../../redux/actions/surveyFormActions";
 //
+import _ from "lodash";
+
 import { goPrev, updateSurveyForm } from "../../../../redux/actions/surveyFormActions";
 
 const SurveryFormSummary = ({ config, onGoNext, onBackClick }) => {

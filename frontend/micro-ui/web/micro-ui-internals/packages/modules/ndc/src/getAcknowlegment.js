@@ -62,7 +62,7 @@ const getReadableCity = (tenantId = "") => {
 
 const capitalize = (text) => text?.charAt(0).toUpperCase() + text?.slice(1);
 
-const getAcknowledgementData = async (application, formattedAddress, tenantInfo, t, approver,ulbType, empData, approverStatement) => {
+const getAcknowledgementData = async (application, formattedAddress, tenantInfo, t, approver,ulbType, empData, approverStatement, landArea, approverComment) => {
   const appData = application?.Applications?.[0] || {};
   const owner = appData?.owners?.[0] || {};
   const ndc = appData?.NdcDetails?.[0] || {};
@@ -80,13 +80,15 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   const applicantName = owner?.name || "NA";
   // const address = owner?.permanentAddress || owner?.correspondenceAddress || "NA";
   const address = appData?.NdcDetails?.[0]?.additionalDetails?.propertyAddress || owner?.permanentAddress || owner?.correspondenceAddress || "NA";
-  const remarks = appData?.NdcDetails?.[0]?.additionalDetails?.remarks || null;
+  const remarks = appData?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails?.remarks || null;
   const reason = t(appData?.reason) || null;
   const ulbName = tenantInfo?.name || appData?.tenantId || "NA";
   const duesAmount = add?.duesAmount || appData?.additionalDetails?.duesAmount || "0";
   const dateOfApplication = add?.dateOfApplication || "NA";
   const dateOfApproval = add?.dateOfApproval || "NA";
   const ownerNames = (application?.propertyOwnerNames || []).join(", ") || "NA";
+  const ownerMobiles = (application?.propertyOwnerMobiles || []).join(", ") || "NA";
+
   console.log(appData, "APPDATA");
 
   const readableCity = getReadableCity(appData?.tenantId);
@@ -99,10 +101,11 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   { text: ", Property ID: ", bold: false , fontSize: 9,},
   { text: `${propertyId}`, bold: true ,  fontSize: 9,},
   { text: ", Property Type: ", bold: false ,  fontSize: 9, },
-  { text: `${propertyType}\n`, bold: true ,  fontSize: 9, },
-
+  { text: `${propertyType}`, bold: true ,  fontSize: 9, },
+  { text: ", Land Area: ", bold: false ,  fontSize: 9, },
+  { text: `${landArea} Sq. Yards \n`, bold: true ,  fontSize: 9, },
   { text: "Property Address: ", bold: false ,  fontSize: 9, },
-  { text: `${formattedAddress}`, bold: true ,  fontSize: 9, }, { text: " Owned by: ", bold: false , fontSize: 9, }, { text: `${ownerNames}\n`, bold: true ,  fontSize: 9,},
+  { text: `${formattedAddress}`, bold: true ,  fontSize: 9, }, { text: " Owned by: ", bold: false , fontSize: 9, }, { text: `${ownerNames}`, bold: true ,  fontSize: 9,},{ text: `, ${ownerMobiles}\n`, bold: true ,  fontSize: 9,},
   { text: "Applicant Name: ", bold: false , fontSize: 9},
   { text: `${applicantName}`, bold: true , fontSize: 9},
   { text: " (s/o, d/o, w/o) ", bold: false , fontSize: 9 },
@@ -164,6 +167,7 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
     approver,
     designation,
     approverStatement,
+    approverComment,
     ulbType,
     tenantId: appData?.tenantId,
     // Use readable city dynamically

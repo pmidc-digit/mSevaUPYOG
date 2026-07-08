@@ -379,7 +379,7 @@ const Table = ({
                                     ...pillStyle,
                                   }}
                                 >
-                                  {getStatusDisplayText(t(cellValue))}
+                                  {t ? getStatusDisplayText(t(cellValue)) : getStatusDisplayText((cellValue))}
                                 </span>
                               );
                             })()

@@ -27,15 +27,11 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
 
   let docs = formData?.DocummentDetails?.documents?.documents;
 
-  console.log("formData", formData);
-
   const appId = formData?.apiData?.Applications?.[0]?.applicationNo || formData?.responseData?.[0]?.applicationNo;
 
   const propertyDet = formData?.apiData?.Applications?.[0]?.NdcDetails || formData?.responseData?.[0]?.NdcDetails;
 
   const filterType = propertyDet?.filter((item) => item?.businessService == "PT");
-
-  console.log("filterType", filterType);
 
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
@@ -131,6 +127,8 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
           ? renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.reason))
           : renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))}
         {renderLabel(t("Remarks"), formData?.NDCDetails?.PropertyDetails?.remarks)}
+        {renderLabel(t("Vashika Number"), formData?.NDCDetails?.PropertyDetails?.vashikaNumber)}
+        {/* {renderLabel(t("Remarks"), formData?.NDCDetails?.PropertyDetails?.remarks)} */}
 
         {renderLabel(
           t("Water Connection"),
@@ -147,7 +145,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
         )}
 
         {renderLabel(t("Property ID"), formData?.NDCDetails?.cpt?.id)}
-        {renderLabel(t("Area"), formData?.NDCDetails?.PropertyDetails?.landArea)}
+        {renderLabel(t("Area"), `${formData?.NDCDetails?.PropertyDetails?.landArea} sq. yd.`)}
 
         {renderLabel(
           t("Application Fees"),

@@ -1,8 +1,9 @@
 import React, { useEffect, useState, Fragment, useRef } from "react";
-import { useForm } from "react-hook-form";
-import { CardLabelError, TextArea, TextInput, Toast, CardLabel, Loader } from "@mseva/digit-ui-react-components";
+import { useForm, Controller } from "react-hook-form";
+import { CardLabelError, TextArea, TextInput, Toast, CardLabel, Loader, LabelFieldPair, Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
+
 import Dialog from "../Modal/Dialog";
 import { ChevronIcon } from "../../components/SvgIndex";
 import UpdateProfile from "../../components/UpdateProfile";
@@ -23,7 +24,9 @@ const FillQuestions = (props) => {
   const [localityList, setLocalityList] = useState(null);
   const [openQuesDetailsDialog, setOpenQuesDetailsDialog] = useState(false);
   const [getFetchAnswers, setFetchAnswers] = useState();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
+
   const prevProps = props.location.state;
   let data = prevProps?.surveyDetails;
   const [hasCitizenDetails, setHasCitizenDetails] = useState(null);
@@ -39,7 +42,8 @@ const FillQuestions = (props) => {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      let response = await Digit.LocationService.getLocalities("pb.testing");
+      let response = await Digit.LocationService.getLocalities(tenantId);
+
       setLoading(false);
       let __localityList = [];
       if (response && response.TenantBoundary?.length > 0) {
@@ -47,17 +51,20 @@ const FillQuestions = (props) => {
         __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
         setLoading(false);
       }
-      const localityDropdownOptions = (__localityList || [])
-        ?.map((item) => {
-          const wardMatch = item.name.match(/Ward\s(\d+)/);
-          const wardNumber = wardMatch ? Number(wardMatch[1]) : Infinity;
 
-          return {
-            ...item,
-            wardNumber,
-          };
-        })
-        ?.sort((a, b) => a.wardNumber - b.wardNumber);
+      const localityDropdownOptions = (__localityList || [])?.sort((a, b) => a.name.localeCompare(b.name));
+
+      // const localityDropdownOptions = (__localityList || [])
+      //   ?.map((item) => {
+      //     const wardMatch = item.name.match(/Ward\s(\d+)/);
+      //     const wardNumber = wardMatch ? Number(wardMatch[1]) : Infinity;
+
+      //     return {
+      //       ...item,
+      //       wardNumber,
+      //     };
+      //   })
+      //   ?.sort((a, b) => a.wardNumber - b.wardNumber);
 
       setLocalityList(localityDropdownOptions);
     })();
@@ -586,6 +593,11 @@ const FillQuestions = (props) => {
     }
   };
 
+  const getErrorMessage = (fieldName) => {
+    if (!errors[fieldName]) return null;
+    return errors[fieldName]?.message || t("PTR_FIELD_REQUIRED");
+  };
+
   const displayAnswerField = (answerType, question, section) => {
     switch (answerType) {
       case "SHORT_ANSWER_TYPE":
@@ -893,7 +905,7 @@ const FillQuestions = (props) => {
   }, [getFetchAnswers]);
 
   const handleLocalityChangeCitizen = (e) => {
-    setLocality(e.target.value);
+    setLocality(e.name);
   };
 
   useEffect(() => {
@@ -1006,11 +1018,49 @@ const FillQuestions = (props) => {
             </div>
 
             <div style={{ width: "70%" }}>
+              {/* <LabelFieldPair> */}
               <CardLabel>
                 {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
               </CardLabel>
+              <Controller
+                control={control}
+                name="locality"
+                // rules={{
+                //   validate: (value) => {
+                //     const arrear = watch("arrear");
+                //     if (arrear > 0 && !value) {
+                //       return t("RENT_LEASE_REASON_REQUIRED");
+                //     }
+                //     return true;
+                //   },
+                // }}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    select={(e) => {
+                      handleLocalityChangeCitizen(e);
+                      props.onChange;
+                    }}
+                    selected={props.value}
+                    option={localityList}
+                    defaultValues
+                    optionKey="name"
+                    t={t}
+                  />
+                )}
+              />
+              {/* </LabelFieldPair> */}
+              {errors?.locality && (
+                <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
+                  {getErrorMessage("locality")}
+                </CardLabelError>
+              )}
 
-              <select
+              {/* <CardLabel>
+                {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
+              </CardLabel> */}
+
+              {/* <select
                 id="dropdown"
                 value={locality}
                 onChange={(e) => {
@@ -1020,7 +1070,7 @@ const FillQuestions = (props) => {
                 <option value="">--Please choose a locality--</option>
                 {city !== null && localityList !== null && (
                   <>
-                    {localityList.map((option, index) => (
+                    {localityList?.map((option, index) => (
                       <option key={index} value={option.name}>
                         {option?.name}
                       </option>
@@ -1032,7 +1082,7 @@ const FillQuestions = (props) => {
                 <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
                   {errors?.["locality"].answerRequired}
                 </CardLabelError>
-              )}
+              )} */}
             </div>
           </>
         )}

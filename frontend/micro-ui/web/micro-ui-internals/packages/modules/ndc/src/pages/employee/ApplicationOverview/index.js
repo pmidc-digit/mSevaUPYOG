@@ -55,6 +55,7 @@ const ApplicationOverview = () => {
   const [getPropertyId, setPropertyId] = useState(null);
   const [approver, setApprover] = useState(null);
   const [approverStatement, setApproverStatement] = useState(null);
+  const [approverComment, setApproverComment] = useState(null);
 
   const [showOptions, setShowOptions] = useState(false);
   const handleMarkPending = (consumerCode, value, index) => {
@@ -130,7 +131,6 @@ const ApplicationOverview = () => {
       setLoader(true);
       WorkflowService = await Digit.WorkflowService.init(tenantId, "ndc-services");
       setLoader(false);
-      console.log("WorkflowService====", WorkflowService?.BusinessServices?.[0]?.states);
       setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
       // setComplaintStatus(applicationStatus);
     })();
@@ -138,13 +138,7 @@ const ApplicationOverview = () => {
 
   const empData = EmployeeData(tenantId, approver);
 
-  console.log("approver for ndc", approver);
-
-  console.log("officerData", empData);
-
   // const WorkflowService = Digit.WorkflowService.init(tenantId, "ndc-services");
-
-  // console.log("WorkflowService====", WorkflowService);
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -214,13 +208,28 @@ const ApplicationOverview = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const isCemp = user?.info?.roles.find((role) => role.code === "NDCCEMP")?.code;
 
+  // let actions =
+  //   workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+  //     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  //   }) ||
+  //   workflowDetailsTemp?.data?.nextActions?.filter((e) => {
+  //     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  //   });
+
   let actions =
-    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    }) ||
-    workflowDetailsTemp?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    workflowDetails?.data?.actionState?.nextActions
+      ?.filter((e) => userRoles?.some((role) => e.roles?.includes(role)) || !e.roles)
+      ?.filter((e) => e.action !== "EDIT") ||
+    workflowDetailsTemp?.data?.nextActions
+      ?.filter((e) => userRoles?.some((role) => e.roles?.includes(role)) || !e.roles)
+      ?.filter((e) => e.action !== "EDIT");
+
+  if (applicationDetails?.Applications?.[0]?.applicationStatus == "CITIZENACTIONREQUIRED" && isCemp) {
+    actions?.push({
+      action: "EDIT",
+      state: actions?.[0]?.state,
     });
+  }
 
   const closeMenu = () => {
     setDisplayMenu(false);
@@ -275,6 +284,8 @@ const ApplicationOverview = () => {
         dueAmount: item?.dueAmount || 0,
         propertyType: item?.additionalDetails?.propertyType || "",
         isDuePending: item?.isDuePending,
+        remarks: item?.additionalDetails?.remarks,
+        vashikaNumber: item?.additionalDetails?.vashikaNumber,
       }));
 
       setDisplayData({ applicantData, Documents, NdcDetails });
@@ -295,19 +306,29 @@ const ApplicationOverview = () => {
       const Property = applicationDetails;
       const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
       const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
-
+      const propertyOwnerMobiles = owners.map((owner) => owner?.mobileNumber).filter(Boolean);
       Property.propertyOwnerNames = propertyOwnerNames;
-
+      Property.propertyOwnerMobiles = propertyOwnerMobiles;
+      const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea;
       console.log("propertyOwnerNames", propertyOwnerNames);
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
-      console.log("tenantInfo", tenantInfo);
       const ulbType = tenantInfo?.city?.ulbType;
       let acknowledgementData;
 
       if (empData) {
-        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData, approverStatement);
+        acknowledgementData = await getAcknowledgementData(
+          Property,
+          formattedAddress,
+          tenantInfo,
+          t,
+          approver,
+          ulbType,
+          empData,
+          approverStatement,
+          landArea,
+          approverComment
+        );
       }
-      console.log("acknowledgementData", acknowledgementData);
       setTimeout(() => {
         Digit.Utils.pdf.generateNDC(acknowledgementData);
         setLoader(false);
@@ -318,27 +339,16 @@ const ApplicationOverview = () => {
     }
   };
   function onActionSelect(action) {
-    console.log("action====||?", action?.state?.actions);
     const ndcDetails = applicationDetails?.Applications?.[0]?.NdcDetails || [];
     const hasDuePending = ndcDetails?.some((item) => item.isDuePending === true);
 
-    console.log("hasDuePending", hasDuePending);
-
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
-
-    console.log("filterNexState====||?", filterNexState[0]?.nextState);
 
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
 
-    console.log("filterRoles====||?", filterRoles);
-    console.log("action test", action?.action);
-
     const checkactionApp = action?.action == "APPROVE";
 
-    console.log("filterRoles && checkactionApp", filterRoles && checkactionApp, checkactionApp, filterRoles);
-
     if (hasDuePending && checkactionApp) {
-      console.log("alwasy coming appprve");
       setLable("You Can Not Approve This Application, Because It Has Pending Dues. Please Send It To Required Department");
       setError(true);
       setShowToast(true);
@@ -462,10 +472,11 @@ const ApplicationOverview = () => {
   useEffect(() => {
     if (workflowDetails) {
       const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
-
+      const comment = approveInstance?.comment;
       const name = approveInstance?.assigner?.name || "NA";
       const status = applicationDetails?.Applications?.[0]?.applicationStatus;
       setApproverStatement(status ? `${t(status)} By` : "");
+      setApproverComment(comment !== null ? `Comments : ${comment}` : "");
       setApprover(name);
     }
   }, [workflowDetails]);
@@ -487,8 +498,6 @@ const ApplicationOverview = () => {
       privacy: Digit.Utils.getPrivacyObject(),
     }
   );
-
-  console.log("applicationDetails", applicationDetails?.Applications?.[0]?.NdcDetails);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -653,7 +662,8 @@ const ApplicationOverview = () => {
                         }`
                       )}
                     />
-                    <Row label={t("Area")} text={propertyDetailsFetch?.Properties?.[0]?.landArea || "N/A"} />
+                    <Row label={t("Area")} text={`${propertyDetailsFetch?.Properties?.[0]?.landArea} sq. yd.` || "N/A"} />
+                    <Row label={t("Vashika Number")} text={detail?.vashikaNumber || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />
@@ -666,13 +676,7 @@ const ApplicationOverview = () => {
                       label={t("Year of creation of Property")}
                       text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
                     />
-                    <Row
-                      label={t("Remarks")}
-                      text={
-                        applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
-                          ?.remarks || "N/A"
-                      }
-                    />
+                    {detail?.remarks && <Row label={t("Remarks")} text={detail?.remarks ? detail?.remarks : "N/A"} />}
                   </>
                 )}
               </StatusTable>
@@ -734,16 +738,16 @@ const ApplicationOverview = () => {
         </ActionBar>
       )}
 
-      {applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" && (
-        <ActionBar>
-          <SubmitBar
-            label={t("COMMON_EDIT")}
-            onSubmit={() => {
-              const id = applicationDetails?.Applications?.[0]?.applicationNo;
-              history.push(`/digit-ui/employee/ndc/create/${id}`);
-            }}
-          />
-        </ActionBar>
+      {applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" && isCemp && (
+        // <ActionBar>
+        <SubmitBar
+          label={t("COMMON_EDIT")}
+          onSubmit={() => {
+            const id = applicationDetails?.Applications?.[0]?.applicationNo;
+            history.push(`/digit-ui/employee/ndc/create/${id}`);
+          }}
+        />
+        // </ActionBar>
       )}
 
       {showModal ? (

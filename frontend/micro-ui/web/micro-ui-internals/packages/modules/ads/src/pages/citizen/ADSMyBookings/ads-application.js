@@ -16,7 +16,7 @@ const AdsApplication = ({ application, tenantId, buttonLabel, refetchBookings })
     // history.push(`/digit-ui/citizen/payment/my-bills/adv-services/${application?.bookingNo}/${tenantId}?tenantId=${tenantId}`);
   };
 
-  const submitCancelBooking = async () => {
+  const submitCancelBooking = async (data) => {
     setShowModal(false);
     const formData = {
       tenantId: application?.tenantId,
@@ -24,7 +24,8 @@ const AdsApplication = ({ application, tenantId, buttonLabel, refetchBookings })
       workflow: {
         businessService: "advandhoarding",
         action: "CANCEL",
-        comments: "User cancelled booking",
+        comment: data?.reason,
+        documents: data?.documents,
       },
     };
     try {
@@ -96,9 +97,9 @@ const AdsApplication = ({ application, tenantId, buttonLabel, refetchBookings })
         <ADSCancelBooking
           t={t}
           closeModal={() => setShowModal(false)}
-          actionCancelLabel="BACK"
+          actionCancelLabel="Cancel"
           actionCancelOnSubmit={() => setShowModal(false)}
-          actionSaveLabel="ADS_CANCEL"
+          actionSaveLabel="Submit"
           actionSaveOnSubmit={submitCancelBooking}
           onSubmit={submitCancelBooking}
         />

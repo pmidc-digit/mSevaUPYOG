@@ -229,7 +229,6 @@ const getMohallaLocale = (value = "", tenantId = "") => {
         { title: t("BPA_WARD_NUMBER_LABEL"), value: BPA?.additionalDetails?.wardnumber || "-", isNotTranslated: true },
         { title: t("BPA_ZONE_NUMBER_LABEL"), value: BPA?.additionalDetails?.zonenumber?.name || BPA?.additionalDetails?.zonenumber || "-", isNotTranslated: true },
         { title: t("BPA_KHASRA_NUMBER_LABEL"), value: BPA?.additionalDetails?.khasraNumber || "-", isNotTranslated: true },
-        { title: t("BPA_ARCHITECT_ID"), value: BPA?.additionalDetails?.architectid || "-", isNotTranslated: true },
         { title: t("BPA_NUMBER_OF_BATHS"), value: BPA?.additionalDetails?.bathnumber || "-", isNotTranslated: true },
         { title: t("BPA_NUMBER_OF_KITCHENS"), value: BPA?.additionalDetails?.kitchenNumber || "-", isNotTranslated: true },
         { title: t("BPA_APPROX_INHABITANTS_FOR_ACCOMODATION"), value: BPA?.additionalDetails?.approxinhabitants || "-", isNotTranslated: true },
@@ -620,7 +619,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
       const grandTotal = totalAmount + totalDeduction;
       sanctionFeeValues.push(
         { title: t("BPA_TOTAL"), value: `₹ ${totalAmount.toLocaleString("en-IN")}` },
-        { title: t("BPA_ADJUSTED_AMOUNT"), value: `₹ ${totalDeduction.toLocaleString("en-IN")}` },
+        { title: " ", value: `₹ ${totalDeduction.toLocaleString("en-IN")}` },
         { title: t("BPA_GRAND_TOTAL") || "Grand Total", value: `₹ ${grandTotal.toLocaleString("en-IN")} (${amountToWords(grandTotal)})` }
       );
     }
@@ -674,8 +673,6 @@ const getMohallaLocale = (value = "", tenantId = "") => {
       details: [
         getApplicationNumberDetails(application, t),
         getOwnerDetails(application, t),
-        getBasicDetails(application, edcr, t),
-        getplotDetails(application, edcr, t),
         {
           title: t("BPA_ARCHITECT_DETAILS"),
           values: [
@@ -697,6 +694,8 @@ const getMohallaLocale = (value = "", tenantId = "") => {
             },
           ],
         },
+        getBasicDetails(application, edcr, t),
+        getplotDetails(application, edcr, t),
         getAdditionalDetails(application, edcr, t),
         getScrutinyDetails(application, edcr, t),
         getScrutinyDetailsForPDF(allData, t),
@@ -805,7 +804,8 @@ const getMohallaLocale = (value = "", tenantId = "") => {
         // },
       imageURL: OwnerPhoto || "",
       ulbType,
-      ulbName
+      ulbName,
+      hideUlbRow : true
     };
   };
   export default getBPAAcknowledgement;

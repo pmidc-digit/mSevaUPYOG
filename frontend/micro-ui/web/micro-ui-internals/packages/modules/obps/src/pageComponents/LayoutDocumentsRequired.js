@@ -33,7 +33,7 @@ const LayoutDocumentsRequired = ({
   formState,
 }) => {
   const tenantId = Digit.ULBService.getStateId()
-  const [documents, setDocuments] = useState([])
+  const [documents, setDocuments] = useState(formData?.documents?.documents || [])
   console.log("documents in childStep three", documents, formData)
   const [error, setError] = useState(null)
   const [enableSubmit, setEnableSubmit] = useState(true)
@@ -61,10 +61,7 @@ const LayoutDocumentsRequired = ({
   //console.log("geocoordinates", geocoordinates)
 
   const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
-
-  useEffect(()=>{
-    setDocuments(currentStepData?.documents?.documents?.documents)
-  },[currentStepData])
+  const applicantType = currentStepData?.applicationDetails?.aplicantType?.code;
 
   const [applicationNo, setApplicationNo] = useState("");
   const [isVacant, setIsVacant] = useState(false);
@@ -154,6 +151,14 @@ const LayoutDocumentsRequired = ({
         else if (doc.code === "OWNER.NATIONALHIGHWAYNOC") {
           isRequired = isNationalHighway
         }        
+        // Ownership document is mandatory for FIRM and NOT mandatory for INDIVIDUAL
+        else if (doc.code === "OWNER.OWNERSHIPDOCUMENT") {
+          if (applicantType === "FIRM") {
+            isRequired = true;
+          } else if (applicantType === "INDIVIDUAL") {
+            isRequired = false;
+          }
+        }
         
         // Filter out building drawing if vacant
         if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
@@ -166,7 +171,7 @@ const LayoutDocumentsRequired = ({
     
     
     return processedDocs
-  }, [isVacant, isCluApproved, isNationalHighway, isInstitution, data?.LAYOUT?.LayoutDocuments?.length])
+  }, [isVacant, isCluApproved, isNationalHighway, isInstitution, applicantType, data?.LAYOUT?.LayoutDocuments?.length])
 
   // console.log("filteredDocs and documents", filteredDocuments, documents)
 
@@ -199,7 +204,7 @@ const LayoutDocumentsRequired = ({
     const currentStatus = currentStepData?.siteDetails?.buildingStatus?.code
 
     if (currentStatus === "VACANT") {
-      setDocuments((prevDocs) => (prevDocs || []).filter((doc) => doc.documentType !== "OWNER.BUILDINGDRAWING"))
+      setDocuments((prevDocs) => Array.isArray(prevDocs) ? prevDocs.filter((doc) => doc.documentType !== "OWNER.BUILDINGDRAWING") : [])
     }
   }, [currentStepData?.siteDetails?.buildingStatus?.code])
 
@@ -290,7 +295,9 @@ function LayoutSelectDocument({
     setFile(selectedFile)
     // console.log("selectedFile here", selectedFile, doc, selectedDocument)
 
-    if (selectedFile && selectedFile.type === "image/jpeg") {
+    const fileType = selectedFile?.type?.toLowerCase();
+
+    if (selectedFile && (fileType?.includes("image/jpeg") || fileType?.includes("image/jpg") || fileType?.includes("image/png"))) {
       extractGeoLocation(selectedFile).then((location) => {
         // console.log("Latitude:", location.latitude)
         // console.log("Longitude:", location.longitude)
@@ -341,7 +348,9 @@ function LayoutSelectDocument({
   function selectfileWithCordinates(e) {
     const selectedFile = e.target.files[0]
 
-    if (selectedFile && selectedFile.type === "image/jpeg") {
+    const fileType = selectedFile?.type?.toLowerCase();
+
+    if (selectedFile && (fileType?.includes("image/jpeg") || fileType?.includes("image/jpg") || fileType?.includes("image/png"))) {
       extractGeoLocation(selectedFile).then((location) => {
         // console.log("Latitude:", location.latitude)
         // console.log("Longitude:", location.longitude)        
@@ -404,44 +413,61 @@ function LayoutSelectDocument({
 
   useEffect(() => {
     if (doc?.code) {
-      if(uploadedFile){
-      setDocuments((prev) => {
-        const filteredDocumentsByDocumentType = (prev || []).filter(
-          (item) => item?.documentType !== doc?.code,
-        )
+      if (uploadedFile) {
+        setDocuments((prev) => {
+          const filteredDocumentsByDocumentType = (prev || []).filter(
+            (item) => item?.documentType !== doc?.code,
+          )
 
-        const selectedDocument = (prev || []).filter(
-          (item) => item?.documentType === doc?.code
-        )
+          const selectedDocument = (prev || []).filter(
+            (item) => item?.documentType === doc?.code
+          )
 
-        // console.log("All Docs filteredDocumentsByDocumentType", filteredDocumentsByDocumentType)
-        if (uploadedFile?.length === 0 || uploadedFile === null) {
-          return filteredDocumentsByDocumentType
+          if (uploadedFile?.length === 0 || uploadedFile === null) {
+            return filteredDocumentsByDocumentType
+          }
+
+          return [
+            ...filteredDocumentsByDocumentType,
+            {
+              ...selectedDocument?.[0],
+              documentType: doc?.code,
+              filestoreId: uploadedFile,
+              documentUid: uploadedFile,
+              documentAttachment: uploadedFile,
+              order: doc?.order
+            },
+          ]
+        })
+      } else if (uploadedFile === "") {
+        const selectedDoc = (documents || [])?.find((item) => item?.documentType === doc?.code);
+        if (!selectedDoc?.layoutId) {
+          setDocuments((prev) => (prev || []).filter((item) => item?.documentType !== doc?.code));
+        } else {
+          setDocuments((prev) => {
+            const filteredDocumentsByDocumentType = (prev || []).filter((item) => item?.documentType !== doc?.code);
+
+            const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
+            return [
+              ...filteredDocumentsByFileStoreId,
+              {
+                ...selectedDoc,
+                documentType: doc?.code,
+                filestoreId: "",
+                documentUid: filteredDocument?.documentUid || "",
+                documentAttachment: "",
+                order: doc?.order,
+              },
+            ];
+          });
         }
-
-        // const filteredDocumentsByFileStoreId =
-        //   filteredDocumentsByDocumentType.filter((item) => item?.filestoreId !== uploadedFile) || []
-
-        // console.log("All Docs filteredDocumentsByFileStoreId", filteredDocumentsByFileStoreId)
-        return [
-          ...filteredDocumentsByDocumentType,
-          {
-            ...selectedDocument?.[0],
-            documentType: doc?.code,
-            filestoreId: uploadedFile,
-            documentUid: uploadedFile,
-            documentAttachment: uploadedFile,
-            order: doc?.order
-          },
-        ]
-      })
-    }
+      }
     }
   }, [uploadedFile, doc])
 
   useEffect(() => {
-    if(value && value != uploadedFile){
-      setUploadedFile(value);
+    if (value !== uploadedFile) {
+      setUploadedFile(value || null);
     }
   }, [value])
 
@@ -505,36 +531,61 @@ function LayoutSelectDocument({
   // }, [isHidden])
 
   function convertToDecimal(coordinate) {
-    const degrees = coordinate[0]
-    const minutes = coordinate[1]
-    const seconds = coordinate[2]
-    return degrees + minutes / 60 + seconds / 3600
+    // Accept either a DMS array (with numerator/denominator objects) or a direct numeric coordinate
+    // If `ref` is provided, caller should apply sign separately. This helper will only convert magnitude.
+    if (!coordinate) return 0;
+
+    const toNumber = (part) => {
+      if (part == null) return 0;
+      if (typeof part === "object" && part !== null && "numerator" in part && "denominator" in part) {
+        return part.numerator / (part.denominator || 1);
+      }
+      if (typeof part === "number") return part;
+      return Number(part) || 0;
+    };
+
+    if (!Array.isArray(coordinate)) {
+      // already a decimal number
+      return Number(coordinate) || 0;
+    }
+
+    const degrees = toNumber(coordinate[0]);
+    const minutes = toNumber(coordinate[1]);
+    const seconds = toNumber(coordinate[2]);
+
+    const decimal = degrees + minutes / 60 + seconds / 3600;
+    return decimal;
   }
 
   function extractGeoLocation(file) {
     return new Promise((resolve) => {
       try {
         EXIF.getData(file, function () {
-          const lat = EXIF.getTag(this, "GPSLatitude")
-          const lon = EXIF.getTag(this, "GPSLongitude")
+          const lat = EXIF.getTag(this, "GPSLatitude");
+          const lon = EXIF.getTag(this, "GPSLongitude");
+          const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+          const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
 
-          // console.log("lat====", lat)
-          if (lat && lon) {
-            const latDecimal = convertToDecimal(lat).toFixed(6)
-            const lonDecimal = convertToDecimal(lon).toFixed(6)
-            resolve({ latitude: latDecimal, longitude: lonDecimal })
+          console.log("Extracted EXIF GPS tags:", { lat, lon, latRef, lonRef });
+
+          if (lat && lon && latRef && lonRef) {
+            // Convert GPS coordinates to decimal format and apply sign from refs
+            const latDecimal = convertToDecimal(lat);
+            const lonDecimal = convertToDecimal(lon);
+            const latitude = latRef === "S" ? -Math.abs(latDecimal) : Math.abs(latDecimal);
+            const longitude = lonRef === "W" ? -Math.abs(lonDecimal) : Math.abs(lonDecimal);
+
+            resolve({ latitude: latitude.toFixed(6), longitude: longitude.toFixed(6) });
           } else {
-            resolve({ latitude: null, longitude: null })
-            if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
-              alert("Please Upload a Photo with Location Details")
-            }
+            console.warn("No GPS EXIF tags (lat/lon/refs) found on file");
+            resolve({ latitude: null, longitude: null });
           }
-        })
+        });
       } catch (error) {
-        //console.log("EXIF parsing failed:", error)
-        resolve({ latitude: null, longitude: null })
+        console.error("EXIF parsing failed:", error);
+        resolve({ latitude: null, longitude: null });
       }
-    })
+    });
   }
 
   return (
@@ -552,16 +603,14 @@ function LayoutSelectDocument({
             id={"clu-doc"}
             onUpload={selectfileWithCordinates}
             onDelete={() => {
-              setUploadedFile(null);
+              setUploadedFile("");
             }}
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             accept=".jpeg, .jpg, .png"
           />
-          <p className="advisory-text">              
-              {t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5MB")}
-          </p>
+            <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           </div>
         ):(
           <div>
@@ -569,16 +618,16 @@ function LayoutSelectDocument({
             id={"clu-doc"}
             onUpload={selectfile}
             onDelete={() => {
-              setUploadedFile(null);
+              setUploadedFile("");
             }}
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
+            required={doc?.required}
+            isRemovable={!doc?.required}
           />
-          <p className="advisory-text">              
-              {t("Only .png, .jpeg, .jpg, .pdf files are accepted with maximum size of 5MB")}
-          </p>
+             <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           </div>
         )}
 

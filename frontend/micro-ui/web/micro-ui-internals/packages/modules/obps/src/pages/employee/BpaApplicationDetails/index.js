@@ -2896,6 +2896,7 @@ const BpaApplicationDetail = () => {
               adjustedAmounts={adjustedAmounts}
               setAdjustedAmounts={setAdjustedAmounts}
               collectionData={data?.collectionBillDetails}
+              actions={actions}
             />
           )}
         </Card>

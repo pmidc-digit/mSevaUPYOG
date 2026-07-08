@@ -618,27 +618,7 @@ const LayoutApplicantDetails = (_props) => {
 
           
 
-          {/* Applicant Name */}
-          <LabelFieldPair style={{ marginBottom: "15px" }}>
-            <CardLabel className="card-label-smaller">
-              {`${(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")}`}
-              <span className="requiredField">*</span>
-            </CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="applicantOwnerOrFirmName"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
-                }}
-                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} 
-                // disabled={isEdit}
-                 t={t} />}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.applicantOwnerOrFirmName ? errors.applicantOwnerOrFirmName.message : ""}</CardLabelError>
+      
 
           <LabelFieldPair style={{ marginBottom: "15px" }}>
             <CardLabel className="card-label-smaller">
@@ -671,6 +651,8 @@ const LayoutApplicantDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
+        
+
           {(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") &&<React.Fragment> <LabelFieldPair style={{ marginBottom: "15px" }}>
             <CardLabel className="card-label-smaller">
               {t("NEW_LAYOUT_FIRM_NAME_LABEL")}
@@ -692,6 +674,28 @@ const LayoutApplicantDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.authorisedPerson ? errors.authorisedPerson.message : ""}</CardLabelError>
           </React.Fragment>}
+
+                {/* Applicant Name */}
+          <LabelFieldPair style={{ marginBottom: "15px" }}>
+            <CardLabel className="card-label-smaller">
+              {`${(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="applicantOwnerOrFirmName"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
+                }}
+                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} 
+                // disabled={isEdit}
+                 t={t} />}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.applicantOwnerOrFirmName ? errors.applicantOwnerOrFirmName.message : ""}</CardLabelError>
 
           {/* Father/Husband Name */}
           <LabelFieldPair  >
@@ -883,11 +887,9 @@ const LayoutApplicantDetails = (_props) => {
               justifyContent: "end",
             }}
           >
-            <p className="advisory-text">
-              {/* Accepted File Types: JPEG, JPG, PNG */}
-              Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
-            </p>
+           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           </div>
+          
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
             <CardLabel className="card-label-smaller">
               {t("BPA_APPLICANT_ID_PROOF")}
@@ -930,10 +932,7 @@ const LayoutApplicantDetails = (_props) => {
               marginTop: "10px",
             }}
           >
-            <p className="advisory-text">
-              {/* Accepted File Types: PDF */}
-              Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
-            </p>
+           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           </div>
           {/* PAN Document */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
@@ -978,10 +977,7 @@ const LayoutApplicantDetails = (_props) => {
               marginTop: "10px",
             }}
           >
-            <p className="advisory-text">
-              {/* Accepted File Types: PDF */}
-              Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
-            </p>
+            <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           </div>
 
           {/* PAN Number */}
@@ -1023,8 +1019,8 @@ const LayoutApplicantDetails = (_props) => {
 
           {/* Hidden Controllers for document validation */}
           <div style={{ display: "none" }}>
-            <Controller control={control} name="primaryOwnerPhoto" rules={{ required: t("BPA_PASSPORT_PHOTO_REQUIRED") }} render={() => null} />
-            <Controller control={control} name="primaryOwnerDocument" rules={{ required: t("BPA_ID_PROOF_REQUIRED") }} render={() => null} />
+            <Controller control={control} name="primaryOwnerPhoto" rules={{ required: t("REQUIRED_FIELD") }} render={() => null} />
+            <Controller control={control} name="primaryOwnerDocument" rules={{ required: t("REQUIRED_FIELD") }} render={() => null} />
           </div>
 
           {/* Additional Applicants Section */}
@@ -1208,22 +1204,19 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.photo?.message || ""}</CardLabelError>
-                      <div
-                        style={{
-                          padding: "10px 12px",
-                          display: "flex",
-                          justifyContent: "end",
+                     <div
+            style={{
+              padding: "10px 12px",
 
-                          borderRadius: "4px",
-                          marginBottom: "10px",
-                          marginTop: "10px",
-                        }}
-                      >
-                        <p className="advisory-text">
-                          {/* Accepted File Types: PDF */}
-                          Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
-                        </p>
-                      </div>
+              borderRadius: "4px",
+              marginBottom: "10px",
+              marginTop: "10px",
+              display: "flex",
+              justifyContent: "end",
+            }}
+          >
+           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+          </div>
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
                         <CardLabel className="card-label-smaller">
@@ -1249,21 +1242,18 @@ const LayoutApplicantDetails = (_props) => {
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.document?.message || ""}</CardLabelError>
                       <div
-                        style={{
-                          padding: "10px 12px",
-                          display: "flex",
-                          justifyContent: "end",
+            style={{
+              padding: "10px 12px",
 
-                          borderRadius: "4px",
-                          marginBottom: "10px",
-                          marginTop: "10px",
-                        }}
-                      >
-                        <p className="advisory-text">
-                          {/* Accepted File Types: PDF */}
-                          Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
-                        </p>
-                      </div>
+              borderRadius: "4px",
+              marginBottom: "10px",
+              marginTop: "10px",
+              display: "flex",
+              justifyContent: "end",
+            }}
+          >
+           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+          </div>
 
                       {/* PAN Number */}
 
@@ -1292,21 +1282,18 @@ const LayoutApplicantDetails = (_props) => {
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.panDocument?.message || ""}</CardLabelError>
                       <div
-                        style={{
-                          padding: "10px 12px",
-                          display: "flex",
-                          justifyContent: "end",
+            style={{
+              padding: "10px 12px",
 
-                          borderRadius: "4px",
-                          marginBottom: "10px",
-                          marginTop: "10px",
-                        }}
-                      >
-                        <p className="advisory-text">
-                          {/* Accepted File Types: PDF */}
-                          Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
-                        </p>
-                      </div>
+              borderRadius: "4px",
+              marginBottom: "10px",
+              marginTop: "10px",
+              display: "flex",
+              justifyContent: "end",
+            }}
+          >
+           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+          </div>
 
                       <LabelFieldPair  >
                         <CardLabel className="card-label-smaller">

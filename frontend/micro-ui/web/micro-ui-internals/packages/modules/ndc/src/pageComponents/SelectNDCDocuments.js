@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState, useRef } from "react";
 import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast } from "@mseva/digit-ui-react-components";
 import { useSelector } from "react-redux";
 import { Loader } from "../components/Loader";
@@ -10,23 +10,24 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
   const [documents, setDocuments] = useState(formData?.documents?.documents || []);
   const [error, setError] = useState(null);
 
+  const initialized = useRef(false);
+
   useEffect(() => {
-    console.log("coming here again", checkFormData);
+    if (initialized.current) return;
 
-    if (checkFormData?.responseData?.[0]?.Documents?.length && documents.length === 0) {
-      console.log("here yes");
+    const docs = checkFormData?.responseData?.[0]?.Documents || checkFormData?.DocummentDetails?.documents?.documents;
 
-      // Map API response into the structure your UploadFile expects
-      const apiDocs = checkFormData?.responseData?.[0]?.Documents?.map((doc) => ({
-        documentType: doc?.documentType,
-        fileStoreId: doc?.uuid, // 👈 key mapping
-        documentUid: doc?.uuid, // 👈 key mapping
-        applicationId: doc?.applicationId,
-      }));
+    if (docs?.length) {
+      initialized.current = true;
 
-      console.log("apiDocs", apiDocs);
-
-      setDocuments(apiDocs);
+      setDocuments(
+        docs.map((doc) => ({
+          documentType: doc.documentType,
+          uuid: doc.uuid,
+          documentAttachment: doc.documentAttachment,
+          applicationId: doc.applicationId,
+        }))
+      );
     }
   }, [checkFormData]);
 
@@ -37,11 +38,17 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
   const ndcDocuments = data?.NDC?.Documents;
 
   const goNext = () => {
-    onSelect(config.key, { documents, ndcDocumentsLength: ndcDocuments?.length });
+    let document = formData.documents;
+    let documentStep;
+    documentStep = { ...document, documents: documents };
+    onSelect(config.key, documentStep);
+    // onSelect(config.key, { documents, ndcDocumentsLength: ndcDocuments?.length });
   };
 
   useEffect(() => {
-    goNext();
+    if (JSON.stringify(formData?.documents?.documents) !== JSON.stringify(documents)) {
+      goNext();
+    }
   }, [documents]);
 
   if (isLoading) {
@@ -80,47 +87,36 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
 };
 
 function SelectDocument({ t, document: doc, setDocuments, setError, documents, setFormError, config, formState }) {
-  const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
+  const filteredDocument = documents?.find((item) => item?.documentType === doc?.code);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [getLoader, setLoader] = useState(false);
 
   const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
+  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.documentAttachment || null);
 
   function selectfile(e) {
     setFile(e.target.files[0]);
   }
 
   useEffect(() => {
-    if (filteredDocument?.fileStoreId && !file) {
-      setUploadedFile(filteredDocument.fileStoreId);
-    }
-  }, [filteredDocument]);
+    setUploadedFile(filteredDocument?.documentAttachment || null);
+  }, [filteredDocument?.documentAttachment]);
 
   useEffect(() => {
-    if (uploadedFile) {
-      console.log("not uploading");
+    setDocuments((prev) => {
+      const remaining = prev.filter((item) => item.documentType !== doc.code);
 
-      setDocuments((prev) => {
-        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
+      if (!uploadedFile) return remaining;
 
-        if (uploadedFile?.length === 0 || uploadedFile === null) {
-          return filteredDocumentsByDocumentType;
-        }
-
-        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile);
-        return [
-          ...filteredDocumentsByFileStoreId,
-          {
-            documentType: doc?.code,
-            uuid: uploadedFile,
-            documentAttachment: uploadedFile,
-          },
-        ];
-      });
-    } else if (uploadedFile === null) {
-      setDocuments((prev) => prev.filter((item) => item?.documentType !== doc?.code));
-    }
+      return [
+        ...remaining,
+        {
+          documentType: doc.code,
+          uuid: uploadedFile,
+          documentAttachment: uploadedFile,
+        },
+      ];
+    });
   }, [uploadedFile]);
 
   useEffect(() => {

@@ -69,6 +69,13 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         },
       },
       {
+        Header: t("Owner Name"),
+        accessor: "owner",
+        Cell: ({ row }) => {
+          return row.original?.owner || "-";
+        },
+      },
+      {
         Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
         accessor: "status",
         Cell: ({ row }) => {
@@ -90,7 +97,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         Cell: ({ row }) => (
           <span className="ndc-new-action-group">
             <Link
-              to={`${parentRoute}/inbox/application-overview/${row.original?.applicationId}`}
+              to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`}
               className="ndc-new-icon ndc-new-icon-link"
               aria-label={t("ES_COMMON_VIEW")}
             >

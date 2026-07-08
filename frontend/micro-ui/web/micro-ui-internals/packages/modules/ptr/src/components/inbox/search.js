@@ -18,17 +18,17 @@ import { useTranslation } from "react-i18next";
 const fieldComponents = {
   date: DatePicker,
   mobileNumber: MobileNumber,
-//   Locality: (props) => (
-//     <Localities
-//       tenantId={Digit.ULBService.getCurrentTenantId()}
-//       selectLocality={props.onChange}
-//       keepNull={false}
-//       boundaryType="revenue"
-//       selected={props.value}
-//       disableLoader={true}
-//       sortFn={(a, b) => (a.i18nkey < b.i18nkey ? -1 : 1)}
-//     />
-//   ),
+  //   Locality: (props) => (
+  //     <Localities
+  //       tenantId={Digit.ULBService.getCurrentTenantId()}
+  //       selectLocality={props.onChange}
+  //       keepNull={false}
+  //       boundaryType="revenue"
+  //       selected={props.value}
+  //       disableLoader={true}
+  //       sortFn={(a, b) => (a.i18nkey < b.i18nkey ? -1 : 1)}
+  //     />
+  //   ),
 };
 
 const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams, isInboxPage, defaultSearchParams, clearSearch: _clearSearch }) => {
@@ -118,7 +118,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   return (
     <form onSubmit={handleSubmit(onSubmitInput)}>
       <React.Fragment>
-      <div className={`search-container ads-search-container ${isInboxPage ? 'ads-search-container--inbox' : 'ads-search-container--revert'}`}>
+        <div className={`search-container ads-search-container ${isInboxPage ? 'ads-search-container--inbox' : 'ads-search-container--revert'}`}>
           <div className="search-complaint-container">
             {(type === "mobile" || mobileView) && (
               <div className="complaint-header">
@@ -128,7 +128,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 </span>
               </div>
             )}
-            <div className="complaint-input-container" style={{textAlign: "start"}}>
+            <div className="complaint-input-container" style={{ textAlign: "start" }}>
               {searchFields
                 ?.filter((e) => true)
                 ?.map((input, index) => (
@@ -170,7 +170,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 ))}
 
               {isInboxPage && (
-                <div className="search-action-wrapper" style={{width: "100%"}}>
+                <div className="search-action-wrapper" style={{ width: "100%" }}>
                   {type === "desktop" && !mobileView && (
                     <SubmitBar
                       className="submit-bar-search"

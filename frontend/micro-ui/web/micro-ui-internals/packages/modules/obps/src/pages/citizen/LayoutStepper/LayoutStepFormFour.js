@@ -56,13 +56,17 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       ? currentStepData?.apiData 
       : currentStepData?.apiData?.Layout?.[0];
     
-    // Primary owner name - try multiple sources for fallback
-    let primaryOwnerName = layoutData?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName
-      || currentStepData?.applicationDetails?.applicantOwnerOrFirmName;
-    
-    // Fallback: Get primary owner name from owners array if not in applicationDetails
-    if (!primaryOwnerName && layoutData?.owners && layoutData.owners.length > 0) {
-      primaryOwnerName = layoutData.owners[0]?.name;
+    const aplicantType = currentStepData?.applicationDetails?.aplicantType?.code 
+      || layoutData?.owners?.[0]?.additionalDetails?.aplicantType?.code;
+
+    // Primary owner name - try form state and API owner fallback based on applicantType
+    let primaryOwnerName = "";
+    if (aplicantType === "FIRM") {
+      primaryOwnerName = currentStepData?.applicationDetails?.authorisedPerson
+        || layoutData?.owners?.[0]?.additionalDetails?.authorisedPerson;
+    } else {
+      primaryOwnerName = currentStepData?.applicationDetails?.applicantOwnerOrFirmName
+        || layoutData?.owners?.[0]?.name;
     }
     
     // Get newly added applicants from Redux state (starts from index 1, index 0 is placeholder)
@@ -422,11 +426,12 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    })?.filter((action) => (action?.action !== "EDIT" && action?.action !== "CANCEL")) ||
+    })?.filter((action) => (action?.action !== "EDIT")) ||
     workflowDetails?.data?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    })?.filter((action) => (action?.action !== "EDIT" && action?.action !== "CANCEL"));
+    })?.filter((action) => (action?.action !== "EDIT"));
 
+    
   //console.log("actions here", actions);
 
   function onActionSelect(action) {

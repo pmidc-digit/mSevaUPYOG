@@ -6,8 +6,7 @@ import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplication
 import { useDispatch } from "react-redux";
 import CitizenConsent from "../components/CitizenConsent";
 
-
-const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack, onChange = () => { } }) => {
+const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack, onChange = () => {} }) => {
   const dispatch = useDispatch();
   const userInfo = Digit.UserService.getUser();
 
@@ -177,8 +176,16 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       // 4. Wait 2 seconds before create
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
+      const formattedData = {
+        ...formData,
+        cartDetails: formData.cartDetails?.map(({ bookingStartDate, bookingEndDate, ...rest }) => rest),
+      };
+
+      // console.log("formattedData", formattedData);
+      // return;
+
       // 5. Call create API
-      const response = await Digit.ADSServices.create({ bookingApplication: formData }, tenantId);
+      const response = await Digit.ADSServices.create({ bookingApplication: formattedData }, tenantId);
       const status = response?.ResponseInfo?.status;
       const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
 
@@ -186,7 +193,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         const appData = Array.isArray(response?.bookingApplication) ? response.bookingApplication[0] : response?.bookingApplication;
 
         dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", appData || response));
-        goNext(formData);
+        goNext(formattedData);
       } else {
         setShowToast({ key: true, label: t("CORE_SOMETHING_WENT_WRONG") });
       }
@@ -404,7 +411,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
                   trigger("pincode");
                 }}
                 t={t}
-
               />
             )}
           />

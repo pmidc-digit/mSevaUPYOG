@@ -7,7 +7,7 @@ const useNOCDocumentSearch = (data1 = {}, config = {}) => {
   
   //console.log("data1 here in hook", data1);
   let filesArray = [];
-  if(data1?.value?.workflowDocs) filesArray = data1?.value?.workflowDocs?.map((ob) => (ob?.documentAttachment || ob?.documentUid));
+  if(data1?.value?.workflowDocs) filesArray = data1?.value?.workflowDocs?.map((ob) => (ob?.documentAttachment));
   
   const { isLoading, error, data } = useQuery([`nocDocuments-${1}`, filesArray], () => Digit.UploadServices.Filefetch(filesArray, tenant));
   return { isLoading, error, data: { pdfFiles: data?.data }, revalidate: () => client.invalidateQueries([`nocDocuments-${1}`, filesArray]) };

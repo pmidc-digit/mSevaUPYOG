@@ -132,6 +132,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
 // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, { cacheTime: 0 })
   const applicationDetails = data?.resData
+  const { isLoading: mdmsLoading, data: mdmsDocsData } = Digit.Hooks.pt.usePropertyMDMS(stateCode, "LAYOUT", ["LayoutDocuments"]);
   const layoutDocuments = applicationDetails?.Layout?.[0]?.documents || [];
   const sitePhotos = layoutDocuments?.filter(
     (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
@@ -283,13 +284,14 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
 
   const dowloadOptions = []
-  if (applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED") {
-
+  if (applicationDetails?.Layout?.[0]) {
     dowloadOptions.push({
       label: t("Download Application"),
       onClick: handleDownloadPdf,
     });
+  }
 
+  if (applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED") {
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CLU_FEE_RECEIPT_1"),
@@ -298,7 +300,6 @@ const [viewTimeline, setViewTimeline] = useState(false);
     }
     if (reciept_data_pay && reciept_data_pay?.Payments.length > 0 && !recieptDataLoadingPay) {
       dowloadOptions.push({
-        label: t("Pay 2 Fee"),
         label: t("CLU_FEE_RECEIPT_2"),
         onClick: () => getRecieptSearch({ tenantId: reciept_data_pay?.Payments[0]?.tenantId, payments: reciept_data_pay?.Payments[0], pdfkey:"layoutreceipt-second" }),
       });
@@ -373,6 +374,96 @@ const [viewTimeline, setViewTimeline] = useState(false);
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
     })
 
+  const isApplicationComplete = () => {
+    const layout = applicationDetails?.Layout?.[0];
+    if (!layout) return false;
+
+    // 1. Check declaration checkbox
+    if (!layout?.layoutDetails?.additionalDetails?.selectedCheckBox) {
+      return false;
+    }
+
+    // 2. Check owner-level mandatory documents (Photo, ID Proof) for all active owners
+    const owners = layout?.owners || [];
+    const allOwnerDocsUploaded = owners.every((owner, idx) => {
+      if (owner?.status === false) return true;
+      const photo = findOwnerDocument(idx, "OWNERPHOTO");
+      const idProof = findOwnerDocument(idx, "OWNERVALIDID");
+      return photo && idProof;
+    });
+    if (!allOwnerDocsUploaded) return false;
+
+    // 3. Check MDMS required documents
+    if (mdmsDocsData?.LAYOUT?.LayoutDocuments) {
+      const siteDetails = layout?.layoutDetails?.additionalDetails?.siteDetails;
+      const isVacant = siteDetails?.buildingStatus?.code === "VACANT" || siteDetails?.buildingStatus === "VACANT";
+      const isCluApproved = siteDetails?.isCluRequired?.code === "YES" || siteDetails?.isCluRequired === "YES" || siteDetails?.isCluRequired === true;
+      const roadType = siteDetails?.roadType?.name || siteDetails?.roadType || "";
+      const isNationalHighway = roadType.toLowerCase().includes("national") || roadType.toLowerCase().includes("nh");
+      const buildingCategory = siteDetails?.buildingCategory?.code || siteDetails?.buildingCategory || "";
+      const isInstitution = buildingCategory === "INSTITUTION" || buildingCategory.toLowerCase().includes("institution");
+      const applicantType = owners?.[0]?.additionalDetails?.aplicantType?.code || owners?.[0]?.additionalDetails?.aplicantType;
+
+      const docs = mdmsDocsData?.LAYOUT?.LayoutDocuments || [];
+      const requiredDocs = docs
+        .map((doc) => {
+          let isRequired = doc.required || false;
+          if (doc.code === "OWNER.SITEPHOTOGRAPHONE" || doc.code === "OWNER.SITEPHOTOGRAPHTWO") {
+            isRequired = true;
+          } else if (doc.code === "OWNER.NATIONALHIGHWAYNOC") {
+            isRequired = isNationalHighway;
+          } else if (doc.code === "OWNER.OWNERSHIPDOCUMENT") {
+            if (applicantType === "FIRM") {
+              isRequired = true;
+            } else if (applicantType === "INDIVIDUAL") {
+              isRequired = false;
+            }
+          }
+
+          if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
+            return null;
+          }
+
+          return { ...doc, required: isRequired };
+        })
+        .filter(doc => !(doc?.cluRequired && !isCluApproved))
+        .filter(doc => doc !== null && doc.required);
+
+      const allRequiredDocsUploaded = requiredDocs.every((reqDoc) => {
+        return layoutDocuments.some(
+          (appDoc) =>
+            appDoc?.documentType?.includes(reqDoc.code) &&
+            (appDoc?.fileStoreId || appDoc?.uuid || appDoc?.documentAttachment)
+        );
+      });
+
+      if (!allRequiredDocsUploaded) return false;
+    }
+
+    // 4. Check other mandatory site details
+    const siteDetails = layout?.layoutDetails?.additionalDetails?.siteDetails;
+    if (!siteDetails) return false;
+
+    const getVal = (val) => {
+      if (!val) return "";
+      if (typeof val === "object") return val.name || val.code || "";
+      return val;
+    };
+
+    if (!getVal(siteDetails.proposedSiteAddress)) return false;
+    if (!getVal(siteDetails.wardNo)) return false;
+    if (!getVal(siteDetails.khasraNo)) return false;
+    if (!getVal(siteDetails.hadbastNo)) return false;
+    if (!getVal(siteDetails.villageName)) return false;
+    if (!getVal(siteDetails.district)) return false;
+    if (!getVal(siteDetails.ulbName)) return false;
+
+    const area = getVal(siteDetails.areaLeftForRoadWidening);
+    if (!area || area === "0.00" || area === "0" || parseFloat(area) === 0) return false;
+
+    return true;
+  };
+
   function onActionSelect(action) {
     const appNo = applicationDetails?.Layout?.[0]?.applicationNo
 
@@ -384,14 +475,14 @@ const [viewTimeline, setViewTimeline] = useState(false);
       history.push(`/digit-ui/citizen/obps/layout/edit-application/${appNo}`)
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" })
-    } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {      
-      // if(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.selectedCheckBox){
-      //   submitAction(payload)
-      // }
-      // else {
-      //   setShowToast({ key: "true", warning: true, message: "APPLICATION_INCOMPLETE" })
-      // }
-      submitAction(payload)
+    } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
+      if (action?.action === "CANCEL") {
+        submitAction(payload)
+      } else if (isApplicationComplete()) {
+        submitAction(payload)
+      } else {
+        setShowToast({ key: "true", warning: true, message: "APPLICATION_INCOMPLETE" })
+      }
     } else if (action?.action == "PAY") {
       let businessService
       if(applicationDetails?.Layout?.[0]?.applicationStatus === "PENDINGAPPLICATIONPAYMENT"){
@@ -573,7 +664,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
 };
 
 
-  if (isLoading || loading) {
+  if (isLoading || loading || mdmsLoading) {
     return <LoaderNew page={true} />;
   }
 
@@ -581,29 +672,40 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
   return (
     <div className={"employee-main-application-details"}>
-      <CustomOwnerImage
-        ownerFileStoreId={findOwnerDocument(0, "OWNERPHOTO")}
-        ownerName={applicationDetails?.Layout?.[0]?.owners?.[0]?.name}
-      />
-      <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+      <div className="cardHeaderWithOptions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Header styles={{ fontSize: "32px" }}>{t("Application Overview")}</Header>
-         <LinkButton  label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
-        {loading && <Loader />}
-        {dowloadOptions && dowloadOptions.length > 0 && (
-          (recieptDataLoading || recieptDataLoadingPay)? 
-          <Loader /> :
-          <div>
-
-          <MultiLink
-            className="multilinkWrapper"
-            onHeadClick={() => setShowOptions(!showOptions)}
-            displayOptions={showOptions}
-            options={dowloadOptions}
-          />
-
-           </div>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginLeft: "auto" }}>
+          <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
+          {loading && <Loader />}
+          {dowloadOptions && dowloadOptions.length > 0 && (
+            (recieptDataLoading || recieptDataLoadingPay)? 
+            <Loader /> :
+            <div>
+              <MultiLink
+                className="multilinkWrapper"
+                onHeadClick={() => setShowOptions(!showOptions)}
+                displayOptions={showOptions}
+                options={dowloadOptions}
+              />
+            </div>
+          )}
+        </div>
       </div>
+
+      <Card>
+        <CardSubHeader>{t("OWNER_OWNERPHOTO") || "OWNER'S PHOTO"}</CardSubHeader>
+        <CustomOwnerImage
+          ownerFileStoreId={findOwnerDocument(0, "OWNERPHOTO")}
+          ownerName={applicationDetails?.Layout?.[0]?.owners?.[0]?.name}
+        />
+      </Card>
+
+      <Card>
+        <StatusTable>
+          <Row label={t("BPA_APPLICATION_NUMBER_LABEL") || t("Application No")} text={id} />
+          <Row label={t("Application Date")} text={applicationDetails?.Layout?.[0]?.auditDetails?.createdTime ? Digit.DateUtils.ConvertTimestampToDate(applicationDetails?.Layout?.[0]?.auditDetails?.createdTime, "dd/MM/yyyy") : "N/A"} />
+        </StatusTable>
+      </Card>
        
 
     {/* -------------------- APPLICANTS/OWNERS DETAILS -------------------- */}
@@ -613,9 +715,10 @@ const [viewTimeline, setViewTimeline] = useState(false);
         {applicationDetails?.Layout?.[0]?.owners?.map((applicant, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
-              <RenderRow label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${applicant?.additionalDetails?.aplicantType?.code === "FIRM"? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") :t("APPLICANT_NAME")}`} value={applicant?.name} />
+         
               {index === 0 && <RenderRow label={t(`CLU_OWNER_TYPE_LABEL`)} value={applicant?.additionalDetails?.aplicantType?.name} />}
               {applicant?.additionalDetails?.aplicantType?.code === "FIRM" && <RenderRow label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} value={applicant?.additionalDetails?.authorisedPerson} />}
+              <RenderRow label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${applicant?.additionalDetails?.aplicantType?.code === "FIRM"? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") :t("APPLICANT_NAME")}`} value={applicant?.name} />
               <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
               <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
               <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={applicant?.mobileNumber} />
@@ -625,7 +728,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
               <RenderRow label={t("BPA_PAN_NUMBER_LABEL")} value={applicant?.pan || "N/A"} />
               <Row label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
               <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
-              <Row label={t("Pan") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />
+              <Row label={t("BPA_PAN_DOCUMENT") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />
             </StatusTable>
           </div>
         ))}

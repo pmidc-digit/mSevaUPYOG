@@ -44,9 +44,9 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
           const ownerObj = application?.businessObject?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0];
           const displayOwner = ownerObj?.firmName?.trim?.() || ownerObj?.ownerOrFirmName?.trim?.() || "-";
           const submittedOn = Number(application?.businessObject?.nocDetails?.additionalDetails?.SubmittedOn); // or submissionDate
-          const endDate = application.businessObject?.nocDetails?.additionalDetails?.siteDetails?.approvalDate
-            ? new Date(application.businessObject?.nocDetails?.additionalDetails?.siteDetails?.approvalDate).getTime()
-            : Date.now();
+          const approvalDate = application.businessObject?.nocDetails?.additionalDetails?.approvalDate;
+          const endDate = approvalDate ? Number(approvalDate) : Date.now();
+
           return {
             applicationId: application.businessObject?.applicationNo,
             date: parseInt(application.businessObject?.auditDetails?.createdTime),
@@ -57,7 +57,7 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
             action: `${application?.ProcessInstance?.action}`,
             tenantId: application.businessObject?.tenantId,
             submissionDate: application?.businessObject?.nocDetails?.additionalDetails?.SubmittedOn,
-            approvalDate: application.businessObject?.nocDetails?.additionalDetails?.siteDetails?.approvalDate,
+            approvalDate: approvalDate,
             category: application.businessObject?.nocDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory,
             zone: application.businessObject?.nocDetails?.additionalDetails?.siteDetails?.zone,
             applicationType: application?.businessObject?.applicationType,

@@ -102,7 +102,10 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         Header: t("CS_APPLICATION_DETAILS_APPROVAL_DATE"),
         accessor: "approvalDate",
         Cell: ({ row }) => {
-          return row.original?.["approvalDate"] ? GetCell(format(new Date(row.original?.["approvalDate"]), "dd/MM/yyyy")) : "-";
+          const value = Number(row.original?.approvalDate);
+          console.log("rooo", row.original);
+
+          return Number.isFinite(value) ? GetCell(format(new Date(value), "dd/MM/yyyy")) : "-";
         },
         disableSortBy: true,
       },

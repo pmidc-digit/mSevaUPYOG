@@ -38,10 +38,7 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
     filters: _filters,
     config: {
       select: (data) => {
-        console.log("Layout Inbox API Response:", data);
-
         if (!data) {
-          console.log("No data returned from API");
           return {
             statuses: [],
             table: [],
@@ -51,20 +48,17 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
           };
         }
 
-        console.log(" Data items:", data?.items);
-        console.log(" Data statusMap:", data?.statusMap);
-        console.log(" Data totalCount:", data?.totalCount);
-
         const tableData = (data?.items || [])?.map((application) => {
           const submittedOn = Number(application?.businessObject?.layoutDetails?.additionalDetails?.SubmittedOn); // or submissionDate
-          const endDate = application.businessObject?.layoutDetails?.additionalDetails?.siteDetails?.approvalDate
-            ? new Date(application.businessObject?.layoutDetails?.additionalDetails?.siteDetails?.approvalDate).getTime()
-            : Date.now();
+          const approvalDate = application?.businessObject?.layoutDetails?.additionalDetails?.approvalDate;
+
+          const endDate = approvalDate ? Number(approvalDate) : Date.now();
+
           return {
             applicationId: application?.businessObject?.applicationNo || application?.businessObject?.applicationNumber,
             date: application?.businessObject?.auditDetails?.createdTime ? Number.parseInt(application.businessObject.auditDetails.createdTime) : 0,
             submissionDate: application?.businessObject?.layoutDetails?.additionalDetails?.SubmittedOn,
-            approvalDate: application.businessObject?.layoutDetails?.additionalDetails?.siteDetails?.approvalDate,
+            approvalDate: approvalDate,
             businessService: application?.ProcessInstance?.businessService,
             locality: application?.businessObject?.tenantId ? `${application.businessObject.tenantId.toUpperCase().split(".").join("_")}` : "-",
             status: application?.businessObject?.applicationStatus,
@@ -80,8 +74,6 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
             sla: Math.floor((endDate - submittedOn) / (1000 * 60 * 60 * 24)),
           };
         });
-
-        console.log(" Transformed table data:", tableData);
 
         return {
           statuses: data?.statusMap || [],

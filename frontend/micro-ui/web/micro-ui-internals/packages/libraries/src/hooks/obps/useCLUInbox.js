@@ -51,14 +51,14 @@ const useCLUInbox = ({ tenantId, filters, config = {} }) => {
 
         const tableData = (data?.items || [])?.map((application) => {
           const submittedOn = Number(application?.businessObject?.cluDetails?.additionalDetails?.SubmittedOn); // or submissionDate
-          const endDate = application.businessObject?.cluDetails?.additionalDetails?.siteDetails?.approvalDate
-            ? new Date(application.businessObject?.cluDetails?.additionalDetails?.siteDetails?.approvalDate).getTime()
-            : Date.now();
+          const approvalDate = application.businessObject?.cluDetails?.additionalDetails?.approvalDate;
+          const endDate = approvalDate ? Number(approvalDate) : Date.now();
+
           return {
             applicationId: application?.businessObject?.applicationNo || application?.businessObject?.applicationNumber || "-",
             date: application?.businessObject?.auditDetails?.createdTime ? Number.parseInt(application.businessObject.auditDetails.createdTime) : 0,
             submissionDate: application?.businessObject?.cluDetails?.additionalDetails?.SubmittedOn,
-            approvalDate: application.businessObject?.cluDetails?.additionalDetails?.siteDetails?.approvalDate,
+            approvalDate: approvalDate,
             businessService: application?.ProcessInstance?.businessService || "-",
             locality: application?.businessObject?.tenantId ? `${application.businessObject.tenantId.toUpperCase().split(".").join("_")}` : "-",
             status: application?.businessObject?.applicationStatus || "-",

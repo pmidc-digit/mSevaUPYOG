@@ -180,6 +180,15 @@ console.log("licenseType:", licenseType);
               handleDownloadPdf(),
           },
         ]);
+      }else{
+        setDowloadOptions((prev) => [
+          ...(prev || [])?.filter((item) => item.label !== t("NOC_APPLICATION_FORM")),
+          {
+            label: t("NOC_APPLICATION_FORM"),
+            onClick: () =>
+              handleDownloadPdf(),
+          },
+        ]);
       }
     }
   }, [applicationDetailLoadingDynamic, applicationDetailLoadingPunjab]);

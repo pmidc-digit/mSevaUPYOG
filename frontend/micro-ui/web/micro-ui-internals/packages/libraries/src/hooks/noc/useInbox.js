@@ -3,15 +3,12 @@ import { useQueryClient } from "react-query";
 
 const useNOCInbox = ({ tenantId, filters, config = {} }) => {
   const queryClient = useQueryClient();
-  console.log("filters in useInbox hook", filters);
 
   const { filterForm, searchForm, tableForm, getFilter } = filters;
   let { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray } = filterForm;
   const { mobileNumber, applicationNo } = searchForm;
   const { sortBy, limit, offset, sortOrder } = tableForm;
   const user = Digit.UserService.getUser();
-
-  console.log("user here in useInbox", user);
 
   const _filters = {
     tenantId,

@@ -7,13 +7,16 @@ import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templ
 import useInboxTableConfig from "./useInboxTableConfig";
 
 const Inbox = ({ parentRoute }) => {
-  console.log("here");
-
   const { t } = useTranslation();
+  let user = Digit.UserService.getUser();
   const [error, setError] = useState({
     error: false,
     label: "",
   });
+
+  const userRoles = user?.info?.roles?.map((role) => role.code) || [];
+
+  const hasViewOBPSCardRole = userRoles.includes("OBPAS_READ_ONLY");
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -21,7 +24,8 @@ const Inbox = ({ parentRoute }) => {
 
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
   const isEmployee = window.location.href.includes("employee");
-  const defaultAssignee = isEmployee ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL";
+  // const defaultAssignee = isEmployee ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL";
+  const defaultAssignee = isEmployee && !hasViewOBPSCardRole ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL";
   const { data: cities } = Digit.Hooks.useTenants();
 
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
@@ -452,7 +456,7 @@ const Inbox = ({ parentRoute }) => {
               filterFormState={formState?.filterForm}
               getFilterFormValue={getFilterFormValue}
               statuses={statusData}
-              showAssigneeCards={isEmployee}
+              showAssigneeCards={isEmployee && !hasViewOBPSCardRole}
               isInboxLoading={isInboxLoading}
               assigneeCounts={assigneeCounts}
               handleFilter={handleFilterChange}

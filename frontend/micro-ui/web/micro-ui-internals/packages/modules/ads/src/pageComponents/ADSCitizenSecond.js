@@ -52,8 +52,8 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     const uniqueCodes = new Set(mdmsAds.map((a) => a.locationCode).filter(Boolean));
 
     return Array.from(uniqueCodes)
-      ?.map((code) => locationMap.get(code))
-      ?.filter(Boolean);
+      .map((code) => locationMap.get(code))
+      .filter(Boolean);
   }, [mdmsAds, location]);
 
   // When ads list changes (site change), reset visible paging

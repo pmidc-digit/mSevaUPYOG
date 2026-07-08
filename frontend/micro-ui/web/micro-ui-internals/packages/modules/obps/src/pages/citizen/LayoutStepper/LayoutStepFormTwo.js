@@ -159,9 +159,15 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       netTotalArea: netArea
     } = data;
 
-    const residential = parseFloat(watchedResidentialArea) || 0;
-    const commercial = parseFloat(watchedCommercialArea) || 0;
-    const institutional = parseFloat(watchedInstitutionalArea) || 0;
+    const buildingCategory = data?.buildingCategory;
+    const catCode = (buildingCategory?.code || buildingCategory?.name || "").toUpperCase();
+    const isResidential = catCode.includes("RESIDENTIAL");
+    const isCommercial = catCode.includes("COMMERCIAL");
+    const isInstitutional = catCode.includes("INDUSTRIAL") || catCode.includes("WAREHOUSE") || catCode.includes("INSTITUTION");
+
+    const residential = isResidential ? (parseFloat(watchedResidentialArea) || 0) : 0;
+    const commercial = isCommercial ? (parseFloat(watchedCommercialArea) || 0) : 0;
+    const institutional = isInstitutional ? (parseFloat(watchedInstitutionalArea) || 0) : 0;
     const communityCenter = parseFloat(watchedCommunityCenterArea) || 0;
     const park = parseFloat(watchedParkArea) || 0;
     const road = parseFloat(watchedRoadArea) || 0;

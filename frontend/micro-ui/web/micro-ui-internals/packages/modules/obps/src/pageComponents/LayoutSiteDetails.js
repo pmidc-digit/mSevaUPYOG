@@ -349,11 +349,24 @@ const LayoutSiteDetails = (_props) => {
     }
   }, []);
 
+  const getSelectedCategoryCode = () => {
+    const cat = selectedBuildingCategory || buildingCategoryMain || (getValues && getValues("buildingCategory"));
+    const code = cat?.code || cat?.name || "";
+    return code.toUpperCase();
+  };
+
+  const currentCategoryCode = getSelectedCategoryCode();
+  const isResidential = currentCategoryCode.includes("RESIDENTIAL");
+  const isCommercial = currentCategoryCode.includes("COMMERCIAL");
+  const isInstitutional = currentCategoryCode.includes("INDUSTRIAL") ||
+                          currentCategoryCode.includes("WAREHOUSE") ||
+                          currentCategoryCode.includes("INSTITUTION");
+
   // Calculate Total Site Area (sum of all distribution areas)
   useEffect(() => {
-    const residential = parseFloat(watchedResidentialArea) || 0;
-    const commercial = parseFloat(watchedCommercialArea) || 0;
-    const institutional = parseFloat(watchedInstitutionalArea) || 0;
+    const residential = isResidential ? (parseFloat(watchedResidentialArea) || 0) : 0;
+    const commercial = isCommercial ? (parseFloat(watchedCommercialArea) || 0) : 0;
+    const institutional = isInstitutional ? (parseFloat(watchedInstitutionalArea) || 0) : 0;
     const communityCenter = parseFloat(watchedCommunityCenterArea) || 0;
     const park = parseFloat(watchedParkArea) || 0;
     const road = parseFloat(watchedRoadArea) || 0;
@@ -384,7 +397,9 @@ const LayoutSiteDetails = (_props) => {
     watchedRoadArea,
     watchedParkingArea,
     watchedOtherAmenitiesArea,
-    netArea
+    netArea,
+    selectedBuildingCategory,
+    buildingCategoryMain
   ]);
 
   // Watch all SqM fields for auto-calculation of percentages
@@ -404,9 +419,9 @@ const LayoutSiteDetails = (_props) => {
     const netArea = parseFloat(watchedNetArea) || 0;
 
     const ews = parseFloat(areaUnderEWSInSqM) || 0;
-    const residential = parseFloat(areaUnderResidentialUseInSqM) || 0;
-    const commercial = parseFloat(areaUnderCommercialUseInSqM) || 0;
-    const institutional = parseFloat(areaUnderInstutionalUseInSqM) || 0;
+    const residential = isResidential ? (parseFloat(areaUnderResidentialUseInSqM) || 0) : 0;
+    const commercial = isCommercial ? (parseFloat(areaUnderCommercialUseInSqM) || 0) : 0;
+    const institutional = isInstitutional ? (parseFloat(areaUnderInstutionalUseInSqM) || 0) : 0;
     const communityCenter = parseFloat(areaUnderCommunityCenterInSqM) || 0;
     const park = parseFloat(areaUnderParkInSqM) || 0;
     const road = parseFloat(areaUnderRoadInSqM) || 0;
@@ -452,6 +467,8 @@ const LayoutSiteDetails = (_props) => {
     areaUnderOtherAmenitiesInSqM,
     watchedNetArea,
     setValue,
+    selectedBuildingCategory,
+    buildingCategoryMain,
   ]);
 
   return (
@@ -1968,7 +1985,7 @@ const LayoutSiteDetails = (_props) => {
                   <CardLabel className="card-label-smaller">
                     {`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL")}`}
                     {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                      selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) && <span className="requiredField">*</span>}
+                      selectedBuildingCategory?.name?.toLowerCase().includes("institution")) && <span className="requiredField">*</span>}
                   </CardLabel>
                   <div className="field">
                     <Controller
@@ -1978,7 +1995,7 @@ const LayoutSiteDetails = (_props) => {
                       rules={{
                         required:
                           selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                            selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
+                            selectedBuildingCategory?.name?.toLowerCase().includes("institution")
                             ? t("REQUIRED_FIELD")
                             : false,
                         validate: (value) => {
@@ -1986,7 +2003,7 @@ const LayoutSiteDetails = (_props) => {
                             return (
                               !(
                                 selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                                selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
+                                selectedBuildingCategory?.name?.toLowerCase().includes("institution")
                               ) || t("REQUIRED_FIELD")
                             );
                           const regex = /^\d+(\.\d{1,2})?$/;

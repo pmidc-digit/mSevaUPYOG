@@ -528,6 +528,14 @@ const LayoutEmployeeApplicationOverview = () => {
             setIsSubmitting(false);
             return;
           }
+
+          const recommendations = record.Recommendations || "";
+          if (recommendations.trim().length < 20) {
+            closeModal();
+            setShowToast({ key: "true", error: true, message: "Please fill in the Recommendations with minimum 20 characters" });
+            setIsSubmitting(false);
+            return;
+          }
         }
       }
 
@@ -1018,7 +1026,7 @@ const LayoutEmployeeApplicationOverview = () => {
         displayData?.owners?.map((applicant, index) => (
           <React.Fragment key={index}>
             <Card>
-              <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
+              <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `${t("Owner") || "Owner"} ${index + 1}`}</CardSubHeader>
               <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
                   
@@ -1027,7 +1035,7 @@ const LayoutEmployeeApplicationOverview = () => {
                     <Row label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} text={applicant?.additionalDetails?.authorisedPerson} />
                   )}
                   <Row
-                    label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${
+                    label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : `${t("Owner") || "Owner"} ${index + 1}`} - ${
                       applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")
                     }`}
                     text={applicant?.name}

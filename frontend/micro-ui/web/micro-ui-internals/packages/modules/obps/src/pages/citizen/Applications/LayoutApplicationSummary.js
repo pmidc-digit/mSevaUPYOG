@@ -366,14 +366,6 @@ const [viewTimeline, setViewTimeline] = useState(false);
     }
   }, [])
 
-  const actions =
-    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
-    }) ||
-    workflowDetails?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
-    })
-
   const isApplicationComplete = () => {
     const layout = applicationDetails?.Layout?.[0];
     if (!layout) return false;
@@ -463,6 +455,19 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
     return true;
   };
+
+  const actions =
+    (workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
+    }) ||
+    workflowDetails?.data?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
+    }))?.filter((e) => {
+      if ((e.action === "APPLY" || e.action === "RESUBMIT") && !isApplicationComplete()) {
+        return false;
+      }
+      return true;
+    });
 
   function onActionSelect(action) {
     const appNo = applicationDetails?.Layout?.[0]?.applicationNo
@@ -733,7 +738,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
          
               {index === 0 && <RenderRow label={t(`CLU_OWNER_TYPE_LABEL`)} value={applicant?.additionalDetails?.aplicantType?.name} />}
               {applicant?.additionalDetails?.aplicantType?.code === "FIRM" && <RenderRow label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} value={applicant?.additionalDetails?.authorisedPerson} />}
-              <RenderRow label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${applicant?.additionalDetails?.aplicantType?.code === "FIRM"? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") :t("APPLICANT_NAME")}`} value={applicant?.name} />
+              <RenderRow label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : `${t("Owner") || "Owner"} ${index + 1}`} - ${applicant?.additionalDetails?.aplicantType?.code === "FIRM"? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") :t("APPLICANT_NAME")}`} value={applicant?.name} />
               <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
               <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
               <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={applicant?.mobileNumber} />

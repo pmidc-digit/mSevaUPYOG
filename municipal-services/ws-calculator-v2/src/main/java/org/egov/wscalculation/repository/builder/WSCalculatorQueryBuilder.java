@@ -358,6 +358,7 @@ public class WSCalculatorQueryBuilder {
 	public String getConnectionNumberList(String tenantId, String locality, String connectionType, String status, Long taxPeriodFrom,
 			Long taxPeriodTo, String cone, List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(connectionNoListQuery);
+        query.append(" INNER JOIN eg_pt_property p ON conn.property_id = p.propertyid INNER JOIN eg_pt_address a ON a.propertyid = p.id ");
 
 		// Add connection type
 		addClauseIfRequired(preparedStatement, query);
@@ -382,7 +383,7 @@ public class WSCalculatorQueryBuilder {
 
         if (locality != null) {
             addClauseIfRequired(preparedStatement, query);
-            query.append(" conn.locality = ? ");
+            query.append(" a.locality = ? ");
             preparedStatement.add(locality);
         }
 //		 Test with connection number

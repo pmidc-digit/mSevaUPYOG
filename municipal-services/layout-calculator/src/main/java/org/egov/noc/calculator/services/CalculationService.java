@@ -117,7 +117,12 @@ public class CalculationService {
 					category = (String) buildingCategory.get("code");
 				}
 				if(siteDetails.get("typeOfApplication") != null) {
-					landType = siteDetails.getOrDefault("typeOfApplication", "PROPOSED").toString();
+					Object typeOfApp = siteDetails.get("typeOfApplication");
+					if (typeOfApp instanceof Map) {
+						landType = (String) ((Map<?, ?>) typeOfApp).get("code");
+					} else {
+						landType = typeOfApp.toString();
+					}
 				}
 				if(siteDetails.get("cluIsApproved") != null) {
 					LinkedHashMap<String, Object> cluIsApprovedObj = (LinkedHashMap<String, Object>) siteDetails.get("cluIsApproved");

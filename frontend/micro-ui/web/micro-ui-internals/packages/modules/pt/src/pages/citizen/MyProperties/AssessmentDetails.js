@@ -290,7 +290,6 @@ const AssessmentDetails = () => {
 console.log(error)
     }
   }
-console.log("isCheck",isCheck)
   const handleAssessment = () => {
     if(isCheck){
       if(location?.state?.reAssess===true){

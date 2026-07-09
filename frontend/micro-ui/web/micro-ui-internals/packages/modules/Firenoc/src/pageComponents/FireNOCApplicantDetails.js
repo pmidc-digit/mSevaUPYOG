@@ -80,7 +80,6 @@ const FireNOCApplicantDetails = (_props) => {
   const applicantType = watch("applicantType");
   const applicantSubtype = watch("applicantSubtype");
 
-  console.log('applicantType: and applicantSubtype', applicantType, applicantSubtype);
   
   /* Derive applicant type options (unique first segments) */
   const applicantTypeOptions = useMemo(() => {
@@ -135,7 +134,6 @@ const FireNOCApplicantDetails = (_props) => {
   const { fields, append, remove } = useFieldArray({ control, name: "owners" });
 
   const isIndividual = applicantType?.code === "INDIVIDUAL" || applicantType?.group === "INDIVIDUAL";
-  console.log("isIndividual", isIndividual);
   
   const isInstitutional = applicantType?.group === "INSTITUTIONAL";
   const isMultipleOwner = applicantSubtype?.code?.includes("MULTIPLEOWNERS");
@@ -146,7 +144,6 @@ const FireNOCApplicantDetails = (_props) => {
     const currentOwners = getValues("owners");
     if (isIndividual && !applicantSubtype?.code?.includes("MULTIPLE")) {
       // keep at least one individual ownerv
-      console.log("owner being trimmed");
       
       if (!currentOwners?.length || currentOwners[0]?.institutionName !== null) {
         setValue("owners", [emptyIndividualOwner()]);

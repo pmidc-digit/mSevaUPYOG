@@ -146,7 +146,6 @@ const isArchitect = qualificationType === "B-Arch";
 const licenseType = t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`);
 
 
-console.log("licenseType:", licenseType);
 
   useEffect(() => {
     if (License) {

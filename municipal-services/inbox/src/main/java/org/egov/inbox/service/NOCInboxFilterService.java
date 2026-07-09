@@ -145,7 +145,11 @@ public class NOCInboxFilterService {
 		}
         if (moduleSearchCriteria != null && (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM) || userRoles.contains(CITIZEN))
                 && !CollectionUtils.isEmpty(userUUIDs)) {
-            searchCriteria.put(USERID_PARAM, userUUIDs);
+            if (moduleSearchCriteria.containsKey("isCitizenView") && Boolean.parseBoolean(String.valueOf(moduleSearchCriteria.get("isCitizenView")))) {
+                searchCriteria.put("ownerUuid", userUUIDs);
+            } else {
+                searchCriteria.put(USERID_PARAM, userUUIDs);
+            }
         }
 
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("applicationNo")) {
@@ -251,9 +255,12 @@ public class NOCInboxFilterService {
         HashMap<String, Object> moduleSearchCriteria = criteria.getModuleSearchCriteria();
         ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
 
-        if ((moduleSearchCriteria == null || moduleSearchCriteria.isEmpty())
-                || !moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)) {
+        if (moduleSearchCriteria == null) {
             moduleSearchCriteria = new HashMap<>();
+        } else {
+            moduleSearchCriteria = new HashMap<>(moduleSearchCriteria);
+        }
+        if (!moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)) {
             moduleSearchCriteria.put(MOBILE_NUMBER_PARAM, requestInfo.getUserInfo().getMobileNumber());
         }
 

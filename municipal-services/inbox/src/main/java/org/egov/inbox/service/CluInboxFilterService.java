@@ -4,6 +4,8 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
+import org.egov.inbox.config.InboxConfiguration;
+import org.egov.inbox.esservice.CLUElasticSearchService;
 import org.egov.inbox.repository.ServiceRequestRepository;
 import org.egov.inbox.web.model.InboxSearchCriteria;
 import org.egov.inbox.web.model.workflow.ProcessInstanceSearchCriteria;
@@ -159,7 +161,11 @@ public class CluInboxFilterService {
 
         if (moduleSearchCriteria != null && (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM) || userRoles.contains(CITIZEN))
                 && !CollectionUtils.isEmpty(userUUIDs)) {
-            searchCriteria.put(USERID_PARAM, userUUIDs);
+            if (moduleSearchCriteria.containsKey("isCitizenView") && Boolean.parseBoolean(String.valueOf(moduleSearchCriteria.get("isCitizenView")))) {
+                searchCriteria.put("ownerUuid", userUUIDs);
+            } else {
+                searchCriteria.put(USERID_PARAM, userUUIDs);
+            }
         }
 
         // CLU ID/UUID
@@ -303,8 +309,12 @@ public class CluInboxFilterService {
         Boolean isMobileNumberPresent = true;
         List<String> userUUIDs = new ArrayList<>();
         List<String> citizenRoles = new ArrayList<>();
-        if ((moduleSearchCriteria == null || moduleSearchCriteria.isEmpty()) || (moduleSearchCriteria != null && !moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM))) {
+        if (moduleSearchCriteria == null) {
             moduleSearchCriteria = new HashMap<>();
+        } else {
+            moduleSearchCriteria = new HashMap<>(moduleSearchCriteria);
+        }
+        if (!moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)) {
             moduleSearchCriteria.put(MOBILE_NUMBER_PARAM, requestInfo.getUserInfo().getMobileNumber());
         } 
         if (Boolean.TRUE.equals(isMobileNumberPresent)) {

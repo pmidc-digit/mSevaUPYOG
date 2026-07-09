@@ -237,7 +237,7 @@ const CustomUploadFile = (props) => {
     const accept = props.accept || '';
     if (!isFileTypeAllowed(file, accept)) {
       const readableAccept = accept.replace(/,/g, ', ');
-      const msg = t('Invalid file type. Allowed: ') + readableAccept;
+      const msg =  props.uploadMessage ? t(props.uploadMessage) :t('Invalid file type. Allowed: ') + readableAccept;
       setLocalError(msg);
       if (props?.setError) props.setError(msg);
       // clear input so user can reselect

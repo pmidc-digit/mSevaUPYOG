@@ -717,6 +717,7 @@ const LayoutSiteDetails = (_props) => {
                         uploadedFile={cluDocumentUploadedFile?.fileStoreId || null}
                         error={cluDocumentError}
                         loading={cluDocumentLoader}
+                        uploadMessage = "Only .pdf files are accepted with maximum size of 5 MB"
                         accept=".pdf"
                         maxFileSize={5} // MB
                       />

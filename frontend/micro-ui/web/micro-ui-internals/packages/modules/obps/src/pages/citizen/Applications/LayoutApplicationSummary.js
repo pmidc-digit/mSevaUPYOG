@@ -833,17 +833,16 @@ const LayoutApplicationOverview = () => {
               {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL"), detail?.areaUnderResidentialUseInPct)}
               {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderCommercialUseInSqM)}
               {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_PCT_LABEL"), detail?.areaUnderCommercialUseInPct)}
-              {renderLabel(
-                usage?.toLowerCase().includes("industrial")
-                  ? t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL")
-                  : t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"),
-                detail?.areaUnderInstutionalUseInSqM
-              )}
-              {renderLabel(
-                usage?.toLowerCase().includes("industrial")
-                  ? t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL")
-                  : t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"),
-                detail?.areaUnderInstutionalUseInPct
+              {usage?.toLowerCase().includes("industrial") ? (
+                <React.Fragment>
+                  {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderIndustrialUseInSqM)}
+                  {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL"), detail?.areaUnderIndustrialUseInPct)}
+                </React.Fragment>
+              ) : (
+                <React.Fragment>
+                  {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderInstutionalUseInSqM)}
+                  {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"), detail?.areaUnderInstutionalUseInPct)}
+                </React.Fragment>
               )}
               {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_SQ_M_LABEL"), detail?.areaUnderCommunityCenterInSqM)}
               {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_PCT_LABEL"), detail?.areaUnderCommunityCenterInPct)}

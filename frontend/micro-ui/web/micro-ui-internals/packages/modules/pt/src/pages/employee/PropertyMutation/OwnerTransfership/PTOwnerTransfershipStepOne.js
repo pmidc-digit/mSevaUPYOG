@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import _ from "lodash";
-import { FormComposer } from "@mseva/digit-ui-react-components";
+import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 // import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
 import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
 
 const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
+    const [showToast, setShowToast] = useState(null);
+
   const getStoredTransferData = () => {
     try {
       return JSON.parse(sessionStorage.getItem("ownerTransferData") || "{}");
@@ -192,6 +194,7 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
   if (!defaultStepData?.originalData) {
     return null;
   }
+  
 
   return (
     <React.Fragment>
@@ -207,6 +210,16 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
       />
+      {showToast && (
+        <Toast
+          error={showToast.key}
+          label={t(showToast.label)}
+          onClose={() => {
+            setShowToast(null);
+          }}
+          isDleteBtn={true}
+        />
+      )}
     </React.Fragment>
   );
 };

@@ -96,7 +96,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
 
             ...(unit?.area && {
               constructionDetail: {
-                builtUpArea: Number(unit.area),
+                builtUpArea: Number((Number(unit.area) / 9).toFixed(2)),
               },
             }),
 
@@ -221,13 +221,20 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       
     
       }
-      const id = response?.Properties[0]?.propertyId;
+      const id = response?.Properties[0]?.propertyId || response?.Properties[0]?.acknowldgementNumber;
+      const ackNo = response?.Properties[0]?.acknowldgementNumber;
       setLoader(false);
       if (isCitizen) {
-        history.push("/digit-ui/citizen/pt/property/response/" + id);
+        history.push({
+          pathname: "/digit-ui/citizen/pt/property/response/" + id,
+          state: { ackNo }
+        });
       } else {
         // history.push("/digit-ui/employee/garbagecollection/response/" + id);
-        history.push("/digit-ui/employee/pt/property/response/" + id);
+        history.push({
+          pathname: "/digit-ui/employee/pt/property/response/" + id,
+          state: { ackNo }
+        });
 
       }
     } catch (error) {

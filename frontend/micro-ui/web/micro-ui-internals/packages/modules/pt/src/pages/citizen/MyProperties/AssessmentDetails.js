@@ -722,7 +722,7 @@ console.log("isCheck",isCheck)
                         },
                         {
                           title: "PT_FORM2_BUILT_AREA",
-                          value: unit?.constructionDetail?.builtUpArea,
+                          value: (Number(unit?.constructionDetail?.builtUpArea)*9).toFixed(2),
                         },
                       ];
 

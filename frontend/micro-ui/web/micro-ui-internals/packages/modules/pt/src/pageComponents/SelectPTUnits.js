@@ -34,7 +34,7 @@ const formatUnits = (units = [], currentFloor, isFloor) => {
     let usageCategory = unit?.usageCategory && !(unit?.usageCategory?.includes("NONRESIDENTIAL")) ?  "RESIDENTIAL" : getUsageCategory(unit?.usageCategory)?.usageCategoryMinor;
     return {
       ...unit,
-      builtUpArea: unit?.constructionDetail?.builtUpArea,
+      builtUpArea: (Number(unit?.constructionDetail?.builtUpArea)*9).toFixed(2),
       rentedMonths:unit?.rentedMonths,
       nonRentedMonthsUsage: unit?.nonRentedMonthsUsage,
       ageOfProperty: unit?.ageOfProperty,

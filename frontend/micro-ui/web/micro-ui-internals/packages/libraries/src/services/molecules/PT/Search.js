@@ -288,7 +288,7 @@ export const PTSearch = {
                 },
                 {
                   title: "PT_FORM2_BUILT_AREA",
-                  value: unit?.constructionDetail?.builtUpArea,
+                  value: unit?.constructionDetail?.builtUpArea ? (Number(unit.constructionDetail.builtUpArea) * 9).toFixed(2) : null,
                 },
                 {
                   title: "Floor No",

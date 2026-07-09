@@ -352,7 +352,7 @@ const handleClick=()=>{
                           }
                         />
                         <Row className="border-none" label={t("PT_OCCUPANY_TYPE_LABEL")} text={`${t("PROPERTYTAX_OCCUPANCYTYPE_" + unit?.occupancyType)}` || t("CS_NA")} />
-                        <Row className="border-none" label={t("PT_BUILTUP_AREA_LABEL")} text={`${`${unit?.constructionDetail?.builtUpArea} sq.ft` || t("CS_NA")}`} />
+                        <Row className="border-none" label={t("PT_BUILTUP_AREA_LABEL")} text={`${`${(Number(unit?.constructionDetail?.builtUpArea)*9).toFixed(2)} sq.ft` || t("CS_NA")}`} />
                         {unit.occupancyType == "RENTED" && (
                           <Row className="border-none" label={t("PT_FORM2_TOTAL_ANNUAL_RENT")} text={`${(unit?.arv && `₹${unit?.arv}`) || t("CS_NA")}`} />
                         )}

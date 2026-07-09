@@ -15,13 +15,13 @@ public class ResponseInfoFact {
 
 		String apiId = null;
 		String ver = null;
-		String ts = null;
+		Long ts = null;
 		String resMsgId = "uief87324"; // FIXME : Hard-coded
 		String msgId = null;
 		if (requestInfo != null) {
 			apiId = requestInfo.getApiId();
 			ver = requestInfo.getVer();
-			ts = isEmpty(requestInfo.getTs()) ? null : requestInfo.getTs().toString();
+			ts = isEmpty(requestInfo.getTs()) ? null : requestInfo.getTs();
 			msgId = requestInfo.getMsgId();
 		}
 		String responseStatus = success ? "successful" : "failed";

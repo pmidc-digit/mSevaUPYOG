@@ -214,7 +214,9 @@ const CitizenApplicationOverview = () => {
       const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
       const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
       const propertyOwnerMobiles = owners.map((owner) => owner?.mobileNumber).filter(Boolean);
-      const vasikaNo = displayData?.NdcDetails?.find((item) => item?.businessService === "NDC_PROPERTY_TAX")?.vashikaNumber|| propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.vasikaNo;
+      const vasikaNo =
+        displayData?.NdcDetails?.find((item) => item?.businessService === "NDC_PROPERTY_TAX")?.vashikaNumber ||
+        propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.vasikaNo;
       Property.propertyOwnerNames = propertyOwnerNames;
       Property.propertyOwnerMobiles = propertyOwnerMobiles;
       const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea;
@@ -401,7 +403,7 @@ const CitizenApplicationOverview = () => {
                       )}
                     />
                     <Row label={t("Area")} text={`${propertyDetailsFetch?.Properties?.[0]?.landArea} sq. yd.` || "N/A"} />
-                    <Row label={t("Vashika Number")} text={detail?.vashikaNumber || "N/A"} />
+                    <Row label={t("Vasika Number")} text={detail?.vashikaNumber || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city || "N/A"} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo || "N/A"} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName || "N/A"} />

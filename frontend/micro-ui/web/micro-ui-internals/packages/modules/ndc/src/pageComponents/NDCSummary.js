@@ -127,7 +127,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
           ? renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.reason))
           : renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))}
         {renderLabel(t("Remarks"), formData?.NDCDetails?.PropertyDetails?.remarks)}
-        {renderLabel(t("Vashika Number"), formData?.NDCDetails?.PropertyDetails?.vashikaNumber)}
+        {renderLabel(t("Vasika Number"), formData?.NDCDetails?.PropertyDetails?.vashikaNumber)}
         {/* {renderLabel(t("Remarks"), formData?.NDCDetails?.PropertyDetails?.remarks)} */}
 
         {renderLabel(

@@ -527,7 +527,7 @@ const PTApplicationDetails = () => {
                             <Row
                               className="border-none"
                               label={t("PT_BUILTUP_AREA_LABEL")}
-                              text={`${`${unit?.constructionDetail?.builtUpArea} sq.ft` || t("CS_NA")}`}
+                              text={`${`${(Number(unit?.constructionDetail?.builtUpArea)*9).toFixed(2)} sq.ft` || t("CS_NA")}`}
                             />
                           
                             {unit.occupancyType == "RENTED" && (

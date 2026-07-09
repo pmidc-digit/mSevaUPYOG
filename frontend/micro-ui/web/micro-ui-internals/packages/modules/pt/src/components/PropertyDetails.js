@@ -31,6 +31,9 @@ const months = [
   { code: "7", name: "7" },
   { code: "8", name: "8" },
   { code: "9", name: "9" },
+  { code: "10", name: "10" },
+  { code: "11", name: "11" },
+  { code: "12", name: "12" },
 ];
 
 const floorsMan = [
@@ -560,7 +563,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 name={`plotSize`}
                 rules={{
                   required: t("Plot Size is required"),
-                  validate: (value) => parseFloat(value) >= 2.0 || t("Land Area cannot be lesser than minimum value : 2.0 sq yard")
+                  validate: (value) => parseFloat(value) >= 1.0 || t("Land Area cannot be lesser than minimum value : 1.0 sq yard")
                 }}
                 render={(props) => (
                   <TextInput
@@ -678,7 +681,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   )}
                 </div>
               </LabelFieldPair>
-              {!hideSubUsageType && (
+              {(!hideSubUsageType && (watch(`unitDetails.${index}.unitUsageType`)?.code !== "RESIDENTIAL" && watch(`unitDetails.${index}.unitUsageType`) !== "RESIDENTIAL")) && 
+               (
                 <LabelFieldPair style={colItem}>
                   <CardLabel className="card-label-smaller">{t("Sub Usage Type")}*</CardLabel>
                   <div className="form-field">
@@ -732,7 +736,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 </div>
               </LabelFieldPair>
               <LabelFieldPair style={colItem}>
-                <CardLabel className="card-label-smaller">{t("Built-up area (sq ft)")}*</CardLabel>
+                <CardLabel className="card-label-smaller">{isResidentialFlat ? t("Total Super Built-up Area (sq ft)") : t("Built-up area (sq ft)")}*</CardLabel>
                 <div className="form-field">
                   <Controller
                     control={control}
@@ -756,19 +760,13 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     }}
                     render={(props) => (
                       <TextInput
-                        type={"number"}
+                        type={"text"}
                         value={props.value}
-                        onWheel={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-                            e.preventDefault();
-                          }
-                        }}
                         onChange={(e) => {
-                          props.onChange(e.target.value);
+                          const val = e.target.value;
+                          if (val === "" || /^\d*\.?\d*$/.test(val)) {
+                            props.onChange(val);
+                          }
                         }}
                         onBlur={(e) => {
                           props.onBlur(e);
@@ -909,15 +907,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
             {/* Remove button */}
             <div className="pt-application-download-btn primary-label-btn">
-              {fields.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => remove(index)}
-                  className="download-button"
-                >
-                  - {t("Remove Unit")}
-                </button>
-              )}
+              
               {/* Add Unit Button (For Independent Property) */}
               {selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY" && watch(`unitDetails.${index}.floor`) && (
                 <button
@@ -935,6 +925,15 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   className="download-button"
                 >
                   + {t("Add Unit to this Floor")}
+                </button>
+              )}
+              {fields.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  className="download-button"
+                >
+                  - {t("Remove Unit")}
                 </button>
               )}
             </div>

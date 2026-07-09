@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardSubHeader, CardText, Loader, SubmitBar, Modal, CardSectionSubText } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState, Fragment, useRef } from "react";
-import { useRouteMatch, useHistory } from "react-router-dom";
+import { useRouteMatch, useHistory, useLocation } from "react-router-dom";
 import { stringReplaceAll } from "../utils";
 import { useTranslation } from "react-i18next";
 
@@ -8,7 +8,8 @@ const PTNewApplicationModal = ({}) => {
   const { t } = useTranslation();
   const history = useHistory();
   const printRef = useRef();
-  
+  const { pathname } = useLocation();
+  const isEdit = pathname.includes("edit");
   const [showToast, setShowToast] = useState(()=>{
     const hasSeenModal = sessionStorage.getItem('ptModalShown');
     return !hasSeenModal; // Show only if not seen before
@@ -92,11 +93,7 @@ const PTNewApplicationModal = ({}) => {
 
   const handleSubmit = () => {
       sessionStorage.setItem('ptModalShown', 'true');
-    //debugger
-    if (isCitizen) {
-      // history.replace(`/digit-ui/citizen/tl/tradelicence/new-application`);
       setShowToast(false);
-    } else history.replace(`/digit-ui/employee/pt/new-application`);
   };
   const proofDocumentsConfig = {
   "Address Proof": {

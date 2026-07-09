@@ -166,9 +166,8 @@ const getAssessmentInfo = (application, t) => {
       },
       {
         title: (flrno = unit?.floorNo) > -3 ? t("PT_FORM2_BUILT_AREA") : "",
-        value: (flrno = unit?.floorNo) > -3 ? t(unit?.constructionDetail?.builtUpArea) || t("CS_NA") : "",
+        value: (flrno = unit?.floorNo) > -3 ? (Number(unit?.constructionDetail?.builtUpArea)*9).toFixed(2) || t("CS_NA") : "",
       },
-
     ];
    if( (flrno = unit?.floorNo) > -3 && t(getPropertyOccupancyTypeLocale(unit?.occupancyType)) === "Rented" ){
     doc.push(

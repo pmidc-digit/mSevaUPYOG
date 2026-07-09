@@ -289,7 +289,7 @@ function NOCSummary({ currentStepData: formData, t }) {
                 <Row label={t("Date Of Birth")} text={formatDob(owner.dob || owner.dateOfBirth)} />
                 <Row label={t("Email")} text={val(owner.emailId)} />
                 <Row label={t("PAN No.")} text={val(panVal)} />
-                <Row label={t("Correspondence Address")} text={val(owner.address || owner.correspondenceAddress)} />
+                <Row label={t("Correspondence Address")} text={val(owner.address || owner.correspondenceAddress || owner.officialAddress)} />
               </StatusTable>
             </div>
           );

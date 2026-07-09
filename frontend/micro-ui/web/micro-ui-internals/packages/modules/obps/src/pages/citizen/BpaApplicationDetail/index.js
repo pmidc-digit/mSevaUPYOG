@@ -1395,6 +1395,9 @@ useEffect(() => {
         }?tenantId=${data?.tenantId}`}`,
       )
     }
+    if(action === "CANCEL"){
+      saveAsDraft(data?.applicationData, action)
+    }
     if (action === "SAVE_AS_DRAFT") {
       getBPAFormData(data?.applicationData, mdmsData, history, t, path)
     }
@@ -1527,7 +1530,7 @@ useEffect(() => {
     );
     const isCitizenConsentIncluded = workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen;
 
-    if(!data?.additionalDetails?.selfCertificationCharges){
+    if(!data?.additionalDetails?.selfCertificationCharges && action!== "CANCEL"){
       setShowToast({
         key: "error",
         action: "Please_Complete_Application_First"
@@ -1565,7 +1568,7 @@ useEffect(() => {
                   documents: (isCitizenConsentIncluded && action === "APPROVE_AND_PAY") ? updatedDocuments : app.documents,
                   workflow: {
                         action: workflowAction,
-                        assignes: (workflowAction === "RESUBMIT") || (workflowAction === "RESUBMIT_AND_PAY") || (workflowAction === "APPROVE_AND_PAY") ? [] : [accountId]
+                        assignes: (workflowAction === "RESUBMIT") || (workflowAction === "RESUBMIT_AND_PAY") || (workflowAction === "APPROVE_AND_PAY") || (workflowAction === "CANCEL") ? [] : [accountId]
                   }
                 }
             }, tenantId)

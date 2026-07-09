@@ -642,7 +642,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     documents,
                     workflow: {
                         action: workflowAction,
-                        assignes: (workflowAction === "RESUBMIT") || (workflowAction === "RESUBMIT_AND_PAY") || (workflowAction === "APPROVE_AND_PAY") ? [] : [accountId]
+                        assignes: (workflowAction === "RESUBMIT") || (workflowAction === "RESUBMIT_AND_PAY") || (workflowAction === "APPROVE_AND_PAY") || (workflowAction === "CANCEL") ? [] : [accountId]
                     }
                 }
             }, tenantId)

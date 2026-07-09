@@ -52,6 +52,8 @@ const LayoutApplicantDetails = (_props) => {
   const [panDocumentUploadedFiles, setPanDocumentUploadedFiles] = useState({});
   const [loader, setLoader] = useState(false);
   const [applicantErrors, setApplicantErrors] = useState({});
+  const errormsggeneral = t("LAYOUT_PDF_MSG")
+  const errormsgIMG = t("LAYOUT_IMG_MSG")
   // State for additional owner mobile search
   const [isLoading, setIsLoading] = useState(false);
   const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({});
@@ -868,11 +870,12 @@ const LayoutApplicantDetails = (_props) => {
                     uploadedFile={getValues("photoUploadedFiles")}
                     message={getValues("photoUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                     error={applicantErrors[0]?.photo}
-                    uploadMessage=""
+                    uploadMessage={errormsgIMG}
                     accept="image/*"
                   />
               )}
               />
+              <p className="upload-file-message">{t(errormsgIMG)}</p>
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerPhoto?.message || ""}</CardLabelError>
@@ -912,11 +915,12 @@ const LayoutApplicantDetails = (_props) => {
                     uploadedFile={getValues("documentUploadedFiles")}
                     message={getValues("documentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                     error={applicantErrors[0]?.document}
-                    uploadMessage=""
+                    uploadMessage={errormsggeneral}
                     accept=".pdf, image/*"
                   />
                   )}
               />
+              <p className="upload-file-message">{t(errormsggeneral)}</p>
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerDocument?.message || ""}</CardLabelError>
@@ -957,11 +961,12 @@ const LayoutApplicantDetails = (_props) => {
                   uploadedFile={getValues("panDocumentUploadedFiles")}
                     message={getValues("panDocumentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                   error={applicantErrors[0]?.panDocument}
-                  uploadMessage=""
+                  uploadMessage={errormsggeneral}
                   accept=".pdf, image/*"
                 />
                 )}
               />
+              <p className="upload-file-message">{t(errormsggeneral)}</p>
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.panDocumentUploadedFiles?.message || ""}</CardLabelError>
@@ -1198,9 +1203,10 @@ const LayoutApplicantDetails = (_props) => {
                             uploadedFile={applicant.photoUploadedFiles}
                             message={applicant.photoUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.photo}
-                            uploadMessage=""
+                            uploadMessage={errormsgIMG}
                             accept="image/*"
                           />
+                          <p className="upload-file-message">{t(errormsgIMG)}</p>
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.photo?.message || ""}</CardLabelError>
@@ -1235,9 +1241,10 @@ const LayoutApplicantDetails = (_props) => {
                             uploadedFile={applicant.documentUploadedFiles}
                             message={applicant.documentUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.document}
-                            uploadMessage=""
+                            uploadMessage={errormsggeneral}
                             accept="image/*, .pdf"
                           />
+                          <p className="upload-file-message">{t(errormsggeneral)}</p>
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.document?.message || ""}</CardLabelError>
@@ -1275,9 +1282,10 @@ const LayoutApplicantDetails = (_props) => {
                             uploadedFile={applicant.panDocumentUploadedFiles}
                             message={applicant.panDocumentUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.panDocument}
-                            uploadMessage=""
+                            uploadMessage={errormsggeneral}
                             accept="image/*, .pdf"
                           />
+                          <p className="upload-file-message">{t(errormsggeneral)}</p>
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.panDocument?.message || ""}</CardLabelError>

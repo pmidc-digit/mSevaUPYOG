@@ -44,9 +44,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Enumeration;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import javax.xml.bind.JAXBException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.xml.bind.JAXBException;
 
 import org.egov.dx.service.DataExchangeService;
 import org.egov.dx.util.XMLRequestParser;

@@ -1,6 +1,6 @@
 package org.egov.dx.web.models;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 

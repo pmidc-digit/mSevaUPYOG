@@ -187,11 +187,11 @@ const LayoutEmployeeApplicationOverview = () => {
   }
 
   React.useEffect(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth" // use "auto" for instant scroll
-      });    
-    }, [])
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });
+  }, [])
 
   useEffect(() => {
     let WorkflowService = null;
@@ -320,8 +320,8 @@ const LayoutEmployeeApplicationOverview = () => {
       doc.documentType === "OWNER.SITEPHOTOGRAPHTWO" ||
       doc.documentType === "SITE.PHOTOGRAPHONE" ||
       doc.documentType === "SITE.PHOTOGRAPHTWO"
-  ).sort((a,b) => a?.order - b?.order);
-  const remainingDocs = displayData?.Documents?.sort((a,b) => a?.order - b?.order)?.filter(
+  ).sort((a, b) => a?.order - b?.order);
+  const remainingDocs = displayData?.Documents?.sort((a, b) => a?.order - b?.order)?.filter(
     (doc) =>
       !(
         doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
@@ -497,7 +497,7 @@ const LayoutEmployeeApplicationOverview = () => {
         return;
       }
 
-      if(filtData?.action === "SEND_FOR_INSPECTION_REPORT"){
+      if (filtData?.action === "SEND_FOR_INSPECTION_REPORT") {
         filtData.assignee = [user?.info?.uuid];
       }
 
@@ -972,24 +972,24 @@ const LayoutEmployeeApplicationOverview = () => {
           <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
           {getLoader && <Loader />}
           {dowloadOptions && dowloadOptions.length > 0 && (
-            (recieptDataLoading1 || recieptDataLoading2) ? 
-            <Loader /> :
-            <div>
-              <MultiLink
-                className="multilinkWrapper"
-                onHeadClick={() => setShowOptions(!showOptions)}
-                displayOptions={showOptions}
-                options={dowloadOptions}
-              />
-            </div>
+            (recieptDataLoading1 || recieptDataLoading2) ?
+              <Loader /> :
+              <div>
+                <MultiLink
+                  className="multilinkWrapper"
+                  onHeadClick={() => setShowOptions(!showOptions)}
+                  displayOptions={showOptions}
+                  options={dowloadOptions}
+                />
+              </div>
           )}
         </div>
       </div>
 
-       <Card>
-              <CardSubHeader>{t("OWNER_OWNERPHOTO") || "OWNER'S PHOTO"}</CardSubHeader>
-             <CustomOwnerImage ownerFileStoreId={displayData?.owners?.[0]?.additionalDetails?.ownerPhoto} ownerName={displayData?.owners?.[0]?.name} />
-            </Card>
+      <Card>
+        <CardSubHeader>{t("OWNER_OWNERPHOTO") || "OWNER'S PHOTO"}</CardSubHeader>
+        <CustomOwnerImage ownerFileStoreId={displayData?.owners?.[0]?.additionalDetails?.ownerPhoto} ownerName={displayData?.owners?.[0]?.name} />
+      </Card>
 
       <Card>
         <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
@@ -1029,15 +1029,14 @@ const LayoutEmployeeApplicationOverview = () => {
               <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `${t("Owner") || "Owner"} ${index + 1}`}</CardSubHeader>
               <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
-                  
+
                   {index === 0 && <Row label={t(`CLU_OWNER_TYPE_LABEL`)} text={applicant?.additionalDetails?.aplicantType?.name} />}
                   {applicant?.additionalDetails?.aplicantType?.code === "FIRM" && (
                     <Row label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} text={applicant?.additionalDetails?.authorisedPerson} />
                   )}
                   <Row
-                    label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : `${t("Owner") || "Owner"} ${index + 1}`} - ${
-                      applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")
-                    }`}
+                    label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : `${t("Owner") || "Owner"} ${index + 1}`} - ${applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")
+                      }`}
                     text={applicant?.name}
                   />
                   <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={applicant?.emailId} />
@@ -1120,8 +1119,23 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL"), detail?.areaUnderResidentialUseInPct)}
               {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderCommercialUseInSqM)}
               {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_PCT_LABEL"), detail?.areaUnderCommercialUseInPct)}
-              {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderInstutionalUseInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"), detail?.areaUnderInstutionalUseInPct)}
+              {renderLabel(
+                formData?.siteDetails?.buildingCategory?.name
+                  ?.toLowerCase()
+                  .includes("industrial")
+                  ? t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL")
+                  : t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"),
+                formData?.siteDetails?.areaUnderInstutionalUseInSqM
+              )}
+
+              {renderLabel(
+                formData?.siteDetails?.buildingCategory?.name
+                  ?.toLowerCase()
+                  .includes("industrial")
+                  ? t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL")
+                  : t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"),
+                formData?.siteDetails?.areaUnderInstutionalUseInPct
+              )}
               {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_SQ_M_LABEL"), detail?.areaUnderCommunityCenterInSqM)}
               {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_PCT_LABEL"), detail?.areaUnderCommunityCenterInPct)}
               {renderLabel(t("BPA_AREA_UNDER_PARK_IN_SQ_M_LABEL"), detail?.areaUnderParkInSqM)}
@@ -1187,6 +1201,7 @@ const LayoutEmployeeApplicationOverview = () => {
         </Card>
       )} */}
 
+      {/* SITE PHOTOGRAPHS */}
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
         <StatusTable
@@ -1210,43 +1225,7 @@ const LayoutEmployeeApplicationOverview = () => {
         </StatusTable>
       </Card>
 
-      {/* Documents Uploaded - Read Only when NOT in DOCUMENTVERIFY_DM */}
-      {applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM" && (
-        <Card>
-          <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-          <StatusTable>
-            {remainingDocs?.length > 0 && (
-              <LayoutDocumentChecklist
-                documents={remainingDocs}
-                applicationNo={id}
-                tenantId={tenantId}
-                onRemarksChange={setChecklistRemarks}
-                value={checklistRemarks}
-                readOnly="true"
-              />
-            )}
-          </StatusTable>
-        </Card>
-      )}
 
-      {/* Documents Uploaded - Editable ONLY for DM role when in DOCUMENTVERIFY_DM */}
-      {applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY_DM" &&
-        user?.info?.roles.filter((role) => role.code === "OBPAS_LAYOUT_DM")?.length > 0 && (
-          <Card>
-            <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-            <StatusTable>
-              {remainingDocs?.length > 0 && (
-                <LayoutDocumentChecklist
-                  documents={remainingDocs}
-                  applicationNo={id}
-                  tenantId={tenantId}
-                  onRemarksChange={setChecklistRemarks}
-                  value={checklistRemarks}
-                />
-              )}
-            </StatusTable>
-          </Card>
-        )}
 
       {/* FIELD INSPECTION UPLOAD SECTION - Allow JE/BI to upload site photographs (mobile-only capture enforced in ChallanDocuments) */}
       {applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && (
@@ -1313,6 +1292,48 @@ const LayoutEmployeeApplicationOverview = () => {
           </Card>
         )}
 
+
+
+      {/* Documents Uploaded - Read Only when NOT in DOCUMENTVERIFY_DM */}
+      {applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM" && (
+        <Card>
+          <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+          <StatusTable>
+            {remainingDocs?.length > 0 && (
+              <LayoutDocumentChecklist
+                documents={remainingDocs}
+                applicationNo={id}
+                tenantId={tenantId}
+                onRemarksChange={setChecklistRemarks}
+                value={checklistRemarks}
+                readOnly="true"
+              />
+            )}
+          </StatusTable>
+        </Card>
+      )}
+
+      {/* Documents Uploaded - Editable ONLY for DM role when in DOCUMENTVERIFY_DM */}
+      {applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY_DM" &&
+        user?.info?.roles.filter((role) => role.code === "OBPAS_LAYOUT_DM")?.length > 0 && (
+          <Card>
+            <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+            <StatusTable>
+              {remainingDocs?.length > 0 && (
+                <LayoutDocumentChecklist
+                  documents={remainingDocs}
+                  applicationNo={id}
+                  tenantId={tenantId}
+                  onRemarksChange={setChecklistRemarks}
+                  value={checklistRemarks}
+                />
+              )}
+            </StatusTable>
+          </Card>
+        )}
+
+
+
       {/* FEE DETAILS CARD - CLU STYLE PART 1 */}
       <Card>
         <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
@@ -1329,29 +1350,29 @@ const LayoutEmployeeApplicationOverview = () => {
             hasPayments={hasPayments}
           />
         )}
-        
+
       </Card>
 
       {/* FEE DETAILS TABLE CARD - CLU STYLE PART 2 */}
-         {applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && (
-      <Card>
-        <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
-        {applicationDetails?.Layout?.[0]?.layoutDetails && (
-          <LayoutFeeEstimationDetailsTable
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
-              siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
-            }}
-            feeType="PAY2"
-            feeAdjustments={feeAdjustments}
-            setFeeAdjustments={setFeeAdjustments}
-            disable={isFeeDisabled}
-          />
-        )}
-      </Card>
-         )}
+      {(applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && applicationDetails?.Layout?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING") && (
+        <Card>
+          <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+          {applicationDetails?.Layout?.[0]?.layoutDetails && (
+            <LayoutFeeEstimationDetailsTable
+              formData={{
+                apiData: { ...applicationDetails },
+                applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
+                siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
+                calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
+              }}
+              feeType="PAY2"
+              feeAdjustments={feeAdjustments}
+              setFeeAdjustments={setFeeAdjustments}
+              disable={isFeeDisabled}
+            />
+          )}
+        </Card>
+      )}
 
       {/* {siteImages?.documents?.length > 0 && (
         <Card>

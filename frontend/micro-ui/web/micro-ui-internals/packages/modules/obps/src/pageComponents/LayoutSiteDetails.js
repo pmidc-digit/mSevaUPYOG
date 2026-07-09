@@ -358,9 +358,7 @@ const LayoutSiteDetails = (_props) => {
   const currentCategoryCode = getSelectedCategoryCode();
   const isResidential = currentCategoryCode.includes("RESIDENTIAL");
   const isCommercial = currentCategoryCode.includes("COMMERCIAL");
-  const isInstitutional = currentCategoryCode.includes("INDUSTRIAL") ||
-                          currentCategoryCode.includes("WAREHOUSE") ||
-                          currentCategoryCode.includes("INSTITUTION");
+  const isInstitutional = currentCategoryCode.includes("INDUSTRIAL") || currentCategoryCode.includes("INSTITUTION");
 
   // Calculate Total Site Area (sum of all distribution areas)
   useEffect(() => {
@@ -1253,7 +1251,7 @@ const LayoutSiteDetails = (_props) => {
                 control={control}
                 name="vasikaNumber"
                 defaultValue=""
-                   rules={{
+                rules={{
                   required: t("REQUIRED_FIELD"),
                   // minLength: {
                   //   value: 4,
@@ -1979,14 +1977,18 @@ const LayoutSiteDetails = (_props) => {
           )}
 
           {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-            selectedBuildingCategory?.name?.toLowerCase().includes("warehouse") ||
             selectedBuildingCategory?.name?.toLowerCase().includes("institution")) && (
               <React.Fragment>
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">
-                    {`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL")}`}
+                    {selectedBuildingCategory?.name?.toLowerCase().includes("industrial")
+                      ? t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL")
+                      : t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL")}
+
                     {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                      selectedBuildingCategory?.name?.toLowerCase().includes("institution")) && <span className="requiredField">*</span>}
+                      selectedBuildingCategory?.name?.toLowerCase().includes("institution")) && (
+                        <span className="requiredField">*</span>
+                      )}
                   </CardLabel>
                   <div className="field">
                     <Controller
@@ -2032,11 +2034,18 @@ const LayoutSiteDetails = (_props) => {
                 </LabelFieldPair>
 
                 <LabelFieldPair>
+
                   <CardLabel className="card-label-smaller">
-                    {`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL")}`}
+                    {selectedBuildingCategory?.name?.toLowerCase().includes("industrial")
+                      ? t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL")
+                      : t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL")}
+
                     {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                      selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) && <span className="requiredField">*</span>}
+                      selectedBuildingCategory?.name?.toLowerCase().includes("institution")) && (
+                        <span className="requiredField">*</span>
+                      )}
                   </CardLabel>
+
                   <div className="field">
                     <Controller
                       control={control}
@@ -2044,7 +2053,7 @@ const LayoutSiteDetails = (_props) => {
                       rules={{
                         required:
                           selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                            selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
+                            selectedBuildingCategory?.name?.toLowerCase().includes("institution")
                             ? t("REQUIRED_FIELD")
                             : false,
                         validate: (value) => {
@@ -2052,7 +2061,7 @@ const LayoutSiteDetails = (_props) => {
                             return (
                               !(
                                 selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                                selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")
+                                selectedBuildingCategory?.name?.toLowerCase().includes("institution")
                               ) || t("REQUIRED_FIELD")
                             );
                           const regex = /^\d+(\.\d{1,2})?$/;

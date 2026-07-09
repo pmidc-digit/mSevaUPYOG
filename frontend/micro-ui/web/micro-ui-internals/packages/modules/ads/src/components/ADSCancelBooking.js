@@ -39,7 +39,7 @@ const ADSCancelBooking = ({ t, closeModal, actionCancelLabel, actionCancelOnSubm
     searchType: "1",
   };
 
-  const { data, isLoading, isError } = Digit.Hooks.rentandlease.useRentAndLeaseProperties(filters);
+  // const { data, isLoading, isError } = Digit.Hooks.rentandlease.useRentAndLeaseProperties(filters);
 
   const setdeclarationhandler = () => {
     setAgree(!agree);
@@ -181,7 +181,7 @@ const ADSCancelBooking = ({ t, closeModal, actionCancelLabel, actionCancelOnSubm
               clearErrors={() => {}}
               formState={{}}
               data={docUploadData}
-              isLoading={isLoading}
+              // isLoading={isLoading}
             />
             {/* {error === "DOCUMENT_REQUIRED" && <p style={{ color: "red", marginTop: "4px" }}>{t("ADS_DOCUMENT_UPLOAD_REQUIRED")}</p>} */}
           </div>

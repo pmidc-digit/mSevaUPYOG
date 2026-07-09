@@ -297,7 +297,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   return (
     <React.Fragment>
-      {!isLoading && config?.currStepConfig ? (
+      {config?.currStepConfig ? (
         <FormComposer
           defaultValues={currentStepData}
           config={config.currStepConfig}

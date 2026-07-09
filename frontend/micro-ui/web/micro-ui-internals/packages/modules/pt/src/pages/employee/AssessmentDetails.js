@@ -511,7 +511,7 @@ const AssessmentDetails = () => {
                               }`,
                           },
                           { title: "PT_ASSESMENT_INFO_OCCUPLANCY", value: unit?.occupancyType },
-                          { title: "PT_FORM2_BUILT_AREA", value: unit?.constructionDetail?.builtUpArea },
+                          { title: "PT_FORM2_BUILT_AREA", value: (Number(unit?.constructionDetail?.builtUpArea)*9).toFixed(2) },
                         ];
                         if (unit.occupancyType === "RENTED") values.push({ title: "PT_FORM2_TOTAL_ANNUAL_RENT", value: unit.arv });
                         return { title: "", values: [{ title: "", values }] };

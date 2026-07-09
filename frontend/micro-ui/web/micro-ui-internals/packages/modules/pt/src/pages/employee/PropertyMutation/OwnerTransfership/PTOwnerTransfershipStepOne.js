@@ -6,6 +6,7 @@ import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
 
 const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
+
   const getStoredTransferData = () => {
     try {
       return JSON.parse(sessionStorage.getItem("ownerTransferData") || "{}");
@@ -210,6 +211,7 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
   if (!defaultStepData?.originalData) {
     return null;
   }
+  
 
   const closeToast = () => {
     setShowToast(null);

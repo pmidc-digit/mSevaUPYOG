@@ -33,8 +33,17 @@ const LayoutDocumentsRequired = ({
   formState,
 }) => {
   const tenantId = Digit.ULBService.getStateId()
-  const [documents, setDocuments] = useState(formData?.documents?.documents || [])
-  console.log("documents in childStep three", documents, formData)
+  const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
+  const [documents, setDocuments] = useState(formData?.documents?.documents || currentStepData?.documents?.documents || [])
+  
+  useEffect(() => {
+    const docs = formData?.documents?.documents || currentStepData?.documents?.documents || [];
+    if (documents?.length === 0 && docs?.length > 0) {
+      setDocuments(docs);
+    }
+  }, [formData?.documents?.documents, currentStepData?.documents?.documents]);
+
+  console.log("documents in childStep three", documents, formData, currentStepData)
   const [error, setError] = useState(null)
   const [enableSubmit, setEnableSubmit] = useState(true)
   const [checkRequiredFields, setCheckRequiredFields] = useState(false)
@@ -60,7 +69,7 @@ const LayoutDocumentsRequired = ({
   // console.log("coordinates (from redux)", coordinates, data)
   //console.log("geocoordinates", geocoordinates)
 
-  const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
+
   const applicantType = currentStepData?.applicationDetails?.aplicantType?.code;
 
   const [applicationNo, setApplicationNo] = useState("");

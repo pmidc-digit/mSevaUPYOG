@@ -185,6 +185,29 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             authorisedPerson: layoutFormData?.applicationDetails?.aplicantType?.code === "FIRM" ? layoutFormData?.applicationDetails?.authorisedPerson || owner?.additionalDetails?.authorisedPerson : null,
           },
         };
+      } else {
+        // Additional owner - map from applicantsFromRedux[index - 1]
+        const applicant = applicantsFromRedux[index - 1];
+        if (applicant) {
+          return {
+            ...owner,
+            name: applicant.name || owner.name || "",
+            mobileNumber: applicant.mobileNumber || owner.mobileNumber || "",
+            emailId: applicant.emailId || owner.emailId || "",
+            fatherOrHusbandName: applicant.fatherOrHusbandName || owner.fatherOrHusbandName || "",
+            permanentAddress: applicant.address || owner.permanentAddress || "",
+            dob: applicant.dob ? new Date(applicant.dob).getTime() : owner.dob || null,
+            gender: applicant.gender?.code || applicant.gender || owner.gender || null,
+            pan: applicant.panNumber || owner.pan || null,
+            status: applicant.status !== undefined ? applicant.status : owner.status,
+            additionalDetails: {
+              ...owner?.additionalDetails,
+              ownerPhoto: applicant.photoUploadedFiles || photoFiles[index]?.fileStoreId || owner?.additionalDetails?.ownerPhoto || null,
+              documentFile: applicant.documentUploadedFiles || docFiles[index]?.fileStoreId || owner?.additionalDetails?.documentFile || null,
+              panDocument: applicant.panDocumentUploadedFiles || panDocFiles[index]?.fileStoreId || owner?.additionalDetails?.panDocument || null,
+            }
+          };
+        }
       }
       return owner;
     });
@@ -357,26 +380,26 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     
     // For newly added applicants, add their documents with proper document type keys
     // The key in docFiles/photoFiles corresponds to the applicant index in applicantsFromRedux
-    newlyAddedApplicants.forEach((applicant, index) => {
-      const applicantIndex = applicantsFromRedux.indexOf(applicant);
-      const ownerIndex = ownersFromApi.length + index; // Position in final owners array
+    // newlyAddedApplicants.forEach((applicant, index) => {
+    //   const applicantIndex = applicantsFromRedux.indexOf(applicant);
+    //   const ownerIndex = ownersFromApi.length + index; // Position in final owners array
       
-      // Add photo document
-      if (photoFiles[applicantIndex]?.fileStoreId) {
-        updatedApplication.documents.push({
-          documentType: ownerIndex === 0 ? "OWNER.OWNERPHOTO" : `OWNER.OWNERPHOTO_${ownerIndex}`,
-          documentAttachment: photoFiles[applicantIndex].fileStoreId,
-        });
-      }
+    //   // Add photo document
+    //   if (photoFiles[applicantIndex]?.fileStoreId) {
+    //     updatedApplication.documents.push({
+    //       documentType: ownerIndex === 0 ? "OWNER.OWNERPHOTO" : `OWNER.OWNERPHOTO_${ownerIndex}`,
+    //       documentAttachment: photoFiles[applicantIndex].fileStoreId,
+    //     });
+    //   }
       
-      // Add ID proof document
-      if (docFiles[applicantIndex]?.fileStoreId) {
-        updatedApplication.documents.push({
-          documentType: ownerIndex === 0 ? "OWNER.OWNERVALIDID" : `OWNER.OWNERVALIDID_${ownerIndex}`,
-          documentAttachment: docFiles[applicantIndex].fileStoreId,
-        });
-      }
-    });
+    //   // Add ID proof document
+    //   if (docFiles[applicantIndex]?.fileStoreId) {
+    //     updatedApplication.documents.push({
+    //       documentType: ownerIndex === 0 ? "OWNER.OWNERVALIDID" : `OWNER.OWNERVALIDID_${ownerIndex}`,
+    //       documentAttachment: docFiles[applicantIndex].fileStoreId,
+    //     });
+    //   }
+    // });
 
     //console.log("[v0] final documents array:", updatedApplication.documents);
 

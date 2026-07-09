@@ -101,7 +101,7 @@ const LayoutApplicantDetails = (_props) => {
       //console.log("[v0] Mapping owners from API response:", ownersFromApi);
 
       // Map additional owners (skip index 0 as it's the primary owner in applicationDetails)
-      const additionalApplicants = ownersFromApi.slice(1).map((owner) => {
+      const additionalApplicants = ownersFromApi.slice(1).map((owner, idx) => {
         // Convert timestamp to YYYY-MM-DD format for date input
         let formattedDob = "";
         if (owner?.dob) {
@@ -116,33 +116,28 @@ const LayoutApplicantDetails = (_props) => {
         const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender;
 
         return {
+          actualIndex: idx,
           name: owner?.name || "",
           fatherOrHusbandName: owner?.fatherOrHusbandName || "",
           mobileNumber: owner?.mobileNumber || "",
           emailId: owner?.emailId || "",
-          address: owner?.permanentAddress || "",
+          address: owner?.permanentAddress || owner?.address || "",
           dob: formattedDob,
           gender: genderObj,
+          panNumber: owner?.pan || "",
+          photoUploadedFiles: owner?.additionalDetails?.ownerPhoto || null,
+          documentUploadedFiles: owner?.additionalDetails?.documentFile || null,
+          panDocumentUploadedFiles: owner?.additionalDetails?.panDocument || null,
+          aplicantType: owner?.additionalDetails?.aplicantType || null,
           // Store original owner data for reference
           uuid: owner?.uuid || "",
           id: owner?.id || "",
+          status: owner?.status || true
         };
       });
 
       //console.log("[v0] Mapped additional applicants:", additionalApplicants);
-
-      // Keep the first empty placeholder at index 0, then add additional applicants
-      // This is because the render logic skips index 0 (index > 0)
-      const emptyPlaceholder = {
-        name: "",
-        fatherOrHusbandName: "",
-        mobileNumber: "",
-        emailId: "",
-        address: "",
-        dob: "",
-        gender: "",
-      };
-      setApplicants([emptyPlaceholder, ...additionalApplicants]);
+      setApplicants(additionalApplicants);
     }
 
     // Restore document uploaded files from Redux state
@@ -432,7 +427,7 @@ const LayoutApplicantDetails = (_props) => {
         if(index === 0){
           setValue("documentUploadedFiles", fileId, { shouldValidate: true });
         }else{
-          clearErrors(`applicants.${index}.documentUploadedFiles`);
+          clearErrors(`applicants.${index - 1}.document`);
           setApplicants(prev => {
             const updated = [...prev];
             if(!updated[index-1]) updated[index-1] = {};
@@ -469,7 +464,7 @@ const LayoutApplicantDetails = (_props) => {
         if(index === 0){
           setValue("photoUploadedFiles", fileId, { shouldValidate: true });
         }else{
-          clearErrors(`applicants.${index}.photoUploadedFiles`);
+          clearErrors(`applicants.${index - 1}.photo`);
           setApplicants(prev => {
             const updated = [...prev];
             if(!updated[index-1]) updated[index-1] = {};
@@ -523,7 +518,7 @@ const LayoutApplicantDetails = (_props) => {
         if(index === 0){
           setValue("panDocumentUploadedFiles", fileId, { shouldValidate: true });
         }else{
-          clearErrors(`applicants.${index}.panDocumentUploadedFiles`);
+          clearErrors(`applicants.${index - 1}.panDocument`);
           setApplicants(prev => {
             const updated = [...prev];
             if(!updated[index-1]) updated[index-1] = {};

@@ -252,7 +252,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         },
         siteDetails: {
           ...layoutData?.layoutDetails?.additionalDetails?.siteDetails,  // Keep original siteDetails structure
-          // Override only the fields that user modified in the form
+          ...layoutFormData?.siteDetails, // Spread form values to override original ones
           ...(layoutFormData?.siteDetails?.ulbName && { ulbName: layoutFormData?.siteDetails?.ulbName?.name || "" }),
           ...(layoutFormData?.siteDetails?.roadType && { 
             roadType: typeof layoutFormData?.siteDetails?.roadType === 'string' 

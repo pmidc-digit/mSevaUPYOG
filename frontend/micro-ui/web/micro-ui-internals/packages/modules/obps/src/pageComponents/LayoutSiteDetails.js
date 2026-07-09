@@ -28,9 +28,9 @@ const LayoutSiteDetails = (_props) => {
   const stateId = Digit.ULBService.getStateId();
 
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch, cluValidationRef, getValues, clearErrors } = _props;
-  const applicationNo = currentStepData?.applicationNo || watch("applicationNo");
+  const applicationNo = currentStepData?.applicationNo || currentStepData?.apiData?.applicationNo || currentStepData?.apiData?.Layout?.[0]?.applicationNo || watch("applicationNo");
   //console.log(applicationNo, getValues("vasikaDate"), "applicationNo in layout site details");
-  const isEditMode = !!applicationNo;
+  const isEditMode = !!applicationNo || window.location.pathname.includes("edit");
   const [netArea, setNetArea] = useState("0.00");
   const AreaLeftForRoadWidening = watch("areaLeftForRoadWidening"); // A = Total Plot Area
   const NetPlotArea = watch("netPlotAreaAfterWidening"); // B = Net Plot Area After Widening
@@ -48,6 +48,17 @@ const LayoutSiteDetails = (_props) => {
   const [cluValidationLoading, setCluValidationLoading] = useState(false);
   const [cluValidationError, setCluValidationError] = useState(null);
   const [isCluValidated, setIsCluValidated] = useState(false);
+  const isInitialized = useRef(false);
+  const cluNumberVal = watch("cluNumber");
+
+  // Restore CLU validation status in edit mode on initial load
+  useEffect(() => {
+    if (isEditMode && cluNumberVal && !isInitialized.current) {
+      setIsCluValidated(true);
+      isInitialized.current = true;
+    }
+  }, [isEditMode, cluNumberVal]);
+
   const [totalPlotArea, setTotalPlotArea] = useState("0.00");
   const [areaLeftforRoadWidning, setAreaLeftforRoadWidning] = useState("0.00");
 
@@ -105,6 +116,7 @@ const LayoutSiteDetails = (_props) => {
   const watchedResidentialPct = watch("areaUnderResidentialUseInPct");
   const watchedCommercialPct = watch("areaUnderCommercialUseInPct");
   const watchedInstitutionalPct = watch("areaUnderInstutionalUseInPct");
+  const watchedIndustrialPct = watch("areaUnderIndustrialUseInPct");
   const watchedCommunityCenterPct = watch("areaUnderCommunityCenterInPct");
   const watchedParkPct = watch("areaUnderParkInPct");
   const watchedRoadPct = watch("areaUnderRoadInPct");
@@ -115,6 +127,7 @@ const LayoutSiteDetails = (_props) => {
   const watchedResidentialArea = watch("areaUnderResidentialUseInSqM");
   const watchedCommercialArea = watch("areaUnderCommercialUseInSqM");
   const watchedInstitutionalArea = watch("areaUnderInstutionalUseInSqM");
+  const watchedIndustrialArea = watch("areaUnderIndustrialUseInSqM");
   const watchedCommunityCenterArea = watch("areaUnderCommunityCenterInSqM");
   const watchedParkArea = watch("areaUnderParkInSqM");
   const watchedRoadArea = watch("areaUnderRoadInSqM");
@@ -358,20 +371,22 @@ const LayoutSiteDetails = (_props) => {
   const currentCategoryCode = getSelectedCategoryCode();
   const isResidential = currentCategoryCode.includes("RESIDENTIAL");
   const isCommercial = currentCategoryCode.includes("COMMERCIAL");
-  const isInstitutional = currentCategoryCode.includes("INDUSTRIAL") || currentCategoryCode.includes("INSTITUTION");
+  const isInstitutional = currentCategoryCode.includes("INSTITUTION");
+  const isIndustrial = currentCategoryCode.includes("INDUSTRIAL");
 
   // Calculate Total Site Area (sum of all distribution areas)
   useEffect(() => {
     const residential = isResidential ? (parseFloat(watchedResidentialArea) || 0) : 0;
     const commercial = isCommercial ? (parseFloat(watchedCommercialArea) || 0) : 0;
     const institutional = isInstitutional ? (parseFloat(watchedInstitutionalArea) || 0) : 0;
+    const industrial = isIndustrial ? (parseFloat(watchedIndustrialArea) || 0) : 0;
     const communityCenter = parseFloat(watchedCommunityCenterArea) || 0;
     const park = parseFloat(watchedParkArea) || 0;
     const road = parseFloat(watchedRoadArea) || 0;
     const parking = parseFloat(watchedParkingArea) || 0;
     const otherAmenities = parseFloat(watchedOtherAmenitiesArea) || 0;
 
-    const total = (residential + commercial + institutional + communityCenter + park + road + parking + otherAmenities).toFixed(2);
+    const total = (residential + commercial + institutional + industrial + communityCenter + park + road + parking + otherAmenities).toFixed(2);
     setTotalSiteArea(total);
 
     // Check if Total Site Area matches Net Area
@@ -390,6 +405,7 @@ const LayoutSiteDetails = (_props) => {
     watchedResidentialArea,
     watchedCommercialArea,
     watchedInstitutionalArea,
+    watchedIndustrialArea,
     watchedCommunityCenterArea,
     watchedParkArea,
     watchedRoadArea,
@@ -405,6 +421,7 @@ const LayoutSiteDetails = (_props) => {
   const areaUnderResidentialUseInSqM = watch("areaUnderResidentialUseInSqM");
   const areaUnderCommercialUseInSqM = watch("areaUnderCommercialUseInSqM");
   const areaUnderInstutionalUseInSqM = watch("areaUnderInstutionalUseInSqM");
+  const areaUnderIndustrialUseInSqM = watch("areaUnderIndustrialUseInSqM");
   const areaUnderCommunityCenterInSqM = watch("areaUnderCommunityCenterInSqM");
   const areaUnderParkInSqM = watch("areaUnderParkInSqM");
   const areaUnderRoadInSqM = watch("areaUnderRoadInSqM");
@@ -420,13 +437,14 @@ const LayoutSiteDetails = (_props) => {
     const residential = isResidential ? (parseFloat(areaUnderResidentialUseInSqM) || 0) : 0;
     const commercial = isCommercial ? (parseFloat(areaUnderCommercialUseInSqM) || 0) : 0;
     const institutional = isInstitutional ? (parseFloat(areaUnderInstutionalUseInSqM) || 0) : 0;
+    const industrial = isIndustrial ? (parseFloat(areaUnderIndustrialUseInSqM) || 0) : 0;
     const communityCenter = parseFloat(areaUnderCommunityCenterInSqM) || 0;
     const park = parseFloat(areaUnderParkInSqM) || 0;
     const road = parseFloat(areaUnderRoadInSqM) || 0;
     const parking = parseFloat(areaUnderParkingInSqM) || 0;
     const otherAmenities = parseFloat(areaUnderOtherAmenitiesInSqM) || 0;
 
-    const totalUsedArea = ews + residential + commercial + institutional + communityCenter + park + road + parking + otherAmenities;
+    const totalUsedArea = ews + residential + commercial + institutional + industrial + communityCenter + park + road + parking + otherAmenities;
 
     const balance = (netArea - totalUsedArea).toFixed(2);
 
@@ -444,6 +462,7 @@ const LayoutSiteDetails = (_props) => {
     setValue("areaUnderResidentialUseInPct", calcPct(residential));
     setValue("areaUnderCommercialUseInPct", calcPct(commercial));
     setValue("areaUnderInstutionalUseInPct", calcPct(institutional));
+    setValue("areaUnderIndustrialUseInPct", calcPct(industrial));
     setValue("areaUnderCommunityCenterInPct", calcPct(communityCenter));
     setValue("areaUnderParkInPct", calcPct(park));
     setValue("areaUnderRoadInPct", calcPct(road));
@@ -458,6 +477,7 @@ const LayoutSiteDetails = (_props) => {
     areaUnderResidentialUseInSqM,
     areaUnderCommercialUseInSqM,
     areaUnderInstutionalUseInSqM,
+    areaUnderIndustrialUseInSqM,
     areaUnderCommunityCenterInSqM,
     areaUnderParkInSqM,
     areaUnderRoadInSqM,
@@ -574,6 +594,8 @@ const LayoutSiteDetails = (_props) => {
                             value={props.value}
                             onChange={(e) => {
                               props.onChange(e.target.value);
+                              setIsCluValidated(false);
+                              setCluValidationError(null);
                             }}
                             onBlur={(e) => {
                               props.onBlur(e);
@@ -613,9 +635,16 @@ const LayoutSiteDetails = (_props) => {
                         }}
                         disabled={cluValidationLoading || !watch("cluNumber")}
                         onClick={async () => {
-                          const cluNumber = watch("cluNumber");
+                          const cluNumber = watch("cluNumber")?.trim();
                           if (!cluNumber) {
                             setCluValidationError("Please enter CLU Number");
+                            return;
+                          }
+
+                          const cluRegex = /^PB-CLU-SAS-[A-Za-z]+-\d+$/i;
+                          if (!cluRegex.test(cluNumber)) {
+                            setCluValidationError("Invalid CLU Number format.");
+                            setIsCluValidated(false);
                             return;
                           }
 
@@ -630,9 +659,16 @@ const LayoutSiteDetails = (_props) => {
                             });
 
                             if (result?.Clu && result.Clu.length > 0) {
-                              // CLU found and validated
-                              setIsCluValidated(true);
-                              setCluValidationError(null);
+                              const cluApp = result.Clu[0];
+                              if (cluApp?.applicationStatus?.toUpperCase() === "APPROVED") {
+                                // CLU found and validated (approved)
+                                setIsCluValidated(true);
+                                setCluValidationError(null);
+                              } else {
+                                // CLU found but not approved
+                                setCluValidationError(`CLU application status is "${cluApp?.applicationStatus || "UNKNOWN"}". It must be APPROVED.`);
+                                setIsCluValidated(false);
+                              }
                             } else {
                               // CLU not found
                               setCluValidationError("CLU Number not found. Please check and try again.");
@@ -1713,6 +1749,8 @@ const LayoutSiteDetails = (_props) => {
                       setValue("areaUnderCommercialUseInPct", "");
                       setValue("areaUnderInstutionalUseInSqM", "");
                       setValue("areaUnderInstutionalUseInPct", "");
+                      setValue("areaUnderIndustrialUseInSqM", "");
+                      setValue("areaUnderIndustrialUseInPct", "");
                       setValue("residentialType", "");
 
                       if (clearErrors) {
@@ -1723,6 +1761,8 @@ const LayoutSiteDetails = (_props) => {
                           "areaUnderCommercialUseInPct",
                           "areaUnderInstutionalUseInSqM",
                           "areaUnderInstutionalUseInPct",
+                          "areaUnderIndustrialUseInSqM",
+                          "areaUnderIndustrialUseInPct",
                           "residentialType"
                         ]);
                       }
@@ -1975,19 +2015,12 @@ const LayoutSiteDetails = (_props) => {
             </React.Fragment>
           )}
 
-          {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-            selectedBuildingCategory?.name?.toLowerCase().includes("institution")) && (
+          {selectedBuildingCategory?.name?.toLowerCase().includes("institution") && (
               <React.Fragment>
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">
-                    {selectedBuildingCategory?.name?.toLowerCase().includes("industrial")
-                      ? t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL")
-                      : t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL")}
-
-                    {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                      selectedBuildingCategory?.name?.toLowerCase().includes("institution")) && (
-                        <span className="requiredField">*</span>
-                      )}
+                    {t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL")}
+                    <span className="requiredField">*</span>
                   </CardLabel>
                   <div className="field">
                     <Controller
@@ -1995,19 +2028,9 @@ const LayoutSiteDetails = (_props) => {
                       name="areaUnderInstutionalUseInSqM"
                       defaultValue=""
                       rules={{
-                        required:
-                          selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                            selectedBuildingCategory?.name?.toLowerCase().includes("institution")
-                            ? t("REQUIRED_FIELD")
-                            : false,
+                        required: t("REQUIRED_FIELD"),
                         validate: (value) => {
-                          if (!value)
-                            return (
-                              !(
-                                selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                                selectedBuildingCategory?.name?.toLowerCase().includes("institution")
-                              ) || t("REQUIRED_FIELD")
-                            );
+                          if (!value) return t("REQUIRED_FIELD");
                           const regex = /^\d+(\.\d{1,2})?$/;
                           return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                         },
@@ -2033,16 +2056,9 @@ const LayoutSiteDetails = (_props) => {
                 </LabelFieldPair>
 
                 <LabelFieldPair>
-
                   <CardLabel className="card-label-smaller">
-                    {selectedBuildingCategory?.name?.toLowerCase().includes("industrial")
-                      ? t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL")
-                      : t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL")}
-
-                    {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                      selectedBuildingCategory?.name?.toLowerCase().includes("institution")) && (
-                        <span className="requiredField">*</span>
-                      )}
+                    {t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL")}
+                    <span className="requiredField">*</span>
                   </CardLabel>
 
                   <div className="field">
@@ -2050,19 +2066,9 @@ const LayoutSiteDetails = (_props) => {
                       control={control}
                       name="areaUnderInstutionalUseInPct"
                       rules={{
-                        required:
-                          selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                            selectedBuildingCategory?.name?.toLowerCase().includes("institution")
-                            ? t("REQUIRED_FIELD")
-                            : false,
+                        required: t("REQUIRED_FIELD"),
                         validate: (value) => {
-                          if (!value)
-                            return (
-                              !(
-                                selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                                selectedBuildingCategory?.name?.toLowerCase().includes("institution")
-                              ) || t("REQUIRED_FIELD")
-                            );
+                          if (!value) return t("REQUIRED_FIELD");
                           const regex = /^\d+(\.\d{1,2})?$/;
                           const isValidFormat = regex.test(value);
                           const isWithinRange = Number.parseFloat(value) <= 100;
@@ -2089,6 +2095,92 @@ const LayoutSiteDetails = (_props) => {
 
                     {errors?.areaUnderInstutionalUseInPct && (
                       <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderInstutionalUseInPct.message}</p>
+                    )}
+                  </div>
+                </LabelFieldPair>
+              </React.Fragment>
+            )}
+
+          {selectedBuildingCategory?.name?.toLowerCase().includes("industrial") && (
+              <React.Fragment>
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">
+                    {t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL")}
+                    <span className="requiredField">*</span>
+                  </CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name="areaUnderIndustrialUseInSqM"
+                      defaultValue=""
+                      rules={{
+                        required: t("REQUIRED_FIELD"),
+                        validate: (value) => {
+                          if (!value) return t("REQUIRED_FIELD");
+                          const regex = /^\d+(\.\d{1,2})?$/;
+                          return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                        },
+                      }}
+                      render={(props) => (
+                        <TextInput
+                          className="form-field"
+                          value={props.value}
+                          onChange={(e) => {
+                            props.onChange(e.target.value);
+                          }}
+                          onBlur={(e) => {
+                            props.onBlur(e);
+                          }}
+                        />
+                      )}
+                    />
+
+                    {errors?.areaUnderIndustrialUseInSqM && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderIndustrialUseInSqM.message}</p>
+                    )}
+                  </div>
+                </LabelFieldPair>
+
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">
+                    {t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL")}
+                    <span className="requiredField">*</span>
+                  </CardLabel>
+
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name="areaUnderIndustrialUseInPct"
+                      rules={{
+                        required: t("REQUIRED_FIELD"),
+                        validate: (value) => {
+                          if (!value) return t("REQUIRED_FIELD");
+                          const regex = /^\d+(\.\d{1,2})?$/;
+                          const isValidFormat = regex.test(value);
+                          const isWithinRange = Number.parseFloat(value) <= 100;
+                          if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                          if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
+                          return true;
+                        },
+                      }}
+                      render={(props) => (
+                        <TextInput
+                          className="form-field"
+                          value={watchedIndustrialPct || ""}
+                          onChange={(e) => {
+                            props.onChange(e.target.value);
+                          }}
+                          onBlur={(e) => {
+                            props.onBlur(e);
+                          }}
+                          readOnly={true}
+                          disabled={true}
+                        />
+                      )}
+                    />
+
+                    {errors?.areaUnderIndustrialUseInPct && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderIndustrialUseInPct.message}</p>
                     )}
                   </div>
                 </LabelFieldPair>

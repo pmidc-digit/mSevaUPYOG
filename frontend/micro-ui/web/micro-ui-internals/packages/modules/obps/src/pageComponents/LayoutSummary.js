@@ -453,23 +453,21 @@ function LayoutSummary({ currentStepData: formData, t }) {
           {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL"), formData?.siteDetails?.areaUnderResidentialUseInPct)}
           {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL"), formData?.siteDetails?.areaUnderCommercialUseInSqM)}
           {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_PCT_LABEL"), formData?.siteDetails?.areaUnderCommercialUseInPct)}
-          {renderLabel(
-            formData?.siteDetails?.buildingCategory?.name
-              ?.toLowerCase()
-              .includes("industrial")
-              ? t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL")
-              : t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"),
-            formData?.siteDetails?.areaUnderInstutionalUseInSqM
-          )}
-
-          {renderLabel(
-            formData?.siteDetails?.buildingCategory?.name
-              ?.toLowerCase()
-              .includes("industrial")
-              ? t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL")
-              : t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"),
-            formData?.siteDetails?.areaUnderInstutionalUseInPct
-          )}
+          {formData?.siteDetails?.buildingCategory?.name
+            ?.toLowerCase()
+            .includes("industrial")
+            ? (
+              <React.Fragment>
+                {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL"), formData?.siteDetails?.areaUnderIndustrialUseInSqM)}
+                {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL"), formData?.siteDetails?.areaUnderIndustrialUseInPct)}
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"), formData?.siteDetails?.areaUnderInstutionalUseInSqM)}
+                {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"), formData?.siteDetails?.areaUnderInstutionalUseInPct)}
+              </React.Fragment>
+            )
+          }
           {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_SQ_M_LABEL"), formData?.siteDetails?.areaUnderCommunityCenterInSqM)}
           {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_PCT_LABEL"), formData?.siteDetails?.areaUnderCommunityCenterInPct)}
           {renderLabel(t("BPA_AREA_UNDER_PARK_IN_SQ_M_LABEL"), formData?.siteDetails?.areaUnderParkInSqM)}

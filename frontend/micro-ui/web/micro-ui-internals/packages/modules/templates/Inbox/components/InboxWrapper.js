@@ -172,6 +172,7 @@ const InboxWrapper = ({
             </div>
             <Table
               isPaginationRequired={false}
+              t={t}
               {...tableProps}
             />
           </div>

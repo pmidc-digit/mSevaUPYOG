@@ -201,7 +201,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
       } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(applicant.panNumber)) {
         setError(`applicants.${applicant?.actualIndex}.panNumber`, {
           type: "manual",
-          message: t("INVALID_PAN_FORMAT"),
+          message: t("Invalid PAN Number format. Format should be like AAAAA1234A"),
         });
         hasError = true;
         //console.log("errorFound: panNumber else error for applicant index",index)

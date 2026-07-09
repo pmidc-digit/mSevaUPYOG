@@ -103,7 +103,7 @@ const LayoutApplicantDetails = (_props) => {
       //console.log("[v0] Mapping owners from API response:", ownersFromApi);
 
       // Map additional owners (skip index 0 as it's the primary owner in applicationDetails)
-      const additionalApplicants = ownersFromApi.slice(1).map((owner) => {
+      const additionalApplicants = ownersFromApi.slice(1).map((owner, idx) => {
         // Convert timestamp to YYYY-MM-DD format for date input
         let formattedDob = "";
         if (owner?.dob) {
@@ -118,33 +118,28 @@ const LayoutApplicantDetails = (_props) => {
         const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender;
 
         return {
+          actualIndex: idx,
           name: owner?.name || "",
           fatherOrHusbandName: owner?.fatherOrHusbandName || "",
           mobileNumber: owner?.mobileNumber || "",
           emailId: owner?.emailId || "",
-          address: owner?.permanentAddress || "",
+          address: owner?.permanentAddress || owner?.address || "",
           dob: formattedDob,
           gender: genderObj,
+          panNumber: owner?.pan || "",
+          photoUploadedFiles: owner?.additionalDetails?.ownerPhoto || null,
+          documentUploadedFiles: owner?.additionalDetails?.documentFile || null,
+          panDocumentUploadedFiles: owner?.additionalDetails?.panDocument || null,
+          aplicantType: owner?.additionalDetails?.aplicantType || null,
           // Store original owner data for reference
           uuid: owner?.uuid || "",
           id: owner?.id || "",
+          status: owner?.status || true
         };
       });
 
       //console.log("[v0] Mapped additional applicants:", additionalApplicants);
-
-      // Keep the first empty placeholder at index 0, then add additional applicants
-      // This is because the render logic skips index 0 (index > 0)
-      const emptyPlaceholder = {
-        name: "",
-        fatherOrHusbandName: "",
-        mobileNumber: "",
-        emailId: "",
-        address: "",
-        dob: "",
-        gender: "",
-      };
-      setApplicants([emptyPlaceholder, ...additionalApplicants]);
+      setApplicants(additionalApplicants);
     }
 
     // Restore document uploaded files from Redux state
@@ -374,6 +369,7 @@ const LayoutApplicantDetails = (_props) => {
       address: "",
       dob: "",
       gender: "",
+      panNumber:"",
       status: true,
     };
     setApplicants([...applicants, newApplicant]);
@@ -395,10 +391,13 @@ const LayoutApplicantDetails = (_props) => {
     // Remove associated files
     {const newDocFiles = { ...documentUploadedFiles };
     const newPhotoFiles = { ...photoUploadedFiles };
-    delete newDocFiles[index];
-    delete newPhotoFiles[index];
+    const newPanFiles = { ...panDocumentUploadedFiles };
+    delete newDocFiles[index + 1];
+    delete newPhotoFiles[index + 1];
+    delete newPanFiles[index + 1];
     setDocumentUploadedFiles(newDocFiles);
-    setPhotoUploadedFiles(newPhotoFiles);}
+    setPhotoUploadedFiles(newPhotoFiles);
+    setPanDocumentUploadedFiles(newPanFiles);}
 
     // Remove errors for this applicant
     const newErrors = { ...applicantErrors };
@@ -430,7 +429,7 @@ const LayoutApplicantDetails = (_props) => {
         if(index === 0){
           setValue("documentUploadedFiles", fileId, { shouldValidate: true });
         }else{
-          clearErrors(`applicants.${index}.documentUploadedFiles`);
+          clearErrors(`applicants.${index - 1}.document`);
           setApplicants(prev => {
             const updated = [...prev];
             if(!updated[index-1]) updated[index-1] = {};
@@ -467,7 +466,7 @@ const LayoutApplicantDetails = (_props) => {
         if(index === 0){
           setValue("photoUploadedFiles", fileId, { shouldValidate: true });
         }else{
-          clearErrors(`applicants.${index}.photoUploadedFiles`);
+          clearErrors(`applicants.${index - 1}.photo`);
           setApplicants(prev => {
             const updated = [...prev];
             if(!updated[index-1]) updated[index-1] = {};
@@ -521,7 +520,7 @@ const LayoutApplicantDetails = (_props) => {
         if(index === 0){
           setValue("panDocumentUploadedFiles", fileId, { shouldValidate: true });
         }else{
-          clearErrors(`applicants.${index}.panDocumentUploadedFiles`);
+          clearErrors(`applicants.${index - 1}.panDocument`);
           setApplicants(prev => {
             const updated = [...prev];
             if(!updated[index-1]) updated[index-1] = {};
@@ -879,19 +878,6 @@ const LayoutApplicantDetails = (_props) => {
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerPhoto?.message || ""}</CardLabelError>
-          <div
-            style={{
-              padding: "10px 12px",
-
-              borderRadius: "4px",
-              marginBottom: "10px",
-              marginTop: "10px",
-              display: "flex",
-              justifyContent: "end",
-            }}
-          >
-           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
           
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
             <CardLabel className="card-label-smaller">
@@ -924,20 +910,6 @@ const LayoutApplicantDetails = (_props) => {
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerDocument?.message || ""}</CardLabelError>
-
-          <div
-            style={{
-              padding: "10px 12px",
-              display: "flex",
-              justifyContent: "end",
-
-              borderRadius: "4px",
-              marginBottom: "10px",
-              marginTop: "10px",
-            }}
-          >
-           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
           {/* PAN Document */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
             <CardLabel className="card-label-smaller">
@@ -970,20 +942,6 @@ const LayoutApplicantDetails = (_props) => {
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.panDocumentUploadedFiles?.message || ""}</CardLabelError>
-
-          <div
-            style={{
-              padding: "10px 12px",
-              display: "flex",
-              justifyContent: "end",
-
-              borderRadius: "4px",
-              marginBottom: "10px",
-              marginTop: "10px",
-            }}
-          >
-            <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
 
           {/* PAN Number */}
           <LabelFieldPair  >
@@ -1032,7 +990,7 @@ const LayoutApplicantDetails = (_props) => {
           {applicants.length > 0 && (
             <React.Fragment>
               <CardSectionHeader className="card-section-header" style={{ marginTop: "30px", marginBottom: "20px" }}>
-                {t("Additional Applicants")}
+                {t("Additional Owners")}
               </CardSectionHeader>
 
               {applicants?.map(
@@ -1053,7 +1011,7 @@ const LayoutApplicantDetails = (_props) => {
                         }}
                       >
                         <CardLabel className="card-label-smaller" style={{ fontSize: "16px", fontWeight: "600" }}>
-                          {`${t("Applicant")} ${visibleIndex + 2}`}
+                          {`${t("Owner")} ${visibleIndex + 2}`}
                         </CardLabel>
                         {/* {!isEditMode && ( */}
                         {(
@@ -1196,8 +1154,15 @@ const LayoutApplicantDetails = (_props) => {
                             id={`passport-photo-${index}`}
                             onUpload={selectPhotoFile(index+1)}
                             onDelete={() => {
-                              deletePhoto(index);
-                              setPhotoUploadedFiles((prev) => ({ ...prev, [index]: null }));
+                              deletePhoto(index + 1);
+                              setPhotoUploadedFiles((prev) => ({ ...prev, [index + 1]: null }));
+                              setApplicants((prev) => {
+                                const updated = [...prev];
+                                if (updated[index]) {
+                                  updated[index].photoUploadedFiles = null;
+                                }
+                                return updated;
+                              });
                               setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], photo: "Passport photo is required" } }));
                             }}
                             uploadedFile={applicant.photoUploadedFiles}
@@ -1210,19 +1175,6 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.photo?.message || ""}</CardLabelError>
-                     <div
-            style={{
-              padding: "10px 12px",
-
-              borderRadius: "4px",
-              marginBottom: "10px",
-              marginTop: "10px",
-              display: "flex",
-              justifyContent: "end",
-            }}
-          >
-           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
                         <CardLabel className="card-label-smaller">
@@ -1234,8 +1186,15 @@ const LayoutApplicantDetails = (_props) => {
                             id={`id-proof-${index}`}
                             onUpload={selectDocumentFile(index+1)}
                             onDelete={() => {
-                              deleteDocument(index);
-                              setDocumentUploadedFiles((prev) => ({ ...prev, [index]: null }));
+                              deleteDocument(index + 1);
+                              setDocumentUploadedFiles((prev) => ({ ...prev, [index + 1]: null }));
+                              setApplicants((prev) => {
+                                const updated = [...prev];
+                                if (updated[index]) {
+                                  updated[index].documentUploadedFiles = null;
+                                }
+                                return updated;
+                              });
                               setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], document: "Document upload is required" } }));
                             }}
                             uploadedFile={applicant.documentUploadedFiles}
@@ -1248,19 +1207,6 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.document?.message || ""}</CardLabelError>
-                      <div
-            style={{
-              padding: "10px 12px",
-
-              borderRadius: "4px",
-              marginBottom: "10px",
-              marginTop: "10px",
-              display: "flex",
-              justifyContent: "end",
-            }}
-          >
-           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
 
                       {/* PAN Number */}
 
@@ -1275,8 +1221,15 @@ const LayoutApplicantDetails = (_props) => {
                             id={`pan-document-${index}`}
                             onUpload={selectPanDocumentFile(index+1)}
                             onDelete={() => {
-                              deletePanDocument(index);
-                              setPanDocumentUploadedFiles((prev) => ({ ...prev, [index]: null }));
+                              deletePanDocument(index + 1);
+                              setPanDocumentUploadedFiles((prev) => ({ ...prev, [index + 1]: null }));
+                              setApplicants((prev) => {
+                                const updated = [...prev];
+                                if (updated[index]) {
+                                  updated[index].panDocumentUploadedFiles = null;
+                                }
+                                return updated;
+                              });
                               setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], panDocument: "PAN document is required" } }));
                             }}
                             uploadedFile={applicant.panDocumentUploadedFiles}
@@ -1289,19 +1242,6 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.panDocument?.message || ""}</CardLabelError>
-                      <div
-            style={{
-              padding: "10px 12px",
-
-              borderRadius: "4px",
-              marginBottom: "10px",
-              marginTop: "10px",
-              display: "flex",
-              justifyContent: "end",
-            }}
-          >
-           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
 
                       <LabelFieldPair  >
                         <CardLabel className="card-label-smaller">
@@ -1356,7 +1296,7 @@ const LayoutApplicantDetails = (_props) => {
                   display: "inline-block",
                 }}
               >
-                + Add Applicant
+                + Add Owner
               </div>
             </div>
           )}

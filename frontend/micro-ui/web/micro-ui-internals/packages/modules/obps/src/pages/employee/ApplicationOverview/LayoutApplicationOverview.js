@@ -38,6 +38,7 @@ import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
 
+
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   //console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -186,11 +187,11 @@ const LayoutEmployeeApplicationOverview = () => {
   }
 
   React.useEffect(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth" // use "auto" for instant scroll
-      });    
-    }, [])
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });
+  }, [])
 
   useEffect(() => {
     let WorkflowService = null;
@@ -319,8 +320,8 @@ const LayoutEmployeeApplicationOverview = () => {
       doc.documentType === "OWNER.SITEPHOTOGRAPHTWO" ||
       doc.documentType === "SITE.PHOTOGRAPHONE" ||
       doc.documentType === "SITE.PHOTOGRAPHTWO"
-  ).sort((a,b) => a?.order - b?.order);
-  const remainingDocs = displayData?.Documents?.sort((a,b) => a?.order - b?.order)?.filter(
+  ).sort((a, b) => a?.order - b?.order);
+  const remainingDocs = displayData?.Documents?.sort((a, b) => a?.order - b?.order)?.filter(
     (doc) =>
       !(
         doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
@@ -354,15 +355,33 @@ const LayoutEmployeeApplicationOverview = () => {
     [siteImages]
   );
 
-  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+  const { data: reciept_data2, isLoading: recieptDataLoading2 } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
-      businessService: "layout",
+      businessService: "LAYOUT.PAY2",
       consumerCodes: id,
       isEmployee: true,
     },
     { enabled: id ? true : false }
   );
+
+  const { data: reciept_data1, isLoading: recieptDataLoading1 } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "LAYOUT.PAY1",
+      consumerCodes: id,
+      isEmployee: true,
+    },
+    { enabled: id ? true : false }
+  );
+
+  const combinedPayments = useMemo(() => {
+    const p1 = reciept_data1?.Payments || [];
+    const p2 = reciept_data2?.Payments || [];
+    return [...p1, ...p2];
+  }, [reciept_data1, reciept_data2]);
+
+  const hasPayments = combinedPayments.length > 0;
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -382,9 +401,9 @@ const LayoutEmployeeApplicationOverview = () => {
     }
   };
 
-  async function getRecieptSearch({ tenantId, payments, ...params }) {
+  async function getRecieptSearch({ tenantId, payments, pdfkey = "layout-receipt", ...params }) {
     let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "layout-receipt");
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, pdfkey);
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
@@ -423,10 +442,17 @@ const LayoutEmployeeApplicationOverview = () => {
     });
   }
 
-  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+  if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
     dowloadOptions.push({
-      label: t("CHB_FEE_RECEIPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      label: t("LAYOUT_FEE_RECEIPT_1"),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey: "layout-receipt" }),
+    });
+  }
+
+  if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
+    dowloadOptions.push({
+      label: t("LAYOUT_FEE_RECEIPT_2"),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey: "layoutreceipt-second" }),
     });
   }
 
@@ -471,7 +497,7 @@ const LayoutEmployeeApplicationOverview = () => {
         return;
       }
 
-      if(filtData?.action === "SEND_FOR_INSPECTION_REPORT"){
+      if (filtData?.action === "SEND_FOR_INSPECTION_REPORT") {
         filtData.assignee = [user?.info?.uuid];
       }
 
@@ -499,6 +525,14 @@ const LayoutEmployeeApplicationOverview = () => {
           if (!allRemarksFilled) {
             closeModal();
             setShowToast({ key: "true", error: true, message: "BPA_FIELD_INSPECTION_REPORT_PENDING_QUESTION_VALIDATION_LABEL" });
+            setIsSubmitting(false);
+            return;
+          }
+
+          const recommendations = record.Recommendations || "";
+          if (recommendations.trim().length < 20) {
+            closeModal();
+            setShowToast({ key: "true", error: true, message: "Please fill in the Recommendations with minimum 20 characters" });
             setIsSubmitting(false);
             return;
           }
@@ -852,10 +886,25 @@ const LayoutEmployeeApplicationOverview = () => {
   const convertDateToISO = (dateStr) => {
     if (!dateStr) return "";
 
+    if (typeof dateStr !== "string") {
+      try {
+        return new Date(dateStr).toLocaleDateString();
+      } catch (e) {
+        return "";
+      }
+    }
+
     const parts = dateStr.split("-");
+    if (parts.length < 3) {
+      try {
+        return new Date(dateStr).toLocaleDateString();
+      } catch (e) {
+        return dateStr;
+      }
+    }
 
     // yyyy-mm-dd (already ISO)
-    if (parts[2].length === 4) {
+    if (parts[2] && parts[2].length === 4) {
       return dateStr;
     }
 
@@ -892,6 +941,24 @@ const LayoutEmployeeApplicationOverview = () => {
     return null;
   };
 
+  const getApplicantNamesForDeclaration = () => {
+    const owners = displayData?.owners || [];
+    if (owners.length === 0) return "";
+
+    return owners
+      .map((applicant, index) => {
+        if (index === 0) {
+          const aplicantType = applicant?.additionalDetails?.aplicantType?.code;
+          if (aplicantType === "FIRM") {
+            return applicant?.additionalDetails?.authorisedPerson || applicant?.name;
+          }
+        }
+        return applicant?.name;
+      })
+      .filter(Boolean)
+      .join(", ");
+  };
+
   if (isLoading) {
     return <Loader />;
   }
@@ -905,24 +972,24 @@ const LayoutEmployeeApplicationOverview = () => {
           <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
           {getLoader && <Loader />}
           {dowloadOptions && dowloadOptions.length > 0 && (
-            recieptDataLoading ? 
-            <Loader /> :
-            <div>
-              <MultiLink
-                className="multilinkWrapper"
-                onHeadClick={() => setShowOptions(!showOptions)}
-                displayOptions={showOptions}
-                options={dowloadOptions}
-              />
-            </div>
+            (recieptDataLoading1 || recieptDataLoading2) ?
+              <Loader /> :
+              <div>
+                <MultiLink
+                  className="multilinkWrapper"
+                  onHeadClick={() => setShowOptions(!showOptions)}
+                  displayOptions={showOptions}
+                  options={dowloadOptions}
+                />
+              </div>
           )}
         </div>
       </div>
 
-       <Card>
-              <CardSubHeader>{t("OWNER_OWNERPHOTO") || "OWNER'S PHOTO"}</CardSubHeader>
-             <CustomOwnerImage ownerFileStoreId={displayData?.owners?.[0]?.additionalDetails?.ownerPhoto} ownerName={displayData?.owners?.[0]?.name} />
-            </Card>
+      <Card>
+        <CardSubHeader>{t("OWNER_OWNERPHOTO") || "OWNER'S PHOTO"}</CardSubHeader>
+        <CustomOwnerImage ownerFileStoreId={displayData?.owners?.[0]?.additionalDetails?.ownerPhoto} ownerName={displayData?.owners?.[0]?.name} />
+      </Card>
 
       <Card>
         <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
@@ -959,18 +1026,17 @@ const LayoutEmployeeApplicationOverview = () => {
         displayData?.owners?.map((applicant, index) => (
           <React.Fragment key={index}>
             <Card>
-              <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
+              <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `${t("Owner") || "Owner"} ${index + 1}`}</CardSubHeader>
               <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
-                  
+
                   {index === 0 && <Row label={t(`CLU_OWNER_TYPE_LABEL`)} text={applicant?.additionalDetails?.aplicantType?.name} />}
                   {applicant?.additionalDetails?.aplicantType?.code === "FIRM" && (
                     <Row label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} text={applicant?.additionalDetails?.authorisedPerson} />
                   )}
                   <Row
-                    label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${
-                      applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")
-                    }`}
+                    label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : `${t("Owner") || "Owner"} ${index + 1}`} - ${applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")
+                      }`}
                     text={applicant?.name}
                   />
                   <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={applicant?.emailId} />
@@ -1053,8 +1119,20 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL"), detail?.areaUnderResidentialUseInPct)}
               {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderCommercialUseInSqM)}
               {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_PCT_LABEL"), detail?.areaUnderCommercialUseInPct)}
-              {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderInstutionalUseInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"), detail?.areaUnderInstutionalUseInPct)}
+              {detail?.buildingCategory?.name
+                ?.toLowerCase()
+                .includes("industrial")
+                ? (
+                  <React.Fragment>
+                    {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderIndustrialUseInSqM)}
+                    {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL"), detail?.areaUnderIndustrialUseInPct)}
+                  </React.Fragment>
+                ) : (
+                  <React.Fragment>
+                    {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderInstutionalUseInSqM)}
+                    {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"), detail?.areaUnderInstutionalUseInPct)}
+                  </React.Fragment>
+                )}
               {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_SQ_M_LABEL"), detail?.areaUnderCommunityCenterInSqM)}
               {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_PCT_LABEL"), detail?.areaUnderCommunityCenterInPct)}
               {renderLabel(t("BPA_AREA_UNDER_PARK_IN_SQ_M_LABEL"), detail?.areaUnderParkInSqM)}
@@ -1120,6 +1198,7 @@ const LayoutEmployeeApplicationOverview = () => {
         </Card>
       )} */}
 
+      {/* SITE PHOTOGRAPHS */}
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
         <StatusTable
@@ -1143,43 +1222,7 @@ const LayoutEmployeeApplicationOverview = () => {
         </StatusTable>
       </Card>
 
-      {/* Documents Uploaded - Read Only when NOT in DOCUMENTVERIFY_DM */}
-      {applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM" && (
-        <Card>
-          <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-          <StatusTable>
-            {remainingDocs?.length > 0 && (
-              <LayoutDocumentChecklist
-                documents={remainingDocs}
-                applicationNo={id}
-                tenantId={tenantId}
-                onRemarksChange={setChecklistRemarks}
-                value={checklistRemarks}
-                readOnly="true"
-              />
-            )}
-          </StatusTable>
-        </Card>
-      )}
 
-      {/* Documents Uploaded - Editable ONLY for DM role when in DOCUMENTVERIFY_DM */}
-      {applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY_DM" &&
-        user?.info?.roles.filter((role) => role.code === "OBPAS_LAYOUT_DM")?.length > 0 && (
-          <Card>
-            <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-            <StatusTable>
-              {remainingDocs?.length > 0 && (
-                <LayoutDocumentChecklist
-                  documents={remainingDocs}
-                  applicationNo={id}
-                  tenantId={tenantId}
-                  onRemarksChange={setChecklistRemarks}
-                  value={checklistRemarks}
-                />
-              )}
-            </StatusTable>
-          </Card>
-        )}
 
       {/* FIELD INSPECTION UPLOAD SECTION - Allow JE/BI to upload site photographs (mobile-only capture enforced in ChallanDocuments) */}
       {applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && (
@@ -1246,6 +1289,48 @@ const LayoutEmployeeApplicationOverview = () => {
           </Card>
         )}
 
+
+
+      {/* Documents Uploaded - Read Only when NOT in DOCUMENTVERIFY_DM */}
+      {applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM" && (
+        <Card>
+          <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+          <StatusTable>
+            {remainingDocs?.length > 0 && (
+              <LayoutDocumentChecklist
+                documents={remainingDocs}
+                applicationNo={id}
+                tenantId={tenantId}
+                onRemarksChange={setChecklistRemarks}
+                value={checklistRemarks}
+                readOnly="true"
+              />
+            )}
+          </StatusTable>
+        </Card>
+      )}
+
+      {/* Documents Uploaded - Editable ONLY for DM role when in DOCUMENTVERIFY_DM */}
+      {applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY_DM" &&
+        user?.info?.roles.filter((role) => role.code === "OBPAS_LAYOUT_DM")?.length > 0 && (
+          <Card>
+            <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+            <StatusTable>
+              {remainingDocs?.length > 0 && (
+                <LayoutDocumentChecklist
+                  documents={remainingDocs}
+                  applicationNo={id}
+                  tenantId={tenantId}
+                  onRemarksChange={setChecklistRemarks}
+                  value={checklistRemarks}
+                />
+              )}
+            </StatusTable>
+          </Card>
+        )}
+
+
+
       {/* FEE DETAILS CARD - CLU STYLE PART 1 */}
       <Card>
         <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
@@ -1259,28 +1344,32 @@ const LayoutEmployeeApplicationOverview = () => {
             }}
             feeType="PAY1"
             disable={isFeeDisabled}
+            hasPayments={hasPayments}
           />
         )}
+
       </Card>
 
       {/* FEE DETAILS TABLE CARD - CLU STYLE PART 2 */}
-      <Card>
-        <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
-        {applicationDetails?.Layout?.[0]?.layoutDetails && (
-          <LayoutFeeEstimationDetailsTable
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
-              siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
-            }}
-            feeType="PAY2"
-            feeAdjustments={feeAdjustments}
-            setFeeAdjustments={setFeeAdjustments}
-            disable={isFeeDisabled}
-          />
-        )}
-      </Card>
+      {(applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && applicationDetails?.Layout?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING") && (
+        <Card>
+          <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+          {applicationDetails?.Layout?.[0]?.layoutDetails && (
+            <LayoutFeeEstimationDetailsTable
+              formData={{
+                apiData: { ...applicationDetails },
+                applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
+                siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
+                calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
+              }}
+              feeType="PAY2"
+              feeAdjustments={feeAdjustments}
+              setFeeAdjustments={setFeeAdjustments}
+              disable={isFeeDisabled}
+            />
+          )}
+        </Card>
+      )}
 
       {/* {siteImages?.documents?.length > 0 && (
         <Card>
@@ -1310,11 +1399,7 @@ const LayoutEmployeeApplicationOverview = () => {
       )} */}
 
       <CheckBox
-        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant ( ${displayData?.owners
-          ?.map((applicant) => applicant?.name)
-          ?.join(
-            ", "
-          )} ). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant( ${getApplicantNamesForDeclaration()} ). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         checked="true"
       />
       <div id="timeline">
@@ -1364,7 +1449,7 @@ const LayoutEmployeeApplicationOverview = () => {
       {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} />}
 
       {/* {(isLoading || getLoader) && <Loader page={true} />} */}
-      {(isLoading || isDetailsLoading || getLoader) && <Loader page={true} />}
+      {(isLoading || isDetailsLoading || getLoader || recieptDataLoading1 || recieptDataLoading2) && <Loader page={true} />}
     </div>
   );
 };

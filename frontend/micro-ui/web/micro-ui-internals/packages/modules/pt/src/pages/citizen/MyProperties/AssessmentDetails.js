@@ -697,6 +697,8 @@ console.log("isCheck",isCheck)
                     ?.sort?.((a, b) => a.floorNo - b.floorNo)
                     ?.map((unit, index) => {
                       let floorName = `PROPERTYTAX_FLOOR_${unit.floorNo}`;
+                      console.log('unit in assess page:', unit);
+                      
                       const values = [
                         {
                           title: `${t("ES_APPLICATION_DETAILS_UNIT")} ${index + 1}`,
@@ -717,7 +719,7 @@ console.log("isCheck",isCheck)
                         },
                         {
                           title: "PT_FORM2_BUILT_AREA",
-                          value: (Number(unit?.constructionDetail?.builtUpArea)*9).toFixed(2),
+                          value: Math.round(Number(unit?.constructionDetail?.builtUpArea) * 9).toFixed(2),
                         },
                       ];
 

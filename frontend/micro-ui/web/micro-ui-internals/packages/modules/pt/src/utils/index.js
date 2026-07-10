@@ -469,6 +469,7 @@ export const getunitsindependent = (data) => {
 export const setPropertyDetails = (data) => {
   // let unitleghtvalue = getnumberoffloors(data);
   let propertyDetails = {};
+  const categoryArray = data?.units?.[0]?.usageCategory?.split(".") || [];
   if (data?.PropertyType?.code?.includes("VACANT")) {
     propertyDetails = {
       units: [],
@@ -476,26 +477,38 @@ export const setPropertyDetails = (data) => {
       propertyType: data?.PropertyType?.code,
       noOfFloors: 0,
       usageCategory: data?.propertyStructureDetails?.usageCategory?.code,
+      usageCategoryMajor: categoryArray[0] || null,
+      usageCategoryMinor: categoryArray[1] || null,
     };
   } else if (data?.PropertyType?.code?.includes("SHAREDPROPERTY")) {
     /*  update this case tulika*/
     propertyDetails = {
-      units: data?.units,
+      units: data?.units?.map(unit => ({
+        ...unit,
+        unitType: unit?.usageCategory?.split(".")[3] || null
+      })),
       landArea: data?.units?.reduce((acc, curr) => Number(curr?.constructionDetail?.builtUpArea) + acc, 0),
       propertyType: data?.PropertyType?.code,
       noOfFloors: 1,
       superBuiltUpArea: data?.units?.reduce((acc, curr) => Number(curr?.constructionDetail?.builtUpArea) + acc, 0),
       usageCategory: data?.units?.[0]?.usageCategory,
+      usageCategoryMajor: categoryArray[0] || null,
+      usageCategoryMinor: categoryArray[1] || null,
     };
   } else if (data?.PropertyType?.code?.includes("INDEPENDENTPROPERTY")) {
     /*  update this case tulika*/
     propertyDetails = {
-      units: data?.units,
+      units: data?.units?.map(unit => ({
+        ...unit,
+        unitType: unit?.usageCategory?.split(".")[3] || null
+      })),
       landArea: data?.landArea?.floorarea,
       propertyType: data?.PropertyType?.code,
       noOfFloors: data?.noOfFloors?.code + 1,
       superBuiltUpArea: null,
       usageCategory: data?.units?.[0]?.usageCategory,
+      usageCategoryMajor: categoryArray[0] || null,
+      usageCategoryMinor: categoryArray[1] || null,
     };
   } else {
     propertyDetails = {

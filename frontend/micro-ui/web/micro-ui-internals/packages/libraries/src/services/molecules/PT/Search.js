@@ -286,7 +286,7 @@ export const PTSearch = {
                 },
                 {
                   title: "PT_FORM2_BUILT_AREA",
-                  value: unit?.constructionDetail?.builtUpArea ? (Number(unit.constructionDetail.builtUpArea) * 9).toFixed(2) : null,
+                  value: unit?.constructionDetail?.builtUpArea ? Math.round(Number(unit?.constructionDetail?.builtUpArea) * 9).toFixed(2) : null,
                 },
                 {
                   title: "Floor No",
@@ -294,8 +294,8 @@ export const PTSearch = {
                 },
               ];
 
-              if (unit.occupancyType === "RENTED") values.push({ title: "PT_FORM2_TOTAL_ANNUAL_RENT", value: unit.arv },{ title: "Months on Rent", value: unit?.months },{ title: "Usage for Pending Months", value: unit?.usage });
-
+              if (unit.occupancyType === "RENTED") values.push({ title: "PT_FORM2_TOTAL_ANNUAL_RENT", value: unit.arv },{ title: "Months on Rent", value: unit?.months || unit?.additionalDetails?.rentedformonths },{ title: "Usage for Pending Months", value: unit?.usage || unit?.additionalDetails?.usageForDueMonths });
+ 
               return {
                 title: floorName,
                 values: [

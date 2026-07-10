@@ -48,7 +48,7 @@ export const mapPropertyToFormData = (property) => {
       subUsageType: unit.usageCategory ? { code: unit.usageCategory } : null,
       occupancy: unit.occupancyType ? { code: unit.occupancyType } : null,
       floor: unit.floorNo != null ? { code: String(unit.floorNo) } : null,
-      area: unit.constructionDetail?.builtUpArea ? String(unit.constructionDetail.builtUpArea) : "",
+      area: unit.constructionDetail?.builtUpArea ? String(Math.round(Number(unit?.constructionDetail?.builtUpArea) * 9).toFixed(2)) : "",
       totalRent: unit.arv || "",
       rentMonths: unit.additionalDetails?.rentedformonths
         ? { code: String(unit.additionalDetails.rentedformonths), name: String(unit.additionalDetails.rentedformonths) }

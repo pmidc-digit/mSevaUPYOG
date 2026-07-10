@@ -895,7 +895,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   + {t("Add Unit to this Floor")}
                 </button>
               )}
-              {fields.length > 1 && (
+              {fields?.length > 1 && !isResidentialFlat && (
                 <button
                   type="button"
                   onClick={() => remove(index)}
@@ -909,7 +909,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
         ))}
 
       {/* Add more */}
-      {selectedPropertyType == "BUILTUP.SHAREDPROPERTY" && (
+      {selectedPropertyType == "BUILTUP.SHAREDPROPERTY" && !isResidentialFlat && (
         <button
           type="button"
           onClick={() =>

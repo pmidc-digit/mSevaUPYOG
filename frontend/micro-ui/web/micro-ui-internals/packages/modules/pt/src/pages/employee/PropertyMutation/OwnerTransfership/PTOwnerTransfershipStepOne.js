@@ -201,7 +201,6 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
   const latestStepData = useRef(defaultStepData);
   console.log("reduxStepData in step one: +", localStepData);
   const dispatch = useDispatch();
-  const [showToast, setShowToast] = useState(null);
 
   useEffect(() => {
     if (!_.isEqual(defaultStepData, localStepData)) {

@@ -203,6 +203,10 @@ const LayoutInbox = ({ parentRoute }) => {
   const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useLayoutInbox({
     tenantId: effectiveTenantId,
     filters: memoizedFilters,
+    config: {
+      staleTime: 0,
+      refetchOnMount: "always",
+    },
   });
 
   const assigneeCountBaseFilters = useMemo(() => {
@@ -240,11 +244,19 @@ const LayoutInbox = ({ parentRoute }) => {
   const { data: assignedToMeInboxData } = Digit.Hooks.obps.useLayoutInbox({
     tenantId: effectiveTenantId,
     filters: assignedToMeFilters,
+    config: {
+      staleTime: 0,
+      refetchOnMount: "always",
+    },
   });
 
   const { data: assignedToAllInboxData } = Digit.Hooks.obps.useLayoutInbox({
     tenantId: effectiveTenantId,
     filters: assignedToAllFilters,
+    config: {
+      staleTime: 0,
+      refetchOnMount: "always",
+    },
   });
 
   useEffect(() => {

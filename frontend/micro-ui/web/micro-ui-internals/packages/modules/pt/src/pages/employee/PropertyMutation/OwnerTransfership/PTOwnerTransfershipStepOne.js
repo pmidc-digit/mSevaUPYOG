@@ -28,21 +28,21 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     // Validation: Transferor and Transferee should not have the same mobile number
-    const transferorOwners = defaultStepData?.originalData?.owners || [];
-    const transferorMobiles = transferorOwners
-      .filter((o) => o?.status === "ACTIVE" && o?.mobileNumber)
-      .map((o) => o.mobileNumber.trim());
+    // const transferorOwners = defaultStepData?.originalData?.owners || [];
+    // const transferorMobiles = transferorOwners
+    //   .filter((o) => o?.status === "ACTIVE" && o?.mobileNumber)
+    //   .map((o) => o.mobileNumber.trim());
 
-    const transfereeOwners = data?.owners || [];
-    const hasSameMobile = transfereeOwners.some((transferee) => {
-      const transMobile = transferee?.mobileNumber?.trim();
-      return transMobile && transferorMobiles.includes(transMobile);
-    });
+    // const transfereeOwners = data?.owners || [];
+    // const hasSameMobile = transfereeOwners.some((transferee) => {
+    //   const transMobile = transferee?.mobileNumber?.trim();
+    //   return transMobile && transferorMobiles.includes(transMobile);
+    // });
 
-    if (hasSameMobile) {
-      setShowToast({ key: "error", label: "PT_MUTATION_TRANSFEROR_TRANSFEREE_SAME_MOBILE_ERROR" });
-      return;
-    }
+    // if (hasSameMobile) {
+    //   setShowToast({ key: "error", label: "PT_MUTATION_TRANSFEROR_TRANSFEREE_SAME_MOBILE_ERROR" });
+    //   return;
+    // }
 
     // Block navigation if mandatory registration details fields are missing
     const additionalDetails = data?.additionalDetails;

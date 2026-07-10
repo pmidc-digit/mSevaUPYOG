@@ -9,10 +9,15 @@ import { OBPS_BPA_NOR_BUSINESS_SERVICES } from "../../../../../../constants/cons
 
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
+  let user = Digit.UserService.getUser();
   const [error, setError] = useState({
     error: false,
     label: "",
   });
+
+  const userRoles = user?.info?.roles?.map((role) => role.code) || [];
+
+  const hasViewOBPSCardRole = userRoles.includes("OBPAS_READ_ONLY");
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -20,7 +25,7 @@ const Inbox = ({ parentRoute }) => {
 
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
   const isEmployee = window.location.href.includes("employee");
-  const defaultAssignee = isEmployee ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL";
+  const defaultAssignee = isEmployee && !hasViewOBPSCardRole ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL";
   const { data: cities } = Digit.Hooks.useTenants();
 
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
@@ -577,12 +582,12 @@ const Inbox = ({ parentRoute }) => {
                   {t("BPA_CITIES_DROPDOWN_LABEL")}
                 </div>
                 <div className="new-inbox-tenant-dropdown">
-                <Dropdown
-                  option={cities}
-                  selected={cities.find((city) => city.code === effectiveTenantId)}
-                  select={(value) => setSelectedTenantIdValue("tenantId", value.code)}
-                  optionKey="name"
-                />
+                  <Dropdown
+                    option={cities}
+                    selected={cities.find((city) => city.code === effectiveTenantId)}
+                    select={(value) => setSelectedTenantIdValue("tenantId", value.code)}
+                    optionKey="name"
+                  />
                 </div>
               </div>
             ) : null
@@ -597,7 +602,7 @@ const Inbox = ({ parentRoute }) => {
               statuses={statusData}
               isInboxLoading={isInboxLoading}
               assigneeCounts={assigneeCounts}
-              showAssigneeCards={isEmployee}
+              showAssigneeCards={isEmployee && !hasViewOBPSCardRole}
               handleFilter={handleFilterChange}
             />
           }

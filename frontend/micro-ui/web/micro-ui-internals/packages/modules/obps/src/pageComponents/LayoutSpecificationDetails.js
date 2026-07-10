@@ -1,42 +1,46 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { LabelFieldPair, TextInput, CardLabel, BreakLine, CardSectionHeader, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
 
 const LayoutSpecificationDetails = (_props) => {
   const { t, currentStepData, Controller, control, setValue, errors, errorStyle, watch } = _props
   const [showToast, setShowToast] = useState(null)
+  const isInitialized = useRef(false)
 
   useEffect(() => {
     const formattedData = currentStepData?.siteDetails
-    if (formattedData) {
+    if (formattedData && !isInitialized.current) {
+      isInitialized.current = true
       Object.entries(formattedData).forEach(([key, value]) => {
         setValue(key, value)
       })
 
-      if (formattedData.areaLeftForRoadWidening) {
+      if (formattedData.specificationPlotArea) {
+        setValue("specificationPlotArea", formattedData.specificationPlotArea)
+      } else if (formattedData.areaLeftForRoadWidening) {
         setValue("specificationPlotArea", formattedData.areaLeftForRoadWidening, { shouldValidate: true })
       }
     }
   }, [currentStepData, setValue])
 
   const specificationPlotAreaValue = watch ? watch("specificationPlotArea") : ""
-  const areaLeftForRoadWidening = currentStepData?.siteDetails?.areaLeftForRoadWidening
+  const areaLeftForRoadWidening = watch ? watch("areaLeftForRoadWidening") : currentStepData?.siteDetails?.areaLeftForRoadWidening
 
-  useEffect(() => {
-    if (specificationPlotAreaValue && areaLeftForRoadWidening) {
-      const plotArea = Number.parseFloat(specificationPlotAreaValue)
-      const fieldA = Number.parseFloat(areaLeftForRoadWidening)
+  // useEffect(() => {
+  //   if (specificationPlotAreaValue && areaLeftForRoadWidening) {
+  //     const plotArea = Number.parseFloat(specificationPlotAreaValue)
+  //     const fieldA = Number.parseFloat(areaLeftForRoadWidening)
 
-      if (!isNaN(plotArea) && !isNaN(fieldA) && plotArea !== fieldA) {
-        setShowToast({
-          error: true,
-          label: "Net Plot Area As Per Jamabandi Must Be Equal To Total Plot Area",
-        })
-      } else {
-        setShowToast(null)
-      }
-    }
-  }, [specificationPlotAreaValue, areaLeftForRoadWidening])
+  //     if (!isNaN(plotArea) && !isNaN(fieldA) && plotArea !== fieldA) {
+  //       setShowToast({
+  //         error: true,
+  //         label: "Net Plot Area As Per Jamabandi Must Be Equal To Total Plot Area",
+  //       })
+  //     } else {
+  //       setShowToast(null)
+  //     }
+  //   }
+  // }, [specificationPlotAreaValue, areaLeftForRoadWidening])
 
   return (
     <React.Fragment>
@@ -85,7 +89,7 @@ const LayoutSpecificationDetails = (_props) => {
       </div>
       <BreakLine />
 
-      {showToast && (
+      {/* {showToast && (
         <Toast
           error={showToast.error}
           warning={showToast.warning}
@@ -94,7 +98,7 @@ const LayoutSpecificationDetails = (_props) => {
             setShowToast(null)
           }}
         />
-      )}
+      )} */}
     </React.Fragment>
   )
 }

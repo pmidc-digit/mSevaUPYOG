@@ -511,7 +511,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
       {/* Vashika Number */}
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Vashika Number")}`}</CardLabel>
+        <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Vasika Number")}`}</CardLabel>
         <div className="form-field">
           <Controller
             control={control}

@@ -290,7 +290,6 @@ const AssessmentDetails = () => {
 console.log(error)
     }
   }
-console.log("isCheck",isCheck)
   const handleAssessment = () => {
     if(isCheck){
       if(location?.state?.reAssess===true){
@@ -702,6 +701,8 @@ console.log("isCheck",isCheck)
                     ?.sort?.((a, b) => a.floorNo - b.floorNo)
                     ?.map((unit, index) => {
                       let floorName = `PROPERTYTAX_FLOOR_${unit.floorNo}`;
+                      console.log('unit in assess page:', unit);
+                      
                       const values = [
                         {
                           title: `${t("ES_APPLICATION_DETAILS_UNIT")} ${index + 1}`,
@@ -722,7 +723,7 @@ console.log("isCheck",isCheck)
                         },
                         {
                           title: "PT_FORM2_BUILT_AREA",
-                          value: unit?.constructionDetail?.builtUpArea,
+                          value: Math.round(Number(unit?.constructionDetail?.builtUpArea) * 9).toFixed(2),
                         },
                       ];
 
@@ -826,7 +827,7 @@ console.log("isCheck",isCheck)
           <h3 style={{ fontFamily: 'Noto Sans', marginBottom: '3px' }}>
             Property Tax = Built up area on GF*Rates per unit of GF-built up empty land on GF * Rate per unit of GF-empty land 𝝨(built-up on nth floor*Rate per unit of nth floor-built up)
           </h3>
-          <h3 style={{ color: 'red', fontFamily: 'Noto Sans', marginBottom: '5px' }}>* 5% increase in Gross Tax is applicable for FY 2021-22</h3>
+          <h3 style={{ color: 'red', fontFamily: 'Noto Sans', marginBottom: '5px' }}>* 5% increase in Gross Tax is applicable for FY 2022-2023</h3>
           <h2 style={{ color: '#2947a3', fontSize: '18px', fontFamily: 'Noto Sans', marginBottom: '2px' }}>Applicable Charge Slabs</h2>
           <StatusTable>
             {applicationDetails?.applicationData?.units

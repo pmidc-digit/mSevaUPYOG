@@ -34,17 +34,14 @@ const LayoutMyApplications = ({ view }) => {
     [page, pageSize, userInfo]
   );
 
-  const { isLoading, data, isError, error } = Digit.Hooks.obps.useLayoutCitizenSearchApplication(params, tenantId);
+  const { isLoading, data, isError, error } = Digit.Hooks.obps.useLayoutCitizenSearchApplication(params, tenantId, {
+    staleTime: 0,
+    refetchOnMount: "always",
+  });
 
   //console.log("data herein CLU==>", data);
 
   const labels = ["CS_CF_VIEW", "CS_CF_TRACK", "TL_VIEW_DETAILS"];
-
-  useEffect(() => {
-    if (data) {
-      data.revalidate();
-    }
-  }, []);
 
   const tableWrapperRef = useRef(null);
 

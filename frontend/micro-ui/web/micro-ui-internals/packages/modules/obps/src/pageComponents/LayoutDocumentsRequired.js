@@ -33,8 +33,17 @@ const LayoutDocumentsRequired = ({
   formState,
 }) => {
   const tenantId = Digit.ULBService.getStateId()
-  const [documents, setDocuments] = useState(formData?.documents?.documents || [])
-  console.log("documents in childStep three", documents, formData)
+  const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
+  const [documents, setDocuments] = useState(formData?.documents?.documents || currentStepData?.documents?.documents || [])
+  
+  useEffect(() => {
+    const docs = formData?.documents?.documents || currentStepData?.documents?.documents || [];
+    if (documents?.length === 0 && docs?.length > 0) {
+      setDocuments(docs);
+    }
+  }, [formData?.documents?.documents, currentStepData?.documents?.documents]);
+
+  console.log("documents in childStep three", documents, formData, currentStepData)
   const [error, setError] = useState(null)
   const [enableSubmit, setEnableSubmit] = useState(true)
   const [checkRequiredFields, setCheckRequiredFields] = useState(false)
@@ -60,7 +69,7 @@ const LayoutDocumentsRequired = ({
   // console.log("coordinates (from redux)", coordinates, data)
   //console.log("geocoordinates", geocoordinates)
 
-  const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
+
   const applicantType = currentStepData?.applicationDetails?.aplicantType?.code;
 
   const [applicationNo, setApplicationNo] = useState("");
@@ -70,6 +79,7 @@ const LayoutDocumentsRequired = ({
   const [isUnderMasterPlan, setIsUnderMasterPlan] = useState(false);
   const [isNationalHighway, setIsNationalHighway] = useState(false);
   const [isInstitution, setIsInstitution] = useState(false);
+  const [isIndustrial, setIsIndustrial] = useState(false);
 
   useEffect(() => {
     if (!currentStepData) return;
@@ -114,16 +124,32 @@ const LayoutDocumentsRequired = ({
       roadType.toLowerCase().includes("nh")
     );
 
-    // Institution
-    const buildingCategory =
-      currentStepData?.siteDetails?.buildingCategory?.code ||
-      currentStepData?.siteDetails?.buildingCategory ||
-      "";
+    // Institution and Industrial checks
+    const bc = currentStepData?.siteDetails?.buildingCategory;
+  
 
-    setIsInstitution(
-      buildingCategory === "INSTITUTION" ||
-      buildingCategory.toLowerCase().includes("institution")
-    );
+    const isInstitutionVal = bc ? (
+      typeof bc === "object" ? (
+        (bc.code || "").toLowerCase().includes("institution") || 
+        (bc.name || "").toLowerCase().includes("institution")
+      ) : (
+        bc.toLowerCase().includes("institution")
+      )
+    ) : false;
+
+    const isIndustrialVal = bc ? (
+      typeof bc === "object" ? (
+        (bc.code || "").toLowerCase().includes("industrial") || 
+        (bc.name || "").toLowerCase().includes("industrial")
+      ) : (
+        bc.toLowerCase().includes("industrial")
+      )
+    ) : false;
+
+
+
+    setIsInstitution(isInstitutionVal);
+    setIsIndustrial(isIndustrialVal);
 
   }, [currentStepData]);
 
@@ -133,7 +159,7 @@ const LayoutDocumentsRequired = ({
   // Filter documents based on building status, CLU approval, road type, and category
   const filteredDocuments = useMemo(() => {
     let docs = data?.LAYOUT?.LayoutDocuments || []
-    
+
     
     // Filter and process documents
     const processedDocs = docs
@@ -159,6 +185,10 @@ const LayoutDocumentsRequired = ({
             isRequired = false;
           }
         }
+        // Industry Category Supporting Document is mandatory when building category is industrial
+        else if (doc.code === "OWNER.INDUSTRYCATEGORYDOCUMENT") {
+          isRequired = isIndustrial;
+        }
         
         // Filter out building drawing if vacant
         if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
@@ -171,7 +201,7 @@ const LayoutDocumentsRequired = ({
     
     
     return processedDocs
-  }, [isVacant, isCluApproved, isNationalHighway, isInstitution, applicantType, data?.LAYOUT?.LayoutDocuments?.length])
+  }, [isVacant, isCluApproved, isNationalHighway, isInstitution, isIndustrial, applicantType, data?.LAYOUT?.LayoutDocuments?.length])
 
   // console.log("filteredDocs and documents", filteredDocuments, documents)
 
@@ -608,6 +638,7 @@ function LayoutSelectDocument({
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
+            uploadMessage = "Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
             accept=".jpeg, .jpg, .png"
           />
             <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
@@ -624,6 +655,7 @@ function LayoutSelectDocument({
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
+            uploadMessage = "Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
             required={doc?.required}
             isRemovable={!doc?.required}
           />

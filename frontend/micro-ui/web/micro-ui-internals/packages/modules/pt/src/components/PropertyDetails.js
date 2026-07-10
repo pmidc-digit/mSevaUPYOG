@@ -31,6 +31,9 @@ const months = [
   { code: "7", name: "7" },
   { code: "8", name: "8" },
   { code: "9", name: "9" },
+  { code: "10", name: "10" },
+  { code: "11", name: "11" },
+  { code: "12", name: "12" },
 ];
 
 const floorsMan = [
@@ -166,6 +169,13 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
       alert(t("PT_ALLOTMENT_DATE_ERROR"));
       return;
     }
+    if (data?.propertyType?.code === "BUILTUP.INDEPENDENTPROPERTY") {
+      const hasGroundFloor = data?.unitDetails?.some((unit) => unit?.floor?.code === "0" || unit?.floor === "0");
+      if (!hasGroundFloor) {
+        alert(t("An Independent Property must include a Ground Floor."));
+        return;
+      }
+    }
     const { subMinor, detail } = allUsageOptions;
     goNext({
       ...data,
@@ -234,12 +244,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
 
   const tesFloorOptions = useMemo(() => {
-    return [...floorOptions].sort((a, b) => {
-      const aCode = Number(a.code);
-      const bCode = Number(b.code);
-      if (aCode < 0 && bCode >= 0) return 1;
-      if (aCode >= 0 && bCode < 0) return -1;
-      return aCode - bCode;
+    return [...floorOptions]?.sort((a, b) => {
+      return Number(a?.code) - Number(b?.code);
     });
   }, [floorOptions]);
 
@@ -325,29 +331,30 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   }, [stateDataCheck, propertyType]);
 
   useEffect(() => {
-    if (!selectedFloors || isRestoring) return;
+  if (!selectedFloors || isRestoring) return;
 
-    const floorCount = Number(selectedFloors);
+  const floorCount = Number(selectedFloors);
+  const groundFloor = floorOptions?.find((f) => f.code == "0");
+  const baseUnits = fields?.map((f, i) => ({ ...f, _idx: i }))?.filter(f => !f?.isAddedUnit);
+  const currentCount = baseUnits?.length;
 
-    // Clear existing fields
-    remove([...Array(fields.length).keys()]);
-
-    const groundFloor = floorOptions?.find((f) => f.code == "0");
-
-    const newUnits = Array.from({ length: floorCount }, (_, index) => ({
-      unitUsageType:
-        (watch("propertyUsageType") && watch("propertyUsageType").name === "Mixed" &&
-          watch("propertyType") && watch("propertyType").code === "BUILTUP.SHAREDPROPERTY")
-          ? ""
-          : (watch("propertyUsageType") && watch("propertyUsageType").code) || "",
+  if (floorCount > currentCount) {
+    append(Array.from({ length: floorCount - currentCount }, (_, i) => ({
+      unitUsageType: (watch("propertyUsageType")?.name === "Mixed" && watch("propertyType")?.code === "BUILTUP.SHAREDPROPERTY")
+        ? "" : watch("propertyUsageType")?.code || "",
       occupancy: null,
-      floor: index === 0 ? groundFloor : null, // ✅ First is Ground Floor
-    }));
+      floor: (currentCount + i) === 0 ? groundFloor : null,
+    })));
+  } else if (floorCount < currentCount) {
+    const firstToRemove = baseUnits[floorCount]?._idx;
+    if (firstToRemove !== undefined) {
+      remove(Array.from({ length: fields?.length - firstToRemove }, (_, i) => fields?.length - 1 - i));
+    }
+  }
 
-    append(newUnits);
+  trigger();
+}, [selectedFloors]);
 
-    trigger(); // revalidate
-  }, [selectedFloors]);
 
   const plotSizeWatch = watch("plotSize");
   useEffect(() => {
@@ -556,7 +563,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 name={`plotSize`}
                 rules={{
                   required: t("Plot Size is required"),
-                  validate: (value) => parseFloat(value) >= 2.0 || t("Land Area cannot be lesser than minimum value : 2.0 sq yard")
+                  validate: (value) => parseFloat(value) >= 1.0 || t("Land Area cannot be lesser than minimum value : 1.0 sq yard")
                 }}
                 render={(props) => (
                   <TextInput
@@ -674,7 +681,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   )}
                 </div>
               </LabelFieldPair>
-              {!hideSubUsageType && (
+              {(!hideSubUsageType && (watch(`unitDetails.${index}.unitUsageType`)?.code !== "RESIDENTIAL" && watch(`unitDetails.${index}.unitUsageType`) !== "RESIDENTIAL")) && 
+               (
                 <LabelFieldPair style={colItem}>
                   <CardLabel className="card-label-smaller">{t("Sub Usage Type")}*</CardLabel>
                   <div className="form-field">
@@ -728,7 +736,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 </div>
               </LabelFieldPair>
               <LabelFieldPair style={colItem}>
-                <CardLabel className="card-label-smaller">{t("Built-up area (sq ft)")}*</CardLabel>
+                <CardLabel className="card-label-smaller">{isResidentialFlat ? t("Total Super Built-up Area (sq ft)") : t("Built-up area (sq ft)")}*</CardLabel>
                 <div className="form-field">
                   <Controller
                     control={control}
@@ -752,19 +760,13 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     }}
                     render={(props) => (
                       <TextInput
-                        type={"number"}
+                        type={"text"}
                         value={props.value}
-                        onWheel={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-                            e.preventDefault();
-                          }
-                        }}
                         onChange={(e) => {
-                          props.onChange(e.target.value);
+                          const val = e.target.value;
+                          if (val === "" || /^\d*\.?\d*$/.test(val)) {
+                            props.onChange(val);
+                          }
                         }}
                         onBlur={(e) => {
                           props.onBlur(e);
@@ -792,19 +794,31 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || null}
                     // defaultValue={item?.floor || ""}
                     render={(props) => {
-                      const isLockedGroundFloorUnit =
-                        selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY" &&
-                        index === 0 &&
-                        (props.value?.code === "0" || props.value === "0");
+                      // const isLockedGroundFloorUnit =
+                      //   selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY" &&
+                      //   index === 0 &&
+                      //   (props.value?.code === "0" || props.value === "0");
 
                       return (
                         <Dropdown
-                          select={props.onChange}
+                          select={(val) => {
+                            props.onChange(val);
+                            // Propagate floor change to all consecutive sub-units that follow this base unit
+                            let nextIdx = index + 1;
+                            while (nextIdx < fields?.length && fields[nextIdx]?.isAddedUnit) {
+                              setValue(`unitDetails.${nextIdx}.floor`, val);
+                              nextIdx++;
+                            }
+                          }}
                           selected={props.value}
-                          option={tesFloorOptions}
+                          option={
+                            index === 0 || item?.isAddedUnit
+                              ? tesFloorOptions
+                              : tesFloorOptions?.filter((f) => Number(f?.code) > Number(watch(`unitDetails.${index - 1}.floor`)?.code || -Infinity))
+                          }
                           optionKey="name"
                           t={t}
-                          disable={isLockedGroundFloorUnit || item.isAddedUnit}
+                          disable={ item?.isAddedUnit}
                         />
                       );
                     }}
@@ -893,15 +907,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
             {/* Remove button */}
             <div className="pt-application-download-btn primary-label-btn">
-              {fields.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => remove(index)}
-                  className="download-button"
-                >
-                  - {t("Remove Unit")}
-                </button>
-              )}
+              
               {/* Add Unit Button (For Independent Property) */}
               {selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY" && watch(`unitDetails.${index}.floor`) && (
                 <button
@@ -921,12 +927,21 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   + {t("Add Unit to this Floor")}
                 </button>
               )}
+              {fields?.length > 1 && !isResidentialFlat && (
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  className="download-button"
+                >
+                  - {t("Remove Unit")}
+                </button>
+              )}
             </div>
           </div>
         ))}
 
       {/* Add more */}
-      {selectedPropertyType == "BUILTUP.SHAREDPROPERTY" && (
+      {selectedPropertyType == "BUILTUP.SHAREDPROPERTY" && !isResidentialFlat && (
         <button
           type="button"
           onClick={() =>

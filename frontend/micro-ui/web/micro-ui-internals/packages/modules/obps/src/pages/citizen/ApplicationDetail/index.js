@@ -146,7 +146,6 @@ const isArchitect = qualificationType === "B-Arch";
 const licenseType = t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`);
 
 
-console.log("licenseType:", licenseType);
 
   useEffect(() => {
     if (License) {
@@ -176,6 +175,15 @@ console.log("licenseType:", licenseType);
           ...(prev || []).filter((item) => item.label !== t("CS_COMMON_DOWNLOAD_Certificate")),
           {
             label: t("CS_COMMON_DOWNLOAD_Certificate"),
+            onClick: () =>
+              handleDownloadPdf(),
+          },
+        ]);
+      }else{
+        setDowloadOptions((prev) => [
+          ...(prev || [])?.filter((item) => item.label !== t("NOC_APPLICATION_FORM")),
+          {
+            label: t("NOC_APPLICATION_FORM"),
             onClick: () =>
               handleDownloadPdf(),
           },

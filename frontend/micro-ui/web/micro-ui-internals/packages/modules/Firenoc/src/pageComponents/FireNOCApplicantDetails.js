@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import {
   LabelFieldPair,
   TextInput,
@@ -80,6 +80,7 @@ const FireNOCApplicantDetails = (_props) => {
   const applicantType = watch("applicantType");
   const applicantSubtype = watch("applicantSubtype");
 
+  
   /* Derive applicant type options (unique first segments) */
   const applicantTypeOptions = useMemo(() => {
     if (!ownerShipData?.length) return [];
@@ -133,6 +134,7 @@ const FireNOCApplicantDetails = (_props) => {
   const { fields, append, remove } = useFieldArray({ control, name: "owners" });
 
   const isIndividual = applicantType?.code === "INDIVIDUAL" || applicantType?.group === "INDIVIDUAL";
+  
   const isInstitutional = applicantType?.group === "INSTITUTIONAL";
   const isMultipleOwner = applicantSubtype?.code?.includes("MULTIPLEOWNERS");
 
@@ -140,20 +142,28 @@ const FireNOCApplicantDetails = (_props) => {
   useEffect(() => {
     if (!applicantType) return;
     const currentOwners = getValues("owners");
-    if (isIndividual) {
-      // keep at least one individual owner
-      if (!currentOwners?.length || currentOwners[0]?.institutionName !== undefined) {
+    if (isIndividual && !applicantSubtype?.code?.includes("MULTIPLE")) {
+      // keep at least one individual ownerv
+      
+      if (!currentOwners?.length || currentOwners[0]?.institutionName !== null) {
         setValue("owners", [emptyIndividualOwner()]);
       }
     } else if (isInstitutional) {
-      if (!currentOwners?.length || currentOwners[0]?.institutionName === undefined) {
+      if (!currentOwners?.length || currentOwners[0]?.institutionName === null) {
         setValue("owners", [emptyInstitutionalOwner()]);
       }
     }
   }, [applicantType?.code]);
 
-  /* When switching from Multiple → Single, trim to first owner */
+  /* When switching from Multiple → Single, trim to first owner.
+     Skip on the very first run so that edit-mode pre-population
+     of multiple owners is never silently discarded. */
+  const hasSubtypeInitialized = useRef(false);
   useEffect(() => {
+    if (!hasSubtypeInitialized.current) {
+      hasSubtypeInitialized.current = true;
+      return; // skip initial hydration — don't trim edit-mode owners
+    }
     if (isIndividual && applicantSubtype && !isMultipleOwner) {
       const current = getValues("owners");
       if (current?.length > 1) {

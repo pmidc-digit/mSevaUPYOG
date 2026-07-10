@@ -335,7 +335,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
           NonRentedMonthsUsage = nonrentedusage?.find((val) => val.code === NonRentedMonthsUsage) || unit?.NonRentedMonthsUsage;
           let key = Date.now() + index;
           let order = index + 1;
-          let builtUpArea = constructionDetail?.builtUpArea || unit?.builtUpArea;
+          let builtUpArea = constructionDetail?.builtUpArea ? (Number(constructionDetail?.builtUpArea) * 9).toFixed(2) : unit?.builtUpArea;
           return {
             ...unit,
             floorNo,

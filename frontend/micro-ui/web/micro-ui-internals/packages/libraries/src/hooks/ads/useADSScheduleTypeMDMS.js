@@ -2,7 +2,6 @@ import { useQuery } from "react-query";
 import { MdmsService } from "../../services/elements/MDMS";
 
 const useADSScheduleTypeMDMS = (tenantId) => {
-    console.log('tenantId', tenantId)
   return useQuery(
     [tenantId, "ADS_MDMS_SCHEDULE_TYPE"], // Unique query key
     () =>
@@ -27,9 +26,8 @@ const useADSScheduleTypeMDMS = (tenantId) => {
       ),
     {
       select: (data) => {
-        console.log('data11111', data)
         // Filter and map active building category
-        return data?.Advertisement?.ScheduleType?.[0]?.frequency
+        return data?.Advertisement?.ScheduleType;
       },
     }
   );

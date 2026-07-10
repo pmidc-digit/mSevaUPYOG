@@ -314,7 +314,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     {units.length > 1 && <CardSubHeader>{t(`PT_UNIT`)}-{unitIndex}</CardSubHeader>}
                     <Row
                       label={t("PT_BUILT_UP_AREA")}
-                      text={`${(Number(unit?.constructionDetail?.builtUpArea)*9).toFixed(2)}`}
+                      text={`${Math.round(Number(unit?.constructionDetail?.builtUpArea) * 9).toFixed(2)}`}
                       actionButton={<ActionButton jumpTo={`/digit-ui/citizen/pt/property/${typeOfApplication}/PtUnits`} />}
                     />
                     <Row

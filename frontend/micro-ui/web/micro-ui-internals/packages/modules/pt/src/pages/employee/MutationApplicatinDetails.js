@@ -420,6 +420,7 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
                     <Row label={t("Guardian Name")} text={owner?.fatherOrHusbandName || t("CS_NA")} />
                     <Row label={t("PT_FORM3_MOBILE_NUMBER")} text={owner?.mobileNumber || t("CS_NA")} />
                     <Row label={t("PT_MUTATION_AUTHORISED_EMAIL")} text={owner?.emailId || t("CS_NA")} />
+                    <Row label={t("Ownership Percentage")} text={owner?.ownerShipPercentage || owner?.ownershipPercentage || t("CS_NA")} />
                     <Row label={t("PT_MUTATION_TRANSFEROR_SPECIAL_CATEGORY")} text={owner?.ownerType?.toLowerCase() || t("CS_NA")} />
                     <Row label={t("PT_OWNERSHIP_INFO_CORR_ADDR")} text={owner?.correspondenceAddress || t("CS_NA")} />
                   </StatusTable>
@@ -476,6 +477,7 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
                     <Row label={t("PT_FORM3_GUARDIAN_NAME")} text={owner?.fatherOrHusbandName || t("CS_NA")} />
                     <Row label={t("PT_FORM3_RELATIONSHIP")} text={t(owner?.relationship) || t("CS_NA")} />
                     <Row label={t("PT_MUTATION_AUTHORISED_EMAIL")} text={owner?.emailId || t("CS_NA")} />
+                    <Row label={t("Ownership Percentage")} text={owner?.ownerShipPercentage || owner?.ownershipPercentage || t("CS_NA")} />
                     <Row label={t("PT_OWNERSHIP_INFO_CORR_ADDR")} text={owner?.correspondenceAddress || t("CS_NA")} />
                     <Row label={t("PT_MUTATION_TRANSFEROR_SPECIAL_CATEGORY")} text={owner?.ownerType?.toLowerCase() || t("CS_NA")} />
                     <Row

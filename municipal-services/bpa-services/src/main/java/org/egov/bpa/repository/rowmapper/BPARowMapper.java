@@ -33,7 +33,7 @@ public class BPARowMapper implements ResultSetExtractor<List<BPA>> {
 
 	/**
 	 * extract the data from the resultset and prepare the BPA Object
-	 * @see org.springframework.jdbc.core.ResultSetExtractor#extractData(java.sql.ResultSet)
+	 * @see ResultSetExtractor#extractData( ResultSet)
 	 */
 	@SuppressWarnings("rawtypes")
 	@Override

@@ -4,8 +4,6 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
-import org.egov.inbox.config.InboxConfiguration;
-import org.egov.inbox.esservice.LayoutElasticSearchService;
 import org.egov.inbox.repository.ServiceRequestRepository;
 import org.egov.inbox.web.model.InboxSearchCriteria;
 import org.egov.inbox.web.model.workflow.ProcessInstanceSearchCriteria;

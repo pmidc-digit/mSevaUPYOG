@@ -22,11 +22,12 @@ import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -43,6 +44,7 @@ public class IndexerUtils {
 	private RestTemplate restTemplate;
 
 	@Autowired
+	@Lazy
 	private ReindexConsumerConfig kafkaConsumerConfig;
 
 	private Version defaultSemVer;

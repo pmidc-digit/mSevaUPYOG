@@ -30,7 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 @Order(1)
 public class IndexerApplicationRunnerImpl implements ApplicationRunner {
 
-	@Autowired
 	public static ResourceLoader resourceLoader;
 
 	@Value("${egov.indexer.yml.repo.path}")

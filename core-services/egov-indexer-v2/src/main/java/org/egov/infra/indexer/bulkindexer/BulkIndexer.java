@@ -7,6 +7,7 @@ import org.egov.infra.indexer.util.IndexerUtils;
 import org.egov.infra.indexer.web.contract.Index;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,6 +28,7 @@ public class BulkIndexer {
 	private RestTemplate restTemplate;
 
 	@Autowired
+	@Lazy
 	private IndexerUtils indexerUtils;
 	
 	@Value("${elasticsearch.username}")
@@ -55,7 +57,7 @@ public class BulkIndexer {
 		try {
 			log.debug("Record being indexed: " + indexJson);
 			final HttpHeaders headers = buildAuthHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+			headers.setContentType(MediaType.APPLICATION_JSON);
 			final HttpEntity<String> entity = new HttpEntity<>(indexJson, headers);
 			Object response = restTemplate.postForObject(url.toString(), entity, Map.class);
 			if (url.contains("_bulk")) {
@@ -111,7 +113,7 @@ public class BulkIndexer {
 			if (httpMethod.equals("POST")) {
 				try {
 					HttpHeaders headers = buildAuthHeaders();
-					headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+					headers.setContentType(MediaType.APPLICATION_JSON);
 					HttpEntity<Object> entity = new HttpEntity<>(body, headers);
 					response = restTemplate.exchange(url, org.springframework.http.HttpMethod.POST, entity, Map.class).getBody();
 				} catch (Exception e) {
@@ -120,7 +122,7 @@ public class BulkIndexer {
 			} else if (httpMethod.equals("PUT")) {
 				try {
 					HttpHeaders headers = buildAuthHeaders();
-					headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+					headers.setContentType(MediaType.APPLICATION_JSON);
 					HttpEntity<Object> entity = new HttpEntity<>(body, headers);
 					restTemplate.exchange(url, org.springframework.http.HttpMethod.PUT, entity, Map.class);
 					response = "OK";

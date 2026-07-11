@@ -208,7 +208,7 @@ const CreateEmployeeStepForm = ({ applicationData, responsePath = "/digit-ui/emp
         tenantId: originalData.tenantId,
         type: typeof transfereeOwners[0]?.institutionType === "object" ? transfereeOwners[0]?.institutionType?.code : transfereeOwners[0]?.institutionType,
       };
-    } else {
+    }else {
       submitData.Property.institution = null;
     }
 

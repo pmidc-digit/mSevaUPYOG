@@ -388,6 +388,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     var selectedCode = e && e.code;
                     var checkData = getUsageOptionsByCode(selectedCode);
                     setSubUsageData(checkData);
+                    fields?.forEach((_, idx) => {
+                      setValue(`unitDetails.${idx}.unitUsageType`, selectedCode === "MIXED" ? "" : e);
+                      setValue(`unitDetails.${idx}.subUsageType`, null);
+                    });
                   }}
                   selected={props.value}
                   option={getUsageData}

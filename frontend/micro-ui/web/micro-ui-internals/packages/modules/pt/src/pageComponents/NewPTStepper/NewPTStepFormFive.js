@@ -60,6 +60,9 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
     // debugger
 
     const { propertyDetails, propertyAddress, ownerDetails, documents } = data;
+    const cleanedCode = propertyDetails?.propertyType?.code
+      ?.toUpperCase()
+      ?.replace(/[^A-Z0-9]/g, "");
     const originalProperty = data._originalProperty;
     const isEditMode = !!originalProperty;
 
@@ -71,7 +74,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       propertyDetails?.unitDetails
         ?.filter((unit) => unit?.floor) // skip units without floor
         ?.map((unit, index) => {
-          const unitUsageCategory = unit?.subUsageType?.code || propertyUsageCode;
+          const unitUsageCategory = unit?.subUsageType?.code || unit?.unitUsageType?.code || propertyUsageCode; // Case : Mixed Property = unit usage cateory extracted from unit details over property usage detail
           const originalUnit = originalProperty?.units?.[index];
           const unitPayload = {
             // Preserve original unit fields (id, etc.) in edit mode
@@ -105,7 +108,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
               unitType: unit.subUsageType.code.split(".").pop(),
             }),
 
-            tenantId: stateTenantId,
+            tenantId: tenantId,
           };
 
           return unitPayload;
@@ -179,7 +182,12 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       landArea: propertyDetails?.plotSize || null,
       superBuiltUpArea: superBuiltUpArea,
       propertyType: propertyDetails?.propertyType?.code,
-      noOfFloors: propertyDetails?.propertyType?.code == "VACANT" ? 1 : propertyDetails?.noOfFloors?.code || 1,
+      noOfFloors: 
+        cleanedCode?.includes("SHAREDPROPERTY") //for shared properties number of floors are expected to be 2 for further tax estimation
+        ? 2
+        : propertyDetails?.propertyType?.code == "VACANT" 
+          ? 1 
+          : propertyDetails?.noOfFloors?.code || 1,
       ownershipCategory: `${ownerDetails?.ownerShip?.value}`,
       usageCategory: usageCategoryMajor === propertyUsageCode ? propertyUsageCode : `${usageCategoryMajor}.${propertyUsageCode}`,
       owners: computedOwners,

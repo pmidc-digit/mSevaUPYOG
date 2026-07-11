@@ -530,7 +530,7 @@ const AssessmentDetails = () => {
                           { title: "Floor No", value: unit?.floorNo },
                           {
                             title: "PT_ASSESSMENT_UNIT_USAGE_TYPE",
-                            value: `PROPERTYTAX_BILLING_SLAB_${unit?.usageCategory != "RESIDENTIAL" ? unit?.usageCategory?.split(".")[1] : unit?.usageCategory
+                            value: `PROPERTYTAX_BILLING_SLAB_${unit?.usageCategory != "RESIDENTIAL" && unit?.usageCategory != "MIXED" ? unit?.usageCategory?.split(".")[1] : unit?.usageCategory
                               }`,
                           },
                           { title: "PT_ASSESMENT_INFO_OCCUPLANCY", value: unit?.occupancyType },

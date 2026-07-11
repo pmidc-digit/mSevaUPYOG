@@ -197,6 +197,7 @@ export const PTSearch = {
     return response.Properties[0];
   },
   transformPropertyToApplicationDetails: ({ property: response, t }) => {
+    
     return [
       {
         title: "PT_PROPERTY_ADDRESS_SUB_HEADER",
@@ -272,12 +273,13 @@ export const PTSearch = {
             ?.filter((e) => e.active)
             ?.sort?.((a, b) => a.floorNo - b.floorNo)
             ?.map((unit, index) => {
-              let floorName = `PROPERTYTAX_FLOOR_${unit.floorNo}`;
+              
+              let floorName = `PROPERTYTAX_FLOOR_${unit?.floorNo}`;
               const values = [
                 {
                   title: "PT_ASSESSMENT_UNIT_USAGE_TYPE",
                   value: `PROPERTYTAX_BILLING_SLAB_${
-                    unit?.usageCategory != "RESIDENTIAL" ? unit?.usageCategory?.split(".")[1] : unit?.usageCategory
+                    unit?.usageCategory !== "RESIDENTIAL" && unit?.usageCategory !== "MIXED" ? unit?.usageCategory?.split(".")[1] : unit?.usageCategory
                   }`,
                 },
                 {

@@ -1351,7 +1351,7 @@ const LayoutEmployeeApplicationOverview = () => {
       </Card>
 
       {/* FEE DETAILS TABLE CARD - CLU STYLE PART 2 */}
-      {(applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && applicationDetails?.Layout?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING") && (
+      {(applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS") && (
         <Card>
           <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
           {applicationDetails?.Layout?.[0]?.layoutDetails && (

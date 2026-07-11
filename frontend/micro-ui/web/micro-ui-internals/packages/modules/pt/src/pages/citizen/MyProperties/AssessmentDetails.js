@@ -714,7 +714,7 @@ console.log(error)
                         },
                         {
                           title: "PT_ASSESSMENT_UNIT_USAGE_TYPE",
-                          value: `PROPERTYTAX_BILLING_SLAB_${unit?.usageCategory != "RESIDENTIAL" ? unit?.usageCategory?.split(".")[1] : unit?.usageCategory
+                          value: `PROPERTYTAX_BILLING_SLAB_${unit?.usageCategory != "RESIDENTIAL" && unit?.usageCategory != "MIXED" ? unit?.usageCategory?.split(".")[1] : unit?.usageCategory
                             }`,
                         },
                         {

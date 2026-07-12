@@ -423,10 +423,11 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   //console.log("currentStepData in StepFour", currentStepData);
 
   // Handle both NEW mode (Layout array) and EDIT mode (Layout object)
-  const isEditMode = !currentStepData?.apiData?.Layout;
+  const isEditMode = window.location.pathname.includes("edit");
+  console.log("isEditMode",isEditMode)
   const layoutData = isEditMode 
-    ? currentStepData?.apiData 
-    : currentStepData?.apiData?.Layout?.[0];
+    ? currentStepData?.apiData?.Layout?.[0]
+    : currentStepData?.apiData?.Layout;
 
   const applicationNo = layoutData?.applicationNo || "";
   const businessServiceCode = layoutData?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";

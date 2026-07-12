@@ -99,7 +99,8 @@ const LayoutStepperForm = () => {
 
   //console.log("applicationNo:", applicationNo);
 
-  const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutCitizenSearchApplication({ applicationNo }, tenantId, { enabled: !!applicationNo });
+  // const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutCitizenSearchApplication({ applicationNo }, tenantId, { enabled: !!applicationNo });
+  const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ applicationNo}, tenantId,{ enabled: !!applicationNo });
 
   //console.log("API data fetched for applicationNo:", applicationNo, data);
 

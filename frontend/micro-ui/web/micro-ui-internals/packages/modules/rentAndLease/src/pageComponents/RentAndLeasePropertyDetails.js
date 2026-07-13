@@ -128,6 +128,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     },
   });
 
+  useEffect(() => {
+    console.log("errors", errors);
+  }, [errors]);
+
   const docUploadData = {
     Challan: {
       Documents: [
@@ -672,7 +676,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
             <Controller
               control={control}
               name="securityDeposit"
-              rules={{ required: t("PTR_FIELD_REQUIRED") }}
+              rules={{
+                required: watch("applicationType")?.code !== "Legacy" ? t("PTR_FIELD_REQUIRED") : false,
+                // required: t("PTR_FIELD_REQUIRED")
+              }}
               render={({ value, onChange }) => (
                 <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />
               )}

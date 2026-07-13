@@ -817,7 +817,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                           option={
                             index === 0 || item?.isAddedUnit
                               ? tesFloorOptions
-                              : tesFloorOptions?.filter((f) => Number(f?.code) > Number(watch(`unitDetails.${index - 1}.floor`)?.code || -Infinity))
+                              : tesFloorOptions?.filter((f) => {
+                                  const previousFloorCode = watch(`unitDetails.${index - 1}.floor`)?.code;
+                                  return !previousFloorCode || f?.code !== previousFloorCode;
+                                })
                           }
                           optionKey="name"
                           t={t}

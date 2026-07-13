@@ -35,7 +35,12 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     const noc = formData?.nocDetails || {};
     const docsFromRedux = formData?.uploadedDocuments?.documents || [];
 
-    const applicationTenantId = fireNOCData?.tenantId || tenantId;
+    const selectedStationCode = site?.fireStationId || fireNOCData?.fireNOCDetails?.firestationId || "";
+    const selectedStationObj = fireStationData?.find(
+      (s) => s.code === selectedStationCode || s.id === selectedStationCode
+    );
+    const applicationTenantId = selectedStationObj?.tenantId || selectedStationObj?.baseTenantId || tenantId;
+
 
     const convertedDocs = docsFromRedux.map((doc) => {
       let docType = doc.documentType || "";

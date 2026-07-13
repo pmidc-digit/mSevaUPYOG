@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { ActionBar, SubmitBar, Dropdown, CardLabel, LabelFieldPair, CardSectionHeader, TextInput, Toast } from "@mseva/digit-ui-react-components";
+import { ActionBar, SubmitBar, Dropdown, CardLabel, LabelFieldPair, CardSectionHeader, TextInput, Toast, Loader } from "@mseva/digit-ui-react-components";
 import { 
   UPDATE_NOCNewApplication_FORM,
   UPDATE_NOCNewApplication_CoOrdinates,
@@ -17,10 +17,12 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
   const [showToast, setShowToast] = useState(null);
   const [provisionalSearchNo, setProvisionalSearchNo] = useState("");
   const [oldNocSearchNo, setOldNocSearchNo] = useState("");
-
+  const [isNocValid, setisNocValid] = useState(true);
   const currentStepData = useSelector(function (state) {
     return state.noc.NOCNewApplicationFormReducer.formData?.nocDetails || {};
-  });
+  }); 
+
+  
 
   const apiData = useSelector(
     (state) => state?.noc?.NOCNewApplicationFormReducer?.formData?.apiData
@@ -63,6 +65,48 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
     })),
 });
 
+const { data: usageType , isLoading } = Digit.Hooks.useCustomMDMS(stateId, "firenoc", [{ name: "BuildingType" }] ,{
+  select: (d) => d?.firenoc?.BuildingType || [],
+});
+
+const handleSearchResponse = (searchData, isProvisional) => {
+    if (!searchData) return;
+    if (searchData?.FireNOCs?.length > 0) {
+      const nocObj = searchData.FireNOCs[0];
+      const buildings = nocObj?.fireNOCDetails?.buildings || [];
+      
+      const isUsageValid = !buildings?.some((building) => {
+        const matchedType = usageType?.find((t) => t?.code === building?.usageType);
+        const matchedSubType = matchedType?.BuildingSubType?.find((s) => s?.code === building?.usageSubType);
+        return matchedType?.active === false || matchedSubType?.active === false;
+      });
+      
+      if (!isUsageValid) {
+        alert(t("NOC_NOT_VALID"));
+        setisNocValid(false);
+        return;
+      }
+      setisNocValid(true);
+      setShowToast({ 
+        success: true, 
+        message: isProvisional ? "NOC_PROVISIONAL_NUMBER_FOUND" : "NOC_OLD_NOC_NUMBER_FOUND" 
+      });
+      
+      dispatch(UPDATE_NOCNewApplication_FORM(config.key, {
+        ...watch(),
+        [isProvisional ? "provisionalNocData" : "oldNocData"]: nocObj,
+      }));
+      autofillNocData(nocObj);
+    } else {
+      setisNocValid(false);
+      setShowToast({ 
+        error: true, 
+        message: isProvisional ? "NOC_PROVISIONAL_NUMBER_NOT_FOUND" : "NOC_OLD_NOC_NUMBER_NOT_FOUND" 
+      });
+    }
+    
+    setTimeout(() => setShowToast(null), 3000);
+  };
   const fireStationOptions = useMemo(() => {
     if (!fireStationData?.length) return [];
     return fireStationData
@@ -260,38 +304,13 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
 
   // Handle provisional search response
   useEffect(() => {
-    if (provisionalData) {
-      if (provisionalData?.FireNOCs?.length > 0) {
-        setShowToast({ success: true, message: "NOC_PROVISIONAL_NUMBER_FOUND" });
-        const nocObj = provisionalData.FireNOCs[0];
-        dispatch(UPDATE_NOCNewApplication_FORM(config.key, {
-          ...watch(),
-          provisionalNocData: nocObj,
-        }));
-        autofillNocData(nocObj);
-      } else {
-        setShowToast({ error: true, message: "NOC_PROVISIONAL_NUMBER_NOT_FOUND" });
-      }
-      setTimeout(() => setShowToast(null), 3000);
-    }
+    if(isLoading) return;
+      handleSearchResponse(provisionalData, true);
   }, [provisionalData]);
-
-  // Handle old NOC search response
+  
   useEffect(() => {
-    if (oldNocData) {
-      if (oldNocData?.FireNOCs?.length > 0) {
-        setShowToast({ success: true, message: "NOC_OLD_NOC_NUMBER_FOUND" });
-        const nocObj = oldNocData.FireNOCs[0];
-        dispatch(UPDATE_NOCNewApplication_FORM(config.key, {
-          ...watch(),
-          oldNocData: nocObj,
-        }));
-        autofillNocData(nocObj);
-      } else {
-        setShowToast({ error: true, message: "NOC_OLD_NOC_NUMBER_NOT_FOUND" });
-      }
-      setTimeout(() => setShowToast(null), 3000);
-    }
+    if(isLoading) return;
+    handleSearchResponse(oldNocData, false);
   }, [oldNocData]);
 
   const handleProvisionalSearch = () => {
@@ -317,14 +336,26 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
   };
 
   const onSubmit = (data) => {
-    if (data.fireNOCType?.code === "RENEWAL" && !data.oldFireNocNumber?.trim()) {
-      setShowToast({ error: true, message: "NOC_OLD_NOC_NUMBER_REQUIRED" });
+    
+    const isRenewal = data.fireNOCType?.code === "RENEWAL";
+    const isNew = data.fireNOCType?.code === "NEW";
+    const nocNum = isRenewal ? data?.oldFireNocNumber : (isNew ? data?.provisionalNocNumber : null);
+    const nocData = isRenewal ? currentStepData?.oldNocData : (isNew ? currentStepData?.provisionalNocData : null);
+
+    if (
+      (isRenewal && !nocNum?.trim()) || 
+      ((isRenewal || isNew) && nocNum?.trim() && (!isNocValid || !nocData))
+    ) {
+      setShowToast({ error: true, message: "NOC_OLD_VALID_NOC_NUMBER_REQUIRED" });
       setTimeout(() => setShowToast(null), 3000);
       return;
     }
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     onGoNext();
   };
+  if(isLoading){
+    return <Loader/>
+  }
 
   return (
     <React.Fragment>
@@ -359,7 +390,7 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
                       optionKey="name"
                       t={t}
                       placeholder={t("NOC_SELECT_NOC_TYPE_PLACEHOLDER")}
-                      disable={props.value?.code === "RENEWAL" || props.value === "RENEWAL" || isSentBack}
+                      disable={isSentBack || (hasProvisionalResult && isNocValid) || (hasOldNocResult && isNocValid)}
                     />
                   )}
                 />
@@ -414,21 +445,21 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
                         onChange={(e) => props.onChange(e.target.value)}
                         placeholder={t("Enter Provisional fire NoC number")}
                         style={{ flex: 1 }}
-                        disable={hasProvisionalResult}
+                        disable={hasProvisionalResult && isNocValid}
                       />
                     )}
                   />
                   <button
                     type="button"
                     onClick={handleProvisionalSearch}
-                    disabled={hasProvisionalResult}
+                    disabled={hasProvisionalResult && isNocValid}
                     style={{
-                      background: hasProvisionalResult ? "#ccc" : "linear-gradient(135deg, #2563eb, #1e40af)",
+                      background: hasProvisionalResult && isNocValid ? "#ccc" : "linear-gradient(135deg, #2563eb, #1e40af)",
                       color: "#fff",
                       border: "none",
                       borderRadius: "4px",
                       padding: "8px 20px",
-                      cursor: hasProvisionalResult ? "not-allowed" : "pointer",
+                      cursor: hasProvisionalResult && isNocValid ? "not-allowed" : "pointer",
                       fontWeight: "bold",
                       fontSize: "14px",
                       whiteSpace: "nowrap",
@@ -458,21 +489,21 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
                         onChange={(e) => props.onChange(e.target.value)}
                         placeholder={t("Enter old fire NoC number")}
                         style={{ flex: 1 }}
-                        disable={hasOldNocResult}
+                        disable={hasOldNocResult && isNocValid}
                       />
                     )}
                   />
                   <button
                     type="button"
                     onClick={handleOldNocSearch}
-                    disabled={hasOldNocResult}
+                    disabled={hasOldNocResult && isNocValid}
                     style={{
-                      background: hasOldNocResult ? "#ccc" : "linear-gradient(135deg, #2563eb, #1e40af)",
+                      background: hasOldNocResult && isNocValid ? "#ccc" : "linear-gradient(135deg, #2563eb, #1e40af)",
                       color: "#fff",
                       border: "none",
                       borderRadius: "4px",
                       padding: "8px 20px",
-                      cursor: hasOldNocResult ? "not-allowed" : "pointer",
+                      cursor: hasOldNocResult && isNocValid ? "not-allowed" : "pointer",
                       fontWeight: "bold",
                       fontSize: "14px",
                       whiteSpace: "nowrap",

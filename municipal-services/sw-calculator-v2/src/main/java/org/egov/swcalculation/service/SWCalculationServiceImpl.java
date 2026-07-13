@@ -40,26 +40,8 @@ import org.egov.swcalculation.repository.SewerageCalculatorDao;
 import org.egov.swcalculation.util.CalculatorUtils;
 import org.egov.swcalculation.util.SWCalculationUtil;
 import org.egov.swcalculation.util.SewerageCessUtil;
-import org.egov.swcalculation.web.models.AdhocTaxReq;
-import org.egov.swcalculation.web.models.BillGenerationSearchCriteria;
-import org.egov.swcalculation.web.models.BillGeneratorReq;
-import org.egov.swcalculation.web.models.BillScheduler;
+import org.egov.swcalculation.web.models.*;
 import org.egov.swcalculation.web.models.BillScheduler.StatusEnum;
-import org.egov.swcalculation.web.models.BulkBillCriteria;
-import org.egov.swcalculation.web.models.Calculation;
-import org.egov.swcalculation.web.models.CalculationCriteria;
-import org.egov.swcalculation.web.models.CalculationReq;
-import org.egov.swcalculation.web.models.Demand;
-import org.egov.swcalculation.web.models.DemandDetail;
-import org.egov.swcalculation.web.models.Property;
-import org.egov.swcalculation.web.models.RequestInfoWrapper;
-import org.egov.swcalculation.web.models.SchedulerLevel;
-import org.egov.swcalculation.web.models.SewerageConnection;
-import org.egov.swcalculation.web.models.SewerageConnectionRequest;
-import org.egov.swcalculation.web.models.SingleDemand;
-import org.egov.swcalculation.web.models.TaxHeadCategory;
-import org.egov.swcalculation.web.models.TaxHeadEstimate;
-import org.egov.swcalculation.web.models.TaxHeadMaster;
 import org.egov.tracer.model.CustomException;
 import com.google.common.collect.ImmutableSet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -310,53 +292,65 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 	/**
 	 * Generate Demand Based on Time (Monthly, Quarterly, Yearly)
 	 */
-	public void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria) {
+	public void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkDemandCriteria bulkDemandCriteria) {
 		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		LocalDateTime date = LocalDateTime.now();
 		log.info("Time schedule start for sewerage demand generation on : " + date.format(dateTimeFormatter));
 //		List<String> tenantIds = sewerageCalculatorDao.getTenantId();
-		List<String> tenantIds = new ArrayList<>();
-		String tenat = requestInfo.getMsgId();
-		
-		 if (!tenat.contains("pb"))
+        List<String> tenantIds = new ArrayList<>();
+        List<String> localities = new ArrayList<>();
+        String tenant = null;
+        String locality = null;
+        if(bulkDemandCriteria.getTenantId() != null){
+            tenant = bulkDemandCriteria.getTenantId();
+        }
+        if(bulkDemandCriteria.getLocality() != null){
+            locality = bulkDemandCriteria.getLocality();
+        }
+
+        if (!tenant.contains("pb"))
 		{
 			 MdmsCriteriaReq mdmsCriteriaReq = ((CalculatorUtils) calculatorUtils).getenats(requestInfo);
 				Object res = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
-								
-							
-							if (res == null) 
-							{
-								throw new CustomException("MDMS_ERROR_FOR_BILLING_FREQUENCY",
-										"ERROR IN FETCHING THE BILLING FREQUENCY");
-							}
-							else {
-				
-								Map<String, Object> resMap = (Map<String, Object>) res;
-								Object mdmsResObj = resMap.get("MdmsRes");
-								Map<String, Object> mdmsRes = (Map<String, Object>) mdmsResObj;
-								Object tenantObj = mdmsRes.get("tenant");
-								Map<String, Object> tenant = (Map<String, Object>) tenantObj;
-								Object waterSewerageObj = tenant.get("waterSewerage");
-								List<Object> waterSewerageList = (List<Object>) waterSewerageObj;
-								for (Object obj : waterSewerageList) 
-								{
-								    if (obj instanceof Map)
-								    {
-								        Map<String, Object> waterSewerageMap = (Map<String, Object>) obj;
-								        Object codeObj = waterSewerageMap.get("code");
-								        if (codeObj != null) {
-								            String code = codeObj.toString();
-								            tenantIds.add(code);
-								        }
-								    }
-								}
-				
-							}
+
+                if (res == null)
+                {
+                    throw new CustomException("MDMS_ERROR_FOR_BILLING_FREQUENCY",
+                            "ERROR IN FETCHING THE BILLING FREQUENCY");
+                }
+                else {
+
+                    Map<String, Object> resMap = (Map<String, Object>) res;
+                    Object mdmsResObj = resMap.get("MdmsRes");
+                    Map<String, Object> mdmsRes = (Map<String, Object>) mdmsResObj;
+                    Object tenantObj = mdmsRes.get("tenant");
+                    Map<String, Object> tenantMap = (Map<String, Object>) tenantObj;
+                    Object waterSewerageObj = tenantMap.get("waterSewerage");
+                    List<Object> waterSewerageList = (List<Object>) waterSewerageObj;
+                    for (Object obj : waterSewerageList)
+                    {
+                        if (obj instanceof Map)
+                        {
+                            Map<String, Object> waterSewerageMap = (Map<String, Object>) obj;
+                            Object codeObj = waterSewerageMap.get("code");
+                            Object localitiesObj = waterSewerageMap.get("localities");
+                            if (codeObj != null) {
+                                String code = codeObj.toString();
+                                tenantIds.add(code);
+                            }
+                            if (localitiesObj != null) {
+                                String local = localitiesObj.toString();
+                                localities.add(local);
+                            }
+                        }
+                    }
+
+                }
 			
 		}
 		else {
-			tenantIds.add(tenat);
-			
+			tenantIds.add(tenant);
+            localities.add(locality);
 		}
 		
 		if (tenantIds.isEmpty())
@@ -383,10 +377,15 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 			}
 
 			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-				try {
+				try { if(!localities.isEmpty()){
+                    localities.forEach(localty -> {
+                        demandService.generateDemandForTenantId(tenantId, localty, requestInfo);
+                    });
+                }else {
 					log.info("▶️ Sewerage demand generation started for tenant: {}", tenantId);
-					demandService.generateDemandForTenantId(tenantId, tenantRequestInfo);
+					demandService.generateDemandForTenantId(tenantId, null, tenantRequestInfo);
 					log.info("✅ Sewerage demand generation completed for tenant: {}", tenantId);
+                }
 				} catch (Exception e) {
 					log.error("❌ Sewerage demand generation failed for tenant: {} | {}", tenantId, e.getMessage(), e);
 				}

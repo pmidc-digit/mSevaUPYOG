@@ -168,10 +168,11 @@ public class SWCalculatorQueryBuilder {
 	}
 	
 	
-	public String getConnectionNumberListsingle(String tenantId, String connectionType, List<Object> preparedStatement,  Long fromDate, Long toDate, String Connectionno) {
+	public String getConnectionNumberListsingle(String tenantId, String locality, String connectionType, List<Object> preparedStatement,  Long fromDate, Long toDate, String Connectionno) {
 		StringBuilder query = new StringBuilder(connectionNoListQuerysingle);
+        query.append(" INNER JOIN eg_pt_property p ON conn.property_id = p.propertyid INNER JOIN eg_pt_address a ON a.propertyid = p.id ");
 
-		addClauseIfRequired(preparedStatement, query);
+        addClauseIfRequired(preparedStatement, query);
 		query.append(" sw.connectiontype = ? ");
 		preparedStatement.add(connectionType);
 		
@@ -191,7 +192,12 @@ public class SWCalculatorQueryBuilder {
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" conn.tenantid = ? ");
 		preparedStatement.add(tenantId);
-		
+
+        if (locality != null) {
+            addClauseIfRequired(preparedStatement, query);
+            query.append(" a.locality = ? ");
+            preparedStatement.add(locality);
+        }
 		//Added connection number for testing Anonymous User issue
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" conn.connectionno ='0603001817' ");
@@ -399,7 +405,7 @@ public class SWCalculatorQueryBuilder {
 	/**
 	 * Bill expire query builder
 	 * 
-	 * @param billIds
+//	 * @param billIds
 	 * @param preparedStmtList
 	 */
 	public String getBillSchedulerUpdateQuery(String schedulerId, List<Object> preparedStmtList) {
@@ -524,9 +530,11 @@ public class SWCalculatorQueryBuilder {
 		return query.toString();
 	}
 	
-	public String getConnectionNumberListForNonCommercial(String tenantId, String connectionType, String status, Long taxPeriodFrom, Long taxPeriodTo, String cone, List<Object> preparedStatement) {
+	public String getConnectionNumberListForNonCommercial(String tenantId, String locality, String connectionType, String status, Long taxPeriodFrom, Long taxPeriodTo, String cone, List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(connectionNoNonCommercialListQuery);
-		// Add connection type
+        query.append(" INNER JOIN eg_pt_address a ON a.propertyid = pt.id ");
+
+        // Add connection type
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" sw.connectiontype = ? ");
 		preparedStatement.add(connectionType);
@@ -548,8 +556,12 @@ public class SWCalculatorQueryBuilder {
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" conn.tenantid = ? ");
 		preparedStatement.add(tenantId);
-		
-		
+
+        if (locality != null) {
+            addClauseIfRequired(preparedStatement, query);
+            query.append(" a.locality = ? ");
+            preparedStatement.add(locality);
+        }
 //		// add Not commercial for amritsar
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append("pt.usagecategory != ? ");

@@ -732,7 +732,8 @@ public class WSCalculationServiceImpl implements WSCalculationService {
                         if (codeObj != null) {
                             String code = codeObj.toString();
                             tenantIds.add(code);
-                        } else if (localitiesObj != null) {
+                        }
+                        if (localitiesObj != null) {
                             String local = localitiesObj.toString();
                             localities.add(local);
                         }

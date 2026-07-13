@@ -3,11 +3,7 @@ package org.egov.swcalculation.service;
 import java.util.List;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.swcalculation.web.models.BulkBillCriteria;
-import org.egov.swcalculation.web.models.Calculation;
-import org.egov.swcalculation.web.models.CalculationReq;
-import org.egov.swcalculation.web.models.SewerageConnection;
-import org.egov.swcalculation.web.models.SingleDemand;
+import org.egov.swcalculation.web.models.*;
 
 public interface SWCalculationService {
 	
@@ -19,7 +15,7 @@ public interface SWCalculationService {
 	
 	void generateBillBasedLocality(RequestInfo requestInfo);
 	
-	void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria);
+	void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkDemandCriteria bulkDemandCriteria);
 	
 	List<Calculation> getEstimation(CalculationReq request);
 	

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 import org.egov.pgr.web.models.RequestSearchCriteria.SortBy;
 import org.egov.pgr.web.models.RequestSearchCriteria.SortOrder;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.NotNull;
 import java.util.Set;
@@ -21,7 +21,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class ImageSearchRequest {
-	 @SafeHtml
+	 @SanitizeHtml
 	    @JsonProperty("tenantId")
 	    private String tenantId;
 
@@ -36,7 +36,7 @@ public class ImageSearchRequest {
 
 
 
-	    @SafeHtml
+	    @SanitizeHtml
 	    @JsonProperty("serviceRequestId")
 	    private String serviceRequestId;
 
@@ -88,7 +88,7 @@ public class ImageSearchRequest {
 	        serviceRequestId
 	    }
 
-	    @SafeHtml
+	    @SanitizeHtml
 	    @JsonProperty("accountId")
 	    private String accountId;
 

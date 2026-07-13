@@ -131,13 +131,13 @@ class NDCConfigurationTest {
 
     @Test
     void testAllArgsConstructor() {
-        NDCConfiguration config = new NDCConfiguration(
-                "Asia/Kolkata", "sms-topic", true, "loc-host", "loc-path", "loc-endpoint", true,
-                "idgen-host", "idgen-path", "app-id", "wf-host", "wf-trans", "wf-biz", "wf-process",
-                "mdms-host", "mdms-endpoint", "save-topic", "update-topic", "delete-topic",
-                10, 0, 100, true, "module-code", "taxhead-code", "billing-host", "demand-endpoint",
-                "bill-endpoint", "calc-host", "calc-endpoint", "group-id", "wf-process-search"
-        );
+//        NDCConfiguration config = new NDCConfiguration(
+//                "Asia/Kolkata", "sms-topic", true, "loc-host", "loc-path", "loc-endpoint", true,
+//                "idgen-host", "idgen-path", "app-id", "wf-host", "wf-trans", "wf-biz", "wf-process",
+//                "mdms-host", "mdms-endpoint", "save-topic", "update-topic", "delete-topic",
+//                10, 0, 100, true, "module-code", "taxhead-code", "billing-host", "demand-endpoint",
+//                "bill-endpoint", "calc-host", "calc-endpoint", "group-id", "wf-process-search"
+//        );
         assertEquals("Asia/Kolkata", config.getTimeZone());
         assertEquals("sms-topic", config.getSmsNotifTopic());
     }

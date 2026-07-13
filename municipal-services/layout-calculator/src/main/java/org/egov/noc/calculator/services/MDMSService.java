@@ -82,8 +82,12 @@ public class MDMSService {
         
         List<MasterDetail> sanctionFeeChargesDetails = new ArrayList<>();
         Long currentTime = System.currentTimeMillis();
-//        final String filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.Category == '" + category + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
-        final String filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.type == '" + feeType + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
+        String filterCodeForCharges;
+        if (LAYOUTConstants.FEE_TYPE_PAY2.equalsIgnoreCase(feeType)) {
+            filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.type == '" + feeType + "' && @.BuildingCategory == '" + category + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
+        } else {
+            filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.type == '" + feeType + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
+        }
         sanctionFeeChargesDetails.add(MasterDetail.builder().name(LAYOUTConstants.MDMS_CHARGES_TYPE).filter(filterCodeForCharges).build());
         ModuleDetail fyModuleDtls = ModuleDetail.builder().masterDetails(sanctionFeeChargesDetails)
                 .moduleName(LAYOUTConstants.LAYOUT_MODULE.toLowerCase()).build();

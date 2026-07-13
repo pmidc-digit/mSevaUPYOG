@@ -105,7 +105,10 @@ public class CalculationService {
 					builtUpArea = new BigDecimal(siteDetails.getOrDefault("totalFloorArea", "0").toString().trim());
 				if(siteDetails.get("basementArea") != null)
 					basementArea = new BigDecimal(siteDetails.getOrDefault("basementArea", "0").toString().trim());
-				if(siteDetails.get("buildingCategory") != null) {
+				if(siteDetails.get("appliedCluCategory") != null) {
+					LinkedHashMap<String, Object> appliedCluCategory = (LinkedHashMap<String, Object>) siteDetails.get("appliedCluCategory");
+					category = (String) appliedCluCategory.getOrDefault("code", appliedCluCategory.get("name"));
+				} else if(siteDetails.get("buildingCategory") != null) {
 					LinkedHashMap<String, Object> buildingCategory = (LinkedHashMap<String, Object>) siteDetails.get("buildingCategory");
 					category = (String) buildingCategory.get("name");
 
@@ -120,7 +123,7 @@ public class CalculationService {
 			}
 			Map<String, Object> siteDetails1 = (Map<String, Object>)((Map<String, Object>)criteria.getLayout().getLayoutDetails().getAdditionalDetails()).get("siteDetails");
 			LinkedHashMap<String, Object> roadType = (LinkedHashMap<String, Object>) siteDetails1.get("roadType");
-			roadTypeVal = (String) roadType.get("name");
+			roadTypeVal = (String) roadType.getOrDefault("code", roadType.get("name"));
 
 			Object mdmsData = mdmsService.getMDMSSanctionFeeCharges(calculationReq.getRequestInfo(), tenantId, CLUConstants.MDMS_CHARGES_TYPE_CODE, category, finYear, criteria.getFeeType());
 			
@@ -197,7 +200,9 @@ public class CalculationService {
 							.add(new BigDecimal(chargesType.containsKey("fee") ? (Double) chargesType.get("fee") : 0.0))
 							.setScale(0, RoundingMode.CEILING);
 				}
+				break;
 			case CLUConstants.CLU_CHARGES:
+			case CLUConstants.CLU_CLU_FEE:
 				if(chargesType.containsKey("slabs")) {
 					Map<String,Double> slabAmountMap = ((List<Map<String, Object>>)chargesType.get("slabs")).stream()
 							.collect(Collectors.toMap(slab -> slab.get("roadType").toString(), slab -> (Double)slab.get("rate")));
@@ -206,7 +211,18 @@ public class CalculationService {
 				}
 				break;
 			case CLUConstants.CLU_EXTERNAL_DEVELOPMENT_CHARGES:
-				amount=rate.multiply(builtUpArea).setScale(0, RoundingMode.CEILING);
+			case CLUConstants.CLU_EDC_FEE:
+				BigDecimal areaToUse = (builtUpArea.compareTo(BigDecimal.ZERO) > 0) ? builtUpArea : plotArea;
+				amount = rate.multiply(areaToUse).setScale(0, RoundingMode.CEILING);
+				break;
+			case CLUConstants.CLU_LF_FEE:
+			case CLUConstants.CLU_OTHER1_FEE:
+			case CLUConstants.CLU_OTHER2_FEE:
+				amount = rate.multiply(plotArea).setScale(0, RoundingMode.CEILING);
+				break;
+			case CLUConstants.CLU_UDC_FEE:
+			case CLUConstants.CLU_URBAN_DEVELOPMENT_CESS:
+				amount = rate;
 				break;
 			default:
 				amount = BigDecimal.ZERO;
@@ -221,13 +237,15 @@ public class CalculationService {
 		});
 		
 		//Updating Urban Development Cess based on other fees
-//		estimates.stream().filter(estimate -> estimate.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_URBAN_DEVELOPMENT_CESS)).forEach(estimate -> {
-//			BigDecimal totalFee = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_PROCESSING_FEE) ||
-//					est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_CHARGES) ||
-//					est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_EXTERNAL_DEVELOPMENT_CHARGES))
-//			.map(est -> est.getEstimateAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
-//			estimate.setEstimateAmount(estimate.getEstimateAmount().multiply(totalFee).divide(BigDecimal.valueOf(100.0)).setScale(0, RoundingMode.CEILING));
-//		});
+		estimates.stream().filter(estimate -> estimate.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_URBAN_DEVELOPMENT_CESS) || estimate.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_UDC_FEE)).forEach(estimate -> {
+			BigDecimal totalFee = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_PROCESSING_FEE) ||
+					est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_CHARGES) ||
+					est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_CLU_FEE) ||
+					est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_EXTERNAL_DEVELOPMENT_CHARGES) ||
+					est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_EDC_FEE))
+			.map(est -> est.getEstimateAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
+			estimate.setEstimateAmount(estimate.getEstimateAmount().multiply(totalFee).divide(BigDecimal.valueOf(100.0)).setScale(0, RoundingMode.CEILING));
+		});
 		
 		
 		return estimates;

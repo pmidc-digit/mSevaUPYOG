@@ -16,12 +16,19 @@ export const TableConfig = (t) => ({
       {
         Header: t("REPORT_FSM_RESULT_APPLICATION_NO"),
         Cell: ({ row }) => {
-          console.log("row :>> ", row);
-          console.log("row", row);
+          // console.log("row :>> ", row);
           return (
             <div>
               <span className="link">
-                <Link to={`${props.parentRoute}/petservice/application-details/` + `${row?.original?.searchData?.["applicationNumber"]}`}>
+                <Link
+                  // to={`${props.parentRoute}/petservice/application-details/` + `${row?.original?.searchData?.["applicationNumber"]}`}
+                  to={{
+                    pathname: `/digit-ui/employee/ptr/petservice/application-details`,
+                    state: {
+                      applicationNumber: row?.original?.searchData?.applicationNumber,
+                    },
+                  }}
+                >
                   {row.original?.searchData?.["applicationNumber"]}
                 </Link>
               </span>

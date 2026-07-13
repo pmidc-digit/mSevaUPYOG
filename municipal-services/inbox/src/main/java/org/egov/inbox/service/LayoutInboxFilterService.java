@@ -44,6 +44,9 @@ public class LayoutInboxFilterService {
     @Value("${egov.searcher.layout.count.path:}")
     private String layoutInboxSearcherCountEndpoint;
 
+    @Value("${egov.searcher.layout.citizen.tenantwise.co.path:}")
+    private String layoutCitizenInboxTenantWiseApplnNosEndpoint;
+
     @Autowired
     private RestTemplate restTemplate;
 
@@ -152,7 +155,11 @@ public class LayoutInboxFilterService {
 
         if (moduleSearchCriteria != null && (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM) || userRoles.contains(CITIZEN))
                 && !CollectionUtils.isEmpty(userUUIDs)) {
-            searchCriteria.put(USERID_PARAM, userUUIDs);
+            if (moduleSearchCriteria.containsKey("isCitizenView") && Boolean.parseBoolean(String.valueOf(moduleSearchCriteria.get("isCitizenView")))) {
+                searchCriteria.put("ownerUuid", userUUIDs);
+            } else {
+                searchCriteria.put(USERID_PARAM, userUUIDs);
+            }
         }
 
         // Application Number
@@ -295,5 +302,52 @@ public class LayoutInboxFilterService {
             log.error("Exception trace: ", e);
         }
         return userDetails;
+    }
+
+    /**
+     * Fetch all tenant+applicationno+status_id rows for citizen inbox status counting.
+     * Status filter is intentionally omitted so all of the citizen's applications are returned.
+     */
+    public List<Map<String, String>> fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(
+            InboxSearchCriteria criteria, Map<String, String> statusIdNameMap, RequestInfo requestInfo) {
+
+        List<Map<String, String>> tenantWiseApplns = new ArrayList<>();
+        HashMap<String, Object> moduleSearchCriteria = criteria.getModuleSearchCriteria();
+        ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
+
+        if (moduleSearchCriteria == null) {
+            moduleSearchCriteria = new HashMap<>();
+        } else {
+            moduleSearchCriteria = new HashMap<>(moduleSearchCriteria);
+        }
+        if (!moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)) {
+            moduleSearchCriteria.put(MOBILE_NUMBER_PARAM, requestInfo.getUserInfo().getMobileNumber());
+        }
+
+        String mobileNumber = String.valueOf(moduleSearchCriteria.get(MOBILE_NUMBER_PARAM));
+        Map<String, List<String>> userDetails = fetchUserUUID(mobileNumber, requestInfo, criteria.getTenantId());
+        List<String> userUUIDs = userDetails.get(USER_UUID);
+        List<String> citizenRoles = userDetails.get(USER_ROLES);
+
+        if (CollectionUtils.isEmpty(userUUIDs)) {
+            userUUIDs = new ArrayList<>();
+            userUUIDs.add(requestInfo.getUserInfo().getUuid());
+            citizenRoles = requestInfo.getUserInfo().getRoles().stream()
+                    .map(Role::getCode).collect(Collectors.toList());
+        }
+
+        Map<String, Object> searchCriteria = getSearchCriteria(
+                criteria, new HashMap<>(statusIdNameMap), moduleSearchCriteria, processCriteria, userUUIDs, citizenRoles);
+
+        Map<String, Object> searcherRequest = new HashMap<>();
+        searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
+        searcherRequest.put(SEARCH_CRITERIA_PARAM, searchCriteria);
+
+        StringBuilder uri = new StringBuilder();
+        uri.append(searcherHost).append(layoutCitizenInboxTenantWiseApplnNosEndpoint);
+
+        Object result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
+        tenantWiseApplns = JsonPath.read(result, "$.layoutApplication.*");
+        return tenantWiseApplns != null ? tenantWiseApplns : new ArrayList<>();
     }
 }

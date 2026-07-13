@@ -25,7 +25,6 @@ import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
 import org.egov.tracer.model.CustomException;
-import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.wscalculation.config.WSCalculationConfiguration;
 import org.egov.wscalculation.constants.WSCalculationConstant;
 import org.egov.wscalculation.producer.WSCalculationProducer;
@@ -43,6 +42,7 @@ import org.egov.wscalculation.web.models.*;
 import org.egov.wscalculation.web.models.Demand.StatusEnum;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.*;
 
@@ -84,6 +84,9 @@ public class DemandService {
 
 	@Autowired
 	private WSCalculationConfiguration configs;
+
+	@Autowired
+	private DemandSchedulerNotificationService demandSchedulerNotificationService;
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
@@ -134,8 +137,11 @@ public class DemandService {
 	public List<Demand> generateDemand(CalculationReq request, List<Calculation> calculations,
 			Map<String, Object> masterMap, boolean isForConnectionNo) {
 		@SuppressWarnings("unchecked")
-		Map<String, Object> financialYearMaster = (Map<String, Object>) masterMap
-				.get(WSCalculationConstant.BILLING_PERIOD);
+		Map<String, Object> financialYearMaster = masterMap != null ? (Map<String, Object>) masterMap
+				.get(WSCalculationConstant.BILLING_PERIOD) : null;
+		if (financialYearMaster == null) {
+			throw new CustomException("NO_BILLING_PERIODS", "Billing Period is not configured in MDMS master data");
+		}
 		Long fromDate = (Long) financialYearMaster.get(WSCalculationConstant.STARTING_DATE_APPLICABLES);
 		Long toDate = (Long) financialYearMaster.get(WSCalculationConstant.ENDING_DATE_APPLICABLES);
 		if (request.getIsDisconnectionRequest() != null && request.getIsDisconnectionRequest()) {
@@ -215,12 +221,14 @@ public class DemandService {
 			}
 		}
 		List<Demand> createdDemands = new ArrayList<>();
-		if (!CollectionUtils.isEmpty(createCalculations))
-			createdDemands = createDemand(request, createCalculations, masterMap, isForConnectionNo);
+		if (!CollectionUtils.isEmpty(createCalculations)) {
+			createdDemands.addAll(createDemand(request, createCalculations, masterMap, isForConnectionNo));
+		}
 
-		if (!CollectionUtils.isEmpty(updateCalculations))
-			createdDemands = updateDemandForCalculation(request.getRequestInfo(), updateCalculations, fromDate, toDate,
-					isForConnectionNo, request.getIsDisconnectionRequest(), request.getIsReconnectionRequest());
+		if (!CollectionUtils.isEmpty(updateCalculations)) {
+			createdDemands.addAll(updateDemandForCalculation(request.getRequestInfo(), updateCalculations, fromDate, toDate,
+					isForConnectionNo, request.getIsDisconnectionRequest(), request.getIsReconnectionRequest()));
+		}
 		return createdDemands;
 	}
 
@@ -275,20 +283,22 @@ public class DemandService {
 							calculation != null ? calculation.getConnectionNo() : "null", e.getMessage(), e);
 					
 					// Construct and push DemandGenerationError to the dead-letter error topic
-					try {
-						DemandGenerationError error = new DemandGenerationError();
-						error.setConnectionNo(calculation.getConnectionNo());
-						error.setTenantId(calculation.getTenantId());
-						error.setToDate(calculation.getTo());
-						error.setFromDate(calculation.getFrom());
-						if (calculation.getWaterConnection() != null) {
-							error.setPropertyId(calculation.getWaterConnection().getPropertyId());
+					if (calculation != null) {
+						try {
+							DemandGenerationError error = new DemandGenerationError();
+							error.setConnectionNo(calculation.getConnectionNo());
+							error.setTenantId(calculation.getTenantId());
+							error.setToDate(calculation.getTo());
+							error.setFromDate(calculation.getFrom());
+							if (calculation.getWaterConnection() != null) {
+								error.setPropertyId(calculation.getWaterConnection().getPropertyId());
+							}
+							error.setErrorMessage("Error during demand generation: " + e.getMessage());
+							wsCalculationProducer.push(configs.getDemandGenerationErrorTopic(), error);
+						} catch (Exception ex) {
+							log.error("❌ Failed to push demand generation error to Kafka for connectionNo {}: {}",
+									calculation.getConnectionNo(), ex.getMessage(), ex);
 						}
-						error.setErrorMessage("Error during demand generation: " + e.getMessage());
-						wsCalculationProducer.push(configs.getDemandGenerationErrorTopic(), error);
-					} catch (Exception ex) {
-						log.error("❌ Failed to push demand generation error to Kafka for connectionNo {}: {}",
-								calculation != null ? calculation.getConnectionNo() : "null", ex.getMessage(), ex);
 					}
 				}
 			}
@@ -377,6 +387,10 @@ public class DemandService {
 
 			String tenantId = calculation.getTenantId();
 			String consumerCode = isForConnectionNO ? calculation.getConnectionNo() : calculation.getApplicationNO();
+			if (property == null || CollectionUtils.isEmpty(property.getOwners())) {
+				throw new CustomException("PROPERTY_NOT_FOUND",
+						"Property or owners not found for connection: " + consumerCode);
+			}
 			User owner = property.getOwners().get(0).toCommonUser();
 			if (!CollectionUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionHolders())) {
 				owner = waterConnectionRequest.getWaterConnection().getConnectionHolders().get(0).toCommonUser();
@@ -404,16 +418,13 @@ public class DemandService {
 					: WSCalculationConstant.ONE_TIME_FEE_SERVICE_FIELD;
 			ObjectMapper obj = new ObjectMapper();
 
-			String json = "{ \"connectionType\" : \"" + connection.getConnectionType() + "\"}";
 			JsonNode additionalDetail = null;
 			try {
-				additionalDetail = obj.readTree(json);
-			} catch (JsonMappingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (JsonProcessingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				com.fasterxml.jackson.databind.node.ObjectNode jsonNode = obj.createObjectNode();
+				jsonNode.put("connectionType", connection.getConnectionType());
+				additionalDetail = jsonNode;
+			} catch (Exception e) {
+				log.error("Error building additionalDetail JSON for connection {}: {}", consumerCode, e.getMessage(), e);
 			}
 
 			addRoundOffTaxHead(calculation.getTenantId(), demandDetails);
@@ -469,9 +480,11 @@ public class DemandService {
 			} else {
 				demandReq.add(demand);
 			}
-			List<String> consumerCodes = new ArrayList<String>();
-			consumerCodes.add(sewConsumerCode);
-			waterCalculatorDao.updateBillStatus(consumerCodes, "SW", "EXPIRED");
+			if (!sewConsumerCode.isEmpty()) {
+				List<String> consumerCodes = new ArrayList<String>();
+				consumerCodes.add(sewConsumerCode);
+				waterCalculatorDao.updateBillStatus(consumerCodes, "SW", "EXPIRED");
+			}
 
 		}
 		// Save the bulk demands for metered connections
@@ -533,14 +546,19 @@ public class DemandService {
 			owner = getPlainOwnerDetails(requestInfo, owner.getUuid(), tenantId);
 			List<DemandDetail> demandDetails = new LinkedList<>();
 			List<DemandDetail> demandDetails1 = new LinkedList<>();
-			calculation.getTaxHeadEstimates().forEach(taxHeadEstimate -> {
-				demandDetails.add(DemandDetail.builder().taxAmount(taxHeadEstimate.getEstimateAmount())
-						.taxHeadMasterCode(taxHeadEstimate.getTaxHeadCode()).collectionAmount(BigDecimal.ZERO)
-						.tenantId(tenantId).build());
-			});
+			if (calculation.getTaxHeadEstimates() != null) {
+				calculation.getTaxHeadEstimates().forEach(taxHeadEstimate -> {
+					demandDetails.add(DemandDetail.builder().taxAmount(taxHeadEstimate.getEstimateAmount())
+							.taxHeadMasterCode(taxHeadEstimate.getTaxHeadCode()).collectionAmount(BigDecimal.ZERO)
+							.tenantId(tenantId).build());
+				});
+			}
 			@SuppressWarnings("unchecked")
-			Map<String, Object> financialYearMaster = (Map<String, Object>) masterMap
-					.get(WSCalculationConstant.BILLING_PERIOD);
+			Map<String, Object> financialYearMaster = masterMap != null ? (Map<String, Object>) masterMap
+					.get(WSCalculationConstant.BILLING_PERIOD) : null;
+			if (financialYearMaster == null) {
+				throw new CustomException("NO_BILLING_PERIODS", "Billing Period is not configured in MDMS master data");
+			}
 
 			Long fromDate = (Long) financialYearMaster.get(WSCalculationConstant.STARTING_DATE_APPLICABLES);
 			Long toDate = (Long) financialYearMaster.get(WSCalculationConstant.ENDING_DATE_APPLICABLES);
@@ -674,60 +692,67 @@ public class DemandService {
 		DemandNotificationObj notificationObj = DemandNotificationObj.builder().requestInfo(requestInfo)
 				.tenantId(calculations.get(0).getTenantId()).waterConnectionIds(waterConnectionIds)
 				.billingCycle(billingcycle).build();
-		List<Demand> demandRes = null ;
+		List<Demand> demandRes = new ArrayList<>();
 		for(Demand demand : demandReq){
 			log.info("Demand Input for WSREconnection is " + demand);
-			demandRes = demandRepository.saveDemand(requestInfo, Collections.singletonList(demand), notificationObj);
+			List<Demand> saved = demandRepository.saveDemand(requestInfo, Collections.singletonList(demand), notificationObj);
+			if (!CollectionUtils.isEmpty(saved)) {
+				demandRes.addAll(saved);
+			}
 			log.info("Demand Response for WSREconnection is " + demand);
 		}
-		if (calculationReq.getIsReconnectionRequest())
-			fetchBillForReconnect(demandRes, requestInfo, masterMap);
-		else if (isForConnectionNO && !calculationReq.getIsReconnectionRequest())
-			fetchBill(demandRes, requestInfo, masterMap);
+		if (!demandRes.isEmpty()) {
+			if (calculationReq.getIsReconnectionRequest())
+				fetchBillForReconnect(demandRes, requestInfo, masterMap);
+			else if (isForConnectionNO && !calculationReq.getIsReconnectionRequest())
+				fetchBill(demandRes, requestInfo, masterMap);
+		}
 
 		return demandRes;
 	}
 
 	private User getPlainOwnerDetails(RequestInfo requestInfo, String uuid, String tenantId) {
 		User userInfoCopy = requestInfo.getUserInfo();
-		StringBuilder uri = new StringBuilder();
-		uri.append(configs.getUserHost()).append(configs.getUserSearchEndpoint());
-		Map<String, Object> userSearchRequest = new HashMap<>();
-		tenantId = tenantId.split("\\.")[0];
-
-		Role role = Role.builder().name("Internal Microservice Role").code("INTERNAL_MICROSERVICE_ROLE")
-				.tenantId(tenantId).build();
-
-		User userInfo = User.builder().uuid(configs.getEgovInternalMicroserviceUserUuid()).type("SYSTEM")
-				.roles(Collections.singletonList(role)).id(0L).build();
-
-		requestInfo.setUserInfo(userInfo);
-
-		userSearchRequest.put("RequestInfo", requestInfo);
-		userSearchRequest.put("tenantId", tenantId);
-		userSearchRequest.put("uuid", Collections.singletonList(uuid));
-		User user = null;
 		try {
-			LinkedHashMap<String, Object> responseMap = (LinkedHashMap<String, Object>) serviceRequestRepository
-					.fetchResult(uri, userSearchRequest);
+			StringBuilder uri = new StringBuilder();
+			uri.append(configs.getUserHost()).append(configs.getUserSearchEndpoint());
+			Map<String, Object> userSearchRequest = new HashMap<>();
+			tenantId = tenantId.split("\\.")[0];
 
-			List<LinkedHashMap<String, Object>> users = (List<LinkedHashMap<String, Object>>) responseMap.get("user");
-			String dobFormat = "yyyy-MM-dd";
-			notificationUtil.parseResponse(responseMap, dobFormat);
-			user = mapper.convertValue(users.get(0), User.class);
+			Role role = Role.builder().name("Internal Microservice Role").code("INTERNAL_MICROSERVICE_ROLE")
+					.tenantId(tenantId).build();
 
-		} catch (Exception e) {
-			throw new CustomException("EG_USER_SEARCH_ERROR", "Service returned null while fetching user");
+			User userInfo = User.builder().uuid(configs.getEgovInternalMicroserviceUserUuid()).type("SYSTEM")
+					.roles(Collections.singletonList(role)).id(0L).build();
+
+			requestInfo.setUserInfo(userInfo);
+
+			userSearchRequest.put("RequestInfo", requestInfo);
+			userSearchRequest.put("tenantId", tenantId);
+			userSearchRequest.put("uuid", Collections.singletonList(uuid));
+			User user = null;
+			try {
+				LinkedHashMap<String, Object> responseMap = (LinkedHashMap<String, Object>) serviceRequestRepository
+						.fetchResult(uri, userSearchRequest);
+
+				List<LinkedHashMap<String, Object>> users = (List<LinkedHashMap<String, Object>>) responseMap.get("user");
+				String dobFormat = "yyyy-MM-dd";
+				notificationUtil.parseResponse(responseMap, dobFormat);
+				user = mapper.convertValue(users.get(0), User.class);
+
+			} catch (Exception e) {
+				throw new CustomException("EG_USER_SEARCH_ERROR", "Service returned null while fetching user");
+			}
+			return user;
+		} finally {
+			requestInfo.setUserInfo(userInfoCopy);
 		}
-		requestInfo.setUserInfo(userInfoCopy);
-		return user;
 	}
 
 	private Demand createDemandForNonMeteredInBulk(RequestInfo requestInfo, Calculation calculation,
 			Map<String, Object> masterMap, boolean isForConnectionNO, long taxPeriodFrom, long taxPeriodTo) {
 
 		WaterConnection connection = calculation.getWaterConnection();
-		connection.setConnectionHolders(null);
 		if (connection == null) {
 			throw new CustomException("INVALID_WATER_CONNECTION",
 					"Demand cannot be generated for "
@@ -743,19 +768,29 @@ public class DemandService {
 
 		String tenantId = calculation.getTenantId();
 		String consumerCode = isForConnectionNO ? calculation.getConnectionNo() : calculation.getApplicationNO();
+		if (property == null || CollectionUtils.isEmpty(property.getOwners())) {
+			throw new CustomException("PROPERTY_NOT_FOUND",
+					"Property or owners not found for connection: " + consumerCode);
+		}
 		User owner = property.getOwners().get(0).toCommonUser();
 		if (!CollectionUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionHolders())) {
 			owner = waterConnectionRequest.getWaterConnection().getConnectionHolders().get(0).toCommonUser();
 		}
 		List<DemandDetail> demandDetails = new LinkedList<>();
-		calculation.getTaxHeadEstimates().forEach(taxHeadEstimate -> {
-			demandDetails.add(DemandDetail.builder().taxAmount(taxHeadEstimate.getEstimateAmount())
-					.taxHeadMasterCode(taxHeadEstimate.getTaxHeadCode()).collectionAmount(BigDecimal.ZERO)
-					.tenantId(tenantId).build());
-		});
+		if (calculation.getTaxHeadEstimates() != null) {
+			calculation.getTaxHeadEstimates().forEach(taxHeadEstimate -> {
+				demandDetails.add(DemandDetail.builder().taxAmount(taxHeadEstimate.getEstimateAmount())
+						.taxHeadMasterCode(taxHeadEstimate.getTaxHeadCode()).collectionAmount(BigDecimal.ZERO)
+						.tenantId(tenantId).build());
+			});
+		}
 		@SuppressWarnings("unchecked")
-		Map<String, Object> financialYearMaster = (Map<String, Object>) masterMap
-				.get(WSCalculationConstant.BILLING_PERIOD);
+		Map<String, Object> financialYearMaster = masterMap != null ? (Map<String, Object>) masterMap
+				.get(WSCalculationConstant.BILLING_PERIOD) : null;
+
+		if (financialYearMaster == null) {
+			throw new CustomException("NO_BILLING_PERIODS", "Billing Period is not configured in MDMS master data");
+		}
 
 		if (taxPeriodFrom == 0 && taxPeriodTo == 0) {
 			taxPeriodFrom = (Long) financialYearMaster.get(WSCalculationConstant.STARTING_DATE_APPLICABLES);
@@ -2058,8 +2093,9 @@ public class DemandService {
 							.isDemandExecuted(true)
 							.build();
 					wsCalculationProducer.push(configs.getSaveBatchDemandLogTopic(), startLog);
+					demandSchedulerNotificationService.sendStartEmail(tenantId, taxPeriodFrom, taxPeriodTo, connectionNos.size(), requestInfo);
 				} catch (Exception e) {
-					log.error("\u26A0\uFE0F Non-fatal: failed to push start BatchDemandLog for tenant: {} | {}",
+					log.error("⚠️ Non-fatal: failed to push start BatchDemandLog or send start email for tenant: {} | {}",
 							tenantId, e.getMessage(), e);
 					// do NOT return — demand generation must continue
 				}
@@ -2132,8 +2168,16 @@ public class DemandService {
 							.build();
 					wsCalculationProducer.push(configs.getSaveBatchDemandLogTopic(), endLog);
 				} catch (Exception e) {
-					log.error("\u26A0\uFE0F Non-fatal: failed to push end BatchDemandLog for tenant: {} | {}",
+					log.error("⚠️ Non-fatal: failed to push end BatchDemandLog for tenant: {} | {}",
 							tenantId, e.getMessage(), e);
+				}
+
+				// Send Completion Email & Poll
+				try {
+					List<String> allConnNos = connectionNos.stream().map(WaterDetails::getConnectionNo).collect(Collectors.toList());
+					demandSchedulerNotificationService.sendCompletionEmail(tenantId, taxPeriodFrom, taxPeriodTo, allConnNos, System.currentTimeMillis(), requestInfo);
+				} catch (Exception e) {
+					log.error("❌ Failed to send completion email for tenant: {} | {}", tenantId, e.getMessage(), e);
 				}
 			}
 
@@ -2734,6 +2778,5 @@ public class DemandService {
 
 	    return url;
 	}
-
 
 }

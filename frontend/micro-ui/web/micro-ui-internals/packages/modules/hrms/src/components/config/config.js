@@ -95,6 +95,19 @@ export const newConfig = [
     ],
   },
   {
+    head: "HR_EMPLOYEE_DETAILS_HEADER",
+    stepNumber: 2,
+    body: [
+      {
+        type: "component",
+        isMandatory: true,
+        component: "EmployeeType",
+        key: "employeeType",
+        withoutLabel: true,
+      },
+    ],
+  },
+  {
     head: "HR_JURISDICTION_DETAILS_HEADER",
     stepNumber: 2,
     body: [

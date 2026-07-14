@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { SearchIconSvg } from "../../../../react-components/src/atoms/svgindex";
 import { Loader } from "@googlemaps/js-api-loader";
-//import { typeOf } from "@mseva/digit-ui-react-components";
 
 const google = typeof window !== "undefined" && window.google ? window.google : null;
 

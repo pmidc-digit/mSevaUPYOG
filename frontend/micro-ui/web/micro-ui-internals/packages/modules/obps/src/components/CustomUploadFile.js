@@ -254,7 +254,7 @@ const CustomUploadFile = (props) => {
     } else setHasFile(false);
   };
 
-  if (props?.uploadMessage && inpRef?.current?.value) {
+  if (props?.uploadMessage === "NEED TO DELETE" && inpRef?.current?.value) {
     handleDelete();
     setHasFile(false);
   }

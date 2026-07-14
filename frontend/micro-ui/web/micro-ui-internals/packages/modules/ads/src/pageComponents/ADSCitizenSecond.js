@@ -22,8 +22,8 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const { data: mdmsAds = [] } = Digit.Hooks.ads.useADSAllMDMS(tenantId);
   const { data: location = [] } = Digit.Hooks.ads.useADSLocationMDMS(tenantId);
   const { data: scheduleType = [] } = Digit.Hooks.ads.useADSScheduleTypeMDMS(tenantId);
+  const [getSceduleType, setSceduleType] = useState(null);
   const [cartSlots, setCartSlots] = useState([]);
-  // const dispatch = useDispatch();
 
   const {
     control,
@@ -84,8 +84,15 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setShowToast({ label: t("ADS_ONE_AD_ATLEAST"), error: true });
       return;
     }
-
-    goNext(cartSlots);
+    const updatedCartSlots = cartSlots.map((item) => ({
+      ...item,
+      ad: {
+        ...item.ad,
+        scheduleType: data?.scheduleType,
+      },
+    }));
+    setCartSlots(updatedCartSlots);
+    goNext(updatedCartSlots);
   };
 
   useEffect(() => {
@@ -105,7 +112,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   }, [showToast]);
 
   const handleViewAvailability = (ad, { startDate, endDate }) => {
-    const err = validateSchedule({ startDate, endDate, scheduleType });
+    const err = validateSchedule({ startDate, endDate }, getSceduleType);
     if (err) {
       setShowToast({ label: err, error: true });
       return;
@@ -183,6 +190,9 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
       const locationCode = currentStepData.ads[0]?.ad?.locationCode;
       const matchedOption = locationOptions?.find((opt) => opt.code === locationCode);
+      const matchSheduleType = scheduleType?.find((item) => item?.frequency == currentStepData.ads[0]?.ad?.scheduleType?.frequency);
+
+      setValue("scheduleType", matchSheduleType);
 
       if (matchedOption) {
         setValue("siteId", matchedOption); // 👈 set full object, not just name
@@ -205,7 +215,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   const errorStyle = { color: "red" };
 
-  const guidance = getScheduleMessage(scheduleType, t);
+  const guidance = getScheduleMessage(getSceduleType, t);
 
   return (
     <React.Fragment>
@@ -234,7 +244,6 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   selected={props.value}
                   select={(e) => {
                     props.onChange(e);
-                    filterAds(e);
                   }}
                 />
               )}
@@ -242,6 +251,32 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           </div>
         </LabelFieldPair>
         {errors.siteId && <CardLabelError style={errorStyle}>{errors.siteId.message}</CardLabelError>}
+
+        <LabelFieldPair>
+          <CardLabel>
+            {t("Select Schedule Type")} <span className="mandatory-asterisk">*</span>
+          </CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="scheduleType"
+              rules={{ required: t("Schedule Type is required") }}
+              render={(props) => (
+                <Dropdown
+                  option={scheduleType}
+                  optionKey="frequency"
+                  selected={props.value}
+                  select={(e) => {
+                    setSceduleType(e?.frequency);
+                    filterAds(watch("siteId"));
+                    props.onChange(e);
+                  }}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.scheduleType && <CardLabelError style={errorStyle}>{errors.scheduleType.message}</CardLabelError>}
 
         {guidance && adsForLocation?.length > 0 && <div className="ads-guidance-box">⚠️ {guidance}</div>}
         {/* Cards grid with see more */}
@@ -258,7 +293,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 onViewAvailability={handleViewAvailability}
                 openCart={() => setShowCart(true)}
                 t={t}
-                scheduleType={scheduleType}
+                scheduleType={getSceduleType}
               />
             ))}
           </div>

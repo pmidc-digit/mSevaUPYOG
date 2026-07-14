@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { TextArea, LinkButton } from "@mseva/digit-ui-react-components";
+import { TextArea, LinkButton, Loader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, readOnly = false }) => {
@@ -13,7 +13,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   });
 
   // fetch urls and checklist data as before...
-  const { data: urlsList } = Digit.Hooks.noc.useNOCDocumentSearch(
+  const { data: urlsList, isLoading } = Digit.Hooks.noc.useNOCDocumentSearch(
     { value: { workflowDocs: (documents || []).map((d) => ({ documentUid: d.documentUid })) } },
     { enabled: documents?.length > 0 }
   );
@@ -35,6 +35,8 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
     setLocalRemarks(updated);
     onRemarksChange(updated);
   };
+
+  if(isLoading) return <Loader />
 
   return (
     <div className="checklist-document-table-wrapper" style={{ fontWeight: "bold" }}>

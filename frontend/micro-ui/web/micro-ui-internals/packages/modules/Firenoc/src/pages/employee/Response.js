@@ -17,7 +17,7 @@ const Response = (props) => {
   const getFirenocNocApplication = async () => {
     try {
       setLoading(true);
-      const nocSanctionData = await getNOCSanctionLetter(nocData, t);
+      const nocSanctionData = await getNOCSanctionLetter({application: nocData, t:t});
       let filestoreID = null;
         try {
           const response = await Digit.PaymentService.generatePdf(

@@ -352,16 +352,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     }
   }
 
-  trigger();
 }, [selectedFloors]);
 
-
-  const plotSizeWatch = watch("plotSize");
-  useEffect(() => {
-    if (plotSizeWatch) {
-      trigger();
-    }
-  }, [plotSizeWatch]);
 
   const vasikaDateWatch = watch("vasikaDate");
   useEffect(() => {
@@ -410,7 +402,22 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
               control={control}
               name="propertyType"
               rules={{ required: t("Property Type is required") }}
-              render={(props) => <Dropdown select={props.onChange} selected={props.value} option={getPropertyTypeData} optionKey="name" t={t} />}
+              render={(props) => <Dropdown select={(val)=>{
+                if(watch("propertyType") && watch("propertyType")?.code !== val?.code && watch("unitDetails")?.length > 1){
+                  if(window.confirm(t("Do you want to clear all the added units?"))){  
+                    setValue("unitDetails", [{ unitUsageType: "", occupancy: null }]);
+                  } else {
+                    return;
+                  }
+                } 
+                props?.onChange(val); 
+              }} 
+              selected={props.value} 
+              option={getPropertyTypeData} 
+              optionKey="name" 
+              t={t} 
+              />
+            }
             />
             {errors.propertyType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.propertyType?.message}</p>}
           </div>
@@ -678,8 +685,6 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   />
 
 
-
-
                   {errors?.unitDetails?.[index]?.unitUsageType && (
                     <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].unitUsageType.message}</p>
                   )}
@@ -795,7 +800,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     control={control}
                     name={`unitDetails.${index}.floor`}
                     rules={{ required: t("Floor is required") }}
-                    defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || null}
+                    defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || (index === 0 ? tesFloorOptions?.find(f => f?.code === "0")  : null)}
                     // defaultValue={item?.floor || ""}
                     render={(props) => {
                       // const isLockedGroundFloorUnit =
@@ -816,7 +821,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                           }}
                           selected={props.value}
                           option={
-                            index === 0 || item?.isAddedUnit
+                            index === 0 || item?.isAddedUnit || selectedPropertyType === "BUILTUP.SHAREDPROPERTY"
                               ? tesFloorOptions
                               : tesFloorOptions?.filter((f) => {
                                   const previousFloorCode = watch(`unitDetails.${index - 1}.floor`)?.code;

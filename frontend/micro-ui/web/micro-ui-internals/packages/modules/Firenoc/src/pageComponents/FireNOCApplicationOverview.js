@@ -130,6 +130,10 @@ const FireNOCApplicationOverview = () => {
       return;
     }
     if (action?.action === "PAY") {
+      if(tenantId === "pb.jalandhar" || tenantId === "pb.testing" || tenantId === "pb.itjalandhar"){
+        alert(t("PAYMENT_DISABLED"))
+        return
+      }
       const redirectPath = isEmployee
         ? `/digit-ui/employee/payment/collect/FIRENOC/${applicationNo}/${tenantId}?tenantId=${tenantId}`
         : `/digit-ui/citizen/payment/collect/FIRENOC/${applicationNo}?tenantId=${tenantId}`;

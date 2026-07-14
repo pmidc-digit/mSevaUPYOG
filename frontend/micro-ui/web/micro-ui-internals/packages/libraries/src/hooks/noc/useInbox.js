@@ -62,7 +62,7 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
             approvalDate: approvalDate,
             category: application.businessObject?.nocDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory,
             zone: application.businessObject?.nocDetails?.additionalDetails?.siteDetails?.zone,
-            applicationType: application?.businessObject?.applicationType,
+            applicationType: application?.businessObject?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType,
             sla: Math.floor((endDate - submittedOn) / (1000 * 60 * 60 * 24)),
           };
         });

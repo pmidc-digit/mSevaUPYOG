@@ -81,7 +81,9 @@ const FireNOCApplicationOverview = () => {
   const [getEmployees, setEmployees] = useState([]);
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const cities = Digit.Hooks.useTenants();
+  
+  
   const menuRef = React.useRef();
 
   const isEmployee = window.location.href.includes("/employee/");
@@ -128,6 +130,10 @@ const FireNOCApplicationOverview = () => {
       return;
     }
     if (action?.action === "PAY") {
+      if((tenantId === "pb.jalandhar" || tenantId === "pb.testing" || tenantId === "pb.itjalandhar") && !isEmployee ){
+        alert(t("PAYMENT_DISABLED"))
+        return
+      }
       const redirectPath = isEmployee
         ? `/digit-ui/employee/payment/collect/FIRENOC/${applicationNo}/${tenantId}?tenantId=${tenantId}`
         : `/digit-ui/citizen/payment/collect/FIRENOC/${applicationNo}?tenantId=${tenantId}`;
@@ -258,7 +264,7 @@ const FireNOCApplicationOverview = () => {
   const getRecieptSearch = async ({ tenantId, payments, pdfkey, EmpData = null, ...params }) => {
     try {
       setLoading(true);
-      const nocSanctionData = await getNOCSanctionLetter(fireNOC, t, EmpData,);
+      const nocSanctionData = await getNOCSanctionLetter({application: fireNOC, t, EmpData});
       let filestoreID = null;
         try {
           const response = await Digit.PaymentService.generatePdf(
@@ -283,7 +289,14 @@ const FireNOCApplicationOverview = () => {
   const getSanctionLetter = async ({ tenantId, payments, pdfkey, EmpData, ...params }) => {
     try {
       setLoading(true);
-      const nocSanctionData = await getNOCSanctionLetter(fireNOC, t, EmpData);
+      
+
+      const tenantCode = address?.city; 
+      
+      const matchedCity = cities?.status === "success" && cities?.data?.find((city) => city?.code === tenantCode);
+      console.log(matchedCity, "matchedCity");
+      
+      const nocSanctionData = await getNOCSanctionLetter({application: fireNOC, t, EmpData , matchedCity : matchedCity});
 
       const prevGetLang = Digit.StoreData.getCurrentLanguage;
       console.log("prevGetLang", prevGetLang);
@@ -375,11 +388,8 @@ const FireNOCApplicationOverview = () => {
             <Row label={t("NOC_FIRENOC_TYPE")} text={details?.fireNOCType || "-"} />
             <Row label={t("NOC_FIRESTATION_ID")} text={details?.firestationId || "-"} />
             <Row label={t("NOC_APPLICATION_DATE")} text={formatDate(details?.applicationDate)} />
-            {details?.issuedDate && (
-              <Row label={t("NOC_ISSUED_DATE")} text={formatDate(details?.issuedDate)} />
-            )}
-            {details?.validTo && (
-              <Row label={t("NOC_VALID_TILL")} text={formatDate(details?.validTo)} />
+            {details?.additionalDetail?.validityYears && (
+              <Row label={t("NOC_VALID_TILL")} text={`${details?.additionalDetail?.validityYears} Year(s)`} />
             )}
           </StatusTable>
         </Card>

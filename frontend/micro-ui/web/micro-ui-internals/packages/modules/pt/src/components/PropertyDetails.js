@@ -388,6 +388,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     var selectedCode = e && e.code;
                     var checkData = getUsageOptionsByCode(selectedCode);
                     setSubUsageData(checkData);
+                    fields?.forEach((_, idx) => {
+                      setValue(`unitDetails.${idx}.unitUsageType`, selectedCode === "MIXED" ? "" : e);
+                      setValue(`unitDetails.${idx}.subUsageType`, null);
+                    });
                   }}
                   selected={props.value}
                   option={getUsageData}
@@ -814,7 +818,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                           option={
                             index === 0 || item?.isAddedUnit
                               ? tesFloorOptions
-                              : tesFloorOptions?.filter((f) => Number(f?.code) > Number(watch(`unitDetails.${index - 1}.floor`)?.code || -Infinity))
+                              : tesFloorOptions?.filter((f) => {
+                                  const previousFloorCode = watch(`unitDetails.${index - 1}.floor`)?.code;
+                                  return !previousFloorCode || f?.code !== previousFloorCode;
+                                })
                           }
                           optionKey="name"
                           t={t}

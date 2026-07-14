@@ -269,7 +269,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, documents, validate
             }}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
-            inputStyles={{ width: "280px" }}
+            inputStyles={{ width: "43%" }}
             accept={doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "PET.PETPHOTO" ? ".jpeg, .jpg, .png" : ".pdf, .jpeg, .jpg, .png"}
             buttonType="button"
             error={Boolean(fieldError)}

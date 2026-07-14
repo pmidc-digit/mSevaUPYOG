@@ -2,6 +2,7 @@ import React, { Fragment, useCallback, useEffect, useMemo, useReducer, useState,
 import { Loader, Card, Table, CaseIcon, Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "react-query";
 import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
 import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templates/Inbox/components";
 import LayoutSearchFormFields from "./LayoutSearchFormFields";
@@ -13,9 +14,11 @@ import { businessServiceListLayout } from "../../../utils";
 const LayoutInbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     window.scroll(0, 0);
+    queryClient.invalidateQueries("INBOX_DATA");
   }, []);
 
   const userRoles = user?.info?.roles?.map((role) => role.code) || [];
@@ -143,7 +146,6 @@ const LayoutInbox = ({ parentRoute }) => {
     ASSIGNED_TO_ME: 0,
     ASSIGNED_TO_ALL: 0,
   });
-  const capturedAssigneeCountsTenant = useRef(null);
 
   const setSelectedTenantIdValue = useCallback(
     (key, value) => {
@@ -203,6 +205,10 @@ const LayoutInbox = ({ parentRoute }) => {
   const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useLayoutInbox({
     tenantId: effectiveTenantId,
     filters: memoizedFilters,
+    config: {
+      staleTime: 0,
+      refetchOnMount: "always",
+    },
   });
 
   const assigneeCountBaseFilters = useMemo(() => {
@@ -240,15 +246,22 @@ const LayoutInbox = ({ parentRoute }) => {
   const { data: assignedToMeInboxData } = Digit.Hooks.obps.useLayoutInbox({
     tenantId: effectiveTenantId,
     filters: assignedToMeFilters,
+    config: {
+      staleTime: 0,
+      refetchOnMount: "always",
+    },
   });
 
   const { data: assignedToAllInboxData } = Digit.Hooks.obps.useLayoutInbox({
     tenantId: effectiveTenantId,
     filters: assignedToAllFilters,
+    config: {
+      staleTime: 0,
+      refetchOnMount: "always",
+    },
   });
 
   useEffect(() => {
-    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
     setAssigneeCounts({
       ASSIGNED_TO_ME: 0,
       ASSIGNED_TO_ALL: 0,
@@ -257,14 +270,12 @@ const LayoutInbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (!assignedToMeInboxData || !assignedToAllInboxData) return;
-    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
 
     setAssigneeCounts({
       ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
     });
-    capturedAssigneeCountsTenant.current = effectiveTenantId;
-  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId]);
+  }, [assignedToAllInboxData, assignedToMeInboxData]);
 
   useEffect(() => {
     if (inboxData) {
@@ -492,17 +503,19 @@ const LayoutInbox = ({ parentRoute }) => {
           handleFilter={handleFilterChange}
         />
       }
-      // topBar={
-      //   <InboxTopBar
-      //     statuses={statusData}
-      //     activeTab={activeStatusTab}
-      //     onTabClick={onStatusTabClick}
-      //     searchValue={topBarSearch}
-      //     onSearchChange={(e) => setTopBarSearch(e.target.value)}
-      //     searchPlaceholder="Search by application number..."
-      //     totalCount={totalCountData}
-      //   />
-      // }
+      topBar={
+        <InboxTopBar
+          statuses={[]}
+          activeTab={activeStatusTab}
+          onTabClick={onStatusTabClick}
+          searchValue={topBarSearch}
+          onSearchChange={(e) => setTopBarSearch(e.target.value)}
+          searchPlaceholder="Search by application number..."
+          totalCount={totalCountData}
+          showClearTab={false}
+          showAll={false}
+        />
+      }
       isLoading={isInboxLoading}
       tableData={tableData}
       tableProps={propsForInboxTable}

@@ -32,7 +32,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
                 // http://localhost:3000/digit-ui/citizen/firenoc/search/application-overview/PB-NOC-SAS-LALRU-001969
                 to={
                   window.location.href.includes("/citizen")
-                    ? `/digit-ui/citizen/firenoc/search/application-overview/${row.original["applicationId"]}`
+                    ? `/digit-ui/citizen/noc/search/application-overview/${row.original["applicationId"]}`
                     : tenantId === "pb.punjab"
                     ? `${parentRoute}/inbox/application-overview/${encodeURIComponentCustom(row.original["applicationId"])}/${
                         row?.original?.tenantId

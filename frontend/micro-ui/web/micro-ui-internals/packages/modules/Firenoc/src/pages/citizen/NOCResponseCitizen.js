@@ -37,13 +37,19 @@ const NOCResponseCitizen = (props) => {
   };
 
   const handlePayment = () => {
-    history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${nocCode}?tenantId=${tenantId}`);
+    if(tenantId === "pb.jalandhar" || tenantId === "pb.testing" || tenantId === "pb.itjalandhar"){
+        alert(t("PAYMENT_DISABLED"))
+      return
+    }
+    else{
+      history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${nocCode}?tenantId=${tenantId}`);
+    }
   };
 
   const getFirenocNocApplication = async () => {
     try {
       setLoading(true);
-      const nocSanctionData = await getNOCSanctionLetter(nocData, t);
+      const nocSanctionData = await getNOCSanctionLetter({application:nocData, t:t});
       let filestoreID = null;
         try {
           const response = await Digit.PaymentService.generatePdf(

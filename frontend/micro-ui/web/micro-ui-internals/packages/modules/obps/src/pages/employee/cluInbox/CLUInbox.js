@@ -540,17 +540,19 @@ const CLUInbox = ({ parentRoute }) => {
               handleFilter={handleFilterChange}
             />
           }
-          // topBar={
-          //   // <InboxTopBar
-          //   //   statuses={filteredTopBarStatuses}
-          //   //   activeTab={activeStatusTab}
-          //   //   onTabClick={onStatusTabClick}
-          //   //   searchValue={topBarSearch}
-          //   //   onSearchChange={(e) => setTopBarSearch(e.target.value)}
-          //   //   searchPlaceholder="Search by application number..."
-          //   //   totalCount={totalCountData}
-          //   // />
-          // }
+          topBar={
+            <InboxTopBar
+              statuses={[]}
+              activeTab={activeStatusTab}
+              onTabClick={onStatusTabClick}
+              searchValue={topBarSearch}
+              onSearchChange={(e) => setTopBarSearch(e.target.value)}
+              searchPlaceholder="Search by application number..."
+              totalCount={totalCountData}
+              showClearTab={false}
+              showAll={false}
+            />
+          }
           isLoading={isInboxLoading}
           tableData={tableData}
           tableProps={propsForInboxTable}

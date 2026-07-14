@@ -44,6 +44,9 @@ public class CluInboxFilterService {
     @Value("${egov.searcher.clu.count.path:}")
     private String cluInboxSearcherCountEndpoint;
 
+    @Value("${egov.searcher.clu.citizen.tenantwise.co.path:}")
+    private String cluCitizenInboxTenantWiseApplnNosEndpoint;
+
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
 
@@ -156,7 +159,11 @@ public class CluInboxFilterService {
 
         if (moduleSearchCriteria != null && (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM) || userRoles.contains(CITIZEN))
                 && !CollectionUtils.isEmpty(userUUIDs)) {
-            searchCriteria.put(USERID_PARAM, userUUIDs);
+            if (moduleSearchCriteria.containsKey("isCitizenView") && Boolean.parseBoolean(String.valueOf(moduleSearchCriteria.get("isCitizenView")))) {
+                searchCriteria.put("ownerUuid", userUUIDs);
+            } else {
+                searchCriteria.put(USERID_PARAM, userUUIDs);
+            }
         }
 
         // CLU ID/UUID
@@ -289,5 +296,55 @@ public class CluInboxFilterService {
             log.error("Exception trace: ", e);
         }
         return userDetails;
+    }
+
+    public List<Map<String, String>> fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(InboxSearchCriteria criteria,
+            Map<String, String> statusIdNameMap, RequestInfo requestInfo) {
+        List<Map<String, String>> tenantWiseApplns = new ArrayList<>();
+        HashMap<String, Object> moduleSearchCriteria = criteria.getModuleSearchCriteria();
+        ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
+        Boolean isSearchResultEmpty = false;
+        Boolean isMobileNumberPresent = true;
+        List<String> userUUIDs = new ArrayList<>();
+        List<String> citizenRoles = new ArrayList<>();
+        if (moduleSearchCriteria == null) {
+            moduleSearchCriteria = new HashMap<>();
+        } else {
+            moduleSearchCriteria = new HashMap<>(moduleSearchCriteria);
+        }
+        if (!moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)) {
+            moduleSearchCriteria.put(MOBILE_NUMBER_PARAM, requestInfo.getUserInfo().getMobileNumber());
+        } 
+        if (Boolean.TRUE.equals(isMobileNumberPresent)) {
+            String tenantId = criteria.getTenantId();
+            String mobileNumber = String.valueOf(moduleSearchCriteria.get(MOBILE_NUMBER_PARAM));
+            Map<String, List<String>> userDetails = fetchUserUUID(mobileNumber, requestInfo, tenantId);
+            userUUIDs = userDetails.get(USER_UUID);
+            citizenRoles = userDetails.get(USER_ROLES);
+            Boolean isUserPresentForGivenMobileNumber = !CollectionUtils.isEmpty(userUUIDs);
+            isSearchResultEmpty = !isUserPresentForGivenMobileNumber;
+            if (Boolean.TRUE.equals(isSearchResultEmpty)) {
+                userUUIDs.add(requestInfo.getUserInfo().getUuid());
+                List<String> roles = requestInfo.getUserInfo().getRoles().stream().map(Role::getCode).collect(Collectors.toList());
+                citizenRoles.addAll(roles);
+            }
+        }
+
+        if (Boolean.FALSE.equals(isSearchResultEmpty)) {
+            Object result = null;
+
+            Map<String, Object> searcherRequest = new HashMap<>();
+            Map<String, Object> searchCriteria = getSearchCriteria(criteria, new HashMap<>(statusIdNameMap),
+                    moduleSearchCriteria, processCriteria, userUUIDs, citizenRoles);
+
+            searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
+            searcherRequest.put(SEARCH_CRITERIA_PARAM, searchCriteria);
+
+            StringBuilder uri = new StringBuilder();
+            uri.append(searcherHost).append(cluCitizenInboxTenantWiseApplnNosEndpoint);
+            result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
+            tenantWiseApplns = JsonPath.read(result, "$.cluApplication.*");
+        }
+        return tenantWiseApplns;
     }
 }

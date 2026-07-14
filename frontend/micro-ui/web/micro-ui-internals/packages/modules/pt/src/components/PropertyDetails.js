@@ -795,7 +795,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     control={control}
                     name={`unitDetails.${index}.floor`}
                     rules={{ required: t("Floor is required") }}
-                    defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || null}
+                    defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || tesFloorOptions?.[0] || null}
                     // defaultValue={item?.floor || ""}
                     render={(props) => {
                       // const isLockedGroundFloorUnit =
@@ -816,7 +816,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                           }}
                           selected={props.value}
                           option={
-                            index === 0 || item?.isAddedUnit
+                            index === 0 || item?.isAddedUnit || selectedPropertyType === "BUILTUP.SHAREDPROPERTY"
                               ? tesFloorOptions
                               : tesFloorOptions?.filter((f) => {
                                   const previousFloorCode = watch(`unitDetails.${index - 1}.floor`)?.code;
@@ -825,7 +825,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                           }
                           optionKey="name"
                           t={t}
-                          disable={ item?.isAddedUnit}
+                          disable={ item?.isAddedUnit || selectedPropertyType === "BUILTUP.SHAREDPROPERTY"}
                         />
                       );
                     }}

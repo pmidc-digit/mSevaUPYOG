@@ -13,6 +13,13 @@ const useBPATaxDocuments = (stateId, formData, beforeUploadDocuments) => {
         if (bpaDocs?.BPA?.DocTypeMapping) {
             filtredBpaDocs = bpaDocs?.BPA?.DocTypeMapping?.filter(data => (data.WFState == formData?.status && data.RiskType == formData?.riskType && data.ServiceType == formData?.data?.serviceType && data.applicationType == formData?.data?.applicationType))
         }
+        console.log("MasterBpaDocs", formData?.status, formData?.riskType, formData?.data?.serviceType, formData?.data?.applicationType, bpaDocs)
+        bpaDocs?.BPA?.DocTypeMapping?.filter(data => {
+            if(data.applicationType == formData?.data?.applicationType){
+                console.log("filtredBpaDocs", data.WFState == formData?.status, data.RiskType == formData?.riskType, data.ServiceType == formData?.data?.serviceType, data.applicationType == formData?.data?.applicationType)
+            }
+            return (data.WFState == formData?.status && data.RiskType == formData?.riskType && data.ServiceType == formData?.data?.serviceType && data.applicationType == formData?.data?.applicationType)
+        })
         let documentsList = [];
         filtredBpaDocs?.[0]?.docTypes?.forEach(doc => {
             let code = doc.code; doc.dropdownData = []; doc.uploadedDocuments = [];

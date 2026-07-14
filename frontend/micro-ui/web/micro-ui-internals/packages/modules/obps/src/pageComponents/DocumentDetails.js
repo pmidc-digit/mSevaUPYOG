@@ -80,6 +80,8 @@ const DocumentDetails = ({
     beforeUploadDocuments || []
   );
 
+  console.log("bpaTaxDocuments",bpaTaxDocuments)
+
   const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["DocTypeMapping"]);
   console.log(
     "bpaTaxDocuments",

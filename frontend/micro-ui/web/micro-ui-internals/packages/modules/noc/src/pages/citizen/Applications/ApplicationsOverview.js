@@ -38,6 +38,7 @@ import { convertToDDMMYYYY, formatDuration, amountToWords, downloadPdfFromURL } 
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import { format } from "date-fns";
+
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -94,14 +95,13 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 const CitizenApplicationOverview = () => {
   const { nocid } = useParams();
   const id = decodeURIComponentCustom(nocid);
-  
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
   const [displayData, setDisplayData] = useState({});
 
-  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
+  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
   const applicationDetails = data?.resData;
   const [timeObj, setTimeObj] = useState(null);
   const [appDate, setAppDate] = useState(null);
@@ -115,7 +115,6 @@ const CitizenApplicationOverview = () => {
       : {}
   );
 
-  // console.log('applicationD', applicationDetails)
   // const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -132,7 +131,7 @@ const CitizenApplicationOverview = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
   const geoLocations = useMemo(() => {
-    if (siteImages?.documents && siteImages?.documents.length > 0) {
+    if (siteImages?.documents && siteImages?.documents?.length > 0) {
       return siteImages?.documents?.map((img) => {
         return {
           latitude: img?.latitude || "",
@@ -156,11 +155,11 @@ const CitizenApplicationOverview = () => {
   React.useEffect(() => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth" // use "auto" for instant scroll
+      behavior: "smooth", // use "auto" for instant scroll
     });
     refetch();
-    workflowDetails.revalidate();   
-  }, [])
+    workflowDetails.revalidate();
+  }, []);
 
   useEffect(() => {
     const nocObject = applicationDetails?.Noc?.[0];
@@ -180,18 +179,17 @@ const CitizenApplicationOverview = () => {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
         siteDetails: siteDetails ? [siteDetails] : [],
         coordinates: coordinates ? [coordinates] : [],
-        Documents: Documents.length > 0 ? Documents : [],
+        Documents: Documents?.length > 0 ? Documents : [],
         ownerPhotoList: ownerPhotoList,
       };
 
       setDisplayData(finalDisplayData);
 
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
-      if(submittedOn!== null){
-        setAppDate(Number(submittedOn))
+      if (submittedOn !== null) {
+        setAppDate(Number(submittedOn));
       }
       const endTime = Date.now();
-      // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
       const time = formatDuration(totalTime);
 
@@ -218,7 +216,6 @@ const CitizenApplicationOverview = () => {
     try {
       setLoading(true);
       const Property = applicationDetails?.Noc?.[0];
-      //console.log("tenants", tenants);
       const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
 
       const site = Property?.nocDetails?.additionalDetails?.siteDetails;
@@ -308,8 +305,8 @@ const CitizenApplicationOverview = () => {
     } finally {
       setLoading(false);
       Digit.StoreData.getCurrentLanguage = prevGetLang;
+    }
   }
-}
   async function getRejectionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-rejectionletter", ...params }) {
     const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
@@ -341,7 +338,7 @@ const CitizenApplicationOverview = () => {
     onClick: handleDownloadPdf,
   });
   if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+    if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
         onClick: () =>
@@ -350,7 +347,7 @@ const CitizenApplicationOverview = () => {
     }
   }
   if (applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+    if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
         onClick: () =>
@@ -365,7 +362,10 @@ const CitizenApplicationOverview = () => {
         onClick: () =>
           getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData }),
       });
-    }else if(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.isMigrationTrue && applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId){
+    } else if (
+      applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.isMigrationTrue &&
+      applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
+    ) {
       dowloadOptions.push({
         label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
         onClick: () =>
@@ -378,16 +378,16 @@ const CitizenApplicationOverview = () => {
     }
   }
   if (applicationDetails?.Noc?.[0]?.applicationStatus === "REJECTED") {
-     dowloadOptions.push({
-        label: t("DOWNLOAD_NOC_REJECTION_LETTER"),
-        onClick: () =>
-          getRejectionLetterReceipt({
-            tenantId: tenantId,
-            payments: reciept_data?.Payments[0],
-            EmpData,
-          }),
-      });
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+    dowloadOptions.push({
+      label: t("DOWNLOAD_NOC_REJECTION_LETTER"),
+      onClick: () =>
+        getRejectionLetterReceipt({
+          tenantId: tenantId,
+          payments: reciept_data?.Payments[0],
+          EmpData,
+        }),
+    });
+    if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
         onClick: () =>
@@ -506,8 +506,8 @@ const CitizenApplicationOverview = () => {
     let conditionText = "";
     if (approvercomments?.includes("[#?..**]")) {
       conditionText = approvercomments.split("[#?..**]")[1] || "";
-    }else{
-        conditionText = approvercomments?.[0]
+    } else {
+      conditionText = approvercomments?.[0];
     }
 
     return conditionText
@@ -527,7 +527,7 @@ const CitizenApplicationOverview = () => {
     };
 
     if (action?.action == "EDIT") {
-      const encyptedID = encodeURIComponentCustom(appNo)
+      const encyptedID = encodeURIComponentCustom(appNo);
       history.push(`/digit-ui/citizen/noc/edit-application/${encyptedID}`);
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
@@ -627,7 +627,7 @@ const CitizenApplicationOverview = () => {
 
   const remainingDocs = displayData?.Documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
-  );
+  )?.filter((doc) => !!doc?.documentAttachment);
   // console.log("remainingDocs", remainingDocs);
   const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
@@ -636,7 +636,9 @@ const CitizenApplicationOverview = () => {
   const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
   const isFirm = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
 
-  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
+  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]
+    .filter((v, i, arr) => v && arr.indexOf(v) === i)
+    .join(", ");
 
   // console.log("combinerOwnersName", combinedOwnersName);
 
@@ -647,7 +649,7 @@ const CitizenApplicationOverview = () => {
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
 
         {loading && <Loader />}
-        {dowloadOptions && dowloadOptions.length > 0 && (
+        {dowloadOptions && dowloadOptions?.length > 0 && (
           <MultiLink
             className="multilinkWrapper"
             onHeadClick={() => setShowOptions(!showOptions)}
@@ -673,7 +675,7 @@ const CitizenApplicationOverview = () => {
           </Card>
         </React.Fragment>
       )}
-      {appDate!== null && (
+      {appDate !== null && (
         <React.Fragment>
           <Card>
             <StatusTable>
@@ -927,7 +929,7 @@ const CitizenApplicationOverview = () => {
         </div>
       </Card> */}
 
-      {(applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") && (
+      {applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" && (
         <Card>
           <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
           {applicationDetails?.Noc?.[0]?.nocDetails && (
@@ -973,7 +975,7 @@ const CitizenApplicationOverview = () => {
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} />
       </div>
 
-      {actions && actions.length > 0 && (
+      {actions && actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu

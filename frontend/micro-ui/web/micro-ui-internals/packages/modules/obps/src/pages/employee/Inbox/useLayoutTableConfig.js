@@ -5,6 +5,16 @@ import { useTranslation } from "react-i18next";
 
 const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
   const { t } = useTranslation();
+  const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
+
+  const GetStatusCell = (value, isSelfCertification) =>
+    value === "CS_NA" ? (
+      t(value)
+    ) : value === "Active" || (value > 10 && isSelfCertification === "Yes") ? (
+      <span className="sla-cell-error">{value}</span>
+    ) : (
+      <span className="sla-cell-success">{value}</span>
+    );
 
   const getStatusClass = (status) => {
     const value = String(status || "").toLowerCase();
@@ -53,7 +63,16 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         className: "ndc-new-table-app",
         Cell: ({ row }) => (
           <div className="ndc-new-cell-stack">
-            <Link to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`} className="ndc-new-app-link">
+            <Link
+              to={
+                // /digit-ui/citizen/obps/layout/application-overview/${row.original?.Applications?.applicationNo}
+                window.location.href.includes("/citizen")
+                  ? `${parentRoute}/layout/application-overview/${row.original?.applicationId}`
+                  : `${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`
+              }
+              // to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`}
+              className="ndc-new-app-link"
+            >
               {row.original?.applicationId || row.original?.applicationNo || "-"}
             </Link>
             {/* {row.original?.locality ? <div className="ndc-new-cell-secondary">{row.original?.locality}</div> : null} */}
@@ -67,6 +86,40 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
           const dateValue = row.original?.date || row.original?.createdTime;
           return dateValue ? format(new Date(dateValue), "dd/MM/yyyy") : "-";
         },
+      },
+      // new added
+      {
+        Header: t("CS_APPLICATION_DETAILS_SUBMISSION_DATE"),
+        accessor: "submissionDate",
+        Cell: ({ row }) => {
+          const value = Number(row.original?.submissionDate);
+
+          return Number.isFinite(value) ? GetCell(format(new Date(value), "dd/MM/yyyy")) : "-";
+        },
+        disableSortBy: true,
+      },
+      {
+        Header: t("CS_APPLICATION_DETAILS_APPROVAL_DATE"),
+        accessor: "approvalDate",
+        Cell: ({ row }) => {
+          const value = Number(row.original?.approvalDate);
+          console.log("rooo", row.original);
+
+          return Number.isFinite(value) ? GetCell(format(new Date(value), "dd/MM/yyyy")) : "-";
+        },
+        disableSortBy: true,
+      },
+      {
+        Header: t("Primary Owner Name"),
+        accessor: "owner",
+        Cell: ({ row }) => {
+          return row.original?.owner || "-";
+        },
+      },
+      {
+        Header: t("CATEGORY"),
+        accessor: (row) => row?.category,
+        disableSortBy: true,
       },
       {
         Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
@@ -83,25 +136,40 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         },
       },
       {
-        Header: t("CS_COMMON_ACTION"),
-        accessor: "action",
+        Header: t("ZONE"),
+        accessor: (row) => t(row?.zone),
         disableSortBy: true,
-        className: "ndc-new-table-action",
-        Cell: ({ row }) => (
-          <span className="ndc-new-action-group">
-            <Link
-              to={`${parentRoute}/inbox/application-overview/${row.original?.applicationId}`}
-              className="ndc-new-icon ndc-new-icon-link"
-              aria-label={t("ES_COMMON_VIEW")}
-            >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-            </Link>
-          </span>
-        ),
       },
+      {
+        Header: t("BPA_SEARCH_APPLICATION_TYPE_LABEL"),
+        accessor: (row) => t(row?.applicationType),
+        disableSortBy: true,
+      },
+      {
+        Header: t("TIME_TAKEN"),
+        accessor: (row) => row?.sla,
+        disableSortBy: true,
+      },
+      // {
+      //   Header: t("CS_COMMON_ACTION"),
+      //   accessor: "action",
+      //   disableSortBy: true,
+      //   className: "ndc-new-table-action",
+      //   Cell: ({ row }) => (
+      //     <span className="ndc-new-action-group">
+      //       <Link
+      //         to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`}
+      //         className="ndc-new-icon ndc-new-icon-link"
+      //         aria-label={t("ES_COMMON_VIEW")}
+      //       >
+      //         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+      //           <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+      //           <circle cx="12" cy="12" r="3" />
+      //         </svg>
+      //       </Link>
+      //     </span>
+      //   ),
+      // },
     ];
   }, [parentRoute, t]);
 

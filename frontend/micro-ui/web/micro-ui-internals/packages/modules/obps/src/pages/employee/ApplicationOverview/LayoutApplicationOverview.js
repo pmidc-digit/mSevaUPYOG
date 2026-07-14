@@ -1304,6 +1304,7 @@ const LayoutEmployeeApplicationOverview = () => {
                 onRemarksChange={setChecklistRemarks}
                 value={checklistRemarks}
                 readOnly="true"
+                applicationStatus={applicationDetails?.Layout?.[0]?.applicationStatus}
               />
             )}
           </StatusTable>
@@ -1323,6 +1324,7 @@ const LayoutEmployeeApplicationOverview = () => {
                   tenantId={tenantId}
                   onRemarksChange={setChecklistRemarks}
                   value={checklistRemarks}
+                  applicationStatus={applicationDetails?.Layout?.[0]?.applicationStatus}
                 />
               )}
             </StatusTable>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { TextArea, LinkButton } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
-const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, value, readOnly = false }) => {
+const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, value, readOnly = false,applicationStatus }) => {
   const { t } = useTranslation();
   const [localRemarks, setLocalRemarks] = useState({});
 
@@ -48,7 +48,9 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
             <th className="checklist-table-header checklist-table-header-srno">{t("SR_NO")}</th>
             <th className="checklist-table-header checklist-table-header-doc-name">{t("BPA_DOCUMENT_NAME")}</th>
             <th className="checklist-table-header checklist-table-header-doc-file">{t("BPA_DOCUMENT_FILE")}</th>
+                 {applicationStatus !== "FIELDINSPECTION_INPROGRESS" && applicationStatus !== "INSPECTION_REPORT_PENDING" && (
             <th className="checklist-table-header checklist-table-header-remark">{t("BPA_DOCUMENT_REMARK")}</th>
+                 )}
           </tr>
         </thead>
         <tbody>
@@ -61,7 +63,8 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
                 <td className="checklist-table-cell checklist-table-cell-file">
                   {url ? <LinkButton label={t("View")} onClick={() => window.open(url, "_blank")} /> : t("CS_NA")}
                 </td>
-                <td className="checklist-table-cell checklist-table-cell-remark">
+                {applicationStatus !== "FIELDINSPECTION_INPROGRESS" && applicationStatus !== "INSPECTION_REPORT_PENDING" && (
+                  <td className="checklist-table-cell checklist-table-cell-remark">
                   {isReadOnly ? (
                     <TextArea t={t} value={value[doc.documentUid] || ""} disabled={true} className="checklist-table-textarea" />
                   ) : (
@@ -80,6 +83,9 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
                     />
                   )}
                 </td>
+
+                )}
+                
               </tr>
             );
           })}

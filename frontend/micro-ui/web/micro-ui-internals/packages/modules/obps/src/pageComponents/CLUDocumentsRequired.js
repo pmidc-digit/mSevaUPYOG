@@ -99,6 +99,8 @@ const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
     link: pdfDownloadLink(docPreviewData?.pdfFiles, doc.filestoreId),
   }));
 
+  if(isDocLoading) return <Loader />
+
   return (
     <div>
       {/* <Timeline currentStep={4} /> */}

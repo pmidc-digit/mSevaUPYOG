@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { TextInput, LinkButton, TextArea } from "@mseva/digit-ui-react-components";
+import { TextInput, LinkButton, TextArea, Loader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, readOnly = false }) => {
@@ -54,6 +54,8 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
     setLocalRemarks(updated);
     onRemarksChange(updated);
   };
+
+  if(isLoading) return <Loader />
 
   const renderMobileCardView = () => {
     return (

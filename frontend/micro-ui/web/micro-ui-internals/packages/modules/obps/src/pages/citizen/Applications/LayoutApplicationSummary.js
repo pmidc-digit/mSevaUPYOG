@@ -29,7 +29,7 @@ import NOCDocumentTableView from "../../../../../noc/src/pageComponents/NOCDocum
 import { useLayoutSearchApplication } from "@mseva/digit-ui-libraries/src/hooks/obps/useSearchApplication";
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
 import LayoutDocumentView from "./LayoutDocumentView";
-import { amountToWords } from "../../../utils/index";
+import { amountToWords, formatDuration } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { LoaderNew } from "../../../components/LoaderNew";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
@@ -127,6 +127,7 @@ const LayoutApplicationOverview = () => {
   const [viewTimeline, setViewTimeline] = useState(false);
   const [displayData, setDisplayData] = useState({})
   const [loading, setLoading] = useState(false);
+  const [timeObj, setTimeObj] = useState(null);
   const state = Digit.ULBService.getStateId()
 
   // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
@@ -243,6 +244,12 @@ const LayoutApplicationOverview = () => {
 
       //console.log("finalDisplayData:", finalDisplayData)
       setDisplayData(finalDisplayData)
+
+      const submittedOn = layoutObject?.layoutDetails?.additionalDetails?.SubmittedOn;
+      const endTime = Date.now();
+      const totalTime = submittedOn != null ? endTime - submittedOn : null;
+      const time = formatDuration(totalTime);
+      setTimeObj(time);
     }
   }, [applicationDetails?.Layout])
 
@@ -944,7 +951,7 @@ const LayoutApplicationOverview = () => {
 
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj}/>
       </div>
 
       {actions && actions.length > 0 && (

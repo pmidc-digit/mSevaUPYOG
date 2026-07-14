@@ -3,6 +3,7 @@ import React from "react";
 import { Route, Switch, useRouteMatch, Link, useLocation } from "react-router-dom";
 import { shouldHideBackButton } from "../../utils";
 import { useTranslation } from "react-i18next";
+import NOCCitizenApplicationOverview from "./Applications/ApplicationsOverview";
 import NOCInbox from "../employee/Inbox/index";
 
 const hideBackButtonConfig = [];
@@ -57,7 +58,7 @@ const App = () => {
   const Inbox = Digit?.ComponentRegistryService?.getComponent("NOCInbox");
 
   const NOCCitizenMyApplications = Digit.ComponentRegistryService.getComponent("NOCCitizenMyApplications");
-  const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
+  // const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
   const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCEditApplication");
   const NOCCitizenSearchApplication = Digit?.ComponentRegistryService?.getComponent("NOCCitizenSearchApplication");
   const isResponse = window.location.href.includes("/response");
@@ -78,7 +79,11 @@ const App = () => {
           {/* <PrivateRoute path={`${path}/my-application`} component={NOCCitizenMyApplications} /> */}
           <PrivateRoute path={`${path}/my-application`} component={(props) => <Inbox {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/edit-application/:nocid`} component={NewNOCEditApplication} />
-          <PrivateRoute path={`${path}/search/application-overview/:nocid`} component={NOCCitizenApplicationOverview} />
+          <PrivateRoute
+            path={`${path}/search/application-overview/:nocid?`}
+            component={(props) => <NOCCitizenApplicationOverview {...props} parentRoute={path} />}
+            // component={NOCCitizenApplicationOverview}
+          />
           <PrivateRoute path={`${path}/search-application`} component={NOCCitizenSearchApplication} />
         </AppContainer>
       </Switch>

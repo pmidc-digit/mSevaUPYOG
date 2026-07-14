@@ -2,6 +2,7 @@ import React, { Fragment, useCallback, useEffect, useMemo, useReducer, useState,
 import { Loader, Card, Table, CaseIcon, Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "react-query";
 import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
 import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templates/Inbox/components";
 import LayoutSearchFormFields from "./LayoutSearchFormFields";
@@ -12,12 +13,22 @@ import { businessServiceListLayout } from "../../../utils";
 
 const LayoutInbox = ({ parentRoute }) => {
   const { t } = useTranslation();
+  let user = Digit.UserService.getUser();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     window.scroll(0, 0);
+    queryClient.invalidateQueries("INBOX_DATA");
   }, []);
 
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const userRoles = user?.info?.roles?.map((role) => role.code) || [];
+
+  const hasViewOBPSCardRole = userRoles.includes("OBPAS_READ_ONLY");
+
+  // const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
+  const isEmployee = window.location.href.includes("employee");
+  const defaultAssignee = isEmployee && !hasViewOBPSCardRole ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL";
   const { data: cities } = Digit.Hooks.useTenants();
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
@@ -123,13 +134,7 @@ const LayoutInbox = ({ parentRoute }) => {
       tableForm: tableOrderFormDefaultValues,
       selectedTenantId: selectedTenantIdDefaultValues,
     };
-  }, [
-    InboxObjectInSessionStorage,
-    filterFormDefaultValues,
-    searchFormDefaultValues,
-    selectedTenantIdDefaultValues,
-    tableOrderFormDefaultValues,
-  ]);
+  }, [InboxObjectInSessionStorage, filterFormDefaultValues, searchFormDefaultValues, selectedTenantIdDefaultValues, tableOrderFormDefaultValues]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
 
@@ -141,7 +146,6 @@ const LayoutInbox = ({ parentRoute }) => {
     ASSIGNED_TO_ME: 0,
     ASSIGNED_TO_ALL: 0,
   });
-  const capturedAssigneeCountsTenant = useRef(null);
 
   const setSelectedTenantIdValue = useCallback(
     (key, value) => {
@@ -201,6 +205,10 @@ const LayoutInbox = ({ parentRoute }) => {
   const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useLayoutInbox({
     tenantId: effectiveTenantId,
     filters: memoizedFilters,
+    config: {
+      staleTime: 0,
+      refetchOnMount: "always",
+    },
   });
 
   const assigneeCountBaseFilters = useMemo(() => {
@@ -238,15 +246,22 @@ const LayoutInbox = ({ parentRoute }) => {
   const { data: assignedToMeInboxData } = Digit.Hooks.obps.useLayoutInbox({
     tenantId: effectiveTenantId,
     filters: assignedToMeFilters,
+    config: {
+      staleTime: 0,
+      refetchOnMount: "always",
+    },
   });
 
   const { data: assignedToAllInboxData } = Digit.Hooks.obps.useLayoutInbox({
     tenantId: effectiveTenantId,
     filters: assignedToAllFilters,
+    config: {
+      staleTime: 0,
+      refetchOnMount: "always",
+    },
   });
 
   useEffect(() => {
-    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
     setAssigneeCounts({
       ASSIGNED_TO_ME: 0,
       ASSIGNED_TO_ALL: 0,
@@ -255,14 +270,12 @@ const LayoutInbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (!assignedToMeInboxData || !assignedToAllInboxData) return;
-    if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
 
     setAssigneeCounts({
       ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
     });
-    capturedAssigneeCountsTenant.current = effectiveTenantId;
-  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId]);
+  }, [assignedToAllInboxData, assignedToMeInboxData]);
 
   useEffect(() => {
     if (inboxData) {
@@ -484,22 +497,25 @@ const LayoutInbox = ({ parentRoute }) => {
           filterFormState={formState?.filterForm}
           getFilterFormValue={getFilterFormValue}
           statuses={statusData}
+          showAssigneeCards={isEmployee && !hasViewOBPSCardRole}
           isInboxLoading={isInboxLoading}
           assigneeCounts={assigneeCounts}
           handleFilter={handleFilterChange}
         />
       }
-      // topBar={
-      //   <InboxTopBar
-      //     statuses={statusData}
-      //     activeTab={activeStatusTab}
-      //     onTabClick={onStatusTabClick}
-      //     searchValue={topBarSearch}
-      //     onSearchChange={(e) => setTopBarSearch(e.target.value)}
-      //     searchPlaceholder="Search by application number..."
-      //     totalCount={totalCountData}
-      //   />
-      // }
+      topBar={
+        <InboxTopBar
+          statuses={[]}
+          activeTab={activeStatusTab}
+          onTabClick={onStatusTabClick}
+          searchValue={topBarSearch}
+          onSearchChange={(e) => setTopBarSearch(e.target.value)}
+          searchPlaceholder="Search by application number..."
+          totalCount={totalCountData}
+          showClearTab={false}
+          showAll={false}
+        />
+      }
       isLoading={isInboxLoading}
       tableData={tableData}
       tableProps={propsForInboxTable}

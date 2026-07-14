@@ -75,13 +75,11 @@ const EmployeeApp = ({ path, url, userType }) => {
       <React.Fragment>
         <div className="ground-container">
           {!isRes ? (
-              <div className={`${isNewRegistration ? 'ads-registration-row--new' : 'ads-registration-row--existing'}`}>
+            <div className={`${isNewRegistration ? "ads-registration-row--new" : "ads-registration-row--existing"}`}>
               <PETBreadCrumbs location={location} />
             </div>
           ) : null}
           <PrivateRoute exact path={`${path}/`} component={() => <PTRLinks matchPath={path} userType={userType} />} />
-          {/* <PrivateRoute exact path={`${path}/ptrservice/application-overview/:id`} component={ApplicationOverview} /> */}
-          {/* <PrivateRoute path={`${path}/petservice/application-details/:id`} component={() => <ApplicationOverview parentRoute={path} />} /> */}
           <PrivateRoute
             path={`${path}/petservice/inbox`}
             component={() => (
@@ -96,7 +94,7 @@ const EmployeeApp = ({ path, url, userType }) => {
             )}
           />
           <PrivateRoute path={`${path}/petservice/new-application/:id?`} component={PTRCreate} />
-          <PrivateRoute path={`${path}/petservice/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
+          <PrivateRoute path={`${path}/petservice/application-details/:id?`} component={() => <ApplicationDetails parentRoute={path} />} />
           <PrivateRoute
             path={`${path}/petservice/applicationsearch/application-details/:id`}
             component={() => <ApplicationDetails parentRoute={path} />}

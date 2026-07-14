@@ -128,6 +128,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     },
   });
 
+  useEffect(() => {
+    console.log("errors", errors);
+  }, [errors]);
+
   const docUploadData = {
     Challan: {
       Documents: [
@@ -180,6 +184,8 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const handlePropertySelect = (property) => {
     if (!property) return;
 
+    console.log("property", property);
+
     const findPropertySpecific = propertySpecificOptions?.find((item) => item?.code == property?.propertyType);
     const findlocationTypeOptions = locationTypeOptions?.find((item) => item?.code == property?.locationType);
 
@@ -191,17 +197,24 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       // "propertyId",
       "propertyName",
       "baseRent",
-      "securityDeposit",
+      // "securityDeposit",
       "refundApplicableOnDiscontinuation",
       "penaltyType",
       // "latePayment",
       // "cowCessApplicable",
       // "taxApplicable"
     ];
+    setValue("securityDeposit", "0");
 
     setValue("selectedProperty", property);
     fieldsToPrefill?.forEach((field) => {
-      setValue(field, property?.[field] || null, {
+      let value = property?.[field];
+
+      if (field === "securityDeposit" && typeof value === "number") {
+        value = value.toString();
+      }
+
+      setValue(field, value || null, {
         shouldValidate: true,
         shouldDirty: true,
       });
@@ -672,7 +685,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
             <Controller
               control={control}
               name="securityDeposit"
-              rules={{ required: t("PTR_FIELD_REQUIRED") }}
+              rules={{
+                required: watch("applicationType")?.code !== "Legacy" ? t("PTR_FIELD_REQUIRED") : false,
+                // required: t("PTR_FIELD_REQUIRED")
+              }}
               render={({ value, onChange }) => (
                 <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />
               )}

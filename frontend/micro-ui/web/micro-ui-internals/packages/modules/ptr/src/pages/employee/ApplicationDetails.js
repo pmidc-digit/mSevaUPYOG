@@ -14,7 +14,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory, useParams, useLocation } from "react-router-dom";
 import getPetAcknowledgementData from "../../getPetAcknowledgementData";
 import PTRWFApplicationTimeline from "../../pageComponents/PTRWFApplicationTimeline";
 import { pdfDownloadLink } from "../../utils";
@@ -26,7 +26,10 @@ import { size } from "lodash";
 const ApplicationDetails = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  const { id } = useParams();
+  const location = useLocation();
+  // const { id } = useParams();
+  const id = location?.state?.applicationNumber;
+
   const [acknowldgementData, setAcknowldgementData] = useState([]);
   const [showOptions, setShowOptions] = useState(false);
   const [popup, setpopup] = useState(false);
@@ -125,12 +128,12 @@ const ApplicationDetails = () => {
 
   // const printCertificate = async () => {
   //     const qrDataURL = await QRCode.toDataURL(window.location.href);
-  
+
   //     try {
   //       if (!data?.PetRegistrationApplications?.[0]) {
   //         throw new Error("Pet registration data is missing");
   //       }
-  
+
   //       const createCertificateHTML = () => {
   //         const petData = data.PetRegistrationApplications[0];
   //         const currentDate = new Date().toLocaleDateString("en-IN", {
@@ -138,22 +141,22 @@ const ApplicationDetails = () => {
   //           month: "2-digit",
   //           year: "numeric",
   //         });
-  
+
   //         const petImage = petData?.documents?.find((doc) => doc?.documentType === "PET.PETPHOTO");
-  
+
   //         const petImageUrl = petImage?.filestoreId
   //           ? `${window.location.origin}/filestore/v1/files/id?tenantId=pb&fileStoreId=${petImage.filestoreId}`
   //           : `${window.location.origin}/adorable-golden-retriever.png`;
-  
+
   //         const content = `
   //           <html>
   //             <head>
   //               <title>Pet Registration Certificate</title>
   //               <style>
   //                 @page { margin: 0.5in; }
-  //                 body { 
-  //                   font-family: 'Times New Roman', serif; 
-  //                   margin: 0; 
+  //                 body {
+  //                   font-family: 'Times New Roman', serif;
+  //                   margin: 0;
   //                   font-size: 11px;
   //                 }
   //                 .certificate-container {
@@ -245,10 +248,10 @@ const ApplicationDetails = () => {
   //               }
   //                 .detail-label {
   //                 font-weight: bold;
-  //                 white-space: normal;    
-  //                 word-break: break-word; 
+  //                 white-space: normal;
+  //                 word-break: break-word;
   //                 margin-left: 10px;
-  //                 flex-shrink: 1;         
+  //                 flex-shrink: 1;
   //                 }
   //                 .detail-value {
   //                   padding-bottom: 2px;
@@ -301,12 +304,12 @@ const ApplicationDetails = () => {
   //                 @media print {
   //                   body { background: white !important; }
   //                 }
-  //                 @media (max-width: 700px) {   
+  //                 @media (max-width: 700px) {
   //                 .main-content {
   //                   flex-wrap: wrap;
   //                 }
   //                 .pet-image {
-  //                   width: 100px;           
+  //                   width: 100px;
   //                   max-width: 100%;
   //                   height: auto;
   //                   aspect-ratio: 1/1;
@@ -322,7 +325,7 @@ const ApplicationDetails = () => {
   //               <div class="certificate-container">
   //               <div class="header">
   //               <div>
-  //                 <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${petData?.tenantId}/logo.png" 
+  //                 <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${petData?.tenantId}/logo.png"
   //                     style="width: 80px; height: 80px; padding-left: 20px; padding-top: 5px;" />
   //               </div>
   //               <div class="header-center">
@@ -343,7 +346,7 @@ const ApplicationDetails = () => {
   //                   <div class="details-section">
   //                     <span class="detail-label">Pet Information</span> <br>
   //                     <span class="detail-label">Registration No:</span> <span class="detail-label">${petData?.petRegistrationNumber || ""}</span>
-  //                     <div class="details-grid">                      
+  //                     <div class="details-grid">
   //                       <div class="detail-row">
   //                         <span class="detail-label">Category</span>
   //                         <span class="detail-value">${petData?.petDetails?.petType || "Dog"}</span>
@@ -386,12 +389,12 @@ const ApplicationDetails = () => {
   //                        }
   //                       </span>
   //                       </div>
-  
+
   //                       <div class="detail-row">
   //                         <span class="detail-label">License Valid Upto</span>
   //                       <span class="detail-value">
   //                        ${petData?.validityDate ? new Date(petData.validityDate * 1000).toLocaleDateString("en-GB") : "N/A"}
-                          
+
   //                       </span>
   //                       </div>
   //                       <div class="detail-row">
@@ -404,14 +407,14 @@ const ApplicationDetails = () => {
   //                       </div>
   //                     </div>
   //                   </div>
-                    
+
   //                   <div class="pet-image-section">
-  //                     <img 
-  //                       src="${petImageUrl}" 
-  //                       alt="Pet Photo" 
-  //                       class="pet-image" 
-  //                       onload="console.log('Pet image loaded successfully:', this.src);" 
-  //                       onerror="console.log('Pet image failed to load:', this.src); console.log('Trying fallback image...'); this.src='/adorable-golden-retriever.png';" 
+  //                     <img
+  //                       src="${petImageUrl}"
+  //                       alt="Pet Photo"
+  //                       class="pet-image"
+  //                       onload="console.log('Pet image loaded successfully:', this.src);"
+  //                       onerror="console.log('Pet image failed to load:', this.src); console.log('Trying fallback image...'); this.src='/adorable-golden-retriever.png';"
   //                     />
   //                     <div class="image-label">Pet Photo</div>
   //                     <script>
@@ -420,7 +423,7 @@ const ApplicationDetails = () => {
   //                     </script>
   //                   </div>
   //                 </div>
-  
+
   //                 <span class="detail-label">Owner Information</span>
   //                 <div class="owner-section">
   //                   <div class="detail-row">
@@ -436,7 +439,7 @@ const ApplicationDetails = () => {
   //                     <span class="detail-value">${petData?.address?.addressId || "Not Specified"}, ${petData?.address?.pincode || ""}</span>
   //                   </div>
   //                 </div>
-  
+
   //                 <div class="header">
   //                 <div class="header-left"> </div>
   //                   <div class="header-disclaimer">
@@ -445,7 +448,7 @@ const ApplicationDetails = () => {
   //                     <div class="header-right"></div>
   //                   </div>
   //                 </div>
-  
+
   //                 <div class="footer-section">
   //                   <div>
   //                     <div>Date:........................</div>
@@ -457,10 +460,10 @@ const ApplicationDetails = () => {
   //                     <div class="signature-line"></div>
   //                     <div>Licensing Authority</div>
   //                     <div>${t(ulbType)}</div>
-                   
+
   //                   </div>
   //                 </div>
-  
+
   //                 <div class="terms-section">
   //                   <div class="terms-title">${t("TERMS AND CONDITIONS")}</div>
   //                   <div class="terms-title">${t("PET_TERMS_HEADER")}</div>
@@ -484,7 +487,7 @@ const ApplicationDetails = () => {
   //                     <li>${t("PET_NEW_TERM_15")}</li>
   //                     <li>${t("PET_NEW_TERM_16")}</li>
   //                   </ol>
-  
+
   //                   <div style="text-align: center;">
   //                     <img src="${qrDataURL}" style="width: 100px; height: 100px;" />
   //                 </div>
@@ -493,11 +496,11 @@ const ApplicationDetails = () => {
   //             </body>
   //           </html>
   //         `;
-  
+
   //         const printWindow = window.open("", "_blank");
   //         printWindow.document.write(content);
   //         printWindow.document.close();
-  
+
   //         printWindow.onload = () => {
   //           setTimeout(() => {
   //             printWindow.print();
@@ -507,7 +510,7 @@ const ApplicationDetails = () => {
   //           }, 500);
   //         };
   //       };
-  
+
   //       createCertificateHTML();
   //       setShowToast({
   //         key: false,
@@ -520,13 +523,13 @@ const ApplicationDetails = () => {
   //       });
   //     }
   //   };
-  
+
   //   const downloadAcknowledgement = async () => {
   //     try {
   //       if (!data?.PetRegistrationApplications?.[0]) {
   //         throw new Error("Pet registration data is missing");
   //       }
-  
+
   //       const createAcknowledgementHTML = () => {
   //         const petData = data.PetRegistrationApplications[0];
   //         const ulb = petData?.tenantId.split(".")[1];
@@ -535,16 +538,16 @@ const ApplicationDetails = () => {
   //           month: "long",
   //           year: "numeric",
   //         });
-  
+
   //         const content = `
   //           <html>
   //             <head>
   //               <title>Pet Registration Acknowledgement</title>
   //               <style>
   //                 @page { margin: 0.5in; }
-  //                 body { 
-  //                   font-family: 'Arial', sans-serif; 
-  //                   margin: 0; 
+  //                 body {
+  //                   font-family: 'Arial', sans-serif;
+  //                   margin: 0;
   //                   padding: 20px;
   //                   font-size: 14px;
   //                   line-height: 1.6;
@@ -622,7 +625,7 @@ const ApplicationDetails = () => {
   //               <div class="acknowledgement-container">
   //                 <div class="header">
   //               <div>
-  //                 <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${petData?.tenantId}/logo.png" 
+  //                 <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${petData?.tenantId}/logo.png"
   //                     style="width: 110px; height: 110px; padding-left: 20px; padding-bottom: 20px;" />
   //               </div>
   //               <div class="header-center">
@@ -634,11 +637,11 @@ const ApplicationDetails = () => {
   //               <div class="header-right">
   //               </div>
   //             </div>
-                  
+
   //                 <div class="acknowledgement-text">
   //                 ${t("PTR_ACKN_TERM_1")}
   //               </div>
-  
+
   //                 <table class="details-table">
   //                   <tr>
   //                     <th>Application Number</th>
@@ -677,12 +680,11 @@ const ApplicationDetails = () => {
   //                     <td style="color: #28a745; font-weight: bold;">${t(petData?.status) || "SUBMITTED"}</td>
   //                   </tr>
   //                 </table>
-                  
+
   //                 <div class="acknowledgement-text">
   //                   ${t("PTR_ACKN_TERM_2")}
   //                 </div>
-  
-                  
+
   //                 <div class="footer">
   //                   <p>Generated on: ${currentDate}</p>
   //                   <p>${t(ulbType)}</p>
@@ -693,11 +695,11 @@ const ApplicationDetails = () => {
   //             </body>
   //           </html>
   //         `;
-  
+
   //         const printWindow = window.open("", "_blank");
   //         printWindow.document.write(content);
   //         printWindow.document.close();
-  
+
   //         printWindow.onload = () => {
   //           setTimeout(() => {
   //             printWindow.print();
@@ -707,7 +709,7 @@ const ApplicationDetails = () => {
   //           }, 500);
   //         };
   //       };
-  
+
   //       createAcknowledgementHTML();
   //       setShowToast({
   //         key: false,
@@ -729,9 +731,9 @@ const ApplicationDetails = () => {
   }
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
-    const petAge= formatPetAge(application?.petDetails?.petAge, t)
+    const petAge = formatPetAge(application?.petDetails?.petAge, t);
     let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments,application , approver, petAge }] }, pdfkey);
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, application, approver, petAge }] }, pdfkey);
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
@@ -743,14 +745,14 @@ const ApplicationDetails = () => {
 
   dowloadOptions.push({
     label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
-      onClick: () => getRecieptSearch({ tenantId: tenantId, payments: reciept_data?.Payments[0] , pdfkey: "petacknowledgement"}),
+    onClick: () => getRecieptSearch({ tenantId: tenantId, payments: reciept_data?.Payments[0], pdfkey: "petacknowledgement" }),
   });
 
   if (reciept_data?.Payments[0]?.paymentStatus === "NEW" || reciept_data?.Payments[0]?.paymentStatus === "DEPOSITED") {
     dowloadOptions.push({
       label: t("PTR_CERTIFICATE"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] , pdfkey: "petcertificatenew"}),
-
+      onClick: () =>
+        getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "petcertificatenew" }),
     });
   } else {
     console.log("Certificate not available. Payment status:", reciept_data?.Payments[0]?.paymentStatus);
@@ -759,7 +761,8 @@ const ApplicationDetails = () => {
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] , pdfkey: "pet-receipt-employee"}),
+      onClick: () =>
+        getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "pet-receipt-employee" }),
     });
   }
 

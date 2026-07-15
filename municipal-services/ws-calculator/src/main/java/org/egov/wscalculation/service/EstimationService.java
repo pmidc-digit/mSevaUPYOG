@@ -323,7 +323,7 @@ public class EstimationService {
 		// Track all slab IDs but calculate water charge only once — unchanged
 		BillingSlab applicableBillSlab = null;
 		Slab applicableSlab = null;
-		String waterUsageType = (String) additionalDetail.get(WSCalculationConstant.WATER_SUBUSAGE_TYPE);
+		String waterUsageType = (String) additionalDetail.getOrDefault(WSCalculationConstant.WATER_SUBUSAGE_TYPE, null);
 
 		for (BillingSlab billSlab : billingSlabs) {
 			billingSlabIds.add(billSlab.getId());

@@ -164,6 +164,14 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     return sm ? `NONRESIDENTIAL.${sm.usageCategoryMinor}.${sm.code}${d ? `.${code}` : ""}` : code;
 };
 
+  // Resolves a stored full code ("NONRESIDENTIAL.COMMERCIAL.RETAIL.MALLS") back to its MDMS object ({ code: "MALLS", name: "Malls" })
+  const resolveSubUsageType = (sub) => {
+    if (!sub) return null;
+    const leafCode = (sub?.code || sub)?.split(".").pop();
+    const { subMinor = [], detail = [] } = allUsageOptions;
+    return [...detail, ...subMinor]?.find((o) => o?.code === leafCode) || sub;
+  };
+
   const onSubmit = async (data) => {
     if (data?.vasikaDate && data?.allotmentDate && new Date(data?.allotmentDate) < new Date(data?.vasikaDate)) {
       alert(t("PT_ALLOTMENT_DATE_ERROR"));
@@ -290,7 +298,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
       stateDataCheck.unitDetails.forEach((unit) => {
         append({
           ...unit,
-          subUsageType: unit?.subUsageType || null,
+          subUsageType: resolveSubUsageType(unit?.subUsageType) || null,
         });
       });
 

@@ -3,8 +3,8 @@ import React from "react";
 import { Route, Switch, useRouteMatch, Link, useLocation } from "react-router-dom";
 import { shouldHideBackButton } from "../../utils";
 import { useTranslation } from "react-i18next";
-import CitizenApplicationOverview from "./Applications/ApplicationsOverview";
-import MyApplications from "./Applications/MyApplications";
+import NOCCitizenApplicationOverview from "./Applications/ApplicationsOverview";
+import NOCInbox from "../employee/Inbox/index";
 
 const hideBackButtonConfig = [];
 
@@ -13,14 +13,17 @@ const NOCBreadCrumbs = ({ location }) => {
 
   const getBreadcrumbs = () => {
     const tenantId = localStorage.getItem("CITIZEN.CITY");
-    const user = Digit.UserService?.getUser()
-    const isUserRegistered = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT" ) || user?.info?.roles?.some(role => (role?.code?.includes("BPA") && role?.tenantId === tenantId));
+    const user = Digit.UserService?.getUser();
+    const isUserRegistered =
+      user?.info?.roles?.some((role) => role?.code === "BPA_ARCHITECT") ||
+      user?.info?.roles?.some((role) => role?.code?.includes("BPA") && role?.tenantId === tenantId);
     const breadcrumbs = [];
-    const hasSecondBreadcrumb = location.pathname.includes("/noc/new-application") ||
-        location.pathname.includes("noc/my-application") ||
-        location.pathname.includes("noc/search/application-overview/") ||
-        location.pathname.includes("noc/search-application");
-    
+    const hasSecondBreadcrumb =
+      location.pathname.includes("/noc/new-application") ||
+      location.pathname.includes("noc/my-application") ||
+      location.pathname.includes("noc/search/application-overview/") ||
+      location.pathname.includes("noc/search-application");
+
     breadcrumbs.push(
       <span key="home">
         <Link to="/digit-ui/citizen" style={{ textDecoration: "none", marginRight: "5px" }}>
@@ -33,7 +36,7 @@ const NOCBreadCrumbs = ({ location }) => {
     if (hasSecondBreadcrumb) {
       breadcrumbs.push(
         <span key="noc">
-          <Link to={isUserRegistered ? "/digit-ui/citizen/obps/home" :"/digit-ui/citizen/noc-home"} style={{ textDecoration: "none" }}>
+          <Link to={isUserRegistered ? "/digit-ui/citizen/obps/home" : "/digit-ui/citizen/noc-home"} style={{ textDecoration: "none" }}>
             NOC Home
           </Link>
         </span>
@@ -52,8 +55,10 @@ const App = () => {
   const { t } = useTranslation();
   const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCStepperForm");
   const NOCResponseCitizen = Digit.ComponentRegistryService.getComponent("NOCResponseCitizen");
+  const Inbox = Digit?.ComponentRegistryService?.getComponent("NOCInbox");
+
   const NOCCitizenMyApplications = Digit.ComponentRegistryService.getComponent("NOCCitizenMyApplications");
-  const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
+  // const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
   const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCEditApplication");
   const NOCCitizenSearchApplication = Digit?.ComponentRegistryService?.getComponent("NOCCitizenSearchApplication");
   const isResponse = window.location.href.includes("/response");
@@ -63,18 +68,23 @@ const App = () => {
     <span className={"pgr-citizen-wrapper"} style={{ width: "100%" }}>
       <Switch>
         <AppContainer>
-           {!isResponse ? (
-            <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop:"20px" } : {}}>
+          {!isResponse ? (
+            <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop: "20px" } : {}}>
               <NOCBreadCrumbs location={location} />
             </div>
           ) : null}
           {/* {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>Back</BackButton> : ""} */}
           <PrivateRoute path={`${path}/new-application`} component={NewNOCApplication} />
           <PrivateRoute path={`${path}/response/:id`} component={NOCResponseCitizen} />
-          <PrivateRoute path={`${path}/my-application`} component={MyApplications} />
+          {/* <PrivateRoute path={`${path}/my-application`} component={NOCCitizenMyApplications} /> */}
+          <PrivateRoute path={`${path}/my-application`} component={(props) => <Inbox {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/edit-application/:nocid`} component={NewNOCEditApplication} />
-          <PrivateRoute path={`${path}/search/application-overview/:nocid`} component={CitizenApplicationOverview} />
-          <PrivateRoute path={`${path}/search-application`} component={NOCCitizenSearchApplication}  />
+          <PrivateRoute
+            path={`${path}/search/application-overview/:nocid?`}
+            component={(props) => <NOCCitizenApplicationOverview {...props} parentRoute={path} />}
+            // component={NOCCitizenApplicationOverview}
+          />
+          <PrivateRoute path={`${path}/search-application`} component={NOCCitizenSearchApplication} />
         </AppContainer>
       </Switch>
     </span>

@@ -8,8 +8,14 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const { t } = useTranslation();
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
-  const GetStatusCell = (value) => value === "CS_NA" ? t(value) : 
-    value === "Active" || value > 0 ? <span className="sla-cell-success">{value}</span> : <span className="sla-cell-error">{value}</span>;
+  const GetStatusCell = (value) =>
+    value === "CS_NA" ? (
+      t(value)
+    ) : value === "Active" || value > 0 ? (
+      <span className="sla-cell-success">{value}</span>
+    ) : (
+      <span className="sla-cell-error">{value}</span>
+    );
 
   const tableColumnConfig = useMemo(() => {
     return [
@@ -18,10 +24,22 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: "applicationNo",
         disableSortBy: true,
         Cell: ({ row }) => {
-          console.log('row in inbox', row)
+          console.log("row in inbox", row);
           return (
             <div>
-              <Link to={tenantId === "pb.punjab" ? `${parentRoute}/inbox/application-overview/${encodeURIComponentCustom(row.original["applicationId"])}/${row?.original?.tenantId}` :`${parentRoute}/inbox/application-overview/${encodeURIComponentCustom(row.original["applicationId"])}`}>
+              <Link
+                // /digit-ui/citizen/noc/search/application-overview/${encodeURIComponentCustom(row.original?.Applications?.applicationNo)}
+                // http://localhost:3000/digit-ui/citizen/firenoc/search/application-overview/PB-NOC-SAS-LALRU-001969
+                to={
+                  window.location.href.includes("/citizen")
+                    ? `/digit-ui/citizen/noc/search/application-overview/${encodeURIComponentCustom(row.original.applicationId)}`
+                    : tenantId === "pb.punjab"
+                    ? `${parentRoute}/inbox/application-overview/${encodeURIComponentCustom(row.original["applicationId"])}/${
+                        row?.original?.tenantId
+                      }`
+                    : `${parentRoute}/inbox/application-overview/${encodeURIComponentCustom(row.original["applicationId"])}`
+                }
+              >
                 <span className="link">{row.original["applicationId"]}</span>
               </Link>
             </div>
@@ -32,6 +50,26 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
         accessor: "applicationDate",
         Cell: ({ row }) => (row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), "dd/MM/yyyy")) : ""),
+      },
+      {
+        Header: t("CS_APPLICATION_DETAILS_SUBMISSION_DATE"),
+        accessor: "submissionDate",
+        Cell: ({ row }) => {
+          const value = Number(row.original?.submissionDate);
+
+          return Number.isFinite(value) ? GetCell(format(new Date(value), "dd/MM/yyyy")) : "-";
+        },
+        disableSortBy: true,
+      },
+      {
+        Header: t("CS_APPLICATION_DETAILS_APPROVAL_DATE"),
+        accessor: "approvalDate",
+        Cell: ({ row }) => {
+          const value = Number(row.original?.approvalDate);
+
+          return Number.isFinite(value) ? GetCell(format(new Date(value), "dd/MM/yyyy")) : "-";
+        },
+        disableSortBy: true,
       },
       // {
       //   Header: t("ES_INBOX_LOCALITY"),
@@ -50,15 +88,35 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         disableSortBy: true,
       },
       {
+        Header: t("CATEGORY"),
+        accessor: (row) => row?.category,
+        disableSortBy: true,
+      },
+      {
         Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
         accessor: (row) => t(row?.status),
         disableSortBy: true,
       },
       {
-        Header: t("CM_TIMELINE_ACTION_TAKEN"),
-        accessor: (row) => t(row?.action),
+        Header: t("ZONE"),
+        accessor: (row) => t(row?.zone),
         disableSortBy: true,
-      }
+      },
+      {
+        Header: t("BPA_SEARCH_APPLICATION_TYPE_LABEL"),
+        accessor: (row) => t(row?.applicationType),
+        disableSortBy: true,
+      },
+      {
+        Header: t("TIME_TAKEN"),
+        accessor: (row) => row?.sla,
+        disableSortBy: true,
+      },
+      // {
+      //   Header: t("CM_TIMELINE_ACTION_TAKEN"),
+      //   accessor: (row) => t(row?.action),
+      //   disableSortBy: true,
+      // },
       // {
       //   Header: t("ES_INBOX_LOCALITY"),
       //   accessor: (row) => t(row?.locality),

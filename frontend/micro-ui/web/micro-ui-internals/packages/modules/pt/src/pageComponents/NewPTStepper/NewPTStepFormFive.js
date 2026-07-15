@@ -114,7 +114,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
           return unitPayload;
         }) || [];
 
-    const superBuiltUpArea = units.reduce((sum, u) => sum + (u?.constructionDetail?.builtUpArea || 0), 0) || null;
+    const superBuiltUpArea = cleanedCode?.includes("SHAREDPROPERTY") ? units?.reduce((sum, u) => sum + (u?.constructionDetail?.builtUpArea || 0), 0).toFixed(2) : null
 
     const computedOwners = ownerDetails?.owners?.map((owner, index) => {
       const originalOwner = originalProperty?.owners?.[index];

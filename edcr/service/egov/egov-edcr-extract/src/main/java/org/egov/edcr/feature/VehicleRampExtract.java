@@ -18,7 +18,9 @@ import org.egov.common.entity.edcr.VehicleRamp;
 import org.egov.edcr.entity.blackbox.MeasurementDetail;
 import org.egov.edcr.entity.blackbox.PlanDetail;
 import org.egov.edcr.service.LayerNames;
+import org.egov.edcr.utility.PolylineMetrics;
 import org.egov.edcr.utility.Util;
+import org.egov.edcr.utility.PolylineMetrics.PolylineMeasurement;
 import org.kabeja.dxf.DXFLWPolyline;
 import org.kabeja.dxf.DXFLine;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -178,8 +180,13 @@ public class VehicleRampExtract extends FeatureExtract {
 		        List<Measurement> vehicleRampPolyLine = polylines.stream()
 		                .map(dxflwPolyline -> new MeasurementDetail(dxflwPolyline, true))
 		                .collect(Collectors.toList());
+		        vehicleRamp.setWidth(vehicleRampPolyLine.get(0).getWidth().setScale(2, RoundingMode.HALF_UP));
+		        //PolylineMeasurement metrics = PolylineMetrics.calculateMetrics(polylines.get(0));
 		        vehicleRamp.setRamps(vehicleRampPolyLine);
 		        vehicleRamp.setSlope(extractSlope(pl, vehicleRmpLayer));
+		        String slopeRatio = extractSlopeRatio(pl, vehicleRmpLayer);
+		        vehicleRamp.setSlopeRatio(slopeRatio);
+		        
 		        String floorHeight = Util.getMtextByLayerName(pl.getDoc(), vehicleRmpLayer,
 		                "FLR_HT_M");
 
@@ -202,7 +209,7 @@ public class VehicleRampExtract extends FeatureExtract {
 	}
 
     private BigDecimal extractSlope(PlanDetail pl, String vehicleRmpLayer) {
-		String text = Util.getMtextByLayerName(pl.getDoc(), vehicleRmpLayer);
+    	String text = Util.getMtextByLayerName(pl.getDoc(), vehicleRmpLayer);
 		BigDecimal slope = BigDecimal.ZERO;
 		if (text != null && !text.isEmpty() && text.contains("=")) {
 		    String[] textArray = text.split("=", 2);
@@ -220,6 +227,20 @@ public class VehicleRampExtract extends FeatureExtract {
 		}
 		return slope;
 	}
+    
+    private String extractSlopeRatio(PlanDetail pl, String rampLayerName) {
+		String text = Util.getMtextByLayerName(pl.getDoc(), rampLayerName);
+		String slope = null;
+		if (text != null && !text.isEmpty() && text.contains("=")) {
+		    String[] textArray = text.split("=", 2);
+		    String slopeText = textArray[1];
+		    if(slopeText!=null) {				
+				slope = slopeText.replace("IN", ":");
+		    }
+		}
+		return slope;
+	}
+
 
     @Override
     public PlanDetail validate(PlanDetail pl) {

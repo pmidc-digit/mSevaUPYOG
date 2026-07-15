@@ -123,7 +123,6 @@ const CitizenInbox = ({ parentRoute }) => {
           ...(inboxObjectInSessionStorage.tableForm || {}),
           limit: validLimit,
           offset: 0,
-          isCitizenView: "true", // always override
         },
         selectedTenantId: inboxObjectInSessionStorage.selectedTenantId || selectedTenantIdDefaultValues,
       };

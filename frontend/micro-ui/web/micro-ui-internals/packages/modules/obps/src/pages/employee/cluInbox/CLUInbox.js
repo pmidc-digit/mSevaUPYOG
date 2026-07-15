@@ -107,7 +107,6 @@ const CLUInbox = ({ parentRoute }) => {
           ...(inboxObjectInSessionStorage.tableForm || {}),
           limit: validLimit,
           offset: 0,
-          isCitizenView: "false", // always override
         },
         selectedTenantId: inboxObjectInSessionStorage.selectedTenantId || selectedTenantIdDefaultValues,
       };

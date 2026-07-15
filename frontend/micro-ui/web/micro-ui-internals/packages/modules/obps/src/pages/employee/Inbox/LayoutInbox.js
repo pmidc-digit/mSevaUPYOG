@@ -123,6 +123,7 @@ const LayoutInbox = ({ parentRoute }) => {
           ...(InboxObjectInSessionStorage.tableForm || {}),
           // Ensure limit is a valid number, reset offset to start from first page
           limit: validLimit,
+          isCitizenView: "false", // always override
           offset: 0,
         },
         selectedTenantId: InboxObjectInSessionStorage.selectedTenantId || selectedTenantIdDefaultValues,

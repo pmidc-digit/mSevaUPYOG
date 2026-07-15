@@ -6,7 +6,7 @@ import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilte
 import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templates/Inbox/components";
 import useCLUTableConfig from "./useCLUTableConfig";
 
-const CLUInbox = ({ parentRoute }) => {
+const CitizenCLUInbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
 
@@ -107,7 +107,7 @@ const CLUInbox = ({ parentRoute }) => {
           ...(inboxObjectInSessionStorage.tableForm || {}),
           limit: validLimit,
           offset: 0,
-          isCitizenView: "false", // always override
+          isCitizenView: "true", // always override
         },
         selectedTenantId: inboxObjectInSessionStorage.selectedTenantId || selectedTenantIdDefaultValues,
       };
@@ -235,13 +235,13 @@ const CLUInbox = ({ parentRoute }) => {
     [assigneeCountBaseFilters]
   );
 
-  const { data: assignedToMeInboxData } = Digit.Hooks.obps.useCLUInbox({
-    tenantId: effectiveTenantId,
-    filters: assignedToMeFilters,
-    config: {
-      enabled: !!tenantId,
-    },
-  });
+  // const { data: assignedToMeInboxData } = Digit.Hooks.obps.useCLUInbox({
+  //   tenantId: effectiveTenantId,
+  //   filters: assignedToMeFilters,
+  //   config: {
+  //     enabled: !!tenantId,
+  //   },
+  // });
 
   const { data: assignedToAllInboxData } = Digit.Hooks.obps.useCLUInbox({
     tenantId: effectiveTenantId,
@@ -262,15 +262,24 @@ const CLUInbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (!isEmployee) return;
-    if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+    if (
+      // !assignedToMeInboxData ||
+      !assignedToAllInboxData
+    )
+      return;
     if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
 
     setAssigneeCounts({
-      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      // ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
     });
     capturedAssigneeCountsTenant.current = effectiveTenantId;
-  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId, isEmployee]);
+  }, [
+    assignedToAllInboxData,
+    // assignedToMeInboxData,
+    effectiveTenantId,
+    isEmployee,
+  ]);
 
   useEffect(() => {
     if (inboxData) {
@@ -575,4 +584,4 @@ const CLUInbox = ({ parentRoute }) => {
   );
 };
 
-export default CLUInbox;
+export default CitizenCLUInbox;

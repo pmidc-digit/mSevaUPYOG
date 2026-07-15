@@ -9,7 +9,7 @@ const useCLUInbox = ({ tenantId, filters, config = {} }) => {
   const { filterForm, searchForm, tableForm, getFilter } = filters;
   const { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray } = filterForm;
   const { mobileNumber, applicationNumber } = searchForm;
-  const { sortBy, limit, offset, sortOrder } = tableForm;
+  const { sortBy, limit, offset, sortOrder, isCitizenView } = tableForm;
   const user = Digit.UserService.getUser();
 
   const _filters = {
@@ -26,6 +26,7 @@ const useCLUInbox = ({ tenantId, filters, config = {} }) => {
       ...(applicationNumber ? { applicationNumber } : {}),
       ...(sortOrder ? { sortOrder } : {}),
       ...(sortBy ? { sortBy } : {}),
+      ...(isCitizenView ? { isCitizenView } : {}),
       ...(locality?.length > 0 ? { locality: locality.map((item) => item.code.split("_").pop()).join(",") } : {}),
     },
     limit,

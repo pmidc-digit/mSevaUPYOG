@@ -8,7 +8,7 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
   const { filterForm, searchForm, tableForm, getFilter } = filters;
   const { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray } = filterForm;
   const { mobileNumber, applicationNumber } = searchForm;
-  const { sortBy, limit, offset, sortOrder } = tableForm;
+  const { sortBy, limit, offset, sortOrder, isCitizenView } = tableForm;
   const user = Digit.UserService.getUser();
 
   const _filters = {
@@ -24,6 +24,7 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
       ...(mobileNumber ? { mobileNumber } : {}),
       ...(applicationNumber ? { applicationNumber } : {}),
       ...(sortOrder ? { sortOrder } : {}),
+      ...(isCitizenView ? { isCitizenView } : {}),
       ...(sortBy ? { sortBy } : {}),
       ...(locality?.length > 0 ? { locality: locality.map((item) => item.code.split("_").pop()).join(",") } : {}),
     },

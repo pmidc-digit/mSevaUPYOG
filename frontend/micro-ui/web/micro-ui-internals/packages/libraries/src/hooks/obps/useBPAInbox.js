@@ -11,7 +11,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
   const { data: holidayList, isLoading: isHolidayListLoading } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "Holidays" }]);
   let { moduleName, businessService, applicationStatus, locality, assignee, applicationType, licenseType } = filterForm;
   const { mobileNumber, applicationNo } = searchForm;
-  const { sortBy, limit, offset, sortOrder } = tableForm;
+  const { sortBy, limit, offset, sortOrder, isCitizenView } = tableForm;
 
   // Parse holidays from the MDMS data into a Set for quick lookup
   const holidaysSet = new Set();
@@ -72,6 +72,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
       ...(applicationNumber ? { applicationNumber } : {}),
       ...(sortOrder ? { sortOrder } : {}),
       ...(sortBy ? { sortBy } : {}),
+      ...(isCitizenView ? { isCitizenView } : {}),
       // ...(applicationType?.length > 0 ? {applicationType: applicationType.map((item) => item.code).join(",")} : {}),
       ...(applicationType && applicationType?.length > 0 ? { applicationType } : {}),
       ...(locality?.length > 0 ? { locality: locality.map((item) => item.code.split("_").pop()).join(",") } : {}),

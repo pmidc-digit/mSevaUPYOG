@@ -122,6 +122,12 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
         });
         hasError = true;
         //console.log("errorFound: address error for applicant index", index);
+      } else if (applicant.address.length > 100) {
+        setError(`applicants.${applicant?.actualIndex}.address`, {
+          type: "manual",
+          message: t("MAX_100_CHARACTERS_ALLOWED"),
+        });
+        hasError = true;
       }
 
       /* ---------------- DOB (18+ validation) ---------------- */

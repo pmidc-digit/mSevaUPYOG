@@ -37,6 +37,7 @@ import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspec
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
+import { formatDuration } from "../../../utils/index";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -126,6 +127,7 @@ const LayoutEmployeeApplicationOverview = () => {
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
+  const [timeObj, setTimeObj] = useState(null);
 
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
@@ -280,6 +282,12 @@ const LayoutEmployeeApplicationOverview = () => {
       };
 
       setDisplayData(finalDisplayData);
+
+      const submittedOn = layoutObject?.layoutDetails?.additionalDetails?.SubmittedOn;
+      const endTime = Date.now();
+      const totalTime = submittedOn != null ? endTime - submittedOn : null;
+      const time = formatDuration(totalTime);
+      setTimeObj(time);
     }
   }, [applicationDetails?.Layout]);
 
@@ -1304,6 +1312,7 @@ const LayoutEmployeeApplicationOverview = () => {
                 onRemarksChange={setChecklistRemarks}
                 value={checklistRemarks}
                 readOnly="true"
+                applicationStatus={applicationDetails?.Layout?.[0]?.applicationStatus}
               />
             )}
           </StatusTable>
@@ -1323,6 +1332,7 @@ const LayoutEmployeeApplicationOverview = () => {
                   tenantId={tenantId}
                   onRemarksChange={setChecklistRemarks}
                   value={checklistRemarks}
+                  applicationStatus={applicationDetails?.Layout?.[0]?.applicationStatus}
                 />
               )}
             </StatusTable>
@@ -1351,7 +1361,7 @@ const LayoutEmployeeApplicationOverview = () => {
       </Card>
 
       {/* FEE DETAILS TABLE CARD - CLU STYLE PART 2 */}
-      {(applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && applicationDetails?.Layout?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING") && (
+      {(applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS") && (
         <Card>
           <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
           {applicationDetails?.Layout?.[0]?.layoutDetails && (
@@ -1403,7 +1413,7 @@ const LayoutEmployeeApplicationOverview = () => {
         checked="true"
       />
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} />
       </div>
       {actions?.length > 0 && (
         <ActionBar>

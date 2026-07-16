@@ -15,7 +15,14 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
 
   // fetch urls and checklist data as before...
   const { data: urlsList, isLoading } = Digit.Hooks.noc.useNOCDocumentSearch(
-    { value: { workflowDocs: (documents || []).map((d) => ({ documentUid: d.documentUid })) } },
+    {
+      value: {
+        workflowDocs: (documents || []).map((d) => ({
+          documentUid: d.documentUid,
+          documentAttachment: d.documentAttachment || "",
+        })),
+      },
+    },
     { enabled: documents?.length > 0 }
   );
   const { data: searchChecklistData } = Digit.Hooks.obps.useCLUCheckListSearch({ applicationNo }, tenantId);

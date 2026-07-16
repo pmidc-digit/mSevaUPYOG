@@ -221,11 +221,11 @@ const CitizenInbox = ({ parentRoute }) => {
     selectedTenantIdDefaultValues,
   ]);
 
-  const CheckForPunjab = window.location.href.includes("others");
+  const CheckForPunjab = window.location.href.includes("citizen-stakeholder-inbox");
 
   console.log("CheckForPunjab", CheckForPunjab);
 
-  const finalTenantId = CheckForPunjab ? tenantId : "pb.punjab";
+  const finalTenantId = CheckForPunjab ? "pb.punjab" : tenantId;
 
   const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.obps.useBPAInbox({
     tenantId: finalTenantId,

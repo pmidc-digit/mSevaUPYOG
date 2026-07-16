@@ -26,7 +26,8 @@ const PropertyAddressDetails = ({ goNext }) => {
   const userType = window.location.href.includes("citizen") ? "citizen" : "employee";
   const [loader, setLoader] = useState(false);
   const tenants = Digit.Hooks.pt.useTenants();
-  const isCitizen = window.location.href.includes("citizen");
+  const isEmployee = window.location.href.includes("employee");
+
   const stateDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData?.propertyAddress);
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
@@ -185,7 +186,7 @@ const PropertyAddressDetails = ({ goNext }) => {
               name="city"
               rules={{ required: t("City is Required") }}
               render={(props) => (
-                <Dropdown select={props.onChange} selected={props.value} option={tenants} optionKey="name" t={t} disable={isCitizen} />
+                <Dropdown select={props.onChange} selected={props.value} option={tenants} optionKey="name" t={t} disable={isEmployee} />
               )}
             />
             {errors.city && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.city?.message}</p>}

@@ -414,38 +414,26 @@ public class LAYOUTService {
 				List<String> accountid = nocRepository.getOwnerUserIdsByLayoutId(noc.getId());
 //				accountid.add(noc.getAccountId());
 				
-				List<OwnerInfo> owner = new ArrayList<>();
-				
 				if(!CollectionUtils.isEmpty(accountid)) {
 					criteria.setAccountId(accountid);
 					UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-					owner = userDetailResponse.getUser();
-				}
-				Map<String, Object>adByUuid = Optional.ofNullable(noc.getOwners())
-						.orElse(Collections.emptyList())
-						.stream()
-						.filter(oi -> oi.getUuid() != null && oi.getAdditionalDetails() != null)
-						.collect(Collectors.toMap(
-								OwnerInfo::getUuid,
-								OwnerInfo::getAdditionalDetails,
-								(a, b) -> a // keep first on duplicate uuid
-						));
+					List<OwnerInfo> users = userDetailResponse.getUser();
+					if(!CollectionUtils.isEmpty(users)) {
+						Map<String, OwnerInfo> usersByUuid = users.stream()
+								.filter(u -> u.getUuid() != null)
+								.collect(Collectors.toMap(OwnerInfo::getUuid, u -> u, (a, b) -> a));
 
-
-// Merge by uuid
-				for (OwnerInfo oi : owner) {
-					String uuid = oi.getUuid(); // ensure this getter exists
-					oi.setStatus(true);
-					if (uuid != null) {
-						Object ad = adByUuid.get(uuid);
-						if (ad != null) {
-							oi.setAdditionalDetails(ad);
+						if(!CollectionUtils.isEmpty(noc.getOwners())) {
+							for (OwnerInfo dbOwner : noc.getOwners()) {
+								OwnerInfo userProfile = usersByUuid.get(dbOwner.getUuid());
+								if (userProfile != null) {
+									dbOwner.addUserWithoutAuditDetail(userProfile);
+								}
+								dbOwner.setStatus(true);
+							}
 						}
 					}
 				}
-
-
-				noc.setOwners(owner);
 
 				// BPA CALL
 //				StringBuilder uri = new StringBuilder(config.getBpaHost()).append(config.getBpaContextPath())
@@ -464,6 +452,7 @@ public class LAYOUTService {
 //						uri.append("&applicationNo=").append(sourceRefId);
 //					}
 //				}
+//
 //
 ////					uri.append("&applicationNo=").append(layout.getSourceRefId());
 //

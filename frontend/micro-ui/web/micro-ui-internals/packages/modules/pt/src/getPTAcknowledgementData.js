@@ -18,6 +18,7 @@ const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
 
 const getOwner = (application, t, customTitle) => {
+  
   let owners = [];
   let ownershipCategory = application?.ownershipCategory;
   if (customTitle?.includes("TRANSFEROR")) {
@@ -79,13 +80,13 @@ const getOwner = (application, t, customTitle) => {
     return {
       title: t("PT_OWNERSHIP_INFO_SUB_HEADER"),
       values: [
-        { title: t("PT_COMMON_INSTITUTION_NAME"), value: application?.institution?.institutionName || t("CS_NA") },
-        { title: t("PT_TYPE_OF_INSTITUTION"), value: application?.institution?.institutionType || t("CS_NA") },
-        { title: t("PT_OWNER_NAME"), value: application?.institution?.nameOfAuthorizedPerson || t("CS_NA") },
-        { title: t("PT_COMMON_AUTHORISED_PERSON_DESIGNATION"), value: application?.institution?.designation || t("CS_NA") },
+        { title: t("PT_COMMON_INSTITUTION_NAME"), value: application?.transferorDetails?.institution?.name || t("CS_NA") },
+        { title: t("PT_TYPE_OF_INSTITUTION"), value: application?.transferorDetails?.institution?.type || t("CS_NA") },
+        { title: t("PT_OWNER_NAME"), value: application?.transferorDetails?.institution?.nameOfAuthorizedPerson || t("CS_NA") },
+        { title: t("PT_COMMON_AUTHORISED_PERSON_DESIGNATION"), value: application?.transferorDetails?.institution?.designation || t("CS_NA") },
         { title: t("PT_FORM3_MOBILE_NUMBER"), value: owners[0]?.mobileNumber || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_TEL_PHONE_NO"), value: owners[0]?.altContactNumber || t("CS_NA") },
-        { title: t("PT_OWNERSHIP_INFO_CORR_ADDR"), value: owners[0]?.correspondenceAddress || t("CS_NA") },
+        { title: t("PT_OWNERSHIP_INFO_CORR_ADDR"), value: owners[0]?.correspondenceAddress || owners[0]?.permanentAddress || t("CS_NA") },
         { title: t("PT_FORM3_OWNERSHIP_TYPE"), value: t(ownershipCategory) || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_EMAIL_ID"), value: owners[0]?.emailId || t("CS_NA") },
       ],
@@ -198,7 +199,7 @@ const getAssessmentInfo = (application, t) => {
       value:
         (flrno = unit?.floorNo) > -3
           ? t(getPropertyOccupancyTypeLocale(unit?.occupancyType)) === "Rented"
-            ? (application?.additionalDetails?.unit?.[0]?.rentedMonths ) || t("CS_NA")
+            ? (unit?.additionalDetails?.rentedformonths ) || t("CS_NA")
             : t("")
           : "",
     })
@@ -214,7 +215,7 @@ const getAssessmentInfo = (application, t) => {
       value:
         (flrno = unit?.floorNo) > -3
           ? t(getPropertyOccupancyTypeLocale(unit?.occupancyType)) === "Rented"
-            ? (application?.additionalDetails?.unit?.[0]?.nonRentedMonthsUsage ) || t("CS_NA")
+            ? (unit?.additionalDetails?.usageForDueMonths ) || t("CS_NA")
             : t("")
           : "",
     })

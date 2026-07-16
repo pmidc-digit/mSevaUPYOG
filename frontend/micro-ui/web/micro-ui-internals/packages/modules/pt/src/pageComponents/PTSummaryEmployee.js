@@ -18,6 +18,26 @@ function PTSummaryEmployee({ formData, t }) {
   const history = useHistory();
   const dispatch = useDispatch();
   const mutateScreen = url.includes("/property-mutate/") || url.includes("/transfer-ownership/");
+  const getDisplayValue = (value, fallback = "NA") => {
+    if (value === undefined || value === null || value === "") return fallback;
+    if (typeof value === "object") return value?.name || value?.label || value?.value || value?.code || value?.i18nKey || fallback;
+    return value;
+  };
+
+  const getFloorCount = (propertyDetails = {}) => {
+    const directFloorCount = Number(propertyDetails?.noOfFloors?.code || propertyDetails?.noOfFloors?.name || propertyDetails?.noOfFloors);
+    if (!isNaN(directFloorCount) && directFloorCount > 0) return String(directFloorCount);
+
+    const unitFloors = (propertyDetails?.units || [])
+      .map((unit) => Number(unit?.floorNoCitizen?.code || unit?.floorNoCitizen || unit?.floor?.code || unit?.floor || unit?.floorNo))
+      .filter((floor) => !isNaN(floor));
+
+    return unitFloors.length ? String(Math.max(...unitFloors)) : "NA";
+  };
+
+  const isInstitutionalOwnership = formData?.ownerShipDetails?.ownershipCategory?.code?.includes("INSTITUTIONAL") || formData?.originalData?.ownershipCategory?.includes("INSTITUTION");
+  
+  const isIndividualOwnership = formData?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL") || formData?.ownerShipDetails?.ownershipCategory?.code === "SINGLEOWNER";
   return (
     <>
       {mutateScreen ? (
@@ -38,6 +58,7 @@ function PTSummaryEmployee({ formData, t }) {
             };
 
             const transferorDetails = summaryData?.TransferorDetails || summaryData || {};
+            
             const originalData = summaryData?.originalData || {};
             const originalOwners = originalData?.owners?.filter((e) => e.status === "ACTIVE" || e.status === "active") || [];
             const transfereeOwners = transferorDetails?.owners || [];
@@ -82,19 +103,34 @@ function PTSummaryEmployee({ formData, t }) {
                   <h3 style={{ fontSize: "16px", fontWeight: "600", color: "#1C1D1F", borderBottom: "1px solid #E4E7EB", paddingBottom: "12px", marginBottom: "16px" }}>
                     {t("Transferor Details")}
                   </h3>
-                  {originalOwners.map((owner, index) => (
-                    <div key={index} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", marginBottom: index < originalOwners.length - 1 ? "24px" : "0" }}>
-                      {renderGridItem("Name", owner.name)}
-                      {renderGridItem("GUARDIAN NAME", owner.fatherOrHusbandName)}
-                      {renderGridItem("Gender", owner.gender)}
-                      {renderGridItem("Type of Ownership", t(`PT_OWNERSHIP_CATEGORY_${originalData?.ownershipCategory}`) || originalData?.ownershipCategory || "NA")}
-                      {renderGridItem("MOBILE NO", owner.mobileNumber)}
-                      {renderGridItem("EMAIL ID", owner.emailId)}
-                      {renderGridItem("Ownership Percentage", owner.ownerShipPercentage)}
-                      {renderGridItem("CATEGORY", owner.ownerType)}
-                      {renderGridItem("Correspondence Address", owner.correspondenceAddress, true)}
+                  {isInstitutionalOwnership ? (
+                    // Institutional: institution-level fields live on originalData.institution, not on owner objects
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+                      {renderGridItem("Institution Name", originalData?.institution?.name || originalOwners[0]?.institutionName)}
+                      {renderGridItem("Designation", originalData?.institution?.designation || originalOwners[0]?.designation)}
+                      {renderGridItem("Institution Type", t(originalData?.institution?.type) || originalData?.institution?.type || t(originalOwners[0]?.institutionType?.code) || originalOwners[0]?.institutionType)}
+                      {renderGridItem("Ownership Type", t(ownershipCategory) || ownershipCategory)}
+                      {renderGridItem("Name of Authorized Person", originalOwners[0]?.name || originalData?.institution?.nameOfAuthorizedPerson)}
+                      {renderGridItem("Telephone Number", originalOwners[0]?.altContactNumber)}
+                      {renderGridItem("MOBILE NO", originalOwners[0]?.mobileNumber)}
+                      {renderGridItem("Correspondence Address", originalOwners[0]?.correspondenceAddress, true)}
                     </div>
-                  ))}
+                  ) : (
+                    // Individual / Multiple owners: all fields on each owner object
+                    originalOwners?.map((owner, index) => (
+                      <div key={index} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", marginBottom: index < originalOwners.length - 1 ? "24px" : "0" }}>
+                        {renderGridItem("Name", owner.name)}
+                        {renderGridItem("GUARDIAN NAME", owner.fatherOrHusbandName)}
+                        {renderGridItem("Gender", t(owner.gender?.code) || owner.gender?.code || owner.gender)}
+                        {renderGridItem("Type of Ownership", t(ownershipCategory) || ownershipCategory)}
+                        {renderGridItem("MOBILE NO", owner.mobileNumber)}
+                        {renderGridItem("EMAIL ID", owner.emailId)}
+                        {renderGridItem("Ownership Percentage", owner.ownershipPercentage || owner.ownerShipPercentage)}
+                        {renderGridItem("CATEGORY", t(owner.ownerType?.code) || owner.ownerType?.code || owner.ownerType)}
+                        {renderGridItem("Correspondence Address", owner.correspondenceAddress, true)}
+                      </div>
+                    ))
+                  )}
                 </Card>
 
                 {/* 2. Transferee Details */}
@@ -102,7 +138,7 @@ function PTSummaryEmployee({ formData, t }) {
                   <h3 style={{ fontSize: "16px", fontWeight: "600", color: "#1C1D1F", borderBottom: "1px solid #E4E7EB", paddingBottom: "12px", marginBottom: "16px" }}>
                     {t("Transferee Details")}
                   </h3>
-                  {transfereeOwners.map((owner, index) => (
+                  {transfereeOwners?.map((owner, index) => (
                     <div key={index} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", marginBottom: index < transfereeOwners.length - 1 ? "24px" : "0" }}>
                       {isInstitutional ? (
                         <>

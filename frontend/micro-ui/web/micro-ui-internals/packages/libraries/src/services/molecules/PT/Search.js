@@ -375,7 +375,7 @@ export const PTSearch = {
                     isArray: false,
                   }, },
                 },
-                { title: "Ownership Percentage", value: response?.owners[0]?.ownerShipPercentage},
+                { title: "Ownership Percentage", value: owner?.ownerShipPercentage},
                 
               
                 {

@@ -261,200 +261,127 @@ public class PlanService {
         AmendmentService repo = (AmendmentService) specificRuleService.find("amendmentService");
         Amendment amd = repo.getAmendments();
 
-		List<PlanFeature> features = featureService.getFeatures();		
-
-//		if (edcrRequest.getAreaType().equalsIgnoreCase("SCHEME_AREA")) {
-//			// Get scheme name
-//			if (edcrRequest.getSchName() != null && !edcrRequest.getSchName().isEmpty()) {
-//				// Upload or Select layout + control sheet
-//				// Master is created for scheme-wise layout and control sheets for all ULBs
-//				if (edcrRequest.getSiteReserved()) {
-//					if (edcrRequest.getApprovedCS()) {
-//						// Exempt scrutiny
-//						// uploadPDF();
-//						// proceedToFormFill();
-//						// as of now not implemented the code for control sheet
-//					} else {
-//						// No approved control sheet
-//						// min plot area and road width not required
-//						// uploadDXF();
-//						Set<Class<?>> classesToRemove = new HashSet<>(Arrays.asList(PlotArea.class, RoadWidth.class));
-//
-//						features.removeIf(feature -> feature.getRuleClass() != null
-//								&& classesToRemove.contains(feature.getRuleClass()));
-//					}
-//				} else {
-//					// Not reserved
-//					// Mark as "Scrutiny as per PMBL"
-//					// uploadDXF();
-//					// process file normally
-//				}
-//			} else {
-//				LOG.info("Error: Scheme Name is required");
-//			}
-//
-//		} else if (edcrRequest.getAreaType().equalsIgnoreCase("NON_SCHEME_AREA")) {
-//			Set<Class<?>> classesToRemove = new HashSet<>();
-//			if (edcrRequest.getCluApprove()) {
-//				// Check for min plot area and road width
-//				// If both present, no scrutiny needed
-//				LOG.info("Min plot area and road width met. No scrutiny required.");
-//				classesToRemove.addAll(Arrays.asList(PlotArea.class, RoadWidth.class));
-//			}
-//
-//			if ("yes".equalsIgnoreCase(edcrRequest.getCoreArea())) {
-//				// Exempt plot coverage, front setback and ECS
-//				LOG.info("Core area: coverage, setback and ECS exempted.");
-//				classesToRemove.addAll(Arrays.asList(Coverage.class, Parking.class, FrontYardService.class));
-//			} else {
-//				// Not a core area
-//				// Scrutiny will be done as per PMBL
-//				LOG.info("Scrutiny as per PMBL.");
-//				// process normally
-//			}
-//
-//			features.removeIf(
-//					feature -> feature.getRuleClass() != null && classesToRemove.contains(feature.getRuleClass()));
-//
-//		} else {
-//			// Not CLU approved
-//			// Scrutiny will be done as per PMBL
-//			LOG.info("Scrutiny as per PMBL.");
-//			// process normally
-//		}
-//		
-//		LOG.info("*** Features for Processing Plan file start *** ");
-//		
-//		features.forEach(feature -> {
-//		    if (feature.getRuleClass() != null) {
-//		    	LOG.info("Feature name : " + feature.getRuleClass().getSimpleName());
-//		    } else {
-//		    	LOG.info("Feature name : " + feature.getName());
-//		    }
-//		});
-		
+		List<PlanFeature> features = featureService.getFeatures();
 		LOG.info("*** Features for Processing Plan file end *** ");
         Plan plan = extractService.extract(dcrApplication.getSavedDxfFile(), amd, asOnDate,
                 features, edcrRequest.getTenantId());
-        plan.setCoreArea(dcrApplication.getCoreArea());
-        LOG.info("coreArea : -> " + plan.getCoreArea());
         plan.setEdcrRequest(edcrRequest);
-        LOG.info("Competency Check Role Wise");
-        BigDecimal plotArea = (plan.getPlot() != null) ? plan.getPlot().getArea() : null;
-
-        if (plotArea != null && plotArea.compareTo(BigDecimal.ZERO) > 0) {
-            // Valid case → pass actual plot area
-            extractService.validateRolesWisePlotArea(
-                    dcrApplication.getSavedDxfFile(),
-                    asOnDate,
-                    plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles(),
-                    plotArea,
-                    plan
-            );
-        } else {
-            // Invalid case → pass ZERO explicitly
-            extractService.validateRolesWisePlotArea(
-                    dcrApplication.getSavedDxfFile(),
-                    asOnDate,
-                    plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles(),
-                    BigDecimal.ZERO,
-                    plan
-            );
-        }
-        
-        // validate Source of the request
-        if(sourceValidation) {
-        	LOG.info("Source validation : " +sourceValidation);
-        	validateSourcePortal(plan);
-        }
-        
-        
-        String roadType = getRoadTypeViaReflection(
-				plan.getEdcrRequest() != null ? plan.getEdcrRequest().getAdditionalDetails() : null);
-        
-        if(roadType!=null) {
-        	plan.getPlanInformation().setRoadType(roadType);
-        	plan.getPlanInfoProperties().put("ROAD_TYPE", roadType);
-        }else {
-        	plan.getErrors().put("ROAD_TYPE NOT PROVIDED", "ROAD TYPE not provided");
-        }
-        
-        //return (Plan) planDetail;
-        // remove requestInfo before plan processing
-        //edcrRequest.setRequestInfo(null);
-        //Setting edcr Data to Plan        
-        //plan.setEdcrRequest(edcrRequest);
-        // validate planInfo city and tenantId city
-        
-        String cityName = getCityFromTenant(plan.getEdcrRequest().getTenantId());
-        
-        if (plan.getPlanInformation().getCity() == null 
-                || !plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
-
-            plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
-        }        
-       
-        // Check Measured and Declared plot area match
-        BigDecimal declaredPlotArea = plan.getPlanInformation().getPlotArea().setScale(0, RoundingMode.DOWN);
-        BigDecimal measuredPlotArea = plan.getPlot().getArea().setScale(0, RoundingMode.DOWN);
-        
-        if(!declaredPlotArea.equals(measuredPlotArea))
-        	plan.getErrors().put("Invalid Plot Area", "Declared plot area and Measured plot area must be the same.");
-        
-        String ulbType = "";
-        String districtName = "";
-        try {
-            Object mdmsData = bpaMdmsUtil.getUlbTypeFromMdms(
-                    new RequestInfo(), plan.getEdcrRequest()
-            );
-
-            @SuppressWarnings("unchecked")
-            Map<String, Object> cityInfo =
-                    (Map<String, Object>) BpaMdmsUtil
-                            .extractMdmsValue(mdmsData,
-                                    MdmsFilter.ULB_TYPE_AND_DISTRICT_FILTER,
-                                    Map.class)
-                            .orElse(Collections.emptyMap());
-
-            ulbType = String.valueOf(cityInfo.getOrDefault("ulbType", ""));
-            districtName = String.valueOf(cityInfo.getOrDefault("districtName", ""));
-
-            if (ulbType.isEmpty()) {
-                LOG.warn("ULB Type not found in MDMS response for tenant : {}",
-                        plan.getEdcrRequest().getTenantId());
-            }
-
-        } catch (Exception e) {
-            LOG.error("Error while fetching ULB Type and District from MDMS", e);
-        }
-
-        plan.getPlanInformation().setUlbType(ulbType);
-        plan.getPlanInformation().setDistrict(districtName);
-
-        LOG.info("ULB Type value from MDMS : {}", ulbType);
-        LOG.info("District value from MDMS : {}", districtName);
-        
-        LOG.info("Setting mdms master data");
-        plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
-        LOG.info("mdms master data set successfully");
-        
-        if (plan.getDrawingPreference() != null &&
-                org.egov.infra.utils.StringUtils.isNotBlank(plan.getDrawingPreference().getUom())
-                && (DxfFileConstants.INCH_UOM.equalsIgnoreCase(plan.getDrawingPreference().getUom())
-                        || DxfFileConstants.FEET_UOM.equalsIgnoreCase(plan.getDrawingPreference().getUom()))) {
-        	plan.getErrors().put("units not in meters", "The Drawing should be in meters.");
-		}
-        
-//        plan = applyRules(plan, amd, cityDetails);
-        if(plan.getErrors().containsKey("Not authorized to scrutinize") || plan.getErrors().containsKey("Invalid ULB")
-        		|| plan.getErrors().containsKey("units not in meters") 
-        		|| plan.getErrors().containsKey("INVALID SOURCE") || plan.getErrors().containsKey("INVALID SOURCE1")) {
+        if(plan.getErrors().containsKey("units not in meters")) {
         	
         }else {
-        	plan = applyRules(plan, amd, cityDetails,features);
+        	//plan = applyRules(plan, amd, cityDetails,features);
+        	plan.setCoreArea(dcrApplication.getCoreArea());
+            LOG.info("coreArea : -> " + plan.getCoreArea());
+            
+            LOG.info("Competency Check Role Wise");
+            BigDecimal plotArea = (plan.getPlot() != null) ? plan.getPlot().getArea() : null;
+
+            if (plotArea != null && plotArea.compareTo(BigDecimal.ZERO) > 0) {
+                // Valid case → pass actual plot area
+                extractService.validateRolesWisePlotArea(
+                        dcrApplication.getSavedDxfFile(),
+                        asOnDate,
+                        plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles(),
+                        plotArea,
+                        plan
+                );
+            } else {
+                // Invalid case → pass ZERO explicitly
+                extractService.validateRolesWisePlotArea(
+                        dcrApplication.getSavedDxfFile(),
+                        asOnDate,
+                        plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles(),
+                        BigDecimal.ZERO,
+                        plan
+                );
+            }
+            
+            // validate Source of the request
+            if(sourceValidation) {
+            	LOG.info("Source validation : " +sourceValidation);
+            	validateSourcePortal(plan);
+            }        
+            
+            String roadType = getRoadTypeViaReflection(
+    				plan.getEdcrRequest() != null ? plan.getEdcrRequest().getAdditionalDetails() : null);
+            
+            if(roadType!=null) {
+            	plan.getPlanInformation().setRoadType(roadType);
+            	plan.getPlanInfoProperties().put("ROAD_TYPE", roadType);
+            }else {
+            	plan.getErrors().put("ROAD_TYPE NOT PROVIDED", "ROAD TYPE not provided");
+            }
+            
+            String cityName = getCityFromTenant(plan.getEdcrRequest().getTenantId());
+            
+            if (plan.getPlanInformation().getCity() == null 
+                    || !plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
+
+                plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
+            }        
+           
+            // Check Measured and Declared plot area match
+            BigDecimal declaredPlotArea = plan.getPlanInformation().getPlotArea().setScale(0, RoundingMode.DOWN);
+            BigDecimal measuredPlotArea = plan.getPlot().getArea().setScale(0, RoundingMode.DOWN);
+            
+            if(!declaredPlotArea.equals(measuredPlotArea))
+            	plan.getErrors().put("Invalid Plot Area", "Declared plot area and Measured plot area must be the same.");
+            
+            String ulbType = "";
+            String districtName = "";
+            try {
+                Object mdmsData = bpaMdmsUtil.getUlbTypeFromMdms(
+                        new RequestInfo(), plan.getEdcrRequest()
+                );
+
+                @SuppressWarnings("unchecked")
+                Map<String, Object> cityInfo =
+                        (Map<String, Object>) BpaMdmsUtil
+                                .extractMdmsValue(mdmsData,
+                                        MdmsFilter.ULB_TYPE_AND_DISTRICT_FILTER,
+                                        Map.class)
+                                .orElse(Collections.emptyMap());
+
+                ulbType = String.valueOf(cityInfo.getOrDefault("ulbType", ""));
+                districtName = String.valueOf(cityInfo.getOrDefault("districtName", ""));
+
+                if (ulbType.isEmpty()) {
+                    LOG.warn("ULB Type not found in MDMS response for tenant : {}",
+                            plan.getEdcrRequest().getTenantId());
+                }
+
+            } catch (Exception e) {
+                LOG.error("Error while fetching ULB Type and District from MDMS", e);
+            }
+
+            plan.getPlanInformation().setUlbType(ulbType);
+            plan.getPlanInformation().setDistrict(districtName);
+
+            LOG.info("ULB Type value from MDMS : {}", ulbType);
+            LOG.info("District value from MDMS : {}", districtName);
+            
+            LOG.info("Setting mdms master data");
+            plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
+            LOG.info("mdms master data set successfully");
+            
+            if (plan.getDrawingPreference() != null
+                    && org.egov.infra.utils.StringUtils.isNotBlank(plan.getDrawingPreference().getUom())
+                    && !DxfFileConstants.METER_UOM.equalsIgnoreCase(plan.getDrawingPreference().getUom())) {
+
+                plan.getErrors().put("units not in meters", "The drawing units must be in meters only.");
+            }
+            
+            if(plan.getErrors().containsKey("Not authorized to scrutinize") || plan.getErrors().containsKey("Invalid ULB") 
+            		|| plan.getErrors().containsKey("INVALID SOURCE") || plan.getErrors().containsKey("INVALID SOURCE1")) {
+            	
+            }else {
+            	plan = applyRules(plan, amd, cityDetails,features);
+            }
+            
+            LOG.info("Competency Role Checked successfully ");
         }
         
-        LOG.info("Competency Role Checked successfully ");
+        
         
       
         String comparisonDcrNumber = dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();
@@ -1004,71 +931,7 @@ public class PlanService {
 
 	    return null;
 	}
-	
-//	private void validateSourcePortal(Plan pl) {
-//
-//		try {
-//			OccupancyTypeHelper mostRestrictiveFar = getOccTypeSubType(pl);
-//
-//			if (mostRestrictiveFar == null || mostRestrictiveFar.getType() == null
-//					|| mostRestrictiveFar.getSubtype() == null || mostRestrictiveFar.getSubtype().getCode() == null) {
-//				LOG.info("validateSourcePortal: mostRestrictiveFar/type/subtype is null, skipping validation.");
-//				return;
-//			}
-//
-//			String occTypeCode = mostRestrictiveFar.getType().getCode();
-//			String occSubTypeCode = mostRestrictiveFar.getSubtype().getCode();
-//
-//			String sourceType = getSourceViaReflection(
-//					pl.getEdcrRequest() != null ? pl.getEdcrRequest().getAdditionalDetails() : null);
-//
-//			LOG.info("validateSourcePortal: sourceType=" + sourceType + ", occTypeCode=" + occTypeCode
-//					+ ", occSubTypeCode=" + occSubTypeCode);
-//
-//			if (sourceType == null) {
-//				LOG.info("validateSourcePortal: sourceType is null, skipping validation.");
-//				return;
-//			}
-//
-//			boolean isGorLOrCommHousing =
-//			        G.equals(occTypeCode)
-//			        || (L.equals(occTypeCode) && !L_MP.equals(occSubTypeCode))
-//			        || (F.equals(occTypeCode) && F_HM.equals(occSubTypeCode));
-//
-//			if (SOURCE_INVESTPUNJAB.equalsIgnoreCase(sourceType)) {
-//				// INVESTPUNJAB: G / L / F-HM -> OK, continue. Anything else -> error.
-//				if (!isGorLOrCommHousing) {
-//					String errorMsg = "Please process this file through the OBPAS portal.";
-//					LOG.info("validateSourcePortal: VALIDATION FAILED -> sourceType=" + sourceType + ", occTypeCode="
-//							+ occTypeCode + ", occSubTypeCode=" + occSubTypeCode + ", error=" + errorMsg);
-//					pl.addError(INVALID_SOURCE, errorMsg);	
-//					throw new EdcrException(
-//					        HttpStatus.BAD_REQUEST,
-//					        "EDCR-34",
-//					        "Please process this file through the OBPAS portal.");
-//					
-//				}
-//
-//			} else if (SOURCE_OBPAS.equalsIgnoreCase(sourceType)) {
-//				// OBPAS: G / L / F-HM -> error (must use Invest Punjab). Anything else -> OK.
-//				if (isGorLOrCommHousing) {
-//					String errorMsg = "Please process this file through the Invest Punjab portal.";
-//					LOG.info("validateSourcePortal: VALIDATION FAILED -> sourceType=" + sourceType + ", occTypeCode="
-//							+ occTypeCode + ", occSubTypeCode=" + occSubTypeCode + ", error=" + errorMsg);
-//					pl.addError(INVALID_SOURCE + "1", ERROR_MSG);
-//					throw new EdcrException(
-//					        HttpStatus.BAD_REQUEST,
-//					        "EDCR-34",
-//					        ERROR_MSG);
-//				}
-//			}
-//
-//		} catch (Exception e) {
-//			LOG.error("validateSourcePortal: Error while validating source portal for occupancy type", e);
-//		}
-//	}
 
-	
 	private void validateSourcePortal(Plan pl) {
 	    try {
 	        OccupancyTypeHelper mostRestrictiveFar = getOccTypeSubType(pl);
@@ -1174,5 +1037,3 @@ public class PlanService {
 	}
 	
 }
-
-

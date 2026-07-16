@@ -70,18 +70,6 @@ public class ExtractService {
 	private MDMSValidator mdmsValidator;
 
 	private Logger LOG = LogManager.getLogger(ExtractService.class);
-
-//	public static final String ROLE_ARCHITECT = "BPA_ARCHITECT";
-//	public static final String ROLE_ENGINEER = "BPA_ENGINEER";
-//	public static final String ROLE_TOWNPLANNER = "BPA_TOWNPLANNER";
-//	public static final String ROLE_SUPERVISOR = "BPA_SUPERVISOR";
-//	public static final String ROLE_DESIGNER = "BPA_DESIGNER";
-//
-//	// Constants for role-based plot area limits
-//	private static final BigDecimal LIMIT_ENGINEER = new BigDecimal("500");
-//	private static final BigDecimal LIMIT_TOWNPLANNER = new BigDecimal("500");
-//	private static final BigDecimal LIMIT_SUPERVISOR = new BigDecimal("250");
-	
 	public static final String COMPETENCY_CHECK_ERROR_MESSAGE =
 	        "Permissible limit exceeded!\n" +
 	        "The maximum permissible plot size for an %s is %s sq. meters, " +
@@ -100,18 +88,30 @@ public class ExtractService {
 		planDetail.setApplicationDate(scrutinyDate);
 		Map<String, String> cityDetails = specificRuleService.getCityDetails();
 
+//		if (doc.getDXFHeader().getVariable("$INSUNITS") != null) {
+//			String unitValue = doc.getDXFHeader().getVariable("$INSUNITS").getValue("70");
+//			if ("1".equalsIgnoreCase(unitValue)) {
+//				planDetail.getDrawingPreference().setUom(DxfFileConstants.INCH_UOM);
+//			} else if ("2".equalsIgnoreCase(unitValue)) {
+//				planDetail.getDrawingPreference().setUom(DxfFileConstants.FEET_UOM);
+//			} else if ("6".equalsIgnoreCase(unitValue)) {
+//				planDetail.getDrawingPreference().setUom(DxfFileConstants.METER_UOM);
+//			} else {
+//				planDetail.getDrawingPreference().setInMeters(false);
+//				planDetail.getErrors().put("units not in meters", "The 'Drawing Unit' is not as per standard. ");
+//			}
+//		}
+		
 		if (doc.getDXFHeader().getVariable("$INSUNITS") != null) {
-			String unitValue = doc.getDXFHeader().getVariable("$INSUNITS").getValue("70");
-			if ("1".equalsIgnoreCase(unitValue)) {
-				planDetail.getDrawingPreference().setUom(DxfFileConstants.INCH_UOM);
-			} else if ("2".equalsIgnoreCase(unitValue)) {
-				planDetail.getDrawingPreference().setUom(DxfFileConstants.FEET_UOM);
-			} else if ("6".equalsIgnoreCase(unitValue)) {
-				planDetail.getDrawingPreference().setUom(DxfFileConstants.METER_UOM);
-			} else {
-				planDetail.getDrawingPreference().setInMeters(false);
-				planDetail.getErrors().put("units not in meters", "The 'Drawing Unit' is not as per standard. ");
-			}
+		    String unitValue = doc.getDXFHeader().getVariable("$INSUNITS").getValue("70");
+
+		    if ("6".equalsIgnoreCase(unitValue)) {
+		        planDetail.getDrawingPreference().setUom(DxfFileConstants.METER_UOM);
+		    } else {
+		        planDetail.getDrawingPreference().setInMeters(false);
+		        planDetail.getErrors().put("units not in meters",
+		                "The drawing units must be in meters only.");
+		    }
 		}
 
 		/*
@@ -294,172 +294,6 @@ public class ExtractService {
 		return doc;
 	}
 
-//    public void validateRolesWisePlotArea(File dxfFile, Date scrutinyDate, List<Role> roles, 
-//    		BigDecimal plotArea, Plan plan) {
-//    	PlanInformation pi = new PlanInformation();
-//        DXFDocument doc = getDxfDocument(dxfFile);
-//
-//        if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
-//        	plotArea = extractPlotDetails(doc);
-//        } 
-//        
-//      // ✅ Iterate roles
-//      for (Role role : roles) {
-//          String roleCode = role.getCode();
-//          Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
-//	  	    if (Boolean.TRUE.equals(mdmsEnabled)) {
-//	  	    	Object mdmsData = edcrMdmsUtil.mdmsRolesCall(new RequestInfo(), plan.getEdcrRequest().getTenantId(),roleCode);
-//	  	    	if (ROLE_ARCHITECT.equalsIgnoreCase(roleCode)) {
-//	                // Architect has no restriction
-//	                //return planDetail;
-//	            }
-//	  	    }
-//
-//          if (ROLE_ARCHITECT.equalsIgnoreCase(roleCode)) {
-//              // Architect has no restriction
-//              //return planDetail;
-//          }
-//
-//          if (ROLE_ENGINEER.equalsIgnoreCase(roleCode)) {
-//              if (plotArea.compareTo(LIMIT_ENGINEER) <= 0) {
-//                  //return planDetail;
-//              } else {
-//            	  plan.getErrors().put(
-//                      "Not authorized to scrutinize",
-//                      "Your role [BPA_ENGINEER] allows maximum plot area of "
-//                              + LIMIT_ENGINEER + " Sqm, but provided plot area is " + plotArea + " Sqm."
-//                  );
-//                  //return plan;
-//              }
-//          }
-//
-//          if (ROLE_TOWNPLANNER.equalsIgnoreCase(roleCode)) {
-//              if (plotArea.compareTo(LIMIT_TOWNPLANNER) <= 0) {
-//                  //return planDetail;
-//              } else {
-//            	  plan.getErrors().put(
-//                      "Not authorized to scrutinize",
-//                      "Your role [BPA_TOWNPLANNER] allows maximum plot area of "
-//                              + LIMIT_TOWNPLANNER + " Sqm, but provided plot area is " + plotArea + " Sqm."
-//                  );
-//                  //return (Plan) planDetail;
-//              }
-//          }
-//
-//          if (ROLE_SUPERVISOR.equalsIgnoreCase(roleCode) || "BPA_DESIGNER".equalsIgnoreCase(roleCode)) {
-//              if (plotArea.compareTo(LIMIT_SUPERVISOR) <= 0) {
-//                  //return planDetail;
-//              } else {
-//            	  plan.getErrors().put(
-//                      "Not authorized to scrutinize",
-//                      "Your role [" + roleCode + "] allows maximum plot area of "
-//                              + LIMIT_SUPERVISOR + " Sqm, but provided plot area is " + plotArea + " Sqm."
-//                  );
-//                  //return (Plan) planDetail;
-//              }
-//          }
-//      }
-//
-//      // No recognized role      
-////      plan.getErrors().put(
-////          "Role not permitted",
-////          "You don't have a valid role to perform plot area scrutiny. Allowed roles are Architect, Engineer, TownPlanner, Supervisor, Designer."
-////      );
-//      //return (Plan) planDetail;
-//  }
-
-//	public void validateRolesWisePlotArea(File dxfFile, Date scrutinyDate, List<Role> roles, BigDecimal plotArea,
-//			Plan plan) {
-//		LOG.info("Inside validateRolesWisePlotArea ");
-//		
-//		//Extract plot area if not provided
-//		LOG.info("Plot area is : " + plotArea);
-//		if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
-//			LOG.info("before getDxf document");		
-//			DXFDocument doc = getDxfDocument(dxfFile);
-//			LOG.info("successfully get getDxf document");
-//			LOG.info("Plot area is null , extracting plot Area : " + plotArea);
-//			plotArea = extractPlotDetails(doc);
-//			LOG.info("extracted Plot area : " + plotArea);
-//		}
-//		LOG.info("Roles info Size : " + roles.size());
-//
-//		//Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
-//		// Iterate through roles and validate via MDMS configuration
-//		for (Role role : roles) {
-//			String roleCode = role.getCode();
-//			LOG.info("fetching role wise data for  : " + roleCode);
-//			// Skip if MDMS not enabled
-////			if (!Boolean.TRUE.equals(mdmsEnabled)) {
-////				continue;
-////			}
-//
-//			try {
-//				//Fetch MDMS data for this role
-//				Object mdmsData = edcrMdmsUtil.mdmsRolesCall(new RequestInfo(), plan.getEdcrRequest().getTenantId(),
-//						roleCode);
-//
-//				if (mdmsData!=null) {
-//					// Parse MDMS response
-//					Map<String, List<Map<String, Object>>> mdmsResponse = BpaMdmsUtil.mdmsResponseMapper(mdmsData,
-//							String.format(MdmsFilter.ROLE_FILTER, roleCode));
-//					
-//					if (mdmsResponse.isEmpty()) {
-//						LOG.warn("Empty role data from MDMS for role: {}", roleCode);
-//						continue;
-//					}
-//
-//					// Extract the role configuration
-//					List<Map<String, Object>> rolesList = mdmsResponse.values().iterator().next();
-//					if (rolesList.isEmpty())
-//						continue;
-//
-//					Map<String, Object> roleData = rolesList.get(0);
-//					Boolean isScrutinizeAllow = roleData.get("isScrutinizeAllow") != null
-//							? Boolean.valueOf(roleData.get("isScrutinizeAllow").toString())
-//							: Boolean.FALSE;
-//
-//					//Skip roles not allowed for scrutiny
-//					if (!isScrutinizeAllow) {
-//						plan.getErrors().put("Not authorized to scrutinize",
-//								"Your role [" + roleCode + "] is not permitted to scrutinize any plan.");
-//						continue;
-//					}else {
-//						// Extract max allowed plot area and scrutiny flag
-//						BigDecimal maxAllowedPlotArea = roleData.get("maxAllowedPlotArea") != null
-//								? new BigDecimal(roleData.get("maxAllowedPlotArea").toString())
-//								: BigDecimal.ZERO;
-//						
-//						//Validate plot area limit
-//						if (plotArea.compareTo(maxAllowedPlotArea) > 0) {
-//							plan.getErrors().put("Not authorized to scrutinize",
-//									"Your role [" + roleCode + "] allows maximum plot area of " + maxAllowedPlotArea
-//											+ " Sqm, but provided plot area is " + plotArea + " Sqm.");
-//						} 
-//							//else {
-////							LOG.info("Role [{}] authorized for plot area {} (limit: {})", roleCode, plotArea,
-////									maxAllowedPlotArea);
-////						}
-//					}					
-//				}else {
-//					LOG.info("No MDMS data found for role: {}", roleCode);
-//					plan.getErrors().put("Not authorized to scrutinize",
-//							"Your role [" + roleCode + "] is not permitted to scrutinize any plan.");
-//					continue;
-//				}
-//
-//			} catch (Exception e) {
-//				LOG.error("Error fetching role details from MDMS for role: {}", roleCode, e);
-//			}
-//		}
-//
-//		// If no roles were recognized or authorized, log warning
-//		if (plan.getErrors().isEmpty()) {
-//			LOG.info("All roles validated successfully for plot area: {}", plotArea);
-//		}
-//		LOG.info("exits validateRolesWisePlotArea ");
-//	}
-	
 	public void validateRolesWisePlotArea(File dxfFile, Date scrutinyDate, List<Role> roles, BigDecimal plotArea, Plan plan) {
 	    LOG.info("Inside validateRolesWisePlotArea ");
 	    LOG.info("Plot area is : {}", plotArea);
@@ -579,18 +413,12 @@ public class ExtractService {
 		BigDecimal area = BigDecimal.valueOf(0.0);
 		if (!plotBoundaries.isEmpty()) {
 			DXFLWPolyline plotBndryPolyLine = plotBoundaries.get(0);
-			// ((PlotDetail) pl.getPlot()).setPolyLine(plotBndryPolyLine);
-			// pl.getPlot().setPlotBndryArea(Util.getPolyLineArea(plotBndryPolyLine));
 			area = Util.getPolyLineArea(plotBndryPolyLine);
 			if (area == null) {
-				// pl.getPlot().setPlotBndryArea(BigDecimal.valueOf(0.0));
 			} else {
-				// pl.getPlot().setPlotBndryArea(area);
 				area = area.setScale(2, RoundingMode.HALF_UP);
 			}
 		} else {
-			// pl.getPlot().setPlotBndryArea(BigDecimal.valueOf(0.0));
-			// pl.addError("PLOT_BOUNDARY", OBJECTNOTDEFINED + "PLOT_BOUNDARY");
 		}
 		LOG.info("extracted plotArea : " + area);
 		LOG.info("exit extractPlotDetails");

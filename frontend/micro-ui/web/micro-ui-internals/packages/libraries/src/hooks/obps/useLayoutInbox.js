@@ -11,6 +11,8 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
   const { sortBy, limit, offset, sortOrder, isCitizenView } = tableForm;
   const user = Digit.UserService.getUser();
 
+  const checkCitizenView = window.location.href.includes("citizen-layout");
+
   const _filters = {
     tenantId,
     processSearchCriteria: {
@@ -24,7 +26,7 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
       ...(mobileNumber ? { mobileNumber } : {}),
       ...(applicationNumber ? { applicationNumber } : {}),
       ...(sortOrder ? { sortOrder } : {}),
-      ...(isCitizenView ? { isCitizenView } : {}),
+      isCitizenView: checkCitizenView,
       ...(sortBy ? { sortBy } : {}),
       ...(locality?.length > 0 ? { locality: locality.map((item) => item.code.split("_").pop()).join(",") } : {}),
     },

@@ -347,7 +347,7 @@ const App = ({ path }) => {
           )}
         />
         <PrivateRoute
-          path={`${path}/my-applications/layout`}
+          path={`${path}/my-applications/citizen-layout`}
           component={(props) => (
             <AppContainer>
               <CitizenLaoyoutInbox {...props} parentRoute={path} />
@@ -355,7 +355,7 @@ const App = ({ path }) => {
           )}
         />
         <PrivateRoute
-          path={`${path}/my-applications/bpa`}
+          path={`${path}/my-applications/citizen-bpa`}
           component={(props) => (
             <AppContainer>
               <CitizenInbox {...props} parentRoute={path} />
@@ -363,7 +363,7 @@ const App = ({ path }) => {
           )}
         />
         <PrivateRoute
-          path={`${path}/my-applications/stakeholder-inbox`}
+          path={`${path}/my-applications/citizen-stakeholder-inbox`}
           component={(props) => (
             <AppContainer>
               <CitizenInbox {...props} parentRoute={path} />
@@ -371,7 +371,7 @@ const App = ({ path }) => {
           )}
         />
         <PrivateRoute
-          path={`${path}/my-applications/stakeholder-inbox/others`}
+          path={`${path}/my-applications/stakeholder-inbox/citizen-others`}
           component={(props) => (
             <AppContainer>
               <CitizenInbox {...props} parentRoute={path} />
@@ -379,7 +379,7 @@ const App = ({ path }) => {
           )}
         />
         <PrivateRoute
-          path={`${path}/my-applications/clu`}
+          path={`${path}/my-applications/citizen-clu`}
           component={(props) => (
             <AppContainer>
               <CitizenCLUInbox {...props} parentRoute={path} />

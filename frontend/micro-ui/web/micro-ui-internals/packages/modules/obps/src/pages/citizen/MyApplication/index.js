@@ -472,7 +472,7 @@ const MyApplication = () => {
         <div className="ndc-new-filter-status-grid ndc-new-filter-card-grid">
           <button
             onClick={() => {
-              history.push("/digit-ui/citizen/obps/my-applications/bpa");
+              history.push("/digit-ui/citizen/obps/my-applications/citizen-bpa");
             }}
             type="button"
             className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card success ${true ? "active" : ""}`}
@@ -482,7 +482,7 @@ const MyApplication = () => {
           {dataPunjab?.Count > 0 && (
             <button
               onClick={() => {
-                history.push("/digit-ui/citizen/obps/my-applications/stakeholder-inbox");
+                history.push("/digit-ui/citizen/obps/my-applications/citizen-stakeholder-inbox");
               }}
               type="button"
               className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card primary ${true ? "active" : ""}`}
@@ -493,7 +493,7 @@ const MyApplication = () => {
           {data?.Count > 0 && (
             <button
               onClick={() => {
-                history.push("/digit-ui/citizen/obps/my-applications/stakeholder-inbox/others");
+                history.push("/digit-ui/citizen/obps/my-applications/stakeholder-inbox/citizen-others");
               }}
               type="button"
               className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card success ${true ? "active" : ""}`}
@@ -503,7 +503,7 @@ const MyApplication = () => {
           )}
           <button
             onClick={() => {
-              history.push("/digit-ui/citizen/obps/my-applications/layout");
+              history.push("/digit-ui/citizen/obps/my-applications/citizen-layout");
             }}
             type="button"
             className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card warning ${true ? "active" : ""}`}
@@ -512,7 +512,7 @@ const MyApplication = () => {
           </button>
           <button
             onClick={() => {
-              history.push("/digit-ui/citizen/obps/my-applications/clu");
+              history.push("/digit-ui/citizen/obps/my-applications/citizen-clu");
             }}
             type="button"
             className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card primary ${true ? "active" : ""}`}

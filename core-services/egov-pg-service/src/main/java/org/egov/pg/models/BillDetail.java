@@ -43,7 +43,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.springframework.util.CollectionUtils;
 
@@ -96,7 +96,7 @@ public class BillDetail {
 	private Long toPeriod = null;
 
 	@JsonProperty("additionalDetails")
-	private JsonNode additionalDetails = null;
+	private Object  additionalDetails = null;
 
 	@JsonProperty("channel")
 	private String channel = null;

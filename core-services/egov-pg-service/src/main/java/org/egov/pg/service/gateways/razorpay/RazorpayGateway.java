@@ -9,7 +9,7 @@ import java.util.Objects;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 import org.egov.pg.constants.TransactionAdditionalFields;
 import org.egov.pg.models.Transaction;
 import org.egov.pg.service.Gateway;
@@ -124,7 +124,7 @@ public class RazorpayGateway implements Gateway{
 	        params.add("orderId", order.get("id"));
 	        params.add("amount", String.valueOf(Utils.formatAmtAsPaise(transaction.getTxnAmount())));
 	        
-	        UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(MERCHANT_URL_PAY).queryParams
+	        UriComponents uriComponents = UriComponentsBuilder.fromUriString(MERCHANT_URL_PAY).queryParams
 	                (params).build().encode();
 	        request.put("url", uriComponents.toUri().toString());
 	        transaction.setGatewayRequest(request);

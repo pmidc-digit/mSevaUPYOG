@@ -35,7 +35,7 @@ public class BankAccountRepository {
  		queryParams.add("businessService", businessService);
 
         String uri = UriComponentsBuilder
-                .fromHttpUrl(appProperties.getBankAccountHost())
+                .fromUriString(appProperties.getBankAccountHost())
                 .path(appProperties.getBankAccountPath())
                 .queryParams(queryParams)
                 .build()

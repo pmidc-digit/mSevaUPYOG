@@ -186,7 +186,7 @@ public class NttdataGateway implements Gateway {
             params.add("custEmail", transaction.getUser().getEmailId());
             params.add("custMobile", transaction.getUser().getMobileNumber());
             params.add("returnURL", getReturnUrl(transaction.getCallbackUrl(), REDIRECT_URL));
-            UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(MERCHANT_HOST).queryParams(params)
+            UriComponents uriComponents = UriComponentsBuilder.fromUriString(MERCHANT_HOST).queryParams(params)
                     .build();
 
             return uriComponents.toUri();
@@ -339,7 +339,7 @@ public class NttdataGateway implements Gateway {
 
     }
     private String getReturnUrl(String callbackUrl, String baseurl) {
-        return UriComponentsBuilder.fromHttpUrl(baseurl).queryParam(ORIGINAL_RETURN_URL_KEY, callbackUrl).build().toUriString();
+        return UriComponentsBuilder.fromUriString(baseurl).queryParam(ORIGINAL_RETURN_URL_KEY, callbackUrl).build().toUriString();
     }
 
     @Override

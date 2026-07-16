@@ -4,18 +4,18 @@ package org.egov.pg.repository;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.pg.config.AppProperties;
 import org.egov.pg.models.IdGenerationResponse;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.web.client.RestTemplate;
 
-@Ignore
+@Disabled
 public class IdGenRepositoryTest {
 
     private IdGenRepository idGenRepository;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockEnvironment env = new MockEnvironment();
         env.setProperty("idGenHost", "http://localhost:8088/");

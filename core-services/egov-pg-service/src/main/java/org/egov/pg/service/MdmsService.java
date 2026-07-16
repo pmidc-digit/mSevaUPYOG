@@ -9,8 +9,10 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.mdms.model.*;
 import org.egov.pg.config.AppProperties;
 import org.egov.pg.repository.ServiceCallRepository;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,14 +25,28 @@ public class MdmsService {
 	private AppProperties appProperties;
 	
 	@Autowired
+	private RestTemplate restTemplate;
+	
+	@Autowired
 	public MdmsService(ServiceCallRepository serviceCallRepository, AppProperties appProperties) {
 		this.serviceCallRepository = serviceCallRepository;
 		this.appProperties = appProperties;
 	}
 	
+//	public Object getMdmsdata(RequestInfo requestInfo, String tenantId) {
+//		MdmsCriteriaReq mdmsCriteriaReq = getMDMSRequest(requestInfo, tenantId);
+//		return serviceCallRepository.fetchResult(getMdmsSearchUrl().toString(), mdmsCriteriaReq).get();
+//	}
 	public Object getMdmsdata(RequestInfo requestInfo, String tenantId) {
-		MdmsCriteriaReq mdmsCriteriaReq = getMDMSRequest(requestInfo, tenantId);
-		return serviceCallRepository.fetchResult(getMdmsSearchUrl().toString(), mdmsCriteriaReq).get();
+
+	    MdmsCriteriaReq mdmsCriteriaReq = getMDMSRequest(requestInfo, tenantId);
+	    try {
+	        return restTemplate.postForObject(getMdmsSearchUrl().toString(),mdmsCriteriaReq,Object.class);
+
+	    } catch (Exception e) {
+	        log.error("Exception while fetching MDMS data", e);
+	        throw new CustomException("MDMS_FETCH_FAILED", "Failed to fetch MDMS data");
+	    }
 	}
 	
 	/**

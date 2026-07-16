@@ -106,7 +106,7 @@ public class AxisGateway implements Gateway {
         String ENCRYPTION_TYPE = "SHA256";
         params.add("vpc_SecureHashType", ENCRYPTION_TYPE);
 
-        UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(MERCHANT_URL_PAY).queryParams
+        UriComponents uriComponents = UriComponentsBuilder.fromUriString(MERCHANT_URL_PAY).queryParams
                 (params).build().encode();
 
         return uriComponents.toUri();
@@ -165,7 +165,7 @@ public class AxisGateway implements Gateway {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
         fields.forEach(queryParams::add);
 
-        UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(MERCHANT_URL_STATUS).queryParams
+        UriComponents uriComponents = UriComponentsBuilder.fromUriString(MERCHANT_URL_STATUS).queryParams
                 (queryParams).build().encode();
 
         try {

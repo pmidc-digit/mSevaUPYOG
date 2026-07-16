@@ -29,7 +29,7 @@ public class CollectionsRepository {
 
     public ReceiptRes generateReceipt(ReceiptReq receiptReq) {
         String uri = UriComponentsBuilder
-                .fromHttpUrl(appProperties.getCollectionServiceHost())
+                .fromUriString(appProperties.getCollectionServiceHost())
                 .path(appProperties.getCollectionServiceCreatePath())
                 .build()
                 .toUriString();
@@ -40,7 +40,7 @@ public class CollectionsRepository {
 
     public ReceiptRes validateReceipt(ReceiptReq receiptReq){
         String uri = UriComponentsBuilder
-                .fromHttpUrl(appProperties.getCollectionServiceHost())
+                .fromUriString(appProperties.getCollectionServiceHost())
                 .path(appProperties.getCollectionServiceValidatePath())
                 .build()
                 .toUriString();

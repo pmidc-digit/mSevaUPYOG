@@ -38,7 +38,7 @@ public class PgDetailRepository {
         pgDetails.add(pgDetail);
         PgDetailRequest pgDetailRequest = new PgDetailRequest(requestInfo,pgDetails);
         String uri = UriComponentsBuilder
-                .fromHttpUrl(appProperties.getPgDetailHost())
+                .fromUriString(appProperties.getPgDetailHost())
                 .path(appProperties.getPgDetailPath())
                 .build()
                 .toUriString();

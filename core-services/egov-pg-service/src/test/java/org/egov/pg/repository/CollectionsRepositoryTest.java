@@ -4,11 +4,11 @@ package org.egov.pg.repository;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.pg.models.ReceiptRes;
 import org.egov.pg.web.models.RequestInfoWrapper;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
 
-@Ignore
+@Disabled
 public class CollectionsRepositoryTest {
 
     @Test

@@ -44,9 +44,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
-import org.hibernate.validator.constraints.Length;
+import jakarta.validation.constraints.Size;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Builder
 @Getter
@@ -59,11 +59,11 @@ public class FundContract extends AuditableContract {
 
     private Long id;
 
-    @Length(max = 50, min = 2)
+    @Size(max = 50, min = 2)
     @NotNull
     private String name;
 
-    @Length(max = 50, min = 2)
+    @Size(max = 50, min = 2)
     @NotNull
     private String code;
     @NotNull

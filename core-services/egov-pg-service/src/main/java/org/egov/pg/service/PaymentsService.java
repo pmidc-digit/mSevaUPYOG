@@ -19,6 +19,7 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,6 +34,9 @@ public class PaymentsService {
 	
 	@Autowired
 	private AppProperties props;
+	
+	@Autowired
+	private RestTemplate restTemplate;
 	
 	@Autowired
 	private ObjectMapper mapper;
@@ -67,28 +71,54 @@ public class PaymentsService {
 	}
 	
 	
+//	public CollectionPayment validatePayment(TransactionRequest request) {
+//		CollectionPayment payment = getPaymentFromTransaction(request);
+//		CollectionPaymentRequest paymentRequest = CollectionPaymentRequest.builder()
+//				.requestInfo(request.getRequestInfo()).payment(payment).build();
+//		String uri = props.getCollectionServiceHost() + props.getPaymentValidatePath();
+//		Optional<Object> response =  repository.fetchResult(uri, paymentRequest);
+//		if(response.isPresent()) {
+//			try {
+//				CollectionPaymentResponse paymentResponse = mapper.convertValue(response.get(), CollectionPaymentResponse.class);
+//				if(!CollectionUtils.isEmpty(paymentResponse.getPayments()))
+//					return paymentResponse.getPayments().get(0);
+//				else
+//					throw new CustomException("PAYMENT_VALIDATION_FAILED", "Failed to validate this payment at collection-service");						
+//			}catch(Exception e) {
+//				log.error("Failed to parse the payment response: ",e);
+//				throw new CustomException("RESPONSE_PARSE_ERROR", "Failed to parse the payment response");
+//			}
+//
+//		}else {
+//			throw new CustomException("PAYMENT_VALIDATION_FAILED", "Failed to validate this payment at collection-service");						
+//		}
+//		
+//	}
 	public CollectionPayment validatePayment(TransactionRequest request) {
-		CollectionPayment payment = getPaymentFromTransaction(request);
-		CollectionPaymentRequest paymentRequest = CollectionPaymentRequest.builder()
-				.requestInfo(request.getRequestInfo()).payment(payment).build();
-		String uri = props.getCollectionServiceHost() + props.getPaymentValidatePath();
-		Optional<Object> response =  repository.fetchResult(uri, paymentRequest);
-		if(response.isPresent()) {
-			try {
-				CollectionPaymentResponse paymentResponse = mapper.convertValue(response.get(), CollectionPaymentResponse.class);
-				if(!CollectionUtils.isEmpty(paymentResponse.getPayments()))
-					return paymentResponse.getPayments().get(0);
-				else
-					throw new CustomException("PAYMENT_VALIDATION_FAILED", "Failed to validate this payment at collection-service");						
-			}catch(Exception e) {
-				log.error("Failed to parse the payment response: ",e);
-				throw new CustomException("RESPONSE_PARSE_ERROR", "Failed to parse the payment response");
-			}
 
-		}else {
-			throw new CustomException("PAYMENT_VALIDATION_FAILED", "Failed to validate this payment at collection-service");						
-		}
-		
+	    CollectionPayment payment = getPaymentFromTransaction(request);
+	    CollectionPaymentRequest paymentRequest = CollectionPaymentRequest.builder()
+	            .requestInfo(request.getRequestInfo())
+	            .payment(payment)
+	            .build();
+	    String uri = props.getCollectionServiceHost() + props.getPaymentValidatePath();
+	    try {
+	        CollectionPaymentResponse paymentResponse =
+	                restTemplate.postForObject(uri, paymentRequest, CollectionPaymentResponse.class);
+
+	        if (paymentResponse != null &&
+	                !CollectionUtils.isEmpty(paymentResponse.getPayments())) {
+	            return paymentResponse.getPayments().get(0);
+	        }
+	        throw new CustomException(
+	                "PAYMENT_VALIDATION_FAILED",
+	                "Failed to validate this payment at collection-service");
+	    } catch (Exception e) {
+	        log.error("Payment validation failed", e);
+	        throw new CustomException(
+	                "PAYMENT_VALIDATION_FAILED",
+	                "Failed to validate this payment at collection-service");
+	    }
 	}
 	
 	

@@ -31,19 +31,31 @@ public class EarlyReconciliationJobConfig {
     }
 
     @Bean
+//    CronTriggerFactoryBean earlyReconciliationTrigger(JobDetail earlyReconciliationJobDetail) {
+//        CronTriggerFactoryBean triggerFactory = new CronTriggerFactoryBean();
+//        int runEvery = appProperties.getEarlyReconcileJobRunInterval();
+//        Integer runEveryMinutes, runEveryHours;
+//        runEveryHours = runEvery / 60;
+//        runEveryMinutes = runEvery % 60;
+//
+//
+//        CronTriggerFactoryBean cronTriggerFactoryBean = new CronTriggerFactoryBean();
+//        cronTriggerFactoryBean.setJobDetail(earlyReconciliationJobDetail);
+////        cronTriggerFactoryBean.setCronExpression("0 0/" + appProperties.getReconciliationTimeout().toString() + " * * * ?");
+//        cronTriggerFactoryBean.setCronExpression("0 " + runEveryHours + "/" + runEveryMinutes + " * * * ?");
+//        cronTriggerFactoryBean.setGroup("status-update");
+//        return cronTriggerFactoryBean;
+//    }
     CronTriggerFactoryBean earlyReconciliationTrigger(JobDetail earlyReconciliationJobDetail) {
-        CronTriggerFactoryBean triggerFactory = new CronTriggerFactoryBean();
-        int runEvery = appProperties.getEarlyReconcileJobRunInterval();
-        Integer runEveryMinutes, runEveryHours;
-        runEveryHours = runEvery / 60;
-        runEveryMinutes = runEvery % 60;
-
-
         CronTriggerFactoryBean cronTriggerFactoryBean = new CronTriggerFactoryBean();
+
         cronTriggerFactoryBean.setJobDetail(earlyReconciliationJobDetail);
-//        cronTriggerFactoryBean.setCronExpression("0 0/" + appProperties.getReconciliationTimeout().toString() + " * * * ?");
-        cronTriggerFactoryBean.setCronExpression("0 " + runEveryHours + "/" + runEveryMinutes + " * * * ?");
+
+        // Run every minute
+        cronTriggerFactoryBean.setCronExpression("0 0/1 * * * ?");
+
         cronTriggerFactoryBean.setGroup("status-update");
+
         return cronTriggerFactoryBean;
     }
 

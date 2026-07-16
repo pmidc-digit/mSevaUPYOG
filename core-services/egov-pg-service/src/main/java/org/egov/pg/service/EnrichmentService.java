@@ -81,7 +81,7 @@ public class EnrichmentService {
         }
         
         String uri = UriComponentsBuilder
-                .fromHttpUrl(transaction.getCallbackUrl())
+                .fromUriString(transaction.getCallbackUrl())
                 .queryParams(new LinkedMultiValueMap<>(singletonMap(PgConstants.PG_TXN_IN_LABEL,
                         Collections.singletonList(txnId))))
                 .build()

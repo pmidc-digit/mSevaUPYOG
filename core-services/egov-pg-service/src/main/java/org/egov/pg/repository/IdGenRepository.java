@@ -39,7 +39,7 @@ public class IdGenRepository {
         }
         IdGenerationRequest req = new IdGenerationRequest(requestInfo, reqList);
         String uri = UriComponentsBuilder
-                .fromHttpUrl(appProperties.getIdGenHost())
+                .fromUriString(appProperties.getIdGenHost())
                 .path(appProperties.getIdGenPath())
                 .build()
                 .toUriString();

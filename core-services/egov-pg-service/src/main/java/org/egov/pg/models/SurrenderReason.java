@@ -1,9 +1,9 @@
 package org.egov.pg.models;
 
 import lombok.*;
-import org.hibernate.validator.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 
 @NoArgsConstructor
 @AllArgsConstructor

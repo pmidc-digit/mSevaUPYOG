@@ -55,7 +55,7 @@ public class RedirectController {
     	else
     		txnId = formData.get(PgConstants.PG_TXN_IN_LABEL_NTTDATA).get(0); 
 
-        //MultiValueMap<String, String> params = UriComponentsBuilder.fromUriString(returnURL).build().getQueryParams();
+        //MultiValueMap<String, String> params = UriComponentsBuilder.fromUriStringg(returnURL).build().getQueryParams();
         log.info("returnUrl in redirect::::"+returnURL);
         log.info("txn Id"+txnId);
         /*
@@ -85,7 +85,7 @@ public class RedirectController {
             StringBuilder redirectURL = new StringBuilder();
             redirectURL.append(returnURL);
             formData.remove(returnUrlKey);
-            httpHeaders.setLocation(UriComponentsBuilder.fromHttpUrl(redirectURL.toString())
+            httpHeaders.setLocation(UriComponentsBuilder.fromUriString(redirectURL.toString())
                     .queryParams(formData).build().encode().toUri());
         } 
         else if(gateway != null && gateway.equalsIgnoreCase("NTTDATA")) {
@@ -97,10 +97,10 @@ public class RedirectController {
             formData.remove("merchId");
             formData.remove(PgConstants.PG_TXN_IN_LABEL_NTTDATA);
 
-            httpHeaders.setLocation(UriComponentsBuilder.fromHttpUrl(redirectURL.toString())
+            httpHeaders.setLocation(UriComponentsBuilder.fromUriString(redirectURL.toString())
                     .queryParams(formData).build().encode().toUri());
         }else {
-            httpHeaders.setLocation(UriComponentsBuilder.fromHttpUrl(formData.get(returnUrlKey).get(0))
+            httpHeaders.setLocation(UriComponentsBuilder.fromUriString(formData.get(returnUrlKey).get(0))
                     .queryParams(formData).build().encode().toUri());
         }
 
@@ -111,7 +111,7 @@ public class RedirectController {
     public ResponseEntity<Object> handleError(Exception e) {
         log.error("EXCEPTION_WHILE_REDIRECTING", e);
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setLocation(UriComponentsBuilder.fromHttpUrl(defaultURL).build().encode().toUri());
+        httpHeaders.setLocation(UriComponentsBuilder.fromUriString(defaultURL).build().encode().toUri());
         return new ResponseEntity<>(httpHeaders, HttpStatus.FOUND);
     }
 

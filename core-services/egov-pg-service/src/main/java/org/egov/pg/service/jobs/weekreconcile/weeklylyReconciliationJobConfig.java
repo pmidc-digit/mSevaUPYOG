@@ -37,7 +37,7 @@ public class weeklylyReconciliationJobConfig {
         triggerFactory.setJobDetail(weeklyReconciliationJobDetail);
         //triggerFactory.setCronExpression("0 0 0 ? * SAT"); // Every Saturday at 12:00 AM
       //  triggerFactory.setCronExpression("0 0/1 * * * ?"); // Cron expression (every 5 minutes as an example)
-            triggerFactory.setCronExpression("0 0 * * * ?"); // every hour
+        triggerFactory.setCronExpression("0 0/1 * * * ?"); // every hour
 
         // Delay start by 2 minutes
       //  triggerFactory.setStartTime(new Date(System.currentTimeMillis() + 2 * 60 * 1000)); // Current time + 2 minutes

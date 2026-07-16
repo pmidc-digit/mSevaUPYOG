@@ -80,7 +80,7 @@ public class PaytmGateway implements Gateway {
             paramMap.forEach((key, value) -> params.put(key, Collections.singletonList(value)));
 
 
-            UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(MERCHANT_URL_DEBIT).queryParams
+            UriComponents uriComponents = UriComponentsBuilder.fromUriString(MERCHANT_URL_DEBIT).queryParams
                     (params).build().encode();
 
             return uriComponents.toUri();

@@ -6,8 +6,8 @@ import org.egov.pg.service.gateways.paytm.PaytmGateway;
 import org.egov.pg.service.gateways.phonepe.PhonepeGateway;
 import org.egov.pg.utils.Utils;
 import org.egov.pg.web.models.User;
-import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.springframework.core.env.Environment;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.web.client.RestTemplate;
@@ -17,7 +17,7 @@ import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.Collections;
 
-@Ignore
+@Disabled
 public class Test {
 
     private User user;
@@ -25,7 +25,7 @@ public class Test {
     private RestTemplate restTemplate;
     private Environment environment;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         user = User.builder().userName("USER001").mobileNumber("9XXXXXXXXX").name("XYZ").tenantId("pb").emailId("").build();
         this.restTemplate = new RestTemplate();
@@ -33,7 +33,7 @@ public class Test {
         this.environment = new MockEnvironment();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void axisTest() {
         Transaction txn = Transaction.builder().txnAmount("100")
                 .txnId("ABC231")
@@ -49,7 +49,7 @@ public class Test {
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void phonepeTest() {
         Transaction txn = Transaction.builder().txnAmount("100")
                 .txnId("ABC2312")
@@ -66,7 +66,7 @@ public class Test {
         System.out.println(redirectUri);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void paytmTest() {
         Transaction txn = Transaction.builder().txnAmount("100")
                 .txnId("PB_PG_2018_06_08_000014_55")
@@ -100,7 +100,7 @@ public class Test {
 //    }
 
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void phonepeStatus() {
 
         Transaction txn = Transaction.builder().txnAmount("100")
@@ -116,7 +116,7 @@ public class Test {
         gateway.fetchStatus(txn, Collections.singletonMap("transactionId", "PB_PG_2018_06_09-000013_13"));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void paytmStatus() {
 
         Transaction txn = Transaction.builder().txnAmount("100")
@@ -133,7 +133,7 @@ public class Test {
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void axisStatus() {
 
         Transaction txn = Transaction.builder().txnAmount("100")
@@ -150,7 +150,7 @@ public class Test {
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void name1() {
         final DecimalFormat CURRENCY_FORMATTER_RUPEE = new DecimalFormat("0.00");
         System.out.println(Double.valueOf(CURRENCY_FORMATTER_RUPEE.format(Double.valueOf("141"))));
@@ -160,7 +160,7 @@ public class Test {
         System.out.println(decimal == decimal1);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void name3() {
         System.out.println(Utils.convertPaiseToRupee("10"));
     }

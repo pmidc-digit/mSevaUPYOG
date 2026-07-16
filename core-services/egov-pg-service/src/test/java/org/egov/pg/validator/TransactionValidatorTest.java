@@ -22,13 +22,14 @@ import org.egov.pg.service.PaymentsService;
 import org.egov.pg.web.models.TransactionCriteria;
 import org.egov.pg.web.models.TransactionRequest;
 import org.egov.tracer.model.CustomException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+//import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(SpringExtension.class)
 public class TransactionValidatorTest {
 
     @Mock
@@ -47,7 +48,7 @@ public class TransactionValidatorTest {
     private List<Bill> bills;
     private Transaction txn;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         validator = new TransactionValidator(gatewayService, transactionRepository, paymentsService, props);
         TaxAndPayment taxAndPayment = TaxAndPayment.builder()

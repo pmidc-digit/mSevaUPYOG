@@ -24,19 +24,22 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: "applicationNo",
         disableSortBy: true,
         Cell: ({ row }) => {
+          console.log("row", row);
           const encryptedId = encryptId(row.original["applicationId"]);
-          console.log("wholerowindatacell", row);
+          const currentUrl = window.location.href;
+          let link;
+          if (currentUrl.includes("/citizen-others") || currentUrl.includes("/citizen-stakeholder-inbox")) {
+            link = `/digit-ui/citizen/obps/stakeholder/${row.original.applicationId}`;
+          } else if (currentUrl.includes("/citizen")) {
+            link = `${parentRoute}/bpa-app/${encryptedId}`;
+          } else if (tenantId === "pb.punjab") {
+            link = `${parentRoute}/inbox/bpa/${encryptedId}/${row.original["tenantId"]}`;
+          } else {
+            link = `${parentRoute}/inbox/bpa/${encryptedId}`;
+          }
           return (
             <div>
-              <Link
-                to={
-                  window.location.href.includes("/citizen")
-                    ? `${parentRoute}/bpa-app/${encryptedId}`
-                    : tenantId === "pb.punjab"
-                    ? `${parentRoute}/inbox/bpa/${encryptedId}/${row.original["tenantId"]}`
-                    : `${parentRoute}/inbox/bpa/${encryptedId}`
-                }
-              >
+              <Link to={link}>
                 <span className="link">{row.original["applicationId"]}</span>
               </Link>
             </div>

@@ -199,7 +199,6 @@ export const PTSearch = {
     return response.Properties[0];
   },
   transformPropertyToApplicationDetails: ({ property: response, t }) => {
-    console.log('response in property:', response);
     
     return [
       {

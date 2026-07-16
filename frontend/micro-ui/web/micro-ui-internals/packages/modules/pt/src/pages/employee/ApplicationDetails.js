@@ -254,7 +254,6 @@ const ApplicationDetails = () => {
   if (appDetailsToShow?.applicationDetails) {
     appDetailsToShow.applicationDetails = appDetailsToShow.applicationDetails.map((detail) => {
       if (detail.title === "PT_OWNERSHIP_INFO_SUB_HEADER") {
-        console.log('detail here:', detail);
         
         return {
           ...detail,

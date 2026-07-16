@@ -36,7 +36,6 @@ function PTSummaryEmployee({ formData, t }) {
   };
 
   const isInstitutionalOwnership = formData?.ownerShipDetails?.ownershipCategory?.code?.includes("INSTITUTIONAL") || formData?.originalData?.ownershipCategory?.includes("INSTITUTION");
-  console.log('isInstitutionalOwnership:, formData', isInstitutionalOwnership, formData);
   
   const isIndividualOwnership = formData?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL") || formData?.ownerShipDetails?.ownershipCategory?.code === "SINGLEOWNER";
   return (
@@ -59,7 +58,6 @@ function PTSummaryEmployee({ formData, t }) {
             };
 
             const transferorDetails = summaryData?.TransferorDetails || summaryData || {};
-            console.log('summaryData:', summaryData);
             
             const originalData = summaryData?.originalData || {};
             const originalOwners = originalData?.owners?.filter((e) => e.status === "ACTIVE" || e.status === "active") || [];

@@ -18,7 +18,6 @@ const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
 
 const getOwner = (application, t, customTitle) => {
-  console.log('application:', application);
   
   let owners = [];
   let ownershipCategory = application?.ownershipCategory;

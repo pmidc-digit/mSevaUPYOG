@@ -205,7 +205,7 @@ const ApplicationDetails = () => {
       }
 
       const data = await getPTAcknowledgementData({ ...Property }, tenantInfo, t);
-      Digit.Utils.pdf.generate(data);
+      Digit.Utils.pdf.generateFormatted(data);
     } catch (error) {
       setShowToast({ key: "error", error: { message: error?.message || t("ERR_PDF_GEN_FAILED") } });
       setTimeout(closeToast, 5000);

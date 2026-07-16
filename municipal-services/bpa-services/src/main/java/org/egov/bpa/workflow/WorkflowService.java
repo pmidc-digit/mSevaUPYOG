@@ -91,7 +91,7 @@ public class WorkflowService {
 	 * @return State object to be fetched
 	 */
 	public Boolean isStateUpdatable(String status, BusinessService businessService) {
-		for (org.egov.bpa.web.model.workflow.State state : businessService.getStates()) {
+		for (State state : businessService.getStates()) {
 			if (state.getApplicationStatus() != null
 					&& state.getApplicationStatus().equalsIgnoreCase(status.toString()))
 				return state.getIsStateUpdatable();

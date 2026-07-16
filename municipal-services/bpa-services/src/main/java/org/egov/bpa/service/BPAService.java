@@ -489,7 +489,7 @@ public class BPAService {
                  * then we need to skip the payment on APPROVE and need to make it APPROVED instead
                  * of SANCTION FEE PAYMENT PEDNING.
                  */
-                if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
+                if (bpa.getWorkflow() != null && (businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
                         || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_BUSINESSSERVICE))
                         && state.equalsIgnoreCase(BPAConstants.PENDING_APPROVAL_STATE) &&
                         bpa.getWorkflow() != null && bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_APPROVE)
@@ -498,43 +498,46 @@ public class BPAService {
                     bpa.setWorkflow(workflow);
                 }
 
-        		// Add Assignees in application workflow 
-        		State currentState = workflowService.getCurrentStateObj(bpa.getStatus(), businessService);
-        		String nextStateId = currentState.getActions().stream()
-        				.filter(act -> act.getAction().equalsIgnoreCase(bpa.getWorkflow().getAction()))
-        				.findFirst().orElse(new Action()).getNextState();
-        		State nextState = businessService.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
-        		
-        		List<String> roles = new ArrayList<String>();
-    			if(nextState != null && !CollectionUtils.isEmpty(nextState.getActions()))
-    				roles = nextState.getActions().stream()
-    				.filter(stateAction -> !stateAction.getNextState().equalsIgnoreCase(nextStateId))
-    				.flatMap(stateAction -> stateAction.getRoles().stream())
-    				.distinct()
-    				.filter(role -> !role.equalsIgnoreCase("OBPAS_UPDATE_ZONE")
-    						&& !role.equalsIgnoreCase("SYSTEM"))
-    				.collect(Collectors.toList());
-        		
-        		if (nextState != null 
-						&& CollectionUtils.isEmpty(bpa.getWorkflow().getAssignes())
-						&& !CollectionUtils.isEmpty(nextState.getActions())) {
-					List<String> assignee = null;
-					if(!CollectionUtils.isEmpty(roles))
-						assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo, false);
-					bpa.getWorkflow().setAssignes(assignee);
+				if (bpa.getWorkflow() != null) {
+					// Add Assignees in application workflow
+					State currentState = workflowService.getCurrentStateObj(bpa.getStatus(), businessService);
+					String nextStateId = currentState.getActions().stream()
+							.filter(act -> act.getAction().equalsIgnoreCase(bpa.getWorkflow().getAction())).findFirst()
+							.orElse(new Action()).getNextState();
+					State nextState = businessService.getStates().stream()
+							.filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
+
+					List<String> roles = new ArrayList<String>();
+					if (nextState != null && !CollectionUtils.isEmpty(nextState.getActions()))
+						roles = nextState.getActions().stream()
+								.filter(stateAction -> !stateAction.getNextState().equalsIgnoreCase(nextStateId))
+								.flatMap(stateAction -> stateAction.getRoles().stream()).distinct()
+								.filter(role -> !role.equalsIgnoreCase("OBPAS_UPDATE_ZONE")
+										&& !role.equalsIgnoreCase("SYSTEM"))
+								.collect(Collectors.toList());
+
+					if (nextState != null && CollectionUtils.isEmpty(bpa.getWorkflow().getAssignes())
+							&& !CollectionUtils.isEmpty(nextState.getActions())) {
+						List<String> assignee = null;
+						if (!CollectionUtils.isEmpty(roles))
+							assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo, false);
+						bpa.getWorkflow().setAssignes(assignee);
+
+					}
+
+					if (!CollectionUtils.isEmpty(roles)) {
+						List<String> assignee = null;
+						assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo, true);
+						bpa.getWorkflow().setAssignes(assignee);
+					}
+
+					wfIntegrator.callWorkFlow(bpaRequest);
+					log.debug("===> workflow done =>" + bpaRequest.getBPA().getStatus());
+					enrichmentService.postStatusEnrichment(bpaRequest);
 					
+					additionalDetails.put("draftComment", null);
 				}
-        		
-        		if(!CollectionUtils.isEmpty(roles)) {
-    				List<String> assignee = null;
-    				assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo, true);
-    				bpa.getWorkflow().setAssignes(assignee);
-    			}
-        		
-		wfIntegrator.callWorkFlow(bpaRequest);
-		log.debug("===> workflow done =>" +bpaRequest.getBPA().getStatus()  );
-		enrichmentService.postStatusEnrichment(bpaRequest);
-		
+              
 		log.debug("Bpa status is : " + bpa.getStatus());
 
 
@@ -580,6 +583,9 @@ public class BPAService {
 	 */
 	private void handleRejectSendBackActions(String applicationType, BPARequest bpaRequest,BusinessService businessService,List<BPA> searchResult,Object mdmsData,Map<String, String> edcrResponse ) {
 		BPA bpa = bpaRequest.getBPA();
+		if(bpa.getWorkflow() ==  null)
+			return;
+		
 		if (bpa.getWorkflow().getAction() != null && (bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_REJECT)
 				|| bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_REVOCATE))) {
 

@@ -1464,6 +1464,10 @@ public class DemandService {
 		        }
 
 		        List<BillSearchs> billSearchsss = waterCalculatorDao.getBillss(tenantId, demandid);
+		        
+		        if(CollectionUtils.isEmpty(billSearchsss) && demandlists.stream().anyMatch(demand -> demand.getIsPaymentCompleted() == true))
+		        	continue; // Skip bill cancellation if there are no bills and payment is completed
+		        
 		        boolean billCancelled = waterCalculatorDao.getexpiryBills(billSearchsss);
 
 		        if (!billCancelled) {

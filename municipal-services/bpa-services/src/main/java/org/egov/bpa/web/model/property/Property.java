@@ -85,12 +85,12 @@ public class Property extends PropertyInfo {
 	@Default
 	private Channel channel = Channel.SYSTEM;
 	
-	@Builder.Default
+	@Default
 	@JsonProperty("isactive")
 	private boolean isactive = false;
 	
 	
-	@Builder.Default
+	@Default
 	@JsonProperty("isinactive")
 	private boolean isinactive = false;
 
@@ -123,7 +123,7 @@ public class Property extends PropertyInfo {
 	@JsonProperty("AlternateUpdated")
 	private boolean AlternateUpdated;
 
-	@Builder.Default
+	@Default
 	@JsonProperty("isOldDataEncryptionRequest")
 	private boolean isOldDataEncryptionRequest = false;
 	

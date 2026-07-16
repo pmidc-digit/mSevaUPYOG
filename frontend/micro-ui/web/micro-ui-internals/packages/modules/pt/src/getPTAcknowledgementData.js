@@ -89,7 +89,7 @@ const getOwner = (application, t, customTitle) => {
         { title: t("PT_COMMON_AUTHORISED_PERSON_DESIGNATION"), value: application?.transferorDetails?.institution?.designation || t("CS_NA") },
         { title: t("PT_FORM3_MOBILE_NUMBER"), value: owners[0]?.mobileNumber || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_TEL_PHONE_NO"), value: owners[0]?.altContactNumber || t("CS_NA") },
-        { title: t("PT_OWNERSHIP_INFO_CORR_ADDR"), value: owners[0]?.correspondenceAddress ||yowners[0]?.permanentAddress || t("CS_NA") },
+        { title: t("PT_OWNERSHIP_INFO_CORR_ADDR"), value: owners[0]?.correspondenceAddress || owners[0]?.permanentAddress || t("CS_NA") },
         { title: t("PT_FORM3_OWNERSHIP_TYPE"), value: t(ownershipCategory) || t("CS_NA") },
         { title: t("PT_OWNERSHIP_INFO_EMAIL_ID"), value: owners[0]?.emailId || t("CS_NA") },
       ],

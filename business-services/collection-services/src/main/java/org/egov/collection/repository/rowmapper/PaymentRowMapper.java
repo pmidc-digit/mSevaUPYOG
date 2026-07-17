@@ -19,6 +19,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -85,12 +86,17 @@ public class PaymentRowMapper implements ResultSetExtractor<List<Payment>> {
                 AuditDetails auditDetails = AuditDetails.builder().createdBy(createdBy).createdTime(createdDate)
                         .lastModifiedBy(lastModifiedBy).lastModifiedTime(lastModifiedTime).build();
 
+                if(!StringUtils.isEmpty(gateway_txn_id))
+                	gateway_txn_id = " (" + gateway_txn_id + ")";
+                else
+                	gateway_txn_id = "";
+                
                 currentPayment = Payment.builder()
                         .id(id)
                         .tenantId(tenantId)
                         .totalDue(totalDue)
                         .totalAmountPaid(totalAmountPaid)
-                        .transactionNumber(transactionNumber + " (" + gateway_txn_id + ")")
+                        .transactionNumber(transactionNumber + gateway_txn_id)
                         .transactionDate(transactionDate)
                         .paymentMode(PaymentModeEnum.fromValue(paymentMode))
                         .instrumentDate(instrumentDate)

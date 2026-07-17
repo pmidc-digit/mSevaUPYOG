@@ -41,7 +41,7 @@ public class PaymentQueryBuilder {
 			+ "pyd.id as pyd_id, pyd.tenantId as pyd_tenantId, pyd.manualreceiptnumber as manualreceiptnumber,pyd.manualreceiptdate as manualreceiptdate, pyd.createdBy as pyd_createdBy,pyd.createdtime as pyd_createdtime,pyd.lastModifiedBy as pyd_lastModifiedBy,"
 			+ "pyd.lastmodifiedtime as pyd_lastmodifiedtime,pyd.additionalDetails as pyd_additionalDetails, txn.gateway_txn_id as gateway_txn_id"
 			+ " FROM egcl_payment py  " + " INNER JOIN egcl_paymentdetail pyd ON pyd.paymentid = py.id "
-			+ " INNER JOIN eg_pg_transactions txn ON txn.txn_id = py.transactionnumber ";
+			+ " LEFT JOIN eg_pg_transactions txn ON txn.txn_id = py.transactionnumber ";
 
 	public static final String ID_QUERY = "WITH py_filtered as ("
 			+ "select id from egcl_payment as py_inner {{WHERE_CLAUSE}} ) "

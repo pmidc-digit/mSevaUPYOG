@@ -253,7 +253,7 @@ const LayoutStepperForm = () => {
               uuid: doc?.uuid || "",
               documentUid: doc?.documentUid || "",
               documentAttachment: doc?.documentAttachment || "",
-              filestoreId: doc?.uuid || "",
+              filestoreId: doc?.documentAttachment || "",
               layoutId: doc?.layoutId || null
             })),
           },

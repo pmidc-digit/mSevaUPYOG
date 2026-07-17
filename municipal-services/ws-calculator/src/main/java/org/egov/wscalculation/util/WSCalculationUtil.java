@@ -17,9 +17,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.egov.wscalculation.repository.ElasticSearchRepository;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @Getter
 public class WSCalculationUtil {
@@ -32,6 +36,9 @@ public class WSCalculationUtil {
 
 	@Autowired
 	private ObjectMapper objectMapper;
+	
+	@Autowired
+	private ElasticSearchRepository elasticSearchRepository;
 
 	@Value("${egov.property.service.host}")
 	private String propertyHost;
@@ -169,9 +176,39 @@ public class WSCalculationUtil {
 		propertyIds.add(waterConnectionRequest.getWaterConnection().getPropertyId());
 		propertyCriteria.setPropertyIds(propertyIds);
 		propertyCriteria.setTenantId(waterConnectionRequest.getWaterConnection().getTenantId());
-		Object result = serviceRequestRepository.fetchResult(getPropertyURL(propertyCriteria),
-				RequestInfoWrapper.builder().requestInfo(waterConnectionRequest.getRequestInfo()).build());
-		List<Property> propertyList = getPropertyDetails(result);
+		
+		List<Property> propertyList = new ArrayList<>();
+		
+		try {
+			SearchCriteria searchCriteria = new SearchCriteria();
+			searchCriteria.setTenantId(waterConnectionRequest.getWaterConnection().getTenantId());
+			searchCriteria.setPropertyId(waterConnectionRequest.getWaterConnection().getPropertyId());
+			
+			Object esResult = elasticSearchRepository.fuzzySearchForConnections(searchCriteria);
+			if (esResult != null) {
+				JsonNode node = objectMapper.convertValue(esResult, JsonNode.class);
+				JsonNode hits = node.path("hits").path("hits");
+				if (hits.isArray() && hits.size() > 0) {
+					for (JsonNode hit : hits) {
+						JsonNode data = hit.path("_source").path("Data");
+						if (!data.isMissingNode()) {
+							propertyList.add(objectMapper.convertValue(data, Property.class));
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error fetching property from ElasticSearch", e);
+		}
+		
+		//fetch property from elastic search
+		//if exist in elastic search then proceed otherwise fetch by RestAPI
+		if (CollectionUtils.isEmpty(propertyList)) {
+			Object result = serviceRequestRepository.fetchResult(getPropertyURL(propertyCriteria),
+					RequestInfoWrapper.builder().requestInfo(waterConnectionRequest.getRequestInfo()).build());
+			propertyList = getPropertyDetails(result);
+		}
+		
 		if (CollectionUtils.isEmpty(propertyList)) {
 			throw new CustomException("INCORRECT_PROPERTY_ID", "PROPERTY SEARCH ERROR!");
 		}

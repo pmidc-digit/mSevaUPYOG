@@ -63,6 +63,24 @@ public class SearchCriteria {
 	@JsonProperty("limit")
 	private Integer limit;
 
+	@JsonProperty("ownerName")
+	private String ownerName;
+
+	@JsonProperty("doorNo")
+	private String doorNo;
+
+	@JsonProperty("locality")
+	private String locality;
+
+	@JsonProperty("ward")
+	private String ward;
+
+	@JsonProperty("acknowledgementIds")
+	private Set<String> acknowledgementIds;
+
+	@JsonProperty("oldPropertyId")
+	private String oldPropertyId;
+
 	@JsonIgnore
 	private List<String> ownerIds;
 

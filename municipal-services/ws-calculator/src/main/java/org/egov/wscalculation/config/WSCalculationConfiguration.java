@@ -241,4 +241,19 @@ public class WSCalculationConfiguration {
 
 	@Value("${egov.ws_calculation.bulkMeterReading.default.limit}")
 	private String bulkMeterLimit;
+	
+	@Value("${elasticsearch.host}")
+	private String elasticsearchHost;
+	
+	@Value("${elasticsearch.search.endpoint}")
+	private String elasticsearchSearchEndpoint;
+	
+	@Value("${elasticsearch.index.name}")
+	private String elasticsearchIndexName;
+	
+	@Value("${elasticsearch.username:}")
+	private String elasticsearchUsername;
+
+	@Value("${elasticsearch.password:}")
+	private String elasticsearchPassword;
 }

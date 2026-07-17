@@ -150,6 +150,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
             : "NA",
           status: application?.ProcessInstance?.state?.state,
           state: application?.ProcessInstance?.state?.state,
+          professionalOwner: application?.businessObject?.tradeLicenseDetail?.owners?.[0]?.name,
           owner: application?.businessObject?.landInfo?.owners?.find((item) => item?.isPrimaryOwner)?.name || "NA",
           mobileNumber: application?.businessObject?.tradeLicenseDetail?.owners?.[0]?.mobileNumber || "NA",
           // sla: application?.businessObject?.status.match(/^(APPROVED)$/)

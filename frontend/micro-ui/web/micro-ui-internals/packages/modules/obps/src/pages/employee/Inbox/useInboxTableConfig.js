@@ -16,9 +16,10 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     );
   const { t } = useTranslation();
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
+  const isCitizenOthers = window.location.href.includes("/citizen-others") || window.location.href.includes("/citizen-stakeholder-inbox");
 
   const tableColumnConfig = useMemo(() => {
-    return [
+    const columns = [
       {
         Header: t("BPA_APPLICATION_NUMBER_LABEL"),
         accessor: "applicationNo",
@@ -67,7 +68,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         },
         disableSortBy: true,
       },
-      {
+      !isCitizenOthers && {
         Header: t("CS_APPLICATION_DETAILS_APPROVAL_DATE"),
         accessor: "approvalDate",
         Cell: ({ row }) => {
@@ -80,12 +81,17 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       //     accessor: (row) => t(row?.locality),
       //     disableSortBy: true,
       // },
-      {
+      !isCitizenOthers && {
         Header: t("WF_INBOX_HEADER_OWNER_NAME"),
         accessor: (row) => t(row?.owner),
         disableSortBy: true,
       },
-      {
+      isCitizenOthers && {
+        Header: t("WF_INBOX_HEADER_OWNER_NAME"),
+        accessor: (row) => t(row?.professionalOwner),
+        disableSortBy: true,
+      },
+      !isCitizenOthers && {
         Header: t("CATEGORY"),
         accessor: (row) => row?.category,
         disableSortBy: true,
@@ -95,12 +101,12 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: (row) => (row?.state ? t(`WF_${row?.businessService}_${row?.state}`) : t(`-`)),
         disableSortBy: true,
       },
-      {
+      !isCitizenOthers && {
         Header: t("ZONE"),
         accessor: (row) => t(row?.zone),
         disableSortBy: true,
       },
-      {
+      !isCitizenOthers && {
         Header: t("BPA_SEARCH_APPLICATION_TYPE_LABEL"),
         accessor: (row) => t(row?.applicationType),
         disableSortBy: true,
@@ -116,7 +122,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         disableSortBy: true,
       },
     ];
-  });
+    return columns.filter(Boolean);
+  }, [t, tenantId, parentRoute]);
 
   return {
     getCellProps: (cellInfo) => {

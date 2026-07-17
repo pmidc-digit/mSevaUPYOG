@@ -519,6 +519,15 @@ const MyApplication = () => {
           >
             <div className="ndc-new-filter-status-title ndc-new-filter-option-title">Change of Land Use</div>
           </button>
+          <button
+            onClick={() => {
+              history.push("/digit-ui/citizen/noc/my-application");
+            }}
+            type="button"
+            className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card success ${true ? "active" : ""}`}
+          >
+            <div className="ndc-new-filter-status-title ndc-new-filter-option-title">No Due Certificate</div>
+          </button>
         </div>
       </div>
 

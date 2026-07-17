@@ -1,6 +1,7 @@
 import { CardLabel, Dropdown, LabelFieldPair, Loader, RemoveableTag, MultiSelectDropdown, LinkLabel } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import cleanup from "../Utils/cleanup";
+import { BOUNDARY_TYPE, REGION_DATA } from "../../../../../constants/DistrcitRegionBifurcation";
 // import MultiSelectDropdown from "./Multiselect";
 
 const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
@@ -155,6 +156,11 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
   if (isLoading) {
     return <Loader />;
   }
+
+  if (!formData?.employeeType || !formData?.employeeType?.code) {
+    return null;
+  }
+
   return (
     <div>
       {jurisdictions?.map((jurisdiction, index) => (
@@ -248,7 +254,7 @@ function Jurisdiction({
   getBoundaryValue,
 }) {
 
-  console.log("MDMSResponseForHRMS", data?.MdmsRes)
+  // console.log("MDMSResponseForHRMS", data?.MdmsRes)
   
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
@@ -595,41 +601,80 @@ function JurisdictionOBPAS({
   
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  const [BoundaryType, selectBoundaryType] = useState([]);
   const [Boundary, selectboundary] = useState([]);
   const [getRoles, setRoles] = useState([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const jurisdictionKeyRef = React.useRef(jurisdiction.key);
-  
-  // Initialize Boundary dropdown immediately if data is available
+
+  const boundaryTypeOptions = BOUNDARY_TYPE.map((bt) => ({
+    ...bt,
+    label: bt.name,
+    i18text: t(bt.name) || bt.name,
+  }));
+
   useEffect(() => {
-    if (data?.MdmsRes?.tenant?.tenants) {
-      const allCities = data?.MdmsRes?.tenant?.tenants
-        .filter((city) => city.code != Digit.ULBService.getStateId())
-        .map((city) => {
-          return { ...city, i18text: Digit.Utils.locale.getCityLocale(city.code) };
-        });
-      selectboundary(allCities);
+    const selectedBoundaryType = typeof jurisdiction?.boundaryType === 'string'
+      ? jurisdiction?.boundaryType
+      : jurisdiction?.boundaryType?.code || jurisdiction?.boundaryType?.label;
+
+    if (!selectedBoundaryType) {
+      selectboundary([]);
+      return;
     }
-  }, [data?.MdmsRes]);
-  
-  useEffect(() => {
-    // Get hierarchy code - handle both string and object formats
-    const hierarchyCode = typeof jurisdiction?.hierarchy === 'string' 
-      ? jurisdiction?.hierarchy 
-      : jurisdiction?.hierarchy?.code;
-    
-    if (hierarchyCode && data?.MdmsRes?.["egov-location"]["TenantBoundary"]) {
-      const boundaryTypes = data?.MdmsRes?.["egov-location"]["TenantBoundary"]
-        .filter((ele) => {
-          return ele?.hierarchyType?.code == hierarchyCode;
-        })
-        .map((item) => {
-          return { ...item.boundary, i18text: Digit.Utils.locale.convertToLocale(item.boundary.label, "EGOV_LOCATION_BOUNDARYTYPE") };
+
+    const typeLower = selectedBoundaryType.toLowerCase();
+    if (typeLower === "region") {
+      const regionOptions = REGION_DATA.map((region) => ({
+        code: region.code,
+        name: region.regionName,
+        i18text: t(region.regionName) || region.regionName,
+      }));
+      selectboundary(regionOptions);
+    } else if (typeLower === "district") {
+      const districtOptions = [];
+      REGION_DATA.forEach((region) => {
+        region.districts.forEach((district) => {
+          if (!districtOptions.find((d) => d.code === district.code)) {
+            districtOptions.push({
+              code: district.code,
+              name: district.districtName,
+              i18text: t(district.districtName) || district.districtName,
+            });
+          }
         });
-      selectBoundaryType(boundaryTypes);
+      });
+      selectboundary(districtOptions);
+    } else if (typeLower === "city") {
+      if (data?.MdmsRes?.tenant?.tenants) {
+        const allCities = data?.MdmsRes?.tenant?.tenants
+          .filter((city) => city.code != Digit.ULBService.getStateId())
+          .map((city) => ({
+            ...city,
+            i18text: Digit.Utils.locale.getCityLocale(city.code),
+          }));
+        selectboundary(allCities);
+      } else {
+        selectboundary([]);
+      }
+    } else {
+      selectboundary([]);
     }
-  }, [jurisdiction?.hierarchy, data?.MdmsRes]);
+  }, [jurisdiction?.boundaryType, data?.MdmsRes]);
+
+  const getBoundaryTypeValueOBPAS = (jurisdiction, boundaryTypeData) => {
+    if (!jurisdiction.boundaryType) return null;
+    if (typeof jurisdiction.boundaryType === 'object') return jurisdiction.boundaryType;
+    const searchVal = String(jurisdiction.boundaryType).toLowerCase();
+    return boundaryTypeData?.find(bt => String(bt.label).toLowerCase() === searchVal || String(bt.code).toLowerCase() === searchVal) || null;
+  };
+
+  const getBoundaryValueOBPAS = (jurisdiction, boundaryData) => {
+    if (!jurisdiction.boundary) return null;
+    if (typeof jurisdiction.boundary === 'object') return jurisdiction.boundary;
+    const searchVal = String(jurisdiction.boundary).toLowerCase();
+    return boundaryData?.find(b => String(b.code).toLowerCase() === searchVal || String(b.name).toLowerCase() === searchVal) || null;
+  };
+
   const tenant = Digit.ULBService.getCurrentTenantId();
 
   const { data: roleGroups = [], isLoading: roleGroupsLoading } = Digit.Hooks.useCustomMDMS(tenantId, "ACCESSCONTROL-ROLES", [
@@ -692,7 +737,12 @@ function JurisdictionOBPAS({
     setjurisdictions((pre) => {
       const result = pre.map((item) => {
         if (item.key === currentKey) {
-          return { ...item, boundaryType: value };
+          return { 
+            ...item, 
+            boundaryType: value,
+            boundary: null,
+            tenantId: null
+          };
         }
         return item;
       });
@@ -833,7 +883,7 @@ function JurisdictionOBPAS({
           ) : null}
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel isMandatory={true} className="card-label-smaller hrms-text-transform-none">{`${t("OBPAS")}`}<span className="hrms-emp-mapping__required-asterisk"> * </span></CardLabel>
+          <CardLabel isMandatory={true} className="card-label-smaller hrms-text-transform-none">{`${t("HR_HIERARCHY_LABEL")}`}<span className="hrms-emp-mapping__required-asterisk"> * </span></CardLabel>
           <Dropdown
             className="form-field"
             selected={getHierarchyValue(jurisdiction, gethierarchylistdata(hierarchylist))}
@@ -851,9 +901,9 @@ function JurisdictionOBPAS({
           <Dropdown
             className="form-field"
             isMandatory={true}
-            selected={getBoundaryTypeValue(jurisdiction, BoundaryType)}
-            disable={BoundaryType?.length === 0}
-            option={BoundaryType}
+            selected={getBoundaryTypeValueOBPAS(jurisdiction, boundaryTypeOptions)}
+            disable={boundaryTypeOptions?.length === 0}
+            option={boundaryTypeOptions}
             select={selectboundaryType}
             optionKey="i18text"
             placeholder={t("HR_BOUNDARY_TYPE_PLACEHOLDER")}
@@ -865,7 +915,7 @@ function JurisdictionOBPAS({
           <Dropdown
             className="form-field"
             isMandatory={true}
-            selected={getBoundaryValue(jurisdiction, Boundary)}
+            selected={getBoundaryValueOBPAS(jurisdiction, Boundary)}
             disable={Boundary?.length === 0}
             option={Boundary}
             select={selectedboundary}

@@ -71,7 +71,7 @@ export const REGION_DATA = [
           },
           {
             "ulbName": "Qadian",
-            "code": "pb.qadian"
+            "code": "pb.quadian"
           },
           {
             "ulbName": "Sri Hargobindpur",
@@ -135,7 +135,7 @@ export const REGION_DATA = [
           },
           {
             "ulbName": "Bucho Mandi",
-            "code": "pb.buchomandi"
+            "code": "pb.bhuchomandi"
           },
           {
             "ulbName": "Goniana",
@@ -163,15 +163,15 @@ export const REGION_DATA = [
           },
           {
             "ulbName": "Sangat",
-            "code": "pb.sangat"
+            "code": "pb.sangatmandi"
           },
           {
             "ulbName": "Bhagta Bhai Ka",
-            "code": "pb.bhagtabhaika"
+            "code": "pb.bhagtabhai"
           },
           {
             "ulbName": "Bhai Rupa",
-            "code": "pb.bhairupa"
+            "code": "pb.bhairoopa"
           },
           {
             "ulbName": "Kotha Guru",
@@ -229,7 +229,7 @@ export const REGION_DATA = [
           },
           {
             "ulbName": "Sadulgarh",
-            "code": "pb.sadulgarh"
+            "code": "pb.sardulgarh"
           }
         ]
       },
@@ -297,7 +297,7 @@ export const REGION_DATA = [
           },
           {
             "ulbName": "Arniwala Sheikh Subhan",
-            "code": "pb.arniwalasheikhsubhan"
+            "code": "pb.arniwala"
           }
         ]
       },
@@ -327,7 +327,7 @@ export const REGION_DATA = [
           },
           {
             "ulbName": "Mallanwala Khas",
-            "code": "pb.mallanwalakhas"
+            "code": "pb.mallanwala"
           },
           {
             "ulbName": "Mamdot",
@@ -361,7 +361,7 @@ export const REGION_DATA = [
           },
           {
             "ulbName": "Kot Ise Khan",
-            "code": "pb.kotisekhan"
+            "code": "pb.kotissekhan"
           },
           {
             "ulbName": "Nihal Singh Wala",
@@ -417,7 +417,7 @@ export const REGION_DATA = [
           },
           {
             "ulbName": "Sham Chaurasi",
-            "code": "pb.shamchaurasi"
+            "code": "pb.shamchurasi"
           },
           {
             "ulbName": "Mahilpur",
@@ -551,11 +551,11 @@ export const REGION_DATA = [
         "cities": [
           {
             "ulbName": "Gobindgarh",
-            "code": "pb.gobindgarh"
+            "code": "pb.mandigobindgarh"
           },
           {
             "ulbName": "Sirhind-Fatehgarh Sahib",
-            "code": "pb.sirhind-fatehgarhsahib"
+            "code": "pb.sirhind"
           },
           {
             "ulbName": "Bassi Pathana",
@@ -567,7 +567,7 @@ export const REGION_DATA = [
           },
           {
             "ulbName": "Khamanon",
-            "code": "pb.khamanon"
+            "code": "pb.khamano"
           }
         ]
       },
@@ -593,7 +593,7 @@ export const REGION_DATA = [
           },
           {
             "ulbName": "Mullanpur Dakha",
-            "code": "pb.mullanpurdakha"
+            "code": "pb.mullanpur"
           },
           {
             "ulbName": "Raikot",
@@ -627,7 +627,7 @@ export const REGION_DATA = [
         "cities": [
           {
             "ulbName": "Rupnagar",
-            "code": "pb.rupnagar"
+            "code": "pb.ropar"
           },
           {
             "ulbName": "Nangal",

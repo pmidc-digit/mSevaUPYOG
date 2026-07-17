@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.ServiceCallException;

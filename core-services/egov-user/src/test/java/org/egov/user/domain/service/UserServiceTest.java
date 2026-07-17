@@ -19,23 +19,23 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.spy;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class UserServiceTest {
 
     private static final int DEFAULT_PASSWORD_EXPIRY_IN_DAYS = 90;
@@ -70,6 +70,8 @@ public class UserServiceTest {
 
     @Before
     public void before() {
+        when(encryptionDecryptionUtil.encryptObject(any(), any(), any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(encryptionDecryptionUtil.decryptObject(any(), any(), any(), any())).thenAnswer(invocation -> invocation.getArgument(0));
         userService = new UserService(userRepository, otpRepository, fileRepository, passwordEncoder, encryptionDecryptionUtil,
                 tokenStore, DEFAULT_PASSWORD_EXPIRY_IN_DAYS,
                 isCitizenLoginOtpBased, isEmployeeLoginOtpBased, pwdRegex, pwdMaxLength, pwdMinLength);
@@ -512,7 +514,6 @@ public class UserServiceTest {
                 .type(UserType.CITIZEN)
                 .newPassword("nEwP@ssw0rd")
                 .build();
-        when(otpRepository.validateOtp(any())).thenThrow(Exception.class);
         final User domainUser = mock(User.class);
         when(domainUser.getType()).thenReturn(UserType.CITIZEN);
         when(userRepository.findAll(any(UserSearchCriteria.class))).thenReturn(Collections.singletonList(domainUser));
@@ -531,7 +532,6 @@ public class UserServiceTest {
                 .type(UserType.EMPLOYEE)
                 .newPassword("nEwP@ssw0rd")
                 .build();
-        when(otpRepository.validateOtp(any())).thenThrow(Exception.class);
         final User domainUser = mock(User.class);
         when(domainUser.getType()).thenReturn(UserType.EMPLOYEE);
         when(userRepository.findAll(any(UserSearchCriteria.class))).thenReturn(Collections.singletonList(domainUser));

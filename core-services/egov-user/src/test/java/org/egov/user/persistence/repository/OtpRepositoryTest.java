@@ -16,7 +16,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -46,7 +46,7 @@ public class OtpRepositoryTest {
         server.expect(once(), requestTo("http://otp-host.com/otp/_validate")).andExpect(method(HttpMethod.POST))
                 .andExpect(content().string(new Resources().getFileContents("otpValidationRequest.json")))
                 .andRespond(withSuccess(new Resources().getFileContents("otpNonValidateResponse.json"),
-                        MediaType.APPLICATION_JSON_UTF8));
+                        MediaType.APPLICATION_JSON));
         final OtpValidateRequest request = buildValidateRequest();
 
         boolean isOtpValidated = otpRepository.validateOtp(request);
@@ -61,7 +61,7 @@ public class OtpRepositoryTest {
         server.expect(once(), requestTo("http://otp-host.com/otp/_validate")).andExpect(method(HttpMethod.POST))
                 .andExpect(content().string(new Resources().getFileContents("otpValidationRequest.json")))
                 .andRespond(withSuccess(new Resources().getFileContents("otpValidateResponse.json"),
-                        MediaType.APPLICATION_JSON_UTF8));
+                        MediaType.APPLICATION_JSON));
         final OtpValidateRequest request = buildValidateRequest();
 
         boolean isOtpValidated = otpRepository.validateOtp(request);

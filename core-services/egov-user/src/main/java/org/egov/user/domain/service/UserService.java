@@ -128,6 +128,16 @@ public class UserService {
      */
     public User getUniqueUser(String userName, String tenantId, UserType userType) {
 
+        if (isEmpty(userName) || isEmpty(tenantId) || isNull(userType)) {
+            log.error("Invalid lookup, mandatory fields are absent");
+            UserSearchCriteria userSearchCriteria = UserSearchCriteria.builder()
+                    .userName(userName)
+                    .tenantId(getStateLevelTenantForCitizen(tenantId, userType))
+                    .type(userType)
+                    .build();
+            throw new UserNotFoundException(userSearchCriteria);
+        }
+
         UserSearchCriteria userSearchCriteria = null;
 
         boolean isMobileNumber = userName.matches("[1-9]\\d{9}");
@@ -137,11 +147,6 @@ public class UserService {
         } else {
             userSearchCriteria = UserSearchCriteria.builder().userName(userName)
                     .tenantId(getStateLevelTenantForCitizen(tenantId, userType)).type(userType).build();
-        }
-
-        if (isEmpty(userName) || isEmpty(tenantId) || isNull(userType)) {
-            log.error("Invalid lookup, mandatory fields are absent");
-            throw new UserNotFoundException(userSearchCriteria);
         }
 
         /* encrypt here */

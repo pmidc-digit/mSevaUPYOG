@@ -19,8 +19,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -39,10 +39,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.ArrayUtils.isEquals;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -57,13 +57,13 @@ public class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
-    @MockBean
+    @MockitoBean
     private TokenService tokenService;
 
-    @MockBean
+    @MockitoBean
     private CustomAuthenticationKeyGenerator authenticationKeyGenerator;
 
     @Test
@@ -76,9 +76,9 @@ public class UserControllerTest {
         when(userService.searchUsers(argThat(new UserSearchActiveFlagMatcher(expectedSearchCriteria)), anyBoolean(), any()))
                 .thenReturn(getUserModels());
 
-        mockMvc.perform(post("/_search/").contentType(MediaType.APPLICATION_JSON_UTF8)
+        mockMvc.perform(post("/_search/").contentType(MediaType.APPLICATION_JSON)
                 .content(getFileContents("getUserByIdRequest.json"))).andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("userSearchResponse.json")));
     }
 
@@ -91,9 +91,9 @@ public class UserControllerTest {
         when(userService.searchUsers(argThat(new UserSearchActiveFlagMatcher(expectedSearchCriteria)), anyBoolean(), any()))
                 .thenReturn(getUserModels());
 
-        mockMvc.perform(post("/_search/").contentType(MediaType.APPLICATION_JSON_UTF8)
+        mockMvc.perform(post("/_search/").contentType(MediaType.APPLICATION_JSON)
                 .content(getFileContents("getAllActiveUsersForGivenTenant.json"))).andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("userSearchResponse.json")));
     }
 
@@ -106,10 +106,10 @@ public class UserControllerTest {
         when(userService.searchUsers(argThat(new UserSearchActiveFlagMatcher(expectedSearchCriteria)), anyBoolean(), any()))
                 .thenReturn(getUserModels());
 
-        mockMvc.perform(post("/_search/").contentType(MediaType.APPLICATION_JSON_UTF8)
+        mockMvc.perform(post("/_search/").contentType(MediaType.APPLICATION_JSON)
                 .content(getFileContents("getAllInActiveUsersForGivenTenant.json")))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("userSearchResponse.json")));
     }
 
@@ -122,10 +122,10 @@ public class UserControllerTest {
         when(userService.searchUsers(argThat(new UserSearchActiveFlagMatcher(expectedSearchCriteria)), anyBoolean(), any()))
                 .thenReturn(getUserModels());
 
-        mockMvc.perform(post("/v1/_search/").contentType(MediaType.APPLICATION_JSON_UTF8)
+        mockMvc.perform(post("/v1/_search/").contentType(MediaType.APPLICATION_JSON)
                 .content(getFileContents("getAllActiveAndInActiveUsersForGivenTenantV1.json")))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("userSearchResponse.json")));
     }
 
@@ -138,10 +138,10 @@ public class UserControllerTest {
         when(userService.searchUsers(argThat(new UserSearchActiveFlagMatcher(expectedSearchCriteria)), anyBoolean(), any()))
                 .thenReturn(getUserModels());
 
-        mockMvc.perform(post("/v1/_search/").contentType(MediaType.APPLICATION_JSON_UTF8)
+        mockMvc.perform(post("/v1/_search/").contentType(MediaType.APPLICATION_JSON)
                 .content(getFileContents("getAllInActiveUsersForGivenTenantV1.json")))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("userSearchResponse.json")));
     }
 
@@ -153,10 +153,10 @@ public class UserControllerTest {
         when(userService.searchUsers(argThat(new UserSearchActiveFlagMatcher(expectedSearchCriteria)), anyBoolean(), any()))
                 .thenReturn(getUserModels());
 
-        mockMvc.perform(post("/v1/_search/").contentType(MediaType.APPLICATION_JSON_UTF8)
+        mockMvc.perform(post("/v1/_search/").contentType(MediaType.APPLICATION_JSON)
                 .content(getFileContents("getAllActiveUsersForGivenTenantV1.json")))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("userSearchResponse.json")));
     }
 
@@ -168,10 +168,10 @@ public class UserControllerTest {
         final UserSearchCriteria invalidSearchCriteria = UserSearchCriteria.builder().build();
         when(userService.searchUsers(any(), true, any())).thenThrow(new InvalidUserSearchCriteriaException(invalidSearchCriteria));
 
-        ResultActions test = mockMvc.perform(post("/_search").contentType(MediaType.APPLICATION_JSON_UTF8)
+        ResultActions test = mockMvc.perform(post("/_search").contentType(MediaType.APPLICATION_JSON)
                 .content(getFileContents("getUserByIdRequest.json")));//				.andExpect(status().isBadRequest())
         ;
-        test.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        test.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("userSearchErrorResponse.json")));
     }
 
@@ -182,10 +182,10 @@ public class UserControllerTest {
         when(userService.partialUpdate(any(), any())).thenReturn(org.egov.user.domain.model.User.builder().build());
 
         mockMvc.perform(post("/profile/_update")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(getFileContents("userProfileUpdateRequest.json")))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("userProfileUpdateResponse.json")));
     }
 
@@ -198,10 +198,10 @@ public class UserControllerTest {
         when(userService.updateWithoutOtpValidation(any(org.egov.user.domain.model.User.class), any())).thenReturn
                 (userRequest);
         mockMvc.perform(post("/users/112/_updatenovalidate")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(getFileContents("userCreateRequest.json")))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("userCreateSuccessResponse.json")));
     }
 
@@ -219,10 +219,10 @@ public class UserControllerTest {
         when(userService.createCitizen(any(), any())).thenReturn(user);
 
         mockMvc.perform(post("/citizen/_create")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(getFileContents("userCreateRequest.json")))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("userCreateSuccessResponse.json")));
     }
 
@@ -241,10 +241,10 @@ public class UserControllerTest {
         when(userService.createUser(argumentCaptor.capture(), any())).thenReturn(expectedUser);
 
         mockMvc.perform(post("/users/_createnovalidate")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(getFileContents("userCreateRequest.json")))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("userCreateSuccessResponse.json")));
 
         final org.egov.user.domain.model.User actualUser = argumentCaptor.getValue();
@@ -372,7 +372,7 @@ public class UserControllerTest {
         }
     }
 
-    class UserSearchMatcher extends ArgumentMatcher<UserSearchCriteria> {
+    class UserSearchMatcher implements ArgumentMatcher<UserSearchCriteria> {
 
         private UserSearchCriteria expectedUserSearch;
 
@@ -381,8 +381,7 @@ public class UserControllerTest {
         }
 
         @Override
-        public boolean matches(Object o) {
-            UserSearchCriteria userSearch = (UserSearchCriteria) o;
+        public boolean matches(UserSearchCriteria userSearch) {
             return userSearch.getId().equals(expectedUserSearch.getId()) &&
                     userSearch.getUserName().equals(expectedUserSearch.getUserName()) &&
                     userSearch.getName().equals(expectedUserSearch.getName()) &&
@@ -400,7 +399,7 @@ public class UserControllerTest {
         }
     }
 
-    class UserSearchActiveFlagMatcher extends ArgumentMatcher<UserSearchCriteria> {
+    class UserSearchActiveFlagMatcher implements ArgumentMatcher<UserSearchCriteria> {
 
         private UserSearchCriteria expectedUserSearch;
 
@@ -409,8 +408,7 @@ public class UserControllerTest {
         }
 
         @Override
-        public boolean matches(Object o) {
-            UserSearchCriteria userSearch = (UserSearchCriteria) o;
+        public boolean matches(UserSearchCriteria userSearch) {
             return userSearch.getActive() == expectedUserSearch.getActive();
         }
     }

@@ -34,14 +34,14 @@ const LayoutDocumentsRequired = ({
 }) => {
   const tenantId = Digit.ULBService.getStateId()
   const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
-  const [documents, setDocuments] = useState(formData?.documents?.documents || currentStepData?.documents?.documents || [])
+  const [documents, setDocuments] = useState(formData?.documents?.documents || [])
   
   useEffect(() => {
-    const docs = formData?.documents?.documents || currentStepData?.documents?.documents || [];
+    const docs = formData?.documents?.documents || [];
     if (documents?.length === 0 && docs?.length > 0) {
       setDocuments(docs);
     }
-  }, [formData?.documents?.documents, currentStepData?.documents?.documents]);
+  }, [formData?.documents?.documents]);
 
   console.log("documents in childStep three", documents, formData, currentStepData)
   const [error, setError] = useState(null)
@@ -272,7 +272,7 @@ const LayoutDocumentsRequired = ({
           {filteredDocuments?.map((document, index) => {
             return (
               <LayoutSelectDocument
-                key={index}
+                key={document?.code}
                 document={document}
                 value={documents?.find(val => val?.documentType === document?.code)?.filestoreId}
                 t={t}

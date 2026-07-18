@@ -133,7 +133,14 @@ public class RoleRepository {
         mcq.setRequestInfo(requestInfo);
         mcq.setMdmsCriteria(mc);
 
-        JsonNode response = restTemplate.postForObject(url, mcq, JsonNode.class).findValue(roleMasterName);
+        String resp = restTemplate.postForObject(url, mcq, String.class);
+        JsonNode response = null;
+        try {
+			response = objectMapper.readTree(resp).findValue(roleMasterName);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+//        JsonNode response = restTemplate.postForObject(url, mcq, JsonNode.class).findValue(roleMasterName);
 
         Set<Role> validatedRoles = new HashSet<>();
 

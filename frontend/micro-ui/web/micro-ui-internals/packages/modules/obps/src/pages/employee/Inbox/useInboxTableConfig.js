@@ -87,7 +87,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         disableSortBy: true,
       },
       isCitizenOthers && {
-        Header: t("WF_INBOX_HEADER_OWNER_NAME"),
+        Header: t("Applicant Name"),
         accessor: (row) => t(row?.professionalOwner),
         disableSortBy: true,
       },
@@ -111,9 +111,19 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: (row) => t(row?.applicationType),
         disableSortBy: true,
       },
-      {
+      !isCitizenOthers && {
         Header: t("IS_SELF_CERTIFICATION"),
         accessor: (row) => t(row?.selfCertification),
+        disableSortBy: true,
+      },
+      isCitizenOthers && {
+        Header: t("License Type"),
+        accessor: (row) => t(row?.applicationType),
+        disableSortBy: true,
+      },
+      isCitizenOthers && {
+        Header: t("Architect ID"),
+        accessor: (row) => t(row?.architectID),
         disableSortBy: true,
       },
       {

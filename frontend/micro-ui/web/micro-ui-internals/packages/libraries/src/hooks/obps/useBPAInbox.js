@@ -162,6 +162,8 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           zone: application.businessObject?.additionalDetails?.zonenumber,
           selfCertification: application.businessObject?.additionalDetails?.isSelfCertification ? "Yes" : "No",
           tenantId: application.businessObject?.tenantId,
+          applicationType: application?.businessObject?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0],
+          architectID: application?.businessObject?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
         })),
         totalCount: data.totalCount,
         nearingSlaCount: data?.nearingSlaCount,

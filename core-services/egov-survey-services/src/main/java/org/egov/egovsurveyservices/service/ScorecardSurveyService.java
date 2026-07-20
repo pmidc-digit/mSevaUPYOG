@@ -136,6 +136,10 @@ public class ScorecardSurveyService {
         return new ArrayList<>();
     }
 
+    public void updateSurveyActive(@Valid UpdateSurveyActiveRequest request) {
+        updateSurvey(request);
+    }
+
     public void updateSurvey(@Valid UpdateSurveyActiveRequest request) {
 		// Validate UUID
 	    if (request.getUuid() == null || request.getUuid().trim().isEmpty()) {
@@ -230,6 +234,18 @@ public class ScorecardSurveyService {
         List<Section> sections = sectionRepository.getSectionsBySurveyId(answerRequest.getSurveyResponse().getSurveyUuid());
         Map<String, BigDecimal> sectionWeightageMap = sections.stream()
                 .collect(Collectors.toMap(Section::getUuid, Section::getWeightage));
+        Map<String, String> sectionTitleMap = sections.stream()
+                .filter(s -> s.getTitle() != null)
+                .collect(Collectors.toMap(Section::getUuid, Section::getTitle, (v1, v2) -> v1));
+
+        ScorecardSurveySearchCriteria surveyCriteria = new ScorecardSurveySearchCriteria();
+        surveyCriteria.setUuid(surveyResponse.getSurveyUuid());
+        List<ScorecardSurveyEntity> surveys = surveyRepository.fetchSurveys(surveyCriteria);
+        if (!surveys.isEmpty() && surveys.get(0).getSurveyTitle() != null) {
+            String title = surveys.get(0).getSurveyTitle();
+            surveyResponse.setSurveyName(title);
+            surveyResponse.setSurveyTitle(title);
+        }
 
         Map<String, UserSearchResponseContent> stringUserMap=null;
         UserSearchResponseContent user;
@@ -252,6 +268,7 @@ public class ScorecardSurveyService {
         List<ScorecardSectionResponse> enrichedSectionResponses = surveyResponse.getAnswers().stream()
                 .collect(Collectors.groupingBy(AnswerNew::getSectionUuid)).entrySet().stream()
                 .map(entry -> {
+                    String sectionTitle = sectionTitleMap.get(entry.getKey());
                     List<ScorecardQuestionResponse> enrichedQuestionResponses = entry.getValue().stream()
                             .map(answer -> {
                                 List<Question> questionById = questionRepository.getQuestionById(answer.getQuestionUuid());
@@ -279,6 +296,8 @@ public class ScorecardSurveyService {
                                 }
                                 answer.setQuestionStatement(question.getQuestionStatement());
                                 answer.setSectionUuid(entry.getKey());
+                                answer.setSectionName(sectionTitle);
+                                answer.setSectionTitle(sectionTitle);
                                 BigDecimal sectionWeightage = sectionWeightageMap.getOrDefault(answer.getSectionUuid(), BigDecimal.valueOf(0.0));
                                 answer.setSectionWeightage(sectionWeightage);
                                 answer.setUuid(uuidToUse);
@@ -317,6 +336,8 @@ public class ScorecardSurveyService {
                     producer.push(applicationProperties.getSubmitAnswerScorecardSurveyTopic(), answerRequest);
                     return ScorecardSectionResponse.builder()
                             .sectionUuid(entry.getKey())
+                            .sectionName(sectionTitle)
+                            .sectionTitle(sectionTitle)
                             .questionResponses(enrichedQuestionResponses)
                             .build();
                 }).collect(Collectors.toList());
@@ -327,6 +348,8 @@ public class ScorecardSurveyService {
             .tenantId(surveyResponse.getTenantId())
             .status(surveyResponse.getStatus().toString())
             .surveyUuid(surveyResponse.getSurveyUuid())
+            .surveyName(surveyResponse.getSurveyName())
+            .surveyTitle(surveyResponse.getSurveyTitle())
             .citizenId(surveyResponse.getCitizenId())
             .sectionResponses(enrichedSectionResponses)
             .auditDetails(auditDetails)
@@ -402,14 +425,27 @@ public class ScorecardSurveyService {
         }
 
         List<ScorecardSectionResponse> sectionResponses = sectionResponsesMap.entrySet().stream()
-                .map(entry -> ScorecardSectionResponse.builder()
-                        .sectionUuid(entry.getKey())
-                        .questionResponses(entry.getValue())
-                        .build())
+                .map(entry -> {
+                    String secTitle = (entry.getValue() != null && !entry.getValue().isEmpty() && entry.getValue().get(0).getAnswerResponse() != null)
+                            ? entry.getValue().get(0).getAnswerResponse().getSectionTitle() : null;
+                    return ScorecardSectionResponse.builder()
+                            .sectionUuid(entry.getKey())
+                            .sectionName(secTitle)
+                            .sectionTitle(secTitle)
+                            .questionResponses(entry.getValue())
+                            .build();
+                })
                 .collect(Collectors.toList());
+
+        ScorecardSurveySearchCriteria surveyCriteria = new ScorecardSurveySearchCriteria();
+        surveyCriteria.setUuid(criteria.getSurveyUuid());
+        List<ScorecardSurveyEntity> surveys = surveyRepository.fetchSurveys(surveyCriteria);
+        String sTitle = (!surveys.isEmpty() && surveys.get(0).getSurveyTitle() != null) ? surveys.get(0).getSurveyTitle() : null;
 
         return ScorecardAnswerResponse.builder()
                 .surveyUuid(criteria.getSurveyUuid())
+                .surveyName(sTitle)
+                .surveyTitle(sTitle)
                 .citizenId(criteria.getCitizenId())
                 .sectionResponses(sectionResponses)
                 .build();
@@ -518,10 +554,16 @@ public class ScorecardSurveyService {
         }
 
         List<ScorecardSectionResponse> sectionResponses = sectionResponsesMap.entrySet().stream()
-                .map(entry -> ScorecardSectionResponse.builder()
-                        .sectionUuid(entry.getKey())
-                        .questionResponses(entry.getValue())
-                        .build())
+                .map(entry -> {
+                    String secTitle = (entry.getValue() != null && !entry.getValue().isEmpty() && entry.getValue().get(0).getAnswerResponse() != null)
+                            ? entry.getValue().get(0).getAnswerResponse().getSectionTitle() : null;
+                    return ScorecardSectionResponse.builder()
+                            .sectionUuid(entry.getKey())
+                            .sectionName(secTitle)
+                            .sectionTitle(secTitle)
+                            .questionResponses(entry.getValue())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return ScorecardAnswerResponse.builder()

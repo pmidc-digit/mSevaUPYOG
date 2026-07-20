@@ -156,7 +156,7 @@ public class ScorecardSurveyRepository {
     public List<AnswerNew> getAnswersForSurvey(String surveyUuid, String tenantId) {
         String query =
                 "SELECT ans.uuid, ans.sectionuuid, ans.questionuuid, ans.comments, " +
-                        "q.questionstatement, " +
+                        "q.questionstatement, sec.title AS section_title, " +
                         "qw.weightage AS question_weightage, " +
                         "sec.weightage AS section_weightage, " +
                         "ad.uuid AS answer_detail_uuid, ad.answertype AS answer_detail_type, " +

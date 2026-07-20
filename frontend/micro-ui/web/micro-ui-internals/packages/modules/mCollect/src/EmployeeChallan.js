@@ -24,6 +24,7 @@ const EmployeeChallan = (props) => {
   const { challanno } = useParams();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [challanBillDetails, setChallanBillDetails] = useState([]);
+    const [challanBillData, setChallanBillData] = useState([]);
   const [totalDueAmount, setTotalDueAmount] = useState(0);
   const [getLoading, setLoading] = useState(false);
   const [displayMenu, setDisplayMenu] = useState(false);
@@ -134,6 +135,7 @@ const EmployeeChallan = (props) => {
         service: data?.challans?.[0]?.businessService,
       });
       setLoading(false);
+      setChallanBillData(res?.Bill?.[0])
 
       res?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails?.forEach((bill) => {
         billDetails.push(bill);
@@ -158,7 +160,7 @@ const EmployeeChallan = (props) => {
   const challanDownload = {
     order: 1,
     label: t("UC_CHALLAN"),
-    onClick: () => downloadAndPrintChallan(challanno, "download", setLoading),
+    onClick: () => downloadAndPrintChallan({challanno: challanno, mode:"download", setLoading:setLoading , challanBillDetails:challanBillData , challanDetails: challanDetails}),
   };
 
   const receiptDownload = {

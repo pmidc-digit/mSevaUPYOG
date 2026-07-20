@@ -2,11 +2,13 @@ import { Header, Loader, Table, Card, SubmitBar } from "@mseva/digit-ui-react-co
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, Link } from "react-router-dom";
+import { useQueryClient } from "react-query";
 import { format } from "date-fns";
 import { encodeURIComponentCustom } from "../../../utils";
 const MyApplications = ({ view }) => {
   const { t } = useTranslation();
   const history = useHistory();
+  const queryClient = useQueryClient();
   const userInfo = Digit.UserService.getUser()?.info || {};
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   
@@ -37,9 +39,7 @@ const MyApplications = ({ view }) => {
   }
 
   useEffect(() => {
-    if (data) {
-      data.revalidate();
-    }
+    queryClient.invalidateQueries("NOC_APPLICATIONS_LIST");
   }, []);
 
   const tableWrapperRef = useRef(null);

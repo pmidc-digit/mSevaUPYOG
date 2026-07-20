@@ -140,6 +140,17 @@ public class ScorecardSurveyRepository {
         }
     }
 
+    public String getSurveyTitleByUuid(String surveyUuid) {
+        if (ObjectUtils.isEmpty(surveyUuid))
+            return null;
+        String query = "SELECT title FROM eg_ss_survey_entity WHERE uuid = ?";
+        try {
+            return jdbcTemplate.queryForObject(query, new Object[]{surveyUuid}, String.class);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
     public List<AnswerDetail> getAnswerDetailsByAnswerUuid(String answerUuid) {
         String query = surveyQueryBuilder.getAnswerDetailsByAnswerUuid();
         return jdbcTemplate.query(query, new Object[]{answerUuid}, (rs, rowNum) ->

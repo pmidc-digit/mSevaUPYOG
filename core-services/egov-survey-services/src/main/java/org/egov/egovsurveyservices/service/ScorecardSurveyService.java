@@ -238,13 +238,10 @@ public class ScorecardSurveyService {
                 .filter(s -> s.getTitle() != null)
                 .collect(Collectors.toMap(Section::getUuid, Section::getTitle, (v1, v2) -> v1));
 
-        ScorecardSurveySearchCriteria surveyCriteria = new ScorecardSurveySearchCriteria();
-        surveyCriteria.setUuid(surveyResponse.getSurveyUuid());
-        List<ScorecardSurveyEntity> surveys = surveyRepository.fetchSurveys(surveyCriteria);
-        if (!surveys.isEmpty() && surveys.get(0).getSurveyTitle() != null) {
-            String title = surveys.get(0).getSurveyTitle();
-            surveyResponse.setSurveyName(title);
-            surveyResponse.setSurveyTitle(title);
+        String surveyTitle = surveyRepository.getSurveyTitleByUuid(surveyResponse.getSurveyUuid());
+        if (surveyTitle != null) {
+            surveyResponse.setSurveyName(surveyTitle);
+            surveyResponse.setSurveyTitle(surveyTitle);
         }
 
         Map<String, UserSearchResponseContent> stringUserMap=null;
@@ -437,10 +434,7 @@ public class ScorecardSurveyService {
                 })
                 .collect(Collectors.toList());
 
-        ScorecardSurveySearchCriteria surveyCriteria = new ScorecardSurveySearchCriteria();
-        surveyCriteria.setUuid(criteria.getSurveyUuid());
-        List<ScorecardSurveyEntity> surveys = surveyRepository.fetchSurveys(surveyCriteria);
-        String sTitle = (!surveys.isEmpty() && surveys.get(0).getSurveyTitle() != null) ? surveys.get(0).getSurveyTitle() : null;
+        String sTitle = surveyRepository.getSurveyTitleByUuid(criteria.getSurveyUuid());
 
         return ScorecardAnswerResponse.builder()
                 .surveyUuid(criteria.getSurveyUuid())
@@ -522,7 +516,10 @@ public class ScorecardSurveyService {
                         .build();
 
                 ScorecardAnswerResponse response = buildScorecardAnswerResponseWithWeightage(answers, scopedCriteria);
+                String surveyTitle = surveyRepository.getSurveyTitleByUuid(sr.getSurveyUuid());
                 response.setSurveyUuid(sr.getSurveyUuid());
+                response.setSurveyName(surveyTitle);
+                response.setSurveyTitle(surveyTitle);
                 response.setTenantId(sr.getTenantId());
                 response.setCitizenId(sr.getCitizenId());
                 response.setLocality(sr.getLocality());
@@ -566,8 +563,12 @@ public class ScorecardSurveyService {
                 })
                 .collect(Collectors.toList());
 
+        String sTitle = surveyRepository.getSurveyTitleByUuid(criteria.getSurveyUuid());
+
         return ScorecardAnswerResponse.builder()
                 .surveyUuid(criteria.getSurveyUuid())
+                .surveyName(sTitle)
+                .surveyTitle(sTitle)
                 .citizenId(criteria.getCitizenId())
                 .sectionResponses(sectionResponses)
                 .build();

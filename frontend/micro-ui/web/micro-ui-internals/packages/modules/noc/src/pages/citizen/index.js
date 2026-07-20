@@ -78,6 +78,7 @@ const App = () => {
           <PrivateRoute path={`${path}/response/:id`} component={NOCResponseCitizen} />
           {/* <PrivateRoute path={`${path}/my-application`} component={NOCCitizenMyApplications} /> */}
           <PrivateRoute path={`${path}/my-application`} component={(props) => <Inbox {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/noc-my-application`} component={(props) => <Inbox {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/edit-application/:nocid`} component={NewNOCEditApplication} />
           <PrivateRoute
             path={`${path}/search/application-overview/:nocid?`}

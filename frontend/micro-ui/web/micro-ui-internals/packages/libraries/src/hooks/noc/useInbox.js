@@ -10,7 +10,7 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
   const { sortBy, limit, offset, sortOrder } = tableForm;
   const user = Digit.UserService.getUser();
 
-  const checkCitizenView = window.location.href.includes("citizen/noc/my-application");
+  const checkCitizenView = window.location.href.includes("noc-my-application");
 
   const _filters = {
     tenantId,

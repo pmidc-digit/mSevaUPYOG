@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.services.config.RentLeaseConfiguration;
@@ -57,7 +58,26 @@ public class NotificationService {
 			log.info("UUID search failed!");
 		}
 
-		toUsers.add(mapOfPhoneNoAndUUIDs.get(mobileNumber));
+		if (!CollectionUtils.isEmpty(mapOfPhoneNoAndUUIDs) && mapOfPhoneNoAndUUIDs.containsKey(mobileNumber)) {
+			toUsers.add(mapOfPhoneNoAndUUIDs.get(mobileNumber));
+		}
+
+		// Fetch and add alternate mobile number recipient if present in additionalDetails
+		if (request.getAllotment().get(0).getAdditionalDetails() != null) {
+			com.fasterxml.jackson.databind.JsonNode additionalDetails = request.getAllotment().get(0).getAdditionalDetails();
+			if (additionalDetails.has("alternateMobileNumber") && !additionalDetails.get("alternateMobileNumber").isNull()) {
+				String alternateMobileNumber = additionalDetails.get("alternateMobileNumber").asText();
+				if (StringUtils.isNotBlank(alternateMobileNumber)) {
+					Map<String, String> mapOfAltPhoneNoAndUUIDs = fetchUserUUIDs(alternateMobileNumber, request.getRequestInfo(), tenantId);
+					if (!CollectionUtils.isEmpty(mapOfAltPhoneNoAndUUIDs) && mapOfAltPhoneNoAndUUIDs.containsKey(alternateMobileNumber)) {
+						toUsers.add(mapOfAltPhoneNoAndUUIDs.get(alternateMobileNumber));
+						log.info("Added alternate recipient UUID: {} for mobile: {}", 
+								mapOfAltPhoneNoAndUUIDs.get(alternateMobileNumber), alternateMobileNumber);
+					}
+				}
+			}
+		}
+
 		String message = null;
 		message = util.getCustomizedMsg(request.getAllotment().get(0),localizationMessages);
 		

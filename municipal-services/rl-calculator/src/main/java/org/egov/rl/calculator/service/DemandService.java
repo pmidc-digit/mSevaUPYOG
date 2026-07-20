@@ -151,6 +151,9 @@ public class DemandService {
 
 			List<Demand> demands1 = demandRepository.saveDemand(
 					calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
+			if (!CollectionUtils.isEmpty(demands1)) {
+				fetchBillForDemands(demands1, requestInfo);
+			}
 			return DemandResponse.builder().demands(demands1).build();
 		}
 	}
@@ -186,6 +189,9 @@ public class DemandService {
 
 		log.info("Saving legacy demand(s) to billing service. Count: {}", demands.size());
 		List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demands);
+		if (!CollectionUtils.isEmpty(savedDemands)) {
+			fetchBillForDemands(savedDemands, requestInfo);
+		}
 		log.info("Legacy demand created successfully. Count: {}", savedDemands.size());
 		return DemandResponse.builder().demands(savedDemands).build();
     }
@@ -237,6 +243,9 @@ public class DemandService {
 		}
 		List<Demand> demands1 = demandRepository.saveDemand(
 				calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
+		if (!CollectionUtils.isEmpty(demands1)) {
+			fetchBillForDemands(demands1, requestInfo);
+		}
 		return DemandResponse.builder().demands(demands1).build();
 	}
 

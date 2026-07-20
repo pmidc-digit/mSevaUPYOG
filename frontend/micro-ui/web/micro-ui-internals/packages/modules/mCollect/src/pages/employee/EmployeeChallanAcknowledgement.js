@@ -1,25 +1,30 @@
-import { Banner, Card, CardText, LinkButton, ActionBar, Row, StatusTable, SubmitBar } from "@egovernments/digit-ui-react-components";
+import { Banner, Card, CardText, LinkButton, ActionBar, Row, StatusTable, SubmitBar , Loader } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { useLocation, Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import * as func from "./Utils/getQueryParams";
 import { downloadAndPrintChallan } from "../../utils";
-
 const MCollectAcknowledgement = () => {
   const location = useLocation();
   const [params, setParams] = useState({});
   const { isEdit } = Digit.Hooks.useQueryParams();
+  const [getLoading, setLoading] = useState(false);
   useEffect(() => {
     setParams(func.getQueryStringParams(location.search)); // result: '?query=abc'
 
   }, [location]);
+  
   const { t } = useTranslation();
 
   const printReciept = async () => {
     const challanNo = params?.challanNumber;
-    downloadAndPrintChallan(challanNo, "print");
+    const serviceCategory = params?.serviceCategory;
+    
+    downloadAndPrintChallan({challanNo:challanNo , serviceCategory: serviceCategory, mode: "print" , setLoading:setLoading});
   };
-
+  if(getLoading){
+    return <Loader page={true}/>
+  }
   return (
     <div>
       {params?.applicationStatus === "CANCELLED" ? (

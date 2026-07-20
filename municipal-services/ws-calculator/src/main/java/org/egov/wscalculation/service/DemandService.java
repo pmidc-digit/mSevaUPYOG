@@ -1184,6 +1184,14 @@ public class DemandService {
 	     ----------------------------------------------------------- */
 
 	    for (Demand demand : demands) {
+	    	
+	    	/* Skip Payment Completed demand */
+
+	        if (demand.getIsPaymentCompleted()) {
+
+	            log.info("Skipping Payment Completed demand {}", demand.getId());
+	            continue;
+	        }
 
 	        BigDecimal totalTax = demand.getDemandDetails()
 	                .stream()

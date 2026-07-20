@@ -321,17 +321,21 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d) => d.documentType));
       
       
-      // Update existing API documents with new filestoreIds from Redux
+      // Update existing API documents with new filestoreIds/documentAttachments from Redux
       const updatedApiResponseDocuments = apiResponseDocuments?.map((doc) => {
-        const fileStoreId = docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.uuid 
-          || docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.filestoreId
-          || docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.documentAttachment;
-        return {
-          ...doc,
-          order: doc?.order,
-          uuid: fileStoreId || doc.uuid,
-          documentAttachment: fileStoreId || doc.documentAttachment,
-        };
+        const matchingDoc = docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType);
+        
+        if (matchingDoc) {
+          const fileStoreId = matchingDoc.filestoreId !== undefined ? matchingDoc.filestoreId : matchingDoc.documentAttachment;
+          const uuid = matchingDoc.uuid || matchingDoc.documentUid || doc.uuid;
+          return {
+            ...doc,
+            order: doc?.order,
+            uuid: uuid,
+            documentAttachment: fileStoreId !== undefined ? fileStoreId : doc.documentAttachment,
+          };
+        }
+        return doc;
       });
       
       // Find newly added documents that don't exist in API response
@@ -339,6 +343,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       
       const updatedNewlyAddedDocs = newlyAddedDocs?.map((doc) => {
         return {
+          layoutId: doc?.layoutId,
           order: doc?.order,
           uuid: doc?.documentUid || doc?.uuid,
           documentType: doc?.documentType,
@@ -346,16 +351,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         };
       });
       
-      // const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
-      const overallDocs = newlyAddedDocs?.map((doc) => {
-        return {
-          layoutId: doc?.layoutId,
-          order: doc?.order,
-          uuid: doc?.documentUid || doc?.uuid,
-          documentType: doc?.documentType,
-          documentAttachment: doc?.filestoreId || doc?.documentAttachment,
-        };
-      });      
+      const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
       
       overallDocs.forEach((doc) => {
         updatedApplication?.documents?.push({ ...doc });

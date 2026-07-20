@@ -34,4 +34,8 @@ public class SearchCriteria {
     
     private String mobile;
 
+    private String level1;
+
+    private String level2;
+
 }

@@ -585,12 +585,6 @@ public class WSCalculatorQueryBuilder {
 		addClauseIfRequired(preparedStmtList, query);
 		query.append(" tenantid = ? ");
 		preparedStmtList.add(tenantId);
-
-		if (locality != null) {
-			addClauseIfRequired(preparedStmtList, query);
-			query.append(" locality = ? ");
-			preparedStmtList.add(locality);
-		}
 		if (billFromDate != null) {
 			addClauseIfRequired(preparedStmtList, query);
 			query.append(" billingcyclestartdate = ? ");
@@ -600,6 +594,18 @@ public class WSCalculatorQueryBuilder {
 			addClauseIfRequired(preparedStmtList, query);
 			query.append(" billingcycleenddate = ? ");
 			preparedStmtList.add(billToDate);
+		}
+		
+		if (locality == null && group == null) {
+	        query.append(" AND locality IS NULL");
+	        query.append(" AND groups IS NULL");
+	        return query.toString();
+	    }
+		
+		if (locality != null) {
+			addClauseIfRequired(preparedStmtList, query);
+			query.append(" locality = ? ");
+			preparedStmtList.add(locality);
 		}
 		if (group != null) {
 			addClauseIfRequired(preparedStmtList, query);
@@ -1095,6 +1101,23 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 		
 		if (criteria.getGroup() != null) {
 			query.append(" and groups is not null ");
+		}
+		
+		query.append(" ORDER BY createdtime DESC");
+		return query.toString();
+	}
+	
+	public String searchBillGenerationSchedulerTenantQuery(BillGenerationSearchCriteria criteria,
+			List<Object> preparedStatement) {
+		StringBuilder query = new StringBuilder(billGenerationSchedulerSearchQuery);
+		addClauseIfRequired(preparedStatement, query);
+		query.append(" tenantid= ? ");
+		preparedStatement.add(criteria.getTenantId());
+		
+		if (criteria.getStatus() != null) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" status = ? ");
+			preparedStatement.add(criteria.getStatus());
 		}
 		
 		query.append(" ORDER BY createdtime DESC");

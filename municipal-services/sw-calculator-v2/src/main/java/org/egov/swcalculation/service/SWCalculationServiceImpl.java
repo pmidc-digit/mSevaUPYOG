@@ -621,7 +621,7 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 	/**
 	 * Generate bill Based on Time (Monthly, Quarterly, Yearly)
 	 */
-	public void generateBillBasedLocalityOrTenant(RequestInfo requestInfo, SchedulerLevel schedulerLevel) {
+	public void generateBillBasedLocalityOrTenant(RequestInfo requestInfo, SchedulerLevel schedulerLevel, String tenantId) {
 		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		log.info("Time schedule start for water bill generation on : " + LocalDateTime.now().format(dateTimeFormatter));
 
@@ -649,9 +649,8 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 				        billSchedularList.add(scheduler);
 				    }
 				}
-				String currentTenantId = requestInfo.getMsgId();
 				if (schedulerLevel == SchedulerLevel.TENANT) {
-					criteria.setTenantId(currentTenantId);
+					criteria.setTenantId(tenantId);
 					List<BillScheduler> billSchedarTenantList = billGeneratorService.getBillGenerationByTenant(criteria);
 					for (BillScheduler scheduler : billSchedarTenantList) {
 						if (scheduler.getId() != null && seenIds.add(scheduler.getId())) {
@@ -664,7 +663,6 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 		log.info("billSchedularList count : " + billSchedularList.size());
 		for (BillScheduler billSchedular : billSchedularList) {
 			try {
-				billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.INPROGRESS);
 				List<String> connectionNos = null;
 
 				requestInfo.getUserInfo().setTenantId(billSchedular.getTenantId() != null ? billSchedular.getTenantId() : requestInfo.getUserInfo().getTenantId());
@@ -672,19 +670,17 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 
 //				List<String> connectionNos = sewerageCalculatorDao.getConnectionsNoByLocality( billSchedular.getTenantId(), SWCalculationConstant.nonMeterdConnection, billSchedular.getLocality());
 				if (billSchedular.getGrup() != null && !billSchedular.getGrup().isEmpty()) {
-
+					billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.INPROGRESS);
 					connectionNos = sewerageCalculatorDao.getConnectionsNoByGroups(billSchedular.getTenantId(),
 							SWCalculationConstant.nonMeterdConnection, billSchedular.getGrup());
 
 				} else if (schedulerLevel == SchedulerLevel.TENANT) {
-					if (!billSchedular.getTenantId().equals(currentTenantId)) {
-						continue;
-					}
 					billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.INPROGRESS);
 					log.info("Updated Bill Schedular Status To INPROGRESS");
 					connectionNos = sewerageCalculatorDao.getConnectionsNoByTenant(billSchedular.getTenantId(),
 							SWCalculationConstant.nonMeterdConnection);
 				} else {
+					billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.INPROGRESS);
 					connectionNos = sewerageCalculatorDao.getConnectionsNoByLocality(billSchedular.getTenantId(),
 							SWCalculationConstant.nonMeterdConnection, billSchedular.getLocality());
 				}
@@ -724,7 +720,7 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 					}
 					
 					int batchCount = count;       
-					String tenantId = billSchedular.getTenantId();
+					tenantId = billSchedular.getTenantId();
 					String cityName = "Unknown";
 
 					if (tenantId != null && tenantId.contains(".")) {

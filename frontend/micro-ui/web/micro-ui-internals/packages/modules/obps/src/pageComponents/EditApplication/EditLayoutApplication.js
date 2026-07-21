@@ -108,8 +108,15 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
 
   // console.log("documents",documents);
   
-  // Extract primary owner data (owners[0]) for applicant form fields
-  const primaryOwner = layoutObject?.owners?.[0] || {};
+  // Extract primary owner data (owners[0] after sorting by isPrimaryOwner) for applicant form fields
+  const sortedOwnersList = layoutObject?.owners ? [...layoutObject.owners].sort((a, b) => {
+    const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+    const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+    if (aPrimary && !bPrimary) return -1;
+    if (!aPrimary && bPrimary) return 1;
+    return 0;
+  }) : [];
+  const primaryOwner = sortedOwnersList[0] || {};
   const applicantDetails = {
     // Applicant personal info from primary owner
     applicantName: primaryOwner?.name || "",
@@ -530,7 +537,13 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
           // Map ALL owners array to applicants format for the form
           // Index 0 = primary owner (used by form but not displayed in UI)
           // Index 1+ = additional owners (displayed in UI)
-          const ownersFromApi = layoutObject?.owners || [];
+          const ownersFromApi = layoutObject?.owners ? [...layoutObject.owners].sort((a, b) => {
+            const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+            const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+            if (aPrimary && !bPrimary) return -1;
+            if (!aPrimary && bPrimary) return 1;
+            return 0;
+          }) : [];
           //console.log("[EditLayoutApplication] ownersFromApi:", ownersFromApi);
           
           // Helper function to format DOB

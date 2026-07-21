@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   LabelFieldPair,
   TextInput,
@@ -18,12 +18,13 @@ import NOCCustomUploadFile from "./NOCCustomUploadFile";
 const NOCSpecificationDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, watch } = _props;
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : (window.localStorage.getItem("Employee.tenant-id") || Digit.ULBService.getCurrentTenantId());
   const stateId = Digit.ULBService.getStateId();
   const [selectedBuildingCategory, setSelectedBuildingCategory] = useState(currentStepData?.siteDetails?.specificationBuildingCategory || null);
 
   const [offlineDocError, setOfflineDocError] = useState(null);
-  const [offlineDocLoader, setOfflineDocLoader] = useState(false);
   const [retrievedNoc, setRetrievedNoc] = useState(null);
   const [retrievedNocDocs, setRetrievedNocDocs] = useState([]);
   const [retrievedNocError, setRetrievedNocError] = useState("");
@@ -35,6 +36,69 @@ const NOCSpecificationDetails = (_props) => {
   const isFinalNoc = specificationNocType?.name === "Final";
 
   const isDigitizationOfManual = specificationNocType?.name === "Digitization of Manual";
+
+  const prevNocTypeRef = useRef(specificationNocType);
+  const userHasChangedNocTypeRef = useRef(false);
+
+  useEffect(() => {
+    const prevCode = prevNocTypeRef.current?.code || prevNocTypeRef.current?.name;
+    const currentCode = specificationNocType?.code || specificationNocType?.name;
+    if (prevCode && prevCode !== currentCode) {
+      userHasChangedNocTypeRef.current = true;
+      setValue("existingNocType", null);
+      setValue("existingNocNumber", "");
+      setValue("existingNocDate", "");
+      setValue("existingNocDocument", null);
+      setValue("isNocValidated", false);
+      setValidatedNocNumber("");
+      setRetrievedNoc(null);
+      setRetrievedNocDocs([]);
+      setRetrievedNocError("");
+    }
+    prevNocTypeRef.current = specificationNocType;
+  }, [specificationNocType]);
+
+  const prevExistingNocTypeRef = useRef(existingNocType);
+  const userHasChangedExistingNocTypeRef = useRef(false);
+
+  useEffect(() => {
+    const prevCode = prevExistingNocTypeRef.current?.code || prevExistingNocTypeRef.current?.name;
+    const currentCode = existingNocType?.code || existingNocType?.name;
+    if (prevCode && prevCode !== currentCode) {
+      userHasChangedExistingNocTypeRef.current = true;
+      setValue("existingNocNumber", "");
+      setValue("existingNocDate", "");
+      setValue("existingNocDocument", null);
+      setValue("isNocValidated", false);
+      setValidatedNocNumber("");
+      setRetrievedNoc(null);
+      setRetrievedNocDocs([]);
+      setRetrievedNocError("");
+    }
+    prevExistingNocTypeRef.current = existingNocType;
+  }, [existingNocType]);
+
+  const [validatedNocNumber, setValidatedNocNumber] = useState(currentStepData?.siteDetails?.existingNocNumber || "");
+
+  const isNocValidated = watch("isNocValidated") !== undefined
+    ? watch("isNocValidated")
+    : (currentStepData?.siteDetails?.isNocValidated !== undefined
+      ? currentStepData.siteDetails.isNocValidated
+      : (isFinalNoc && currentStepData?.siteDetails?.existingNocType === "Online" && currentStepData?.siteDetails?.existingNocNumber ? true : false)
+    );
+
+  useEffect(() => {
+    if (isNocValidated && existingNocNumber !== validatedNocNumber) {
+      setValue("isNocValidated", false);
+    }
+  }, [existingNocNumber, validatedNocNumber, isNocValidated]);
+
+  useEffect(() => {
+    if (isNocValidated && existingNocNumber && retrievedNocDocs.length === 0 && !isRetrieving) {
+      handleRetrieveNoc(existingNocNumber);
+    }
+  }, [isNocValidated, existingNocNumber, retrievedNocDocs.length]);
+
   const { data: buildingCategory, isLoading: isLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
   const { data: nocType, isLoading: isNocTypeLoading,  } = Digit.Hooks.noc.useNocType(stateId);
 
@@ -52,11 +116,21 @@ const NOCSpecificationDetails = (_props) => {
   ];
 
   const handleRetrieveNoc = async (nocNum) => {
-    const numToSearch = typeof nocNum === "string" ? nocNum : existingNocNumber;
+    const numToSearch = (typeof nocNum === "string" ? nocNum : existingNocNumber)?.trim();
     if (!numToSearch) {
-      setRetrievedNocError(t("NOC_NUMBER_REQUIRED") || "Existing NOC Number is required");
+      setRetrievedNocError("Existing NOC Number is required");
       return;
     }
+
+    const nocRegex = /^PB-NOC-SAS-[A-Za-z]+-\d+$/i;
+    if (!nocRegex.test(numToSearch)) {
+      setRetrievedNocError("Invalid NOC Number format.");
+      setRetrievedNoc(null);
+      setRetrievedNocDocs([]);
+      setValue("existingNocDocument", null);
+      return;
+    }
+
     setIsRetrieving(true);
     setRetrievedNocError("");
     setRetrievedNocDocs([]);
@@ -68,54 +142,67 @@ const NOCSpecificationDetails = (_props) => {
       const nocData = response?.Noc?.[0];
       if (nocData) {
         setRetrievedNoc(nocData);
-        const docs = nocData?.documents || [];
-        if (docs.length > 0) {
-          const fileStoreIds = docs.map(d => d.fileStoreId || d.filestoreId).filter(Boolean);
-          if (fileStoreIds.length > 0) {
-            const fileFetchResponse = await Digit.UploadServices.Filefetch(fileStoreIds, stateId);
-            const pdfFiles = fileFetchResponse?.data || {};
-            
-            const mappedDocs = docs.map(d => {
-              const fid = d.fileStoreId || d.filestoreId;
-              let fileUrl = "";
-              if (pdfFiles?.fileStoreIds) {
-                const foundFile = pdfFiles.fileStoreIds.find(f => f.id === fid);
-                fileUrl = foundFile?.url || "";
-              } else {
-                fileUrl = pdfFiles[fid] || "";
-              }
-              return {
-                title: d.documentType ? t(d.documentType.replaceAll(".", "_")) : t("NOC_DOCUMENT"),
-                url: fileUrl
-              };
-            });
-            setRetrievedNocDocs(mappedDocs);
-            // Save the document info into the form state
-            if (fileStoreIds[0]) {
-              setValue("existingNocDocument", fileStoreIds[0]);
+        const sanctionLetterFilestoreId = nocData?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
+        const fileStoreIds = [];
+        if (sanctionLetterFilestoreId) {
+          fileStoreIds.push(sanctionLetterFilestoreId);
+        } else {
+          const docs = nocData?.documents || [];
+          const docsFileStoreIds = docs.map(d => d.fileStoreId || d.filestoreId).filter(Boolean);
+          fileStoreIds.push(...docsFileStoreIds);
+        }
+
+        if (fileStoreIds.length > 0) {
+          const fileFetchResponse = await Digit.UploadServices.Filefetch(fileStoreIds, tenantId);
+          const pdfFiles = fileFetchResponse?.data || {};
+
+          const mappedDocs = fileStoreIds.map((fid) => {
+            let rawUrl = "";
+            if (pdfFiles?.fileStoreIds) {
+              const foundFile = pdfFiles.fileStoreIds.find(f => f.id === fid);
+              rawUrl = foundFile?.url || "";
+            } else {
+              rawUrl = pdfFiles[fid] || "";
             }
-          } else {
-            setRetrievedNocError(t("NOC_NO_DOCUMENTS_ASSOCIATED") || "No documents associated with this NOC");
+            const fileUrl = Digit.Utils.getFileUrl(rawUrl);
+            let title = t("NOC_DOCUMENT");
+            if (fid === sanctionLetterFilestoreId) {
+              title = t("APPROVED_NOC_CERTIFICATE") || "Approved NOC Certificate";
+            } else {
+              const matchingDoc = nocData?.documents?.find(d => (d.fileStoreId || d.filestoreId) === fid);
+              if (matchingDoc?.documentType) {
+                title = t(matchingDoc.documentType.replaceAll(".", "_"));
+              }
+            }
+            return {
+              title,
+              url: fileUrl
+            };
+          });
+          setRetrievedNocDocs(mappedDocs);
+          setValue("isNocValidated", true);
+          setValidatedNocNumber(numToSearch);
+          // Save the document info into the form state
+          if (fileStoreIds[0]) {
+            setValue("existingNocDocument", fileStoreIds[0]);
           }
         } else {
-          setRetrievedNocError(t("NOC_NO_DOCUMENTS_ASSOCIATED") || "No documents associated with this NOC");
+          setRetrievedNocError("No documents associated with this NOC");
         }
       } else {
-        setRetrievedNocError(t("NOC_APPLICATION_NOT_FOUND") || "No NOC application found with this number");
+        setRetrievedNocError("No NOC application found with this number");
+        setValue("isNocValidated", false);
+        setValidatedNocNumber("");
       }
     } catch (err) {
       console.error("Error retrieving NOC: ", err);
-      setRetrievedNocError(t("NOC_RETRIEVAL_FAILED") || "Failed to retrieve NOC. Please verify the number.");
+      setRetrievedNocError("Error validating NOC. Please try again.");
+      setValue("isNocValidated", false);
+      setValidatedNocNumber("");
     } finally {
       setIsRetrieving(false);
     }
   };
-
-  useEffect(() => {
-    if (existingNocType?.name === "Online" && existingNocNumber && retrievedNocDocs.length === 0 && !isRetrieving) {
-      handleRetrieveNoc(existingNocNumber);
-    }
-  }, [existingNocType, existingNocNumber]);
 
   useEffect(() => {
     console.log("currentStepData4", currentStepData);
@@ -129,6 +216,7 @@ const NOCSpecificationDetails = (_props) => {
   }, [currentStepData, setValue]);
 
   useEffect(() => {
+    if (userHasChangedNocTypeRef.current || userHasChangedExistingNocTypeRef.current) return;
     if (isFinalNoc && currentStepData?.siteDetails?.existingNocType) {
       const matched = [
         { code: "OFFLINE", name: "Offline" },
@@ -145,6 +233,7 @@ const NOCSpecificationDetails = (_props) => {
   }, [isFinalNoc, currentStepData]);
 
   useEffect(() => {
+    if (userHasChangedNocTypeRef.current || userHasChangedExistingNocTypeRef.current) return;
     if (isDigitizationOfManual || (isFinalNoc && existingNocType?.name === "Offline")) {
       if (currentStepData?.siteDetails?.existingNocNumber) {
         setValue("existingNocNumber", currentStepData.siteDetails.existingNocNumber);
@@ -357,7 +446,7 @@ const NOCSpecificationDetails = (_props) => {
             </LabelFieldPair>
 
             
-              <LabelFieldPair>
+               <LabelFieldPair className="noc-upload-field-pair">
                 <CardLabel className="card-label-smaller">
                   {`${t("NOC_UPLOAD_DOCUMENT_LABEL")}`} <span className="requiredField">*</span>
                 </CardLabel>
@@ -380,39 +469,36 @@ const NOCSpecificationDetails = (_props) => {
                             return;
                           }
 
-                          try {
-                            setOfflineDocLoader(true);
-                            setOfflineDocError(null);
-                            const response = await Digit.UploadServices.Filestorage("NOC", file, stateId);
-                            if (response?.data?.files?.length > 0) {
-                              const fileStoreId = response.data.files[0].fileStoreId;
-                              props.onChange(fileStoreId);
-                            } else {
-                              setOfflineDocError(t("NOC_FILE_UPLOAD_FAILED") || "File upload failed");
-                            }
-                          } catch (err) {
-                            setOfflineDocError(t("NOC_FILE_UPLOAD_ERROR") || "File upload error");
-                          } finally {
-                            setOfflineDocLoader(false);
-                          }
-                        }}
-                        onDelete={() => {
-                          props.onChange(null);
+                        try {
                           setOfflineDocError(null);
-                        }}
-                        uploadedFile={props.value}
-                        message={props.value ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                        error={offlineDocError || errors?.existingNocDocument?.message}
-                        uploadMessage=""
-                        accept=".pdf"
-                        required
-                      />
-                    )}
-                  />
-                  {offlineDocLoader && <p style={{ color: "orange" }}>{t("NOC_UPLOADING") || "Uploading..."}</p>}
-                </div>
-              </LabelFieldPair>
-          
+                          const response = await Digit.UploadServices.Filestorage("NOC", file, stateId);
+                          if (response?.data?.files?.length > 0) {
+                            const fileStoreId = response.data.files[0].fileStoreId;
+                            props.onChange(fileStoreId);
+                          } else {
+                            setOfflineDocError(t("NOC_FILE_UPLOAD_FAILED") || "File upload failed");
+                          }
+                        } catch (err) {
+                          setOfflineDocError(t("NOC_FILE_UPLOAD_ERROR") || "File upload error");
+                        } 
+                      }}
+                      onDelete={() => {
+                        props.onChange(null);
+                        setOfflineDocError(null);
+                      }}
+                      uploadedFile={props.value}
+                      message={props.value ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                      iserror={offlineDocError || errors?.existingNocDocument?.message}
+                      uploadMessage=""
+                      accept=".pdf"
+                      required
+                    />
+                  )}
+                />
+
+              </div>
+            </LabelFieldPair>
+
           </React.Fragment>
         )}
 
@@ -433,8 +519,8 @@ const NOCSpecificationDetails = (_props) => {
                         validate: (value) => {
                           if (isFinalNoc && existingNocType?.name === "Online") {
                             if (!value) return t("REQUIRED_FIELD");
-                            if (!retrievedNoc) {
-                              return t("NOC_MUST_BE_RETRIEVED_AND_VERIFIED") || "NOC must be retrieved and verified";
+                            if (!isNocValidated) {
+                              return "NOC certificate must be searched and verified";
                             }
                           }
                           return true;
@@ -458,6 +544,9 @@ const NOCSpecificationDetails = (_props) => {
                       )}
                     />
                   </div>
+                  {isNocValidated && (
+                    <span style={{ color: "#00703c", fontWeight: 500 }}>✓ NOC Validated</span>
+                  )}
                   <button
                     type="button"
                     style={{
@@ -473,7 +562,7 @@ const NOCSpecificationDetails = (_props) => {
                     disabled={isRetrieving}
                     onClick={handleRetrieveNoc}
                   >
-                    {isRetrieving ? "Retrieving..." : "Retrieve"}
+                    {isRetrieving ? "Searching..." : "Search"}
                   </button>
                 </div>
                 {errors?.existingNocNumber && (
@@ -490,15 +579,24 @@ const NOCSpecificationDetails = (_props) => {
                 <CardLabel className="card-label-smaller">{t("NOC_RETRIEVED_DOCUMENTS")}</CardLabel>
                 <div className="field">
                   {retrievedNocDocs.map((doc, idx) => (
-                    <div key={idx} style={{ marginBottom: "8px" }}>
-                      <a
-                        href={doc.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: "#F47738", textDecoration: "underline", fontWeight: "bold" }}
+                    <div key={idx} style={{ marginBottom: "12px", display: "flex", alignItems: "center", gap: "12px" }}>
+
+                      <button
+                        type="button"
+                        style={{
+                          padding: "8px 16px",
+                          background: "#1976d2",
+                          color: "white",
+                          cursor: "pointer",
+                          border: "none",
+                          borderRadius: "4px",
+                          fontWeight: "bold",
+                          fontSize: "14px"
+                        }}
+                        onClick={() => doc.url && window.open(doc.url, "_blank")}
                       >
-                        {doc.title || `${t("NOC_DOCUMENT")} ${idx + 1}`}
-                      </a>
+                        VIEW DOCUMENT
+                      </button>
                     </div>
                   ))}
                 </div>

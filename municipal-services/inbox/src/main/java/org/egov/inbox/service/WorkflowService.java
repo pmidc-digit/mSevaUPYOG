@@ -263,16 +263,27 @@ public class WorkflowService {
         Map<String,Set<String>> stateToRoleMap = getStateToRoleMap(businessServices);
         HashMap<String,String> actionableStatuses = new HashMap<>();
         
+        String stateLevelCompare = "pb.punjab";
+        if (criteria != null && !ObjectUtils.isEmpty(criteria.getModuleName())
+                && (criteria.getModuleName().equalsIgnoreCase("BPA") 
+                    || criteria.getModuleName().equalsIgnoreCase("bpa-service")
+                    || criteria.getModuleName().equalsIgnoreCase("bpa-services"))) {
+            stateLevelCompare = config.getStateLevelTenantId();
+        }
+        
         for(Map.Entry<String,List<String>> entry : tenantIdToUserRolesMap.entrySet()){
         	
         	String statelevelTenantId=entry.getKey().split("\\.")[0];
         	
-            if(requestInfo.getUserInfo().getTenantId().equalsIgnoreCase("pb.punjab")||(
+            if(requestInfo.getUserInfo().getTenantId().equalsIgnoreCase(stateLevelCompare)||(
 					entry.getKey().equals(criteria.getTenantId()) ||
 					(entry.getValue().contains(FSMConstants.FSM_DSO) && entry.getKey().equals(statelevelTenantId)) )){
                 List<BusinessService> businessServicesByTenantId = new ArrayList();
-                if(requestInfo.getUserInfo().getTenantId().equalsIgnoreCase("pb.punjab")||entry.getKey().split("\\.").length==1){
+                if(requestInfo.getUserInfo().getTenantId().equalsIgnoreCase(stateLevelCompare)||entry.getKey().split("\\.").length==1){
                     businessServicesByTenantId = tenantIdToBuisnessSevicesMap.get(criteria.getTenantId());
+                    if (businessServicesByTenantId == null) {
+                        businessServicesByTenantId = tenantIdToBuisnessSevicesMap.get(entry.getKey());
+                    }
               }else{
                     businessServicesByTenantId = tenantIdToBuisnessSevicesMap.get(entry.getKey());
               }
@@ -353,4 +364,26 @@ public class WorkflowService {
     }
 
 	
+    /**
+     * Gets all statuses configured for the business services, regardless of role actionability
+     * @param businessServices The list of business services
+     * @return Map of status UUID to application status name
+     */
+    public HashMap<String, String> getAllStatuses(List<BusinessService> businessServices) {
+        HashMap<String, String> allStatuses = new HashMap<>();
+        if (!CollectionUtils.isEmpty(businessServices)) {
+            businessServices.forEach(service -> {
+                List<State> states = service.getStates();
+                if (!CollectionUtils.isEmpty(states)) {
+                    states.forEach(state -> {
+                        if (!ObjectUtils.isEmpty(state.getApplicationStatus())) {
+                            allStatuses.put(state.getUuid(), state.getApplicationStatus());
+                        }
+                    });
+                }
+            });
+        }
+        return allStatuses;
+    }
 }
+

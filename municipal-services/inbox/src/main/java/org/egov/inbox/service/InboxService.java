@@ -139,6 +139,9 @@ public class InboxService {
     private NOCInboxFilterService nocInboxFilterService;
 
     @Autowired
+    private FireNocInboxFilterService fireNocInboxFilterService;
+
+    @Autowired
     private WSInboxFilterService wsInboxFilterService;
     
     @Autowired
@@ -214,8 +217,11 @@ public class InboxService {
         String assigneeUuid = ObjectUtils.isEmpty(processCriteria.getAssignee())
                 ? null
                 : processCriteria.getAssignee();
-
         String moduleName = processCriteria.getModuleName();
+
+        List<String> roles = requestInfo.getUserInfo().getRoles().stream()
+                .map(Role::getCode).collect(Collectors.toList());
+        boolean isCitizenInboxCall = isCitizenInboxSupportAvailable(moduleName, roles);
 
         processCriteria.setStatus(inputStatuses);
         processCriteria.setAssignee(assigneeUuid);
@@ -239,21 +245,41 @@ public class InboxService {
         }
 
         // Load actionable statuses
-        HashMap<String, String> statusIdNameMap =
-                workflowService.getActionableStatusesForRole(requestInfo, businessSrvs, processCriteria);
+        //For CitizenInboxSupport we need to send all the statuses so that we can show all the applications on the citizen side
+        HashMap<String, String> statusIdNameMap = isCitizenInboxCall
+                ? workflowService.getAllStatuses(businessSrvs)
+                : workflowService.getActionableStatusesForRole(requestInfo, businessSrvs, processCriteria);
+        //For Readonly role we get all statuses cause he/she can see all the applications 
+        if (CollectionUtils.isEmpty(statusIdNameMap) && isReadOnlyOrReportingUser(roles)) {
+            statusIdNameMap = workflowService.getAllStatuses(businessSrvs);
+        }
+                
+        // Preserve all actionable statuses before any filtering
+        Map<String, String> allActionableStatuses = new HashMap<>(statusIdNameMap);
+
         if (!CollectionUtils.isEmpty(inputStatuses)) {
-            statusIdNameMap.entrySet().removeIf(entry -> !inputStatuses.contains(entry.getValue()));
+            // Some modules send status as UUID, others send status name.
+            // Retain an entry if inputStatuses matches either the key (UUID) or the value (name).
+            statusIdNameMap.entrySet().removeIf(entry ->
+                    !inputStatuses.contains(entry.getKey()) && !inputStatuses.contains(entry.getValue()));
         }
         List<String> statusIds = new ArrayList<>(statusIdNameMap.keySet());
         
-        // Fetch full status count map for UI (before applying any filters)
-        // This ensures status map shows all statuses regardless of current filter
-        ProcessInstanceSearchCriteria statusCountCriteria = new ProcessInstanceSearchCriteria();
-        statusCountCriteria.setTenantId(criteria.getTenantId());
-        statusCountCriteria.setBusinessService(businessServiceName);
-        statusCountCriteria.setModuleName(moduleName);
-        List<HashMap<String, Object>> fullStatusCountMap = workflowService.getProcessStatusCount(requestInfo, statusCountCriteria);
+        // Fetch full status count map for the UI.
+        // Citizen inbox uses a searcher-based path (multi-tenant, by applicationNo);
+        // every other module goes directly through the workflow status-count API.
+        List<HashMap<String, Object>> fullStatusCountMap;
+        if (isCitizenInboxCall) {
+            fullStatusCountMap = getCitizenStatusCount(
+                    criteria, allActionableStatuses, requestInfo, businessServiceName, moduleName);
+        } else {
+            ProcessInstanceSearchCriteria statusCountCriteria = buildStatusCountCriteria(
+                    criteria.getTenantId(), businessServiceName, moduleName, allActionableStatuses);
+            fullStatusCountMap = workflowService.getProcessStatusCount(requestInfo, statusCountCriteria);
+        }
         
+        int searcherCount = resolveSearcherCount(moduleName, criteria, statusIdNameMap, requestInfo);
+
         Map<String, Object> updatedMap =
                 handleModuleSearchCriteria(moduleName, criteria, statusIdNameMap, requestInfo,
                         moduleSearchCriteria, businessKeys);
@@ -265,7 +291,7 @@ public class InboxService {
             response.setNearingSlaCount(0);
             return response;
         }     
-//        processCriteria.setStatus(statusIds);
+        processCriteria.setStatus(null);
         processCriteria.setBusinessIds(new ArrayList<>(businessKeys));
         processCriteria.setTenantId(criteria.getTenantId());
         processCriteria.setIsProcessCountCall(Boolean.FALSE);
@@ -302,11 +328,26 @@ public class InboxService {
 
         // Modules that require a searcher-based count override (e.g. multi-tenant, citizen/stakeholder aggregation).
         // For all other modules, fall back to the WF processInstanceMap size.
-        int searcherCount = resolveSearcherCount(moduleName, criteria, statusIdNameMap, requestInfo);
         int totalCount = (searcherCount >= 0) ? searcherCount : processInstanceMap.size();
 
-        // FIXED: store businessIds as List<String>, not CSV
-        moduleSearchCriteria.put(srvMap.get("applNosParam"), new ArrayList<>(processInstanceMap.keySet()));
+        // Translate applicationNo to UUID for firenoc if mapping is available, so we search by UUIDs instead of applicationNo
+        if ("firenoc".equalsIgnoreCase(moduleName) && moduleSearchCriteria.containsKey("firenoc_appNo_to_uuid_map")) {
+            Map<String, String> appNoToUuidMap = (Map<String, String>) moduleSearchCriteria.get("firenoc_appNo_to_uuid_map");
+            List<String> uuids = new ArrayList<>();
+            for (String appNo : processInstanceMap.keySet()) {
+                if (appNoToUuidMap.containsKey(appNo)) {
+                    uuids.add(appNoToUuidMap.get(appNo));
+                } else {
+                    uuids.add(appNo); // fallback
+                }
+            }
+            moduleSearchCriteria.put(srvMap.get("applNosParam"), uuids);
+            moduleSearchCriteria.remove("firenoc_appNo_to_uuid_map");
+            moduleSearchCriteria.remove("limit");
+            moduleSearchCriteria.remove("sortOrder");
+        } else {
+            moduleSearchCriteria.put(srvMap.get("applNosParam"), new ArrayList<>(processInstanceMap.keySet()));
+        }
         moduleSearchCriteria.put("tenantId", criteria.getTenantId());
 
         JSONArray businessObjects =
@@ -314,7 +355,13 @@ public class InboxService {
 
         Map<String, Object> businessMap =
                 StreamSupport.stream(businessObjects.spliterator(), false)
-                        .collect(Collectors.toMap(s -> ((JSONObject) s).get(businessIdParam).toString(), s -> s));
+                        .collect(Collectors.toMap(
+                                s -> ((JSONObject) s).get(businessIdParam) != null ? ((JSONObject) s).get(businessIdParam).toString() : "",
+                                s -> s,
+                                (v1, v2) -> v1
+                        ));
+
+        businessMap = resolveBusinessMap(moduleName, businessMap);
 
         // Use full status count map (not filtered) so UI shows all statuses
         List<HashMap<String, Object>> statusMap = fullStatusCountMap;
@@ -354,6 +401,126 @@ public class InboxService {
 
         return response;
     }
+
+    /**
+     * Builds a fresh {@link ProcessInstanceSearchCriteria} for the status-count API call.
+     * Using a dedicated object avoids mutating the shared processCriteria that drives the main query.
+     */
+    private ProcessInstanceSearchCriteria buildStatusCountCriteria(
+            String tenantId, List<String> businessServices,
+            String moduleName, Map<String, String> allActionableStatuses) {
+        ProcessInstanceSearchCriteria c = new ProcessInstanceSearchCriteria();
+        c.setTenantId(tenantId);
+        c.setBusinessService(businessServices);
+        c.setModuleName(moduleName);
+        if (!CollectionUtils.isEmpty(allActionableStatuses)) {
+            c.setStatus(new ArrayList<>(allActionableStatuses.keySet()));
+        }
+        return c;
+    }
+
+    /**
+     * Computes the status count map for a BPA citizen inbox.
+     *
+     * <p>Regular modules can query the workflow status-count API directly because the workflow
+     * engine already knows which applications belong to the logged-in user (via assignee).
+     * For citizens the workflow has no assignee concept, so we:
+     * <ol>
+     *   <li>Fetch every application owned by the citizen from the BPA searcher (status-filter
+     *       stripped so we always get the full picture, not just the currently selected status).</li>
+     *   <li>Group those application numbers by tenant.</li>
+     *   <li>Query the workflow status-count API once per tenant, passing the explicit
+     *       {@code businessIds} list so it counts across the citizen's own applications only.</li>
+     *   <li>Merge the per-tenant results into a single list, summing counts for shared statuses.</li>
+     * </ol>
+     */
+    private List<HashMap<String, Object>> getCitizenStatusCount(
+            InboxSearchCriteria criteria,
+            Map<String, String> allActionableStatuses,
+            RequestInfo requestInfo,
+            List<String> businessServiceName,
+            String moduleName) {
+
+        // Strip the input status filter before hitting the searcher so we always get
+        // the citizen's full application list (not just apps in the selected status).
+        List<String> savedStatus = criteria.getProcessSearchCriteria().getStatus();
+        criteria.getProcessSearchCriteria().setStatus(null);
+
+        List<Map<String, String>> allApplications;
+        if (moduleName.equalsIgnoreCase("clu-service")) {
+            allApplications = cluInboxFilterService
+                    .fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(
+                            criteria, allActionableStatuses, requestInfo);
+        } else if (moduleName.equalsIgnoreCase("layout-service")) {
+            allApplications = layoutInboxFilterService
+                    .fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(
+                            criteria, allActionableStatuses, requestInfo);
+        } else if (moduleName.equalsIgnoreCase("noc-service")) {
+            allApplications = nocInboxFilterService
+                    .fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(
+                            criteria, allActionableStatuses, requestInfo);
+        } else {
+            allApplications = bpaInboxFilterService
+                    .fetchTenantWiseApplicationNumbersForCitizenInboxFromSearcher(
+                            criteria, allActionableStatuses, requestInfo);
+        }
+        criteria.getProcessSearchCriteria().setStatus(savedStatus);
+
+        return buildStatusCountFromSearcherResult(
+                allApplications, businessServiceName, criteria.getTenantId(), requestInfo);
+    }
+
+    /**
+     * Counts each status from the searcher result rows in memory.
+     * Every row contains a {@code status_id} column written by the SQL query
+     * (filtered with {@code pi.latest = TRUE}), so this replaces the WF
+     * status-count API call entirely for citizen modules.
+     */
+    private List<HashMap<String, Object>> buildStatusCountFromSearcherResult(
+            List<Map<String, String>> tenantWiseApplns,
+            List<String> businessServiceName,
+            String tenantId,
+            RequestInfo requestInfo) {
+
+        // Build UUID -> name/service lookup from workflow business service config
+        Map<String, String> statusToServiceMap = new HashMap<>();
+        Map<String, String> statusToNameMap    = new HashMap<>();
+        for (String businessSrv : businessServiceName) {
+            BusinessService service = workflowService.getBusinessService(tenantId, requestInfo, businessSrv);
+            if (service != null && service.getStates() != null) {
+                for (State state : service.getStates()) {
+                    if (state.getUuid() != null) {
+                        String uuid = state.getUuid().toLowerCase();
+                        statusToServiceMap.put(uuid, service.getBusinessService());
+                        statusToNameMap.put(uuid, state.getApplicationStatus());
+                    }
+                }
+            }
+        }
+
+        // Count occurrences — one row per application since searcher ensures pi.latest = TRUE
+        Map<String, Integer> counts = new LinkedHashMap<>();
+        for (Map<String, String> app : tenantWiseApplns) {
+            String statusId = app.get("status_id");
+            if (statusId != null) {
+                statusId = statusId.toLowerCase();
+                counts.merge(statusId, 1, Integer::sum);
+            }
+        }
+
+        List<HashMap<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : counts.entrySet()) {
+            String statusId = entry.getKey();
+            HashMap<String, Object> statusMap = new HashMap<>();
+            statusMap.put("statusid",        statusId);
+            statusMap.put("count",           entry.getValue());
+            statusMap.put("applicationstatus", statusToNameMap.getOrDefault(statusId, ""));
+            statusMap.put("businessservice", statusToServiceMap.getOrDefault(statusId, ""));
+            result.add(statusMap);
+        }
+        return result;
+    }
+
     /**
      * Returns a searcher-based total count for modules that cannot rely on the WF processInstanceMap size
      * (e.g. multi-tenant stakeholders, cross-role aggregation).
@@ -366,10 +533,43 @@ public class InboxService {
         if (moduleName == null) return -1;
         switch (moduleName.toLowerCase()) {
             case "bpa-service":
+            case "bpa":
                 return bpaInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
-            // Add more modules here as needed, e.g.:
-            // case "ndc":
-            //     return ndcInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "ndc":
+                return ndcInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "swach":
+                return swachInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "pet-service":
+                return petInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "advandhoarding-services":
+                return advInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "bpareg":
+            case "tl":
+                return tlInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "pgr":
+                return pgrInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "noc-service":
+                return nocInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "firenoc":
+                return fireNocInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "chb":
+                return chbInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "challan_generation":
+                return challanInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "layout-service":
+                return layoutInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "clu-service":
+                return cluInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "gc-services":
+                return garbageInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "rl-services":
+                return rlInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "bs-ws":
+                return wsInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "bs-sw":
+                return swInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
+            case "billing-amendment":
+                return billInboxFilterService.fetchApplicationCountFromSearcher(criteria, statusIdNameMap, requestInfo);
             default:
                 return -1;
         }
@@ -457,6 +657,13 @@ public class InboxService {
                     moduleSearchCriteria.put("applicationNo", applicationNumbers);
                 break;
 
+            case "firenoc":
+                applicationNumbers = fireNocInboxFilterService.fetchApplicationNumbersFromSearcher(
+                        criteria, statusIdNameStringMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers))
+                    moduleSearchCriteria.put("ids", applicationNumbers);
+                break;
+
             case "chb":
             case "CHB":
                 applicationNumbers = chbInboxFilterService.fetchApplicationNumbersFromSearcher(
@@ -524,7 +731,26 @@ public class InboxService {
     }
 
 
-    
+    private Map<String, Object> resolveBusinessMap(String moduleName, Map<String, Object> businessMap) {
+        if ("firenoc".equalsIgnoreCase(moduleName)) {
+            Map<String, Object> resolvedMap = new HashMap<>();
+            for (Map.Entry<String, Object> entry : businessMap.entrySet()) {
+                Object value = entry.getValue();
+                if (value instanceof JSONObject) {
+                    JSONObject fn = (JSONObject) value;
+                    if (fn.has("fireNOCDetails")) {
+                        JSONObject details = fn.getJSONObject("fireNOCDetails");
+                        if (details.has("applicationNumber") && details.get("applicationNumber") != null) {
+                            resolvedMap.put(details.get("applicationNumber").toString(), value);
+                        }
+                    }
+                }
+            }
+            return resolvedMap;
+        }
+        return businessMap;
+    }
+
     private Object findClosestBusinessObject(String businessId, Map<String, Object> businessMap) {
 
         // 1. Exact match
@@ -2140,4 +2366,24 @@ public class InboxService {
 
 		return results;
 	}
-}
+
+    private boolean isCitizenInboxSupportAvailable(String moduleName, List<String> roles) {
+        if (ObjectUtils.isEmpty(moduleName) || CollectionUtils.isEmpty(roles)) {
+            return false;
+        }
+        return roles.contains(BpaConstants.CITIZEN) && 
+            (moduleName.equalsIgnoreCase("bpa-service") || 
+             moduleName.equalsIgnoreCase("BPA") || 
+             moduleName.equalsIgnoreCase("clu-service") ||
+             moduleName.equalsIgnoreCase("layout-service") ||
+             moduleName.equalsIgnoreCase("noc-service"));
+    }
+
+    private boolean isReadOnlyOrReportingUser(List<String> roles) {
+        if (CollectionUtils.isEmpty(roles)) {
+            return false;
+        }
+        return roles.stream().anyMatch(role -> 
+            role.contains("OBPAS_READ_ONLY")
+        );
+    }}

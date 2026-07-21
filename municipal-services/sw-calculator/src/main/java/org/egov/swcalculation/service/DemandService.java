@@ -952,6 +952,14 @@ public class DemandService {
 	     ----------------------------------------------------------- */
 
 	    for (Demand demand : demands) {
+	    	
+	    	/* Skip Payment Completed demand */
+
+	        if (demand.getIsPaymentCompleted()) {
+
+	            log.info("Skipping Payment Completed demand {}", demand.getId());
+	            continue;
+	        }
 
 	        BigDecimal totalTax = demand.getDemandDetails()
 	                .stream()
@@ -1740,6 +1748,10 @@ public class DemandService {
 		        }
 
 		        List<BillSearchs> billSearchsss = sewerageCalculatorDao.getBillss(tenantId, demandid);
+		        
+		        if(CollectionUtils.isEmpty(billSearchsss) && demandlists.stream().anyMatch(demand -> demand.getIsPaymentCompleted() == true))
+		        	continue; // Skip bill cancellation if there are no bills and payment is completed
+		        
 		        boolean billCancelled = sewerageCalculatorDao.getexpiryBills(billSearchsss);
 
 		        if (!billCancelled) {

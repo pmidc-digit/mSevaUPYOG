@@ -71,6 +71,7 @@ import org.egov.edcr.entity.SearchBuildingPlanScrutinyForm;
 import org.egov.edcr.repository.EdcrApplicationDetailRepository;
 import org.egov.edcr.repository.EdcrApplicationRepository;
 import org.egov.edcr.service.es.EdcrIndexService;
+import org.egov.edcr.utility.DcrConstants;
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.config.persistence.datasource.routing.annotation.ReadOnly;
 import org.egov.infra.filestore.entity.FileStoreMapper;
@@ -152,8 +153,9 @@ public class EdcrApplicationService {
     public static final String ABORTED = "Aborted";
     private static Logger LOG = LogManager.getLogger(EdcrApplicationService.class);
         
-    private static final float EXPAND_RIGHT  = 800f;
+    private static final float EXPAND_RIGHT  = 80f;
     private static final float EXPAND_BOTTOM = 80f;
+    private static final String BLANK_TEXT = "-";
     
     // GAP CONTROLS  ← spacing between elements
     private static final float GAP_DRAWING_TO_TABLES = 20f;
@@ -205,6 +207,9 @@ public class EdcrApplicationService {
     
     @Autowired
     private FileStoreMapperRepository fileStoreMapperRepository;
+    
+    @Autowired
+    private PlanReportServiceV2 planReportServiceV2;
     
 
     public Session getCurrentSession() {
@@ -459,26 +464,36 @@ public class EdcrApplicationService {
     }
  
 
-    private JsonNode buildJsonNode(Plan pl, File signatureImageFile) {
-        return buildJsonNode(pl, signatureImageFile, null);
+    private JsonNode buildJsonNode(Plan pl, File signatureImageFile, EdcrApplication dcrApplication) {
+        return buildJsonNode(pl, signatureImageFile, null, dcrApplication);
     }
 
-    private JsonNode buildJsonNode(Plan pl, File signatureImageFile, JsonNode patchFields) {
+    private JsonNode buildJsonNode(Plan pl, File signatureImageFile, JsonNode patchFields, EdcrApplication dcrApplication) {
         final ObjectMapper mapper = new ObjectMapper();
         final ObjectNode root = mapper.createObjectNode();
         final ObjectNode details = mapper.createObjectNode();
         root.set("details", details);
 
         try {
-            Map<String, Object> finalReportData = extractFinalReportData(pl);
+            Map<String, Object> finalReportData = extractFinalReportData(pl, dcrApplication);
+            if(!CollectionUtils.isEmpty(pl.getBlocks())) {
+            	finalReportData.put("buildingHeight", pl.getBlocks().get(0).getBuilding().getBuildingHeightExcludingMP().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
+            	finalReportData.put("totalBuildingHeight", pl.getBlocks().get(0).getBuilding().getBuildingHeight().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
+            }
             if (finalReportData == null || finalReportData.isEmpty()) {
                 LOG.warn("finalReportData is empty. Building minimal overlay JSON.");
                 return root;
             }
 
+            String zone = BLANK_TEXT;
+            if (patchFields != null && !patchFields.isNull() && !patchFields.isMissingNode()) {
+            	JsonNode patchRoot = patchFields.path("details").isMissingNode() ? patchFields : patchFields.path("details");
+            	zone = meaningfulText(patchRoot, "zone");
+            }
+            
             JsonNode frd = mapper.valueToTree(finalReportData);
 
-            details.set("applicationDetails", buildApplicationDetails(mapper, frd));
+            details.set("applicationDetails", buildApplicationDetails(mapper, frd, zone));
             details.set("plotAreaDetails", buildPlotAreaDetails(mapper, frd));
             details.set("builtUpArea", buildBuiltUpArea(mapper, frd));
             details.set("farDetails", buildFarDetails(mapper, frd));
@@ -553,7 +568,8 @@ public class EdcrApplicationService {
                                          String approvalSanctionDate,
                                          String validTill,
                                          String signatoryName,
-                                         String designation) {
+                                         String designation,
+                                         String zone) {
         final ObjectMapper mapper = new ObjectMapper();
         final ObjectNode root = mapper.createObjectNode();
         final ObjectNode details = mapper.createObjectNode();
@@ -585,6 +601,8 @@ public class EdcrApplicationService {
                 details.set("eSign", eSign);
             }
         }
+        
+        details.put("zone", zone);
 
         return root;
     }
@@ -640,7 +658,7 @@ public class EdcrApplicationService {
         });
     }
 
-    private ObjectNode buildApplicationDetails(ObjectMapper mapper, JsonNode frd) {
+    private ObjectNode buildApplicationDetails(ObjectMapper mapper, JsonNode frd, String zone) {
         ObjectNode n = mapper.createObjectNode();
         JsonNode pi = frd.path("planInformation");
         n.put("nameOfApplicant", txt(frd, "applicantName"));
@@ -651,7 +669,7 @@ public class EdcrApplicationService {
         n.put("buildingCategory", txt(pi, "occupancy"));
         n.put("proposedSiteAddress", txt(pi, "city"));
         n.put("khasraNo", txt(pi, "khasraNo"));
-        n.put("zone", txt(pi, "landUseZone"));
+        n.put("zone", zone);
         return n;
     }
 
@@ -685,7 +703,7 @@ public class EdcrApplicationService {
 
         n.put("totalPermissibleFAR", txt(farDetails, "Permissible"));
         n.put("totalPermissibleFARArea", getTotalFloorArea(bws));
-        n.put("totalProposedFAR", txt(farDetails, "Purchasable"));
+        n.put("totalProposedFAR", txt(farDetails, "Provided"));
         n.put("totalProposedFARArea", getTotalFloorArea(bws));
 
         return n;
@@ -703,43 +721,64 @@ public class EdcrApplicationService {
     
     private String extractTotalHeight(String remarks) {
         if (remarks == null) {
-            return "N/A";
+            return BLANK_TEXT;
         }
 
         Pattern pattern = Pattern.compile("Total Height of building is\\s*([\\d.]+)");
         Matcher matcher = pattern.matcher(remarks);
 
-        return matcher.find() ? matcher.group(1) : "N/A";
+        return matcher.find() ? matcher.group(1) : BLANK_TEXT;
     }
 
     private ObjectNode buildEcsDetails(ObjectMapper mapper, JsonNode frd) {
         ObjectNode n = mapper.createObjectNode();
-        JsonNode parkingDetails = findCommonParkingDetail(frd);
+        JsonNode parkingDetails = new ObjectMapper().createObjectNode();
+        JsonNode parkingDetailsArr = findCommonParkingDetail(frd);
+        String oprnParking = "0.0";
+        String stiltParking = "0.0";
+        String coveredParking = "0.0";
+        String basementParking = "0.0";
+        for (JsonNode row : parkingDetailsArr) {
+        	String description = row.path("Description").asText();
+        	switch (description) {
+				case "Parking":
+					parkingDetails = row;
+					break;
+				case "Open Parking Area":
+					oprnParking = txt(row, "Provided");
+					break;
+				case "Stilt Parking Area":
+					stiltParking = txt(row, "Provided");
+					break;
+				case "Cover Parking Area":
+					coveredParking = txt(row, "Provided");
+					break;
+				case "Basement Parking Area":
+					basementParking = txt(row, "Provided");
+					break;
+				default:
+					break;
+			}
+			
+		}
+        
         n.put("parking", txt(parkingDetails, "Provided"));
         n.put("required", txt(parkingDetails, "Required"));
-        n.put("twoWheelerParking", "N/A");
-        n.put("openParkingArea", txt(parkingDetails, "Provided"));
-        n.put("coveredStiltParkingArea", "0.0");
-        n.put("basementParkingArea", "0.0");
+        n.put("twoWheelerParking", BLANK_TEXT);
+        n.put("openParkingArea", oprnParking);
+        n.put("stiltParkingArea", stiltParking);
+        n.put("coveredParkingArea", coveredParking);
+        n.put("basementParkingArea", basementParking);
         return n;
     }
 
     private ObjectNode buildBuildingHeight(ObjectMapper mapper, JsonNode frd) {
         ObjectNode n = mapper.createObjectNode();
-        JsonNode h = findBlockScrutinyFirstDetailByKey(frd, "Height of Building (excluding mumty)");
-        JsonNode bws = frd.path("sections")
-                .path("Block Wise Summary")
-                .path("Block No 1 - Proposed Details");
-        
-        String provided = txt(h, "Provided");
-        String remarks = bws.path("remarks").asText();
-        String totalHeight = remarks.split("Total Height of building is")[1]
-                                   .replace("m", "")
-                                   .trim();
-        n.put("permissibleBuildingHeight", extractNumber(txt(h, "Permissible")));
-        n.put("proposedBuildingHeight", extractNumber(provided));
+       
+        n.put("permissibleBuildingHeight", "0.0");
+        n.put("proposedBuildingHeight", txt(frd, "buildingHeight") + " m");
         n.put("permissibleTotalHeight", "----");
-        n.put("proposedTotalHeight", totalHeight);
+        n.put("proposedTotalHeight", txt(frd, "totalBuildingHeight") + " m");
         return n;
     }
 
@@ -767,7 +806,7 @@ public class EdcrApplicationService {
     private ObjectNode buildProfessionalSignature(ObjectMapper mapper, JsonNode frd, File signatureImageFile) {
         ObjectNode n = mapper.createObjectNode();
         String signatureDataUri = toDataUri(signatureImageFile);
-        n.put("uploadedSignature", StringUtils.isNotBlank(signatureDataUri) ? signatureDataUri : txt(frd, "N/A"));
+        n.put("uploadedSignature", StringUtils.isNotBlank(signatureDataUri) ? signatureDataUri : txt(frd, BLANK_TEXT));
         n.put("hasSignatureImage", StringUtils.isNotBlank(signatureDataUri));
         return n;
     }
@@ -810,8 +849,8 @@ public class EdcrApplicationService {
         }
 
         ObjectNode p1 = mapper.createObjectNode();
-        p1.put("signatoryName", "N/A");
-        p1.put("designation", "N/A");
+        p1.put("signatoryName", BLANK_TEXT);
+        p1.put("designation", BLANK_TEXT);
         arr.add(p1);
 
 //        ObjectNode p2 = mapper.createObjectNode();
@@ -823,7 +862,7 @@ public class EdcrApplicationService {
 
     private ObjectNode buildBlockWiseSummary(ObjectMapper mapper, JsonNode frd) {
         ObjectNode n = mapper.createObjectNode();
-        n.put("totalPlotArea", num(frd.path("planInformation"), "plotArea"));
+        n.put("totalPlotArea", num(frd.path("plot"), "area"));
         n.put("groundCoverage", txt(frd, "coverage") + "%");
         n.put("totalBuiltUpArea", num(frd, "totalBuiltUpArea"));
         
@@ -867,7 +906,7 @@ public class EdcrApplicationService {
 
             if ("Total-colspan-2".equalsIgnoreCase(occupancy)) {
                 n.put("floor", "Total");
-                n.put("occupancySubOccupancy", "N/A");
+                n.put("occupancySubOccupancy", BLANK_TEXT);
             } else {
                 n.put("floor", txt(r, "Floor"));
                 n.put("occupancySubOccupancy", occupancy);
@@ -952,14 +991,14 @@ public class EdcrApplicationService {
 
     private ObjectNode buildSetbacks(ObjectMapper mapper, JsonNode frd) {
         ObjectNode n = mapper.createObjectNode();
-        n.put("frontPermissible", "N/A");
-        n.put("frontProvided", "N/A");
-        n.put("rearPermissible", "N/A");
-        n.put("rearProvided", "N/A");
-        n.put("side1Permissible", "N/A");
-        n.put("side1Provided", "N/A");
-        n.put("side2Permissible", "N/A");
-        n.put("side2Provided", "N/A");
+        n.put("frontPermissible", BLANK_TEXT);
+        n.put("frontProvided", BLANK_TEXT);
+        n.put("rearPermissible", BLANK_TEXT);
+        n.put("rearProvided", BLANK_TEXT);
+        n.put("side1Permissible", BLANK_TEXT);
+        n.put("side1Provided", BLANK_TEXT);
+        n.put("side2Permissible", BLANK_TEXT);
+        n.put("side2Provided", BLANK_TEXT);
 
         JsonNode setbackRows = frd.path("sections").path("Block 1 - Scrutiny Details").path("Setback").path("detail");
         if (setbackRows.isArray()) {
@@ -985,7 +1024,7 @@ public class EdcrApplicationService {
 
     private JsonNode findCommonParkingDetail(JsonNode frd) {
         JsonNode arr = frd.path("sections").path("Common - Scrutiny Details").path("Parking").path("detail");
-        return arr.isArray() && arr.size() > 0 ? arr.get(0) : new ObjectMapper().createObjectNode();
+        return arr.isArray() && arr.size() > 0 ? arr : new ObjectMapper().createObjectNode();
     }
     
     private JsonNode findCommonFarDetail(JsonNode frd) {
@@ -1070,14 +1109,14 @@ public class EdcrApplicationService {
 //        if ("0".equals(floorNo)) return "Ground Floor";
 //        if ("1".equals(floorNo)) return "1st Floor";
 //        if ("2".equals(floorNo)) return "2nd Floor";
-        return floorNo == null || floorNo.trim().isEmpty() ? "N/A" : floorNo;
+        return floorNo == null || floorNo.trim().isEmpty() ? BLANK_TEXT : floorNo;
     }
 
     private String txt(JsonNode node, String field) {
         JsonNode v = node == null ? null : node.path(field);
-        if (v == null || v.isMissingNode() || v.isNull()) return "N/A";
+        if (v == null || v.isMissingNode() || v.isNull()) return BLANK_TEXT;
         String out = v.asText("").trim();
-        return out.isEmpty() ? "N/A" : out;
+        return out.isEmpty() ? BLANK_TEXT : out;
     }
 
     private double num(JsonNode node, String field) {
@@ -1106,7 +1145,7 @@ public class EdcrApplicationService {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> extractFinalReportData(Plan pl) {
+    private Map<String, Object> extractFinalReportData(Plan pl, EdcrApplication dcrApplication) {
         if (pl == null) return new java.util.HashMap<String, Object>();
         try {
             java.lang.reflect.Method getter = pl.getClass().getMethod("getFinalReportData");
@@ -1117,7 +1156,11 @@ public class EdcrApplicationService {
         } catch (Exception ex) {
             LOG.warn("Unable to read finalReportData from Plan. Using fallback fields.", ex);
         }
-
+        
+        Map<String, Object> model = planReportServiceV2.buildReportModelV2(pl, dcrApplication);
+        if(!CollectionUtils.isEmpty(model))
+        	return model;
+        
         Map<String, Object> fallback = new java.util.HashMap<String, Object>();
         Map<String, Object> planInfo = new java.util.HashMap<String, Object>();
         if (pl.getPlanInformation() != null) {
@@ -1144,9 +1187,9 @@ public class EdcrApplicationService {
 
 	private void updateFileNew(Plan pl, EdcrApplication edcrApplication, String fileNumber, String examinedBy,
 			String approvedSanctionedBy, String approvalSanctionDate, String validTill, String signatoryName,
-			String designation, String tenantId) {
+			String designation, String tenantId, String zone) {
 		JsonNode patchFields = buildLateFieldPatch(fileNumber, examinedBy, approvedSanctionedBy, approvalSanctionDate,
-				validTill, signatoryName, designation);
+				validTill, signatoryName, designation, zone);
 		updateFileV4(pl, edcrApplication, patchFields, tenantId);
 	}
     
@@ -1251,7 +1294,7 @@ public class EdcrApplicationService {
 
 			File signatureFile = fetchSignatureFile(pl);
 
-			JsonNode additionalDetails = buildJsonNode(pl, signatureFile, patchFields);
+			JsonNode additionalDetails = buildJsonNode(pl, signatureFile, patchFields, edcrApplication);
 
 			tempPdf = pdfOverlayTemplateService.impose(tempPdf, tempPdf.getAbsolutePath(), additionalDetails,
 					EXPAND_RIGHT, EXPAND_BOTTOM, GAP_DRAWING_TO_TABLES, GAP_TOP);
@@ -1381,7 +1424,7 @@ public class EdcrApplicationService {
                 uploadedDiagramFile = fileStoreService.fetch(signatureFileStoreId, "", "pb");
             }
 
-            additionalDetails = buildJsonNode(pl, uploadedDiagramFile, patchFields);
+            additionalDetails = buildJsonNode(pl, uploadedDiagramFile, patchFields,edcrApplication);
 
             // Overlay the information onto the DXF-converted PDF using template renderer
             tempPdf = pdfOverlayTemplateService.impose(
@@ -1862,7 +1905,7 @@ public class EdcrApplicationService {
     
 	public FileStoreMapper updateDXFOutput(String fileNo, String examinedBy, String approvedBy, String approvedDate,
 			String validDate, String edcrNo, Boolean isSelfCertification, String eSign, String eSignName,
-			String tenantId) throws IOException {
+			String tenantId, String zone) throws IOException {
 
 		if (StringUtils.isBlank(edcrNo)) {
 			throw new IllegalArgumentException("EDCR Number is mandatory.");
@@ -1923,7 +1966,7 @@ public class EdcrApplicationService {
 		edcrApplication.setSavedDxfFile(dxfFile);
 
 		updateFileNew(pl, edcrApplication, fileNo, examinedBy, approvedBy, approvedDate, validDate, eSignName, eSign,
-				tenantId);
+				tenantId, zone);
 
 		FileStoreMapper mapper = appDetail.getScrutinizedDxfFileId();
 

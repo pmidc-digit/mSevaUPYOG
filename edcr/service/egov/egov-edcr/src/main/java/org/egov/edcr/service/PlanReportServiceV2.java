@@ -335,7 +335,7 @@ public class PlanReportServiceV2 {
         model.put("planInformation",    plan.getPlanInformation());
         model.put("plot",               plan.getPlot());
         model.put("plotBndryArea",
-                plan.getPlot() != null ? plan.getPlot().getPlotBndryArea() : BigDecimal.ZERO);
+                plan.getPlot() != null ? plan.getPlot().getPlotBndryArea(): BigDecimal.ZERO);
 
         // ---- serviceType (same logic as PlanReportService) ----
         Map<String, String> serviceTypeList = new ConcurrentHashMap<>();
@@ -411,12 +411,15 @@ public class PlanReportServiceV2 {
         // 5. DCR number
         if (finalReportStatus) {
             String dcrApplicationNumber = "";
-            if (ApplicationType.OCCUPANCY_CERTIFICATE.equals(dcrApplication.getApplicationType()))
-                dcrApplicationNumber = ocPlanScrutinyNumberGenerator.generateEdcrApplicationNumber();
-            else
-                dcrApplicationNumber = dcrApplicationNumberGenerator.generateEdcrApplicationNumber(dcrApplication);
             EdcrApplicationDetail edcrApplicationDetail = dcrApplication.getEdcrApplicationDetails().get(0);
-            edcrApplicationDetail.setDcrNumber(dcrApplicationNumber);
+            if(StringUtils.isEmpty(edcrApplicationDetail.getDcrNumber())) {
+            	if (ApplicationType.OCCUPANCY_CERTIFICATE.equals(dcrApplication.getApplicationType()))
+                    dcrApplicationNumber = ocPlanScrutinyNumberGenerator.generateEdcrApplicationNumber();
+                else
+                    dcrApplicationNumber = dcrApplicationNumberGenerator.generateEdcrApplicationNumber(dcrApplication);
+                edcrApplicationDetail.setDcrNumber(dcrApplicationNumber);
+            }
+            dcrApplicationNumber = edcrApplicationDetail.getDcrNumber();
             if (StringUtils.isEmpty(dcrApplicationNumber)) dcrApplicationNumber = "NA";
             model.put("dcrNo", dcrApplicationNumber);
 

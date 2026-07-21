@@ -55,7 +55,7 @@ public class WSCalculatorQueryBuilder {
 	
 	private static final String getDemandId = "SELECT DISTINCT d.id AS demandId, d.status AS Status, dd.collectionamount as amountCollected FROM egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
 
-	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode from egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
+	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode, d.ispaymentcompleted from egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
 	private static final String connectionNoListQueryUpdate = "UPDATE egbs_demand_v1 set ";
 	
 	private static final String connectionNoListQuerybill = "UPDATE egbs_bill_v1 " +
@@ -863,7 +863,8 @@ StringBuilder query = new StringBuilder(connectionNoListQueryCancel);
 		query.append(" d.status = 'ACTIVE' ");
 		
 		addClauseIfRequired(preparedStatement, query);
-		query.append(" d.ispaymentcompleted = 'false' ");
+//		query.append(" d.ispaymentcompleted = 'false' ");
+		query.append(" (d.ispaymentcompleted = 'false' OR (d.ispaymentcompleted = 'true' AND dd.taxamount = dd.collectionamount and dd.taxamount = '0')) ");
 				
 		return query.toString();
 	}
@@ -1049,7 +1050,14 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 	public String searchBillGenerationSchedulerQuery(BillGenerationSearchCriteria criteria,
 			List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(billGenerationSchedulerSearchQuery);
-		query.append("egws inner join eg_bndry_mohalla egbm on egws.locality = egbm.localitycode ");
+		if (StringUtils.isEmpty(criteria.getGroup())) {
+			query.append("egws inner join eg_bndry_mohalla egbm on egws.locality = egbm.localitycode ");
+		}else {
+			query.append(" egws ");
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" egws.groups = ? ");
+	        preparedStatement.add(criteria.getGroup());
+		}
 		
 		if (!StringUtils.isEmpty(criteria.getTenantId())) {
 	        addClauseIfRequired(preparedStatement, query);

@@ -405,7 +405,7 @@ public class RestEdcrApplicationController {
     @ResponseBody
     public ResponseEntity<?> scrutinyDetails(@ModelAttribute EdcrRequest edcrRequest,
             @RequestBody @Valid RequestInfoWrapper requestInfoWrapper) {
-        ErrorDetail edcReqRes = edcrValidator.validate(edcrRequest);
+        ErrorDetail edcReqRes = edcrValidator.validate2(edcrRequest);
         if (edcReqRes != null && StringUtils.isNotBlank(edcReqRes.getErrorMessage()))
             return new ResponseEntity<>(edcReqRes, HttpStatus.BAD_REQUEST);
         ErrorDetail edcRes = edcrValidator.validate(requestInfoWrapper);
@@ -718,6 +718,7 @@ public class RestEdcrApplicationController {
             String approvedDate = getJsonValue(bpaObject, "$.BPA[0].approvalDate");
             String validDate = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.validityDate");
             String edcrNo = getJsonValue(bpaObject, "$.BPA[0].edcrNumber");
+            String zone = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.zonenumber");
             Boolean isSelfCertification = JsonPath.read(
                     bpaObject,
                     "$.BPA[0].additionalDetails.isSelfCertification"
@@ -750,7 +751,8 @@ public class RestEdcrApplicationController {
                     isSelfCertification,
                     eSign,
                     eSignName,
-                    tenantId
+                    tenantId,
+                    zone
             );
 
             response.put("success", true);
@@ -792,9 +794,12 @@ public class RestEdcrApplicationController {
 	public static String formatEpochDate(String epochMillis) {
 
     	    if (epochMillis == null) {
-    	        return "";
+    	        return "-";
     	    }
     	    Long date = Long.parseLong(epochMillis);
+    	    if(date == 0) {
+		        return "-";
+		    }
     	    try {
     	        Date date1 = new Date(date);
     	        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMMM-yyyy");

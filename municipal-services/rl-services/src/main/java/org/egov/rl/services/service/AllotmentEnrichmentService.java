@@ -1,5 +1,7 @@
 package org.egov.rl.services.service;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -8,6 +10,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.services.config.RentLeaseConfiguration;
 import org.egov.rl.services.models.Address;
@@ -17,6 +23,8 @@ import org.egov.rl.services.models.AllotmentRequest;
 import org.egov.rl.services.models.AuditDetails;
 import org.egov.rl.services.models.Document;
 import org.egov.rl.services.models.OwnerInfo;
+import org.egov.rl.services.models.RentRevision;
+import org.egov.rl.services.models.RLProperty;
 import org.egov.rl.services.models.enums.Status;
 import org.egov.rl.services.util.RentLeaseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +46,12 @@ public class AllotmentEnrichmentService {
 	@Autowired
 	private AllotmentService allotmentService;
 
+	@Autowired
+	private BoundaryService boundaryService;
+
+	@Autowired
+	private ObjectMapper mapper;
+
 	/**
 	 * Assigns UUIDs to all id fields and also assigns acknowledgement-number and
 	 * assessment-number generated from id-gen
@@ -56,8 +70,58 @@ public class AllotmentEnrichmentService {
 		if(allotmentRequest.getAllotment().get(0).getPreviousApplicationNumber()==null) {
 		 setRegistrationNumber(allotmentRequest);
 		}
+		
+		enrichTaxApplicability(requestInfo, allotmentDetails);
+		enrichAdditionalDetails(allotmentDetails);
+		enrichRentRevision(allotmentRequest, auditDetails);
 	}
 
+
+
+	private void enrichTaxApplicability(RequestInfo requestInfo, AllotmentDetails allotmentDetails) {
+		try {
+			ArrayNode taxRates = propertyutil.fetchTaxRatesFromMdms(requestInfo, allotmentDetails.getTenantId());
+			if (taxRates != null) {
+				for (JsonNode taxRate : taxRates) {
+					String taxType = taxRate.path("taxType").asText();
+					boolean isActive = taxRate.path("isActive").asBoolean(false);
+					if (isActive) {
+						if ("RL_CGST_FEE".equals(taxType) || "RL_SGST_FEE".equals(taxType)) {
+							allotmentDetails.setGSTApplicable(true);
+						}
+						if ("RL_COWCESS_FEE".equals(taxType)) {
+							allotmentDetails.setCowCessApplicable(true);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("Error enriching tax applicability from MDMS: " + e.getMessage());
+		}
+	}
+
+	private void enrichAdditionalDetails(AllotmentDetails allotmentDetails) {
+		ObjectNode additionalDetailsNode;
+		if (allotmentDetails.getAdditionalDetails() != null && allotmentDetails.getAdditionalDetails().isObject()) {
+			additionalDetailsNode = (com.fasterxml.jackson.databind.node.ObjectNode) allotmentDetails.getAdditionalDetails();
+		} else {
+			additionalDetailsNode = mapper.createObjectNode();
+		}
+		
+		if (additionalDetailsNode.has("propertyDetails") && additionalDetailsNode.get("propertyDetails").isArray()) {
+			ArrayNode propertyDetailsArray = (ArrayNode) additionalDetailsNode.get("propertyDetails");
+			for (JsonNode propertyNode : propertyDetailsArray) {
+				if (propertyNode.isObject()) {
+					ObjectNode propObj = (ObjectNode) propertyNode;
+					if (!propObj.has("propertyType") || propObj.get("propertyType").isNull() || propObj.get("propertyType").asText().isEmpty()) {
+						propObj.put("propertyType", "Commercial");
+					}
+				}
+			}
+		}
+		
+		allotmentDetails.setAdditionalDetails(additionalDetailsNode);
+	}
 
 	/**
 	 * Assigns UUID for new fields that are added and sets propertyDetail and
@@ -244,5 +308,106 @@ public class AllotmentEnrichmentService {
 				return ownerInfo;
 			}).collect(Collectors.toList());
 		}).collect(Collectors.toList());
+	}
+
+	private void enrichRentRevision(AllotmentRequest allotmentRequest, AuditDetails auditDetails) {
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+		com.fasterxml.jackson.databind.JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+		
+		String baseRentStr = null;
+		if (additionalDetails != null) {
+			JsonNode propDetails = additionalDetails.path("propertyDetails");
+			if (propDetails.isArray() && propDetails.size() > 0) {
+				JsonNode propertyNode = propDetails.get(0);
+				if (propertyNode.has("baseRent")) {
+					baseRentStr = propertyNode.get("baseRent").asText();
+				}
+			}
+		}
+
+		if (baseRentStr == null) {
+			try {
+				List<RLProperty> properties = boundaryService.allPropertyList(allotmentRequest);
+				if (!CollectionUtils.isEmpty(properties)) {
+					baseRentStr = properties.get(0).getBaseRent();
+				}
+			} catch (Exception e) {
+				System.err.println("Error fetching property for rent revision enrichment: " + e.getMessage());
+			}
+		}
+
+		if (baseRentStr == null) {
+			return;
+		}
+
+		BigDecimal baseRent = new BigDecimal(baseRentStr);
+
+		Long revisionDate = null;
+		int incrementPeriodMonths = 12;
+		BigDecimal incrementPercentage = null;
+
+		if (additionalDetails != null) {
+			JsonNode propDetails = additionalDetails.path("propertyDetails");
+			JsonNode targetNode = (propDetails.isArray() && propDetails.size() > 0) ? propDetails.get(0) : additionalDetails;
+
+			if (additionalDetails.has("lastrevisiondate")) {
+				revisionDate = additionalDetails.get("lastrevisiondate").asLong();
+			} else if (additionalDetails.has("lastRevisionDate")) {
+				revisionDate = additionalDetails.get("lastRevisionDate").asLong();
+			} else if (additionalDetails.has("lastRentRevisedDate")) {
+				revisionDate = additionalDetails.get("lastRentRevisedDate").asLong();
+			} else if (targetNode.has("lastrevisiondate")) {
+				revisionDate = targetNode.get("lastrevisiondate").asLong();
+			} else if (targetNode.has("lastRevisionDate")) {
+				revisionDate = targetNode.get("lastRevisionDate").asLong();
+			} else if (targetNode.has("lastRentRevisedDate")) {
+				revisionDate = targetNode.get("lastRentRevisedDate").asLong();
+			}
+
+			if (additionalDetails.has("incrementPeriodMonths")) {
+				incrementPeriodMonths = additionalDetails.get("incrementPeriodMonths").asInt();
+			} else if (targetNode.has("incrementPeriodMonths")) {
+				incrementPeriodMonths = targetNode.get("incrementPeriodMonths").asInt();
+			}
+
+			if (additionalDetails.has("incrementPercentage")) {
+				incrementPercentage = new java.math.BigDecimal(additionalDetails.get("incrementPercentage").asText());
+			} else if (targetNode.has("incrementPercentage")) {
+				incrementPercentage = new java.math.BigDecimal(targetNode.path("incrementPercentage").asText());
+			}
+		}
+
+		if (revisionDate == null) {
+			revisionDate = allotmentDetails.getStartDate();
+		}
+		if (revisionDate == null) {
+			revisionDate = System.currentTimeMillis();
+		}
+
+		if (incrementPeriodMonths <= 0) {
+			incrementPeriodMonths = 12;
+		}
+
+		long nextRevisionDate = Instant.ofEpochMilli(revisionDate)
+				.atZone(java.time.ZoneId.of("Asia/Kolkata"))
+				.toLocalDate()
+				.plusMonths(incrementPeriodMonths)
+				.atStartOfDay(java.time.ZoneId.of("Asia/Kolkata"))
+				.toInstant()
+				.toEpochMilli();
+
+		RentRevision initialRevision = RentRevision.builder()
+				.id(UUID.randomUUID().toString())
+				.allotmentId(allotmentDetails.getId())
+				.revisedRent(baseRent)
+				.revisionDate(revisionDate)
+				.nextRevisionDate(nextRevisionDate)
+				.incrementPercentage(incrementPercentage)
+				.tenantId(allotmentDetails.getTenantId())
+				.active(true)
+				.auditDetails(auditDetails)
+				.build();
+
+		allotmentDetails.addRentRevisionsItem(initialRevision);
 	}
 }

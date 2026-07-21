@@ -235,7 +235,33 @@ const CreateEDCR = ({ parentRoute }) => {
                 hideSubmit={true}
                 headerBarMainStyle={{ margin: "0px", height: "35px" }}
             >
-              {`Dear Investors,\nPlease be informed that with effect from 15.05.2025, all building plan applications under the following categories will no longer be accepted on the eNaksha Portal: https://enaksha.lgpunjab.gov.in and https://mseva.lgpunjab.gov.in/\n• Industry • Hotel • Nursing Home / Hospital • Institutions\nInstead, investors are requested to submit such applications exclusively through the Punjab Bureau of Investment Promotion (PBIP) Portal: https://fasttrack.punjab.gov.in/webportal/login We request all stakeholders to kindly take note of this change and plan submissions accordingly.\nLocal Government Department, Government of Punjab.`}
+              <div className="investor-notice-container">
+                <p className="notice-salutation">Dear Investors,</p>
+                <p className="notice-body">
+                  Please be informed that with effect from 15.05.2025, all building plan applications under the following categories will no longer be accepted on the eNaksha Portal:{" "}
+                  <a href="https://enaksha.lgpunjab.gov.in" target="_blank" rel="noopener noreferrer" className="notice-link">https://enaksha.lgpunjab.gov.in</a> and{" "}
+                  <a href="https://mseva.lgpunjab.gov.in/" target="_blank" rel="noopener noreferrer" className="notice-link">https://mseva.lgpunjab.gov.in/</a>
+                </p>
+                <ul className="notice-list">
+                  <li>Industry</li>
+                  <li>Hotel</li>
+                  <li>Nursing Home / Hospital</li>
+                  <li>Institutions</li>
+                </ul>
+                <p className="notice-body">
+                  Instead, investors are requested to submit such applications exclusively through the Punjab Bureau of Investment Promotion (PBIP) Portal:
+                </p>
+                <p className="notice-body-link">
+                  <a href="https://fasttrack.punjab.gov.in/webportal/login" target="_blank" rel="noopener noreferrer" className="notice-link">https://fasttrack.punjab.gov.in/webportal/login</a>
+                </p>
+                <p className="notice-body">
+                  We request all stakeholders to kindly take note of this change and plan submissions accordingly.
+                </p>
+                <p className="notice-footer">
+                  Local Government Department,<br />
+                  Government of Punjab
+                </p>
+              </div>
             </Modal> : null}
           </Route>
         );

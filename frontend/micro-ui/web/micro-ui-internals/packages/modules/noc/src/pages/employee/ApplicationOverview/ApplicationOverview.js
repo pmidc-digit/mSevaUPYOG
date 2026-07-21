@@ -48,32 +48,32 @@ import ZoneModal from "../../../components/ZoneModal";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
 import { format } from "date-fns";
 
-const NocDocumentLink = ({ fileStoreId, tenantId }) => {
+const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
   const [url, setUrl] = useState(null);
+
   useEffect(() => {
-    (async () => {
+    const fetchUrl = async () => {
       if (fileStoreId) {
         try {
-          const res = await Digit.UploadServices.Filefetch([fileStoreId], tenantId);
-          let fileUrl = "";
-          if (res?.data?.fileStoreIds) {
-            fileUrl = res.data.fileStoreIds[0]?.url || "";
-          } else {
-            fileUrl = res?.data?.[fileStoreId] || "";
+          const result = await Digit.UploadServices.Filefetch([fileStoreId], stateCode);
+          if (result?.data?.fileStoreIds?.[0]?.url) {
+            setUrl(result.data.fileStoreIds[0].url);
           }
-          setUrl(fileUrl);
-        } catch (e) {
-          console.error(e);
+        } catch (error) {
+          console.error("Error fetching document:", error);
         }
       }
-    })();
-  }, [fileStoreId, tenantId]);
+    };
+    fetchUrl();
+  }, [fileStoreId, stateCode]);
 
-  if (!url) return <span>Loading...</span>;
+  if (!url) return <span>{t("CS_NA") || "NA"}</span>;
+
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "#F47738", fontWeight: "bold" }}>
-      View Document
-    </a>
+    <LinkButton
+      label={t("View") || "View"}
+      onClick={() => window.open(url, "_blank")}
+    />
   );
 };
 
@@ -1360,7 +1360,7 @@ const NOCEmployeeApplicationOverview = () => {
                     <Row
                       label={t("NOC_UPLOAD_DOCUMENT_LABEL")}
                       text={
-                        <NocDocumentLink fileStoreId={detail?.existingNocDocument} tenantId={Digit.ULBService.getStateId()} />
+                        <DocumentLink fileStoreId={detail?.existingNocDocument} stateCode={Digit.ULBService.getStateId()} t={t} />
                       }
                     />
                   )}

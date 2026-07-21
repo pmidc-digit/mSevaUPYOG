@@ -255,6 +255,7 @@ const EditApplication = () => {
         existingNocNumber: siteDetails?.existingNocNumber || "",
         existingNocDate: siteDetails?.existingNocDate || "",
         existingNocDocument: siteDetails?.existingNocDocument || null,
+        isNocValidated: siteDetails?.isNocValidated !== undefined ? siteDetails.isNocValidated : (siteDetails?.existingNocType === "Online" && siteDetails?.existingNocNumber ? true : false),
       };
 
       dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", updatedApplicantDetails));

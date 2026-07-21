@@ -201,6 +201,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         existingNocNumber: formData?.siteDetails?.existingNocNumber || "",
         existingNocDate: formData?.siteDetails?.existingNocDate || "",
         existingNocDocument: formData?.siteDetails?.existingNocDocument || null,
+        isNocValidated: formData?.siteDetails?.isNocValidated || false,
       },
       ownerPhotos: Array.isArray(ownerPhotos?.ownerPhotoList) ? ownerPhotos.ownerPhotoList : [],
       ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList : [],

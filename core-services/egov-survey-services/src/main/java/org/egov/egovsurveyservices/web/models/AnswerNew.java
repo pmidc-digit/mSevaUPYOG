@@ -20,6 +20,10 @@ public class AnswerNew {
     private String uuid;
     @JsonProperty("sectionUuid")
     private String sectionUuid;
+    @JsonProperty("sectionName")
+    private String sectionName;
+    @JsonProperty("sectionTitle")
+    private String sectionTitle;
     @JsonProperty("sectionWeightage")
     private BigDecimal sectionWeightage;
     @JsonProperty("questionUuid")

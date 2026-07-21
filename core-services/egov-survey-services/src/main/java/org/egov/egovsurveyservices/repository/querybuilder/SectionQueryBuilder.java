@@ -8,11 +8,11 @@ public class SectionQueryBuilder {
 
 
     public String getSectionBySurveyUuid() {
-        return "SELECT uuid, weightage FROM eg_ss_survey_section WHERE surveyuuid = ?";
+        return "SELECT uuid, title, weightage FROM eg_ss_survey_section WHERE surveyuuid = ?";
     }
 
     public String getSectionBySectionUuid(){
-        return "SELECT uuid, weightage FROM eg_ss_survey_section WHERE surveyuuid = ?";
+        return "SELECT uuid, title, weightage FROM eg_ss_survey_section WHERE surveyuuid = ?";
     }
 
 }

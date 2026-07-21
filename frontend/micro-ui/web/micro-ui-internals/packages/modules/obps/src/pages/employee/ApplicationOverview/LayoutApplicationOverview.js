@@ -407,8 +407,8 @@ const LayoutEmployeeApplicationOverview = () => {
       const Property = applicationDetails?.Layout?.[0];
       const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
-      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t);
-      await Digit.Utils.pdf.generateFormatted(acknowledgementData);
+      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t, combinedPayments);
+      await Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
     } catch (err) {
       console.error(err);
     } finally {

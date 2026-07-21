@@ -211,6 +211,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             existingNocNumber: nocFormData?.siteDetails?.existingNocNumber || "",
             existingNocDate: nocFormData?.siteDetails?.existingNocDate || "",
             existingNocDocument: nocFormData?.siteDetails?.existingNocDocument || null,
+            isNocValidated: nocFormData?.siteDetails?.isNocValidated || false,
           },
           coordinates: { ...coordinates },
           ownerPhotos: Array.isArray(ownerPhotos?.ownerPhotoList) ? ownerPhotos.ownerPhotoList : [],

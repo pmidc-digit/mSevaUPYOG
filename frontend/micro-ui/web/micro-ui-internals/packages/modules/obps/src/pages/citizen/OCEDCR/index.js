@@ -65,7 +65,10 @@ const CreateOCEDCR = ({ parentRoute }) => {
     const cluApprove = data?.ScrutinyDetails?.planDetail?.edcrRequest?.cluApprove;
     const purchasableFar = data?.ScrutinyDetails?.planDetail?.edcrRequest?.purchasableFar;
     const schemeArea = data?.ScrutinyDetails?.planDetail?.edcrRequest?.schemeArea;
-    const coreArea = data?.ScrutinyDetails?.planDetail?.edcrRequest?.coreArea;    
+    const coreArea = data?.ScrutinyDetails?.planDetail?.edcrRequest?.coreArea;
+    const additionalDetails = {      
+      source: "OBPAS"
+    };  
 
     edcrRequest = { ...edcrRequest, transactionNumber };
     edcrRequest = { ...edcrRequest, edcrNumber };
@@ -86,6 +89,7 @@ const CreateOCEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, cluApprove };
     edcrRequest = {...edcrRequest, purchasableFar};
     edcrRequest = { ...edcrRequest, coreArea };
+    edcrRequest = { ...edcrRequest, additionalDetails };
 
     console.log("OC_EDCR_Data", data, edcrRequest);
 

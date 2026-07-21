@@ -71,6 +71,7 @@ const content = printRef.current.innerHTML;
 
     //  onConcent(e)
     }
+    const [showToast, setShowToast] = useState(true);
     const setModal=()=>{
       // Navigate back to property details after transfer ownership completion
       const isEmployeeRoute = location.pathname.includes("/employee/");
@@ -80,10 +81,10 @@ const content = printRef.current.innerHTML;
       history.push(transferOwnershipRoute, { property });
     }
     const closeModalTwo =() =>{
-      // Navigate back when closing the modal
+      // Hide the modal first, then navigate back
+      setShowToast(false);
       history.goBack();
     }
-    const [showToast, setShowToast] = useState(true);
     
 
 

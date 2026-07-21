@@ -661,22 +661,54 @@ useEffect(() => {
               {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (
                 <div style={twoColRow}>
                   <LabelFieldPair style={colItem}>
-                    <CardLabel className="card-label-smaller">{t("Ownership Percentage")}</CardLabel>
+                    <CardLabel className="card-label-smaller">{t("Ownership Percentage")}*</CardLabel>
                     <Controller
                       control={control}
                       name={`owners.${index}.ownershipPercentage`}
                       defaultValue={item?.ownershipPercentage || ""}
                       rules={{
+                        required: "Ownership percentage is required",
                         validate: {
                           maxHundred: (v) => !v || Number(v) <= 100 || "Ownership percentage cannot exceed 100%",
                           minZero: (v) => !v || Number(v) >= 0 || "Ownership percentage cannot be negative",
                           isNumber: (v) => !v || !isNaN(Number(v)) || "Must be a valid number",
+                          checkPercentage: (v) => {
+                            const ownershipType = getValues("ownerShip")?.code;
+                            if (ownershipType === "SINGLEOWNER") {
+                              return Number(v) === 100 || "Ownership percentage for single owner must be 100%";
+                            }
+                            if (ownershipType === "INDIVIDUAL.MULTIPLEOWNERS") {
+                              const allOwners = getValues({ nest: true })?.owners || [];
+                              const total = allOwners.reduce((sum, owner) => {
+                                const val = String(owner.ownershipPercentage || "").trim();
+                                const num = val ? Number(val) : 0;
+                                return sum + (isNaN(num) ? 0 : num);
+                              }, 0);
+                              console.log("PT checkPercentage Debug:", {
+                                allOwners,
+                                total,
+                                v,
+                                isValid: total === 100
+                              });
+                              return total === 100 || `Sum of all ownership percentages must be 100%`;
+                            }
+                            return true;
+                          }
                         },
                       }}
                       render={(props) => (
                         <TextInput
                           value={props.value}
-                          onChange={(e) => props.onChange(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "");
+                            props.onChange(val);
+                            setTimeout(() => {
+                              const allOwners = getValues({ nest: true })?.owners || [];
+                              allOwners.forEach((_, idx) => {
+                                trigger(`owners.${idx}.ownershipPercentage`);
+                              });
+                            }, 0);
+                          }}
                           disable={isEditMode}
                           placeholder="0-100"
                         />

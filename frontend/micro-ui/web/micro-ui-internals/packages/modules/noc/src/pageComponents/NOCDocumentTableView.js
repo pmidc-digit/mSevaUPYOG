@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useMemo} from 'react'
-import { Table, StatusTable, LinkButton } from '@mseva/digit-ui-react-components'
+import { Table, StatusTable, LinkButton, Loader } from '@mseva/digit-ui-react-components'
 import { useTranslation } from "react-i18next";
 
 const NOCDocumentTableView = ({documents}) => {
@@ -51,7 +51,7 @@ const NOCDocumentTableView = ({documents}) => {
       documentType: doc?.documentType || "",
       filestoreId: doc?.filestoreId || "",
       documentUid: doc?.documentUid || "",
-      documentAttachment: doc?.documentAttachment || "",
+      documentAttachment: doc?.documentAttachment || doc?.filestoreId || doc?.documentUid || "",
       order: doc?.order || null
     }))
    }
@@ -91,6 +91,8 @@ const NOCDocumentTableView = ({documents}) => {
       fileUrl: doc?.url,
     }));
   }, [mappedDocuments]);
+
+  if(urlsListLoading) return <Loader />
 
   return (
     <div className='checklist-document-table-wrapper'>

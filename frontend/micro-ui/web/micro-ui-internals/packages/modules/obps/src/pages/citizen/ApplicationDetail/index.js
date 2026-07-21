@@ -13,8 +13,8 @@ const DownloadCertificateButton = ({ applicationNumber }) => {
   const tenantId = localStorage?.getItem("CITIZEN.CITY");
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
-  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails("pb.punjab", { applicationNumber, tenantId:"pb.punjab" }, {});
-  console.log("applicationDetails",applicationDetails)
+  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails("pb.punjab", { applicationNumber, tenantId: "pb.punjab" }, {});
+  console.log("applicationDetails", applicationDetails);
 
   const handleDownloadPdf = async () => {
     try {
@@ -49,32 +49,29 @@ const ApplicationDetails = () => {
   const params = { applicationNumber: appNumber };
   const stateCode = Digit.ULBService.getStateId();
   const isMobile = window.Digit.Utils.browser.isMobile();
-   const [displayMenu, setDisplayMenu] = useState(false);
-   const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const [displayMenu, setDisplayMenu] = useState(false);
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   // const { data: LicenseData, isLoading } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
   // let License = LicenseData?.Licenses?.[0];
   const { data: mdmsRes } = Digit.Hooks.obps.useMDMS(stateCode, "StakeholderRegistraition", "TradeTypetoRoleMapping");
-  
+
   const { data: LicenseDataDynamic, isLoading: isLoadingDynamic } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
-const { data: LicenseDataPunjab, isLoading: isLoadingPunjab } = Digit.Hooks.obps.useBPAREGSearch("pb.punjab", {}, params);
+  const { data: LicenseDataPunjab, isLoading: isLoadingPunjab } = Digit.Hooks.obps.useBPAREGSearch("pb.punjab", {}, params);
 
-//  Merge the license data from both tenants
-const LicenseData = {
-  Licenses: [
-    ...(LicenseDataDynamic?.Licenses || []),
-    ...(LicenseDataPunjab?.Licenses || [])
-  ]
-};
+  //  Merge the license data from both tenants
+  const LicenseData = {
+    Licenses: [...(LicenseDataDynamic?.Licenses || []), ...(LicenseDataPunjab?.Licenses || [])],
+  };
 
-let License = LicenseData?.Licenses?.[0];
+  let License = LicenseData?.Licenses?.[0];
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-    { tenantId:`${License?.tradeLicenseDetail?.additionalDetail?.Ulb}`, businessService: "BPAREG", consumerCodes: id, isEmployee: false },
+    { tenantId: `${License?.tradeLicenseDetail?.additionalDetail?.Ulb}`, businessService: "BPAREG", consumerCodes: id, isEmployee: false },
     {}
   );
 
-  console.log('reciept_data', reciept_data)
+  console.log("reciept_data", reciept_data);
   const handleDownloadPdf = async () => {
     try {
       const Property = applicationDetail;
@@ -95,27 +92,34 @@ let License = LicenseData?.Licenses?.[0];
   };
 
   const ulbType = tenants?.find((tenant) => tenant.code === tenantId)?.city?.ulbType;
-  console.log('ulbType', ulbType)
+  console.log("ulbType", ulbType);
   console.log(reciept_data, "TOTAL AMOUNT");
-    // Call useBPAREGSearch twice - once for dynamic tenant, once for pb.punjab
+  // Call useBPAREGSearch twice - once for dynamic tenant, once for pb.punjab
 
+  const { data: applicationDetailDynamic, isLoading: applicationDetailLoadingDynamic } = Digit.Hooks.obps.useLicenseDetails(
+    tenantId,
+    { applicationNumber: id, tenantId },
+    {}
+  );
+  const { data: applicationDetailPunjab, isLoading: applicationDetailLoadingPunjab } = Digit.Hooks.obps.useLicenseDetails(
+    "pb.punjab",
+    { applicationNumber: id, tenantId: "pb.punjab" },
+    {}
+  );
 
-const { data: applicationDetailDynamic, isLoading: applicationDetailLoadingDynamic } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: id, tenantId }, {});
-const { data: applicationDetailPunjab, isLoading: applicationDetailLoadingPunjab } = Digit.Hooks.obps.useLicenseDetails("pb.punjab", { applicationNumber: id, tenantId: "pb.punjab" }, {});
+  const applicationDetail = applicationDetailDynamic || applicationDetailPunjab;
+  const applicationDetailLoading = applicationDetailLoadingDynamic || applicationDetailLoadingPunjab;
 
-const applicationDetail = applicationDetailDynamic || applicationDetailPunjab;
-const applicationDetailLoading = applicationDetailLoadingDynamic || applicationDetailLoadingPunjab;
+  console.log("applicationDetails 2", LicenseData);
 
-console.log("applicationDetails 2",LicenseData);
-
-//  Update loading state to check both
-const isLoading = isLoadingDynamic || isLoadingPunjab;
+  //  Update loading state to check both
+  const isLoading = isLoadingDynamic || isLoadingPunjab;
 
   const [viewTimeline, setViewTimeline] = useState(false);
   const menuRef = useRef();
-  const applicationDetails= LicenseData
+  const applicationDetails = LicenseData;
   console.log(applicationDetails, "UUU");
- const history=useHistory();
+  const history = useHistory();
   let user = Digit.UserService.getUser();
 
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
@@ -126,15 +130,13 @@ const isLoading = isLoadingDynamic || isLoadingPunjab;
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
-const qualificationType =
-  LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.qualificationType
+  const qualificationType = LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.qualificationType;
 
-  console.log("LicenseData",License);
+  console.log("LicenseData", License);
 
-const isArchitect = qualificationType === "B-Arch";
+  const isArchitect = qualificationType === "B-Arch";
 
-  
-// useBPAREGApplicationActions
+  // useBPAREGApplicationActions
   useEffect(() => {
     if (License?.tradeLicenseDetail?.applicationDocuments?.length) {
       const fileStoresIds = License?.tradeLicenseDetail?.applicationDocuments?.map((document) => document?.fileStoreId);
@@ -142,11 +144,9 @@ const isArchitect = qualificationType === "B-Arch";
     }
   }, [License]);
 
+  const licenseType = t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`);
 
-const licenseType = t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`);
-
-
-console.log("licenseType:", licenseType);
+  console.log("licenseType:", licenseType);
 
   useEffect(() => {
     if (License) {
@@ -160,10 +160,11 @@ console.log("licenseType:", licenseType);
                 reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG",
                 License?.applicationNumber,
                 stateCode,
-                reciept_data?.Payments,licenseType,
+                reciept_data?.Payments,
+                licenseType,
                 ulbType
               ),
-          }
+          },
         ]);
       }
     }
@@ -176,23 +177,20 @@ console.log("licenseType:", licenseType);
           ...(prev || []).filter((item) => item.label !== t("CS_COMMON_DOWNLOAD_Certificate")),
           {
             label: t("CS_COMMON_DOWNLOAD_Certificate"),
-            onClick: () =>
-              handleDownloadPdf(),
+            onClick: () => handleDownloadPdf(),
           },
         ]);
-      }else{
+      } else {
         setDowloadOptions((prev) => [
           ...(prev || [])?.filter((item) => item.label !== t("NOC_APPLICATION_FORM")),
           {
             label: t("NOC_APPLICATION_FORM"),
-            onClick: () =>
-              handleDownloadPdf(),
+            onClick: () => handleDownloadPdf(),
           },
         ]);
       }
     }
   }, [applicationDetailLoadingDynamic, applicationDetailLoadingPunjab]);
-
 
   const handleViewTimeline = () => {
     setViewTimeline(true);
@@ -209,7 +207,7 @@ console.log("licenseType:", licenseType);
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     color: "#333",
     paddingBottom: "5rem",
-  }
+  };
 
   const sectionStyle = {
     backgroundColor: "#ffffff",
@@ -217,7 +215,7 @@ console.log("licenseType:", licenseType);
     borderRadius: "8px",
     marginBottom: "1.5rem",
     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-  }
+  };
 
   const headingStyle = {
     fontSize: isMobile ? "1.2rem" : "1.5rem",
@@ -226,7 +224,7 @@ console.log("licenseType:", licenseType);
     color: "#2e4a66",
     marginTop: isMobile ? "1.2rem" : "2rem",
     marginBottom: "1rem",
-  }
+  };
 
   const labelFieldPairStyle = {
     display: "flex",
@@ -237,35 +235,38 @@ console.log("licenseType:", licenseType);
     padding: "0.5rem 0",
     color: "#333",
     gap: isMobile ? "0.25rem" : "0",
-  }
+  };
 
-  const boldLabelStyle = { fontWeight: "bold", color: "#555" }
+  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
   const renderLabel = (label, value) => (
     <div style={labelFieldPairStyle}>
       <CardLabel style={boldLabelStyle}>{label}</CardLabel>
       <div style={{ wordBreak: "break-word" }}>{value || t("CS_NA")}</div>
     </div>
-  )
+  );
 
-const formatDate = (timestamp) => {
-  if (!timestamp) return "";
-  const date = new Date(Number(timestamp));
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(Number(timestamp));
 
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
 
-  return `${day}/${month}/${year}`;
-};
+    return `${day}/${month}/${year}`;
+  };
 
-const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? License?.tradeLicenseDetail?.owners?.[0]?.dob : formatDate(License?.tradeLicenseDetail?.owners?.[0]?.dob)
+  const dob =
+    typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string"
+      ? License?.tradeLicenseDetail?.owners?.[0]?.dob
+      : formatDate(License?.tradeLicenseDetail?.owners?.[0]?.dob);
 
   const documentsContainerStyle = {
     display: "flex",
     flexWrap: "wrap",
     gap: "1rem",
-  }
+  };
 
   const documentCardStyle = {
     flex: isMobile ? "1 1 100%" : "1 1 calc(50% - 1rem)",
@@ -283,11 +284,11 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
     justifyContent: "center",
     cursor: "pointer",
     transition: "transform 0.2s, box-shadow 0.2s",
-  }
+  };
 
   const getFormattedULBName = (ulbCode = "") => {
     if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");
-    if(typeof ulbCode !== "string") return ""
+    if (typeof ulbCode !== "string") return "";
 
     const parts = ulbCode.split(".");
     if (parts.length < 2) return ulbCode?.charAt(0)?.toUpperCase() + ulbCode?.slice(1);
@@ -298,12 +299,102 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
 
   const ulbName = getFormattedULBName(License?.tradeLicenseDetail?.additionalDetail?.Ulb);
 
+  const getBPAREGFormDataForUpgrade = (data) => {
+    let license = data;
+    const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
+    const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
+    const distrcit = license?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
+    const permanentAddress = address;
+    const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name.trim()?.split(/\s+/);
+
+    let name = "";
+    let middleName = "";
+    let lastName = "";
+
+    if (nameParts.length === 1) {
+      // Single name
+      name = nameParts[0];
+    } else if (nameParts.length === 2) {
+      // Two names → first is name, second is lastName
+      name = nameParts[0];
+      lastName = nameParts[1];
+    } else if (nameParts.length > 2) {
+      // More than two names → first = name, last = lastName, middle = rest
+      name = nameParts[0];
+      lastName = nameParts[nameParts.length - 1];
+      middleName = nameParts.slice(1, -1).join(" ");
+    }
+
+    let intermediateData = {
+      Correspondenceaddress:
+        license?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress ||
+        `${license?.tradeLicenseDetail?.address?.doorNo ? `${license?.tradeLicenseDetail?.address?.doorNo}, ` : ""} ${
+          license?.tradeLicenseDetail?.address?.street ? `${license?.tradeLicenseDetail?.address?.street}, ` : ""
+        }${license?.tradeLicenseDetail?.address?.landmark ? `${license?.tradeLicenseDetail?.address?.landmark}, ` : ""}${t(
+          license?.tradeLicenseDetail?.address?.locality.code
+        )}, ${t(license?.tradeLicenseDetail?.address?.city ? license?.tradeLicenseDetail?.address?.city.code : "")},${
+          t(license?.tradeLicenseDetail?.address?.pincode) ? `${license.tradeLicenseDetail?.address?.pincode}` : " "
+        }`,
+      formData: {
+        LicneseDetails: {
+          PanNumber: license?.tradeLicenseDetail?.owners?.[0]?.pan,
+          PermanentAddress: permanentAddress,
+
+          email: license?.tradeLicenseDetail?.owners?.[0]?.emailId,
+          gender: {
+            code: license?.tradeLicenseDetail?.owners?.[0]?.gender,
+            i18nKey: `COMMON_GENDER_${license?.tradeLicenseDetail?.owners?.[0]?.gender}`,
+            value: license?.tradeLicenseDetail?.owners?.[0]?.gender,
+          },
+          mobileNumber: license?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
+          name: name,
+          lastName: lastName,
+          middleName: middleName,
+          SelectedState: state || "",
+          SelectedDistrict: distrcit || "",
+          Pincode: license?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || "",
+          Ulb: license?.tradeLicenseDetail?.additionalDetail?.Ulb || [],
+          dateOfBirth: data?.tradeLicenseDetail?.owners?.[0]?.dob
+            ? Digit.Utils.date.getDate(data?.tradeLicenseDetail?.owners?.[0]?.dob) || null
+            : null,
+          SelectedCorrespondentState: license?.tradeLicenseDetail?.additionalDetail?.correspondenceState,
+          SelectedCorrespondentDistrict: license?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict,
+          PincodeCorrespondent: license?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode,
+        },
+        LicneseType: {
+          LicenseType: {
+            i18nKey: `TRADELICENSE_TRADETYPE_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`,
+            role: [`BPA_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`],
+            tradeType: license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
+          },
+          ArchitectNo: license?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || null,
+          selfCertification: license?.tradeLicenseDetail?.additionalDetail?.isSelfCertificationRequired || false,
+          qualificationType: license?.tradeLicenseDetail?.additionalDetail?.qualificationType || null,
+        },
+      },
+      isAddressSame:
+        license?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress === license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress ? true : false,
+      result: {
+        Licenses: [{ ...data }],
+      },
+      initiationFlow: true,
+      editableFields: {
+        "provide-license-type": true,
+        "licensee-details": false,
+        "Permanent-address": true,
+        "professional-document-details": true,
+        isCreate: false,
+        applicationType: "UPGRADE",
+      },
+    };
+    sessionStorage.setItem("BPAREGintermediateValue", JSON.stringify(intermediateData));
+    history.push("/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required");
+  };
+
   return (
     <Fragment>
       <div style={pageStyle}>
         {/* Header */}
-     
-
 
         <div
           style={{
@@ -325,51 +416,54 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
                 flexDirection: isMobile ? "column" : "row",
               }}
             >
-              {(recieptDataLoading || applicationDetailLoading) ? (
+              {recieptDataLoading || applicationDetailLoading ? (
                 <Loader />
               ) : (
-                (
-                  <MultiLink
-                    style={{ position: "static" }}
-                    optionsStyle={{ position: "static" }}
-                    onHeadClick={() => setShowOptions(!showOptions)}
-                    displayOptions={showOptions}
-                    options={dowloadOptions}
-                  />
-                )
+                <MultiLink
+                  style={{ position: "static" }}
+                  optionsStyle={{ position: "static" }}
+                  onHeadClick={() => setShowOptions(!showOptions)}
+                  displayOptions={showOptions}
+                  options={dowloadOptions}
+                />
               )}
               {/* <DownloadCertificateButton applicationNumber={id} /> */}
               <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
+
+              {applicationDetail?.applicationData?.status === "APPROVED" &&
+                !applicationDetail?.applicationData?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("ARCHITECT") && (
+                  <LinkButton label={t("BPA_PROFESSIONAL_UPGRADE")} onClick={() => getBPAREGFormDataForUpgrade(License)} />
+                )}
             </div>
           </div>
 
           {(() => {
             const passportPhoto = License?.tradeLicenseDetail?.applicationDocuments?.find(
-              (doc) => doc.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO",
-            )
+              (doc) => doc.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO"
+            );
 
-            if (!passportPhoto || !documents[passportPhoto.fileStoreId]) return null
+            if (!passportPhoto || !documents[passportPhoto.fileStoreId]) return null;
 
             return (
-              <div style={{display: "flex", flexDirection:"column" , alignItems: "center", marginBottom: "1rem"}}>
-              <img
-                src={documents[passportPhoto.fileStoreId]?.split(",")[0] || "/placeholder.svg"}
-                alt="Owner Photograph"
-                style={{
-                  maxWidth: "120px",
-                  maxHeight: "120px",
-                  border: "2px solid #e0e0e0",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                  flexShrink: 0,
-                }}
-                onError={(e) => {
-                  e.target.style.display = "none"
-                }}
-              />
-              <CardLabel style={boldLabelStyle}>{License?.tradeLicenseDetail?.owners?.[0]?.name}</CardLabel>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "1rem" }}>
+                <img
+                  src={documents[passportPhoto.fileStoreId]?.split(",")[0] || "/placeholder.svg"}
+                  alt="Owner Photograph"
+                  style={{
+                    maxWidth: "120px",
+                    maxHeight: "120px",
+                    border: "2px solid #e0e0e0",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                    flexShrink: 0,
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                  }}
+                />
+                <CardLabel style={boldLabelStyle}>{License?.tradeLicenseDetail?.owners?.[0]?.name}</CardLabel>
               </div>
-            )
+            );
           })()}
         </div>
 
@@ -379,34 +473,18 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
         {/* License Details */}
         <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_LICENSE_DETAILS_LABEL")}</h2>
-          {renderLabel(
-          t("BPA_QUALIFICATION_TYPE"),
-          t(
-            License?.tradeLicenseDetail?.additionalDetail?.qualificationType
-          )
-        )}
-          {renderLabel(
-            t("BPA_LICENSE_TYPE"),
-            t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`),
-          )}
-          {License?.licenseNumber && renderLabel(t("BPA_COUNCIL_NUMBER") , License?.licenseNumber)}
+          {renderLabel(t("BPA_QUALIFICATION_TYPE"), t(License?.tradeLicenseDetail?.additionalDetail?.qualificationType))}
+          {renderLabel(t("BPA_LICENSE_TYPE"), t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`))}
+          {License?.licenseNumber && renderLabel(t("BPA_COUNCIL_NUMBER"), License?.licenseNumber)}
           {License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT") &&
-            renderLabel(
-              t("BPA_COUNCIL_OF_ARCH_NO_LABEL"),
-              License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
-            )}
+            renderLabel(t("BPA_COUNCIL_OF_ARCH_NO_LABEL"), License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo)}
           {License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("TOWNPLANNER") &&
-            renderLabel(
-              t("BPA_ASSOCIATE_OR_FELLOW_NUMBER"),
-              License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
-            )}
-             {License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT") &&
-            renderLabel(
-              t("BPA_CERTIFICATE_EXPIRY_DATE"),
-              formatDate(License?.validTo),
-            )}
-            {License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT") ? renderLabel(t("BPA_SELECTED_ULB"), t("BPA_ULB_SELECTED_MESSAGE"))
-          : renderLabel(t("BPA_SELECTED_ULB"), ulbName || "NA")}
+            renderLabel(t("BPA_ASSOCIATE_OR_FELLOW_NUMBER"), License?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo)}
+          {License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT") &&
+            renderLabel(t("BPA_CERTIFICATE_EXPIRY_DATE"), formatDate(License?.validTo))}
+          {License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT")
+            ? renderLabel(t("BPA_SELECTED_ULB"), t("BPA_ULB_SELECTED_MESSAGE"))
+            : renderLabel(t("BPA_SELECTED_ULB"), ulbName || "NA")}
         </div>
 
         {/* Applicant Details */}
@@ -439,7 +517,6 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
 
         {/* Documents */}
 
- 
         {License?.tradeLicenseDetail?.applicationDocuments?.length > 0 && (
           <div style={sectionStyle}>
             <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
@@ -511,9 +588,7 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
                         {index + 1}
                       </td>
                       <td style={{ padding: "0.75rem" }}>
-                        <div style={{ color: "#333" }}>
-                          {t(`BPAREG_HEADER_${stringReplaceAll(document?.documentType?.toUpperCase(), ".", "_")}`)}
-                        </div>
+                        <div style={{ color: "#333" }}>{t(`BPAREG_HEADER_${stringReplaceAll(document?.documentType?.toUpperCase(), ".", "_")}`)}</div>
                         {document?.info && (
                           <div
                             style={{
@@ -534,9 +609,9 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
                       >
                         <button
                           onClick={() => {
-                            const fileUrl = documents[document.fileStoreId]?.split(",")[0]
+                            const fileUrl = documents[document.fileStoreId]?.split(",")[0];
                             if (fileUrl) {
-                              window.open(fileUrl, "_blank")
+                              window.open(fileUrl, "_blank");
                             }
                           }}
                           style={{
@@ -564,10 +639,7 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
           </div>
         )}
 
-
-
-
-         {/* <div style={sectionStyle}>
+        {/* <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
           {recieptDataLoading ? (
             <Loader />
@@ -579,34 +651,28 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
           )}
         </div> */}
 
+        {!(License?.applicationType === "UPGRADE") && (
+          <div style={sectionStyle}>
+            <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
 
-        {!(License?.applicationType === "UPGRADE") && <div style={sectionStyle}>
-          <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
+            {recieptDataLoading ? (
+              <Loader />
+            ) : (
+              <div>
+                {/* Total Amount (Architect → 0, else actual) */}
+                {renderLabel(t("Total Amount"), isArchitect ? `₹ 0` : reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue)}
 
-          {recieptDataLoading ? (
-            <Loader />
-          ) : (
-            <div>
-              {/* Total Amount (Architect → 0, else actual) */}
-              {renderLabel(
-                t("Total Amount"),
-                isArchitect
-                  ? `₹ 0`
-                  : reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue
-              )}
-
-              {/* Status */}
-              {renderLabel(
-                t("Status"),
-                reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalAmountPaid ===
-                  reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue
-                  ? t("PAID")
-                  : t("PENDING")
-              )}
-            </div>
-          )}
-        </div>}
-
+                {/* Status */}
+                {renderLabel(
+                  t("Status"),
+                  reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalAmountPaid === reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue
+                    ? t("PAID")
+                    : t("PENDING")
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Timeline */}
         <div id="timeline" style={sectionStyle}>
@@ -615,7 +681,7 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
         </div>
       </div>
     </Fragment>
-  )
-}
+  );
+};
 
-export default ApplicationDetails
+export default ApplicationDetails;

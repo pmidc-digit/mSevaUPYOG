@@ -13,6 +13,10 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
   const { mobileNumber, applicationNo } = searchForm;
   const { sortBy, limit, offset, sortOrder } = tableForm;
 
+  // const checkCitizenView = window.location.href.includes("citizen-bpa");
+
+  const checkCitizenView = ["citizen-bpa", "citizen-stakeholder-inbox", "citizen-others"]?.some((path) => window.location.href.includes(path));
+
   // Parse holidays from the MDMS data into a Set for quick lookup
   const holidaysSet = new Set();
   if (holidayList?.["common-masters"]?.Holidays) {
@@ -72,6 +76,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
       ...(applicationNumber ? { applicationNumber } : {}),
       ...(sortOrder ? { sortOrder } : {}),
       ...(sortBy ? { sortBy } : {}),
+      isCitizenView: checkCitizenView,
       // ...(applicationType?.length > 0 ? {applicationType: applicationType.map((item) => item.code).join(",")} : {}),
       ...(applicationType && applicationType?.length > 0 ? { applicationType } : {}),
       ...(locality?.length > 0 ? { locality: locality.map((item) => item.code.split("_").pop()).join(",") } : {}),
@@ -145,6 +150,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
             : "NA",
           status: application?.ProcessInstance?.state?.state,
           state: application?.ProcessInstance?.state?.state,
+          professionalOwner: application?.businessObject?.tradeLicenseDetail?.owners?.[0]?.name,
           owner: application?.businessObject?.landInfo?.owners?.find((item) => item?.isPrimaryOwner)?.name || "NA",
           mobileNumber: application?.businessObject?.tradeLicenseDetail?.owners?.[0]?.mobileNumber || "NA",
           // sla: application?.businessObject?.status.match(/^(APPROVED)$/)
@@ -156,6 +162,8 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           zone: application.businessObject?.additionalDetails?.zonenumber,
           selfCertification: application.businessObject?.additionalDetails?.isSelfCertification ? "Yes" : "No",
           tenantId: application.businessObject?.tenantId,
+          applicationType: application?.businessObject?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0],
+          architectID: application?.businessObject?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
         })),
         totalCount: data.totalCount,
         nearingSlaCount: data?.nearingSlaCount,

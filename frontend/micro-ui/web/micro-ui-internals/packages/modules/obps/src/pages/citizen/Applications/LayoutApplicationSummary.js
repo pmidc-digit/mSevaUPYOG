@@ -29,7 +29,7 @@ import NOCDocumentTableView from "../../../../../noc/src/pageComponents/NOCDocum
 import { useLayoutSearchApplication } from "@mseva/digit-ui-libraries/src/hooks/obps/useSearchApplication";
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
 import LayoutDocumentView from "./LayoutDocumentView";
-import { amountToWords } from "../../../utils/index";
+import { amountToWords, formatDuration } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { LoaderNew } from "../../../components/LoaderNew";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
@@ -127,6 +127,7 @@ const LayoutApplicationOverview = () => {
   const [viewTimeline, setViewTimeline] = useState(false);
   const [displayData, setDisplayData] = useState({})
   const [loading, setLoading] = useState(false);
+  const [timeObj, setTimeObj] = useState(null);
   const state = Digit.ULBService.getStateId()
 
   // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
@@ -134,6 +135,14 @@ const LayoutApplicationOverview = () => {
   const applicationDetails = data?.resData
   const { isLoading: mdmsLoading, data: mdmsDocsData } = Digit.Hooks.pt.usePropertyMDMS(stateCode, "LAYOUT", ["LayoutDocuments"]);
   const layoutDocuments = applicationDetails?.Layout?.[0]?.documents || [];
+  const rawOwners = applicationDetails?.Layout?.[0]?.owners || [];
+  const sortedOwners = [...rawOwners].sort((a, b) => {
+    const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+    const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+    if (aPrimary && !bPrimary) return -1;
+    if (!aPrimary && bPrimary) return 1;
+    return 0;
+  });
   const sitePhotos = layoutDocuments?.filter(
     (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
   )?.sort((a, b) => a?.order - b?.order);
@@ -157,16 +166,15 @@ const LayoutApplicationOverview = () => {
     }
 
     // Then check owner's additionalDetails (same keys as LayoutSummary.js)
-    const owners = applicationDetails?.Layout?.[0]?.owners || [];
-    if (owners && owners[ownerIndex]?.additionalDetails) {
-      if (docType === "OWNERPHOTO" && owners[ownerIndex]?.additionalDetails?.ownerPhoto) {
-        return owners[ownerIndex]?.additionalDetails?.ownerPhoto;
+    if (sortedOwners && sortedOwners[ownerIndex]?.additionalDetails) {
+      if (docType === "OWNERPHOTO" && sortedOwners[ownerIndex]?.additionalDetails?.ownerPhoto) {
+        return sortedOwners[ownerIndex]?.additionalDetails?.ownerPhoto;
       }
-      if (docType === "OWNERVALIDID" && owners[ownerIndex]?.additionalDetails?.documentFile) {
-        return owners[ownerIndex]?.additionalDetails?.documentFile;
+      if (docType === "OWNERVALIDID" && sortedOwners[ownerIndex]?.additionalDetails?.documentFile) {
+        return sortedOwners[ownerIndex]?.additionalDetails?.documentFile;
       }
-      if (docType === "OWNERPAN" && owners[ownerIndex]?.additionalDetails?.documentFile) {
-        return owners[ownerIndex]?.additionalDetails?.panDocument;
+      if (docType === "OWNERPAN" && sortedOwners[ownerIndex]?.additionalDetails?.documentFile) {
+        return sortedOwners[ownerIndex]?.additionalDetails?.panDocument;
       }
     }
 
@@ -243,6 +251,12 @@ const LayoutApplicationOverview = () => {
 
       //console.log("finalDisplayData:", finalDisplayData)
       setDisplayData(finalDisplayData)
+
+      const submittedOn = layoutObject?.layoutDetails?.additionalDetails?.SubmittedOn;
+      const endTime = Date.now();
+      const totalTime = submittedOn != null ? endTime - submittedOn : null;
+      const time = formatDuration(totalTime);
+      setTimeObj(time);
     }
   }, [applicationDetails?.Layout])
 
@@ -716,7 +730,7 @@ const LayoutApplicationOverview = () => {
         <CardSubHeader>{t("OWNER_OWNERPHOTO") || "OWNER'S PHOTO"}</CardSubHeader>
         <CustomOwnerImage
           ownerFileStoreId={findOwnerDocument(0, "OWNERPHOTO")}
-          ownerName={applicationDetails?.Layout?.[0]?.owners?.[0]?.name}
+          ownerName={sortedOwners?.[0]?.name}
         />
       </Card>
 
@@ -729,10 +743,10 @@ const LayoutApplicationOverview = () => {
 
 
       {/* -------------------- APPLICANTS/OWNERS DETAILS -------------------- */}
-      {applicationDetails?.Layout?.[0]?.owners && applicationDetails?.Layout?.[0]?.owners?.length > 0 && (
+      {sortedOwners && sortedOwners.length > 0 && (
         <Card>
           <CardSubHeader>{t("Owners Details") || "Owners Details"}</CardSubHeader>
-          {applicationDetails?.Layout?.[0]?.owners?.map((applicant, index) => (
+          {sortedOwners.map((applicant, index) => (
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
 
@@ -944,7 +958,7 @@ const LayoutApplicationOverview = () => {
 
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj}/>
       </div>
 
       {actions && actions.length > 0 && (

@@ -37,6 +37,7 @@ import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspec
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
+import { formatDuration } from "../../../utils/index";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -126,6 +127,7 @@ const LayoutEmployeeApplicationOverview = () => {
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
+  const [timeObj, setTimeObj] = useState(null);
 
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
@@ -264,7 +266,14 @@ const LayoutEmployeeApplicationOverview = () => {
 
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails;
-      const owners = layoutObject?.owners || [];
+      const rawOwners = layoutObject?.owners || [];
+      const owners = [...rawOwners].sort((a, b) => {
+        const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+        const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+        if (aPrimary && !bPrimary) return -1;
+        if (!aPrimary && bPrimary) return 1;
+        return 0;
+      });
       const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails;
       const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates;
       const Documents = layoutObject?.documents || [];
@@ -280,6 +289,12 @@ const LayoutEmployeeApplicationOverview = () => {
       };
 
       setDisplayData(finalDisplayData);
+
+      const submittedOn = layoutObject?.layoutDetails?.additionalDetails?.SubmittedOn;
+      const endTime = Date.now();
+      const totalTime = submittedOn != null ? endTime - submittedOn : null;
+      const time = formatDuration(totalTime);
+      setTimeObj(time);
     }
   }, [applicationDetails?.Layout]);
 
@@ -1405,7 +1420,7 @@ const LayoutEmployeeApplicationOverview = () => {
         checked="true"
       />
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} />
       </div>
       {actions?.length > 0 && (
         <ActionBar>

@@ -97,7 +97,13 @@ const LayoutApplicantDetails = (_props) => {
     }
     // If no applicants in Redux, check if we're in edit mode and have owners from API
     else if (currentStepData?.apiData?.Layout?.[0]?.owners && currentStepData?.apiData?.Layout?.[0]?.owners?.length > 1) {
-      const ownersFromApi = currentStepData.apiData.Layout[0].owners;
+      const ownersFromApi = [...currentStepData.apiData.Layout[0].owners].sort((a, b) => {
+        const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+        const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+        if (aPrimary && !bPrimary) return -1;
+        if (!aPrimary && bPrimary) return 1;
+        return 0;
+      });
       //console.log("[v0] Mapping owners from API response:", ownersFromApi);
 
       // Map additional owners (skip index 0 as it's the primary owner in applicationDetails)
@@ -164,7 +170,13 @@ const LayoutApplicantDetails = (_props) => {
       currentStepData?.apiData?.Layout?.[0]?.owners &&
       (!currentStepData?.documentUploadedFiles || Object.keys(currentStepData.documentUploadedFiles).length === 0)
     ) {
-      const ownersFromApi = currentStepData.apiData.Layout[0].owners;
+      const ownersFromApi = [...currentStepData.apiData.Layout[0].owners].sort((a, b) => {
+        const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+        const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+        if (aPrimary && !bPrimary) return -1;
+        if (!aPrimary && bPrimary) return 1;
+        return 0;
+      });
       //console.log("[v0] Mapping documents from owners additionalDetails");
 
       const docFiles = {};
@@ -426,6 +438,7 @@ const LayoutApplicantDetails = (_props) => {
         // setDocumentUploadedFiles(updatedDocFiles);
         if(index === 0){
           setValue("documentUploadedFiles", fileId, { shouldValidate: true });
+          clearErrors("primaryOwnerDocument");
         }else{
           clearErrors(`applicants.${index - 1}.document`);
           setApplicants(prev => {
@@ -463,6 +476,7 @@ const LayoutApplicantDetails = (_props) => {
         // setPhotoUploadedFiles(updatedPhotoFiles);
         if(index === 0){
           setValue("photoUploadedFiles", fileId, { shouldValidate: true });
+          clearErrors("primaryOwnerPhoto");
         }else{
           clearErrors(`applicants.${index - 1}.photo`);
           setApplicants(prev => {
@@ -517,6 +531,7 @@ const LayoutApplicantDetails = (_props) => {
         // setPanDocumentUploadedFiles(updatedPanDocFiles);
         if(index === 0){
           setValue("panDocumentUploadedFiles", fileId, { shouldValidate: true });
+          clearErrors("panDocumentUploadedFiles");
         }else{
           clearErrors(`applicants.${index - 1}.panDocument`);
           setApplicants(prev => {
@@ -559,21 +574,21 @@ const LayoutApplicantDetails = (_props) => {
     <React.Fragment>
       {loader && <Loader />}
       <div>        
-        {/* <CardSectionHeader className="card-section-header" style={{ marginBottom: "15px" }}>
+        <CardSectionHeader className="card-section-header" style={{ marginBottom: "15px" }}>
           {t("BPA_APPLICANT_DETAILS")}
-        </CardSectionHeader> */}
+        </CardSectionHeader>
 
-        {/* {isEdit && (
+        {isEdit && (
           <CardSectionSubText style={{ color: "red", margin: "10px 0px 20px 0px" }}>
             {t(
-              "To update your Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section, and you cannot edit the applicant detail"
+              "To update Applicant Details -  Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section"
             )}
           </CardSectionSubText>
-        )} */}
+        )}
 
         <div style={{ marginTop: "20px" }}>
           <CardSectionHeader className="card-section-header" style={{ marginTop: "20px", marginBottom: "20px" }}>
-            {t("BPA_APPLICANT_DETAILS")} - Primary
+            Primary Owner
           </CardSectionHeader>
 
           {/* Mobile Number */}
@@ -600,6 +615,7 @@ const LayoutApplicantDetails = (_props) => {
                     onChange={(e) => {
                       props.onChange(e.target.value);
                       setMobileNo(e.target.value);
+                      clearErrors("applicantMobileNumber");
                     }}
                     onBlur={props.onBlur}
                     // disabled={isEdit}
@@ -634,6 +650,7 @@ const LayoutApplicantDetails = (_props) => {
                       select={(e) => {                        
                         props.onChange(e);
                         setPrimaryApplicantType(e)
+                        clearErrors("aplicantType");
                       }}
                       selected={props.value}
                       option={[
@@ -666,9 +683,18 @@ const LayoutApplicantDetails = (_props) => {
                   required: t("REQUIRED_FIELD"),
                   maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
                 }}
-                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} 
-                // disabled={isEdit}
-                t={t} />}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e);
+                      clearErrors("authorisedPerson");
+                    }}
+                    onBlur={props.onBlur}
+                    // disabled={isEdit}
+                    t={t}
+                  />
+                )}
               />
             </div>
           </LabelFieldPair>
@@ -689,9 +715,18 @@ const LayoutApplicantDetails = (_props) => {
                   required: t("REQUIRED_FIELD"),
                   maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
                 }}
-                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} 
-                // disabled={isEdit}
-                 t={t} />}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e);
+                      clearErrors("applicantOwnerOrFirmName");
+                    }}
+                    onBlur={props.onBlur}
+                    // disabled={isEdit}
+                    t={t}
+                  />
+                )}
               />
             </div>
           </LabelFieldPair>
@@ -742,6 +777,7 @@ const LayoutApplicantDetails = (_props) => {
                     value={props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
+                      clearErrors("applicantEmailId");
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
@@ -771,7 +807,17 @@ const LayoutApplicantDetails = (_props) => {
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
                   },
                 }}
-                render={(props) => <TextArea value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} />}
+                render={(props) => (
+                  <TextArea
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e);
+                      clearErrors("applicantAddress");
+                    }}
+                    onBlur={props.onBlur}
+                    t={t}
+                  />
+                )}
               />
             </div>
           </LabelFieldPair>
@@ -803,7 +849,10 @@ const LayoutApplicantDetails = (_props) => {
                   <TextInput
                     type="date"
                     value={props.value}
-                    onChange={props.onChange}
+                    onChange={(e) => {
+                      props.onChange(e);
+                      clearErrors("applicantDateOfBirth");
+                    }}
                     onBlur={props.onBlur}
                     // disabled={isEdit}
                     min="1900-01-01"
@@ -835,6 +884,7 @@ const LayoutApplicantDetails = (_props) => {
                     selectedOption={props.value}
                     onSelect={(e) => {
                       props.onChange(e);
+                      clearErrors("applicantGender");
                     }}
                     isDependent={true}
                     // disabled={isEdit}
@@ -969,6 +1019,7 @@ const LayoutApplicantDetails = (_props) => {
                     onChange={(e) => {
                       const upperValue = e.target.value.toUpperCase();
                       props.onChange(upperValue);
+                      clearErrors("panNumber");
                     }}
                     onBlur={props.onBlur}
                     placeholder="e.g., AAAAA1234A"

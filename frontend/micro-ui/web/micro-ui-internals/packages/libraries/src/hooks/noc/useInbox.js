@@ -10,6 +10,8 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
   const { sortBy, limit, offset, sortOrder } = tableForm;
   const user = Digit.UserService.getUser();
 
+  const checkCitizenView = window.location.href.includes("noc-my-application");
+
   const _filters = {
     tenantId,
     processSearchCriteria: {
@@ -25,6 +27,7 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
       ...(applicationNo ? { applicationNo } : {}),
       ...(sortOrder ? { sortOrder } : {}),
       ...(sortBy ? { sortBy } : {}),
+      isCitizenView: checkCitizenView,
       ...(locality?.length > 0 ? { locality: locality.map((item) => item.code.split("_").pop()).join(",") } : {}),
     },
     // sortBy,

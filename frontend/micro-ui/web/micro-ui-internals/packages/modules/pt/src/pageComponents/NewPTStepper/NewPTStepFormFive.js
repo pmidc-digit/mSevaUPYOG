@@ -1,9 +1,9 @@
 import React, { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FormComposer, Toast, ActionBar, Menu, SubmitBar } from "@mseva/digit-ui-react-components";
+import { FormComposer, Toast, ActionBar, Menu, SubmitBar, CheckBox } from "@mseva/digit-ui-react-components";
 import { useState } from "react";
 import _ from "lodash";
-import { useHistory, useRouteMatch } from "react-router-dom";
+import { useHistory, useRouteMatch, useLocation } from "react-router-dom";
 import { UPDATE_PTNewApplication_FORM } from "../../redux/action/PTNewApplicationActions";
 import { Loader } from "../../components/Loader";
 
@@ -13,6 +13,10 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
   const [showToast, setShowToast] = useState(false);
   const [loader, setLoader] = useState(false);
   const [error, setError] = useState("");
+  const [isDeclared, setIsDeclared] = useState(false);
+  const { pathname } = useLocation();
+  const isEdit = pathname.includes("edit");
+
   const history = useHistory();
   const isCitizen = window.location.href.includes("citizen");
   const tenantId = window.location.href.includes("citizen")
@@ -115,7 +119,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
           return unitPayload;
         }) || [];
 
-    const superBuiltUpArea = units.reduce((sum, u) => sum + (u?.constructionDetail?.builtUpArea || 0), 0) || null;
+    const superBuiltUpArea = cleanedCode?.includes("SHAREDPROPERTY") ? units?.reduce((sum, u) => sum + (u?.constructionDetail?.builtUpArea || 0), 0).toFixed(2) : null;
 
     const computedOwners = ownerDetails?.owners?.map((owner, index) => {
       const originalOwner = originalProperty?.owners?.[index];
@@ -315,8 +319,12 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
         {/* {displayMenu && actions ? (
           <Menu localeKeyPrefix={t(`WF_CITIZEN_${"PTR"}`)} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
         ) : null} */}
+        {isCitizen && <CheckBox
+          label={t("PT_FINAL_DECLARATION_MESSAGE")}
+          onChange={() => setIsDeclared(!isDeclared)}
+        />}
 
-        <SubmitBar ref={menuRef} label={t("Submit")} onSubmit={() => goNext()} />
+        <SubmitBar ref={menuRef} label={t("Submit")} disabled={isCitizen && isEdit && !isDeclared} onSubmit={() => goNext()} />
       </ActionBar>
 
       {showToast && <Toast isDleteBtn={true} error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}

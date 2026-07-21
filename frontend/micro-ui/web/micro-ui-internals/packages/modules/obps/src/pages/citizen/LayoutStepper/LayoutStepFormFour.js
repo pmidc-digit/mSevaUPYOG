@@ -56,17 +56,26 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       ? currentStepData?.apiData 
       : currentStepData?.apiData?.Layout?.[0];
     
+    const sortedOwners = layoutData?.owners ? [...layoutData.owners].sort((a, b) => {
+      const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+      const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+      if (aPrimary && !bPrimary) return -1;
+      if (!aPrimary && bPrimary) return 1;
+      return 0;
+    }) : [];
+    const primaryOwner = sortedOwners[0] || {};
+    
     const aplicantType = currentStepData?.applicationDetails?.aplicantType?.code 
-      || layoutData?.owners?.[0]?.additionalDetails?.aplicantType?.code;
+      || primaryOwner?.additionalDetails?.aplicantType?.code;
 
     // Primary owner name - try form state and API owner fallback based on applicantType
     let primaryOwnerName = "";
     if (aplicantType === "FIRM") {
       primaryOwnerName = currentStepData?.applicationDetails?.authorisedPerson
-        || layoutData?.owners?.[0]?.additionalDetails?.authorisedPerson;
+        || primaryOwner?.additionalDetails?.authorisedPerson;
     } else {
       primaryOwnerName = currentStepData?.applicationDetails?.applicantOwnerOrFirmName
-        || layoutData?.owners?.[0]?.name;
+        || primaryOwner?.name;
     }
     
     // Get newly added applicants from Redux state (starts from index 1, index 0 is placeholder)
@@ -149,7 +158,13 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     // For Update API: Merge original owners from API response with newly added applicants from Redux
     // The owners array from layoutData contains full user objects with id, uuid, roles, etc.
-    const ownersFromApi = layoutData?.owners || [];
+    const ownersFromApi = layoutData?.owners ? [...layoutData.owners].sort((a, b) => {
+      const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+      const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+      if (aPrimary && !bPrimary) return -1;
+      if (!aPrimary && bPrimary) return 1;
+      return 0;
+    }) : [];
     
     // Get newly added applicants from Redux state (starts from index 1, index 0 is placeholder)
     const applicantsFromRedux = layoutFormData?.applicants || [];
@@ -321,17 +336,21 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d) => d.documentType));
       
       
-      // Update existing API documents with new filestoreIds from Redux
+      // Update existing API documents with new filestoreIds/documentAttachments from Redux
       const updatedApiResponseDocuments = apiResponseDocuments?.map((doc) => {
-        const fileStoreId = docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.uuid 
-          || docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.filestoreId
-          || docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.documentAttachment;
-        return {
-          ...doc,
-          order: doc?.order,
-          uuid: fileStoreId || doc.uuid,
-          documentAttachment: fileStoreId || doc.documentAttachment,
-        };
+        const matchingDoc = docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType);
+        
+        if (matchingDoc) {
+          const fileStoreId = matchingDoc.filestoreId !== undefined ? matchingDoc.filestoreId : matchingDoc.documentAttachment;
+          const uuid = matchingDoc.uuid || matchingDoc.documentUid || doc.uuid;
+          return {
+            ...doc,
+            order: doc?.order,
+            uuid: uuid,
+            documentAttachment: fileStoreId !== undefined ? fileStoreId : doc.documentAttachment,
+          };
+        }
+        return doc;
       });
       
       // Find newly added documents that don't exist in API response
@@ -339,6 +358,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       
       const updatedNewlyAddedDocs = newlyAddedDocs?.map((doc) => {
         return {
+          layoutId: doc?.layoutId,
           order: doc?.order,
           uuid: doc?.documentUid || doc?.uuid,
           documentType: doc?.documentType,
@@ -346,16 +366,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         };
       });
       
-      // const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
-      const overallDocs = newlyAddedDocs?.map((doc) => {
-        return {
-          layoutId: doc?.layoutId,
-          order: doc?.order,
-          uuid: doc?.documentUid || doc?.uuid,
-          documentType: doc?.documentType,
-          documentAttachment: doc?.filestoreId || doc?.documentAttachment,
-        };
-      });      
+      const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
       
       overallDocs.forEach((doc) => {
         updatedApplication?.documents?.push({ ...doc });

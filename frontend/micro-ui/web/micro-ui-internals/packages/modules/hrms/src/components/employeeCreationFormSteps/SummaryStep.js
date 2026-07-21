@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { FormComposer, Toast, Loader } from "@mseva/digit-ui-react-components";
 import { onSubmit } from "../../utils/onSubmitCreateEmployee";
+import { REGION_DATA } from "../../../../../constants/DistrcitRegionBifurcation";
 
 const SummaryStep = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -40,12 +41,80 @@ const SummaryStep = ({ config, onGoNext, onBackClick, t }) => {
       
       // Transform objects to codes for API submission
       // Summary shows the NAME but API needs the CODE
+      if(data?.employeeType?.code === "OBPS_EMP"){
+        if (data.Jurisdictions) {
+          let transformedJurisdictions = [];
+          data.Jurisdictions.forEach(juris => {
+            const rawBoundaryType = typeof juris.boundaryType === 'string' ? juris.boundaryType : (juris.boundaryType?.code || juris.boundaryType?.label || juris.boundaryType);
+            const rawBoundary = typeof juris.boundary === 'string' ? juris.boundary : (juris.boundary?.code || juris.boundary);
+            
+            if (!rawBoundaryType || !rawBoundary) {
+              return;
+            }
+
+            const typeLower = String(rawBoundaryType).toLowerCase();
+            const boundaryLower = String(rawBoundary).toLowerCase();
+
+            if (typeLower === "region") {
+              const region = REGION_DATA.find(r => r.code?.toLowerCase() === boundaryLower || r.regionName?.toLowerCase() === boundaryLower);
+              if (region) {
+                region.districts.forEach(district => {
+                  district.cities.forEach(city => {
+                    transformedJurisdictions.push({
+                      ...juris,
+                      boundaryType: "City",
+                      boundary: city.code,
+                      tenantId: city.code,
+                      roles: juris?.roles?.map(ro => ({
+                        ...ro,
+                        tenantId: city.code
+                      }))
+                    });
+                  });
+                });
+              }
+            } else if (typeLower === "district") {
+              let foundDistrict = null;
+              for (const region of REGION_DATA) {
+                const dist = region.districts.find(d => d.code?.toLowerCase() === boundaryLower || d.districtName?.toLowerCase() === boundaryLower);
+                if (dist) {
+                  foundDistrict = dist;
+                  break;
+                }
+              }
+              if (foundDistrict) {
+                foundDistrict.cities.forEach(city => {
+                  transformedJurisdictions.push({
+                    ...juris,
+                    boundaryType: "City",
+                    boundary: city.code,
+                    tenantId: city.code,
+                    roles: juris?.roles?.map(ro => ({
+                        ...ro,
+                        tenantId: city.code
+                    }))
+                  });
+                });
+              }
+            } else {
+              transformedJurisdictions.push({
+                ...juris,
+                boundary: rawBoundary,
+                boundaryType: typeof juris.boundaryType === 'string' ? juris.boundaryType : (juris.boundaryType?.code || juris.boundaryType),
+                tenantId: rawBoundary
+              });
+            }
+          });
+          data.Jurisdictions = transformedJurisdictions;
+        }
+      }else{
       if (data.Jurisdictions) {
         data.Jurisdictions = data.Jurisdictions.map(juris => ({
           ...juris,
           boundary: typeof juris.boundary === 'string' ? juris.boundary : (juris.boundary?.code || juris.boundary),
           boundaryType: typeof juris.boundaryType === 'string' ? juris.boundaryType : (juris.boundaryType?.code || juris.boundaryType),
         }));
+      }
       }
       
       if (data.Assignments) {

@@ -113,7 +113,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     const applicationType = currentStepData?.propertyDetails?.applicationType?.code;
     const lastBillingPeriodData = new Date(currentStepData?.propertyDetails?.lastBillingPeriod).getTime();
     const lastRentRevisedDate = new Date(currentStepData?.propertyDetails?.lastRentRevisedDate).getTime();
-    const additionalDetails =
+    let additionalDetails =
       applicationType === "Legacy"
         ? {
             arrear: currentStepData?.propertyDetails?.arrear,
@@ -132,10 +132,9 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
             remarks: currentStepData?.propertyDetails?.remarks,
             lastBillingPeriod: lastBillingPeriodData,
           }
-        : null;
+        : {};
 
-    console.log("currentStepData", currentStepData);
-    // return;
+    additionalDetails["alternateMobileNumber"] = data?.applicants?.[0]?.alternateMobileNumber;
 
     const payload = buildAllotmentPayload({
       propertyDetails: currentStepData?.propertyDetails,
@@ -228,8 +227,8 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
         reset({
           ownershipType: "MULTIPLE",
           applicants: [
-            { mobileNumber: "", emailId: "", name: "", address: "", pincode: "" },
-            { mobileNumber: "", emailId: "", name: "", address: "", pincode: "" },
+            { mobileNumber: "", alternateMobileNumber: "", emailId: "", name: "", address: "", pincode: "" },
+            { mobileNumber: "", alternateMobileNumber: "", emailId: "", name: "", address: "", pincode: "" },
           ],
         });
       }
@@ -288,7 +287,8 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
             {/* Mobile Number */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {t("NOC_APPLICANT_MOBILE_NO_LABEL")} <span className="mandatory-asterisk">*</span>
+                {t("NOC_APPLICANT_MOBILE_NO_LABEL")}
+                <span className="mandatory-asterisk">*</span>
               </CardLabel>
               <div className="form-field">
                 <Controller
@@ -317,6 +317,41 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
             </LabelFieldPair>
             {getErrorMessage("mobileNumber", index) && (
               <CardLabelError className="ral-error-label">{getErrorMessage("mobileNumber", index)}</CardLabelError>
+            )}
+
+            {/*Billing Mobile Number */}
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">
+                {t("Billing Mobile Number")}
+                {/* <span className="mandatory-asterisk">*</span> */}
+              </CardLabel>
+              <div className="form-field">
+                <Controller
+                  control={control}
+                  name={`applicants.${index}.alternateMobileNumber`}
+                  rules={{
+                    // required: t("PTR_MOBILE_REQUIRED"),
+                    pattern: { value: /^[6-9][0-9]{9}$/, message: t("PTR_MOBILE_INVALID") },
+                  }}
+                  render={({ value, onChange, onBlur }) => (
+                    <MobileNumber
+                      value={value}
+                      onChange={(e) => {
+                        onChange(e);
+                        // debouncedHandleMobileChange(e, index);
+                      }}
+                      onBlur={(e) => {
+                        onBlur(e);
+                        // trigger(`applicants.${index}.alternateMobileNumber`);
+                      }}
+                      t={t}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {getErrorMessage("alternateMobileNumber", index) && (
+              <CardLabelError className="ral-error-label">{getErrorMessage("alternateMobileNumber", index)}</CardLabelError>
             )}
 
             {/* Name */}
@@ -439,7 +474,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
           <SubmitBar
             label={<span>➕{t("RAL_ADD_APPLICANT")}</span>}
             className="ral-add-applicant-btn"
-            onSubmit={() => append({ mobileNumber: "", emailId: "", name: "", address: "", pincode: "" })}
+            onSubmit={() => append({ mobileNumber: "", alternateMobileNumber: "", emailId: "", name: "", address: "", pincode: "" })}
           />
         </div>
       )}

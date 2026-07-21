@@ -901,8 +901,6 @@ public class EstimationService {
 		BigDecimal exemption = BigDecimal.ZERO;
 		BigDecimal rebate = BigDecimal.ZERO;
 		BigDecimal ptTax = BigDecimal.ZERO;
-		
-		estimates.stream().forEach(estimate -> estimate.setEstimateAmount(estimate.getEstimateAmount().setScale(0, RoundingMode.CEILING)));
 
 		for (TaxHeadEstimate estimate : estimates) {
 
@@ -956,16 +954,10 @@ public class EstimationService {
                 rebate = rebate.add(decimalEstimate.getEstimateAmount());
         }
 
-        taxAmt = taxAmt.setScale(0, RoundingMode.CEILING);
-        penalty = penalty.setScale(0, RoundingMode.CEILING);
-        exemption = exemption.setScale(0, RoundingMode.CEILING);
-        rebate = rebate.setScale(0, RoundingMode.CEILING);
-        
-		BigDecimal totalAmount = taxAmt.add(penalty).add(rebate).add(exemption).setScale(0, RoundingMode.CEILING);
+		BigDecimal totalAmount = taxAmt.add(penalty).add(rebate).add(exemption);
 		// false in the argument represents that the demand shouldn't be updated from this call
 		Demand oldDemand = utils.getLatestDemandForCurrentFinancialYear(requestInfo,criteria);
-		BigDecimal collectedAmtForOldDemand = demandService.getCarryForwardAndCancelOldDemand(ptTax, criteria, requestInfo,oldDemand, false)
-				.setScale(0, BigDecimal.ROUND_CEILING);
+		BigDecimal collectedAmtForOldDemand = demandService.getCarryForwardAndCancelOldDemand(ptTax, criteria, requestInfo,oldDemand, false);
 		log.info("inside getCalculation line number 892" +collectedAmtForOldDemand.toString());
 
 if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
@@ -2174,9 +2166,9 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 				}
 			}
 
-			PT_TAX = Math.round((PT_TAX * 100) / 100.0);
-			exemption = Math.round((exemption * 100) / 100.0);
-			unit_usage_exemption = Math.round((unit_usage_exemption * 100) / 100.0);
+			PT_TAX = Math.round(PT_TAX * 100) / 100.0;
+			exemption = Math.round(exemption * 100) / 100.0;
+			unit_usage_exemption = Math.round(unit_usage_exemption * 100) / 100.0;
 			PT_TAX_NET = PT_TAX - exemption - unit_usage_exemption;
 
 			double penality = PT_TAX_NET * penalityRate / 100.0;
@@ -2185,18 +2177,18 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 			long days = ChronoUnit.DAYS.between(LocalDate.of(2014, 4, 1), currentDate);
 			double totalInterest = interestPerDay * days;
 
-			penality = Math.round((penality * 100) / 100.0);
-			totalInterest = Math.round((totalInterest * 100) / 100.0);
+			penality = Math.round(penality * 100) / 100.0;
+			totalInterest = Math.round(totalInterest * 100) / 100.0;
 
 			double rebatable_amount = PT_TAX + penality + totalInterest - unit_usage_exemption - exemption;
 			double additional_rebate = new BigDecimal(rebatable_amount * additionalRebateRate / 100.0)
-					.setScale(0, BigDecimal.ROUND_CEILING).doubleValue();
+					.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 
 			double tax_payable = rebatable_amount + FireCess - additional_rebate;
 			tax_payable = Math.round(tax_payable * 100) / 100.0;
 			double tax_payable_roundoff = Math.round(tax_payable);
-			double round_off = Math.round(((tax_payable_roundoff - tax_payable) * 100.0) / 100.0);
-			FireCess=Math.round((FireCess * 100) / 100.0);
+			double round_off = Math.round((tax_payable_roundoff - tax_payable) * 100.0) / 100.0;
+			FireCess=Math.round(FireCess * 100) / 100.0;
 			double totalTax = tax_payable_roundoff;
 
 			taxHeadEstimates.add(buildTaxHead("PT_TAX", PT_TAX));

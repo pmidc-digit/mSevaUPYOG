@@ -1,8 +1,38 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardLabel, LabelFieldPair, CardSubHeader, StatusTable, Row } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { SET_NOCNewApplication_STEP } from "../redux/action/NOCNewApplicationActions";
+
+const NocDocumentLink = ({ fileStoreId, tenantId }) => {
+  const [url, setUrl] = useState(null);
+  useEffect(() => {
+    (async () => {
+      if (fileStoreId) {
+        try {
+          const res = await Digit.UploadServices.Filefetch([fileStoreId], tenantId);
+          let fileUrl = "";
+          if (res?.data?.fileStoreIds) {
+            fileUrl = res.data.fileStoreIds[0]?.url || "";
+          } else {
+            fileUrl = res?.data?.[fileStoreId] || "";
+          }
+          setUrl(fileUrl);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    })();
+  }, [fileStoreId, tenantId]);
+
+  if (!url) return <span>Loading...</span>;
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "#F47738", fontWeight: "bold" }}>
+      View Document
+    </a>
+  );
+};
+
 import NOCDocument from "./NOCDocument";
 import NOCImageView from "./NOCImageView";
 import NOCDocumentTableView from "./NOCDocumentTableView";
@@ -209,6 +239,35 @@ console.log('applicationNo, submittedOn', applicationNo, submittedOn)
           <Row label={t("NOC_NOC_TYPE_LABEL")} text={formData?.siteDetails?.specificationNocType?.name || "N/A"} />
           <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={formData?.siteDetails?.specificationRestrictedArea?.code || "N/A"} />
           <Row label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "N/A"} />
+          {((formData?.siteDetails?.specificationNocType?.name === "Final" || formData?.siteDetails?.specificationNocType?.name === "Digitization of Manual")) && (
+            <React.Fragment>
+              {(formData?.siteDetails?.specificationNocType?.name === "Final") && (
+                <Row
+                  label={t("NOC_EXISTING_NOC_TYPE_LABEL")}
+                  text={
+                    formData?.siteDetails?.existingNocType?.name ||
+                    formData?.siteDetails?.existingNocType?.code ||
+                    (typeof formData?.siteDetails?.existingNocType === "string" ? formData?.siteDetails?.existingNocType : "N/A")
+                  }
+                />
+              )}
+              <Row label={t("NOC_NUMBER_LABEL")} text={formData?.siteDetails?.existingNocNumber || "N/A"} />
+              {((formData?.siteDetails?.existingNocType?.name === "Offline" ||
+                formData?.siteDetails?.existingNocType?.code === "OFFLINE" ||
+                formData?.siteDetails?.existingNocType === "Offline") ||
+                formData?.siteDetails?.specificationNocType?.name === "Digitization of Manual") && (
+                <Row label={t("NOC_DATE_LABEL")} text={formData?.siteDetails?.existingNocDate || "N/A"} />
+              )}
+              {formData?.siteDetails?.existingNocDocument && (
+                <Row
+                  label={t("NOC_UPLOAD_DOCUMENT_LABEL")}
+                  text={
+                    <NocDocumentLink fileStoreId={formData?.siteDetails?.existingNocDocument} tenantId={Digit.ULBService.getStateId()} />
+                  }
+                />
+              )}
+            </React.Fragment>
+          )}
         </StatusTable>
       </Card>
 

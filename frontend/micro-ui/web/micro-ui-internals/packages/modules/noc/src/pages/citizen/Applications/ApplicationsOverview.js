@@ -39,6 +39,35 @@ import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import { format } from "date-fns";
 
+const NocDocumentLink = ({ fileStoreId, tenantId }) => {
+  const [url, setUrl] = useState(null);
+  useEffect(() => {
+    (async () => {
+      if (fileStoreId) {
+        try {
+          const res = await Digit.UploadServices.Filefetch([fileStoreId], tenantId);
+          let fileUrl = "";
+          if (res?.data?.fileStoreIds) {
+            fileUrl = res.data.fileStoreIds[0]?.url || "";
+          } else {
+            fileUrl = res?.data?.[fileStoreId] || "";
+          }
+          setUrl(fileUrl);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    })();
+  }, [fileStoreId, tenantId]);
+
+  if (!url) return <span>Loading...</span>;
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "#F47738", fontWeight: "bold" }}>
+      View Document
+    </a>
+  );
+};
+
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -799,6 +828,35 @@ const CitizenApplicationOverview = () => {
               />
 
               <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || detail?.specificationNocType || "N/A"} />
+              {((detail?.specificationNocType === "Final" || detail?.specificationNocType === "Digitization of Manual")) && (
+                <React.Fragment>
+                  {((detail?.specificationNocType === "Final")) && (
+                    <Row
+                      label={t("NOC_EXISTING_NOC_TYPE_LABEL")}
+                      text={
+                        detail?.existingNocType?.name ||
+                        detail?.existingNocType?.code ||
+                        (typeof detail?.existingNocType === "string" ? detail?.existingNocType : "N/A")
+                      }
+                    />
+                  )}
+                  <Row label={t("NOC_NUMBER_LABEL")} text={detail?.existingNocNumber || "N/A"} />
+                  {((detail?.existingNocType?.name === "Offline" ||
+                    detail?.existingNocType?.code === "OFFLINE" ||
+                    detail?.existingNocType === "Offline") ||
+                    detail?.specificationNocType === "Digitization of Manual") && (
+                    <Row label={t("NOC_DATE_LABEL")} text={detail?.existingNocDate || "N/A"} />
+                  )}
+                  {detail?.existingNocDocument && (
+                    <Row
+                      label={t("NOC_UPLOAD_DOCUMENT_LABEL")}
+                      text={
+                        <NocDocumentLink fileStoreId={detail?.existingNocDocument} tenantId={Digit.ULBService.getStateId()} />
+                      }
+                    />
+                  )}
+                </React.Fragment>
+              )}
               <Row
                 label={t("NOC_RESTRICTED_AREA_LABEL")}
                 text={detail?.specificationRestrictedArea?.code || detail?.specificationRestrictedArea || "N/A"}

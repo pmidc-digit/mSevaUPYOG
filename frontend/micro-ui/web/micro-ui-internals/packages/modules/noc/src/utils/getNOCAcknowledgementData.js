@@ -283,6 +283,32 @@ const getSpecificationDetails = (appData, t) => {
         appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType ||
         "N/A",
     },
+  ];
+
+  const specNocType = appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType?.name || appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType;
+  const isFinalOrDigitization = specNocType === "Final" || specNocType === "FINAL" || specNocType === "Digitization of Manual" || specNocType === "DIGITIZATION_OF_MANUAL";
+
+  if (isFinalOrDigitization) {
+    if (specNocType === "Final" || specNocType === "FINAL") {
+      values.push({
+        title: t("NOC_EXISTING_NOC_TYPE_LABEL"),
+        value: appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocType || "N/A",
+      });
+    }
+    values.push({
+      title: t("NOC_NUMBER_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocNumber || "N/A",
+    });
+    const existingType = appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocType;
+    if (existingType === "Offline" || specNocType === "Digitization of Manual" || specNocType === "DIGITIZATION_OF_MANUAL") {
+      values.push({
+        title: t("NOC_DATE_LABEL"),
+        value: appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocDate || "N/A",
+      });
+    }
+  }
+
+  values.push(
     {
       title: t("NOC_RESTRICTED_AREA_LABEL"),
       value:
@@ -296,8 +322,8 @@ const getSpecificationDetails = (appData, t) => {
         appData?.nocDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan?.code ||
         appData?.nocDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan ||
         "N/A",
-    },
-  ];
+    }
+  );
 
   return {
     title: t("NOC_SPECIFICATION_DETAILS"),
@@ -344,19 +370,33 @@ const getDocuments = async (appData, t) => {
 
   const sortedDocs = filteredDocs?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
-  const filesArray = sortedDocs?.map((value) => value?.uuid);
+  const filesArray = sortedDocs?.map((value) => value?.uuid) || [];
+  const existingNocDocId = appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocDocument;
+  if (existingNocDocId) {
+    filesArray.push(existingNocDocId);
+  }
 
   const res = filesArray.length > 0 && (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
+
+  const documentValues = sortedDocs?.map((document, index) => ({
+    title: `${index + 1}. ${t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")}`,
+    value: " ",
+    link: pdfDownloadLink(res?.data, document?.uuid) || "",
+  })) || [];
+
+  if (existingNocDocId) {
+    documentValues.push({
+      title: `${documentValues.length + 1}. ${t("NOC_UPLOAD_DOCUMENT_LABEL") || "Existing NOC Document"}`,
+      value: " ",
+      link: pdfDownloadLink(res?.data, existingNocDocId) || "",
+    });
+  }
 
   return {
     title: t("BPA_TITILE_DOCUMENT_UPLOADED"),
     values:
-      sortedDocs.length > 0
-        ? sortedDocs?.map((document, index) => ({
-            title: `${index + 1}. ${t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")}`,
-            value: " ",
-            link: pdfDownloadLink(res?.data, document?.uuid) || "",
-          }))
+      documentValues.length > 0
+        ? documentValues
         : [
             {
               title: t("PT_NO_DOCUMENTS"),

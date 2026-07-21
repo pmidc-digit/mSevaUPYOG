@@ -97,7 +97,13 @@ const LayoutApplicantDetails = (_props) => {
     }
     // If no applicants in Redux, check if we're in edit mode and have owners from API
     else if (currentStepData?.apiData?.Layout?.[0]?.owners && currentStepData?.apiData?.Layout?.[0]?.owners?.length > 1) {
-      const ownersFromApi = currentStepData.apiData.Layout[0].owners;
+      const ownersFromApi = [...currentStepData.apiData.Layout[0].owners].sort((a, b) => {
+        const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+        const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+        if (aPrimary && !bPrimary) return -1;
+        if (!aPrimary && bPrimary) return 1;
+        return 0;
+      });
       //console.log("[v0] Mapping owners from API response:", ownersFromApi);
 
       // Map additional owners (skip index 0 as it's the primary owner in applicationDetails)
@@ -164,7 +170,13 @@ const LayoutApplicantDetails = (_props) => {
       currentStepData?.apiData?.Layout?.[0]?.owners &&
       (!currentStepData?.documentUploadedFiles || Object.keys(currentStepData.documentUploadedFiles).length === 0)
     ) {
-      const ownersFromApi = currentStepData.apiData.Layout[0].owners;
+      const ownersFromApi = [...currentStepData.apiData.Layout[0].owners].sort((a, b) => {
+        const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+        const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+        if (aPrimary && !bPrimary) return -1;
+        if (!aPrimary && bPrimary) return 1;
+        return 0;
+      });
       //console.log("[v0] Mapping documents from owners additionalDetails");
 
       const docFiles = {};
@@ -562,21 +574,21 @@ const LayoutApplicantDetails = (_props) => {
     <React.Fragment>
       {loader && <Loader />}
       <div>        
-        {/* <CardSectionHeader className="card-section-header" style={{ marginBottom: "15px" }}>
+        <CardSectionHeader className="card-section-header" style={{ marginBottom: "15px" }}>
           {t("BPA_APPLICANT_DETAILS")}
-        </CardSectionHeader> */}
+        </CardSectionHeader>
 
-        {/* {isEdit && (
+        {isEdit && (
           <CardSectionSubText style={{ color: "red", margin: "10px 0px 20px 0px" }}>
             {t(
-              "To update your Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section, and you cannot edit the applicant detail"
+              "To update Applicant Details -  Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section"
             )}
           </CardSectionSubText>
-        )} */}
+        )}
 
         <div style={{ marginTop: "20px" }}>
           <CardSectionHeader className="card-section-header" style={{ marginTop: "20px", marginBottom: "20px" }}>
-            {t("BPA_APPLICANT_DETAILS")} - Primary
+            Primary Owner
           </CardSectionHeader>
 
           {/* Mobile Number */}

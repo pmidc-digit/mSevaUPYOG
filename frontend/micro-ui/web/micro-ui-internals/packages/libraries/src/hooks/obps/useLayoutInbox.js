@@ -66,7 +66,8 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
             locality: application?.businessObject?.tenantId ? `${application.businessObject.tenantId.toUpperCase().split(".").join("_")}` : "-",
             status: application?.businessObject?.applicationStatus,
             owner: (() => {
-              const owner = application?.businessObject?.owners?.[0];
+              const owners = application?.businessObject?.owners || [];
+              const owner = owners.find((o) => o?.isPrimaryOwner === true) || owners[0];
               const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
               return isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name;
             })(),

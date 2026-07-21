@@ -18,6 +18,9 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
   const isCitizenOthers = window.location.href.includes("/citizen-others") || window.location.href.includes("/citizen-stakeholder-inbox");
 
+  const isOther = window.location.href.includes("/citizen-others");
+  const isCitizenStakeholder = window.location.href.includes("/citizen-stakeholder-inbox");
+
   const tableColumnConfig = useMemo(() => {
     const columns = [
       {
@@ -68,7 +71,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         },
         disableSortBy: true,
       },
-      !isCitizenOthers && {
+      // !isCitizenOthers &&
+      {
         Header: t("CS_APPLICATION_DETAILS_APPROVAL_DATE"),
         accessor: "approvalDate",
         Cell: ({ row }) => {
@@ -121,9 +125,14 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: (row) => t(row?.applicationType),
         disableSortBy: true,
       },
-      isCitizenOthers && {
+      isCitizenStakeholder && {
         Header: t("Architect ID"),
         accessor: (row) => t(row?.architectID),
+        disableSortBy: true,
+      },
+      isOther && {
+        Header: t("License Number"),
+        accessor: (row) => t(row?.licenseNumber),
         disableSortBy: true,
       },
       {

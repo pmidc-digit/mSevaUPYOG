@@ -286,7 +286,7 @@ const getSpecificationDetails = (appData, t) => {
   ];
 
   const specNocType = appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType?.name || appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType;
-  const isFinalOrDigitization = specNocType === "Final" || specNocType === "FINAL" || specNocType === "Digitization of Manual" || specNocType === "DIGITIZATION_OF_MANUAL";
+  const isFinalOrDigitization = specNocType === "Final" || specNocType === "FINAL" || specNocType === "Digitization of Manual NOC" || specNocType === "DIGITIZATION_OF_MANUAL_NOC";
 
   if (isFinalOrDigitization) {
     if (specNocType === "Final" || specNocType === "FINAL") {
@@ -300,7 +300,7 @@ const getSpecificationDetails = (appData, t) => {
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocNumber || "N/A",
     });
     const existingType = appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocType;
-    if (existingType === "Offline" || specNocType === "Digitization of Manual" || specNocType === "DIGITIZATION_OF_MANUAL") {
+    if (existingType === "Offline" || specNocType === "Digitization of Manual NOC" || specNocType === "DIGITIZATION_OF_MANUAL_NOC") {
       values.push({
         title: t("NOC_DATE_LABEL"),
         value: appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocDate || "N/A",

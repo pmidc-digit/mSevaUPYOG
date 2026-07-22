@@ -237,7 +237,7 @@ function NOCSummary({ currentStepData: formData, t }) {
           const specNocCode = getCode(formData?.siteDetails?.specificationNocType);
           const existNocCode = getCode(formData?.siteDetails?.existingNocType);
           const isFinalNoc = specNocCode === "FINAL";
-          const isDigitizationOfManual = specNocCode === "DIGITIZATION_OF_MANUAL";
+          const isDigitizationOfManual = specNocCode === "DIGITIZATION_OF_MANUAL_NOC";
           const isOffline = existNocCode === "OFFLINE";
 
           return (

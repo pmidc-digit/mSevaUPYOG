@@ -165,6 +165,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           applicationType: application?.businessObject?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0],
           architectID: application?.businessObject?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
           licenseNumber: application?.businessObject?.licenseNumber,
+          issuedDate: application?.businessObject?.issuedDate,
         })),
         totalCount: data.totalCount,
         nearingSlaCount: data?.nearingSlaCount,

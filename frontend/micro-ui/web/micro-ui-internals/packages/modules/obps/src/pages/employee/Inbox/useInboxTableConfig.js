@@ -72,11 +72,19 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         disableSortBy: true,
       },
       // !isCitizenOthers &&
-      {
+      !isCitizenOthers && {
         Header: t("CS_APPLICATION_DETAILS_APPROVAL_DATE"),
         accessor: "approvalDate",
         Cell: ({ row }) => {
           return row.original?.["approvalDate"] ? GetCell(format(new Date(row.original?.["approvalDate"]), "dd/MM/yyyy")) : "-";
+        },
+        disableSortBy: true,
+      },
+      isCitizenOthers && {
+        Header: t("CS_APPLICATION_DETAILS_APPROVAL_DATE"),
+        accessor: "issuedDate",
+        Cell: ({ row }) => {
+          return row.original?.["issuedDate"] ? GetCell(format(new Date(row.original?.["issuedDate"]), "dd/MM/yyyy")) : "-";
         },
         disableSortBy: true,
       },

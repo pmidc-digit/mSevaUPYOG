@@ -22,6 +22,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     handleSubmit,
     setValue,
     trigger,
+    clearErrors,
     formState: { errors },
     watch,
     getValues,
@@ -62,7 +63,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.noc.NOCNewApplicationFormReducer.ownerPhotos;
   });
 
-  const commonProps = { Controller, control, setValue, trigger, errors, errorStyle, useFieldArray, watch };
+  const commonProps = { Controller, control, setValue, trigger, clearErrors, errors, errorStyle, useFieldArray, watch };
 
   let tenantId;
 
@@ -197,6 +198,11 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
         specificationRestrictedArea: formData?.siteDetails?.specificationRestrictedArea?.code || "",
         specificationIsSiteUnderMasterPlan: formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
+        existingNocType: formData?.siteDetails?.existingNocType?.name || "",
+        existingNocNumber: formData?.siteDetails?.existingNocNumber || "",
+        existingNocDate: formData?.siteDetails?.existingNocDate || "",
+        existingNocDocument: formData?.siteDetails?.existingNocDocument || null,
+        isNocValidated: formData?.siteDetails?.isNocValidated || false,
       },
       ownerPhotos: Array.isArray(ownerPhotos?.ownerPhotoList) ? ownerPhotos.ownerPhotoList : [],
       ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList : [],

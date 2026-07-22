@@ -2,7 +2,7 @@ import { Banner, Card, Loader, Toast } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
-import { stringReplaceAll } from "../../utils";
+import { encodeURIComponentCustom, stringReplaceAll } from "../../utils";
 
 const NOCEsignResponse = () => {
   const location = useLocation();

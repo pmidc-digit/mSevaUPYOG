@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.hibernate.validator.constraints.SafeHtml;
 
+import java.math.BigDecimal;
 import javax.validation.constraints.Digits;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -56,6 +57,12 @@ public class RLProperty {// extends PropertyInfo {
 	
 	@JsonProperty("penaltyType")
 	private String penaltyType;
+	
+	@JsonProperty("penaltyRate")
+	private BigDecimal penaltyRate;
+
+	@JsonProperty("penaltyFlatAmount")
+	private BigDecimal penaltyFlatAmount;
 	
 //	@JsonProperty("latePayment")
 //	private String latePayment;

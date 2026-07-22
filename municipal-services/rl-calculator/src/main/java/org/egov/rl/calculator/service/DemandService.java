@@ -635,6 +635,21 @@ public class DemandService {
 				boolean groupModified = false;
 				AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
 
+				// Fetch property-level penalty configuration from MDMS if available
+				RLProperty propConfig = null;
+				try {
+					List<AllotmentDetails> allotments = fetchApprovedAllotmentApplications(tenantId, requestInfo, cCode);
+					if (!CollectionUtils.isEmpty(allotments)) {
+						String propertyId = allotments.get(0).getPropertyId();
+						List<RLProperty> propList = propertyutil.getCalculateAmount(propertyId, requestInfo, tenantId, RLConstants.RL_MASTER_MODULE_NAME);
+						if (!CollectionUtils.isEmpty(propList)) {
+							propConfig = propList.get(0);
+						}
+					}
+				} catch (Exception ex) {
+					log.warn("Could not fetch property MDMS config for consumerCode: {}. Falling back to default ULB penalty slab.", cCode, ex);
+				}
+
 				// Step 4: apply flat penalty per expired demand (on its own base rent)
 				// Also accumulate newly added penalty amounts into totalOutstanding
 				for (Demand d : expiredDemandsInGroup) {
@@ -650,7 +665,15 @@ public class DemandService {
 									.anyMatch(dd -> dd.getTaxHeadMasterCode().equals(RLConstants.PENALTY_FEE_RL_APPLICATION));
 
 							if (!hasFlatPenalty) {
-								BigDecimal flatPenaltyAmount = baseRent.multiply(flatPenaltyRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+								BigDecimal flatPenaltyAmount = BigDecimal.ZERO;
+								if (propConfig != null && propConfig.getPenaltyFlatAmount() != null && propConfig.getPenaltyFlatAmount().compareTo(BigDecimal.ZERO) > 0) {
+									flatPenaltyAmount = propConfig.getPenaltyFlatAmount();
+								} else if (propConfig != null && propConfig.getPenaltyRate() != null && propConfig.getPenaltyRate().compareTo(BigDecimal.ZERO) > 0) {
+									flatPenaltyAmount = baseRent.multiply(propConfig.getPenaltyRate()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+								} else {
+									flatPenaltyAmount = baseRent.multiply(flatPenaltyRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+								}
+
 								if (flatPenaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
 									DemandDetail flatPenaltyDetail = DemandDetail.builder()
 											.demandId(d.getId())

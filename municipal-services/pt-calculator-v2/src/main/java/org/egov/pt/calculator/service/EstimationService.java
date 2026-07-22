@@ -238,6 +238,30 @@ public class EstimationService {
 
 		if(criteria.getFromDate()==null || criteria.getToDate()==null)
             enrichmentService.enrichDemandPeriod(criteria,assessmentYear,masterMap);
+		
+		if ("2013-14".equals(assessmentYear)) {
+		    log.info("Calling 2013-14 special tax calculation...");
+
+		    CalculationReq request = new CalculationReq();
+		    request.setRequestInfo(requestInfo);
+		    request.setCalculationCriteria(Collections.singletonList(criteria));
+
+		    JsonNode requestBody = mapper.convertValue(request, JsonNode.class);
+		    JsonNode legacyResponseJson = calculateFor2013(requestBody);
+		    JsonNode calcArray = legacyResponseJson.path("Calculation");
+
+		    Calculation legacyCalc = mapper.convertValue(calcArray.get(0), Calculation.class);
+
+		    List<TaxHeadEstimate> taxHeadEstimates = legacyCalc.getTaxHeadEstimates();
+		    List<String> billingSlabs = legacyCalc.getBillingSlabIds();
+
+		    Map<String, List> estimatesAndBillingSlabs = new HashMap<>();
+		    estimatesAndBillingSlabs.put("estimates", taxHeadEstimates);
+		    estimatesAndBillingSlabs.put("billingSlabIds", billingSlabs);
+
+		    return estimatesAndBillingSlabs;
+		}
+
 
         List<BillingSlab> filteredBillingSlabs = getSlabsFiltered(property, requestInfo);
 
@@ -577,8 +601,10 @@ public class EstimationService {
 				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.157625"));
 			else if (assessmentYear.startsWith("2024-")) 
 				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.215506"));
-			else if (assessmentYear.startsWith("2025-")  || assessmentYear.compareTo("2025-") > 0)  // applicable for assessmentyear 2025-26 and onwards
+			else if (assessmentYear.startsWith("2025-"))  // applicable for assessmentyear 2025-26
 				currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.276281"));
+            else if (assessmentYear.startsWith("2026-")  || assessmentYear.compareTo("2026-") > 0)  // applicable for assessmentyear 2026-27 and onwards
+                currentUnitTax=currentUnitTax.multiply(new BigDecimal("1.340095"));
 			
 		}
 		
@@ -901,12 +927,12 @@ public class EstimationService {
 				break;
 
 			case PT_UNIT_USAGE_EXEMPTION:
-				exemption = exemption.add(estimate.getEstimateAmount());
+				exemption = exemption.add(estimate.getEstimateAmount());		
 				estimate.setCategory(taxHeadCategoryMap.get(estimate.getTaxHeadCode()));
 				break;
 				
 			case PT_OWNER_EXEMPTION:
-				exemption = exemption.add(estimate.getEstimateAmount());
+				exemption = exemption.add(estimate.getEstimateAmount());	
 				estimate.setCategory(taxHeadCategoryMap.get(estimate.getTaxHeadCode()));
 				break;
 				
@@ -916,6 +942,9 @@ public class EstimationService {
 				break;
 			}
 		}
+		
+		
+		
 		TaxHeadEstimate decimalEstimate = payService.roundOfDecimals(taxAmt.add(penalty), rebate.add(exemption));
         if (null != decimalEstimate) {
 			decimalEstimate.setCategory(taxHeadCategoryMap.get(decimalEstimate.getTaxHeadCode()));
@@ -957,6 +986,8 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 	/**
 	 * method to do a first level filtering on the slabs based on the values present in Property detail
 	 */
+	   
+	   
 	private List<BillingSlab> getSlabsFiltered(Property property, RequestInfo requestInfo) {
 
 		PropertyDetail detail = property.getPropertyDetails().get(0);
@@ -1827,9 +1858,11 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 						   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.157625));
 						else if( assessmentYear.startsWith("2024-"))
 							   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.215506));
-						else if( assessmentYear.startsWith("2025-") || assessmentYear.compareTo("2025-") > 0)  // applicable for assessment year 2025-26 and onwards
+						else if( assessmentYear.startsWith("2025-"))  // applicable for assessment year 2025-26
 							   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.276281));
-						else
+                        else if( assessmentYear.startsWith("2026-") || assessmentYear.compareTo("2026-") > 0)  // applicable for assessment year 2026-27 and onwards
+                            unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.340095));
+                        else
 						   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)));
 					}
 						else {  
@@ -1841,9 +1874,11 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 							unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)*1.157625));
 						else if(assessmentYear.startsWith("2024-"))  
 							unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)*1.215506));
-						else if( assessmentYear.startsWith("2025-") || assessmentYear.compareTo("2025-") > 0)  // applicable for assessment year 2025-26 and onwards
+						else if( assessmentYear.startsWith("2025-"))  // applicable for assessment year 2025-26
 							   unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.276281));
-						else
+                        else if( assessmentYear.startsWith("2026-") || assessmentYear.compareTo("2026-") > 0)  // applicable for assessment year 2026-27 and onwards
+                            unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() * unit.getUnitArea() / groundUnitsArea) * (diffArea)*1.340095));
+                        else
 						    unBuiltRateCalc.put(unit, BigDecimal.valueOf((slab.getUnBuiltUnitRate() / groundUnits.size()) * (diffArea)));
 					}
 				}
@@ -2159,12 +2194,12 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 			double totalTax = tax_payable_roundoff;
 
 			taxHeadEstimates.add(buildTaxHead("PT_TAX", PT_TAX));
-			taxHeadEstimates.add(buildTaxHead("PT_OWNER_EXEMPTION", exemption));
-			taxHeadEstimates.add(buildTaxHead("PT_UNIT_USAGE_EXEMPTION", unit_usage_exemption));
+			taxHeadEstimates.add(buildTaxHead("PT_OWNER_EXEMPTION",  -Math.abs(exemption)));
+			taxHeadEstimates.add(buildTaxHead("PT_UNIT_USAGE_EXEMPTION", -Math.abs(unit_usage_exemption)));
 			taxHeadEstimates.add(buildTaxHead("PT_FIRE_CESS", FireCess));
 			taxHeadEstimates.add(buildTaxHead("PT_TIME_PENALTY", penality));
 			taxHeadEstimates.add(buildTaxHead("PT_CANCER_CESS", 0.0));
-			taxHeadEstimates.add(buildTaxHead("PT_TIME_REBATE", additional_rebate));
+			taxHeadEstimates.add(buildTaxHead("PT_TIME_REBATE", -Math.abs(additional_rebate)));
 			taxHeadEstimates.add(buildTaxHead("PT_TIME_INTEREST", totalInterest));
 			taxHeadEstimates.add(buildTaxHead("PT_ROUNDOFF", round_off));
 

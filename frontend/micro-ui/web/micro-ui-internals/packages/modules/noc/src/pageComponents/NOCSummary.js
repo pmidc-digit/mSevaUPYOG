@@ -37,7 +37,7 @@ import NOCDocument from "./NOCDocument";
 import NOCImageView from "./NOCImageView";
 import NOCDocumentTableView from "./NOCDocumentTableView";
 import NocSitePhotographs from "../components/NocSitePhotographs";
-import { convertToDDMMYYYY } from "../utils";
+import { convertToDDMMYYYY, getCode } from "../utils";
 import { format } from "date-fns";
 
 function NOCSummary({ currentStepData: formData, t }) {
@@ -233,43 +233,51 @@ console.log('applicationNo, submittedOn', applicationNo, submittedOn)
 
       <Card>
         <CardSubHeader>{t("NOC_SPECIFICATION_DETAILS")}</CardSubHeader>
-        <StatusTable>
-          <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={formData?.siteDetails?.specificationPlotArea || "N/A"} />
-          <Row label={t("NOC_BUILDING_CATEGORY_LABEL")} text={formData?.siteDetails?.specificationBuildingCategory?.name || "N/A"} />
-          <Row label={t("NOC_NOC_TYPE_LABEL")} text={formData?.siteDetails?.specificationNocType?.name || "N/A"} />
+        {(() => {
+          const specNocCode = getCode(formData?.siteDetails?.specificationNocType);
+          const existNocCode = getCode(formData?.siteDetails?.existingNocType);
+          const isFinalNoc = specNocCode === "FINAL";
+          const isDigitizationOfManual = specNocCode === "DIGITIZATION_OF_MANUAL";
+          const isOffline = existNocCode === "OFFLINE";
 
-          {((formData?.siteDetails?.specificationNocType?.name === "Final" || formData?.siteDetails?.specificationNocType?.name === "Digitization of Manual")) && (
-            <React.Fragment>
-              {(formData?.siteDetails?.specificationNocType?.name === "Final") && (
-                <Row
-                  label={t("NOC_EXISTING_NOC_TYPE_LABEL")}
-                  text={
-                    formData?.siteDetails?.existingNocType?.name ||
-                    formData?.siteDetails?.existingNocType?.code ||
-                    (typeof formData?.siteDetails?.existingNocType === "string" ? formData?.siteDetails?.existingNocType : "N/A")
-                  }
-                />
+          return (
+            <StatusTable>
+              <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={formData?.siteDetails?.specificationPlotArea || "N/A"} />
+              <Row label={t("NOC_BUILDING_CATEGORY_LABEL")} text={formData?.siteDetails?.specificationBuildingCategory?.name || formData?.siteDetails?.specificationBuildingCategory || "N/A"} />
+              <Row label={t("NOC_NOC_TYPE_LABEL")} text={formData?.siteDetails?.specificationNocType?.name || formData?.siteDetails?.specificationNocType || "N/A"} />
+
+              {(isFinalNoc || isDigitizationOfManual) && (
+                <React.Fragment>
+                  {isFinalNoc && (
+                    <Row
+                      label={t("NOC_EXISTING_NOC_TYPE_LABEL")}
+                      text={
+                        formData?.siteDetails?.existingNocType?.name ||
+                        formData?.siteDetails?.existingNocType?.code ||
+                        (typeof formData?.siteDetails?.existingNocType === "string" ? formData?.siteDetails?.existingNocType : "N/A")
+                      }
+                    />
+                  )}
+                  <Row label={t("NOC_NUMBER_LABEL")} text={formData?.siteDetails?.existingNocNumber || "N/A"} />
+                  {(isOffline || isDigitizationOfManual) && (
+                    <Row label={t("NOC_DATE_LABEL")} text={formData?.siteDetails?.existingNocDate || "N/A"} />
+                  )}
+                  {formData?.siteDetails?.existingNocDocument && (
+                    <Row
+                      label={t("NOC_UPLOAD_DOCUMENT_LABEL")}
+                      text={
+                        <DocumentLink fileStoreId={formData?.siteDetails?.existingNocDocument} stateCode={Digit.ULBService.getStateId()} t={t} />
+                      }
+                    />
+                  )}
+                
+                </React.Fragment>
               )}
-              <Row label={t("NOC_NUMBER_LABEL")} text={formData?.siteDetails?.existingNocNumber || "N/A"} />
-              {((formData?.siteDetails?.existingNocType?.name === "Offline" ||
-                formData?.siteDetails?.existingNocType?.code === "OFFLINE" ||
-                formData?.siteDetails?.existingNocType === "Offline") ||
-                formData?.siteDetails?.specificationNocType?.name === "Digitization of Manual") && (
-                <Row label={t("NOC_DATE_LABEL")} text={formData?.siteDetails?.existingNocDate || "N/A"} />
-              )}
-              {formData?.siteDetails?.existingNocDocument && (
-                <Row
-                  label={t("NOC_UPLOAD_DOCUMENT_LABEL")}
-                  text={
-                    <DocumentLink fileStoreId={formData?.siteDetails?.existingNocDocument} stateCode={Digit.ULBService.getStateId()} t={t} />
-                  }
-                />
-              )}
-              <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={formData?.siteDetails?.specificationRestrictedArea?.code || "N/A"} />
-              <Row label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "N/A"} />
-            </React.Fragment>
-          )}
-        </StatusTable>
+                <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={formData?.siteDetails?.specificationRestrictedArea?.code || formData?.siteDetails?.specificationRestrictedArea || "N/A"} />
+                <Row label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || formData?.siteDetails?.specificationIsSiteUnderMasterPlan || "N/A"} />
+            </StatusTable>
+          );
+        })()}
       </Card>
 
       {/* <Card>

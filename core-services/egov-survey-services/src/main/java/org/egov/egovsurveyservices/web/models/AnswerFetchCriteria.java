@@ -26,4 +26,10 @@ public class AnswerFetchCriteria {
     @JsonProperty("tenantId")
     private String tenantId;
 
+    @JsonProperty("offset")
+    private Integer offset = 0;
+
+    @JsonProperty("limit")
+    private Integer limit = 50;
+
 }

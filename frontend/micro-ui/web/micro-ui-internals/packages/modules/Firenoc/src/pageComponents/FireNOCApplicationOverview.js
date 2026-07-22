@@ -130,7 +130,7 @@ const FireNOCApplicationOverview = () => {
       return;
     }
     if (action?.action === "PAY") {
-      if(tenantId === "pb.jalandhar" || tenantId === "pb.testing" || tenantId === "pb.itjalandhar"){
+      if((tenantId === "pb.jalandhar" || tenantId === "pb.testing" || tenantId === "pb.itjalandhar") && !isEmployee){
         alert(t("PAYMENT_DISABLED"))
         return
       }

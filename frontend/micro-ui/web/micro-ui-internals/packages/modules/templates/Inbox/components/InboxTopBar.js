@@ -169,6 +169,7 @@ const InboxTopBar = ({
   searchPlaceholder = "Search by application number...",
   totalCount = 0,
   showClearTab = true,
+  showAll = true,
 }) => {
   const { t } = useTranslation();
   const businessServiceLabelMap = React.useMemo(
@@ -194,11 +195,12 @@ const InboxTopBar = ({
   return (
     <div className="new-inbox-topbar">
       <div className="new-inbox-tabs">
-        <button type="button" className={`new-inbox-tab ${activeTab === "ALL" ? "new-inbox-tab-active" : ""}`} onClick={() => onTabClick?.("ALL")}>
-          {t("ALL")}
-          <span className={`new-inbox-tab-count ${activeTab === "ALL" ? "new-inbox-tab-count-active" : ""}`}>{totalCount || 0}</span>
-        </button>
-
+        {showAll && (
+          <button type="button" className={`new-inbox-tab ${activeTab === "ALL" ? "new-inbox-tab-active" : ""}`} onClick={() => onTabClick?.("ALL")}>
+            {t("ALL")}
+            <span className={`new-inbox-tab-count ${activeTab === "ALL" ? "new-inbox-tab-count-active" : ""}`}>{totalCount || 0}</span>
+          </button>
+        )}
         {(statuses || []).map((status) => {
           const businessService = status?.businessService || status?.businessservice;
           const businessServiceLabel = status?.businessServiceLabel || businessServiceLabelMap?.[businessService] || businessService;

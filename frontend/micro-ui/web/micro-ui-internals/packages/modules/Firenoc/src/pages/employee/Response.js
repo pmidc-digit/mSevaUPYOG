@@ -52,13 +52,7 @@ const Response = (props) => {
   };
 
   const handlePayment = () => {
-    if(tenantId === "pb.jalandhar" || tenantId === "pb.testing" || tenantId === "pb.itjalandhar"){
-        alert(t("PAYMENT_DISABLED"))
-      return
-    }
-    else {
-      history.push(`/digit-ui/employee/payment/collect/FIRENOC/${nocCode}/${tenantId}?tenantId=${tenantId}`);
-    }
+    history.push(`/digit-ui/employee/payment/collect/FIRENOC/${nocCode}/${tenantId}?tenantId=${tenantId}`);
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
   };
   const onViewApplication = () => {

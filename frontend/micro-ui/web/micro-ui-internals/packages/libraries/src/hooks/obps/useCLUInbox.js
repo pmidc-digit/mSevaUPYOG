@@ -1,7 +1,7 @@
 import React from "react";
 import useInbox from "../useInbox";
 import { useQueryClient } from "react-query";
-import {OBPS_CLU_BUSINESS_SERVICES} from "../../../../constants/constants"
+import { OBPS_CLU_BUSINESS_SERVICES } from "../../../../constants/constants";
 
 const useCLUInbox = ({ tenantId, filters, config = {} }) => {
   const queryClient = useQueryClient();
@@ -50,16 +50,26 @@ const useCLUInbox = ({ tenantId, filters, config = {} }) => {
         }
 
         const tableData = (data?.items || [])?.map((application) => {
+          const submittedOn = Number(application?.businessObject?.cluDetails?.additionalDetails?.SubmittedOn); // or submissionDate
+          const approvalDate = application.businessObject?.cluDetails?.additionalDetails?.approvalDate;
+          const endDate = approvalDate ? Number(approvalDate) : Date.now();
+
           return {
             applicationId: application?.businessObject?.applicationNo || application?.businessObject?.applicationNumber || "-",
             date: application?.businessObject?.auditDetails?.createdTime ? Number.parseInt(application.businessObject.auditDetails.createdTime) : 0,
+            submissionDate: application?.businessObject?.cluDetails?.additionalDetails?.SubmittedOn,
+            approvalDate: approvalDate,
             businessService: application?.ProcessInstance?.businessService || "-",
             locality: application?.businessObject?.tenantId ? `${application.businessObject.tenantId.toUpperCase().split(".").join("_")}` : "-",
             status: application?.businessObject?.applicationStatus || "-",
             owner: application?.businessObject?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-",
             professionalName: application?.businessObject?.cluDetails?.additionalDetails?.applicationDetails?.professionalName || "-",
             documents: application?.businessObject?.documents || application?.documents || [],
-            tenantId: application?.businessObject?.tenantId
+            tenantId: application?.businessObject?.tenantId,
+            category: application.businessObject?.cluDetails?.additionalDetails?.siteDetails?.appliedCluCategory?.name,
+            zone: application.businessObject?.cluDetails?.additionalDetails?.siteDetails?.zone?.name,
+            applicationType: application?.businessObject?.applicationType,
+            sla: Math.floor((endDate - submittedOn) / (1000 * 60 * 60 * 24)),
           };
         });
 

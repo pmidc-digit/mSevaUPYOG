@@ -9,7 +9,8 @@ import java.util.Map;
 
 import com.ingestpipeline.model.SourceReferences;
 import com.ingestpipeline.model.TargetReferences;
-import org.apache.tomcat.util.codec.binary.Base64;
+//import org.apache.tomcat.util.codec.binary.Base64;
+import java.util.Base64;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -236,9 +237,12 @@ public class EnrichmentServiceImpl implements EnrichmentService {
 	 * @return
 	 */
 	private String getBase64Value(String userName, String password) {
-		String authString = String.format("%s:%s", userName, password);
-		byte[] encodedAuthString = Base64.encodeBase64(authString.getBytes(Charset.forName(US_ASCII)));
-		return String.format(BASIC_AUTH, new String(encodedAuthString));
+	    String authString = userName + ":" + password;
+
+	    String encodedAuthString = Base64.getEncoder()
+	            .encodeToString(authString.getBytes(StandardCharsets.US_ASCII));
+
+	    return String.format(BASIC_AUTH, encodedAuthString);
 	}
 	
 	/**

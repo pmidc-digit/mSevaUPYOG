@@ -24,6 +24,12 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   //console.log("LOOK APPLICATION NUMBER +++++>", isEditApplication);
   const history = useHistory();  
 
+    useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
+  
   // Get Redux data BEFORE using it in useForm
   const currentStepData = useSelector(function (state) {
     return state.obps.LayoutNewApplicationFormReducer.formData;

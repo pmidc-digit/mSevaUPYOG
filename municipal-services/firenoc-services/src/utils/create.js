@@ -411,3 +411,35 @@ const getUUidFromUserName = async (owners, RequestInfo) => {
 
   return uuidsSet;
 };
+
+export const ownerAssignee = async (owners, RequestInfo) => {
+  let assignees = [];
+
+  if (!owners || owners.length === 0) {
+    return null;
+  }
+ for (let owner of owners) {
+    let userSearchReqCriteria = {
+      mobileNumber: owner.mobileNumber,
+      userName: owner.mobileNumber,
+      tenantId: envVariables.EGOV_DEFAULT_STATE_ID
+    };
+
+    let userSearchResponse = await userService.searchUser(
+      RequestInfo,
+      userSearchReqCriteria
+    );
+    console.log("userSearchResponsedfdhfdh",userSearchResponse)
+    if (get(userSearchResponse, "user", []).length > 0) {
+      assignees.push(userSearchResponse.user[0].uuid);
+    }
+  }
+  
+  if (assignees.length === 0) {
+    return null;
+  }
+
+  assignees = [...new Set(assignees)];
+  console.log("assigneesdsdsg",assignees)
+  return assignees.map(uuid => ({ uuid }));
+};

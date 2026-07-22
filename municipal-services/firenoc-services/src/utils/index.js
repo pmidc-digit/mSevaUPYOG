@@ -4,6 +4,7 @@ import get from "lodash/get";
 import findIndex from "lodash/findIndex";
 import isEmpty from "lodash/isEmpty";
 import { httpRequest } from "./api";
+import { ownerAssignee } from "./create";
 import envVariables from "../envVariables";
 
 export const uuidv1 = () => {
@@ -69,26 +70,37 @@ export const getLocationDetails = async (requestInfo, tenantId) => {
 };
 
 export const createWorkFlow = async body => {
-  //wfDocuments and comment should rework after that
-    console.log("WorkFlow Method Calling Now")
-  let processInstances = body.FireNOCs.map(fireNOC => {
-    return {
+  console.log("WorkFlow Method Calling Now")
+
+  let processInstances = [];
+  for (let i = 0; i < body.FireNOCs.length; i++) {
+    let fireNOC = body.FireNOCs[i];
+    let assignesValue = null;
+
+    if (fireNOC.fireNOCDetails.action === 'SENDBACKTOCITIZEN') {
+      let owners = get(fireNOC, "fireNOCDetails.applicantDetails.owners", []);
+      assignesValue = await ownerAssignee(owners, body.RequestInfo);
+    } else {
+      assignesValue = (fireNOC.fireNOCDetails.assignee
+        && fireNOC.fireNOCDetails.assignee[0] != null
+        && fireNOC.fireNOCDetails.assignee[0] !== '')
+        ? [{ uuid: fireNOC.fireNOCDetails.assignee[0] }]
+        : null;
+    }
+
+    processInstances.push({
       tenantId: fireNOC.tenantId,
       businessService: envVariables.BUSINESS_SERVICE,
       businessId: fireNOC.fireNOCDetails.applicationNumber,
       action: fireNOC.fireNOCDetails.action,
       comment: get(fireNOC.fireNOCDetails, "comment", null),
-      assignes: (fireNOC.fireNOCDetails.assignee 
-        && fireNOC.fireNOCDetails.assignee[0] != null 
-       && fireNOC.fireNOCDetails.assignee[0] !='')
-        ? [{ uuid: fireNOC.fireNOCDetails.assignee[0] }]
-        : null,
+      assignes: assignesValue,
       documents: get(fireNOC.fireNOCDetails, "wfDocuments", null),
       sla: 0,
       previousStatus: null,
       moduleName: envVariables.BUSINESS_SERVICE
-    };
-  });
+    });
+  }
   
   var systemPaymentRole = {
     code: "SYSTEM_PAYMENT",

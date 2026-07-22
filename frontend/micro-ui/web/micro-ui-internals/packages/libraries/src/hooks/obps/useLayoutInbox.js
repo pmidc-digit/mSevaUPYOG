@@ -54,6 +54,8 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
         const tableData = (data?.items || [])?.map((application) => {
           const submittedOn = Number(application?.businessObject?.layoutDetails?.additionalDetails?.SubmittedOn); // or submissionDate
           const approvalDate = application?.businessObject?.layoutDetails?.additionalDetails?.approvalDate;
+          const siteDetails = application?.businessObject?.layoutDetails?.additionalDetails?.siteDetails;
+          const typeOfApp = siteDetails?.typeOfApplication;
 
           const endDate = approvalDate ? Number(approvalDate) : Date.now();
 
@@ -71,9 +73,9 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
               const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
               return isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name;
             })(),
-            category: application.businessObject?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name,
-            zone: application.businessObject?.layoutDetails?.additionalDetails?.siteDetails?.zone?.name,
-            applicationType: application?.businessObject?.applicationType,
+            category: siteDetails?.buildingCategory?.name,
+            zone: siteDetails?.zone?.name,
+            applicationType: (typeof typeOfApp === "object" ? typeOfApp?.name : typeOfApp) || application?.businessObject?.applicationType,
             documents: application?.businessObject?.documents || application?.documents,
             sla: Math.floor((endDate - submittedOn) / (1000 * 60 * 60 * 24)),
           };

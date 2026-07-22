@@ -48,6 +48,7 @@
 package org.egov.edcr.feature;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -89,7 +90,9 @@ public class PlantationGreenStrip extends FeatureProcess {
 		
 		 if (mostRestrictiveFarHelper != null && mostRestrictiveFarHelper.getType() != null){			
 			 if(DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveFarHelper.getType().getCode()) ||
-					 DxfFileConstants.G.equalsIgnoreCase(mostRestrictiveFarHelper.getType().getCode())) {
+					 DxfFileConstants.G.equalsIgnoreCase(mostRestrictiveFarHelper.getType().getCode()) ||
+					 DxfFileConstants.F_MTP.equalsIgnoreCase(mostRestrictiveFarHelper.getSubtype().getCode())
+					 ) {
 				 for (Block block : pl.getBlocks()) {
 						ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
 						scrutinyDetail.addColumnHeading(1, RULE_NO);
@@ -110,16 +113,42 @@ public class PlantationGreenStrip extends FeatureProcess {
 									.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
 						}
 
-						BigDecimal requiredPlantations =  requiredPlantationPlotAreaWise(pl,mostRestrictiveFarHelper.getType().getCode());
+						BigDecimal requiredPlantations =  BigDecimal.ZERO;
 						// Check plantation area ≥ 5% of plot area
-						String percentage =
-						        requiredPlantations
-						                .multiply(BigDecimal.valueOf(100))
-						                .stripTrailingZeros()
-						                .toPlainString() + "% of plot area";
+						String percentage = "";
+						BigDecimal requiredPlantationArea = BigDecimal.ZERO;
+						
+						if (DxfFileConstants.F_MTP.equalsIgnoreCase(mostRestrictiveFarHelper.getSubtype().getCode())) {
+						    BigDecimal buildingFootprintArea = BigDecimal.ZERO;
+						    BigDecimal openArea = BigDecimal.ZERO;
+						    if (pl.getPlot() != null
+						            && pl.getPlot().getBuildingFootPrint() != null
+						            && pl.getPlot().getBuildingFootPrint().getArea() != null) {
+						        buildingFootprintArea = pl.getPlot().getBuildingFootPrint().getArea().setScale(2,RoundingMode.HALF_UP);
+						    }
+						    openArea = plotArea.subtract(buildingFootprintArea);
+						    // Prevent negative open area
+						    if (openArea.compareTo(BigDecimal.ZERO) < 0) {
+						        openArea = BigDecimal.ZERO;
+						    }
+						    // Plantation area = 10% of Open Area
+						    percentage = "10% of Open Area";
+						    requiredPlantationArea = openArea
+						            .multiply(BigDecimal.valueOf(0.10))
+						            .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+						                    DcrConstants.ROUNDMODE_MEASUREMENTS);
+						}else {
+							requiredPlantations =  requiredPlantationPlotAreaWise(pl,mostRestrictiveFarHelper.getType().getCode());
+							// Check plantation area ≥ 5% of plot area
+							percentage =
+							        requiredPlantations
+							                .multiply(BigDecimal.valueOf(100))
+							                .stripTrailingZeros()
+							                .toPlainString() + "% of plot area";
+							requiredPlantationArea = plotArea.multiply(requiredPlantations).
+									setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
+						}
 
-						BigDecimal requiredPlantationArea = plotArea.multiply(requiredPlantations).
-								setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
 						if (plantationArea.compareTo(requiredPlantationArea) >= 0) {
 							isAreaAccepted = true;
 						} else {

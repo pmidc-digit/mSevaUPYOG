@@ -77,6 +77,7 @@ import java.util.Arrays;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.egov.common.entity.edcr.Block;
+import org.egov.common.entity.edcr.Building;
 import org.egov.common.entity.edcr.Floor;
 import org.egov.common.entity.edcr.Measurement;
 import org.egov.common.entity.edcr.Occupancy;
@@ -478,6 +479,15 @@ public class Parking extends FeatureProcess {
             	noOfrequiredParking = calculateMiniplexECS(plotCoveredArea)
                         .setScale(0, RoundingMode.HALF_UP)
                         .intValue();
+            }else if(F_MTP.equalsIgnoreCase(subType)){
+            	BigDecimal totalBuiltUpArea = getTotalBuiltUpArea(pl);
+            	BigDecimal totalCinemaArea = getTotalCinemaArea(pl);
+
+            	noOfrequiredParking = calculateMultiplexECS(
+            	        totalBuiltUpArea,
+            	        totalCinemaArea)
+            	        .setScale(0, RoundingMode.HALF_UP)
+            	        .intValue();
             }else {            	
             	Integer multiplier = getFTypeMultiplier(subType);
             	BigDecimal divisor = getFTypeDivisor(subType);
@@ -1194,4 +1204,76 @@ public class Parking extends FeatureProcess {
 
         return firstSlabECS.add(remainingSlabECS);
     }
+    
+	private BigDecimal calculateMultiplexECS(BigDecimal totalBuiltUpArea, BigDecimal cinemaArea) {
+
+		BigDecimal commercialArea = BigDecimal.ZERO;
+
+		if (totalBuiltUpArea != null && cinemaArea != null) {
+			commercialArea = totalBuiltUpArea.subtract(cinemaArea);
+
+			if (commercialArea.compareTo(BigDecimal.ZERO) < 0) {
+				commercialArea = BigDecimal.ZERO;
+			}
+		}
+
+		BigDecimal totalECS = BigDecimal.ZERO;
+
+		// Cinema component
+		if (cinemaArea != null && cinemaArea.compareTo(BigDecimal.ZERO) > 0) {
+			totalECS = totalECS.add(cinemaArea.multiply(BigDecimal.valueOf(2)).divide(BigDecimal.valueOf(66.91), 10,
+					RoundingMode.HALF_UP));
+		}
+
+		// Commercial / Other component
+		if (commercialArea.compareTo(BigDecimal.ZERO) > 0) {
+			totalECS = totalECS.add(commercialArea.multiply(BigDecimal.valueOf(2)).divide(BigDecimal.valueOf(100), 10,
+					RoundingMode.HALF_UP));
+		}
+
+		return totalECS;
+	}
+	
+	private BigDecimal getTotalCinemaArea(Plan plan) {
+	    BigDecimal totalCinemaArea = BigDecimal.ZERO;
+	    if (plan == null || plan.getBlocks() == null) {
+	        return totalCinemaArea;
+	    }
+	    for (Block block : plan.getBlocks()) {
+	        if (block.getBuilding() == null || block.getBuilding().getFloors() == null) {
+	            continue;
+	        }
+	        for (Floor floor : block.getBuilding().getFloors()) {
+	            if (floor.getCinemas() == null) {
+	                continue;
+	            }
+
+	            for (org.egov.common.entity.edcr.Cinema cinema : floor.getCinemas()) {
+	                if (cinema.getCinemas() == null) {
+	                    continue;
+	                }
+	                for (Measurement measurement : cinema.getCinemas()) {
+	                    if (measurement != null && measurement.getArea() != null) {
+	                        totalCinemaArea = totalCinemaArea.add(measurement.getArea());
+	                    }
+	                }
+	            }
+	        }
+	    }
+
+	    return totalCinemaArea;
+	}
+	
+	private BigDecimal getTotalBuiltUpArea(Plan plan) {
+
+	    if (plan == null
+	            || plan.getVirtualBuilding() == null
+	            || plan.getVirtualBuilding().getTotalBuitUpArea() == null) {
+	        return BigDecimal.ZERO;
+	    }
+
+	    return plan.getVirtualBuilding().getTotalBuitUpArea().max(BigDecimal.ZERO);
+	}
+	
+    
 }

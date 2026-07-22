@@ -27,19 +27,21 @@ public class XMLRequestParser {
         
         // FIX: Check for both propertyId and consumerCode
         String idToSearch = request.getDocDetails().getPropertyId();
-        if (idToSearch == null || idToSearch.isEmpty()) {
+        if (idToSearch == null || idToSearch.trim().isEmpty()) {
             idToSearch = request.getDocDetails().getConsumerCode();
         }
 
         SearchCriteria criteria = SearchCriteria.builder()
-            .propertyId(idToSearch) // Pass the resolved ID here
-            .city(request.getDocDetails().getCity())
-            .connType(request.getDocDetails().getConnType())
-            .origin(origin)
-            .txn(txn)
-            .docType(request.getDocDetails().getDocType())
-            .payerName(request.getDocDetails().getFullName())
-            .mobile(request.getDocDetails().getMobile())
+            .propertyId(trim(idToSearch))
+            .city(trim(request.getDocDetails().getCity()))
+            .connType(trim(request.getDocDetails().getConnType()))
+            .level1(trim(request.getDocDetails().getLevel1()))
+            .level2(trim(request.getDocDetails().getLevel2()))
+            .origin(trim(origin))
+            .txn(trim(txn))
+            .docType(trim(request.getDocDetails().getDocType()))
+            .payerName(trim(request.getDocDetails().getFullName()))
+            .mobile(trim(request.getDocDetails().getMobile()))
             .build();
             
         return criteria;
@@ -51,16 +53,20 @@ public class XMLRequestParser {
         PullDocRequest request = (PullDocRequest) xstream.fromXML(xmlBody);
         String txn = extractTxn(xmlBody, request.getTxn());
         SearchCriteria criteria = new SearchCriteria();
-        criteria.setURI(request.getDocDetails().getURI());
-        criteria.setOrigin(origin);
-        criteria.setTxn(txn);
+        criteria.setURI(trim(request.getDocDetails().getURI()));
+        criteria.setOrigin(trim(origin));
+        criteria.setTxn(trim(txn));
         return criteria;
     }
 
     private String extractTxn(String xmlBody, String txnAttr) {
-        if (txnAttr != null) return txnAttr;
+        if (txnAttr != null) return txnAttr.trim();
         // Fallback regex split from original
-        return xmlBody.split("txn=\"")[1].split("\"")[0];
+        return xmlBody.split("txn=\"")[1].split("\"")[0].trim();
+    }
+
+    private String trim(String val) {
+        return val != null ? val.trim() : null;
     }
 
     private XStream configureXStream() {

@@ -211,7 +211,7 @@ public class AssessmentService {
 			assessmentRequest.setIsRented(configData.get(CalculatorConstants.IS_RENTED) == null ? true
 					: (Boolean) configData.get(CalculatorConstants.IS_RENTED));
 
-			int count = repository.getActivePropertyCount(assessmentRequest);
+			Long count = repository.getActivePropertyCount(assessmentRequest);
 			
 		
 			if (assessmentRequest.getLimit() != null && assessmentRequest.getLimit() > configs.getMaxSearchLimit())
@@ -264,7 +264,10 @@ public class AssessmentService {
 
 				}
 				
-				offset = limit +offset;
+				offset += limit;
+			}
+			if(scheduledTenants.size() > 1) {
+				assessmentRequest.setOffset(configs.getDefaultOffset());
 			}
 		}
 		return assessedProperties;

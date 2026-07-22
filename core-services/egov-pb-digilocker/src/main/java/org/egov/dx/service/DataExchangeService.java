@@ -111,6 +111,7 @@ public class DataExchangeService {
             }
             
             RequestInfoWrapper requestWrapper = prepareRequestInfo();
+            resolveCityFromMdms(searchCriteria, requestWrapper);
             String docType = searchCriteria.getDocType();
 
             log.info("Processing DigiLocker Request for DocType: {}", docType);
@@ -294,12 +295,12 @@ private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriR
                   .append("?searchType=CONNECTION")
                   .append("&tenantId=").append(TENANT_PREFIX).append(sc.getCity());
                   
-        if (sc.getMobile() != null && !sc.getMobile().isEmpty()) {
-            urlBuilder.append("&mobileNumber=").append(sc.getMobile());
+        if (sc.getMobile() != null && !sc.getMobile().trim().isEmpty()) {
+            urlBuilder.append("&mobileNumber=").append(sc.getMobile().trim());
         }
         
-        if (sc.getPropertyId() != null && !sc.getPropertyId().isEmpty()) {
-            urlBuilder.append("&connectionNumber=").append(sc.getPropertyId());
+        if (sc.getPropertyId() != null && !sc.getPropertyId().trim().isEmpty()) {
+            urlBuilder.append("&connectionNumber=").append(sc.getPropertyId().trim());
         }
 
         Map<String, Object> requestBody = new HashMap<>();
@@ -664,5 +665,98 @@ private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriR
         cert.setCertificateData(data);
 
         return cert;
+    }
+
+    private void resolveCityFromMdms(SearchCriteria searchCriteria, RequestInfoWrapper requestWrapper) {
+        if (searchCriteria.getCity() != null && !searchCriteria.getCity().trim().isEmpty()) {
+            log.info("City '{}' is already present in request criteria, skipping MDMS level lookup", searchCriteria.getCity());
+            return;
+        }
+
+        String level1 = searchCriteria.getLevel1();
+        String level2 = searchCriteria.getLevel2();
+
+        if (level1 == null || level1.trim().isEmpty() || level2 == null || level2.trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            log.info("Resolving city from MDMS using level1='{}', level2='{}'", level1, level2);
+
+            Map<String, Object> masterDetail = new HashMap<>();
+            masterDetail.put("name", "tenants");
+            masterDetail.put("filter", String.format("[?(@.ulbCode=='%s' && @.districtCode=='%s')]", level2, level1));
+
+            Map<String, Object> moduleDetail = new HashMap<>();
+            moduleDetail.put("moduleName", "tenant");
+            moduleDetail.put("masterDetails", Collections.singletonList(masterDetail));
+
+            Map<String, Object> mdmsCriteria = new HashMap<>();
+            mdmsCriteria.put("tenantId", "pb");
+            mdmsCriteria.put("moduleDetails", Collections.singletonList(moduleDetail));
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("RequestInfo", requestWrapper.getRequestInfo());
+            requestBody.put("MdmsCriteria", mdmsCriteria);
+
+            String mdmsUrl = configurations.getMdmsHost() + configurations.getMdmsEndpoint();
+            JsonNode mdmsRes = restTemplate.postForObject(mdmsUrl, requestBody, JsonNode.class);
+
+            if (mdmsRes != null && mdmsRes.has("MdmsRes")) {
+                JsonNode tenantsNode = mdmsRes.path("MdmsRes").path("tenant").path("tenants");
+                if (tenantsNode.isArray() && tenantsNode.size() > 0) {
+                    JsonNode tenantObj = tenantsNode.get(0);
+                    String tenantCode = tenantObj.path("code").asText("");
+                    if (!tenantCode.isEmpty()) {
+                        String city = tenantCode.startsWith("pb.") ? tenantCode.substring(3) : tenantCode;
+                        searchCriteria.setCity(city);
+                        log.info("Successfully resolved city '{}' from MDMS (tenantCode: {})", city, tenantCode);
+                        return;
+                    }
+                }
+            }
+
+            // Fallback: Retry without MDMS filter if filter produced no matches
+            masterDetail.remove("filter");
+            mdmsRes = restTemplate.postForObject(mdmsUrl, requestBody, JsonNode.class);
+
+            if (mdmsRes != null && mdmsRes.has("MdmsRes")) {
+                JsonNode tenantsNode = mdmsRes.path("MdmsRes").path("tenant").path("tenants");
+                if (tenantsNode.isArray()) {
+                    for (JsonNode t : tenantsNode) {
+                        String tenantCode = t.path("code").asText("");
+                        
+                        String districtCode = t.path("districtCode").asText("");
+                        if (districtCode.isEmpty()) {
+                            districtCode = t.path("city").path("districtCode").asText("");
+                        }
+                        
+                        String ulbCode = t.path("ulbCode").asText("");
+                        if (ulbCode.isEmpty()) {
+                            ulbCode = t.path("city").path("ulbCode").asText("");
+                            if (ulbCode.isEmpty()) {
+                                ulbCode = t.path("city").path("code").asText("");
+                            }
+                        }
+
+                        boolean matchesDistrict = districtCode.equalsIgnoreCase(level1)
+                                || tenantCode.toLowerCase().contains(level1.toLowerCase());
+                        boolean matchesUlb = ulbCode.equalsIgnoreCase(level2)
+                                || tenantCode.equalsIgnoreCase(level2)
+                                || tenantCode.equalsIgnoreCase("pb." + level2)
+                                || tenantCode.toLowerCase().endsWith("." + level2.toLowerCase());
+
+                        if (matchesDistrict && matchesUlb) {
+                            String city = tenantCode.startsWith("pb.") ? tenantCode.substring(3) : tenantCode;
+                            searchCriteria.setCity(city);
+                            log.info("Successfully resolved city '{}' via fallback match from MDMS (tenantCode: {})", city, tenantCode);
+                            return;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to resolve city from MDMS for level1='{}', level2='{}': ", level1, level2, e);
+        }
     }
 }

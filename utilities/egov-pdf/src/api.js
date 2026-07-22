@@ -834,6 +834,7 @@ async function create_bulk_pdf(kafkaData) {
         if (waterBillsData.length > 0) {
           for (let waterBill of waterBillsData) {
             if (waterBill.status === 'ACTIVE' && waterBill.totalAmount > 0) {
+              waterBill.additionalDetails.latePaymentc = (waterBillsData[0].tenantId == "pb.patiala" || waterBillsData[0].tenantId == "pb.nabha") ? '0% Late payment charges will be applied after due date' : '10% late payment charges For both water and sewerage';
               consolidatedResult.Bill.push(waterBill);
             }
           }
@@ -861,6 +862,7 @@ async function create_bulk_pdf(kafkaData) {
         if (sewerageBillsData.length > 0) {
           for (let sewerageBill of sewerageBillsData) {
             if (sewerageBill.status === 'ACTIVE' && sewerageBill.totalAmount > 0) {
+              sewerageBill.additionalDetails.latePaymentc = (sewerageBillsData[0].tenantId == "pb.patiala" || sewerageBillsData[0].tenantId == "pb.nabha") ? '25% Late payment charges will be applied after due date' : '10% late payment charges For both water and sewerage';
               consolidatedResult.Bill.push(sewerageBill);
             }
           }

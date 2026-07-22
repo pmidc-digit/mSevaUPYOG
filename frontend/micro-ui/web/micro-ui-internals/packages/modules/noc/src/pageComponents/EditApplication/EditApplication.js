@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation, useParams } from "react-router-dom";
-import { decodeURIComponentCustom, formatDateForInput } from "../../utils";
+import { decodeURIComponentCustom, formatDateForInput, getCode } from "../../utils";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper"
 import { stepperConfig } from "../../config/Create/stepperConfig";
 import {
@@ -242,8 +242,8 @@ const EditApplication = () => {
           (obj) => obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory
         ),
         specificationNocType: nocType?.find(
-          (obj) => obj.name === siteDetails?.specificationNocType?.name || obj.name === siteDetails?.specificationNocType
-        ),
+          (obj) => getCode(obj) === getCode(siteDetails?.specificationNocType)
+        ) || null,
         specificationRestrictedArea: options?.find(
           (obj) => obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea
         ),
@@ -251,11 +251,11 @@ const EditApplication = () => {
           (obj) =>
             obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan
         ),
-        existingNocType: existingNocTypeOptions?.find((obj) => obj.name === siteDetails?.existingNocType) || null,
+        existingNocType: existingNocTypeOptions?.find((obj) => getCode(obj) === getCode(siteDetails?.existingNocType)) || null,
         existingNocNumber: siteDetails?.existingNocNumber || "",
         existingNocDate: siteDetails?.existingNocDate || "",
         existingNocDocument: siteDetails?.existingNocDocument || null,
-        isNocValidated: siteDetails?.isNocValidated !== undefined ? siteDetails.isNocValidated : (siteDetails?.existingNocType === "Online" && siteDetails?.existingNocNumber ? true : false),
+        isNocValidated: siteDetails?.isNocValidated !== undefined ? siteDetails.isNocValidated : (getCode(siteDetails?.existingNocType) === "ONLINE" && siteDetails?.existingNocNumber ? true : false),
       };
 
       dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", updatedApplicantDetails));

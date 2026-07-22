@@ -12,10 +12,10 @@ import java.util.Base64;
 import java.util.List;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+//import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
 
 import com.ingestpipeline.util.Constants;
-
 
 @SpringBootApplication(scanBasePackages={"com.ingestpipeline"})// same as @Configuration @EnableAutoConfiguration @ComponentScan combined
 public class IngestApp {
@@ -44,15 +44,19 @@ public class IngestApp {
 		return restTemplate;
 	}
 	
-	 @Bean
-	    public WebMvcConfigurer corsConfigurer() {
-	        return new WebMvcConfigurerAdapter() {
-	            @Override
-	            public void addCorsMappings(CorsRegistry registry) {
-	                registry.addMapping("/**").allowedMethods(Constants.ALLOWED_METHODS_GET,Constants.ALLOWED_METHODS_POST
-	                		).allowedOrigins("*")
-	                        .allowedHeaders("*");
-	            }
-	        };
-	    }
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+	    return new WebMvcConfigurer() {
+	        @Override
+	        public void addCorsMappings(CorsRegistry registry) {
+	            registry.addMapping("/**")
+	                    .allowedMethods(
+	                        Constants.ALLOWED_METHODS_GET,
+	                        Constants.ALLOWED_METHODS_POST
+	                    )
+	                    .allowedOrigins("*")
+	                    .allowedHeaders("*");
+	        }
+	    };
+	}
 }

@@ -9,6 +9,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+//import org.springframework.retry.annotation.EnableRetry;
+
 
 import javax.naming.ServiceUnavailableException;
 

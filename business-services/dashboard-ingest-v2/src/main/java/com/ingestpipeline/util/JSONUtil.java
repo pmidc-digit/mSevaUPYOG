@@ -21,7 +21,7 @@ import java.util.Map;
 public class JSONUtil {
 	@Autowired
 	public ObjectMapper mapper;
-	@Autowired
+
 	public Gson gson;
 	@Autowired
 	private ElasticSearchRepository elasticRepository;

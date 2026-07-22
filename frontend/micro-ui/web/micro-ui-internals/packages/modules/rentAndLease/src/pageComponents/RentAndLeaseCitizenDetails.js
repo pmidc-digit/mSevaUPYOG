@@ -135,6 +135,8 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
         : {};
 
     additionalDetails["alternateMobileNumber"] = data?.applicants?.[0]?.alternateMobileNumber;
+    additionalDetails["gstAmount"] = currentStepData?.propertyDetails?.gstAmount;
+    additionalDetails["rebateAmount"] = currentStepData?.propertyDetails?.rebateAmount;
 
     const payload = buildAllotmentPayload({
       propertyDetails: currentStepData?.propertyDetails,
@@ -150,8 +152,6 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       goNext(data);
       return;
     }
-
-    console.log("PAYLOAD", payload);
 
     triggerLoader(true);
     try {

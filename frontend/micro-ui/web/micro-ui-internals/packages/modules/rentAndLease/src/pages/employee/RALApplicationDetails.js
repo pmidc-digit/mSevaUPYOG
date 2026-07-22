@@ -478,6 +478,8 @@ const RALApplicationDetails = () => {
             {applicationData?.tradeLicenseNumber && (
               <Row label={t("RENT_LEASE_TRADE_LICENSE_NUMBER")} text={tValue(applicationData?.tradeLicenseNumber)} />
             )}
+            {rawAdditionalDetails?.gstAmount && <Row label={t("GST")} text={tValue(rawAdditionalDetails?.gstAmount)} />}
+            {rawAdditionalDetails?.rebateAmount && <Row label={t("Rebate")} text={tValue(rawAdditionalDetails?.rebateAmount)} />}
           </StatusTable>
 
           {rawAdditionalDetails?.applicationType === "Legacy" && (

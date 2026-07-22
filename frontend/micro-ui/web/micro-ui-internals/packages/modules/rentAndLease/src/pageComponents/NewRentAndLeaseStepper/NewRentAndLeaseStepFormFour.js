@@ -95,6 +95,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
   const onSubmit = async (data, selectedAction) => {
     const { CreatedResponse } = data;
+
     const { workflow: existingWorkflow } = CreatedResponse || {};
 
     let formData = {};
@@ -157,6 +158,11 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
               incrementPercentage: updatedPropertyDetails?.incrementPercentage,
             }
           : null;
+
+      additionalDetails["alternateMobileNumber"] = originalAdditionalDetails?.alternateMobileNumber;
+
+      additionalDetails["gstAmount"] = updatedPropertyDetails?.gstAmount;
+      additionalDetails["rebateAmount"] = updatedPropertyDetails?.rebateAmount;
 
       // Get the allotmentId from CreatedResponse for new documents
 
@@ -239,7 +245,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       const lastRentRevisedDate = new Date(checkLastRentRevisedDate).getTime();
 
       const applicationType = updatedPropertyDetails?.applicationType?.code || originalAdditionalDetails?.applicationType;
-      const additionalDetails =
+      let additionalDetails =
         applicationType === "Legacy"
           ? {
               ...originalAdditionalDetails,
@@ -260,7 +266,12 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
               incrementPeriodMonths: updatedPropertyDetails?.incrementPeriodMonths?.code,
               incrementPercentage: updatedPropertyDetails?.incrementPercentage,
             }
-          : null;
+          : {};
+
+      additionalDetails["alternateMobileNumber"] = originalAdditionalDetails?.alternateMobileNumber;
+
+      additionalDetails["gstAmount"] = updatedPropertyDetails?.gstAmount;
+      additionalDetails["rebateAmount"] = updatedPropertyDetails?.rebateAmount;
 
       formData = {
         ...CreatedResponse?.AllotmentDetails?.[0],

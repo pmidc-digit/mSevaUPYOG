@@ -662,7 +662,7 @@ function LayoutSelectDocument({
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
-            uploadMessage = "Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+            uploadMessage = "Invalid File Format"
             required={doc?.required}
             isRemovable={!doc?.required}
           />

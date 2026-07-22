@@ -39,7 +39,7 @@ const NOCSpecificationDetails = (_props) => {
   const existCode = getCode(existingNocType);
 
   const isFinalNoc = specCode === "FINAL";
-  const isDigitizationOfManual = specCode === "DIGITIZATION_OF_MANUAL";
+  const isDigitizationOfManual = specCode === "DIGITIZATION_OF_MANUAL_NOC";
   const isOffline = existCode === "OFFLINE";
   const isOnline = existCode === "ONLINE";
 

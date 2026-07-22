@@ -1331,7 +1331,7 @@ const NOCEmployeeApplicationOverview = () => {
           const specNocCode = getCode(detail?.specificationNocType);
           const existNocCode = getCode(detail?.existingNocType);
           const isFinalNoc = specNocCode === "FINAL";
-          const isDigitizationOfManual = specNocCode === "DIGITIZATION_OF_MANUAL";
+          const isDigitizationOfManual = specNocCode === "DIGITIZATION_OF_MANUAL_NOC";
           const isOffline = existNocCode === "OFFLINE";
 
           return (

@@ -34,7 +34,7 @@ import { decodeURIComponentCustom, EmployeeData, encodeURIComponentCustom } from
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
-import { convertToDDMMYYYY, formatDuration, amountToWords, downloadPdfFromURL } from "../../../utils/index";
+import { convertToDDMMYYYY, formatDuration, amountToWords, downloadPdfFromURL, getCode } from "../../../utils/index";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import { format } from "date-fns";
@@ -818,56 +818,61 @@ const CitizenApplicationOverview = () => {
 
       <Card>
         <CardSubHeader>{t("NOC_SPECIFICATION_DETAILS")}</CardSubHeader>
-        {displayData?.siteDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
-              <Row
-                label={t("NOC_BUILDING_CATEGORY_LABEL")}
-                text={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory || "N/A"}
-              />
+        {displayData?.siteDetails?.map((detail, index) => {
+          const specNocCode = getCode(detail?.specificationNocType);
+          const existNocCode = getCode(detail?.existingNocType);
+          const isFinalNoc = specNocCode === "FINAL";
+          const isDigitizationOfManual = specNocCode === "DIGITIZATION_OF_MANUAL";
+          const isOffline = existNocCode === "OFFLINE";
 
-              <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || detail?.specificationNocType || "N/A"} />
-              {((detail?.specificationNocType === "Final" || detail?.specificationNocType === "Digitization of Manual")) && (
-                <React.Fragment>
-                  {((detail?.specificationNocType === "Final")) && (
-                    <Row
-                      label={t("NOC_EXISTING_NOC_TYPE_LABEL")}
-                      text={
-                        detail?.existingNocType?.name ||
-                        detail?.existingNocType?.code ||
-                        (typeof detail?.existingNocType === "string" ? detail?.existingNocType : "N/A")
-                      }
-                    />
-                  )}
-                  <Row label={t("NOC_NUMBER_LABEL")} text={detail?.existingNocNumber || "N/A"} />
-                  {((detail?.existingNocType?.name === "Offline" ||
-                    detail?.existingNocType?.code === "OFFLINE" ||
-                    detail?.existingNocType === "Offline") ||
-                    detail?.specificationNocType === "Digitization of Manual") && (
-                    <Row label={t("NOC_DATE_LABEL")} text={detail?.existingNocDate || "N/A"} />
-                  )}
-                  {detail?.existingNocDocument && (
-                    <Row
-                      label={t("NOC_UPLOAD_DOCUMENT_LABEL")}
-                      text={
-                        <DocumentLink fileStoreId={detail?.existingNocDocument} stateCode={Digit.ULBService.getStateId()} t={t} />
-                      }
-                    />
-                  )}
-                </React.Fragment>
-              )}
-              <Row
-                label={t("NOC_RESTRICTED_AREA_LABEL")}
-                text={detail?.specificationRestrictedArea?.code || detail?.specificationRestrictedArea || "N/A"}
-              />
-              <Row
-                label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")}
-                text={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan || "N/A"}
-              />
-            </StatusTable>
-          </div>
-        ))}
+          return (
+            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <StatusTable>
+                <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
+                <Row
+                  label={t("NOC_BUILDING_CATEGORY_LABEL")}
+                  text={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory || "N/A"}
+                />
+
+                <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || detail?.specificationNocType || "N/A"} />
+                {(isFinalNoc || isDigitizationOfManual) && (
+                  <React.Fragment>
+                    {isFinalNoc && (
+                      <Row
+                        label={t("NOC_EXISTING_NOC_TYPE_LABEL")}
+                        text={
+                          detail?.existingNocType?.name ||
+                          detail?.existingNocType?.code ||
+                          (typeof detail?.existingNocType === "string" ? detail?.existingNocType : "N/A")
+                        }
+                      />
+                    )}
+                    <Row label={t("NOC_NUMBER_LABEL")} text={detail?.existingNocNumber || "N/A"} />
+                    {(isOffline || isDigitizationOfManual) && (
+                      <Row label={t("NOC_DATE_LABEL")} text={detail?.existingNocDate || "N/A"} />
+                    )}
+                    {detail?.existingNocDocument && (
+                      <Row
+                        label={t("NOC_UPLOAD_DOCUMENT_LABEL")}
+                        text={
+                          <DocumentLink fileStoreId={detail?.existingNocDocument} stateCode={Digit.ULBService.getStateId()} t={t} />
+                        }
+                      />
+                    )}
+                  </React.Fragment>
+                )}
+                <Row
+                  label={t("NOC_RESTRICTED_AREA_LABEL")}
+                  text={detail?.specificationRestrictedArea?.code || detail?.specificationRestrictedArea || "N/A"}
+                />
+                <Row
+                  label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")}
+                  text={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan || "N/A"}
+                />
+              </StatusTable>
+            </div>
+          );
+        })}
       </Card>
       {/* 
      <Card>

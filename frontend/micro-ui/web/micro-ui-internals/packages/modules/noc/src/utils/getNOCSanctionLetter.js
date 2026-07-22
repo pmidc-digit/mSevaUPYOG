@@ -1,3 +1,5 @@
+import { getCode } from "./index";
+
 const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
   
   const currentDate = new Date().toLocaleDateString("en-IN", {
@@ -77,6 +79,8 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
 
 
   const sanctionKeys = [
+    "NOC_SANCTION_ONE",
+    "NOC_SANCTION_TWO",
     "NOC_SANCTION_THREE",
     "NOC_SANCTION_FOUR",
     "NOC_SANCTION_FIVE",
@@ -85,7 +89,7 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
     "NOC_SANCTION_EIGHT",
   ];
 
-  const isProvisional = site?.specificationNocType === "Provisional";
+  const isProvisional = getCode(site?.specificationNocType) === "PROVISIONAL";
   const activeKeys = isProvisional ? sanctionKeys : sanctionKeys.slice(1);
 
   const sanctionTerms = activeKeys?.map((key, idx) => ({

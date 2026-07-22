@@ -36,6 +36,11 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
   } = useForm();
 
   const commonProps = { Controller, control, setValue, errors, trigger, errorStyle, getValues, setError, clearErrors};
+    useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
 
 //   const validateApplicants = (applicants) => {
 //   let hasError = false;

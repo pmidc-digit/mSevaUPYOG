@@ -429,9 +429,11 @@ const LayoutStepperForm = () => {
 
   // console.log("formData",formData);
 
-    useEffect(() => {
-      window.scrollTo(0, 0);
-    }, [step]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [step]);
 
 
   const handleSubmit = (dataGet) => {

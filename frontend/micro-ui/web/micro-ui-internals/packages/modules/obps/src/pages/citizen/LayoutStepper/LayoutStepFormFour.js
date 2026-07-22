@@ -13,6 +13,11 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
   const [selectedCheckBox, setSelectedCheckBox] = useState(false);
 
   const handleCheckBox = (e) => {

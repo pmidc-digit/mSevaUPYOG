@@ -918,7 +918,7 @@ const LayoutApplicantDetails = (_props) => {
                     uploadedFile={getValues("photoUploadedFiles")}
                     message={getValues("photoUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                     error={applicantErrors[0]?.photo}
-                    uploadMessage="Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                    uploadMessage="Invalid File Format"
                     accept=".png, .jpeg, .jpg"
                   />
               )}
@@ -950,7 +950,7 @@ const LayoutApplicantDetails = (_props) => {
                     uploadedFile={getValues("documentUploadedFiles")}
                     message={getValues("documentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                     error={applicantErrors[0]?.document}
-                    uploadMessage="Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                    uploadMessage="Invalid File Format"
                     accept=".pdf, .png, .jpeg, .jpg"
                   />
                   )}
@@ -982,7 +982,7 @@ const LayoutApplicantDetails = (_props) => {
                   uploadedFile={getValues("panDocumentUploadedFiles")}
                     message={getValues("panDocumentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                   error={applicantErrors[0]?.panDocument}
-                  uploadMessage="Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                  uploadMessage="Invalid File Format"
                   accept=".pdf, .png, .jpeg, .jpg"
                 />
                 )}
@@ -1218,7 +1218,7 @@ const LayoutApplicantDetails = (_props) => {
                             uploadedFile={applicant.photoUploadedFiles}
                             message={applicant.photoUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.photo}
-                            uploadMessage="Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                            uploadMessage="Invalid File Format"
                             accept=".png, .jpeg, .jpg"
                           />
                           <p className="upload-file-message">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
@@ -1250,7 +1250,7 @@ const LayoutApplicantDetails = (_props) => {
                             uploadedFile={applicant.documentUploadedFiles}
                             message={applicant.documentUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.document}
-                            uploadMessage="Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                            uploadMessage="Invalid File Format"
                             accept=".pdf, .png, .jpeg, .jpg"
                           />
                           <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
@@ -1285,7 +1285,7 @@ const LayoutApplicantDetails = (_props) => {
                             uploadedFile={applicant.panDocumentUploadedFiles}
                             message={applicant.panDocumentUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.panDocument}
-                            uploadMessage="Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                            uploadMessage="Invalid File Format"
                             accept=".pdf, .png, .jpeg, .jpg"
                           />
                           <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>

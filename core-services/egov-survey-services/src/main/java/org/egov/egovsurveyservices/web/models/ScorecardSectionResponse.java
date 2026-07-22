@@ -18,6 +18,12 @@ public class ScorecardSectionResponse {
     @JsonProperty("sectionUuid")
     private String sectionUuid;
 
+    @JsonProperty("sectionName")
+    private String sectionName;
+
+    @JsonProperty("sectionTitle")
+    private String sectionTitle;
+
     @JsonProperty("questionResponses")
     private List<ScorecardQuestionResponse> questionResponses;
 }

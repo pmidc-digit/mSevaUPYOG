@@ -24,6 +24,12 @@ public class ScorecardAnswerResponse {
     @JsonProperty("surveyUuid")
     private String surveyUuid;
 
+    @JsonProperty("surveyName")
+    private String surveyName;
+
+    @JsonProperty("surveyTitle")
+    private String surveyTitle;
+
     @NotNull
     @JsonProperty("citizenId")
     private String citizenId;

@@ -140,6 +140,17 @@ public class ScorecardSurveyRepository {
         }
     }
 
+    public String getSurveyTitleByUuid(String surveyUuid) {
+        if (ObjectUtils.isEmpty(surveyUuid))
+            return null;
+        String query = "SELECT title FROM eg_ss_survey_entity WHERE uuid = ?";
+        try {
+            return jdbcTemplate.queryForObject(query, new Object[]{surveyUuid}, String.class);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
     public List<AnswerDetail> getAnswerDetailsByAnswerUuid(String answerUuid) {
         String query = surveyQueryBuilder.getAnswerDetailsByAnswerUuid();
         return jdbcTemplate.query(query, new Object[]{answerUuid}, (rs, rowNum) ->
@@ -156,7 +167,7 @@ public class ScorecardSurveyRepository {
     public List<AnswerNew> getAnswersForSurvey(String surveyUuid, String tenantId) {
         String query =
                 "SELECT ans.uuid, ans.sectionuuid, ans.questionuuid, ans.comments, " +
-                        "q.questionstatement, " +
+                        "q.questionstatement, sec.title AS section_title, " +
                         "qw.weightage AS question_weightage, " +
                         "sec.weightage AS section_weightage, " +
                         "ad.uuid AS answer_detail_uuid, ad.answertype AS answer_detail_type, " +

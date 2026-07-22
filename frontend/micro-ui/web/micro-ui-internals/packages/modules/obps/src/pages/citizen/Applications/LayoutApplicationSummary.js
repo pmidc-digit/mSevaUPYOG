@@ -29,7 +29,7 @@ import NOCDocumentTableView from "../../../../../noc/src/pageComponents/NOCDocum
 import { useLayoutSearchApplication } from "@mseva/digit-ui-libraries/src/hooks/obps/useSearchApplication";
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
 import LayoutDocumentView from "./LayoutDocumentView";
-import { amountToWords, formatDuration } from "../../../utils/index";
+import { amountToWords, formatDuration, formatDate } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { LoaderNew } from "../../../components/LoaderNew";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
@@ -671,37 +671,6 @@ const LayoutApplicationOverview = () => {
     return <Row label={label} text={value} />;
   };
 
-  const convertDateToISO = (dateStr) => {
-    if (!dateStr) return "";
-
-    if (typeof dateStr !== "string") {
-      try {
-        return new Date(dateStr).toLocaleDateString();
-      } catch (e) {
-        return "";
-      }
-    }
-
-    const parts = dateStr.split("-");
-    if (parts.length < 3) {
-      try {
-        return new Date(dateStr).toLocaleDateString();
-      } catch (e) {
-        return dateStr;
-      }
-    }
-
-    // yyyy-mm-dd (already ISO)
-    if (parts[2] && parts[2].length === 4) {
-      return dateStr;
-    }
-
-    // dd-mm-yyyy → yyyy-mm-dd
-    const [yyyy, mm, dd,] = parts;
-    return `${dd}/${mm}/${yyyy}`;
-  };
-
-
   if (isLoading || loading || mdmsLoading) {
     return <LoaderNew page={true} />;
   }
@@ -760,7 +729,7 @@ const LayoutApplicationOverview = () => {
                 <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
                 <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
                 <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={applicant?.mobileNumber} />
-                <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={applicant?.dob ? new Date(applicant?.dob).toLocaleDateString() : ""} />
+                <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={formatDate(applicant?.dob)} />
                 <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
                 <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
                 <RenderRow label={t("BPA_PAN_NUMBER_LABEL")} value={applicant?.pan || "N/A"} />
@@ -787,7 +756,7 @@ const LayoutApplicationOverview = () => {
                 <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
                 <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
                 <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
-                <RenderRow label={t("Registration Expire Date")} value={convertDateToISO(detail?.professionalRegistrationValidity)} />
+                <RenderRow label={t("Registration Expire Date")} value={formatDate(detail?.professionalRegistrationValidity)} />
 
               </StatusTable>
             </div>
@@ -808,7 +777,7 @@ const LayoutApplicationOverview = () => {
                     renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
                   {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
                     renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
-                  {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), convertDateToISO(detail?.cluApprovalDate))}
+                  {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
                 </React.Fragment>
               )}
               {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && (
@@ -826,7 +795,7 @@ const LayoutApplicationOverview = () => {
               {renderLabel(t("BPA_HADBAST_NO_LABEL"), detail?.hadbastNo)}
               {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
               {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
-              {renderLabel(t("BPA_VASIKA_DATE_LABEL"), convertDateToISO(detail?.vasikaDate))}
+              {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
               {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
               {renderLabel(t("BPA_NET_TOTAL_AREA_LABEL"), detail?.areaLeftForRoadWidening)}
               {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}

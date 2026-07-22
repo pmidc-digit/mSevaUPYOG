@@ -11,6 +11,7 @@ import LayoutDocumentTableView from "./LayoutDocumentsView";
 import NocSitePhotographs from "../components/NocSitePhotographs";
 import CustomOwnerImage from "../components/CustomOwnerImage";
 import LayoutFeeEstimationDetails from "./LayoutFeeEstimationDetails";
+import { formatDate } from "../utils";
 
 // Component to render document link
 const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
@@ -261,21 +262,6 @@ function LayoutSummary({ currentStepData: formData, t }) {
   const userInfo = Digit.UserService.getUser()
   const currentUser = userInfo?.info?.type
 
-  const convertDateToISO = (dateStr) => {
-    if (!dateStr) return "";
-
-    const parts = dateStr.split("-");
-
-    // yyyy-mm-dd (already ISO)
-    if (parts[2].length === 4) {
-      return dateStr;
-    }
-
-    // dd-mm-yyyy → yyyy-mm-dd
-    const [yyyy, mm, dd,] = parts;
-    return `${dd}/${mm}/${yyyy}`;
-  };
-
   const docs = formData?.documents?.documents?.documents
 
   const sitePhotos = docs?.filter(
@@ -304,7 +290,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
               {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owners[0]?.mobileNumber)}
               {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owners[0]?.emailId)}
               {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), owners[0]?.gender?.code || owners[0]?.gender?.value || owners[0]?.gender)}
-              {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), owners[0]?.dob ? new Date(owners[0]?.dob).toLocaleDateString() : null)}
+              {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), formatDate(owners[0]?.dob))}
               {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owners[0]?.fatherOrHusbandName)}
               {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owners[0]?.permanentAddress)}
 
@@ -340,7 +326,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
                   {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
                   {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
                   {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), owner?.gender?.code || owner?.gender?.value || owner?.gender)}
-                  {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), owner?.dob ? convertDateToISO(owner?.dob) : null)}
+                  {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), formatDate(owner?.dob))}
                   {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
                   {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.permanentAddress || owner?.address)}
 
@@ -379,17 +365,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
             {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
             {renderLabel(t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"), formData?.applicationDetails?.professionalMobileNumber)}
             {renderLabel(t("BPA_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
-            {renderLabel(t("BPA_CERTIFICATE_EXPIRY_DATE"), convertDateToISO(formData?.applicationDetails?.professionalRegistrationValidity))}
+            {renderLabel(t("BPA_CERTIFICATE_EXPIRY_DATE"), formatDate(formData?.applicationDetails?.professionalRegistrationValidity))}
 
-            {/* Professional Photo */}
-            {formData?.applicationDetails?.primaryOwnerPhoto && (
-              <div style={labelFieldPairStyle}>
-                <CardLabel style={boldLabelStyle}>{t("Photo") || "Photo"}</CardLabel>
-                <div style={valueStyle}>
-                  <DocumentLink fileStoreId={formData?.applicationDetails?.primaryOwnerPhoto} stateCode={stateCode} t={t} />
-                </div>
-              </div>
-            )}
           </div>
         </Card>
       )}
@@ -410,7 +387,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
                 renderLabel(t("BPA_CLU_NUMBER_LABEL"), formData?.siteDetails?.cluNumber)}
               {(formData?.siteDetails?.cluType?.code === "OFFLINE" || formData?.siteDetails?.cluType === "OFFLINE") &&
                 renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), formData?.siteDetails?.cluNumberOffline)}
-              {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), convertDateToISO(formData?.siteDetails?.cluApprovalDate))}
+              {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(formData?.siteDetails?.cluApprovalDate))}
             </React.Fragment>
           )}
           {(formData?.siteDetails?.isCluRequired?.code === "YES" || formData?.siteDetails?.isCluRequired === "YES") && (
@@ -428,7 +405,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
           {renderLabel(t("BPA_HADBAST_NO_LABEL"), formData?.siteDetails?.hadbastNo)}
           {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), formData?.siteDetails?.villageName)}
           {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), formData?.siteDetails?.vasikaNumber)}
-          {renderLabel(t("BPA_VASIKA_DATE_LABEL"), convertDateToISO(formData?.siteDetails?.vasikaDate))}
+          {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(formData?.siteDetails?.vasikaDate))}
           {renderLabel(t("BPA_ROAD_TYPE_LABEL"), formData?.siteDetails?.roadType?.name)}
           {renderLabel(t("BPA_NET_TOTAL_AREA_LABEL"), formData?.siteDetails?.areaLeftForRoadWidening)}
           {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), formData?.siteDetails?.isAreaUnderMasterPlan?.i18nKey)}

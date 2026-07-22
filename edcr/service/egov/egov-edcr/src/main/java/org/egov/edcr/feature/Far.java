@@ -2446,83 +2446,6 @@ public class Far extends FeatureProcess {
 	    }
 	}
 	
-//	private void getFarDetailsFromMDMS(Plan pl, String occType, String typeOfArea, OccupancyTypeHelper occupancyType) {
-//	        try {	           	  
-//	        	BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
-//	            Optional<Double> normalFAR = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.NORMAL_FAR, Double.class);
-//	            normalFAR.ifPresent(normalFar -> LOG.info("normalFar get by mdms : " + normalFar));
-//				
-//				Optional<Double> purchasableFAR = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.PURCHASABLE_FAR, Double.class);
-//				purchasableFAR.ifPresent(purchasableFar -> LOG.info("purchasableFAR get by mdms : : " + purchasableFar));
-//
-//				Double regularPermissableFar = normalFAR.get();
-//	            Double purchasablePermissableFar = purchasableFAR.get();
-//	            Double providedFar = pl.getFarDetails() != null ? pl.getFarDetails().getProvidedFar() : 0.0;	                     
-//	            Double purchasableFar = 0.0;		           
-//	                        
-//		        if (Boolean.TRUE.equals(pl.getEdcrRequest().getPurchasableFar())) {	
-//			        // Step 1: Calculate purchasable FAR (if provided > regular)
-//			        if (providedFar != null && regularPermissableFar != null && providedFar > regularPermissableFar) {
-//			        	  purchasableFar = providedFar - regularPermissableFar;
-//			         }
-//	
-//		            // Step 2: Determine total permissible FAR conditionally
-//		            Double totalPermissableFar;
-//		            if (providedFar != null && regularPermissableFar != null && providedFar > regularPermissableFar) {
-//		                                // Provided FAR exceeds regular, allow adding purchasable permissible FAR
-//		                totalPermissableFar = (regularPermissableFar != null ? regularPermissableFar : 0.0)
-//		                                        + (purchasablePermissableFar != null ? purchasablePermissableFar : 0.0);
-//		            } else {
-//		                                // Provided FAR is within regular permissible, no need to add extra FAR
-//		                totalPermissableFar = regularPermissableFar != null ? regularPermissableFar : 0.0;
-//		            }
-//	
-//		            // Step 3: Round all values to 2 decimals
-//		            regularPermissableFar = BigDecimal.valueOf(regularPermissableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//		            purchasablePermissableFar = BigDecimal.valueOf(purchasablePermissableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//		            providedFar = BigDecimal.valueOf(providedFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//		            purchasableFar = BigDecimal.valueOf(purchasableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//		            totalPermissableFar = BigDecimal.valueOf(totalPermissableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//	
-//		            // Step 4: Check acceptance
-//		            boolean isAccepted = (providedFar <= totalPermissableFar);
-//	
-//		            // Step 5: Update FAR details in plan
-//		            pl.getFarDetails().setPermissableFar(regularPermissableFar);
-//		            pl.getFarDetails().setPurchasableFar(purchasablePermissableFar);
-//		            pl.getFarDetails().setProvidedPurchasableFar(purchasableFar);
-//		            pl.getFarDetails().setProvidedFar(providedFar);
-//	
-//		            // Step 6: Logging
-//		            LOG.info("Matched FAR -> OccupancyType: " + occType + ", PlotArea: " + plotArea);
-//		            LOG.info("Regular Permissible FAR: " + regularPermissableFar
-//		                    + ", Purchasable FAR Allowed: " + purchasablePermissableFar
-//		                    + ", Provided FAR: " + providedFar
-//		                    + ", Total Permissible FAR: " + totalPermissableFar
-//		                    + ", Accepted: " + isAccepted);
-//	
-//		            // Step 7: Build result
-//		            buildResult1(pl, occupancyType.getType().getName(), providedFar, purchasablePermissableFar,
-//		                                    typeOfArea, regularPermissableFar, isAccepted);	                           
-//
-//		        } else {
-//		        	LOG.info("Purchasable FAR is false, processing as normal Rules");
-//		            // If purchasable FAR is not enabled
-//		            boolean isAccepted = (providedFar <= regularPermissableFar);
-//		            pl.getFarDetails().setPermissableFar(regularPermissableFar);
-//		            pl.getFarDetails().setProvidedFar(providedFar);
-//		            pl.getFarDetails().setPurchasableFar(mdmsDataParser.toDouble(0.0));
-//		            pl.getFarDetails().setProvidedPurchasableFar(mdmsDataParser.toDouble(0.0));		                            
-//	
-//		            buildResult1(pl, occupancyType.getType().getName(), providedFar, purchasableFar,
-//	                                    typeOfArea, regularPermissableFar, isAccepted);	                            
-//	        }     
-//	        } catch (Exception e) {
-//	            LOG.error("Error while fetching FAR details from MDMS", e);
-//	        }
-//	    
-//	}
-
 	private void getFarDetailsFromMDMS(Plan pl, String occType, String typeOfArea, OccupancyTypeHelper occupancyType) {
 	    try {
 	    	BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
@@ -2739,7 +2662,7 @@ public class Far extends FeatureProcess {
 	            return new BigDecimal("1080");
 	        
 	        case "F-MTP":	        
-	            return new BigDecimal(" 4046.856");
+	            return new BigDecimal("4046.856");
 	            
 	        case "F-MIP":	        
 	            return new BigDecimal("2000");

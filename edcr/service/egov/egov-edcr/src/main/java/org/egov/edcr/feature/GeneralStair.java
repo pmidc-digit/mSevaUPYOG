@@ -754,11 +754,10 @@ public class GeneralStair extends FeatureProcess {
                 && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
             return BigDecimal.valueOf(0.76);
         } else if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getType() != null
-                && DxfFileConstants.B.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
-            return BigDecimal.valueOf(1.5);
-        } else if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getType() != null
-                && DxfFileConstants.D.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
-            return BigDecimal.valueOf(2);
+                 && (DxfFileConstants.F_MTP.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
+                 || DxfFileConstants.F_MIP.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
+                 )) {
+            return BigDecimal.valueOf(2.0);
         } else {
             return BigDecimal.valueOf(1.5);
         }

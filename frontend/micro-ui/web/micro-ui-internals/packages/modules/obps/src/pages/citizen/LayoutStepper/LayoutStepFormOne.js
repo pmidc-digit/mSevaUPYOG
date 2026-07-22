@@ -304,8 +304,8 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     }
   }, []);
 
-  const LayoutProfessionalDetails = Digit?.ComponentRegistryService?.getComponent("LayoutProfessionalDetails");
-  const LayoutApplicantDetails = Digit?.ComponentRegistryService?.getComponent("LayoutApplicantDetails");
+  const LayoutProfessionalDetails = React.useMemo(() => Digit?.ComponentRegistryService?.getComponent("LayoutProfessionalDetails"), []);
+  const LayoutApplicantDetails = React.useMemo(() => Digit?.ComponentRegistryService?.getComponent("LayoutApplicantDetails"), []);
 
   return (
     <React.Fragment>

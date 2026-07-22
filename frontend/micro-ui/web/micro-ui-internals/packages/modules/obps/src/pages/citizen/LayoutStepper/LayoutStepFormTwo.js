@@ -420,9 +420,9 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     setShowToast(null);
   };
 
-  const LayoutLocalityInfo = Digit?.ComponentRegistryService?.getComponent("LayoutLocalityInfo");
-  const LayoutSiteDetails = Digit?.ComponentRegistryService?.getComponent("LayoutSiteDetails");
-  const LayoutSpecificationDetails = Digit?.ComponentRegistryService?.getComponent("LayoutSpecificationDetails");
+  const LayoutLocalityInfo = React.useMemo(() => Digit?.ComponentRegistryService?.getComponent("LayoutLocalityInfo"), []);
+  const LayoutSiteDetails = React.useMemo(() => Digit?.ComponentRegistryService?.getComponent("LayoutSiteDetails"), []);
+  const LayoutSpecificationDetails = React.useMemo(() => Digit?.ComponentRegistryService?.getComponent("LayoutSpecificationDetails"), []);
 
   return (
     <React.Fragment>

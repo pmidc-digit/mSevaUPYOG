@@ -491,8 +491,17 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
             // Document file references
             primaryOwnerPhoto: applicantDetails?.primaryOwnerPhoto || "",
             primaryOwnerDocument: applicantDetails?.primaryOwnerDocument || "",
-            aplicantType: applicantDetails?.aplicantType,
-            authorisedPerson: applicantDetails?.authorisedPerson,
+            aplicantType: applicantDetails?.aplicantType ? (
+              {
+                Individual: { name: "Individual", code: "INDIVIDUAL" },
+                Firm: { name: "Firm", code: "FIRM" },
+                INDIVIDUAL: { name: "Individual", code: "INDIVIDUAL" },
+                FIRM: { name: "Firm", code: "FIRM" },
+              }[(typeof applicantDetails?.aplicantType === "string" ? applicantDetails?.aplicantType : applicantDetails?.aplicantType?.code || applicantDetails?.aplicantType?.name || "").toUpperCase()] || (
+                typeof applicantDetails?.aplicantType === "object" && applicantDetails?.aplicantType?.code ? applicantDetails.aplicantType : null
+              )
+            ) : null,
+            authorisedPerson: applicantDetails?.authorisedPerson || "",
             
           };
     

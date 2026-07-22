@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch } from "react-redux";
 import {
   LabelFieldPair,
@@ -25,6 +25,17 @@ import CustomUploadFile from "../components/CustomUploadFile";
 import { useHistory, useLocation } from "react-router-dom";
 import { UPDATE_LayoutNewApplication_FORM } from "../redux/actions/LayoutNewApplicationActions";
 import { LoaderNew } from "../components/LoaderNew";
+
+const applicantTypeOptions = [
+  { name: "Individual", code: "INDIVIDUAL" },
+  { name: "Firm", code: "FIRM" },
+];
+
+const findApplicantTypeOption = (val) => {
+  if (!val) return null;
+  const strVal = (typeof val === "string" ? val : val?.code || val?.name || "").toUpperCase();
+  return applicantTypeOptions.find((opt) => opt.code.toUpperCase() === strVal || opt.name.toUpperCase() === strVal) || null;
+};
 
 const useQueryParam = (key) => {
   const { search } = useLocation();
@@ -57,6 +68,7 @@ const LayoutApplicantDetails = (_props) => {
   const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({});
   const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({});
   const [primaryApplicantType, setPrimaryApplicantType] = useState({});
+  const isDataInitialized = useRef(false);
   //console.log("userInfo here", getValues("aplicantType"), applicants);
   const closeToast = () => setShowToast(null);
 
@@ -80,13 +92,20 @@ const LayoutApplicantDetails = (_props) => {
   // );
 
   useEffect(() => {
-    // Only restore data on mount, not on every change
-    //console.log("[v0] LayoutApplicantDetails - Restoring from currentStepData on mount");
+    // Only restore data on mount / first load, not on every change
+    if (isDataInitialized.current) return;
+
     const formattedData = currentStepData?.applicationDetails;
 
     if (formattedData) {
       Object.entries(formattedData).forEach(([key, value]) => {
-        setValue(key, value);
+        if (key === "aplicantType") {
+          const normalized = findApplicantTypeOption(value);
+          setValue(key, normalized);
+          if (normalized) setPrimaryApplicantType(normalized);
+        } else {
+          setValue(key, value);
+        }
       });
     }
 
@@ -166,7 +185,7 @@ const LayoutApplicantDetails = (_props) => {
 
     // Map documents from additionalDetails in API response during edit mode (only if Redux data is empty)
     if (
-      isEdit && 
+      isEditMode && 
       currentStepData?.apiData?.Layout?.[0]?.owners &&
       (!currentStepData?.documentUploadedFiles || Object.keys(currentStepData.documentUploadedFiles).length === 0)
     ) {
@@ -210,10 +229,16 @@ const LayoutApplicantDetails = (_props) => {
         setPanDocumentUploadedFiles(panDocFiles);
       }
     }
+
+    if (formattedData || currentStepData?.apiData?.Layout?.[0]?.owners) {
+      isDataInitialized.current = true;
+    }
   }, [currentStepData]);
 
   const getOwnerDetails = async () => {
-    if (mobileNo === "" || mobileNo.length !== 10) {
+    const currentMobile = getValues("applicantMobileNumber") || mobileNo;
+
+    if (!currentMobile || currentMobile.length !== 10 || !/^[6-9]\d{9}$/.test(currentMobile)) {
       setShowToast({
         key: "true",
         error: true,
@@ -223,19 +248,60 @@ const LayoutApplicantDetails = (_props) => {
     }
     setIsLoading(true);
 
-    const userResponse = await Digit.UserService.userSearch(stateId, { userName: mobileNo }, {});
-    setIsLoading(false);
-    //console.log(userResponse, "PHOTO");
-    if (!userResponse?.user?.length) {
+    try {
+      const userResponse = await Digit.UserService.userSearch(stateId, { userName: currentMobile }, {});
+      setIsLoading(false);
+
+      if (!userResponse?.user?.length) {
+        setShowToast({
+          key: "true",
+          warning: true,
+          message: t("ERR_MOBILE_NUMBER_NOT_REGISTERED"),
+        });
+        return;
+      }
+
+      const u = userResponse.user[0];
+      setUserInfo(u);
+
+      if (u.name) setValue("applicantOwnerOrFirmName", u.name, { shouldValidate: true, shouldDirty: true });
+      if (u.emailId) setValue("applicantEmailId", u.emailId, { shouldValidate: true, shouldDirty: true });
+      if (u.dob) {
+        let formattedDob = "";
+        if (typeof u.dob === "string") {
+          formattedDob = u.dob.slice(0, 10);
+        } else if (typeof u.dob === "number") {
+          const d = new Date(u.dob);
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
+          formattedDob = `${year}-${month}-${day}`;
+        }
+        setValue("applicantDateOfBirth", formattedDob, { shouldValidate: true, shouldDirty: true });
+      }
+      if (u.fatherOrHusbandName) setValue("applicantFatherHusbandName", u.fatherOrHusbandName, { shouldValidate: true, shouldDirty: true });
+      if (u.permanentAddress) setValue("applicantAddress", u.permanentAddress, { shouldValidate: true, shouldDirty: true });
+      if (u.gender) {
+        const genderObj = menu.find((obj) => obj.code === u.gender) || u.gender;
+        if (genderObj) setValue("applicantGender", genderObj, { shouldValidate: true, shouldDirty: true });
+      }
+
+      clearErrors(["applicantOwnerOrFirmName", "applicantEmailId", "applicantDateOfBirth", "applicantAddress", "applicantGender"]);
+
       setShowToast({
         key: "true",
-        warning: true,
-        message: t("ERR_MOBILE_NUMBER_NOT_REGISTERED"),
+        warning: false,
+        error: false,
+        message: t("Applicant details fetched successfully"),
       });
-      return;
+    } catch (err) {
+      setIsLoading(false);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: t("Error fetching applicant details"),
+      });
     }
-
-    setUserInfo(userResponse.user[0]);
   };
 
   // Search function for additional owners
@@ -315,28 +381,6 @@ const LayoutApplicantDetails = (_props) => {
     }
   };
 
-  // Prefill UI on userInfo
-  useEffect(() => {
-    if (userInfo) {
-      Object.entries(userInfo).forEach(([key, value]) => {
-        if (key === "name") setValue("applicantOwnerOrFirmName", value, { shouldValidate: true });
-
-        if (key === "emailId") setValue("applicantEmailId", value, { shouldValidate: true });
-
-        if (key === "dob") setValue("applicantDateOfBirth", value, { shouldValidate: true });
-
-        if (key === "fatherOrHusbandName") setValue("applicantFatherHusbandName", value);
-
-        if (key === "permanentAddress") setValue("applicantAddress", value, { shouldValidate: true });
-
-        if (key === "gender") {
-          const genderObj = menu.find((obj) => obj.code === value);
-          if (genderObj) setValue("applicantGender", genderObj, { shouldValidate: true });
-        }
-      });
-    }
-  }, [userInfo]);
-
   // Save applicants data to Redux
   useEffect(() => {
     if (
@@ -397,9 +441,7 @@ const LayoutApplicantDetails = (_props) => {
       return newApplicantArray
     });
 
-    // In order to remove applicant in any case, we are changing its {status: false} this way, DB will automatically remove applicant from Backend
-    // Remove associated files
-    {const newDocFiles = { ...documentUploadedFiles };
+    const newDocFiles = { ...documentUploadedFiles };
     const newPhotoFiles = { ...photoUploadedFiles };
     const newPanFiles = { ...panDocumentUploadedFiles };
     delete newDocFiles[index + 1];
@@ -407,7 +449,7 @@ const LayoutApplicantDetails = (_props) => {
     delete newPanFiles[index + 1];
     setDocumentUploadedFiles(newDocFiles);
     setPhotoUploadedFiles(newPhotoFiles);
-    setPanDocumentUploadedFiles(newPanFiles);}
+    setPanDocumentUploadedFiles(newPanFiles);
 
     // Remove errors for this applicant
     const newErrors = { ...applicantErrors };
@@ -570,6 +612,9 @@ const LayoutApplicantDetails = (_props) => {
 
   const activeApplicants = applicants?.filter(a => a?.status);
 
+  const currentApplicantTypeCode = (getValues("aplicantType")?.code || getValues("aplicantType") || primaryApplicantType?.code || primaryApplicantType || "").toString().toUpperCase();
+  const isFirm = currentApplicantTypeCode === "FIRM";
+
   return (
     <React.Fragment>
       {loader && <Loader />}
@@ -652,11 +697,8 @@ const LayoutApplicantDetails = (_props) => {
                         setPrimaryApplicantType(e)
                         clearErrors("aplicantType");
                       }}
-                      selected={props.value}
-                      option={[
-                        {name: "Individual", code: "INDIVIDUAL"},
-                        {name: "Firm", code: "FIRM"},
-                      ]}
+                      selected={findApplicantTypeOption(props.value)}
+                      option={applicantTypeOptions}
                       optionKey="name"
                       // disable={isEditMode}
                       t={t}
@@ -670,7 +712,7 @@ const LayoutApplicantDetails = (_props) => {
 
         
 
-          {(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") &&<React.Fragment> <LabelFieldPair style={{ marginBottom: "15px" }}>
+          {isFirm && <React.Fragment> <LabelFieldPair style={{ marginBottom: "15px" }}>
             <CardLabel className="card-label-smaller">
               {t("NEW_LAYOUT_FIRM_NAME_LABEL")}
               <span className="requiredField">*</span>
@@ -687,7 +729,7 @@ const LayoutApplicantDetails = (_props) => {
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e);
+                      props.onChange(e.target.value);
                       clearErrors("authorisedPerson");
                     }}
                     onBlur={props.onBlur}
@@ -704,7 +746,7 @@ const LayoutApplicantDetails = (_props) => {
                 {/* Applicant Name */}
           <LabelFieldPair style={{ marginBottom: "15px" }}>
             <CardLabel className="card-label-smaller">
-              {`${(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")}`}
+              {`${isFirm ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")}`}
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
@@ -719,7 +761,7 @@ const LayoutApplicantDetails = (_props) => {
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e);
+                      props.onChange(e.target.value);
                       clearErrors("applicantOwnerOrFirmName");
                     }}
                     onBlur={props.onBlur}
@@ -811,7 +853,7 @@ const LayoutApplicantDetails = (_props) => {
                   <TextArea
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e);
+                      props.onChange(e.target.value);
                       clearErrors("applicantAddress");
                     }}
                     onBlur={props.onBlur}
@@ -850,7 +892,7 @@ const LayoutApplicantDetails = (_props) => {
                     type="date"
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e);
+                      props.onChange(e.target.value);
                       clearErrors("applicantDateOfBirth");
                     }}
                     onBlur={props.onBlur}

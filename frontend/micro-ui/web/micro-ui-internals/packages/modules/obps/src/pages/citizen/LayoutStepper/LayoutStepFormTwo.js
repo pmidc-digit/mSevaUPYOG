@@ -172,7 +172,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     const catCode = (buildingCategory?.code || buildingCategory?.name || "").toUpperCase();
     const isResidential = catCode.includes("RESIDENTIAL");
     const isCommercial = catCode.includes("COMMERCIAL");
-    const isInstitutional = catCode.includes("INSTITUTION");
+    const isInstitutional = catCode.includes("INSTITUTIONAL");
     const isIndustrial = catCode.includes("INDUSTRIAL") || catCode.includes("WAREHOUSE");
 
     const residential = isResidential ? (parseFloat(watchedResidentialArea) || 0) : 0;

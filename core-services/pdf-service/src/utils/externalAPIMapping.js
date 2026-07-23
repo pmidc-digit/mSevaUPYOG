@@ -177,17 +177,17 @@ export const externalAPIMapping = async function (
     };
 
     var resPromise;
-    const fullUrl = externalAPIArray[i].uri + "?" + externalAPIArray[i].queryParams;
-    logger.info(`Making external API call [${i}] - ${externalAPIArray[i].requesttype}: ${externalAPIArray[i].uri}`);
     if (externalAPIArray[i].requesttype == "POST") {
-      resPromise = axios_instance.post(fullUrl, {
+      resPromise = axios_instance.post(
+        externalAPIArray[i].uri + "?" + externalAPIArray[i].queryParams, {
           RequestInfo: requestInfo
         }, {
           headers: headers
         }
       );
     } else {
-      resPromise = axios_instance.get(fullUrl, {
+      resPromise = axios_instance.get(
+        externalAPIArray[i].uri + "?" + externalAPIArray[i].queryParams, {
           responseType: "application/json"
         }
       );
@@ -195,23 +195,9 @@ export const externalAPIMapping = async function (
     responsePromises.push(resPromise)
   }
 
-  responses = await Promise.allSettled(responsePromises)
+  responses = await Promise.all(responsePromises)
   for (let i = 0; i < externalAPIArray.length; i++) {
-    if (responses[i].status === 'rejected') {
-      logger.error(`>>> EXTERNAL API [${i}] FAILED: ${externalAPIArray[i].uri} - ${responses[i].reason.message}`);
-      throw responses[i].reason;
-    }
-    if (responses[i].status === 'fulfilled') {
-      logger.info(`>>> EXTERNAL API [${i}] SUCCESS: ${externalAPIArray[i].uri}`);
-    }
-    var res = responses[i].value.data;
-    logger.info(`>>> EXTERNAL API [${i}] Response Type: ${typeof res}, Is Object: ${res !== null && typeof res === 'object'}`);
-    logger.info(`>>> EXTERNAL API [${i}] Response Data: ${JSON.stringify(res).substring(0, 200)}`);
-
-    if (res === null || res === undefined || typeof res !== 'object') {
-      logger.error(`>>> EXTERNAL API [${i}] returned invalid response: ${JSON.stringify(res)}`);
-      throw new Error(`API [${i}] (${externalAPIArray[i].uri}) returned non-object response: ${typeof res}`);
-    }
+    var res = responses[i].data
 
     //putting required data from external API call in format config
 
@@ -229,14 +215,11 @@ export const externalAPIMapping = async function (
         if (replaceValue != "NA") {
           try {
             var len = replaceValue[0].split(",").length;
-            const imageUrl = replaceValue[0].split(",")[len - 1];
-            logger.info(`>>> Fetching image from URL: ${imageUrl}`);
             var response = await axios_instance.get(
-              imageUrl, {
+              replaceValue[0].split(",")[len - 1], {
                 responseType: "arraybuffer"
               }
             );
-            logger.info(`>>> Image fetched successfully from: ${imageUrl}`);
             imageData =
               "data:" +
               response.headers["content-type"] +
@@ -393,14 +376,12 @@ export const externalAPIMapping = async function (
 
   let localisationMap = [];
   try{
-    logger.info(`>>> Calling localisation service for modules: ${localisationModules.join(', ')} with codes: ${localisationCodes.join(', ')}`);
     let resposnseMap = await findLocalisation(
       requestInfo,
       localisationModules,
       localisationCodes,
       pdfKey+'-externalMapping'
     );
-    logger.info(`>>> Localisation service call succeeded`);
     resposnseMap.messages.map((item) => {
       localisationMap[item.code + "_" + item.module] = item.message;
     });

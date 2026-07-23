@@ -774,9 +774,33 @@ public class InboxService {
         return null;
     }
 
-    
-    public InboxResponse fetchInboxDataBackup(InboxSearchCriteria criteria, RequestInfo requestInfo) {
-    	
+    private boolean isCitizenInboxSupportAvailable(String moduleName, List<String> roles) {
+        if (ObjectUtils.isEmpty(moduleName) || CollectionUtils.isEmpty(roles)) {
+            return false;
+        }
+        return roles.contains(BpaConstants.CITIZEN) &&
+                (moduleName.equalsIgnoreCase("bpa-service") ||
+                        moduleName.equalsIgnoreCase("BPA") ||
+                        moduleName.equalsIgnoreCase("clu-service") ||
+                        moduleName.equalsIgnoreCase("layout-service") ||
+                        moduleName.equalsIgnoreCase("noc-service"));
+    }
+
+    private boolean isReadOnlyOrReportingUser(List<String> roles) {
+        if (CollectionUtils.isEmpty(roles)) {
+            return false;
+        }
+        return roles.stream().anyMatch(role ->
+                role.contains("READ") ||
+                        role.contains("VIEW") ||
+                        role.contains("REPORT") ||
+                        role.contains("SUPERUSER")
+        );
+    }
+
+
+        public InboxResponse fetchInboxDataBackup(InboxSearchCriteria criteria, RequestInfo requestInfo) {
+
         ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
         HashMap moduleSearchCriteria = criteria.getModuleSearchCriteria();
         processCriteria.setTenantId(criteria.getTenantId());
@@ -2366,24 +2390,4 @@ public class InboxService {
 
 		return results;
 	}
-
-    private boolean isCitizenInboxSupportAvailable(String moduleName, List<String> roles) {
-        if (ObjectUtils.isEmpty(moduleName) || CollectionUtils.isEmpty(roles)) {
-            return false;
-        }
-        return roles.contains(BpaConstants.CITIZEN) && 
-            (moduleName.equalsIgnoreCase("bpa-service") || 
-             moduleName.equalsIgnoreCase("BPA") || 
-             moduleName.equalsIgnoreCase("clu-service") ||
-             moduleName.equalsIgnoreCase("layout-service") ||
-             moduleName.equalsIgnoreCase("noc-service"));
-    }
-
-    private boolean isReadOnlyOrReportingUser(List<String> roles) {
-        if (CollectionUtils.isEmpty(roles)) {
-            return false;
-        }
-        return roles.stream().anyMatch(role -> 
-            role.contains("OBPAS_READ_ONLY")
-        );
-    }}
+}

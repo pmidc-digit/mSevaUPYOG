@@ -116,7 +116,9 @@ public class BPAInboxFilterService {
             searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
             searcherRequest.put(SEARCH_CRITERIA_PARAM, searchCriteria);
 
-            if (citizenHasStakeholderRoles(requestInfo, citizenRoles)) {
+            boolean isCitizenView = moduleSearchCriteria != null && moduleSearchCriteria.containsKey("isCitizenView")
+                    && Boolean.parseBoolean(String.valueOf(moduleSearchCriteria.get("isCitizenView")));
+            if (!isCitizenView && citizenHasStakeholderRoles(requestInfo, citizenRoles)) {
                 StringBuilder uri = new StringBuilder();
                 if (moduleSearchCriteria.containsKey(SORT_ORDER_PARAM)
                         && moduleSearchCriteria.get(SORT_ORDER_PARAM).equals(DESC_PARAM))
@@ -231,7 +233,9 @@ public class BPAInboxFilterService {
                     moduleSearchCriteria, processCriteria, userUUIDs, citizenRoles);
             searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
             searcherRequest.put(SEARCH_CRITERIA_PARAM, searchCriteria);
-            if (citizenHasStakeholderRoles(requestInfo, citizenRoles)) {
+            boolean isCitizenView = moduleSearchCriteria != null && moduleSearchCriteria.containsKey("isCitizenView")
+                    && Boolean.parseBoolean(String.valueOf(moduleSearchCriteria.get("isCitizenView")));
+            if (!isCitizenView && citizenHasStakeholderRoles(requestInfo, citizenRoles)) {
                 StringBuilder uri = new StringBuilder();
                 uri.append(searcherHost).append(bpaInboxSearcherCountEndpoint);
 
@@ -295,8 +299,12 @@ public class BPAInboxFilterService {
         Boolean isMobileNumberPresent = true;
         List<String> userUUIDs = new ArrayList<>();
         List<String> citizenRoles = new ArrayList<>();
-        if ((moduleSearchCriteria == null || moduleSearchCriteria.isEmpty()) || (moduleSearchCriteria != null && !moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM))) {
+        if (moduleSearchCriteria == null) {
             moduleSearchCriteria = new HashMap<>();
+        } else {
+            moduleSearchCriteria = new HashMap<>(moduleSearchCriteria);
+        }
+        if (!moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)) {
             moduleSearchCriteria.put(MOBILE_NUMBER_PARAM, requestInfo.getUserInfo().getMobileNumber());
         } 
         if (Boolean.TRUE.equals(isMobileNumberPresent)) {
@@ -326,7 +334,9 @@ public class BPAInboxFilterService {
 
             searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
             searcherRequest.put(SEARCH_CRITERIA_PARAM, searchCriteria);
-            if (citizenHasStakeholderRoles(requestInfo, citizenRoles)) {
+            boolean isCitizenView = moduleSearchCriteria != null && moduleSearchCriteria.containsKey("isCitizenView")
+                    && Boolean.parseBoolean(String.valueOf(moduleSearchCriteria.get("isCitizenView")));
+            if (!isCitizenView && citizenHasStakeholderRoles(requestInfo, citizenRoles)) {
                 StringBuilder uri = new StringBuilder();
                 uri.append(searcherHost).append(bpaStakeholderInboxTenantWiseApplnNosEndpoint);
                 result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);

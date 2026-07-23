@@ -2295,20 +2295,37 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
       } else {
         valueRows = detail?.values?.map((indData, i, arr) => {
           const isLast = i === arr.length - 1;
+
+          if (indData?.isBold) {
+            return [
+              {
+                text: indData?.title,
+                style: "header",
+                fontSize: 9,
+                bold: true,
+                colSpan: 2,
+                fillColor: "#f5f5f5",
+                margin: [10, 4, 0, 4],
+                border: isLast ? [true, false, true, true] : [true, false, true, false],
+              },
+              {},
+            ];
+          }
+
           return [
             {
               text: indData?.title,
               style: "header",
               fontSize: 9,
               margin: [10, 2, 0, 2],
-              border: isLast ? [true, false, false, true] : [true, false, false, false]
+              border: isLast ? [true, false, false, true] : [true, false, false, false],
             },
             {
               text: indData?.value && String(indData.value).trim() !== "" ? `${indData.value} ${indData?.isUnit ? ` ${t(indData.isUnit)}` : ""}` : "",
               fontSize: 9,
               margin: [0, 2, 0, 2],
-              border: isLast ? [false, false, true, true] : [false, false, true, false]
-            }
+              border: isLast ? [false, false, true, true] : [false, false, true, false],
+            },
           ];
         });
       }

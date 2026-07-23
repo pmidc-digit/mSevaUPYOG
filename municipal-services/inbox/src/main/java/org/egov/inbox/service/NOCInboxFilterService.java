@@ -158,6 +158,12 @@ public class NOCInboxFilterService {
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("uuid")) {
             searchCriteria.put("id", moduleSearchCriteria.get("uuid"));
         }
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("isMigrated")
+                && Boolean.parseBoolean(String.valueOf(moduleSearchCriteria.get("isMigrated")))) {
+            searchCriteria.put("isMigrationTrue", "true");
+        } else {
+            searchCriteria.put("isMigrationTrue", "false");
+        }
         if (!ObjectUtils.isEmpty(processCriteria.getAssignee())) {
             searchCriteria.put(ASSIGNEE_PARAM, processCriteria.getAssignee());
         }

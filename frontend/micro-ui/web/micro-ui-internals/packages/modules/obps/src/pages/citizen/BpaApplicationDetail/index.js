@@ -1928,7 +1928,10 @@ useEffect(() => {
   if (
     data &&
     data?.applicationData?.businessService === "BPA_LOW" &&
-    data?.collectionBillDetails?.length > 0 &&
+    (
+    data?.collectionBillDetails?.length > 0 ||
+    data?.applicationData?.additionalDetails?.isMigrationTrue
+   ) &&
     data?.applicationData?.additionalDetails?.isSanctionLetterGenerated
   ) {
     !data?.applicationData?.status.includes("REVOCATION") &&
@@ -1948,7 +1951,7 @@ useEffect(() => {
         label: t("BPA_REVOCATION_PDF_LABEL"),
         onClick: () => getRevocationPDFSearch({ tenantId: data?.applicationData?.tenantId }),
       });
-  } else if (data && data?.collectionBillDetails?.length > 0 ) {
+  } else if (data && (data?.collectionBillDetails?.length > 0 || data?.applicationData?.additionalDetails?.isMigrationTrue) ) {
     if (!data?.applicationData?.additionalDetails?.isSelfCertification && data?.applicationData?.status === "APPROVED") {
       dowloadOptions.push({
         order: 3,

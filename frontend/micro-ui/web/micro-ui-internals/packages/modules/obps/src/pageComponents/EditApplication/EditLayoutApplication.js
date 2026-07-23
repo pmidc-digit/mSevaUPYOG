@@ -95,14 +95,18 @@ const EditLayoutApplication = () => {
     tenantId = window.localStorage.getItem("CITIZEN.CITY");
   }
 
-  const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutCitizenSearchApplication({ applicationNo: id }, tenantId);
-  const applicationDetails = data?.resData;
-  //console.log("applicationDetails here==>", data);
-  const layoutObject = data?.data?.[0]?.Applications;
+const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ applicationNo: id }, tenantId);
+  const applicationDetails = data?.resData?.Layout?.[0];
+  // console.log("applicationDetails here==>", data);
+  const layoutObject = data?.resData?.Layout?.[0];
+  // console.log("Layout Object",layoutObject);
+  const documents = layoutObject?.documents || [];
   const professionalDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails || {};
   const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails || {};
   const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates || {};
-  const documents = layoutObject?.documents || [];
+
+
+  // console.log("documents",documents);
   
   // Extract primary owner data (owners[0]) for applicant form fields
   const primaryOwner = layoutObject?.owners?.[0] || {};
@@ -415,7 +419,7 @@ const EditLayoutApplication = () => {
                 uuid: doc?.uuid || "",
                 documentUid: doc?.documentUid || "",
                 documentAttachment: doc?.documentAttachment || "",
-                filestoreId: doc?.uuid || "",
+                filestoreId: doc?.documentAttachment || "",
                 layoutId: doc?.layoutId || null
               })),
             },

@@ -71,6 +71,7 @@ function RentAndLeaseSummary({ t }) {
 
                 {renderRow(t("NOC_COMMON_TABLE_COL_OWN_NAME_LABEL"), applicant?.name)}
                 {renderRow(t("CORE_COMMON_MOBILE_NUMBER"), applicant?.mobileNumber)}
+                {applicant?.alternateMobileNumber && renderRow(t("Billing Mobile Number"), applicant?.alternateMobileNumber)}
                 {renderRow(t("CORE_COMMON_EMAIL_ID"), applicant?.emailId)}
                 {renderRow(t("ADDRESS"), applicant?.address)}
                 {renderRow(t("CORE_COMMON_PINCODE"), applicant?.pincode)}

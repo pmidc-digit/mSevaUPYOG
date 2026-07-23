@@ -164,6 +164,14 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     return sm ? `NONRESIDENTIAL.${sm.usageCategoryMinor}.${sm.code}${d ? `.${code}` : ""}` : code;
 };
 
+  // Resolves a stored full code ("NONRESIDENTIAL.COMMERCIAL.RETAIL.MALLS") back to its MDMS object ({ code: "MALLS", name: "Malls" })
+  const resolveSubUsageType = (sub) => {
+    if (!sub) return null;
+    const leafCode = (sub?.code || sub)?.split(".").pop();
+    const { subMinor = [], detail = [] } = allUsageOptions;
+    return [...detail, ...subMinor]?.find((o) => o?.code === leafCode) || sub;
+  };
+
   const onSubmit = async (data) => {
     if (data?.vasikaDate && data?.allotmentDate && new Date(data?.allotmentDate) < new Date(data?.vasikaDate)) {
       alert(t("PT_ALLOTMENT_DATE_ERROR"));
@@ -290,7 +298,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
       stateDataCheck.unitDetails.forEach((unit) => {
         append({
           ...unit,
-          subUsageType: unit?.subUsageType || null,
+          subUsageType: resolveSubUsageType(unit?.subUsageType) || null,
         });
       });
 
@@ -352,16 +360,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     }
   }
 
-  trigger();
 }, [selectedFloors]);
 
-
-  const plotSizeWatch = watch("plotSize");
-  useEffect(() => {
-    if (plotSizeWatch) {
-      trigger();
-    }
-  }, [plotSizeWatch]);
 
   const vasikaDateWatch = watch("vasikaDate");
   useEffect(() => {
@@ -388,6 +388,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     var selectedCode = e && e.code;
                     var checkData = getUsageOptionsByCode(selectedCode);
                     setSubUsageData(checkData);
+                    fields?.forEach((_, idx) => {
+                      setValue(`unitDetails.${idx}.unitUsageType`, selectedCode === "MIXED" ? "" : e);
+                      setValue(`unitDetails.${idx}.subUsageType`, null);
+                    });
                   }}
                   selected={props.value}
                   option={getUsageData}
@@ -406,7 +410,22 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
               control={control}
               name="propertyType"
               rules={{ required: t("Property Type is required") }}
-              render={(props) => <Dropdown select={props.onChange} selected={props.value} option={getPropertyTypeData} optionKey="name" t={t} />}
+              render={(props) => <Dropdown select={(val)=>{
+                if(watch("propertyType") && watch("propertyType")?.code !== val?.code && watch("unitDetails")?.length > 1){
+                  if(window.confirm(t("Do you want to clear all the added units?"))){  
+                    setValue("unitDetails", [{ unitUsageType: "", occupancy: null }]);
+                  } else {
+                    return;
+                  }
+                } 
+                props?.onChange(val); 
+              }} 
+              selected={props.value} 
+              option={getPropertyTypeData} 
+              optionKey="name" 
+              t={t} 
+              />
+            }
             />
             {errors.propertyType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.propertyType?.message}</p>}
           </div>
@@ -674,8 +693,6 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   />
 
 
-
-
                   {errors?.unitDetails?.[index]?.unitUsageType && (
                     <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].unitUsageType.message}</p>
                   )}
@@ -791,7 +808,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     control={control}
                     name={`unitDetails.${index}.floor`}
                     rules={{ required: t("Floor is required") }}
-                    defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || null}
+                    defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || (index === 0 ? tesFloorOptions?.find(f => f?.code === "0")  : null)}
                     // defaultValue={item?.floor || ""}
                     render={(props) => {
                       // const isLockedGroundFloorUnit =
@@ -812,9 +829,12 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                           }}
                           selected={props.value}
                           option={
-                            index === 0 || item?.isAddedUnit
+                            index === 0 || item?.isAddedUnit || selectedPropertyType === "BUILTUP.SHAREDPROPERTY"
                               ? tesFloorOptions
-                              : tesFloorOptions?.filter((f) => Number(f?.code) > Number(watch(`unitDetails.${index - 1}.floor`)?.code || -Infinity))
+                              : tesFloorOptions?.filter((f) => {
+                                  const previousFloorCode = watch(`unitDetails.${index - 1}.floor`)?.code;
+                                  return !previousFloorCode || f?.code !== previousFloorCode;
+                                })
                           }
                           optionKey="name"
                           t={t}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { ImageViewer, Card, CardSubHeader, CardSectionHeader } from "@mseva/digit-ui-react-components";
+import { ImageViewer, Card, CardSubHeader, CardSectionHeader, Loader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import EXIF from "../utils/exif-compat";
 
@@ -65,6 +65,8 @@ const CLUSitePhotographs = ({ documents, coordinates={} }) => {
   //   };
   //   img.src = fileUrl;
   // };
+
+  if(urlsListLoading) return <Loader />
 
 
   return (

@@ -112,7 +112,12 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     );
     const resolvedFirestationId = site.fireStationId || matchedStation?.code || "";
 
-    const applicationTenantId = tenantId;
+    const selectedStationCode = site?.fireStationId || resolvedFirestationId;
+    const selectedStationObj = fireStationData?.find(
+      (s) => s.code === selectedStationCode || s.id === selectedStationCode
+    );
+    const applicationTenantId = selectedStationObj?.tenantId || selectedStationObj?.baseTenantId || tenantId;
+
 
     /* ── ownerShipType mapping ── */
     const ownerShipType = appDetails.applicantSubtype?.code || "INDIVIDUAL.SINGLEOWNER";

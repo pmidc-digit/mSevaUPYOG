@@ -11,7 +11,7 @@ import useLayoutTableConfig from "./useLayoutTableConfig";
 import { Link } from "react-router-dom";
 import { businessServiceListLayout } from "../../../utils";
 
-const LayoutInbox = ({ parentRoute }) => {
+const CitizenLaoyoutInbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
   const queryClient = useQueryClient();
@@ -243,14 +243,14 @@ const LayoutInbox = ({ parentRoute }) => {
     [assigneeCountBaseFilters]
   );
 
-  const { data: assignedToMeInboxData } = Digit.Hooks.obps.useLayoutInbox({
-    tenantId: effectiveTenantId,
-    filters: assignedToMeFilters,
-    config: {
-      staleTime: 0,
-      refetchOnMount: "always",
-    },
-  });
+  // const { data: assignedToMeInboxData } = Digit.Hooks.obps.useLayoutInbox({
+  //   tenantId: effectiveTenantId,
+  //   filters: assignedToMeFilters,
+  //   config: {
+  //     staleTime: 0,
+  //     refetchOnMount: "always",
+  //   },
+  // });
 
   const { data: assignedToAllInboxData } = Digit.Hooks.obps.useLayoutInbox({
     tenantId: effectiveTenantId,
@@ -269,13 +269,20 @@ const LayoutInbox = ({ parentRoute }) => {
   }, [effectiveTenantId]);
 
   useEffect(() => {
-    if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+    if (
+      // !assignedToMeInboxData ||
+      !assignedToAllInboxData
+    )
+      return;
 
     setAssigneeCounts({
-      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      // ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
     });
-  }, [assignedToAllInboxData, assignedToMeInboxData]);
+  }, [
+    assignedToAllInboxData,
+    // assignedToMeInboxData
+  ]);
 
   useEffect(() => {
     if (inboxData) {
@@ -534,4 +541,4 @@ const LayoutInbox = ({ parentRoute }) => {
   );
 };
 
-export default LayoutInbox;
+export default CitizenLaoyoutInbox;

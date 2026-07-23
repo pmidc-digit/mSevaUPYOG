@@ -20,7 +20,7 @@ import {
   MultiLink,
   DisplayPhotos,
 } from "@mseva/digit-ui-react-components";
-import React, { Fragment, useEffect, useState, useRef } from "react";
+import React, { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import NOCDocument from "../../../../../noc/src/pageComponents/NOCDocument";
@@ -29,7 +29,7 @@ import NOCDocumentTableView from "../../../../../noc/src/pageComponents/NOCDocum
 import { useLayoutSearchApplication } from "@mseva/digit-ui-libraries/src/hooks/obps/useSearchApplication";
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
 import LayoutDocumentView from "./LayoutDocumentView";
-import { amountToWords } from "../../../utils/index";
+import { amountToWords, formatDuration } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { LoaderNew } from "../../../components/LoaderNew";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
@@ -127,6 +127,7 @@ const LayoutApplicationOverview = () => {
   const [viewTimeline, setViewTimeline] = useState(false);
   const [displayData, setDisplayData] = useState({})
   const [loading, setLoading] = useState(false);
+  const [timeObj, setTimeObj] = useState(null);
   const state = Digit.ULBService.getStateId()
 
   // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
@@ -202,8 +203,8 @@ const LayoutApplicationOverview = () => {
       const Property = applicationDetails?.Layout?.[0];
       const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
-      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t);
-      await Digit.Utils.pdf.generateFormatted(acknowledgementData);
+      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t, combinedPayments);
+      await Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -243,6 +244,12 @@ const LayoutApplicationOverview = () => {
 
       //console.log("finalDisplayData:", finalDisplayData)
       setDisplayData(finalDisplayData)
+
+      const submittedOn = layoutObject?.layoutDetails?.additionalDetails?.SubmittedOn;
+      const endTime = Date.now();
+      const totalTime = submittedOn != null ? endTime - submittedOn : null;
+      const time = formatDuration(totalTime);
+      setTimeObj(time);
     }
   }, [applicationDetails?.Layout])
 
@@ -265,7 +272,11 @@ const LayoutApplicationOverview = () => {
     { enabled: id ? true : false },
   )
 
-
+ const combinedPayments = useMemo(() => {
+     const p1 = reciept_data?.Payments || [];
+     const p2 = reciept_data_pay?.Payments || [];
+     return [...p1, ...p2];
+   }, [reciept_data, reciept_data_pay]);
 
   const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid
 
@@ -944,7 +955,7 @@ const LayoutApplicationOverview = () => {
 
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj}/>
       </div>
 
       {actions && actions.length > 0 && (

@@ -731,7 +731,7 @@ useEffect(() => {
               {(ownerShip?.code?.includes("INDIVIDUAL") || ownerShip?.code === "SINGLEOWNER") && (
                 <div style={twoColRow}>
                   <LabelFieldPair style={colItem}>
-                    <CardLabel className="card-label-smaller">{t("Ownership Percentage")}</CardLabel>
+                    <CardLabel className="card-label-smaller">{t("Ownership Percentage")}*</CardLabel>
                     <Controller
                       control={control}
                       name={`owners.${index}.ownershipPercentage`}

@@ -99,7 +99,8 @@ const LayoutStepperForm = () => {
 
   //console.log("applicationNo:", applicationNo);
 
-  const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutCitizenSearchApplication({ applicationNo }, tenantId, { enabled: !!applicationNo });
+  // const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutCitizenSearchApplication({ applicationNo }, tenantId, { enabled: !!applicationNo });
+  const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ applicationNo}, tenantId,{ enabled: !!applicationNo });
 
   //console.log("API data fetched for applicationNo:", applicationNo, data);
 
@@ -252,7 +253,7 @@ const LayoutStepperForm = () => {
               uuid: doc?.uuid || "",
               documentUid: doc?.documentUid || "",
               documentAttachment: doc?.documentAttachment || "",
-              filestoreId: doc?.uuid || "",
+              filestoreId: doc?.documentAttachment || "",
               layoutId: doc?.layoutId || null
             })),
           },

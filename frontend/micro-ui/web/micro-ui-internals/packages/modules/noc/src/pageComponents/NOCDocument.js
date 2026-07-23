@@ -19,6 +19,8 @@ function NOCDocument({ value = {}}) {
 
   if (!data.pdfFiles || Object.keys(data.pdfFiles).length === 0) return <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>;
 
+  if(isLoading) return <Loader />;
+
   return (
     <div style={{ marginTop: "19px" }}>
       <React.Fragment>

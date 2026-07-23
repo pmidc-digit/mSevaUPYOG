@@ -336,6 +336,7 @@ const jsPdfGeneratorFormattedNOC = async ({
   ulbType,
   ulbName,
   hideUlbRow = false,
+  showLogo = false,
   openInNewTab = false
 }) => {
   console.log("ulbType", ulbType)
@@ -368,7 +369,7 @@ const jsPdfGeneratorFormattedNOC = async ({
 
     header: {},
     content: [
-      ...await createHeaderFormattedNOC(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber, ulbType, ulbName, hideUlbRow),
+      ...await createHeaderFormattedNOC(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber, ulbType, ulbName, hideUlbRow, showLogo),
       ...contentFormatted
     ],
     footer: function (currentPage, pageCount) {
@@ -2596,7 +2597,7 @@ async function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, 
   return headerData;
 }
 
-async function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName , hideUlbRow = false) {
+async function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName , hideUlbRow = false , showLogo = false) {
   const ulb = ulbName? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
   let headerData = [];
   const tenantDetails = await getMDMSDetails(tenantId);
@@ -2605,16 +2606,18 @@ async function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumbe
     layout: "noBorders",
     margin: [0, 0, 0, 0],
     table: {
-      widths: ["90%" , "10%"], // center, right
+      widths: ["25%", "50%", "25%"], // center, right
       body: [
         [
           // Left: Logo
-          // {
-          //   image: logo || getBase64Image(tenantId) || localGovLogo,
-          //   width: 78,
-          //   margin: [10, 10],
-          //   alignment: "left",
-          // },
+          showLogo ?
+          {
+            image: tenantDetails?.logo,
+            width: 78,
+            margin: [10, 10],
+            alignment: "left",
+          } :
+          {},
 
           // Center: Heading + Name stacked
           {

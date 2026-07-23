@@ -301,7 +301,7 @@ export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, 
         }
 
         const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-          fileStoreIds: response.filestoreIds[0],
+          fileStoreIds: response.filestoreIds.join(","),
         });
 
         response?.filestoreIds?.forEach((id) => {

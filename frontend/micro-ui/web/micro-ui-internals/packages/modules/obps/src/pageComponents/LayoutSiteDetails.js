@@ -520,7 +520,7 @@ const LayoutSiteDetails = (_props) => {
                     option={options}
                     optionKey="i18nKey"
                     t={t}
-                    disable={isEditMode}
+                    // disable={isEditMode}
                   />
                 )}
               />

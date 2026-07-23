@@ -88,9 +88,6 @@ const ApplicationDetails = () => {
 
   useEffect(() => {
     if (applicationDetails) {
-      appDetailsToShow?.applicationData?.owners.sort((item, item2) => {
-        return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence;
-      });
       setAppDetailsToShow(_.cloneDeep(applicationDetails));
       if (applicationDetails?.applicationData?.status !== "ACTIVE" && applicationDetails?.applicationData?.creationReason === "MUTATION") {
         setEnableAudit(true);
@@ -208,7 +205,7 @@ const ApplicationDetails = () => {
       }
 
       const data = await getPTAcknowledgementData({ ...Property }, tenantInfo, t);
-      Digit.Utils.pdf.generate(data);
+      Digit.Utils.pdf.generateFormatted(data);
     } catch (error) {
       setShowToast({ key: "error", error: { message: error?.message || t("ERR_PDF_GEN_FAILED") } });
       setTimeout(closeToast, 5000);
@@ -252,16 +249,12 @@ const ApplicationDetails = () => {
     }
   }
 
-  const reversedOwners = Array.isArray(appDetailsToShow?.applicationData?.owners) ? appDetailsToShow?.applicationData?.owners.slice().reverse() : [];
-  if (appDetailsToShow?.applicationData) {
-    appDetailsToShow?.applicationDetails?.[3]?.additionalDetails?.owners.sort(() => {
-      return appDetailsToShow?.applicationDetails?.[3]?.additionalDetails?.owners;
-    });
-  }
+
 
   if (appDetailsToShow?.applicationDetails) {
     appDetailsToShow.applicationDetails = appDetailsToShow.applicationDetails.map((detail) => {
       if (detail.title === "PT_OWNERSHIP_INFO_SUB_HEADER") {
+        
         return {
           ...detail,
           Component: () => (

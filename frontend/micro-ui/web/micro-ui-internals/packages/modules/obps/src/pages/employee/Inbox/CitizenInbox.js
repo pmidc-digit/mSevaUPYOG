@@ -4,12 +4,12 @@ import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
 import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templates/Inbox/components";
-import useCLUTableConfig from "./useCLUTableConfig";
+import useInboxTableConfig from "./useInboxTableConfig";
+import { OBPS_BPA_NOR_BUSINESS_SERVICES } from "../../../../../../constants/constants";
 
-const CLUInbox = ({ parentRoute }) => {
+const CitizenInbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
-
   const [error, setError] = useState({
     error: false,
     label: "",
@@ -23,32 +23,26 @@ const CLUInbox = ({ parentRoute }) => {
     window.scroll(0, 0);
   }, []);
 
-  const { data: cities } = Digit.Hooks.useTenants();
-  // const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
   const isEmployee = window.location.href.includes("employee");
   const defaultAssignee = isEmployee && !hasViewOBPSCardRole ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL";
+  const { data: cities } = Digit.Hooks.useTenants();
 
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
 
-  const searchFormDefaultValues = useMemo(
-    () => ({
-      mobileNumber: "",
-      applicationNumber: "",
-    }),
-    []
-  );
+  const searchFormDefaultValues = useMemo(() => ({}), []);
 
   const filterFormDefaultValues = useMemo(
     () => ({
-      moduleName: "clu-service",
+      moduleName: "bpa-services",
       applicationStatus: [],
-      businessService: "clu_mcl",
+      businessService: null,
+      locality: [],
       assignee: defaultAssignee,
-      // assignee: "ASSIGNED_TO_ME",
+      applicationType: [],
     }),
-    []
+    [defaultAssignee]
   );
 
   const selectedTenantIdDefaultValues = useMemo(
@@ -65,7 +59,7 @@ const CLUInbox = ({ parentRoute }) => {
       sortBy: "",
       limit: isMobileDevice ? 50 : 10,
       offset: 0,
-      sortOrder: "ASC",
+      sortOrder: "DESC",
     }),
     [isMobileDevice]
   );
@@ -73,33 +67,55 @@ const CLUInbox = ({ parentRoute }) => {
   function formReducer(state, payload) {
     switch (payload.action) {
       case "mutateSearchForm":
-        Digit.SessionStorage.set("CLU.INBOX", { ...state, searchForm: payload.data });
+        Digit.SessionStorage.set("OBPS.INBOX", { ...state, searchForm: payload.data });
         return { ...state, searchForm: payload.data };
       case "mutateFilterForm":
-        Digit.SessionStorage.set("CLU.INBOX", { ...state, filterForm: payload.data });
+        Digit.SessionStorage.set("OBPS.INBOX", { ...state, filterForm: payload.data });
         return { ...state, filterForm: payload.data };
       case "mutateTableForm":
-        Digit.SessionStorage.set("CLU.INBOX", { ...state, tableForm: payload.data });
+        Digit.SessionStorage.set("OBPS.INBOX", { ...state, tableForm: payload.data });
         return { ...state, tableForm: payload.data };
       case "mutateSelectedTenantId":
-        Digit.SessionStorage.set("CLU.INBOX", { ...state, selectedTenantId: payload.data });
+        Digit.SessionStorage.set("OBPS.INBOX", { ...state, selectedTenantId: payload.data });
         return { ...state, selectedTenantId: payload.data };
       default:
         break;
     }
   }
 
-  const inboxObjectInSessionStorage = Digit.SessionStorage.get("CLU.INBOX");
+  const inboxObjectInSessionStorage = Digit.SessionStorage.get("OBPS.INBOX");
+
+  const onFilterFormReset = useCallback(
+    (setFilterFormValue) => {
+      setFilterFormValue("moduleName", "bpa-services");
+      setFilterFormValue("applicationStatus", []);
+      setFilterFormValue("businessService", null);
+      setFilterFormValue("locality", []);
+      setFilterFormValue("assignee", defaultAssignee);
+      setFilterFormValue("applicationType", []);
+      dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
+    },
+    [defaultAssignee, filterFormDefaultValues]
+  );
+
+  const onSortFormReset = useCallback(
+    (setSortFormValue) => {
+      setSortFormValue("sortOrder", "DESC");
+      dispatch({ action: "mutateTableForm", data: tableOrderFormDefaultValues });
+    },
+    [tableOrderFormDefaultValues]
+  );
 
   const formInitValue = useMemo(() => {
     if (inboxObjectInSessionStorage) {
       const sessionLimit = parseInt(inboxObjectInSessionStorage.tableForm?.limit, 10);
       const validLimit = [10, 20, 30, 40, 50].includes(sessionLimit) ? sessionLimit : tableOrderFormDefaultValues.limit;
-      const sessionFilterForm = inboxObjectInSessionStorage.filterForm || filterFormDefaultValues;
+      const sessionFilterForm = inboxObjectInSessionStorage.filterForm || {};
       return {
         filterForm: {
+          ...filterFormDefaultValues,
           ...sessionFilterForm,
-          applicationStatus: [],
+          assignee: isEmployee ? sessionFilterForm?.assignee || defaultAssignee : defaultAssignee,
         },
         searchForm: inboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
         tableForm: {
@@ -118,7 +134,15 @@ const CLUInbox = ({ parentRoute }) => {
       tableForm: tableOrderFormDefaultValues,
       selectedTenantId: selectedTenantIdDefaultValues,
     };
-  }, [inboxObjectInSessionStorage, filterFormDefaultValues, searchFormDefaultValues, tableOrderFormDefaultValues, selectedTenantIdDefaultValues]);
+  }, [
+    defaultAssignee,
+    filterFormDefaultValues,
+    inboxObjectInSessionStorage,
+    isEmployee,
+    searchFormDefaultValues,
+    selectedTenantIdDefaultValues,
+    tableOrderFormDefaultValues,
+  ]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
   const [tableData, setTableData] = useState([]);
@@ -131,7 +155,14 @@ const CLUInbox = ({ parentRoute }) => {
   });
   const capturedAssigneeCountsTenant = useRef(null);
 
-  const getResolvedStatuses = useCallback((applicationStatuses = []) => {
+  const setSelectedTenantIdValue = useCallback(
+    (key, value) => {
+      dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
+    },
+    [formState.selectedTenantId]
+  );
+
+  const getResolvedStatusIds = useCallback((applicationStatuses = []) => {
     return [
       ...new Set(
         applicationStatuses.reduce((acc, item) => {
@@ -148,16 +179,25 @@ const CLUInbox = ({ parentRoute }) => {
     ];
   }, []);
 
-  const setSelectedTenantIdValue = useCallback(
-    (key, value) => {
-      dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
-    },
-    [formState.selectedTenantId]
-  );
+  const effectiveTenantId =
+    isEmployee && tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+
+  useEffect(() => {
+    if (!(isEmployee && tenantId === "pb.punjab")) return;
+    if (!cities?.length) return;
+    if (formState?.selectedTenantId?.tenantId) return;
+
+    dispatch({
+      action: "mutateSelectedTenantId",
+      data: { ...(formState?.selectedTenantId || {}), tenantId: cities[0].code },
+    });
+  }, [cities, formState?.selectedTenantId, isEmployee, tenantId]);
 
   const memoizedFilters = useMemo(() => {
     const normalizedFilterForm = {
       ...(formState?.filterForm || filterFormDefaultValues),
+      businessService:
+        formState?.filterForm?.businessService === "BPA" ? OBPS_BPA_NOR_BUSINESS_SERVICES : formState?.filterForm?.businessService || null,
     };
 
     if (!normalizedFilterForm?.applicationStatus?.length) {
@@ -181,25 +221,16 @@ const CLUInbox = ({ parentRoute }) => {
     selectedTenantIdDefaultValues,
   ]);
 
-  const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+  const CheckForPunjab = window.location.href.includes("citizen-stakeholder-inbox");
 
-  useEffect(() => {
-    if (tenantId !== "pb.punjab") return;
-    if (!cities?.length) return;
-    if (formState?.selectedTenantId?.tenantId) return;
+  console.log("CheckForPunjab", CheckForPunjab);
 
-    dispatch({
-      action: "mutateSelectedTenantId",
-      data: { ...(formState?.selectedTenantId || {}), tenantId: cities[0].code },
-    });
-  }, [cities, formState?.selectedTenantId, tenantId]);
+  const finalTenantId = CheckForPunjab ? "pb.punjab" : tenantId;
 
-  const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.obps.useCLUInbox({
-    tenantId: effectiveTenantId,
+  const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.obps.useBPAInbox({
+    tenantId: finalTenantId,
     filters: memoizedFilters,
-    config: {
-      enabled: !!tenantId,
-    },
+    config: { enabled: !!tenantId },
   });
 
   const assigneeCountBaseFilters = useMemo(() => {
@@ -234,21 +265,23 @@ const CLUInbox = ({ parentRoute }) => {
     [assigneeCountBaseFilters]
   );
 
-  const { data: assignedToMeInboxData } = Digit.Hooks.obps.useCLUInbox({
-    tenantId: effectiveTenantId,
-    filters: assignedToMeFilters,
-    config: {
-      enabled: !!tenantId,
-    },
+  // const { data: assignedToMeInboxData } = Digit.Hooks.obps.useBPAInbox({
+  //   tenantId: effectiveTenantId,
+  //   filters: assignedToMeFilters,
+  //   config: { enabled: !!tenantId && isEmployee },
+  // });
+
+  const { data: assignedToAllInboxData } = Digit.Hooks.obps.useBPAInbox({
+    tenantId: finalTenantId,
+    filters: assignedToAllFilters,
+    config: { enabled: !!tenantId && isEmployee },
   });
 
-  const { data: assignedToAllInboxData } = Digit.Hooks.obps.useCLUInbox({
-    tenantId: effectiveTenantId,
-    filters: assignedToAllFilters,
-    config: {
-      enabled: !!tenantId,
-    },
-  });
+  // const { data: assignedToAllInboxDataPunjab } = Digit.Hooks.obps.useBPAInbox({
+  //   tenantId: "pb.punjab",
+  //   filters: assignedToAllFilters,
+  //   // config: { enabled: !!tenantId && isEmployee },
+  // });
 
   useEffect(() => {
     if (!isEmployee) return;
@@ -261,15 +294,24 @@ const CLUInbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (!isEmployee) return;
-    if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+    if (
+      // !assignedToMeInboxData ||
+      !assignedToAllInboxData
+    )
+      return;
     if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
 
     setAssigneeCounts({
-      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      // ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
     });
     capturedAssigneeCountsTenant.current = effectiveTenantId;
-  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId, isEmployee]);
+  }, [
+    assignedToAllInboxData,
+    //  assignedToMeInboxData,
+    effectiveTenantId,
+    isEmployee,
+  ]);
 
   useEffect(() => {
     if (inboxData) {
@@ -280,16 +322,22 @@ const CLUInbox = ({ parentRoute }) => {
         return acc;
       }, {});
 
-      const groupedStatuses = (inboxData?.statuses || []).reduce((acc, status) => {
-        const key = status?.applicationstatus;
+      const topBarStatuses = (inboxData?.statuses || []).reduce((acc, status) => {
+        const statusKey = status?.applicationstatus;
+        const businessService = status?.businessService || status?.businessservice;
+        const isDuplicateStatus = (duplicateStatusCounts?.[statusKey] || 0) > 1;
 
-        if (!key) {
-          acc.push(status);
+        if (!statusKey || !isDuplicateStatus) {
+          acc.push({
+            ...status,
+            hasDuplicateName: isDuplicateStatus,
+          });
           return acc;
         }
 
+        const bucketType = businessService === "BPA_LOW" ? "SELF_CERTIFICATION" : "OTHERS";
+        const existingStatus = acc.find((item) => item?.applicationstatus === statusKey && item?.bucketType === bucketType);
         const count = status?.totalCount ?? status?.count ?? 0;
-        const existingStatus = acc.find((item) => item?.applicationstatus === key);
 
         if (existingStatus) {
           existingStatus.totalCount = (existingStatus.totalCount || 0) + count;
@@ -300,9 +348,37 @@ const CLUInbox = ({ parentRoute }) => {
 
         acc.push({
           ...status,
-          selectionValue: undefined,
-          selectionValues: status?.statusid ? [status.statusid] : [],
-          statusid: `${key}_GROUP`,
+          statusid: `${statusKey}_${bucketType}`,
+          statusids: status?.statusid ? [status.statusid] : [],
+          totalCount: count,
+          count,
+          hasDuplicateName: true,
+          bucketType,
+          businessServiceLabel: bucketType === "SELF_CERTIFICATION" ? "Self Certification" : "Others",
+        });
+        return acc;
+      }, []);
+
+      const groupedStatuses = (inboxData?.statuses || []).reduce((acc, status) => {
+        const statusKey = status?.applicationstatus;
+        if (!statusKey) {
+          acc.push(status);
+          return acc;
+        }
+
+        const count = status?.totalCount ?? status?.count ?? 0;
+        const existingStatus = acc.find((item) => item?.applicationstatus === statusKey);
+
+        if (existingStatus) {
+          existingStatus.totalCount = (existingStatus.totalCount || 0) + count;
+          existingStatus.count = existingStatus.totalCount;
+          existingStatus.statusids = [...new Set([...(existingStatus.statusids || []), status?.statusid].filter(Boolean))];
+          return acc;
+        }
+
+        acc.push({
+          ...status,
+          statusid: `${statusKey}_GROUP`,
           statusids: status?.statusid ? [status.statusid] : [],
           totalCount: count,
           count,
@@ -312,23 +388,108 @@ const CLUInbox = ({ parentRoute }) => {
         return acc;
       }, []);
 
-      setStatusData(
-        groupedStatuses.map((status) => ({
-          ...status,
-          selectionValue: status?.selectionValue,
-          selectionValues: status?.statusids || status?.selectionValues || [],
-        }))
-      );
-      setTopBarStatusData(
-        (inboxData?.statuses || []).map((status) => ({
-          ...status,
-          hasDuplicateName: (duplicateStatusCounts?.[status?.applicationstatus] || 0) > 1,
-        }))
-      );
+      setStatusData(groupedStatuses);
+      setTopBarStatusData(topBarStatuses);
       setTableData(inboxData?.table || []);
       setTotalCountData(inboxData?.totalCount || 0);
     }
   }, [inboxData]);
+
+  // useEffect(() => {
+  //   const allStatuses = [...(inboxData?.statuses || []), ...(assignedToAllInboxDataPunjab?.statuses || [])];
+
+  //   const allTableData = [...(inboxData?.table || []), ...(assignedToAllInboxDataPunjab?.table || [])];
+
+  //   const totalCount = (inboxData?.totalCount || 0) + (assignedToAllInboxDataPunjab?.totalCount || 0);
+
+  //   console.log("assignedToAllInboxDataPunjab", assignedToAllInboxDataPunjab);
+  //   console.log("allTableData", allTableData);
+
+  //   if (allStatuses.length) {
+  //     const duplicateStatusCounts = allStatuses.reduce((acc, status) => {
+  //       const statusKey = status?.applicationstatus;
+  //       if (!statusKey) return acc;
+  //       acc[statusKey] = (acc[statusKey] || 0) + 1;
+  //       return acc;
+  //     }, {});
+
+  //     const topBarStatuses = allStatuses.reduce((acc, status) => {
+  //       const statusKey = status?.applicationstatus;
+  //       const businessService = status?.businessService || status?.businessservice;
+  //       const isDuplicateStatus = (duplicateStatusCounts?.[statusKey] || 0) > 1;
+
+  //       if (!statusKey || !isDuplicateStatus) {
+  //         acc.push({
+  //           ...status,
+  //           hasDuplicateName: isDuplicateStatus,
+  //         });
+  //         return acc;
+  //       }
+
+  //       const bucketType = businessService === "BPA_LOW" ? "SELF_CERTIFICATION" : "OTHERS";
+
+  //       const existingStatus = acc.find((item) => item.applicationstatus === statusKey && item.bucketType === bucketType);
+
+  //       const count = status?.totalCount ?? status?.count ?? 0;
+
+  //       if (existingStatus) {
+  //         existingStatus.totalCount += count;
+  //         existingStatus.count = existingStatus.totalCount;
+  //         existingStatus.statusids = [...new Set([...(existingStatus.statusids || []), status?.statusid].filter(Boolean))];
+  //         return acc;
+  //       }
+
+  //       acc.push({
+  //         ...status,
+  //         statusid: `${statusKey}_${bucketType}`,
+  //         statusids: status?.statusid ? [status.statusid] : [],
+  //         totalCount: count,
+  //         count,
+  //         hasDuplicateName: true,
+  //         bucketType,
+  //         businessServiceLabel: bucketType === "SELF_CERTIFICATION" ? "Self Certification" : "Others",
+  //       });
+
+  //       return acc;
+  //     }, []);
+
+  //     const groupedStatuses = allStatuses.reduce((acc, status) => {
+  //       const statusKey = status?.applicationstatus;
+  //       if (!statusKey) {
+  //         acc.push(status);
+  //         return acc;
+  //       }
+
+  //       const count = status?.totalCount ?? status?.count ?? 0;
+
+  //       const existingStatus = acc.find((item) => item.applicationstatus === statusKey);
+
+  //       if (existingStatus) {
+  //         existingStatus.totalCount += count;
+  //         existingStatus.count = existingStatus.totalCount;
+  //         existingStatus.statusids = [...new Set([...(existingStatus.statusids || []), status?.statusid].filter(Boolean))];
+  //         return acc;
+  //       }
+
+  //       acc.push({
+  //         ...status,
+  //         statusid: `${statusKey}_GROUP`,
+  //         statusids: status?.statusid ? [status.statusid] : [],
+  //         totalCount: count,
+  //         count,
+  //         businessService: null,
+  //         businessservice: null,
+  //       });
+
+  //       return acc;
+  //     }, []);
+
+  //     setStatusData(groupedStatuses);
+  //     setTopBarStatusData(topBarStatuses);
+  //     setTableData(allTableData);
+  //     setTotalCountData(totalCount);
+  //   }
+  // }, [inboxData, assignedToAllInboxDataPunjab]);
 
   const onPageSizeChange = (e) => {
     const newLimit = parseInt(e.target.value, 10);
@@ -358,7 +519,7 @@ const CLUInbox = ({ parentRoute }) => {
     [formState.tableForm, formState.filterForm]
   );
 
-  const propsForInboxTable = useCLUTableConfig({
+  const propsForInboxTable = useInboxTableConfig({
     parentRoute,
     onPageSizeChange,
     formState,
@@ -366,7 +527,6 @@ const CLUInbox = ({ parentRoute }) => {
     table: tableData,
     dispatch,
     onSortingByData,
-    tenantId,
   });
 
   const {
@@ -381,9 +541,9 @@ const CLUInbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
-      const resolvedStatuses = getResolvedStatuses(filterData.applicationStatus || []);
+      const resolvedIds = getResolvedStatusIds(filterData.applicationStatus || []);
 
-      setFilterFormValue("applicationStatus", resolvedStatuses);
+      setFilterFormValue("applicationStatus", resolvedIds);
       if (filterData.assignee) {
         setFilterFormValue("assignee", filterData.assignee);
       }
@@ -392,25 +552,25 @@ const CLUInbox = ({ parentRoute }) => {
         action: "mutateFilterForm",
         data: {
           ...formState?.filterForm,
-          applicationStatus: resolvedStatuses,
-          assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ME",
+          applicationStatus: resolvedIds,
+          assignee: filterData.assignee || formState?.filterForm?.assignee || defaultAssignee,
         },
       });
     },
-    [formState?.filterForm, getResolvedStatuses, setFilterFormValue]
+    [defaultAssignee, formState?.filterForm, getResolvedStatusIds, setFilterFormValue]
   );
 
   const filteredTopBarStatuses = useMemo(() => {
-    const selectedStatusCodes = formState?.filterForm?.applicationStatus || [];
+    const selectedStatusIds = formState?.filterForm?.applicationStatus || [];
 
-    if (!selectedStatusCodes.length) {
+    if (!selectedStatusIds.length) {
       return topBarStatusData;
     }
 
     const selectedStatusKeys = [
       ...new Set(
         statusData
-          .filter((status) => (status?.statusids || []).some((statusId) => selectedStatusCodes.includes(statusId)))
+          .filter((status) => (status?.statusids || []).some((statusId) => selectedStatusIds.includes(statusId)))
           .map((status) => status?.applicationstatus)
           .filter(Boolean)
       ),
@@ -420,8 +580,10 @@ const CLUInbox = ({ parentRoute }) => {
       return topBarStatusData;
     }
 
-    return topBarStatusData.filter((status) => selectedStatusKeys.includes(status?.applicationstatus));
-  }, [formState?.filterForm?.applicationStatus, statusData, topBarStatusData]);
+    return topBarStatusData.filter((status) => {
+      return selectedStatusKeys.includes(status?.applicationstatus);
+    });
+  }, [formState?.filterForm?.applicationStatus, topBarStatusData]);
 
   const searchDebounceRef = useRef(null);
   const hasInitializedFilterForm = useRef(false);
@@ -440,16 +602,21 @@ const CLUInbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (formState?.filterForm) {
-      setFilterFormValue("moduleName", formState.filterForm.moduleName || "clu-service");
+      setFilterFormValue("moduleName", formState.filterForm.moduleName || "bpa-services");
       setFilterFormValue("applicationStatus", formState.filterForm.applicationStatus || []);
-      setFilterFormValue("assignee", formState.filterForm.assignee || "ASSIGNED_TO_ME");
-      setFilterFormValue("businessService", formState.filterForm.businessService || "clu_mcl");
+      setFilterFormValue("assignee", formState.filterForm.assignee || defaultAssignee);
+      setFilterFormValue("businessService", formState.filterForm.businessService || null);
+      setFilterFormValue("applicationType", formState.filterForm.applicationType || []);
+      setFilterFormValue("locality", formState.filterForm.locality || []);
     }
   }, [
     formState?.filterForm?.moduleName,
     formState?.filterForm?.applicationStatus,
     formState?.filterForm?.assignee,
     formState?.filterForm?.businessService,
+    formState?.filterForm?.applicationType,
+    formState?.filterForm?.locality,
+    defaultAssignee,
     setFilterFormValue,
   ]);
 
@@ -457,7 +624,7 @@ const CLUInbox = ({ parentRoute }) => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     searchDebounceRef.current = setTimeout(() => {
       const value = String(topBarSearch || "").trim();
-      const nextSearchForm = value ? { applicationNumber: value } : {};
+      const nextSearchForm = value ? { applicationNo: value } : {};
       dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
       dispatch({ action: "mutateSearchForm", data: nextSearchForm });
     }, 400);
@@ -481,14 +648,28 @@ const CLUInbox = ({ parentRoute }) => {
       }
       if (label === "ALL") {
         setFilterFormValue("applicationStatus", [], { shouldDirty: true, shouldTouch: true });
-        handleFilterFormSubmit(onFilterFormSubmit)();
+        dispatch({
+          action: "mutateTableForm",
+          data: { ...formState.tableForm, offset: 0 },
+        });
+        dispatch({
+          action: "mutateFilterForm",
+          data: { ...formState.filterForm, applicationStatus: [] },
+        });
         return;
       }
       const resolvedCode = Array.isArray(status?.statusids) && status.statusids.length ? status.statusids : status?.statusid ? [status.statusid] : [];
       setFilterFormValue("applicationStatus", resolvedCode, { shouldDirty: true, shouldTouch: true });
-      handleFilterFormSubmit(onFilterFormSubmit)();
+      dispatch({
+        action: "mutateTableForm",
+        data: { ...formState.tableForm, offset: 0 },
+      });
+      dispatch({
+        action: "mutateFilterForm",
+        data: { ...formState.filterForm, applicationStatus: resolvedCode },
+      });
     },
-    [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
+    [formState.filterForm, formState.tableForm, setFilterFormValue]
   );
 
   useEffect(() => {
@@ -503,6 +684,8 @@ const CLUInbox = ({ parentRoute }) => {
     }
   }, [isError, t]);
 
+  console.log("yes coming here");
+
   return (
     <>
       {!isError && (
@@ -510,7 +693,7 @@ const CLUInbox = ({ parentRoute }) => {
           title={t("ES_COMMON_INBOX")}
           totalCount={totalCountData}
           tenantSelector={
-            tenantId === "pb.punjab" && cities?.length ? (
+            isEmployee && tenantId === "pb.punjab" && cities?.length ? (
               <div className="new-inbox-tenant-selector">
                 <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>
                   {t("BPA_CITIES_DROPDOWN_LABEL")}
@@ -534,15 +717,15 @@ const CLUInbox = ({ parentRoute }) => {
               filterFormState={formState?.filterForm}
               getFilterFormValue={getFilterFormValue}
               statuses={statusData}
-              showAssigneeCards={isEmployee && !hasViewOBPSCardRole}
               isInboxLoading={isInboxLoading}
               assigneeCounts={assigneeCounts}
+              showAssigneeCards={isEmployee && !hasViewOBPSCardRole}
               handleFilter={handleFilterChange}
             />
           }
           topBar={
             <InboxTopBar
-              statuses={[]}
+              statuses={filteredTopBarStatuses}
               activeTab={activeStatusTab}
               onTabClick={onStatusTabClick}
               searchValue={topBarSearch}
@@ -574,4 +757,4 @@ const CLUInbox = ({ parentRoute }) => {
   );
 };
 
-export default CLUInbox;
+export default CitizenInbox;

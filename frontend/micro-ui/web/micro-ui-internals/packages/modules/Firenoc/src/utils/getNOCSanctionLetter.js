@@ -151,7 +151,7 @@ const ulbType = matchedCity?.city?.ulbType;
 console.log(ulbName, ulbType ,  "ULBBB");
 
 const zoneLabel = fireNOCDetails?.zone || " ";
-const validityPeriod = fireNOCDetails?.validityPeriod || "1 Year(s)";
+const validityPeriod = `${fireNOCDetails?.validityPeriod || fireNOCDetails?.additionalDetail?.validityYears || 1} Year(s)`;
 
 
 const locality = addr?.locality?.code;

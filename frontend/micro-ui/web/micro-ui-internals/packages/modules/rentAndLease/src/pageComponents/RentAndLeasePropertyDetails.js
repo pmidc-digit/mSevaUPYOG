@@ -39,20 +39,25 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     { name: t("New"), code: "new" },
   ];
 
-  const incrementPeriodMonthsValues = [
-    { name: 1, code: "1" },
-    { name: 2, code: "2" },
-    { name: 3, code: "3" },
-    { name: 4, code: "4" },
-    { name: 5, code: "5" },
-    { name: 6, code: "6" },
-    { name: 7, code: "7" },
-    { name: 8, code: "8" },
-    { name: 9, code: "9" },
-    { name: 10, code: "10" },
-    { name: 11, code: "11" },
-    { name: 12, code: "12" },
-  ];
+  // const incrementPeriodMonthsValues = [
+  //   { name: 1, code: "1" },
+  //   { name: 2, code: "2" },
+  //   { name: 3, code: "3" },
+  //   { name: 4, code: "4" },
+  //   { name: 5, code: "5" },
+  //   { name: 6, code: "6" },
+  //   { name: 7, code: "7" },
+  //   { name: 8, code: "8" },
+  //   { name: 9, code: "9" },
+  //   { name: 10, code: "10" },
+  //   { name: 11, code: "11" },
+  //   { name: 12, code: "12" },
+  // ];
+
+  const incrementPeriodMonthsValues = Array.from({ length: 60 }, (_, index) => ({
+    name: index + 1,
+    code: String(index + 1),
+  }));
 
   const propertySpecificOptions = [
     { name: t("COMMERCIAL"), code: "Commercial", i18nKey: "Commercial" },
@@ -128,6 +133,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     },
   });
 
+  useEffect(() => {
+    console.log("errors", errors);
+  }, [errors]);
+
   const docUploadData = {
     Challan: {
       Documents: [
@@ -180,6 +189,8 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const handlePropertySelect = (property) => {
     if (!property) return;
 
+    console.log("property", property);
+
     const findPropertySpecific = propertySpecificOptions?.find((item) => item?.code == property?.propertyType);
     const findlocationTypeOptions = locationTypeOptions?.find((item) => item?.code == property?.locationType);
 
@@ -191,17 +202,24 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       // "propertyId",
       "propertyName",
       "baseRent",
-      "securityDeposit",
+      // "securityDeposit",
       "refundApplicableOnDiscontinuation",
       "penaltyType",
       // "latePayment",
       // "cowCessApplicable",
       // "taxApplicable"
     ];
+    setValue("securityDeposit", "0");
 
     setValue("selectedProperty", property);
     fieldsToPrefill?.forEach((field) => {
-      setValue(field, property?.[field] || null, {
+      let value = property?.[field];
+
+      if (field === "securityDeposit" && typeof value === "number") {
+        value = value.toString();
+      }
+
+      setValue(field, value || null, {
         shouldValidate: true,
         shouldDirty: true,
       });
@@ -672,7 +690,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
             <Controller
               control={control}
               name="securityDeposit"
-              rules={{ required: t("PTR_FIELD_REQUIRED") }}
+              rules={{
+                required: watch("applicationType")?.code !== "Legacy" ? t("PTR_FIELD_REQUIRED") : false,
+                // required: t("PTR_FIELD_REQUIRED")
+              }}
               render={({ value, onChange }) => (
                 <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />
               )}
@@ -714,10 +735,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
           </LabelFieldPair>
           {errors.arrear && <CardLabelError className="ral-error-label">{getErrorMessage("arrear")}</CardLabelError>}
 
-          {/* Last Billing Period */}
+          {/* Last Billing Month */}
           <LabelFieldPair>
             <CardLabel>
-              {t("Last Billing Period")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
+              {t("Last Billing Month")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
             </CardLabel>
             <div className="form-field">
               <Controller

@@ -148,7 +148,7 @@ export const newConfigMutate = [
         labels: [
           {
             label: "PT_OWNERSHIP_INSTI_NAME",
-            keyPath: ["searchResult", "property", "institution", "institutionName"],
+            keyPath: ["searchResult", "property", "institution", "name"],
             ownershipType: "INSTITUTIONAL",
           },
           {
@@ -158,7 +158,7 @@ export const newConfigMutate = [
           },
           {
             label: "PT_INSTI_OWNERSHIP_TYPE",
-            keyPath: ["searchResult", "property", "institution", "institutionType"],
+            keyPath: ["searchResult", "property", "institution", "type"],
             ownershipType: "INSTITUTIONAL",
           },
           {

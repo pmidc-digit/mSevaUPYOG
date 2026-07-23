@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { TextInput, LinkButton, TextArea } from "@mseva/digit-ui-react-components";
+import { TextInput, LinkButton, TextArea, Loader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, readOnly = false }) => {
@@ -14,8 +14,15 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   });
 
   // fetch urls and checklist data as before...
-  const { data: urlsList } = Digit.Hooks.noc.useNOCDocumentSearch(
-    { value: { workflowDocs: (documents || []).map((d) => ({ documentUid: d.documentUid })) } },
+  const { data: urlsList, isLoading } = Digit.Hooks.noc.useNOCDocumentSearch(
+    {
+      value: {
+        workflowDocs: (documents || []).map((d) => ({
+          documentUid: d.documentUid,
+          documentAttachment: d.documentAttachment || "",
+        })),
+      },
+    },
     { enabled: documents?.length > 0 }
   );
   const { data: searchChecklistData } = Digit.Hooks.obps.useCLUCheckListSearch({ applicationNo }, tenantId);
@@ -46,6 +53,8 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
     setLocalRemarks(updated);
     onRemarksChange(updated);
   };
+
+  if(isLoading) return <Loader />
 
   const renderMobileCardView = () => {
     return (

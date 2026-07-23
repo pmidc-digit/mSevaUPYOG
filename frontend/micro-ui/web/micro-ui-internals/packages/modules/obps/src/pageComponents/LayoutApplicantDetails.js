@@ -52,8 +52,6 @@ const LayoutApplicantDetails = (_props) => {
   const [panDocumentUploadedFiles, setPanDocumentUploadedFiles] = useState({});
   const [loader, setLoader] = useState(false);
   const [applicantErrors, setApplicantErrors] = useState({});
-  const errormsggeneral = t("LAYOUT_PDF_MSG")
-  const errormsgIMG = t("LAYOUT_IMG_MSG")
   // State for additional owner mobile search
   const [isLoading, setIsLoading] = useState(false);
   const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({});
@@ -428,6 +426,7 @@ const LayoutApplicantDetails = (_props) => {
         // setDocumentUploadedFiles(updatedDocFiles);
         if(index === 0){
           setValue("documentUploadedFiles", fileId, { shouldValidate: true });
+          clearErrors("primaryOwnerDocument");
         }else{
           clearErrors(`applicants.${index - 1}.document`);
           setApplicants(prev => {
@@ -465,6 +464,7 @@ const LayoutApplicantDetails = (_props) => {
         // setPhotoUploadedFiles(updatedPhotoFiles);
         if(index === 0){
           setValue("photoUploadedFiles", fileId, { shouldValidate: true });
+          clearErrors("primaryOwnerPhoto");
         }else{
           clearErrors(`applicants.${index - 1}.photo`);
           setApplicants(prev => {
@@ -519,6 +519,7 @@ const LayoutApplicantDetails = (_props) => {
         // setPanDocumentUploadedFiles(updatedPanDocFiles);
         if(index === 0){
           setValue("panDocumentUploadedFiles", fileId, { shouldValidate: true });
+          clearErrors("panDocumentUploadedFiles");
         }else{
           clearErrors(`applicants.${index - 1}.panDocument`);
           setApplicants(prev => {
@@ -602,6 +603,7 @@ const LayoutApplicantDetails = (_props) => {
                     onChange={(e) => {
                       props.onChange(e.target.value);
                       setMobileNo(e.target.value);
+                      clearErrors("applicantMobileNumber");
                     }}
                     onBlur={props.onBlur}
                     // disabled={isEdit}
@@ -636,6 +638,7 @@ const LayoutApplicantDetails = (_props) => {
                       select={(e) => {                        
                         props.onChange(e);
                         setPrimaryApplicantType(e)
+                        clearErrors("aplicantType");
                       }}
                       selected={props.value}
                       option={[
@@ -648,9 +651,10 @@ const LayoutApplicantDetails = (_props) => {
                     />
                   )}
                 />              
-              <CardLabelError style={errorStyle}>{errors?.aplicantType?.message || ""}</CardLabelError>
+            
             </div>
           </LabelFieldPair>
+            <CardLabelError style={errorStyle}>{errors?.aplicantType?.message || ""}</CardLabelError>
 
         
 
@@ -667,9 +671,18 @@ const LayoutApplicantDetails = (_props) => {
                   required: t("REQUIRED_FIELD"),
                   maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
                 }}
-                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} 
-                // disabled={isEdit}
-                t={t} />}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e);
+                      clearErrors("authorisedPerson");
+                    }}
+                    onBlur={props.onBlur}
+                    // disabled={isEdit}
+                    t={t}
+                  />
+                )}
               />
             </div>
           </LabelFieldPair>
@@ -690,9 +703,18 @@ const LayoutApplicantDetails = (_props) => {
                   required: t("REQUIRED_FIELD"),
                   maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
                 }}
-                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} 
-                // disabled={isEdit}
-                 t={t} />}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e);
+                      clearErrors("applicantOwnerOrFirmName");
+                    }}
+                    onBlur={props.onBlur}
+                    // disabled={isEdit}
+                    t={t}
+                  />
+                )}
               />
             </div>
           </LabelFieldPair>
@@ -743,6 +765,7 @@ const LayoutApplicantDetails = (_props) => {
                     value={props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
+                      clearErrors("applicantEmailId");
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
@@ -772,7 +795,17 @@ const LayoutApplicantDetails = (_props) => {
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
                   },
                 }}
-                render={(props) => <TextArea value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} />}
+                render={(props) => (
+                  <TextArea
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e);
+                      clearErrors("applicantAddress");
+                    }}
+                    onBlur={props.onBlur}
+                    t={t}
+                  />
+                )}
               />
             </div>
           </LabelFieldPair>
@@ -804,7 +837,10 @@ const LayoutApplicantDetails = (_props) => {
                   <TextInput
                     type="date"
                     value={props.value}
-                    onChange={props.onChange}
+                    onChange={(e) => {
+                      props.onChange(e);
+                      clearErrors("applicantDateOfBirth");
+                    }}
                     onBlur={props.onBlur}
                     // disabled={isEdit}
                     min="1900-01-01"
@@ -836,6 +872,7 @@ const LayoutApplicantDetails = (_props) => {
                     selectedOption={props.value}
                     onSelect={(e) => {
                       props.onChange(e);
+                      clearErrors("applicantGender");
                     }}
                     isDependent={true}
                     // disabled={isEdit}
@@ -869,12 +906,12 @@ const LayoutApplicantDetails = (_props) => {
                     uploadedFile={getValues("photoUploadedFiles")}
                     message={getValues("photoUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                     error={applicantErrors[0]?.photo}
-                    uploadMessage={errormsgIMG}
-                    accept="image/*"
+                    uploadMessage="Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                    accept=".png, .jpeg, .jpg"
                   />
               )}
               />
-              <p className="upload-file-message">{t(errormsgIMG)}</p>
+              <p className="upload-file-message">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerPhoto?.message || ""}</CardLabelError>
@@ -901,12 +938,12 @@ const LayoutApplicantDetails = (_props) => {
                     uploadedFile={getValues("documentUploadedFiles")}
                     message={getValues("documentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                     error={applicantErrors[0]?.document}
-                    uploadMessage={errormsggeneral}
-                    accept=".pdf, image/*"
+                    uploadMessage="Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                    accept=".pdf, .png, .jpeg, .jpg"
                   />
                   )}
               />
-              <p className="upload-file-message">{t(errormsggeneral)}</p>
+              <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerDocument?.message || ""}</CardLabelError>
@@ -933,12 +970,12 @@ const LayoutApplicantDetails = (_props) => {
                   uploadedFile={getValues("panDocumentUploadedFiles")}
                     message={getValues("panDocumentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                   error={applicantErrors[0]?.panDocument}
-                  uploadMessage={errormsggeneral}
-                  accept=".pdf, image/*"
+                  uploadMessage="Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                  accept=".pdf, .png, .jpeg, .jpg"
                 />
                 )}
               />
-              <p className="upload-file-message">{t(errormsggeneral)}</p>
+              <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.panDocumentUploadedFiles?.message || ""}</CardLabelError>
@@ -970,6 +1007,7 @@ const LayoutApplicantDetails = (_props) => {
                     onChange={(e) => {
                       const upperValue = e.target.value.toUpperCase();
                       props.onChange(upperValue);
+                      clearErrors("panNumber");
                     }}
                     onBlur={props.onBlur}
                     placeholder="e.g., AAAAA1234A"
@@ -1168,10 +1206,10 @@ const LayoutApplicantDetails = (_props) => {
                             uploadedFile={applicant.photoUploadedFiles}
                             message={applicant.photoUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.photo}
-                            uploadMessage={errormsgIMG}
-                            accept="image/*"
+                            uploadMessage="Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                            accept=".png, .jpeg, .jpg"
                           />
-                          <p className="upload-file-message">{t(errormsgIMG)}</p>
+                          <p className="upload-file-message">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.photo?.message || ""}</CardLabelError>
@@ -1200,10 +1238,10 @@ const LayoutApplicantDetails = (_props) => {
                             uploadedFile={applicant.documentUploadedFiles}
                             message={applicant.documentUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.document}
-                            uploadMessage={errormsggeneral}
-                            accept="image/*, .pdf"
+                            uploadMessage="Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                            accept=".pdf, .png, .jpeg, .jpg"
                           />
-                          <p className="upload-file-message">{t(errormsggeneral)}</p>
+                          <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.document?.message || ""}</CardLabelError>
@@ -1235,10 +1273,10 @@ const LayoutApplicantDetails = (_props) => {
                             uploadedFile={applicant.panDocumentUploadedFiles}
                             message={applicant.panDocumentUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.panDocument}
-                            uploadMessage={errormsggeneral}
-                            accept="image/*, .pdf"
+                            uploadMessage="Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                            accept=".pdf, .png, .jpeg, .jpg"
                           />
-                          <p className="upload-file-message">{t(errormsggeneral)}</p>
+                          <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.panDocument?.message || ""}</CardLabelError>

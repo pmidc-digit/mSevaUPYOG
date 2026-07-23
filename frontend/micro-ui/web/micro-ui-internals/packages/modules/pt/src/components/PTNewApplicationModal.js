@@ -153,6 +153,10 @@ const PTNewApplicationModal = ({}) => {
     docs: ["Rent Agreement"],
     note: "* In case of multiple floors/units please provide the Occupancy Proof of all floors/units",
   },
+  "Construction Proof": {
+    docs: ["BPA Certificate"],
+    note: "* In case of multiple floors/units please provide the Construction Proof of all floors/units",
+  },
 };
 
   return (

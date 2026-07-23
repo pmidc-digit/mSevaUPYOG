@@ -12,6 +12,8 @@ const useCLUInbox = ({ tenantId, filters, config = {} }) => {
   const { sortBy, limit, offset, sortOrder } = tableForm;
   const user = Digit.UserService.getUser();
 
+  const checkCitizenView = window.location.href.includes("citizen-clu");
+
   const _filters = {
     tenantId,
     processSearchCriteria: {
@@ -26,6 +28,8 @@ const useCLUInbox = ({ tenantId, filters, config = {} }) => {
       ...(applicationNumber ? { applicationNumber } : {}),
       ...(sortOrder ? { sortOrder } : {}),
       ...(sortBy ? { sortBy } : {}),
+      isCitizenView: checkCitizenView,
+      // ...(isCitizenView ? { checkCitizenView } : {}),
       ...(locality?.length > 0 ? { locality: locality.map((item) => item.code.split("_").pop()).join(",") } : {}),
     },
     limit,

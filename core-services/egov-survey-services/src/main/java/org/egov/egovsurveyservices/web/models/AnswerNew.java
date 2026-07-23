@@ -36,5 +36,9 @@ public class AnswerNew {
     private List<AnswerDetail> answerDetails;
     @JsonProperty("comments")
     private String comments;
+    @JsonProperty("surveyResponseUuid")
+    private String surveyResponseUuid;
+    @JsonProperty("citizenId")
+    private String citizenId;
     private AuditDetails auditDetails;
 }

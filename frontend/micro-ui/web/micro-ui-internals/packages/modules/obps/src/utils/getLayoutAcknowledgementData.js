@@ -79,15 +79,23 @@ const getApplicantDetails = (appData, t) => {
 
   const primaryOwner = sortedOwners?.find((o) => o?.isPrimaryOwner === true) || sortedOwners?.[0];
 
-  sortedOwners?.forEach((owner , i) => {
-    if (i > 0) {
-      values.push({ title: " ", value: " " });
-    }
+  sortedOwners?.forEach((owner, i) => {
+   if (sortedOwners?.length > 1) {
+     if (i > 0) {
+       values.push({ title: " ", value: " " });
+     }
+     values.push({ title: `${t("Owner")} ${i + 1}`, value: "" , isBold: true});
+   }
+
     const value = [
-      {
-        title: t("CLU_OWNER_TYPE_LABEL"),
-        value: primaryOwner?.additionalDetails?.aplicantType?.name || owner?.additionalDetails?.aplicantType || "N/A",
-      },
+      ...(i === 0
+        ? [
+            {
+              title: t("CLU_OWNER_TYPE_LABEL"),
+              value: primaryOwner?.additionalDetails?.aplicantType?.name || primaryOwner?.additionalDetails?.aplicantType || "N/A",
+            },
+          ]
+        : []),
       ...[
         owner?.additionalDetails?.aplicantType?.code === "FIRM"
           ? {
@@ -125,21 +133,21 @@ const getApplicantDetails = (appData, t) => {
         value: owner?.permanentAddress || "N/A",
       },
     ];
-    values.push(...value?.filter((owner) => owner !== null));
+    values.push(...value?.filter((v) => v !== null));
   });
 
   values.push(
     ...(appData?.layoutDetails?.additionalDetails?.applicationDetails?.panNumber
       ? [
           {
-            title: "NOC_PAN_NO",
+            title: t("NOC_PAN_NO"),
             value: appData?.layoutDetails?.additionalDetails?.applicationDetails?.panNumber,
           },
         ]
       : [])
   );
   return {
-    title: t("NOC_APPLICANT_DETAILS"),
+    title: t("BPA_APPLICANT_DETAILS"),
     values: values,
   };
 };
@@ -302,30 +310,46 @@ const getSpecificationDetails = (appData, t) => {
   };
 };
 
-const getDocuments = async ({appData, t, onlyapplicants = false, primaryOwner = false}) => {
-  
-  const applicantDocs = onlyapplicants && primaryOwner
-  ? [
-      primaryOwner?.additionalDetails?.documentFile ? { uuid: primaryOwner.additionalDetails?.documentFile, documentType: "OWNER.DOCUMENTFILE" } : null,
-      primaryOwner?.additionalDetails?.panDocument  ? { uuid: primaryOwner.additionalDetails?.panDocument,  documentType: "OWNER.PANDOCUMENT"  } : null,
-    ]?.filter(Boolean)
-  : null;
-  const filteredDocs = !onlyapplicants ? appData?.documents
-    ?.filter((doc) => doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" && doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO")
-    ?.sort((a, b) => a?.order - b?.order) : applicantDocs;
+const getDocuments = async ({ appData, t }) => {
+  const sortedOwners = [...(appData?.owners || [])]
+    ?.sort((a, b) => (b?.isPrimaryOwner === true ? 1 : 0) - (a?.isPrimaryOwner === true ? 1 : 0));
+
+  const hasMultipleOwners = sortedOwners?.length > 1;
+
+  const applicantDocs = sortedOwners
+    ?.flatMap((owner, i) => {
+      const prefix = hasMultipleOwners ? `${t("Owner")} ${i + 1} - ` : "";
+      return [
+        owner?.additionalDetails?.documentFile
+          ? { uuid: owner.additionalDetails?.documentFile, documentType: "OWNER.DOCUMENTFILE", prefix }
+          : null,
+        owner?.additionalDetails?.panDocument
+          ? { uuid: owner.additionalDetails?.panDocument, documentType: "OWNER.PANDOCUMENT", prefix }
+          : null,
+      ];
+    })
+    ?.filter(Boolean);
+
+  const otherDocs =
+    appData?.documents
+      ?.filter((doc) => doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" && doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO")
+      ?.sort((a, b) => a?.order - b?.order) || [];
+
+  const filteredDocs = [...applicantDocs, ...otherDocs];
 
   const filesArray = filteredDocs?.map((value) => value?.uuid || value);
-  
+
   const res = filesArray?.length > 0 && (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
-  
+
   return {
-    title: !onlyapplicants? t("BPA_TITILE_DOCUMENT_UPLOADED") : t("APPLICANT_DOCUMENTS"),
+    title: t("BPA_TITILE_DOCUMENT_UPLOADED"),
     values:
       filteredDocs?.length > 0
-        ? filteredDocs.map((document, index) => {
+        ? filteredDocs.map((document) => {
             const documentLink = pdfDownloadLink(res?.data, document?.uuid);
+            const label = t(document?.documentType.replace(/\./g, "_")) || t("CS_NA");
             return {
-              title: t(document?.documentType.replace(/\./g, "_")) ? index + 1 + ". " + t(document?.documentType.replace(/\./g, "_")) : t("CS_NA"),
+              title: `${document?.prefix || ""}${label}`,
               value: " ",
               link: documentLink || "",
             };
@@ -594,11 +618,10 @@ export const getLayoutAcknowledgementData = async (applicationDetails, tenantInf
       ...(appData?.layoutDetails?.additionalDetails?.applicationDetails?.professionalName
         ? [getProfessionalDetails(appData, t)]
         : []),
-      await getDocuments({appData: appData, t:t, onlyapplicants : true ,primaryOwner: primaryOwner}),
       getSiteDetails(appData, t),
       ...isEmployee && (appData?.layoutDetails?.additionalDetails?.siteImages?.length > 0 || appData?.additionalDetails?.siteImages?.length > 0) ? [await getJESiteImages(appData, t, stateCode)] : [],
       await getSitePhotographs(appData, t),
-      await getDocuments({appData: appData, t:t}),
+      await getDocuments({appData: appData, t:t }),
       ...isEmployee && (appData?.layoutDetails?.additionalDetails?.fieldinspection_pending?.[0] || appData?.additionalDetails?.fieldinspection_pending?.[0]) ? [getInspectionReport(appData, t)] : [],
       ...(getLayoutApplicationFeeDetails(collectionData, t) ? [getLayoutApplicationFeeDetails(collectionData, t)] : []),
       ...(isEmployee && getLayoutSanctionFeeDetails(collectionData, t) ? [getLayoutSanctionFeeDetails(collectionData, t)] : []),

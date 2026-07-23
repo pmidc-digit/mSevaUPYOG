@@ -903,8 +903,10 @@ const LayoutApplicantDetails = (_props) => {
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   validate: (value) => {
-                    const today = new Date();
+                    if (!value) return true;
                     const dob = new Date(value);
+                    if (isNaN(dob.getTime())) return t("Invalid Date Format");
+                    const today = new Date();
                     const age = today.getFullYear() - dob.getFullYear();
                     const m = today.getMonth() - dob.getMonth();
                     const d = today.getDate() - dob.getDate();

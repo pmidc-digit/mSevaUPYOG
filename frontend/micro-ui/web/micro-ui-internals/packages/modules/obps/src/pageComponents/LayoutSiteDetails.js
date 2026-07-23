@@ -1329,6 +1329,7 @@ const LayoutSiteDetails = (_props) => {
                   validate: (value) => {
                     if (!value) return true;
                     const selectedDate = new Date(value);
+                    if (isNaN(selectedDate.getTime())) return t("Invalid Date Format");
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
                     if (selectedDate > today) {

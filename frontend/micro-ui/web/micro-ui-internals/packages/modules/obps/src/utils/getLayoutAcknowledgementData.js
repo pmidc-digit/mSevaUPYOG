@@ -74,12 +74,19 @@ const getProfessionalDetails = (appData, t) => {
 const getApplicantDetails = (appData, t) => {
   const values = [];
 
-  [...appData?.owners]
-  ?.sort((a, b) => (b?.isPrimaryOwner === true ? 1 : 0) - (a?.isPrimaryOwner === true ? 1 : 0))?.map((owner) => {
+  const sortedOwners = [...appData?.owners]
+    ?.sort((a, b) => (b?.isPrimaryOwner === true ? 1 : 0) - (a?.isPrimaryOwner === true ? 1 : 0));
+
+  const primaryOwner = sortedOwners?.find((o) => o?.isPrimaryOwner === true) || sortedOwners?.[0];
+
+  sortedOwners?.forEach((owner , i) => {
+    if (i > 0) {
+      values.push({ title: " ", value: " " });
+    }
     const value = [
       {
         title: t("CLU_OWNER_TYPE_LABEL"),
-        value: owner?.additionalDetails?.aplicantType?.name || owner?.additionalDetails?.aplicantType || "N/A",
+        value: primaryOwner?.additionalDetails?.aplicantType?.name || owner?.additionalDetails?.aplicantType || "N/A",
       },
       ...[
         owner?.additionalDetails?.aplicantType?.code === "FIRM"

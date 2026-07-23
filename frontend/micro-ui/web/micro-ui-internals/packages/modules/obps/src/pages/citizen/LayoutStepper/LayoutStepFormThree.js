@@ -80,15 +80,15 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
         roadType.toLowerCase().includes("nh")
       );
   
-      // Institution and Industrial checks
+      // Institutional and Industrial checks
       const bc = currentStepDataNew?.siteDetails?.buildingCategory;
 
       const isInstitutionVal = bc ? (
         typeof bc === "object" ? (
-          (bc.code || "").toLowerCase().includes("institution") || 
-          (bc.name || "").toLowerCase().includes("institution")
+          (bc.code || "").toLowerCase().includes("institutional") || 
+          (bc.name || "").toLowerCase().includes("institutional")
         ) : (
-          bc.toLowerCase().includes("institution")
+          bc.toLowerCase().includes("institutional")
         )
       ) : false;
 

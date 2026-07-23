@@ -411,7 +411,7 @@ const LayoutApplicationOverview = () => {
       const roadType = siteDetails?.roadType?.name || siteDetails?.roadType || "";
       const isNationalHighway = roadType.toLowerCase().includes("national") || roadType.toLowerCase().includes("nh");
       const buildingCategory = siteDetails?.buildingCategory?.code || siteDetails?.buildingCategory || "";
-      const isInstitution = buildingCategory === "INSTITUTION" || buildingCategory.toLowerCase().includes("institution");
+      const isInstitution = buildingCategory === "INSTITUTIONAL" || buildingCategory.toLowerCase().includes("institutional");
       const applicantType = owners?.[0]?.additionalDetails?.aplicantType?.code || owners?.[0]?.additionalDetails?.aplicantType;
 
       const docs = mdmsDocsData?.LAYOUT?.LayoutDocuments || [];

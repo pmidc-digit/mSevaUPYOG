@@ -163,43 +163,48 @@ public class PlotFrontage extends FeatureProcess {
             OccupancyTypeHelper mostRestrictiveOccupancy = pl.getVirtualBuilding().getMostRestrictiveFarHelper();
             if(mostRestrictiveOccupancy!=null &&
             		mostRestrictiveOccupancy.getSubtype()!=null &&
-            		mostRestrictiveOccupancy.getSubtype().getCode()!=null) {
-            	
+            		mostRestrictiveOccupancy.getSubtype().getCode()!=null) {            	
             	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
-            	if (F_MTP.equalsIgnoreCase(subType)) {
-            		permissableFrontage = BigDecimal.valueOf(24.00);
-				} else if (F_MIP.equalsIgnoreCase(subType)) {				    
-					permissableFrontage = BigDecimal.valueOf(21.33);
-				}
+            	if(F_MTP.equals(subType) || F_MIP.equals(subType)) {
+            		if (F_MTP.equalsIgnoreCase(subType)) {
+                		permissableFrontage = BigDecimal.valueOf(24.00);
+    				} else if (F_MIP.equalsIgnoreCase(subType)) {				    
+    					permissableFrontage = BigDecimal.valueOf(21.33);
+    				}
+                	
+                	if (pl.getPlotFrontageList() != null) {
+                        frontageWidth = pl.getPlotFrontageList()
+                                .stream()
+                                .filter(Objects::nonNull)
+                                .map(Measurement::getWidth)
+                                .filter(Objects::nonNull)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
+                    }
+
+                    boolean accepted = frontageWidth.compareTo(permissableFrontage) >= 0;
+
+                    LOG.info("Plot Frontage Provided : {} m", frontageWidth);
+                    LOG.info("Permissible Frontage   : {} m", permissableFrontage);
+                    LOG.info("Plot Frontage Status   : {}", accepted ? "Accepted" : "Not Accepted");
+
+                    Map<String, String> row = new HashMap<>();
+
+                    row.put(RULE_NO, RULENO);
+                    row.put(DESCRIPTION, "Plot Frontage");
+                    row.put(PERMISSIBLE, permissableFrontage.stripTrailingZeros().toPlainString() + " m");
+                    row.put(PROVIDED, frontageWidth.stripTrailingZeros().toPlainString() + " m");
+                    row.put(STATUS,
+                            accepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
+
+                    plotFrontageDetail.getDetail().add(row);
+
+                    pl.getReportOutput().getScrutinyDetails().add(plotFrontageDetail);
+            	}
+            	
+            	
             }
 
-            if (pl.getPlotFrontageList() != null) {
-                frontageWidth = pl.getPlotFrontageList()
-                        .stream()
-                        .filter(Objects::nonNull)
-                        .map(Measurement::getWidth)
-                        .filter(Objects::nonNull)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
-            }
-
-            boolean accepted = frontageWidth.compareTo(permissableFrontage) >= 0;
-
-            LOG.info("Plot Frontage Provided : {} m", frontageWidth);
-            LOG.info("Permissible Frontage   : {} m", permissableFrontage);
-            LOG.info("Plot Frontage Status   : {}", accepted ? "Accepted" : "Not Accepted");
-
-            Map<String, String> row = new HashMap<>();
-
-            row.put(RULE_NO, RULENO);
-            row.put(DESCRIPTION, "Plot Frontage");
-            row.put(PERMISSIBLE, permissableFrontage.stripTrailingZeros().toPlainString() + " m");
-            row.put(PROVIDED, frontageWidth.stripTrailingZeros().toPlainString() + " m");
-            row.put(STATUS,
-                    accepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
-
-            plotFrontageDetail.getDetail().add(row);
-
-            pl.getReportOutput().getScrutinyDetails().add(plotFrontageDetail);
+            
 
         } catch (Exception e) {
             LOG.error("Error while processing Plot Frontage scrutiny.", e);

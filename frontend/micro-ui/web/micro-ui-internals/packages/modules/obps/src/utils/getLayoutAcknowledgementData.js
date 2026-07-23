@@ -312,7 +312,6 @@ const getDocuments = async ({appData, t, onlyapplicants = false, primaryOwner = 
   const res = filesArray?.length > 0 && (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
   
   return {
-    isAttachments: true,
     title: !onlyapplicants? t("BPA_TITILE_DOCUMENT_UPLOADED") : t("APPLICANT_DOCUMENTS"),
     values:
       filteredDocs?.length > 0

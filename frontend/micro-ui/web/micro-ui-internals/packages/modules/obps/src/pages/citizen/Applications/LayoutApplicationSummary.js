@@ -316,6 +316,19 @@ const LayoutApplicationOverview = () => {
       });
     }
   }
+  if (
+      applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
+    ) {
+      dowloadOptions.push({
+        label: t("LETTER_OF_INTENT"),
+        onClick: () =>
+          getRecieptSearch({
+            tenantId: tenantId,
+            payments: {},
+            filestoreId: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
+          }),
+      });
+    }
 
   const getFloorLabel = (index) => {
     if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL")
@@ -581,21 +594,27 @@ const LayoutApplicationOverview = () => {
   //   }
   // }
 
-  async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
-
+  async function getRecieptSearch({ tenantId, payments, pdfkey, filestoreId = null, ...params }) {
     try {
       setLoading(true);
-      const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name
-      const fee = payments?.totalAmountPaid;
-      const amountinwords = amountToWords(fee);
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, usage, amountinwords }] }, pdfkey);
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+      if (!filestoreId) {
+        const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name;
+        const fee = payments?.totalAmountPaid;
+        const amountinwords = amountToWords(fee);
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, usage, amountinwords }] }, pdfkey);
+        filestoreId = response?.filestoreIds[0];
+      }
+      let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
 
+      if (!fileStore?.[filestoreId]?.length) {
+        fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
+      }
+      window.open(fileStore[filestoreId], "_blank");
     } catch (error) {
       console.error("receipt download error:", error);
+    } finally {
+      setLoading(false);
     }
-    finally { setLoading(false); }
   }
 
   const getTimelineCaptions = (checkpoint, index, arr) => {

@@ -716,8 +716,8 @@ const getMohallaLocale = (value = "", tenantId = "") => {
 
        // Add the new sections here:
         getApplicationFeeDetails(application, collectionData, t),
-        getPaymentHistoryDetails(collectionData, t),
         getSanctionFeeDetails(application, t),
+        getPaymentHistoryDetails(collectionData, t),
         getFeeHistoryDetails(application, t),
         await getDocuments(application, t),
         await getSitePhotographs(application, t, stateCode),

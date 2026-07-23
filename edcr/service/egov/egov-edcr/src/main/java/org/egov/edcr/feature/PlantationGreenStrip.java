@@ -132,21 +132,22 @@ public class PlantationGreenStrip extends FeatureProcess {
 						        openArea = BigDecimal.ZERO;
 						    }
 						    // Plantation area = 10% of Open Area
-						    percentage = "10% of Open Area";
+						    
 						    requiredPlantationArea = openArea
 						            .multiply(BigDecimal.valueOf(0.10))
 						            .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
 						                    DcrConstants.ROUNDMODE_MEASUREMENTS);
+						    percentage = "10% of Open Area (" + requiredPlantationArea + ")";
 						}else {
 							requiredPlantations =  requiredPlantationPlotAreaWise(pl,mostRestrictiveFarHelper.getType().getCode());
 							// Check plantation area ≥ 5% of plot area
+							requiredPlantationArea = plotArea.multiply(requiredPlantations).
+									setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
 							percentage =
 							        requiredPlantations
 							                .multiply(BigDecimal.valueOf(100))
 							                .stripTrailingZeros()
-							                .toPlainString() + "% of plot area";
-							requiredPlantationArea = plotArea.multiply(requiredPlantations).
-									setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
+							                .toPlainString() + "% of plot area(" + requiredPlantationArea + ")";
 						}
 
 						if (plantationArea.compareTo(requiredPlantationArea) >= 0) {

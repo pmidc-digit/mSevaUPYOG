@@ -386,11 +386,34 @@ const LayoutApplicantDetails = (_props) => {
   // Save applicants data to Redux
   useEffect(() => {
     if (
-      applicants?.length > 0 ||
+      isDataInitialized.current &&
+      (applicants?.length > 0 ||
       Object.keys(documentUploadedFiles)?.length > 0 ||
       Object.keys(photoUploadedFiles)?.length > 0 ||
-      Object.keys(panDocumentUploadedFiles)?.length > 0
+      Object.keys(panDocumentUploadedFiles)?.length > 0)
     ) {
+      const formValues = getValues();
+      const updatedDetails = {
+        ...currentStepData?.applicationDetails,
+        aplicantType: formValues?.aplicantType || currentStepData?.applicationDetails?.aplicantType,
+        authorisedPerson: formValues?.authorisedPerson || currentStepData?.applicationDetails?.authorisedPerson,
+        applicantOwnerOrFirmName: formValues?.applicantOwnerOrFirmName || currentStepData?.applicationDetails?.applicantOwnerOrFirmName,
+        applicantMobileNumber: formValues?.applicantMobileNumber || currentStepData?.applicationDetails?.applicantMobileNumber,
+        applicantEmailId: formValues?.applicantEmailId || currentStepData?.applicationDetails?.applicantEmailId,
+        applicantAddress: formValues?.applicantAddress || currentStepData?.applicationDetails?.applicantAddress,
+        applicantFatherHusbandName: formValues?.applicantFatherHusbandName || currentStepData?.applicationDetails?.applicantFatherHusbandName,
+        applicantDateOfBirth: formValues?.applicantDateOfBirth || currentStepData?.applicationDetails?.applicantDateOfBirth,
+        applicantGender: formValues?.applicantGender || currentStepData?.applicationDetails?.applicantGender,
+        panNumber: formValues?.panNumber || currentStepData?.applicationDetails?.panNumber,
+        // Also preserve files
+        documentUploadedFiles: formValues?.documentUploadedFiles || currentStepData?.applicationDetails?.documentUploadedFiles,
+        photoUploadedFiles: formValues?.photoUploadedFiles || currentStepData?.applicationDetails?.photoUploadedFiles,
+        panDocumentUploadedFiles: formValues?.panDocumentUploadedFiles || currentStepData?.applicationDetails?.panDocumentUploadedFiles,
+        primaryOwnerPhoto: formValues?.primaryOwnerPhoto || currentStepData?.applicationDetails?.primaryOwnerPhoto,
+        primaryOwnerDocument: formValues?.primaryOwnerDocument || currentStepData?.applicationDetails?.primaryOwnerDocument,
+      };
+
+      dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedDetails));
       dispatch(UPDATE_LayoutNewApplication_FORM("applicants", applicants));
       dispatch(UPDATE_LayoutNewApplication_FORM("documentUploadedFiles", documentUploadedFiles));
       dispatch(UPDATE_LayoutNewApplication_FORM("photoUploadedFiles", photoUploadedFiles));

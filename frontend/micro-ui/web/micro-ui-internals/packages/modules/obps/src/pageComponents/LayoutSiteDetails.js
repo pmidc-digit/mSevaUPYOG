@@ -372,7 +372,7 @@ const LayoutSiteDetails = (_props) => {
   const currentCategoryCode = getSelectedCategoryCode();
   const isResidential = currentCategoryCode.includes("RESIDENTIAL");
   const isCommercial = currentCategoryCode.includes("COMMERCIAL");
-  const isInstitutional = currentCategoryCode.includes("INSTITUTION");
+  const isInstitutional = currentCategoryCode.includes("INSTITUTIONAL");
   const isIndustrial = currentCategoryCode.includes("INDUSTRIAL");
 
   // Calculate Total Site Area (sum of all distribution areas)
@@ -1772,7 +1772,7 @@ const LayoutSiteDetails = (_props) => {
                       { code: "RESIDENTIAL", name: "Residential" },
                       { code: "COMMERCIAL", name: "Commercial" },
                       { code: "INDUSTRIAL_WAREHOUSE", name: "Industrial-Warehouse" },
-                      { code: "INSTITUTION", name: "Institution" },
+                      { code: "INSTITUTIONAL", name: "Institutional" },
                     ]}
                     optionKey="name"
                     t={t}
@@ -1835,12 +1835,12 @@ const LayoutSiteDetails = (_props) => {
             </LabelFieldPair>
           )}
 
-          {/* Sub-category for Institution */}
-          {(getValues("buildingCategory")?.code === "INSTITUTION" || buildingCategoryMain?.code === "INSTITUTION") && (
+          {/* Sub-category for Institutional */}
+          {(getValues("buildingCategory")?.code === "INSTITUTIONAL" || buildingCategoryMain?.code === "INSTITUTIONAL") && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{t("BPA_BUILDING_CATEGORY_LABEL_TYPE")}</CardLabel>
               <div className="field">
-                <TextInput value="Institution" disabled={true} />
+                <TextInput value="Institutional" disabled={true} />
               </div>
             </LabelFieldPair>
           )}
@@ -2015,7 +2015,7 @@ const LayoutSiteDetails = (_props) => {
             </React.Fragment>
           )}
 
-          {selectedBuildingCategory?.name?.toLowerCase().includes("institution") && (
+          {selectedBuildingCategory?.name?.toLowerCase().includes("institutional") && (
               <React.Fragment>
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">

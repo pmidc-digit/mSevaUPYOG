@@ -16,6 +16,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
+import CustomDatePicker from "./CustomDatePicker";
 
 const LayoutSiteDetails = (_props) => {
   let tenantId;
@@ -819,8 +820,7 @@ const LayoutSiteDetails = (_props) => {
                           },
                         }}
                         render={(props) => (
-                          <TextInput
-                            type="date"
+                          <CustomDatePicker
                             value={props.value}
                             onChange={(e) => {
                               props.onChange(e.target.value);
@@ -1338,8 +1338,7 @@ const LayoutSiteDetails = (_props) => {
                   },
                 }}
                 render={(props) => (
-                  <TextInput
-                    type="date"
+                  <CustomDatePicker
                     value={props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);

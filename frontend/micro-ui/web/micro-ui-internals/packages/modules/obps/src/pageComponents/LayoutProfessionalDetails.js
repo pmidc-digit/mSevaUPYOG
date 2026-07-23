@@ -14,6 +14,7 @@ import {
   CardSectionHeader,
   Loader,
 } from "@mseva/digit-ui-react-components";
+import CustomDatePicker from "./CustomDatePicker";
 
 const LayoutProfessionalDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle } = _props;
@@ -374,16 +375,13 @@ const LayoutProfessionalDetails = (_props) => {
               required: t("REQUIRED_FIELD"),
             }}
             render={(props) => (
-              <TextInput
-                type="date"
+              <CustomDatePicker
                 value={props.value}
                 onChange={(e) => {
                   props.onChange(e.target.value);
                 }}
-                onBlur={(e) => {
-                  props.onBlur(e);
-                }}
-                disabled="true"
+                onBlur={props.onBlur}
+                disabled={true}
                 min={new Date().toISOString().split("T")[0]}
               />
             )}

@@ -1429,7 +1429,16 @@ export const convertToDDMMYYYY = (dateString) => {
   }
 
   // Fallback: return original
-  return dateString;
+};
+
+export const convertToLocalISODate = (dateVal) => {
+  if (!dateVal) return "";
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return dateVal;
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, limit = null } = {}) {

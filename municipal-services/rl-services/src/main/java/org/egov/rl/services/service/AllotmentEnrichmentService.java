@@ -120,6 +120,13 @@ public class AllotmentEnrichmentService {
 			}
 		}
 		
+		if (!additionalDetailsNode.has("gstAmount")) {
+			additionalDetailsNode.put("gstAmount", 0);
+		}
+		if (!additionalDetailsNode.has("rebatePercentage")) {
+			additionalDetailsNode.put("rebatePercentage", 0);
+		}
+		
 		allotmentDetails.setAdditionalDetails(additionalDetailsNode);
 	}
 

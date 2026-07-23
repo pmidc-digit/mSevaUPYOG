@@ -145,19 +145,26 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
         //console.log("errorFound: dob error for applicant index",index)
       } else {
         const dob = new Date(applicant.dob);
-        const today = new Date();
-
-        let age = today.getFullYear() - dob.getFullYear();
-        const m = today.getMonth() - dob.getMonth();
-        const d = today.getDate() - dob.getDate();
-
-        if (age < 18 || (age === 18 && (m < 0 || (m === 0 && d < 0)))) {
+        if (isNaN(dob.getTime())) {
           setError(`applicants.${applicant?.actualIndex}.dob`, {
             type: "manual",
-            message: t("DOB_MUST_BE_18_YEARS_OLD"),
+            message: t("Invalid Date Format"),
           });
           hasError = true;
-          //console.log("errorFound: dob else error for applicant index",index)
+        } else {
+          const today = new Date();
+
+          let age = today.getFullYear() - dob.getFullYear();
+          const m = today.getMonth() - dob.getMonth();
+          const d = today.getDate() - dob.getDate();
+
+          if (age < 18 || (age === 18 && (m < 0 || (m === 0 && d < 0)))) {
+            setError(`applicants.${applicant?.actualIndex}.dob`, {
+              type: "manual",
+              message: t("DOB_MUST_BE_18_YEARS_OLD"),
+            });
+            hasError = true;
+          }
         }
       }
 

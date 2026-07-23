@@ -51,16 +51,16 @@ const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", min, ma
           setInputValue(formatDateToDDMMYYYY(newDate));
         }
       } else {
-        if (selectedDate !== null || inputValue !== "") {
-          setSelectedDate(null);
+        setSelectedDate(null);
+        if (value !== "Invalid Date") {
           setInputValue("");
         }
       }
     } else {
       if (selectedDate !== null) {
         setSelectedDate(null);
-        setInputValue("");
       }
+      setInputValue("");
     }
   }, [value]);
 
@@ -131,7 +131,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", min, ma
     setSelectedDate(null);
     if (onChange) {
       onChange({
-        target: { value: "" },
+        target: { value: val === "" ? "" : "Invalid Date" },
       });
     }
   };

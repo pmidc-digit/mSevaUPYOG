@@ -14,6 +14,7 @@ import {
 } from "../../redux/actions/LayoutNewApplicationActions";
 
 import { CardHeader, Toast, Loader } from "@mseva/digit-ui-react-components";
+import { convertToLocalISODate } from "../../utils";
 
 //Config for steps
 const createEmployeeConfig = [
@@ -473,12 +474,7 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
             documentUploadedFiles: applicantDetails?.documentUploadedFiles || "",
             photoUploadedFiles: applicantDetails?.photoUploadedFiles || "",
             panDocumentUploadedFiles: applicantDetails?.panDocumentUploadedFiles || "",
-            // Format DOB to YYYY-MM-DD if available
-            applicantDateOfBirth: applicantDetails?.applicantDob ? 
-              (new Date(applicantDetails.applicantDob) instanceof Date && !isNaN(new Date(applicantDetails.applicantDob).getTime())
-                ? new Date(applicantDetails.applicantDob).toISOString().split('T')[0]
-                : applicantDetails.applicantDob
-              ) : "",
+            applicantDateOfBirth: convertToLocalISODate(applicantDetails?.applicantDob),
             applicantGender: menu?.find((obj) => obj?.code === applicantDetails?.applicantGender?.code || obj?.code === applicantDetails?.applicantGender),
             panNumber: applicantDetails?.panNumber || "",
             // Professional details (if applicable)

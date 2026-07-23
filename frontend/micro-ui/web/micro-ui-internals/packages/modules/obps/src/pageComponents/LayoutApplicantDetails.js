@@ -25,6 +25,7 @@ import CustomUploadFile from "../components/CustomUploadFile";
 import { useHistory, useLocation } from "react-router-dom";
 import { UPDATE_LayoutNewApplication_FORM } from "../redux/actions/LayoutNewApplicationActions";
 import { LoaderNew } from "../components/LoaderNew";
+import CustomDatePicker from "./CustomDatePicker";
 
 const applicantTypeOptions = [
   { name: "Individual", code: "INDIVIDUAL" },
@@ -92,6 +93,7 @@ const LayoutApplicantDetails = (_props) => {
   // );
 
   useEffect(() => {
+    console.log("LayoutApplicantDetails data restore effect run, isDataInitialized =", isDataInitialized.current, currentStepData);
     // Only restore data on mount / first load, not on every change
     if (isDataInitialized.current) return;
 
@@ -888,8 +890,7 @@ const LayoutApplicantDetails = (_props) => {
                   },
                 }}
                 render={(props) => (
-                  <TextInput
-                    type="date"
+                  <CustomDatePicker
                     value={props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
@@ -1200,8 +1201,7 @@ const LayoutApplicantDetails = (_props) => {
                           <span className="requiredField">*</span>
                         </CardLabel>
                         <div className="field">
-                          <TextInput
-                            type="date"
+                          <CustomDatePicker
                             value={applicant.dob}
                             onChange={(e) => updateApplicant(index, "dob", e.target.value)}
                             min="1900-01-01"

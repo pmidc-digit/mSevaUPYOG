@@ -42,6 +42,29 @@ public class AnswerRowMapper implements ResultSetExtractor<List<AnswerNew>> {
                     if(rs.getString("questionstatement")!=null){
                         answerNew.setQuestionStatement(rs.getString("questionstatement"));
                     }
+                    try {
+                        String sectionTitle = rs.getString("section_title");
+                        if (sectionTitle != null) {
+                            answerNew.setSectionName(sectionTitle);
+                            answerNew.setSectionTitle(sectionTitle);
+                        }
+                    } catch (SQLException ignored) {
+                        // Column section_title might not be present in all queries using this mapper
+                    }
+                    try {
+                        String srUuid = rs.getString("surveyresponseuuid");
+                        if (srUuid != null) {
+                            answerNew.setSurveyResponseUuid(srUuid);
+                        }
+                    } catch (SQLException ignored) {
+                    }
+                    try {
+                        String citizenId = rs.getString("survey_citizen_id");
+                        if (citizenId != null) {
+                            answerNew.setCitizenId(citizenId);
+                        }
+                    } catch (SQLException ignored) {
+                    }
                     return answerNew;
                 } catch (SQLException e) {
                     throw new RuntimeException("Error while extracting answer data", e);

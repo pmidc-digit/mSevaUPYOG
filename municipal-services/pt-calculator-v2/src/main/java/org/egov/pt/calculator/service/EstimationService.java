@@ -2172,13 +2172,14 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 			PT_TAX_NET = PT_TAX - exemption - unit_usage_exemption;
 
 			double penality = PT_TAX_NET * penalityRate / 100.0;
-			double interestPerDay = (PT_TAX_NET) * (interestRate / 365 / 100.0);
+			double interestPerYear = (PT_TAX_NET) * (interestRate  / 100.0);
 			LocalDate currentDate = LocalDate.now();
 			long days = ChronoUnit.DAYS.between(LocalDate.of(2014, 4, 1), currentDate);
-			double totalInterest = interestPerDay * days;
+			if(days > 1 ) days += 1; // include the current day in interest calculation
+			double totalInterest = interestPerYear * (BigDecimal.valueOf(days).divide(BigDecimal.valueOf(365), 6, 5).doubleValue());
 
 			penality = Math.round(penality * 100) / 100.0;
-			totalInterest = Math.round(totalInterest * 100) / 100.0;
+			totalInterest = BigDecimal.valueOf(totalInterest).setScale(2, 0).doubleValue();
 
 			double rebatable_amount = PT_TAX + penality + totalInterest - unit_usage_exemption - exemption;
 			double additional_rebate = new BigDecimal(rebatable_amount * additionalRebateRate / 100.0)

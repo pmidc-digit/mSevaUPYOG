@@ -461,17 +461,12 @@ const LayoutEmployeeApplicationOverview = () => {
   const dowloadOptions = [];
   if (applicationDetails?.Layout?.[0]) {
     dowloadOptions.push({
-      label: t("Download Application"),
+      label: t("Application Form"),
       onClick: handleDownloadPdf,
     });
   }
 
-  if (applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") {
-    dowloadOptions.push({
-      label: t("DOWNLOAD_CERTIFICATE"),
-      onClick: handleDownloadPdf,
-    });
-  }
+ 
   if (
       applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
     ) {
@@ -487,14 +482,14 @@ const LayoutEmployeeApplicationOverview = () => {
 
   if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
     dowloadOptions.push({
-      label: t("LAYOUT_FEE_RECEIPT_1"),
+      label: t("CLU_FEE_RECEIPT_1"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey: "layout-receipt" }),
     });
   }
 
   if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
     dowloadOptions.push({
-      label: t("LAYOUT_FEE_RECEIPT_2"),
+      label: t("CLU_FEE_RECEIPT_2"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey: "layoutreceipt-second" }),
     });
   }
@@ -1020,7 +1015,7 @@ const LayoutEmployeeApplicationOverview = () => {
               <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalMobileNumber || "N/A"} />
               <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalAddress || "N/A"} />
               <Row
-                label={t("BPA_CERTIFICATE_EXPIRY_DATE")}
+                label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}
                 text={formatDate(displayData?.applicantDetails?.[0]?.professionalRegistrationValidity || "N/A")}
               />
             </StatusTable>

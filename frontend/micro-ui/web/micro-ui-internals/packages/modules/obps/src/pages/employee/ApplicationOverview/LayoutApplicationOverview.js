@@ -37,7 +37,7 @@ import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspec
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
-import { formatDuration } from "../../../utils/index";
+import { formatDuration, formatDate, decryptId } from "../../../utils/index";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -115,7 +115,8 @@ const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
 };
 
 const LayoutEmployeeApplicationOverview = () => {
-  const { id } = useParams();
+  const { layid } = useParams();
+  const id = decryptId(layid)
   const { t } = useTranslation();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const history = useHistory();

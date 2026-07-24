@@ -141,17 +141,6 @@ const Inbox = ({ parentRoute }) => {
   const PropsForInboxLinks = {
     links: [
       {
-        // text: t("CS_COMMON_NEW_SURVEY"),
-        text: t("Create New Survey"),
-        link: "/digit-ui/employee/engagement/surveys/create-survey-step-form",
-        //link: "/digit-ui/employee/engagement/surveys/create-survey-step-form?from=ES_EVENT_INBOX",
-      },
-      {
-        text: t("Active and Open Surveys"),
-        link: "/digit-ui/employee/engagement/surveys/active-open-surveys",
-        //link: "/digit-ui/employee/engagement/surveys/active-open-surveys?from=ES_EVENT_INBOX",
-      },
-      {
         text: t("Surveys Inbox/Search Surveys"),
         link: "/digit-ui/employee/engagement/surveys/inbox",
         //link: "/digit-ui/employee/engagement/surveys/inbox?from=ES_EVENT_INBOX",
@@ -162,7 +151,7 @@ const Inbox = ({ parentRoute }) => {
         //link: "/digit-ui/employee/engagement/surveys/create-category?from=ES_EVENT_INBOX",
       },
       {
-        text: t("Search Categories"),
+        text: t("Search Category"),
         link: "/digit-ui/employee/engagement/surveys/search-categories",
         //link: "/digit-ui/employee/engagement/surveys/search-categories?from=ES_EVENT_INBOX",
       },
@@ -175,6 +164,18 @@ const Inbox = ({ parentRoute }) => {
         text: t("Search Questions"),
         link: "/digit-ui/employee/engagement/surveys/search-questions",
         //link: "/digit-ui/employee/engagement/surveys/search-questions?from=ES_EVENT_INBOX",
+      },
+
+      {
+        // text: t("CS_COMMON_NEW_SURVEY"),
+        text: t("Create New Survey"),
+        link: "/digit-ui/employee/engagement/surveys/create-survey-step-form",
+        //link: "/digit-ui/employee/engagement/surveys/create-survey-step-form?from=ES_EVENT_INBOX",
+      },
+      {
+        text: t("Active and Open Surveys"),
+        link: "/digit-ui/employee/engagement/surveys/active-open-surveys",
+        //link: "/digit-ui/employee/engagement/surveys/active-open-surveys?from=ES_EVENT_INBOX",
       },
     ],
   };

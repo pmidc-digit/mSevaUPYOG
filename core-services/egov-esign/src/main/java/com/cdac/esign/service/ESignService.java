@@ -304,9 +304,9 @@ public class ESignService {
         PdfSigner.signDeferred(signer.getDocument(), "Signature1", signedBaos, external);
 
         // Upload using EXTRACTED tenant ID
-        String fileStoreResponse = uploadPdfToFilestore(signedBaos.toByteArray(), extractedTenantId);
+        String fileStoreResponse = uploadPdfToFilestore(signedBaos.toByteArray(), tenantId);
         String finalFileStoreId = extractFileStoreIdFromResponse(fileStoreResponse);
-        String returnFileStoreURL= getPdfUrlFromFilestore(finalFileStoreId, extractedTenantId);
+        String returnFileStoreURL= getPdfUrlFromFilestore(finalFileStoreId, tenantId);
 
         Map<String, String> result = new HashMap<>();
         result.put("fileStoreId", finalFileStoreId);

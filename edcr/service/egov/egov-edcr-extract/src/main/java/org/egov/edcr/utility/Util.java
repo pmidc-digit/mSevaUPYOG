@@ -139,6 +139,7 @@ public class Util {
         LAYER_RULES.add(new LayerRule(".*DRINKING_WATER$", 90));
         LAYER_RULES.add(new LayerRule(".*TOILET_k$", 91));
         LAYER_RULES.add(new LayerRule(".*TOILET_VENTILATION$", 92));
+        LAYER_RULES.add(new LayerRule(".*CINEMA_k$", 150));
 
         // --- BASEMENT & PARKING ---
         LAYER_RULES.add(new LayerRule(".*BASEMENT_FOOT_PRINT$", 110));

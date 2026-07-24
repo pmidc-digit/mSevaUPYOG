@@ -1392,8 +1392,8 @@ public class SideYardService extends GeneralRule {
         }
         // IT,ITES
         if (mostRestrictiveOccupancy.getType() != null && F.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {
-        	side2val = getMinValueForCommercialFromMdms(pl, plot.getArea(), errors, buildingHeight, sideYard1Result, sideYard2Result);
-        	side1val = getMinValueForCommercialFromMdms(pl, plot.getArea(), errors, buildingHeight, sideYard1Result, sideYard2Result);        	
+        	side2val = getMinValueForCommercialFromMdms(pl, plot.getArea(), errors, buildingHeight, sideYard1Result, sideYard2Result, mostRestrictiveOccupancy);
+        	side1val = getMinValueForCommercialFromMdms(pl, plot.getArea(), errors, buildingHeight, sideYard1Result, sideYard2Result, mostRestrictiveOccupancy);        	
             subRule = "4.7.4";;
         }
         
@@ -2047,7 +2047,8 @@ public class SideYardService extends GeneralRule {
 	}
 
     private BigDecimal getMinValueForCommercialFromMdms(Plan pl, BigDecimal plotArea, HashMap<String, String> errors, 
-			BigDecimal buildingHeight, SideYardResult sideYard1Result, SideYardResult sideYard2Result) {
+			BigDecimal buildingHeight, SideYardResult sideYard1Result, SideYardResult sideYard2Result,
+			OccupancyTypeHelper mostRestrictiveOccupancy) {
 
 	    LOG.info("getMinValueForCommercialFromMdms for Commercial:");
 
@@ -2078,25 +2079,63 @@ public class SideYardService extends GeneralRule {
 		    sideYard1Result.setBackPercentage = "10";
 	        sideYard2Result.setBackPercentage = "10";
 	    }else {
-	    	sideYard1Result.isSetbackCombine=true;
-	    	sideYard2Result.isSetbackCombine=true;
+	    	
+	    	
 	    	 /* ======================================================
 	         * LOW RISE BUILDINGS (Height ≤ 21 m)
 	         * ====================================================== */	    	
 	    	//minVal= getPermisableForCommericalBelow21m(plotArea,pl, sideYard1Result, sideYard2Result);
-	    	Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
-		            pl.getMdmsMasterData().get("masterMdmsData"),
-		            MdmsFilter.SIDE_SETBACK_PATH,
-		            BigDecimal.class
-		    );
+	        
+	        if (DxfFileConstants.F_MTP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
+	        	sideYard2Result.isSetbackCombine=false;
 
-		    if (scOpt.isPresent()) {
-		        BigDecimal mdmsValue = scOpt.get();
-		        LOG.info("Side Setback Value from MDMS : " + mdmsValue);
-		        minVal = mdmsValue;
-		    }
-		    sideYard1Result.setBackPercentage = "10";
-	        sideYard2Result.setBackPercentage = "10";
+				Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"),
+						MdmsFilter.LIST_SIDE_SETBACK_PATH, List.class);
+
+				if (fullListOpt.isPresent()) {
+
+					List<Map<String, Object>> setbackRules = (List<Map<String, Object>>) fullListOpt.get();
+
+					Optional<BigDecimal> tableSetbackOpt = BpaMdmsUtil.findSetbackValueByHeight(setbackRules,
+							buildingHeight);
+
+					if (tableSetbackOpt.isPresent()) {
+
+						BigDecimal tableSetback = tableSetbackOpt.get();
+						BigDecimal minimumSideSetback = new BigDecimal("6.096"); //20 ft (6.096) m
+
+						// Rear & Side setback = max(20 ft (6.096 m), Table value)
+						minVal = tableSetback.max(minimumSideSetback);
+
+						if (minVal.compareTo(minimumSideSetback) == 0) {
+							sideYard1Result.setBackPercentage = minimumSideSetback.toPlainString().concat("m");
+							sideYard2Result.setBackPercentage = minimumSideSetback.toPlainString().concat("m");
+						} else {
+							sideYard1Result.setBackPercentage = tableSetback.toPlainString().concat("m");
+							sideYard2Result.setBackPercentage = tableSetback.toPlainString().concat("m");
+						}
+					}
+				}
+
+			} else {
+				sideYard1Result.isSetbackCombine=true;
+				if (pl.getMdmsMasterData().get("masterMdmsData") != null) {					
+					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+				            pl.getMdmsMasterData().get("masterMdmsData"),
+				            MdmsFilter.SIDE_SETBACK_PATH,
+				            BigDecimal.class
+				    );
+
+				    if (scOpt.isPresent()) {
+				        BigDecimal mdmsValue = scOpt.get();
+				        LOG.info("Side Setback Value from MDMS : " + mdmsValue);
+				        minVal = mdmsValue;
+				    }
+				    
+				    sideYard1Result.setBackPercentage = "10";
+			        sideYard2Result.setBackPercentage = "10";
+				}
+			}
 	    }
 
 	    return minVal.setScale(2, RoundingMode.HALF_UP);

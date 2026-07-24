@@ -137,6 +137,8 @@ import org.egov.edcr.feature.WaterTankCapacity;
 import org.egov.edcr.feature.WaterTreatmentPlant;
 import org.egov.edcr.feature.Well;
 import org.springframework.stereotype.Service;
+import org.egov.edcr.feature.Cinema;
+import org.egov.edcr.feature.PlotFrontage;
 
 @Service
 public class PlanFeatureRepository {
@@ -396,6 +398,12 @@ public class PlanFeatureRepository {
         features.add(pf);
         
         pf = new PlanFeature(TerraceToilet.class);
+        features.add(pf);
+        
+        pf = new PlanFeature(Cinema.class);
+        features.add(pf);
+        
+        pf = new PlanFeature(PlotFrontage.class);
         features.add(pf);
 
         

@@ -418,11 +418,25 @@ const LayoutEmployeeApplicationOverview = () => {
     }
   };
 
-  async function getRecieptSearch({ tenantId, payments, pdfkey = "layout-receipt", ...params }) {
-    let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, pdfkey);
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-    window.open(fileStore[response?.filestoreIds[0]], "_blank");
+  async function getRecieptSearch({ tenantId, payments, pdfkey = "layout-receipt", filestoreId = null, ...params }) {
+    try {
+      setLoader(true);
+      if (!filestoreId) {
+        let response = { filestoreIds: [payments?.fileStoreId] };
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, pdfkey);
+        filestoreId = response.filestoreIds[0];
+      }
+      let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
+
+      if (!fileStore?.[filestoreId]?.length) {
+        fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
+      }
+      window.open(fileStore[filestoreId], "_blank");
+    } catch (error) {
+      console.log("error:", error);
+    } finally {
+      setLoader(false);
+    }
   }
 
   function routeToImage(filestoreId) {
@@ -458,6 +472,18 @@ const LayoutEmployeeApplicationOverview = () => {
       onClick: handleDownloadPdf,
     });
   }
+  if (
+      applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
+    ) {
+      dowloadOptions.push({
+        label: t("LETTER_OF_INTENT"),
+        onClick: () =>
+          getRecieptSearch({
+            tenantId: tenantId,
+            payments: {},
+          }),
+      });
+    }
 
   if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
     dowloadOptions.push({

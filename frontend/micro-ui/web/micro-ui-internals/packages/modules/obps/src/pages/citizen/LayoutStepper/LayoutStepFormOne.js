@@ -33,9 +33,10 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     getValues,
     setError,
     clearErrors,
+    register,
   } = useForm();
 
-  const commonProps = { Controller, control, setValue, errors, trigger, errorStyle, getValues, setError, clearErrors};
+  const commonProps = { Controller, control, setValue, errors, trigger, errorStyle, getValues, setError, clearErrors, register};
     useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     document.documentElement.scrollTop = 0;
@@ -71,64 +72,69 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     let hasError = false;
     //console.log("errorFound: Step 1 validation started for applicants", applicants);
 
-    applicants?.filter(obj => obj?.status)?.forEach((applicant, index) => {
+    applicants?.filter(obj => obj?.status)?.forEach((applicant) => {
+      const originalIndex = applicant.actualIndex !== undefined ? applicant.actualIndex : applicants.indexOf(applicant);
       // Clear old errors for this applicant
-      clearErrors(`applicants.${applicant?.actualIndex}`);
+      clearErrors([
+        `applicants.${originalIndex}.mobileNumber`,
+        `applicants.${originalIndex}.name`,
+        `applicants.${originalIndex}.emailId`,
+        `applicants.${originalIndex}.address`,
+        `applicants.${originalIndex}.dob`,
+        `applicants.${originalIndex}.gender`,
+        `applicants.${originalIndex}.photo`,
+        `applicants.${originalIndex}.document`,
+        `applicants.${originalIndex}.panDocument`,
+        `applicants.${originalIndex}.panNumber`
+      ]);
 
       /* ---------------- Mobile Number ---------------- */
       if (!applicant.mobileNumber) {
-        setError(`applicants.${applicant?.actualIndex}.mobileNumber`, {
+        setError(`applicants.${originalIndex}.mobileNumber`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: mobile number error for applicant index", index);
+        //console.log("errorFound: mobile number error for applicant index", originalIndex);
       } else if (!/^[6-9]\d{9}$/.test(applicant.mobileNumber)) {
-        setError(`applicants.${applicant?.actualIndex}.mobileNumber`, {
+        setError(`applicants.${originalIndex}.mobileNumber`, {
           type: "manual",
           message: t("INVALID_MOBILE_NUMBER"),
         });
         hasError = true;
-        //console.log("errorFound: mobile number else error for applicant index", index);
+        //console.log("errorFound: mobile number else error for applicant index", originalIndex);
       }
 
       /* ---------------- Name ---------------- */
       if (!applicant.name || !applicant.name.trim()) {
-        setError(`applicants.${applicant?.actualIndex}.name`, {
+        setError(`applicants.${originalIndex}.name`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: name error for applicant index", index);
+        //console.log("errorFound: name error for applicant index", originalIndex);
       }
 
       /* ---------------- Email ---------------- */
       if (!applicant.emailId) {
-        setError(`applicants.${applicant?.actualIndex}.emailId`, {
+        setError(`applicants.${originalIndex}.emailId`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: email id error for applicant index", index);
+        //console.log("errorFound: email id error for applicant index", originalIndex);
       } 
-      // else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(applicant.emailId)) {
-      //   setError(`applicants.${index}.emailId`, {
-      //     type: "manual",
-      //     message: t("INVALID_EMAIL_FORMAT"),
-      //   });
-      //   hasError = true;
-      // }
 
       /* ---------------- Address ---------------- */
       if (!applicant.address || !applicant.address.trim()) {
-        setError(`applicants.${applicant?.actualIndex}.address`, {
+        setError(`applicants.${originalIndex}.address`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: address error for applicant index", index);
+        //console.log("errorFound: address error for applicant index", originalIndex);
       } else if (applicant.address.length > 100) {
-        setError(`applicants.${applicant?.actualIndex}.address`, {
+        setError(`applicants.${originalIndex}.address`, {
           type: "manual",
           message: t("MAX_100_CHARACTERS_ALLOWED"),
         });
@@ -137,16 +143,16 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
       /* ---------------- DOB (18+ validation) ---------------- */
       if (!applicant.dob) {
-        setError(`applicants.${applicant?.actualIndex}.dob`, {
+        setError(`applicants.${originalIndex}.dob`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: dob error for applicant index",index)
+        //console.log("errorFound: dob error for applicant index", originalIndex)
       } else {
         const dob = new Date(applicant.dob);
         if (isNaN(dob.getTime())) {
-          setError(`applicants.${applicant?.actualIndex}.dob`, {
+          setError(`applicants.${originalIndex}.dob`, {
             type: "manual",
             message: t("Invalid Date Format"),
           });
@@ -159,7 +165,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           const d = today.getDate() - dob.getDate();
 
           if (age < 18 || (age === 18 && (m < 0 || (m === 0 && d < 0)))) {
-            setError(`applicants.${applicant?.actualIndex}.dob`, {
+            setError(`applicants.${originalIndex}.dob`, {
               type: "manual",
               message: t("DOB_MUST_BE_18_YEARS_OLD"),
             });
@@ -170,59 +176,59 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
       /* ---------------- Gender ---------------- */
       if (!applicant.gender) {
-        setError(`applicants.${applicant?.actualIndex}.gender`, {
+        setError(`applicants.${originalIndex}.gender`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: gender error for applicant index",index)
+        //console.log("errorFound: gender error for applicant index", originalIndex)
       }
 
       /* ---------------- Passport Photo ---------------- */
       if (!applicant.photoUploadedFiles) {
-        setError(`applicants.${applicant?.actualIndex}.photo`, {
+        setError(`applicants.${originalIndex}.photo`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: photo error for applicant index",index)
+        //console.log("errorFound: photo error for applicant index", originalIndex)
       }
 
       /* ---------------- ID Proof ---------------- */
       if (!applicant.documentUploadedFiles) {
-        setError(`applicants.${applicant?.actualIndex}.document`, {
+        setError(`applicants.${originalIndex}.document`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: id proof error for applicant index",index)
+        //console.log("errorFound: id proof error for applicant index", originalIndex)
       }
 
       /* ---------------- PAN Document ---------------- */
       if (!applicant.panDocumentUploadedFiles) {
-        setError(`applicants.${applicant?.actualIndex}.panDocument`, {
+        setError(`applicants.${originalIndex}.panDocument`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: panDocument error for applicant index",index)
+        //console.log("errorFound: panDocument error for applicant index", originalIndex)
       }
 
       /* ---------------- PAN Number ---------------- */
       if (!applicant.panNumber) {
-        setError(`applicants.${applicant?.actualIndex}.panNumber`, {
+        setError(`applicants.${originalIndex}.panNumber`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: panNumber error for applicant index",index)
+        //console.log("errorFound: panNumber error for applicant index", originalIndex)
       } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(applicant.panNumber)) {
-        setError(`applicants.${applicant?.actualIndex}.panNumber`, {
+        setError(`applicants.${originalIndex}.panNumber`, {
           type: "manual",
           message: t("Invalid PAN Number format. Format should be like AAAAA1234A"),
         });
         hasError = true;
-        //console.log("errorFound: panNumber else error for applicant index",index)
+        //console.log("errorFound: panNumber else error for applicant index", originalIndex)
       }
     });
 

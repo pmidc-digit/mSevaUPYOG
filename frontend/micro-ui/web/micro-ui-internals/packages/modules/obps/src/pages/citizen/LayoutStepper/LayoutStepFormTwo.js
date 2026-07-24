@@ -294,8 +294,8 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       pan: formData?.applicationDetails?.panNumber || null,
       isPrimaryOwner: true,
       additionalDetails: {
-        documentFile: formData?.applicationDetails?.documentUploadedFiles || null,
-        ownerPhoto: formData?.applicationDetails?.photoUploadedFiles || null,
+        documentFile: formData?.applicationDetails?.primaryOwnerDocument || formData?.applicationDetails?.documentUploadedFiles || null,
+        ownerPhoto: formData?.applicationDetails?.primaryOwnerPhoto || formData?.applicationDetails?.photoUploadedFiles || null,
         panDocument: formData?.applicationDetails?.panDocumentUploadedFiles || null,
         aplicantType: formData?.applicationDetails?.aplicantType || null,
         authorisedPerson: formData?.applicationDetails?.aplicantType?.code === "FIRM" ? formData?.applicationDetails?.authorisedPerson || null : null,

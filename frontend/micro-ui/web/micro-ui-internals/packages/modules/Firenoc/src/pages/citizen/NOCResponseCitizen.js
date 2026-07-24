@@ -37,12 +37,11 @@ const NOCResponseCitizen = (props) => {
   };
 
   const handlePayment = () => {
-    if(tenantId === "pb.jalandhar" || tenantId === "pb.testing" || tenantId === "pb.itjalandhar"){
-        alert(t("PAYMENT_DISABLED"))
-      return
-    }
-    else{
+    if (nocData && Object.keys(nocData)?.length > 0 && nocCode) {
       history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${nocCode}?tenantId=${tenantId}`);
+    } else {
+      alert(t("No data found for application"));
+      return
     }
   };
 

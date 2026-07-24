@@ -47,12 +47,12 @@ const FireNOCMyApplications = () => {
   const handlePayment = (application) => {
     const appNo = application?.fireNOCDetails?.applicationNumber;
     const tenantId = application?.tenantId;
-    if(tenantId === "pb.jalandhar" || tenantId === "pb.testing" || tenantId === "pb.itjalandhar"){
-        alert(t("PAYMENT_DISABLED"))
-        return
+    if(application?.fireNOCDetails && Object.keys(application.fireNOCDetails)?.length > 0){
+        history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${appNo}?tenantId=${tenantId}`);
       }
     else{  
-      history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${appNo}?tenantId=${tenantId}`);
+      alert(t("No data found for application"));
+      return
     };
   }
   if (isLoading) return <Loader />;

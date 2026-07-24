@@ -893,11 +893,6 @@ const LayoutEmployeeApplicationOverview = () => {
     return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  };
   const formatDateVasika = (dateString) => {
     if (!dateString) return "";
     const [day, month, year] = dateString.split("-");

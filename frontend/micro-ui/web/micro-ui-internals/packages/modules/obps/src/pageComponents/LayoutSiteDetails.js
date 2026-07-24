@@ -666,7 +666,7 @@ const LayoutSiteDetails = (_props) => {
                                 setCluValidationError(null);
                               } else {
                                 // CLU found but not approved
-                                setCluValidationError(`CLU application status is "${cluApp?.applicationStatus || "UNKNOWN"}". It must be APPROVED.`);
+                                setCluValidationError(`CLU application status is "${t(cluApp?.applicationStatus || "UNKNOWN")}". It must be APPROVED.`);
                                 setIsCluValidated(false);
                               }
                             } else {

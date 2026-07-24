@@ -109,7 +109,7 @@ const RALApplicationDetails = () => {
       const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
       const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
       setTimeout(() => {
-        Digit.Utils.pdf.generate(acknowldgementDataAPI);
+        Digit.Utils.pdf.generateFormatted(acknowldgementDataAPI);
         setLoader(false);
       }, 0);
     } catch (error) {

@@ -38,6 +38,7 @@ import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
 import { formatDuration, formatDate, decryptId } from "../../../utils/index";
+import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -1356,6 +1357,11 @@ const LayoutEmployeeApplicationOverview = () => {
             hasPayments={hasPayments}
           />
         )}
+         {hasPayments && (
+                  <div style={{ marginTop: "16px" }}>
+                    <PaymentHistory payments={combinedPayments} />
+                  </div>
+                )}
 
       </Card>
 

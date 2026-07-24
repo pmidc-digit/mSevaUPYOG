@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } 
 import { Toast, Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "react-query";
 import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
 import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templates/Inbox/components";
 import useInboxTableConfig from "./useInboxTableConfig";
@@ -9,6 +10,7 @@ import useInboxTableConfig from "./useInboxTableConfig";
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
+  const queryClient = useQueryClient();
   const [error, setError] = useState({
     error: false,
     label: "",
@@ -20,6 +22,7 @@ const Inbox = ({ parentRoute }) => {
 
   useEffect(() => {
     window.scroll(0, 0);
+    queryClient.invalidateQueries("INBOX_DATA");
   }, []);
 
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");

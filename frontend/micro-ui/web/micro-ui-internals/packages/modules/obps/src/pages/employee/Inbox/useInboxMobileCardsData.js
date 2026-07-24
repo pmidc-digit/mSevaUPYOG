@@ -8,7 +8,7 @@ import { encryptId } from "../../../utils";
 const useInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) => {
     const { t } = useTranslation()
 
-    const dataForMobileInboxCards = table?.map(({ applicationId, date, applicationType,businessService, locality, status, owner, sla, state}) => ({
+    const dataForMobileInboxCards = table?.map(({ applicationId, date, applicationType, businessService, locality, status, owner, sla, state}) => ({
             [t("BPA_APPLICATION_NUMBER_LABEL")]: applicationId,
             [t("CS_APPLICATION_DETAILS_APPLICATION_DATE")]: format(new Date(date), 'dd/MM/yyyy'),
             [t("BPA_SEARCH_APPLICATION_TYPE_LABEL")]: t(applicationType),

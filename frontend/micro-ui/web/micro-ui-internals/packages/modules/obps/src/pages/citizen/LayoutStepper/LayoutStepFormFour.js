@@ -13,6 +13,11 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
   const [selectedCheckBox, setSelectedCheckBox] = useState(false);
 
   const handleCheckBox = (e) => {
@@ -56,17 +61,26 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       ? currentStepData?.apiData 
       : currentStepData?.apiData?.Layout?.[0];
     
+    const sortedOwners = layoutData?.owners ? [...layoutData.owners].sort((a, b) => {
+      const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+      const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+      if (aPrimary && !bPrimary) return -1;
+      if (!aPrimary && bPrimary) return 1;
+      return 0;
+    }) : [];
+    const primaryOwner = sortedOwners[0] || {};
+    
     const aplicantType = currentStepData?.applicationDetails?.aplicantType?.code 
-      || layoutData?.owners?.[0]?.additionalDetails?.aplicantType?.code;
+      || primaryOwner?.additionalDetails?.aplicantType?.code;
 
     // Primary owner name - try form state and API owner fallback based on applicantType
     let primaryOwnerName = "";
     if (aplicantType === "FIRM") {
       primaryOwnerName = currentStepData?.applicationDetails?.authorisedPerson
-        || layoutData?.owners?.[0]?.additionalDetails?.authorisedPerson;
+        || primaryOwner?.additionalDetails?.authorisedPerson;
     } else {
       primaryOwnerName = currentStepData?.applicationDetails?.applicantOwnerOrFirmName
-        || layoutData?.owners?.[0]?.name;
+        || primaryOwner?.name;
     }
     
     // Get newly added applicants from Redux state (starts from index 1, index 0 is placeholder)
@@ -149,7 +163,13 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     // For Update API: Merge original owners from API response with newly added applicants from Redux
     // The owners array from layoutData contains full user objects with id, uuid, roles, etc.
-    const ownersFromApi = layoutData?.owners || [];
+    const ownersFromApi = layoutData?.owners ? [...layoutData.owners].sort((a, b) => {
+      const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+      const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+      if (aPrimary && !bPrimary) return -1;
+      if (!aPrimary && bPrimary) return 1;
+      return 0;
+    }) : [];
     
     // Get newly added applicants from Redux state (starts from index 1, index 0 is placeholder)
     const applicantsFromRedux = layoutFormData?.applicants || [];
@@ -178,9 +198,9 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           pan: layoutFormData?.applicationDetails?.panNumber || owner?.pan || null,
           additionalDetails: {
             ...owner?.additionalDetails,            
-            ownerPhoto: photoFiles[0]?.fileStoreId || owner?.additionalDetails?.ownerPhoto || null,
-            documentFile: docFiles[0]?.fileStoreId || owner?.additionalDetails?.documentFile || null,
-            panDocument: panDocFiles[0]?.fileStoreId || owner?.additionalDetails?.panDocument || null,
+            ownerPhoto: layoutFormData?.applicationDetails?.primaryOwnerPhoto || photoFiles[0]?.fileStoreId || owner?.additionalDetails?.ownerPhoto || null,
+            documentFile: layoutFormData?.applicationDetails?.primaryOwnerDocument || docFiles[0]?.fileStoreId || owner?.additionalDetails?.documentFile || null,
+            panDocument: layoutFormData?.applicationDetails?.panDocumentUploadedFiles || panDocFiles[0]?.fileStoreId || owner?.additionalDetails?.panDocument || null,
             aplicantType: layoutFormData?.applicationDetails?.aplicantType || owner?.additionalDetails?.aplicantType || null,
             authorisedPerson: layoutFormData?.applicationDetails?.aplicantType?.code === "FIRM" ? layoutFormData?.applicationDetails?.authorisedPerson || owner?.additionalDetails?.authorisedPerson : null,
           },

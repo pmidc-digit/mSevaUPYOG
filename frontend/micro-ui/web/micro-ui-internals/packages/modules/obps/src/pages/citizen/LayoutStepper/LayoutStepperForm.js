@@ -12,6 +12,7 @@ import {
   RESET_LayoutNewApplication_FORM,
  } from "../../../redux/actions/LayoutNewApplicationActions";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
+import { convertToLocalISODate } from "../../../utils";
 
 //Config for steps
 const createEmployeeConfig = [
@@ -300,12 +301,7 @@ const LayoutStepperForm = () => {
           documentUploadedFiles: applicantDetails?.documentUploadedFiles || "",
           photoUploadedFiles: applicantDetails?.photoUploadedFiles || "",
           panDocumentUploadedFiles: applicantDetails?.panDocumentUploadedFiles || "",
-          // Format DOB to YYYY-MM-DD if available
-          applicantDateOfBirth: applicantDetails?.applicantDob ? 
-            (new Date(applicantDetails.applicantDob) instanceof Date && !isNaN(new Date(applicantDetails.applicantDob).getTime())
-              ? new Date(applicantDetails.applicantDob).toISOString().split('T')[0]
-              : applicantDetails.applicantDob
-            ) : "",
+          applicantDateOfBirth: convertToLocalISODate(applicantDetails?.applicantDob),
           applicantGender: menu?.find((obj) => obj?.code === applicantDetails?.applicantGender?.code || obj?.code === applicantDetails?.applicantGender),
           panNumber: applicantDetails?.panNumber || "",
           aplicantType: applicantDetails?.aplicantType,
@@ -429,9 +425,11 @@ const LayoutStepperForm = () => {
 
   // console.log("formData",formData);
 
-    useEffect(() => {
-      window.scrollTo(0, 0);
-    }, [step]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [step]);
 
 
   const handleSubmit = (dataGet) => {

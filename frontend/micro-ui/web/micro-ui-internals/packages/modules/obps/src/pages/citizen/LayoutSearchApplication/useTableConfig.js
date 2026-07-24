@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { encryptId } from "../../../utils";
 
 const useSearchApplicationTableConfig = () => {
     const {t} = useTranslation();
@@ -16,7 +17,7 @@ const useSearchApplicationTableConfig = () => {
             return (
               <div>
                 <span className="link">
-                  <Link to={`/digit-ui/citizen/obps/layout/application-overview/${row.original["applicationNo"]}`}>
+                  <Link to={`/digit-ui/citizen/obps/layout/application-overview/${encryptId(row.original["applicationNo"])}`}>
                     {row.original["applicationNo"]}
                   </Link>
                 </span>

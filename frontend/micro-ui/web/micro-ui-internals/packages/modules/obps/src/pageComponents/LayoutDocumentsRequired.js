@@ -131,16 +131,16 @@ const LayoutDocumentsRequired = ({
       roadType.toLowerCase().includes("nh")
     );
 
-    // Institution and Industrial checks
+    // Institutional and Industrial checks
     const bc = currentStepData?.siteDetails?.buildingCategory;
   
 
     const isInstitutionVal = bc ? (
       typeof bc === "object" ? (
-        (bc.code || "").toLowerCase().includes("institution") || 
-        (bc.name || "").toLowerCase().includes("institution")
+        (bc.code || "").toLowerCase().includes("institutional") || 
+        (bc.name || "").toLowerCase().includes("institutional")
       ) : (
-        bc.toLowerCase().includes("institution")
+        bc.toLowerCase().includes("institutional")
       )
     ) : false;
 
@@ -645,7 +645,7 @@ function LayoutSelectDocument({
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
-            uploadMessage = "Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+            uploadMessage = "Invalid File Format"
             accept=".jpeg, .jpg, .png"
           />
             <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
@@ -662,7 +662,7 @@ function LayoutSelectDocument({
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
-            uploadMessage = "Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+            uploadMessage = "Invalid File Format"
             required={doc?.required}
             isRemovable={!doc?.required}
           />

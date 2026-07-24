@@ -9,6 +9,11 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
 
   const stateId = Digit.ULBService.getStateId();
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId,  "BPA", ["LayoutDocuments"]);
@@ -75,15 +80,15 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
         roadType.toLowerCase().includes("nh")
       );
   
-      // Institution and Industrial checks
+      // Institutional and Industrial checks
       const bc = currentStepDataNew?.siteDetails?.buildingCategory;
 
       const isInstitutionVal = bc ? (
         typeof bc === "object" ? (
-          (bc.code || "").toLowerCase().includes("institution") || 
-          (bc.name || "").toLowerCase().includes("institution")
+          (bc.code || "").toLowerCase().includes("institutional") || 
+          (bc.name || "").toLowerCase().includes("institutional")
         ) : (
-          bc.toLowerCase().includes("institution")
+          bc.toLowerCase().includes("institutional")
         )
       ) : false;
 

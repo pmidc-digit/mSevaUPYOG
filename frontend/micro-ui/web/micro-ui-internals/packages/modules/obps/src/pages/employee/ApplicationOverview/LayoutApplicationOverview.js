@@ -37,7 +37,8 @@ import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspec
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
-import { formatDuration } from "../../../utils/index";
+import { formatDuration, formatDate, decryptId } from "../../../utils/index";
+import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -115,7 +116,8 @@ const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
 };
 
 const LayoutEmployeeApplicationOverview = () => {
-  const { id } = useParams();
+  const { layid } = useParams();
+  const id = decryptId(layid)
   const { t } = useTranslation();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const history = useHistory();
@@ -266,7 +268,14 @@ const LayoutEmployeeApplicationOverview = () => {
 
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails;
-      const owners = layoutObject?.owners || [];
+      const rawOwners = layoutObject?.owners || [];
+      const owners = [...rawOwners].sort((a, b) => {
+        const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+        const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+        if (aPrimary && !bPrimary) return -1;
+        if (!aPrimary && bPrimary) return 1;
+        return 0;
+      });
       const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails;
       const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates;
       const Documents = layoutObject?.documents || [];
@@ -885,11 +894,6 @@ const LayoutEmployeeApplicationOverview = () => {
     return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  };
   const formatDateVasika = (dateString) => {
     if (!dateString) return "";
     const [day, month, year] = dateString.split("-");
@@ -915,36 +919,6 @@ const LayoutEmployeeApplicationOverview = () => {
     setViewTimeline(true);
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const convertDateToISO = (dateStr) => {
-    if (!dateStr) return "";
-
-    if (typeof dateStr !== "string") {
-      try {
-        return new Date(dateStr).toLocaleDateString();
-      } catch (e) {
-        return "";
-      }
-    }
-
-    const parts = dateStr.split("-");
-    if (parts.length < 3) {
-      try {
-        return new Date(dateStr).toLocaleDateString();
-      } catch (e) {
-        return dateStr;
-      }
-    }
-
-    // yyyy-mm-dd (already ISO)
-    if (parts[2] && parts[2].length === 4) {
-      return dateStr;
-    }
-
-    // dd-mm-yyyy → yyyy-mm-dd
-    const [yyyy, mm, dd] = parts;
-    return `${dd}/${mm}/${yyyy}`;
   };
 
   const onChangeReport = (key, value) => {
@@ -1076,7 +1050,7 @@ const LayoutEmployeeApplicationOverview = () => {
                   <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={applicant?.emailId} />
                   <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={applicant?.fatherOrHusbandName} />
                   <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={applicant?.mobileNumber} />
-                  <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={applicant?.dob ? new Date(applicant?.dob).toLocaleDateString() : ""} />
+                  <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(applicant?.dob)} />
                   <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={applicant?.gender} />
                   <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={applicant?.permanentAddress} />
                   <Row label={t("BPA_PAN_NUMBER_LABEL")} text={applicant?.pan || "N/A"} />
@@ -1111,7 +1085,7 @@ const LayoutEmployeeApplicationOverview = () => {
                   {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
                   {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
                     renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
-                  {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), convertDateToISO(detail?.cluApprovalDate))}
+                  {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
                 </React.Fragment>
               )}
               {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && (
@@ -1129,7 +1103,7 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel(t("BPA_HADBAST_NO_LABEL"), detail?.hadbastNo)}
               {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
               {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
-              {renderLabel(t("BPA_VASIKA_DATE_LABEL"), convertDateToISO(detail?.vasikaDate))}
+              {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
               {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
               {renderLabel(t("BPA_NET_TOTAL_AREA_LABEL"), detail?.areaLeftForRoadWidening)}
               {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
@@ -1383,6 +1357,11 @@ const LayoutEmployeeApplicationOverview = () => {
             hasPayments={hasPayments}
           />
         )}
+         {hasPayments && (
+                  <div style={{ marginTop: "16px" }}>
+                    <PaymentHistory payments={combinedPayments} />
+                  </div>
+                )}
 
       </Card>
 

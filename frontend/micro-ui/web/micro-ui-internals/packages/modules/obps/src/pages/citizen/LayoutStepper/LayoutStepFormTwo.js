@@ -24,6 +24,12 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   //console.log("LOOK APPLICATION NUMBER +++++>", isEditApplication);
   const history = useHistory();  
 
+    useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
+  
   // Get Redux data BEFORE using it in useForm
   const currentStepData = useSelector(function (state) {
     return state.obps.LayoutNewApplicationFormReducer.formData;
@@ -166,7 +172,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     const catCode = (buildingCategory?.code || buildingCategory?.name || "").toUpperCase();
     const isResidential = catCode.includes("RESIDENTIAL");
     const isCommercial = catCode.includes("COMMERCIAL");
-    const isInstitutional = catCode.includes("INSTITUTION");
+    const isInstitutional = catCode.includes("INSTITUTIONAL");
     const isIndustrial = catCode.includes("INDUSTRIAL") || catCode.includes("WAREHOUSE");
 
     const residential = isResidential ? (parseFloat(watchedResidentialArea) || 0) : 0;
@@ -288,8 +294,8 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       pan: formData?.applicationDetails?.panNumber || null,
       isPrimaryOwner: true,
       additionalDetails: {
-        documentFile: formData?.applicationDetails?.documentUploadedFiles || null,
-        ownerPhoto: formData?.applicationDetails?.photoUploadedFiles || null,
+        documentFile: formData?.applicationDetails?.primaryOwnerDocument || formData?.applicationDetails?.documentUploadedFiles || null,
+        ownerPhoto: formData?.applicationDetails?.primaryOwnerPhoto || formData?.applicationDetails?.photoUploadedFiles || null,
         panDocument: formData?.applicationDetails?.panDocumentUploadedFiles || null,
         aplicantType: formData?.applicationDetails?.aplicantType || null,
         authorisedPerson: formData?.applicationDetails?.aplicantType?.code === "FIRM" ? formData?.applicationDetails?.authorisedPerson || null : null,
@@ -414,9 +420,9 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     setShowToast(null);
   };
 
-  const LayoutLocalityInfo = Digit?.ComponentRegistryService?.getComponent("LayoutLocalityInfo");
-  const LayoutSiteDetails = Digit?.ComponentRegistryService?.getComponent("LayoutSiteDetails");
-  const LayoutSpecificationDetails = Digit?.ComponentRegistryService?.getComponent("LayoutSpecificationDetails");
+  const LayoutLocalityInfo = React.useMemo(() => Digit?.ComponentRegistryService?.getComponent("LayoutLocalityInfo"), []);
+  const LayoutSiteDetails = React.useMemo(() => Digit?.ComponentRegistryService?.getComponent("LayoutSiteDetails"), []);
+  const LayoutSpecificationDetails = React.useMemo(() => Digit?.ComponentRegistryService?.getComponent("LayoutSpecificationDetails"), []);
 
   return (
     <React.Fragment>

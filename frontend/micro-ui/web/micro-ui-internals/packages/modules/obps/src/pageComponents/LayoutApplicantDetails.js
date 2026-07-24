@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch } from "react-redux";
 import {
   LabelFieldPair,
@@ -25,6 +25,18 @@ import CustomUploadFile from "../components/CustomUploadFile";
 import { useHistory, useLocation } from "react-router-dom";
 import { UPDATE_LayoutNewApplication_FORM } from "../redux/actions/LayoutNewApplicationActions";
 import { LoaderNew } from "../components/LoaderNew";
+import CustomDatePicker from "./CustomDatePicker";
+
+const applicantTypeOptions = [
+  { name: "Individual", code: "INDIVIDUAL" },
+  { name: "Firm", code: "FIRM" },
+];
+
+const findApplicantTypeOption = (val) => {
+  if (!val) return null;
+  const strVal = (typeof val === "string" ? val : val?.code || val?.name || "").toUpperCase();
+  return applicantTypeOptions.find((opt) => opt.code.toUpperCase() === strVal || opt.name.toUpperCase() === strVal) || null;
+};
 
 const useQueryParam = (key) => {
   const { search } = useLocation();
@@ -33,7 +45,7 @@ const useQueryParam = (key) => {
 
 const LayoutApplicantDetails = (_props) => {
   const dispatch = useDispatch();
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, trigger, getValues, clearErrors } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, trigger, getValues, clearErrors, register } = _props;
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
@@ -57,8 +69,15 @@ const LayoutApplicantDetails = (_props) => {
   const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({});
   const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({});
   const [primaryApplicantType, setPrimaryApplicantType] = useState({});
+  const isDataInitialized = useRef(false);
   //console.log("userInfo here", getValues("aplicantType"), applicants);
   const closeToast = () => setShowToast(null);
+
+  useEffect(() => {
+    register("primaryOwnerPhoto", { required: t("REQUIRED_FIELD") });
+    register("primaryOwnerDocument", { required: t("REQUIRED_FIELD") });
+    register("panDocumentUploadedFiles", { required: t("REQUIRED_FIELD") });
+  }, [register]);
 
   const { isLoading: genderTypeDataLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
 
@@ -80,13 +99,21 @@ const LayoutApplicantDetails = (_props) => {
   // );
 
   useEffect(() => {
-    // Only restore data on mount, not on every change
-    //console.log("[v0] LayoutApplicantDetails - Restoring from currentStepData on mount");
+    console.log("LayoutApplicantDetails data restore effect run, isDataInitialized =", isDataInitialized.current, currentStepData);
+    // Only restore data on mount / first load, not on every change
+    if (isDataInitialized.current) return;
+
     const formattedData = currentStepData?.applicationDetails;
 
     if (formattedData) {
       Object.entries(formattedData).forEach(([key, value]) => {
-        setValue(key, value);
+        if (key === "aplicantType") {
+          const normalized = findApplicantTypeOption(value);
+          setValue(key, normalized);
+          if (normalized) setPrimaryApplicantType(normalized);
+        } else {
+          setValue(key, value);
+        }
       });
     }
 
@@ -97,7 +124,13 @@ const LayoutApplicantDetails = (_props) => {
     }
     // If no applicants in Redux, check if we're in edit mode and have owners from API
     else if (currentStepData?.apiData?.Layout?.[0]?.owners && currentStepData?.apiData?.Layout?.[0]?.owners?.length > 1) {
-      const ownersFromApi = currentStepData.apiData.Layout[0].owners;
+      const ownersFromApi = [...currentStepData.apiData.Layout[0].owners].sort((a, b) => {
+        const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+        const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+        if (aPrimary && !bPrimary) return -1;
+        if (!aPrimary && bPrimary) return 1;
+        return 0;
+      });
       //console.log("[v0] Mapping owners from API response:", ownersFromApi);
 
       // Map additional owners (skip index 0 as it's the primary owner in applicationDetails)
@@ -160,11 +193,17 @@ const LayoutApplicantDetails = (_props) => {
 
     // Map documents from additionalDetails in API response during edit mode (only if Redux data is empty)
     if (
-      isEdit && 
+      isEditMode && 
       currentStepData?.apiData?.Layout?.[0]?.owners &&
       (!currentStepData?.documentUploadedFiles || Object.keys(currentStepData.documentUploadedFiles).length === 0)
     ) {
-      const ownersFromApi = currentStepData.apiData.Layout[0].owners;
+      const ownersFromApi = [...currentStepData.apiData.Layout[0].owners].sort((a, b) => {
+        const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+        const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+        if (aPrimary && !bPrimary) return -1;
+        if (!aPrimary && bPrimary) return 1;
+        return 0;
+      });
       //console.log("[v0] Mapping documents from owners additionalDetails");
 
       const docFiles = {};
@@ -198,10 +237,16 @@ const LayoutApplicantDetails = (_props) => {
         setPanDocumentUploadedFiles(panDocFiles);
       }
     }
+
+    if (formattedData || currentStepData?.apiData?.Layout?.[0]?.owners || !isEditMode) {
+      isDataInitialized.current = true;
+    }
   }, [currentStepData]);
 
   const getOwnerDetails = async () => {
-    if (mobileNo === "" || mobileNo.length !== 10) {
+    const currentMobile = getValues("applicantMobileNumber") || mobileNo;
+
+    if (!currentMobile || currentMobile.length !== 10 || !/^[6-9]\d{9}$/.test(currentMobile)) {
       setShowToast({
         key: "true",
         error: true,
@@ -211,19 +256,60 @@ const LayoutApplicantDetails = (_props) => {
     }
     setIsLoading(true);
 
-    const userResponse = await Digit.UserService.userSearch(stateId, { userName: mobileNo }, {});
-    setIsLoading(false);
-    //console.log(userResponse, "PHOTO");
-    if (!userResponse?.user?.length) {
+    try {
+      const userResponse = await Digit.UserService.userSearch(stateId, { userName: currentMobile }, {});
+      setIsLoading(false);
+
+      if (!userResponse?.user?.length) {
+        setShowToast({
+          key: "true",
+          warning: true,
+          message: t("ERR_MOBILE_NUMBER_NOT_REGISTERED"),
+        });
+        return;
+      }
+
+      const u = userResponse.user[0];
+      setUserInfo(u);
+
+      if (u.name) setValue("applicantOwnerOrFirmName", u.name, { shouldValidate: true, shouldDirty: true });
+      if (u.emailId) setValue("applicantEmailId", u.emailId, { shouldValidate: true, shouldDirty: true });
+      if (u.dob) {
+        let formattedDob = "";
+        if (typeof u.dob === "string") {
+          formattedDob = u.dob.slice(0, 10);
+        } else if (typeof u.dob === "number") {
+          const d = new Date(u.dob);
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
+          formattedDob = `${year}-${month}-${day}`;
+        }
+        setValue("applicantDateOfBirth", formattedDob, { shouldValidate: true, shouldDirty: true });
+      }
+      if (u.fatherOrHusbandName) setValue("applicantFatherHusbandName", u.fatherOrHusbandName, { shouldValidate: true, shouldDirty: true });
+      if (u.permanentAddress) setValue("applicantAddress", u.permanentAddress, { shouldValidate: true, shouldDirty: true });
+      if (u.gender) {
+        const genderObj = menu.find((obj) => obj.code === u.gender) || u.gender;
+        if (genderObj) setValue("applicantGender", genderObj, { shouldValidate: true, shouldDirty: true });
+      }
+
+      clearErrors(["applicantOwnerOrFirmName", "applicantEmailId", "applicantDateOfBirth", "applicantAddress", "applicantGender"]);
+
       setShowToast({
         key: "true",
-        warning: true,
-        message: t("ERR_MOBILE_NUMBER_NOT_REGISTERED"),
+        warning: false,
+        error: false,
+        message: t("Applicant details fetched successfully"),
       });
-      return;
+    } catch (err) {
+      setIsLoading(false);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: t("Error fetching applicant details"),
+      });
     }
-
-    setUserInfo(userResponse.user[0]);
   };
 
   // Search function for additional owners
@@ -303,36 +389,37 @@ const LayoutApplicantDetails = (_props) => {
     }
   };
 
-  // Prefill UI on userInfo
-  useEffect(() => {
-    if (userInfo) {
-      Object.entries(userInfo).forEach(([key, value]) => {
-        if (key === "name") setValue("applicantOwnerOrFirmName", value, { shouldValidate: true });
-
-        if (key === "emailId") setValue("applicantEmailId", value, { shouldValidate: true });
-
-        if (key === "dob") setValue("applicantDateOfBirth", value, { shouldValidate: true });
-
-        if (key === "fatherOrHusbandName") setValue("applicantFatherHusbandName", value);
-
-        if (key === "permanentAddress") setValue("applicantAddress", value, { shouldValidate: true });
-
-        if (key === "gender") {
-          const genderObj = menu.find((obj) => obj.code === value);
-          if (genderObj) setValue("applicantGender", genderObj, { shouldValidate: true });
-        }
-      });
-    }
-  }, [userInfo]);
-
   // Save applicants data to Redux
   useEffect(() => {
     if (
-      applicants?.length > 0 ||
+      isDataInitialized.current &&
+      (applicants?.length > 0 ||
       Object.keys(documentUploadedFiles)?.length > 0 ||
       Object.keys(photoUploadedFiles)?.length > 0 ||
-      Object.keys(panDocumentUploadedFiles)?.length > 0
+      Object.keys(panDocumentUploadedFiles)?.length > 0)
     ) {
+      const formValues = getValues();
+      const updatedDetails = {
+        ...currentStepData?.applicationDetails,
+        aplicantType: formValues?.aplicantType || currentStepData?.applicationDetails?.aplicantType,
+        authorisedPerson: formValues?.authorisedPerson || currentStepData?.applicationDetails?.authorisedPerson,
+        applicantOwnerOrFirmName: formValues?.applicantOwnerOrFirmName || currentStepData?.applicationDetails?.applicantOwnerOrFirmName,
+        applicantMobileNumber: formValues?.applicantMobileNumber || currentStepData?.applicationDetails?.applicantMobileNumber,
+        applicantEmailId: formValues?.applicantEmailId || currentStepData?.applicationDetails?.applicantEmailId,
+        applicantAddress: formValues?.applicantAddress || currentStepData?.applicationDetails?.applicantAddress,
+        applicantFatherHusbandName: formValues?.applicantFatherHusbandName || currentStepData?.applicationDetails?.applicantFatherHusbandName,
+        applicantDateOfBirth: formValues?.applicantDateOfBirth || currentStepData?.applicationDetails?.applicantDateOfBirth,
+        applicantGender: formValues?.applicantGender || currentStepData?.applicationDetails?.applicantGender,
+        panNumber: formValues?.panNumber || currentStepData?.applicationDetails?.panNumber,
+        // Also preserve files
+        documentUploadedFiles: formValues?.primaryOwnerDocument || formValues?.documentUploadedFiles || currentStepData?.applicationDetails?.documentUploadedFiles,
+        photoUploadedFiles: formValues?.primaryOwnerPhoto || formValues?.photoUploadedFiles || currentStepData?.applicationDetails?.photoUploadedFiles,
+        panDocumentUploadedFiles: formValues?.panDocumentUploadedFiles || currentStepData?.applicationDetails?.panDocumentUploadedFiles,
+        primaryOwnerPhoto: formValues?.primaryOwnerPhoto || currentStepData?.applicationDetails?.primaryOwnerPhoto,
+        primaryOwnerDocument: formValues?.primaryOwnerDocument || currentStepData?.applicationDetails?.primaryOwnerDocument,
+      };
+
+      dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedDetails));
       dispatch(UPDATE_LayoutNewApplication_FORM("applicants", applicants));
       dispatch(UPDATE_LayoutNewApplication_FORM("documentUploadedFiles", documentUploadedFiles));
       dispatch(UPDATE_LayoutNewApplication_FORM("photoUploadedFiles", photoUploadedFiles));
@@ -340,22 +427,7 @@ const LayoutApplicantDetails = (_props) => {
     }
   }, [applicants, documentUploadedFiles, photoUploadedFiles, panDocumentUploadedFiles, dispatch]);
 
-  // Sync document files with react-hook-form for validation
-  useEffect(() => {
-    // Set primary owner photo validation
-    if (photoUploadedFiles[0]?.fileStoreId) {
-      setValue("primaryOwnerPhoto", photoUploadedFiles[0].fileStoreId, { shouldValidate: true });
-    } else {
-      setValue("primaryOwnerPhoto", "", { shouldValidate: false });
-    }
 
-    // Set primary owner document validation
-    if (documentUploadedFiles[0]?.fileStoreId) {
-      setValue("primaryOwnerDocument", documentUploadedFiles[0].fileStoreId, { shouldValidate: true });
-    } else {
-      setValue("primaryOwnerDocument", "", { shouldValidate: false });
-    }
-  }, [photoUploadedFiles, documentUploadedFiles, setValue]);
 
   const handleAddApplicant = () => {
     const newApplicant = {
@@ -385,9 +457,7 @@ const LayoutApplicantDetails = (_props) => {
       return newApplicantArray
     });
 
-    // In order to remove applicant in any case, we are changing its {status: false} this way, DB will automatically remove applicant from Backend
-    // Remove associated files
-    {const newDocFiles = { ...documentUploadedFiles };
+    const newDocFiles = { ...documentUploadedFiles };
     const newPhotoFiles = { ...photoUploadedFiles };
     const newPanFiles = { ...panDocumentUploadedFiles };
     delete newDocFiles[index + 1];
@@ -395,7 +465,7 @@ const LayoutApplicantDetails = (_props) => {
     delete newPanFiles[index + 1];
     setDocumentUploadedFiles(newDocFiles);
     setPhotoUploadedFiles(newPhotoFiles);
-    setPanDocumentUploadedFiles(newPanFiles);}
+    setPanDocumentUploadedFiles(newPanFiles);
 
     // Remove errors for this applicant
     const newErrors = { ...applicantErrors };
@@ -423,9 +493,9 @@ const LayoutApplicantDetails = (_props) => {
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
         const updatedDocFiles = { ...documentUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
-        // setDocumentUploadedFiles(updatedDocFiles);
+        setDocumentUploadedFiles(updatedDocFiles);
         if(index === 0){
-          setValue("documentUploadedFiles", fileId, { shouldValidate: true });
+          setValue("primaryOwnerDocument", fileId, { shouldValidate: true });
           clearErrors("primaryOwnerDocument");
         }else{
           clearErrors(`applicants.${index - 1}.document`);
@@ -461,9 +531,9 @@ const LayoutApplicantDetails = (_props) => {
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
         const updatedPhotoFiles = { ...photoUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
-        // setPhotoUploadedFiles(updatedPhotoFiles);
+        setPhotoUploadedFiles(updatedPhotoFiles);
         if(index === 0){
-          setValue("photoUploadedFiles", fileId, { shouldValidate: true });
+          setValue("primaryOwnerPhoto", fileId, { shouldValidate: true });
           clearErrors("primaryOwnerPhoto");
         }else{
           clearErrors(`applicants.${index - 1}.photo`);
@@ -516,7 +586,7 @@ const LayoutApplicantDetails = (_props) => {
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
         const updatedPanDocFiles = { ...panDocumentUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
-        // setPanDocumentUploadedFiles(updatedPanDocFiles);
+        setPanDocumentUploadedFiles(updatedPanDocFiles);
         if(index === 0){
           setValue("panDocumentUploadedFiles", fileId, { shouldValidate: true });
           clearErrors("panDocumentUploadedFiles");
@@ -558,25 +628,28 @@ const LayoutApplicantDetails = (_props) => {
 
   const activeApplicants = applicants?.filter(a => a?.status);
 
+  const currentApplicantTypeCode = (getValues("aplicantType")?.code || getValues("aplicantType") || primaryApplicantType?.code || primaryApplicantType || "").toString().toUpperCase();
+  const isFirm = currentApplicantTypeCode === "FIRM";
+
   return (
     <React.Fragment>
       {loader && <Loader />}
       <div>        
-        {/* <CardSectionHeader className="card-section-header" style={{ marginBottom: "15px" }}>
+        <CardSectionHeader className="card-section-header" style={{ marginBottom: "15px" }}>
           {t("BPA_APPLICANT_DETAILS")}
-        </CardSectionHeader> */}
+        </CardSectionHeader>
 
-        {/* {isEdit && (
+        {isEdit && (
           <CardSectionSubText style={{ color: "red", margin: "10px 0px 20px 0px" }}>
             {t(
-              "To update your Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section, and you cannot edit the applicant detail"
+              "To update Applicant Details -  Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section"
             )}
           </CardSectionSubText>
-        )} */}
+        )}
 
         <div style={{ marginTop: "20px" }}>
           <CardSectionHeader className="card-section-header" style={{ marginTop: "20px", marginBottom: "20px" }}>
-            {t("BPA_APPLICANT_DETAILS")} - Primary
+            Primary Owner
           </CardSectionHeader>
 
           {/* Mobile Number */}
@@ -640,11 +713,8 @@ const LayoutApplicantDetails = (_props) => {
                         setPrimaryApplicantType(e)
                         clearErrors("aplicantType");
                       }}
-                      selected={props.value}
-                      option={[
-                        {name: "Individual", code: "INDIVIDUAL"},
-                        {name: "Firm", code: "FIRM"},
-                      ]}
+                      selected={findApplicantTypeOption(props.value)}
+                      option={applicantTypeOptions}
                       optionKey="name"
                       // disable={isEditMode}
                       t={t}
@@ -658,7 +728,7 @@ const LayoutApplicantDetails = (_props) => {
 
         
 
-          {(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") &&<React.Fragment> <LabelFieldPair style={{ marginBottom: "15px" }}>
+          {isFirm && <React.Fragment> <LabelFieldPair style={{ marginBottom: "15px" }}>
             <CardLabel className="card-label-smaller">
               {t("NEW_LAYOUT_FIRM_NAME_LABEL")}
               <span className="requiredField">*</span>
@@ -675,7 +745,7 @@ const LayoutApplicantDetails = (_props) => {
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e);
+                      props.onChange(e.target.value);
                       clearErrors("authorisedPerson");
                     }}
                     onBlur={props.onBlur}
@@ -692,7 +762,7 @@ const LayoutApplicantDetails = (_props) => {
                 {/* Applicant Name */}
           <LabelFieldPair style={{ marginBottom: "15px" }}>
             <CardLabel className="card-label-smaller">
-              {`${(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")}`}
+              {`${isFirm ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")}`}
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
@@ -707,7 +777,7 @@ const LayoutApplicantDetails = (_props) => {
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e);
+                      props.onChange(e.target.value);
                       clearErrors("applicantOwnerOrFirmName");
                     }}
                     onBlur={props.onBlur}
@@ -799,7 +869,7 @@ const LayoutApplicantDetails = (_props) => {
                   <TextArea
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e);
+                      props.onChange(e.target.value);
                       clearErrors("applicantAddress");
                     }}
                     onBlur={props.onBlur}
@@ -824,8 +894,10 @@ const LayoutApplicantDetails = (_props) => {
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   validate: (value) => {
-                    const today = new Date();
+                    if (!value) return true;
                     const dob = new Date(value);
+                    if (isNaN(dob.getTime())) return t("Invalid Date Format");
+                    const today = new Date();
                     const age = today.getFullYear() - dob.getFullYear();
                     const m = today.getMonth() - dob.getMonth();
                     const d = today.getDate() - dob.getDate();
@@ -834,11 +906,10 @@ const LayoutApplicantDetails = (_props) => {
                   },
                 }}
                 render={(props) => (
-                  <TextInput
-                    type="date"
+                  <CustomDatePicker
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e);
+                      props.onChange(e.target.value);
                       clearErrors("applicantDateOfBirth");
                     }}
                     onBlur={props.onBlur}
@@ -889,28 +960,21 @@ const LayoutApplicantDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field" style={{ width: "100%" }}>
-              <Controller
-                control={control}
-                name="photoUploadedFiles"
-                rules={{ required: t("REQUIRED_FIELD") }}
-                render={(props) => (
                   <CustomUploadFile
                     id="passport-photo-primary"
                     onUpload={selectPhotoFile(0)}
                     onDelete={() => {
                       deletePhoto(0);
                       setPhotoUploadedFiles((prev) => ({ ...prev, [0]: null }));
+                      setValue("primaryOwnerPhoto", "", { shouldValidate: true });
                       setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], photo: "Passport photo is required" } }));
                     }}
-                    // uploadedFile={photoUploadedFiles[0]?.fileStoreId}
-                    uploadedFile={getValues("photoUploadedFiles")}
-                    message={getValues("photoUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                    uploadedFile={photoUploadedFiles[0]?.fileStoreId}
+                    message={photoUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                     error={applicantErrors[0]?.photo}
-                    uploadMessage="Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                    uploadMessage="Invalid File Format"
                     accept=".png, .jpeg, .jpg"
                   />
-              )}
-              />
               <p className="upload-file-message">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             </div>
           </LabelFieldPair>
@@ -922,27 +986,21 @@ const LayoutApplicantDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field" style={{ width: "100%" }}>
-              <Controller
-                control={control}
-                name="documentUploadedFiles"
-                rules={{ required: t("REQUIRED_FIELD") }}
-                render={(props) => (
                   <CustomUploadFile
                     id="id-proof-primary"
                     onUpload={selectDocumentFile(0)}
                     onDelete={() => {
                       deleteDocument(0);
                       setDocumentUploadedFiles((prev) => ({ ...prev, [0]: null }));
+                      setValue("primaryOwnerDocument", "", { shouldValidate: true });
                       setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], document: "Document upload is required" } }));
                     }}
-                    uploadedFile={getValues("documentUploadedFiles")}
-                    message={getValues("documentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                    uploadedFile={documentUploadedFiles[0]?.fileStoreId}
+                    message={documentUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                     error={applicantErrors[0]?.document}
-                    uploadMessage="Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                    uploadMessage="Invalid File Format"
                     accept=".pdf, .png, .jpeg, .jpg"
                   />
-                  )}
-              />
               <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             </div>
           </LabelFieldPair>
@@ -954,27 +1012,21 @@ const LayoutApplicantDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field" style={{ width: "100%" }}>
-              <Controller
-                control={control}
-                name="panDocumentUploadedFiles"  
-                rules={{ required: t("REQUIRED_FIELD") }}              
-                render={(props) => (
                 <CustomUploadFile
                   id="pan-document-primary"
                   onUpload={selectPanDocumentFile(0)}
                   onDelete={() => {
                     deletePanDocument(0);
                     setPanDocumentUploadedFiles((prev) => ({ ...prev, [0]: null }));
+                    setValue("panDocumentUploadedFiles", "", { shouldValidate: true });
                     setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], panDocument: "PAN document is required" } }));
                   }}
-                  uploadedFile={getValues("panDocumentUploadedFiles")}
-                    message={getValues("panDocumentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                  uploadedFile={panDocumentUploadedFiles[0]?.fileStoreId}
+                  message={panDocumentUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                   error={applicantErrors[0]?.panDocument}
-                  uploadMessage="Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                  uploadMessage="Invalid File Format"
                   accept=".pdf, .png, .jpeg, .jpg"
                 />
-                )}
-              />
               <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             </div>
           </LabelFieldPair>
@@ -1018,11 +1070,7 @@ const LayoutApplicantDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.panNumber?.message || ""}</CardLabelError>
 
-          {/* Hidden Controllers for document validation */}
-          <div style={{ display: "none" }}>
-            <Controller control={control} name="primaryOwnerPhoto" rules={{ required: t("REQUIRED_FIELD") }} render={() => null} />
-            <Controller control={control} name="primaryOwnerDocument" rules={{ required: t("REQUIRED_FIELD") }} render={() => null} />
-          </div>
+
 
           {/* Additional Applicants Section */}
           {applicants.length > 0 && (
@@ -1146,8 +1194,7 @@ const LayoutApplicantDetails = (_props) => {
                           <span className="requiredField">*</span>
                         </CardLabel>
                         <div className="field">
-                          <TextInput
-                            type="date"
+                          <CustomDatePicker
                             value={applicant.dob}
                             onChange={(e) => updateApplicant(index, "dob", e.target.value)}
                             min="1900-01-01"
@@ -1206,7 +1253,7 @@ const LayoutApplicantDetails = (_props) => {
                             uploadedFile={applicant.photoUploadedFiles}
                             message={applicant.photoUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.photo}
-                            uploadMessage="Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                            uploadMessage="Invalid File Format"
                             accept=".png, .jpeg, .jpg"
                           />
                           <p className="upload-file-message">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
@@ -1238,7 +1285,7 @@ const LayoutApplicantDetails = (_props) => {
                             uploadedFile={applicant.documentUploadedFiles}
                             message={applicant.documentUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.document}
-                            uploadMessage="Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                            uploadMessage="Invalid File Format"
                             accept=".pdf, .png, .jpeg, .jpg"
                           />
                           <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
@@ -1273,7 +1320,7 @@ const LayoutApplicantDetails = (_props) => {
                             uploadedFile={applicant.panDocumentUploadedFiles}
                             message={applicant.panDocumentUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.panDocument}
-                            uploadMessage="Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+                            uploadMessage="Invalid File Format"
                             accept=".pdf, .png, .jpeg, .jpg"
                           />
                           <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>

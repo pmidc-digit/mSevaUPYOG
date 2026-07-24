@@ -475,7 +475,7 @@ const LayoutEmployeeApplicationOverview = () => {
       applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
     ) {
       dowloadOptions.push({
-        label: t("Letter of Intent"),
+        label: t("LETTER_OF_INTENT"),
         onClick: () =>
           getRecieptSearch({
             tenantId: tenantId,

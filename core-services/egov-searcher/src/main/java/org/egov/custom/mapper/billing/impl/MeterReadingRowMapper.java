@@ -58,6 +58,7 @@ public class MeterReadingRowMapper implements ResultSetExtractor<List<Map<String
 
                 connection.put("connectionNo", connectionNo);
                 connection.put("propertyId", rs.getString("propertyid"));
+                connection.put("propertyStatus", rs.getString("propertystatus"));
                 connection.put("applicationNo", rs.getString("applicationno"));
                 connection.put("usageCategory", rs.getString("usagecategory"));
 

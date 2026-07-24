@@ -868,7 +868,11 @@ const LayoutEmployeeApplicationOverview = () => {
     return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
   };
 
-
+  const formatDateVasika = (dateString) => {
+    if (!dateString) return "";
+    const [day, month, year] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
 
   // Helper function to render label-value pairs only when value exists
   const renderLabel = (label, value) => {

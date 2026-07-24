@@ -36,7 +36,8 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
-import { formatDuration, formatDate } from "../../../utils/index";
+import CustomOwnerImage from "../../../components/CustomOwnerImage";
+import { formatDuration, formatDate, decryptId } from "../../../utils/index";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -114,7 +115,8 @@ const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
 };
 
 const LayoutEmployeeApplicationOverview = () => {
-  const { id } = useParams();
+  const { layid } = useParams();
+  const id = decryptId(layid)
   const { t } = useTranslation();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const history = useHistory();
@@ -891,11 +893,6 @@ const LayoutEmployeeApplicationOverview = () => {
     return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  };
   const formatDateVasika = (dateString) => {
     if (!dateString) return "";
     const [day, month, year] = dateString.split("-");

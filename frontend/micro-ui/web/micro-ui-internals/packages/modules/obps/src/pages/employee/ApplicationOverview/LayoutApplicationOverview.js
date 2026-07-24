@@ -37,7 +37,8 @@ import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspec
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import { formatDuration, formatDate } from "../../../utils/index";
-
+import CustomOwnerImage from "../../../components/CustomOwnerImage";
+import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   //console.log("checkpoint here", checkpoint);
@@ -865,16 +866,7 @@ const LayoutEmployeeApplicationOverview = () => {
     return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  };
-  const formatDateVasika = (dateString) => {
-    if (!dateString) return "";
-    const [day, month, year] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  };
+
 
   // Helper function to render label-value pairs only when value exists
   const renderLabel = (label, value) => {
@@ -1333,6 +1325,11 @@ const LayoutEmployeeApplicationOverview = () => {
             hasPayments={hasPayments}
           />
         )}
+         {hasPayments && (
+                  <div style={{ marginTop: "16px" }}>
+                    <PaymentHistory payments={combinedPayments} />
+                  </div>
+                )}
 
       </Card>
 

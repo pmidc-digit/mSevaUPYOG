@@ -16,27 +16,34 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     );
   const { t } = useTranslation();
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
+  const isCitizenOthers = window.location.href.includes("/citizen-others") || window.location.href.includes("/citizen-stakeholder-inbox");
+
+  const isOther = window.location.href.includes("/citizen-others");
+  const isCitizenStakeholder = window.location.href.includes("/citizen-stakeholder-inbox");
 
   const tableColumnConfig = useMemo(() => {
-    return [
+    const columns = [
       {
         Header: t("BPA_APPLICATION_NUMBER_LABEL"),
         accessor: "applicationNo",
         disableSortBy: true,
         Cell: ({ row }) => {
+          console.log("row", row);
           const encryptedId = encryptId(row.original["applicationId"]);
-          console.log("wholerowindatacell", row);
+          const currentUrl = window.location.href;
+          let link;
+          if (currentUrl.includes("/citizen-others") || currentUrl.includes("/citizen-stakeholder-inbox")) {
+            link = `/digit-ui/citizen/obps/stakeholder/${row.original.applicationId}`;
+          } else if (currentUrl.includes("/citizen")) {
+            link = `${parentRoute}/bpa-app/${encryptedId}`;
+          } else if (tenantId === "pb.punjab") {
+            link = `${parentRoute}/inbox/bpa/${encryptedId}/${row.original["tenantId"]}`;
+          } else {
+            link = `${parentRoute}/inbox/bpa/${encryptedId}`;
+          }
           return (
             <div>
-              <Link
-                to={
-                  window.location.href.includes("/citizen")
-                    ? `${parentRoute}/bpa-app/${encryptedId}`
-                    : tenantId === "pb.punjab"
-                    ? `${parentRoute}/inbox/bpa/${encryptedId}/${row.original["tenantId"]}`
-                    : `${parentRoute}/inbox/bpa/${encryptedId}`
-                }
-              >
+              <Link to={link}>
                 <span className="link">{row.original["applicationId"]}</span>
               </Link>
             </div>
@@ -64,11 +71,20 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         },
         disableSortBy: true,
       },
-      {
+      // !isCitizenOthers &&
+      !isCitizenOthers && {
         Header: t("CS_APPLICATION_DETAILS_APPROVAL_DATE"),
         accessor: "approvalDate",
         Cell: ({ row }) => {
           return row.original?.["approvalDate"] ? GetCell(format(new Date(row.original?.["approvalDate"]), "dd/MM/yyyy")) : "-";
+        },
+        disableSortBy: true,
+      },
+      isCitizenOthers && {
+        Header: t("CS_APPLICATION_DETAILS_APPROVAL_DATE"),
+        accessor: "issuedDate",
+        Cell: ({ row }) => {
+          return row.original?.["issuedDate"] ? GetCell(format(new Date(row.original?.["issuedDate"]), "dd/MM/yyyy")) : "-";
         },
         disableSortBy: true,
       },
@@ -77,12 +93,17 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       //     accessor: (row) => t(row?.locality),
       //     disableSortBy: true,
       // },
-      {
+      !isCitizenOthers && {
         Header: t("WF_INBOX_HEADER_OWNER_NAME"),
         accessor: (row) => t(row?.owner),
         disableSortBy: true,
       },
-      {
+      isCitizenOthers && {
+        Header: t("Applicant Name"),
+        accessor: (row) => t(row?.professionalOwner),
+        disableSortBy: true,
+      },
+      !isCitizenOthers && {
         Header: t("CATEGORY"),
         accessor: (row) => row?.category,
         disableSortBy: true,
@@ -92,19 +113,34 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: (row) => (row?.state ? t(`WF_${row?.businessService}_${row?.state}`) : t(`-`)),
         disableSortBy: true,
       },
-      {
+      !isCitizenOthers && {
         Header: t("ZONE"),
         accessor: (row) => t(row?.zone),
         disableSortBy: true,
       },
-      {
+      !isCitizenOthers && {
         Header: t("BPA_SEARCH_APPLICATION_TYPE_LABEL"),
         accessor: (row) => t(row?.applicationType),
         disableSortBy: true,
       },
-      {
+      !isCitizenOthers && {
         Header: t("IS_SELF_CERTIFICATION"),
         accessor: (row) => t(row?.selfCertification),
+        disableSortBy: true,
+      },
+      isCitizenOthers && {
+        Header: t("License Type"),
+        accessor: (row) => t(row?.applicationType),
+        disableSortBy: true,
+      },
+      isCitizenStakeholder && {
+        Header: t("Architect ID"),
+        accessor: (row) => t(row?.architectID),
+        disableSortBy: true,
+      },
+      isOther && {
+        Header: t("License Number"),
+        accessor: (row) => t(row?.licenseNumber),
         disableSortBy: true,
       },
       {
@@ -113,7 +149,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         disableSortBy: true,
       },
     ];
-  });
+    return columns.filter(Boolean);
+  }, [t, tenantId, parentRoute]);
 
   return {
     getCellProps: (cellInfo) => {

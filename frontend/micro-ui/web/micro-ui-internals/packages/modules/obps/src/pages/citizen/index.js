@@ -30,6 +30,9 @@ import BPAEsignResponse from "../employee/BPAEsignResponse";
 import BPASanctionEsignResponse from "../employee/BPASanctionEsignResponse";
 import CLUInbox from "../employee/cluInbox/CLUInbox";
 import LayoutInbox from "../employee/Inbox/LayoutInbox";
+import CitizenLaoyoutInbox from "../employee/Inbox/CitizenLaoyoutInbox";
+import CitizenCLUInbox from "../employee/cluInbox/CitizenCLUInbox";
+import CitizenInbox from "../employee/Inbox/CitizenInbox";
 
 const OBPSBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
@@ -340,6 +343,46 @@ const App = ({ path }) => {
           component={(props) => (
             <AppContainer>
               <StakeholderRegistration {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/my-applications/citizen-layout`}
+          component={(props) => (
+            <AppContainer>
+              <CitizenLaoyoutInbox {...props} parentRoute={path} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/my-applications/citizen-bpa`}
+          component={(props) => (
+            <AppContainer>
+              <CitizenInbox {...props} parentRoute={path} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/my-applications/citizen-stakeholder-inbox`}
+          component={(props) => (
+            <AppContainer>
+              <CitizenInbox {...props} parentRoute={path} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/my-applications/stakeholder-inbox/citizen-others`}
+          component={(props) => (
+            <AppContainer>
+              <CitizenInbox {...props} parentRoute={path} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/my-applications/citizen-clu`}
+          component={(props) => (
+            <AppContainer>
+              <CitizenCLUInbox {...props} parentRoute={path} />
             </AppContainer>
           )}
         />

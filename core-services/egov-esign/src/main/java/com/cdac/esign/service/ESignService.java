@@ -96,7 +96,7 @@ public class ESignService {
         
         //Added Custome response Url logic
         if(!StringUtils.isEmpty(callbackUrl))
-        	responseUrl += "?callbackUrl=" + callbackUrl;
+        	responseUrl += "?callbackUrl=" + callbackUrl + "&tenantId=" + tenantId;
         
         // 1. Get Original PDF
         String pdfUrl = getPdfUrlFromFilestore(fileStoreId, tenantId);
@@ -193,6 +193,10 @@ public class ESignService {
 
         // --- CUSTOM TXN ID LOGIC ("pb.nabha-UUID") ---
         String customTxnId = tenantId + "-" + rawFileStoreId; 
+        if(customTxnId.length() > 50) {
+        	int additionalLength = customTxnId.length() - 50;
+        	customTxnId = tenantId.substring(0, tenantId.length() - additionalLength -1 ) + "-" + rawFileStoreId;
+        }
         logger.info("Generated Custom TXN ID: {}", customTxnId);
 
         // 5. Generate XML
@@ -234,7 +238,7 @@ public class ESignService {
     /**
      * PHASE 2: Handle Response (Strip Prefix)
      */
-    public Map<String, String> processDocumentCompletion(String eSignResponseXml, String customTxnId, HttpServletRequest request) throws Exception {
+    public Map<String, String> processDocumentCompletion(String eSignResponseXml, String customTxnId, HttpServletRequest request, String tenantId) throws Exception {
         logger.info("Processing Phase 2 for Custom ID: {}", customTxnId);
 
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -277,8 +281,8 @@ public class ESignService {
             }
         }
 
-        logger.info("Extracted -> Tenant: {}, FileID: {}", extractedTenantId, originalFileStoreId);// Download using EXTRACTED tenant ID
-        byte[] preparedPdfBytes = downloadPdfFromUrlAsBytes(getPdfUrlFromFilestore(originalFileStoreId, extractedTenantId));
+        logger.info("Extracted -> Tenant: {}, FileID: {}", tenantId, originalFileStoreId);// Download using EXTRACTED tenant ID
+        byte[] preparedPdfBytes = downloadPdfFromUrlAsBytes(getPdfUrlFromFilestore(originalFileStoreId, tenantId));
 
         ByteArrayOutputStream signedBaos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new ByteArrayInputStream(preparedPdfBytes));

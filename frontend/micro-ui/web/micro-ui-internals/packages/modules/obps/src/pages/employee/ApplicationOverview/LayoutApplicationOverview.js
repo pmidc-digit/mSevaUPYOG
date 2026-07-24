@@ -36,9 +36,9 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
-import { formatDuration, formatDate } from "../../../utils/index";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
 import { formatDuration, formatDate, decryptId } from "../../../utils/index";
+import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {

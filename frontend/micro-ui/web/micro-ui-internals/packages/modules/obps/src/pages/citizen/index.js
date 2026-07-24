@@ -176,7 +176,7 @@ const App = ({ path }) => {
           )}
         />
         <PrivateRoute
-          path={`${path}/layout/application-overview/:id`}
+          path={`${path}/layout/application-overview/:layid`}
           component={(props) => (
             <AppContainer>
               <LayoutApplicationSummary {...props} />

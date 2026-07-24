@@ -29,7 +29,7 @@ import NOCDocumentTableView from "../../../../../noc/src/pageComponents/NOCDocum
 import { useLayoutSearchApplication } from "@mseva/digit-ui-libraries/src/hooks/obps/useSearchApplication";
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
 import LayoutDocumentView from "./LayoutDocumentView";
-import { amountToWords, formatDuration, formatDate } from "../../../utils/index";
+import { amountToWords, formatDuration, formatDate, decryptId } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { LoaderNew } from "../../../components/LoaderNew";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
@@ -119,7 +119,8 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
 
 const LayoutApplicationOverview = () => {
-  const { id } = useParams()
+  const { layid } = useParams()
+  const id = decryptId(layid)
   const { t } = useTranslation()
   const history = useHistory()
   const tenantId = window.localStorage.getItem("CITIZEN.CITY")

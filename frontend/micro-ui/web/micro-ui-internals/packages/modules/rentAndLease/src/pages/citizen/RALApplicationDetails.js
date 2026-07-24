@@ -139,6 +139,9 @@ const RALApplicationDetails = () => {
                     <Row label={t("PT_OWNERSHIP_INFO_NAME")} text={tValue(owner?.name)} />
                     <Row label={t("CORE_COMMON_PROFILE_EMAIL")} text={tValue(owner?.emailId)} />
                     <Row label={t("CORE_MOBILE_NUMBER")} text={tValue(owner?.mobileNo)} />
+                    {rawAdditionalDetails?.alternateMobileNumber && (
+                      <Row label={t("Billing Mobile Number")} text={tValue(rawAdditionalDetails?.alternateMobileNumber)} />
+                    )}
                     <Row
                       label={t("PT_COMMON_COL_ADDRESS")}
                       text={tValue(owner?.correspondenceAddress?.addressId || owner?.permanentAddress?.addressId)}

@@ -71,12 +71,14 @@ const LayoutMyApplications = ({ view }) => {
       {
         Header: t("Owner Name"),
         accessor: (row) => {
-          const owner = row?.Applications?.owners?.[0];
+          const owners = row?.Applications?.owners || [];
+          const owner = owners.find((o) => o?.isPrimaryOwner === true) || owners[0];
           const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
           return isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name;
         },
         Cell: ({ row }) => {
-          const owner = row.original?.Applications?.owners?.[0];
+          const owners = row.original?.Applications?.owners || [];
+          const owner = owners.find((o) => o?.isPrimaryOwner === true) || owners[0];
           const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
           const displayName = isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name;
           return GetCell(displayName || "-");
@@ -147,7 +149,8 @@ const LayoutMyApplications = ({ view }) => {
                 <p style={{ margin: "4px 0" }}>
                   <b>{t("Owner Name")}:</b>{" "}
                   {(() => {
-                    const owner = application?.Applications?.owners?.[0];
+                    const owners = application?.Applications?.owners || [];
+                    const owner = owners.find((o) => o?.isPrimaryOwner === true) || owners[0];
                     const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
                     return (isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name) || t("CS_NA");
                   })()}

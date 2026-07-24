@@ -34,14 +34,21 @@ const LayoutDocumentsRequired = ({
 }) => {
   const tenantId = Digit.ULBService.getStateId()
   const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
-  const [documents, setDocuments] = useState(formData?.documents?.documents || currentStepData?.documents?.documents || [])
+  const [documents, setDocuments] = useState(
+    formData?.documents?.documents?.documents || 
+    currentStepData?.documents?.documents?.documents || 
+    []
+  )
   
   useEffect(() => {
-    const docs = formData?.documents?.documents || currentStepData?.documents?.documents || [];
+    const docs = 
+      formData?.documents?.documents?.documents || 
+      currentStepData?.documents?.documents?.documents || 
+      [];
     if (documents?.length === 0 && docs?.length > 0) {
       setDocuments(docs);
     }
-  }, [formData?.documents?.documents, currentStepData?.documents?.documents]);
+  }, [formData?.documents?.documents?.documents, currentStepData?.documents?.documents?.documents]);
 
   console.log("documents in childStep three", documents, formData, currentStepData)
   const [error, setError] = useState(null)
@@ -124,16 +131,16 @@ const LayoutDocumentsRequired = ({
       roadType.toLowerCase().includes("nh")
     );
 
-    // Institution and Industrial checks
+    // Institutional and Industrial checks
     const bc = currentStepData?.siteDetails?.buildingCategory;
   
 
     const isInstitutionVal = bc ? (
       typeof bc === "object" ? (
-        (bc.code || "").toLowerCase().includes("institution") || 
-        (bc.name || "").toLowerCase().includes("institution")
+        (bc.code || "").toLowerCase().includes("institutional") || 
+        (bc.name || "").toLowerCase().includes("institutional")
       ) : (
-        bc.toLowerCase().includes("institution")
+        bc.toLowerCase().includes("institutional")
       )
     ) : false;
 
@@ -272,7 +279,7 @@ const LayoutDocumentsRequired = ({
           {filteredDocuments?.map((document, index) => {
             return (
               <LayoutSelectDocument
-                key={index}
+                key={document?.code}
                 document={document}
                 value={documents?.find(val => val?.documentType === document?.code)?.filestoreId}
                 t={t}
@@ -638,7 +645,7 @@ function LayoutSelectDocument({
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
-            uploadMessage = "Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+            uploadMessage = "Invalid File Format"
             accept=".jpeg, .jpg, .png"
           />
             <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
@@ -655,7 +662,7 @@ function LayoutSelectDocument({
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
-            uploadMessage = "Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+            uploadMessage = "Invalid File Format"
             required={doc?.required}
             isRemovable={!doc?.required}
           />

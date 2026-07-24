@@ -16,6 +16,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
+import CustomDatePicker from "./CustomDatePicker";
 
 const LayoutSiteDetails = (_props) => {
   let tenantId;
@@ -371,7 +372,7 @@ const LayoutSiteDetails = (_props) => {
   const currentCategoryCode = getSelectedCategoryCode();
   const isResidential = currentCategoryCode.includes("RESIDENTIAL");
   const isCommercial = currentCategoryCode.includes("COMMERCIAL");
-  const isInstitutional = currentCategoryCode.includes("INSTITUTION");
+  const isInstitutional = currentCategoryCode.includes("INSTITUTIONAL");
   const isIndustrial = currentCategoryCode.includes("INDUSTRIAL");
 
   // Calculate Total Site Area (sum of all distribution areas)
@@ -520,7 +521,7 @@ const LayoutSiteDetails = (_props) => {
                     option={options}
                     optionKey="i18nKey"
                     t={t}
-                    disable={isEditMode}
+                    // disable={isEditMode}
                   />
                 )}
               />
@@ -666,7 +667,7 @@ const LayoutSiteDetails = (_props) => {
                                 setCluValidationError(null);
                               } else {
                                 // CLU found but not approved
-                                setCluValidationError(`CLU application status is "${cluApp?.applicationStatus || "UNKNOWN"}". It must be APPROVED.`);
+                                setCluValidationError(`CLU application status is "${t(cluApp?.applicationStatus || "UNKNOWN")}". It must be APPROVED.`);
                                 setIsCluValidated(false);
                               }
                             } else {
@@ -819,8 +820,7 @@ const LayoutSiteDetails = (_props) => {
                           },
                         }}
                         render={(props) => (
-                          <TextInput
-                            type="date"
+                          <CustomDatePicker
                             value={props.value}
                             onChange={(e) => {
                               props.onChange(e.target.value);
@@ -1329,6 +1329,7 @@ const LayoutSiteDetails = (_props) => {
                   validate: (value) => {
                     if (!value) return true;
                     const selectedDate = new Date(value);
+                    if (isNaN(selectedDate.getTime())) return t("Invalid Date Format");
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
                     if (selectedDate > today) {
@@ -1338,8 +1339,7 @@ const LayoutSiteDetails = (_props) => {
                   },
                 }}
                 render={(props) => (
-                  <TextInput
-                    type="date"
+                  <CustomDatePicker
                     value={props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
@@ -1773,7 +1773,7 @@ const LayoutSiteDetails = (_props) => {
                       { code: "RESIDENTIAL", name: "Residential" },
                       { code: "COMMERCIAL", name: "Commercial" },
                       { code: "INDUSTRIAL_WAREHOUSE", name: "Industrial-Warehouse" },
-                      { code: "INSTITUTION", name: "Institution" },
+                      { code: "INSTITUTIONAL", name: "Institutional" },
                     ]}
                     optionKey="name"
                     t={t}
@@ -1836,12 +1836,12 @@ const LayoutSiteDetails = (_props) => {
             </LabelFieldPair>
           )}
 
-          {/* Sub-category for Institution */}
-          {(getValues("buildingCategory")?.code === "INSTITUTION" || buildingCategoryMain?.code === "INSTITUTION") && (
+          {/* Sub-category for Institutional */}
+          {(getValues("buildingCategory")?.code === "INSTITUTIONAL" || buildingCategoryMain?.code === "INSTITUTIONAL") && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{t("BPA_BUILDING_CATEGORY_LABEL_TYPE")}</CardLabel>
               <div className="field">
-                <TextInput value="Institution" disabled={true} />
+                <TextInput value="Institutional" disabled={true} />
               </div>
             </LabelFieldPair>
           )}
@@ -2016,7 +2016,7 @@ const LayoutSiteDetails = (_props) => {
             </React.Fragment>
           )}
 
-          {selectedBuildingCategory?.name?.toLowerCase().includes("institution") && (
+          {selectedBuildingCategory?.name?.toLowerCase().includes("institutional") && (
               <React.Fragment>
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">

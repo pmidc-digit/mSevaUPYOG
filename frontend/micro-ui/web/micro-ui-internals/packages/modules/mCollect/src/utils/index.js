@@ -87,18 +87,50 @@ export const printPdf = (blob) => {
     });
   }
 };
-
-export const downloadAndPrintChallan = async (challanNo, mode, setLoading) => {
+export const downloadAndPrintChallan = async ({challanNo, mode, setLoading, challanBillDetails = null , serviceCategory = null, challanDetails = null}) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // setLoading(true);
-  const response = await Digit.MCollectService.downloadPdf(challanNo, tenantId);
-  console.log("➡️➡️",response)
+  let filestoreId = null
+  try {
+    if (!challanBillDetails) {
+      setLoading(true);
+    const res = await Digit.PaymentService.searchBill(tenantId, {
+      consumerCode: challanNo,
+      service: serviceCategory,
+    });
+    challanBillDetails = res?.Bill?.[0];
+  }
+  if (!challanDetails) {
+    setLoading(true);
+    const Searchres = await Digit.MCollectService.search({
+      tenantId,
+      filters: { challanNo: challanNo },
+    });
+    challanDetails = Searchres?.challans?.[0];
+  }
+
+  setLoading(true);
+  const response = await Digit.PaymentService.generatePdf(
+    Digit.ULBService.getStateId(),
+    { Challan: [{...challanBillDetails, challanDetails}] },
+    "mcollect-challan"
+  );
+  filestoreId = response.filestoreIds[0];
+  } catch (error) {
+    console.log('error:', error);
+  }finally{
+    setLoading(false);
+  }
+  const fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
+  window.open(fileStore[filestoreId], "_blank");
+
+
   // setLoading(false);
-  const responseStatus = parseInt(response.status, 10);
+  const responseStatus = parseInt(challanBillDetails.status, 10);
   if (responseStatus === 201 || responseStatus === 200) {
     mode == "print"
-      ? printPdf(new Blob([response.data], { type: "application/pdf" }))
-      : downloadPdf(new Blob([response.data], { type: "application/pdf" }), `CHALLAN-${challanNo}.pdf`);
+      ? printPdf(new Blob([challanBillDetails.data], { type: "application/pdf" }))
+      : downloadPdf(new Blob([challanBillDetails.data], { type: "application/pdf" }), `CHALLAN-${challanNo}.pdf`);
   }
 };
 

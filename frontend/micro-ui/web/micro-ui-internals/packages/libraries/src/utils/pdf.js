@@ -333,6 +333,7 @@ const jsPdfGeneratorFormattedNOC = async ({
   ulbType,
   ulbName,
   hideUlbRow = false,
+  showLogo = false,
   openInNewTab = false
 }) => {
   console.log("ulbType", ulbType)
@@ -365,7 +366,7 @@ const jsPdfGeneratorFormattedNOC = async ({
 
     header: {},
     content: [
-      ...await createHeaderFormattedNOC(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber, ulbType, ulbName, hideUlbRow),
+      ...await createHeaderFormattedNOC(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber, ulbType, ulbName, hideUlbRow, showLogo),
       ...contentFormatted
     ],
     footer: function (currentPage, pageCount) {
@@ -2294,20 +2295,37 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
       } else {
         valueRows = detail?.values?.map((indData, i, arr) => {
           const isLast = i === arr.length - 1;
+
+          if (indData?.isBold) {
+            return [
+              {
+                text: indData?.title,
+                style: "header",
+                fontSize: 9,
+                bold: true,
+                colSpan: 2,
+                fillColor: "#f5f5f5",
+                margin: [10, 4, 0, 4],
+                border: isLast ? [true, false, true, true] : [true, false, true, false],
+              },
+              {},
+            ];
+          }
+
           return [
             {
               text: indData?.title,
               style: "header",
               fontSize: 9,
               margin: [10, 2, 0, 2],
-              border: isLast ? [true, false, false, true] : [true, false, false, false]
+              border: isLast ? [true, false, false, true] : [true, false, false, false],
             },
             {
               text: indData?.value && String(indData.value).trim() !== "" ? `${indData.value} ${indData?.isUnit ? ` ${t(indData.isUnit)}` : ""}` : "",
               fontSize: 9,
               margin: [0, 2, 0, 2],
-              border: isLast ? [false, false, true, true] : [false, false, true, false]
-            }
+              border: isLast ? [false, false, true, true] : [false, false, true, false],
+            },
           ];
         });
       }
@@ -2593,7 +2611,7 @@ async function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, 
   return headerData;
 }
 
-async function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName , hideUlbRow = false) {
+async function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName , hideUlbRow = false , showLogo = false) {
   const ulb = ulbName? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
   let headerData = [];
   const tenantDetails = await getMDMSDetails(tenantId);
@@ -2602,16 +2620,18 @@ async function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumbe
     layout: "noBorders",
     margin: [0, 0, 0, 0],
     table: {
-      widths: ["90%", "10%"], // center, right
+      widths: ["25%", "50%", "25%"], // center, right
       body: [
         [
           // Left: Logo
-          // {
-          //   image: logo || getBase64Image(tenantId) || localGovLogo,
-          //   width: 78,
-          //   margin: [10, 10],
-          //   alignment: "left",
-          // },
+          showLogo ?
+          {
+            image: tenantDetails?.logo,
+            width: 78,
+            margin: [10, 10],
+            alignment: "left",
+          } :
+          {},
 
           // Center: Heading + Name stacked
           {

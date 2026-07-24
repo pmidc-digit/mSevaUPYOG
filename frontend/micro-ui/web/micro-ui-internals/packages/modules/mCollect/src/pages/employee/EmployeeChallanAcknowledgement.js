@@ -4,22 +4,27 @@ import { useLocation, Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import * as func from "./Utils/getQueryParams";
 import { downloadAndPrintChallan } from "../../utils";
-
+import { Loader } from "../../components/Loader";
 const MCollectAcknowledgement = () => {
   const location = useLocation();
   const [params, setParams] = useState({});
   const { isEdit } = Digit.Hooks.useQueryParams();
+  const [getLoading, setLoading] = useState(false);
   useEffect(() => {
     setParams(func.getQueryStringParams(location.search)); // result: '?query=abc'
   }, [location]);
+  
   const { t } = useTranslation();
 
   const printReciept = async () => {
     const challanNo = params?.challanNumber;
+    const serviceCategory = params?.serviceCategory;
     
-    downloadAndPrintChallan(challanNo, "print");
+    downloadAndPrintChallan({challanNo:challanNo , serviceCategory: serviceCategory, mode: "print" , setLoading:setLoading});
   };
-
+  if(getLoading){
+    return <Loader page={true}/>
+  }
   return (
     <div>
       {params?.applicationStatus === "CANCELLED" ? (

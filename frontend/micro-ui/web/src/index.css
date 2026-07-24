@@ -435,3 +435,7 @@ a:hover {
 .upload-label-field-pair {
   margin-bottom: 10px;
 }
+
+.noc-upload-field-pair {
+  margin-bottom: 10px !important;
+}

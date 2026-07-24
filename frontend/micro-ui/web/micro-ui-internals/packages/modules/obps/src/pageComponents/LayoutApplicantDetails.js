@@ -45,7 +45,7 @@ const useQueryParam = (key) => {
 
 const LayoutApplicantDetails = (_props) => {
   const dispatch = useDispatch();
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, trigger, getValues, clearErrors } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, trigger, getValues, clearErrors, register } = _props;
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
@@ -72,6 +72,12 @@ const LayoutApplicantDetails = (_props) => {
   const isDataInitialized = useRef(false);
   //console.log("userInfo here", getValues("aplicantType"), applicants);
   const closeToast = () => setShowToast(null);
+
+  useEffect(() => {
+    register("primaryOwnerPhoto", { required: t("REQUIRED_FIELD") });
+    register("primaryOwnerDocument", { required: t("REQUIRED_FIELD") });
+    register("panDocumentUploadedFiles", { required: t("REQUIRED_FIELD") });
+  }, [register]);
 
   const { isLoading: genderTypeDataLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
 
@@ -232,7 +238,7 @@ const LayoutApplicantDetails = (_props) => {
       }
     }
 
-    if (formattedData || currentStepData?.apiData?.Layout?.[0]?.owners) {
+    if (formattedData || currentStepData?.apiData?.Layout?.[0]?.owners || !isEditMode) {
       isDataInitialized.current = true;
     }
   }, [currentStepData]);
@@ -406,8 +412,8 @@ const LayoutApplicantDetails = (_props) => {
         applicantGender: formValues?.applicantGender || currentStepData?.applicationDetails?.applicantGender,
         panNumber: formValues?.panNumber || currentStepData?.applicationDetails?.panNumber,
         // Also preserve files
-        documentUploadedFiles: formValues?.documentUploadedFiles || currentStepData?.applicationDetails?.documentUploadedFiles,
-        photoUploadedFiles: formValues?.photoUploadedFiles || currentStepData?.applicationDetails?.photoUploadedFiles,
+        documentUploadedFiles: formValues?.primaryOwnerDocument || formValues?.documentUploadedFiles || currentStepData?.applicationDetails?.documentUploadedFiles,
+        photoUploadedFiles: formValues?.primaryOwnerPhoto || formValues?.photoUploadedFiles || currentStepData?.applicationDetails?.photoUploadedFiles,
         panDocumentUploadedFiles: formValues?.panDocumentUploadedFiles || currentStepData?.applicationDetails?.panDocumentUploadedFiles,
         primaryOwnerPhoto: formValues?.primaryOwnerPhoto || currentStepData?.applicationDetails?.primaryOwnerPhoto,
         primaryOwnerDocument: formValues?.primaryOwnerDocument || currentStepData?.applicationDetails?.primaryOwnerDocument,
@@ -421,22 +427,7 @@ const LayoutApplicantDetails = (_props) => {
     }
   }, [applicants, documentUploadedFiles, photoUploadedFiles, panDocumentUploadedFiles, dispatch]);
 
-  // Sync document files with react-hook-form for validation
-  useEffect(() => {
-    // Set primary owner photo validation
-    if (photoUploadedFiles[0]?.fileStoreId) {
-      setValue("primaryOwnerPhoto", photoUploadedFiles[0].fileStoreId, { shouldValidate: true });
-    } else {
-      setValue("primaryOwnerPhoto", "", { shouldValidate: false });
-    }
 
-    // Set primary owner document validation
-    if (documentUploadedFiles[0]?.fileStoreId) {
-      setValue("primaryOwnerDocument", documentUploadedFiles[0].fileStoreId, { shouldValidate: true });
-    } else {
-      setValue("primaryOwnerDocument", "", { shouldValidate: false });
-    }
-  }, [photoUploadedFiles, documentUploadedFiles, setValue]);
 
   const handleAddApplicant = () => {
     const newApplicant = {
@@ -502,9 +493,9 @@ const LayoutApplicantDetails = (_props) => {
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
         const updatedDocFiles = { ...documentUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
-        // setDocumentUploadedFiles(updatedDocFiles);
+        setDocumentUploadedFiles(updatedDocFiles);
         if(index === 0){
-          setValue("documentUploadedFiles", fileId, { shouldValidate: true });
+          setValue("primaryOwnerDocument", fileId, { shouldValidate: true });
           clearErrors("primaryOwnerDocument");
         }else{
           clearErrors(`applicants.${index - 1}.document`);
@@ -540,9 +531,9 @@ const LayoutApplicantDetails = (_props) => {
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
         const updatedPhotoFiles = { ...photoUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
-        // setPhotoUploadedFiles(updatedPhotoFiles);
+        setPhotoUploadedFiles(updatedPhotoFiles);
         if(index === 0){
-          setValue("photoUploadedFiles", fileId, { shouldValidate: true });
+          setValue("primaryOwnerPhoto", fileId, { shouldValidate: true });
           clearErrors("primaryOwnerPhoto");
         }else{
           clearErrors(`applicants.${index - 1}.photo`);
@@ -595,7 +586,7 @@ const LayoutApplicantDetails = (_props) => {
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
         const updatedPanDocFiles = { ...panDocumentUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
-        // setPanDocumentUploadedFiles(updatedPanDocFiles);
+        setPanDocumentUploadedFiles(updatedPanDocFiles);
         if(index === 0){
           setValue("panDocumentUploadedFiles", fileId, { shouldValidate: true });
           clearErrors("panDocumentUploadedFiles");
@@ -969,28 +960,21 @@ const LayoutApplicantDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field" style={{ width: "100%" }}>
-              <Controller
-                control={control}
-                name="photoUploadedFiles"
-                rules={{ required: t("REQUIRED_FIELD") }}
-                render={(props) => (
                   <CustomUploadFile
                     id="passport-photo-primary"
                     onUpload={selectPhotoFile(0)}
                     onDelete={() => {
                       deletePhoto(0);
                       setPhotoUploadedFiles((prev) => ({ ...prev, [0]: null }));
+                      setValue("primaryOwnerPhoto", "", { shouldValidate: true });
                       setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], photo: "Passport photo is required" } }));
                     }}
-                    // uploadedFile={photoUploadedFiles[0]?.fileStoreId}
-                    uploadedFile={getValues("photoUploadedFiles")}
-                    message={getValues("photoUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                    uploadedFile={photoUploadedFiles[0]?.fileStoreId}
+                    message={photoUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                     error={applicantErrors[0]?.photo}
                     uploadMessage="Invalid File Format"
                     accept=".png, .jpeg, .jpg"
                   />
-              )}
-              />
               <p className="upload-file-message">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             </div>
           </LabelFieldPair>
@@ -1002,27 +986,21 @@ const LayoutApplicantDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field" style={{ width: "100%" }}>
-              <Controller
-                control={control}
-                name="documentUploadedFiles"
-                rules={{ required: t("REQUIRED_FIELD") }}
-                render={(props) => (
                   <CustomUploadFile
                     id="id-proof-primary"
                     onUpload={selectDocumentFile(0)}
                     onDelete={() => {
                       deleteDocument(0);
                       setDocumentUploadedFiles((prev) => ({ ...prev, [0]: null }));
+                      setValue("primaryOwnerDocument", "", { shouldValidate: true });
                       setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], document: "Document upload is required" } }));
                     }}
-                    uploadedFile={getValues("documentUploadedFiles")}
-                    message={getValues("documentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                    uploadedFile={documentUploadedFiles[0]?.fileStoreId}
+                    message={documentUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                     error={applicantErrors[0]?.document}
                     uploadMessage="Invalid File Format"
                     accept=".pdf, .png, .jpeg, .jpg"
                   />
-                  )}
-              />
               <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             </div>
           </LabelFieldPair>
@@ -1034,27 +1012,21 @@ const LayoutApplicantDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field" style={{ width: "100%" }}>
-              <Controller
-                control={control}
-                name="panDocumentUploadedFiles"  
-                rules={{ required: t("REQUIRED_FIELD") }}              
-                render={(props) => (
                 <CustomUploadFile
                   id="pan-document-primary"
                   onUpload={selectPanDocumentFile(0)}
                   onDelete={() => {
                     deletePanDocument(0);
                     setPanDocumentUploadedFiles((prev) => ({ ...prev, [0]: null }));
+                    setValue("panDocumentUploadedFiles", "", { shouldValidate: true });
                     setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], panDocument: "PAN document is required" } }));
                   }}
-                  uploadedFile={getValues("panDocumentUploadedFiles")}
-                    message={getValues("panDocumentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                  uploadedFile={panDocumentUploadedFiles[0]?.fileStoreId}
+                  message={panDocumentUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                   error={applicantErrors[0]?.panDocument}
                   uploadMessage="Invalid File Format"
                   accept=".pdf, .png, .jpeg, .jpg"
                 />
-                )}
-              />
               <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             </div>
           </LabelFieldPair>
@@ -1098,11 +1070,7 @@ const LayoutApplicantDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.panNumber?.message || ""}</CardLabelError>
 
-          {/* Hidden Controllers for document validation */}
-          <div style={{ display: "none" }}>
-            <Controller control={control} name="primaryOwnerPhoto" rules={{ required: t("REQUIRED_FIELD") }} render={() => null} />
-            <Controller control={control} name="primaryOwnerDocument" rules={{ required: t("REQUIRED_FIELD") }} render={() => null} />
-          </div>
+
 
           {/* Additional Applicants Section */}
           {applicants.length > 0 && (

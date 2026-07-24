@@ -198,9 +198,9 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           pan: layoutFormData?.applicationDetails?.panNumber || owner?.pan || null,
           additionalDetails: {
             ...owner?.additionalDetails,            
-            ownerPhoto: photoFiles[0]?.fileStoreId || owner?.additionalDetails?.ownerPhoto || null,
-            documentFile: docFiles[0]?.fileStoreId || owner?.additionalDetails?.documentFile || null,
-            panDocument: panDocFiles[0]?.fileStoreId || owner?.additionalDetails?.panDocument || null,
+            ownerPhoto: layoutFormData?.applicationDetails?.primaryOwnerPhoto || photoFiles[0]?.fileStoreId || owner?.additionalDetails?.ownerPhoto || null,
+            documentFile: layoutFormData?.applicationDetails?.primaryOwnerDocument || docFiles[0]?.fileStoreId || owner?.additionalDetails?.documentFile || null,
+            panDocument: layoutFormData?.applicationDetails?.panDocumentUploadedFiles || panDocFiles[0]?.fileStoreId || owner?.additionalDetails?.panDocument || null,
             aplicantType: layoutFormData?.applicationDetails?.aplicantType || owner?.additionalDetails?.aplicantType || null,
             authorisedPerson: layoutFormData?.applicationDetails?.aplicantType?.code === "FIRM" ? layoutFormData?.applicationDetails?.authorisedPerson || owner?.additionalDetails?.authorisedPerson : null,
           },

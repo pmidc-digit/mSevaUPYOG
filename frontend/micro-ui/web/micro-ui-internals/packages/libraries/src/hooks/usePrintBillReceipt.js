@@ -58,7 +58,7 @@ const fetchServiceSearchData = async ({ serviceType, identifier, tenantId }) => 
 
         let data = res?.GarbageConnection?.[0];
 
-        // fallback for connection number
+        // fallback for connection number 
         if (!data) {
           res = await Digit.GCService.search({
             tenantId,
@@ -80,18 +80,6 @@ const fetchServiceSearchData = async ({ serviceType, identifier, tenantId }) => 
   }
 };
 
-const formatDDMMYYYY = (ts) => (ts ? new Date(ts).toLocaleDateString("en-GB").split("/").join("") : "");
-
-const getPeriodMappingEntries = ({ businessService, hasArrears, searchData }) => {
-  return businessService === "rl-services" && !hasArrears
-    ? [
-        {
-          variable: "validityperiod",
-          value: `${formatDDMMYYYY(searchData?.startDate)} to ${formatDDMMYYYY(searchData?.endDate)}`,
-        },
-      ]
-    : [{ variable: " ", value: " " }];
-};
 const transformBillsForPdf = (Bills, meta = {}) => {
   const billsArray = normalizeBills(Bills);
   if (!billsArray?.length) return { Bills: [] };
@@ -108,7 +96,6 @@ const transformBillsForPdf = (Bills, meta = {}) => {
 
     billDetails?.forEach((detail) => {
       const cleanedAccountDetails = cleanBillAccountDetails(detail?.billAccountDetails);
-      const hasArrears = detail?.billAccountDetails?.some((item) => item?.taxHeadCode?.includes("ARREAR") && Number(item?.amount) > 0);
       mergedBillDetails?.push({
         billRootData: {
           ...billRootData,
@@ -128,7 +115,6 @@ const transformBillsForPdf = (Bills, meta = {}) => {
         },
         ...detail,
         billAccountDetails: cleanedAccountDetails,
-        periodMappingEntries: getPeriodMappingEntries({ businessService, hasArrears, searchData }),
       });
     });
   });
@@ -173,7 +159,6 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
 
       billDetails?.forEach((detail) => {
         const cleanedAccountDetails = cleanBillAccountDetails(detail?.billAccountDetails);
-        const hasArrears = detail?.billAccountDetails?.some((item) => item?.taxHeadCode?.includes("ARREAR") && Number(item?.amount) > 0);
         extractedBillDetails?.push({
           ...detail,
           billAccountDetails: cleanedAccountDetails,
@@ -203,7 +188,6 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
 
             generatedAt,
           },
-          periodMappingEntries: getPeriodMappingEntries({ businessService, hasArrears, searchData }),
         });
       });
 
@@ -307,26 +291,21 @@ export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, 
 
         if (rootKey === "PAYMENTS") {
           const payment = sourceData?.Payments?.[0];
-
           if (payment?.fileStoreId) {
             response = { filestoreIds: [payment.fileStoreId] };
           }
         }
 
-        let fileStore = await Digit.PaymentService.printReciept(tenantId, {
-          fileStoreIds: response?.filestoreIds?.join(","),
-        });
-
-        if (!fileStore?.fileStoreIds?.[0]?.id) {
+        if (!response) {
           response = await Digit.PaymentService.generatePdf(tenantId, pdfPayload, pdfkey);
-
-          fileStore = await Digit.PaymentService.printReciept(tenantId, {
-            fileStoreIds: response?.filestoreIds?.join(","),
-          });
         }
 
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+          fileStoreIds: response.filestoreIds.join(","),
+        });
+
         response?.filestoreIds?.forEach((id) => {
-          if (fileStore?.[id]) {
+          if (fileStore[id]) {
             window.open(fileStore[id], "_blank");
           }
         });

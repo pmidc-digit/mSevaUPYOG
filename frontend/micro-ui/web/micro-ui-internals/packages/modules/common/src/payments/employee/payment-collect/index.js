@@ -23,8 +23,13 @@ export const CollectPayment = (props) => {
 
   const { path: currentPath } = useRouteMatch();
   let { consumerCode, businessService } = useParams();
+  const isFireNocPayment = businessService === "FIRENOC";
   console.log("businessService", businessService);
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const { isFireNOCLoading, data: fireNOC } = Digit.Hooks.firenoc.useFIRENOCApplicationDetails({
+    tenantId,
+    applicationNumber: consumerCode,
+  });
   const location = useLocation();
   const search = useLocation().search;
   if (window.location.href.includes("ISWSAPP")) consumerCode = new URLSearchParams(search).get("applicationNumber");
@@ -111,6 +116,10 @@ export const CollectPayment = (props) => {
   const onSubmit = async (data) => {
     if (data?.paymentMode?.code == "ONLINE") {
       history.push(`/digit-ui/employee/payment/challan/collect/${businessService}/${consumerCode}/${tenantId}?tenantId=${tenantId}`);
+      return;
+    }
+    if(isFireNocPayment &&!isFireNOCLoading && (!fireNOC?.fireNOCDetails || Object.keys(fireNOC.fireNOCDetails).length === 0)){
+      alert("No application details found");
       return;
     }
 
@@ -379,7 +388,7 @@ export const CollectPayment = (props) => {
   };
   const checkFSM = window.location.href.includes("FSM");
 
-  if (isLoading) {
+  if (isLoading || (isFireNocPayment && isFireNOCLoading)) {
     return <Loader />;
   }
 

@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { encryptId } from "../../../utils";
 
 const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
   const { t } = useTranslation();
@@ -67,8 +68,8 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
               to={
                 // /digit-ui/citizen/obps/layout/application-overview/${row.original?.Applications?.applicationNo}
                 window.location.href.includes("/citizen")
-                  ? `${parentRoute}/layout/application-overview/${row.original?.applicationId}`
-                  : `${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`
+                  ? `${parentRoute}/layout/application-overview/${encryptId(row.original?.applicationId)}`
+                  : `${parentRoute}/layout/inbox/application-overview/${encryptId(row.original?.applicationId)}`
               }
               // to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`}
               className="ndc-new-app-link"

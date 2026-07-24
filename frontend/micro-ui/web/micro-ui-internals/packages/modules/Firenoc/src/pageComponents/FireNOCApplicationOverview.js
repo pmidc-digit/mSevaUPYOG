@@ -130,8 +130,8 @@ const FireNOCApplicationOverview = () => {
       return;
     }
     if (action?.action === "PAY") {
-      if((tenantId === "pb.jalandhar" || tenantId === "pb.testing" || tenantId === "pb.itjalandhar") && !isEmployee ){
-        alert(t("PAYMENT_DISABLED"))
+      if(!fireNOC?.fireNOCDetails || Object.keys(fireNOC.fireNOCDetails).length === 0){
+        setShowToast({ key: "true", error: true, message: "No application details found" });
         return
       }
       const redirectPath = isEmployee

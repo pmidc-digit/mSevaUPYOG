@@ -54,6 +54,12 @@ export const SelectPaymentType = (props) => {
   // const menu = ["RAZORPAY"];
   let { consumerCode, businessService } = useParams();
   const tenantId = state?.tenantId || __tenantId || Digit.ULBService.getCurrentTenantId();
+  const isFireNocPayment = businessService === "FIRENOC";
+  const { isFireNOCLoading, data: fireNOC } = Digit.Hooks.firenoc.useFIRENOCApplicationDetails({
+    tenantId,
+    applicationNumber: consumerCode,
+  });
+
   const propertyId = state?.propertyId;
   const stateTenant = Digit.ULBService.getStateId();
   const { control, handleSubmit, setValue } = useForm();
@@ -98,6 +104,10 @@ export const SelectPaymentType = (props) => {
       return;
     } else if (!mobileRegex.test(d.mobileNumber)) {
       setShowOwnerToast({ key: true, label: t("ERR_INVALID_MOBILE") });
+      return;
+    }
+    if(isFireNocPayment &&!isFireNOCLoading && (!fireNOC?.fireNOCDetails || Object.keys(fireNOC.fireNOCDetails).length === 0)){
+      setShowToast({ key: "true", error: true, message: "No application details found" });
       return;
     }
 
@@ -359,7 +369,7 @@ export const SelectPaymentType = (props) => {
     window.location.href = `/digit-ui/citizen/login?from=${encodeURIComponent(pathname + search)}`;
   }
 
-  if (paymentLoading || isPaymentLoading || isLoading) {
+  if (paymentLoading || isPaymentLoading || isLoading || isFireNOCLoading) {
     window.scrollTo({
       top: 0,
       behavior: "smooth", // for smooth scrolling

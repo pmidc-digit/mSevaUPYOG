@@ -1077,6 +1077,9 @@ const generateTimelinePDF = async (data) => {
   const { t, tenantId, tenantName, heading, businessId, businessService, currentStatus, generatedDate, generatedDateTime, timelineRows, totalSteps, moduleName } = data;
 
   let moduleNamenew = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
+  moduleNamenew = moduleNamenew?.toLowerCase().includes("layout")
+  ? "Layout"
+  : moduleNamenew;
   // Build content for each timeline entry in eOffice style
   const addSoftBreaks = (text) => {
     if (!text) return text;
@@ -1114,11 +1117,11 @@ const generateTimelinePDF = async (data) => {
                         [
 
 
-                          { text: "Date & Time of Receipt", bold: true , fillColor: "#709770" , alignment: "center"},
+                          { text: "Date & Time", bold: true , fillColor: "#709770" , alignment: "center"},
 
 
 
-                          { text: "Action", bold: true, fillColor: "#709770" , alignment: "center"},
+                          { text: "Action Taken", bold: true, fillColor: "#709770" , alignment: "center"},
 
 
 

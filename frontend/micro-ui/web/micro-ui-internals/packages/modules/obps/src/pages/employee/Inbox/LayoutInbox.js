@@ -47,7 +47,7 @@ const LayoutInbox = ({ parentRoute }) => {
       moduleName: "layout-service",
       applicationStatus: [],
       businessService: "Layout_mcUp",
-      assignee: "ASSIGNED_TO_ALL",
+      assignee: defaultAssignee,
       // businessServiceArray: businessServiceListLayout(true) || [],
     }),
     []
@@ -102,7 +102,7 @@ const LayoutInbox = ({ parentRoute }) => {
   const onFilterFormReset = (setFilterFormValue) => {
     setFilterFormValue("moduleName", "layout-service");
     setFilterFormValue("applicationStatus", "");
-    setFilterFormValue("assignee", "ASSIGNED_TO_ALL");
+    setFilterFormValue("assignee", defaultAssignee);
     dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
   };
 
@@ -392,11 +392,11 @@ const LayoutInbox = ({ parentRoute }) => {
         data: {
           ...formState?.filterForm,
           applicationStatus: resolvedStatuses,
-          assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ALL",
+          assignee: filterData.assignee || formState?.filterForm?.assignee || defaultAssignee,
         },
       });
     },
-    [formState?.filterForm, getResolvedStatusIds, setFilterFormValue]
+    [formState?.filterForm, getResolvedStatusIds, setFilterFormValue, defaultAssignee]
   );
 
   const searchDebounceRef = useRef(null);
@@ -419,7 +419,7 @@ const LayoutInbox = ({ parentRoute }) => {
     if (formState?.filterForm) {
       setFilterFormValue("moduleName", formState.filterForm.moduleName || "layout-service");
       setFilterFormValue("applicationStatus", formState.filterForm.applicationStatus || []);
-      setFilterFormValue("assignee", formState.filterForm.assignee || "ASSIGNED_TO_ALL");
+      setFilterFormValue("assignee", formState.filterForm.assignee || defaultAssignee);
       setFilterFormValue("businessService", formState.filterForm.businessService || "Layout_mcUp");
     }
   }, [
@@ -428,6 +428,7 @@ const LayoutInbox = ({ parentRoute }) => {
     formState?.filterForm?.assignee,
     formState?.filterForm?.businessService,
     setFilterFormValue,
+    defaultAssignee,
   ]);
 
   // Search debounce

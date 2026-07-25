@@ -7,13 +7,13 @@ const useSearchApplicationTableConfig = () => {
     const {t} = useTranslation();
     
     const GetCell = (value) => <span className="cell-text">{value}</span>;
-    
     return useMemo( () => ([
         {
           Header: t("BPA_APPLICATION_NUMBER_LABEL"),
           accessor: "applicationNo",
           disableSortBy: true,
           Cell: ({ row }) => {
+            console.log('row', row)
             return (
               <div>
                 <span className="link">
@@ -32,7 +32,13 @@ const useSearchApplicationTableConfig = () => {
         },
         {
           Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
-          accessor: (row) => t(`BPA_STATUS_${row?.applicationStatus}`),
+          accessor: (row) => {
+            const service = row?.original?.businessService || row?.businessService;
+            const serviceKey = service ? String(service).toUpperCase() : "";
+            const status = row?.applicationStatus || row?.original?.applicationStatus || row?.status || "-";
+            const translationKey = serviceKey ? `WF_EMPLOYEE_LAYOUT_STATUS_${serviceKey}_${status}` : `WF_EMPLOYEE_LAYOUT_STATUS_${status}`;
+            return t(translationKey) || status || "-";
+          },
           disableSortBy: true,
         },
 

@@ -32,6 +32,7 @@ const LayoutInbox = ({ parentRoute }) => {
   const { data: cities } = Digit.Hooks.useTenants();
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
+  const prefix = "WF_EMPLOYEE_LAYOUT_STATUS";
 
   const searchFormDefaultValues = useMemo(
     () => ({
@@ -210,6 +211,8 @@ const LayoutInbox = ({ parentRoute }) => {
       refetchOnMount: "always",
     },
   });
+
+  console.log('inboxData', inboxData)
 
   const assigneeCountBaseFilters = useMemo(() => {
     const countFilterForm = { ...(memoizedFilters?.filterForm || {}) };
@@ -501,6 +504,8 @@ const LayoutInbox = ({ parentRoute }) => {
           isInboxLoading={isInboxLoading}
           assigneeCounts={assigneeCounts}
           handleFilter={handleFilterChange}
+          prefix= {prefix}
+          rawStatuses={inboxData?.statuses || []}
         />
       }
       topBar={

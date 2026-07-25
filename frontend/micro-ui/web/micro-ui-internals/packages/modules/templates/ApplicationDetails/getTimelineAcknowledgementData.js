@@ -3,7 +3,7 @@
  * Follows the same pattern as OBPS getAcknowledgementData.
  */
 
-const getTimelineAcknowledgementData = ({workflowDetails, prefix=null, tenantInfo, pdfFiles = {}, deptMap = {}, t}) => {
+const getTimelineAcknowledgementData = ({workflowDetails, prefix=null, Statusprefix=null, tenantInfo, pdfFiles = {}, deptMap = {}, t}) => {
   console.log('pdfFiles', pdfFiles)
   const timeline = workflowDetails?.data?.timeline || workflowDetails?.timeline || [];
   const processInstances = workflowDetails?.data?.processInstances || workflowDetails?.processInstances || [];
@@ -74,7 +74,7 @@ const getTimelineAcknowledgementData = ({workflowDetails, prefix=null, tenantInf
     };
   });
   const timelineStatusKey = timeline?.[0]?.status || timeline?.[0]?.state
-  const timelineStatus = prefix ? `${prefix}_${timelineStatusKey}` : timelineStatusKey || "N/A";
+  const timelineStatus = Statusprefix ? `${Statusprefix}_${timelineStatusKey}` : timelineStatusKey || "N/A";
 
 
   return {

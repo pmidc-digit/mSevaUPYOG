@@ -40,7 +40,7 @@ const TimelineDocument = React.memo(({ value, Code, index }) => {
   );
 });
 
-export default function NewApplicationTimeline({ workflowDetails, prefix = null, t, tenantId = Digit.ULBService.getCurrentTenantId(), timeObj, empUserName = null, handleSetEmpDesignation= ()=>{} }) {
+export default function NewApplicationTimeline({ workflowDetails, prefix = null,Statusprefix =null, t, tenantId = Digit.ULBService.getCurrentTenantId(), timeObj, empUserName = null, handleSetEmpDesignation= ()=>{} }) {
   const { isLoading, data: docData } = Digit.Hooks.ads.useADSDocumentSearch(
     { value: workflowDetails?.data?.timeline?.flatMap((item) => item?.wfDocuments) || [] },
     { value: workflowDetails?.data?.timeline?.flatMap((item) => item?.wfDocuments) || [] },
@@ -162,7 +162,7 @@ export default function NewApplicationTimeline({ workflowDetails, prefix = null,
    const handleDownloadPDF = React.useCallback(() => {
     if (!isLoading) {
       const tenantInfo = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY") || {};
-      const acknowledgementData = getTimelineAcknowledgementData({workflowDetails:normalizedWorkflowDetails, prefix:prefix, tenantInfo:tenantInfo, pdfFiles: docData?.pdfFiles || {}, deptMap:deptMap, t:t});
+      const acknowledgementData = getTimelineAcknowledgementData({workflowDetails:normalizedWorkflowDetails, prefix:prefix, Statusprefix:Statusprefix, tenantInfo:tenantInfo, pdfFiles: docData?.pdfFiles || {}, deptMap:deptMap, t:t});
       Digit.Utils.pdf.generateTimelinePDF(acknowledgementData);
     }
   }, [workflowDetails, docData, t, isLoading]);

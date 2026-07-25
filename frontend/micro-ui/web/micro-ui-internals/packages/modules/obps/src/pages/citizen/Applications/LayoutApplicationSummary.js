@@ -373,6 +373,7 @@ const LayoutApplicationOverview = () => {
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu)
   const businessServiceCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
   const prefix= `WF_EMPLOYEE_${"LAYOUT"}_${businessServiceCode}`?.toUpperCase();
+  const Statusprefix= `WF_EMPLOYEE_LAYOUT_STATUS_${businessServiceCode}`?.toUpperCase();
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -952,7 +953,7 @@ const LayoutApplicationOverview = () => {
 
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} prefix={prefix} t={t} timeObj={timeObj}/>
+        <NewApplicationTimeline workflowDetails={workflowDetails} prefix={prefix} Statusprefix={Statusprefix} t={t} timeObj={timeObj}/>
       </div>
 
       {actions && actions.length > 0 && (

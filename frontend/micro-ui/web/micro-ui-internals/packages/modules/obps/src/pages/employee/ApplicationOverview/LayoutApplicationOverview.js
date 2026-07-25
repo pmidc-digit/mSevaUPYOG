@@ -161,7 +161,8 @@ const LayoutEmployeeApplicationOverview = () => {
   //console.log("applicationDetails here==>", applicationDetails, checklistRemarks);
   const currentZoneCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.zone?.code;
   const businessService = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService?.toUpperCase();
-  const prefix= `WF_EMPLOYEE_${"LAYOUT"}_${businessService}`;
+  const prefix= `WF_EMPLOYEE_${"LAYOUT"}_${businessService}`?.toUpperCase();
+  const Statusprefix= `WF_EMPLOYEE_LAYOUT_STATUS_${businessService}`?.toUpperCase();
   // Fetch layout checklist data - only if not on first DM submission
   // Status DOCUMENTVERIFY_DM means DM is in the process, so don't fetch checklist yet (it will be created on their first submit)
   // For other statuses, checklist should already exist from previous submissions
@@ -1414,7 +1415,7 @@ const LayoutEmployeeApplicationOverview = () => {
         checked="true"
       />
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} prefix= {prefix} t={t} timeObj={timeObj} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} prefix= {prefix} t={t} Statusprefix ={Statusprefix} timeObj={timeObj} />
       </div>
       {actions?.length > 0 && (
         <ActionBar>

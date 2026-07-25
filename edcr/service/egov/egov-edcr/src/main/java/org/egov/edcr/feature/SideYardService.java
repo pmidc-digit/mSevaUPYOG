@@ -2117,6 +2117,44 @@ public class SideYardService extends GeneralRule {
 					}
 				}
 
+			}else if (DxfFileConstants.F_MIP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
+
+			    sideYard2Result.isSetbackCombine = false;
+
+			    if (buildingHeight.compareTo(BigDecimal.valueOf(15)) < 0) {
+
+			        // Clause 4.22(ii)
+			        Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+			                pl.getMdmsMasterData().get("masterMdmsData"),
+			                MdmsFilter.SIDE_SETBACK_PATH,
+			                BigDecimal.class);
+
+			        BigDecimal mdmsSide = scOpt.orElse(BigDecimal.valueOf(2));
+
+			        BigDecimal oneSixthHeight = buildingHeight.divide(
+			                BigDecimal.valueOf(6),
+			                2,
+			                RoundingMode.HALF_UP);
+
+			        minVal = mdmsSide.max(oneSixthHeight);
+
+			        sideYard1Result.setBackPercentage =
+			                minVal.stripTrailingZeros().toPlainString() + "m";
+			        sideYard2Result.setBackPercentage =
+			                minVal.stripTrailingZeros().toPlainString() + "m";
+
+			    } else {
+
+			        // Table 5.4
+			        BigDecimal tableSetback = getTableSetback(buildingHeight);
+
+			        minVal = tableSetback;
+
+			        sideYard1Result.setBackPercentage =
+			                tableSetback.stripTrailingZeros().toPlainString() + "m";
+			        sideYard2Result.setBackPercentage =
+			                tableSetback.stripTrailingZeros().toPlainString() + "m";
+			    }
 			} else {
 				sideYard1Result.isSetbackCombine=true;
 				if (pl.getMdmsMasterData().get("masterMdmsData") != null) {					
@@ -2184,5 +2222,38 @@ public class SideYardService extends GeneralRule {
  	    
  	    return minVal;
  	}
+ 	
+ 	private BigDecimal getTableSetback(BigDecimal buildingHeight) {
+
+	    if (buildingHeight == null)
+	        return BigDecimal.ZERO;
+
+	    double h = buildingHeight.doubleValue();
+
+	    if (h < 15)
+	        return BigDecimal.valueOf(3);
+	    else if (h <= 18)
+	        return BigDecimal.valueOf(5);
+	    else if (h <= 21)
+	        return BigDecimal.valueOf(6);
+	    else if (h <= 24)
+	        return BigDecimal.valueOf(7);
+	    else if (h <= 27)
+	        return BigDecimal.valueOf(8);
+	    else if (h <= 30)
+	        return BigDecimal.valueOf(9);
+	    else if (h <= 35)
+	        return BigDecimal.valueOf(10);
+	    else if (h <= 40)
+	        return BigDecimal.valueOf(11);
+	    else if (h <= 45)
+	        return BigDecimal.valueOf(12);
+	    else if (h <= 50)
+	        return BigDecimal.valueOf(13);
+	    else if (h < 55)
+	        return BigDecimal.valueOf(14);
+	    else
+	        return BigDecimal.valueOf(16);
+	}
     
 }

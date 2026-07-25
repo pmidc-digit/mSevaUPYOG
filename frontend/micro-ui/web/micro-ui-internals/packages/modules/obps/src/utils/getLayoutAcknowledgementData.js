@@ -174,7 +174,7 @@ const getSiteDetails = (appData, t) => {
         ]
       : []),
     ...(sd?.isCluRequired?.code === "YES" || sd?.isCluRequired === "YES"
-      ? [{ title: t("Application Applied Under"), value: sd?.applicationAppliedUnder?.code || sd?.applicationAppliedUnder  }]
+      ? [{ title: t("Application Applied Under"), value: sd?.applicationAppliedUnder?.name || sd?.applicationAppliedUnder?.code || sd?.applicationAppliedUnder  }]
       : []),
 
     { title: t("Type Of Application"),       value: sd?.typeOfApplication?.name },
@@ -591,7 +591,7 @@ const getLayoutFeeHistoryDetails = (appData, t) => {
   };
 };
 
-export const getLayoutAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, t, collectionData = []) => {
+export const getLayoutAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, t, collectionData = [], isView = false,) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData = applicationDetails || {};
   let detailsArr = [],
@@ -603,7 +603,7 @@ export const getLayoutAcknowledgementData = async (applicationDetails, tenantInf
   imageURL = fileData?.url || "";
   const isEmployee = window.location.href.includes("/employee")
 
-  return {
+  const data = {
     t: t,
     tenantId: tenantInfo?.code,
     name: t("LAYOUT_ACKNOWLEDGEMENT_TITLE"),
@@ -631,4 +631,8 @@ export const getLayoutAcknowledgementData = async (applicationDetails, tenantInf
     ulbType,
     showLogo : true
   };
+  if (isView) {
+    data.openInNewTab = true;
+  }
+  return data;
 };

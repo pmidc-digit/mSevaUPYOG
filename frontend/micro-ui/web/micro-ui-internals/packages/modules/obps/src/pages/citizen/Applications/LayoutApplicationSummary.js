@@ -804,7 +804,7 @@ const LayoutApplicationOverview = () => {
               )}
               {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && (
                 <React.Fragment>
-                  {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
+                  {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.name || detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
                 </React.Fragment>
               )}
               {renderLabel(t("Type Of Application"), detail?.typeOfApplication?.name)}

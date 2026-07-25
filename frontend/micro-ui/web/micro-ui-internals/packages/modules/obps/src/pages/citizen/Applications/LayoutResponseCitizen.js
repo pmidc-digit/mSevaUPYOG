@@ -110,18 +110,19 @@ const LayoutResponseCitizen = (props) => {
       { paymentAmount: calculatedAmount, tenantId }
     );
   };
+  
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = async (isView = false) => {
     try{
       setDownloading(true);
       const Property = layoutData;
     //console.log("tenants in NOC", tenants);
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
     const ulbType = tenantInfo?.city?.ulbType;
-    const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo,ulbType, t);
+    const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo,ulbType, t, [], isView);
     //console.log("acknowledgementData in citizen NOC", acknowledgementData);
     // Digit.Utils.pdf.generate(acknowledgementData);
-    Digit.Utils.pdf.generateFormatted(acknowledgementData);
+    Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
     } catch(err){
       //console.log('err', err)
     }finally{
@@ -142,9 +143,13 @@ const LayoutResponseCitizen = (props) => {
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         {downloading && <Loader />}
-        {layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" ? (
+        {layoutData?.applicationStatus !== "REJECTED" ? (
             <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
-            <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
+              {layoutData?.applicationStatus === "INITIATED" ? (
+                          <SubmitBar label={t("View Application")} onSubmit={() => handleDownloadPdf(true)} />
+                        ) : (
+                          <SubmitBar label={t("Download Application")} onSubmit={() => handleDownloadPdf(false)} />
+                        )}
             {(layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" || layoutData?.applicationStatus === "PENDINGSANCTIONPAYMENT") && <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />}
           </ActionBar>
         ) : null}

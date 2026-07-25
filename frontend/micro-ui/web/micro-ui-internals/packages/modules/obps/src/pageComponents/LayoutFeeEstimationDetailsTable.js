@@ -228,8 +228,16 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
     // Discard any calculation where every taxHeadEstimate has estimateAmount = 0
     const filteredCalcs = allCalcs.filter((calc) => (calc?.taxHeadEstimates || []).some((tax) => tax?.estimateAmount > 0));
 
-    return buildFeeHistoryByTax(filteredCalcs, { newestFirst: true });
-  }, [formData?.calculations]);
+    const history = buildFeeHistoryByTax(filteredCalcs, { newestFirst: true }) || {};
+
+    const isCluReq = siteDetails?.isCluRequired?.code || (typeof siteDetails?.isCluRequired === "string" ? siteDetails?.isCluRequired : null);
+
+    if (isCluReq !== "YES" && history["LAYOUT_CLU_FEE"]) {
+      delete history["LAYOUT_CLU_FEE"];
+    }
+
+    return history;
+  }, [formData?.calculations, siteDetails]);
 
   const [prevSiteDetails, setPrevSiteDetails] = useState(null);
 
@@ -275,20 +283,29 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
 
   const applicationFeeDataWithTotal = useMemo(() => {
     if (!data?.Calculation?.[0]?.taxHeadEstimates) return [];
-    const rows = data.Calculation[0].taxHeadEstimates.map((tax, index) => {
-      const adjustedAmount = feeAdjustments[index]?.adjustedAmount || tax.estimateAmount;
-      const remarkValue = feeAdjustments[index]?.remark || tax.remarks || "";
+
+    const isCluReq = siteDetails?.isCluRequired?.code || (typeof siteDetails?.isCluRequired === "string" ? siteDetails?.isCluRequired : null);
+
+    let filteredEstimates = data.Calculation[0].taxHeadEstimates;
+    if (isCluReq !== "YES") {
+      filteredEstimates = filteredEstimates.filter((tax) => tax.taxHeadCode !== "LAYOUT_CLU_FEE");
+    }
+
+    const rows = filteredEstimates.map((tax) => {
+      const originalIndex = data.Calculation[0]?.taxHeadEstimates.findIndex((t) => t.taxHeadCode === tax.taxHeadCode);
+      const adjustedAmount = feeAdjustments[originalIndex]?.adjustedAmount || tax.estimateAmount;
+      const remarkValue = feeAdjustments[originalIndex]?.remark || tax.remarks || "";
 
       return {
-        index,
-        id: `tax-${index}`,
+        index: originalIndex,
+        id: `tax-${originalIndex}`,
         title: t(tax.taxHeadCode),
         taxHeadCode: tax.taxHeadCode,
         amount: tax.estimateAmount || 0,
         category: tax.category,
         adjustedAmount,
         remark: remarkValue,
-        filestoreId: feeAdjustments[index]?.filestoreId || null,
+        filestoreId: feeAdjustments[originalIndex]?.filestoreId || null,
       };
     });
 
@@ -321,7 +338,7 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
         grandTotal: totalAmount,
       },
     ];
-  }, [data, t, feeAdjustments]);
+  }, [data, t, feeAdjustments, siteDetails]);
 
   if (layoutCalculatorLoading) return <Loader />;
 

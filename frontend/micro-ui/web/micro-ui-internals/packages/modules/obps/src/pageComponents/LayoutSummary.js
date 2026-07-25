@@ -268,7 +268,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
           )}
           {(formData?.siteDetails?.isCluRequired?.code === "YES" || formData?.siteDetails?.isCluRequired === "YES") && (
             <React.Fragment>
-              {renderRow(t("Application Applied Under"), formData?.siteDetails?.applicationAppliedUnder?.code || formData?.siteDetails?.applicationAppliedUnder)}
+              {renderRow(t("Application Applied Under"), formData?.siteDetails?.applicationAppliedUnder?.name || detail?.applicationAppliedUnder?.code || formData?.siteDetails?.applicationAppliedUnder)}
             </React.Fragment>
           )}
           {renderRow(t("Type Of Application"), formData?.siteDetails?.typeOfApplication?.name)}

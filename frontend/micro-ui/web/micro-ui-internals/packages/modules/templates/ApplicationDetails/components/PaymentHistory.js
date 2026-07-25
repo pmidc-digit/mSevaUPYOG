@@ -167,7 +167,7 @@ const PaymentHistory = ({ payments }) => {
                          
                           
                         >
-                          {t("PT_DOWNLOAD_RECEIPT") || "Download Receipt"}
+                          {t("DOWNLOAD_RECEIPT_HEADER") || "Download Receipt"}
                         </button>
                       </div>
                     </div>

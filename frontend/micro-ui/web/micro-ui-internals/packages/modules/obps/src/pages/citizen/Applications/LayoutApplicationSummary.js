@@ -305,7 +305,7 @@ const LayoutApplicationOverview = () => {
   const dowloadOptions = []
   if (applicationDetails?.Layout?.[0]) {
     dowloadOptions.push({
-      label: t("Download Application"),
+      label: t("Application Form"),
       onClick: handleDownloadPdf,
     });
   }
@@ -776,7 +776,7 @@ const LayoutApplicationOverview = () => {
                 <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
                 <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
                 <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
-                <RenderRow label={t("Registration Expire Date")} value={formatDate(detail?.professionalRegistrationValidity)} />
+                <RenderRow label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} value={formatDate(detail?.professionalRegistrationValidity)} />
 
               </StatusTable>
             </div>
@@ -802,7 +802,7 @@ const LayoutApplicationOverview = () => {
               )}
               {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && (
                 <React.Fragment>
-                  {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
+                  {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.name || detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
                 </React.Fragment>
               )}
               {renderLabel(t("Type Of Application"), detail?.typeOfApplication?.name)}

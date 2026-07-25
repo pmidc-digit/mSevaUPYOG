@@ -13,6 +13,8 @@ const NewFilterFormFieldsComponent = ({
   assigneeCounts = {},
   showAssigneeCards = true,
   showLicenseTypeFilter = false,
+  prefix = null,
+  rawStatuses = [],
 }) => {
   const { t } = useTranslation();
   const [showAllStatuses, setShowAllStatuses] = useState(false);
@@ -26,6 +28,16 @@ const NewFilterFormFieldsComponent = ({
     return new Set(Object.keys(counts).filter((key) => counts[key] > 1));
   }, [statuses]);
 
+  const businessServiceByStatusId = useMemo(() => {
+    const map = {};
+    (rawStatuses || []).forEach((s) => {
+      const svc = s?.businessService || s?.businessservice;
+      if (s?.statusid && svc) map[s.statusid] = svc;
+    });
+    return map;
+  }, [rawStatuses]);
+
+  console.log('businessServiceByStatusId', businessServiceByStatusId)
   const availableOptions = showAssigneeCards
     ? [
         { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
@@ -145,14 +157,19 @@ const NewFilterFormFieldsComponent = ({
     })),
     ...(statuses || []).map((status) => {
       // Include businessService in key if available to avoid deduplication
-      const businessService = status.businessService || status.businessservice;
+      const fallbackStatusId = status?.statusids?.[0] || status?.statusid;
+      const businessService = businessServiceByStatusId[fallbackStatusId] || status?.businessService || status?.businessservice;
       const uniqueKey = status.statusid || (businessService ? `${status.applicationstatus}-${businessService}` : status.applicationstatus);
       const hasDuplicateName = duplicateStatusCodes.has(status.applicationstatus);
       const count = getStatusCount(status);
+      const statusKey = prefix
+        ? `${prefix}_${businessService}_${status?.applicationstatus}`?.toUpperCase()
+        : status?.applicationstatus;
+
       return {
         key: uniqueKey,
         type: "status",
-        label: t(status.applicationstatus),
+        label: t(statusKey),
         subtitle: hasDuplicateName && businessService ? `${businessService} (${count})` : null,
         count,
         code: status.selectionValue || status.statusid || status.applicationstatus,

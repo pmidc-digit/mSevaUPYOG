@@ -246,7 +246,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
             {renderRow(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
             {renderRow(t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"), formData?.applicationDetails?.professionalMobileNumber)}
             {renderRow(t("BPA_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
-            {renderRow(t("BPA_CERTIFICATE_EXPIRY_DATE"), formatDate(formData?.applicationDetails?.professionalRegistrationValidity))}
+            {renderRow(t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL"), formatDate(formData?.applicationDetails?.professionalRegistrationValidity))}
           </StatusTable>
         </Card>
       )}

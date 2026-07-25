@@ -82,6 +82,7 @@ export const useLayoutSearchApplicationByIdOrMobile = (params, tenantId, config 
             date: Digit.DateUtils.ConvertEpochToDate(application?.auditDetails?.createdTime),
             locality: `${application?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,
             applicationStatus: `${application?.applicationStatus}`,
+            businessService: application?.layoutDetails?.additionalDetails?.siteDetails?.businessService,
           };
     });
 

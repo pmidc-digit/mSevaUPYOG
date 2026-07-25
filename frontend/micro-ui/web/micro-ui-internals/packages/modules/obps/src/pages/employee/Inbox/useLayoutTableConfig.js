@@ -124,14 +124,17 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
       },
       {
         Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
-        accessor: "status",
-        Cell: ({ row }) => {
-          const statusValue = t(row.original?.status) || t(row.original?.applicationStatus) || "-";
-          const statusClass = getStatusClass(statusValue);
+        accessor: (row) => {
+          const prefix = `WF_EMPLOYEE_LAYOUT_STATUS_${row?.businessService.toUpperCase()}`;
+          return t(`${prefix}_${row?.status}`) || t(`${prefix}_${row?.applicationStatus}`) || "-";
+        },
+        id: "status",
+        Cell: ({ cell }) => {
+          const statusClass = getStatusClass(cell.value);
           return (
             <span className={`ndc-new-status-pill ${statusClass}`}>
               {renderStatusIcon(statusClass)}
-              <span>{String(statusValue || "-").toLowerCase()}</span>
+              <span>{cell.value}</span>
             </span>
           );
         },

@@ -476,9 +476,16 @@ public class Parking extends FeatureProcess {
                 errors.put("Plot Area Error:", "Plot covered area must be greater than 0.");
                 pl.addErrors(errors);
             } else if (F_MIP.equalsIgnoreCase(subType)) {
-            	noOfrequiredParking = calculateMiniplexECS(plotCoveredArea)
-                        .setScale(0, RoundingMode.HALF_UP)
-                        .intValue();
+            	BigDecimal totalBuiltUpArea = getTotalBuiltUpArea(pl);
+            	BigDecimal totalCinemaArea = getTotalCinemaArea(pl);
+
+            	noOfrequiredParking = calculateMiniplexECS(
+            	        totalBuiltUpArea,
+            	        totalCinemaArea)
+            	        .setScale(0, RoundingMode.HALF_UP)
+            	        .intValue();
+            	
+            	
             }else if(F_MTP.equalsIgnoreCase(subType)){
             	BigDecimal totalBuiltUpArea = getTotalBuiltUpArea(pl);
             	BigDecimal totalCinemaArea = getTotalCinemaArea(pl);
@@ -1222,6 +1229,35 @@ public class Parking extends FeatureProcess {
 		// Cinema component
 		if (cinemaArea != null && cinemaArea.compareTo(BigDecimal.ZERO) > 0) {
 			totalECS = totalECS.add(cinemaArea.multiply(BigDecimal.valueOf(2)).divide(BigDecimal.valueOf(66.91), 10,
+					RoundingMode.HALF_UP));
+		}
+
+		// Commercial / Other component
+		if (commercialArea.compareTo(BigDecimal.ZERO) > 0) {
+			totalECS = totalECS.add(commercialArea.multiply(BigDecimal.valueOf(2)).divide(BigDecimal.valueOf(100), 10,
+					RoundingMode.HALF_UP));
+		}
+
+		return totalECS;
+	}
+	
+	private BigDecimal calculateMiniplexECS(BigDecimal totalBuiltUpArea, BigDecimal cinemaArea) {
+
+		BigDecimal commercialArea = BigDecimal.ZERO;
+
+		if (totalBuiltUpArea != null && cinemaArea != null) {
+			commercialArea = totalBuiltUpArea.subtract(cinemaArea);
+
+			if (commercialArea.compareTo(BigDecimal.ZERO) < 0) {
+				commercialArea = BigDecimal.ZERO;
+			}
+		}
+
+		BigDecimal totalECS = BigDecimal.ZERO;
+
+		// Cinema component
+		if (cinemaArea != null && cinemaArea.compareTo(BigDecimal.ZERO) > 0) {
+			totalECS = totalECS.add(cinemaArea.multiply(BigDecimal.valueOf(3)).divide(BigDecimal.valueOf(100), 10,
 					RoundingMode.HALF_UP));
 		}
 

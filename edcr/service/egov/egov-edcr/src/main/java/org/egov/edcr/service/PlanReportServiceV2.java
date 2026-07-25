@@ -408,6 +408,12 @@ public class PlanReportServiceV2 {
 
         if (notFulfilledCount > 0) finalReportStatus = false;
 
+        if (ApplicationType.OCCUPANCY_CERTIFICATE.equals(dcrApplication.getApplicationType())
+                && StringUtils.isNotBlank(dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber())) {
+            plan.setMainDcrPassed(finalReportStatus);
+            finalReportStatus = finalReportStatus && (dcrApplication.getDeviationStatus().equalsIgnoreCase("Accepted"));
+        }
+        
         // 5. DCR number
         if (finalReportStatus) {
             String dcrApplicationNumber = "";

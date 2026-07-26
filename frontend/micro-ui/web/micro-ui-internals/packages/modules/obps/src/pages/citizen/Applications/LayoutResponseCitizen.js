@@ -44,9 +44,9 @@ const LayoutResponseCitizen = (props) => {
         if (siteDetails.zone && typeof siteDetails.zone === 'string') {
           formattedSiteDetails.zone = { code: siteDetails.zone, name: siteDetails.zone };
         }
-        if (siteDetails.buildingStatus && typeof siteDetails.buildingStatus === 'string') {
-          formattedSiteDetails.buildingStatus = { code: siteDetails.buildingStatus, name: siteDetails.buildingStatus };
-        }
+        // if (siteDetails.buildingStatus && typeof siteDetails.buildingStatus === 'string') {
+        //   formattedSiteDetails.buildingStatus = { code: siteDetails.buildingStatus, name: siteDetails.buildingStatus };
+        // }
         if (siteDetails.buildingCategory && typeof siteDetails.buildingCategory === 'string') {
           formattedSiteDetails.buildingCategory = { code: siteDetails.buildingCategory, name: siteDetails.buildingCategory };
         }

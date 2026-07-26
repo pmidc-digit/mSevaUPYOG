@@ -38,7 +38,7 @@ import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
 import { formatDuration, formatDate, decryptId } from "../../../utils/index";
-import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
+import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -1151,7 +1151,7 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
 
               {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
-              {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)}
+              {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
           </div>
         ))}
@@ -1357,7 +1357,7 @@ const LayoutEmployeeApplicationOverview = () => {
         )}
          {hasPayments && (
                   <div style={{ marginTop: "16px" }}>
-                    <PaymentHistory payments={combinedPayments} />
+                    <OBPSPaymentHistory payments={combinedPayments} />
                   </div>
                 )}
 

@@ -36,7 +36,7 @@ import NocSitePhotographs from "../../../components/NocSitePhotographs";
 import LayoutFeeEstimationDetailsTable from "../../../pageComponents/LayoutFeeEstimationDetailsTable";
 import LayoutDocumentTableView from "../../../pageComponents/LayoutDocumentsView";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
-
+import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 // Component to render document link for owner documents
 const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
   const [url, setUrl] = useState(null);
@@ -287,6 +287,8 @@ const LayoutApplicationOverview = () => {
      return [...p1, ...p2];
    }, [reciept_data, reciept_data_pay]);
 
+    const hasPayments = combinedPayments.length > 0;
+
   const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid
 
   const downloadSanctionLetter = async () => {
@@ -423,7 +425,7 @@ const LayoutApplicationOverview = () => {
     // 3. Check MDMS required documents
     if (mdmsDocsData?.LAYOUT?.LayoutDocuments) {
       const siteDetails = layout?.layoutDetails?.additionalDetails?.siteDetails;
-      const isVacant = siteDetails?.buildingStatus?.code === "VACANT" || siteDetails?.buildingStatus === "VACANT";
+      // const isVacant = siteDetails?.buildingStatus?.code === "VACANT" || siteDetails?.buildingStatus === "VACANT";
       const isCluApproved = siteDetails?.isCluRequired?.code === "YES" || siteDetails?.isCluRequired === "YES" || siteDetails?.isCluRequired === true;
       const roadType = siteDetails?.roadType?.name || siteDetails?.roadType || "";
       const isNationalHighway = roadType.toLowerCase().includes("national") || roadType.toLowerCase().includes("nh");
@@ -447,9 +449,9 @@ const LayoutApplicationOverview = () => {
             }
           }
 
-          if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
-            return null;
-          }
+          // if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
+          //   return null;
+          // }
 
           return { ...doc, required: isRequired };
         })
@@ -866,7 +868,7 @@ const LayoutApplicationOverview = () => {
               {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
 
               {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
-              {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)}
+              {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
 
           </div>
@@ -874,10 +876,10 @@ const LayoutApplicationOverview = () => {
       </Card>
 
       {/* 3️⃣ FEE DETAILS CARD */}
-      {applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails && (
+    
         <Card>
           <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
-
+  {applicationDetails?.Layout?.[0]?.layoutDetails && (
           <LayoutFeeEstimationDetails
             formData={{
               apiData: { ...applicationDetails },
@@ -891,8 +893,16 @@ const LayoutApplicationOverview = () => {
             feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
             hasPayments={reciept_data?.Payments?.length > 0}
           />
+          )}
+          {hasPayments && (
+                <div style={{ marginTop: "16px" }}>
+                  <OBPSPaymentHistory payments={combinedPayments} />
+                </div>
+              )}
         </Card>
-      )}
+      
+
+      
 
       {/* 1️⃣ SITE COORDINATES CARD */}
       {displayData?.coordinates && displayData.coordinates.length > 0 && (

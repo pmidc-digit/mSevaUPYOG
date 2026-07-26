@@ -3,7 +3,7 @@
  * Follows the same pattern as OBPS getAcknowledgementData.
  */
 
-const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = {}, deptMap = {}, t) => {
+const getTimelineAcknowledgementData = ({workflowDetails, prefix=null, Statusprefix=null, tenantInfo, pdfFiles = {}, deptMap = {}, t}) => {
   console.log('pdfFiles', pdfFiles)
   const timeline = workflowDetails?.data?.timeline || workflowDetails?.timeline || [];
   const processInstances = workflowDetails?.data?.processInstances || workflowDetails?.processInstances || [];
@@ -38,7 +38,7 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
     const assignerName = item?.assigner?.name || "N/A";    
     const assignerType = item?.assigner?.type || "N/A";
     const mobileNumber = item?.assigner?.mobileNumber || "N/A";
-    const action = item?.performedAction || "N/A";
+    const action = prefix ? `${prefix}_${item?.performedAction}` : item?.performedAction || "N/A";
     const status = item?.status || item?.state || "N/A";
     const designationKey = item?.designationKey || null;
     const designation = designationKey ? t(designationKey) : (assignerType || "N/A");
@@ -49,11 +49,12 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
     const documents = item?.wfDocuments || [];
     const sla = item?.sla || "N/A";
     const assignedTo = Array.isArray(item?.assignes) ? item.assignes.map(a => a?.name).filter(Boolean).join(", ") : "";
-
+    
     return {
       sNo: index + 1,
       action: t ? t(action) : action,
       status: t ? t(status) : status,
+      designation,
       assignerName,
       assignerType,
       mobileNumber,
@@ -69,10 +70,12 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
       })),
       hasDocuments: documents.length > 0,
       sla,
-      designation,
       assignedTo,
     };
   });
+  const timelineStatusKey = timeline?.[0]?.status || timeline?.[0]?.state
+  const timelineStatus = Statusprefix ? `${Statusprefix}_${timelineStatusKey}` : timelineStatusKey || "N/A";
+
 
   return {
     t,
@@ -83,7 +86,7 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
     businessId,
     businessService: t ? t(`CS_COMMON_${businessService?.toUpperCase()}`) : businessService,
     moduleName,
-    currentStatus: t ? t(timeline?.[0]?.status || timeline?.[0]?.state || "N/A") : (timeline?.[0]?.status || timeline?.[0]?.state || "N/A"),
+    currentStatus: t ? t(timelineStatus) : timelineStatus,
     generatedDate: new Date().toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "long",

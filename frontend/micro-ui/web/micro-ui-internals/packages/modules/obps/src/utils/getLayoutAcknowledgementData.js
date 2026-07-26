@@ -236,31 +236,31 @@ const getSiteDetails = (appData, t) => {
     { title: t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"),  value: sd?.areaUnderOtherAmenitiesInPct  },
 
     { title: t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), value: sd?.roadWidthAtSite  },
-    { title: t("BPA_BUILDING_STATUS_LABEL"),    value: sd?.buildingStatus?.name || sd?.buildingStatus?.code || sd?.buildingStatus  },
+    // { title: t("BPA_BUILDING_STATUS_LABEL"),    value: sd?.buildingStatus?.name || sd?.buildingStatus?.code || sd?.buildingStatus  },
   ];
 
-  if (sd?.buildingStatus == "Built Up") {
-    values.push({
-      title: t("NOC_BASEMENT_AREA_LABEL"),
-      value: sd?.basementArea ,
-    });
-  }
+  // if (sd?.buildingStatus == "Built Up") {
+  //   values.push({
+  //     title: t("NOC_BASEMENT_AREA_LABEL"),
+  //     value: sd?.basementArea ,
+  //   });
+  // }
 
-  if (sd?.buildingStatus == "Built UP") {
-    sd?.floorArea?.map((floor, index) =>
-      values.push({
-        title: getFloorLabel(index, t),
-        value: floor?.value,
-      })
-    );
-  }
+  // if (sd?.buildingStatus == "Built UP") {
+  //   sd?.floorArea?.map((floor, index) =>
+  //     values.push({
+  //       title: getFloorLabel(index, t),
+  //       value: floor?.value,
+  //     })
+  //   );
+  // }
 
-  if (sd?.buildingStatus == "Built Up") {
-    values.push({
-      title: t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL"),
-      value: sd?.totalFloorArea ,
-    });
-  }
+  // if (sd?.buildingStatus == "Built Up") {
+  //   values.push({
+  //     title: t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL"),
+  //     value: sd?.totalFloorArea ,
+  //   });
+  // }
 
   return {
     title: t("NOC_SITE_DETAILS"),

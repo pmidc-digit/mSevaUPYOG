@@ -40,7 +40,7 @@ const TimelineDocument = React.memo(({ value, Code, index }) => {
   );
 });
 
-export default function NewApplicationTimeline({ workflowDetails, t, tenantId = Digit.ULBService.getCurrentTenantId(), timeObj, empUserName = null, handleSetEmpDesignation= ()=>{} }) {
+export default function NewApplicationTimeline({ workflowDetails, prefix = null,Statusprefix =null, t, tenantId = Digit.ULBService.getCurrentTenantId(), timeObj, empUserName = null, handleSetEmpDesignation= ()=>{} }) {
   const { isLoading, data: docData } = Digit.Hooks.ads.useADSDocumentSearch(
     { value: workflowDetails?.data?.timeline?.flatMap((item) => item?.wfDocuments) || [] },
     { value: workflowDetails?.data?.timeline?.flatMap((item) => item?.wfDocuments) || [] },
@@ -162,7 +162,7 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
    const handleDownloadPDF = React.useCallback(() => {
     if (!isLoading) {
       const tenantInfo = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY") || {};
-      const acknowledgementData = getTimelineAcknowledgementData(normalizedWorkflowDetails, tenantInfo, docData?.pdfFiles || {}, deptMap, t);
+      const acknowledgementData = getTimelineAcknowledgementData({workflowDetails:normalizedWorkflowDetails, prefix:prefix, Statusprefix:Statusprefix, tenantInfo:tenantInfo, pdfFiles: docData?.pdfFiles || {}, deptMap:deptMap, t:t});
       Digit.Utils.pdf.generateTimelinePDF(acknowledgementData);
     }
   }, [workflowDetails, docData, t, isLoading]);
@@ -261,7 +261,7 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
                       <div className="custom-card-column custom-card-column-right">
                         <h3 className="custom-action-title">{t("Action")}</h3>
                         <div className={`custom-status-text ${item?.performedAction === "OBSERVATION" ? "chb-slot-status--unavailable" : ""}`}>
-                          {t(item?.performedAction || "CS_COMMON_NA")}
+                          {prefix ? t(`${prefix}_${item?.performedAction}`.toUpperCase()) : t(item?.performedAction || "CS_COMMON_NA")}
                         </div>
                       </div>
                     </div>

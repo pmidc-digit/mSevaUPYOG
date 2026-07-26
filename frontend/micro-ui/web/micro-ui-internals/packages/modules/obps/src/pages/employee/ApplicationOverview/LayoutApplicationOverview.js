@@ -38,7 +38,7 @@ import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
 import { formatDuration, formatDate, decryptId } from "../../../utils/index";
-import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
+import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -160,7 +160,9 @@ const LayoutEmployeeApplicationOverview = () => {
   const applicationDetails = data?.resData;
   //console.log("applicationDetails here==>", applicationDetails, checklistRemarks);
   const currentZoneCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.zone?.code;
-
+  const businessService = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService?.toUpperCase();
+  const prefix= `WF_EMPLOYEE_LAYOUT_${businessService}`?.toUpperCase();
+  const Statusprefix= `WF_EMPLOYEE_LAYOUT_STATUS_${businessService}`?.toUpperCase();
   // Fetch layout checklist data - only if not on first DM submission
   // Status DOCUMENTVERIFY_DM means DM is in the process, so don't fetch checklist yet (it will be created on their first submit)
   // For other statuses, checklist should already exist from previous submissions
@@ -1148,7 +1150,7 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
 
               {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
-              {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)}
+              {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
           </div>
         ))}
@@ -1354,7 +1356,7 @@ const LayoutEmployeeApplicationOverview = () => {
         )}
          {hasPayments && (
                   <div style={{ marginTop: "16px" }}>
-                    <PaymentHistory payments={combinedPayments} />
+                    <OBPSPaymentHistory payments={combinedPayments} />
                   </div>
                 )}
 
@@ -1413,12 +1415,12 @@ const LayoutEmployeeApplicationOverview = () => {
         checked="true"
       />
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} prefix= {prefix} t={t} Statusprefix ={Statusprefix} timeObj={timeObj} />
       </div>
       {actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-            <Menu localeKeyPrefix={`WF_EMPLOYEE_${"LAYOUT"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+            <Menu localeKeyPrefix={prefix} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>
@@ -1431,6 +1433,7 @@ const LayoutEmployeeApplicationOverview = () => {
             action={selectedAction}
             tenantId={tenantId}
             state={state}
+            businessService= {businessService}
             getEmployees={getEmployees}
             id={id}
             applicationDetails={applicationDetails}

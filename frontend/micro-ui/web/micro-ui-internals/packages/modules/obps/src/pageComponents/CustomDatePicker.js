@@ -36,6 +36,78 @@ const formatDateToYYYYMMDD = (date) => {
   return `${year}-${month}-${day}`;
 };
 
+const formatAndValidateTypedValue = (val, max) => {
+  // Remove consecutive slashes
+  val = val.replace(/\/+/g, "/");
+  
+  let parts = val.split("/");
+  
+  if (parts.length > 3) {
+    parts = parts.slice(0, 3);
+  }
+  
+  // Format and validate Day (parts[0])
+  if (parts[0] !== undefined) {
+    let day = parts[0];
+    if (day.length === 1) {
+      if (day >= "4" && day <= "9") {
+        parts[0] = "0" + day;
+        if (parts.length === 1) parts.push("");
+      }
+    } else if (day.length >= 2) {
+      day = day.slice(0, 2);
+      const dVal = parseInt(day, 10);
+      if (dVal > 31 || dVal === 0) {
+        parts[0] = day.slice(0, 1);
+      } else {
+        parts[0] = day;
+        if (parts.length === 1) parts.push("");
+      }
+    }
+  }
+  
+  // Format and validate Month (parts[1])
+  if (parts[1] !== undefined) {
+    let month = parts[1];
+    if (month.length === 1) {
+      if (month >= "2" && month <= "9") {
+        parts[1] = "0" + month;
+        if (parts.length === 2) parts.push("");
+      }
+    } else if (month.length >= 2) {
+      month = month.slice(0, 2);
+      const mVal = parseInt(month, 10);
+      if (mVal > 12 || mVal === 0) {
+        parts[1] = month.slice(0, 1);
+      } else {
+        parts[1] = month;
+        if (parts.length === 2) parts.push("");
+      }
+    }
+  }
+  
+  // Format Year (parts[2])
+  if (parts[2] !== undefined) {
+    let year = parts[2].slice(0, 4);
+    if (max && year.length > 0) {
+      const maxYear = new Date(max).getFullYear();
+      if (!isNaN(maxYear)) {
+        const maxYearStr = String(maxYear);
+        const len = year.length;
+        const yearPrefix = year;
+        const maxYearPrefix = maxYearStr.slice(0, len);
+        if (parseInt(yearPrefix, 10) > parseInt(maxYearPrefix, 10)) {
+          // Reject the last digit
+          year = year.slice(0, len - 1);
+        }
+      }
+    }
+    parts[2] = year;
+  }
+  
+  return parts.join("/");
+};
+
 const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", min, max, disabled, ...props }) => {
   const [selectedDate, setSelectedDate] = useState(value ? new Date(value) : null);
   const [inputValue, setInputValue] = useState(value ? formatDateToDDMMYYYY(value) : "");
@@ -74,16 +146,17 @@ const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", min, ma
           target: { value: formatDateToYYYYMMDD(newDate) },
         });
       }
-    } else {
-      setSelectedDate(null);
-      setInputValue("");
-      if (onChange) {
-        onChange({
-          target: { value: "" },
-        });
-      }
+      return;
+    }
+    setSelectedDate(null);
+    setInputValue("");
+    if (onChange) {
+      onChange({
+        target: { value: "Invalid Date" },
+      });
     }
   };
+
   const handleTextChange = (e) => {
     let val = e.target.value;
     
@@ -95,17 +168,14 @@ const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", min, ma
     // Detect backspace/deleting to avoid forcing slashes
     const isDeleting = val.length < inputValue.length;
 
+    let formattedVal = val;
     if (!isDeleting) {
-      if (val.length === 2 && !val.includes("/")) {
-        val = val + "/";
-      } else if (val.length === 5 && val.split("/").length === 2) {
-        val = val + "/";
-      }
+      formattedVal = formatAndValidateTypedValue(val, max);
     }
 
-    setInputValue(val);
+    setInputValue(formattedVal);
 
-    const match = val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    const match = formattedVal.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     if (match) {
       const day = parseInt(match[1], 10);
       const month = parseInt(match[2], 10);
@@ -131,7 +201,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", min, ma
     setSelectedDate(null);
     if (onChange) {
       onChange({
-        target: { value: val === "" ? "" : "Invalid Date" },
+        target: { value: formattedVal === "" ? "" : "Invalid Date" },
       });
     }
   };
@@ -201,6 +271,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", min, ma
         max={max}
         disabled={disabled}
         style={hiddenDateInputStyle}
+        onInvalid={(e) => e.preventDefault()}
       />
     </div>
   );

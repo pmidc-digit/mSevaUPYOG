@@ -328,10 +328,10 @@ const LayoutStepperForm = () => {
           ),
           ulbName: ulbListOptions?.find((obj) => obj?.name === siteDetails?.ulbName?.name || obj?.name === siteDetails?.ulbName),
           roadType: roadTypeData?.find((obj) => obj?.name === siteDetails?.roadType?.name || obj?.name === siteDetails?.roadType),
-          buildingStatus: buildingTypeData?.find((obj) => obj?.name === siteDetails?.buildingStatus?.name || obj?.name === siteDetails?.buildingStatus),
-          isBasementAreaAvailable: options?.find(
-            (obj) => obj?.code === siteDetails?.isBasementAreaAvailable?.code || obj?.code === siteDetails?.isBasementAreaAvailable
-          ),
+         // buildingStatus: buildingTypeData?.find((obj) => obj?.name === siteDetails?.buildingStatus?.name || obj?.name === siteDetails?.buildingStatus),
+          //isBasementAreaAvailable: options?.find(
+           // (obj) => obj?.code === siteDetails?.isBasementAreaAvailable?.code || obj?.code === siteDetails?.isBasementAreaAvailable
+          //),
           district: districtObj,
           cluType: cluTypeOptions?.find((obj) => obj?.code === siteDetails?.cluType?.code || obj?.code === siteDetails?.cluType),
           // buildingCategory: buildingCategoryData?.find(

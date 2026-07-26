@@ -422,7 +422,7 @@ const LayoutApplicationOverview = () => {
     // 3. Check MDMS required documents
     if (mdmsDocsData?.LAYOUT?.LayoutDocuments) {
       const siteDetails = layout?.layoutDetails?.additionalDetails?.siteDetails;
-      const isVacant = siteDetails?.buildingStatus?.code === "VACANT" || siteDetails?.buildingStatus === "VACANT";
+      // const isVacant = siteDetails?.buildingStatus?.code === "VACANT" || siteDetails?.buildingStatus === "VACANT";
       const isCluApproved = siteDetails?.isCluRequired?.code === "YES" || siteDetails?.isCluRequired === "YES" || siteDetails?.isCluRequired === true;
       const roadType = siteDetails?.roadType?.name || siteDetails?.roadType || "";
       const isNationalHighway = roadType.toLowerCase().includes("national") || roadType.toLowerCase().includes("nh");
@@ -446,9 +446,9 @@ const LayoutApplicationOverview = () => {
             }
           }
 
-          if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
-            return null;
-          }
+          // if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
+          //   return null;
+          // }
 
           return { ...doc, required: isRequired };
         })
@@ -865,7 +865,7 @@ const LayoutApplicationOverview = () => {
               {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
 
               {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
-              {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)}
+              {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
 
           </div>

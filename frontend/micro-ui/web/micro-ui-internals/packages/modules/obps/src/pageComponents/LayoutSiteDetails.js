@@ -169,7 +169,7 @@ const LayoutSiteDetails = (_props) => {
 
   const [ulbName, setUlbName] = useState(currentStepData?.siteDetails?.ulbName || null);
   const [ulbType, setUlbType] = useState(currentStepData?.siteDetails?.ulbType || "");
-  const [buildingStatus, setBuildingStatus] = useState(currentStepData?.siteDetails?.buildingStatus || null);
+  // const [buildingStatus, setBuildingStatus] = useState(currentStepData?.siteDetails?.buildingStatus || null);
 
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.obps.useLayoutBuildingType(stateId);
   const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.obps.useLayoutRoadType(stateId);
@@ -331,9 +331,9 @@ const LayoutSiteDetails = (_props) => {
       });
 
       // Set state variables to ensure dropdowns are pre-filled
-      if (formattedData.buildingStatus) {
-        setBuildingStatus(formattedData.buildingStatus);
-      }
+      // if (formattedData.buildingStatus) {
+      //   setBuildingStatus(formattedData.buildingStatus);
+      // }
       if (formattedData.buildingCategory) {
         setSelectedBuildingCategory(formattedData.buildingCategory);
       }
@@ -1690,7 +1690,7 @@ const LayoutSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair>
+          {/* <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               {`${t("BPA_BUILDING_STATUS_LABEL")}`} <span className="requiredField">*</span>
             </CardLabel>
@@ -1719,7 +1719,7 @@ const LayoutSiteDetails = (_props) => {
               )}
               {errors?.buildingStatus && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.buildingStatus.message}</p>}
             </div>
-          </LabelFieldPair>
+          </LabelFieldPair> */}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
@@ -2188,7 +2188,7 @@ const LayoutSiteDetails = (_props) => {
               </React.Fragment>
             )}
 
-          {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
+          {/* {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
                 {`${t("BPA_BASEMENT_AREA_LABEL")}`} <span className="requiredField">*</span>
@@ -2224,16 +2224,15 @@ const LayoutSiteDetails = (_props) => {
                 {errors?.basementArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.basementArea.message}</p>}
               </div>
             </LabelFieldPair>
-          )}
+          )} */}
 
           {/* SECTION: Floor Details */}
-          {buildingStatus?.code === "BUILTUP" && <CardSectionHeader>{t("BPA_FLOOR_DETAILS_LABEL")}</CardSectionHeader>}
+          {/* {buildingStatus?.code === "BUILTUP" && <CardSectionHeader>{t("BPA_FLOOR_DETAILS_LABEL")}</CardSectionHeader>} */}
 
-          {buildingStatus?.code === "BUILTUP" &&
+          {/* {buildingStatus?.code === "BUILTUP" &&
             areaFields.map((field, index) => (
               <div key={field.id} style={{ display: "flex", gap: "10px", flexDirection: "column" }}>
                 <CardLabel className="card-label-smaller">
-                  {/* {index === 0 ? "Ground" : `${index}`} Floor Area <span className="requiredField">*</span> */}
                   {index === 0 ? "Ground" : `${index}st`} Floor (IN SQ MT) <span className="requiredField">*</span>
                 </CardLabel>
                 <div className="field" style={{ display: "flex", gap: "10px" }}>
@@ -2255,8 +2254,6 @@ const LayoutSiteDetails = (_props) => {
                         const floorValue = parseFloat(value) || 0;
                         const balanceArea = parseFloat(netArea) || 0;
                         const floorName = index === 0 ? "Ground" : `${index}`;
-
-                        // Validate individual floor doesn't exceed balance area
                         if (floorValue > balanceArea) {
                           return `${floorName} floor area (${floorValue.toFixed(2)} Sq M) cannot exceed balance area (${balanceArea.toFixed(
                             2
@@ -2295,9 +2292,9 @@ const LayoutSiteDetails = (_props) => {
                   </button>
                 </div>
               </div>
-            ))}
+            ))} */}
 
-          {buildingStatus?.code === "BUILTUP" && (
+          {/* {buildingStatus?.code === "BUILTUP" && (
             <button
               type="button"
               onClick={() => addFloor({ value: "" })}
@@ -2312,7 +2309,7 @@ const LayoutSiteDetails = (_props) => {
             >
               Add Floor
             </button>
-          )}
+          )} */}
 
           {/* SECTION: Area Distribution across 9 Categories */}
           <CardSectionHeader>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardSectionHeader>

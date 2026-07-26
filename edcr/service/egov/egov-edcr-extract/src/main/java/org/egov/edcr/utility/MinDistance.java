@@ -492,25 +492,23 @@ public class MinDistance {
         // =========================================================================================
         if (!isOldWay) {
             for (Point yp : yardPts) {
-                if (Util.isPointStrictlyInsidePolygon(buildFoorPrint, yp) || Util.isPointOnPolygonBoundary(buildFoorPrint, yp)) {
-                    if(!insidePoints.contains(yp)) insidePoints.add(yp);
+                if (Util.isPointInsideOrOnPolygon(buildFoorPrint, yp)) {
+                    if (!insidePoints.contains(yp)) insidePoints.add(yp);
                 }
-                if (Util.isPointStrictlyInsidePolygon(plotBoundary, yp) || Util.isPointOnPolygonBoundary(plotBoundary, yp)) {
-                    if(!outsidePoints.contains(yp)) outsidePoints.add(yp);
+                if (Util.isPointInsideOrOnPolygon(plotBoundary, yp)) {
+                    if (!outsidePoints.contains(yp)) outsidePoints.add(yp);
                 }
             }
-
             for (Point fp : fpPts) {
-                if (Util.isPointStrictlyInsidePolygon(yardPolyline, fp) || Util.isPointOnPolygonBoundary(yardPolyline, fp)) {
-                    if(!insidePoints.contains(fp)) insidePoints.add(fp);
+                if (Util.isPointInsideOrOnPolygon(yardPolyline, fp)) {
+                    if (!insidePoints.contains(fp)) insidePoints.add(fp);
                 }
             }
             for (Point pb : pbPts) {
-                if (Util.isPointStrictlyInsidePolygon(yardPolyline, pb) || Util.isPointOnPolygonBoundary(yardPolyline, pb)) {
-                    if(!outsidePoints.contains(pb)) outsidePoints.add(pb);
+                if (Util.isPointInsideOrOnPolygon(yardPolyline, pb)) {
+                    if (!outsidePoints.contains(pb)) outsidePoints.add(pb);
                 }
             }
-
             if (insidePoints.isEmpty() || outsidePoints.isEmpty()) {
                 List<DXFLine> yardLines = getLinesOfPolyline(yardPolyline);
                 if (insidePoints.isEmpty()) insidePoints = Util.findPointsOnPolylines(fpPts, yardLines, pl, name);

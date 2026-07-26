@@ -580,7 +580,11 @@ public class Parking extends FeatureProcess {
             } else if (requiredCarParkArea > 0 && totalProvidedCarParkingArea.compareTo(requiredCarParkingArea) < 0) {
 //                setReportOutputDetails(pl, RULE_, RULE__DESCRIPTION, requiredCarParkingArea + SQMTRS,
 //                        totalProvidedCarParkingArea + SQMTRS, Result.Not_Accepted.getResultVal());
-            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
+//            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
+//            			totalECS + " ECS" ,
+//            			Result.Not_Accepted.getResultVal()
+//        				);
+            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS" ,
             			totalECS + " ECS" ,
             			Result.Not_Accepted.getResultVal()
         				);
@@ -590,12 +594,18 @@ public class Parking extends FeatureProcess {
             	if(Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_ECS)) {
             		status=Result.Accepted.getResultVal();
             	}
-                setReportOutputDetails1(pl,"4.2.1","Parking",noOfrequiredParking + " ECS ( Covered Area " + coveredArea + " )",
-                    totalECS + " ECS",status);
+//                setReportOutputDetails1(pl,"4.2.1","Parking",noOfrequiredParking + " ECS ( Covered Area " + coveredArea + " )",
+//                    totalECS + " ECS",status);
+            	setReportOutputDetails1(pl,"4.2.1","Parking",noOfrequiredParking + " ECS",
+                        totalECS + " ECS",status);
             }else {
 //                setReportOutputDetails(pl, RULE_, RULE__DESCRIPTION, requiredCarParkingArea + SQMTRS,
 //                        totalProvidedCarParkingArea + SQMTRS, Result.Accepted.getResultVal());
-            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
+//            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
+//            			totalECS + " ECS" ,
+//            			Result.Accepted.getResultVal()
+//        				);
+            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS" ,
             			totalECS + " ECS" ,
             			Result.Accepted.getResultVal()
         				);

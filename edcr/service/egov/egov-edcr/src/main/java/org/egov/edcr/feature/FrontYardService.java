@@ -163,6 +163,7 @@ public class FrontYardService extends GeneralRule {
 	// Front setback percentages
 	private static final BigDecimal INDUSTRIAL_FRONT_SETBACK_PERCENT_20 = BigDecimal.valueOf(0.20);
 	private static final BigDecimal PERCENT_25 = BigDecimal.valueOf(0.25);
+	private static final BigDecimal PERCENT_20 = BigDecimal.valueOf(0.20);
 	
 	private Boolean isNbcType=false;
 	
@@ -1286,6 +1287,15 @@ private class FrontYardResult {
 	    		        }
 	    		    }
 	    		}
+	    	}else if (DxfFileConstants.F_MIP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
+	    		        minVal = plotArea
+	    		                .multiply(PERCENT_20)
+	    		                .setScale(2, RoundingMode.HALF_UP);
+	    		        frontYardResult.setBackPercentage = PERCENT_20
+    		        	        .multiply(BigDecimal.valueOf(100))
+    		        	        .stripTrailingZeros()
+    		        	        .toPlainString();    		    
+	    		
 	    	}else {
 	    		if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
 					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.FRONT_SETBACK_PATH, BigDecimal.class);

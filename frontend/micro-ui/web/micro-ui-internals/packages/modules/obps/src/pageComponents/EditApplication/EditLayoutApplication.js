@@ -109,14 +109,15 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
 
   // console.log("documents",documents);
   
-  // Extract primary owner data (owners[0] after sorting by isPrimaryOwner) for applicant form fields
-  const sortedOwnersList = layoutObject?.owners ? [...layoutObject.owners].sort((a, b) => {
+  // Extract primary owner data (owners[0] after sorting active owners by isPrimaryOwner) for applicant form fields
+  const activeOwnersList = layoutObject?.owners ? layoutObject.owners.filter((o) => o?.status !== false && o?.status !== "false") : [];
+  const sortedOwnersList = [...activeOwnersList].sort((a, b) => {
     const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
     const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
     if (aPrimary && !bPrimary) return -1;
     if (!aPrimary && bPrimary) return 1;
     return 0;
-  }) : [];
+  });
   const primaryOwner = sortedOwnersList[0] || {};
   const applicantDetails = {
     // Applicant personal info from primary owner
@@ -325,7 +326,7 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
             //     typeof applicantDetails?.aplicantType === "object" && applicantDetails?.aplicantType?.code ? applicantDetails.aplicantType : null
             //   )
             // ) : null,
-            aplicantType: layoutObject?.owners?.length > 1 ? (
+            aplicantType: activeOwnersList?.length > 1 ? (
               {name: 'Multiple', code: 'MULTIPLE'}
             ) : ({name: 'Individual', code: 'INDIVIDUAL'}),
             authorisedPerson: applicantDetails?.authorisedPerson || "",
@@ -401,15 +402,19 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
           );
     
           // Map ALL owners array to applicants format for the form
-          // Index 0 = primary owner (used by form but not displayed in UI)
-          // Index 1+ = additional owners (displayed in UI)
-          const ownersFromApi = layoutObject?.owners ? [...layoutObject.owners].sort((a, b) => {
+          const rawOwners = layoutObject?.owners || [];
+          const activeOwners = rawOwners.filter((o) => o?.status !== false && o?.status !== "false");
+          const inactiveOwners = rawOwners.filter((o) => o?.status === false || o?.status === "false");
+
+          const sortedActive = [...activeOwners].sort((a, b) => {
             const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
             const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
             if (aPrimary && !bPrimary) return -1;
             if (!aPrimary && bPrimary) return 1;
             return 0;
-          }) : [];
+          });
+
+          const ownersFromApi = [...sortedActive, ...inactiveOwners];
           //console.log("[EditLayoutApplication] ownersFromApi:", ownersFromApi);
           
           // Helper function to format DOB

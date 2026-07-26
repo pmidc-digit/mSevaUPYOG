@@ -302,12 +302,12 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
               ? { code: layoutFormData?.siteDetails?.roadType, name: layoutFormData?.siteDetails?.roadType }
               : layoutFormData?.siteDetails?.roadType
           }),
-          ...(layoutFormData?.siteDetails?.buildingStatus && { 
-            buildingStatus: typeof layoutFormData?.siteDetails?.buildingStatus === 'string' 
-              ? { code: layoutFormData?.siteDetails?.buildingStatus, name: layoutFormData?.siteDetails?.buildingStatus }
-              : layoutFormData?.siteDetails?.buildingStatus
-          }),
-          ...(layoutFormData?.siteDetails?.isBasementAreaAvailable && { isBasementAreaAvailable: layoutFormData?.siteDetails?.isBasementAreaAvailable?.code || "" }),
+          // ...(layoutFormData?.siteDetails?.buildingStatus && { 
+          //   buildingStatus: typeof layoutFormData?.siteDetails?.buildingStatus === 'string' 
+          //     ? { code: layoutFormData?.siteDetails?.buildingStatus, name: layoutFormData?.siteDetails?.buildingStatus }
+          //     : layoutFormData?.siteDetails?.buildingStatus
+          // }),
+          // ...(layoutFormData?.siteDetails?.isBasementAreaAvailable && { isBasementAreaAvailable: layoutFormData?.siteDetails?.isBasementAreaAvailable?.code || "" }),
           ...(layoutFormData?.siteDetails?.district && { 
             district: typeof layoutFormData?.siteDetails?.district === 'string'
               ? { code: layoutFormData?.siteDetails?.district, name: layoutFormData?.siteDetails?.district }

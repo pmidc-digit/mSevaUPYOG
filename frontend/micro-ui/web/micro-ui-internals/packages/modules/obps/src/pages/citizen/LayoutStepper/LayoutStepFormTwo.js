@@ -88,7 +88,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       areaUnderEWS: currentStepData?.siteDetails?.areaUnderEWS || "",
       netTotalArea: currentStepData?.siteDetails?.netTotalArea || "",
 
-      buildingStatus: currentStepData?.siteDetails?.buildingStatus || "",
+      //buildingStatus: currentStepData?.siteDetails?.buildingStatus || "",
       buildingCategory: currentStepData?.siteDetails?.buildingCategory || "",
 
       areaUnderResidentialUseInSqM: currentStepData?.siteDetails?.areaUnderResidentialUseInSqM || "",
@@ -251,7 +251,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       ...formData?.siteDetails,
       ulbName: formData?.siteDetails?.ulbName?.name || formData?.siteDetails?.ulbName || "",
       roadType: formData?.siteDetails?.roadType || "",  // Keep full object
-      buildingStatus: formData?.siteDetails?.buildingStatus?.name || formData?.siteDetails?.buildingStatus || "",  // Extract name
+      //buildingStatus: formData?.siteDetails?.buildingStatus?.name || formData?.siteDetails?.buildingStatus || "",  // Extract name
       buildingCategory: formData?.siteDetails?.buildingCategory || "",  // Keep full object
       schemeType: formData?.siteDetails?.schemeType || "",  // Keep full object
       layoutAreaType: formData?.siteDetails?.layoutAreaType || "",  // Keep full object

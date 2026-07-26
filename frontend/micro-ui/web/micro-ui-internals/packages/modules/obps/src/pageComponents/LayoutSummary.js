@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardLabel, LabelFieldPair, Table, LinkButton, ImageViewer, CardSubHeader, StatusTable, Row } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
@@ -48,9 +47,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
   const stateCode = Digit.ULBService.getStateId();
 
-  // Check if we're in EDIT mode or NEW mode (same logic as LayoutStepFormFour)
-  // In NEW mode: data is at formData.apiData.Layout[0]
-  // In EDIT mode: data is at formData.apiData directly
+  // Check if we're in EDIT mode or NEW mode
   const isEditMode = !formData?.apiData?.Layout;
   const layoutData = isEditMode
     ? formData?.apiData
@@ -59,37 +56,29 @@ function LayoutSummary({ currentStepData: formData, t }) {
   // Get owners from API response (existing owners)
   const ownersFromApi = layoutData?.owners || [];
 
-  // Get newly added applicants from Redux state (starts from index 1, index 0 is placeholder)
+  // Get applicants from Redux state (LayoutNewApplicantDetails)
   const applicantsFromRedux = formData?.applicants || [];
-  const newlyAddedApplicants = applicantsFromRedux.filter(app => app?.name); // Filter out empty entries
+  const newlyAddedApplicants = applicantsFromRedux.filter(app => app?.name);
 
   // For fresh applications (non-edit mode), construct primary owner from applicationDetails
-  let primaryOwner = null;
-  if (!isEditMode && formData?.applicationDetails) {
-    primaryOwner = {
-      name: formData.applicationDetails.applicantOwnerOrFirmName,
-      mobileNumber: formData.applicationDetails.applicantMobileNumber,
-      emailId: formData.applicationDetails.applicantEmailId,
-      gender: formData.applicationDetails.applicantGender,
-      dob: formData.applicationDetails.applicantDateOfBirth,
-      fatherOrHusbandName: formData.applicationDetails.applicantFatherHusbandName,
-      permanentAddress: formData.applicationDetails.applicantAddress,
-      pan: formData.applicationDetails.panNumber,
-      aplicantType: formData.applicationDetails.aplicantType,
-      authorisedPerson: formData.applicationDetails.authorisedPerson,
-    };
-  }
+  // let primaryOwner = null;
+  // if (!isEditMode && formData?.applicationDetails) {
+  //   primaryOwner = {
+  //     name: formData.applicationDetails.applicantOwnerOrFirmName,
+  //     mobileNumber: formData.applicationDetails.applicantMobileNumber,
+  //     emailId: formData.applicationDetails.applicantEmailId,
+  //     gender: formData.applicationDetails.applicantGender,
+  //     dob: formData.applicationDetails.applicantDateOfBirth,
+  //     fatherOrHusbandName: formData.applicationDetails.applicantFatherHusbandName,
+  //     permanentAddress: formData.applicationDetails.applicantAddress,
+  //     pan: formData.applicationDetails.panNumber,
+  //     aplicantType: formData.applicationDetails.aplicantType,
+  //     authorisedPerson: formData.applicationDetails.authorisedPerson,
+  //   };
+  // }
 
-  // Merge: API owners + newly added applicants from Redux (if any)
-  let owners = [];
-
-  if (!isEditMode && primaryOwner) {
-    owners = [primaryOwner, ...newlyAddedApplicants];
-  } else {
-    owners = ownersFromApi.length > 0 ? ownersFromApi : newlyAddedApplicants;
-  }
-
-  const activeApplicants = owners?.slice(1)?.filter(a => a?.status);
+  // Merge / Resolution for owners list:
+  let owners = [...newlyAddedApplicants];
 
   const layoutDocuments = layoutData?.documents || [];
 
@@ -176,65 +165,52 @@ function LayoutSummary({ currentStepData: formData, t }) {
         <Card>
           <CardSubHeader>{t("OWNER_OWNERPHOTO") || "Owner Photo"}</CardSubHeader>
           <CustomOwnerImage
-            ownerFileStoreId={findOwnerDocument(0, "OWNERPHOTO")}
+            ownerFileStoreId={findOwnerDocument(0, "OWNERPHOTO") || owners[0]?.photoUploadedFiles || owners[0]?.additionalDetails?.ownerPhoto}
             ownerName={owners[0]?.name}
           />
         </Card>
       </StatusTable>
 
       {/* OWNERS DETAILS AND DOCUMENTS */}
-      {owners && owners.length > 0 && (
-        <React.Fragment>
-          {/* PRIMARY OWNER */}
-          <Card>
-            <CardSubHeader>{t("Primary Owner") || "Primary Owner"}</CardSubHeader>
+      {owners && owners.length > 0 && owners.map((owner, index) => {
+        const isPrimary = index === 0;
+        const cardHeader = isPrimary
+          ? (t("Primary Owner") || "Primary Owner")
+          : `${t("Owner") || "Owner"} ${index + 1}`;
+
+        const photoFile = findOwnerDocument(index, "OWNERPHOTO") || owner?.photoUploadedFiles || owner?.additionalDetails?.ownerPhoto;
+        const idProofFile = findOwnerDocument(index, "OWNERVALIDID") || owner?.documentUploadedFiles || owner?.additionalDetails?.documentFile;
+        const panDocFile = findOwnerDocument(index, "PANDOCUMENT") || owner?.panDocumentUploadedFiles || owner?.additionalDetails?.panDocument;
+        const panNum = isPrimary
+          ? (formData?.applicationDetails?.panNumber || owner?.panNumber || owner?.pan)
+          : (owner?.panNumber || owner?.pan);
+
+        return (
+          <Card key={index}>
+            <CardSubHeader>{cardHeader}</CardSubHeader>
             <StatusTable>
-              {renderRow(owners[0]?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME"), owners[0]?.name)}
-              {renderRow(t("CLU_OWNER_TYPE_LABEL"), owners[0]?.aplicantType?.name || "")}
-              {owners[0]?.aplicantType?.code === "FIRM" && renderRow(t("NEW_LAYOUT_FIRM_NAME_LABEL"), owners[0]?.authorisedPerson || "N/A")}
-              {renderRow(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owners[0]?.mobileNumber)}
-              {renderRow(t("BPA_APPLICANT_EMAIL_LABEL"), owners[0]?.emailId)}
-              {renderRow(t("BPA_APPLICANT_GENDER_LABEL"), owners[0]?.gender?.code || owners[0]?.gender?.value || owners[0]?.gender)}
-              {renderRow(t("BPA_APPLICANT_DOB_LABEL"), formatDate(owners[0]?.dob))}
-              {renderRow(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owners[0]?.fatherOrHusbandName)}
-              {renderRow(t("BPA_APPLICANT_ADDRESS_LABEL"), owners[0]?.permanentAddress)}
+              {renderRow(
+                owner?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME"),
+                owner?.name
+              )}
+              {isPrimary && renderRow(t("CLU_OWNER_TYPE_LABEL"), owner?.aplicantType?.name || owner?.aplicantType?.code || owner?.aplicantType)}
+              {owner?.aplicantType?.code === "FIRM" && renderRow(t("NEW_LAYOUT_FIRM_NAME_LABEL"), owner?.authorisedPerson || "N/A")}
+              {renderRow(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
+              {renderRow(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
+              {renderRow(t("BPA_APPLICANT_GENDER_LABEL"), owner?.gender?.code || owner?.gender?.value || owner?.gender)}
+              {renderRow(t("BPA_APPLICANT_DOB_LABEL"), formatDate(owner?.dob))}
+              {renderRow(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
+              {renderRow(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.permanentAddress || owner?.address)}
 
               {/* Documents */}
-              <Row label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(0, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
-              <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(0, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
-              <Row label={t("BPA_PAN_DOCUMENT") || "PAN Document"} text={<DocumentLink fileStoreId={findOwnerDocument(0, "PANDOCUMENT")} stateCode={stateCode} t={t} />} />
-              {renderRow(t("BPA_PAN_NUMBER_LABEL"), formData?.applicationDetails?.panNumber)}
+              <Row label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={photoFile} stateCode={stateCode} t={t} />} />
+              <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={idProofFile} stateCode={stateCode} t={t} />} />
+              <Row label={t("BPA_PAN_DOCUMENT") || "PAN Document"} text={<DocumentLink fileStoreId={panDocFile} stateCode={stateCode} t={t} />} />
+              {renderRow(t("BPA_PAN_NUMBER_LABEL"), panNum)}
             </StatusTable>
           </Card>
-
-          {/* ADDITIONAL OWNERS */}
-          {owners.length > 1 && owners.slice(1).map((owner, index) => {
-            if (!owner?.status) return null;
-            const visibleIndex = activeApplicants.findIndex(a => a === owner);
-
-            return (
-              <Card key={index + 1}>
-                <CardSubHeader>{`${t("Owner") || "Owner"} ${visibleIndex + 2}`}</CardSubHeader>
-                <StatusTable>
-                  {renderRow(t("BPA_FIRM_OWNER_NAME_LABEL"), owner?.name)}
-                  {renderRow(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
-                  {renderRow(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
-                  {renderRow(t("BPA_APPLICANT_GENDER_LABEL"), owner?.gender?.code || owner?.gender?.value || owner?.gender)}
-                  {renderRow(t("BPA_APPLICANT_DOB_LABEL"), formatDate(owner?.dob))}
-                  {renderRow(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
-                  {renderRow(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.permanentAddress || owner?.address)}
-
-                  {/* Documents */}
-                  <Row label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={owner?.photoUploadedFiles} stateCode={stateCode} t={t} />} />
-                  <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={owner?.documentUploadedFiles} stateCode={stateCode} t={t} />} />
-                  <Row label={t("BPA_PAN_DOCUMENT") || "PAN Document"} text={<DocumentLink fileStoreId={owner?.panDocumentUploadedFiles} stateCode={stateCode} t={t} />} />
-                  {renderRow(t("BPA_PAN_NUMBER_LABEL"), owner?.panNumber)}
-                </StatusTable>
-              </Card>
-            );
-          })}
-        </React.Fragment>
-      )}
+        );
+      })}
 
       {/* PROFESSIONAL DETAILS */}
       {formData?.applicationDetails?.professionalName && (

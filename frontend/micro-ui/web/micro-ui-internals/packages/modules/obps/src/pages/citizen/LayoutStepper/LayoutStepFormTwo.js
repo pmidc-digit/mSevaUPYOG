@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { useParams } from "react-router-dom";
-import { convertToDDMMYYYY, useQueryParam } from "../../../utils";
+import { convertDateTimeToEpoch, convertToDDMMYYYY, useQueryParam } from "../../../utils";
 import { useHistory } from "react-router-dom";
 
 const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
@@ -35,7 +35,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.obps.LayoutNewApplicationFormReducer.formData;
   });
 
-  //console.log(currentStepData, "FFFFFFFFFFF");
+  // console.log("FFFFFFFFFFF", currentStepData);
 
   const {
     control,
@@ -282,30 +282,34 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     const applicants = [];
     
     // First applicant: from primary applicant form fields (top section of LayoutApplicantDetails)
-    applicants.push({
-      mobileNumber: formData?.applicationDetails?.applicantMobileNumber || "",
-      name: formData?.applicationDetails?.applicantOwnerOrFirmName || "",
-      emailId: formData?.applicationDetails?.applicantEmailId || "",
-      userName: formData?.applicationDetails?.applicantMobileNumber || "",
-      gender: formData?.applicationDetails?.applicantGender?.code || formData?.applicationDetails?.applicantGender || null,
-      dob: formData?.applicationDetails?.applicantDateOfBirth ? Digit.Utils.pt.convertDateToEpoch(formData?.applicationDetails?.applicantDateOfBirth) : null,
-      fatherOrHusbandName: formData?.applicationDetails?.applicantFatherHusbandName || "",
-      permanentAddress: formData?.applicationDetails?.applicantAddress || "",
-      pan: formData?.applicationDetails?.panNumber || null,
-      isPrimaryOwner: true,
-      additionalDetails: {
-        documentFile: formData?.applicationDetails?.primaryOwnerDocument || formData?.applicationDetails?.documentUploadedFiles || null,
-        ownerPhoto: formData?.applicationDetails?.primaryOwnerPhoto || formData?.applicationDetails?.photoUploadedFiles || null,
-        panDocument: formData?.applicationDetails?.panDocumentUploadedFiles || null,
-        aplicantType: formData?.applicationDetails?.aplicantType || null,
-        authorisedPerson: formData?.applicationDetails?.aplicantType?.code === "FIRM" ? formData?.applicationDetails?.authorisedPerson || null : null,
-      },
-    });
+    // applicants.push({
+    //   mobileNumber: formData?.applicationDetails?.applicantMobileNumber || "",
+    //   name: formData?.applicationDetails?.applicantOwnerOrFirmName || "",
+    //   emailId: formData?.applicationDetails?.applicantEmailId || "",
+    //   userName: formData?.applicationDetails?.applicantMobileNumber || "",
+    //   gender: formData?.applicationDetails?.applicantGender?.code || formData?.applicationDetails?.applicantGender || null,
+    //   dob: formData?.applicationDetails?.applicantDateOfBirth ? Digit.Utils.pt.convertDateToEpoch(formData?.applicationDetails?.applicantDateOfBirth) : null,
+    //   fatherOrHusbandName: formData?.applicationDetails?.applicantFatherHusbandName || "",
+    //   permanentAddress: formData?.applicationDetails?.applicantAddress || "",
+    //   pan: formData?.applicationDetails?.panNumber || null,
+    //   isPrimaryOwner: true,
+    //   additionalDetails: {
+    //     documentFile: formData?.applicationDetails?.primaryOwnerDocument || formData?.applicationDetails?.documentUploadedFiles || null,
+    //     ownerPhoto: formData?.applicationDetails?.primaryOwnerPhoto || formData?.applicationDetails?.photoUploadedFiles || null,
+    //     panDocument: formData?.applicationDetails?.panDocumentUploadedFiles || null,
+    //     aplicantType: formData?.applicationDetails?.aplicantType || null,
+    //     authorisedPerson: formData?.applicationDetails?.aplicantType?.code === "FIRM" ? formData?.applicationDetails?.authorisedPerson || null : null,
+    //   },
+    // });
 
     // Additional applicants: from applicants array (starting from index 1, skipping the first empty one)
-    if (formData?.applicants?.length > 0) {
+    // if (formData?.applicants?.length > 0) {
       formData.applicants.forEach((applicant, index) => {
         applicants.push({
+          ...applicant,
+          createdDate: applicant?.createdDate ? convertDateTimeToEpoch(applicant?.createdDate) : null,
+          lastModifiedDate: applicant?.lastModifiedDate ? convertDateTimeToEpoch(applicant?.lastModifiedDate) : null,
+          pwdExpiryDate: applicant?.pwdExpiryDate ? convertDateTimeToEpoch(applicant?.pwdExpiryDate) : null,
           mobileNumber: applicant?.mobileNumber || "",
           name: applicant?.name || "",
           emailId: applicant?.emailId || "",
@@ -315,13 +319,13 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           fatherOrHusbandName: applicant?.fatherOrHusbandName || "",
           permanentAddress: applicant?.address || "",
           pan: applicant?.panNumber || null,
-          status: applicant?.status,
           additionalDetails: {
             documentFile: applicant?.documentUploadedFiles || null,
             ownerPhoto: applicant?.photoUploadedFiles || null,
             panDocument: applicant?.panDocumentUploadedFiles || null,
             aplicantType: applicant?.aplicantType || null
           },
+          uuid: applicant?.uuid || null
           // additionalDetails: {
           //   documentFile: applicant?.documentUploadedFiles || formData?.documentUploadedFiles?.[index + 1]?.fileStoreId || formData?.documentUploadedFiles?.[index + 1] || null,
           //   ownerPhoto: applicant?.photoUploadedFiles || formData?.photoUploadedFiles?.[index + 1]?.fileStoreId || formData?.photoUploadedFiles?.[index + 1] || null,
@@ -329,7 +333,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           // },
         });
       });
-    }
+    // }
 
     // Build transformedApplicationDetails (only professional details, NOT personal details which are in owners array)
     const transformedApplicationDetails = {

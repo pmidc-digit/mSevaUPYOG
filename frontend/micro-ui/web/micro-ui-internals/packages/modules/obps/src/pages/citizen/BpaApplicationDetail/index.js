@@ -1870,8 +1870,11 @@ const BpaApplicationDetail = () => {
 
   if (
     data &&
-    data?.applicationData?.additionalDetails?.isSelfCertification &&
-    data?.collectionBillDetails?.length > 0 &&
+    data?.applicationData?.businessService === "BPA_LOW" &&
+    (
+    data?.collectionBillDetails?.length > 0 ||
+    data?.applicationData?.additionalDetails?.isMigrationTrue
+   ) &&
     data?.applicationData?.additionalDetails?.isSanctionLetterGenerated
   ) {
     !data?.applicationData?.status.includes("REVOCATION") &&
@@ -1893,7 +1896,7 @@ const BpaApplicationDetail = () => {
         label: t("BPA_REVOCATION_PDF_LABEL"),
         onClick: () => getRevocationPDFSearch({ tenantId: data?.applicationData?.tenantId }),
       });
-  } else if (data && data?.collectionBillDetails?.length > 0) {
+  } else if (data && (data?.collectionBillDetails?.length > 0 || data?.applicationData?.additionalDetails?.isMigrationTrue) ) {
     if (!data?.applicationData?.additionalDetails?.isSelfCertification && data?.applicationData?.status === "APPROVED") {
       dowloadOptions.push(
         {

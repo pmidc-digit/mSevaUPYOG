@@ -29,14 +29,14 @@ import NOCDocumentTableView from "../../../../../noc/src/pageComponents/NOCDocum
 import { useLayoutSearchApplication } from "@mseva/digit-ui-libraries/src/hooks/obps/useSearchApplication";
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
 import LayoutDocumentView from "./LayoutDocumentView";
-import { amountToWords, formatDuration } from "../../../utils/index";
+import { amountToWords, formatDuration, formatDate, decryptId } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { LoaderNew } from "../../../components/LoaderNew";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
 import LayoutFeeEstimationDetailsTable from "../../../pageComponents/LayoutFeeEstimationDetailsTable";
 import LayoutDocumentTableView from "../../../pageComponents/LayoutDocumentsView";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
-
+import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 // Component to render document link for owner documents
 const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
   const [url, setUrl] = useState(null);
@@ -119,7 +119,8 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
 
 const LayoutApplicationOverview = () => {
-  const { id } = useParams()
+  const { layid } = useParams()
+  const id = decryptId(layid)
   const { t } = useTranslation()
   const history = useHistory()
   const tenantId = window.localStorage.getItem("CITIZEN.CITY")
@@ -135,6 +136,14 @@ const LayoutApplicationOverview = () => {
   const applicationDetails = data?.resData
   const { isLoading: mdmsLoading, data: mdmsDocsData } = Digit.Hooks.pt.usePropertyMDMS(stateCode, "LAYOUT", ["LayoutDocuments"]);
   const layoutDocuments = applicationDetails?.Layout?.[0]?.documents || [];
+  const rawOwners = applicationDetails?.Layout?.[0]?.owners || [];
+  const sortedOwners = [...rawOwners].sort((a, b) => {
+    const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+    const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+    if (aPrimary && !bPrimary) return -1;
+    if (!aPrimary && bPrimary) return 1;
+    return 0;
+  });
   const sitePhotos = layoutDocuments?.filter(
     (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
   )?.sort((a, b) => a?.order - b?.order);
@@ -158,16 +167,15 @@ const LayoutApplicationOverview = () => {
     }
 
     // Then check owner's additionalDetails (same keys as LayoutSummary.js)
-    const owners = applicationDetails?.Layout?.[0]?.owners || [];
-    if (owners && owners[ownerIndex]?.additionalDetails) {
-      if (docType === "OWNERPHOTO" && owners[ownerIndex]?.additionalDetails?.ownerPhoto) {
-        return owners[ownerIndex]?.additionalDetails?.ownerPhoto;
+    if (sortedOwners && sortedOwners[ownerIndex]?.additionalDetails) {
+      if (docType === "OWNERPHOTO" && sortedOwners[ownerIndex]?.additionalDetails?.ownerPhoto) {
+        return sortedOwners[ownerIndex]?.additionalDetails?.ownerPhoto;
       }
-      if (docType === "OWNERVALIDID" && owners[ownerIndex]?.additionalDetails?.documentFile) {
-        return owners[ownerIndex]?.additionalDetails?.documentFile;
+      if (docType === "OWNERVALIDID" && sortedOwners[ownerIndex]?.additionalDetails?.documentFile) {
+        return sortedOwners[ownerIndex]?.additionalDetails?.documentFile;
       }
-      if (docType === "OWNERPAN" && owners[ownerIndex]?.additionalDetails?.documentFile) {
-        return owners[ownerIndex]?.additionalDetails?.panDocument;
+      if (docType === "OWNERPAN" && sortedOwners[ownerIndex]?.additionalDetails?.documentFile) {
+        return sortedOwners[ownerIndex]?.additionalDetails?.panDocument;
       }
     }
 
@@ -278,6 +286,8 @@ const LayoutApplicationOverview = () => {
      return [...p1, ...p2];
    }, [reciept_data, reciept_data_pay]);
 
+    const hasPayments = combinedPayments.length > 0;
+
   const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid
 
   const downloadSanctionLetter = async () => {
@@ -297,7 +307,7 @@ const LayoutApplicationOverview = () => {
   const dowloadOptions = []
   if (applicationDetails?.Layout?.[0]) {
     dowloadOptions.push({
-      label: t("Download Application"),
+      label: t("Application Form"),
       onClick: handleDownloadPdf,
     });
   }
@@ -316,6 +326,19 @@ const LayoutApplicationOverview = () => {
       });
     }
   }
+  if (
+      applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
+    ) {
+      dowloadOptions.push({
+        label: t("LETTER_OF_INTENT"),
+        onClick: () =>
+          getRecieptSearch({
+            tenantId: tenantId,
+            payments: {},
+            filestoreId: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
+          }),
+      });
+    }
 
   const getFloorLabel = (index) => {
     if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL")
@@ -351,6 +374,8 @@ const LayoutApplicationOverview = () => {
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu)
   const businessServiceCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
+  const prefix= `WF_EMPLOYEE_${"LAYOUT"}_${businessServiceCode}`?.toUpperCase();
+  const Statusprefix= `WF_EMPLOYEE_LAYOUT_STATUS_${businessServiceCode}`?.toUpperCase();
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -399,12 +424,12 @@ const LayoutApplicationOverview = () => {
     // 3. Check MDMS required documents
     if (mdmsDocsData?.LAYOUT?.LayoutDocuments) {
       const siteDetails = layout?.layoutDetails?.additionalDetails?.siteDetails;
-      const isVacant = siteDetails?.buildingStatus?.code === "VACANT" || siteDetails?.buildingStatus === "VACANT";
+      // const isVacant = siteDetails?.buildingStatus?.code === "VACANT" || siteDetails?.buildingStatus === "VACANT";
       const isCluApproved = siteDetails?.isCluRequired?.code === "YES" || siteDetails?.isCluRequired === "YES" || siteDetails?.isCluRequired === true;
       const roadType = siteDetails?.roadType?.name || siteDetails?.roadType || "";
       const isNationalHighway = roadType.toLowerCase().includes("national") || roadType.toLowerCase().includes("nh");
       const buildingCategory = siteDetails?.buildingCategory?.code || siteDetails?.buildingCategory || "";
-      const isInstitution = buildingCategory === "INSTITUTION" || buildingCategory.toLowerCase().includes("institution");
+      const isInstitution = buildingCategory === "INSTITUTIONAL" || buildingCategory.toLowerCase().includes("institutional");
       const applicantType = owners?.[0]?.additionalDetails?.aplicantType?.code || owners?.[0]?.additionalDetails?.aplicantType;
 
       const docs = mdmsDocsData?.LAYOUT?.LayoutDocuments || [];
@@ -423,9 +448,9 @@ const LayoutApplicationOverview = () => {
             }
           }
 
-          if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
-            return null;
-          }
+          // if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
+          //   return null;
+          // }
 
           return { ...doc, required: isRequired };
         })
@@ -581,21 +606,27 @@ const LayoutApplicationOverview = () => {
   //   }
   // }
 
-  async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
-
+  async function getRecieptSearch({ tenantId, payments, pdfkey, filestoreId = null, ...params }) {
     try {
       setLoading(true);
-      const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name
-      const fee = payments?.totalAmountPaid;
-      const amountinwords = amountToWords(fee);
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, usage, amountinwords }] }, pdfkey);
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+      if (!filestoreId) {
+        const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name;
+        const fee = payments?.totalAmountPaid;
+        const amountinwords = amountToWords(fee);
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, usage, amountinwords }] }, pdfkey);
+        filestoreId = response?.filestoreIds[0];
+      }
+      let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
 
+      if (!fileStore?.[filestoreId]?.length) {
+        fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
+      }
+      window.open(fileStore[filestoreId], "_blank");
     } catch (error) {
       console.error("receipt download error:", error);
+    } finally {
+      setLoading(false);
     }
-    finally { setLoading(false); }
   }
 
   const getTimelineCaptions = (checkpoint, index, arr) => {
@@ -664,37 +695,6 @@ const LayoutApplicationOverview = () => {
     return <Row label={label} text={value} />;
   };
 
-  const convertDateToISO = (dateStr) => {
-    if (!dateStr) return "";
-
-    if (typeof dateStr !== "string") {
-      try {
-        return new Date(dateStr).toLocaleDateString();
-      } catch (e) {
-        return "";
-      }
-    }
-
-    const parts = dateStr.split("-");
-    if (parts.length < 3) {
-      try {
-        return new Date(dateStr).toLocaleDateString();
-      } catch (e) {
-        return dateStr;
-      }
-    }
-
-    // yyyy-mm-dd (already ISO)
-    if (parts[2] && parts[2].length === 4) {
-      return dateStr;
-    }
-
-    // dd-mm-yyyy → yyyy-mm-dd
-    const [yyyy, mm, dd,] = parts;
-    return `${dd}/${mm}/${yyyy}`;
-  };
-
-
   if (isLoading || loading || mdmsLoading) {
     return <LoaderNew page={true} />;
   }
@@ -727,7 +727,7 @@ const LayoutApplicationOverview = () => {
         <CardSubHeader>{t("OWNER_OWNERPHOTO") || "OWNER'S PHOTO"}</CardSubHeader>
         <CustomOwnerImage
           ownerFileStoreId={findOwnerDocument(0, "OWNERPHOTO")}
-          ownerName={applicationDetails?.Layout?.[0]?.owners?.[0]?.name}
+          ownerName={sortedOwners?.[0]?.name}
         />
       </Card>
 
@@ -740,10 +740,10 @@ const LayoutApplicationOverview = () => {
 
 
       {/* -------------------- APPLICANTS/OWNERS DETAILS -------------------- */}
-      {applicationDetails?.Layout?.[0]?.owners && applicationDetails?.Layout?.[0]?.owners?.length > 0 && (
+      {sortedOwners && sortedOwners.length > 0 && (
         <Card>
           <CardSubHeader>{t("Owners Details") || "Owners Details"}</CardSubHeader>
-          {applicationDetails?.Layout?.[0]?.owners?.map((applicant, index) => (
+          {sortedOwners.map((applicant, index) => (
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
 
@@ -753,7 +753,7 @@ const LayoutApplicationOverview = () => {
                 <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
                 <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
                 <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={applicant?.mobileNumber} />
-                <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={applicant?.dob ? new Date(applicant?.dob).toLocaleDateString() : ""} />
+                <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={formatDate(applicant?.dob)} />
                 <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
                 <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
                 <RenderRow label={t("BPA_PAN_NUMBER_LABEL")} value={applicant?.pan || "N/A"} />
@@ -780,7 +780,7 @@ const LayoutApplicationOverview = () => {
                 <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
                 <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
                 <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
-                <RenderRow label={t("Registration Expire Date")} value={convertDateToISO(detail?.professionalRegistrationValidity)} />
+                <RenderRow label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} value={formatDate(detail?.professionalRegistrationValidity)} />
 
               </StatusTable>
             </div>
@@ -801,12 +801,12 @@ const LayoutApplicationOverview = () => {
                     renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
                   {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
                     renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
-                  {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), convertDateToISO(detail?.cluApprovalDate))}
+                  {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
                 </React.Fragment>
               )}
               {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && (
                 <React.Fragment>
-                  {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
+                  {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.name || detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
                 </React.Fragment>
               )}
               {renderLabel(t("Type Of Application"), detail?.typeOfApplication?.name)}
@@ -819,7 +819,7 @@ const LayoutApplicationOverview = () => {
               {renderLabel(t("BPA_HADBAST_NO_LABEL"), detail?.hadbastNo)}
               {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
               {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
-              {renderLabel(t("BPA_VASIKA_DATE_LABEL"), convertDateToISO(detail?.vasikaDate))}
+              {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
               {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
               {renderLabel(t("BPA_NET_TOTAL_AREA_LABEL"), detail?.areaLeftForRoadWidening)}
               {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
@@ -867,7 +867,7 @@ const LayoutApplicationOverview = () => {
               {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
 
               {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
-              {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)}
+              {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
 
           </div>
@@ -875,10 +875,10 @@ const LayoutApplicationOverview = () => {
       </Card>
 
       {/* 3️⃣ FEE DETAILS CARD */}
-      {applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails && (
+    
         <Card>
           <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
-
+  {applicationDetails?.Layout?.[0]?.layoutDetails && (
           <LayoutFeeEstimationDetails
             formData={{
               apiData: { ...applicationDetails },
@@ -892,8 +892,16 @@ const LayoutApplicationOverview = () => {
             feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
             hasPayments={reciept_data?.Payments?.length > 0}
           />
+          )}
+          {hasPayments && (
+                <div style={{ marginTop: "16px" }}>
+                  <OBPSPaymentHistory payments={combinedPayments} />
+                </div>
+              )}
         </Card>
-      )}
+      
+
+      
 
       {/* 1️⃣ SITE COORDINATES CARD */}
       {displayData?.coordinates && displayData.coordinates.length > 0 && (
@@ -955,14 +963,14 @@ const LayoutApplicationOverview = () => {
 
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj}/>
+        <NewApplicationTimeline workflowDetails={workflowDetails} prefix={prefix} Statusprefix={Statusprefix} t={t} timeObj={timeObj}/>
       </div>
 
       {actions && actions.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
-              localeKeyPrefix={`WF_EMPLOYEE_${"LAYOUT"}`}
+              localeKeyPrefix={prefix}
               options={actions}
               optionKey={"action"}
               t={t}

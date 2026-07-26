@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { encryptId } from "../../../utils";
 
 const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
   const { t } = useTranslation();
@@ -67,8 +68,8 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
               to={
                 // /digit-ui/citizen/obps/layout/application-overview/${row.original?.Applications?.applicationNo}
                 window.location.href.includes("/citizen")
-                  ? `${parentRoute}/layout/application-overview/${row.original?.applicationId}`
-                  : `${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`
+                  ? `${parentRoute}/layout/application-overview/${encryptId(row.original?.applicationId)}`
+                  : `${parentRoute}/layout/inbox/application-overview/${encryptId(row.original?.applicationId)}`
               }
               // to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`}
               className="ndc-new-app-link"
@@ -123,14 +124,17 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
       },
       {
         Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
-        accessor: "status",
-        Cell: ({ row }) => {
-          const statusValue = t(row.original?.status) || t(row.original?.applicationStatus) || "-";
-          const statusClass = getStatusClass(statusValue);
+        accessor: (row) => {
+          const prefix = `WF_EMPLOYEE_LAYOUT_STATUS_${row?.businessService.toUpperCase()}`;
+          return t(`${prefix}_${row?.status}`) || t(`${prefix}_${row?.applicationStatus}`) || "-";
+        },
+        id: "status",
+        Cell: ({ cell }) => {
+          const statusClass = getStatusClass(cell.value);
           return (
             <span className={`ndc-new-status-pill ${statusClass}`}>
               {renderStatusIcon(statusClass)}
-              <span>{String(statusValue || "-").toLowerCase()}</span>
+              <span>{cell.value}</span>
             </span>
           );
         },

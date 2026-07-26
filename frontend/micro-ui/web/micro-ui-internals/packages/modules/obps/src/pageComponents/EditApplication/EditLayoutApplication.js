@@ -14,6 +14,7 @@ import {
 } from "../../redux/actions/LayoutNewApplicationActions";
 
 import { CardHeader, Toast, Loader } from "@mseva/digit-ui-react-components";
+import { convertToLocalISODate } from "../../utils";
 
 //Config for steps
 const createEmployeeConfig = [
@@ -108,8 +109,15 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
 
   // console.log("documents",documents);
   
-  // Extract primary owner data (owners[0]) for applicant form fields
-  const primaryOwner = layoutObject?.owners?.[0] || {};
+  // Extract primary owner data (owners[0] after sorting by isPrimaryOwner) for applicant form fields
+  const sortedOwnersList = layoutObject?.owners ? [...layoutObject.owners].sort((a, b) => {
+    const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+    const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+    if (aPrimary && !bPrimary) return -1;
+    if (!aPrimary && bPrimary) return 1;
+    return 0;
+  }) : [];
+  const primaryOwner = sortedOwnersList[0] || {};
   const applicantDetails = {
     // Applicant personal info from primary owner
     applicantName: primaryOwner?.name || "",
@@ -466,12 +474,7 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
             documentUploadedFiles: applicantDetails?.documentUploadedFiles || "",
             photoUploadedFiles: applicantDetails?.photoUploadedFiles || "",
             panDocumentUploadedFiles: applicantDetails?.panDocumentUploadedFiles || "",
-            // Format DOB to YYYY-MM-DD if available
-            applicantDateOfBirth: applicantDetails?.applicantDob ? 
-              (new Date(applicantDetails.applicantDob) instanceof Date && !isNaN(new Date(applicantDetails.applicantDob).getTime())
-                ? new Date(applicantDetails.applicantDob).toISOString().split('T')[0]
-                : applicantDetails.applicantDob
-              ) : "",
+            applicantDateOfBirth: convertToLocalISODate(applicantDetails?.applicantDob),
             applicantGender: menu?.find((obj) => obj?.code === applicantDetails?.applicantGender?.code || obj?.code === applicantDetails?.applicantGender),
             panNumber: applicantDetails?.panNumber || "",
             // Professional details (if applicable)
@@ -484,8 +487,17 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
             // Document file references
             primaryOwnerPhoto: applicantDetails?.primaryOwnerPhoto || "",
             primaryOwnerDocument: applicantDetails?.primaryOwnerDocument || "",
-            aplicantType: applicantDetails?.aplicantType,
-            authorisedPerson: applicantDetails?.authorisedPerson,
+            aplicantType: applicantDetails?.aplicantType ? (
+              {
+                Individual: { name: "Individual", code: "INDIVIDUAL" },
+                Firm: { name: "Firm", code: "FIRM" },
+                INDIVIDUAL: { name: "Individual", code: "INDIVIDUAL" },
+                FIRM: { name: "Firm", code: "FIRM" },
+              }[(typeof applicantDetails?.aplicantType === "string" ? applicantDetails?.aplicantType : applicantDetails?.aplicantType?.code || applicantDetails?.aplicantType?.name || "").toUpperCase()] || (
+                typeof applicantDetails?.aplicantType === "object" && applicantDetails?.aplicantType?.code ? applicantDetails.aplicantType : null
+              )
+            ) : null,
+            authorisedPerson: applicantDetails?.authorisedPerson || "",
             
           };
     
@@ -499,10 +511,10 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
             ),
             ulbName: ulbListOptions?.find((obj) => obj?.name === siteDetails?.ulbName?.name || obj?.name === siteDetails?.ulbName),
             roadType: roadTypeData?.find((obj) => obj?.name === siteDetails?.roadType?.name || obj?.name === siteDetails?.roadType),
-            buildingStatus: buildingTypeData?.find((obj) => obj?.name === siteDetails?.buildingStatus?.name || obj?.name === siteDetails?.buildingStatus),
-            isBasementAreaAvailable: options?.find(
-              (obj) => obj?.code === siteDetails?.isBasementAreaAvailable?.code || obj?.code === siteDetails?.isBasementAreaAvailable
-            ),
+            // buildingStatus: buildingTypeData?.find((obj) => obj?.name === siteDetails?.buildingStatus?.name || obj?.name === siteDetails?.buildingStatus),
+            // isBasementAreaAvailable: options?.find(
+            //   (obj) => obj?.code === siteDetails?.isBasementAreaAvailable?.code || obj?.code === siteDetails?.isBasementAreaAvailable
+            // ),
             district: districtObj,
             cluType: cluTypeOptions?.find((obj) => obj?.code === siteDetails?.cluType?.code || obj?.code === siteDetails?.cluType),
             // buildingCategory: buildingCategoryData?.find(
@@ -530,7 +542,13 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
           // Map ALL owners array to applicants format for the form
           // Index 0 = primary owner (used by form but not displayed in UI)
           // Index 1+ = additional owners (displayed in UI)
-          const ownersFromApi = layoutObject?.owners || [];
+          const ownersFromApi = layoutObject?.owners ? [...layoutObject.owners].sort((a, b) => {
+            const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+            const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+            if (aPrimary && !bPrimary) return -1;
+            if (!aPrimary && bPrimary) return 1;
+            return 0;
+          }) : [];
           //console.log("[EditLayoutApplication] ownersFromApi:", ownersFromApi);
           
           // Helper function to format DOB

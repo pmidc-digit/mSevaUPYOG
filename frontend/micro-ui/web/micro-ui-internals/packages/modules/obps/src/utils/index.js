@@ -1351,11 +1351,50 @@ export const businessServiceListLayout = (isCode = false) => {
 
   return newAvailableBusinessServices;
 };
-//Convert date from YYYY-MM-DD to DD/MM/YYYY
+//Convert date to DD/MM/YYYY
 export const formatDate = (dateString) => {
   if (!dateString) return "";
-  const [year, month, day] = dateString.split("-");
-  return `${day}/${month}/${year}`;
+  const str = String(dateString).trim();
+  if (/^\d+$/.test(str)) {
+    const d = new Date(Number(str));
+    if (!isNaN(d.getTime())) {
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+  }
+  const cleanStr = str.split("T")[0];
+  if (cleanStr.includes("-")) {
+    const parts = cleanStr.split("-");
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      if (parts[2].length === 4) {
+        return `${parts[0]}/${parts[1]}/${parts[2]}`;
+      }
+    }
+  }
+  if (cleanStr.includes("/")) {
+    const parts = cleanStr.split("/");
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      if (parts[2].length === 4) {
+        return `${parts[0]}/${parts[1]}/${parts[2]}`;
+      }
+    }
+  }
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) {
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+  return str;
 };
 
 export const formatDateForInput = (dateString) => {
@@ -1391,7 +1430,16 @@ export const convertToDDMMYYYY = (dateString) => {
   }
 
   // Fallback: return original
-  return dateString;
+};
+
+export const convertToLocalISODate = (dateVal) => {
+  if (!dateVal) return "";
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return dateVal;
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, limit = null } = {}) {

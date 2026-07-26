@@ -80,7 +80,7 @@ const LayoutDocumentsRequired = ({
   const applicantType = currentStepData?.applicationDetails?.aplicantType?.code;
 
   const [applicationNo, setApplicationNo] = useState("");
-  const [isVacant, setIsVacant] = useState(false);
+  // const [isVacant, setIsVacant] = useState(false);
   const [isCluApproved, setIsCluApproved] = useState(false);
   const [isRestrictedArea, setIsRestrictedArea] = useState(false);
   const [isUnderMasterPlan, setIsUnderMasterPlan] = useState(false);
@@ -97,9 +97,9 @@ const LayoutDocumentsRequired = ({
     );
 
     // Vacant
-    setIsVacant(
-      currentStepData?.siteDetails?.buildingStatus?.code === "VACANT"
-    );
+    // setIsVacant(
+    //   currentStepData?.siteDetails?.buildingStatus?.code === "VACANT"
+    // );
 
     // CLU Approved
     const cluApprovedValue =
@@ -131,16 +131,16 @@ const LayoutDocumentsRequired = ({
       roadType.toLowerCase().includes("nh")
     );
 
-    // Institution and Industrial checks
+    // Institutional and Industrial checks
     const bc = currentStepData?.siteDetails?.buildingCategory;
   
 
     const isInstitutionVal = bc ? (
       typeof bc === "object" ? (
-        (bc.code || "").toLowerCase().includes("institution") || 
-        (bc.name || "").toLowerCase().includes("institution")
+        (bc.code || "").toLowerCase().includes("institutional") || 
+        (bc.name || "").toLowerCase().includes("institutional")
       ) : (
-        bc.toLowerCase().includes("institution")
+        bc.toLowerCase().includes("institutional")
       )
     ) : false;
 
@@ -198,9 +198,9 @@ const LayoutDocumentsRequired = ({
         }
         
         // Filter out building drawing if vacant
-        if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
-          return null
-        }
+        // if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
+        //   return null
+        // }
         
         return { ...doc, required: isRequired }
       }).filter(doc => !(doc?.cluRequired && !isCluApproved))
@@ -208,7 +208,7 @@ const LayoutDocumentsRequired = ({
     
     
     return processedDocs
-  }, [isVacant, isCluApproved, isNationalHighway, isInstitution, isIndustrial, applicantType, data?.LAYOUT?.LayoutDocuments?.length])
+  }, [isCluApproved, isNationalHighway, isInstitution, isIndustrial, applicantType, data?.LAYOUT?.LayoutDocuments?.length])
 
   // console.log("filteredDocs and documents", filteredDocuments, documents)
 
@@ -237,13 +237,13 @@ const LayoutDocumentsRequired = ({
     else setEnableSubmit(true)
   }, [documents, checkRequiredFields, filteredDocuments])
 
-  useEffect(() => {
-    const currentStatus = currentStepData?.siteDetails?.buildingStatus?.code
+  // useEffect(() => {
+  //   const currentStatus = currentStepData?.siteDetails?.buildingStatus?.code
 
-    if (currentStatus === "VACANT") {
-      setDocuments((prevDocs) => Array.isArray(prevDocs) ? prevDocs.filter((doc) => doc.documentType !== "OWNER.BUILDINGDRAWING") : [])
-    }
-  }, [currentStepData?.siteDetails?.buildingStatus?.code])
+  //   if (currentStatus === "VACANT") {
+  //     setDocuments((prevDocs) => Array.isArray(prevDocs) ? prevDocs.filter((doc) => doc.documentType !== "OWNER.BUILDINGDRAWING") : [])
+  //   }
+  // }, [currentStepData?.siteDetails?.buildingStatus?.code])
 
   const documentObj = {
     value: {
@@ -645,7 +645,7 @@ function LayoutSelectDocument({
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
-            uploadMessage = "Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+            uploadMessage = "Invalid File Format"
             accept=".jpeg, .jpg, .png"
           />
             <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
@@ -662,7 +662,7 @@ function LayoutSelectDocument({
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
-            uploadMessage = "Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB"
+            uploadMessage = "Invalid File Format"
             required={doc?.required}
             isRemovable={!doc?.required}
           />

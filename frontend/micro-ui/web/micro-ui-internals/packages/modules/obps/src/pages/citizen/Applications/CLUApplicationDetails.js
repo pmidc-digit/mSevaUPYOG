@@ -35,7 +35,7 @@ import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
 import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimationDetailsTable";
 import { convertToDDMMYYYY } from "../../../utils/index";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
-import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
+import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 import { EmployeeData } from "../../../utils/index";
 
 const CLUApplicationDetails = () => {
@@ -467,6 +467,18 @@ const CLUApplicationDetails = () => {
       });
     }
   }
+  else if (applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.isMigrationTrue &&
+      applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId) {
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () =>
+          getSanctionLetterReceipt({
+            tenantId: tenantId,
+            payments: {},
+            pdfkey: "clu-sanctionletter",
+          }),
+      });
+  }
   if (applicationDetails?.Clu?.[0]) {
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
@@ -872,7 +884,7 @@ const CLUApplicationDetails = () => {
         )}
         {hasPayments && (
           <div style={{ marginTop: "16px" }}>
-            <PaymentHistory payments={combinedPayments} />
+            <OBPSPaymentHistory payments={combinedPayments} />
           </div>
         )}
       </Card>

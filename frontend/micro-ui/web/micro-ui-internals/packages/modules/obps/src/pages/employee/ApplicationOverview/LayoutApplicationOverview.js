@@ -37,7 +37,8 @@ import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspec
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
-import { formatDuration } from "../../../utils/index";
+import { formatDuration, formatDate, decryptId } from "../../../utils/index";
+import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -115,7 +116,8 @@ const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
 };
 
 const LayoutEmployeeApplicationOverview = () => {
-  const { id } = useParams();
+  const { layid } = useParams();
+  const id = decryptId(layid)
   const { t } = useTranslation();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const history = useHistory();
@@ -158,7 +160,9 @@ const LayoutEmployeeApplicationOverview = () => {
   const applicationDetails = data?.resData;
   //console.log("applicationDetails here==>", applicationDetails, checklistRemarks);
   const currentZoneCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.zone?.code;
-
+  const businessService = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService?.toUpperCase();
+  const prefix= `WF_EMPLOYEE_LAYOUT_${businessService}`?.toUpperCase();
+  const Statusprefix= `WF_EMPLOYEE_LAYOUT_STATUS_${businessService}`?.toUpperCase();
   // Fetch layout checklist data - only if not on first DM submission
   // Status DOCUMENTVERIFY_DM means DM is in the process, so don't fetch checklist yet (it will be created on their first submit)
   // For other statuses, checklist should already exist from previous submissions
@@ -266,7 +270,14 @@ const LayoutEmployeeApplicationOverview = () => {
 
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails;
-      const owners = layoutObject?.owners || [];
+      const rawOwners = layoutObject?.owners || [];
+      const owners = [...rawOwners].sort((a, b) => {
+        const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+        const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+        if (aPrimary && !bPrimary) return -1;
+        if (!aPrimary && bPrimary) return 1;
+        return 0;
+      });
       const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails;
       const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates;
       const Documents = layoutObject?.documents || [];
@@ -409,11 +420,25 @@ const LayoutEmployeeApplicationOverview = () => {
     }
   };
 
-  async function getRecieptSearch({ tenantId, payments, pdfkey = "layout-receipt", ...params }) {
-    let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, pdfkey);
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-    window.open(fileStore[response?.filestoreIds[0]], "_blank");
+  async function getRecieptSearch({ tenantId, payments, pdfkey = "layout-receipt", filestoreId = null, ...params }) {
+    try {
+      setLoader(true);
+      if (!filestoreId) {
+        let response = { filestoreIds: [payments?.fileStoreId] };
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, pdfkey);
+        filestoreId = response.filestoreIds[0];
+      }
+      let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
+
+      if (!fileStore?.[filestoreId]?.length) {
+        fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
+      }
+      window.open(fileStore[filestoreId], "_blank");
+    } catch (error) {
+      console.log("error:", error);
+    } finally {
+      setLoader(false);
+    }
   }
 
   function routeToImage(filestoreId) {
@@ -438,28 +463,35 @@ const LayoutEmployeeApplicationOverview = () => {
   const dowloadOptions = [];
   if (applicationDetails?.Layout?.[0]) {
     dowloadOptions.push({
-      label: t("Download Application"),
+      label: t("Application Form"),
       onClick: handleDownloadPdf,
     });
   }
 
-  if (applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") {
-    dowloadOptions.push({
-      label: t("DOWNLOAD_CERTIFICATE"),
-      onClick: handleDownloadPdf,
-    });
-  }
+ 
+  if (
+      applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
+    ) {
+      dowloadOptions.push({
+        label: t("LETTER_OF_INTENT"),
+        onClick: () =>
+          getRecieptSearch({
+            tenantId: tenantId,
+            payments: {},
+          }),
+      });
+    }
 
   if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
     dowloadOptions.push({
-      label: t("LAYOUT_FEE_RECEIPT_1"),
+      label: t("CLU_FEE_RECEIPT_1"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey: "layout-receipt" }),
     });
   }
 
   if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
     dowloadOptions.push({
-      label: t("LAYOUT_FEE_RECEIPT_2"),
+      label: t("CLU_FEE_RECEIPT_2"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey: "layoutreceipt-second" }),
     });
   }
@@ -859,11 +891,6 @@ const LayoutEmployeeApplicationOverview = () => {
     return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  };
   const formatDateVasika = (dateString) => {
     if (!dateString) return "";
     const [day, month, year] = dateString.split("-");
@@ -889,36 +916,6 @@ const LayoutEmployeeApplicationOverview = () => {
     setViewTimeline(true);
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const convertDateToISO = (dateStr) => {
-    if (!dateStr) return "";
-
-    if (typeof dateStr !== "string") {
-      try {
-        return new Date(dateStr).toLocaleDateString();
-      } catch (e) {
-        return "";
-      }
-    }
-
-    const parts = dateStr.split("-");
-    if (parts.length < 3) {
-      try {
-        return new Date(dateStr).toLocaleDateString();
-      } catch (e) {
-        return dateStr;
-      }
-    }
-
-    // yyyy-mm-dd (already ISO)
-    if (parts[2] && parts[2].length === 4) {
-      return dateStr;
-    }
-
-    // dd-mm-yyyy → yyyy-mm-dd
-    const [yyyy, mm, dd] = parts;
-    return `${dd}/${mm}/${yyyy}`;
   };
 
   const onChangeReport = (key, value) => {
@@ -1020,7 +1017,7 @@ const LayoutEmployeeApplicationOverview = () => {
               <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalMobileNumber || "N/A"} />
               <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalAddress || "N/A"} />
               <Row
-                label={t("BPA_CERTIFICATE_EXPIRY_DATE")}
+                label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}
                 text={formatDate(displayData?.applicantDetails?.[0]?.professionalRegistrationValidity || "N/A")}
               />
             </StatusTable>
@@ -1050,7 +1047,7 @@ const LayoutEmployeeApplicationOverview = () => {
                   <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={applicant?.emailId} />
                   <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={applicant?.fatherOrHusbandName} />
                   <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={applicant?.mobileNumber} />
-                  <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={applicant?.dob ? new Date(applicant?.dob).toLocaleDateString() : ""} />
+                  <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(applicant?.dob)} />
                   <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={applicant?.gender} />
                   <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={applicant?.permanentAddress} />
                   <Row label={t("BPA_PAN_NUMBER_LABEL")} text={applicant?.pan || "N/A"} />
@@ -1085,12 +1082,12 @@ const LayoutEmployeeApplicationOverview = () => {
                   {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
                   {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
                     renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
-                  {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), convertDateToISO(detail?.cluApprovalDate))}
+                  {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
                 </React.Fragment>
               )}
               {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && (
                 <React.Fragment>
-                  {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
+                  {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.name || detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
                 </React.Fragment>
               )}
               {renderLabel(t("Type Of Application"), detail?.typeOfApplication?.name)}
@@ -1103,7 +1100,7 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel(t("BPA_HADBAST_NO_LABEL"), detail?.hadbastNo)}
               {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
               {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
-              {renderLabel(t("BPA_VASIKA_DATE_LABEL"), convertDateToISO(detail?.vasikaDate))}
+              {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
               {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
               {renderLabel(t("BPA_NET_TOTAL_AREA_LABEL"), detail?.areaLeftForRoadWidening)}
               {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
@@ -1153,7 +1150,7 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
 
               {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
-              {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)}
+              {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
           </div>
         ))}
@@ -1357,6 +1354,11 @@ const LayoutEmployeeApplicationOverview = () => {
             hasPayments={hasPayments}
           />
         )}
+         {hasPayments && (
+                  <div style={{ marginTop: "16px" }}>
+                    <OBPSPaymentHistory payments={combinedPayments} />
+                  </div>
+                )}
 
       </Card>
 
@@ -1413,12 +1415,12 @@ const LayoutEmployeeApplicationOverview = () => {
         checked="true"
       />
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} prefix= {prefix} t={t} Statusprefix ={Statusprefix} timeObj={timeObj} />
       </div>
       {actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-            <Menu localeKeyPrefix={`WF_EMPLOYEE_${"LAYOUT"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+            <Menu localeKeyPrefix={prefix} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>
@@ -1431,6 +1433,7 @@ const LayoutEmployeeApplicationOverview = () => {
             action={selectedAction}
             tenantId={tenantId}
             state={state}
+            businessService= {businessService}
             getEmployees={getEmployees}
             id={id}
             applicationDetails={applicationDetails}

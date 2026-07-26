@@ -16,6 +16,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
+import CustomDatePicker from "./CustomDatePicker";
 
 const LayoutSiteDetails = (_props) => {
   let tenantId;
@@ -168,7 +169,7 @@ const LayoutSiteDetails = (_props) => {
 
   const [ulbName, setUlbName] = useState(currentStepData?.siteDetails?.ulbName || null);
   const [ulbType, setUlbType] = useState(currentStepData?.siteDetails?.ulbType || "");
-  const [buildingStatus, setBuildingStatus] = useState(currentStepData?.siteDetails?.buildingStatus || null);
+  // const [buildingStatus, setBuildingStatus] = useState(currentStepData?.siteDetails?.buildingStatus || null);
 
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.obps.useLayoutBuildingType(stateId);
   const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.obps.useLayoutRoadType(stateId);
@@ -330,9 +331,9 @@ const LayoutSiteDetails = (_props) => {
       });
 
       // Set state variables to ensure dropdowns are pre-filled
-      if (formattedData.buildingStatus) {
-        setBuildingStatus(formattedData.buildingStatus);
-      }
+      // if (formattedData.buildingStatus) {
+      //   setBuildingStatus(formattedData.buildingStatus);
+      // }
       if (formattedData.buildingCategory) {
         setSelectedBuildingCategory(formattedData.buildingCategory);
       }
@@ -371,7 +372,7 @@ const LayoutSiteDetails = (_props) => {
   const currentCategoryCode = getSelectedCategoryCode();
   const isResidential = currentCategoryCode.includes("RESIDENTIAL");
   const isCommercial = currentCategoryCode.includes("COMMERCIAL");
-  const isInstitutional = currentCategoryCode.includes("INSTITUTION");
+  const isInstitutional = currentCategoryCode.includes("INSTITUTIONAL");
   const isIndustrial = currentCategoryCode.includes("INDUSTRIAL");
 
   // Calculate Total Site Area (sum of all distribution areas)
@@ -666,7 +667,7 @@ const LayoutSiteDetails = (_props) => {
                                 setCluValidationError(null);
                               } else {
                                 // CLU found but not approved
-                                setCluValidationError(`CLU application status is "${cluApp?.applicationStatus || "UNKNOWN"}". It must be APPROVED.`);
+                                setCluValidationError(`CLU application status is "${t(cluApp?.applicationStatus || "UNKNOWN")}". It must be APPROVED.`);
                                 setIsCluValidated(false);
                               }
                             } else {
@@ -819,8 +820,7 @@ const LayoutSiteDetails = (_props) => {
                           },
                         }}
                         render={(props) => (
-                          <TextInput
-                            type="date"
+                          <CustomDatePicker
                             value={props.value}
                             onChange={(e) => {
                               props.onChange(e.target.value);
@@ -1329,6 +1329,7 @@ const LayoutSiteDetails = (_props) => {
                   validate: (value) => {
                     if (!value) return true;
                     const selectedDate = new Date(value);
+                    if (isNaN(selectedDate.getTime())) return t("Invalid Date Format");
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
                     if (selectedDate > today) {
@@ -1338,8 +1339,7 @@ const LayoutSiteDetails = (_props) => {
                   },
                 }}
                 render={(props) => (
-                  <TextInput
-                    type="date"
+                  <CustomDatePicker
                     value={props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
@@ -1690,7 +1690,7 @@ const LayoutSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair>
+          {/* <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               {`${t("BPA_BUILDING_STATUS_LABEL")}`} <span className="requiredField">*</span>
             </CardLabel>
@@ -1719,7 +1719,7 @@ const LayoutSiteDetails = (_props) => {
               )}
               {errors?.buildingStatus && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.buildingStatus.message}</p>}
             </div>
-          </LabelFieldPair>
+          </LabelFieldPair> */}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
@@ -1773,7 +1773,7 @@ const LayoutSiteDetails = (_props) => {
                       { code: "RESIDENTIAL", name: "Residential" },
                       { code: "COMMERCIAL", name: "Commercial" },
                       { code: "INDUSTRIAL_WAREHOUSE", name: "Industrial-Warehouse" },
-                      { code: "INSTITUTION", name: "Institution" },
+                      { code: "INSTITUTIONAL", name: "Institutional" },
                     ]}
                     optionKey="name"
                     t={t}
@@ -1836,12 +1836,12 @@ const LayoutSiteDetails = (_props) => {
             </LabelFieldPair>
           )}
 
-          {/* Sub-category for Institution */}
-          {(getValues("buildingCategory")?.code === "INSTITUTION" || buildingCategoryMain?.code === "INSTITUTION") && (
+          {/* Sub-category for Institutional */}
+          {(getValues("buildingCategory")?.code === "INSTITUTIONAL" || buildingCategoryMain?.code === "INSTITUTIONAL") && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{t("BPA_BUILDING_CATEGORY_LABEL_TYPE")}</CardLabel>
               <div className="field">
-                <TextInput value="Institution" disabled={true} />
+                <TextInput value="Institutional" disabled={true} />
               </div>
             </LabelFieldPair>
           )}
@@ -2016,7 +2016,7 @@ const LayoutSiteDetails = (_props) => {
             </React.Fragment>
           )}
 
-          {selectedBuildingCategory?.name?.toLowerCase().includes("institution") && (
+          {selectedBuildingCategory?.name?.toLowerCase().includes("institutional") && (
               <React.Fragment>
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">
@@ -2188,7 +2188,7 @@ const LayoutSiteDetails = (_props) => {
               </React.Fragment>
             )}
 
-          {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
+          {/* {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
                 {`${t("BPA_BASEMENT_AREA_LABEL")}`} <span className="requiredField">*</span>
@@ -2224,16 +2224,15 @@ const LayoutSiteDetails = (_props) => {
                 {errors?.basementArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.basementArea.message}</p>}
               </div>
             </LabelFieldPair>
-          )}
+          )} */}
 
           {/* SECTION: Floor Details */}
-          {buildingStatus?.code === "BUILTUP" && <CardSectionHeader>{t("BPA_FLOOR_DETAILS_LABEL")}</CardSectionHeader>}
+          {/* {buildingStatus?.code === "BUILTUP" && <CardSectionHeader>{t("BPA_FLOOR_DETAILS_LABEL")}</CardSectionHeader>} */}
 
-          {buildingStatus?.code === "BUILTUP" &&
+          {/* {buildingStatus?.code === "BUILTUP" &&
             areaFields.map((field, index) => (
               <div key={field.id} style={{ display: "flex", gap: "10px", flexDirection: "column" }}>
                 <CardLabel className="card-label-smaller">
-                  {/* {index === 0 ? "Ground" : `${index}`} Floor Area <span className="requiredField">*</span> */}
                   {index === 0 ? "Ground" : `${index}st`} Floor (IN SQ MT) <span className="requiredField">*</span>
                 </CardLabel>
                 <div className="field" style={{ display: "flex", gap: "10px" }}>
@@ -2255,8 +2254,6 @@ const LayoutSiteDetails = (_props) => {
                         const floorValue = parseFloat(value) || 0;
                         const balanceArea = parseFloat(netArea) || 0;
                         const floorName = index === 0 ? "Ground" : `${index}`;
-
-                        // Validate individual floor doesn't exceed balance area
                         if (floorValue > balanceArea) {
                           return `${floorName} floor area (${floorValue.toFixed(2)} Sq M) cannot exceed balance area (${balanceArea.toFixed(
                             2
@@ -2295,9 +2292,9 @@ const LayoutSiteDetails = (_props) => {
                   </button>
                 </div>
               </div>
-            ))}
+            ))} */}
 
-          {buildingStatus?.code === "BUILTUP" && (
+          {/* {buildingStatus?.code === "BUILTUP" && (
             <button
               type="button"
               onClick={() => addFloor({ value: "" })}
@@ -2312,7 +2309,7 @@ const LayoutSiteDetails = (_props) => {
             >
               Add Floor
             </button>
-          )}
+          )} */}
 
           {/* SECTION: Area Distribution across 9 Categories */}
           <CardSectionHeader>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardSectionHeader>

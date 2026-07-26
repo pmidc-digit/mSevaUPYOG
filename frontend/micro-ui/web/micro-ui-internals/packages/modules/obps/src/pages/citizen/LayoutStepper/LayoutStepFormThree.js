@@ -9,6 +9,11 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
 
   const stateId = Digit.ULBService.getStateId();
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId,  "BPA", ["LayoutDocuments"]);
@@ -24,7 +29,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const applicantType = currentStepDataNew?.applicationDetails?.aplicantType?.code;
 
   const [applicationNo, setApplicationNo] = useState("");
-    const [isVacant, setIsVacant] = useState(false);
+    // const [isVacant, setIsVacant] = useState(false);
     const [isCluApproved, setIsCluApproved] = useState(false);
     const [isRestrictedArea, setIsRestrictedArea] = useState(false);
     const [isUnderMasterPlan, setIsUnderMasterPlan] = useState(false);
@@ -41,9 +46,9 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       );
   
       // Vacant
-      setIsVacant(
-        currentStepDataNew?.siteDetails?.buildingStatus?.code === "VACANT"
-      );
+      // setIsVacant(
+      //   currentStepDataNew?.siteDetails?.buildingStatus?.code === "VACANT"
+      // );
   
       // CLU Approved
       const cluApprovedValue =
@@ -75,15 +80,15 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
         roadType.toLowerCase().includes("nh")
       );
   
-      // Institution and Industrial checks
+      // Institutional and Industrial checks
       const bc = currentStepDataNew?.siteDetails?.buildingCategory;
 
       const isInstitutionVal = bc ? (
         typeof bc === "object" ? (
-          (bc.code || "").toLowerCase().includes("institution") || 
-          (bc.name || "").toLowerCase().includes("institution")
+          (bc.code || "").toLowerCase().includes("institutional") || 
+          (bc.name || "").toLowerCase().includes("institutional")
         ) : (
-          bc.toLowerCase().includes("institution")
+          bc.toLowerCase().includes("institutional")
         )
       ) : false;
 
@@ -151,9 +156,9 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
           // }
           
           // Filter out building drawing if vacant
-          if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
-            return null
-          }
+          // if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
+          //   return null
+          // }
           
           return { ...doc, required: isRequired }
         }).filter(doc => !(doc?.cluRequired && !isCluApproved))
@@ -164,7 +169,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       //console.log("=== END DEBUG ===")
       
       return processedDocs
-    }, [isVacant, isCluApproved, isNationalHighway, isInstitution, isIndustrial, applicantType, docData?.LAYOUT?.LayoutDocuments?.length])
+    }, [ isCluApproved, isNationalHighway, isInstitution, isIndustrial, applicantType, docData?.LAYOUT?.LayoutDocuments?.length])
 
 
 

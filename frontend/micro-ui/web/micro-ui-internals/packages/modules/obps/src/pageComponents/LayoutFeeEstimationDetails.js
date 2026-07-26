@@ -56,12 +56,12 @@ const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
     }
 
     // Format buildingStatus to object if it's a string
-    if (formatted.buildingStatus && typeof formatted.buildingStatus === 'string') {
-      formatted.buildingStatus = {
-        code: formatted.buildingStatus,
-        name: formatted.buildingStatus,
-      };
-    }
+    // if (formatted.buildingStatus && typeof formatted.buildingStatus === 'string') {
+    //   formatted.buildingStatus = {
+    //     code: formatted.buildingStatus,
+    //     name: formatted.buildingStatus,
+    //   };
+    // }
 
     // Format buildingCategory to object if it's a string
     if (formatted.buildingCategory && typeof formatted.buildingCategory === 'string') {
@@ -88,12 +88,12 @@ const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
     }
 
     // Format isBasementAreaAvailable to object if it's a string
-    if (formatted.isBasementAreaAvailable && typeof formatted.isBasementAreaAvailable === 'string') {
-      formatted.isBasementAreaAvailable = {
-        code: formatted.isBasementAreaAvailable,
-        i18nKey: formatted.isBasementAreaAvailable,
-      };
-    }
+    // if (formatted.isBasementAreaAvailable && typeof formatted.isBasementAreaAvailable === 'string') {
+    //   formatted.isBasementAreaAvailable = {
+    //     code: formatted.isBasementAreaAvailable,
+    //     i18nKey: formatted.isBasementAreaAvailable,
+    //   };
+    // }
 
     // Format isAreaUnderMasterPlan to object if it's a string
     if (formatted.isAreaUnderMasterPlan && typeof formatted.isAreaUnderMasterPlan === 'string') {

@@ -7,7 +7,7 @@ import { useState } from "react";
 import _ from "lodash";
 import { useHistory, useLocation } from "react-router-dom";
 import LayoutSummary from "../../../pageComponents/LayoutSummary";
-import { convertToDDMMYYYY } from "../../../utils";
+import { convertDateTimeToEpoch, convertToDDMMYYYY } from "../../../utils";
 
 const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -178,66 +178,68 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     const panDocFiles = layoutFormData?.panDocumentUploadedFiles || {};
     
     // Update primary owner (index 0) with new documents if available
-    const updatedOwnersFromApi = ownersFromApi.map((owner, index) => {
-      if (index === 0) {
-        // Primary owner - update additionalDetails with new documents if provided
-        return {
-          ...owner,
-          mobileNumber: layoutFormData?.applicationDetails?.applicantMobileNumber || owner?.mobileNumber || "",
-          name: layoutFormData?.applicationDetails?.applicantOwnerOrFirmName || owner?.name || "",
-          emailId: layoutFormData?.applicationDetails?.applicantEmailId || owner?.emailId || "",
-          userName: layoutFormData?.applicationDetails?.applicantMobileNumber || owner?.userName || "",
-          gender: layoutFormData?.applicationDetails?.applicantGender?.code || layoutFormData?.applicationDetails?.applicantGender || owner?.gender || null,
-          dob: layoutFormData?.applicationDetails?.applicantDateOfBirth ? Digit.Utils.pt.convertDateToEpoch(layoutFormData?.applicationDetails?.applicantDateOfBirth) : owner?.dob || null,
-          fatherOrHusbandName: layoutFormData?.applicationDetails?.applicantFatherHusbandName || owner?.fatherOrHusbandName || "",
-          permanentAddress: layoutFormData?.applicationDetails?.applicantAddress || owner?.permanentAddress || "",
-          isPrimaryOwner: true,
-          pan: layoutFormData?.applicationDetails?.panNumber || owner?.pan || null,
-          additionalDetails: {
-            ...owner?.additionalDetails,            
-            ownerPhoto: layoutFormData?.applicationDetails?.primaryOwnerPhoto || photoFiles[0]?.fileStoreId || owner?.additionalDetails?.ownerPhoto || null,
-            documentFile: layoutFormData?.applicationDetails?.primaryOwnerDocument || docFiles[0]?.fileStoreId || owner?.additionalDetails?.documentFile || null,
-            panDocument: layoutFormData?.applicationDetails?.panDocumentUploadedFiles || panDocFiles[0]?.fileStoreId || owner?.additionalDetails?.panDocument || null,
-            aplicantType: layoutFormData?.applicationDetails?.aplicantType || owner?.additionalDetails?.aplicantType || null,
-            authorisedPerson: layoutFormData?.applicationDetails?.aplicantType?.code === "FIRM" ? layoutFormData?.applicationDetails?.authorisedPerson || owner?.additionalDetails?.authorisedPerson : null,
-          },
-        };
-      } else {
-        // Additional owner - map from applicantsFromRedux[index - 1]
-        const applicant = applicantsFromRedux[index - 1];
-        if (applicant) {
-          return {
-            ...owner,
-            name: applicant.name || owner.name || "",
-            mobileNumber: applicant.mobileNumber || owner.mobileNumber || "",
-            emailId: applicant.emailId || owner.emailId || "",
-            fatherOrHusbandName: applicant.fatherOrHusbandName || owner.fatherOrHusbandName || "",
-            permanentAddress: applicant.address || owner.permanentAddress || "",
-            dob: applicant.dob ? new Date(applicant.dob).getTime() : owner.dob || null,
-            gender: applicant.gender?.code || applicant.gender || owner.gender || null,
-            pan: applicant.panNumber || applicant.pan || owner.pan || null,
-            status: applicant.status !== undefined ? applicant.status : owner.status,
-            additionalDetails: {
-              ...owner?.additionalDetails,
-              ownerPhoto: applicant.photoUploadedFiles || photoFiles[index]?.fileStoreId || owner?.additionalDetails?.ownerPhoto || null,
-              documentFile: applicant.documentUploadedFiles || docFiles[index]?.fileStoreId || owner?.additionalDetails?.documentFile || null,
-              panDocument: applicant.panDocumentUploadedFiles || panDocFiles[index]?.fileStoreId || owner?.additionalDetails?.panDocument || null,
-            }
-          };
-        }
-      }
-      return owner;
-    });
+    // const updatedOwnersFromApi = ownersFromApi.map((owner, index) => {
+    //   if (index === 0) {
+    //     // Primary owner - update additionalDetails with new documents if provided
+    //     return {
+    //       ...owner,
+    //       mobileNumber: layoutFormData?.applicationDetails?.applicantMobileNumber || owner?.mobileNumber || "",
+    //       name: layoutFormData?.applicationDetails?.applicantOwnerOrFirmName || owner?.name || "",
+    //       emailId: layoutFormData?.applicationDetails?.applicantEmailId || owner?.emailId || "",
+    //       userName: layoutFormData?.applicationDetails?.applicantMobileNumber || owner?.userName || "",
+    //       gender: layoutFormData?.applicationDetails?.applicantGender?.code || layoutFormData?.applicationDetails?.applicantGender || owner?.gender || null,
+    //       dob: layoutFormData?.applicationDetails?.applicantDateOfBirth ? Digit.Utils.pt.convertDateToEpoch(layoutFormData?.applicationDetails?.applicantDateOfBirth) : owner?.dob || null,
+    //       fatherOrHusbandName: layoutFormData?.applicationDetails?.applicantFatherHusbandName || owner?.fatherOrHusbandName || "",
+    //       permanentAddress: layoutFormData?.applicationDetails?.applicantAddress || owner?.permanentAddress || "",
+    //       isPrimaryOwner: true,
+    //       pan: layoutFormData?.applicationDetails?.panNumber || owner?.pan || null,
+    //       additionalDetails: {
+    //         ...owner?.additionalDetails,            
+    //         ownerPhoto: layoutFormData?.applicationDetails?.primaryOwnerPhoto || photoFiles[0]?.fileStoreId || owner?.additionalDetails?.ownerPhoto || null,
+    //         documentFile: layoutFormData?.applicationDetails?.primaryOwnerDocument || docFiles[0]?.fileStoreId || owner?.additionalDetails?.documentFile || null,
+    //         panDocument: layoutFormData?.applicationDetails?.panDocumentUploadedFiles || panDocFiles[0]?.fileStoreId || owner?.additionalDetails?.panDocument || null,
+    //         aplicantType: layoutFormData?.applicationDetails?.aplicantType || owner?.additionalDetails?.aplicantType || null,
+    //         authorisedPerson: layoutFormData?.applicationDetails?.aplicantType?.code === "FIRM" ? layoutFormData?.applicationDetails?.authorisedPerson || owner?.additionalDetails?.authorisedPerson : null,
+    //       },
+    //     };
+    //   } else {
+    //     // Additional owner - map from applicantsFromRedux[index - 1]
+    //     const applicant = applicantsFromRedux[index - 1];
+    //     if (applicant) {
+    //       return {
+    //         ...owner,
+    //         name: applicant.name || owner.name || "",
+    //         mobileNumber: applicant.mobileNumber || owner.mobileNumber || "",
+    //         emailId: applicant.emailId || owner.emailId || "",
+    //         fatherOrHusbandName: applicant.fatherOrHusbandName || owner.fatherOrHusbandName || "",
+    //         permanentAddress: applicant.address || owner.permanentAddress || "",
+    //         dob: applicant.dob ? new Date(applicant.dob).getTime() : owner.dob || null,
+    //         gender: applicant.gender?.code || applicant.gender || owner.gender || null,
+    //         pan: applicant.panNumber || owner.pan || null,
+    //         status: applicant.status !== undefined ? applicant.status : owner.status,
+    //         additionalDetails: {
+    //           ...owner?.additionalDetails,
+    //           ownerPhoto: applicant.photoUploadedFiles || photoFiles[index]?.fileStoreId || owner?.additionalDetails?.ownerPhoto || null,
+    //           documentFile: applicant.documentUploadedFiles || docFiles[index]?.fileStoreId || owner?.additionalDetails?.documentFile || null,
+    //           panDocument: applicant.panDocumentUploadedFiles || panDocFiles[index]?.fileStoreId || owner?.additionalDetails?.panDocument || null,
+    //         }
+    //       };
+    //     }
+    //   }
+    //   return owner;
+    // });
     
     // Map newly added applicants to owner format for API
     const mappedNewApplicants = newlyAddedApplicants
-      .filter(newApp => !updatedOwnersFromApi.some(existingOwner => existingOwner.mobileNumber === newApp.mobileNumber))
-      .map((applicant, index) => {
-        const applicantIndex = applicantsFromRedux.indexOf(applicant);
+      .map((applicant) => {
         
         // For new applicants, don't send uuid - let backend create/assign it
         // Sending uuid with mobileNumber causes InvalidUserSearchCriteriaException
         const ownerObj = {
+          ...applicant,
+          createdDate: applicant?.createdDate ? convertDateTimeToEpoch(applicant?.createdDate) : null,
+          lastModifiedDate: applicant?.lastModifiedDate ? convertDateTimeToEpoch(applicant?.lastModifiedDate) : null,
+          pwdExpiryDate: applicant?.pwdExpiryDate ? convertDateTimeToEpoch(applicant?.pwdExpiryDate) : null,
           name: applicant.name,
           mobileNumber: applicant.mobileNumber,
           emailId: applicant.emailId,
@@ -252,13 +254,14 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             documentFile: applicant?.documentUploadedFiles || null,
             panDocument: applicant?.panDocumentUploadedFiles || null,
           },
+          uuid: applicant?.uuid || null
         };
         
         return ownerObj;
       });
     
     // Merge: existing owners from API (updated) + newly added applicants
-    const owners = [...updatedOwnersFromApi, ...mappedNewApplicants];
+    const owners = [...mappedNewApplicants];
     
 
     const siteDet = layoutFormData?.siteDetails || {};
@@ -452,7 +455,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   // Handle both NEW mode (Layout array) and EDIT mode (Layout object)
   const isEditMode = window.location.pathname.includes("edit");
-  console.log("isEditMode",isEditMode)
+  // console.log("isEditMode",isEditMode)
   const layoutData = isEditMode 
     ? currentStepData?.apiData?.Layout?.[0]
     : currentStepData?.apiData?.Layout;

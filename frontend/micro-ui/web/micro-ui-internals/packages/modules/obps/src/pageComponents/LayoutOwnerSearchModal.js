@@ -11,9 +11,12 @@ import {
   StatusTable,
   RadioButtons,
   CardLabelError,
+  LabelFieldPair,
+  LinkButton,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import CustomDatePicker from "./CustomDatePicker";
+import CustomUploadFile from "../components/CustomUploadFile";
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -30,7 +33,7 @@ const CloseBtn = (props) => {
   );
 };
 
-export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobileNumber }) => {
+export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobileNumber, editingOwner }) => {
   const { t } = useTranslation();
   const stateId = Digit.ULBService.getStateId();
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -39,6 +42,18 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
   const [showToast, setShowToast] = useState(null);
   const [searchedUsers, setSearchedUsers] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [docLoader, setDocLoader] = useState(false);
+
+  // Step state: 1 = Search/Manual form, 2 = Mandatory upload & additional fields form
+  const [step, setStep] = useState(1);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  // Additional mandatory fields state
+  const [photoUploadedFile, setPhotoUploadedFile] = useState(null);
+  const [documentUploadedFile, setDocumentUploadedFile] = useState(null);
+  const [panDocumentUploadedFile, setPanDocumentUploadedFile] = useState(null);
+  const [panNumber, setPanNumber] = useState("");
+  const [errors, setErrors] = useState({});
 
   // Manual User Form states
   const [showManualForm, setShowManualForm] = useState(false);
@@ -62,10 +77,17 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
     });
 
   useEffect(() => {
-    if (initialMobileNumber && /^[6-9]\d{9}$/.test(initialMobileNumber)) {
+    if (editingOwner) {
+      setSelectedUser(editingOwner);
+      setPhotoUploadedFile(editingOwner?.photoUploadedFiles || editingOwner?.additionalDetails?.ownerPhoto || null);
+      setDocumentUploadedFile(editingOwner?.documentUploadedFiles || editingOwner?.additionalDetails?.documentFile || null);
+      setPanDocumentUploadedFile(editingOwner?.panDocumentUploadedFiles || editingOwner?.additionalDetails?.panDocument || null);
+      setPanNumber(editingOwner?.panNumber || editingOwner?.pan || "");
+      setStep(2);
+    } else if (initialMobileNumber && /^[6-9]\d{9}$/.test(initialMobileNumber)) {
       handleSearch(initialMobileNumber);
     }
-  }, [initialMobileNumber]);
+  }, [initialMobileNumber, editingOwner]);
 
   const handleMobileNumberChange = (e) => {
     setMobileNumber(e.target.value);
@@ -126,6 +148,76 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
     }
   };
 
+  // Upload Handlers
+  const selectPhotoFile = async (e) => {
+    const file = e.target.files[0];
+    if (file && file.size > 5 * 1024 * 1024) {
+      setShowToast({ error: true, label: "FILE_SIZE_EXCEEDS_5MB" });
+      return;
+    }
+    try {
+      setDocLoader(true);
+      const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
+      setDocLoader(false);
+      if (response?.data?.files?.length > 0) {
+        const fileId = response.data.files[0].fileStoreId;
+        setPhotoUploadedFile(fileId);
+        setErrors((prev) => ({ ...prev, photo: "" }));
+      } else {
+        setShowToast({ error: true, label: "FILE_UPLOAD_FAILED" });
+      }
+    } catch (err) {
+      setDocLoader(false);
+      setShowToast({ error: true, label: "FILE_UPLOAD_FAILED" });
+    }
+  };
+
+  const selectDocumentFile = async (e) => {
+    const file = e.target.files[0];
+    if (file && file.size > 5 * 1024 * 1024) {
+      setShowToast({ error: true, label: "FILE_SIZE_EXCEEDS_5MB" });
+      return;
+    }
+    try {
+      setDocLoader(true);
+      const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
+      setDocLoader(false);
+      if (response?.data?.files?.length > 0) {
+        const fileId = response.data.files[0].fileStoreId;
+        setDocumentUploadedFile(fileId);
+        setErrors((prev) => ({ ...prev, document: "" }));
+      } else {
+        setShowToast({ error: true, label: "FILE_UPLOAD_FAILED" });
+      }
+    } catch (err) {
+      setDocLoader(false);
+      setShowToast({ error: true, label: "FILE_UPLOAD_FAILED" });
+    }
+  };
+
+  const selectPanDocumentFile = async (e) => {
+    const file = e.target.files[0];
+    if (file && file.size > 5 * 1024 * 1024) {
+      setShowToast({ error: true, label: "FILE_SIZE_EXCEEDS_5MB" });
+      return;
+    }
+    try {
+      setDocLoader(true);
+      const response = await Digit.UploadServices.Filestorage("Layout", file, stateId);
+      setDocLoader(false);
+      if (response?.data?.files?.length > 0) {
+        const fileId = response.data.files[0].fileStoreId;
+        setPanDocumentUploadedFile(fileId);
+        setErrors((prev) => ({ ...prev, panDocument: "" }));
+      } else {
+        setShowToast({ error: true, label: "FILE_UPLOAD_FAILED" });
+      }
+    } catch (err) {
+      setDocLoader(false);
+      setShowToast({ error: true, label: "FILE_UPLOAD_FAILED" });
+    }
+  };
+
   // Validations matching LayoutApplicantDetails.js
   const validateName = (value) => {
     if (!value || !value.trim()) return "REQUIRED_FIELD";
@@ -164,6 +256,16 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
     return null;
   };
 
+  const handleSelectUserFromTable = (user) => {
+    setSelectedUser(user);
+    setPhotoUploadedFile(user?.photoUploadedFiles || user?.additionalDetails?.ownerPhoto || null);
+    setDocumentUploadedFile(user?.documentUploadedFiles || user?.additionalDetails?.documentFile || null);
+    setPanDocumentUploadedFile(user?.panDocumentUploadedFiles || user?.additionalDetails?.panDocument || null);
+    setPanNumber(user?.panNumber || user?.pan || "");
+    setErrors({});
+    setStep(2);
+  };
+
   const handleSaveManualUser = () => {
     if (!mobileNumber || !/^[6-9]\d{9}$/.test(mobileNumber)) {
       setShowToast({ error: true, label: "INVALID_MOBILE_NUMBER" });
@@ -195,7 +297,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
     const newManualUser = {
       uuid: null,
       name: manualName.trim(),
-      mobileNumber: mobileNumber, // Associated with searched mobile number
+      mobileNumber: mobileNumber,
       emailId: manualEmail.trim(),
       fatherOrHusbandName: manualFatherOrHusband.trim(),
       permanentAddress: manualAddress.trim(),
@@ -203,7 +305,57 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       gender: manualGender,
     };
 
-    onSelectUser(newManualUser);
+    setSelectedUser(newManualUser);
+    setPhotoUploadedFile(null);
+    setDocumentUploadedFile(null);
+    setPanDocumentUploadedFile(null);
+    setPanNumber("");
+    setErrors({});
+    setStep(2);
+  };
+
+  const handleSaveFinalOwner = () => {
+    const errs = {};
+
+    if (!photoUploadedFile) {
+      errs.photo = t("Passport photo is required");
+    }
+
+    if (!documentUploadedFile) {
+      errs.document = t("Document upload is required");
+    }
+
+    if (!panDocumentUploadedFile) {
+      errs.panDocument = t("PAN document is required");
+    }
+
+    if (!panNumber || !panNumber.trim()) {
+      errs.panNumber = t("REQUIRED_FIELD");
+    } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNumber.trim())) {
+      errs.panNumber = t("Invalid PAN Number format. Format should be like AAAAA1234A");
+    }
+
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      return;
+    }
+
+    const finalUserObj = {
+      ...selectedUser,
+      panNumber: panNumber.trim().toUpperCase(),
+      pan: panNumber.trim().toUpperCase(),
+      photoUploadedFiles: photoUploadedFile,
+      documentUploadedFiles: documentUploadedFile,
+      panDocumentUploadedFiles: panDocumentUploadedFile,
+      additionalDetails: {
+        ...selectedUser?.additionalDetails,
+        ownerPhoto: photoUploadedFile,
+        documentFile: documentUploadedFile,
+        panDocument: panDocumentUploadedFile,
+      },
+    };
+
+    onSelectUser(finalUserObj);
     closeModal();
   };
 
@@ -244,15 +396,12 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       Cell: ({ value }) => (typeof value === "object" ? t(value?.i18nKey || value?.code) : t(value) || t("CS_NA")),
     },
     {
-      Header: t(""),
+      Header: t("ACTION"),
       accessor: "uuid",
       Cell: ({ row }) => (
-        <SubmitBar
+        <LinkButton
           label={t("Select")}
-          onSubmit={() => {
-            onSelectUser(row.original);
-            closeModal();
-          }}
+          onClick={() => handleSelectUserFromTable(row.original)}
         />
       ),
     },
@@ -261,19 +410,21 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
   return (
     <React.Fragment>
       <Modal
-        headerBarMain={<h1 className="heading-m">{t("BPA_SEARCH_OWNER_DETAILS")}</h1>}
+        headerBarMain={<h1 className="heading-m">{step === 2 ? t("OWNER_ADDITIONAL_DETAILS") : t("BPA_SEARCH_OWNER_DETAILS")}</h1>}
         headerBarEnd={<CloseBtn onClick={closeModal} />}
         formId="owner-search-modal"
         popupStyles={{
-          width: "80%",
-          maxWidth: "900px",
+          width: "92%",
+          maxWidth: "1150px",
           maxHeight: "90vh",
           overflowY: "auto",
           padding: "20px",
         }}
         hideSubmit={true}
       >
-        {!showManualForm ? (
+        {docLoader && <Loader />}
+
+        {step === 1 && !showManualForm && (
           <React.Fragment>
             {/* Search Input & Button */}
             <div style={{ marginBottom: "20px" }}>
@@ -312,23 +463,29 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             </div>
 
             {/* Searched Results Table */}
-            <div style={{ marginTop: "20px" }}>
+            <div style={{ marginTop: "20px", overflowX: "auto", width: "100%", display: "block" }}>
               {isLoading ? (
                 <Loader />
               ) : searchedUsers && searchedUsers.length > 0 ? (
-                <StatusTable>
-                  <Table
-                    className="customTable table-border-style"
-                    t={t}
-                    data={searchedUsers}
-                    columns={columns}
-                    getCellProps={() => ({ style: {} })}
-                    disableSort={true}
-                    autoSort={false}
-                    manualPagination={false}
-                    isPaginationRequired={false}
-                  />
-                </StatusTable>
+                <Table
+                  className="customTable table-border-style"
+                  t={t}
+                  data={searchedUsers}
+                  columns={columns}
+                  getCellProps={(cellInfo) => ({
+                    style: {
+                      whiteSpace: cellInfo.column.id === "uuid" ? "nowrap" : "normal",
+                      wordBreak: "break-word",
+                      padding: "10px 12px",
+                      verticalAlign: "middle",
+                      minWidth: cellInfo.column.id === "uuid" ? "100px" : "110px",
+                    },
+                  })}
+                  disableSort={true}
+                  autoSort={false}
+                  manualPagination={false}
+                  isPaginationRequired={false}
+                />
               ) : null}
             </div>
 
@@ -358,8 +515,10 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
               </div>
             )}
           </React.Fragment>
-        ) : (
-          /* Manual Owner Creation Form Only (Search fields and Search Table are hidden) */
+        )}
+
+        {step === 1 && showManualForm && (
+          /* Manual Owner Creation Form Only */
           <div style={{ background: "#f9fafb", padding: "20px", borderRadius: "8px", border: "1px solid #e5e7eb" }}>
             <h2 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px", color: "#111827" }}>
               {t("CREATE_NEW_USER_DETAILS")}
@@ -482,6 +641,147 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 style={{ color: "white", cursor: "pointer" }}
                 onClick={handleSaveManualUser}
               >
+                {t("CS_COMMON_NEXT")}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && selectedUser && (
+          <div style={{ background: "#f9fafb", padding: "20px", borderRadius: "8px", border: "1px solid #e5e7eb" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+              <h2 style={{ fontSize: "16px", fontWeight: "600", color: "#111827", margin: 0 }}>
+                {t("OWNER_ADDITIONAL_DETAILS_AND_DOCUMENTS")}
+              </h2>
+              <LinkButton
+                label={t("CHANGE_OWNER")}
+                onClick={() => {
+                  setStep(1);
+                  setShowManualForm(false);
+                }}
+              />
+            </div>
+
+            {/* Selected Owner Details Card */}
+            <div style={{ background: "#ffffff", padding: "12px 16px", borderRadius: "6px", border: "1px solid #e5e7eb", marginBottom: "20px" }}>
+              <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>{t("APPLICANT_NAME")}:</strong> {selectedUser.name || "NA"}</p>
+              <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>{t("MOBILE_NO")}:</strong> {selectedUser.mobileNumber || "NA"}</p>
+              {selectedUser.emailId && <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>{t("EMAIL_ID")}:</strong> {selectedUser.emailId}</p>}
+            </div>
+
+            {/* Passport Photo */}
+            <LabelFieldPair style={{ marginBottom: "15px", marginTop: "1.5rem" }}>
+              <CardLabel className="card-label-smaller">
+                {t("BPA_APPLICANT_PASSPORT_PHOTO")}
+                <span className="requiredField">*</span>
+              </CardLabel>
+              <div className="field" style={{ width: "100%" }}>
+                <CustomUploadFile
+                  id="passport-photo-modal"
+                  onUpload={selectPhotoFile}
+                  onDelete={() => {
+                    setPhotoUploadedFile(null);
+                    setErrors((prev) => ({ ...prev, photo: t("Passport photo is required") }));
+                  }}
+                  uploadedFile={photoUploadedFile}
+                  message={photoUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                  error={errors?.photo}
+                  uploadMessage="Invalid File Format"
+                  accept=".png, .jpeg, .jpg"
+                />
+                <p className="upload-file-message">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+              </div>
+            </LabelFieldPair>
+            {errors?.photo && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.photo}</CardLabelError>}
+
+            {/* ID Proof */}
+            <LabelFieldPair style={{ marginBottom: "15px", marginTop: "1.5rem" }}>
+              <CardLabel className="card-label-smaller">
+                {t("BPA_APPLICANT_ID_PROOF")}
+                <span className="requiredField">*</span>
+              </CardLabel>
+              <div className="field" style={{ width: "100%" }}>
+                <CustomUploadFile
+                  id="id-proof-modal"
+                  onUpload={selectDocumentFile}
+                  onDelete={() => {
+                    setDocumentUploadedFile(null);
+                    setErrors((prev) => ({ ...prev, document: t("Document upload is required") }));
+                  }}
+                  uploadedFile={documentUploadedFile}
+                  message={documentUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                  error={errors?.document}
+                  uploadMessage="Invalid File Format"
+                  accept=".pdf, .png, .jpeg, .jpg"
+                />
+                <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+              </div>
+            </LabelFieldPair>
+            {errors?.document && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.document}</CardLabelError>}
+
+            {/* PAN Document */}
+            <LabelFieldPair style={{ marginBottom: "15px", marginTop: "1.5rem" }}>
+              <CardLabel className="card-label-smaller">
+                {t("BPA_PAN_DOCUMENT")}
+                <span className="requiredField">*</span>
+              </CardLabel>
+              <div className="field" style={{ width: "100%" }}>
+                <CustomUploadFile
+                  id="pan-document-modal"
+                  onUpload={selectPanDocumentFile}
+                  onDelete={() => {
+                    setPanDocumentUploadedFile(null);
+                    setErrors((prev) => ({ ...prev, panDocument: t("PAN document is required") }));
+                  }}
+                  uploadedFile={panDocumentUploadedFile}
+                  message={panDocumentUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                  error={errors?.panDocument}
+                  uploadMessage="Invalid File Format"
+                  accept=".pdf, .png, .jpeg, .jpg"
+                />
+                <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+              </div>
+            </LabelFieldPair>
+            {errors?.panDocument && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.panDocument}</CardLabelError>}
+
+            {/* PAN Number */}
+            <LabelFieldPair style={{ marginBottom: "15px" }}>
+              <CardLabel className="card-label-smaller">
+                {`${t("BPA_PAN_NUMBER_LABEL")}`}
+                <span className="requiredField">*</span>
+              </CardLabel>
+              <div className="field">
+                <TextInput
+                  value={panNumber || ""}
+                  onChange={(e) => {
+                    const upper = e.target.value.toUpperCase();
+                    setPanNumber(upper);
+                    setErrors((prev) => ({ ...prev, panNumber: "" }));
+                  }}
+                  placeholder="e.g., AAAAA1234A"
+                  maxlength={10}
+                  t={t}
+                />
+              </div>
+            </LabelFieldPair>
+            {errors?.panNumber && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.panNumber}</CardLabelError>}
+
+            {/* Action Buttons */}
+            <div style={{ marginTop: "24px", display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                className="submit-bar"
+                style={{ color: "#0b0c0c", background: "#f4f5f5", border: "1px solid #0b0c0c", cursor: "pointer" }}
+                onClick={closeModal}
+              >
+                {t("CS_COMMON_CANCEL")}
+              </button>
+              <button
+                type="button"
+                className="submit-bar"
+                style={{ color: "white", cursor: "pointer" }}
+                onClick={handleSaveFinalOwner}
+              >
                 {t("Save & Select Owner")}
               </button>
             </div>
@@ -504,3 +804,4 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
 };
 
 export default LayoutOwnerSearchModal;
+

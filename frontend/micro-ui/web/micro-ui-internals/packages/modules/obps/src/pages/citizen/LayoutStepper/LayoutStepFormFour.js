@@ -250,9 +250,10 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           pan: applicant.panNumber || applicant.pan || null,
           status: applicant.status,
           additionalDetails: {
-            ownerPhoto: applicant?.photoUploadedFiles || null,
-            documentFile: applicant?.documentUploadedFiles || null,
-            panDocument: applicant?.panDocumentUploadedFiles || null,
+            ...applicant?.additionalDetails,
+            ownerPhoto: applicant?.photoUploadedFiles || applicant?.additionalDetails?.ownerPhoto || null,
+            documentFile: applicant?.documentUploadedFiles || applicant?.additionalDetails?.documentFile || null,
+            panDocument: applicant?.panDocumentUploadedFiles || applicant?.additionalDetails?.panDocument || null,
           },
           uuid: applicant?.uuid || null
         };

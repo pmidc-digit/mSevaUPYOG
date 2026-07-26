@@ -77,8 +77,14 @@ function LayoutSummary({ currentStepData: formData, t }) {
   //   };
   // }
 
-  // Merge / Resolution for owners list:
-  let owners = [...newlyAddedApplicants];
+  const activeApplicants = applicantsFromRedux.filter(app => app?.name && app?.status !== false && app?.status !== "false");
+  let owners = [...activeApplicants].sort((a, b) => {
+    const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
+    const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
+    if (aPrimary && !bPrimary) return -1;
+    if (!aPrimary && bPrimary) return 1;
+    return 0;
+  });
 
   const layoutDocuments = layoutData?.documents || [];
 
@@ -165,7 +171,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
         <Card>
           <CardSubHeader>{t("OWNER_OWNERPHOTO") || "Owner Photo"}</CardSubHeader>
           <CustomOwnerImage
-            ownerFileStoreId={findOwnerDocument(0, "OWNERPHOTO") || owners[0]?.photoUploadedFiles || owners[0]?.additionalDetails?.ownerPhoto}
+            ownerFileStoreId={owners[0]?.photoUploadedFiles || owners[0]?.additionalDetails?.ownerPhoto || findOwnerDocument(0, "OWNERPHOTO")}
             ownerName={owners[0]?.name}
           />
         </Card>

@@ -250,11 +250,12 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           permanentAddress: applicant.address,
           dob: applicant.dob ? new Date(applicant.dob).getTime() : null,
           gender: applicant.gender?.code || applicant.gender,
-          pan: applicant.panNumber || null,
+          pan: applicant.panNumber || applicant.pan || null,
           additionalDetails: {
-            ownerPhoto: applicant?.photoUploadedFiles || null,
-            documentFile: applicant?.documentUploadedFiles || null,
-            panDocument: applicant?.panDocumentUploadedFiles || null,
+            ...applicant?.additionalDetails,
+            ownerPhoto: applicant?.photoUploadedFiles || applicant?.additionalDetails?.ownerPhoto || null,
+            documentFile: applicant?.documentUploadedFiles || applicant?.additionalDetails?.documentFile || null,
+            panDocument: applicant?.panDocumentUploadedFiles || applicant?.additionalDetails?.panDocument || null,
           },
           uuid: applicant?.uuid || null
         };

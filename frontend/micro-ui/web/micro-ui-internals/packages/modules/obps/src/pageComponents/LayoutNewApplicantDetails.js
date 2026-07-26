@@ -105,7 +105,33 @@ const LayoutNewApplicantDetails = (_props) => {
 
     // Map all owners into applicants array
     // console.log("selectedOwners",selectedOwners)
-    const applicantsArray = selectedOwners.map((owner, idx) => ({
+    // Sort active owners so that primary owner (isPrimaryOwner: true) is placed at top
+    const active = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false");
+    const inactive = selectedOwners.filter((o) => o?.status === false || o?.status === "false");
+
+    let primaryIdx = active.findIndex((o) => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true");
+    if (primaryIdx === -1 && active.length > 0) {
+      primaryIdx = 0;
+    }
+
+    const updatedActive = active.map((owner, idx) => ({
+      ...owner,
+      isPrimaryOwner: idx === primaryIdx ? true : null,
+    }));
+
+    if (primaryIdx > 0) {
+      const [primaryObj] = updatedActive.splice(primaryIdx, 1);
+      updatedActive.unshift(primaryObj);
+    }
+
+    const updatedInactive = inactive.map((owner) => ({
+      ...owner,
+      isPrimaryOwner: null,
+    }));
+
+    const orderedSelectedOwners = [...updatedActive, ...updatedInactive];
+
+    const applicantsArray = orderedSelectedOwners.map((owner, idx) => ({
       ...owner,
       actualIndex: idx,
       name: owner.name || "",
@@ -116,7 +142,18 @@ const LayoutNewApplicantDetails = (_props) => {
       dob: owner.dob || "",
       gender: owner.gender || "",
       panNumber: owner.panNumber || owner.pan || "",
+      isPrimaryOwner: owner.isPrimaryOwner,
+      photoUploadedFiles: owner.photoUploadedFiles || owner.additionalDetails?.ownerPhoto || null,
+      documentUploadedFiles: owner.documentUploadedFiles || owner.additionalDetails?.documentFile || null,
+      panDocumentUploadedFiles: owner.panDocumentUploadedFiles || owner.additionalDetails?.panDocument || null,
+      additionalDetails: {
+        ...owner.additionalDetails,
+        ownerPhoto: owner.photoUploadedFiles || owner.additionalDetails?.ownerPhoto || null,
+        documentFile: owner.documentUploadedFiles || owner.additionalDetails?.documentFile || null,
+        panDocument: owner.panDocumentUploadedFiles || owner.additionalDetails?.panDocument || null,
+      },
       uuid: owner.uuid !== undefined ? owner.uuid : null,
+      status: owner.status !== undefined ? owner.status : true,
     }));
 
     dispatch(UPDATE_LayoutNewApplication_FORM("applicants", applicantsArray));
@@ -128,9 +165,12 @@ const LayoutNewApplicantDetails = (_props) => {
     clearErrors("aplicantType");
 
     if (selectedType?.code === "INDIVIDUAL") {
-      if (selectedOwners.length > 1) {
-        // Keep only the first owner, remove all others
-        setSelectedOwners([selectedOwners[0]]);
+      const active = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false");
+      if (active.length > 1) {
+        // Keep only the first active owner, mark others as status false
+        const firstActive = active[0];
+        const updated = selectedOwners.map((o) => (o === firstActive ? { ...o, isPrimaryOwner: true } : { ...o, status: false, isPrimaryOwner: null }));
+        setSelectedOwners(updated);
         setShowToast({
           warning: true,
           message: t("INDIVIDUAL_OWNER_TYPE_SELECTED_ONLY_ONE_OWNER_KEPT"),
@@ -155,18 +195,40 @@ const LayoutNewApplicantDetails = (_props) => {
       dob: userObj.dob || "",
       gender: userObj.gender || "",
       panNumber: userObj.panNumber || userObj.pan || "",
+      photoUploadedFiles: userObj.photoUploadedFiles || userObj.additionalDetails?.ownerPhoto || null,
+      documentUploadedFiles: userObj.documentUploadedFiles || userObj.additionalDetails?.documentFile || null,
+      panDocumentUploadedFiles: userObj.panDocumentUploadedFiles || userObj.additionalDetails?.panDocument || null,
+      additionalDetails: {
+        ...userObj.additionalDetails,
+        ownerPhoto: userObj.photoUploadedFiles || userObj.additionalDetails?.ownerPhoto || null,
+        documentFile: userObj.documentUploadedFiles || userObj.additionalDetails?.documentFile || null,
+        panDocument: userObj.panDocumentUploadedFiles || userObj.additionalDetails?.panDocument || null,
+      },
       uuid: userObj.uuid !== undefined ? userObj.uuid : null,
+      status: true,
     };
 
     if (editingOwner) {
-      // EDIT MODE: Replace the editing owner object directly at its index
+      // EDIT MODE: Check if a different user (different uuid or mobile number) was selected
+      const isDifferentUser =
+        (userObj.uuid && editingOwner.uuid && userObj.uuid !== editingOwner.uuid) ||
+        (!userObj.uuid && userObj.mobileNumber !== editingOwner.mobileNumber);
+
       const targetIndex = selectedOwners.findIndex(
         (o) => o === editingOwner || (o.mobileNumber === editingOwner.mobileNumber && o.uuid === editingOwner.uuid)
       );
 
       if (targetIndex !== -1) {
         const updated = [...selectedOwners];
-        updated[targetIndex] = newUser;
+        if (isDifferentUser) {
+          // Mark previous owner object status as false
+          updated[targetIndex] = { ...editingOwner, status: false, isPrimaryOwner: null };
+          // New owner object takes its place
+          updated.push({ ...newUser, isPrimaryOwner: editingOwner.isPrimaryOwner });
+        } else {
+          // Same user updated
+          updated[targetIndex] = { ...newUser, isPrimaryOwner: editingOwner.isPrimaryOwner, status: true };
+        }
         setSelectedOwners(updated);
       } else {
         setSelectedOwners([...selectedOwners, newUser]);
@@ -181,8 +243,10 @@ const LayoutNewApplicantDetails = (_props) => {
     }
 
     // ADD MODE
-    const existingIndex = selectedOwners.findIndex((o) => o.mobileNumber === userObj.mobileNumber);
-    if (existingIndex !== -1) {
+    const existingActiveIndex = selectedOwners.findIndex(
+      (o) => o?.status !== false && o?.status !== "false" && o.mobileNumber === userObj.mobileNumber
+    );
+    if (existingActiveIndex !== -1) {
       setShowToast({
         error: true,
         message: t("OWNER_ALREADY_ADDED"),
@@ -190,11 +254,16 @@ const LayoutNewApplicantDetails = (_props) => {
       return;
     }
 
-    if (ownerType?.code === "INDIVIDUAL" && selectedOwners.length >= 1) {
-      // For individual mode, replace existing owner with new owner
-      setSelectedOwners([newUser]);
+    const activeCount = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false").length;
+    if (ownerType?.code === "INDIVIDUAL" && activeCount >= 1) {
+      // For individual mode, set existing active owner status to false and add new primary owner
+      const updated = selectedOwners.map((o) =>
+        o?.status !== false && o?.status !== "false" ? { ...o, status: false, isPrimaryOwner: null } : o
+      );
+      setSelectedOwners([...updated, { ...newUser, isPrimaryOwner: true }]);
     } else {
-      setSelectedOwners([...selectedOwners, newUser]);
+      const isFirstActive = activeCount === 0;
+      setSelectedOwners([...selectedOwners, { ...newUser, isPrimaryOwner: isFirstActive ? true : null }]);
     }
 
     setShowToast({
@@ -204,16 +273,21 @@ const LayoutNewApplicantDetails = (_props) => {
   };
 
   const handleRemoveOwner = (targetOwner) => {
-    // Remove the target owner object completely from the array
-    const updated = selectedOwners.filter(
-      (o) => !(o === targetOwner || (o.mobileNumber === targetOwner.mobileNumber && o.uuid === targetOwner.uuid))
-    );
+    // Instead of deleting, set status to false
+    const updated = selectedOwners.map((o) => {
+      if (o === targetOwner || (o.mobileNumber === targetOwner.mobileNumber && (o.uuid === targetOwner.uuid || !o.uuid))) {
+        return { ...o, status: false, isPrimaryOwner: null };
+      }
+      return o;
+    });
     setSelectedOwners(updated);
   };
 
   const isIndividual = ownerType?.code === "INDIVIDUAL";
   const isMultiple = ownerType?.code === "MULTIPLE";
-  const hideAddOwnerButton = isIndividual && selectedOwners.length >= 1;
+
+  const activeOwners = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false");
+  const hideAddOwnerButton = isIndividual && activeOwners.length >= 1;
 
   const tableColumns = [
     {
@@ -224,7 +298,12 @@ const LayoutNewApplicantDetails = (_props) => {
     {
       Header: t("APPLICANT NAME"),
       accessor: "name",
-      Cell: ({ value }) => value || t("CS_NA"),
+      Cell: ({ value, row }) => (
+        <span>
+          {value || t("CS_NA")}
+          {row.original?.isPrimaryOwner === true ? ` (${t("PRIMARY_OWNER") || "Primary Owner"})` : ""}
+        </span>
+      ),
     },
     {
       Header: t("MOBILE NO"),
@@ -316,7 +395,7 @@ const LayoutNewApplicantDetails = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.aplicantType?.message || ""}</CardLabelError>
 
         {/* Selected Owners Table */}
-        {selectedOwners.length > 0 && (
+        {activeOwners.length > 0 && (
           <div style={{ marginTop: "20px", marginBottom: "20px" }}>
             <CardSectionHeader className="card-section-header" style={{ marginBottom: "10px", fontSize: "16px" }}>
               {t("SELECTED_OWNERS_DETAILS")}
@@ -325,7 +404,7 @@ const LayoutNewApplicantDetails = (_props) => {
               <Table
                 className="customTable table-border-style"
                 t={t}
-                data={selectedOwners}
+                data={activeOwners}
                 columns={tableColumns}
                 getCellProps={() => ({ style: {} })}
                 disableSort={true}
@@ -338,13 +417,13 @@ const LayoutNewApplicantDetails = (_props) => {
         )}
 
         {/* Validation Errors for Owners */}
-        {selectedOwners.length === 0 && (
+        {activeOwners.length === 0 && (
           <CardLabelError style={{ color: "red", fontSize: "12px", marginTop: "10px" }}>
             {t("AT_LEAST_ONE_OWNER_REQUIRED")}
           </CardLabelError>
         )}
 
-        {isMultiple && selectedOwners.length === 1 && (
+        {isMultiple && activeOwners.length === 1 && (
           <CardLabelError style={{ color: "red", fontSize: "12px", marginTop: "10px" }}>
             {t("MULTIPLE_OWNER_TYPE_REQUIRES_MORE_THAN_ONE_OWNER")}
           </CardLabelError>
@@ -381,6 +460,7 @@ const LayoutNewApplicantDetails = (_props) => {
           }}
           onSelectUser={handleSelectUserFromModal}
           initialMobileNumber={editingOwner?.mobileNumber}
+          editingOwner={editingOwner}
         />
       )}
 

@@ -33,7 +33,7 @@ import { PayTwoTable } from "./PayTwoTable";
 import { FeeHistoryTable } from "./FeeHistoryTable";
 import { buildFeeHistoryByTax } from "../utils";
 import { PayTwoTableRegular } from "./PayTwoTableRegular";
-import PaymentHistory from "../../../templates/ApplicationDetails/components/PaymentHistory";
+import OBPSPaymentHistory from "../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 
 const thStyle = {
     border: "1px solid #ddd",
@@ -555,7 +555,7 @@ const FeeEstimation = ({
                 />
             </div>}
 
-            {collectionData?.length > 0 && <PaymentHistory payments={collectionData} t={t} />}
+            {collectionData?.length > 0 && <OBPSPaymentHistory payments={collectionData} t={t} />}
 
             {!hidePayTwo && currentStepData?.createdResponse?.additionalDetails?.isSelfCertification && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange, enabledEmployee}}/>)}
             

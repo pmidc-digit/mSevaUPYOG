@@ -35,7 +35,7 @@ import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
 import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimationDetailsTable";
 import { convertToDDMMYYYY } from "../../../utils/index";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
-import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
+import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 import { EmployeeData } from "../../../utils/index";
 
 const CLUApplicationDetails = () => {
@@ -881,7 +881,7 @@ const CLUApplicationDetails = () => {
         )}
         {hasPayments && (
           <div style={{ marginTop: "16px" }}>
-            <PaymentHistory payments={combinedPayments} />
+            <OBPSPaymentHistory payments={combinedPayments} />
           </div>
         )}
       </Card>

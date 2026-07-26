@@ -66,6 +66,11 @@ public class Util {
     private static final BigDecimal FIFTY = BigDecimal.valueOf(50);
     private static final BigDecimal THREEHUNDRED = BigDecimal.valueOf(300);
 
+    
+    private static final double DEFAULT_EPS = 1e-3;
+
+    
+    
     @Autowired
     public LayerNames layerNames;
 
@@ -1288,6 +1293,38 @@ public class Util {
 
     }
 
+    public static List<DXFLWPolyline> getPolyLinesByLayerV2(DXFDocument dxfDocument, List<String> layerNames) {
+
+        List<DXFLWPolyline> dxflwPolylines = new ArrayList<>();
+
+        if (dxfDocument == null || layerNames == null || layerNames.isEmpty()) {
+            return dxflwPolylines;
+        }
+
+        for (String layerName : layerNames) {
+
+            if (layerName == null || !dxfDocument.containsDXFLayer(layerName)) {
+                continue;
+            }
+
+            DXFLayer dxfLayer = dxfDocument.getDXFLayer(layerName);
+
+            if (dxfLayer != null
+                    && dxfLayer.getName().equalsIgnoreCase(layerName)
+                    && dxfLayer.hasDXFEntities(DXFConstants.ENTITY_TYPE_LWPOLYLINE)) {
+
+                List<?> dxfPolyLineEntities =
+                        dxfLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_LWPOLYLINE);
+
+                for (Object dxfEntity : dxfPolyLineEntities) {
+                    dxflwPolylines.add((DXFLWPolyline) dxfEntity);
+                }
+            }
+        }
+
+        return dxflwPolylines;
+    }
+    
     public static List<DXFLWPolyline> getPolyLinesByLayerPattern(DXFDocument doc, String regex) {
 
         List<DXFLWPolyline> result = new ArrayList<>();
@@ -1865,14 +1902,14 @@ public class Util {
             return OccupancyType.OCCUPANCY_A2;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_BOARDING_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_A3;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_B1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_B1;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B2_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_B2;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B3_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_B3;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_C1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_C1;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C2_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_C2;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C3_COLOR_CODE)
@@ -1965,22 +2002,22 @@ public class Util {
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G12_COLOR_CODE)
             return OccupancyType.OCCUPANCY_G12;
         
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_H_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_H;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_I1;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I2_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_I2;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I2_KIOSK_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_F4;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_J;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_J1;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J2_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_J2;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J3_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_J3;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_H_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_H;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_I1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_I2;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I2_KIOSK_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_F4;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_J;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_J1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_J2;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J3_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_J3;
         
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L1_COLOR_CODE)
             return OccupancyType.OCCUPANCY_L1;
@@ -2365,9 +2402,19 @@ public class Util {
     }
     
     public static boolean isPointStrictlyInsidePolygon(DXFLWPolyline poly, Point p) {
+        return isPointStrictlyInsidePolygon(poly, p, DEFAULT_EPS);
+    }
+
+    public static boolean isPointStrictlyInsidePolygon(DXFLWPolyline poly, Point p, double eps) {
+
+        // Check boundary FIRST — avoids running ray casting on points that are
+        // going to be rejected anyway, and guarantees boundary always wins over
+        // any float noise in the ray-cast result.
+        if (isPointOnPolygonBoundary(poly, p, eps)) {
+            return false;
+        }
 
         List<Point> pts = new ArrayList<>();
-
         Iterator it = poly.getVertexIterator();
         while (it.hasNext()) {
             DXFVertex v = (DXFVertex) it.next();
@@ -2391,15 +2438,17 @@ public class Util {
                 inside = !inside;
         }
 
-        // strictly inside → not on boundary
-        if (inside && !isPointOnPolygonBoundary(poly, p)) {
-            return true;
-        }
-
-        return false;
+        return inside;
     }
     
+    
+    
+
     public static boolean isPointOnPolygonBoundary(DXFLWPolyline poly, Point p) {
+        return isPointOnPolygonBoundary(poly, p, DEFAULT_EPS);
+    }
+
+    public static boolean isPointOnPolygonBoundary(DXFLWPolyline poly, Point p, double eps) {
 
         Iterator it = poly.getVertexIterator();
         Point prev = null;
@@ -2410,32 +2459,44 @@ public class Util {
 
         while (it.hasNext()) {
             Point curr = ((DXFVertex) it.next()).getPoint();
-            if (isPointOnLine(prev, curr, p)) return true;
+            if (isPointOnLine(prev, curr, p, eps)) return true;
             prev = curr;
         }
 
         // close last-to-first segment
         Point first = ((DXFVertex) poly.getVertex(0)).getPoint();
-        if (isPointOnLine(prev, first, p)) return true;
+        if (isPointOnLine(prev, first, p, eps)) return true;
 
         return false;
     }
 
     public static boolean isPointOnLine(Point a, Point b, Point p) {
-        double cross = (p.getY() - a.getY()) * (b.getX() - a.getX())
-                - (p.getX() - a.getX()) * (b.getY() - a.getY());
+        return isPointOnLine(a, b, p, DEFAULT_EPS);
+    }
 
-        if (Math.abs(cross) > 1e-6) return false;
+    public static boolean isPointOnLine(Point a, Point b, Point p, double eps) {
+        double abx = b.getX() - a.getX();
+        double aby = b.getY() - a.getY();
+        double apx = p.getX() - a.getX();
+        double apy = p.getY() - a.getY();
 
-        double dot = (p.getX() - a.getX()) * (b.getX() - a.getX()) +
-                (p.getY() - a.getY()) * (b.getY() - a.getY());
+        double lenSq = abx * abx + aby * aby;
+        if (lenSq < 1e-12) {
+            // degenerate segment, treat as point comparison
+            return Math.hypot(apx, apy) <= eps;
+        }
 
-        if (dot < 0) return false;
+        double cross = apy * abx - apx * aby;
+        double perpDist = Math.abs(cross) / Math.sqrt(lenSq); // <-- normalize!
 
-        double lenSq = (b.getX() - a.getX()) * (b.getX() - a.getX())
-                + (b.getY() - a.getY()) * (b.getY() - a.getY());
+        if (perpDist > eps) return false;
 
-        return dot <= lenSq;
+        double dot = apx * abx + apy * aby;
+        if (dot < -eps) return false; // small tolerance at ends too
+
+        if (dot > lenSq + eps) return false;
+
+        return true;
     }
 
     public static boolean doLineSegmentsIntersect(Point p1, Point p2, Point q1, Point q2) {
@@ -2465,9 +2526,36 @@ public class Util {
         if (Math.abs(val) < 1e-10) return 0;  // Collinear
         return (val > 0) ? 1 : 2;            // Clockwise or Counterclockwise
     }
+    
+    public static boolean isPointInsideOrOnPolygon(DXFLWPolyline poly, Point p) {
+        return isPointInsideOrOnPolygon(poly, p, DEFAULT_EPS);
+    }
+
+    public static boolean isPointInsideOrOnPolygon(DXFLWPolyline poly, Point p, double eps) {
+        if (isPointOnPolygonBoundary(poly, p, eps)) {
+            return true;
+        }
+        List<Point> pts = new ArrayList<>();
+        Iterator it = poly.getVertexIterator();
+        while (it.hasNext()) {
+            DXFVertex v = (DXFVertex) it.next();
+            pts.add(v.getPoint());
+        }
+        int n = pts.size();
+        boolean inside = false;
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            double xi = pts.get(i).getX(), yi = pts.get(i).getY();
+            double xj = pts.get(j).getX(), yj = pts.get(j).getY();
+            boolean intersect =
+                    ((yi > p.getY()) != (yj > p.getY())) &&
+                            (p.getX() < (xj - xi) * (p.getY() - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
 
     private static boolean onSegment(Point a, Point b, Point c) {
-        return b.getX() <= Math.max(a.getY(), c.getX()) && b.getX() >= Math.min(a.getX(), c.getX()) &&
+        return b.getX() <= Math.max(a.getX(), c.getX()) && b.getX() >= Math.min(a.getX(), c.getX()) &&
                b.getY() <= Math.max(a.getY(), c.getY()) && b.getY() >= Math.min(a.getY(), c.getY());
     }
 

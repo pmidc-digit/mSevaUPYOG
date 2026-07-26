@@ -92,6 +92,8 @@ import LayoutStepFormTwo from "./pages/citizen/LayoutStepper/LayoutStepFormTwo";
 import LayoutStepFormThree from "./pages/citizen/LayoutStepper/LayoutStepFormThree";
 import LayoutStepFormFour from "./pages/citizen/LayoutStepper/LayoutStepFormFour";
 import LayoutApplicantDetails from "./pageComponents/LayoutApplicantDetails";
+import LayoutNewApplicantDetails from "./pageComponents/LayoutNewApplicantDetails";
+import LayoutOwnerSearchModal from "./pageComponents/LayoutOwnerSearchModal";
 import LayoutProfessionalDetails from "./pageComponents/LayoutProfessionalDetails";
 import LayoutLocalityInfo from "./pageComponents/LayoutLocalityInfo";
 import LayoutSiteDetails from "./pageComponents/LayoutSiteDetails";
@@ -244,6 +246,8 @@ const componentsToRegister = {
   LayoutStepFormThree,
   LayoutStepFormFour,
   LayoutApplicantDetails,
+  LayoutNewApplicantDetails,
+  LayoutOwnerSearchModal,
   LayoutProfessionalDetails,
   LayoutSiteDetails,
   LayoutSpecificationDetails,

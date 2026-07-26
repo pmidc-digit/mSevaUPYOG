@@ -26,6 +26,7 @@ const useEDCRForm = ({ formData }) => {
   const [layoutMessage, setLayoutMessage] = useState("");
   const [layoutFile, setLayoutFile] = useState(null);
   const [dxfFile, setDxfFile] = useState(null);
+  const [roadType, setRoadType] = useState(formData?.Scrutiny?.[0]?.roadType || null);
 
   // Initialize selectedCity with pb.amritsar as default
   const [selectedCity, setSelectedCity] = useState("");
@@ -158,6 +159,10 @@ useEffect(() => {
     console.log("selected city", city);
   }
 
+  function selectRoadType(type) {
+    setRoadType(type);
+  }
+
   const RadioButtonProps = useMemo(() => {
     return {
       options: cities,
@@ -175,6 +180,11 @@ useEffect(() => {
 
   const isFormValid = () => {
     if (!name || !selectedCity?.code || !areaType) return false;
+
+
+    if(roadType === null || roadType === undefined){
+      return false
+    }
 
     if (areaType?.code === "SCHEME_AREA") {
       if (!schemeArea || !schName || !siteReserved) return false;
@@ -287,6 +297,8 @@ useEffect(() => {
     uploadMessage,
     uploadedFile,
     cities,
+    roadType,
+    selectRoadType
   };
 };
 

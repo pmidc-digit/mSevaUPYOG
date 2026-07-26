@@ -26,3 +26,95 @@
 .noc-upload-field-pair {
   margin-bottom: 10px !important;
 }
+
+/* OBPS Payment History Styling */
+.obps-payment-history-container {
+  width: 100%;
+  border: 1px solid #d6d6d6;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  background-color: #fff;
+  font-family: "Noto Sans", sans-serif;
+}
+.obps-payment-history-header {
+  background-color: #f1f1f1;
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+.obps-payment-history-header:hover {
+  background-color: #e5e5e5;
+}
+.obps-payment-history-title {
+  color: #1d70b8;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+.obps-payment-history-chevron {
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+.obps-payment-history-chevron.open {
+  transform: rotate(180deg);
+}
+.obps-payment-history-body {
+  padding: 20px;
+  background-color: #fff;
+  border-top: 1px solid #d6d6d6;
+}
+.obps-payment-history-no-payments {
+  color: #d4351c;
+  font-size: 15px;
+}
+.obps-payment-history-table-wrapper {
+  overflow-x: auto;
+}
+.obps-payment-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 5px;
+}
+.obps-payment-history-table th,
+.obps-payment-history-table td {
+  border: 1px solid #d6d6d6;
+  padding: 10px 16px;
+  font-size: 14px;
+  text-align: left;
+}
+.obps-payment-history-table th {
+  background-color: #f8f9fa;
+  font-weight: 500;
+  color: #505a5f;
+}
+.obps-payment-history-receipt-link {
+  background: none;
+  border: none;
+  color: #1d70b8;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+  font-size: 14px;
+  font-family: inherit;
+  text-align: left;
+}
+.obps-payment-history-receipt-link:hover {
+  color: #003078;
+}
+.obps-payment-history-status {
+  font-weight: 500;
+  color: #0b0c0c;
+}
+.obps-payment-history-status.deposited {
+  color: #00703c;
+  font-weight: 600;
+}
+.obps-payment-history-total {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #505a5f;
+}

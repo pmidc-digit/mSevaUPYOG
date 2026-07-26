@@ -36,7 +36,7 @@ import NocSitePhotographs from "../../../components/NocSitePhotographs";
 import LayoutFeeEstimationDetailsTable from "../../../pageComponents/LayoutFeeEstimationDetailsTable";
 import LayoutDocumentTableView from "../../../pageComponents/LayoutDocumentsView";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
-
+import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 // Component to render document link for owner documents
 const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
   const [url, setUrl] = useState(null);
@@ -285,6 +285,8 @@ const LayoutApplicationOverview = () => {
      const p2 = reciept_data_pay?.Payments || [];
      return [...p1, ...p2];
    }, [reciept_data, reciept_data_pay]);
+
+    const hasPayments = combinedPayments.length > 0;
 
   const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid
 
@@ -873,10 +875,10 @@ const LayoutApplicationOverview = () => {
       </Card>
 
       {/* 3️⃣ FEE DETAILS CARD */}
-      {applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails && (
+    
         <Card>
           <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
-
+  {applicationDetails?.Layout?.[0]?.layoutDetails && (
           <LayoutFeeEstimationDetails
             formData={{
               apiData: { ...applicationDetails },
@@ -890,8 +892,16 @@ const LayoutApplicationOverview = () => {
             feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
             hasPayments={reciept_data?.Payments?.length > 0}
           />
+          )}
+          {hasPayments && (
+                <div style={{ marginTop: "16px" }}>
+                  <OBPSPaymentHistory payments={combinedPayments} />
+                </div>
+              )}
         </Card>
-      )}
+      
+
+      
 
       {/* 1️⃣ SITE COORDINATES CARD */}
       {displayData?.coordinates && displayData.coordinates.length > 0 && (

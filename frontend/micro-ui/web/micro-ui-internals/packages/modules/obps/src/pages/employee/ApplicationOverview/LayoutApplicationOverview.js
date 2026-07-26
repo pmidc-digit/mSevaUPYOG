@@ -37,6 +37,9 @@ import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspec
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
+import { formatDuration, formatDate, decryptId } from "../../../utils/index";
+import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
+
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   //console.log("checkpoint here", checkpoint);
@@ -1234,6 +1237,12 @@ const LayoutEmployeeApplicationOverview = () => {
             disable={isFeeDisabled}
           />
         )}
+         {hasPayments && (
+                  <div style={{ marginTop: "16px" }}>
+                    <OBPSPaymentHistory payments={combinedPayments} />
+                  </div>
+                )}
+
       </Card>
 
       {/* FEE DETAILS TABLE CARD - CLU STYLE PART 2 */}

@@ -179,41 +179,6 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
   const isDataInitialized = useRef(false);
   const hasResetForm = useRef(false);
 
-  useEffect(() => {
-    // console.log("[v0] Loading states:", {
-    //   isLoading,
-    //   isBuildingTypeLoading,
-    //   isBuildingCategoryLoading,
-    //   isRoadTypeLoading,
-    //   isLayoutTypeLoading,
-    //   isUlbListLoading,
-    //   isMdmsLoading,
-    // });
-    // console.log("[v0] Data availability:", {
-    //   hasLayoutObject: !!layoutObject?.layoutDetails,
-    //   buildingTypeLength: buildingTypeData?.length || 0,
-    //   buildingCategoryLength: buildingCategoryData?.length || 0,
-    //   layoutTypeLength: layoutTypeData?.length || 0,
-    //   roadTypeLength: roadTypeData?.length || 0,
-    //   areaTypeLength: areaTypeOptions.length,
-    //   menuLength: menu.length,
-    // });
-  }, [isLoading, isBuildingTypeLoading, isBuildingCategoryLoading, isRoadTypeLoading, isLayoutTypeLoading, isUlbListLoading, isMdmsLoading]);
-
-  // First useEffect: Handle zone updates only
-  // useEffect(() => {
-  //   if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
-  //     const zoneName = siteDetails?.zone?.name || siteDetails?.zone
-  //     const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName)
-  //     if (matchedZone && formData.siteDetails?.zone?.code !== matchedZone.code) {
-  //       dispatch(
-  //         UPDATE_LayoutNewApplication_FORM("siteDetails", {
-  //           ...formData.siteDetails,            
-  //         })
-  //       );
-  //     }
-  //   }
-  // }, [fetchedLocalities, siteDetails?.zone]);
 
    const options = [
       { code: "YES", i18nKey: "YES" },
@@ -248,10 +213,7 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
       });
     });
 
-  // const convertToISODate = (dateStr) => {
-  //   const [dd, mm, yyyy] = dateStr.split("-");
-  //   return `${yyyy}-${mm}-${dd}`;
-  // };
+  
 
   const convertToISODate = (dateStr) => {
   if (!dateStr) return "";
@@ -269,140 +231,6 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
 };
 
 
-  // useEffect(() => {
-  //   const hasApiData = !isLoading && layoutObject?.layoutDetails && !isUlbListLoading && ulbList?.length > 0
-
-  //   console.log("[v0] hasApiData check:", hasApiData, "isDataInitialized:", isDataInitialized.current)
-
-  //   if (hasApiData && !isDataInitialized.current) {
-  //     console.log("[v0] Initializing form data with API data...")
-  //     console.log("[v0] buildingType:", buildingTypeData)
-  //     console.log("[v0] buildingCategory:", buildingCategoryData)
-  //     console.log("[v0] roadType:", roadTypeData)
-  //     console.log("[v0] siteDetails:", siteDetails)
-
-  //     isDataInitialized.current = true
-
-  //     dispatch(RESET_LAYOUT_NEW_APPLICATION_FORM())
-
-  //     const formattedDocuments = {
-  //       documents: {
-  //         documents: documents?.map((doc) => ({
-  //           documentType: doc?.documentType || "",
-  //           uuid: doc?.uuid || "",
-  //           documentUid: doc?.documentUid || "",
-  //           documentAttachment: doc?.documentAttachment || "",
-  //           filestoreId: doc?.uuid || "",
-  //         })),
-  //       },
-  //     }
-
-  //     Object.entries(coordinates || {}).forEach(([key, value]) => {
-  //       dispatch(UPDATE_LayoutNewApplication_CoOrdinates(key, value))
-  //     })
-
-  //     const updatedApplicantDetails = {
-  //       ...applicantDetails,
-  //       applicantGender: menu?.find(
-  //         (obj) =>
-  //           obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender,
-  //       ),
-  //     }
-
-  //     const districtObj = cities?.find((obj) => {
-  //       const siteDistrictValue = siteDetails?.district?.name || siteDetails?.district
-  //       console.log("[v0] Comparing district:", obj.name, "with", siteDistrictValue)
-  //       return obj.name === siteDistrictValue || obj.code === siteDetails?.district?.code
-  //     })
-  //     console.log("[v0] Found districtObj:", districtObj)
-  //     if (districtObj) setSelectedDistrict(districtObj)
-
-  //     const ulbNameObj = ulbListOptions?.find((obj) => {
-  //       const siteUlbValue = siteDetails?.ulbName?.name || siteDetails?.ulbName
-  //       console.log("[v0] Comparing ulb:", obj.name, "with", siteUlbValue)
-  //       return obj.name === siteUlbValue || obj.code === siteDetails?.ulbName?.code
-  //     })
-  //     console.log("[v0] Found ulbNameObj:", ulbNameObj)
-
-  //     const buildingCategoryObj = buildingCategoryData?.find((obj) => {
-  //       const siteCategoryValue = siteDetails?.buildingCategory?.name || siteDetails?.buildingCategory
-  //       console.log("[v0] Comparing buildingCategory:", obj.name, "with", siteCategoryValue)
-  //       return obj.name === siteCategoryValue || obj.code === siteDetails?.buildingCategory?.code
-  //     })
-  //     console.log("[v0] Found buildingCategoryObj:", buildingCategoryObj)
-
-  //     const buildingStatusObj = buildingTypeData?.find((obj) => {
-  //       const siteStatusValue = siteDetails?.buildingStatus?.name || siteDetails?.buildingStatus
-  //       console.log("[v0] Comparing buildingStatus:", obj.name, "with", siteStatusValue)
-  //       return obj.name === siteStatusValue || obj.code === siteDetails?.buildingStatus?.code
-  //     })
-  //     console.log("[v0] Found buildingStatusObj:", buildingStatusObj)
-
-  //     const updatedSiteDetails = {
-  //       ...siteDetails,
-  //       localityAreaType:
-  //         areaTypeOptions?.find(
-  //           (obj) =>
-  //             obj.name === siteDetails?.localityAreaType?.name ||
-  //             obj.name === siteDetails?.localityAreaType ||
-  //             obj.code === siteDetails?.localityAreaType?.code ||
-  //             obj.code === siteDetails?.localityAreaType,
-  //         ) || siteDetails?.localityAreaType,
-  //       ulbName: ulbNameObj || siteDetails?.ulbName,
-  //       roadType:
-  //         roadTypeData?.find(
-  //           (obj) =>
-  //             obj.name === siteDetails?.roadType?.name ||
-  //             obj.name === siteDetails?.roadType ||
-  //             obj.code === siteDetails?.roadType?.code ||
-  //             obj.code === siteDetails?.roadType,
-  //         ) || siteDetails?.roadType,
-  //       buildingStatus: buildingStatusObj || siteDetails?.buildingStatus,
-  //       isBasementAreaAvailable: options?.find(
-  //         (obj) =>
-  //           obj.code === siteDetails?.isBasementAreaAvailable?.code ||
-  //           obj.code === siteDetails?.isBasementAreaAvailable,
-  //       ),
-  //       district: districtObj || siteDetails?.district,
-  //       buildingCategory: buildingCategoryObj || siteDetails?.buildingCategory,
-  //       specificationBuildingCategory:
-  //         buildingCategoryData?.find(
-  //           (obj) =>
-  //             obj.name === siteDetails?.specificationBuildingCategory?.name ||
-  //             obj.name === siteDetails?.specificationBuildingCategory ||
-  //             obj.code === siteDetails?.specificationBuildingCategory?.code ||
-  //             obj.code === siteDetails?.specificationBuildingCategory,
-  //         ) || siteDetails?.specificationBuildingCategory,
-  //       specificationLayoutType:
-  //         layoutTypeData?.find(
-  //           (obj) =>
-  //             obj.name === siteDetails?.specificationLayoutType?.name ||
-  //             obj.name === siteDetails?.specificationLayoutType ||
-  //             obj.code === siteDetails?.specificationLayoutType?.code ||
-  //             obj.code === siteDetails?.specificationLayoutType,
-  //         ) || siteDetails?.specificationLayoutType,
-  //       specificationRestrictedArea: options?.find(
-  //         (obj) =>
-  //           obj.code === siteDetails?.specificationRestrictedArea?.code ||
-  //           obj.code === siteDetails?.specificationRestrictedArea,
-  //       ),
-  //       specificationIsSiteUnderMasterPlan: options?.find(
-  //         (obj) =>
-  //           obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code ||
-  //           obj.code === siteDetails?.specificationIsSiteUnderMasterPlan,
-  //       ),
-  //     }
-
-  //     console.log("[v0] Updated siteDetails:", updatedSiteDetails)
-
-  //     dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedApplicantDetails))
-  //     dispatch(UPDATE_LayoutNewApplication_FORM("siteDetails", updatedSiteDetails))
-  //     dispatch(UPDATE_LayoutNewApplication_FORM("documents", formattedDocuments))
-  //     dispatch(UPDATE_LayoutNewApplication_FORM("apiData", layoutObject))
-
-  //     console.log("[v0] Form data initialized successfully")
-  //   }
-  // }, [isLoading, isUlbListLoading, layoutObject, cities, ulbList, buildingTypeData, buildingCategoryData, roadTypeData])
 
   // <CHANGE> Simplify useEffect - remove the ref and complex initialization
   useEffect(() => {
@@ -487,16 +315,19 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
             // Document file references
             primaryOwnerPhoto: applicantDetails?.primaryOwnerPhoto || "",
             primaryOwnerDocument: applicantDetails?.primaryOwnerDocument || "",
-            aplicantType: applicantDetails?.aplicantType ? (
-              {
-                Individual: { name: "Individual", code: "INDIVIDUAL" },
-                Firm: { name: "Firm", code: "FIRM" },
-                INDIVIDUAL: { name: "Individual", code: "INDIVIDUAL" },
-                FIRM: { name: "Firm", code: "FIRM" },
-              }[(typeof applicantDetails?.aplicantType === "string" ? applicantDetails?.aplicantType : applicantDetails?.aplicantType?.code || applicantDetails?.aplicantType?.name || "").toUpperCase()] || (
-                typeof applicantDetails?.aplicantType === "object" && applicantDetails?.aplicantType?.code ? applicantDetails.aplicantType : null
-              )
-            ) : null,
+            // aplicantType: applicantDetails?.aplicantType ? (
+            //   {
+            //     Individual: { name: "Individual", code: "INDIVIDUAL" },
+            //     Firm: { name: "Firm", code: "FIRM" },
+            //     INDIVIDUAL: { name: "Individual", code: "INDIVIDUAL" },
+            //     FIRM: { name: "Firm", code: "FIRM" },
+            //   }[(typeof applicantDetails?.aplicantType === "string" ? applicantDetails?.aplicantType : applicantDetails?.aplicantType?.code || applicantDetails?.aplicantType?.name || "").toUpperCase()] || (
+            //     typeof applicantDetails?.aplicantType === "object" && applicantDetails?.aplicantType?.code ? applicantDetails.aplicantType : null
+            //   )
+            // ) : null,
+            aplicantType: layoutObject?.owners?.length > 1 ? (
+              {name: 'Multiple', code: 'MULTIPLE'}
+            ) : ({name: 'Individual', code: 'INDIVIDUAL'}),
             authorisedPerson: applicantDetails?.authorisedPerson || "",
             
           };
@@ -598,11 +429,13 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
           };
     
           // Map all owners including primary (index 0)
-          const allApplicants = ownersFromApi?.filter((owner, index) => (index !== 0))?.map((owner, index) => {
+          // console.log("Ownsers in this field", ownersFromApi)
+          const allApplicants = ownersFromApi?.map((owner, index) => {
             const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender;
             const formattedDob = formatDobToDate(owner?.dob);
     
             return {
+              ...owner,
               actualIndex: index,
               name: owner?.name || "",
               fatherOrHusbandName: owner?.fatherOrHusbandName || "",

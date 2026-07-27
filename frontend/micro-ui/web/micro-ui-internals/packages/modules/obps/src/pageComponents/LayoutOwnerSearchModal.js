@@ -103,7 +103,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
 
     try {
       setIsLoading(true);
-      const userResponse = await Digit.UserService.userSearch(stateId, { mobileNumber: currentMobile }, {});
+      const userResponse = await Digit.UserService.userSearch(stateId, { mobileNumber: currentMobile, active: true, userType: "CITIZEN" }, {});
       setIsLoading(false);
 
       if (userResponse?.user && userResponse.user.length > 0) {

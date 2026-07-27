@@ -625,12 +625,31 @@ function LayoutSelectDocument({
     });
   }
 
+  const getDocumentLabel = () => {
+    const translationKey = doc?.code ? doc.code.replaceAll(".", "_") : "";
+    const text = t(translationKey);
+    if (doc?.code === "OWNER.SITEMARKEDONGOOGLEPLAN") {
+      const splitWord = " and ";
+      const splitIndex = text.indexOf(splitWord);
+      if (splitIndex !== -1) {
+        return (
+          <React.Fragment>
+            {text.substring(0, splitIndex)}
+            <br />
+            {text.substring(splitIndex + 1)}
+          </React.Fragment>
+        );
+      }
+    }
+    return text;
+  };
+
   return (
     <div style={{ marginBottom: "24px" }}>
       {getLoading && <Loader />}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller" style={{ width: "100%" }}>
-            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && <span className="requiredField">*</span>} 
+            {getDocumentLabel()} {doc?.required && <span className="requiredField">*</span>} 
           </CardLabel>
 
       <div className="field" style={{display: "flex", flexDirection:"column", gap: "10px"}}>

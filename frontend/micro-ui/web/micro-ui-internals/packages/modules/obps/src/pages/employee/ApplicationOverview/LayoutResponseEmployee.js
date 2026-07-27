@@ -44,7 +44,8 @@ const LayoutResponseEmployee = (props) => {
     <div>
       <Card>
         <Banner
-          message={t(`LAYOUT_APPLICATION_FORWARD_SUCCESS_HEADER`)}
+          message={layoutData?.workflow?.action?.includes("FORWARD" || "forward") ? t("WF_EMPLOYEE_LAYOUT_FORWARD_SUCESS_HEADER"): t(`WF_EMPLOYEE_LAYOUT_${layoutData?.workflow?.action}_SUCCESS_HEADER`)}
+          // message={t(`LAYOUT_APPLICATION_FORWARD_SUCCESS_HEADER`)}
           applicationNumber={applicationNo}
           info={layoutData?.applicationStatus === "REJECTED" ? "" : t("LAYOUT_APPLICATION_NUMBER")}
           successful={layoutData?.applicationStatus === "REJECTED" ? false : true}

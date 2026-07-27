@@ -245,6 +245,14 @@ const CustomUploadFile = (props) => {
       return;
     }
 
+    if (props.maxFileSize && file.size > props.maxFileSize * 1024 * 1024) {
+      const msg = t(`File size exceeds ${props.maxFileSize}MB limit`);
+      setLocalError(msg);
+      if (props?.setError) props.setError(msg);
+      inpRef.current.value = '';
+      return;
+    }
+
     // valid file — forward the event to parent
     props.onUpload && props.onUpload(e);
     // update local state
@@ -395,8 +403,8 @@ const CustomUploadFile = (props) => {
       </div>
     )}
 
-    {props.iserror && <p className="error-text">{props.iserror}</p>}
-  {localError && <p className="error-text">{localError}</p>}
+    {(props.iserror || props.error) && <p className="error-text">{t(props.iserror || props.error)}</p>}
+    {localError && <p className="error-text">{t(localError)}</p>}
     {props?.showHintBelow && <p className="cell-text">{t(props?.hintText)}</p>}
     {loader && <LoaderNew page />}
   </Fragment>

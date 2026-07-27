@@ -80,7 +80,7 @@ const fetchServiceSearchData = async ({ serviceType, identifier, tenantId }) => 
   }
 };
 
-const formatDDMMYYYY = (ts) => (ts ? new Date(ts).toLocaleDateString("en-GB").split("/").join("") : "");
+const formatDDMMYYYY = (ts) => (ts ? new Date(ts).toLocaleDateString("en-GB") : "");
 
 const getPeriodMappingEntries = ({ businessService, hasArrears, searchData }) => {
   return businessService === "rl-services" && !hasArrears
@@ -313,9 +313,12 @@ export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, 
           }
         }
 
-        let fileStore = await Digit.PaymentService.printReciept(tenantId, {
-          fileStoreIds: response?.filestoreIds?.join(","),
-        });
+        let fileStore;
+        if (response?.filestoreIds?.length) {
+          fileStore = await Digit.PaymentService.printReciept(tenantId, {
+            fileStoreIds: response.filestoreIds.join(","),
+          });
+        }
 
         if (!fileStore?.fileStoreIds?.[0]?.id) {
           response = await Digit.PaymentService.generatePdf(tenantId, pdfPayload, pdfkey);

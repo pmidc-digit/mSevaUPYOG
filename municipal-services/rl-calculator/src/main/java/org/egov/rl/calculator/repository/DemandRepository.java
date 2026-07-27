@@ -221,9 +221,8 @@ public class DemandRepository {
 
 	public List<Demand> getExpiredUnpaidDemands(String tenantId, long currentTime, String consumerCode) {
 		List<Object> preparedStmtList = new ArrayList<>();
-		StringBuilder queryBuilder = new StringBuilder("SELECT * FROM egbs_demand_v1 WHERE tenantid = ? AND (createdtime + billexpirytime) <= ? AND ispaymentcompleted = false AND businessservice = 'rl-services' AND status = 'ACTIVE'");
+		StringBuilder queryBuilder = new StringBuilder("SELECT * FROM egbs_demand_v1 WHERE tenantid = ? AND ispaymentcompleted = false AND businessservice = 'rl-services' AND status = 'ACTIVE'");
 		preparedStmtList.add(tenantId);
-		preparedStmtList.add(currentTime);
 
 		if (consumerCode != null && !consumerCode.trim().isEmpty()) {
 			queryBuilder.append(" AND consumercode = ?");

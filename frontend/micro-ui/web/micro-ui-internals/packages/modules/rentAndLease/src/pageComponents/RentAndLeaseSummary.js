@@ -42,13 +42,15 @@ function RentAndLeaseSummary({ t }) {
     // locationType: t("RENT_LEASE_LOCATION_TYPE"),
     baseRent: t("RENT_AMOUNT "),
     securityDeposit: t("SECURITY_DEPOSIT"),
-    tax_applicable: t("GST_APPLICABLE"),
+    isGSTApplicable: t("GST_APPLICABLE"),
     refundApplicableOnDiscontinuation: t("REFUND_APPLICABLE"),
     penaltyType: t("PENALTY_TYPE"),
     startDate: t("RAL_START_DATE"),
     endDate: t("RAL_END_DATE"),
     // latePayment: t("LATE_PAYMENT_PERCENT"),
   };
+
+  console.log("formData", formData);
 
   return (
     <div className="application-summary">
@@ -120,6 +122,8 @@ function RentAndLeaseSummary({ t }) {
 
               return renderRow(label, value);
             })}
+          {property?.gstAmount && renderRow(t("GST"), property?.gstAmount)}
+          {property?.rebateAmount && renderRow(t("Rebate"), property?.rebateAmount)}
         </div>
       </Card>
 

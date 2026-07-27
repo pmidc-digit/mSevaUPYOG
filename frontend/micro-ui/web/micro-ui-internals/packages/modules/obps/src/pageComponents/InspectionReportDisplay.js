@@ -86,50 +86,26 @@ const InspectionReportDisplay = ({fiReport}) => {
                 {report?.InspectionTime || t("NA")}
               </div>
             </LabelFieldPair>} */}
-            <div style={{ marginTop: "16px" }}>
-              {/* <CardLabel className="card-label-smaller">{t("BPA_FI_CHECKLIST_LABEL")}:</CardLabel> */}
-              {report.questionList && report.questionList.length > 0 ? (
-                // report.questionList.map((questionItem, qIndex) => (
-                //   <div key={qIndex}>
-                //     <div>
-                //       <strong>{questionItem.question}</strong>
-                //     </div>
-                //     <div>
-                //       {t(report?.["question_"+qIndex]?.i18nKey)}
-                //     </div>
-                //     {report?.["Remarks_"+qIndex] && (
-                //       <div>
-                //         <em>{t("COMMENTS")}: {report?.["Remarks_"+qIndex]}</em>
-                //       </div>
-                //     )}
-                //   </div>
-                // ))
-                        <Table
-                            className="customTable table-border-style"
-                            t={t}
-                            data={tableData}
-                            columns={[
-                                {
-                                    Header: t("SR_NO"),
-                                    accessor: "srNo",
-                                    width: "100px"
-                                },
-                                {
-                                    Header: t("BPA_CHECK_LIST_DETAILS"),
-                                    accessor: "question"
-                                },                                
-                                {
-                                    Header: t("BPA_REMARKS"),
-                                    accessor: "remarks"
-                                }
-                            ]}
-                            getCellProps={() => ({ style: {} })}
-                            disableSort={true}
-                            // autoSort={true}
-                            manualPagination={false}
-                            isPaginationRequired={false}
-                            pageSizeLimit={tableData.length}
-                        />
+            <div className="bpa-table-container">
+              {tableData && tableData.length > 0 ? (
+                <table className="customTable table-border-style">
+                  <thead>
+                    <tr>
+                      <th style={{ width: "100px" }}>{t("SR_NO")}</th>
+                      <th>{t("BPA_CHECK_LIST_DETAILS")}</th>
+                      <th>{t("BPA_REMARKS")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableData.map((row, index) => (
+                      <tr key={index}>
+                        <td style={{ width: "100px" }}>{row.srNo}</td>
+                        <td>{row.question}</td>
+                        <td>{row.remarks}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               ) : (
                 <div>{t("NA")}</div>
               )}

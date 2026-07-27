@@ -892,33 +892,7 @@ const LayoutApplicationOverview = () => {
           </div>
         ))}
       </Card>
-
-      {/* 3️⃣ FEE DETAILS CARD */}
-    
-        <Card>
-          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
-  {applicationDetails?.Layout?.[0]?.layoutDetails && (
-          <LayoutFeeEstimationDetails
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
-              },
-              siteDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
-              },
-            }}
-            feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
-            hasPayments={reciept_data?.Payments?.length > 0}
-          />
-          )}
-          {hasPayments && (
-                <div style={{ marginTop: "16px" }}>
-                  <OBPSPaymentHistory payments={combinedPayments} />
-                </div>
-              )}
-        </Card>
-      
+  
 
       
 
@@ -958,6 +932,35 @@ const LayoutApplicationOverview = () => {
           </StatusTable>
         </Card>
       )}
+
+       {/* 3️⃣ FEE DETAILS CARD */}
+    
+        <Card>
+          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
+  {applicationDetails?.Layout?.[0]?.layoutDetails && (
+     <StatusTable>
+          <LayoutFeeEstimationDetails
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
+              },
+              siteDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
+              },
+            }}
+            feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
+            hasPayments={reciept_data?.Payments?.length > 0}
+          />
+          </StatusTable>
+          )}
+          {hasPayments && (
+                <div style={{ marginTop: "16px" }}>
+                  <OBPSPaymentHistory payments={combinedPayments} />
+                </div>
+              )}
+        </Card>
+      
 
       {/* -------------------- SPECIFICATIONS -------------------- */}
       {/* <Card>

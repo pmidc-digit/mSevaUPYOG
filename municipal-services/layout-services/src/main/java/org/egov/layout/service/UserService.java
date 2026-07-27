@@ -131,8 +131,13 @@ public class UserService {
 				map.put("createdDate", dateTolong((String) map.get("createdDate"), format1));
 				if ((String) map.get("lastModifiedDate") != null)
 					map.put("lastModifiedDate", dateTolong((String) map.get("lastModifiedDate"), format1));
-				if ((String) map.get("dob") != null && dobFormat != null)
-					map.put("dob", dateTolong((String) map.get("dob"), dobFormat));
+				if ((String) map.get("dob") != null && dobFormat != null) {
+					String dob = (String) map.get("dob");
+					if(dob.contains("/"))
+						map.put("dob", dateTolong((String) map.get("dob"), "dd/MM/yyyy"));
+					else if(dob.contains("-"))
+						map.put("dob", dateTolong((String) map.get("dob"), "yyyy-MM-dd"));
+				}
 				if ((String) map.get("pwdExpiryDate") != null)
 					map.put("pwdExpiryDate", dateTolong((String) map.get("pwdExpiryDate"), format1));
 			});

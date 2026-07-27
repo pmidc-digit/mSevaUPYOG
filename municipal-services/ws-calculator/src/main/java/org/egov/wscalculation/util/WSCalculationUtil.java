@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.egov.wscalculation.repository.ElasticSearchRepository;
 
@@ -176,39 +178,9 @@ public class WSCalculationUtil {
 		propertyIds.add(waterConnectionRequest.getWaterConnection().getPropertyId());
 		propertyCriteria.setPropertyIds(propertyIds);
 		propertyCriteria.setTenantId(waterConnectionRequest.getWaterConnection().getTenantId());
-		
-		List<Property> propertyList = new ArrayList<>();
-		
-		try {
-			SearchCriteria searchCriteria = new SearchCriteria();
-			searchCriteria.setTenantId(waterConnectionRequest.getWaterConnection().getTenantId());
-			searchCriteria.setPropertyId(waterConnectionRequest.getWaterConnection().getPropertyId());
-			
-			Object esResult = elasticSearchRepository.fuzzySearchForConnections(searchCriteria);
-			if (esResult != null) {
-				JsonNode node = objectMapper.convertValue(esResult, JsonNode.class);
-				JsonNode hits = node.path("hits").path("hits");
-				if (hits.isArray() && hits.size() > 0) {
-					for (JsonNode hit : hits) {
-						JsonNode data = hit.path("_source").path("Data");
-						if (!data.isMissingNode()) {
-							propertyList.add(objectMapper.convertValue(data, Property.class));
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			log.error("Error fetching property from ElasticSearch", e);
-		}
-		
-		//fetch property from elastic search
-		//if exist in elastic search then proceed otherwise fetch by RestAPI
-		if (CollectionUtils.isEmpty(propertyList)) {
-			Object result = serviceRequestRepository.fetchResult(getPropertyURL(propertyCriteria),
-					RequestInfoWrapper.builder().requestInfo(waterConnectionRequest.getRequestInfo()).build());
-			propertyList = getPropertyDetails(result);
-		}
-		
+		Object result = serviceRequestRepository.fetchResult(getPropertyURL(propertyCriteria),
+				RequestInfoWrapper.builder().requestInfo(waterConnectionRequest.getRequestInfo()).build());
+		List<Property> propertyList = getPropertyDetails(result);
 		if (CollectionUtils.isEmpty(propertyList)) {
 			throw new CustomException("INCORRECT_PROPERTY_ID", "PROPERTY SEARCH ERROR!");
 		}
@@ -350,5 +322,52 @@ public class WSCalculationUtil {
 
 	public StringBuilder getPropertyURL() {
 		return new StringBuilder().append(propertyHost).append(searchPropertyEndPoint);
+	}
+
+	public Property getPropertyDetailsFromElasticData(WaterConnectionRequest waterConnectionRequest) {
+		List<Property> propertyList = new ArrayList<>();
+		try {
+			SearchCriteria searchCriteria = new SearchCriteria();
+			searchCriteria.setTenantId(waterConnectionRequest.getWaterConnection().getTenantId());
+			searchCriteria.setPropertyId(waterConnectionRequest.getWaterConnection().getPropertyId());
+
+			Object esResult = elasticSearchRepository.fuzzySearchForConnections(searchCriteria);
+
+			if (esResult != null) {
+				JsonNode node = objectMapper.convertValue(esResult, JsonNode.class);
+				JsonNode hits = node.path("hits").path("hits");
+				if (hits.isArray() && hits.size() > 0) {
+					for (JsonNode hit : hits) {
+						JsonNode data = hit.path("_source").path("Data");
+						if (!data.isMissingNode()) {
+							if (data.has("owners") && data.get("owners").isArray()) {
+								ArrayNode ownersArray = (ArrayNode) data.get("owners");
+								ArrayNode newOwnersArray = objectMapper.createArrayNode();
+								for (JsonNode ownerIdNode : ownersArray) {
+									if (ownerIdNode.isTextual()) {
+										ObjectNode ownerNode = objectMapper.createObjectNode();
+										ownerNode.put("uuid", ownerIdNode.asText());
+										newOwnersArray.add(ownerNode);
+									} else {
+										newOwnersArray.add(ownerIdNode);
+									}
+								}
+								((ObjectNode) data).set("owners", newOwnersArray);
+							}
+							propertyList.add(objectMapper.convertValue(data, Property.class));
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error fetching property from ElasticSearch", e);
+		}
+
+		if (!CollectionUtils.isEmpty(propertyList)) {
+			log.info("Successfully fetched {} properties from ElasticSearch for propertyId: {}", propertyList.size(),
+					waterConnectionRequest.getWaterConnection().getPropertyId());
+		}
+
+		return propertyList.stream().findFirst().orElse(null);
 	}
 }

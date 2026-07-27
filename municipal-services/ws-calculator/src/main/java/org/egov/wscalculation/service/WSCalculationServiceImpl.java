@@ -169,23 +169,6 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 		return calculations;
 	}
 
-	
-	
-	
-	
-	
-	public List<Calculation> bulkbillgeneration(CalculationReq request, Map<String, Object> masterMap) {
-		List<Calculation> calculations = getCalculations(request, masterMap);
-		demandService.generateDemandForBillingCycleInBulk(request, calculations, masterMap, true);
-		return calculations;
-	}
-	
-	
-	
-	
-	
-	
-	
 	/**
 	 * 
 	 * @param request - Calculation Request Object

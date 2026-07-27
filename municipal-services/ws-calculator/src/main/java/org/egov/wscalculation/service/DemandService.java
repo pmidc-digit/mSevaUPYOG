@@ -681,7 +681,12 @@ public class DemandService {
 				.requestInfo(requestInfo).build();
 
 //		log.info("waterConnectionRequest: {}", waterConnectionRequest);
-		Property property = wsCalculationUtil.getProperty(waterConnectionRequest);
+		Property property = wsCalculationUtil.getPropertyDetailsFromElasticData(waterConnectionRequest);
+		
+		if(property == null) {
+            log.info("Property not found in Elastic, fetching from Property Service"); 
+			property = wsCalculationUtil.getProperty(waterConnectionRequest);
+		}
 		//log.info("Property: {}", property);
 
 		String tenantId = calculation.getTenantId();

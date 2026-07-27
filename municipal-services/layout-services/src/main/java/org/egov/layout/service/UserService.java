@@ -281,8 +281,8 @@ public class UserService {
 				addUserDefaultFields(noc.getTenantId(), role, owner);
 
 				UserResponse existingUserResponse = userExists(owner, requestInfo);
-
-				if (!existingUserResponse.getUser().isEmpty()) {
+				existingUserResponse = new UserResponse();
+				if (!CollectionUtils.isEmpty(existingUserResponse.getUser())) {
 					OwnerInfo existingUser = existingUserResponse.getUser().get(0);
 					log.info("User already exists with UUID: " + existingUser.getUuid());
 					owner.setUuid(existingUser.getUuid());
@@ -291,6 +291,7 @@ public class UserService {
 //						  UserResponse userResponse = userExists(owner,requestInfo);
 					StringBuilder uri = new StringBuilder(userHost).append(userContextPath).append(userCreateEndpoint);
 					setUserName(owner);
+					owner.setUserName(UUID.randomUUID().toString());
 					UserResponse userResponse = userCall(new CreateUserRequest(requestInfo, owner), uri);
 					if (userResponse.getUser().get(0).getUuid() == null) {
 						throw new CustomException("INVALID USER RESPONSE", "The user created has uuid as null");

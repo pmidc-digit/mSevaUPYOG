@@ -480,7 +480,8 @@ public class MinDistance {
             // Add a meaningful, descriptive error directly to the eDCR report
             pl.getErrors().put(
                 name + "_INVALID_MARKING_STYLE", 
-                "Invalid marking style detected for " + name + ". Setbacks must NOT be drawn as isolated boxes inside the plot. Please draw them extending continuously from the Plot Boundary, touching the adjacent yards (Edge-to-Edge/Sandwich style)."
+                "Invalid marking style detected for " + name + ". Setbacks must NOT be drawn as isolated boxes inside the plot. Please draw them extending continuously from the Plot Boundary,"
+                		+ "touching the adjacent yards (Edge-to-Edge)."
             );
             
             // Return 0.0 immediately so it fails the validation check
@@ -1088,6 +1089,9 @@ public class MinDistance {
             Point mid = new Point();
             mid.setX((y1.getX() + y2.getX()) / 2.0);
             mid.setY((y1.getY() + y2.getY()) / 2.0);
+            
+            double dist = Util.minDistanceToPolygonBoundary(buildingFootprint, mid);
+            LOG.info("{} midpoint distance to boundary = {}" , yardName, dist);
 
             if (Util.isPointStrictlyInsidePolygon(buildingFootprint, mid)) {
 

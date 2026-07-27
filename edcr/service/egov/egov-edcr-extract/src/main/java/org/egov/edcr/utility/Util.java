@@ -67,7 +67,7 @@ public class Util {
     private static final BigDecimal THREEHUNDRED = BigDecimal.valueOf(300);
 
     
-    private static final double DEFAULT_EPS = 1e-3;
+    private static final double DEFAULT_EPS = 0.02;
 
     
     
@@ -2441,7 +2441,34 @@ public class Util {
         return inside;
     }
     
-    
+    public static double minDistanceToPolygonBoundary(DXFLWPolyline poly, Point p) {
+        List<Point> pts = new ArrayList<>();
+        Iterator it = poly.getVertexIterator();
+        while (it.hasNext()) {
+            DXFVertex v = (DXFVertex) it.next();
+            pts.add(v.getPoint());
+        }
+        int n = pts.size();
+        double min = Double.MAX_VALUE;
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            min = Math.min(min, distanceToSegment(p, pts.get(j), pts.get(i)));
+        }
+        return min;
+    }
+
+    // point-to-segment distance, shared helper
+    private static double distanceToSegment(Point p, Point a, Point b) {
+        double px = p.getX(), py = p.getY();
+        double ax = a.getX(), ay = a.getY();
+        double bx = b.getX(), by = b.getY();
+        double abx = bx - ax, aby = by - ay;
+        double apx = px - ax, apy = py - ay;
+        double lenSq = abx * abx + aby * aby;
+        double t = lenSq < 1e-12 ? 0 : (apx * abx + apy * aby) / lenSq;
+        t = Math.max(0, Math.min(1, t));
+        double cx = ax + t * abx, cy = ay + t * aby;
+        return Math.hypot(px - cx, py - cy);
+    }
     
 
     public static boolean isPointOnPolygonBoundary(DXFLWPolyline poly, Point p) {

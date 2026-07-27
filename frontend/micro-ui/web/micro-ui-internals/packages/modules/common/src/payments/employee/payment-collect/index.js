@@ -11,6 +11,7 @@ import { useNEFTDetails } from "./neft";
 import { useRTGSDetails } from "./rtgs";
 import { usePostalDetails } from "./postalOrder";
 import { useQRDetails } from "./qrCode";
+import { useAdvanceDetails } from "./advance";
 import isEqual from "lodash/isEqual";
 import { BillDetailsFormConfig } from "./Bill-details/billDetails";
 
@@ -72,11 +73,13 @@ export const CollectPayment = (props) => {
   const { rtgsConfig } = useRTGSDetails(props, t);
   const { postalOrderConfig } = usePostalDetails(props, t);
   const { qrConfig } = useQRDetails(props, t);
+  const { advanceConfig } = useAdvanceDetails(props, t);
 
   const [toast, setToast] = useState(null);
 
   const isChallanGeneration = location.pathname.includes("Challan_Generation");
   const isPetService = location.pathname.includes("pet-services");
+  const isRentLease = location.pathname.includes("rl-services");
 
   console.log("isPetService", isPetService);
 
@@ -96,6 +99,7 @@ export const CollectPayment = (props) => {
     ...(!(isChallanGeneration || isPetService) ? [{ code: "OFFLINE_RTGS", label: "RTGS" }] : []),
     ...(!(isChallanGeneration || isPetService) ? [{ code: "POSTAL_ORDER", label: "Postal Order" }] : []),
     ...(!(isChallanGeneration || isPetService) ? [{ code: "QR_CODE", label: "QR Code" }] : []),
+    ...(isRentLease ? [{ code: "Advance", label: "Advance" }] : []),
   ];
 
   const formConfigMap = {
@@ -106,6 +110,7 @@ export const CollectPayment = (props) => {
     OFFLINE_RTGS: rtgsConfig,
     POSTAL_ORDER: postalOrderConfig,
     QR_CODE: qrConfig,
+    Advance: advanceConfig,
   };
 
   useEffect(() => {
@@ -125,13 +130,23 @@ export const CollectPayment = (props) => {
       history.push(`/digit-ui/employee/payment/challan/collect/${businessService}/${consumerCode}/${tenantId}?tenantId=${tenantId}`);
       return;
     }
-    if(isFireNocPayment &&!isFireNOCLoading && (!fireNOC?.fireNOCDetails || Object.keys(fireNOC.fireNOCDetails).length === 0)){
+    if (isFireNocPayment && !isFireNOCLoading && (!fireNOC?.fireNOCDetails || Object.keys(fireNOC.fireNOCDetails).length === 0)) {
       alert("No application details found");
       return;
     }
 
     bill.totalAmount = Math.round(bill.totalAmount);
     data.paidBy = data.paidBy.code;
+
+    const isAdvancePayment = data?.paymentMode?.code === "Advance";
+    const advanceAmount = Number(data?.advanceAmount);
+
+    if (isAdvancePayment && (!Number.isFinite(advanceAmount) || advanceAmount <= bill.totalAmount)) {
+      alert(`Advance amount must be greater than ₹${bill.totalAmount}`);
+      return;
+    }
+
+    const totalAmountPaid = data?.advanceAmount || data?.amount?.amount || bill.totalAmount;
 
     if (
       BillDetailsFormConfig({ consumerCode, businessService }, t)[
@@ -154,6 +169,14 @@ export const CollectPayment = (props) => {
     const { ManualRecieptDetails, paymentModeDetails, ...rest } = data;
     const { errorObj, ...details } = paymentModeDetails || {};
 
+    // let setPaymentMode;
+
+    // if (data.paymentMode.code == "Advance") {
+    //   setPaymentMode = "CASH";
+    // } else {
+    //   setPaymentMode = data.paymentMode.code;
+    // }
+
     let recieptRequest = {
       Payment: {
         mobileNumber: data.payerMobile,
@@ -162,13 +185,13 @@ export const CollectPayment = (props) => {
             businessService,
             billId: bill.id,
             totalDue: bill.totalAmount,
-            totalAmountPaid: data?.amount?.amount || bill.totalAmount,
+            totalAmountPaid,
           },
         ],
         tenantId: bill.tenantId,
         totalDue: bill.totalAmount,
-        totalAmountPaid: data?.amount?.amount || bill.totalAmount,
-        paymentMode: data.paymentMode.code,
+        totalAmountPaid,
+        paymentMode: data?.paymentMode?.code == "Advance" ? "CASH" : data?.paymentMode?.code,
         payerName: data.payerName,
         paidBy: data.paidBy,
       },
@@ -190,7 +213,7 @@ export const CollectPayment = (props) => {
     if (data.ManualRecieptDetails.manualReceiptNumber) {
       recieptRequest.Payment.paymentDetails[0].manualReceiptNumber = ManualRecieptDetails.manualReceiptNumber;
     }
-    recieptRequest.Payment.paymentMode = data?.paymentMode?.code;
+    // recieptRequest.Payment.paymentMode = data?.paymentMode?.code;
 
     if (data.paymentModeDetails) {
       recieptRequest.Payment = { ...recieptRequest.Payment, ...details };

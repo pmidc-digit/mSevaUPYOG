@@ -73,7 +73,7 @@ const InspectionReportDisplay = ({fiReport}) => {
       <div>
         {/* {fiReport.map((report, index) => ( */}
           {/* <div key={index}> */}
-            <CardSectionHeader>{fiReport.length > 1 ? `${t("BPA_FI_REPORT")}-${index + 1}` : `${t("BPA_FI_REPORT")}`}</CardSectionHeader>
+            {/* <CardSectionHeader>{fiReport.length > 1 ? `${t("BPA_FI_REPORT")}-${index + 1}` : `${t("BPA_FI_REPORT")}`}</CardSectionHeader> */}
             {/* {<LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("BPA_FI_DATE_LABEL")}: `}</CardLabel>
               <div className="field" style={{ width: "100%" }}>

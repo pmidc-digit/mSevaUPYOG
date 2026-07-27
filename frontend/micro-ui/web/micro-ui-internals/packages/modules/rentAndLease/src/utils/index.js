@@ -156,129 +156,155 @@ const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ")
 export const getAcknowledgementData = async (application, tenantInfo, t) => {
   const details = [];
 
-  const propertyDetails = application?.additionalDetails?.propertyDetails?.[0];
-  const rawAdditionalDetails = application?.additionalDetails;
-  const isLegacy = rawAdditionalDetails?.applicationType === "Legacy";
+  // License Details
 
-  // Citizen (Owner) Details — mirrors "RAL_CITIZEN_DETAILS" StatusTable
   application?.OwnerInfo?.forEach((owner, index) => {
     details.push({
-      title: `${t("RAL_APPLICANT")} ${index + 1}`,
+      title: `Owner ${index + 1} Details`,
       values: [
-        { title: t("PT_OWNERSHIP_INFO_NAME"), value: owner?.name || t("CS_NA") },
-        { title: t("CORE_COMMON_PROFILE_EMAIL"), value: owner?.emailId || t("CS_NA") },
-        { title: t("CORE_MOBILE_NUMBER"), value: owner?.mobileNo || t("CS_NA") },
         {
-          title: t("PT_COMMON_COL_ADDRESS"),
-          value: owner?.correspondenceAddress?.addressId || owner?.permanentAddress?.addressId || t("CS_NA"),
+          title: t("CORE_COMMON_NAME"),
+          value: owner?.name || t("CS_NA"),
         },
         {
-          title: t("CORE_COMMON_PINCODE"),
-          value: owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode || t("CS_NA"),
+          title: t("CORE_COMMON_PROFILE_MOBILE_NUMBER"),
+          value: owner?.mobileNo || t("CS_NA"),
+        },
+        {
+          title: t("CORE_EMAIL_ID"),
+          value: owner?.emailId || t("CS_NA"),
+        },
+        {
+          title: t("Permanent Address"),
+          value: `${owner?.permanentAddress?.addressId || t("CS_NA")} , ${owner?.permanentAddress?.pincode || t("CS_NA")}`,
+        },
+        {
+          title: t("Correspondence Address"),
+          value: `${owner?.correspondenceAddress?.addressId || t("CS_NA")} , ${owner?.correspondenceAddress?.pincode || t("CS_NA")}`,
         },
       ],
     });
   });
 
-  // Building/Plot/Shop Details — mirrors that StatusTable exactly, incl. conditional rows
   details.push({
-    title: t("Building/Plot/Shop Details"),
+    title: t("PT_PROPERTY_DETAILS"),
     values: [
-      ...(application?.registrationNumber
-        ? [{ title: t("RAL_REGISTRATION_NUMBER"), value: application.registrationNumber }]
-        : []),
-      { title: t("APPLICATION_NUMBER"), value: application?.applicationNumber || t("CS_NA") },
-      { title: t("Unit Id"), value: propertyDetails?.propertyId || t("CS_NA") },
-      { title: t("Building/Plot/Shop Name"), value: propertyDetails?.propertyName || t("CS_NA") },
-      { title: t("RAL_ALLOTMENT_TYPE"), value: propertyDetails?.allotmentType || t("CS_NA") },
-      { title: t("Building/Plot/Shop Type"), value: propertyDetails?.propertyType || t("CS_NA") },
-      { title: t("Building/Plot/Shop Locality"), value: propertyDetails?.address || t("CS_NA") },
-      { title: t("RAL_PROPERTY_AMOUNT"), value: propertyDetails?.baseRent || t("CS_NA") },
-      { title: t("PENALTY_TYPE"), value: propertyDetails?.penaltyType || t("CS_NA") },
       {
-        title: t("RAL_FEE_CYCLE"),
-        value: propertyDetails?.feesPeriodCycle
-          ? propertyDetails.feesPeriodCycle[0].toUpperCase() + propertyDetails.feesPeriodCycle.slice(1).toLowerCase()
-          : t("CS_NA"),
+        title: t("STATUS"),
+        value: t(application?.status) || "NA",
       },
-      { title: t("Building/Plot/Shop Size"), value: propertyDetails?.propertySizeOrArea || t("CS_NA") },
-      { title: t("RENT_LEASE_LOCATION_TYPE"), value: propertyDetails?.locationType || t("CS_NA") },
-      ...(!isLegacy ?
-        [{
-          title: t("RAL_START_DATE"), value: convertEpochToDate(application?.startDate) || t("CS_NA")
-        },
-        {
-          title: t("RAL_END_DATE"), value: convertEpochToDate(application?.endDate) || t("CS_NA")
-        },
-        ] : []),
-      ...(application?.amountToBeDeducted > 0
-        ? [{ title: t("RAL_PROPERTY_PENALTY"), value: `Rs. ${application.amountToBeDeducted}` }]
-        : []),
-      ...(!isLegacy
-        ? [{ title: t("SECURITY_DEPOSIT"), value: `Rs. ${propertyDetails?.securityDeposit || "NA"}` }]
-        : []),
-      ...(application?.amountToBeDeducted - propertyDetails?.securityDeposit > 0
+      {
+        title: t("PROPERTY_ID"),
+        value: t(application?.additionalDetails?.propertyDetails?.[0]?.propertyId) || "NA",
+      },
+      {
+        title: t("PT_ACK_LOCALIZATION_PROPERTY_ADDRESS"),
+        value: application?.additionalDetails?.propertyDetails?.[0]?.address || "NA",
+      },
+      {
+        title: t("Allotment Type"),
+        value: application?.additionalDetails?.propertyDetails?.[0]?.allotmentType || "NA",
+      },
+      {
+        title: t("Property Name"),
+        value: application?.additionalDetails?.propertyDetails?.[0]?.propertyName || "NA",
+      },
+      {
+        title: t("Property Area"),
+        value: `${application?.additionalDetails?.propertyDetails?.[0]?.propertySizeOrArea || "NA"} sq. meters`,
+      },
+      {
+        title: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PROPERTY_TYPE"),
+        value: application?.additionalDetails?.propertyDetails?.[0]?.propertyType || "NA",
+      },
+      {
+        title: t("Location Type"),
+        value: application?.additionalDetails?.propertyDetails?.[0]?.locationType || "NA",
+      },
+      ...(application?.additionalDetails?.applicationType !== "Legacy"
         ? [
             {
-              title: t("RAL_AMOUNT_TO_TAKE_FROM_CITIZEN"),
-              value: `Rs. ${application.amountToBeDeducted - propertyDetails.securityDeposit}`,
+              title: t("Security Deposit"),
+              value: `Rs. ${application?.additionalDetails?.propertyDetails?.[0]?.securityDeposit || "NA"}`,
             },
           ]
         : []),
-      ...(application?.amountToBeRefund > 0
-        ? [{ title: t("RAL_AMOUNT_TO_REFUND"), value: `Rs. ${application.amountToBeRefund}` }]
-        : []),
-      ...(application?.tradeLicenseNumber
-        ? [{ title: t("RENT_LEASE_TRADE_LICENSE_NUMBER"), value: application.tradeLicenseNumber }]
+      {
+        title: t("Base Rent"),
+        value: `Rs. ${application?.additionalDetails?.propertyDetails?.[0]?.baseRent || "NA"}`,
+      },
+      ...(application?.amountToBeDeducted
+        ? [
+            {
+              title: t("Penalty Amount"),
+              value: `Rs. ${application?.amountToBeDeducted || 0}`,
+            },
+            {
+              title: t("Penalty Amount (After Security Deposit)"),
+              value: `Rs. ${
+                Math.abs(Number(application?.additionalDetails?.propertyDetails?.[0]?.securityDeposit) - application?.amountToBeDeducted) || 0
+              }`,
+            },
+          ]
         : []),
     ],
   });
 
-  if (isLegacy) {
+  if (application?.additionalDetails?.applicationType === "Legacy") {
     details.push({
       title: t("RAL_ARREAR_DETAILS"),
       values: [
-        { title: t("Arrears"), value: rawAdditionalDetails?.arrear || t("CS_NA") },
         {
-          title: t("Last Billing Period"),
-          value: rawAdditionalDetails?.lastBillingPeriod
-            ? new Date(rawAdditionalDetails.lastBillingPeriod).toLocaleDateString("en-IN")
-            : "-",
+          title: t("Arrears"),
+          value: application?.additionalDetails?.arrear || "NA",
         },
-        ...(rawAdditionalDetails?.lastRentRevisedDate
-          ? [
-              {
-                title: t("Last Rent Revised Date"),
-                value: new Date(rawAdditionalDetails.lastRentRevisedDate).toLocaleDateString("en-IN"),
-              },
-            ]
-          : []),
-        ...(rawAdditionalDetails?.incrementPeriodMonths
-          ? [{ title: t("Increment Period Months"), value: rawAdditionalDetails.incrementPeriodMonths }]
-          : []),
-        ...(rawAdditionalDetails?.incrementPercentage
-          ? [{ title: t("Increment Percentage"), value: rawAdditionalDetails.incrementPercentage }]
-          : []),
-        { title: t("Reason"), value:  rawAdditionalDetails?.arrearReason?.name || rawAdditionalDetails?.arrearReason || t("CS_NA") },
-        { title: t("Remarks"), value: rawAdditionalDetails?.remarks || t("CS_NA") },
+        {
+          title: t("RAL_START_DATE"),
+          value: convertEpochToDate(application?.additionalDetails?.arrearStartDate) || "NA",
+        },
+        {
+          title: t("RAL_END_DATE"),
+          value: convertEpochToDate(application?.additionalDetails?.arrearEndDate) || "NA",
+        },
+        {
+          title: t("Reason"),
+          value: application?.additionalDetails?.arrearReason?.name || "NA",
+        },
+        {
+          title: t("Remarks"),
+          value: application?.additionalDetails?.remarks || "NA",
+        },
       ],
     });
   }
 
-  // Documents — mirrors allDocuments mapping
-  const docDetails =
-    application?.Document?.map((doc) => ({
-      title: t(doc.documentType) || "NA",
+  const standardDocs =
+    application?.Document?.map((doc, index) => ({
+      title: t(`${doc.documentType}`) || "NA",
       value: " ",
+      // link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
     })) || [];
 
+  const arrearDoc = application?.additionalDetails?.arrearDoc
+    ? [
+        {
+          title: t("Arrear Doc"),
+          value: " ",
+          // link: Digit.Utils.getFileUrl(application.additionalDetails.arrearDoc),
+        },
+      ]
+    : [];
+
+  const docDetails = [...standardDocs, ...arrearDoc];
+
   details.push({
-    title: t("CS_COMMON_DOCUMENTS"),
-    values: docDetails.length ? docDetails : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }],
+    title: t("BPA_APPLICATION_DOCUMENTS"),
+    values: docDetails?.length ? docDetails : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }],
   });
 
+  // const imageURL = application?.additionalDetails?.propertyDetails?.[0]?.propertyImage;
   return {
-    t,
+    t: t,
     tenantId: tenantInfo?.code,
     name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
     email: tenantInfo?.emailId,
@@ -286,5 +312,6 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     heading: t("Allotment letter for Rent and Lease Services"),
     applicationNumber: application?.applicationNumber || "NA",
     details,
+    // imageURL,
   };
 };

@@ -18,6 +18,7 @@ const NewFilterFormFieldsComponent = ({
 }) => {
   const { t } = useTranslation();
   const [showAllStatuses, setShowAllStatuses] = useState(false);
+  const [isMigratedApplications, setIsMigratedApplications] = useState(false);
   const duplicateStatusCodes = useMemo(() => {
     const counts = (statuses || []).reduce((acc, status) => {
       const key = status?.applicationstatus;
@@ -37,7 +38,6 @@ const NewFilterFormFieldsComponent = ({
     return map;
   }, [rawStatuses]);
 
-  console.log('businessServiceByStatusId', businessServiceByStatusId)
   const availableOptions = showAssigneeCards
     ? [
         { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
@@ -46,12 +46,14 @@ const NewFilterFormFieldsComponent = ({
     : [];
 
   // License Type options for BPAREG (Professional Registration) - Only shown in stakeholder inbox
-  const licenseTypeOptions = showLicenseTypeFilter ? [
-    { code: "ARCHITECT", name: "Architect" },
-    { code: "ENGINEER", name: "Engineer" },
-    { code: "TOWNPLANNER", name: "Town Planner" },
-    { code: "SUPERVISOR", name: "Supervisor" },
-  ] : [];
+  const licenseTypeOptions = showLicenseTypeFilter
+    ? [
+        { code: "ARCHITECT", name: "Architect" },
+        { code: "ENGINEER", name: "Engineer" },
+        { code: "TOWNPLANNER", name: "Town Planner" },
+        { code: "SUPERVISOR", name: "Supervisor" },
+      ]
+    : [];
 
   applicationTypesOfBPA?.forEach((type) => {
     type.name = t(`WF_BPA_${type.code}`);
@@ -70,7 +72,8 @@ const NewFilterFormFieldsComponent = ({
 
   const colorVariants = ["primary", "success", "warning", "danger", "info", "indigo", "teal", "pink", "amber", "slate"];
   const getVariantByIndex = (index, fallback) => colorVariants[index % colorVariants.length] || fallback;
-  const getStatusCount = (status) => status?.totalCount ?? status?.count ?? status?.noOfRecords ?? status?.totalRecords ?? status?.applicationCount ?? 0;
+  const getStatusCount = (status) =>
+    status?.totalCount ?? status?.count ?? status?.noOfRecords ?? status?.totalRecords ?? status?.applicationCount ?? 0;
 
   const { field: assigneeField } = useController({ name: "assignee", control: controlFilterForm });
   const { field: statusField } = useController({ name: "applicationStatus", control: controlFilterForm, defaultValue: [] });
@@ -155,6 +158,15 @@ const NewFilterFormFieldsComponent = ({
       code: option.code,
       icon: "⌂",
     })),
+    {
+      key: "migrated-applications",
+      type: "migratedApplications",
+      label: "Migrated applications",
+      // subtitle: String(isMigratedApplications),
+      count: null,
+      code: isMigratedApplications,
+      icon: "◎",
+    },
     ...(statuses || []).map((status) => {
       // Include businessService in key if available to avoid deduplication
       const fallbackStatusId = status?.statusids?.[0] || status?.statusid;
@@ -162,9 +174,7 @@ const NewFilterFormFieldsComponent = ({
       const uniqueKey = status.statusid || (businessService ? `${status.applicationstatus}-${businessService}` : status.applicationstatus);
       const hasDuplicateName = duplicateStatusCodes.has(status.applicationstatus);
       const count = getStatusCount(status);
-      const statusKey = prefix
-        ? `${prefix}_${businessService}_${status?.applicationstatus}`?.toUpperCase()
-        : status?.applicationstatus;
+      const statusKey = prefix ? `${prefix}_${businessService}_${status?.applicationstatus}`?.toUpperCase() : status?.applicationstatus;
 
       return {
         key: uniqueKey,
@@ -195,9 +205,17 @@ const NewFilterFormFieldsComponent = ({
 
   const visibleCards = showAllStatuses ? cards : cards.slice(0, 6);
 
-  const stakeholderPrimaryCards = cards.filter((card) => card.type === "assignee" || card.type === "licenseType");
+  const stakeholderPrimaryCards = cards.filter(
+    (card) => card.type === "assignee" || card.type === "licenseType" || card.type === "migratedApplications"
+  );
   const stakeholderStatusCards = cards.filter((card) => card.type === "status");
   const displayCards = showLicenseTypeFilter ? stakeholderPrimaryCards : visibleCards;
+
+  useEffect(() => {
+    handleFilter({
+      migration: isMigratedApplications,
+    });
+  }, [isMigratedApplications]);
 
   return (
     <div className="ndc-new-inbox-filter-card" style={{ marginTop: 16, marginBottom: 16 }}>
@@ -209,6 +227,8 @@ const NewFilterFormFieldsComponent = ({
               const isActive =
                 card.type === "assignee"
                   ? assigneeField.value === card.code
+                  : card.type === "migratedApplications"
+                  ? isMigratedApplications
                   : card.type === "licenseType"
                   ? licenseTypeValues.includes(card.code)
                   : isStatusCardActive(card);
@@ -219,9 +239,7 @@ const NewFilterFormFieldsComponent = ({
                 <button
                   key={card.key}
                   type="button"
-                  className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card ${variant} ${
-                    isActive ? "active" : ""
-                  }`}
+                  className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card ${variant} ${isActive ? "active" : ""}`}
                   onClick={() => {
                     if (card.type === "assignee") {
                       assigneeField.onChange(card.code);
@@ -233,6 +251,9 @@ const NewFilterFormFieldsComponent = ({
                           licenseType: licenseTypeValues,
                         });
                       }
+                    } else if (card.type === "migratedApplications") {
+                      // This is UI-only until the inbox API supports the migrated flag.
+                      setIsMigratedApplications((previousValue) => !previousValue);
                     } else if (card.type === "licenseType") {
                       toggleLicenseType(card.code);
                     } else {
@@ -278,9 +299,7 @@ const NewFilterFormFieldsComponent = ({
                       <button
                         key={card.key}
                         type="button"
-                        className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card ${variant} ${
-                          isActive ? "active" : ""
-                        }`}
+                        className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card ${variant} ${isActive ? "active" : ""}`}
                         onClick={() => toggleStatus(card)}
                       >
                         {isActive ? (
@@ -307,17 +326,16 @@ const NewFilterFormFieldsComponent = ({
           {!showLicenseTypeFilter && cards.length > 6 ? (
             <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
               <button
-              type="button"
-              className="ndc-new-filter-show-more"
-              onClick={() => setShowAllStatuses((prev) => !prev)}
-              aria-label={showAllStatuses ? t("ES_COMMON_SHOW_LESS") : t("ES_COMMON_SHOW_MORE")}
-            >
-              <span className="ndc-new-filter-show-more-icon" aria-hidden="true">
-                {showAllStatuses ? "▲" : "▼"}
-              </span>
-            </button>
+                type="button"
+                className="ndc-new-filter-show-more"
+                onClick={() => setShowAllStatuses((prev) => !prev)}
+                aria-label={showAllStatuses ? t("ES_COMMON_SHOW_LESS") : t("ES_COMMON_SHOW_MORE")}
+              >
+                <span className="ndc-new-filter-show-more-icon" aria-hidden="true">
+                  {showAllStatuses ? "▲" : "▼"}
+                </span>
+              </button>
             </div>
-          
           ) : null}
         </div>
       </FilterFormField>

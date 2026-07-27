@@ -717,9 +717,9 @@ const LayoutSiteDetails = (_props) => {
                               return;
                             }
 
-                            // Validate file type is PDF
-                            if (file.type !== "application/pdf") {
-                              setCluDocumentError("Only PDF files are allowed");
+                            // Validate file type
+                            if ( !["application/pdf","image/jpeg","image/png","image/jpg"].includes(file.type)) {
+                              setCluDocumentError("Only .pdf, .png, .jpeg, .jpg files are allowed");
                               return;
                             }
 
@@ -753,11 +753,13 @@ const LayoutSiteDetails = (_props) => {
                         }}
                         uploadedFile={cluDocumentUploadedFile?.fileStoreId || null}
                         error={cluDocumentError}
+                        iserror={cluDocumentError}
                         loading={cluDocumentLoader}
-                        uploadMessage = "Only .pdf files are accepted with maximum size of 5 MB"
-                        accept=".pdf"
+                        uploadMessage="Invalid File Format"
+                        accept=".pdf, .png, .jpeg, .jpg"
                         maxFileSize={5} // MB
                       />
+                          <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
                     </div>
                   </LabelFieldPair>
 

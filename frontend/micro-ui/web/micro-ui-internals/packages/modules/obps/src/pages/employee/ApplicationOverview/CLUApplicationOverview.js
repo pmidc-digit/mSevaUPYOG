@@ -1218,7 +1218,11 @@ const CLUEmployeeApplicationDetails = () => {
       {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
         applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
           <Card>
-            <CardSubHeader>{`${t("BPA_FI_REPORT")} UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
+          <CardSubHeader>
+            {empName
+              ? `${t("BPA_FI_REPORT")} UPLOADED BY ${empName} - ${empDesignation}`
+              : t("BPA_FI_REPORT")}
+          </CardSubHeader>
             <InspectionReportDisplay fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending} />
           </Card>
         )}

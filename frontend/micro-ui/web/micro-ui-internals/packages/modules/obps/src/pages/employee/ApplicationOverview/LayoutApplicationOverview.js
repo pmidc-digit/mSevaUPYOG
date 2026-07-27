@@ -153,7 +153,7 @@ const LayoutEmployeeApplicationOverview = () => {
   const [checklistRemarks, setChecklistRemarks] = useState({});
   const [feeAdjustments, setFeeAdjustments] = useState([]);
   const [showZoneModal, setShowZoneModal] = useState(false);
-
+  const [empDesignation, setEmpDesignation] = useState(null);
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, {
     cacheTime: 0,
   });
@@ -180,6 +180,17 @@ const LayoutEmployeeApplicationOverview = () => {
     id: id,
     moduleCode: applicationDetails?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "Layout_mcUp",
   });
+
+    const siteInspectionEmp = useMemo(() => {
+      return workflowDetails?.data?.processInstances?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")?.assigner;
+    }, [workflowDetails]);
+  
+    const empUserName = siteInspectionEmp?.userName || "";
+    const empName = siteInspectionEmp?.name || "";
+
+      const handleSetEmpDesignation = (key) => {
+    setEmpDesignation(key);
+  };
 
   //console.log("workflowDetails here=>", workflowDetails);
   //console.log("next employee ======>", data, applicationDetails, applicationDetails?.businessService);
@@ -732,19 +743,19 @@ const LayoutEmployeeApplicationOverview = () => {
           workflowDetails.revalidate();
           setSelectedAction(null);
           setShowModal(false);
+           setTimeout(() => {
+            window.location.href = "/digit-ui/employee/obps/layout/inbox";
+          }, 3000);
         } else if (
           filtData?.action === "APPLY" ||
           filtData?.action === "APPROVE" ||
           filtData?.action === "RESUBMIT" ||
           filtData?.action === "DRAFT" ||
-          filtData?.action === "FORWARD_L1" ||
-          filtData?.action === "FORWARD_L2" ||
-          filtData?.action === "FORWARD_L3" ||
-          filtData?.action === "FORWARD_L4" ||
-          filtData?.action === "FORWARD_L5" ||
-          filtData?.action === "FORWARD_L6" ||
-          filtData?.action === "FORWARD_L7" ||
-          filtData?.action === "SENDBACKTOPROFESSIONAL"
+          filtData?.action?.includes("FORWARD" || "forward") ||
+          filtData?.action === "SENDBACKTOPROFESSIONAL" ||
+          filtData?.action === "REJECT" ||
+          filtData?.action === "INTERNAL_QUERY" ||
+          filtData?.action === "OBSERVATION"
         ) {
           //console.log("We are calling employee response page");
           history.replace({
@@ -756,6 +767,9 @@ const LayoutEmployeeApplicationOverview = () => {
           workflowDetails.revalidate();
           setSelectedAction(null);
           setShowModal(false);
+           setTimeout(() => {
+            window.location.href = "/digit-ui/employee/obps/layout/inbox";
+          }, 3000);
         }
       } else {
         console.error(" API response not successful:", response);
@@ -1081,8 +1095,27 @@ const LayoutEmployeeApplicationOverview = () => {
                 <React.Fragment>
                   {renderLabel(t("BPA_CLU_TYPE_LABEL"), detail?.cluType?.code || detail?.cluType)}
                   {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
-                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
-                    renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
+                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") && (
+                    <React.Fragment>
+                      {renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
+                      {Boolean(detail?.cluDocumentUpload) && (
+                        <Row
+                          label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
+                          text={
+                            <DocumentLink
+                              fileStoreId={
+                                typeof detail?.cluDocumentUpload === "string"
+                                  ? detail?.cluDocumentUpload
+                                  : (detail?.cluDocumentUpload?.fileStoreId || detail?.cluDocumentUpload?.filestoreId || detail?.cluDocumentUpload?.uuid)
+                              }
+                              stateCode={stateCode}
+                              t={t}
+                            />
+                          }
+                        />
+                      )}
+                    </React.Fragment>
+                  )}
                   {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
                 </React.Fragment>
               )}
@@ -1241,7 +1274,7 @@ const LayoutEmployeeApplicationOverview = () => {
       {/* FIELD INSPECTION UPLOADED DOCUMENTS - Display when not in progress */}
       {applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
         <Card>
-          <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
+           <CardSubHeader>{`FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
           <StatusTable
             style={{
               display: "flex",
@@ -1266,7 +1299,7 @@ const LayoutEmployeeApplicationOverview = () => {
 
           {geoLocations?.length > 0 && (
             <Fragment>
-              <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+              <CardSubHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSubHeader>
               <CustomLocationSearch position={geoLocations} />
             </Fragment>
           )}
@@ -1290,7 +1323,11 @@ const LayoutEmployeeApplicationOverview = () => {
       {applicationDetails?.Layout?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
         applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
           <Card>
-            <div id="fieldInspection"></div>
+          <CardSubHeader>
+            {empName
+              ? `${t("BPA_FI_REPORT")} VERIFIED BY ${empName} - ${empDesignation}`
+              : t("BPA_FI_REPORT")}
+          </CardSubHeader>
             <InspectionReportDisplay fiReport={applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.fieldinspection_pending} />
           </Card>
         )}
@@ -1416,8 +1453,18 @@ const LayoutEmployeeApplicationOverview = () => {
         checked="true"
       />
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} prefix= {prefix} t={t} Statusprefix ={Statusprefix} timeObj={timeObj} />
-      </div>
+              {/* <NewApplicationTimeline workflowDetails={workflowDetails} t={t} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/> */}
+              <NewApplicationTimeline
+                workflowDetails={workflowDetails}
+                prefix= {prefix}
+                t={t}
+                timeObj={timeObj}
+                Statusprefix ={Statusprefix} 
+                empUserName={empUserName}
+                handleSetEmpDesignation={handleSetEmpDesignation}
+              />
+            </div>
+     
       {actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (

@@ -261,8 +261,27 @@ function LayoutSummary({ currentStepData: formData, t }) {
               {renderRow(t("BPA_CLU_TYPE_LABEL"), formData?.siteDetails?.cluType?.code || formData?.siteDetails?.cluType)}
               {(formData?.siteDetails?.cluType?.code === "ONLINE" || formData?.siteDetails?.cluType === "ONLINE") &&
                 renderRow(t("BPA_CLU_NUMBER_LABEL"), formData?.siteDetails?.cluNumber)}
-              {(formData?.siteDetails?.cluType?.code === "OFFLINE" || formData?.siteDetails?.cluType === "OFFLINE") &&
-                renderRow(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), formData?.siteDetails?.cluNumberOffline)}
+              {(formData?.siteDetails?.cluType?.code === "OFFLINE" || formData?.siteDetails?.cluType === "OFFLINE") && (
+                <React.Fragment>
+                  {renderRow(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), formData?.siteDetails?.cluNumberOffline)}
+                  {Boolean(formData?.siteDetails?.cluDocumentUpload) && (
+                    <Row
+                      label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
+                      text={
+                        <DocumentLink
+                          fileStoreId={
+                            typeof formData?.siteDetails?.cluDocumentUpload === "string"
+                              ? formData?.siteDetails?.cluDocumentUpload
+                              : (formData?.siteDetails?.cluDocumentUpload?.fileStoreId || formData?.siteDetails?.cluDocumentUpload?.filestoreId || formData?.siteDetails?.cluDocumentUpload?.uuid)
+                          }
+                          stateCode={stateCode}
+                          t={t}
+                        />
+                      }
+                    />
+                  )}
+                </React.Fragment>
+              )}
               {renderRow(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(formData?.siteDetails?.cluApprovalDate))}
             </React.Fragment>
           )}

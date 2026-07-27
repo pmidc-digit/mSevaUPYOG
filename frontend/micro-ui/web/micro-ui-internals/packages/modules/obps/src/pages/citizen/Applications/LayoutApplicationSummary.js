@@ -799,8 +799,27 @@ const LayoutApplicationOverview = () => {
                   {renderLabel(t("BPA_CLU_TYPE_LABEL"), detail?.cluType?.code || detail?.cluType)}
                   {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") &&
                     renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
-                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
-                    renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
+                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") && (
+                    <React.Fragment>
+                      {renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
+                      {Boolean(detail?.cluDocumentUpload) && (
+                        <Row
+                          label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
+                          text={
+                            <DocumentLink
+                              fileStoreId={
+                                typeof detail?.cluDocumentUpload === "string"
+                                  ? detail?.cluDocumentUpload
+                                  : (detail?.cluDocumentUpload?.fileStoreId || detail?.cluDocumentUpload?.filestoreId || detail?.cluDocumentUpload?.uuid)
+                              }
+                              stateCode={stateCode}
+                              t={t}
+                            />
+                          }
+                        />
+                      )}
+                    </React.Fragment>
+                  )}
                   {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
                 </React.Fragment>
               )}

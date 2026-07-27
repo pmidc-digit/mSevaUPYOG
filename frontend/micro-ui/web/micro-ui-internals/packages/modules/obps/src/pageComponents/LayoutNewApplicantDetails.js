@@ -33,6 +33,26 @@ const findOwnerTypeOption = (val) => {
   return ownerTypeOptions.find((opt) => opt.code.toUpperCase() === strVal || opt.name.toUpperCase() === strVal) || null;
 };
 
+const areApplicantsEqual = (arr1, arr2) => {
+  if (!arr1 && !arr2) return true;
+  if (!arr1 || !arr2) return false;
+  if (arr1.length !== arr2.length) return false;
+
+  return arr1.every((item, index) => {
+    const target = arr2[index];
+    if (!target) return false;
+    return (
+      (item.uuid || null) === (target.uuid || null) &&
+      (item.name || "") === (target.name || "") &&
+      (item.mobileNumber || "") === (target.mobileNumber || "") &&
+      (item.emailId || "") === (target.emailId || "") &&
+      (item.status !== undefined ? item.status : true) === (target.status !== undefined ? target.status : true) &&
+      (item.isPrimaryOwner || null) === (target.isPrimaryOwner || null) &&
+      (item.panNumber || item.pan || "") === (target.panNumber || target.pan || "")
+    );
+  });
+};
+
 const LayoutNewApplicantDetails = (_props) => {
   const dispatch = useDispatch();
   const { t, currentStepData, Controller, control, setValue, errors, errorStyle, clearErrors } = _props;
@@ -46,11 +66,18 @@ const LayoutNewApplicantDetails = (_props) => {
 
   const closeToast = () => setShowToast(null);
 
-  // Restore initial data strictly from currentStepData.applicants on mount
+  // Restore initial data strictly from currentStepData.applicants when updated (e.g. late API data arrival)
   useEffect(() => {
+    const reduxApplicants = currentStepData?.applicants || [];
+
+    // If Redux applicants data matches selectedOwners, skip re-restoring to avoid infinite loop
+    if (isInitialized && areApplicantsEqual(reduxApplicants, selectedOwners)) {
+      return;
+    }
+
     let restoredOwners = [];
-    if (currentStepData?.applicants && currentStepData.applicants.length > 0) {
-      restoredOwners = currentStepData.applicants.map((a) => ({
+    if (reduxApplicants.length > 0) {
+      restoredOwners = reduxApplicants.map((a) => ({
         ...a,
         name: a.name || "",
         mobileNumber: a.mobileNumber || "",
@@ -60,7 +87,9 @@ const LayoutNewApplicantDetails = (_props) => {
         dob: a.dob || "",
         gender: a.gender || "",
         panNumber: a.panNumber || a.pan || "",
+        isPrimaryOwner: a.isPrimaryOwner,
         uuid: a.uuid !== undefined ? a.uuid : null,
+        status: a.status !== undefined ? a.status : true,
       }));
 
       setSelectedOwners(restoredOwners);
@@ -77,9 +106,9 @@ const LayoutNewApplicantDetails = (_props) => {
 
     if (!inferredType) {
       // If aplicantType is null or undefined:
-      // if length of owners is less than 2 (0 or 1), it should be Individual
-      // if length is more than 1, it should be Multiple
-      if (restoredOwners.length > 1) {
+      // if length of active owners is more than 1, it should be Multiple, else Individual
+      const activeRestored = restoredOwners.filter((o) => o?.status !== false && o?.status !== "false");
+      if (activeRestored.length > 1) {
         inferredType = ownerTypeOptions[1]; // Multiple
       } else {
         inferredType = ownerTypeOptions[0]; // Individual
@@ -90,7 +119,7 @@ const LayoutNewApplicantDetails = (_props) => {
     setValue("aplicantType", inferredType);
 
     setIsInitialized(true);
-  }, []);
+  }, [currentStepData]);
 
   // Sync selected owners and owner type strictly to currentStepData.applicants array in Redux
   useEffect(() => {
@@ -209,13 +238,19 @@ const LayoutNewApplicantDetails = (_props) => {
     };
 
     if (editingOwner) {
-      // EDIT MODE: Check if a different user (different uuid or mobile number) was selected
-      const isDifferentUser =
-        (userObj.uuid && editingOwner.uuid && userObj.uuid !== editingOwner.uuid) ||
-        (!userObj.uuid && userObj.mobileNumber !== editingOwner.mobileNumber);
+      // EDIT MODE: Check if userObj is the exact same person as editingOwner
+      const isSameUser =
+        userObj === editingOwner ||
+        (Boolean(editingOwner?.uuid) && Boolean(userObj?.uuid) && editingOwner.uuid === userObj.uuid) ||
+        (!editingOwner?.uuid && !userObj?.uuid && editingOwner?.mobileNumber === userObj?.mobileNumber && editingOwner?.name === userObj?.name);
+
+      const isDifferentUser = !isSameUser;
 
       const targetIndex = selectedOwners.findIndex(
-        (o) => o === editingOwner || (o.mobileNumber === editingOwner.mobileNumber && o.uuid === editingOwner.uuid)
+        (o) =>
+          o === editingOwner ||
+          (editingOwner?.uuid && o?.uuid === editingOwner.uuid) ||
+          (!editingOwner?.uuid && o?.mobileNumber === editingOwner?.mobileNumber && o?.name === editingOwner?.name)
       );
 
       if (targetIndex !== -1) {
@@ -224,7 +259,7 @@ const LayoutNewApplicantDetails = (_props) => {
           // Mark previous owner object status as false
           updated[targetIndex] = { ...editingOwner, status: false, isPrimaryOwner: null };
           // New owner object takes its place
-          updated.push({ ...newUser, isPrimaryOwner: editingOwner.isPrimaryOwner });
+          updated.push({ ...newUser, isPrimaryOwner: editingOwner.isPrimaryOwner, status: true });
         } else {
           // Same user updated
           updated[targetIndex] = { ...newUser, isPrimaryOwner: editingOwner.isPrimaryOwner, status: true };

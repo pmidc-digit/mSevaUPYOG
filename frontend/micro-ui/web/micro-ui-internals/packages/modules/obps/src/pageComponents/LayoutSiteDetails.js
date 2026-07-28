@@ -525,10 +525,10 @@ const LayoutSiteDetails = (_props) => {
                   />
                 )}
               />
-            </div>
-            {errors?.isCluRequired && (
+               {errors?.isCluRequired && (
               <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isCluRequired.message}</p>
             )}
+            </div>
           </LabelFieldPair>
 
 
@@ -900,10 +900,10 @@ const LayoutSiteDetails = (_props) => {
                     />
                   )}
                 />
-              </div>
-              {errors?.applicationAppliedUnder && (
+                {errors?.applicationAppliedUnder && (
                 <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.applicationAppliedUnder.message}</p>
               )}
+              </div>
             </LabelFieldPair>
           {/* ) : null} */}
           {/* ===== TYPE OF APPLICATION ===== */}
@@ -1421,10 +1421,11 @@ const LayoutSiteDetails = (_props) => {
                   <Dropdown className="form-field" select={props.onChange} selected={props.value} option={options} optionKey="i18nKey" t={t} />
                 )}
               />
-            </div>
-            {errors?.isAreaUnderMasterPlan && (
+              {errors?.isAreaUnderMasterPlan && (
               <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isAreaUnderMasterPlan.message}</p>
             )}
+            </div>
+            
           </LabelFieldPair>
 
 

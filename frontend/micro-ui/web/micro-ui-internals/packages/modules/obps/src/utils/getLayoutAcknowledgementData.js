@@ -174,7 +174,7 @@ const getSiteDetails = (appData, t) => {
         ]
       : []),
     // ...(sd?.isCluRequired?.code === "YES" || sd?.isCluRequired === "YES" ?
-     [{ title: t("Application Applied Under"), value: sd?.applicationAppliedUnder?.name || sd?.applicationAppliedUnder?.code || sd?.applicationAppliedUnder  }],
+     { title: t("Application Applied Under"), value: sd?.applicationAppliedUnder?.name || sd?.applicationAppliedUnder?.code || sd?.applicationAppliedUnder  },
       // : []),
 
     { title: t("Type Of Application"),       value: sd?.typeOfApplication?.name },

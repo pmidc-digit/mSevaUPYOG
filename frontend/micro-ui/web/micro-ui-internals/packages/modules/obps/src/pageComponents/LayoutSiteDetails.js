@@ -1437,7 +1437,7 @@ const LayoutSiteDetails = (_props) => {
           {/* Add Area Left For Road Widening field (A) */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_NET_TOTAL_AREA_LABEL")}`} <span className="requiredField">*</span>
+              {`${t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <Controller
@@ -1593,7 +1593,7 @@ const LayoutSiteDetails = (_props) => {
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("Total Area Percentage (EWS)")}`} <span className="requiredField">*</span>
+              {`${t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL")}`} <span className="requiredField">*</span>
             </CardLabel>
 
 
@@ -2688,7 +2688,7 @@ const LayoutSiteDetails = (_props) => {
 
           {/* Total Site Area - Sum of all distribution areas */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">Total Site Area (Sq M)</CardLabel>
+            <CardLabel className="card-label-smaller">Total Site Area(sqm)</CardLabel>
             <div className="field">
               <TextInput className="form-field" value={parseFloat(totalSiteArea).toFixed(2) || "0.00"} disabled={true} />
             </div>

@@ -189,7 +189,6 @@ const getSiteDetails = (appData, t) => {
     { title: t("BPA_VASIKA_NUMBER_LABEL"),   value: sd?.vasikaNumber  },
     { title: t("BPA_VASIKA_DATE_LABEL"),     value: sd?.vasikaDate  },
     { title: t("BPA_ROAD_TYPE_LABEL"),       value: sd?.roadType?.name || sd?.roadType },
-    { title: t("BPA_NET_TOTAL_AREA_LABEL"),  value: sd?.areaLeftForRoadWidening },
     { title: t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), value: sd?.isAreaUnderMasterPlan?.i18nKey || sd?.isAreaUnderMasterPlan },
     { title: t("BPA_ZONE_LABEL"),            value: sd?.zone?.name || sd?.zone },
     { title: t("BPA_ULB_NAME_LABEL"),        value: sd?.ulbName?.name || sd?.ulbName },
@@ -200,7 +199,7 @@ const getSiteDetails = (appData, t) => {
     // Area distribution
     { title: t("BPA_BUILDING_CATEGORY_LABEL"),      value: sd?.buildingCategory?.name  },
     { title: t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), value: sd?.residentialType?.name || sd?.buildingCategory?.name },
-    { title: t("BPA_NET_TOTAL_AREA_LABEL"),         value: sd?.areaLeftForRoadWidening  },
+    { title: t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL"),         value: sd?.areaLeftForRoadWidening  },
     { title: t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), value: sd?.netPlotAreaAfterWidening  },
     {
       title: t("BPA_BALANCE_AREA_IN_SQ_M_LABEL"),

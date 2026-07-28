@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CardLabel, ActionBar, SubmitBar, CardSubHeader, Dropdown, MobileNumber, TextInput } from "@mseva/digit-ui-react-components";
+import { CardLabel, ActionBar, SubmitBar, CardSubHeader, Dropdown, MobileNumber, TextInput, Toast } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
@@ -22,16 +22,21 @@ const BillGenie = () => {
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
 
+  const isCitizenCheck = window.location.href.includes("citizen");
+
   const [loader, setLoader] = useState(false);
   const [getData, setData] = useState();
   const [getBills, setBills] = useState([]);
+  const [showToast, setShowToast] = useState(false);
+  const [error, setError] = useState("");
+  const [getLable, setLable] = useState(false);
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
 
   const { printReceipt } = Digit.Hooks.usePrintBillReceipt({
     tenantId,
     setLoader,
     t,
-    pdfkey: "garbage-bill"
+    pdfkey: "garbage-bill",
   });
   const {
     control,
@@ -66,15 +71,21 @@ const BillGenie = () => {
     };
     try {
       const response = await Digit.GCService.billGenieSearch(payload);
+      console.log("response", response?.Bills);
+
       setLoader(false);
       setBills(response?.Bills);
+      if (response?.Bills.length < 1) {
+        setLable("No Bill Found");
+        setError(false);
+        setShowToast(true);
+      }
     } catch (error) {
       setLoader(false);
       // setShowToast(true);
       // setError(error.response.data?.Errors?.[0]?.message);
     }
   };
-
 
   const handleApiData = async () => {
     setLoader(true);
@@ -94,6 +105,10 @@ const BillGenie = () => {
   useEffect(() => {
     handleApiData();
   }, []);
+
+  const closeToast = () => {
+    setShowToast(null);
+  };
 
   const columns = [
     { Header: `${t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL")}`, accessor: "uuid" },
@@ -120,8 +135,10 @@ const BillGenie = () => {
               <SubmitBar
                 label="Pay"
                 onSubmit={() => {
+                  const isCitizen = window.location.href.includes("citizen");
+                  const setRole = isCitizen ? "citizen" : "employee";
                   const id = row?.original?.uuid;
-                  history.push(`/digit-ui/employee/payment/collect/GC/${id}/${tenantId}?tenantId=${tenantId}`);
+                  history.push(`/digit-ui/${setRole}/payment/collect/GC/${id}/${tenantId}?tenantId=${tenantId}`);
                 }}
               />
             )}
@@ -133,25 +150,25 @@ const BillGenie = () => {
 
   const slotlistRows =
     getBills?.map((bills, index) => ({
-      _index: index,    
+      _index: index,
       uuid: bills?.consumerCode,
       createdtime: bills?.billDate,
       status: t(bills.status),
     })) || [];
 
-  
   const getReceiptSearch = async (bill) => {
     printReceipt({
-      billOrPaymentResponse: bill, 
+      billOrPaymentResponse: bill,
       businessService: "GC.ONE_TIME_FEE",
       rootKey: "BILLS",
     });
   };
 
-
   return (
     <React.Fragment>
-      <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 40px" }}>{t("ACTION_TEST_GARBAGE_COLLECTION_BILL_GENIE")}</CardSubHeader>
+      <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 40px" }}>
+        {isCitizenCheck ? "Search and Pay" : t("ACTION_TEST_GARBAGE_COLLECTION_BILL_GENIE")}
+      </CardSubHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div
           style={{
@@ -279,6 +296,8 @@ const BillGenie = () => {
           <SubmitBar label="Search" submit="submit" />
         </ActionBar>
       </form>
+      {showToast && <Toast isDleteBtn={true} error={error} label={getLable} onClose={closeToast} />}
+
       {loader && <Loader page={true} />}
     </React.Fragment>
   );

@@ -94,6 +94,7 @@ public class CalculationService {
 			String isCLUApproved = "";
 			String finYear = "";
 			String roadTypeVal = "";
+			String isCluRequired = "";
 
 //			Object additionalDetailsData = criteria.getNoc().getNocDetails().getAdditionalDetails();
 
@@ -117,7 +118,22 @@ public class CalculationService {
 					category = (String) buildingCategory.get("name");
 				}
 				if(siteDetails.get("typeOfApplication") != null) {
-					landType = siteDetails.getOrDefault("typeOfApplication", "PROPOSED").toString();
+					Object typeOfAppObj = siteDetails.get("typeOfApplication");
+					if (typeOfAppObj instanceof Map) {
+						Map<String, Object> typeOfAppMap = (Map<String, Object>) typeOfAppObj;
+						landType = typeOfAppMap.get("code") != null ? typeOfAppMap.get("code").toString() : "";
+					} else {
+						landType = typeOfAppObj.toString();
+					}
+				}
+				if(siteDetails.get("isCluRequired") != null) {
+					Object cluReqObj = siteDetails.get("isCluRequired");
+					if (cluReqObj instanceof Map) {
+						Map<String, Object> cluReqMap = (Map<String, Object>) cluReqObj;
+						isCluRequired = cluReqMap.get("code") != null ? cluReqMap.get("code").toString() : "";
+					} else {
+						isCluRequired = cluReqObj.toString();
+					}
 				}
 				if(siteDetails.get("cluIsApproved") != null) {
 					LinkedHashMap<String, Object> cluIsApprovedObj = (LinkedHashMap<String, Object>) siteDetails.get("cluIsApproved");
@@ -134,7 +150,7 @@ public class CalculationService {
 			Object mdmsData = mdmsService.getMDMSSanctionFeeCharges(calculationReq.getRequestInfo(), tenantId, LAYOUTConstants.MDMS_CHARGES_TYPE_CODE, category, finYear,criteria.getFeeType());
 			
 			if(estimates.isEmpty())
-				estimates = calculateFee(calculationReq.getRequestInfo(), mdmsData, plotArea, builtUpArea, basementArea,roadTypeVal,landType);
+				estimates = calculateFee(calculationReq.getRequestInfo(), mdmsData, plotArea, builtUpArea, basementArea, roadTypeVal, landType, criteria.getFeeType(), isCluRequired);
 
 			if(estimates.isEmpty())
 				throw new CustomException("NO_FEE_CONFIGURED","No fee configured for the application");	
@@ -184,7 +200,7 @@ public class CalculationService {
 	 * @param finYear Current financial year
 	 * @return List of TaxHeadEstimate for the Demand creation
 	 */
-	private List<TaxHeadEstimate> calculateFee (RequestInfo requestInfo, Object mdmsData, BigDecimal plotArea, BigDecimal builtUpArea, BigDecimal basementArea,String roadType,String landType) {
+	private List<TaxHeadEstimate> calculateFee (RequestInfo requestInfo, Object mdmsData, BigDecimal plotArea, BigDecimal builtUpArea, BigDecimal basementArea, String roadType, String landType, String feeType, String isCluRequired) {
 		List<TaxHeadEstimate> estimates = new LinkedList<>();
 		List<Map<String,Object>> chargesTypejsonOutput = JsonPath.read(mdmsData, LAYOUTConstants.MDMS_CHARGES_TYPE_PATH);
 		
@@ -193,10 +209,15 @@ public class CalculationService {
 			TaxHeadEstimate estimate = new TaxHeadEstimate();
 			BigDecimal amount= BigDecimal.ZERO;
 			String taxhead= chargesType.get("taxHeadCode").toString();
+			boolean skipEstimate = false;
 			
 			switch (taxhead) {
 			
 			case LAYOUTConstants.LAYOUT_PROCESSING_FEE:
+				if (LAYOUTConstants.FEE_TYPE_PAY1.equalsIgnoreCase(feeType) && !"YES".equalsIgnoreCase(isCluRequired)) {
+					skipEstimate = true;
+					break;
+				}
 				BigDecimal acarPlotArea = plotArea.multiply(LAYOUTConstants.SQMETER_TO_SQYARD).divide(LAYOUTConstants.ACAR_TO_SQYARD, 0, RoundingMode.CEILING).setScale(0, RoundingMode.CEILING);
 				if(acarPlotArea.equals(BigDecimal.ONE))
 					amount = new BigDecimal(chargesType.containsKey("fee") ? (Double) chargesType.get("fee") : 0.0);
@@ -216,7 +237,7 @@ public class CalculationService {
 						.findFirst()
 						.orElse(Collections.EMPTY_MAP);
 
-			rate = new BigDecimal((Double) matchedSlab.getOrDefault("rate", 0.0));
+				rate = new BigDecimal((Double) matchedSlab.getOrDefault("rate", 0.0));
 
 				amount = plotArea
 						.multiply(rate)
@@ -238,10 +259,12 @@ public class CalculationService {
 
 			}
 			
-			estimate.setEstimateAmount(amount);
-			estimate.setCategory(Category.FEE);
-			estimate.setTaxHeadCode(taxhead);
-			estimates.add(estimate);
+			if (!skipEstimate) {
+				estimate.setEstimateAmount(amount);
+				estimate.setCategory(Category.FEE);
+				estimate.setTaxHeadCode(taxhead);
+				estimates.add(estimate);
+			}
 			
 		});
 		

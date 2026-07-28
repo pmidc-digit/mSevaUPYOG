@@ -253,6 +253,8 @@ public class InboxService {
         if (CollectionUtils.isEmpty(statusIdNameMap) && isReadOnlyOrReportingUser(roles)) {
             statusIdNameMap = workflowService.getAllStatuses(businessSrvs);
         }
+
+        excludeCancelledAndTerminatedStates(moduleName, statusIdNameMap);
                 
         // Preserve all actionable statuses before any filtering
         Map<String, String> allActionableStatuses = new HashMap<>(statusIdNameMap);
@@ -796,6 +798,22 @@ public class InboxService {
                         role.contains("REPORT") ||
                         role.contains("SUPERUSER")
         );
+    }
+
+    private void excludeCancelledAndTerminatedStates(String moduleName, HashMap<String, String> statusIdNameMap) {
+        if (!CollectionUtils.isEmpty(statusIdNameMap) && moduleName != null && (
+                moduleName.equalsIgnoreCase("noc-service") ||
+                        moduleName.equalsIgnoreCase("layout-service") ||
+                        moduleName.equalsIgnoreCase("clu-service")
+        )) {
+            statusIdNameMap.entrySet().removeIf(entry -> {
+                String statusName = entry.getValue();
+                return statusName != null && (
+                        statusName.equalsIgnoreCase("CANCELLED")
+
+                );
+            });
+        }
     }
 
 

@@ -1133,7 +1133,7 @@ const LayoutEmployeeApplicationOverview = () => {
 
               {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_LOCATION_LABEL")}</CardLabel> */}
               {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), detail?.proposedSiteAddress)}
-              {renderLabel(t("BPA_ULB_NAME_LABEL"), detail?.ulbName?.name)}
+              {renderLabel(t("BPA_ULB_NAME_LABEL"), detail?.ulbName || detail?.ulbName?.name)}
               {renderLabel(t("BPA_ULB_TYPE_LABEL"), detail?.ulbType)}
               {renderLabel(t("BPA_DISTRICT_LABEL"), detail?.district?.name)}
               {renderLabel(t("BPA_ZONE_LABEL"), detail?.zone?.name)}

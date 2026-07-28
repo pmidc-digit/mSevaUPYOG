@@ -323,7 +323,8 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
             documentFile: applicant?.documentUploadedFiles || null,
             ownerPhoto: applicant?.photoUploadedFiles || null,
             panDocument: applicant?.panDocumentUploadedFiles || null,
-            aplicantType: applicant?.aplicantType || null
+            aplicantType: applicant?.additionalDetails?.aplicantType || null,
+            authorisedPerson: applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? applicant?.additionalDetails?.authorisedPerson || "" : null,
           },
           uuid: applicant?.uuid || null
           // additionalDetails: {

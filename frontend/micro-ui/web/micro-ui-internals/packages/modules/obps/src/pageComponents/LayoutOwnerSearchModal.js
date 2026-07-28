@@ -562,7 +562,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
           /* Manual Owner Creation Form Only */
           <div style={{ background: "#f9fafb", padding: "20px", borderRadius: "8px", border: "1px solid #e5e7eb" }}>
             <h2 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px", color: "#111827" }}>
-              {t("CREATE_NEW_USER_DETAILS")}
+              {t("CREATE NEW USER DETAILS")}
             </h2>
 
             {/* Name */}
@@ -711,7 +711,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             </div>
 
             {/* Applicant Type */}
-            <LabelFieldPair style={{ marginBottom: "15px" }}>
               <CardLabel className="card-label-smaller">
                 {`${t("CLU_OWNER_TYPE_LABEL")}`} <span className="requiredField">*</span>
               </CardLabel>
@@ -728,13 +727,11 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                   t={t}
                 />
               </div>
-            </LabelFieldPair>
             {errors?.aplicantType && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.aplicantType}</CardLabelError>}
 
             {/* Authorised Person (for Firm) */}
             {aplicantType?.code === "FIRM" && (
               <React.Fragment>
-                <LabelFieldPair style={{ marginBottom: "15px" }}>
                   <CardLabel className="card-label-smaller">
                     {t("NEW_LAYOUT_FIRM_NAME_LABEL")}
                     <span className="requiredField">*</span>
@@ -749,13 +746,11 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                       t={t}
                     />
                   </div>
-                </LabelFieldPair>
                 {errors?.authorisedPerson && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.authorisedPerson}</CardLabelError>}
               </React.Fragment>
             )}
 
             {/* Passport Photo */}
-            <LabelFieldPair style={{ marginBottom: "15px", marginTop: "1.5rem" }}>
               <CardLabel className="card-label-smaller">
                 {t("BPA_APPLICANT_PASSPORT_PHOTO")}
                 <span className="requiredField">*</span>
@@ -776,11 +771,9 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 />
                 <p className="upload-file-message">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
               </div>
-            </LabelFieldPair>
             {errors?.photo && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.photo}</CardLabelError>}
 
             {/* ID Proof */}
-            <LabelFieldPair style={{ marginBottom: "15px", marginTop: "1.5rem" }}>
               <CardLabel className="card-label-smaller">
                 {t("BPA_APPLICANT_ID_PROOF")}
                 <span className="requiredField">*</span>
@@ -801,11 +794,9 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 />
                 <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
               </div>
-            </LabelFieldPair>
             {errors?.document && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.document}</CardLabelError>}
 
             {/* PAN Document */}
-            <LabelFieldPair style={{ marginBottom: "15px", marginTop: "1.5rem" }}>
               <CardLabel className="card-label-smaller">
                 {t("BPA_PAN_DOCUMENT")}
                 <span className="requiredField">*</span>
@@ -826,11 +817,9 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 />
                 <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
               </div>
-            </LabelFieldPair>
             {errors?.panDocument && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.panDocument}</CardLabelError>}
 
             {/* PAN Number */}
-            <LabelFieldPair style={{ marginBottom: "15px" }}>
               <CardLabel className="card-label-smaller">
                 {`${t("BPA_PAN_NUMBER_LABEL")}`}
                 <span className="requiredField">*</span>
@@ -848,7 +837,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                   t={t}
                 />
               </div>
-            </LabelFieldPair>
             {errors?.panNumber && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.panNumber}</CardLabelError>}
 
             {/* Action Buttons */}

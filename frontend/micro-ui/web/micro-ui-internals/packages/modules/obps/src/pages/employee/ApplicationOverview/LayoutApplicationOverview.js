@@ -1014,9 +1014,15 @@ const LayoutEmployeeApplicationOverview = () => {
         <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
         <StatusTable>
           <Row label={t("Application Number")} text={applicationDetails?.Layout?.[0]?.applicationNo || "N/A"} />
-          <Row label={t("Application Date")} text={applicationDetails?.Layout?.[0]?.auditDetails?.createdTime ? Digit.DateUtils.ConvertTimestampToDate(applicationDetails?.Layout?.[0]?.auditDetails?.createdTime, "dd/MM/yyyy") : "N/A"} />
+          <Row label={t("Application Date")} text={applicationDetails?.Layout?.[0]?.auditDetails?.createdTime ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.auditDetails?.createdTime), "dd/MM/yyyy") : "N/A"} />
+          <Row label={t("Application Submission Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn), "dd/MM/yyyy") : "N/A"} />
+          {(applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") && (
+            <Row label={t("Application Approval Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate), "dd/MM/yyyy") : "N/A"} />
+          )}
         </StatusTable>
       </Card>
+
+      
 
       {/* -------------------- PROFESSIONAL DETAILS -------------------- */}
 
@@ -1118,30 +1124,33 @@ const LayoutEmployeeApplicationOverview = () => {
                   {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
                 </React.Fragment>
               )}
-              {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && (
+              {/* {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && ( */}
                 <React.Fragment>
                   {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.name || detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
                 </React.Fragment>
-              )}
+              {/* )} */}
               {renderLabel(t("Type Of Application"), detail?.typeOfApplication?.name)}
 
               {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_LOCATION_LABEL")}</CardLabel> */}
               {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), detail?.proposedSiteAddress)}
-              {renderLabel(t("BPA_SITE_WARD_NO_LABEL"), detail?.wardNo)}
-              {renderLabel(t("BPA_KHASRA_NO_LABEL"), detail?.khasraNo)}
-              {renderLabel(t("Khatuni No."), detail?.khanutiNo)}
-              {renderLabel(t("BPA_HADBAST_NO_LABEL"), detail?.hadbastNo)}
+              {renderLabel(t("BPA_ULB_NAME_LABEL"), detail?.ulbName?.name)}
+              {renderLabel(t("BPA_ULB_TYPE_LABEL"), detail?.ulbType)}
+              {renderLabel(t("BPA_DISTRICT_LABEL"), detail?.district?.name)}
+              {renderLabel(t("BPA_ZONE_LABEL"), detail?.zone?.name)}
               {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
+              {renderLabel(t("BPA_SITE_WARD_NO_LABEL"), detail?.wardNo)}
+              {renderLabel(t("Khatuni No."), detail?.khanutiNo)}
+              {renderLabel(t("BPA_KHASRA_NO_LABEL"), detail?.khasraNo)}
+              {renderLabel(t("BPA_HADBAST_NO_LABEL"), detail?.hadbastNo)}
               {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
               {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
               {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
               {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
-              {renderLabel(t("BPA_ZONE_LABEL"), detail?.zone?.name)}
-              {renderLabel(t("BPA_ULB_NAME_LABEL"), detail?.ulbName?.name)}
-              {renderLabel(t("BPA_DISTRICT_LABEL"), detail?.district?.name)}
+              
+              
               {/* {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)} */}
-              {renderLabel(t("BPA_ULB_TYPE_LABEL"), detail?.ulbType)}
-              {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)}
+              
+              {/* {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)} */}
 
               {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
               {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}

@@ -254,6 +254,8 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             ownerPhoto: applicant?.photoUploadedFiles || applicant?.additionalDetails?.ownerPhoto || null,
             documentFile: applicant?.documentUploadedFiles || applicant?.additionalDetails?.documentFile || null,
             panDocument: applicant?.panDocumentUploadedFiles || applicant?.additionalDetails?.panDocument || null,
+            aplicantType: applicant?.additionalDetails?.aplicantType || null,
+            authorisedPerson: applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? applicant?.additionalDetails?.authorisedPerson || "" : null,
           },
           uuid: applicant?.uuid || null
         };

@@ -13,10 +13,24 @@ import {
   CardLabelError,
   LabelFieldPair,
   LinkButton,
+  Dropdown,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import CustomDatePicker from "./CustomDatePicker";
 import CustomUploadFile from "../components/CustomUploadFile";
+
+const applicantTypeOptions = [
+  { name: "Individual", code: "INDIVIDUAL" },
+  { name: "Firm", code: "FIRM" },
+];
+
+const findApplicantTypeOption = (val) => {
+  if (!val) return null;
+  const strVal = (typeof val === "string" ? val : val?.code || val?.name || "").toUpperCase();
+  return applicantTypeOptions.find((opt) => opt.code.toUpperCase() === strVal || opt.name.toUpperCase() === strVal) || null;
+};
+
+
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -53,6 +67,8 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
   const [documentUploadedFile, setDocumentUploadedFile] = useState(null);
   const [panDocumentUploadedFile, setPanDocumentUploadedFile] = useState(null);
   const [panNumber, setPanNumber] = useState("");
+  const [aplicantType, setAplicantType] = useState(null);
+  const [authorisedPerson, setAuthorisedPerson] = useState("");
   const [errors, setErrors] = useState({});
 
   // Manual User Form states
@@ -83,6 +99,9 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       setDocumentUploadedFile(editingOwner?.documentUploadedFiles || editingOwner?.additionalDetails?.documentFile || null);
       setPanDocumentUploadedFile(editingOwner?.panDocumentUploadedFiles || editingOwner?.additionalDetails?.panDocument || null);
       setPanNumber(editingOwner?.panNumber || editingOwner?.pan || "");
+      const appType = editingOwner?.aplicantType || editingOwner?.additionalDetails?.aplicantType || null;
+      setAplicantType(findApplicantTypeOption(appType));
+      setAuthorisedPerson(editingOwner?.authorisedPerson || editingOwner?.additionalDetails?.authorisedPerson || "");
       setStep(2);
     } else if (initialMobileNumber && /^[6-9]\d{9}$/.test(initialMobileNumber)) {
       handleSearch(initialMobileNumber);
@@ -262,6 +281,9 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
     setDocumentUploadedFile(user?.documentUploadedFiles || user?.additionalDetails?.documentFile || null);
     setPanDocumentUploadedFile(user?.panDocumentUploadedFiles || user?.additionalDetails?.panDocument || null);
     setPanNumber(user?.panNumber || user?.pan || "");
+    const appType = user?.aplicantType || user?.additionalDetails?.aplicantType || null;
+    setAplicantType(findApplicantTypeOption(appType));
+    setAuthorisedPerson(user?.authorisedPerson || user?.additionalDetails?.authorisedPerson || "");
     setErrors({});
     setStep(2);
   };
@@ -310,12 +332,23 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
     setDocumentUploadedFile(null);
     setPanDocumentUploadedFile(null);
     setPanNumber("");
+    setAplicantType(null);
+    setAuthorisedPerson("");
     setErrors({});
     setStep(2);
   };
 
   const handleSaveFinalOwner = () => {
     const errs = {};
+
+    if (!aplicantType) {
+      errs.aplicantType = t("REQUIRED_FIELD");
+    }
+
+    const isFirm = aplicantType?.code === "FIRM";
+    if (isFirm && (!authorisedPerson || !authorisedPerson.trim())) {
+      errs.authorisedPerson = t("REQUIRED_FIELD");
+    }
 
     if (!photoUploadedFile) {
       errs.photo = t("Passport photo is required");
@@ -342,6 +375,8 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
 
     const finalUserObj = {
       ...selectedUser,
+      aplicantType: aplicantType,
+      authorisedPerson: isFirm ? authorisedPerson.trim() : null,
       panNumber: panNumber.trim().toUpperCase(),
       pan: panNumber.trim().toUpperCase(),
       photoUploadedFiles: photoUploadedFile,
@@ -352,6 +387,8 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
         ownerPhoto: photoUploadedFile,
         documentFile: documentUploadedFile,
         panDocument: panDocumentUploadedFile,
+        aplicantType: aplicantType,
+        authorisedPerson: isFirm ? authorisedPerson.trim() : null,
       },
     };
 
@@ -399,10 +436,14 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       Header: t("ACTION"),
       accessor: "uuid",
       Cell: ({ row }) => (
-        <LinkButton
-          label={t("Select")}
+        <button
+          className="submit-bar"
+          type="button"
+          style={{ color: "white", width: "100%", maxWidth: "120px", height: "40px", margin: 0 }}
           onClick={() => handleSelectUserFromTable(row.original)}
-        />
+        >
+          {t("Select")}
+        </button>
       ),
     },
   ];
@@ -410,7 +451,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
   return (
     <React.Fragment>
       <Modal
-        headerBarMain={<h1 className="heading-m">{step === 2 ? t("OWNER_ADDITIONAL_DETAILS") : t("BPA_SEARCH_OWNER_DETAILS")}</h1>}
+        headerBarMain={<h1 className="heading-m">{step === 2 ? t("OWNER ADDITIONAL DETAILS") : t("SEARCH OWNER DETAILS")}</h1>}
         headerBarEnd={<CloseBtn onClick={closeModal} />}
         formId="owner-search-modal"
         popupStyles={{
@@ -651,10 +692,10 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
           <div style={{ background: "#f9fafb", padding: "20px", borderRadius: "8px", border: "1px solid #e5e7eb" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
               <h2 style={{ fontSize: "16px", fontWeight: "600", color: "#111827", margin: 0 }}>
-                {t("OWNER_ADDITIONAL_DETAILS_AND_DOCUMENTS")}
+                {t("ADDITIONAL DETAILS DOCUMENTS")}
               </h2>
               <LinkButton
-                label={t("CHANGE_OWNER")}
+                label={t("CHANGE OWNER")}
                 onClick={() => {
                   setStep(1);
                   setShowManualForm(false);
@@ -664,10 +705,54 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
 
             {/* Selected Owner Details Card */}
             <div style={{ background: "#ffffff", padding: "12px 16px", borderRadius: "6px", border: "1px solid #e5e7eb", marginBottom: "20px" }}>
-              <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>{t("APPLICANT_NAME")}:</strong> {selectedUser.name || "NA"}</p>
-              <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>{t("MOBILE_NO")}:</strong> {selectedUser.mobileNumber || "NA"}</p>
-              {selectedUser.emailId && <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>{t("EMAIL_ID")}:</strong> {selectedUser.emailId}</p>}
+              <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>{t("APPLICANT NAME")}:</strong> {selectedUser.name || "NA"}</p>
+              <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>{t("MOBILE NO")}:</strong> {selectedUser.mobileNumber || "NA"}</p>
+              {selectedUser.emailId && <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>{t("EMAIL ID")}:</strong> {selectedUser.emailId}</p>}
             </div>
+
+            {/* Applicant Type */}
+            <LabelFieldPair style={{ marginBottom: "15px" }}>
+              <CardLabel className="card-label-smaller">
+                {`${t("CLU_OWNER_TYPE_LABEL")}`} <span className="requiredField">*</span>
+              </CardLabel>
+              <div className="field">
+                <Dropdown
+                  className="form-field"
+                  select={(e) => {
+                    setAplicantType(e);
+                    setErrors((prev) => ({ ...prev, aplicantType: "" }));
+                  }}
+                  selected={aplicantType}
+                  option={applicantTypeOptions}
+                  optionKey="name"
+                  t={t}
+                />
+              </div>
+            </LabelFieldPair>
+            {errors?.aplicantType && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.aplicantType}</CardLabelError>}
+
+            {/* Authorised Person (for Firm) */}
+            {aplicantType?.code === "FIRM" && (
+              <React.Fragment>
+                <LabelFieldPair style={{ marginBottom: "15px" }}>
+                  <CardLabel className="card-label-smaller">
+                    {t("NEW_LAYOUT_FIRM_NAME_LABEL")}
+                    <span className="requiredField">*</span>
+                  </CardLabel>
+                  <div className="field">
+                    <TextInput
+                      value={authorisedPerson}
+                      onChange={(e) => {
+                        setAuthorisedPerson(e.target.value);
+                        setErrors((prev) => ({ ...prev, authorisedPerson: "" }));
+                      }}
+                      t={t}
+                    />
+                  </div>
+                </LabelFieldPair>
+                {errors?.authorisedPerson && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.authorisedPerson}</CardLabelError>}
+              </React.Fragment>
+            )}
 
             {/* Passport Photo */}
             <LabelFieldPair style={{ marginBottom: "15px", marginTop: "1.5rem" }}>

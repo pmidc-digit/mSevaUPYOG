@@ -66,7 +66,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
       typeOfApplication: currentStepData?.siteDetails?.typeOfApplication || "",
 
-      plotNo: currentStepData?.siteDetails?.plotNo || "",
+      // plotNo: currentStepData?.siteDetails?.plotNo || "",
       proposedSiteAddress: currentStepData?.siteDetails?.proposedSiteAddress || "",
 
       ulbName: currentStepData?.siteDetails?.ulbName || "",

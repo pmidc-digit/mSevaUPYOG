@@ -323,7 +323,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
               ? { code: layoutFormData?.siteDetails?.zone, name: layoutFormData?.siteDetails?.zone }
               : layoutFormData?.siteDetails?.zone
           }),
-          ...(layoutFormData?.siteDetails?.plotNo && { plotNo: layoutFormData?.siteDetails?.plotNo }),
+          // ...(layoutFormData?.siteDetails?.plotNo && { plotNo: layoutFormData?.siteDetails?.plotNo }),
           ...(layoutFormData?.siteDetails?.proposedSiteAddress && { proposedSiteAddress: layoutFormData?.siteDetails?.proposedSiteAddress }),
           ...(layoutFormData?.siteDetails?.vasikaNumber && { vasikaNumber: layoutFormData?.siteDetails?.vasikaNumber }),
           ...(layoutFormData?.siteDetails?.vasikaDate && { vasikaDate: convertToDDMMYYYY(layoutFormData?.siteDetails?.vasikaDate) }),

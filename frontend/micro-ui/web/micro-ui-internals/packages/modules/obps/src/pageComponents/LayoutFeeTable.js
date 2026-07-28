@@ -49,6 +49,16 @@ export const LayoutFeeTable = ({
 
   let columns = [
     {
+      key: "srNo",
+      label: "SR_NO",
+      headerLabel: "SR_NO",
+      type: "custom",
+      render: (row, rowIndex) => {
+        if (row.taxHeadCode === "LAYOUT_TOTAL") return "";
+        return rowIndex + 1;
+      },
+    },
+    {
       key: "title",
       label: "BPA_TAXHEAD_CODE",
       headerLabel: "BPA_TAXHEAD_CODE",
@@ -130,6 +140,16 @@ export const LayoutFeeTable = ({
 
   if (isCitizen) {
     columns = [
+      {
+        key: "srNo",
+        label: "SR_NO",
+        headerLabel: "SR_NO",
+        type: "custom",
+        render: (row, rowIndex) => {
+          if (row.taxHeadCode === "LAYOUT_TOTAL") return "";
+          return rowIndex + 1;
+        },
+      },
       {
         key: "title",
         label: "BPA_TAXHEAD_CODE",

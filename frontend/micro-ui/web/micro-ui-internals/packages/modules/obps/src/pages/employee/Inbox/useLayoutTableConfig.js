@@ -81,7 +81,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         ),
       },
       {
-        Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
+        Header: t("CS_APPLICATION_DETAILS_CREATION_DATE"),
         accessor: "date",
         Cell: ({ row }) => {
           const dateValue = row.original?.date || row.original?.createdTime;

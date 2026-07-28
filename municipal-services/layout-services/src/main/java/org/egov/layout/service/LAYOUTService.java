@@ -93,11 +93,10 @@ public class LAYOUTService {
 		String buildingCategoryType = (String) buildingCategory.get("code");
 		if(buildingCategoryType.equals("RESIDENTIAL")){
 			acres = (String) siteDetails.get("areaUnderResidentialUseInSqM");
-		}else if(buildingCategoryType.equals("INDUSTRIAL_WAREHOUSE")) {
+		}else if(buildingCategoryType.equals("INDUSTRIAL_WAREHOUSE")){
 			acres = (String) siteDetails.get("areaUnderInstutionalUseInSqM");
-		}else if(buildingCategoryType.equals("INSTITUTIONAL")) {
-			acres = (String) siteDetails.get("areaUnderInstutionalUseInSqM");
-		} else{
+		}
+		else{
 			acres = (String) siteDetails.get("areaUnderCommercialUseInSqM");
 		}
 
@@ -225,16 +224,15 @@ public class LAYOUTService {
 				.findFirst().orElse(new Action()).getNextState();
 		State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
 
-		if (nextState != null && CollectionUtils.isEmpty(layout.getWorkflow().getAssignes())
-				&& !CollectionUtils.isEmpty(nextState.getActions())) {
+		String action = layout.getWorkflow() != null ? layout.getWorkflow().getAction() : "";
+
+		if (nextState != null && nextState.getState().equalsIgnoreCase(LAYOUTConstants.FI_STATUS)
+				&& (LAYOUTConstants.ACTION_PAY.equalsIgnoreCase(action) || LAYOUTConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
 			List<String> roles = new ArrayList<>();
-			nextState.getActions().stream()
-			.filter(stateAction -> !stateAction.getNextState().equalsIgnoreCase(nextStateId)).forEach(stateAction -> 
-				roles.addAll(stateAction.getRoles())
-			);
-			List<String> assignee = null;
-			if(!CollectionUtils.isEmpty(roles))
-				assignee = userService.getAssigneeFromLayout(layout, roles, nocRequest.getRequestInfo());
+			nextState.getActions().forEach(stateAction -> {
+				roles.addAll(stateAction.getRoles());
+			});
+			List<String> assignee = userService.getAssigneeFromLayout(layout, roles, nocRequest.getRequestInfo());
 			layout.getWorkflow().setAssignes(assignee);
 		}
 		if(nocRequest.getLayout().getWorkflow().getAction().equals(LAYOUTConstants.ACTION_INITIATE) || nocRequest.getLayout().getWorkflow().getAction().equals(LAYOUTConstants.ACTION_APPLY)){
@@ -415,26 +413,38 @@ public class LAYOUTService {
 				List<String> accountid = nocRepository.getOwnerUserIdsByLayoutId(noc.getId());
 //				accountid.add(noc.getAccountId());
 				
+				List<OwnerInfo> owner = new ArrayList<>();
+				
 				if(!CollectionUtils.isEmpty(accountid)) {
 					criteria.setAccountId(accountid);
 					UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-					List<OwnerInfo> users = userDetailResponse.getUser();
-					if(!CollectionUtils.isEmpty(users)) {
-						Map<String, OwnerInfo> usersByUuid = users.stream()
-								.filter(u -> u.getUuid() != null)
-								.collect(Collectors.toMap(OwnerInfo::getUuid, u -> u, (a, b) -> a));
+					owner = userDetailResponse.getUser();
+				}
+				Map<String, Object>adByUuid = Optional.ofNullable(noc.getOwners())
+						.orElse(Collections.emptyList())
+						.stream()
+						.filter(oi -> oi.getUuid() != null && oi.getAdditionalDetails() != null)
+						.collect(Collectors.toMap(
+								OwnerInfo::getUuid,
+								OwnerInfo::getAdditionalDetails,
+								(a, b) -> a // keep first on duplicate uuid
+						));
 
-						if(!CollectionUtils.isEmpty(noc.getOwners())) {
-							for (OwnerInfo dbOwner : noc.getOwners()) {
-								OwnerInfo userProfile = usersByUuid.get(dbOwner.getUuid());
-								if (userProfile != null) {
-									dbOwner.addUserWithoutAuditDetail(userProfile);
-								}
-								dbOwner.setStatus(true);
-							}
+
+// Merge by uuid
+				for (OwnerInfo oi : owner) {
+					String uuid = oi.getUuid(); // ensure this getter exists
+					oi.setStatus(true);
+					if (uuid != null) {
+						Object ad = adByUuid.get(uuid);
+						if (ad != null) {
+							oi.setAdditionalDetails(ad);
 						}
 					}
 				}
+
+
+				noc.setOwners(owner);
 
 				// BPA CALL
 //				StringBuilder uri = new StringBuilder(config.getBpaHost()).append(config.getBpaContextPath())
@@ -453,7 +463,6 @@ public class LAYOUTService {
 //						uri.append("&applicationNo=").append(sourceRefId);
 //					}
 //				}
-//
 //
 ////					uri.append("&applicationNo=").append(layout.getSourceRefId());
 //

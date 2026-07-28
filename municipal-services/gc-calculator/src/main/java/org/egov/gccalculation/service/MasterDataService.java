@@ -302,6 +302,11 @@ public class MasterDataService {
 						? master.get(GCCalculationConstant.Demand_Expiry_Date_String)
 						: "0"));
 		Long demandExpiryDateMillis = expiryDate.longValue();
+		// MDMS stores durations (e.g. 30 days = 2,592,000,000 ms), not absolute timestamps.
+		// Convert to absolute timestamp by adding current time, unless value is 0 (no expiry).
+		if (demandExpiryDateMillis != null && demandExpiryDateMillis > 0) {
+			demandExpiryDateMillis = System.currentTimeMillis() + demandExpiryDateMillis;
+		}
 		billingPeriod.put(GCCalculationConstant.Demand_Expiry_Date_String, demandExpiryDateMillis);
 		masterMap.put(GCCalculationConstant.BILLING_PERIOD, billingPeriod);
 		return masterMap;
@@ -313,10 +318,15 @@ public class MasterDataService {
 	 */
 	public Map<String, Object> enrichBillingPeriodForFee(Map<String, Object> masterMap) {
 		Map<String, Object> billingPeriod = new HashMap<>();
+		Long feeExpiryDuration = GCCalculationConstant.APPLICATION_FEE_DEMAND_EXP_DATE;
 		billingPeriod.put(GCCalculationConstant.STARTING_DATE_APPLICABLES, System.currentTimeMillis());
 		billingPeriod.put(GCCalculationConstant.ENDING_DATE_APPLICABLES,
 				System.currentTimeMillis() + GCCalculationConstant.APPLICATION_FEE_DEMAND_END_DATE);
-		billingPeriod.put(GCCalculationConstant.Demand_Expiry_Date_String, GCCalculationConstant.APPLICATION_FEE_DEMAND_EXP_DATE);
+		// Convert duration to absolute timestamp (unless 0 = no expiry)
+		Long feeExpiryDate = (feeExpiryDuration != null && feeExpiryDuration > 0)
+				? System.currentTimeMillis() + feeExpiryDuration
+				: feeExpiryDuration;
+		billingPeriod.put(GCCalculationConstant.Demand_Expiry_Date_String, feeExpiryDate);
 		masterMap.put(GCCalculationConstant.BILLING_PERIOD, billingPeriod);
 		return masterMap;
 	}

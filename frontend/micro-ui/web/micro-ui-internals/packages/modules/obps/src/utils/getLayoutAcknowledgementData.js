@@ -173,28 +173,29 @@ const getSiteDetails = (appData, t) => {
           { title: t("BPA_CLU_APPROVAL_DATE_LABEL"), value: sd?.cluApprovalDate  },
         ]
       : []),
-    ...(sd?.isCluRequired?.code === "YES" || sd?.isCluRequired === "YES"
-      ? [{ title: t("Application Applied Under"), value: sd?.applicationAppliedUnder?.name || sd?.applicationAppliedUnder?.code || sd?.applicationAppliedUnder  }]
-      : []),
+    // ...(sd?.isCluRequired?.code === "YES" || sd?.isCluRequired === "YES" ?
+     [{ title: t("Application Applied Under"), value: sd?.applicationAppliedUnder?.name || sd?.applicationAppliedUnder?.code || sd?.applicationAppliedUnder  }],
+      // : []),
 
     { title: t("Type Of Application"),       value: sd?.typeOfApplication?.name },
 
     // Location fields
     { title: t("BPA_PROPOSED_SITE_ADDRESS"), value: sd?.proposedSiteAddress  },
-    { title: t("BPA_SITE_WARD_NO_LABEL"),    value: sd?.wardNo  },
-    { title: t("BPA_KHASRA_NO_LABEL"),       value: sd?.khasraNo  },
-    { title: t("Khatuni No."),               value: sd?.khanutiNo  },
-    { title: t("BPA_HADBAST_NO_LABEL"),      value: sd?.hadbastNo  },
+    { title: t("BPA_ULB_NAME_LABEL"),        value: sd?.ulbName?.name || sd?.ulbName },
+    { title: t("BPA_ULB_TYPE_LABEL"),        value: sd?.ulbType  },
+    { title: t("BPA_DISTRICT_LABEL"),        value: sd?.district?.name || sd?.district  },
+    { title: t("BPA_ZONE_LABEL"),            value: sd?.zone?.name || sd?.zone },
     { title: t("BPA_SITE_VILLAGE_NAME_LABEL"), value: sd?.villageName  },
+    { title: t("BPA_SITE_WARD_NO_LABEL"),    value: sd?.wardNo  },
+    { title: t("Khatuni No."),               value: sd?.khanutiNo  },
+    { title: t("BPA_KHASRA_NO_LABEL"),       value: sd?.khasraNo  },
+    { title: t("BPA_HADBAST_NO_LABEL"),      value: sd?.hadbastNo  },
     { title: t("BPA_VASIKA_NUMBER_LABEL"),   value: sd?.vasikaNumber  },
     { title: t("BPA_VASIKA_DATE_LABEL"),     value: sd?.vasikaDate  },
     { title: t("BPA_ROAD_TYPE_LABEL"),       value: sd?.roadType?.name || sd?.roadType },
     { title: t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), value: sd?.isAreaUnderMasterPlan?.i18nKey || sd?.isAreaUnderMasterPlan },
-    { title: t("BPA_ZONE_LABEL"),            value: sd?.zone?.name || sd?.zone },
-    { title: t("BPA_ULB_NAME_LABEL"),        value: sd?.ulbName?.name || sd?.ulbName },
-    { title: t("BPA_DISTRICT_LABEL"),        value: sd?.district?.name || sd?.district  },
-    { title: t("BPA_ULB_TYPE_LABEL"),        value: sd?.ulbType  },
-    { title: t("BPA_PLOT_NO_LABEL"),         value: sd?.plotNo  },
+    
+    // { title: t("BPA_PLOT_NO_LABEL"),         value: sd?.plotNo  },
 
     // Area distribution
     { title: t("BPA_BUILDING_CATEGORY_LABEL"),      value: sd?.buildingCategory?.name  },

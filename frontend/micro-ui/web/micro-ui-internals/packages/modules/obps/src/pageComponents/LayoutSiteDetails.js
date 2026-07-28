@@ -868,7 +868,7 @@ const LayoutSiteDetails = (_props) => {
           ) : null}
 
           {/* ===== Application Applied Under Section (when isCluRequired = YES) ===== */}
-          {isCluRequired?.code === "YES" || isCluRequired === "YES" ? (
+          {/* {isCluRequired?.code === "YES" || isCluRequired === "YES" ? ( */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
                 {`Application Applied Under`} <span className="requiredField">*</span>
@@ -905,7 +905,7 @@ const LayoutSiteDetails = (_props) => {
                 <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.applicationAppliedUnder.message}</p>
               )}
             </LabelFieldPair>
-          ) : null}
+          {/* ) : null} */}
           {/* ===== TYPE OF APPLICATION ===== */}
 
           <LabelFieldPair>
@@ -938,7 +938,7 @@ const LayoutSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair>
+          {/* <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               {`${t("BPA_PLOT_NO_LABEL")}`} <span className="requiredField">*</span>
             </CardLabel>
@@ -969,7 +969,7 @@ const LayoutSiteDetails = (_props) => {
               />
               {errors?.plotNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.plotNo.message}</p>}
             </div>
-          </LabelFieldPair>
+          </LabelFieldPair> */}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
@@ -1037,6 +1037,25 @@ const LayoutSiteDetails = (_props) => {
               </div>
             )}
             {errors?.ulbName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.ulbName.message}</p>}
+          </LabelFieldPair>
+
+          {/* ULB Type */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_ULB_TYPE_LABEL")}`}</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="ulbType"
+                defaultValue={ulbType || ""}
+                render={(props) => (
+                  <TextInput
+                    value={ulbType || props.value || ""}
+                    disabled={true}
+                    onChange={(e) => props.onChange(e.target.value)}
+                  />
+                )}
+              />
+            </div>
           </LabelFieldPair>
 
           {/* District - Non-editable, auto-fetched from tenantId */}
@@ -1415,24 +1434,7 @@ const LayoutSiteDetails = (_props) => {
           {/* SECTION: Area Calculation (A-B-C) */}
           <CardSectionHeader>{t("BPA_AREA_CALCULATION_LABEL")}</CardSectionHeader>
 
-          {/* ULB Type */}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_ULB_TYPE_LABEL")}`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="ulbType"
-                defaultValue={ulbType || ""}
-                render={(props) => (
-                  <TextInput
-                    value={ulbType || props.value || ""}
-                    disabled={true}
-                    onChange={(e) => props.onChange(e.target.value)}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
+          
 
           {/* Add Area Left For Road Widening field (A) */}
           <LabelFieldPair>

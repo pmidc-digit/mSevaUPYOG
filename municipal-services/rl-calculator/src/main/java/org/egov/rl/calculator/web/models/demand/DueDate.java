@@ -18,4 +18,10 @@ public class DueDate {
     @JsonProperty("dueDay")
     private Integer dueDay;
 
+    @JsonProperty("rebatePercentage")
+    private Double rebatePercentage;
+
+    @JsonProperty("rebateFlatAmount")
+    private java.math.BigDecimal rebateFlatAmount;
+
 }

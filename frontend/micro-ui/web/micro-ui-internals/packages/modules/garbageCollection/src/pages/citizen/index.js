@@ -2,6 +2,7 @@ import { BreadCrumb, AppContainer, BackButton, PrivateRoute } from "@mseva/digit
 import React from "react";
 import { Redirect, Switch, useRouteMatch, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import SearchApplications from "../citizen/MyChallan/SearchApplications";
 
 const GCBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
@@ -49,6 +50,7 @@ const App = () => {
           <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={GCApplicationDetails} />
           <PrivateRoute path={`${path}/response/:id`} component={GCResponseCitizen} />
           <PrivateRoute path={`${path}/search-and-pay`} component={BillGenie} />
+          <PrivateRoute path={`${path}/search-applications`} component={SearchApplications} />
         </AppContainer>
       </Switch>
     </span>

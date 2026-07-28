@@ -62,7 +62,6 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   };
 
   const handleDiscontinue = async (data) => {
-    console.log("data", data);
     setLoader(true);
     const payload = {
       GarbageConnection: {
@@ -75,11 +74,9 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
       },
       disconnectRequest: true,
     };
-    console.log("payload===", payload);
 
     try {
       const response = await Digit.GCService.create(payload);
-      console.log("response", response);
       updateApplication(response?.GarbageConnection[0]);
       // setLoader(false);
     } catch (error) {
@@ -88,7 +85,6 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   };
 
   const updateApplication = async (response) => {
-    console.log("uddated response", response);
     // return;
     // setLoader(true);
     const payload = {
@@ -100,10 +96,8 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
         },
       },
     };
-    console.log("payload===", payload);
     try {
       const response = await Digit.GCService.update(payload);
-      console.log("response", response);
       await fetchChallans();
       // setLoader(false);
     } catch (error) {
@@ -133,7 +127,6 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
 
         {getChallanData?.map((bill, index) => {
           const connectionCount = connectionCountMap[bill?.connectionNo] || 0;
-          console.log("bill", bill);
           const showDiscontinueButton = bill.applicationStatus === "CONNECTION_ACTIVATED" && connectionCount === 1; // ✅ ONLY IF UNIQUE
           return (
             <Card key={index}>

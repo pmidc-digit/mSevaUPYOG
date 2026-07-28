@@ -26,7 +26,7 @@ const LayoutDocumentTableView = ({documents}) => {
       accessor: "fileUrl",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton style={{ float: "right", display: "inline" }}
+          <LinkButton 
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -78,7 +78,7 @@ const LayoutDocumentTableView = ({documents}) => {
     <div>
       {documentsData && 
         <Table
-          className="customTable table-border-style"
+          className="customTable table-border-style obps-documents-table"
           t={t}
           data={documentsData}
           columns={documentsColumns}

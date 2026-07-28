@@ -261,8 +261,27 @@ function LayoutSummary({ currentStepData: formData, t }) {
               {renderRow(t("BPA_CLU_TYPE_LABEL"), formData?.siteDetails?.cluType?.code || formData?.siteDetails?.cluType)}
               {(formData?.siteDetails?.cluType?.code === "ONLINE" || formData?.siteDetails?.cluType === "ONLINE") &&
                 renderRow(t("BPA_CLU_NUMBER_LABEL"), formData?.siteDetails?.cluNumber)}
-              {(formData?.siteDetails?.cluType?.code === "OFFLINE" || formData?.siteDetails?.cluType === "OFFLINE") &&
-                renderRow(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), formData?.siteDetails?.cluNumberOffline)}
+              {(formData?.siteDetails?.cluType?.code === "OFFLINE" || formData?.siteDetails?.cluType === "OFFLINE") && (
+                <React.Fragment>
+                  {renderRow(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), formData?.siteDetails?.cluNumberOffline)}
+                  {Boolean(formData?.siteDetails?.cluDocumentUpload) && (
+                    <Row
+                      label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
+                      text={
+                        <DocumentLink
+                          fileStoreId={
+                            typeof formData?.siteDetails?.cluDocumentUpload === "string"
+                              ? formData?.siteDetails?.cluDocumentUpload
+                              : (formData?.siteDetails?.cluDocumentUpload?.fileStoreId || formData?.siteDetails?.cluDocumentUpload?.filestoreId || formData?.siteDetails?.cluDocumentUpload?.uuid)
+                          }
+                          stateCode={stateCode}
+                          t={t}
+                        />
+                      }
+                    />
+                  )}
+                </React.Fragment>
+              )}
               {renderRow(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(formData?.siteDetails?.cluApprovalDate))}
             </React.Fragment>
           )}
@@ -282,7 +301,6 @@ function LayoutSummary({ currentStepData: formData, t }) {
           {renderRow(t("BPA_VASIKA_NUMBER_LABEL"), formData?.siteDetails?.vasikaNumber)}
           {renderRow(t("BPA_VASIKA_DATE_LABEL"), formatDate(formData?.siteDetails?.vasikaDate))}
           {renderRow(t("BPA_ROAD_TYPE_LABEL"), formData?.siteDetails?.roadType?.name)}
-          {renderRow(t("BPA_NET_TOTAL_AREA_LABEL"), formData?.siteDetails?.areaLeftForRoadWidening)}
           {renderRow(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), formData?.siteDetails?.isAreaUnderMasterPlan?.i18nKey)}
           {renderRow(t("BPA_ZONE_LABEL"), formData?.siteDetails?.zone?.name)}
           {renderRow(t("BPA_ULB_NAME_LABEL"), formData?.siteDetails?.ulbName?.name)}
@@ -292,7 +310,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
           {renderRow(t("BPA_BUILDING_CATEGORY_LABEL"), formData?.siteDetails?.buildingCategory?.name)}
           {renderRow(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), formData?.siteDetails?.residentialType?.name || formData?.siteDetails?.buildingCategory?.name)}
-          {renderRow(t("BPA_NET_TOTAL_AREA_LABEL"), formData?.siteDetails?.areaLeftForRoadWidening)}
+          {renderRow(t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL"), formData?.siteDetails?.areaLeftForRoadWidening)}
           {renderRow(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), formData?.siteDetails?.netPlotAreaAfterWidening)}
           {renderRow(t("BPA_BALANCE_AREA_IN_SQ_M_LABEL"), parseFloat(formData?.siteDetails?.areaLeftForRoadWidening - formData?.siteDetails?.netPlotAreaAfterWidening))}
           {renderRow(t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL"), formData?.siteDetails?.areaUnderEWS)}

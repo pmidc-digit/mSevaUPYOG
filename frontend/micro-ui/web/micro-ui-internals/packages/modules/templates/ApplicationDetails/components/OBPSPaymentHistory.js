@@ -44,15 +44,15 @@ const OBPSPaymentHistory = ({ payments }) => {
             </div>
           ) : (
             <div className="obps-payment-history-table-wrapper">
-              <table className="obps-payment-history-table">
+              <table className="custom-fix-fee-history-table obps-payment-history-table">
                 <thead>
                   <tr>
-                    <th>{t("PT_RECEIPT_NO") || "Receipt Number"}</th>
-                    <th>{t("PT_TRANSACTION_DATE") || "Transaction Date"}</th>
-                    <th>{t("PT_AMOUNT_PAID") || "Amount Paid"}</th>
-                    <th>{t("PT_PAYMENT_MODE") || "Payment Mode"}</th>
-                    <th>{t("PT_TRANSACTION_ID") || "Transaction ID"}</th>
-                    <th>{t("PT_STATUS") || "Status"}</th>
+                    <th className="custom-fix-fee-history-table-header">{t("PT_RECEIPT_NO") || "Receipt Number"}</th>
+                    <th className="custom-fix-fee-history-table-header">{t("PT_TRANSACTION_DATE") || "Transaction Date"}</th>
+                    <th className="custom-fix-fee-history-table-header">{t("PT_AMOUNT_PAID") || "Amount Paid"}</th>
+                    <th className="custom-fix-fee-history-table-header">{t("PT_PAYMENT_MODE") || "Payment Mode"}</th>
+                    <th className="custom-fix-fee-history-table-header">{t("PT_TRANSACTION_ID") || "Transaction ID"}</th>
+                    <th className="custom-fix-fee-history-table-header">{t("PT_STATUS") || "Status"}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -67,12 +67,12 @@ const OBPSPaymentHistory = ({ payments }) => {
 
                     return (
                       <tr key={payment.id || index}>
-                        <td>{receiptNo}</td>
-                        <td>{formatDate(paymentDate)}</td>
-                        <td>₹{amountPaid}</td>
-                        <td>{payment.paymentMode || 'N/A'}</td>
-                        <td>{transactionId}</td>
-                        <td>
+                        <td className="custom-fix-fee-history-table-cell-value">{receiptNo}</td>
+                        <td className="custom-fix-fee-history-table-cell-value">{formatDate(paymentDate)}</td>
+                        <td className="custom-fix-fee-history-table-cell-value">₹{amountPaid}</td>
+                        <td className="custom-fix-fee-history-table-cell-value">{payment.paymentMode || 'N/A'}</td>
+                        <td className="custom-fix-fee-history-table-cell-value">{transactionId}</td>
+                        <td className="custom-fix-fee-history-table-cell-value">
                           <span className={`obps-payment-history-status ${isDeposited ? "deposited" : ""}`}>
                             {t(status)}
                           </span>

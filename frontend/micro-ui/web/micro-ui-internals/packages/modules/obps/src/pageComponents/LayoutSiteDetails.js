@@ -717,9 +717,9 @@ const LayoutSiteDetails = (_props) => {
                               return;
                             }
 
-                            // Validate file type is PDF
-                            if (file.type !== "application/pdf") {
-                              setCluDocumentError("Only PDF files are allowed");
+                            // Validate file type
+                            if ( !["application/pdf","image/jpeg","image/png","image/jpg"].includes(file.type)) {
+                              setCluDocumentError("Only .pdf, .png, .jpeg, .jpg files are allowed");
                               return;
                             }
 
@@ -753,11 +753,13 @@ const LayoutSiteDetails = (_props) => {
                         }}
                         uploadedFile={cluDocumentUploadedFile?.fileStoreId || null}
                         error={cluDocumentError}
+                        iserror={cluDocumentError}
                         loading={cluDocumentLoader}
-                        uploadMessage = "Only .pdf files are accepted with maximum size of 5 MB"
-                        accept=".pdf"
+                        uploadMessage="Invalid File Format"
+                        accept=".pdf, .png, .jpeg, .jpg"
                         maxFileSize={5} // MB
                       />
+                          <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
                     </div>
                   </LabelFieldPair>
 
@@ -1435,7 +1437,7 @@ const LayoutSiteDetails = (_props) => {
           {/* Add Area Left For Road Widening field (A) */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_NET_TOTAL_AREA_LABEL")}`} <span className="requiredField">*</span>
+              {`${t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <Controller
@@ -1591,7 +1593,7 @@ const LayoutSiteDetails = (_props) => {
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("Total Area Percentage (EWS)")}`} <span className="requiredField">*</span>
+              {`${t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL")}`} <span className="requiredField">*</span>
             </CardLabel>
 
 
@@ -2686,7 +2688,7 @@ const LayoutSiteDetails = (_props) => {
 
           {/* Total Site Area - Sum of all distribution areas */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">Total Site Area (Sq M)</CardLabel>
+            <CardLabel className="card-label-smaller">Total Site Area(sqm)</CardLabel>
             <div className="field">
               <TextInput className="form-field" value={parseFloat(totalSiteArea).toFixed(2) || "0.00"} disabled={true} />
             </div>

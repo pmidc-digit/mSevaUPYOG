@@ -639,6 +639,21 @@ table tbody tr:nth-child(even) {
   background-color: unset;
 }
 
+.obps-documents-table th:nth-child(1),
+.obps-documents-table td:nth-child(1) {
+  width: 15% !important;
+}
+
+.obps-documents-table th:nth-child(2),
+.obps-documents-table td:nth-child(2) {
+  width: 65% !important;
+}
+
+.obps-documents-table th:nth-child(3),
+.obps-documents-table td:nth-child(3) {
+  width: 20% !important;
+}
+
 /* ============================================
    RESPONSIVE TABLE STYLES
    ============================================ */

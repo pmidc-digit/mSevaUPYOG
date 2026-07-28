@@ -799,8 +799,27 @@ const LayoutApplicationOverview = () => {
                   {renderLabel(t("BPA_CLU_TYPE_LABEL"), detail?.cluType?.code || detail?.cluType)}
                   {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") &&
                     renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
-                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
-                    renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
+                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") && (
+                    <React.Fragment>
+                      {renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
+                      {Boolean(detail?.cluDocumentUpload) && (
+                        <Row
+                          label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
+                          text={
+                            <DocumentLink
+                              fileStoreId={
+                                typeof detail?.cluDocumentUpload === "string"
+                                  ? detail?.cluDocumentUpload
+                                  : (detail?.cluDocumentUpload?.fileStoreId || detail?.cluDocumentUpload?.filestoreId || detail?.cluDocumentUpload?.uuid)
+                              }
+                              stateCode={stateCode}
+                              t={t}
+                            />
+                          }
+                        />
+                      )}
+                    </React.Fragment>
+                  )}
                   {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
                 </React.Fragment>
               )}
@@ -821,7 +840,6 @@ const LayoutApplicationOverview = () => {
               {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
               {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
               {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
-              {renderLabel(t("BPA_NET_TOTAL_AREA_LABEL"), detail?.areaLeftForRoadWidening)}
               {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
               {renderLabel(t("BPA_ZONE_LABEL"), detail?.zone?.name)}
               {renderLabel(t("BPA_ULB_NAME_LABEL"), detail?.ulbName?.name)}
@@ -834,7 +852,7 @@ const LayoutApplicationOverview = () => {
               {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
               {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}
               {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), detail?.residentialType?.name || detail?.buildingCategory?.name)}
-              {renderLabel(t("BPA_NET_TOTAL_AREA_LABEL"), detail?.areaLeftForRoadWidening)}
+              {renderLabel(t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL"), detail?.areaLeftForRoadWidening)}
               {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.netPlotAreaAfterWidening)}
               {renderLabel(t("BPA_BALANCE_AREA_IN_SQ_M_LABEL"), parseFloat(detail?.areaLeftForRoadWidening - detail?.netPlotAreaAfterWidening))}
               {renderLabel(t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL"), detail?.areaUnderEWS)}
@@ -873,33 +891,7 @@ const LayoutApplicationOverview = () => {
           </div>
         ))}
       </Card>
-
-      {/* 3️⃣ FEE DETAILS CARD */}
-    
-        <Card>
-          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
-  {applicationDetails?.Layout?.[0]?.layoutDetails && (
-          <LayoutFeeEstimationDetails
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
-              },
-              siteDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
-              },
-            }}
-            feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
-            hasPayments={reciept_data?.Payments?.length > 0}
-          />
-          )}
-          {hasPayments && (
-                <div style={{ marginTop: "16px" }}>
-                  <OBPSPaymentHistory payments={combinedPayments} />
-                </div>
-              )}
-        </Card>
-      
+  
 
       
 
@@ -939,6 +931,35 @@ const LayoutApplicationOverview = () => {
           </StatusTable>
         </Card>
       )}
+
+       {/* 3️⃣ FEE DETAILS CARD */}
+    
+        <Card>
+          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
+  {applicationDetails?.Layout?.[0]?.layoutDetails && (
+     <StatusTable>
+          <LayoutFeeEstimationDetails
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
+              },
+              siteDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
+              },
+            }}
+            feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
+            hasPayments={reciept_data?.Payments?.length > 0}
+          />
+          </StatusTable>
+          )}
+          {hasPayments && (
+                <div style={{ marginTop: "16px" }}>
+                  <OBPSPaymentHistory payments={combinedPayments} />
+                </div>
+              )}
+        </Card>
+      
 
       {/* -------------------- SPECIFICATIONS -------------------- */}
       {/* <Card>

@@ -400,6 +400,7 @@ export const LayoutFeeTable = ({
     renderMobileCardView()
   ) : (
     <div>
+      <div className="bpa-table-container">
       <CustomFeeTable
         data={feeDataWithTotal}
         columns={columns}
@@ -410,6 +411,7 @@ export const LayoutFeeTable = ({
         t={t}
         readOnly={disable}
       />
+      </div>
       {renderCustomHistory()}
     </div>
   );

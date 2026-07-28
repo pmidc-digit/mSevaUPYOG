@@ -201,13 +201,15 @@ const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
     },
   ]
 
+  const isCitizen = window.location.href.includes("citizen");
+
   if (layoutCalculatorLoading) return <Loader />
 
   return (
     <div>
       {layoutCalculatorLoading ? (
         <Loader />
-      ) : (
+      ) : isCitizen ? (
         <Table
           className="customTable table-border-style"
           t={t}
@@ -218,6 +220,37 @@ const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
           manualPagination={false}
           isPaginationRequired={false}
         />
+      ) : (
+        <div className="bpa-table-container">
+        <table className="customTable table-border-style">
+          <thead>
+            <tr>
+              <th>{t("LAYOUT_FEE_TYPE_LABEL")}</th>
+              <th>{t("LAYOUT_AMOUNT_LABEL")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {applicationFeeDataWithTotal?.map((row, index) => {
+              const amountVal = row.amount;
+              const isStatus = row.isStatus;
+              return (
+                <tr key={row.id || index}>
+                  <td>{row.title || t("CS_NA")}</td>
+                  <td>
+                    {isStatus ? (
+                      <span style={{ color: "green", fontWeight: "bold" }}>{amountVal}</span>
+                    ) : amountVal === null || amountVal === undefined || isNaN(amountVal) ? (
+                      t("CS_NA")
+                    ) : (
+                      `₹ ${parseFloat(amountVal).toLocaleString("en-IN")}`
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        </div>
       )}
     </div>
   )

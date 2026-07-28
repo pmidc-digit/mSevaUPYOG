@@ -48,7 +48,7 @@ const App = () => {
           <PrivateRoute path={`${path}/create-application`} component={CHBCreate} />
           <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={GCApplicationDetails} />
           <PrivateRoute path={`${path}/response/:id`} component={GCResponseCitizen} />
-          <PrivateRoute path={`${path}/bill-genie`} component={BillGenie} />
+          <PrivateRoute path={`${path}/search-and-pay`} component={BillGenie} />
         </AppContainer>
       </Switch>
     </span>

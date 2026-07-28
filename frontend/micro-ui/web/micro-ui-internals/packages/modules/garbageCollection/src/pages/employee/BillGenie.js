@@ -22,6 +22,8 @@ const BillGenie = () => {
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
 
+  const isCitizenCheck = window.location.href.includes("citizen");
+
   const [loader, setLoader] = useState(false);
   const [getData, setData] = useState();
   const [getBills, setBills] = useState([]);
@@ -164,7 +166,9 @@ const BillGenie = () => {
 
   return (
     <React.Fragment>
-      <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 40px" }}>{t("ACTION_TEST_GARBAGE_COLLECTION_BILL_GENIE")}</CardSubHeader>
+      <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 40px" }}>
+        {isCitizenCheck ? "Search and Pay" : t("ACTION_TEST_GARBAGE_COLLECTION_BILL_GENIE")}
+      </CardSubHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div
           style={{

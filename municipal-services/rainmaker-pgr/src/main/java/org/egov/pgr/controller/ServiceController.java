@@ -1,6 +1,6 @@
 package org.egov.pgr.controller;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.pgr.contract.RequestInfoWrapper;
 import org.egov.pgr.contract.ServiceReqSearchCriteria;

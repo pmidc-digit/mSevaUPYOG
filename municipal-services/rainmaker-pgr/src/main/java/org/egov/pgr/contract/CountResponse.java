@@ -2,7 +2,7 @@ package org.egov.pgr.contract;
 
 import java.util.Objects;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.common.contract.response.ResponseInfo;
 
@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 /**
  * CountResponse
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2018-02-23T09:30:28.401Z")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2018-02-23T09:30:28.401Z")
 
 @AllArgsConstructor
 @NoArgsConstructor

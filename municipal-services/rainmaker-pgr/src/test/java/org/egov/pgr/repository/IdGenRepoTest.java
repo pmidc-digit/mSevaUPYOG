@@ -1,7 +1,7 @@
 package org.egov.pgr.repository;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -15,18 +15,20 @@ import org.egov.pgr.contract.IdRequest;
 import org.egov.pgr.contract.IdResponse;
 import org.egov.pgr.utils.PGRConstants;
 import org.egov.tracer.model.ServiceCallException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+//import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(SpringExtension.class)
 public class IdGenRepoTest {
 
 	private String idGenHost = "http://localhost:8088/";
@@ -39,7 +41,7 @@ public class IdGenRepoTest {
 	@InjectMocks
 	private IdGenRepo idGenRepo;
 
-	@Before
+	@BeforeEach
 	public void before() {
 		/*static void	setField(java.lang.Class<?> targetClass, java.lang.String name, java.lang.Object value)
 		Set the static field with the given name on the provided targetClass to the supplied value.*/
@@ -75,13 +77,21 @@ public class IdGenRepoTest {
 		assertFalse(mockFailResponse.equals(idGenRepo.getId(new RequestInfo(), "mh.roha", count, PGRConstants.SERV_REQ_ID_NAME, PGRConstants.SERV_REQ_ID_FORMAT)));
 	}
 	
-	@Test(expected = ServiceCallException.class)
-	public void idGenShouldThrowServiceCallException() {
-		
-		Integer count =2;
-		
-		when(restTemplate.postForObject(idGenHost+idGenPath, getIdGenRequest(), IdGenerationResponse.class)).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
-		assertFalse(getIdGenResponse().equals(idGenRepo.getId(new RequestInfo(), "mh.roha", count, PGRConstants.SERV_REQ_ID_NAME, PGRConstants.SERV_REQ_ID_FORMAT)));
+	@Test
+	void idGenShouldThrowServiceCallException() {
+
+	    Integer count = 2;
+
+	    when(restTemplate.postForObject(idGenHost + idGenPath, getIdGenRequest(), IdGenerationResponse.class))
+	            .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
+
+	    assertThrows(ServiceCallException.class, () ->
+	            idGenRepo.getId(
+	                    new RequestInfo(),
+	                    "mh.roha",
+	                    count,
+	                    PGRConstants.SERV_REQ_ID_NAME,
+	                    PGRConstants.SERV_REQ_ID_FORMAT));
 	}
 	
 	private IdGenerationRequest getIdGenRequest() {

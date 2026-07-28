@@ -1,11 +1,12 @@
 package org.egov.pgr.service;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+//import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(SpringExtension.class)
 public class ServiceRequestServiceTest {
 	
 	@Test

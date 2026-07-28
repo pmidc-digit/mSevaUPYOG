@@ -1,6 +1,6 @@
 package org.egov.pgr.repository;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Map;
 
@@ -9,20 +9,24 @@ import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.pgr.contract.SearcherRequest;
 import org.egov.pgr.contract.ServiceReqSearchCriteria;
 import org.egov.tracer.model.ServiceCallException;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
+//import org.mockito.Matchers;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.lenient;
-import org.mockito.runners.MockitoJUnitRunner;
+//import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(SpringExtension.class)
 public class ServiceRequestRepositoryTest {
 	
 	@Mock
@@ -33,7 +37,7 @@ public class ServiceRequestRepositoryTest {
 	private ServiceRequestRepository serviceRequestRepository;
 
 
-	@Ignore
+	@Disabled
 	@Test
 	public void testGetServiceRequestsFailure() {
 		Object response = new Object();
@@ -56,7 +60,7 @@ public class ServiceRequestRepositoryTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Ignore
+	@Disabled
 	@Test
 	public void testGetServiceRequestsSuccess() {
 /*		ReflectionTestUtils.setField(
@@ -75,21 +79,23 @@ public class ServiceRequestRepositoryTest {
 		serviceRequestRepository.fetchResult(uri, searcherRequest);				
 				
         Mockito.verify(restTemplate).postForObject(
-        		Matchers.any(String.class),
-        		Matchers.any(SearcherRequest.class),
-                Matchers.any(Class.class));
+        	    any(String.class),
+        	    any(SearcherRequest.class),
+        	    any(Class.class));
 		
 	}
 	
 	@SuppressWarnings("unchecked")
-	@Ignore
-	@Test(expected = ServiceCallException.class)
+	@Disabled
+	@Test
 	public void testGetServiceRequestsException() {
 		StringBuilder uri = new StringBuilder();
 		uri.append("http://localhost:8093/infra-search/rainmaker-pgr/serviceRequestSearch/_get");
 		MdmsCriteriaReq mdmsCriteriaReq = new MdmsCriteriaReq();
 		Mockito.when(restTemplate.postForObject(uri.toString(), mdmsCriteriaReq, Map.class)).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
-		serviceRequestRepository.fetchResult(uri, mdmsCriteriaReq);			
+		assertThrows(ServiceCallException.class, () -> {
+	        serviceRequestRepository.fetchResult(uri, mdmsCriteriaReq);
+	    });			
 	}
 	
 

@@ -1,34 +1,49 @@
 package org.egov.pgr.utils;
 
-import okhttp3.*;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
-public class DGRApi {	
+import java.util.Map;
 
-	public String apiCalling(String complaintId)
-	{
-		String jsonData = null;
-	OkHttpClient client = new OkHttpClient().newBuilder()
-			  .followRedirects(false)
-			  .build();
-			MediaType mediaType = MediaType.parse("application/json");
-			RequestBody body = RequestBody.create(mediaType, " {\"Complaint_Id\":\""+complaintId+"\", \r\n \"Remarks\":\"Resolved Succesffully\", \r\n \"Status\":\"resolved\"}");
-			Request request = new Request.Builder()
-			  .url("http://devgrievanceapi.psegs.in/api/grievance/GetComplaintStatus_PMIDC")
-			  .method("POST", body)
-			  .addHeader("Content-Type", "application/json")
-			  .build();
-			Response responses = null;
-			try {
-				responses = client.newCall(request).execute();
-				jsonData = responses.body().string();
-				
-				
-	}
-	catch(Exception e)
-	{
-		e.printStackTrace();
-	}
-			return jsonData;
-	}
+@Service
+public class DGRApi {
 
+    private final RestClient restClient = RestClient.create();
+
+    public String apiCalling(String complaintId) {
+
+        try {
+            Map<String, String> request = Map.of(
+                    "Complaint_Id", complaintId,
+                    "Remarks", "Resolved Successfully",
+                    "Status", "resolved"
+            );
+
+            return restClient.post()
+                    .uri("http://devgrievanceapi.psegs.in/api/grievance/GetComplaintStatus_PMIDC")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(request)
+                    .retrieve()
+                    .body(String.class);
+
+        } catch (RestClientResponseException e) {
+            // HTTP 4xx/5xx errors
+            System.err.println("HTTP Error: " + e.getStatusCode());
+            System.err.println("Response Body: " + e.getResponseBodyAsString());
+            return null;
+
+        } catch (RestClientException e) {
+            // Connection, timeout, or other RestClient errors
+            e.printStackTrace();
+            return null;
+
+        } catch (Exception e) {
+            // Any unexpected exception
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

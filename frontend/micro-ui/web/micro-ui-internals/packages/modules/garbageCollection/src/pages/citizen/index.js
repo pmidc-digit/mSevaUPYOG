@@ -32,6 +32,7 @@ const App = () => {
   const GCMyApplications = Digit?.ComponentRegistryService?.getComponent("GCMyApplications");
   const GCApplicationDetails = Digit?.ComponentRegistryService?.getComponent("GCApplicationDetails");
   const GCResponseCitizen = Digit?.ComponentRegistryService?.getComponent("GCResponseCitizen");
+  const BillGenie = Digit?.ComponentRegistryService?.getComponent("BillGenie");
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
   return (
@@ -47,6 +48,7 @@ const App = () => {
           <PrivateRoute path={`${path}/create-application`} component={CHBCreate} />
           <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={GCApplicationDetails} />
           <PrivateRoute path={`${path}/response/:id`} component={GCResponseCitizen} />
+          <PrivateRoute path={`${path}/search-and-pay`} component={BillGenie} />
         </AppContainer>
       </Switch>
     </span>

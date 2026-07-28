@@ -8,7 +8,7 @@ import PTSearchApplication from "../../components/SearchApplication";
 const SearchApp = ({path}) => {
     const { variant } = useParams();
     const { t } = useTranslation();
-    const tenantId = Digit.ULBService.getCurrentTenantId();
+    const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId(): localStorage.getItem("CITIZEN.CITY");
     const [payload, setPayload] = useState({})
     const [showToast, setShowToast] = useState(null);
 

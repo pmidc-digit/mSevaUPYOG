@@ -440,7 +440,7 @@ const LayoutApplicationOverview = () => {
             isRequired = true;
           } else if (doc.code === "OWNER.NATIONALHIGHWAYNOC") {
             isRequired = isNationalHighway;
-          } else if (doc.code === "OWNER.OWNERSHIPDOCUMENT") {
+          } else if (doc.code === "OWNER.AUTHORIZATIONLETTER") {
             if (applicantType === "FIRM") {
               isRequired = true;
             } else if (applicantType === "INDIVIDUAL") {

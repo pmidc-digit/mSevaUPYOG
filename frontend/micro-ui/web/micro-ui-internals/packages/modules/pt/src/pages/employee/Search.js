@@ -169,7 +169,8 @@ const PTSearchFields = {
 
 const Search = () => {
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId(): localStorage.getItem("CITIZEN.CITY");
+  console.log('tenantId in prop search', tenantId)
     const defaultValues = {
  tenantId: {
   code: tenantId,

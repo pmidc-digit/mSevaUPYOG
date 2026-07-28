@@ -16,6 +16,7 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
   const [showUpdateNo, setShowUpdateNo] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [ownerInvalidMobileNumberIndex, setOwnerInvalidMobileNumberIndex] = useState(0);
+  const pathvar = window.location.href.includes("employee") ? "employee" : "citizen";
 
   const { data, isLoading, error, isSuccess, billData, revalidate } = Digit.Hooks.pt.usePropertySearchWithDue({
     tenantId,
@@ -24,7 +25,7 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
   });
 
   const mutation = Digit.Hooks.pt.usePropertyAPI(tenantId, false);
-
+  const isEmployee = window.location.href.includes("employee");
   const UpdatePropertyNumberComponent = Digit?.ComponentRegistryService?.getComponent("EmployeeUpdateOwnerNumber");
   const { data: updateNumberConfig } = Digit.Hooks.useCommonMDMS(Digit.ULBService.getStateId(), "PropertyTax", ["UpdateNumber"], {
     select: (data) => {
@@ -58,7 +59,7 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
       setSelectedProperty(val);
     } else {
       revalidate();
-      history.push(`/digit-ui/employee/payment/collect/PT/${val?.["propertyId"]}`);
+      history.push(`/digit-ui/${pathvar}/payment/collect/PT/${val?.["propertyId"]}`);
     }
   };
 
@@ -78,7 +79,7 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
   };
 
   const skipNContinue = () => {
-    history.push(`/digit-ui/employee/payment/collect/PT/${selectedProperty?.["propertyId"]}`);
+    history.push(`/digit-ui/${pathvar}/payment/collect/PT/${selectedProperty?.["propertyId"]}`);
   };
 
   const updateMobileNumber = () => {
@@ -102,7 +103,15 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
           return (
             <div>
               <span className="link">
-                <Link to={`/digit-ui/employee/pt/ptsearch/property-details/${row.original["propertyId"]}`}>{row.original["propertyId"]}</Link>
+                <Link
+                  to={
+                    isEmployee
+                      ? `/digit-ui/employee/pt/property-details/${row.original.propertyId}`
+                      : `/digit-ui/citizen/pt/property/my-property/${row.original.propertyId}`
+                  }
+                >
+                  {row.original["propertyId"]}
+                </Link>
               </span>
             </div>
           );

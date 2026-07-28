@@ -320,7 +320,8 @@ public class EstimationService {
 		// Track all slab IDs but calculate water charge only once — unchanged
 		BillingSlab applicableBillSlab = null;
 		Slab applicableSlab = null;
- 
+		String waterUsageType = (String) additionalDetail.getOrDefault(WSCalculationConstant.WATER_SUBUSAGE_TYPE, null);
+		
 		for (BillingSlab billSlab : billingSlabs) {
 			billingSlabIds.add(billSlab.getId());
  
@@ -330,7 +331,12 @@ public class EstimationService {
 							&& slab.getEffectiveTo() >= System.currentTimeMillis())
 					.collect(Collectors.toList());
  
-			if (!filteredSlabs.isEmpty() && applicableBillSlab == null) {
+			if (waterUsageType == null) {
+				// No water usage type provided, pick the first matching BillingSlab
+				applicableBillSlab = billSlab;
+				applicableSlab = filteredSlabs.get(0);
+			} else if (waterUsageType.equals(billSlab.getWaterSubUsageType())) {
+				// Water usage type provided, pick only the matching BillingSlab
 				applicableBillSlab = billSlab;
 				applicableSlab = filteredSlabs.get(0);
 			}

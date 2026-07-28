@@ -2170,6 +2170,9 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 			exemption = Math.round(exemption * 100) / 100.0;
 			unit_usage_exemption = Math.round(unit_usage_exemption * 100) / 100.0;
 			PT_TAX_NET = PT_TAX - exemption - unit_usage_exemption;
+			
+			if(PT_TAX_NET == 0.0)
+				FireCess = 0.0;
 
 			double penality = PT_TAX_NET * penalityRate / 100.0;
 			double interestPerYear = (PT_TAX_NET) * (interestRate  / 100.0);

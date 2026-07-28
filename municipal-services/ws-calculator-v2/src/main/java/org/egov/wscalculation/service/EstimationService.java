@@ -330,7 +330,10 @@ public class EstimationService {
 							&& slab.getEffectiveFrom() <= System.currentTimeMillis()
 							&& slab.getEffectiveTo() >= System.currentTimeMillis())
 					.collect(Collectors.toList());
- 
+			
+			if (filteredSlabs.isEmpty() || applicableBillSlab != null) {
+		        continue;
+		    }
 			if (waterUsageType == null) {
 				// No water usage type provided, pick the first matching BillingSlab
 				applicableBillSlab = billSlab;

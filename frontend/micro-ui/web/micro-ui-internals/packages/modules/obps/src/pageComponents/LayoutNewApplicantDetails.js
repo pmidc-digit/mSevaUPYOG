@@ -87,6 +87,8 @@ const LayoutNewApplicantDetails = (_props) => {
         dob: a.dob || "",
         gender: a.gender || "",
         panNumber: a.panNumber || a.pan || "",
+        aplicantType: a.aplicantType || a.additionalDetails?.aplicantType || null,
+        authorisedPerson: a.authorisedPerson || a.additionalDetails?.authorisedPerson || null,
         isPrimaryOwner: a.isPrimaryOwner,
         uuid: a.uuid !== undefined ? a.uuid : null,
         status: a.status !== undefined ? a.status : true,
@@ -175,11 +177,15 @@ const LayoutNewApplicantDetails = (_props) => {
       photoUploadedFiles: owner.photoUploadedFiles || owner.additionalDetails?.ownerPhoto || null,
       documentUploadedFiles: owner.documentUploadedFiles || owner.additionalDetails?.documentFile || null,
       panDocumentUploadedFiles: owner.panDocumentUploadedFiles || owner.additionalDetails?.panDocument || null,
+      aplicantType: owner.aplicantType || owner.additionalDetails?.aplicantType || null,
+      authorisedPerson: owner.authorisedPerson || owner.additionalDetails?.authorisedPerson || null,
       additionalDetails: {
         ...owner.additionalDetails,
         ownerPhoto: owner.photoUploadedFiles || owner.additionalDetails?.ownerPhoto || null,
         documentFile: owner.documentUploadedFiles || owner.additionalDetails?.documentFile || null,
         panDocument: owner.panDocumentUploadedFiles || owner.additionalDetails?.panDocument || null,
+        aplicantType: owner.aplicantType || owner.additionalDetails?.aplicantType || null,
+        authorisedPerson: owner.authorisedPerson || owner.additionalDetails?.authorisedPerson || null,
       },
       uuid: owner.uuid !== undefined ? owner.uuid : null,
       status: owner.status !== undefined ? owner.status : true,
@@ -232,6 +238,8 @@ const LayoutNewApplicantDetails = (_props) => {
         ownerPhoto: userObj.photoUploadedFiles || userObj.additionalDetails?.ownerPhoto || null,
         documentFile: userObj.documentUploadedFiles || userObj.additionalDetails?.documentFile || null,
         panDocument: userObj.panDocumentUploadedFiles || userObj.additionalDetails?.panDocument || null,
+        aplicantType: userObj.aplicantType || userObj.additionalDetails?.aplicantType || null,
+        authorisedPerson: userObj.authorisedPerson || userObj.additionalDetails?.authorisedPerson || null,
       },
       uuid: userObj.uuid !== undefined ? userObj.uuid : null,
       status: true,
@@ -433,7 +441,7 @@ const LayoutNewApplicantDetails = (_props) => {
         {activeOwners.length > 0 && (
           <div style={{ marginTop: "20px", marginBottom: "20px" }}>
             <CardSectionHeader className="card-section-header" style={{ marginBottom: "10px", fontSize: "16px" }}>
-              {t("SELECTED_OWNERS_DETAILS")}
+              {t("SELECTED OWNERS DETAILS")}
             </CardSectionHeader>
             <StatusTable>
               <Table
@@ -454,13 +462,13 @@ const LayoutNewApplicantDetails = (_props) => {
         {/* Validation Errors for Owners */}
         {activeOwners.length === 0 && (
           <CardLabelError style={{ color: "red", fontSize: "12px", marginTop: "10px" }}>
-            {t("AT_LEAST_ONE_OWNER_REQUIRED")}
+            {t("AT LEAST ONE OWNER REQUIRED")}
           </CardLabelError>
         )}
 
         {isMultiple && activeOwners.length === 1 && (
           <CardLabelError style={{ color: "red", fontSize: "12px", marginTop: "10px" }}>
-            {t("MULTIPLE_OWNER_TYPE_REQUIRES_MORE_THAN_ONE_OWNER")}
+            {t("MULTIPLE OWNER TYPE REQUIRES MORE THAN ONE OWNER")}
           </CardLabelError>
         )}
 

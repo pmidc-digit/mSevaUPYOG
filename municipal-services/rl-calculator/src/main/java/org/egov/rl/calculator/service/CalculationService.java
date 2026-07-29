@@ -31,10 +31,12 @@ import org.egov.common.contract.request.RequestInfo;
 import org.springframework.util.CollectionUtils;
 import org.egov.tracer.model.CustomException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import org.egov.rl.calculator.web.models.demand.DueDate;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -444,14 +446,13 @@ public class CalculationService {
         addRoundOffTaxHead(tenantId, details);
         BigDecimal amountPayable = details.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        long demandCreationEpoch = System.currentTimeMillis();
-        long expiryDays = 10;
-        List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, tenantId);
-        if (penaltySlabs != null && !penaltySlabs.isEmpty() && penaltySlabs.get(0).getApplicableAfterDays() != null) {
-            expiryDays = penaltySlabs.get(0).getApplicableAfterDays().longValue();
-        }
-        long durationMillis = expiryDays * 24 * 60 * 60 * 1000L;
-        long calculatedExpiry = demandCreationEpoch + durationMillis;
+        DueDate dueDateConfig = masterDataService.getDueDateConfig(requestInfo, tenantId, cycle);
+        Integer dueDay = (dueDateConfig != null && dueDateConfig.getDueDay() != null) ? dueDateConfig.getDueDay() : 10;
+        LocalDate billingMonth = Instant.ofEpochMilli(taxPeriodFrom).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toLocalDate();
+        int day = Math.min(dueDay, billingMonth.lengthOfMonth());
+        LocalDateTime dueCutoff = LocalDateTime.of(billingMonth.getYear(), billingMonth.getMonthValue(), day, 23, 59, 59, 999000000);
+        long calculatedExpiry = dueCutoff.atZone(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
+        long durationMillis = Math.max(0L, calculatedExpiry - System.currentTimeMillis());
 
         Demand monthlyDemand = Demand.builder().consumerCode(consumerCode).demandDetails(details).payer(payerUser)
                 .minimumAmountPayable(amountPayable).tenantId(tenantId).taxPeriodFrom(taxPeriodFrom).taxPeriodTo(taxPeriodTo)
@@ -470,7 +471,7 @@ public class CalculationService {
             
             long arrearDemandTime = entryDateEpoch;
             
-            long arrearCalculatedExpiry = demandCreationEpoch + durationMillis;
+            long arrearCalculatedExpiry = System.currentTimeMillis() + durationMillis;
 
             Demand arrearDemand = Demand.builder().consumerCode(consumerCode).demandDetails(arrearDetails).payer(payerUser)
 					.minimumAmountPayable(arrearAmountPayable).tenantId(tenantId).taxPeriodFrom(arrearDemandTime).taxPeriodTo(arrearDemandTime)

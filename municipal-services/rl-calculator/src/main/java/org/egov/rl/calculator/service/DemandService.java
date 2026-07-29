@@ -130,14 +130,11 @@ public class DemandService {
 							BigDecimal::add);
 //					amountPayable = calculationService.calculatePaybleAmount(startDay, endDay, amountPayable, cycle);
 
-					long demandCreationEpoch = System.currentTimeMillis();
-					long expiryDays = 10;
-					List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, tenantId);
-					if (penaltySlabs != null && !penaltySlabs.isEmpty() && penaltySlabs.get(0).getApplicableAfterDays() != null) {
-						expiryDays = penaltySlabs.get(0).getApplicableAfterDays().longValue();
-					}
-					long durationMillis = expiryDays * 24 * 60 * 60 * 1000L;
-					long absoluteExpiry = demandCreationEpoch + durationMillis;
+					DueDate dueDateConfig = masterDataService.getDueDateConfig(requestInfo, tenantId, cycle);
+					Integer dueDay = (dueDateConfig != null && dueDateConfig.getDueDay() != null) ? dueDateConfig.getDueDay() : 10;
+					Demand tempDemand = Demand.builder().taxPeriodFrom(startDay).build();
+					long absoluteExpiry = getDueCutoffEpoch(tempDemand, dueDay);
+					long durationMillis = Math.max(0L, absoluteExpiry - System.currentTimeMillis());
 
 					Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails)
 							.payer(payerUser).minimumAmountPayable(amountPayable).tenantId(tenantId)
@@ -151,6 +148,9 @@ public class DemandService {
 
 			List<Demand> demands1 = demandRepository.saveDemand(
 					calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
+			if (!CollectionUtils.isEmpty(demands1)) {
+				fetchBillForDemands(demands1, requestInfo);
+			}
 			return DemandResponse.builder().demands(demands1).build();
 		}
 	}
@@ -186,6 +186,9 @@ public class DemandService {
 
 		log.info("Saving legacy demand(s) to billing service. Count: {}", demands.size());
 		List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demands);
+		if (!CollectionUtils.isEmpty(savedDemands)) {
+			fetchBillForDemands(savedDemands, requestInfo);
+		}
 		log.info("Legacy demand created successfully. Count: {}", savedDemands.size());
 		return DemandResponse.builder().demands(savedDemands).build();
     }
@@ -218,14 +221,11 @@ public class DemandService {
 			amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
 					BigDecimal::add);
 
-			long demandCreationEpoch = System.currentTimeMillis();
-			long expiryDays = 10;
-			List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, tenantId);
-			if (penaltySlabs != null && !penaltySlabs.isEmpty() && penaltySlabs.get(0).getApplicableAfterDays() != null) {
-				expiryDays = penaltySlabs.get(0).getApplicableAfterDays().longValue();
-			}
-			long durationMillis = expiryDays * 24 * 60 * 60 * 1000L;
-			long absoluteExpiry = demandCreationEpoch + durationMillis;
+			DueDate dueDateConfig = masterDataService.getDueDateConfig(requestInfo, tenantId, cycle);
+			Integer dueDay = (dueDateConfig != null && dueDateConfig.getDueDay() != null) ? dueDateConfig.getDueDay() : 10;
+			Demand tempDemand = Demand.builder().taxPeriodFrom(billingPeriod.getTaxPeriodFrom()).build();
+			long absoluteExpiry = getDueCutoffEpoch(tempDemand, dueDay);
+			long durationMillis = Math.max(0L, absoluteExpiry - System.currentTimeMillis());
 
 			Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
 					.minimumAmountPayable(amountPayable).tenantId(tenantId)
@@ -237,6 +237,9 @@ public class DemandService {
 		}
 		List<Demand> demands1 = demandRepository.saveDemand(
 				calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
+		if (!CollectionUtils.isEmpty(demands1)) {
+			fetchBillForDemands(demands1, requestInfo);
+		}
 		return DemandResponse.builder().demands(demands1).build();
 	}
 
@@ -267,14 +270,11 @@ public class DemandService {
 			amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
 					BigDecimal::add);
 
-			long demandCreationEpoch = System.currentTimeMillis();
-			long expiryDays = 10;
-			List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, tenantId);
-			if (penaltySlabs != null && !penaltySlabs.isEmpty() && penaltySlabs.get(0).getApplicableAfterDays() != null) {
-				expiryDays = penaltySlabs.get(0).getApplicableAfterDays().longValue();
-			}
-			long durationMillis = expiryDays * 24 * 60 * 60 * 1000L;
-			long absoluteExpiry = demandCreationEpoch + durationMillis;
+			DueDate dueDateConfig = masterDataService.getDueDateConfig(requestInfo, tenantId, null);
+			Integer dueDay = (dueDateConfig != null && dueDateConfig.getDueDay() != null) ? dueDateConfig.getDueDay() : 10;
+			Demand tempDemand = Demand.builder().taxPeriodFrom(billingPeriod.getTaxPeriodFrom()).build();
+			long absoluteExpiry = getDueCutoffEpoch(tempDemand, dueDay);
+			long durationMillis = Math.max(0L, absoluteExpiry - System.currentTimeMillis());
 
 			Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
 					.minimumAmountPayable(amountPayable).tenantId(tenantId)
@@ -348,87 +348,120 @@ public class DemandService {
 			List<TaxPeriod> taxPeriods, List<BillingPeriod> billingPeriods, List<Penalty> penaltySlabs) {
 		log.info("Applying time based applicables for demand: {}", demand.getId());
 
-		if (CollectionUtils.isEmpty(penaltySlabs)) {
-			log.info("No penalty slabs found for tenant: {}", demand.getTenantId());
-			return;
-		}
-		log.info("Found {} penalty slabs.", penaltySlabs.size());
+		RequestInfo requestInfo = (requestInfoWrapper != null) ? requestInfoWrapper.getRequestInfo() : new RequestInfo();
+		DueDate dueDateConfig = masterDataService.getDueDateConfig(requestInfo, demand.getTenantId(), null);
+		Integer dueDay = (dueDateConfig != null && dueDateConfig.getDueDay() != null) ? dueDateConfig.getDueDay() : 10;
 
-		Long expiryTimeMillis = demand.getTaxPeriodTo();
-		
-		if (expiryTimeMillis == null) {
-			log.error("Cannot apply penalty. Demand taxPeriodTo is null for demand: {}", demand.getId());
-			return;
-		}
-
-		log.info("Demand ID: {}. TaxPeriodTo (Expiry Time): {}. Current Time: {}", demand.getId(), expiryTimeMillis,
-				System.currentTimeMillis());
-
-		if (System.currentTimeMillis() < expiryTimeMillis) {
-			log.info("Demand is not yet overdue. Skipping penalty calculation for demand: {}", demand.getId());
-			return;
-		}
-
-		boolean penaltyAlreadyApplied = demand.getDemandDetails().stream()
-				.anyMatch(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.PENALTY_TAXHEAD_CODE));
-
-		if (penaltyAlreadyApplied) {
-			log.info("Penalty already applied for demand: {}", demand.getId());
-			return;
-		}
-
-		long daysPastExpiry = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - expiryTimeMillis);
-		log.info("Demand ID: {}. Days Past Expiry: {}", demand.getId(), daysPastExpiry);
+		long dueCutoffEpoch = getDueCutoffEpoch(demand, dueDay);
+		long now = System.currentTimeMillis();
 
 		BigDecimal principalAmount = demand.getDemandDetails().stream().filter(
 				detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.RENT_LEASE_FEE_RL_APPLICATION))
 				.map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-		log.info("Demand ID: {}. Principal amount for penalty calculation: {}", demand.getId(), principalAmount);
-
 		if (principalAmount.compareTo(BigDecimal.ZERO) <= 0) {
-			log.info("Principal amount is zero or less for demand: {}. Skipping penalty.", demand.getId());
+			log.info("Principal amount is zero or less for demand: {}. Skipping time-based applicables.", demand.getId());
 			return;
 		}
-
-		Penalty penaltySlab = penaltySlabs.get(0);
-		log.info("Demand ID: {}. Using Penalty Slab: Applicable After {} days.", demand.getId(),
-				penaltySlab.getApplicableAfterDays());
-
-		if (penaltySlab.getApplicableAfterDays() != null && daysPastExpiry > penaltySlab.getApplicableAfterDays()) {
-			log.info("Applying penalty for demand: {}", demand.getId());
-
-			BigDecimal penaltyAmount = BigDecimal.ZERO;
-
-			if (penaltySlab.getRate() != null && penaltySlab.getRate().compareTo(BigDecimal.ZERO) > 0) {
-				penaltyAmount = principalAmount.multiply(penaltySlab.getRate()).divide(new BigDecimal(100), 2,
-						RoundingMode.HALF_UP);
-			} else if (penaltySlab.getFlatAmount() != null
-					&& penaltySlab.getFlatAmount().compareTo(BigDecimal.ZERO) > 0) {
-				penaltyAmount = penaltySlab.getFlatAmount();
+		//if today is less than due date apply rebate and else reset rebate 
+		if (now <= dueCutoffEpoch) {
+			// Early payment rebate applies (on or before 10th of the month)
+			BigDecimal rebateAmount = BigDecimal.ZERO;
+			if (dueDateConfig != null && dueDateConfig.getRebatePercentage() != null && dueDateConfig.getRebatePercentage() > 0) {
+				rebateAmount = principalAmount.multiply(BigDecimal.valueOf(dueDateConfig.getRebatePercentage()))
+						.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+			} else if (dueDateConfig != null && dueDateConfig.getRebateFlatAmount() != null
+					&& dueDateConfig.getRebateFlatAmount().compareTo(BigDecimal.ZERO) > 0) {
+				rebateAmount = dueDateConfig.getRebateFlatAmount();
 			}
 
-			if (penaltySlab.getMinAmount() != null && penaltyAmount.compareTo(penaltySlab.getMinAmount()) < 0) {
-				penaltyAmount = penaltySlab.getMinAmount();
-			}
+			if (rebateAmount.compareTo(BigDecimal.ZERO) > 0) {
+				BigDecimal negativeRebate = rebateAmount.negate();
+				DemandDetail rebateDetail = demand.getDemandDetails().stream()
+						.filter(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.RL_TIME_REBATE))
+						.findFirst().orElse(null);
 
-			if (penaltySlab.getMaxAmount() != null && penaltyAmount.compareTo(penaltySlab.getMaxAmount()) > 0) {
-				penaltyAmount = penaltySlab.getMaxAmount();
-			}
-
-			if (penaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
-				DemandDetail penaltyDetail = DemandDetail.builder().taxAmount(penaltyAmount)
-						.taxHeadMasterCode(RLConstants.PENALTY_TAXHEAD_CODE).tenantId(demand.getTenantId())
-						.collectionAmount(BigDecimal.ZERO).demandId(demand.getId()).build();
-				demand.getDemandDetails().add(penaltyDetail);
-				log.info("Penalty of {} applied for demand: {}", penaltyAmount, demand.getId());
-			} else {
-				log.warn("Calculated penalty amount is zero or less for demand: {}. No penalty applied.",
-						demand.getId());
+				if (rebateDetail != null) {
+					rebateDetail.setTaxAmount(negativeRebate);
+				} else {
+					DemandDetail newRebateDetail = DemandDetail.builder()
+							.taxAmount(negativeRebate)
+							.taxHeadMasterCode(RLConstants.RL_TIME_REBATE)
+							.tenantId(demand.getTenantId())
+							.collectionAmount(BigDecimal.ZERO)
+							.demandId(demand.getId())
+							.build();
+					demand.getDemandDetails().add(newRebateDetail);
+				}
+				log.info("Early payment rebate of {} applied for demand: {}", rebateAmount, demand.getId());
 			}
 		} else {
-			log.info("Penalty grace period not over for demand: {}", demand.getId());
+			// Past due date cutoff: reset early payment rebate to 0
+			demand.getDemandDetails().stream()
+					.filter(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.RL_TIME_REBATE))
+					.forEach(detail -> detail.setTaxAmount(BigDecimal.ZERO));
+
+			// Apply penalty if penalty slabs are configured
+			if (!CollectionUtils.isEmpty(penaltySlabs)) {
+				boolean penaltyAlreadyApplied = demand.getDemandDetails().stream()
+						.anyMatch(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.PENALTY_TAXHEAD_CODE));
+
+				if (!penaltyAlreadyApplied) {
+					long daysPastExpiry = TimeUnit.MILLISECONDS.toDays(now - dueCutoffEpoch);
+					Penalty penaltySlab = penaltySlabs.get(0);
+
+					if (penaltySlab.getApplicableAfterDays() == null || daysPastExpiry >= penaltySlab.getApplicableAfterDays()) {
+						BigDecimal penaltyAmount = BigDecimal.ZERO;
+						if (penaltySlab.getRate() != null && penaltySlab.getRate().compareTo(BigDecimal.ZERO) > 0) {
+							penaltyAmount = principalAmount.multiply(penaltySlab.getRate()).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
+						} else if (penaltySlab.getFlatAmount() != null && penaltySlab.getFlatAmount().compareTo(BigDecimal.ZERO) > 0) {
+							penaltyAmount = penaltySlab.getFlatAmount();
+						}
+
+						if (penaltySlab.getMinAmount() != null && penaltyAmount.compareTo(penaltySlab.getMinAmount()) < 0) {
+							penaltyAmount = penaltySlab.getMinAmount();
+						}
+						if (penaltySlab.getMaxAmount() != null && penaltyAmount.compareTo(penaltySlab.getMaxAmount()) > 0) {
+							penaltyAmount = penaltySlab.getMaxAmount();
+						}
+
+						if (penaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
+							DemandDetail penaltyDetail = DemandDetail.builder().taxAmount(penaltyAmount)
+									.taxHeadMasterCode(RLConstants.PENALTY_TAXHEAD_CODE).tenantId(demand.getTenantId())
+									.collectionAmount(BigDecimal.ZERO).demandId(demand.getId()).build();
+							demand.getDemandDetails().add(penaltyDetail);
+							log.info("Penalty of {} applied for demand: {}", penaltyAmount, demand.getId());
+						}
+					}
+				}
+			}
 		}
+	}
+
+	private long getDueCutoffEpoch(Demand demand, Integer dueDay) {
+		int targetDueDay = (dueDay != null && dueDay > 0) ? dueDay : 10;
+		long startEpoch = (demand.getTaxPeriodFrom() != null && demand.getTaxPeriodFrom() > 0)
+				? demand.getTaxPeriodFrom()
+				: ((demand.getAuditDetails() != null && demand.getAuditDetails().getCreatedTime() != null)
+						? demand.getAuditDetails().getCreatedTime()
+						: System.currentTimeMillis());
+
+		LocalDate startDate = Instant.ofEpochMilli(startEpoch)
+				.atZone(ZoneId.of(RLConstants.TIME_ZONE))
+				.toLocalDate();
+
+		java.time.LocalDateTime dueCutoff;
+		if (targetDueDay <= 31) {
+			// Monthly cycle rule: N-th day of the billing start month
+			int day = Math.min(targetDueDay, startDate.lengthOfMonth());
+			dueCutoff = java.time.LocalDateTime.of(startDate.getYear(), startDate.getMonthValue(), day, 23, 59, 59, 999000000);
+		} else {
+			// Multi-month cycle rule (QUATERLY / BIANNUAL / ANNUAL): N days from taxPeriodFrom
+			LocalDate cutoffDate = startDate.plusDays(targetDueDay);
+			dueCutoff = java.time.LocalDateTime.of(cutoffDate.getYear(), cutoffDate.getMonthValue(), cutoffDate.getDayOfMonth(), 23, 59, 59, 999000000);
+		}
+
+		return dueCutoff.atZone(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
 	}
 
 	private List<AllotmentDetails> fetchApprovedAllotmentApplications(String tenantId, RequestInfo requestInfo,
@@ -568,7 +601,20 @@ public class DemandService {
 
 	public void sendNotificationUpdateDemand(String tenantId, RequestInfo requestInfo, String consumerCode) {
 		long now = System.currentTimeMillis();
-		List<Demand> expiredDemands = demandRepository.getExpiredUnpaidDemands(tenantId, now, consumerCode);
+		List<Demand> rawUnpaidDemands = demandRepository.getExpiredUnpaidDemands(tenantId, now, consumerCode);
+
+		if (CollectionUtils.isEmpty(rawUnpaidDemands)) {
+			log.info("No unpaid demands found for tenant: {}", tenantId);
+			return;
+		}
+
+		DueDate dueDateConfig = masterDataService.getDueDateConfig(requestInfo, tenantId, null);
+		Integer dueDay = (dueDateConfig != null && dueDateConfig.getDueDay() != null) ? dueDateConfig.getDueDay() : 10;
+
+		// Dynamically filter demands that are past their due date cutoff (e.g. 10th of billing month 23:59:59 IST)
+		List<Demand> expiredDemands = rawUnpaidDemands.stream()
+				.filter(d -> now > getDueCutoffEpoch(d, dueDay))
+				.collect(Collectors.toList());
 
 		if (CollectionUtils.isEmpty(expiredDemands)) {
 			log.info("No expired unpaid demands found for tenant: {}", tenantId);
@@ -626,6 +672,21 @@ public class DemandService {
 				boolean groupModified = false;
 				AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
 
+				// Fetch property-level penalty configuration from MDMS if available
+				RLProperty propConfig = null;
+				try {
+					List<AllotmentDetails> allotments = fetchApprovedAllotmentApplications(tenantId, requestInfo, cCode);
+					if (!CollectionUtils.isEmpty(allotments)) {
+						String propertyId = allotments.get(0).getPropertyId();
+						List<RLProperty> propList = propertyutil.getCalculateAmount(propertyId, requestInfo, tenantId, RLConstants.RL_MASTER_MODULE_NAME);
+						if (!CollectionUtils.isEmpty(propList)) {
+							propConfig = propList.get(0);
+						}
+					}
+				} catch (Exception ex) {
+					log.warn("Could not fetch property MDMS config for consumerCode: {}. Falling back to default ULB penalty slab.", cCode, ex);
+				}
+
 				// Step 4: apply flat penalty per expired demand (on its own base rent)
 				// Also accumulate newly added penalty amounts into totalOutstanding
 				for (Demand d : expiredDemandsInGroup) {
@@ -641,7 +702,15 @@ public class DemandService {
 									.anyMatch(dd -> dd.getTaxHeadMasterCode().equals(RLConstants.PENALTY_FEE_RL_APPLICATION));
 
 							if (!hasFlatPenalty) {
-								BigDecimal flatPenaltyAmount = baseRent.multiply(flatPenaltyRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+								BigDecimal flatPenaltyAmount = BigDecimal.ZERO;
+								if (propConfig != null && propConfig.getPenaltyFlatAmount() != null && propConfig.getPenaltyFlatAmount().compareTo(BigDecimal.ZERO) > 0) {
+									flatPenaltyAmount = propConfig.getPenaltyFlatAmount();
+								} else if (propConfig != null && propConfig.getPenaltyRate() != null && propConfig.getPenaltyRate().compareTo(BigDecimal.ZERO) > 0) {
+									flatPenaltyAmount = baseRent.multiply(propConfig.getPenaltyRate()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+								} else {
+									flatPenaltyAmount = baseRent.multiply(flatPenaltyRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+								}
+
 								if (flatPenaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
 									DemandDetail flatPenaltyDetail = DemandDetail.builder()
 											.demandId(d.getId())
@@ -652,7 +721,8 @@ public class DemandService {
 											.collectionAmount(BigDecimal.ZERO)
 											.build();
 									d.getDemandDetails().add(flatPenaltyDetail);
-									d.setMinimumAmountPayable(d.getMinimumAmountPayable().add(flatPenaltyAmount));
+									BigDecimal currentMin = d.getMinimumAmountPayable() != null ? d.getMinimumAmountPayable() : BigDecimal.ZERO;
+									d.setMinimumAmountPayable(currentMin.add(flatPenaltyAmount));
 									// Accumulate newly added flat penalty into totalOutstanding so daily interest includes it
 									totalOutstanding = totalOutstanding.add(flatPenaltyAmount);
 									groupModified = true;
@@ -670,7 +740,7 @@ public class DemandService {
 				// totalOutstanding now reflects pre-existing outstanding PLUS any flat penalties added in Step 4 this run
 				long maxDaysOverdue = -1;
 				for (Demand d : expiredDemandsInGroup) {
-					long days = getDaysOverdue(d, now);
+					long days = getDaysOverdue(d, now, dueDay);
 					if (days > maxDaysOverdue) {
 						maxDaysOverdue = days;
 					}
@@ -708,7 +778,8 @@ public class DemandService {
 											.collectionAmount(BigDecimal.ZERO)
 											.build();
 									latestExpiredDemand.getDemandDetails().add(interestDetail);
-									latestExpiredDemand.setMinimumAmountPayable(latestExpiredDemand.getMinimumAmountPayable().add(dailyPenaltyAmount));
+									BigDecimal currentLatestMin = latestExpiredDemand.getMinimumAmountPayable() != null ? latestExpiredDemand.getMinimumAmountPayable() : BigDecimal.ZERO;
+									latestExpiredDemand.setMinimumAmountPayable(currentLatestMin.add(dailyPenaltyAmount));
 								}
 								groupModified = true;
 								if (!demandsToUpdate.contains(latestExpiredDemand)) {
@@ -732,18 +803,9 @@ public class DemandService {
 		}
 	}
 
-	private long getDaysOverdue(Demand demand, long now) {
-		long billExpiryTimeEpoch;
-		if (demand.getFixedbillexpirydate() != null && demand.getFixedbillexpirydate() > 0) {
-			billExpiryTimeEpoch = demand.getFixedbillexpirydate();
-		} else {
-			long createdTime = (demand.getAuditDetails() != null && demand.getAuditDetails().getCreatedTime() != null)
-					? demand.getAuditDetails().getCreatedTime()
-					: (demand.getTaxPeriodFrom() != null ? demand.getTaxPeriodFrom() : now);
-			long expiryDuration = (demand.getBillExpiryTime() != null) ? demand.getBillExpiryTime() : 0L;
-			billExpiryTimeEpoch = createdTime + expiryDuration;
-		}
-		long diffMillis = now - billExpiryTimeEpoch;
+	private long getDaysOverdue(Demand demand, long now, Integer dueDay) {
+		long dueCutoffEpoch = getDueCutoffEpoch(demand, dueDay);
+		long diffMillis = now - dueCutoffEpoch;
 		if (diffMillis < 0) {
 			return -1;
 		}
@@ -793,14 +855,11 @@ public class DemandService {
 		amountPayable = calculationService.calculatePaybleAmount(allotmentDetails.getStartDate(),
 				allotmentDetails.getEndDate(), amountPayable, cycle);
 
-		long demandCreationEpoch = System.currentTimeMillis();
-		long expiryDays = 10;
-		List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, allotmentDetails.getTenantId());
-		if (penaltySlabs != null && !penaltySlabs.isEmpty() && penaltySlabs.get(0).getApplicableAfterDays() != null) {
-			expiryDays = penaltySlabs.get(0).getApplicableAfterDays().longValue();
-		}
-		long durationMillis = expiryDays * 24 * 60 * 60 * 1000L;
-		long absoluteExpiry = demandCreationEpoch + durationMillis;
+		DueDate dueDateConfig = masterDataService.getDueDateConfig(requestInfo, allotmentDetails.getTenantId(), cycle);
+		Integer dueDay = (dueDateConfig != null && dueDateConfig.getDueDay() != null) ? dueDateConfig.getDueDay() : 10;
+		Demand tempDemand = Demand.builder().taxPeriodFrom(allotmentDetails.getStartDate()).build();
+		long absoluteExpiry = getDueCutoffEpoch(tempDemand, dueDay);
+		long durationMillis = Math.max(0L, absoluteExpiry - System.currentTimeMillis());
 
 		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
 				.minimumAmountPayable(amountPayable).tenantId(allotmentDetails.getTenantId())

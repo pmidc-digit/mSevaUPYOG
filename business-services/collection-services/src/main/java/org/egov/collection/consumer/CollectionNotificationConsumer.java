@@ -34,6 +34,8 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 
+import org.egov.collection.service.MDMSService;
+
 import static org.egov.collection.config.CollectionServiceConstants.*;
 
 @Slf4j
@@ -51,6 +53,9 @@ public class CollectionNotificationConsumer {
 
 	@Autowired
 	private RestTemplate restTemplate;
+
+	@Autowired
+	private MDMSService mdmsService;
 
 	@KafkaListener(topics = { "${kafka.topics.payment.create.name}", "${kafka.topics.payment.receiptlink.name}" },
 			concurrency =  "${kafka.topics.bankaccountservicemapping.concurreny.count}" )
@@ -170,11 +175,17 @@ public class CollectionNotificationConsumer {
 	    String stateId = validatedPayments.get(0).getTenantId().split("\\.")[0];
 	    String fileStoreId = null;
 
+	    String businessService = null;
+	    if (!CollectionUtils.isEmpty(validatedPayments.get(0).getPaymentDetails())) {
+	        businessService = validatedPayments.get(0).getPaymentDetails().get(0).getBusinessService();
+	    }
+	    String receiptKey = mdmsService.getReceiptKey(requestInfo, stateId, businessService);
+
 	    try {
 	        // --- STEP 1: Generate the PDF and get FileStoreId ---
 	        String pdfUri = applicationProperties.getEgovServiceHost() 
 	                      + applicationProperties.getEgovPdfCreate() 
-	                      + "?key=consolidatedreceipt&tenantId=" + stateId;
+	                      + "?key=" + receiptKey + "&tenantId=" + stateId;
 
 	        Map<String, Object> pdfRequest = new HashMap<>();
 	        pdfRequest.put("RequestInfo", requestInfo);

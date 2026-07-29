@@ -325,6 +325,8 @@ const Inbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
+      console.log("here", filterData);
+
       const resolvedStatuses = filterData.applicationStatus?.map((item) => item.applicationstatus || item.statusCode || item.code) || [];
 
       if (filterData.applicationStatus) {
@@ -340,6 +342,7 @@ const Inbox = ({ parentRoute }) => {
           ...formState?.filterForm,
           applicationStatus: resolvedStatuses,
           assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ME",
+          migration: filterData?.migration,
         },
       });
     },

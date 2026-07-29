@@ -150,7 +150,7 @@ public class MasterDataService {
         }
     }
 
-    public Integer getLegacyDueDate(RequestInfo requestInfo, String tenantId, String billingCycle) {
+    public org.egov.rl.calculator.web.models.demand.DueDate getDueDateConfig(RequestInfo requestInfo, String tenantId, String billingCycle) {
         try {
             MdmsCriteriaReq mdmsCriteriaReq = getMasterRequest(requestInfo, tenantId,
                     RLConstants.RL_SERVICES_MASTER_MODULE, "DueDate", null);
@@ -169,24 +169,25 @@ public class MasterDataService {
                 );
                 
                 if (dueDates != null && !dueDates.isEmpty()) {
-                    // Try to find a matching entry for the billing cycle
                     if (billingCycle != null) {
                         for (org.egov.rl.calculator.web.models.demand.DueDate dd : dueDates) {
-                            if (billingCycle.equalsIgnoreCase(dd.getBillingCycle()) && dd.getDueDay() != null) {
-                                return dd.getDueDay();
+                            if (billingCycle.equalsIgnoreCase(dd.getBillingCycle())) {
+                                return dd;
                             }
                         }
                     }
-                    // Fallback to first entry if no cycle match
-                    if (dueDates.get(0).getDueDay() != null) {
-                        return dueDates.get(0).getDueDay();
-                    }
+                    return dueDates.get(0);
                 }
             }
         } catch (Exception e) {
-            log.warn("Failed to get DueDate from MDMS for tenant " + tenantId + ". Falling back to default (10).", e);
+            log.warn("Failed to get DueDate from MDMS for tenant " + tenantId + ". Falling back to default.", e);
         }
-        return 10; // Default fallback if missing or error
+        return org.egov.rl.calculator.web.models.demand.DueDate.builder().dueDay(10).rebatePercentage(0.0).build();
+    }
+
+    public Integer getLegacyDueDate(RequestInfo requestInfo, String tenantId, String billingCycle) {
+        org.egov.rl.calculator.web.models.demand.DueDate dueDate = getDueDateConfig(requestInfo, tenantId, billingCycle);
+        return (dueDate != null && dueDate.getDueDay() != null) ? dueDate.getDueDay() : 10;
     }
 
     /**

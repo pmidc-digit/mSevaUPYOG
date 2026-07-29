@@ -67,7 +67,7 @@ export const SelectPaymentType = (props) => {
   const moduleName = "testing"; //need to change this back to testing -> tenantId?.split(".")?.[1];
   // const { data: menu2, isLoading } = Digit.Hooks.useCommonMDMS("pb", "testing", "PaymentGateway");
   // const { data: menuList } = Digit.Hooks.useCustomMDMS(tenantId, moduleName, [{ name: "PaymentGateway" }]);
-  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PAYMENT", [{ name: "PaymentGateway" }]); // will change back to pb.testing -> tenantId
+  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PAYMENT", [{ name: "PaymentGateway", "filter": `$.*.[?(@.businessService contains '${businessService}')]` }]); // will change back to pb.testing -> tenantId
   console.log("menuList", menuList);
 
   const [isPaymentLoading, setPaymentLoading] = useState(false);

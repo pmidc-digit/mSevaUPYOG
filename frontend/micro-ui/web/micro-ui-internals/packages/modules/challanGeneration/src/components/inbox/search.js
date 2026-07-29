@@ -103,7 +103,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 ))}
 
               {isInboxPage && (
-                <div className="search-action-wrapper" style={{width: "100%"}}>
+                <div className="search-action-wrapper" style={{ width: "100%" }}>
                   <SubmitBar className="submit-bar-search" label={t("ES_COMMON_SEARCH")} submit />
                   <span style={{ paddingTop: "9px" }} className="clear-search">
                     {clearAll()}

@@ -64,7 +64,7 @@ const SubMenu = ({ item, t, isEmployee }) => {
         <div onClick={item.links && showSubnav} className={`sidebar-link ${subnav === true ? "active" : ""}`}>
           <div className="actions">
             {isEmployee ? leftIconEmployee : leftIconCitizen}
-            <span>{isEmployee ? item.moduleName : t(Digit.Utils.locale.getTransformedLocale(`ACTION_TEST_${item.moduleName}`))}</span>
+            <span>{isEmployee ? item.moduleName : t(Digit.Utils.locale.getTransformedLocale(`ACTION_TEST_${item.moduleName}.toUppercase()`))}</span>
           </div>
           <div> {item.links && subnav} </div>
         </div>

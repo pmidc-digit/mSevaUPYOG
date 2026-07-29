@@ -489,12 +489,12 @@ public class WorkflowNotificationService {
         }
 
         //Send the notification to applicant
-        if(!StringUtils.isEmpty(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber()))
-        {
-            mobileNumbersAndNames.put(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber(), waterConnectionRequest.getRequestInfo().getUserInfo().getName());
-            mobileNumbers.add(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber());
-            mobileNumberAndEmailId.put(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber(), waterConnectionRequest.getRequestInfo().getUserInfo().getEmailId());
-        }
+        // if(!StringUtils.isEmpty(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber()))
+        // {
+        //     mobileNumbersAndNames.put(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber(), waterConnectionRequest.getRequestInfo().getUserInfo().getName());
+        //     mobileNumbers.add(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber());
+        //     mobileNumberAndEmailId.put(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber(), waterConnectionRequest.getRequestInfo().getUserInfo().getEmailId());
+        // }
 
         if (message != null) {
         	Map<String, String> mobileNumberAndMessage = getMessageForMobileNumber(mobileNumbersAndNames,

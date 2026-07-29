@@ -294,6 +294,22 @@ public class GeneralStair extends FeatureProcess {
 
                                 totalSteps = totalRisers.add(totalLandingWidth);
                                 LOG.info("total totalSteps :" + totalSteps);
+                                
+                                // Validate minimum number of risers
+                                if (totalSteps != null) {
+                                    BigDecimal minimumRisers = BigDecimal.valueOf(15);
+                                    if (mostRestrictiveOccupancyType != null
+                                            && mostRestrictiveOccupancyType.getSubtype() != null
+                                            && DxfFileConstants.A_R.equalsIgnoreCase(
+                                                    mostRestrictiveOccupancyType.getSubtype().getCode())) {
+                                        minimumRisers = BigDecimal.valueOf(12);
+                                    }
+
+                                    if (totalSteps.compareTo(minimumRisers) < 0) {
+                                        errors.put("Required Minimum no of risers is", minimumRisers.toPlainString());
+                                        plan.addErrors(errors);
+                                    }
+                                }
 
                                 validateFlight(plan, errors, block, scrutinyDetail2, scrutinyDetail3,
                                         scrutinyDetailRise, mostRestrictiveOccupancyType, floor,
@@ -394,9 +410,9 @@ public class GeneralStair extends FeatureProcess {
 
                         boolean isRiserProvided =
                                 riserHeight != null && riserHeight.compareTo(BigDecimal.ZERO) > 0;
-
+                        BigDecimal minRiserHeight = getMinRiserHeight(mostRestrictiveOccupancyType);
                         boolean isRiserHeightWithinLimit =
-                                riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0;
+                                riserHeight.compareTo(minRiserHeight) <= 0;
 
                         boolean isRiserHeightValid;
 
@@ -737,25 +753,29 @@ public class GeneralStair extends FeatureProcess {
     }
 
     private BigDecimal getRequiredWidth(Block block, OccupancyTypeHelper mostRestrictiveOccupancyType) {
-        if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getType() != null
-                && DxfFileConstants.A_AF.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
-            return BigDecimal.valueOf(1.9);
-        } else if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getType() != null
-                && DxfFileConstants.A_AF_GH.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
-            return BigDecimal.valueOf(0.75);
-        }
+//        if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getType() != null
+//                && DxfFileConstants.A_AF.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
+//            return BigDecimal.valueOf(1.9);
+//        } else if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getType() != null
+//                && DxfFileConstants.A_AF_GH.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
+//            return BigDecimal.valueOf(0.75);
+//        }
         //else if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getType() != null
 //                && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())
 //                && block.getBuilding().getBuildingHeight().compareTo(BigDecimal.valueOf(10)) <= 0
 //                && block.getBuilding().getFloorsAboveGround().compareTo(BigDecimal.valueOf(3)) <= 0) {
 //            return BigDecimal.ONE;
 //        }
-        else if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getType() != null
-                && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
+        if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getSubtype() != null
+                && DxfFileConstants.A_R.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())) {
             return BigDecimal.valueOf(0.76);
-        } else if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getType() != null
+        }else if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getType() != null
+                && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
+            return BigDecimal.valueOf(1.0);
+        } else if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getSubtype() != null
                  && (DxfFileConstants.F_MTP.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
                  || DxfFileConstants.F_MIP.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
+                 || DxfFileConstants.L_NH.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
                  )) {
             return BigDecimal.valueOf(2.0);
         } else {
@@ -836,16 +856,27 @@ public class GeneralStair extends FeatureProcess {
     }
 
 	private BigDecimal getRequiredTread(OccupancyTypeHelper mostRestrictiveOccupancyType) {
-        if (mostRestrictiveOccupancyType != null
-        		//&& mostRestrictiveOccupancyType.getSubtype() != null
-                //&& DxfFileConstants.A_AF.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())) {
-        	 && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
-            return BigDecimal.valueOf(0.25);
-        } else {
-            return BigDecimal.valueOf(0.3);
-        	//return null;
-        }
+//        if (mostRestrictiveOccupancyType != null
+//        		//&& mostRestrictiveOccupancyType.getSubtype() != null
+//                //&& DxfFileConstants.A_AF.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())) {
+//        	 && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
+//            return BigDecimal.valueOf(0.25);
+//        } else {
+//            return BigDecimal.valueOf(0.3);
+//        	//return null;
+//        }
+		 return BigDecimal.valueOf(0.3);
     }
+	
+	private BigDecimal getMinRiserHeight(OccupancyTypeHelper mostRestrictiveOccupancyType) {
+      if (mostRestrictiveOccupancyType != null
+      		&& (mostRestrictiveOccupancyType.getSubtype() != null
+      	 && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode()))) {
+          return BigDecimal.valueOf(0.19);
+      } else {
+          return BigDecimal.valueOf(0.15);
+      }
+  }
 
     private void validateNoOfRises(Plan plan, HashMap<String, String> errors, Block block,
             ScrutinyDetail scrutinyDetail3, Floor floor, Map<String, Object> typicalFloorValues,

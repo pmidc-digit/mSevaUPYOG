@@ -45,6 +45,7 @@ const Inbox = ({ parentRoute }) => {
       // assignee: "ASSIGNED_TO_ME",
       assignee: defaultAssignee,
       businessServiceArray: [],
+      isMigrated: false,
     }),
     []
   );
@@ -94,7 +95,11 @@ const Inbox = ({ parentRoute }) => {
       const sessionLimit = parseInt(inboxObjectInSessionStorage.tableForm?.limit, 10);
       const validLimit = [10, 20, 30, 40, 50].includes(sessionLimit) ? sessionLimit : tableOrderFormDefaultValues.limit;
       return {
-        filterForm: inboxObjectInSessionStorage.filterForm || filterFormDefaultValues,
+        filterForm: {
+          ...filterFormDefaultValues,
+          ...(inboxObjectInSessionStorage.filterForm || {}),
+          isMigrated: inboxObjectInSessionStorage.filterForm?.isMigrated ?? false,
+        },
         searchForm: inboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
         tableForm: {
           ...tableOrderFormDefaultValues,
@@ -342,7 +347,6 @@ const Inbox = ({ parentRoute }) => {
           ...formState?.filterForm,
           applicationStatus: resolvedStatuses,
           assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ME",
-          migration: filterData?.migration,
         },
       });
     },
@@ -419,6 +423,17 @@ const Inbox = ({ parentRoute }) => {
     [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
   );
 
+  const onMigrationChange = useCallback(
+    (isMigrated) => {
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({
+        action: "mutateFilterForm",
+        data: { ...formState.filterForm, isMigrated },
+      });
+    },
+    [formState.filterForm, formState.tableForm]
+  );
+
   useEffect(() => {
     if (isError) {
       setError({
@@ -479,6 +494,9 @@ const Inbox = ({ parentRoute }) => {
               totalCount={totalCountData}
               showClearTab={false}
               showAll={false}
+              showMigrationTabs={isEmployee}
+              isMigrated={formState?.filterForm?.isMigrated === true}
+              onMigrationChange={onMigrationChange}
             />
           }
           isLoading={isInboxLoading}

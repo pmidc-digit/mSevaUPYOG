@@ -1063,6 +1063,7 @@ const LayoutApplicantDetails = (_props) => {
                     }}
                     onBlur={props.onBlur}
                     placeholder="e.g., AAAAA1234A"
+                    maxlength={10}
                   />
                 )}
               />
@@ -1338,6 +1339,7 @@ const LayoutApplicantDetails = (_props) => {
                             value={applicant.panNumber || ""}
                             onChange={(e) => updateApplicant(index, "panNumber", e.target.value.toUpperCase())}
                             placeholder="e.g., AAAAA1234A"
+                            maxlength={10}
                             t={t}
                           />
                         </div>

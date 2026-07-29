@@ -109,7 +109,7 @@ const RALApplicationDetails = () => {
       const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
       const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
       setTimeout(() => {
-        Digit.Utils.pdf.generateFormatted(acknowldgementDataAPI);
+        Digit.Utils.pdf.generate(acknowldgementDataAPI);
         setLoader(false);
       }, 0);
     } catch (error) {
@@ -478,6 +478,8 @@ const RALApplicationDetails = () => {
             {applicationData?.tradeLicenseNumber && (
               <Row label={t("RENT_LEASE_TRADE_LICENSE_NUMBER")} text={tValue(applicationData?.tradeLicenseNumber)} />
             )}
+            {rawAdditionalDetails?.gstAmount && <Row label={t("GST")} text={tValue(rawAdditionalDetails?.gstAmount)} />}
+            {rawAdditionalDetails?.rebateAmount && <Row label={t("Rebate")} text={tValue(rawAdditionalDetails?.rebateAmount)} />}
           </StatusTable>
 
           {rawAdditionalDetails?.applicationType === "Legacy" && (

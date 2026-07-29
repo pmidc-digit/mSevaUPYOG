@@ -184,8 +184,8 @@ const LayoutDocumentsRequired = ({
         else if (doc.code === "OWNER.NATIONALHIGHWAYNOC") {
           isRequired = isNationalHighway
         }        
-        // Ownership document is mandatory for FIRM and NOT mandatory for INDIVIDUAL
-        else if (doc.code === "OWNER.OWNERSHIPDOCUMENT") {
+        // authorization document is mandatory for FIRM and NOT mandatory for INDIVIDUAL
+        else if (doc.code === "OWNER.AUTHORIZATIONLETTER") {
           if (applicantType === "FIRM") {
             isRequired = true;
           } else if (applicantType === "INDIVIDUAL") {

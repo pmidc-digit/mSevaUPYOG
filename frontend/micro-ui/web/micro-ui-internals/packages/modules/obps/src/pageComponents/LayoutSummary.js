@@ -285,28 +285,32 @@ function LayoutSummary({ currentStepData: formData, t }) {
               {renderRow(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(formData?.siteDetails?.cluApprovalDate))}
             </React.Fragment>
           )}
-          {(formData?.siteDetails?.isCluRequired?.code === "YES" || formData?.siteDetails?.isCluRequired === "YES") && (
+          {/* {(formData?.siteDetails?.isCluRequired?.code === "YES" || formData?.siteDetails?.isCluRequired === "YES") && ( */}
             <React.Fragment>
               {renderRow(t("Application Applied Under"), formData?.siteDetails?.applicationAppliedUnder?.name || formData?.siteDetails?.applicationAppliedUnder?.code || formData?.siteDetails?.applicationAppliedUnder)}
             </React.Fragment>
-          )}
+          {/* )} */}
           {renderRow(t("Type Of Application"), formData?.siteDetails?.typeOfApplication?.name)}
 
           {renderRow(t("BPA_PROPOSED_SITE_ADDRESS"), formData?.siteDetails?.proposedSiteAddress)}
-          {renderRow(t("BPA_SITE_WARD_NO_LABEL"), formData?.siteDetails?.wardNo)}
-          {renderRow(t("BPA_KHASRA_NO_LABEL"), formData?.siteDetails?.khasraNo)}
-          {renderRow(t("Khatuni No."), formData?.siteDetails?.khanutiNo)}
-          {renderRow(t("BPA_HADBAST_NO_LABEL"), formData?.siteDetails?.hadbastNo)}
+          {renderRow(t("BPA_ULB_NAME_LABEL"), formData?.siteDetails?.ulbName?.name)}
+          {renderRow(t("BPA_ULB_TYPE_LABEL"), formData?.siteDetails?.ulbType)}
+          {renderRow(t("BPA_DISTRICT_LABEL"), formData?.siteDetails?.district?.name)}
+          {renderRow(t("BPA_ZONE_LABEL"), formData?.siteDetails?.zone?.name)}
           {renderRow(t("BPA_SITE_VILLAGE_NAME_LABEL"), formData?.siteDetails?.villageName)}
+          {renderRow(t("BPA_SITE_WARD_NO_LABEL"), formData?.siteDetails?.wardNo)}
+          {renderRow(t("Khatuni No."), formData?.siteDetails?.khanutiNo)}
+          {renderRow(t("BPA_KHASRA_NO_LABEL"), formData?.siteDetails?.khasraNo)}
+          {renderRow(t("BPA_HADBAST_NO_LABEL"), formData?.siteDetails?.hadbastNo)}
           {renderRow(t("BPA_VASIKA_NUMBER_LABEL"), formData?.siteDetails?.vasikaNumber)}
           {renderRow(t("BPA_VASIKA_DATE_LABEL"), formatDate(formData?.siteDetails?.vasikaDate))}
           {renderRow(t("BPA_ROAD_TYPE_LABEL"), formData?.siteDetails?.roadType?.name)}
           {renderRow(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), formData?.siteDetails?.isAreaUnderMasterPlan?.i18nKey)}
-          {renderRow(t("BPA_ZONE_LABEL"), formData?.siteDetails?.zone?.name)}
-          {renderRow(t("BPA_ULB_NAME_LABEL"), formData?.siteDetails?.ulbName?.name)}
-          {renderRow(t("BPA_DISTRICT_LABEL"), formData?.siteDetails?.district?.name)}
-          {renderRow(t("BPA_ULB_TYPE_LABEL"), formData?.siteDetails?.ulbType)}
-          {renderRow(t("BPA_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)}
+          
+          
+          
+          
+          {/* {renderRow(t("BPA_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)} */}
 
           {renderRow(t("BPA_BUILDING_CATEGORY_LABEL"), formData?.siteDetails?.buildingCategory?.name)}
           {renderRow(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), formData?.siteDetails?.residentialType?.name || formData?.siteDetails?.buildingCategory?.name)}

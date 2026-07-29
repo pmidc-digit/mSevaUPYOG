@@ -4,6 +4,7 @@ import { Redirect, Switch, useRouteMatch, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import MyChallanResultsComponent from "./MyChallan";
 import ChallanApplicationDetails from "./ChallanApplicationDetails";
+import SearchChallan from "./MyChallan/searchChallan";
 
 const ChallanBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
@@ -48,6 +49,7 @@ const App = () => {
           <PrivateRoute path={`${path}/search`} component={ChallanSearch} />
           <PrivateRoute path={`${path}/search-results`} component={SearchResultsComponent} />
           <PrivateRoute path={`${path}/My-Challans`} component={MyChallanResultsComponent} />
+          <PrivateRoute path={`${path}/search-challans`} component={SearchChallan} />
           <PrivateRoute path={`${path}/response/:id`} component={ChallanResponseCitizen} />
           <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={ChallanApplicationDetails} />
           {/* <Redirect to={`/`}></Redirect> */}

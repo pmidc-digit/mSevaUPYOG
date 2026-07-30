@@ -34,7 +34,9 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 
+import org.egov.collection.model.PaymentSearchCriteria;
 import org.egov.collection.service.MDMSService;
+import org.egov.collection.service.PaymentService;
 
 import static org.egov.collection.config.CollectionServiceConstants.*;
 
@@ -56,6 +58,9 @@ public class CollectionNotificationConsumer {
 
 	@Autowired
 	private MDMSService mdmsService;
+
+	@Autowired
+	private PaymentService paymentService;
 
 	@KafkaListener(topics = { "${kafka.topics.payment.create.name}", "${kafka.topics.payment.receiptlink.name}" },
 			concurrency =  "${kafka.topics.bankaccountservicemapping.concurreny.count}" )

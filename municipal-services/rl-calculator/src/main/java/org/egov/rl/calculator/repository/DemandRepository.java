@@ -219,21 +219,55 @@ public class DemandRepository {
 		}
 	}
 
+	/**
+	 * Fetches unpaid RL demands for a tenant (and optionally a specific consumerCode).
+	 *
+	 * Hybrid Expiry Filtering Strategy:
+	 *  - fixedbillexpirydate does NOT persist in egbs_demand_v1 (billing-service does not save it).
+	 *  - billexpirytime IS persisted but stores a RELATIVE DURATION in ms (not an absolute epoch).
+	 *  - createdtime IS persisted as an absolute epoch ms.
+	 *
+	 *  Therefore, to reconstruct the absolute expiry epoch in SQL:
+	 *    absolute_expiry = createdtime + billexpirytime
+	 *
+	 *  SQL Filter:
+	 *   CASE 1 — billexpirytime IS NOT NULL:
+	 *     SQL filters in-place: (createdtime + billexpirytime) < currentTime → demand has expired.
+	 *   CASE 2 — billexpirytime IS NULL (legacy demands, old data with no expiry set):
+	 *     Demand is passed through to Java for in-memory getDueCutoffEpoch() evaluation.
+	 */
 	public List<Demand> getExpiredUnpaidDemands(String tenantId, long currentTime, String consumerCode) {
 		List<Object> preparedStmtList = new ArrayList<>();
-		StringBuilder queryBuilder = new StringBuilder("SELECT * FROM egbs_demand_v1 WHERE tenantid = ? AND (createdtime + billexpirytime) <= ? AND ispaymentcompleted = false AND businessservice = 'rl-services' AND status = 'ACTIVE'");
+
+		// WHERE clause:
+		//   CASE 1 — billexpirytime is non-null: SQL evaluates (createdtime + billexpirytime) < currentTime
+		//   CASE 2 — billexpirytime IS NULL: pass through for Java in-memory getDueCutoffEpoch() evaluation
+		StringBuilder queryBuilder = new StringBuilder(
+			"SELECT * FROM egbs_demand_v1 " +
+			"WHERE tenantid = ? " +
+			"  AND ispaymentcompleted = false " +
+			"  AND businessservice = 'rl-services' " +
+			"  AND status = 'ACTIVE' " +
+			"  AND (billexpirytime IS NULL OR (createdtime + billexpirytime) < ?)"
+		);
 		preparedStmtList.add(tenantId);
-		preparedStmtList.add(currentTime);
+		preparedStmtList.add(currentTime); // Compared against (createdtime + billexpirytime) = absolute expiry epoch
 
 		if (consumerCode != null && !consumerCode.trim().isEmpty()) {
 			queryBuilder.append(" AND consumercode = ?");
 			preparedStmtList.add(consumerCode);
 		}
 
+		log.info("getExpiredUnpaidDemands SQL query: {}", queryBuilder);
+		log.info("getExpiredUnpaidDemands params: tenantId={}, currentTime={}, consumerCode={}", tenantId, currentTime, consumerCode);
+
 		try {
-			return jdbcTemplate.query(queryBuilder.toString(), preparedStmtList.toArray(), demandRowMapper);
+			List<Demand> demands = jdbcTemplate.query(queryBuilder.toString(), preparedStmtList.toArray(), demandRowMapper);
+			log.info("getExpiredUnpaidDemands: total fetched from DB = {}. " +
+					"(SQL-expired via (createdtime + billexpirytime) + NULL-expiry for in-memory evaluation)", demands.size());
+			return demands;
 		} catch (Exception e) {
-			log.error("Error while fetching expired unpaid demands", e);
+			log.error("Error while fetching expired unpaid demands for tenantId={}, consumerCode={}", tenantId, consumerCode, e);
 			throw new CustomException("DEMAND_FETCH_ERROR", "Failed to fetch expired unpaid demands");
 		}
 	}

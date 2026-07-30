@@ -122,7 +122,10 @@ public class PaymentUpdateService {
 						throw new CustomException("INVALID_RECEIPT",
 								"More than one application found on consumerCode " + criteria.getApplicationNumber());
 					}
+					
 					waterConnections.forEach(waterConnection -> waterConnection.getProcessInstance().setAction((WCConstants.ACTION_PAY)));
+
+					
 					WaterConnectionRequest waterConnectionRequest = WaterConnectionRequest.builder()
 							.waterConnection(connection).requestInfo(paymentRequest.getRequestInfo())
 							.build();
@@ -562,16 +565,16 @@ public class PaymentUpdateService {
 				message = message.replace("{Billing Period}", billingPeriod);
 			}
 
-			if (message.contains("{receipt download link}")){
-				String link = config.getNotificationUrl() + config.getMyPaymentsLink();
-				link = link.replace("$consumerCode", paymentDetail.getBill().getConsumerCode());
-				link = link.replace("$tenantId", paymentDetail.getTenantId());
-				link = link.replace("$businessService",paymentDetail.getBusinessService());
-				link = link.replace("$receiptNumber",paymentDetail.getReceiptNumber());
-				link = link.replace("$mobile", mobAndMesg.getKey());
-				link = waterServiceUtil.getShortnerURL(link);
-				message = message.replace("{receipt download link}",link);
-			}
+//			if (message.contains("{receipt download link}")){
+//				String link = config.getNotificationUrl() + config.getMyPaymentsLink();
+//				link = link.replace("$consumerCode", paymentDetail.getBill().getConsumerCode());
+//				link = link.replace("$tenantId", paymentDetail.getTenantId());
+//				link = link.replace("$businessService",paymentDetail.getBusinessService());
+//				link = link.replace("$receiptNumber",paymentDetail.getReceiptNumber());
+//				link = link.replace("$mobile", mobAndMesg.getKey());
+//				link = waterServiceUtil.getShortnerURL(link);
+//				message = message.replace("{receipt download link}",link);
+//			}
 
 			messageToReturn.put(mobAndMesg.getKey(), message);
 		}

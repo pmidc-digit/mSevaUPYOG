@@ -15,27 +15,28 @@ const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
 const ProfessionalChangeCity = (prop) => {
     const { t } = useTranslation();
     const { data: cities, isLoading } = Digit.Hooks.useTenants();
-    const { selectedCity, userInfo } = prop;
-
+    const { selectedCity, userInfo, obps } = prop;
     const cityOptions = cities?.map((city) => ({ ...city, displayName: t(city.i18nKey) }))?.filter((city) => city.code !== "pb.punjab") || [];
+     let filteredCityOptions;
+    if (obps) {
+        // Filter cityOptions based on user roles
+        const roles = userInfo?.roles || [];
+        const hasBPAArchitect = roles.some(role => role?.code === "BPA_ARCHITECT");
 
-    // Filter cityOptions based on user roles
-    const roles = userInfo?.roles || [];
-    const hasBPAArchitect = roles.some(role => role?.code === "BPA_ARCHITECT");
-    
-    let filteredCityOptions = cityOptions;
-    
-    if (!hasBPAArchitect) {
-      // Get all roles with code starting with "BPA"
-      const bpaRoles = roles.filter(role => role?.code?.startsWith("BPA"));
-      
-      // Extract tenantIds from BPA roles
-      const allowedTenantIds = bpaRoles.map(role => role?.tenantId);
-      
-      // Filter cityOptions to only include cities with codes in allowedTenantIds
-      filteredCityOptions = cityOptions.filter(city => allowedTenantIds.includes(city?.code));
+       
+        if (!hasBPAArchitect) {
+            // Get all roles with code starting with "BPA"
+            const bpaRoles = roles.filter(role => role?.code?.startsWith("BPA"));
+
+            // Extract tenantIds from BPA roles
+            const allowedTenantIds = bpaRoles.map(role => role?.tenantId);
+
+            // Filter cityOptions to only include cities with codes in allowedTenantIds
+            filteredCityOptions = cityOptions.filter(city => allowedTenantIds.includes(city?.code));
+        }
+    }else{
+        filteredCityOptions=cityOptions;
     }
-
     function setCity(city) {
         Digit.SessionStorage.set("CITIZEN.COMMON.HOME.CITY", city);
         localStorage.setItem("CITIZEN.CITY", city?.code);
@@ -45,28 +46,28 @@ const ProfessionalChangeCity = (prop) => {
 
     console.log("filteredCityOptions", selectedCity);
 
-    const style ={
-    locationWrapper : {
-        width: "100%"
+    const style = {
+        locationWrapper: {
+            width: "100%"
+        }
     }
-  }
 
     // if (isDropdown) {
     return (
         <div className="location-wrapper" style={style.locationWrapper}>
-        <div style={prop?.mobileView ? { color: "#767676", width: "100%", height: "auto", overflow: "visible" } : { width: "150px", height: "auto", paddingRight: "16px", overflow: "visible" }}>
-            {!isLoading && (
-                <Dropdown
-                    option={filteredCityOptions}
-                    optionKey="displayName"
-                    id="city"
-                    selected={selectedCity?.value}
-                    select={setCity}
-                    t={t}
+            <div style={prop?.mobileView ? { color: "#767676", width: "100%", height: "auto", overflow: "visible" } : { width: "150px", height: "auto", paddingRight: "16px", overflow: "visible" }}>
+                {!isLoading && (
+                    <Dropdown
+                        option={filteredCityOptions}
+                        optionKey="displayName"
+                        id="city"
+                        selected={selectedCity?.value}
+                        select={setCity}
+                        t={t}
                     // customSelector={<label className="cp">{prop?.t(`TENANT_TENANTS_${stringReplaceAll(localStorage.getItem("CITIZEN.CITY"), ".", "_")?.toUpperCase()}`)}</label>}
-                />
-            )}
-        </div>
+                    />
+                )}
+            </div>
         </div>
     );
 };

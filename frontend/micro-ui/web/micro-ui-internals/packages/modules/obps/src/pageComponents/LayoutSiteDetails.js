@@ -41,7 +41,6 @@ const LayoutSiteDetails = (_props) => {
   const [totalAreaPercentage, setTotalAreaPercentage] = useState("0.00");
   const [isCluRequired, setIsCluRequired] = useState(null);
   const [cluType, setCluType] = useState(null);
-  const [applicationAppliedUnder, setApplicationAppliedUnder] = useState(null);
   const [buildingCategoryMain, setBuildingCategoryMain] = useState(null);
   const [cluDocumentUploadedFile, setCluDocumentUploadedFile] = useState(null);
   const [cluDocumentLoader, setCluDocumentLoader] = useState(false);
@@ -51,14 +50,237 @@ const LayoutSiteDetails = (_props) => {
   const [isCluValidated, setIsCluValidated] = useState(false);
   const isInitialized = useRef(false);
   const cluNumberVal = watch("cluNumber");
+  const [retrievedClu, setRetrievedClu] = useState(null);
+  const [retrievedCluDocs, setRetrievedCluDocs] = useState([]);
+  const validatedCluNumberRef = useRef(currentStepData?.siteDetails?.cluNumber || "");
 
-  // Restore CLU validation status in edit mode on initial load
-  useEffect(() => {
-    if (isEditMode && cluNumberVal && !isInitialized.current) {
-      setIsCluValidated(true);
-      isInitialized.current = true;
+  const updateValidatedCluNumber = (val) => {
+    validatedCluNumberRef.current = val;
+  };
+
+  const updateCluValidated = (val) => {
+    setIsCluValidated(val);
+    if (val && clearErrors) {
+      clearErrors("cluNumber");
     }
-  }, [isEditMode, cluNumberVal]);
+  };
+
+  const isCluRequiredVal = watch("isCluRequired");
+  const cluTypeVal = watch("cluType");
+
+  const getCode = (obj) => (typeof obj === "string" ? obj : obj?.code || obj?.name || "");
+
+  const resetCluSubFields = () => {
+    setValue("cluNumber", "");
+    setValue("cluNumberOffline", "");
+    setValue("cluApprovalDate", "");
+    setValue("cluDocumentUpload", null);
+    setCluDocumentUploadedFile(null);
+    setRetrievedClu(null);
+    setRetrievedCluDocs([]);
+    setCluValidationError(null);
+    setCluDocumentError(null);
+    updateCluValidated(false);
+    updateValidatedCluNumber("");
+  };
+
+  const prevIsCluRequiredRef = useRef(isCluRequiredVal);
+
+  // Reset all dependent CLU fields when isCluRequired changes
+  useEffect(() => {
+    const prevCode = getCode(prevIsCluRequiredRef.current);
+    const currentCode = getCode(isCluRequiredVal);
+    if (prevCode && prevCode !== currentCode) {
+      setValue("cluType", null);
+      setCluType(null);
+      resetCluSubFields();
+    }
+    prevIsCluRequiredRef.current = isCluRequiredVal;
+  }, [isCluRequiredVal]);
+
+  const prevCluTypeRef = useRef(cluTypeVal);
+
+  // Reset all dependent CLU fields when cluType changes
+  useEffect(() => {
+    const prevCode = getCode(prevCluTypeRef.current);
+    const currentCode = getCode(cluTypeVal);
+    if (prevCode && prevCode !== currentCode) {
+      resetCluSubFields();
+    }
+    prevCluTypeRef.current = cluTypeVal;
+  }, [cluTypeVal]);
+
+  // In EDIT mode, if existing CLU number is present, auto-validate and search on initial load
+  useEffect(() => {
+    const isEditPage = window.location.pathname.includes("edit") || !!currentStepData?.applicationNo || !!currentStepData?.apiData?.applicationNo || !!currentStepData?.apiData?.Layout?.[0]?.applicationNo;
+    const existingClu = currentStepData?.siteDetails?.cluNumber || cluNumberVal;
+    if (isEditPage && existingClu && !isInitialized.current) {
+      isInitialized.current = true;
+      handleValidateClu(existingClu);
+    }
+  }, [currentStepData]);
+
+  useEffect(() => {
+    const currentValStr = (typeof cluNumberVal === "string" ? cluNumberVal : (cluNumberVal?.code || cluNumberVal?.name || ""))?.trim()?.toLowerCase();
+    const validatedStr = (validatedCluNumberRef.current || "")?.trim()?.toLowerCase();
+    if (isCluValidated && validatedStr && currentValStr && currentValStr !== validatedStr) {
+      updateCluValidated(false);
+      setRetrievedCluDocs([]);
+      setRetrievedClu(null);
+      setCluValidationError(null);
+      setValue("cluDocumentUpload", null);
+    }
+  }, [cluNumberVal, isCluValidated]);
+
+  const handleViewDocument = async (doc) => {
+    let fileUrl = doc?.url;
+    const docId = doc?.fileStoreId || (typeof watch("cluDocumentUpload") === "string" ? watch("cluDocumentUpload") : watch("cluDocumentUpload")?.fileStoreId);
+
+    if (!fileUrl && docId) {
+      const fetchTenant = retrievedClu?.tenantId || stateId || Digit.ULBService.getStateId();
+      try {
+        const fetchRes = await Digit.UploadServices.Filefetch([docId], fetchTenant);
+        if (fetchRes?.data?.fileStoreIds?.[0]?.url) {
+          fileUrl = fetchRes.data.fileStoreIds[0].url;
+        } else if (fetchRes?.data?.[docId]) {
+          fileUrl = fetchRes.data[docId];
+        } else {
+          const fileStore = await Digit.PaymentService.printReciept(fetchTenant, { fileStoreIds: docId });
+          if (fileStore?.[docId]) {
+            fileUrl = fileStore[docId];
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching CLU document URL:", err);
+      }
+    }
+
+    if (fileUrl) {
+      const finalUrl = typeof fileUrl === "string" ? fileUrl.split(",")?.[0] : fileUrl;
+      window.open(finalUrl, "_blank");
+    } else {
+      console.error("No URL found for CLU document", doc);
+    }
+  };
+
+  const handleValidateClu = async (cluNum) => {
+    const rawNum = typeof cluNum === "string" ? cluNum : (typeof cluNumberVal === "string" ? cluNumberVal : (cluNumberVal?.code || cluNumberVal?.name || getValues("cluNumber")?.code || getValues("cluNumber") || ""));
+    const numToSearch = (typeof rawNum === "string" ? rawNum : "")?.trim();
+    if (!numToSearch) {
+      setCluValidationError("Please enter CLU Number");
+      return;
+    }
+
+    const cluRegex = /^PB-CLU-.*-\d+$/i;
+    if (!cluRegex.test(numToSearch)) {
+      setCluValidationError("Invalid CLU Number format.");
+      updateCluValidated(false);
+      updateValidatedCluNumber("");
+      setRetrievedClu(null);
+      setRetrievedCluDocs([]);
+      setValue("cluDocumentUpload", null);
+      return;
+    }
+
+    setCluValidationLoading(true);
+    setCluValidationError(null);
+
+    try {
+      let searchTenantId = tenantId;
+      const parts = numToSearch.split("-");
+      if (parts.length >= 4 && parts[3]) {
+        searchTenantId = `pb.${parts[3].toLowerCase()}`;
+      }
+
+      let result = await Digit.OBPSService.CLUSearch({
+        filters: { applicationNo: numToSearch },
+        tenantId: searchTenantId,
+      });
+
+
+      const cluApp = result?.Clu?.[0];
+      if (cluApp) {
+        setRetrievedClu(cluApp);
+        const fileStoreIds = [];
+
+        const sanctionLetterFilestoreId =
+          cluApp?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId ||
+          cluApp?.additionalDetails?.sanctionLetterFilestoreId;
+
+        if (sanctionLetterFilestoreId) {
+          fileStoreIds.push(sanctionLetterFilestoreId);
+        } else {
+          const docs = cluApp?.documents || cluApp?.cluDetails?.documents || [];
+
+          docs.forEach((d) => {
+            const fid = d.fileStoreId;
+
+            if (fid && !fileStoreIds.includes(fid)) {
+              fileStoreIds.push(fid);
+            }
+          });
+        }
+
+
+        if (fileStoreIds.length > 0) {
+          let mappedDocs = [];
+          const fetchTenant = cluApp?.tenantId || searchTenantId;
+          try {
+            const fileFetchResponse = await Digit.UploadServices.Filefetch(fileStoreIds, fetchTenant);
+            const pdfFiles = fileFetchResponse?.data || {};
+
+            mappedDocs = fileStoreIds.map((fid) => {
+              let rawUrl = "";
+              if (pdfFiles?.fileStoreIds && Array.isArray(pdfFiles.fileStoreIds)) {
+                const foundFile = pdfFiles.fileStoreIds.find((f) => f?.id === fid || f?.fileStoreId === fid);
+                rawUrl = foundFile?.url || "";
+              } else if (pdfFiles && typeof pdfFiles === "object") {
+                rawUrl = pdfFiles[fid] || "";
+              }
+              const fileUrl = (typeof rawUrl === "string" ? rawUrl.split(",")?.[0] : "") || rawUrl || "";
+              return {
+                url: fileUrl,
+                fileStoreId: fid,
+              };
+            });
+          } catch (err) {
+            console.error("Error fetching fileStoreIds during validation:", err);
+            mappedDocs = fileStoreIds.map((fid) => ({
+              fileStoreId: fid,
+            }));
+          }
+
+          setRetrievedCluDocs(mappedDocs);
+          setValue("cluDocumentUpload", fileStoreIds[0]);
+        } else {
+          setRetrievedCluDocs([]);
+        }
+
+        updateValidatedCluNumber(numToSearch);
+        updateCluValidated(true);
+        setCluValidationError(null);
+      } else {
+        setCluValidationError("CLU Number not found. Please check and try again.");
+        updateCluValidated(false);
+        updateValidatedCluNumber("");
+        setRetrievedClu(null);
+        setRetrievedCluDocs([]);
+      }
+    } catch (error) {
+      console.error("CLU Validation Error:", error);
+      if (currentStepData?.siteDetails?.cluNumber === numToSearch && currentStepData?.siteDetails?.cluDocumentUpload) {
+        updateValidatedCluNumber(numToSearch);
+        updateCluValidated(true);
+        setCluValidationError(null);
+      } else {
+        setCluValidationError("Error validating CLU. Please try again.");
+        updateCluValidated(false);
+        updateValidatedCluNumber("");
+      }
+    } finally {
+      setCluValidationLoading(false);
+    }
+  };
 
   const [totalPlotArea, setTotalPlotArea] = useState("0.00");
   const [areaLeftforRoadWidning, setAreaLeftforRoadWidning] = useState("0.00");
@@ -594,9 +816,14 @@ const LayoutSiteDetails = (_props) => {
                           <TextInput
                             value={props.value}
                             onChange={(e) => {
-                              props.onChange(e.target.value);
-                              setIsCluValidated(false);
-                              setCluValidationError(null);
+                              const val = e.target.value;
+                              props.onChange(val);
+                              if (isCluValidated && validatedCluNumberRef.current && val !== validatedCluNumberRef.current) {
+                                updateCluValidated(false);
+                                setRetrievedClu(null);
+                                setRetrievedCluDocs([]);
+                                setValue("cluDocumentUpload", null);
+                              }
                             }}
                             onBlur={(e) => {
                               props.onBlur(e);
@@ -635,62 +862,44 @@ const LayoutSiteDetails = (_props) => {
                           minWidth: "120px"
                         }}
                         disabled={cluValidationLoading || !watch("cluNumber")}
-                        onClick={async () => {
-                          const cluNumber = watch("cluNumber")?.trim();
-                          if (!cluNumber) {
-                            setCluValidationError("Please enter CLU Number");
-                            return;
-                          }
-
-                          const cluRegex = /^PB-CLU-SAS-[A-Za-z]+-\d+$/i;
-                          if (!cluRegex.test(cluNumber)) {
-                            setCluValidationError("Invalid CLU Number format.");
-                            setIsCluValidated(false);
-                            return;
-                          }
-
-                          setCluValidationLoading(true);
-                          setCluValidationError(null);
-
-                          try {
-                            // Search for CLU by applicationNo
-                            const result = await Digit.OBPSService.CLUSearch({
-                              filters: { applicationNo: cluNumber },
-                              tenantId: tenantId
-                            });
-
-                            if (result?.Clu && result.Clu.length > 0) {
-                              const cluApp = result.Clu[0];
-                              if (cluApp?.applicationStatus?.toUpperCase() === "APPROVED") {
-                                // CLU found and validated (approved)
-                                setIsCluValidated(true);
-                                setCluValidationError(null);
-                              } else {
-                                // CLU found but not approved
-                                setCluValidationError(`CLU application status is "${t(cluApp?.applicationStatus || "UNKNOWN")}". It must be APPROVED.`);
-                                setIsCluValidated(false);
-                              }
-                            } else {
-                              // CLU not found
-                              setCluValidationError("CLU Number not found. Please check and try again.");
-                              setIsCluValidated(false);
-                            }
-                          } catch (error) {
-                            console.error("CLU Validation Error:", error);
-                            setCluValidationError("Error validating CLU. Please try again.");
-                            setIsCluValidated(false);
-                          } finally {
-                            setCluValidationLoading(false);
-                          }
-                        }}
+                        onClick={() => handleValidateClu()}
                       >
-                        {cluValidationLoading ? "Validating..." : "Validate CLU"}
+                        {cluValidationLoading ? "Searching..." : "Validate CLU"}
                       </button>
                     </div>
                   </LabelFieldPair>
 
                   {cluValidationError && (
                     <p style={{ color: "red", marginTop: "4px", marginBottom: "16px" }}>{cluValidationError}</p>
+                  )}
+
+                  {(isCluValidated || (retrievedCluDocs && retrievedCluDocs.length > 0)) && (
+                    <LabelFieldPair>
+                      <CardLabel className="card-label-smaller">{t("BPA_CLU_DOCUMENT_LABEL") || "CLU Document"}</CardLabel>
+                      <div className="field">
+                         {retrievedCluDocs.map((doc, idx) => (
+                    <div key={idx} style={{ marginBottom: "12px", display: "flex", alignItems: "center", gap: "12px" }}>
+
+                      <button
+                        type="button"
+                        style={{
+                          padding: "8px 16px",
+                          background: "#2947a3",
+                          color: "white",
+                          cursor: "pointer",
+                          border: "none",
+                          borderRadius: "4px",
+                          fontWeight: "bold",
+                          fontSize: "14px"
+                        }}
+                        onClick={() => handleViewDocument(doc)}
+                      >
+                        VIEW DOCUMENT
+                      </button>
+                    </div>
+                  ))}
+                      </div>
+                    </LabelFieldPair>
                   )}
                 </React.Fragment>
               ) : null}
@@ -885,7 +1094,6 @@ const LayoutSiteDetails = (_props) => {
                       className="form-field"
                       select={(e) => {
                         props.onChange(e);
-                        setApplicationAppliedUnder(e.code);
                       }}
                       selected={props.value}
                       option={[

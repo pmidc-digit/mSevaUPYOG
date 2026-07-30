@@ -38,30 +38,63 @@ import LayoutDocumentTableView from "../../../pageComponents/LayoutDocumentsView
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
 import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 // Component to render document link for owner documents
-const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
+const DocumentLink = ({ fileStoreId, cluNumber, stateCode, t, label }) => {
   const [url, setUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUrl = async () => {
-      if (fileStoreId) {
+      let fId = fileStoreId;
+      const effectiveState = stateCode || Digit.ULBService.getStateId();
+      let fetchTenantId = effectiveState;
+
+      if (!fId && cluNumber) {
         try {
-          const result = await Digit.UploadServices.Filefetch([fileStoreId], stateCode);
+          const parts = String(cluNumber).split("-");
+          const searchTenantId = parts.length >= 4 && parts[3] ? `pb.${parts[3].toLowerCase()}` : effectiveState;
+          const searchRes = await Digit.OBPSService.CLUSearch({
+            filters: { applicationNo: cluNumber },
+            tenantId: searchTenantId,
+          });
+          const cluApp = searchRes?.Clu?.[0];
+          if (cluApp) {
+            fId = cluApp?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId ||
+                  cluApp?.additionalDetails?.sanctionLetterFilestoreId;
+            if (cluApp?.tenantId) {
+              fetchTenantId = cluApp.tenantId;
+            }
+          }
+        } catch (e) {
+          console.error("Error searching CLU for document:", e);
+        }
+      }
+
+      if (fId) {
+        try {
+          const result = await Digit.UploadServices.Filefetch([fId], fetchTenantId);
+          let fetchedUrl = "";
           if (result?.data?.fileStoreIds?.[0]?.url) {
-            setUrl(result.data.fileStoreIds[0].url);
+            fetchedUrl = result.data.fileStoreIds[0].url;
+          } else if (result?.data?.[fId]) {
+            fetchedUrl = result.data[fId];
+          }
+          if (fetchedUrl) {
+            setUrl(typeof fetchedUrl === "string" ? fetchedUrl.split(",")?.[0] : fetchedUrl);
           }
         } catch (error) {
           console.error("Error fetching document:", error);
         }
       }
+      setLoading(false);
     };
     fetchUrl();
-  }, [fileStoreId, stateCode]);
+  }, [fileStoreId, cluNumber, stateCode]);
 
+  if (loading) return <span>{t("LOADING") || "Loading..."}</span>;
   if (!url) return <span>{t("CS_NA") || "NA"}</span>;
 
   return (
     <LinkButton
-
       label={t("View") || "View"}
       onClick={() => window.open(url, "_blank")}
     />
@@ -803,26 +836,24 @@ const LayoutApplicationOverview = () => {
                   {renderLabel(t("BPA_CLU_TYPE_LABEL"), detail?.cluType?.code || detail?.cluType)}
                   {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") &&
                     renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
-                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") && (
-                    <React.Fragment>
-                      {renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
-                      {Boolean(detail?.cluDocumentUpload) && (
-                        <Row
-                          label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
-                          text={
-                            <DocumentLink
-                              fileStoreId={
-                                typeof detail?.cluDocumentUpload === "string"
-                                  ? detail?.cluDocumentUpload
-                                  : (detail?.cluDocumentUpload?.fileStoreId || detail?.cluDocumentUpload?.filestoreId || detail?.cluDocumentUpload?.uuid)
-                              }
-                              stateCode={stateCode}
-                              t={t}
-                            />
+                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
+                    renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
+                  {(Boolean(detail?.cluDocumentUpload) || detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && (
+                    <Row
+                      label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
+                      text={
+                        <DocumentLink
+                          fileStoreId={
+                            typeof detail?.cluDocumentUpload === "string"
+                              ? detail?.cluDocumentUpload
+                              : (detail?.cluDocumentUpload?.fileStoreId || detail?.cluDocumentUpload?.filestoreId || detail?.cluDocumentUpload?.uuid)
                           }
+                          cluNumber={detail?.cluNumber}
+                          stateCode={stateCode}
+                          t={t}
                         />
-                      )}
-                    </React.Fragment>
+                      }
+                    />
                   )}
                   {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
                 </React.Fragment>

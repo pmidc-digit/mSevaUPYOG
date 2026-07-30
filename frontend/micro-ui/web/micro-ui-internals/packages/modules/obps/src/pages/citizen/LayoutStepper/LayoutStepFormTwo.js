@@ -270,7 +270,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       cluNumberOffline: formData?.siteDetails?.cluNumberOffline || "",
       cluApprovalDate: formData?.siteDetails?.cluApprovalDate || "",
       cluDocumentUpload: formData?.siteDetails?.cluDocumentUpload || "",
-      applicationAppliedUnder: formData?.siteDetails?.applicationAppliedUnder?.code || formData?.siteDetails?.applicationAppliedUnder || "",
+      applicationAppliedUnder: formData?.siteDetails?.applicationAppliedUnder || formData?.siteDetails?.applicationAppliedUnder?.code  || "",
       nonSchemeType: formData?.siteDetails?.nonSchemeType || "",
       approvedColonyName: formData?.siteDetails?.approvedColonyName || "",
       // Exclude vasikaNumber and vasikaDate from here - they go at top level

@@ -179,6 +179,27 @@ public class CollectionNotificationConsumer {
 	    if (!CollectionUtils.isEmpty(validatedPayments.get(0).getPaymentDetails())) {
 	        businessService = validatedPayments.get(0).getPaymentDetails().get(0).getBusinessService();
 	    }
+
+	    try {
+	        String receiptNumber = null;
+	        if (!CollectionUtils.isEmpty(validatedPayments.get(0).getPaymentDetails())) {
+	            receiptNumber = validatedPayments.get(0).getPaymentDetails().get(0).getReceiptNumber();
+	        }
+	        if (!StringUtils.isEmpty(receiptNumber)) {
+	            PaymentSearchCriteria criteria = PaymentSearchCriteria.builder()
+	                    .tenantId(validatedPayments.get(0).getTenantId())
+	                    .receiptNumbers(Collections.singleton(receiptNumber))
+	                    .businessService(businessService)
+	                    .build();
+	            List<Payment> enrichedPayments = paymentService.getPayments(requestInfo, criteria, businessService);
+	            if (!CollectionUtils.isEmpty(enrichedPayments)) {
+	                validatedPayments = enrichedPayments;
+	            }
+	        }
+	    } catch (Exception e) {
+	        log.error("Failed to enrich payment details before PDF creation: ", e);
+	    }
+
 	    String receiptKey = mdmsService.getReceiptKey(requestInfo, stateId, businessService);
 
 	    try {

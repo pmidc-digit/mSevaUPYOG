@@ -2375,7 +2375,10 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
                 : { text: "" },
               { text: t(ft), fontSize: 8, margin: [2, 4, 2, 4], bold: true, alignment: "left" },
               {
-                text: feeHistory[ft]?.[entryIndex] ? `₹ ${Number(feeHistory[ft][entryIndex].estimateAmount).toLocaleString("en-IN")}` : "-",
+                text:
+                  feeHistory[ft]?.[entryIndex] && feeHistory[ft][entryIndex].estimateAmount != null && feeHistory[ft][entryIndex].estimateAmount !== ""
+                    ? `₹ ${Number(feeHistory[ft][entryIndex].estimateAmount).toLocaleString("en-IN")}`
+                    : "",
                 fontSize: 8,
                 margin: [2, 4, 2, 4],
                 alignment: "left"

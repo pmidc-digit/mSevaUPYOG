@@ -156,9 +156,9 @@ export const CLUFeeTable = ({
                       {feeTypes.map((feeType) => (
                         <td key={`${feeType}-fee-${entryIndex}`} className="custom-fix-fee-history-table-cell-value">
                           {feeHistory[feeType]?.[entryIndex]
-                            ? feeHistory[feeType][entryIndex].estimateAmount != null
+                            ? feeHistory[feeType][entryIndex].estimateAmount != null && feeHistory[feeType][entryIndex].estimateAmount !== ""
                               ? `₹ ${feeHistory[feeType][entryIndex].estimateAmount}`
-                              : t("CS_NA")
+                              : ""
                             : ""}
                         </td>
                       ))}
@@ -304,7 +304,7 @@ export const CLUFeeTable = ({
                         <div key={idx} className="custom-fee-history-entry">
                           <div className="custom-fee-history-item">
                             <span className="custom-fee-history-label-bold">{t("BPA_FEE2_LABEL")}:</span>{" "}
-                            {h.estimateAmount != null ? `₹ ${h.estimateAmount}` : t("CS_NA")}
+                            {h.estimateAmount != null && h.estimateAmount !== "" ? `₹ ${h.estimateAmount}` : ""}
                           </div>
                           <div className="custom-fee-history-item">
                             <span className="custom-fee-history-label-bold">{t("BPA_REMARK_LABEL")}:</span> {h.remarks || t("CS_NA")}

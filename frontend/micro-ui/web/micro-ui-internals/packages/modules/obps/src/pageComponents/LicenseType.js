@@ -281,6 +281,14 @@ console.log("validTo",validTo);
     setLicenseType(value);
   }
 
+  function isBArchQualification(qual) {
+    if (!qual) return false;
+    if (typeof qual === "string") {
+      return qual === "B-Arch" || qual === "B_ARCH";
+    }
+    return qual?.code === "B_ARCH" || qual?.name === "B-Arch";
+  }
+
   function isValidCOA(input) {
     let pattern = /^CA\/(\d{4})\/\d{5,6}$/;
     const match = input.match(pattern);
@@ -295,8 +303,12 @@ console.log("validTo",validTo);
   function selectArchitectNo(e) {
     const input = e.target.value.trim();
     setArchitectNo(input);
-    if (!isValidCOA(input) && input !== "") {
-      setErrorMessage(t("BPA_INVALID_MESSAGE_FOR_COA"));
+    if (isBArchQualification(qualificationType)) {
+      if (!isValidCOA(input) && input !== "") {
+        setErrorMessage(t("BPA_INVALID_MESSAGE_FOR_COA"));
+      } else {
+        setErrorMessage("");
+      }
     } else {
       setErrorMessage("");
     }
@@ -423,9 +435,15 @@ console.log("validTo",validTo);
   function goNext() {
     if (errorMessage !== "") return;
 
-    if (LicenseType?.i18nKey.includes("ARCHITECT") && ArchitectNo === null) {
-      setErrorMessage(t("BPA_INVALID_MESSAGE_FOR_COA"));
-      return;
+    if (LicenseType?.i18nKey.includes("ARCHITECT")) {
+      if (!ArchitectNo || ArchitectNo.trim() === "") {
+        setErrorMessage(t("BPA_INVALID_MESSAGE_FOR_COA"));
+        return;
+      }
+      if (isBArchQualification(qualificationType) && !isValidCOA(ArchitectNo)) {
+        setErrorMessage(t("BPA_INVALID_MESSAGE_FOR_COA"));
+        return;
+      }
     }
 
     if (LicenseType?.i18nKey.includes("TOWNPLANNER") && ArchitectNo === null) {

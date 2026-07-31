@@ -790,7 +790,8 @@ const LayoutEmployeeApplicationOverview = () => {
           filtData?.action === "SENDBACKTOPROFESSIONAL" ||
           filtData?.action === "REJECT" ||
           filtData?.action === "INTERNAL_QUERY" ||
-          filtData?.action === "OBSERVATION"
+          filtData?.action === "OBSERVATION" ||
+          filtData?.action === "SEND_FOR_INSPECTION_REPORT"
         ) {
           //console.log("We are calling employee response page");
           history.replace({
@@ -1314,7 +1315,7 @@ const LayoutEmployeeApplicationOverview = () => {
       {/* FIELD INSPECTION UPLOADED DOCUMENTS - Display when not in progress */}
       {applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
         <Card>
-           <CardSubHeader>{`FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
+           <CardSubHeader>{empName ? `FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}` : t("SITE_INPECTION_IMAGES")}</CardSubHeader>
           <StatusTable
             style={{
               display: "flex",
@@ -1337,7 +1338,7 @@ const LayoutEmployeeApplicationOverview = () => {
               ))}
           </StatusTable>
 
-          {geoLocations?.length > 0 && (
+          {applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && geoLocations?.length > 0 && (
             <Fragment>
               <CardSubHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSubHeader>
               <CustomLocationSearch position={geoLocations} />

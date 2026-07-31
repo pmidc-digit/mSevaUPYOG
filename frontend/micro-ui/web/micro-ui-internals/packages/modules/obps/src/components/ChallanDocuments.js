@@ -39,6 +39,12 @@ const ChallanDocuments = ({
   function onAdd() {}
 
   useEffect(() => {
+    if (formData?.documents?.documents && formData?.documents?.documents?.length > 0) {
+      setDocuments(formData.documents.documents);
+    }
+  }, [formData?.documents?.documents]);
+
+  useEffect(() => {
     let count = 0;
     data?.Challan?.Documents?.map((doc) => {
       doc.hasDropdown = true;
@@ -159,6 +165,28 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.filestoreId || null);
 
+  useEffect(() => {
+    if (filteredDocument?.filestoreId && filteredDocument?.filestoreId !== uploadedFile) {
+      setUploadedFile(filteredDocument.filestoreId);
+    }
+  }, [filteredDocument?.filestoreId]);
+
+  useEffect(() => {
+    if (filteredDocument) {
+      const match = doc?.dropdownData?.find((e) => e.code === filteredDocument.documentType);
+      if (match) {
+        setSelectedDocument({ ...match, i18nKey: match.code?.replaceAll(".", "_") });
+      } else if (doc?.code) {
+        setSelectedDocument({ code: doc.code, i18nKey: doc.code.replaceAll(".", "_") });
+      }
+    } else if (doc?.dropdownData?.length === 1) {
+      const onlyOption = doc.dropdownData[0];
+      setSelectedDocument({ ...onlyOption, i18nKey: onlyOption.code?.replaceAll(".", "_") });
+    } else if (doc?.code) {
+      setSelectedDocument({ code: doc.code, i18nKey: doc.code.replaceAll(".", "_") });
+    }
+  }, [filteredDocument, doc]);
+
   const handlePTRSelectDocument = (value) => setSelectedDocument(value);
 
   function selectfile(e) {
@@ -209,13 +237,14 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   }
 
   // helper function to avoid repeating code
-  function updateDocument(selectedDocument, extraFields = {}) {
+  function updateDocument(selectedDoc, extraFields = {}) {
+    const docCode = selectedDoc?.code || doc?.code;
     setDocuments((prev = []) => {
-      const updated = prev.map((item) => (item?.documentType === selectedDocument?.code ? { ...item, ...extraFields } : item));
+      const updated = prev.map((item) => (item?.documentType === docCode ? { ...item, ...extraFields } : item));
 
-      if (!updated.some((i) => i?.documentType === selectedDocument?.code)) {
+      if (!updated.some((i) => i?.documentType === docCode)) {
         updated.push({
-          documentType: selectedDocument?.code,
+          documentType: docCode,
           filestoreId: null,
           documentUid: null,
           ...extraFields,

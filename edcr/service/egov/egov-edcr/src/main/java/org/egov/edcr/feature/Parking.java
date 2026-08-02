@@ -79,6 +79,7 @@ import org.apache.logging.log4j.LogManager;
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Building;
 import org.egov.common.entity.edcr.Floor;
+import org.egov.common.entity.edcr.FloorUnit;
 import org.egov.common.entity.edcr.Measurement;
 import org.egov.common.entity.edcr.Occupancy;
 import org.egov.common.entity.edcr.OccupancyType;
@@ -156,10 +157,6 @@ public class Parking extends FeatureProcess {
     private static final String TWO_WHEELER_SIZE_NOTE = "Note : Two Wheeler Size - 2.0 x 0.75 Meter";
     private static final String PARKING_AREA_DIM = "2.0 M x 0.75 M";
     
-    // Placeholder variables you'd need to define elsewhere
-    private static final double totalDwellingUnits = 50.0; // Total number of dwelling units in the block
-    private static final double averageUnitAreaSqM = 150.0; // Average unit area (total covered area / total DUs) in sq. m
-
     public static final double AREA_UPPER_100 = 100;
     public static final double AREA_UPPER_150 = 150;
     public static final double AREA_UPPER_200 = 200;
@@ -366,27 +363,15 @@ public class Parking extends FeatureProcess {
         }
   
         Integer noOfrequiredParking = 0;
+        String requiredParkingText = null;
         if (mostRestrictiveOccupancy != null && A.equals(mostRestrictiveOccupancy.getType().getCode())) {
         	if(mostRestrictiveOccupancy.getSubtype()!=null
 							&& A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
-        		// Reset parking calculation variables
-                noOfrequiredParking = 0; // This will hold the total ECS required for DUs + Guest Parking
-                // --- 1. Calculate base ECS based on Unit Area (per DU) from the first image ---
-                double ecsPerDu = 0.0;
+        		// A-AF apartment/flat parking: ECS per dwelling unit plus 10% guest parking.
+                ResidentialParkingStats parkingStats = getResidentialParkingStats(pl);
+                double ecsPerDu = getApartmentFlatEcsPerDu(parkingStats.averageUnitAreaSqM);
                 
-                if (averageUnitAreaSqM <= 120) {
-                    // 1. Up to 120 sq. m -> 1.5 ECS / DU
-                    ecsPerDu = 1.5;
-                } else if (averageUnitAreaSqM > 120 && averageUnitAreaSqM <= 300) {
-                    // 2. 120–300 sq. m -> 2 ECS / DU
-                    ecsPerDu = 2.0;
-                } else if (averageUnitAreaSqM > 300) {
-                    // 3. Above 300 sq. m -> 3 ECS / DU
-                    ecsPerDu = 3.0;
-                }
-
-                // Calculate total ECS required for DUs
-                double totalDuEcs = ecsPerDu * totalDwellingUnits;
+                double totalDuEcs = ecsPerDu * parkingStats.totalDwellingUnits;
                 
                 // --- 2. Add Additional 10% Guest Parking ---
                 // (As per the second image: "Additional 10% guest parking shall also be provided")
@@ -394,6 +379,8 @@ public class Parking extends FeatureProcess {
                 
                 // Total required ECS (noOfrequiredParking)
                 noOfrequiredParking = (int) Math.ceil(totalDuEcs + guestEcs);
+                requiredParkingText = formatEcs(totalDuEcs) + " ECS + 10% Guest Parking ("
+                        + formatEcs(guestEcs) + " ECS) = " + noOfrequiredParking + " ECS";
                 
                 if (pl.getPlot() != null) {                 
                     if (openParkingArea != null && openParkingArea.doubleValue() > 0) {
@@ -564,6 +551,9 @@ public class Parking extends FeatureProcess {
         
         BigDecimal totalECS = new BigDecimal(roundedValueOpen + roundedValueCover + roundedValueBsmnt + roundedValueStilt)
                 .setScale(2, BigDecimal.ROUND_HALF_UP);
+        if (requiredParkingText == null) {
+            requiredParkingText = noOfrequiredParking + " ECS";
+        }
      
         
         // Conditionally report Car Parking details (Section 4.2.1) ONLY if plotArea > 100
@@ -584,7 +574,7 @@ public class Parking extends FeatureProcess {
 //            			totalECS + " ECS" ,
 //            			Result.Not_Accepted.getResultVal()
 //        				);
-            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS" ,
+            	setReportOutputDetails1(pl,"4.2.1", "Parking", requiredParkingText ,
             			totalECS + " ECS" ,
             			Result.Not_Accepted.getResultVal()
         				);
@@ -596,7 +586,7 @@ public class Parking extends FeatureProcess {
             	}
 //                setReportOutputDetails1(pl,"4.2.1","Parking",noOfrequiredParking + " ECS ( Covered Area " + coveredArea + " )",
 //                    totalECS + " ECS",status);
-            	setReportOutputDetails1(pl,"4.2.1","Parking",noOfrequiredParking + " ECS",
+            	setReportOutputDetails1(pl,"4.2.1","Parking",requiredParkingText,
                         totalECS + " ECS",status);
             }else {
 //                setReportOutputDetails(pl, RULE_, RULE__DESCRIPTION, requiredCarParkingArea + SQMTRS,
@@ -605,7 +595,7 @@ public class Parking extends FeatureProcess {
 //            			totalECS + " ECS" ,
 //            			Result.Accepted.getResultVal()
 //        				);
-            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS" ,
+            	setReportOutputDetails1(pl,"4.2.1", "Parking", requiredParkingText ,
             			totalECS + " ECS" ,
             			Result.Accepted.getResultVal()
         				);
@@ -1031,6 +1021,85 @@ public class Parking extends FeatureProcess {
 					Result.Not_Accepted.getResultVal());
 		}
 	}
+
+    private ResidentialParkingStats getResidentialParkingStats(Plan pl) {
+        int totalDwellingUnits = 0;
+        BigDecimal totalCoveredArea = BigDecimal.ZERO;
+
+        if (pl != null && pl.getBlocks() != null) {
+            for (Block block : pl.getBlocks()) {
+                if (block.getBuilding() == null || block.getBuilding().getFloors() == null) {
+                    continue;
+                }
+                for (Floor floor : block.getBuilding().getFloors()) {
+                    if (floor.getUnits() == null || floor.getUnits().isEmpty()) {
+                        continue;
+                    }
+                    totalDwellingUnits += floor.getUnits().size();
+                    totalCoveredArea = totalCoveredArea.add(getFloorCoveredArea(floor));
+                }
+            }
+        }
+
+        double averageUnitAreaSqM = 0;
+        if (totalDwellingUnits > 0) {
+            averageUnitAreaSqM = totalCoveredArea
+                    .divide(BigDecimal.valueOf(totalDwellingUnits), 2, RoundingMode.HALF_UP)
+                    .doubleValue();
+        }
+
+        return new ResidentialParkingStats(totalDwellingUnits, averageUnitAreaSqM);
+    }
+
+    private BigDecimal getFloorCoveredArea(Floor floor) {
+        BigDecimal coveredArea = BigDecimal.ZERO;
+        if (floor.getOccupancies() != null) {
+            for (Occupancy occupancy : floor.getOccupancies()) {
+                if (occupancy.getBuiltUpArea() != null) {
+                    coveredArea = coveredArea.add(occupancy.getBuiltUpArea());
+                }
+            }
+        }
+
+        if (coveredArea.compareTo(BigDecimal.ZERO) > 0) {
+            return coveredArea;
+        }
+
+        for (FloorUnit unit : floor.getUnits()) {
+            if (unit.getArea() != null) {
+                coveredArea = coveredArea.add(unit.getArea());
+            }
+        }
+        return coveredArea;
+    }
+
+    private double getApartmentFlatEcsPerDu(double averageUnitAreaSqM) {
+        if (averageUnitAreaSqM <= 0) {
+            return 0;
+        }
+        if (averageUnitAreaSqM <= 120) {
+            return 1.5;
+        }
+        if (averageUnitAreaSqM <= 300) {
+            return 2.0;
+        }
+        return 3.0;
+    }
+
+    private String formatEcs(double ecs) {
+        BigDecimal ecsValue = BigDecimal.valueOf(ecs).setScale(2, RoundingMode.HALF_UP).stripTrailingZeros();
+        return ecsValue.toPlainString();
+    }
+
+    private static class ResidentialParkingStats {
+        private final int totalDwellingUnits;
+        private final double averageUnitAreaSqM;
+
+        private ResidentialParkingStats(int totalDwellingUnits, double averageUnitAreaSqM) {
+            this.totalDwellingUnits = totalDwellingUnits;
+            this.averageUnitAreaSqM = averageUnitAreaSqM;
+        }
+    }
 
     private BigDecimal getTotalCarpetAreaByOccupancy(Plan pl, OccupancyType type) {
         BigDecimal totalArea = BigDecimal.ZERO;

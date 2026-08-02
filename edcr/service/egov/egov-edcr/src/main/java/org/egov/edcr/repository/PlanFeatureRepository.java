@@ -128,6 +128,7 @@ import org.egov.edcr.feature.TerraceToilet;
 import org.egov.edcr.feature.TerraceUtilityService;
 import org.egov.edcr.feature.ToiletDetails;
 import org.egov.edcr.feature.TravelDistanceToExit;
+import org.egov.edcr.feature.UnitFA;
 import org.egov.edcr.feature.VehicleRamp;
 import org.egov.edcr.feature.Ventilation;
 import org.egov.edcr.feature.Verandah;
@@ -404,6 +405,9 @@ public class PlanFeatureRepository {
         features.add(pf);
         
         pf = new PlanFeature(PlotFrontage.class);
+        features.add(pf);
+        
+        pf = new PlanFeature(UnitFA.class);
         features.add(pf);
 
         

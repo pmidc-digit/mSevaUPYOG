@@ -348,9 +348,15 @@ const jsPdfGeneratorFormattedNOC = async ({
     finalUrl = imageURL;
   }
 
-  const base64Image = imageURL
-    ? await getBase64FromUrl(finalUrl)
-    : baseUrl;
+  let base64Image = null;
+  if (imageURL) {
+    try {
+      base64Image = await getBase64FromUrl(finalUrl);
+    } catch (e) {
+      console.warn("Failed to convert imageURL to base64", e);
+      base64Image = null;
+    }
+  }
 
   const contentFormatted = await createContentFormatted(details, applicationNumber, phoneNumber, logo, tenantId, t, breakPageLimit);
   const dd = {
@@ -733,9 +739,16 @@ const jsPdfGeneratorBPAREG = async ({
     `${baseUrl}/digit-ui/citizen/acknowledgement/details?tenantId=${tenantId}&acknowledgementNumber=${applicationNumber}`
   );
   const module = applicationNumber.split("-")[1];
-  const splitURL = imageURL.split("filestore")?.[1];
-
-  const base64Image = await getBase64FromUrl(`${baseUrl}/filestore${splitURL}`);
+  let base64Image = null;
+  if (imageURL?.includes("filestore")) {
+    try {
+      const splitURL = imageURL.split("filestore")?.[1];
+      base64Image = await getBase64FromUrl(`${baseUrl}/filestore${splitURL}`);
+    } catch (e) {
+      console.warn("Failed to convert imageURL to base64", e);
+      base64Image = null;
+    }
+  }
 
   const dd = {
     background: [
@@ -818,9 +831,16 @@ const jsPdfGeneratorNewBPAREG = async ({
   const baseUrl = window.location.origin;
 
   const module = applicationNumber.split("-")[1];
-  const splitURL = imageURL.split("filestore")?.[1];
-
-  const base64Image = await getBase64FromUrl(`${baseUrl}/filestore${splitURL}`);
+  let base64Image = null;
+  if (imageURL?.includes("filestore")) {
+    try {
+      const splitURL = imageURL.split("filestore")?.[1];
+      base64Image = await getBase64FromUrl(`${baseUrl}/filestore${splitURL}`);
+    } catch (e) {
+      console.warn("Failed to convert imageURL to base64", e);
+      base64Image = null;
+    }
+  }
 
   const dd = {
     background: [

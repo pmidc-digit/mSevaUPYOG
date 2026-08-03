@@ -256,9 +256,15 @@ const LayoutSiteDetails = (_props) => {
           setRetrievedCluDocs([]);
         }
 
-        updateValidatedCluNumber(numToSearch);
-        updateCluValidated(true);
-        setCluValidationError(null);
+        if (sanctionLetterFilestoreId) {
+          updateValidatedCluNumber(numToSearch);
+          updateCluValidated(true);
+          setCluValidationError(null);
+        } else {
+          updateValidatedCluNumber("");
+          updateCluValidated(false);
+          setCluValidationError("Approved CLU Document not found for this CLU Number.");
+        }
       } else {
         setCluValidationError("CLU Number not found. Please check and try again.");
         updateCluValidated(false);

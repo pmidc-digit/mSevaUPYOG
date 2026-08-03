@@ -1111,3 +1111,11 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/ws-calculator-v2/src/main/resources/db"
         image-name: "ws-calculator-v2-db"
+
+  - name: "builds/upyog/municipal-services/ws-billscheduler"
+    build:
+      - work-dir: "municipal-services/ws-billscheduler"
+        image-name: "ws-billscheduler"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/ws-billscheduler/src/main/resources/db"
+        image-name: "ws-billscheduler-db"

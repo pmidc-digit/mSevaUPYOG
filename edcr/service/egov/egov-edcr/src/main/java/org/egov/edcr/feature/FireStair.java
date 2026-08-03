@@ -192,13 +192,20 @@ public class FireStair extends FeatureProcess {
                         // spiralStairCount = spiralStairCount +
                         // floor.getSpiralStairs().size();
                         if (!fireStairs.isEmpty()) {
-                            for (org.egov.common.entity.edcr.FireStair fireStair : fireStairs) {
-                                setReportOutputDetailsBltUp(plan, RULE42_5_II, floor.getNumber().toString(),
-                                        "Fire stair should abut floor external wall",
-                                        fireStair.isAbuttingBltUp() ? "Is abuting external wall" : "Not abuting external wall",
-                                        fireStair.isAbuttingBltUp() ? Result.Accepted.getResultVal()
-                                                : Result.Not_Accepted.getResultVal(),
-                                        scrutinyDetailAbutBltUp);
+                            for (org.egov.common.entity.edcr.FireStair fireStair : fireStairs) {                                
+                                if(floor.getIsStiltFloor()) {
+                                	setReportOutputDetailsBltUp(plan, RULE42_5_II, floor.getNumber().toString() + "(Stilt)",
+                                            "Fire stair should abut floor external wall","Is abuting external wall",
+                                            Result.Accepted.getResultVal(),
+                                            scrutinyDetailAbutBltUp);
+                                }else {
+                                	setReportOutputDetailsBltUp(plan, RULE42_5_II, floor.getNumber().toString(),
+                                            "Fire stair should abut floor external wall",
+                                            fireStair.isAbuttingBltUp() ? "Is abuting external wall" : "Not abuting external wall",
+                                            fireStair.isAbuttingBltUp() ? Result.Accepted.getResultVal()
+                                                    : Result.Not_Accepted.getResultVal(),
+                                            scrutinyDetailAbutBltUp);
+                                }
 
                                 validateFlight(plan, errors, block, scrutinyDetail2, scrutinyDetail3,
                                         scrutinyDetailRise, mostRestrictiveOccupancyType, floor, typicalFloorValues,

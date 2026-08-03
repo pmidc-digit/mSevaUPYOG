@@ -307,6 +307,11 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
               ? { code: layoutFormData?.siteDetails?.roadType, name: layoutFormData?.siteDetails?.roadType }
               : layoutFormData?.siteDetails?.roadType
           }),
+           ...(layoutFormData?.siteDetails?.applicationAppliedUnder && { 
+            applicationAppliedUnder: typeof layoutFormData?.siteDetails?.applicationAppliedUnder === 'string' 
+              ? { code: layoutFormData?.siteDetails?.applicationAppliedUnder, name: layoutFormData?.siteDetails?.applicationAppliedUnder }
+              : layoutFormData?.siteDetails?.applicationAppliedUnder
+          }),
           // ...(layoutFormData?.siteDetails?.buildingStatus && { 
           //   buildingStatus: typeof layoutFormData?.siteDetails?.buildingStatus === 'string' 
           //     ? { code: layoutFormData?.siteDetails?.buildingStatus, name: layoutFormData?.siteDetails?.buildingStatus }

@@ -120,7 +120,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
             arrearDoc: currentStepData?.propertyDetails?.arrearDoc,
             lastRentRevisedDate: lastRentRevisedDate,
             incrementPeriodMonths: currentStepData?.propertyDetails?.incrementPeriodMonths?.code,
-            incrementPercentage: currentStepData?.propertyDetails?.incrementPercentage,
+            incrementPercentage: currentStepData?.propertyDetails?.incrementPercentage ? currentStepData?.propertyDetails?.incrementPercentage : 0,
             // arrearEndDate: currentStepData?.propertyDetails?.arrearEndDate
             //   ? new Date(currentStepData?.propertyDetails?.arrearEndDate).getTime()
             //   : null,

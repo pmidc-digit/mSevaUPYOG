@@ -69,11 +69,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const { data: rentANDLeaseTaxRates = [], isLoading: RLTaxRatesLoading } = Digit.Hooks.useCustomMDMS(tenantId, "rentAndLease", [
     { name: "TaxRates" },
   ]);
+
   const { data: rentANDLeaseProperty = [], isLoading: RLPropertyLoading } = Digit.Hooks.useCustomMDMS(tenantId, "rentAndLease", [
     { name: "RLProperty" },
   ]);
-
-  console.log("rentANDLeaseTaxRates", rentANDLeaseTaxRates?.rentAndLease?.TaxRates);
 
   const { data: dueDateRL = [], isLoading: DueDateLoading } = Digit.Hooks.useCustomMDMS(tenantId, "rl-services-masters", [{ name: "DueDate" }]);
 
@@ -113,10 +112,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       rebateAmount: "",
     },
   });
-
-  useEffect(() => {
-    console.log("errors", errors);
-  }, [errors]);
 
   const docUploadData = {
     Challan: {
@@ -160,8 +155,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
   const handlePropertySelect = (property) => {
     if (!property) return;
-
-    console.log("property", property);
 
     const findPropertySpecific = propertySpecificOptions?.find((item) => item?.code == property?.propertyType);
     const findlocationTypeOptions = locationTypeOptions?.find((item) => item?.code == property?.locationType);
@@ -218,7 +211,11 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   };
 
   useEffect(() => {
+    console.log("yes here");
+
     if (currentStepData?.propertyDetails) {
+      console.log("currentStepData", currentStepData);
+
       setValue("securityDeposit", currentStepData?.propertyDetails?.securityDeposit);
       const propertyDetails = currentStepData.propertyDetails;
 
@@ -226,6 +223,15 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         if (key === "securityDeposit" || key === "duration") return; // Skip this field
         setValue(key, propertyDetails[key], { shouldValidate: true });
       });
+
+      const findBuildingValue = rentANDLeaseArea?.rentAndLease?.Area?.find((item) => item?.code == propertyDetails?.areaCode);
+      const lastBillingPeriod = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails?.lastBillingPeriod;
+
+      console.log("findBuildingValue", findBuildingValue);
+
+      setValue("area", findBuildingValue);
+      // setValue("lastBillingPeriod", currentStepData?.CreatedResponse?.AllotmentDetails[0]?.additionalDetails?.lastBillingPeriod);
+      setValue("lastBillingPeriod", lastBillingPeriod ? new Date(lastBillingPeriod).toISOString().split("T")[0] : "");
 
       // Restore documentsData for persistence
       if (propertyDetails.arrearDoc) {
@@ -338,10 +344,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       const sgst = taxRates.find((item) => item.taxType === "RL_SGST_FEE");
 
       const totalGST = (cgst?.amount || 0) + (sgst?.amount || 0);
-
-      console.log("CGST:", cgst?.amount);
-      console.log("SGST:", sgst?.amount);
-      console.log("Total GST:", totalGST);
       setValue("gstAmount", totalGST);
     }
   }, [rentANDLeaseTaxRates?.rentAndLease?.TaxRates]);

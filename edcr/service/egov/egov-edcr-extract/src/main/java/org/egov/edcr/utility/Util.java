@@ -206,9 +206,14 @@ public class Util {
 
         // --- LIGHT & VENTILATION ---
         LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_LIGHT_VENTILATION$", 121));
-
+        
+        // --- LIGHT & VENTILATION ---
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_ROOM_\\d+_LIGHT_VENTILATION_\\d+$", 122));
         // --- TOILET VENTILATION ---
-        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_TOILET_\\d+_VENTILATION$", 92));
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_ACROOM_\\d+_LIGHT_VENTILATION_\\d+$", 122));
+        
+        // --- AC ROOM ---
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_AC_ROOM_\\d+$", 135));
 
         
     }
@@ -517,6 +522,30 @@ public class Util {
         }
         disNames.addAll(layerNames);
         return disNames;
+    }
+    
+    public static List<String> printLayerNamesLike(DXFDocument doc, String layerRegEx) {
+        List<String> matchingLayers = new ArrayList<>();
+
+        if (doc == null || layerRegEx == null || layerRegEx.trim().isEmpty()) {
+            return matchingLayers;
+        }
+
+        Pattern pattern = Pattern.compile(layerRegEx);
+
+        Iterator<?> layerIterator = doc.getDXFLayerIterator();
+        while (layerIterator.hasNext()) {
+            DXFLayer layer = (DXFLayer) layerIterator.next();
+            String layerName = layer.getName();
+
+            if (pattern.matcher(layerName).matches()) {
+                matchingLayers.add(layerName);
+                //LOG.info("Matched Layer : {}", layerName);
+            }
+        }
+
+        Collections.sort(matchingLayers);
+        return matchingLayers;
     }
     
     public static List<String> getAllLayersNameLike(DXFDocument doc, String regExp) {
@@ -2205,7 +2234,6 @@ public class Util {
             Boolean isTypicalRepititiveFloor) { // Reverting the signature change
         
     Map<String, Object> mapOfTypicalFloorValues = new HashMap<>();
-    List<Integer> typicalFlrs = new ArrayList<>();
     String typicalFloors = null;
     Integer maxTypicalFloors = null;
     Integer minTypicalFloors = null;
@@ -2222,18 +2250,17 @@ public class Util {
             if (typicalFloor.getModelFloorNo().equals(floor.getNumber())
                     || typicalFloor.getRepetitiveFloorNos().contains(floor.getNumber())) {
                 
-                // Add the model floor number and all repetitive floor numbers to a list.
-                typicalFlrs.add(typicalFloor.getModelFloorNo());
-                typicalFlrs.addAll(typicalFloor.getRepetitiveFloorNos());
+                List<Integer> repetitiveFloors = typicalFloor.getRepetitiveFloorNos();
 
-                // Calculate the min and max floor numbers for the typical set.
-                if (!typicalFlrs.isEmpty()) {
-                    // Use streams for a cleaner way to find min/max
-                    minTypicalFloors = typicalFlrs.stream().min(Integer::compareTo).orElse(null);
-                    maxTypicalFloors = typicalFlrs.stream().max(Integer::compareTo).orElse(null);
+                if (repetitiveFloors != null && !repetitiveFloors.isEmpty()) {
+                    minTypicalFloors = repetitiveFloors.stream().min(Integer::compareTo).orElse(null);
+                    maxTypicalFloors = repetitiveFloors.stream().max(Integer::compareTo).orElse(null);
                     
                     if (minTypicalFloors != null && maxTypicalFloors != null) {
-                        typicalFloors = "Typical Floor " + minTypicalFloors + " to " + maxTypicalFloors;
+                        String typicalFloorLabel = minTypicalFloors.equals(maxTypicalFloors)
+                                ? minTypicalFloors.toString()
+                                : minTypicalFloors + " to " + maxTypicalFloors;
+                        typicalFloors = "Typical Floor " + typicalFloorLabel;
                     }
                 }
                 

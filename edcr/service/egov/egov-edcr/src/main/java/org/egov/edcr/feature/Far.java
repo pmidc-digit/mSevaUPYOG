@@ -2166,7 +2166,7 @@ public class Far extends FeatureProcess {
 //	}
 	
 	private void buildResult1(Plan pl, String occupancyName, Double totalProvidedFar, Double purchasableFar, String typeOfArea,
-			Double expectedResult, boolean isAccepted) {
+			Double expectedResult, boolean isAccepted, String ruleNo) {
 		ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
 		scrutinyDetail.addColumnHeading(1, RULE_NO);
 		scrutinyDetail.addColumnHeading(2, OCCUPANCY);
@@ -2181,7 +2181,7 @@ public class Far extends FeatureProcess {
 		String totalProvidedFar1 = totalProvidedFar.toString();
 
 		Map<String, String> details = new HashMap<>();
-		details.put(RULE_NO, RULE);
+		details.put(RULE_NO, ruleNo);
 		details.put(OCCUPANCY, occupancyName);
 		details.put(AREA_TYPE, typeOfArea);
 	//	details.put(ROAD_WIDTH, roadWidth.toString());
@@ -2449,6 +2449,7 @@ public class Far extends FeatureProcess {
 	private void getFarDetailsFromMDMS(Plan pl, String occType, String typeOfArea, OccupancyTypeHelper occupancyType) {
 	    try {
 	    	BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
+	    	String ruleNo = "";
 	    	// --- 1. Fetch & Initialize FAR values ---
 	    	Double regularPermissibleFar = 0.0;
 	    	if(A_AIF.equals(occupancyType.getSubtype().getCode())) {
@@ -2458,6 +2459,12 @@ public class Far extends FeatureProcess {
 		        regularPermissibleFar = BpaMdmsUtil.extractMdmsValue(
 		                pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.NORMAL_FAR, Double.class)
 		                .orElse(0.0);
+	    	}
+	    	
+	    	if(A_AF.equals(occupancyType.getSubtype().getCode())) {
+	    		ruleNo = "4.6";
+	    	}else {
+	    		ruleNo = RULE;
 	    	}
 
 	        Double purchasablePermissibleFar = BpaMdmsUtil.extractMdmsValue(
@@ -2516,7 +2523,7 @@ public class Far extends FeatureProcess {
 
 	        // Build result (assuming buildResult1 is part of the class)
 	        buildResult1(pl, occupancyType.getType().getName(), providedFar, purchasablePermissibleFar,
-	                     typeOfArea, regularPermissibleFar, isAccepted);
+	                     typeOfArea, regularPermissibleFar, isAccepted, ruleNo);
 
 	    } catch (Exception e) {
 	        LOG.error("Error while fetching FAR details from MDMS", e);	       

@@ -382,7 +382,11 @@ public class PlanService {
         }
         
         
-        
+        DxfValidator.validate(dcrApplication.getSavedDxfFile(), plan);
+        if (plan.getErrors() != null && !plan.getErrors().isEmpty()) {
+            LOG.warn("DXF preflight found {} issue(s) for : {}",
+                    plan.getErrors().size(), plan.getErrors());
+        }
       
         String comparisonDcrNumber = dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();
         if (ApplicationType.PERMIT.getApplicationTypeVal()

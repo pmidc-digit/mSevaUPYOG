@@ -41,6 +41,7 @@ import org.egov.common.entity.edcr.Floor;
 import org.egov.common.entity.edcr.Occupancy;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.common.entity.edcr.TypicalFloor;
 import org.egov.edcr.autonumber.DcrApplicationNumberGenerator;
 import org.egov.edcr.autonumber.OCPlanScrutinyNumberGenerator;
 import org.egov.edcr.entity.ApplicationType;
@@ -370,6 +371,7 @@ public class PlanReportServiceV2 {
         if (plan.getReportOutput() != null && plan.getReportOutput().getScrutinyDetails() != null) {
             allDetails = plan.getReportOutput().getScrutinyDetails();
         }
+        normalizeTypicalFloorDetails(allDetails, plan);
 
         // sections is a LinkedHashMap so order is preserved exactly as the PDF
         Map<String, Map<String, ScrutinyDetail>> sections = new LinkedHashMap<>();
@@ -480,6 +482,223 @@ public class PlanReportServiceV2 {
         }
 
         return overallSummaryDetails;
+    }
+
+    private void normalizeTypicalFloorDetails(List<ScrutinyDetail> scrutinyDetails, Plan plan) {
+        if (CollectionUtils.isEmpty(scrutinyDetails) || plan == null || CollectionUtils.isEmpty(plan.getBlocks())) {
+            return;
+        }
+
+        Map<String, List<TypicalFloor>> typicalFloorsByBlock = new HashMap<>();
+        for (Block block : plan.getBlocks()) {
+            if (block.getNumber() != null && !CollectionUtils.isEmpty(block.getTypicalFloor())) {
+                typicalFloorsByBlock.put(block.getNumber(), block.getTypicalFloor());
+            }
+        }
+        if (typicalFloorsByBlock.isEmpty()) {
+            return;
+        }
+
+        for (ScrutinyDetail scrutinyDetail : scrutinyDetails) {
+            if (scrutinyDetail.getKey() == null || !scrutinyDetail.getKey().startsWith("Block_")
+                    || scrutinyDetail.getKey().contains("_UnitFA-")
+                    || CollectionUtils.isEmpty(scrutinyDetail.getDetail())) {
+                continue;
+            }
+
+            String blockNo = getBlockNoFromScrutinyKey(scrutinyDetail.getKey());
+            if (blockNo == null || !typicalFloorsByBlock.containsKey(blockNo)) {
+                continue;
+            }
+
+            for (TypicalFloor typicalFloor : typicalFloorsByBlock.get(blockNo)) {
+                normalizeTypicalFloorRows(scrutinyDetail, typicalFloor);
+            }
+        }
+    }
+
+    private String getBlockNoFromScrutinyKey(String key) {
+        String[] parts = key.split("_");
+        if (parts.length < 2) {
+            return null;
+        }
+        return parts[1];
+    }
+
+    private void normalizeTypicalFloorRows(ScrutinyDetail scrutinyDetail, TypicalFloor typicalFloor) {
+        if (typicalFloor == null || typicalFloor.getModelFloorNo() == null
+                || CollectionUtils.isEmpty(typicalFloor.getRepetitiveFloorNos())) {
+            return;
+        }
+
+        List<Map<String, String>> normalizedRows = new ArrayList<>();
+        List<Map<String, String>> modelFloorRows = new ArrayList<>();
+        Set<String> modelRowSignatures = new HashSet<>();
+        boolean typicalRowsAdded = false;
+
+        for (Map<String, String> row : scrutinyDetail.getDetail()) {
+            String floorValue = getFloorValue(row);
+            Integer rowFloorNo = getFloorNo(floorValue);
+            boolean modelFloorRow = rowFloorNo != null && rowFloorNo.equals(typicalFloor.getModelFloorNo());
+            boolean repetitiveFloorRow = rowFloorNo != null && typicalFloor.getRepetitiveFloorNos().contains(rowFloorNo);
+            boolean existingTypicalRow = isTypicalFloorLabel(floorValue);
+
+            if ((repetitiveFloorRow || existingTypicalRow) && !typicalRowsAdded && modelFloorRows.isEmpty()) {
+                Map<String, String> modelRow = new HashMap<>(row);
+                modelRow.put("Floor", typicalFloor.getModelFloorNo().toString());
+                String signature = getTypicalRowSignature(modelRow);
+                if (modelRowSignatures.add(signature)) {
+                    normalizedRows.add(modelRow);
+                    modelFloorRows.add(modelRow);
+                }
+                continue;
+            }
+
+            if (modelFloorRow) {
+                Map<String, String> modelRow = new HashMap<>(row);
+                modelRow.put("Floor", typicalFloor.getModelFloorNo().toString());
+                normalizedRows.add(modelRow);
+                String signature = getTypicalRowSignature(modelRow);
+                if (modelRowSignatures.add(signature)) {
+                    modelFloorRows.add(modelRow);
+                }
+                continue;
+            }
+
+            if (repetitiveFloorRow || existingTypicalRow) {
+                continue;
+            }
+
+            if (!typicalRowsAdded && !modelFloorRows.isEmpty()) {
+                addTypicalRows(normalizedRows, modelFloorRows, typicalFloor);
+                typicalRowsAdded = true;
+            }
+            normalizedRows.add(row);
+        }
+
+        if (!typicalRowsAdded && !modelFloorRows.isEmpty()) {
+            addTypicalRows(normalizedRows, modelFloorRows, typicalFloor);
+        }
+
+        if (!normalizedRows.isEmpty()) {
+            scrutinyDetail.getDetail().clear();
+            scrutinyDetail.getDetail().addAll(normalizedRows);
+        }
+    }
+
+    private void addTypicalRows(List<Map<String, String>> normalizedRows, List<Map<String, String>> modelFloorRows,
+            TypicalFloor typicalFloor) {
+        String typicalFloorLabel = "Typical Floor " + formatFloorRange(typicalFloor.getRepetitiveFloorNos());
+        for (Map<String, String> modelRow : modelFloorRows) {
+            Map<String, String> typicalRow = new HashMap<>(modelRow);
+            if (typicalRow.containsKey("Provided")) {
+                if (typicalRow.containsKey("Floor")) {
+                    typicalRow.put("Floor", typicalFloorLabel);
+                    typicalRow.put("Provided", "Same as Floor " + typicalFloor.getModelFloorNo()
+                            + " (" + typicalFloorLabel + ")");
+                } else {
+                    typicalRow.put("Provided", "Same as Floor " + typicalFloor.getModelFloorNo()
+                            + " (" + typicalFloorLabel + ")");
+                }
+            } else {
+                typicalRow.put("Floor", typicalFloorLabel);
+            }
+            normalizedRows.add(typicalRow);
+        }
+    }
+
+    private String getTypicalRowSignature(Map<String, String> row) {
+        return row.entrySet().stream()
+                .filter(entry -> !"Floor".equals(entry.getKey()))
+                .filter(entry -> !"Provided".equals(entry.getKey()))
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .sorted()
+                .collect(Collectors.joining("|"));
+    }
+
+    private Integer getFloorNo(String floorValue) {
+        if (StringUtils.isBlank(floorValue)) {
+            return null;
+        }
+
+        String trimmedFloorValue = floorValue.trim();
+        StringBuilder numericPrefix = new StringBuilder();
+        for (int i = 0; i < trimmedFloorValue.length(); i++) {
+            char ch = trimmedFloorValue.charAt(i);
+            if (Character.isDigit(ch) || (i == 0 && ch == '-')) {
+                numericPrefix.append(ch);
+            } else {
+                break;
+            }
+        }
+
+        if (numericPrefix.length() == 0 || "-".contentEquals(numericPrefix)) {
+            return getFloorNoAfterFloorText(trimmedFloorValue);
+        }
+
+        try {
+            return Integer.valueOf(numericPrefix.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String getFloorValue(Map<String, String> row) {
+        if (row.containsKey("Floor")) {
+            return row.get("Floor");
+        }
+        return row.get("Provided");
+    }
+
+    private Integer getFloorNoAfterFloorText(String text) {
+        String lowerText = text.toLowerCase();
+        int floorIndex = lowerText.indexOf("floor");
+        if (floorIndex < 0) {
+            return null;
+        }
+
+        StringBuilder digits = new StringBuilder();
+        for (int i = floorIndex + "floor".length(); i < text.length(); i++) {
+            char ch = text.charAt(i);
+            if (Character.isDigit(ch)) {
+                digits.append(ch);
+            } else if (digits.length() > 0) {
+                break;
+            }
+        }
+
+        if (digits.length() == 0) {
+            return null;
+        }
+
+        try {
+            return Integer.valueOf(digits.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private boolean isTypicalFloorLabel(String floorValue) {
+        return StringUtils.isNotBlank(floorValue)
+                && floorValue.toLowerCase().contains("typical floor");
+    }
+
+    private String formatFloorRange(List<Integer> floorNos) {
+        if (floorNos.size() == 1) {
+            return floorNos.get(0).toString();
+        }
+
+        Integer minFloorNo = floorNos.get(0);
+        Integer maxFloorNo = floorNos.get(0);
+        for (Integer floorNo : floorNos) {
+            if (floorNo < minFloorNo) {
+                minFloorNo = floorNo;
+            }
+            if (floorNo > maxFloorNo) {
+                maxFloorNo = floorNo;
+            }
+        }
+        return minFloorNo + " to " + maxFloorNo;
     }
 
     // -----------------------------------------------------------------------
@@ -727,7 +946,8 @@ public class PlanReportServiceV2 {
                             }
                         }
                         dcrReportFloorDetails = dcrReportFloorDetails.stream()
-                                .sorted(Comparator.comparing(DcrReportFloorDetail::getFloorNo))
+                                .sorted(Comparator.comparingInt(PlanReportServiceV2::getFloorSortOrder)
+                                        .thenComparing(DcrReportFloorDetail::getFloorNo, Comparator.nullsLast(String::compareTo)))
                                 .collect(Collectors.toList());
                         dcrReportBlockDetail.setDcrReportFloorDetails(dcrReportFloorDetails);
                     }
@@ -736,6 +956,37 @@ public class PlanReportServiceV2 {
             }
         }
         return dcrReportBlockDetails;
+    }
+
+    private static int getFloorSortOrder(DcrReportFloorDetail floorDetail) {
+        if (floorDetail == null || StringUtils.isBlank(floorDetail.getFloorNo())) {
+            return Integer.MAX_VALUE;
+        }
+
+        String floorNo = floorDetail.getFloorNo().trim();
+        if ("Terrace".equalsIgnoreCase(floorNo)) {
+            return Integer.MAX_VALUE;
+        }
+
+        StringBuilder numericPrefix = new StringBuilder();
+        for (int i = 0; i < floorNo.length(); i++) {
+            char ch = floorNo.charAt(i);
+            if (Character.isDigit(ch) || (i == 0 && ch == '-')) {
+                numericPrefix.append(ch);
+            } else {
+                break;
+            }
+        }
+
+        if (numericPrefix.length() == 0 || "-".contentEquals(numericPrefix)) {
+            return Integer.MAX_VALUE - 1;
+        }
+
+        try {
+            return Integer.parseInt(numericPrefix.toString());
+        } catch (NumberFormatException e) {
+            return Integer.MAX_VALUE - 1;
+        }
     }
 
     // -----------------------------------------------------------------------

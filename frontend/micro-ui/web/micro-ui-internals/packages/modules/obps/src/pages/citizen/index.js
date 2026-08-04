@@ -63,6 +63,12 @@ const OBPSBreadCrumbs = ({ location }) => {
       location.pathname.includes("obps/ocbpa/PB") ||
       location.pathname.includes("/obps/search/application");
 
+    const layoutinbox =
+      location.pathname.includes("obps/layout/application-overview") ||
+      location.pathname.includes("obps/layout/my-applications") ||
+      location.pathname.includes("obps/layout/response") ||
+      location.pathname.includes("/obps/my-applications/citizen-layout");
+
     breadcrumbs.push(
       <span key="home">
         <Link to="/digit-ui/citizen" style={{ textDecoration: "none", marginRight: "5px" }}>
@@ -81,7 +87,7 @@ const OBPSBreadCrumbs = ({ location }) => {
           >
             {t("OBAPS Home")}
           </Link>
-          {bpainbox && isUserRegistered && <span style={{ marginRight: "5px" }}>/</span>}
+          {(bpainbox || layoutinbox) && isUserRegistered && <span style={{ marginRight: "5px" }}>/</span>}
         </span>
       );
     }
@@ -93,6 +99,16 @@ const OBPSBreadCrumbs = ({ location }) => {
             {t("CS_COMMON_INBOX")}
           </Link>
           {/* {hasThirdBreadcrumb && <span style={{ marginRight: "5px" }}>/</span>} */}
+        </span>
+      );
+    }
+
+    if (layoutinbox && isUserRegistered) {
+      breadcrumbs.push(
+        <span key="layout-inbox">
+          <Link to="/digit-ui/citizen/obps/layout/my-applications" style={{ textDecoration: "none" }}>
+             {t("CS_COMMON_INBOX")}
+          </Link>
         </span>
       );
     }

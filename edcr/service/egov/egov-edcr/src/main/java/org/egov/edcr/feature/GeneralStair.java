@@ -411,23 +411,24 @@ public class GeneralStair extends FeatureProcess {
                         boolean isRiserProvided =
                                 riserHeight != null && riserHeight.compareTo(BigDecimal.ZERO) > 0;
                         BigDecimal minRiserHeight = getMinRiserHeight(mostRestrictiveOccupancyType);
+                        		
                         boolean isRiserHeightWithinLimit =
-                                riserHeight.compareTo(minRiserHeight) <= 0;
+                                riserHeight.compareTo(minRiserHeight) >= 0;
 
                         boolean isRiserHeightValid;
 
                         if (currentFloorNo < lastFloorNo) {
-                            // Mandatory floors (0 to N-2)
+                            // Mandatory floors: riser must be provided and within maximum limit
                             isRiserHeightValid =
                                     isRiserProvided && isRiserHeightWithinLimit;
                         } else {
-                            // Last floor (optional)
+                            // Last floor: riser is optional, but if provided it must be within limit
                             isRiserHeightValid =
                                     !isRiserProvided || isRiserHeightWithinLimit;
                         }
 
                         setReportOutputDetailsFloorStairWise(
-                                plan, GENERAL_STAIRS_RISER_HEIGHT_RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, MAXIMUM_HEIGHT_0_19.toString(),
+                                plan, GENERAL_STAIRS_RISER_HEIGHT_RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, minRiserHeight.toString(),
                                 riserHeight.toString(), isRiserHeightValid 
                                 		? Result.Accepted.getResultVal()
                                         : Result.Not_Accepted.getResultVal(), scrutinyDetail4

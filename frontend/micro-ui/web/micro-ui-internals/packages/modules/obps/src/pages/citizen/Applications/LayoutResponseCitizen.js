@@ -148,7 +148,7 @@ const LayoutResponseCitizen = (props) => {
               {layoutData?.applicationStatus === "INITIATED" ? (
                           <SubmitBar label={t("View Application")} onSubmit={() => handleDownloadPdf(true)} />
                         ) : (
-                          <SubmitBar label={t("Download Application")} onSubmit={() => handleDownloadPdf(false)} />
+                          <SubmitBar label={t("COMMON_DOWNLOAD")} onSubmit={() => handleDownloadPdf(false)} />
                         )}
             {(layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" || layoutData?.applicationStatus === "PENDINGSANCTIONPAYMENT") && <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />}
           </ActionBar>

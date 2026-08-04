@@ -211,12 +211,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   };
 
   useEffect(() => {
-    console.log("yes here");
-
     if (currentStepData?.propertyDetails) {
-      console.log("currentStepData", currentStepData);
-
+      const additionalDetailsRes = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails;
+      const findIncrementPeriodMonthsValues = incrementPeriodMonthsValues?.find((item) => item?.code == additionalDetailsRes?.incrementPeriodMonths);
       setValue("securityDeposit", currentStepData?.propertyDetails?.securityDeposit);
+      setValue("incrementPercentage", additionalDetailsRes?.incrementPercentage);
+      setValue("incrementPeriodMonths", findIncrementPeriodMonthsValues);
       const propertyDetails = currentStepData.propertyDetails;
 
       Object.keys(propertyDetails)?.forEach((key) => {
@@ -225,13 +225,18 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       });
 
       const findBuildingValue = rentANDLeaseArea?.rentAndLease?.Area?.find((item) => item?.code == propertyDetails?.areaCode);
-      const lastBillingPeriod = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails?.lastBillingPeriod;
-
-      console.log("findBuildingValue", findBuildingValue);
+      // const lastBillingPeriod = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails?.lastBillingPeriod;
 
       setValue("area", findBuildingValue);
       // setValue("lastBillingPeriod", currentStepData?.CreatedResponse?.AllotmentDetails[0]?.additionalDetails?.lastBillingPeriod);
-      setValue("lastBillingPeriod", lastBillingPeriod ? new Date(lastBillingPeriod).toISOString().split("T")[0] : "");
+      setValue(
+        "lastBillingPeriod",
+        additionalDetailsRes?.lastBillingPeriod ? new Date(additionalDetailsRes?.lastBillingPeriod).toISOString().split("T")[0] : ""
+      );
+      setValue(
+        "lastRentRevisedDate",
+        additionalDetailsRes?.lastRentRevisedDate ? new Date(additionalDetailsRes?.lastRentRevisedDate).toISOString().split("T")[0] : ""
+      );
 
       // Restore documentsData for persistence
       if (propertyDetails.arrearDoc) {

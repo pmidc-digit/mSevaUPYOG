@@ -75,7 +75,6 @@ public class Util {
     public LayerNames layerNames;
 
     
- // 1. Helper class for Layer Rules
     private static class LayerRule {
         Pattern pattern;
         int colorCode;
@@ -143,7 +142,9 @@ public class Util {
         LAYER_RULES.add(new LayerRule(".*WATER_CLOSET$", 89));
         LAYER_RULES.add(new LayerRule(".*DRINKING_WATER$", 90));
         LAYER_RULES.add(new LayerRule(".*TOILET_k$", 91));
-        LAYER_RULES.add(new LayerRule(".*TOILET_VENTILATION$", 92));
+        //LAYER_RULES.add(new LayerRule(".*TOILET_VENTILATION$", 92));
+        // --- TOILET VENTILATION ---
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_TOILET(?:_\\d+)?_VENTILATION$",92));
         LAYER_RULES.add(new LayerRule(".*CINEMA_k$", 150));
 
         // --- BASEMENT & PARKING ---

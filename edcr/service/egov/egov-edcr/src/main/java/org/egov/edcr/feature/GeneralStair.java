@@ -295,22 +295,6 @@ public class GeneralStair extends FeatureProcess {
                                 totalSteps = totalRisers.add(totalLandingWidth);
                                 LOG.info("total totalSteps :" + totalSteps);
                                 
-                                // Validate minimum number of risers
-                                if (totalSteps != null) {
-                                    BigDecimal minimumRisers = BigDecimal.valueOf(15);
-                                    if (mostRestrictiveOccupancyType != null
-                                            && mostRestrictiveOccupancyType.getSubtype() != null
-                                            && DxfFileConstants.A_R.equalsIgnoreCase(
-                                                    mostRestrictiveOccupancyType.getSubtype().getCode())) {
-                                        minimumRisers = BigDecimal.valueOf(12);
-                                    }
-
-                                    if (totalSteps.compareTo(minimumRisers) < 0) {
-                                        errors.put("Required Minimum no of risers is", minimumRisers.toPlainString());
-                                        plan.addErrors(errors);
-                                    }
-                                }
-
                                 validateFlight(plan, errors, block, scrutinyDetail2, scrutinyDetail3,
                                         scrutinyDetailRise, mostRestrictiveOccupancyType, floor,
                                         typicalFloorValues, generalStair, generalStairCount);
@@ -410,10 +394,11 @@ public class GeneralStair extends FeatureProcess {
 
                         boolean isRiserProvided =
                                 riserHeight != null && riserHeight.compareTo(BigDecimal.ZERO) > 0;
-                        BigDecimal minRiserHeight = getMinRiserHeight(mostRestrictiveOccupancyType);
                         		
+                        BigDecimal maxRiserHeight = getMinRiserHeight(mostRestrictiveOccupancyType); // Better rename this method/variable later
+
                         boolean isRiserHeightWithinLimit =
-                                riserHeight.compareTo(minRiserHeight) >= 0;
+                                riserHeight.compareTo(maxRiserHeight) <= 0;
 
                         boolean isRiserHeightValid;
 
@@ -428,7 +413,7 @@ public class GeneralStair extends FeatureProcess {
                         }
 
                         setReportOutputDetailsFloorStairWise(
-                                plan, GENERAL_STAIRS_RISER_HEIGHT_RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, minRiserHeight.toString(),
+                                plan, GENERAL_STAIRS_RISER_HEIGHT_RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, maxRiserHeight.toString(),
                                 riserHeight.toString(), isRiserHeightValid 
                                 		? Result.Accepted.getResultVal()
                                         : Result.Not_Accepted.getResultVal(), scrutinyDetail4
@@ -680,7 +665,7 @@ public class GeneralStair extends FeatureProcess {
                         if (noOfRises != null && noOfRises.compareTo(BigDecimal.ZERO) > 0) {
                             try {
                                 validateNoOfRises(plan, errors, block, scrutinyDetailRise, floor,
-                                        typicalFloorValues, generalStair, flight, noOfRises);
+                                        typicalFloorValues, generalStair, flight, noOfRises,mostRestrictiveOccupancyType);
                             } catch (ArithmeticException e) {
                                 LOG.info("Denominator is zero");
                             }
@@ -879,32 +864,58 @@ public class GeneralStair extends FeatureProcess {
       }
   }
 
-    private void validateNoOfRises(Plan plan, HashMap<String, String> errors, Block block,
-            ScrutinyDetail scrutinyDetail3, Floor floor, Map<String, Object> typicalFloorValues,
-            org.egov.common.entity.edcr.GeneralStair generalStair, Flight flight, BigDecimal noOfRises) {
-        boolean valid = false;
+	private void validateNoOfRises(Plan plan, HashMap<String, String> errors, Block block,
+			ScrutinyDetail scrutinyDetail3, Floor floor, Map<String, Object> typicalFloorValues,
+			org.egov.common.entity.edcr.GeneralStair generalStair, Flight flight, BigDecimal noOfRises,
+			OccupancyTypeHelper mostRestrictiveOccupancyType) {
+		boolean isTypicalRepetitiveFloor = Boolean.TRUE.equals(typicalFloorValues.get("isTypicalRepititiveFloor"));
 
-        if (!(Boolean) typicalFloorValues.get("isTypicalRepititiveFloor")) {
-            if (Util.roundOffTwoDecimal(noOfRises).compareTo(Util.roundOffTwoDecimal(BigDecimal.valueOf(12))) <= 0) {
-                valid = true;
-            }
+		if (isTypicalRepetitiveFloor) {
+			return;
+		}
 
-            String value = typicalFloorValues.get("typicalFloors") != null
-                    ? (String) typicalFloorValues.get("typicalFloors")
-                    : "" + floor.getNumber();
-            if (valid) {
-                setReportOutputDetailsFloorStairWise(plan, RULERISER, value,
-                        String.format(NO_OF_RISER_DESCRIPTION, generalStair.getNumber(), flight.getNumber()),
-                        EXPECTED_NO_OF_RISER,
-                        String.valueOf(noOfRises), Result.Accepted.getResultVal(), scrutinyDetail3);
-            } else {
-                setReportOutputDetailsFloorStairWise(plan, RULERISER, value,
-                        String.format(NO_OF_RISER_DESCRIPTION, generalStair.getNumber(), flight.getNumber()),
-                        EXPECTED_NO_OF_RISER,
-                        String.valueOf(noOfRises), Result.Not_Accepted.getResultVal(), scrutinyDetail3);
-            }
-        }
-    }
+		/*
+		 * Maximum allowed risers: A-R occupancy = 12 Other occupancies = 15
+		 */
+		BigDecimal maximumRisers = BigDecimal.valueOf(15);
+
+		if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getSubtype() != null
+				&& DxfFileConstants.A_R.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())) {
+
+			maximumRisers = BigDecimal.valueOf(12);
+		}
+
+		boolean isRiserProvided = noOfRises != null && noOfRises.compareTo(BigDecimal.ZERO) > 0;
+
+		/*
+		 * Valid when: noOfRises <= maximumRisers
+		 */
+		boolean isNoOfRisersValid = isRiserProvided
+				&& Util.roundOffTwoDecimal(noOfRises).compareTo(Util.roundOffTwoDecimal(maximumRisers)) <= 0;
+
+		String floorValue = typicalFloorValues.get("typicalFloors") != null
+				? String.valueOf(typicalFloorValues.get("typicalFloors"))
+				: String.valueOf(floor.getNumber());
+
+		if (!isNoOfRisersValid) {
+			String errorKey = String.format("Maximum number of risers exceeded for Floor %s, Stair %s, Flight %s",
+					floorValue, generalStair != null ? generalStair.getNumber() : "",
+					flight != null ? flight.getNumber() : "");
+
+			String providedValue = noOfRises != null ? noOfRises.toPlainString() : "Not Provided";
+
+			errors.put(errorKey,
+					"Maximum permitted is " + maximumRisers.toPlainString() + ", but provided is " + providedValue);
+
+			plan.addErrors(errors);
+		}
+
+		setReportOutputDetailsFloorStairWise(plan, RULERISER, floorValue,
+				String.format(NO_OF_RISER_DESCRIPTION, generalStair.getNumber(), flight.getNumber()),
+				maximumRisers.toPlainString(), noOfRises != null ? noOfRises.toPlainString() : "0",
+				isNoOfRisersValid ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal(),
+				scrutinyDetail3);
+	}
 
     /*
      * private void setReportOutputDetails(Plan pl, String ruleNo, String ruleDesc, String expected, String actual, String status,

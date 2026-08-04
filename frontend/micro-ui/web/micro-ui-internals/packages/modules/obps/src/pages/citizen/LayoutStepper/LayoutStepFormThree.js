@@ -26,7 +26,8 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   )
 
   const currentStepDataNew = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
-  const applicantType = currentStepDataNew?.applicationDetails?.aplicantType?.code;
+  const primaryApplicant = currentStepDataNew?.applicants?.find((app) => app?.isPrimaryOwner) || currentStepDataNew?.applicants?.[0];
+  const applicantType = primaryApplicant?.aplicantType?.code;
 
   const [applicationNo, setApplicationNo] = useState("");
     // const [isVacant, setIsVacant] = useState(false);

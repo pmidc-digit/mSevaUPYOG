@@ -158,15 +158,7 @@ const NewFilterFormFieldsComponent = ({
       code: option.code,
       icon: "⌂",
     })),
-    {
-      key: "migrated-applications",
-      type: "migratedApplications",
-      label: "Migrated applications",
-      // subtitle: String(isMigratedApplications),
-      count: null,
-      code: isMigratedApplications,
-      icon: "◎",
-    },
+
     ...(statuses || []).map((status) => {
       // Include businessService in key if available to avoid deduplication
       const fallbackStatusId = status?.statusids?.[0] || status?.statusid;

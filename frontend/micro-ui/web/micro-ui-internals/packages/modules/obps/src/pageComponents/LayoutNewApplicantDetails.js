@@ -14,6 +14,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { UPDATE_LayoutNewApplication_FORM } from "../redux/actions/LayoutNewApplicationActions";
 import LayoutOwnerSearchModal from "./LayoutOwnerSearchModal";
+import { formatDate } from "../utils";
 
 const EditIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="#F47738">
@@ -330,7 +331,7 @@ const LayoutNewApplicantDetails = (_props) => {
   const isMultiple = ownerType?.code === "MULTIPLE";
 
   const activeOwners = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false");
-  const hideAddOwnerButton = isIndividual && activeOwners.length >= 1;
+  const hideAddOwnerButton = (isIndividual && activeOwners.length >= 1) || showModal;
 
   const tableColumns = [
     {
@@ -339,7 +340,7 @@ const LayoutNewApplicantDetails = (_props) => {
       Cell: ({ row }) => row.index + 1,
     },
     {
-      Header: t("APPLICANT NAME"),
+      Header: t("NAME"),
       accessor: "name",
       Cell: ({ value, row }) => (
         <span>
@@ -349,6 +350,15 @@ const LayoutNewApplicantDetails = (_props) => {
       ),
     },
     {
+      Header: t("IS FIRM"),
+      id: "isFirm",
+      Cell: ({ row }) => {
+        const appType = row.original?.aplicantType || row.original?.additionalDetails?.aplicantType;
+        const code = typeof appType === "string" ? appType : appType?.code || "";
+        return code.toUpperCase() === "FIRM" ? t("YES") : t("NO");
+      },
+    },
+    {
       Header: t("MOBILE NO"),
       accessor: "mobileNumber",
       Cell: ({ value }) => value || t("CS_NA"),
@@ -356,15 +366,15 @@ const LayoutNewApplicantDetails = (_props) => {
     {
       Header: t("EMAIL ID"),
       accessor: "emailId",
-      Cell: ({ value }) => value || t("CS_NA"),
+      Cell: ({ value }) => value ? <span style={{ wordBreak: "break-all" }}>{value}</span> : t("CS_NA"),
     },
     {
       Header: t("DOB"),
       accessor: "dob",
-      Cell: ({ value }) => value || t("CS_NA"),
+      Cell: ({ value }) => value ? formatDate(value) : t("CS_NA"),
     },
     {
-      Header: t("FATHER HUSBAND NAME"),
+      Header: t("GUARDIAN NAME"),
       accessor: "fatherOrHusbandName",
       Cell: ({ value }) => value || t("CS_NA"),
     },
@@ -443,20 +453,20 @@ const LayoutNewApplicantDetails = (_props) => {
             <CardSectionHeader className="card-section-header" style={{ marginBottom: "10px", fontSize: "16px" }}>
               {t("SELECTED OWNERS DETAILS")}
             </CardSectionHeader>
-            <StatusTable>
-              <Table
-                className="customTable table-border-style"
-                t={t}
-                data={activeOwners}
-                columns={tableColumns}
+              <StatusTable>
+                <Table
+                  className="customTable table-border-style"
+                  t={t}
+                  data={activeOwners}
+                  columns={tableColumns}
                 getCellProps={() => ({ style: {} })}
-                disableSort={true}
-                autoSort={false}
-                manualPagination={false}
-                isPaginationRequired={false}
-              />
-            </StatusTable>
-          </div>
+                  disableSort={true}
+                  autoSort={false}
+                  manualPagination={false}
+                  isPaginationRequired={false}
+                />
+              </StatusTable>
+            </div>
         )}
 
         {/* Validation Errors for Owners */}
@@ -492,20 +502,21 @@ const LayoutNewApplicantDetails = (_props) => {
             </div>
           </div>
         )}
-      </div>
 
-      {/* Owner Search Modal */}
-      {showModal && (
-        <LayoutOwnerSearchModal
-          closeModal={() => {
-            setShowModal(false);
-            setEditingOwner(null);
-          }}
-          onSelectUser={handleSelectUserFromModal}
-          initialMobileNumber={editingOwner?.mobileNumber}
-          editingOwner={editingOwner}
-        />
-      )}
+        {/* Owner Search Form */}
+        {showModal && (
+          <LayoutOwnerSearchModal
+            closeModal={() => {
+              setShowModal(false);
+              setEditingOwner(null);
+            }}
+            onSelectUser={handleSelectUserFromModal}
+            initialMobileNumber={editingOwner?.mobileNumber}
+            editingOwner={editingOwner}
+            isPrimaryOwner={editingOwner ? (editingOwner.isPrimaryOwner === true || editingOwner.isPrimaryOwner === "true") : (activeOwners.length === 0 || ownerType?.code === "INDIVIDUAL")}
+          />
+        )}
+      </div>
 
       {/* Toast Notification */}
       {showToast && (

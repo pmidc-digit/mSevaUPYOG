@@ -48,6 +48,7 @@
 package org.egov.edcr.feature;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -117,7 +118,8 @@ public class RoadReserve extends FeatureProcess {
 			if (roadReserves != null && !roadReserves.isEmpty()) {
 			    
 			    for (Road road : roadReserves) {
-			        if (road != null && road.getWidth() != null && road.getWidth().compareTo(BigDecimal.ZERO) > 0) {			        	
+			    	BigDecimal roadWidth = road.getWidth().setScale(2, RoundingMode.HALF_UP);
+			        if (road != null && roadWidth != null && roadWidth.compareTo(BigDecimal.ZERO) > 0) {			        	
 			        	String roadName = "";
 			            if (road.getName() != null) {
 			                String layerName = road.getName().toUpperCase();
@@ -144,7 +146,7 @@ public class RoadReserve extends FeatureProcess {
 			            roadWidthBuilder
 			                    .append(roadName)
 			                    .append("=")
-			                    .append(road.getWidth())
+			                    .append(roadWidth)
 			                    .append("m");
 			        }						 
 			        

@@ -201,7 +201,7 @@ export async function getBase64Img(fileStoreId, state) {
     }
     console.log("finalUrl", finalUrl);
 
-    const base64Image = signUrl ? await getBase64FromUrl(finalUrl) : baseUrl;
+    const base64Image = signUrl ? await getBase64FromUrl(finalUrl) : null;
 
     return base64Image;
   } catch (error) {

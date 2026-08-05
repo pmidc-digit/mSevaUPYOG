@@ -91,25 +91,59 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
   );
 };
 
-const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
+const DocumentLink = ({ fileStoreId, cluNumber, stateCode, t, label }) => {
   const [url, setUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUrl = async () => {
-      if (fileStoreId) {
+      let fId = fileStoreId;
+      const effectiveState = stateCode || Digit.ULBService.getStateId();
+      let fetchTenantId = effectiveState;
+
+      if (!fId && cluNumber) {
         try {
-          const result = await Digit.UploadServices.Filefetch([fileStoreId], stateCode);
+          const parts = String(cluNumber).split("-");
+          const searchTenantId = parts.length >= 4 && parts[3] ? `pb.${parts[3].toLowerCase()}` : effectiveState;
+          const searchRes = await Digit.OBPSService.CLUSearch({
+            filters: { applicationNo: cluNumber },
+            tenantId: searchTenantId,
+          });
+          const cluApp = searchRes?.Clu?.[0];
+          if (cluApp) {
+            fId = cluApp?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId ||
+                  cluApp?.additionalDetails?.sanctionLetterFilestoreId;
+            if (cluApp?.tenantId) {
+              fetchTenantId = cluApp.tenantId;
+            }
+          }
+        } catch (e) {
+          console.error("Error searching CLU for document:", e);
+        }
+      }
+
+      if (fId) {
+        try {
+          const result = await Digit.UploadServices.Filefetch([fId], fetchTenantId);
+          let fetchedUrl = "";
           if (result?.data?.fileStoreIds?.[0]?.url) {
-            setUrl(result.data.fileStoreIds[0].url);
+            fetchedUrl = result.data.fileStoreIds[0].url;
+          } else if (result?.data?.[fId]) {
+            fetchedUrl = result.data[fId];
+          }
+          if (fetchedUrl) {
+            setUrl(typeof fetchedUrl === "string" ? fetchedUrl.split(",")?.[0] : fetchedUrl);
           }
         } catch (error) {
           console.error("Error fetching document:", error);
         }
       }
+      setLoading(false);
     };
     fetchUrl();
-  }, [fileStoreId, stateCode]);
+  }, [fileStoreId, cluNumber, stateCode]);
 
+  if (loading) return <span>{t("LOADING") || "Loading..."}</span>;
   if (!url) return <span>{t("CS_NA") || "NA"}</span>;
 
   return <LinkButton label={t("View") || "View"} onClick={() => window.open(url, "_blank")} />;
@@ -737,15 +771,17 @@ const LayoutEmployeeApplicationOverview = () => {
       }
 
       if (response?.ResponseInfo?.status === "successful") {
-        if (filtData?.action === "CANCEL") {
-          setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
-          workflowDetails.revalidate();
-          setSelectedAction(null);
-          setShowModal(false);
-           setTimeout(() => {
-            window.location.href = "/digit-ui/employee/obps/layout/inbox";
-          }, 3000);
-        } else if (
+        // if (filtData?.action === "CANCEL") {
+        //   setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
+        //   workflowDetails.revalidate();
+        //   setSelectedAction(null);
+        //   setShowModal(false);
+        //    setTimeout(() => {
+        //     window.location.href = "/digit-ui/employee/obps/layout/inbox";
+        //   }, 3000);
+        // } else
+          if (
+          filtData?.action === "CANCEL" ||
           filtData?.action === "APPLY" ||
           filtData?.action === "APPROVE" ||
           filtData?.action === "RESUBMIT" ||
@@ -754,7 +790,8 @@ const LayoutEmployeeApplicationOverview = () => {
           filtData?.action === "SENDBACKTOPROFESSIONAL" ||
           filtData?.action === "REJECT" ||
           filtData?.action === "INTERNAL_QUERY" ||
-          filtData?.action === "OBSERVATION"
+          filtData?.action === "OBSERVATION" ||
+          filtData?.action === "SEND_FOR_INSPECTION_REPORT"
         ) {
           //console.log("We are calling employee response page");
           history.replace({
@@ -1100,26 +1137,23 @@ const LayoutEmployeeApplicationOverview = () => {
                 <React.Fragment>
                   {renderLabel(t("BPA_CLU_TYPE_LABEL"), detail?.cluType?.code || detail?.cluType)}
                   {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
-                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") && (
-                    <React.Fragment>
-                      {renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
-                      {Boolean(detail?.cluDocumentUpload) && (
-                        <Row
-                          label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
-                          text={
-                            <DocumentLink
-                              fileStoreId={
-                                typeof detail?.cluDocumentUpload === "string"
-                                  ? detail?.cluDocumentUpload
-                                  : (detail?.cluDocumentUpload?.fileStoreId || detail?.cluDocumentUpload?.filestoreId || detail?.cluDocumentUpload?.uuid)
-                              }
-                              stateCode={stateCode}
-                              t={t}
-                            />
+                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") && renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
+                  {(Boolean(detail?.cluDocumentUpload) || detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && (
+                    <Row
+                      label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
+                      text={
+                        <DocumentLink
+                          fileStoreId={
+                            typeof detail?.cluDocumentUpload === "string"
+                              ? detail?.cluDocumentUpload
+                              : (detail?.cluDocumentUpload?.fileStoreId || detail?.cluDocumentUpload?.filestoreId || detail?.cluDocumentUpload?.uuid)
                           }
+                          cluNumber={detail?.cluNumber}
+                          stateCode={stateCode}
+                          t={t}
                         />
-                      )}
-                    </React.Fragment>
+                      }
+                    />
                   )}
                   {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
                 </React.Fragment>
@@ -1281,7 +1315,7 @@ const LayoutEmployeeApplicationOverview = () => {
       {/* FIELD INSPECTION UPLOADED DOCUMENTS - Display when not in progress */}
       {applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
         <Card>
-           <CardSubHeader>{`FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
+           <CardSubHeader>{empName ? `FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}` : t("SITE_INPECTION_IMAGES")}</CardSubHeader>
           <StatusTable
             style={{
               display: "flex",
@@ -1304,7 +1338,7 @@ const LayoutEmployeeApplicationOverview = () => {
               ))}
           </StatusTable>
 
-          {geoLocations?.length > 0 && (
+          {applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && geoLocations?.length > 0 && (
             <Fragment>
               <CardSubHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSubHeader>
               <CustomLocationSearch position={geoLocations} />

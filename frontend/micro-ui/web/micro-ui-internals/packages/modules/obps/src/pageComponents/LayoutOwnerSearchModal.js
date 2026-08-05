@@ -47,7 +47,7 @@ const CloseBtn = (props) => {
   );
 };
 
-export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobileNumber, editingOwner }) => {
+export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobileNumber, editingOwner, isPrimaryOwner }) => {
   const { t } = useTranslation();
   const stateId = Digit.ULBService.getStateId();
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -341,13 +341,15 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
   const handleSaveFinalOwner = () => {
     const errs = {};
 
-    if (!aplicantType) {
-      errs.aplicantType = t("REQUIRED_FIELD");
-    }
+    if (isPrimaryOwner) {
+      if (!aplicantType) {
+        errs.aplicantType = t("REQUIRED_FIELD");
+      }
 
-    const isFirm = aplicantType?.code === "FIRM";
-    if (isFirm && (!authorisedPerson || !authorisedPerson.trim())) {
-      errs.authorisedPerson = t("REQUIRED_FIELD");
+      const isFirm = aplicantType?.code === "FIRM";
+      if (isFirm && (!authorisedPerson || !authorisedPerson.trim())) {
+        errs.authorisedPerson = t("REQUIRED_FIELD");
+      }
     }
 
     if (!photoUploadedFile) {
@@ -373,9 +375,11 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       return;
     }
 
+    const isFirm = isPrimaryOwner && aplicantType?.code === "FIRM";
+
     const finalUserObj = {
       ...selectedUser,
-      aplicantType: aplicantType,
+      aplicantType: isPrimaryOwner ? aplicantType : null,
       authorisedPerson: isFirm ? authorisedPerson.trim() : null,
       panNumber: panNumber.trim().toUpperCase(),
       pan: panNumber.trim().toUpperCase(),
@@ -387,7 +391,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
         ownerPhoto: photoUploadedFile,
         documentFile: documentUploadedFile,
         panDocument: panDocumentUploadedFile,
-        aplicantType: aplicantType,
+        aplicantType: isPrimaryOwner ? aplicantType : null,
         authorisedPerson: isFirm ? authorisedPerson.trim() : null,
       },
     };
@@ -450,19 +454,24 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
 
   return (
     <React.Fragment>
-      <Modal
-        headerBarMain={<h1 className="heading-m">{step === 2 ? t("OWNER ADDITIONAL DETAILS") : t("SEARCH OWNER DETAILS")}</h1>}
-        headerBarEnd={<CloseBtn onClick={closeModal} />}
-        formId="owner-search-modal"
-        popupStyles={{
-          width: "92%",
-          maxWidth: "1150px",
-          maxHeight: "90vh",
-          overflowY: "auto",
+      <div
+        id="owner-search-form-container"
+        style={{
+          border: "1px solid #d6d6d6",
           padding: "20px",
+          borderRadius: "4px",
+          background: "#fff",
+          marginTop: "20px",
+          marginBottom: "20px",
+          position: "relative"
         }}
-        hideSubmit={true}
       >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+          <h1 className="heading-m" style={{ margin: 0 }}>
+            {step === 2 ? t("OWNER ADDITIONAL DETAILS") : t("SEARCH OWNER DETAILS")}
+          </h1>
+          <CloseBtn onClick={closeModal} />
+        </div>
         {docLoader && <Loader />}
 
         {step === 1 && !showManualForm && (
@@ -711,23 +720,27 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             </div>
 
             {/* Applicant Type */}
-              <CardLabel className="card-label-smaller">
-                {`${t("CLU_OWNER_TYPE_LABEL")}`} <span className="requiredField">*</span>
-              </CardLabel>
-              <div className="field">
-                <Dropdown
-                  className="form-field"
-                  select={(e) => {
-                    setAplicantType(e);
-                    setErrors((prev) => ({ ...prev, aplicantType: "" }));
-                  }}
-                  selected={aplicantType}
-                  option={applicantTypeOptions}
-                  optionKey="name"
-                  t={t}
-                />
-              </div>
-            {errors?.aplicantType && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.aplicantType}</CardLabelError>}
+            {isPrimaryOwner && (
+              <React.Fragment>
+                <CardLabel className="card-label-smaller">
+                  {`${t("CLU_OWNER_TYPE_LABEL")}`} <span className="requiredField">*</span>
+                </CardLabel>
+                <div className="field">
+                  <Dropdown
+                    className="form-field"
+                    select={(e) => {
+                      setAplicantType(e);
+                      setErrors((prev) => ({ ...prev, aplicantType: "" }));
+                    }}
+                    selected={aplicantType}
+                    option={applicantTypeOptions}
+                    optionKey="name"
+                    t={t}
+                  />
+                </div>
+                {errors?.aplicantType && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.aplicantType}</CardLabelError>}
+              </React.Fragment>
+            )}
 
             {/* Authorised Person (for Firm) */}
             {aplicantType?.code === "FIRM" && (
@@ -871,7 +884,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             onClose={() => setShowToast(null)}
           />
         )}
-      </Modal>
+      </div>
     </React.Fragment>
   );
 };

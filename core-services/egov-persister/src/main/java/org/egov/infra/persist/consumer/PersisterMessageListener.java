@@ -45,7 +45,10 @@ public class PersisterMessageListener implements AcknowledgingMessageListener<St
 		try {
 			rcvData = objectMapper.writeValueAsString(data.value());
 			persistService.persist(data.topic(), rcvData);
-			acknowledgment.acknowledge();
+			log.info("Message persisted successfully for topic: {}, {}", data.topic(), acknowledgment != null ? acknowledgment.toString() : "null");
+			if (acknowledgment != null) {
+				acknowledgment.acknowledge();
+			}
 		} catch (JsonProcessingException e) {
 			log.error("Failed to serialize incoming message", e);
 		}

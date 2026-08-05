@@ -1119,3 +1119,11 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/ws-billscheduler/src/main/resources/db"
         image-name: "ws-billscheduler-db"
+
+    - name: "builds/upyog/municipal-services/sw-billscheduler"
+    build:
+      - work-dir: "municipal-services/sw-billscheduler"
+        image-name: "sw-billscheduler"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/sw-billscheduler/src/main/resources/db"
+        image-name: "sw-billscheduler-db"

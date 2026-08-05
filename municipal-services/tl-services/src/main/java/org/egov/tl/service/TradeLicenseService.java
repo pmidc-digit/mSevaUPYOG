@@ -355,7 +355,8 @@ public class TradeLicenseService {
             if ((license.getStatus() != null) && (license.getStatus().equalsIgnoreCase(endstates.get(i))
             		|| license.getStatus().equalsIgnoreCase(TLConstants.STATUS_BLACKLISTED)
             		|| license.getStatus().equalsIgnoreCase(TLConstants.STATUS_EXPIRED)
-            		|| license.getStatus().equalsIgnoreCase(TLConstants.STATUS_INACTIVE) )) {
+            		|| license.getStatus().equalsIgnoreCase(TLConstants.STATUS_INACTIVE)
+            		|| license.getStatus().equalsIgnoreCase(TLConstants.STATUS_CITIZEN_ACTION_REQUIRED) )) {
                 licensesToAddRoles.add(license);
             }
         }

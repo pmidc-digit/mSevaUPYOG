@@ -216,6 +216,21 @@ function LayoutSummary({ currentStepData: formData, t }) {
         </Card>
       </StatusTable>
 
+      {/* PROFESSIONAL DETAILS */}
+      {formData?.applicationDetails?.professionalName && (
+        <Card>
+          <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS")}</CardSubHeader>
+          <StatusTable>
+            {renderRow(t("BPA_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
+            {renderRow(t("BPA_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
+            {renderRow(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
+            {renderRow(t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"), formData?.applicationDetails?.professionalMobileNumber)}
+            {renderRow(t("BPA_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
+            {renderRow(t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL"), formatDate(formData?.applicationDetails?.professionalRegistrationValidity))}
+          </StatusTable>
+        </Card>
+      )}
+
       {/* OWNERS DETAILS AND DOCUMENTS */}
       {owners && owners.length > 0 && (
         <React.Fragment>
@@ -270,20 +285,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
         </React.Fragment>
       )}
 
-      {/* PROFESSIONAL DETAILS */}
-      {formData?.applicationDetails?.professionalName && (
-        <Card>
-          <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS")}</CardSubHeader>
-          <StatusTable>
-            {renderRow(t("BPA_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
-            {renderRow(t("BPA_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
-            {renderRow(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
-            {renderRow(t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"), formData?.applicationDetails?.professionalMobileNumber)}
-            {renderRow(t("BPA_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
-            {renderRow(t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL"), formatDate(formData?.applicationDetails?.professionalRegistrationValidity))}
-          </StatusTable>
-        </Card>
-      )}
+      
 
       {/* SITE DETAILS */}
       <Card>

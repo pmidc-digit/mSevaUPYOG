@@ -766,6 +766,7 @@ const LayoutApplicationOverview = () => {
       </Card>
 
       <Card>
+        <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
         <StatusTable>
           <Row label={t("BPA_APPLICATION_NUMBER_LABEL") || t("Application No")} text={id} />
           <Row label={t("Application Date")} text={applicationDetails?.Layout?.[0]?.auditDetails?.createdTime ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.auditDetails?.createdTime), "dd/MM/yyyy") : "N/A"} />
@@ -776,14 +777,33 @@ const LayoutApplicationOverview = () => {
         </StatusTable>
       </Card>
 
+      {/* -------------------- PROFESSIONAL DETAILS -------------------- */}
+      {displayData?.applicantDetails?.[0]?.professionalName &&
+        displayData?.applicantDetails?.map((detail, index) => (
+          <Card key={index}>
+            <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
+
+              <StatusTable>
+
+                <RenderRow label={t("NOC_PROFESSIONAL_NAME_LABEL")} value={detail?.professionalName} />
+                <RenderRow label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} value={detail?.professionalEmailId} />
+                <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
+                <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
+                <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
+                <RenderRow label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} value={formatDate(detail?.professionalRegistrationValidity)} />
+
+              </StatusTable>
+            
+          </Card>
+        ))}
+
 
       {/* -------------------- APPLICANTS/OWNERS DETAILS -------------------- */}
       {sortedOwners && sortedOwners.length > 0 && (
         <Card>
           <CardSubHeader>{t("Owners Details") || "Owners Details"}</CardSubHeader>
           {sortedOwners.map((applicant, index) => (
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-              <StatusTable>
+              <StatusTable key={index}>
 
                 {index === 0 && <RenderRow label={t(`CLU_OWNER_TYPE_LABEL`)} value={applicant?.additionalDetails?.aplicantType?.name} />}
                 {applicant?.additionalDetails?.aplicantType?.code === "FIRM" && <RenderRow label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} value={applicant?.additionalDetails?.authorisedPerson} />}
@@ -799,38 +819,20 @@ const LayoutApplicationOverview = () => {
                 <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
                 <Row label={t("BPA_PAN_DOCUMENT") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />
               </StatusTable>
-            </div>
+
           ))}
         </Card>
       )}
 
 
-      {/* -------------------- PROFESSIONAL DETAILS -------------------- */}
-      {displayData?.applicantDetails?.[0]?.professionalName &&
-        displayData?.applicantDetails?.map((detail, index) => (
-          <Card key={index}>
-            <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
-            <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-              <StatusTable>
-
-                <RenderRow label={t("NOC_PROFESSIONAL_NAME_LABEL")} value={detail?.professionalName} />
-                <RenderRow label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} value={detail?.professionalEmailId} />
-                <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
-                <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
-                <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
-                <RenderRow label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} value={formatDate(detail?.professionalRegistrationValidity)} />
-
-              </StatusTable>
-            </div>
-          </Card>
-        ))}
+      
 
       {/* -------------------- SITE DETAILS -------------------- */}
       <Card>
         <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
+          
+            <StatusTable key={index}>
               {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
               {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
                 <React.Fragment>
@@ -928,7 +930,7 @@ const LayoutApplicationOverview = () => {
               {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
 
-          </div>
+          
         ))}
       </Card>
 

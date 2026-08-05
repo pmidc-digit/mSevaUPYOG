@@ -112,13 +112,13 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   }, [showToast]);
 
   const handleViewAvailability = (ad, { startDate, endDate }) => {
-    const err = validateSchedule({ startDate, endDate }, getSceduleType);
-    if (err) {
-      setShowToast({ label: err, error: true });
-      return;
-    }
+    // const err = validateSchedule({ startDate, endDate }, getSceduleType);
+    // if (err) {
+    //   setShowToast({ label: err, error: true });
+    //   return;
+    // }
 
-    const locationName = location.find((loc) => loc.code === ad?.locationCode);
+    const locationName = location?.find((loc) => loc.code === ad?.locationCode);
     setSelectedAd({ ...ad, locationName, startDate, endDate });
     setDateRange({ startDate, endDate });
     setShowModal(true);
@@ -243,6 +243,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   optionKey="name"
                   selected={props.value}
                   select={(e) => {
+                    filterAds(e);
                     props.onChange(e);
                   }}
                 />
@@ -252,7 +253,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         </LabelFieldPair>
         {errors.siteId && <CardLabelError style={errorStyle}>{errors.siteId.message}</CardLabelError>}
 
-        <LabelFieldPair>
+        {/* <LabelFieldPair>
           <CardLabel>
             {t("Select Schedule Type")} <span className="mandatory-asterisk">*</span>
           </CardLabel>
@@ -276,9 +277,10 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             />
           </div>
         </LabelFieldPair>
-        {errors.scheduleType && <CardLabelError style={errorStyle}>{errors.scheduleType.message}</CardLabelError>}
+        {errors.scheduleType && <CardLabelError style={errorStyle}>{errors.scheduleType.message}</CardLabelError>} */}
 
-        {guidance && adsForLocation?.length > 0 && <div className="ads-guidance-box">⚠️ {guidance}</div>}
+        {/* {guidance && adsForLocation?.length > 0 && <div className="ads-guidance-box">⚠️ {guidance}</div>} */}
+
         {/* Cards grid with see more */}
         {adsForLocation?.length > 0 && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>

@@ -80,6 +80,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
           name: a?.name,
           mobileNo: a?.mobileNumber,
           emailId: a?.emailId,
+          alternateMobileNumber: a?.alternateMobileNumber,
           correspondenceAddress: {
             pinCode: a?.pincode,
             city: a?.city || "",
@@ -120,7 +121,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
             arrearDoc: currentStepData?.propertyDetails?.arrearDoc,
             lastRentRevisedDate: lastRentRevisedDate,
             incrementPeriodMonths: currentStepData?.propertyDetails?.incrementPeriodMonths?.code,
-            incrementPercentage: currentStepData?.propertyDetails?.incrementPercentage,
+            incrementPercentage: currentStepData?.propertyDetails?.incrementPercentage ? currentStepData?.propertyDetails?.incrementPercentage : 0,
             // arrearEndDate: currentStepData?.propertyDetails?.arrearEndDate
             //   ? new Date(currentStepData?.propertyDetails?.arrearEndDate).getTime()
             //   : null,
@@ -192,6 +193,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
 
   const handleMobileChange = async (value, index) => {
     if (!value || value.length < 10) return;
+
     triggerLoader(true);
     try {
       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
@@ -200,6 +202,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       setValue(`applicants.${index}.emailId`, user.emailId || "", { shouldValidate: true });
       setValue(`applicants.${index}.address`, user.permanentAddress || user?.correspondenceAddress || "", { shouldValidate: true });
       setValue(`applicants.${index}.pincode`, user.permanentPinCode || user?.correspondencePinCode || "", { shouldValidate: true });
+      setValue(`applicants.${index}.alternateMobileNumber`, user?.alternateMobileNumber || "", { shouldValidate: true });
     } catch (error) {
       console.error(error);
     } finally {
@@ -215,7 +218,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     if (ownershipType === "SINGLE") {
       // ensure exactly one applicant
       if (fields.length === 0) {
-        append({ mobileNumber: "", emailId: "", name: "", address: "", pincode: "" });
+        append({ mobileNumber: "", emailId: "", name: "", address: "", pincode: "", alternateMobileNumber: "" });
       } else if (fields.length > 1) {
         reset({ ownershipType: "SINGLE", applicants: [fields[0]] });
       }
@@ -227,8 +230,8 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
         reset({
           ownershipType: "MULTIPLE",
           applicants: [
-            { mobileNumber: "", alternateMobileNumber: "", emailId: "", name: "", address: "", pincode: "" },
-            { mobileNumber: "", alternateMobileNumber: "", emailId: "", name: "", address: "", pincode: "" },
+            { mobileNumber: "", alternateMobileNumber: "", emailId: "", name: "", address: "", pincode: "", alternateMobileNumber: "" },
+            { mobileNumber: "", alternateMobileNumber: "", emailId: "", name: "", address: "", pincode: "", alternateMobileNumber: "" },
           ],
         });
       }
@@ -238,11 +241,21 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
   useEffect(() => {
     const applicantsData = currentStepData?.applicantDetails?.applicants || [];
     const ownershipTypeData = currentStepData?.applicantDetails?.ownershipType || "";
+    const additionalDetailsRes = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails;
+
+    const updatedApplicants = applicantsData?.map((applicant, index) =>
+      index === 0
+        ? {
+            ...applicant,
+            alternateMobileNumber: additionalDetailsRes?.alternateMobileNumber || "",
+          }
+        : applicant
+    );
 
     if (Array.isArray(applicantsData) && applicantsData.length > 0) {
       reset({
         ownershipType: ownershipTypeData, // 👈 restore select box
-        applicants: applicantsData, // 👈 restore applicants
+        applicants: updatedApplicants, // 👈 restore applicants
       });
     }
   }, [currentStepData, reset]);
@@ -474,7 +487,9 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
           <SubmitBar
             label={<span>➕{t("RAL_ADD_APPLICANT")}</span>}
             className="ral-add-applicant-btn"
-            onSubmit={() => append({ mobileNumber: "", alternateMobileNumber: "", emailId: "", name: "", address: "", pincode: "" })}
+            onSubmit={() =>
+              append({ mobileNumber: "", alternateMobileNumber: "", emailId: "", name: "", address: "", pincode: "", alternateMobileNumber: "" })
+            }
           />
         </div>
       )}

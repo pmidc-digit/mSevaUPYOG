@@ -372,6 +372,13 @@ public class RampService extends FeatureProcess {
                             	                mapOfRampNumberAndSlopeValues.put("slope", actualRatio);
 
                             	                break;
+                            	            }else {
+                            	            	valid = false;
+
+                            	                mapOfRampNumberAndSlopeValues.put("daRampNumber",
+                            	                        daRamp.getNumber().toString());
+
+                            	                mapOfRampNumberAndSlopeValues.put("slope", actualRatio);
                             	            }
                             	        }
                             	    }
@@ -405,7 +412,7 @@ public class RampService extends FeatureProcess {
                         }
                     }
 
-                    if (block.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0) {
+                    //if (block.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0) {
                         OccupancyTypeHelper mostRestrictiveFarHelper = pl.getVirtualBuilding() != null
                                 ? pl.getVirtualBuilding().getMostRestrictiveFarHelper()
                                 : null;
@@ -551,7 +558,7 @@ public class RampService extends FeatureProcess {
                                                 if (valid) {
                                                 	setReportOutputDetailsFloorWiseWithDescription(
                                             	            pl,
-                                            	            SUBRULE_40,
+                                            	            SUBRULE_50_C_4_B,
                                             	            String.format(SUBRULE_50_C_4_B_DESCRIPTION,
                                             	                    mapOfRampNumberAndSlopeValues.get("rampNumber")),
                                             	            value,
@@ -563,7 +570,7 @@ public class RampService extends FeatureProcess {
                                             	} else {
                                             		setReportOutputDetailsFloorWiseWithDescription(
                                             	            pl,
-                                            	            SUBRULE_40,
+                                            	            SUBRULE_50_C_4_B,
                                             	            String.format(SUBRULE_50_C_4_B_DESCRIPTION, ""),
                                             	            value,
                                             	            expectedRatio,
@@ -578,7 +585,7 @@ public class RampService extends FeatureProcess {
                                 }
                             }
                         }
-                    }
+                    //}
                 }
             }
         }

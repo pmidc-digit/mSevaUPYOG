@@ -156,7 +156,7 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			Util.validateLayerColor(layer, Integer.parseInt(color), pl);
 	        
 			b.setHeight(height);
-			b.getBuilding().setBuildingHeight(height);
+			b.getBuilding().setBuildingHeight(height.setScale(2, RoundingMode.HALF_UP));
 			b.getBuilding().setDeclaredBuildingHeight(height);
 
 			String layerName1 = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + b.getNumber() + "_"
@@ -246,7 +246,7 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			pl.setPlot(plot);
 		} else {
 			plotArea = plotArea.replaceAll(digitsRegex, "");
-			BigDecimal numericValue = getNumericValue(plotArea, pl, DxfFileConstants.PLOT_AREA);
+			BigDecimal numericValue = getNumericValue(plotArea, pl, DxfFileConstants.PLOT_AREA).setScale(2, RoundingMode.HALF_UP);
 			if (numericValue != null) {
 				pi.setPlotArea(numericValue);
 				plot.setArea(numericValue);
@@ -773,13 +773,13 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 		if (StringUtils.isNotBlank(numberOfFloors))
 			pi.setNumberOfFloors(numberOfFloors);
 
-		String roadType = planInfoProperties.get(DxfFileConstants.ROAD_TYPE);
-		if (StringUtils.isNotBlank(roadType))
-			pi.setRoadType(roadType);
-		else {
-			pl.addError(DxfFileConstants.ROAD_TYPE,
-					getLocaleMessage(OBJECTNOTDEFINED, DxfFileConstants.ROAD_TYPE + " of PLAN_INFO layer"));
-		}
+//		String roadType = planInfoProperties.get(DxfFileConstants.ROAD_TYPE);
+//		if (StringUtils.isNotBlank(roadType))
+//			pi.setRoadType(roadType);
+//		else {
+//			pl.addError(DxfFileConstants.ROAD_TYPE,
+//					getLocaleMessage(OBJECTNOTDEFINED, DxfFileConstants.ROAD_TYPE + " of PLAN_INFO layer"));
+//		}
 		
 		String khasraNo = planInfoProperties.get(DxfFileConstants.KHASRA_NO);
 		if (StringUtils.isNotBlank(khasraNo)) {

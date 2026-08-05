@@ -2406,7 +2406,7 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
                 alignment: "left"
               },
               {
-                text: feeHistory[ft]?.[entryIndex]?.remarks || t("CS_NA"),
+                text: feeHistory[ft]?.[entryIndex]?.remarks || "",
                 fontSize: 8,
                 margin: [2, 4, 2, 4],
                 alignment: "left"

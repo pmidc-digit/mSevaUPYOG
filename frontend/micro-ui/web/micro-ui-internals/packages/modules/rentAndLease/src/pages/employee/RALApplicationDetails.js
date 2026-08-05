@@ -491,7 +491,8 @@ const RALApplicationDetails = () => {
                   label={t("Last Billing Period")}
                   text={rawAdditionalDetails?.lastBillingPeriod ? new Date(rawAdditionalDetails.lastBillingPeriod).toLocaleDateString("en-IN") : "-"}
                 />
-                {rawAdditionalDetails?.lastRentRevisedDate && (
+
+                {rawAdditionalDetails?.lastRentRevisedDate != null && (
                   <Row
                     label={t("Last Rent Revised Date")}
                     text={
@@ -499,8 +500,8 @@ const RALApplicationDetails = () => {
                     }
                   />
                 )}
-                {rawAdditionalDetails?.incrementPeriodMonths && (
-                  <Row label={t("Increment Period Months")} text={rawAdditionalDetails?.incrementPeriodMonths} />
+                {rawAdditionalDetails?.incrementPeriodMonths != null && (
+                  <Row label={t("Increment Period Months")} text={Number(rawAdditionalDetails.incrementPeriodMonths) || "-"} />
                 )}
                 {rawAdditionalDetails?.incrementPercentage && (
                   <Row label={t("Increment Percentage")} text={rawAdditionalDetails?.incrementPercentage} />

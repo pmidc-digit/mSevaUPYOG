@@ -130,7 +130,7 @@ public class SchemaDefinitionMigrationService {
                         	
                         	// Populate schemaCodeToSchemaJsonMap
                             schemaCodeToSchemaJsonMap.put(module + DOT_SEPARATOR + master, schemaNode);
-
+                            log.info("Schema generated for : " + module + DOT_SEPARATOR + master);
                             // Write generated schema definition to files with the name in module.master format
                             fileWriter.writeJsonToFile(schemaNode, module + DOT_SEPARATOR + master);
                         	
@@ -166,43 +166,31 @@ public class SchemaDefinitionMigrationService {
      * @param masterDataJsonArray
      * @return
      */
-    private ObjectNode getSchemaNode(JSONArray masterDataJsonArray){
-    	
-    	//Get Master Data Size
-    	Long dataSize = Long.valueOf(masterDataJsonArray.size());
-    	
-    	//Get All the master data Entries
-    	List<Entry<String, Object>> entryList = (List<Map.Entry<String, Object>>)masterDataJsonArray
-    			.stream()
-    			.map(data -> objectMapper.convertValue(data, HashMap.class))
-    			.flatMap(dataMap -> dataMap.entrySet().stream()).collect(Collectors.toList());
-    	    	
-    	//Get Master data that contains all the Unique keys
-    	Map<String, Object> dataMap = entryList.stream().distinct().filter(entry -> entry.getValue() != null)
-    			.collect(Collectors.toMap(Entry::getKey, Entry::getValue, (oldValue, newValue) -> newValue));
-    	
-    	entryList.stream().distinct()
-    	.filter(entry -> entry.getValue() == null)
-    	.map(entry -> entry.getKey()).collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-    	.entrySet().stream().filter(entry -> entry.getValue().equals(dataSize))
-    	.forEach(entry -> dataMap.put(entry.getKey(), null));
-    	
-    	//Get required fields for Master Data
-    	List<String> requiredList = entryList.stream()
-    			.map(Entry::getKey)
-    			.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-    			.entrySet().stream().filter(entry -> entry.getValue().equals(dataSize))
-    			.map(Entry::getKey).collect(Collectors.toList());
-    	
-    	 // Convert master data to JsonNode
-        JsonNode jsonNode = objectMapper.convertValue(dataMap, JsonNode.class);
+	private ObjectNode getSchemaNode(JSONArray masterDataJsonArray) {
+		// 1. Get Master Data Size
+		Long dataSize = Long.valueOf(masterDataJsonArray.size());
+		// 2. Convert all records in masterDataJsonArray into a List of JsonNodes
+		List<JsonNode> sampleNodes = new ArrayList<>();
+		for (Object record : masterDataJsonArray) {
+			sampleNodes.add(objectMapper.convertValue(record, JsonNode.class));
+		}
+		// 3. Collect top-level entries to determine required fields
+		List<Entry<String, Object>> entryList = (List<Map.Entry<String, Object>>) masterDataJsonArray.stream()
+				.map(data -> objectMapper.convertValue(data, HashMap.class))
+				.flatMap(dataMap -> dataMap.entrySet().stream()).collect(Collectors.toList());
+		
+		// A field is required only if it is present in 100% of master data records
+		List<String> requiredList = entryList.stream().map(Entry::getKey)
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream()
+				.filter(entry -> entry.getValue().equals(dataSize)).map(Entry::getKey).collect(Collectors.toList());
+		
+		// 4. Infer schema across ALL sample records (merges all fields automatically)
+		JsonNode schemaNode = inferrer.inferForSamples(sampleNodes);
+		Map<String, Object> schemaNodeMap = objectMapper.convertValue(schemaNode, Map.class);
 
-        // Feed the converted master data to jsonSchemaInferrer for generating schema
-        Map<String, Object> schemaNodeMap = objectMapper.convertValue(inferrer.inferForSample(jsonNode), Map.class);
-        schemaNodeMap.put("required", requiredList);
-        schemaNodeMap.put("x-unique", Arrays.asList("id"));
-                
-        return objectMapper.convertValue(schemaNodeMap, ObjectNode.class);
-    }
+		schemaNodeMap.put("required", requiredList);
+		schemaNodeMap.put("x-unique", Arrays.asList("id"));
+		return objectMapper.convertValue(schemaNodeMap, ObjectNode.class);
+	}
     
 }

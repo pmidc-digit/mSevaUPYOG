@@ -853,3 +853,18 @@ table tbody tr:nth-child(even) {
   width: 20px;
   height: 20px;
 }
+
+.obps-documents-table th:nth-child(1),
+.obps-documents-table td:nth-child(1) {
+  width: 8% !important;
+}
+
+.obps-documents-table th:nth-child(2),
+.obps-documents-table td:nth-child(2) {
+  width: 65% !important;
+}
+
+.obps-documents-table th:nth-child(3),
+.obps-documents-table td:nth-child(3) {
+  width: 28% !important;
+}

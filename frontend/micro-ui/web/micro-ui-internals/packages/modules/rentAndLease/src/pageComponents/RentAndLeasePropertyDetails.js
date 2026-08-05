@@ -164,7 +164,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
     // List only the fields you want to prefill
     const fieldsToPrefill = ["propertyName", "baseRent", "refundApplicableOnDiscontinuation", "penaltyType"];
-    setValue("securityDeposit", "0");
+    setValue("securityDeposit", property?.securityDeposit);
 
     setValue("selectedProperty", property);
     fieldsToPrefill?.forEach((field) => {
@@ -212,31 +212,31 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
   useEffect(() => {
     if (currentStepData?.propertyDetails) {
+      console.log("currentStepData", currentStepData);
+
       const additionalDetailsRes = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails;
       const findIncrementPeriodMonthsValues = incrementPeriodMonthsValues?.find((item) => item?.code == additionalDetailsRes?.incrementPeriodMonths);
       setValue("securityDeposit", currentStepData?.propertyDetails?.securityDeposit);
       setValue("incrementPercentage", additionalDetailsRes?.incrementPercentage);
       setValue("incrementPeriodMonths", findIncrementPeriodMonthsValues);
       const propertyDetails = currentStepData.propertyDetails;
+      const checkBillingPeriod = additionalDetailsRes?.lastBillingPeriod || propertyDetails?.lastBillingPeriod;
+      const checkRevisedDatePeriod = additionalDetailsRes?.lastRentRevisedDate || propertyDetails?.lastRentRevisedDate;
 
       Object.keys(propertyDetails)?.forEach((key) => {
         if (key === "securityDeposit" || key === "duration") return; // Skip this field
         setValue(key, propertyDetails[key], { shouldValidate: true });
       });
 
-      const findBuildingValue = rentANDLeaseArea?.rentAndLease?.Area?.find((item) => item?.code == propertyDetails?.areaCode);
+      const findBuildingValue = rentANDLeaseArea?.rentAndLease?.Area?.find(
+        (item) => item?.code == (propertyDetails?.areaCode || propertyDetails?.area?.code)
+      );
       // const lastBillingPeriod = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails?.lastBillingPeriod;
 
       setValue("area", findBuildingValue);
       // setValue("lastBillingPeriod", currentStepData?.CreatedResponse?.AllotmentDetails[0]?.additionalDetails?.lastBillingPeriod);
-      setValue(
-        "lastBillingPeriod",
-        additionalDetailsRes?.lastBillingPeriod ? new Date(additionalDetailsRes?.lastBillingPeriod).toISOString().split("T")[0] : ""
-      );
-      setValue(
-        "lastRentRevisedDate",
-        additionalDetailsRes?.lastRentRevisedDate ? new Date(additionalDetailsRes?.lastRentRevisedDate).toISOString().split("T")[0] : ""
-      );
+      setValue("lastBillingPeriod", checkBillingPeriod ? new Date(checkBillingPeriod).toISOString().split("T")[0] : "");
+      setValue("lastRentRevisedDate", checkRevisedDatePeriod ? new Date(checkRevisedDatePeriod).toISOString().split("T")[0] : "");
 
       // Restore documentsData for persistence
       if (propertyDetails.arrearDoc) {

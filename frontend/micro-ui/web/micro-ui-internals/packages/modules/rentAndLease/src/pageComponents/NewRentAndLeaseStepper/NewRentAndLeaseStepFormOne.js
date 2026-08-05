@@ -22,16 +22,13 @@ const NewRentAndLeaseStepFormOne = ({ config, onGoNext, onBackClick }) => {
     onBackClick(config.key, data);
   }
 
-
-
   return (
     <React.Fragment>
       <div className="employeeCard">
-        <RentAndLeasePropertyDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} config={config}/>
+        <RentAndLeasePropertyDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} config={config} />
       </div>
     </React.Fragment>
   );
 };
 
 export default NewRentAndLeaseStepFormOne;
-

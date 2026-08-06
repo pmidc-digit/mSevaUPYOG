@@ -802,6 +802,7 @@ const LayoutApplicationOverview = () => {
         <Card>
           <CardSubHeader>{t("Owners Details") || "Owners Details"}</CardSubHeader>
           {sortedOwners.map((applicant, index) => (
+            <div key={index} style={{ marginBottom: "20px" }}>
               <StatusTable key={index}>
 
                 {index === 0 && <RenderRow label={t(`CLU_OWNER_TYPE_LABEL`)} value={applicant?.additionalDetails?.aplicantType?.name} />}
@@ -818,7 +819,7 @@ const LayoutApplicationOverview = () => {
                 <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
                 <Row label={t("BPA_PAN_DOCUMENT") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />
               </StatusTable>
-
+            </div>
           ))}
         </Card>
       )}
@@ -932,6 +933,16 @@ const LayoutApplicationOverview = () => {
           
         ))}
       </Card>
+
+      {/* -------------------- SPECIFICATIONS -------------------- */}
+            <Card>
+              <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
+               {displayData?.siteDetails?.map((detail, index) => (
+                   <StatusTable key={index}>
+                     {renderLabel(t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL"), detail?.specificationPlotArea)}
+                  </StatusTable>
+                        ))}
+            </Card>
   
 
       

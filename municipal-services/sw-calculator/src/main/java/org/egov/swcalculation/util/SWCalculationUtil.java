@@ -119,7 +119,10 @@ public class SWCalculationUtil {
 			url = new StringBuilder().append(configurations.getBillingServiceHost())
 					.append(configurations.getDemandSearchEndPoint()).append(SWCalculationConstant.URL_PARAMS_SEPARATER)
 					.append(SWCalculationConstant.TENANT_ID_FIELD_FOR_SEARCH_URL).append(getBillCriteria.getTenantId())
-					.append(SWCalculationConstant.SEPARATER)
+                    .append(SWCalculationConstant.SEPARATER)
+                    .append(SWCalculationConstant.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
+                    .append(getBillCriteria.getBusinessService())
+                    .append(SWCalculationConstant.SEPARATER)
 					.append(SWCalculationConstant.CONSUMER_CODE_SEARCH_FIELD_NAME)
 					.append(getBillCriteria.getConnectionId()).append(SWCalculationConstant.SW_CONSUMER_CODE_SEPARATOR)
 					.append(getBillCriteria.getConnectionNumber());

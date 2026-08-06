@@ -8,6 +8,7 @@ import Body from "./atoms/Body";
 import BreadCrumb from "./atoms/BreadCrumb";
 import BreakLine from "./atoms/BreakLine";
 import ButtonSelector from "./atoms/ButtonSelector";
+import MarqueeBanner from "./atoms/MarqueeBanner";
 import Card from "./atoms/Card";
 import CardCaption from "./atoms/CardCaption";
 import CardHeader from "./atoms/CardHeader";
@@ -266,6 +267,7 @@ export {
   CardSectionSubText,
   SubmitBar,
   ButtonSelector,
+  MarqueeBanner,
   LinkButton,
   StatusTable,
   Row,

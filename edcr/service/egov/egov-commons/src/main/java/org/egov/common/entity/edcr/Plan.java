@@ -195,7 +195,18 @@ public class Plan implements Serializable {
     
     private Map<String, Object> finalReportData;
     
-    public Map<String, Object> getFinalReportData() {
+    private List<Measurement> plotFrontageList = new ArrayList<>();
+    
+
+	public List<Measurement> getPlotFrontageList() {
+		return plotFrontageList;
+	}
+
+	public void setPlotFrontageList(List<Measurement> plotFrontageList) {
+		this.plotFrontageList = plotFrontageList;
+	}
+
+	public Map<String, Object> getFinalReportData() {
 		return finalReportData;
 	}
 

@@ -157,9 +157,9 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
     return <Loader />;
   }
 
-  if (!formData?.employeeType || !formData?.employeeType?.code) {
-    return null;
-  }
+  // if (!formData?.employeeType || !formData?.employeeType?.code) {
+  //   return null;
+  // }
 
   return (
     <div>

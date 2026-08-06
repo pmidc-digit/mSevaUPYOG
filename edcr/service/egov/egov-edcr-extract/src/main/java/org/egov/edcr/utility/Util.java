@@ -216,8 +216,13 @@ public class Util {
         // --- AC ROOM ---
         LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_AC_ROOM_\\d+$", 135));
 
+        // Unit-FA
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_UNITFA_\\d+_TOILET_\\d+_VENTILATION_\\d+$", 92));  
+        
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_UNITFA_\\d+_LIGHT_VENTILATION$", 121));
         
     }
+    
 
     public static int resolveLayerColor(String layerName) {
         try {

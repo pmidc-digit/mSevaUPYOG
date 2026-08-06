@@ -244,18 +244,40 @@ function LayoutSummary({ currentStepData: formData, t }) {
           <Card key={index}>
             <CardSubHeader>{cardHeader}</CardSubHeader>
             <StatusTable>
-              {renderRow(
-                owner?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME"),
-                owner?.name
-              )}
-              {isPrimary && renderRow(t("CLU_OWNER_TYPE_LABEL"), owner?.aplicantType?.name || owner?.aplicantType?.code || owner?.aplicantType)}
-              {owner?.aplicantType?.code === "FIRM" && renderRow(t("NEW_LAYOUT_FIRM_NAME_LABEL"), owner?.authorisedPerson || "N/A")}
-              {renderRow(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
-              {renderRow(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
-              {renderRow(t("BPA_APPLICANT_GENDER_LABEL"), owner?.gender?.code || owner?.gender?.value || owner?.gender)}
-              {renderRow(t("BPA_APPLICANT_DOB_LABEL"), formatDate(owner?.dob))}
-              {renderRow(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
-              {renderRow(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.permanentAddress || owner?.address)}
+              {renderRow(t("CLU_OWNER_TYPE_LABEL"), owners[0]?.aplicantType?.name || "")}
+              {renderRow(owners[0]?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME"), owners[0]?.name)}
+              {owners[0]?.aplicantType?.code === "FIRM" && renderRow(t("NEW_LAYOUT_FIRM_NAME_LABEL"), owners[0]?.authorisedPerson || "N/A")}
+              {renderRow(t("NOC_APPLICANT_EMAIL_LABEL"), owners[0]?.emailId)}
+              {renderRow(t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owners[0]?.fatherOrHusbandName)}
+              {renderRow(t("NOC_APPLICANT_MOBILE_NO_LABEL"), owners[0]?.mobileNumber)}
+              {renderRow(t("NOC_APPLICANT_DOB_LABEL"), formatDate(owners[0]?.dob))}
+              {renderRow(t("NOC_APPLICANT_GENDER_LABEL"), owners[0]?.gender?.code || owners[0]?.gender?.value || owners[0]?.gender)}
+              {renderRow(t("NOC_APPLICANT_ADDRESS_LABEL"), owners[0]?.permanentAddress)}
+
+              {/* Documents */}
+              <Row label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(0, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
+              <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(0, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
+              <Row label={t("BPA_PAN_DOCUMENT") || "PAN Document"} text={<DocumentLink fileStoreId={findOwnerDocument(0, "PANDOCUMENT")} stateCode={stateCode} t={t} />} />
+              {renderRow(t("BPA_PAN_NUMBER_LABEL"), formData?.applicationDetails?.panNumber)}
+            </StatusTable>
+          </Card>
+
+          {/* ADDITIONAL OWNERS */}
+          {owners.length > 1 && owners.slice(1).map((owner, index) => {
+            if (!owner?.status) return null;
+            const visibleIndex = activeApplicants.findIndex(a => a === owner);
+
+            return (
+              <Card key={index + 1}>
+                <CardSubHeader>{`${t("Owner") || "Owner"} ${visibleIndex + 2}`}</CardSubHeader>
+                <StatusTable>
+                  {renderRow(t("APPLICANT_NAME"), owner?.name)}
+                  {renderRow(t("NOC_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
+                  {renderRow(t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
+                  {renderRow(t("NOC_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
+                  {renderRow(t("NOC_APPLICANT_DOB_LABEL"), formatDate(owner?.dob))}
+                  {renderRow(t("NOC_APPLICANT_GENDER_LABEL"), owner?.gender?.code || owner?.gender?.value || owner?.gender)}
+                  {renderRow(t("NOC_APPLICANT_ADDRESS_LABEL"), owner?.permanentAddress || owner?.address)}
 
               {/* Documents */}
               <Row label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={photoFile} stateCode={stateCode} t={t} />} />
@@ -369,9 +391,9 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
       {/* SPECIFICATION DETAILS */}
       <Card>
-        <CardSubHeader>{t("BPA_SPECIFICATION_DETAILS")}</CardSubHeader>
+        <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
         <StatusTable>
-          {renderRow(t("BPA_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}
+          {renderRow(t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}
         </StatusTable>
       </Card>
 

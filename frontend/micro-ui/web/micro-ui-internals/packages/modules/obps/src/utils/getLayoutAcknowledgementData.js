@@ -271,7 +271,7 @@ const getSiteDetails = (appData, t) => {
 const getSpecificationDetails = (appData, t) => {
   const values = [
     {
-      title: t("NOC_PLOT_AREA_JAMA_BANDI_LABEL"),
+      title: t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL"),
       value: appData?.layoutDetails?.additionalDetails?.siteDetails?.specificationPlotArea || "N/A",
     },
     {

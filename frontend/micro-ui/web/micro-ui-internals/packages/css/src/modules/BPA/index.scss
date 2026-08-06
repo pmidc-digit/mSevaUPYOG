@@ -284,4 +284,111 @@
   padding-bottom: 12px;
   padding-left: 5px;
 }
-        
+ 
+.rich-textbox-wrapper {
+  width: 100%;
+}
+
+.rich-textbox-toolbar {
+  background: #f7f9fb;
+  border: 1px solid #e6edf3;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.rich-textbox-toolbar button {
+  background: transparent;
+  border: none;
+  padding: 6px 8px;
+  margin: 0 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  color: #2f3b45;
+  font-weight: 600;
+}
+
+.rich-textbox-toolbar button:hover {
+  background: rgba(47,59,69,0.06);
+}
+
+.rich-textbox-toolbar button:active {
+  background: rgba(47,59,69,0.12);
+}
+
+.rich-textbox-toolbar button[title="Bold"] {
+  width: 32px;
+  height: 32px;
+}
+
+.rich-textbox-toolbar button[title="Italic"] {
+  width: 32px;
+  height: 32px;
+}
+
+.rich-textbox-toolbar button[title="Underline"] {
+  width: 32px;
+  height: 32px;
+}
+
+.rich-textbox-textarea {
+  width: 100%;
+  border: 1px solid #e6edf3;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #222;
+}
+
+.rich-textbox-wrapper .rich-textbox-toolbar div {
+  color: #8592a0;
+}
+
+.investor-notice-container {
+  color: #d32f2f;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  padding: 10px 20px;
+}
+
+.investor-notice-container p {
+  margin-bottom: 16px;
+}
+
+.investor-notice-container .notice-salutation {
+  margin-bottom: 20px;
+}
+
+.investor-notice-container .notice-list {
+  list-style: disc !important;
+  padding-left: 20px !important;
+  margin: 16px 0 !important;
+}
+
+.investor-notice-container .notice-list li {
+  display: list-item !important;
+  margin-bottom: 8px;
+}
+
+.investor-notice-container .notice-link {
+  color: #0066cc;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.investor-notice-container .notice-link:hover {
+  color: #004499;
+}
+
+.investor-notice-container .notice-body-link {
+  margin-top: -8px;
+  margin-bottom: 20px;
+}
+
+.investor-notice-container .notice-footer {
+  margin-top: 24px;
+  line-height: 1.4;
+}

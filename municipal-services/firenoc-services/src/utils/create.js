@@ -1,4 +1,4 @@
-import { addIDGenId, uuidv1 } from "../utils";
+import { addIDGenId, getValidityYears, uuidv1 } from "../utils";
 import envVariables from "../envVariables";
 import get from "lodash/get";
 import userService from "../services/userService";
@@ -242,6 +242,7 @@ const createUser = async (requestInfo, owner, tenantId, method) => {
 const checkApproveRecord = async (fireNoc = {}, RequestInfo) => {
   if (fireNoc.fireNOCDetails.action == "APPROVE") {
     let fireNOCNumber = fireNoc.fireNOCNumber;
+    let validityYears = getValidityYears(fireNoc.fireNOCDetails.additionalDetail.validityYears);
     fireNoc.fireNOCNumber = fireNOCNumber
       ? fireNOCNumber
       : await addIDGenId(RequestInfo, [
@@ -253,7 +254,7 @@ const checkApproveRecord = async (fireNoc = {}, RequestInfo) => {
       ]);
     fireNoc.fireNOCDetails.validFrom = new Date().getTime();
     let validTo = new Date();
-    validTo.setFullYear(validTo.getFullYear() + 1);
+    validTo.setFullYear(validTo.getFullYear() + validityYears);
     validTo.setDate(validTo.getDate() - 1);
     fireNoc.fireNOCDetails.validTo = validTo.getTime();
     fireNoc.fireNOCDetails.issuedDate = new Date().getTime();

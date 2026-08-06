@@ -122,31 +122,31 @@ public class ParkingExtract extends FeatureExtract {
 
             }
 
-            String hallLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
-                    + layerNames.getLayerName("LAYER_NAME_UNITFA_HALL") + "_" + "\\d";
-            List<String> layerNames1 = Util.getLayerNamesLike(pl.getDoc(), hallLayer);
-            for (String s : layerNames1) {
+//            String hallLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
+//                    + layerNames.getLayerName("LAYER_NAME_UNITFA_HALL") + "_" + "\\d";
+//            List<String> layerNames1 = Util.getLayerNamesLike(pl.getDoc(), hallLayer);
+//            for (String s : layerNames1) {
+//
+//                List<DXFLWPolyline> hallPolylines = Util.getPolyLinesByLayer(pl.getDoc(), s);
+//                for (DXFLWPolyline pline : hallPolylines) {
+//                    MeasurementDetail m = new MeasurementDetail(pline, true);
+//                    Hall hall = new Hall();
+//                    hall.setNumber(pline.getLayerName().substring(pline.getLayerName().length() - 1));
+//                    hall.setArea(m.getArea());
+//                    hall.setLength(m.getLength());
+//                    hall.setWidth(m.getWidth());
+//                    hall.setHeight(m.getHeight());
+//                    hall.setMinimumSide(m.getMinimumSide());
+//                    block.getHallAreas().add(hall);
+//                }
+//            }
 
-                List<DXFLWPolyline> hallPolylines = Util.getPolyLinesByLayer(pl.getDoc(), s);
-                for (DXFLWPolyline pline : hallPolylines) {
-                    MeasurementDetail m = new MeasurementDetail(pline, true);
-                    Hall hall = new Hall();
-                    hall.setNumber(pline.getLayerName().substring(pline.getLayerName().length() - 1));
-                    hall.setArea(m.getArea());
-                    hall.setLength(m.getLength());
-                    hall.setWidth(m.getWidth());
-                    hall.setHeight(m.getHeight());
-                    hall.setMinimumSide(m.getMinimumSide());
-                    block.getHallAreas().add(hall);
-                }
-            }
-
-            String dinningLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
-                    + layerNames.getLayerName("LAYER_NAME_UNITFA_DINING") + "_" + "\\d";
-            List<String> layerNames2 = Util.getLayerNamesLike(pl.getDoc(), dinningLayer);
-            for (String s : layerNames2)
-                Util.getPolyLinesByLayer(pl.getDoc(), s).forEach(
-                        dinningPolyline -> block.getDiningSpaces().add(new MeasurementDetail(dinningPolyline, true)));
+//            String dinningLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
+//                    + layerNames.getLayerName("LAYER_NAME_UNITFA_DINING") + "_" + "\\d";
+//            List<String> layerNames2 = Util.getLayerNamesLike(pl.getDoc(), dinningLayer);
+//            for (String s : layerNames2)
+//                Util.getPolyLinesByLayer(pl.getDoc(), s).forEach(
+//                        dinningPolyline -> block.getDiningSpaces().add(new MeasurementDetail(dinningPolyline, true)));
         }
 
         Util.getPolyLinesByLayer(pl.getDoc(), layerNames.getLayerName("LAYER_NAME_LOADING_UNLOADING"))

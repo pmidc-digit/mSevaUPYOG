@@ -290,7 +290,7 @@ public class Ventilation extends FeatureProcess {
 	            }
 	        }
 
-	        // ✅ Add scrutiny details only if filled
+	        //Add scrutiny details only if filled
 	        if (!scrutinyDetail.getDetail().isEmpty()) {
 	            pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 	        }

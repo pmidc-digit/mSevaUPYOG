@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -369,7 +371,7 @@ public class PlanReportServiceV2 {
         // ---- Scrutiny details ----
         List<ScrutinyDetail> allDetails = new ArrayList<>();
         if (plan.getReportOutput() != null && plan.getReportOutput().getScrutinyDetails() != null) {
-            allDetails = plan.getReportOutput().getScrutinyDetails();
+            allDetails = getDistinctScrutinyDetails(plan.getReportOutput().getScrutinyDetails());
         }
         normalizeTypicalFloorDetails(allDetails, plan);
 
@@ -484,6 +486,21 @@ public class PlanReportServiceV2 {
         return overallSummaryDetails;
     }
 
+    private List<ScrutinyDetail> getDistinctScrutinyDetails(List<ScrutinyDetail> scrutinyDetails) {
+        if (CollectionUtils.isEmpty(scrutinyDetails)) {
+            return new ArrayList<>();
+        }
+
+        Set<ScrutinyDetail> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        List<ScrutinyDetail> distinctDetails = new ArrayList<>();
+        for (ScrutinyDetail scrutinyDetail : scrutinyDetails) {
+            if (scrutinyDetail != null && seen.add(scrutinyDetail)) {
+                distinctDetails.add(scrutinyDetail);
+            }
+        }
+        return distinctDetails;
+    }
+
     private void normalizeTypicalFloorDetails(List<ScrutinyDetail> scrutinyDetails, Plan plan) {
         if (CollectionUtils.isEmpty(scrutinyDetails) || plan == null || CollectionUtils.isEmpty(plan.getBlocks())) {
             return;
@@ -502,6 +519,7 @@ public class PlanReportServiceV2 {
         for (ScrutinyDetail scrutinyDetail : scrutinyDetails) {
             if (scrutinyDetail.getKey() == null || !scrutinyDetail.getKey().startsWith("Block_")
                     || scrutinyDetail.getKey().contains("_UnitFA-")
+                    || scrutinyDetail.getKey().contains("_Dwelling Unit-")
                     || CollectionUtils.isEmpty(scrutinyDetail.getDetail())) {
                 continue;
             }
@@ -570,14 +588,14 @@ public class PlanReportServiceV2 {
             }
 
             if (!typicalRowsAdded && !modelFloorRows.isEmpty()) {
-                addTypicalRows(normalizedRows, modelFloorRows, typicalFloor);
+                addTypicalRows(normalizedRows, modelFloorRows, typicalFloor, scrutinyDetail.getKey());
                 typicalRowsAdded = true;
             }
             normalizedRows.add(row);
         }
 
         if (!typicalRowsAdded && !modelFloorRows.isEmpty()) {
-            addTypicalRows(normalizedRows, modelFloorRows, typicalFloor);
+            addTypicalRows(normalizedRows, modelFloorRows, typicalFloor, scrutinyDetail.getKey());
         }
 
         if (!normalizedRows.isEmpty()) {
@@ -587,8 +605,13 @@ public class PlanReportServiceV2 {
     }
 
     private void addTypicalRows(List<Map<String, String>> normalizedRows, List<Map<String, String>> modelFloorRows,
-            TypicalFloor typicalFloor) {
+            TypicalFloor typicalFloor, String scrutinyKey) {
         String typicalFloorLabel = "Typical Floor " + formatFloorRange(typicalFloor.getRepetitiveFloorNos());
+        if (isStairScrutinyKey(scrutinyKey)) {
+            normalizedRows.add(buildSingleTypicalStairRow(modelFloorRows, typicalFloor, typicalFloorLabel));
+            return;
+        }
+
         for (Map<String, String> modelRow : modelFloorRows) {
             Map<String, String> typicalRow = new HashMap<>(modelRow);
             if (typicalRow.containsKey("Provided")) {
@@ -605,6 +628,39 @@ public class PlanReportServiceV2 {
             }
             normalizedRows.add(typicalRow);
         }
+    }
+
+    private boolean isStairScrutinyKey(String scrutinyKey) {
+        return StringUtils.isNotBlank(scrutinyKey)
+                && (scrutinyKey.contains("_Fire Stair -") || scrutinyKey.contains("_General Stair -"));
+    }
+
+    private Map<String, String> buildSingleTypicalStairRow(List<Map<String, String>> modelFloorRows,
+            TypicalFloor typicalFloor, String typicalFloorLabel) {
+        Map<String, String> firstRow = modelFloorRows.get(0);
+        Map<String, String> typicalRow = new HashMap<>(firstRow);
+        typicalRow.put("Floor", typicalFloorLabel);
+        if (typicalRow.containsKey("Description")) {
+            typicalRow.put("Description", "Same as Floor " + typicalFloor.getModelFloorNo());
+        }
+        if (typicalRow.containsKey("Provided")) {
+            typicalRow.put("Provided", "Same as Floor " + typicalFloor.getModelFloorNo()
+                    + " (" + typicalFloorLabel + ")");
+        }
+        if (typicalRow.containsKey("Status")) {
+            typicalRow.put("Status", getTypicalStatus(modelFloorRows));
+        }
+        return typicalRow;
+    }
+
+    private String getTypicalStatus(List<Map<String, String>> modelFloorRows) {
+        for (Map<String, String> modelRow : modelFloorRows) {
+            if ("Not Accepted".equalsIgnoreCase(modelRow.get("Status"))
+                    || "Not Fulfilled".equalsIgnoreCase(modelRow.get("Status"))) {
+                return modelRow.get("Status");
+            }
+        }
+        return modelFloorRows.get(0).getOrDefault("Status", "");
     }
 
     private String getTypicalRowSignature(Map<String, String> row) {

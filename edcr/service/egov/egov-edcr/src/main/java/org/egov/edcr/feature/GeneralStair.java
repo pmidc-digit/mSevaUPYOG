@@ -936,7 +936,9 @@ public class GeneralStair extends FeatureProcess {
         details.put(PROVIDED, actual);
         details.put(STATUS, status);
         scrutinyDetail.getDetail().add(details);
-        pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+        if (!pl.getReportOutput().getScrutinyDetails().contains(scrutinyDetail)) {
+            pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+        }
     }
 
     

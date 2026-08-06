@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
-import { LoginIcon, Toast, Dropdown } from "@mseva/digit-ui-react-components";
+import { LoginIcon, Toast, Dropdown, MarqueeBanner } from "@mseva/digit-ui-react-components";
 import LanguageSelect from "../NewLogin/NewLanguageSelect";
 import LocationSelect from "../NewLogin/NewLocationSelect";
 import RegistrationForm from "./NewRegistrationForm";
@@ -173,6 +173,25 @@ const NewRegistration = ({ stateCode }) => {
   };
 
   return (
+    <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    width: "100%",
+  }}
+>
+  <div
+  style={{
+    position: "fixed", // or absolute
+    top: 0,
+    left: 0,
+    width: "100vw",
+    zIndex: 9999,
+  }}
+>
+  <MarqueeBanner />
+</div>
+
     <div className="login-page-cover">
       <div className="login-container">
         {/* Left Panel - Same Hero Section as Login */}
@@ -276,6 +295,7 @@ const NewRegistration = ({ stateCode }) => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

@@ -139,3 +139,9 @@ export const addQueryArg = (url, queries = []) => {
     return url;
   }
 };
+export const getValidityYears = (validityYearValue) => {
+  if (!validityYearValue || validityYearValue === 'NA' || validityYearValue === '') {
+    return 1;
+  }
+  return validityYearValue;
+};

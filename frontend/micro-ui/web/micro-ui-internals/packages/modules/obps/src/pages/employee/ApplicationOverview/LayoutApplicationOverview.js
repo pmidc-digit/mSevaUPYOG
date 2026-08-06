@@ -33,7 +33,7 @@ import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledg
 import LayoutDocumentView from "../../citizen/Applications/LayoutDocumentView";
 import { Loader } from "../../../config/Loader";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
-import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspection";
+import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
@@ -1238,7 +1238,7 @@ const LayoutEmployeeApplicationOverview = () => {
         {displayData?.siteDetails?.map((detail, index) => (
          
             <StatusTable key={index}>
-              <RenderRow label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} value={detail?.specificationPlotArea} />
+              <RenderRow label={t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL")} value={detail?.specificationPlotArea} />
               <RenderRow
                 label={t("NOC_BUILDING_CATEGORY_LABEL")}
                 value={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory}

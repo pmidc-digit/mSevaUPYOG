@@ -796,7 +796,9 @@ public class FireStair extends FeatureProcess {
         details.put(PROVIDED, actual);
         details.put(STATUS, status);
         scrutinyDetail.getDetail().add(details);
-        pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+        if (!pl.getReportOutput().getScrutinyDetails().contains(scrutinyDetail)) {
+            pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+        }
     }
 
     private void setReportOutputDetailsBltUp(Plan pl, String ruleNo, String floor, String description, String actual,
@@ -808,7 +810,9 @@ public class FireStair extends FeatureProcess {
         details.put(PROVIDED, actual);
         details.put(STATUS, status);
         scrutinyDetail.getDetail().add(details);
-        pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+        if (!pl.getReportOutput().getScrutinyDetails().contains(scrutinyDetail)) {
+            pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+        }
     }
 
     

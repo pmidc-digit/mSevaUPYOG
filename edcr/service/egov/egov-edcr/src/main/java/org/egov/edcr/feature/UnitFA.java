@@ -75,7 +75,7 @@ public class UnitFA extends FeatureProcess {
     private static final BigDecimal MIN_DOOR_WIDTH = BigDecimal.valueOf(1.0);
     private static final BigDecimal MIN_NON_HABITATIONAL_DOOR_HEIGHT = BigDecimal.valueOf(2.0);
     private static final BigDecimal MIN_NON_HABITATIONAL_DOOR_WIDTH = BigDecimal.valueOf(0.76);
-    private static final BigDecimal VENTILATION_PERCENTAGE = BigDecimal.valueOf(20);
+    private static final BigDecimal VENTILATION_PERCENTAGE = BigDecimal.valueOf(10);
 
     // Light & Ventilation percentage thresholds (mirrors the floor-level
     // Common/Regular-Room ventilation logic), applied against the unit's
@@ -125,9 +125,9 @@ public class UnitFA extends FeatureProcess {
 
                                     // 1. Add Unit Floor Area Report Data
                                     ReportData unitFaData = new ReportData(
-                                            "Block_" + block.getNumber() + "_UnitFA-Area",
+                                            "Block_" + block.getNumber() + "_Dwelling Unit-Area",
                                             RULE_NO_VAL,
-                                            "Unit Floor Area (unitFA)",
+                                            "Unit Floor Area (Dwelling Unit)",
                                             floorLabel,
                                             unitIdentifier,
                                             "Area = " + unitFaArea + DcrConstants.SQMTRS,
@@ -292,7 +292,7 @@ public class UnitFA extends FeatureProcess {
                         roomHeightVal.toPlainString());
 
                 ReportData roomData = new ReportData(
-                        "Block_" + block.getNumber() + "_UnitFA-Rooms",
+                        "Block_" + block.getNumber() + "_Dwelling Unit-Rooms",
                         RULE_NO_VAL,
                         "Minimum Area, Width & Height of Room",
                         floorNo,
@@ -371,7 +371,7 @@ public class UnitFA extends FeatureProcess {
                     kitchenHeightVal.compareTo(BigDecimal.ZERO) > 0 ? kitchenHeightVal.toPlainString() : "N/A");
 
             ReportData kitchenData = new ReportData(
-                    "Block_" + block.getNumber() + "_UnitFA-Kitchens",
+                    "Block_" + block.getNumber() + "_Dwelling Unit-Kitchens",
                     RULE_NO_VAL,
                     "Minimum Area, Width & Height of Kitchen",
                     floorNo,
@@ -460,7 +460,7 @@ public class UnitFA extends FeatureProcess {
                         roomHeightVal.toPlainString());
 
                 ReportData habRoomData = new ReportData(
-                        "Block_" + block.getNumber() + "_UnitFA-HabitationRooms",
+                        "Block_" + block.getNumber() + "_Dwelling Unit-HabitationRooms",
                         RULE_NO_VAL,
                         "Minimum Area, Width & Height of Habitation Room",
                         floorNo,
@@ -539,7 +539,7 @@ public class UnitFA extends FeatureProcess {
                         roomHeightVal.compareTo(BigDecimal.ZERO) > 0 ? roomHeightVal.toPlainString() : "N/A");
 
                 ReportData acRoomData = new ReportData(
-                        "Block_" + block.getNumber() + "_UnitFA-AcRooms",
+                        "Block_" + block.getNumber() + "_Dwelling Unit-AcRooms",
                         RULE_NO_VAL,
                         "Minimum Area, Width & Height of AC Room",
                         floorNo,
@@ -578,7 +578,7 @@ public class UnitFA extends FeatureProcess {
             String providedString = String.format("Area = %s m²", area.toPlainString());
 
             ReportData hallData = new ReportData(
-                    "Block_" + block.getNumber() + "_UnitFA-Halls",
+                    "Block_" + block.getNumber() + "_Dwelling Unit-Halls",
                     RULE_NO_VAL,
                     "Minimum Area of Hall",
                     floorNo,
@@ -624,7 +624,7 @@ public class UnitFA extends FeatureProcess {
             String providedString = String.format("Area = %s m², Width = %s m", area.toPlainString(), width.toPlainString());
 
             ReportData bathData = new ReportData(
-                    "Block_" + block.getNumber() + "_UnitFA-Bathroom",
+                    "Block_" + block.getNumber() + "_Dwelling Unit-Bathroom",
                     RULE_NO_VAL,
                     "Minimum Area & Width of Bathroom",
                     floorNo,
@@ -676,7 +676,7 @@ public class UnitFA extends FeatureProcess {
                 String providedString = String.format("Area = %s m², Width = %s m", area.toPlainString(), width.toPlainString());
 
                 ReportData storeData = new ReportData(
-                        "Block_" + block.getNumber() + "_UnitFA-StoreRooms",
+                        "Block_" + block.getNumber() + "_Dwelling Unit-StoreRooms",
                         RULE_NO_VAL,
                         "Minimum Area & Width of Store Room",
                         floorNo,
@@ -739,7 +739,7 @@ public class UnitFA extends FeatureProcess {
                         area.toPlainString(), width.toPlainString(), ventilationHeight.toPlainString());
 
                 ReportData toiletData = new ReportData(
-                        "Block_" + block.getNumber() + "_UnitFA-Toilets",
+                        "Block_" + block.getNumber() + "_Dwelling Unit-Toilets",
                         RULE_NO_VAL,
                         "Minimum Area, Width & Ventilation of Toilet",
                         floorNo,
@@ -777,7 +777,7 @@ public class UnitFA extends FeatureProcess {
             String providedString = "Width = " + width.toPlainString() + " m";
 
             ReportData doorData = new ReportData(
-                    "Block_" + block.getNumber() + "_UnitFA-Doors",
+                    "Block_" + block.getNumber() + "_Dwelling Unit-Doors",
                     RULE_NO_VAL,
                     "Minimum Door Width",
                     floorNo,
@@ -819,7 +819,7 @@ public class UnitFA extends FeatureProcess {
             String providedString = String.format("Height = %s m, Width = %s m", height.toPlainString(), width.toPlainString());
 
             ReportData doorData = new ReportData(
-                    "Block_" + block.getNumber() + "_UnitFA-NonHabitationalDoors",
+                    "Block_" + block.getNumber() + "_Dwelling Unit-NonHabitationalDoors",
                     RULE_NO_VAL,
                     "Minimum Non-Habitational Door Height & Width",
                     floorNo,
@@ -857,7 +857,7 @@ public class UnitFA extends FeatureProcess {
             String providedString = String.format("Height = %s m, Width = %s m", height.toPlainString(), width.toPlainString());
 
             ReportData windowData = new ReportData(
-                    "Block_" + block.getNumber() + "_UnitFA-Windows",
+                    "Block_" + block.getNumber() + "_Dwelling Unit-Windows",
                     RULE_NO_VAL,
                     "Window",
                     floorNo,
@@ -939,7 +939,7 @@ public class UnitFA extends FeatureProcess {
             String roomLabel = room.getNumber() != null ? "Room " + room.getNumber() : "Room";
 
             ReportData ventilationData = new ReportData(
-                    "Block_" + block.getNumber() + "_UnitFA-RoomVentilation",
+                    "Block_" + block.getNumber() + "_Dwelling Unit-RoomVentilation",
                     RULE_NO_VAL,
                     "Room Wise Ventilation (Doors and Windows)",
                     floorNo,
@@ -986,7 +986,7 @@ public class UnitFA extends FeatureProcess {
         String providedString = "Ventilation Area = " + totalVentilationArea.toPlainString() + " m²";
 
         ReportData ventData = new ReportData(
-                "Block_" + block.getNumber() + "_UnitFA-GeneralVentilation",
+                "Block_" + block.getNumber() + "_Dwelling Unit-GeneralVentilation",
                 RULE_NO_VAL,
                 "Light and Ventilation (Unit)",
                 floorNo,
@@ -1048,7 +1048,7 @@ public class UnitFA extends FeatureProcess {
             String providedString = "Ventilation Area = " + totalRoomVentilationArea.toPlainString() + " m²";
 
             ReportData ventData = new ReportData(
-                    "Block_" + block.getNumber() + "_UnitFA-RoomWiseLightVentilation",
+                    "Block_" + block.getNumber() + "_Dwelling Unit-RoomWiseLightVentilation",
                     RULE_NO_VAL,
                     "Room Wise Light and Ventilation",
                     floorNo,
@@ -1082,7 +1082,7 @@ public class UnitFA extends FeatureProcess {
             }
 
             ScrutinyDetail summaryDetail = new ScrutinyDetail();
-            summaryDetail.setKey("Block_" + block.getNumber() + "_UnitFA-Summary");
+            summaryDetail.setKey("Block_" + block.getNumber() + "_Dwelling Unit-Summary");
             summaryDetail.addColumnHeading(1, FLOOR_HEADER);
             summaryDetail.addColumnHeading(2, OCCUPANCY_SUB_OCCUPANCY_HEADER);
             summaryDetail.addColumnHeading(3, NO_OF_UNITS_HEADER);
@@ -1262,14 +1262,14 @@ public class UnitFA extends FeatureProcess {
         typicalRow.put(DESCRIPTION, firstRow.getOrDefault(DESCRIPTION, ""));
         typicalRow.put(FLOOR_HEADER, typicalFloorLabel);
         typicalRow.put(FLOOR_NO, typicalFloorLabel);
-        typicalRow.put(UNIT_HEADER, "All typical floors");
+        typicalRow.put(UNIT_HEADER, "All units as Floor No. " + modelFloorNo);
         if (firstRow.containsKey(ITEM_HEADER)) {
-            typicalRow.put(ITEM_HEADER, "Same as defined Floor " + modelFloorNo);
+            typicalRow.put(ITEM_HEADER, "Same as Floor No. " + modelFloorNo);
         }
         if (firstRow.containsKey(REQUIRED)) {
             typicalRow.put(REQUIRED, firstRow.getOrDefault(REQUIRED, ""));
         }
-        typicalRow.put(PROVIDED, "Same as defined Floor " + modelFloorNo);
+        typicalRow.put(PROVIDED, "Same as Floor No. " + modelFloorNo);
         typicalRow.put(STATUS, getTypicalFloorStatus(definedFloorRows));
         return typicalRow;
     }
@@ -1324,6 +1324,15 @@ public class UnitFA extends FeatureProcess {
                 scrutinyDetail.addColumnHeading(6, REQUIRED);
                 scrutinyDetail.addColumnHeading(7, PROVIDED);
                 scrutinyDetail.addColumnHeading(8, STATUS);
+            } else if (reportData.getItem() != null && !reportData.getItem().isEmpty()) {
+                // 7-column layout for itemized informational checks like windows
+                scrutinyDetail.addColumnHeading(1, RULE_NO);
+                scrutinyDetail.addColumnHeading(2, DESCRIPTION);
+                scrutinyDetail.addColumnHeading(3, FLOOR_HEADER);
+                scrutinyDetail.addColumnHeading(4, UNIT_HEADER);
+                scrutinyDetail.addColumnHeading(5, ITEM_HEADER);
+                scrutinyDetail.addColumnHeading(6, PROVIDED);
+                scrutinyDetail.addColumnHeading(7, STATUS);
             } else {
                 // 6-column layout
                 scrutinyDetail.addColumnHeading(1, RULE_NO);
@@ -1399,10 +1408,18 @@ public class UnitFA extends FeatureProcess {
             this.status = status;
         }
 
-        public ReportData(String string, String ruleNoVal, String string2, String floorNo, String unitIdentifier,
-				String string3, String providedString, String resultVal) {
-			// TODO Auto-generated constructor stub
-		}
+        // 8-argument constructor (for itemized checks without REQUIRED field)
+        public ReportData(String ruleKey, String ruleNo, String ruleDesc, String floor, String unitName,
+                          String item, String provided, String status) {
+            this.ruleKey = ruleKey;
+            this.ruleNo = ruleNo;
+            this.ruleDesc = ruleDesc;
+            this.floor = floor;
+            this.unitName = unitName;
+            this.item = item;
+            this.provided = provided;
+            this.status = status;
+        }
 
 		public String getRuleKey() { return ruleKey; }
         public String getRuleNo() { return ruleNo; }

@@ -498,7 +498,7 @@ public class UnitFAExtract extends FeatureExtract {
 					}
 				}
 		 
-				String toiletVentilationRegex = String.format("BLK_%s_FLR_%s_UNITFA_%s_TOILET_VENTILATION_+\\d",
+				String toiletVentilationRegex = String.format("BLK_%s_FLR_%s_UNITFA_%s_TOILET_\\d+_VENTILATION_\\d+",
 						block.getNumber(), floor.getNumber(), unit.getUnitNo());
 				List<String> ventilationLayers = Util.getLayerNamesLike(pl.getDoc(), toiletVentilationRegex);
 		 

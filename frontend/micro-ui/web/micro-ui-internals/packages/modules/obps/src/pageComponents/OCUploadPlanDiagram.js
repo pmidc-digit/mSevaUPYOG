@@ -2,7 +2,8 @@ import {
     CardLabel, FormStep,
     UploadFile,
     Toast,
-    Loader
+    Loader,
+    Dropdown
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useLocation, useHistory } from "react-router-dom";
@@ -13,12 +14,18 @@ const OCUploadPlanDiagram = ({ t, config, onSelect, userType, formData, ownerInd
     const stateId = Digit.ULBService.getStateId();
     const [uploadedFile, setUploadedFile] = useState(() => formData?.uploadData?.file || null);
     const [file, setFile] = useState(formData?.uploadData?.file);
+    const [roadType, setRoadType] = useState(null);
     const [uploadMessage, setUploadMessage] = useState("");
     const history = useHistory();
+    const { data: roadTypeOptions, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
 
     function selectfile(e) {
         setUploadedFile(e.target.files[0]);
         setFile(e.target.files[0]);
+    }
+
+    function selectRoadType(type) {
+        setRoadType(type);
     }
 
     const onSkip = () => { };
@@ -42,6 +49,7 @@ const OCUploadPlanDiagram = ({ t, config, onSelect, userType, formData, ownerInd
     const handleSubmit = () => {
         const data = { };
         data.file = file;
+        data.roadType = roadType;
         onSelect(config.key, data, true, true);
     };
 
@@ -50,6 +58,10 @@ const OCUploadPlanDiagram = ({ t, config, onSelect, userType, formData, ownerInd
         return (
             <CustomLoader message={"EDCR_SCRUTINY_LOADING_MESSAGE"} />
         );
+    }
+
+    if(isRoadTypeLoading){
+        return <Loader />
     }
 
     return (
@@ -62,6 +74,10 @@ const OCUploadPlanDiagram = ({ t, config, onSelect, userType, formData, ownerInd
             onAdd={onAdd}
             isMultipleAllow={true}
         >
+            <React.Fragment>
+                <CardLabel>{t("BPA_ROAD_TYPE")}</CardLabel>
+                <Dropdown t={t} isMandatory={true} option={roadTypeOptions} selected={roadType} optionKey="name" select={selectRoadType} />
+            </React.Fragment>
             <CardLabel>{`${t("BPA_OC_PLAN_DIAGRAM_DXF")} *`}</CardLabel>
             <UploadFile
                 id={"oc-doc"}

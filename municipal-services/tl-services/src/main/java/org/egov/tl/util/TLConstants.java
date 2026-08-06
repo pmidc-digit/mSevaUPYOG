@@ -470,6 +470,10 @@ public class TLConstants {
     
     public static final String ACTION_REAPPROVE  = "REAPPROVE";
     
+    public static final String STATUS_CITIZEN_ACTION_REQUIRED  = "CITIZEN_ACTION_REQUIRED";
+    
+    public static final String ACTION_CORRECTION  = "CORRECTION";
+    
 	public static final Map<String, String> TRADETYPE_TO_IDGEN_SHORTNAME =
 	    Stream.of(new Object[][] {
 	        {"ARCHITECT", "AR"},

@@ -69,11 +69,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const { data: rentANDLeaseTaxRates = [], isLoading: RLTaxRatesLoading } = Digit.Hooks.useCustomMDMS(tenantId, "rentAndLease", [
     { name: "TaxRates" },
   ]);
+
   const { data: rentANDLeaseProperty = [], isLoading: RLPropertyLoading } = Digit.Hooks.useCustomMDMS(tenantId, "rentAndLease", [
     { name: "RLProperty" },
   ]);
-
-  console.log("rentANDLeaseTaxRates", rentANDLeaseTaxRates?.rentAndLease?.TaxRates);
 
   const { data: dueDateRL = [], isLoading: DueDateLoading } = Digit.Hooks.useCustomMDMS(tenantId, "rl-services-masters", [{ name: "DueDate" }]);
 
@@ -113,10 +112,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       rebateAmount: "",
     },
   });
-
-  useEffect(() => {
-    console.log("errors", errors);
-  }, [errors]);
 
   const docUploadData = {
     Challan: {
@@ -161,8 +156,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const handlePropertySelect = (property) => {
     if (!property) return;
 
-    console.log("property", property);
-
     const findPropertySpecific = propertySpecificOptions?.find((item) => item?.code == property?.propertyType);
     const findlocationTypeOptions = locationTypeOptions?.find((item) => item?.code == property?.locationType);
 
@@ -171,7 +164,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
     // List only the fields you want to prefill
     const fieldsToPrefill = ["propertyName", "baseRent", "refundApplicableOnDiscontinuation", "penaltyType"];
-    setValue("securityDeposit", "0");
+    setValue("securityDeposit", property?.securityDeposit);
 
     setValue("selectedProperty", property);
     fieldsToPrefill?.forEach((field) => {
@@ -219,13 +212,31 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
   useEffect(() => {
     if (currentStepData?.propertyDetails) {
+      console.log("currentStepData", currentStepData);
+
+      const additionalDetailsRes = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails;
+      const findIncrementPeriodMonthsValues = incrementPeriodMonthsValues?.find((item) => item?.code == additionalDetailsRes?.incrementPeriodMonths);
       setValue("securityDeposit", currentStepData?.propertyDetails?.securityDeposit);
+      setValue("incrementPercentage", additionalDetailsRes?.incrementPercentage);
+      setValue("incrementPeriodMonths", findIncrementPeriodMonthsValues);
       const propertyDetails = currentStepData.propertyDetails;
+      const checkBillingPeriod = additionalDetailsRes?.lastBillingPeriod || propertyDetails?.lastBillingPeriod;
+      const checkRevisedDatePeriod = additionalDetailsRes?.lastRentRevisedDate || propertyDetails?.lastRentRevisedDate;
 
       Object.keys(propertyDetails)?.forEach((key) => {
         if (key === "securityDeposit" || key === "duration") return; // Skip this field
         setValue(key, propertyDetails[key], { shouldValidate: true });
       });
+
+      const findBuildingValue = rentANDLeaseArea?.rentAndLease?.Area?.find(
+        (item) => item?.code == (propertyDetails?.areaCode || propertyDetails?.area?.code)
+      );
+      // const lastBillingPeriod = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails?.lastBillingPeriod;
+
+      setValue("area", findBuildingValue);
+      // setValue("lastBillingPeriod", currentStepData?.CreatedResponse?.AllotmentDetails[0]?.additionalDetails?.lastBillingPeriod);
+      setValue("lastBillingPeriod", checkBillingPeriod ? new Date(checkBillingPeriod).toISOString().split("T")[0] : "");
+      setValue("lastRentRevisedDate", checkRevisedDatePeriod ? new Date(checkRevisedDatePeriod).toISOString().split("T")[0] : "");
 
       // Restore documentsData for persistence
       if (propertyDetails.arrearDoc) {
@@ -338,10 +349,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       const sgst = taxRates.find((item) => item.taxType === "RL_SGST_FEE");
 
       const totalGST = (cgst?.amount || 0) + (sgst?.amount || 0);
-
-      console.log("CGST:", cgst?.amount);
-      console.log("SGST:", sgst?.amount);
-      console.log("Total GST:", totalGST);
       setValue("gstAmount", totalGST);
     }
   }, [rentANDLeaseTaxRates?.rentAndLease?.TaxRates]);

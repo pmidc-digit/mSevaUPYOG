@@ -163,7 +163,7 @@ export const NOCFeeTable = ({
                       <td className="custom-fix-fee-history-table-cell-label">{t("BPA_REMARK_LABEL")}</td>
                       {feeTypes.map((feeType) => (
                         <td key={`${feeType}-remark-${entryIndex}`} className="custom-fix-fee-history-table-cell-value">
-                          {feeHistory[feeType]?.[entryIndex]?.remarks || t("CS_NA")}
+                          {feeHistory[feeType]?.[entryIndex]?.remarks || ""}
                         </td>
                       ))}
                     </tr>
@@ -292,7 +292,7 @@ export const NOCFeeTable = ({
                             {h.estimateAmount != null && h.estimateAmount !== "" ? `₹ ${h.estimateAmount}` : ""}
                           </div>
                           <div className="custom-fee-history-item">
-                            <span className="custom-fee-history-label-bold">{t("BPA_REMARK_LABEL")}:</span> {h.remarks || t("CS_NA")}
+                            <span className="custom-fee-history-label-bold">{t("BPA_REMARK_LABEL")}:</span> {h.remarks || ""}
                           </div>
                           <div className="custom-fee-history-item">
                             <span className="custom-fee-history-label-bold">{t("BPA_UPDATED_BY_LABEL")}:</span> {h.who || t("UNKNOWN")}

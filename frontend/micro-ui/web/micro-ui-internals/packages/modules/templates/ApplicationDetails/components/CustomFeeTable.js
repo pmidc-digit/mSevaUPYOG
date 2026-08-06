@@ -15,28 +15,10 @@ const CustomFeeTable = ({
 
 
   const getModuleStyles = (moduleName) => {
-    switch (moduleName) {
+    switch (moduleName?.toUpperCase()) {
       case "CLU":
-        return {
-          tableClass: "custom-fee-table",
-          wrapperClass: "custom-fee-table-wrapper",
-          headerClass: "custom-fee-table-header",
-          cellClass: "custom-fee-table-cell",
-        };
-      case "Layout":
-        return {
-          tableClass: "layout-fee-table",
-          wrapperClass: "layout-fee-table-wrapper",
-          headerClass: "layout-fee-table-header",
-          cellClass: "layout-fee-table-cell",
-        };
+      case "LAYOUT":
       case "NOC":
-        return {
-          tableClass: "noc-fee-table",
-          wrapperClass: "noc-fee-table-wrapper",
-          headerClass: "noc-fee-table-header",
-          cellClass: "noc-fee-table-cell",
-        };
       default:
         return {
           tableClass: "custom-fee-table",

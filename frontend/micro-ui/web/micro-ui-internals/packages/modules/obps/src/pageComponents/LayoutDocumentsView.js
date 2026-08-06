@@ -13,8 +13,7 @@ const LayoutDocumentTableView = ({documents}) => {
     {
       Header: t("SR_NO"),
       accessor: "srNo",
-      width: "20px",
-      Cell: ({ row }) => <div style={{ width: "20px" }}>{row.index + 1}</div>,
+      Cell: ({ row }) => <div>{row.index + 1}</div>,
     },
     {
       Header: t("BPA_DOCUMENT_NAME"),

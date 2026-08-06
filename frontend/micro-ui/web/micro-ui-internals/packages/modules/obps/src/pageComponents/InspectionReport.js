@@ -424,7 +424,7 @@ const InspectionReportForm = (_props) => {
                         </div>
                     ))} */}                
                     <div className="bpa-table-container">
-                        <table className="customTable table-border-style">
+                        <table className="customTable table-border-style inspection-report-table">
                             <thead>
                                 <tr>
                                     <th style={{width:"100px"}}>{t("SR_NO")}</th>
@@ -450,14 +450,11 @@ const InspectionReportForm = (_props) => {
                                                     <TextArea
                                                         value={props.value}
                                                         onChange={(e) => {
-                                                            e.target.style.height = "auto";
-                                                            e.target.style.height = e.target.scrollHeight + "px";
                                                             props.onChange(e.target.value);
                                                         }}
                                                         placeholder={t("BPA_ENTER_REMARKS")}
                                                         onBlur={props.onBlur}
                                                         className="checklist-table-textarea"
-                                                        style={{ overflow: "hidden",maxHeight:"1500px" }}
                                                     />
                                                 )}
                                             />
@@ -484,14 +481,11 @@ const InspectionReportForm = (_props) => {
                                                 <TextArea 
                                                     value={props.value}
                                                     onChange={(e) => {
-                                                        e.target.style.height = "auto";
-                                                        e.target.style.height = e.target.scrollHeight + "px";
                                                         props.onChange(e.target.value);
                                                     }}
                                                     placeholder={t("BPA_ENTER_RECOMMENDATIONS")}
                                                     onBlur={props.onBlur}
                                                     className="checklist-table-textarea"
-                                                    style={{ overflow: "hidden" }}
                                                 />
                                             )}
                                         />

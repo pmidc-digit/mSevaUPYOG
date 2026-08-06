@@ -1066,7 +1066,7 @@ const LayoutEmployeeApplicationOverview = () => {
       {displayData?.applicantDetails?.[0]?.professionalName && (
         <Card>
           <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
-          <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+      
             <StatusTable>
               <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalName || "N/A"} />
               <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalEmailId || "N/A"} />
@@ -1078,7 +1078,7 @@ const LayoutEmployeeApplicationOverview = () => {
                 text={formatDate(displayData?.applicantDetails?.[0]?.professionalRegistrationValidity || "N/A")}
               />
             </StatusTable>
-          </div>
+          
         </Card>
       )}
 
@@ -1089,7 +1089,7 @@ const LayoutEmployeeApplicationOverview = () => {
           <React.Fragment key={index}>
             <Card>
               <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `${t("Owner") || "Owner"} ${index + 1}`}</CardSubHeader>
-              <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+         
                 <StatusTable>
 
                   {index === 0 && <Row label={t(`CLU_OWNER_TYPE_LABEL`)} text={applicant?.additionalDetails?.aplicantType?.name} />}
@@ -1121,7 +1121,7 @@ const LayoutEmployeeApplicationOverview = () => {
                     text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />}
                   />
                 </StatusTable>
-              </div>
+             
             </Card>
           </React.Fragment>
         ))}
@@ -1130,8 +1130,8 @@ const LayoutEmployeeApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
+     
+            <StatusTable key={index}>
               {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
               {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
                 <React.Fragment>
@@ -1227,7 +1227,7 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
               {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
-          </div>
+          
         ))}
       </Card>
 
@@ -1235,8 +1235,8 @@ const LayoutEmployeeApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
+         
+            <StatusTable key={index}>
               <RenderRow label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} value={detail?.specificationPlotArea} />
               <RenderRow
                 label={t("NOC_BUILDING_CATEGORY_LABEL")}
@@ -1252,7 +1252,7 @@ const LayoutEmployeeApplicationOverview = () => {
                 value={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan}
               />
             </StatusTable>
-          </div>
+          
         ))}
       </Card>
 
@@ -1340,7 +1340,7 @@ const LayoutEmployeeApplicationOverview = () => {
 
           {applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && geoLocations?.length > 0 && (
             <Fragment>
-              <CardSubHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSubHeader>
+              <CardSubHeader >{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSubHeader>
               <CustomLocationSearch position={geoLocations} />
             </Fragment>
           )}

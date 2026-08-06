@@ -63,7 +63,7 @@ const [showHistory, setShowHistory] = useState(false);
                               <td className="custom-fix-fee-history-table-cell-label">{t("BPA_REMARK_LABEL")}</td>
                               {feeTypes.map((feeType) => (
                                 <td key={`${feeType}-remark-${entryIndex}`} className="custom-fix-fee-history-table-cell-value">
-                                  {feeHistory[feeType]?.[entryIndex]?.remarks || t("CS_NA")}
+                                  {feeHistory[feeType]?.[entryIndex]?.remarks || ""}
                                 </td>
                               ))}
                             </tr>

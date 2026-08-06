@@ -24,7 +24,7 @@ const CustomOwnerImage = ({ownerFileStoreId, ownerName}) => {
   }, [ownerFileStoreId]);
   
 return (
-  <div style={{ padding: "20px 0px" }}>
+  <div>
     <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px", padding: "0px 20px" }}>
       <div style={{ textAlign: "center" }}>
         <img

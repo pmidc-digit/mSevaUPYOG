@@ -135,35 +135,37 @@ public class MeterReadingRowMapper implements ResultSetExtractor<List<Map<String
         		readingIndexMap.put(connectionNo, new LinkedHashMap<>());
             }
 
-            Map<String, Object> reading = new LinkedHashMap<>();
-			String readingId = rs.getString("id");
-            reading.put("id", rs.getString("id"));
-            reading.put("billingPeriod", rs.getString("billingperiod"));
-            reading.put("meterStatus", rs.getString("meterstatus"));
-            reading.put("lastReading", rs.getBigDecimal("lastreading"));
-            reading.put("currentReading", rs.getBigDecimal("currentreading"));
-            reading.put("lastReadingDate", rs.getObject("lastreadingdate"));
-            reading.put("currentReadingDate", rs.getObject("currentreadingdate"));
+            String readingId = rs.getString("id");
+            if (readingId != null) {
+                Map<String, Object> reading = new LinkedHashMap<>();
+                reading.put("id", readingId);
+                reading.put("billingPeriod", rs.getString("billingperiod"));
+                reading.put("meterStatus", rs.getString("meterstatus"));
+                reading.put("lastReading", rs.getBigDecimal("lastreading"));
+                reading.put("currentReading", rs.getBigDecimal("currentreading"));
+                reading.put("lastReadingDate", rs.getObject("lastreadingdate"));
+                reading.put("currentReadingDate", rs.getObject("currentreadingdate"));
 
-			List<Map<String, Object>> meterReadings = (List<Map<String, Object>>) connection.get("meterReadings");
-			Map<String, Map<String, Object>> readingIndex = readingIndexMap.get(connectionNo);
+                List<Map<String, Object>> meterReadings = (List<Map<String, Object>>) connection.get("meterReadings");
+                Map<String, Map<String, Object>> readingIndex = readingIndexMap.get(connectionNo);
 
-			// O(1) duplicate check via HashMap instead of linear stream scan
-			Map<String, Object> existingReading = readingIndex.get(readingId);
+                // O(1) duplicate check via HashMap instead of linear stream scan
+                Map<String, Object> existingReading = readingIndex.get(readingId);
 
-			if (existingReading != null) {
-				long existingDate = ((Number) existingReading.get("currentReadingDate")).longValue();
-				long newDate = ((Number) reading.get("currentReadingDate")).longValue();
+                if (existingReading != null) {
+                    long existingDate = ((Number) existingReading.get("currentReadingDate")).longValue();
+                    long newDate = ((Number) reading.get("currentReadingDate")).longValue();
 
-				if (newDate > existingDate) {
-					meterReadings.remove(existingReading);
-					meterReadings.add(reading);
-					readingIndex.put(readingId, reading);
-				}
-			} else {
-				meterReadings.add(reading);
-				readingIndex.put(readingId, reading);
-			}
+                    if (newDate > existingDate) {
+                        meterReadings.remove(existingReading);
+                        meterReadings.add(reading);
+                        readingIndex.put(readingId, reading);
+                    }
+                } else {
+                    meterReadings.add(reading);
+                    readingIndex.put(readingId, reading);
+                }
+            }
 		}
 
 		// Sort once after all rows are processed (moved out of the loop)

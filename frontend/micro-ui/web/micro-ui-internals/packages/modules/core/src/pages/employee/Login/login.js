@@ -1,4 +1,4 @@
-import { BackButton, Dropdown, Loader, LoginIcon, Toast } from "@mseva/digit-ui-react-components";
+import { BackButton, Dropdown, Loader, LoginIcon, Toast, MarqueeBanner } from "@mseva/digit-ui-react-components";
 import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
 import PropTypes from "prop-types";
 import React, { useEffect, useState } from "react";
@@ -245,7 +245,6 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   };
 
   const prevRef = React.useRef({});
-
   const onFormValueChange = (setValue, data) => {
     const prev = prevRef.current;
 
@@ -285,7 +284,11 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     //   {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true}/>}
 
     // </Background>
-    <Background>
+    <Background
+      banner={
+         <MarqueeBanner/>
+      }
+    >
       <div className="language-plugin">
         <div className="bhashini-plugin-container"></div>
       </div>

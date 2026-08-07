@@ -160,21 +160,32 @@ const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
     }
 
     const calculation = data?.Calculation?.[0];
-    const totalAmount = calculation?.taxHeadEstimates?.reduce((acc, item) => {
-      const amount = parseFloat(item?.estimateAmount) || 0;
-      return acc + amount;
-    }, 0) || 0;
+    const taxHeadEstimates = calculation?.taxHeadEstimates || [];
 
-    // Ensure totalAmount is a valid number
+    const totalAmount = taxHeadEstimates.length > 0
+      ? taxHeadEstimates.reduce((acc, item) => acc + (parseFloat(item?.estimateAmount) || 0), 0)
+      : (parseFloat(calculation?.totalAmount) || 0);
+
     const finalAmount = isNaN(totalAmount) ? 0 : totalAmount;
 
-    const rows = [{ id: "1", title: t("Layout Processing Fee"), amount: finalAmount }];
+    const rows = taxHeadEstimates.map((item, index) => ({
+      id: `taxhead-${index}`,
+      title: t(item?.taxHeadCode),
+      amount: parseFloat(item?.estimateAmount) || 0,
+    }));
+
+    rows.push({
+      id: "total",
+      title: t("BPA_COMMON_TOTAL_AMT"),
+      amount: finalAmount,
+      isTotal: true,
+    });
 
     rows.push({
       id: "status",
       title: t("BPA_STATUS_LABEL"),
       amount: hasPayments ? t("BPA_PAID_LABEL") : t("BPA_UNPAID_LABEL"),
-      isStatus: true
+      isStatus: true,
     });
 
     return rows;
@@ -184,7 +195,12 @@ const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
     {
       Header: t("LAYOUT_FEE_TYPE_LABEL"),
       accessor: "title",
-      Cell: ({ value }) => value || t("CS_NA"),
+      Cell: ({ row, value }) => {
+        if (row.original.isTotal) {
+          return <strong>{value || t("CS_NA")}</strong>;
+        }
+        return value || t("CS_NA");
+      },
     },
     {
       Header: t("LAYOUT_AMOUNT_LABEL"),
@@ -196,10 +212,13 @@ const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
         if (value === null || value === undefined || isNaN(value)) {
           return t("CS_NA");
         }
-        return `₹ ${parseFloat(value).toLocaleString()}`;
+        if (row.original.isTotal) {
+          return <strong>{`₹ ${parseFloat(value).toLocaleString("en-IN")}`}</strong>;
+        }
+        return `₹ ${parseFloat(value).toLocaleString("en-IN")}`;
       },
     },
-  ]
+  ];
 
   const isCitizen = window.location.href.includes("citizen");
 

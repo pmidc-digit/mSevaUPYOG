@@ -77,8 +77,16 @@ const LayoutDocumentsRequired = ({
   //console.log("geocoordinates", geocoordinates)
 
 
-  const applicantType = currentStepData?.applicationDetails?.aplicantType?.code;
+  const layoutOwners = currentStepData?.apiData?.Layout?.[0]?.owners || [];
+  const primaryOwnerFromLayout = layoutOwners?.find((owner) => owner?.isPrimaryOwner) || layoutOwners?.[0];
+  const primaryApplicant = currentStepData?.applicants?.find((app) => app?.isPrimaryOwner) || primaryOwnerFromLayout || currentStepData?.applicationDetails || currentStepData?.applicants?.[0] || {};
+  
+  const applicantType = 
+    primaryApplicant?.aplicantType?.code || 
+    primaryApplicant?.additionalDetails?.aplicantType?.code;
 
+
+  
   const [applicationNo, setApplicationNo] = useState("");
   // const [isVacant, setIsVacant] = useState(false);
   const [isCluApproved, setIsCluApproved] = useState(false);
@@ -210,7 +218,7 @@ const LayoutDocumentsRequired = ({
     return processedDocs
   }, [isCluApproved, isNationalHighway, isInstitution, isIndustrial, applicantType, data?.LAYOUT?.LayoutDocuments?.length])
 
-  // console.log("filteredDocs and documents", filteredDocuments, documents)
+   console.log("filteredDocs and documents", filteredDocuments, documents)
 
   const handleSubmit = () => {
     const document = formData.documents

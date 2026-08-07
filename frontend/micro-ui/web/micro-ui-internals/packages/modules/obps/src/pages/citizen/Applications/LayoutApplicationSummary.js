@@ -409,6 +409,7 @@ const LayoutApplicationOverview = () => {
   const businessServiceCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
   const prefix= `WF_EMPLOYEE_${"LAYOUT"}_${businessServiceCode}`?.toUpperCase();
   const Statusprefix= `WF_EMPLOYEE_LAYOUT_STATUS_${businessServiceCode}`?.toUpperCase();
+  
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -538,6 +539,12 @@ const LayoutApplicationOverview = () => {
         return true;
       });
 
+  const modifiedActions = actions?.map((action) => ({
+      ...action,
+      action: action.action?.toUpperCase().includes("FORWARD")
+        ? "FORWARD"
+        : action.action,
+      }));
   function onActionSelect(action) {
     const appNo = applicationDetails?.Layout?.[0]?.applicationNo
 
@@ -1044,7 +1051,7 @@ const LayoutApplicationOverview = () => {
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
               localeKeyPrefix={prefix}
-              options={actions}
+              options={modifiedActions}
               optionKey={"action"}
               t={t}
               onSelect={onActionSelect}

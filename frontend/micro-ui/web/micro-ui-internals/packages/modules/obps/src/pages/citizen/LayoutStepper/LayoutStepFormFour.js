@@ -476,7 +476,12 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     })?.filter((action) => (action?.action !== "EDIT"));
 
-    
+  const modifiedActions = actions?.map((action) => ({
+      ...action,
+      action: action.action?.toUpperCase().includes("FORWARD")
+        ? "FORWARD"
+        : action.action,
+      }));
   //console.log("actions here", actions);
 
   function onActionSelect(action) {
@@ -499,7 +504,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />
 
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-            <Menu localeKeyPrefix={`WF_EMPLOYEE_LAYOUT`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+            <Menu localeKeyPrefix={`WF_EMPLOYEE_LAYOUT`} options={modifiedActions} optionKey={"action"} t={t} onSelect={onActionSelect} />
           ) : null}
           {selectedCheckBox && <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />}
         </ActionBar>

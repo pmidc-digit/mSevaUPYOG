@@ -1966,7 +1966,7 @@ function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tena
           // Left: Logo
           {
             image: logo || getBase64Image(tenantId) || localGovLogo,
-            width: 78,
+            width: 50,
             margin: [10, 10],
             alignment: "left",
           },
@@ -1977,19 +1977,19 @@ function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tena
               {
                 text: heading,
                 bold: true,
-                fontSize: 19,
+                fontSize: 15,
                 alignment: "center",
                 decoration: "underline",
                 margin: [0, 15, 0, 4],
               },
               {
                 text: ulbType && ulb ? `${ulbType} ${ulb}` : `Municipal Corporation ${ulb}`,
-                fontSize: 11,
+                fontSize: 9,
                 alignment: "center",
               },
               {
-                text: name ? name :"No Dues Certificate",
-                fontSize: 11,
+                text: name ? name : "No Dues Certificate",
+                fontSize: 9,
                 alignment: "center",
               },
             ],
@@ -1999,11 +1999,11 @@ function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tena
           // Right: QR code (if available)
           qrCodeDataUrl
             ? {
-                image: qrCodeDataUrl,
-                width: 78,
-                margin: [10, 10],
-                alignment: "right",
-              }
+              image: qrCodeDataUrl,
+              width: 50,
+              margin: [10, 10],
+              alignment: "right",
+            }
             : {},
         ],
       ],

@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 public class SvgToPdfConverter {
 	
 	private static Logger LOG = LogManager.getLogger(SvgToPdfConverter.class);
+	private static final float DXF_RENDER_DPI = 300f;
 
 	public static void convert(File svgFile, File pdfFile) throws Exception {
 	    LOG.info("Converting SVG → PDF: {}", svgFile.getAbsolutePath());
@@ -76,9 +77,11 @@ public class SvgToPdfConverter {
 
 	    // --- Step 3: Transcode SVG → PDF ---
 	    PDFTranscoder transcoder = new PDFTranscoder();
-	    transcoder.addTranscodingHint(PDFTranscoder.KEY_WIDTH,  svgWidth);
-	    transcoder.addTranscodingHint(PDFTranscoder.KEY_HEIGHT, svgHeight);
-	    transcoder.addTranscodingHint(PDFTranscoder.KEY_PIXEL_UNIT_TO_MILLIMETER, 25.4f / 96f);
+	    if (isPixelLength(root.getAttribute("width")) && isPixelLength(root.getAttribute("height"))) {
+	        transcoder.addTranscodingHint(PDFTranscoder.KEY_WIDTH,  svgWidth);
+	        transcoder.addTranscodingHint(PDFTranscoder.KEY_HEIGHT, svgHeight);
+	    }
+	    transcoder.addTranscodingHint(PDFTranscoder.KEY_PIXEL_UNIT_TO_MILLIMETER, 25.4f / DXF_RENDER_DPI);
 
 	    try (FileOutputStream fos = new FileOutputStream(pdfFile)) {
 	        TranscoderInput input = new TranscoderInput(svgDoc);
@@ -123,6 +126,14 @@ public class SvgToPdfConverter {
         } catch (NumberFormatException e) {
             return 0;
         }
+    }
+
+    static boolean isPixelLength(String val) {
+        if (val == null || val.trim().isEmpty()) {
+            return false;
+        }
+        String normalized = val.trim().toLowerCase();
+        return normalized.endsWith("px") || normalized.matches("[0-9.]+");
     }
 
 

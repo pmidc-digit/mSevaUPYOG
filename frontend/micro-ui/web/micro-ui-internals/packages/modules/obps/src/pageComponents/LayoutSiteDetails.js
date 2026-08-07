@@ -593,7 +593,7 @@ const LayoutSiteDetails = (_props) => {
 
   const getSelectedCategoryCode = () => {
     const cat = selectedBuildingCategory || buildingCategoryMain || (getValues && getValues("buildingCategory"));
-    const code = cat?.code || cat?.name || "";
+    const code = typeof cat === "string" ? cat : cat?.code || cat?.name || "";
     return code.toUpperCase();
   };
 
@@ -601,14 +601,14 @@ const LayoutSiteDetails = (_props) => {
   const isResidential = currentCategoryCode.includes("RESIDENTIAL");
   const isCommercial = currentCategoryCode.includes("COMMERCIAL");
   const isInstitutional = currentCategoryCode.includes("INSTITUTIONAL");
-  const isIndustrial = currentCategoryCode.includes("INDUSTRIAL");
+  const isIndustrial = currentCategoryCode.includes("INDUSTRIAL") || currentCategoryCode.includes("WAREHOUSE");
 
   // Calculate Total Site Area (sum of all distribution areas)
   useEffect(() => {
-    const residential = isResidential ? (parseFloat(watchedResidentialArea) || 0) : 0;
-    const commercial = isCommercial ? (parseFloat(watchedCommercialArea) || 0) : 0;
-    const institutional = isInstitutional ? (parseFloat(watchedInstitutionalArea) || 0) : 0;
-    const industrial = isIndustrial ? (parseFloat(watchedIndustrialArea) || 0) : 0;
+    const residential = isResidential ? parseFloat(watchedResidentialArea) || 0 : 0;
+    const commercial = isCommercial ? parseFloat(watchedCommercialArea) || 0 : 0;
+    const institutional = isInstitutional ? parseFloat(watchedInstitutionalArea) || 0 : 0;
+    const industrial = isIndustrial ? parseFloat(watchedIndustrialArea) || 0 : 0;
     const communityCenter = parseFloat(watchedCommunityCenterArea) || 0;
     const park = parseFloat(watchedParkArea) || 0;
     const road = parseFloat(watchedRoadArea) || 0;
@@ -642,7 +642,11 @@ const LayoutSiteDetails = (_props) => {
     watchedOtherAmenitiesArea,
     netArea,
     selectedBuildingCategory,
-    buildingCategoryMain
+    buildingCategoryMain,
+    isResidential,
+    isCommercial,
+    isInstitutional,
+    isIndustrial,
   ]);
 
   // Watch all SqM fields for auto-calculation of percentages
@@ -663,10 +667,10 @@ const LayoutSiteDetails = (_props) => {
     const netArea = parseFloat(watchedNetArea) || 0;
 
     const ews = parseFloat(areaUnderEWSInSqM) || 0;
-    const residential = isResidential ? (parseFloat(areaUnderResidentialUseInSqM) || 0) : 0;
-    const commercial = isCommercial ? (parseFloat(areaUnderCommercialUseInSqM) || 0) : 0;
-    const institutional = isInstitutional ? (parseFloat(areaUnderInstutionalUseInSqM) || 0) : 0;
-    const industrial = isIndustrial ? (parseFloat(areaUnderIndustrialUseInSqM) || 0) : 0;
+    const residential = isResidential ? parseFloat(areaUnderResidentialUseInSqM) || 0 : 0;
+    const commercial = isCommercial ? parseFloat(areaUnderCommercialUseInSqM) || 0 : 0;
+    const institutional = isInstitutional ? parseFloat(areaUnderInstutionalUseInSqM) || 0 : 0;
+    const industrial = isIndustrial ? parseFloat(areaUnderIndustrialUseInSqM) || 0 : 0;
     const communityCenter = parseFloat(areaUnderCommunityCenterInSqM) || 0;
     const park = parseFloat(areaUnderParkInSqM) || 0;
     const road = parseFloat(areaUnderRoadInSqM) || 0;
@@ -688,10 +692,10 @@ const LayoutSiteDetails = (_props) => {
     const calcPct = (val) => (netArea > 0 ? ((val / netArea) * 100).toFixed(2) : "0.00");
 
     setValue("areaUnderEWSInPct", calcPct(ews));
-    setValue("areaUnderResidentialUseInPct", calcPct(residential));
-    setValue("areaUnderCommercialUseInPct", calcPct(commercial));
-    setValue("areaUnderInstutionalUseInPct", calcPct(institutional));
-    setValue("areaUnderIndustrialUseInPct", calcPct(industrial));
+    setValue("areaUnderResidentialUseInPct", isResidential ? calcPct(residential) : "");
+    setValue("areaUnderCommercialUseInPct", isCommercial ? calcPct(commercial) : "");
+    setValue("areaUnderInstutionalUseInPct", isInstitutional ? calcPct(institutional) : "");
+    setValue("areaUnderIndustrialUseInPct", isIndustrial ? calcPct(industrial) : "");
     setValue("areaUnderCommunityCenterInPct", calcPct(communityCenter));
     setValue("areaUnderParkInPct", calcPct(park));
     setValue("areaUnderRoadInPct", calcPct(road));
@@ -716,6 +720,10 @@ const LayoutSiteDetails = (_props) => {
     setValue,
     selectedBuildingCategory,
     buildingCategoryMain,
+    isResidential,
+    isCommercial,
+    isInstitutional,
+    isIndustrial,
   ]);
 
   return (
@@ -1962,16 +1970,32 @@ const LayoutSiteDetails = (_props) => {
                       setSelectedBuildingCategory(e);
                       props.onChange(e);
 
+                      const catCode = (e?.code || e?.name || "").toUpperCase();
+                      const isRes = catCode.includes("RESIDENTIAL");
+                      const isComm = catCode.includes("COMMERCIAL");
+                      const isInst = catCode.includes("INSTITUTIONAL");
+                      const isInd = catCode.includes("INDUSTRIAL") || catCode.includes("WAREHOUSE");
+
                       // Reset all dependent fields on building category change
-                      setValue("areaUnderResidentialUseInSqM", "");
-                      setValue("areaUnderResidentialUseInPct", "");
-                      setValue("areaUnderCommercialUseInSqM", "");
-                      setValue("areaUnderCommercialUseInPct", "");
-                      setValue("areaUnderInstutionalUseInSqM", "");
-                      setValue("areaUnderInstutionalUseInPct", "");
-                      setValue("areaUnderIndustrialUseInSqM", "");
-                      setValue("areaUnderIndustrialUseInPct", "");
-                      setValue("residentialType", "");
+                      if (!isRes) {
+                        setValue("areaUnderResidentialUseInSqM", "");
+                        setValue("areaUnderResidentialUseInPct", "");
+                        setValue("residentialType", "");
+                      }
+                      if (!isComm) {
+                        setValue("areaUnderCommercialUseInSqM", "");
+                        setValue("areaUnderCommercialUseInPct", "");
+                      }
+                      if (!isInst) {
+                        setValue("areaUnderInstutionalUseInSqM", "");
+                        setValue("areaUnderInstutionalUseInPct", "");
+                      }
+                      if (!isInd) {
+                        setValue("areaUnderIndustrialUseInSqM", "");
+                        setValue("areaUnderIndustrialUseInPct", "");
+                      }
+
+                      setValue("specificationBuildingCategory", e?.name || e?.code || "");
 
                       if (clearErrors) {
                         clearErrors([
@@ -1983,7 +2007,7 @@ const LayoutSiteDetails = (_props) => {
                           "areaUnderInstutionalUseInPct",
                           "areaUnderIndustrialUseInSqM",
                           "areaUnderIndustrialUseInPct",
-                          "residentialType"
+                          "residentialType",
                         ]);
                       }
                     }}
@@ -2005,7 +2029,7 @@ const LayoutSiteDetails = (_props) => {
           </LabelFieldPair>
 
           {/* Sub-category for Residential */}
-          {(getValues("buildingCategory")?.code === "RESIDENTIAL" || buildingCategoryMain?.code === "RESIDENTIAL") && (
+          {isResidential && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
                 {t("BPA_BUILDING_CATEGORY_LABEL_TYPE")} <span className="requiredField">*</span>
@@ -2036,7 +2060,7 @@ const LayoutSiteDetails = (_props) => {
           )}
 
           {/* Sub-category for Commercial */}
-          {(getValues("buildingCategory")?.code === "COMMERCIAL" || buildingCategoryMain?.code === "COMMERCIAL") && (
+          {isCommercial && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{t("BPA_BUILDING_CATEGORY_LABEL_TYPE")}</CardLabel>
               <div className="field">
@@ -2046,7 +2070,7 @@ const LayoutSiteDetails = (_props) => {
           )}
 
           {/* Sub-category for Industrial-Warehouse */}
-          {(getValues("buildingCategory")?.code === "INDUSTRIAL_WAREHOUSE" || buildingCategoryMain?.code === "INDUSTRIAL_WAREHOUSE") && (
+          {isIndustrial && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{t("BPA_BUILDING_CATEGORY_LABEL_TYPE")}</CardLabel>
               <div className="field">
@@ -2056,7 +2080,7 @@ const LayoutSiteDetails = (_props) => {
           )}
 
           {/* Sub-category for Institutional */}
-          {(getValues("buildingCategory")?.code === "INSTITUTIONAL" || buildingCategoryMain?.code === "INSTITUTIONAL") && (
+          {isInstitutional && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{t("BPA_BUILDING_CATEGORY_LABEL_TYPE")}</CardLabel>
               <div className="field">
@@ -2065,12 +2089,12 @@ const LayoutSiteDetails = (_props) => {
             </LabelFieldPair>
           )}
 
-          {(selectedBuildingCategory?.name?.toLowerCase().includes("residential")) && (
+          {isResidential && (
             <React.Fragment>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
                   {`${t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_SQ_M_LABEL")}`}
-                  {selectedBuildingCategory?.name?.toLowerCase().includes("residential") && <span className="requiredField">*</span>}
+                  <span className="requiredField">*</span>
                 </CardLabel>
                 <div className="field">
                   <Controller
@@ -2078,9 +2102,9 @@ const LayoutSiteDetails = (_props) => {
                     name="areaUnderResidentialUseInSqM"
                     defaultValue=""
                     rules={{
-                      required: selectedBuildingCategory?.name?.toLowerCase().includes("residential") ? t("REQUIRED_FIELD") : false,
+                      required: isResidential ? t("REQUIRED_FIELD") : false,
                       validate: (value) => {
-                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("residential") || t("REQUIRED_FIELD");
+                        if (!value) return !isResidential || t("REQUIRED_FIELD");
                         const regex = /^\d+(\.\d{1,2})?$/;
                         return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                       },
@@ -2108,16 +2132,16 @@ const LayoutSiteDetails = (_props) => {
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
                   {`${t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL")}`}
-                  {selectedBuildingCategory?.name?.toLowerCase().includes("residential") && <span className="requiredField">*</span>}
+                  <span className="requiredField">*</span>
                 </CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
                     name="areaUnderResidentialUseInPct"
                     rules={{
-                      required: selectedBuildingCategory?.name?.toLowerCase().includes("residential") ? t("REQUIRED_FIELD") : false,
+                      required: isResidential ? t("REQUIRED_FIELD") : false,
                       validate: (value) => {
-                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("residential") || t("REQUIRED_FIELD");
+                        if (!value) return !isResidential || t("REQUIRED_FIELD");
                         const regex = /^\d+(\.\d{1,2})?$/;
                         const isValidFormat = regex.test(value);
                         const isWithinRange = Number.parseFloat(value) <= 100;
@@ -2150,12 +2174,12 @@ const LayoutSiteDetails = (_props) => {
             </React.Fragment>
           )}
 
-          {(selectedBuildingCategory?.name?.toLowerCase().includes("commercial")) && (
+          {isCommercial && (
             <React.Fragment>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
                   {`${t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL")}`}
-                  {selectedBuildingCategory?.name?.toLowerCase().includes("commercial") && <span className="requiredField">*</span>}
+                  <span className="requiredField">*</span>
                 </CardLabel>
                 <div className="field">
                   <Controller
@@ -2163,9 +2187,9 @@ const LayoutSiteDetails = (_props) => {
                     name="areaUnderCommercialUseInSqM"
                     defaultValue=""
                     rules={{
-                      required: selectedBuildingCategory?.name?.toLowerCase().includes("commercial") ? t("REQUIRED_FIELD") : false,
+                      required: isCommercial ? t("REQUIRED_FIELD") : false,
                       validate: (value) => {
-                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("commercial") || t("REQUIRED_FIELD");
+                        if (!value) return !isCommercial || t("REQUIRED_FIELD");
                         const regex = /^\d+(\.\d{1,2})?$/;
                         return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
                       },
@@ -2193,16 +2217,16 @@ const LayoutSiteDetails = (_props) => {
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
                   {`${t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_PCT_LABEL")}`}
-                  {selectedBuildingCategory?.name?.toLowerCase().includes("commercial") && <span className="requiredField">*</span>}
+                  <span className="requiredField">*</span>
                 </CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
                     name="areaUnderCommercialUseInPct"
                     rules={{
-                      required: selectedBuildingCategory?.name?.toLowerCase().includes("commercial") ? t("REQUIRED_FIELD") : false,
+                      required: isCommercial ? t("REQUIRED_FIELD") : false,
                       validate: (value) => {
-                        if (!value) return !selectedBuildingCategory?.name?.toLowerCase().includes("commercial") || t("REQUIRED_FIELD");
+                        if (!value) return !isCommercial || t("REQUIRED_FIELD");
                         const regex = /^\d+(\.\d{1,2})?$/;
                         const isValidFormat = regex.test(value);
                         const isWithinRange = Number.parseFloat(value) <= 100;
@@ -2235,7 +2259,7 @@ const LayoutSiteDetails = (_props) => {
             </React.Fragment>
           )}
 
-          {selectedBuildingCategory?.name?.toLowerCase().includes("institutional") && (
+          {isInstitutional && (
               <React.Fragment>
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">

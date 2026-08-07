@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   CardLabel,
   LabelFieldPair,
@@ -11,6 +11,8 @@ import {
   Loader,
   CardSectionHeader,
   TextArea,
+  Modal,
+  CardSubHeader
 } from "@mseva/digit-ui-react-components";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import * as func from "../pages/employee/Utils/Category";
@@ -183,6 +185,42 @@ const OwnerForm1 = (_props) => {
   const selectedCategoryType = useWatch({ control: control, name: "categoryType", defaultValue: "" });
   const TaxHeadMasterFields = Digit.Hooks.mcollect.useMCollectTaxHeads(selectedCategoryType, categoriesandTypes);
   const selectedPincode = useWatch({ control: control, name: "pincode", defaultValue: "" });
+  const [showModal, setShowModal] = useState(false);
+  const shownForCurrentParent = useRef(false);
+  const previousParent = useRef(null);
+
+  const matchesPopupCategory = (obj) => {
+    const code = obj?.code?.replace(/_/g, "")?.toLowerCase() || "";
+    const validCodes = ["advt", "chb", "noduecertificate"]
+    return validCodes?.some((item)=>code?.includes(item))
+  };
+
+  useEffect(() => {
+  console.log("Selected Category:", selectedCategory);
+  console.log(
+    "Selected Available Service Types:",
+    sortDropdownNames(categoiresType, "code", t)
+  );
+}, [selectedCategory, categoiresType]);
+
+ const modalMsg = t("MCOLLECT_CATEGORY_POPUP_MESSAGE")
+useEffect(() => {
+  const parentCode = selectedCategory?.code;
+
+  if (previousParent.current !== parentCode) {
+    previousParent.current = parentCode;
+    shownForCurrentParent.current = false;
+  }
+
+  const shouldShow =
+    matchesPopupCategory(selectedCategory) ||
+    categoiresType.some(matchesPopupCategory);
+
+  if (shouldShow && !shownForCurrentParent.current) {
+    shownForCurrentParent.current = true;
+    setShowModal(true);
+  }
+}, [selectedCategory, categoiresType]);
 
   console.log("tax Master Fields", TaxHeadMasterFields);
   useEffect(() => {
@@ -199,6 +237,20 @@ const OwnerForm1 = (_props) => {
     if (isEdit) setValue("city", selectedCity);
   }, [selectedCity]);
 
+  const Close = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+  </svg>
+  );
+
+  const CloseBtn = (props) => {
+    return (
+      <div className="icon-bg-secondary" onClick={props.onClick}>
+        <Close />
+      </div>
+    );
+  };
   // useEffect(() => {
   //   if(!isEdit)
   //   TaxHeadMasterFields && TaxHeadMasterFields.length>0 && TaxHeadMasterFields?.map((ob) => {
@@ -274,9 +326,12 @@ const OwnerForm1 = (_props) => {
   return (
     <div style={isMobile ? {} : { marginTop: "-50px" }}>
       <CardSectionHeader>{t("SERVICEDETAILS")}</CardSectionHeader>
-      <div style={isMobile ? {} : { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+      <div style={isMobile ? {} : { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px" }}>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("UC_CITY_LABEL")} `}<span>*</span></CardLabel>
+          <CardLabel className="card-label-smaller">
+            {`${t("UC_CITY_LABEL")} `}
+            <span>*</span>
+          </CardLabel>
           <Controller
             name="city"
             rules={{ required: t("REQUIRED_FIELD") }}
@@ -299,7 +354,10 @@ const OwnerForm1 = (_props) => {
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>{`${t("UC_SERVICE_CATEGORY_LABEL")}`}<span>*</span></CardLabel>
+          <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>
+            {`${t("UC_SERVICE_CATEGORY_LABEL")}`}
+            <span>*</span>
+          </CardLabel>
           <Controller
             name="category"
             rules={{ required: t("REQUIRED_FIELD") }}
@@ -323,7 +381,10 @@ const OwnerForm1 = (_props) => {
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("UC_SERVICE_TYPE_LABEL")} `}<span>*</span></CardLabel>
+          <CardLabel className="card-label-smaller">
+            {`${t("UC_SERVICE_TYPE_LABEL")} `}
+            <span>*</span>
+          </CardLabel>
           <Controller
             name="categoryType"
             rules={{ required: t("REQUIRED_FIELD") }}
@@ -346,7 +407,10 @@ const OwnerForm1 = (_props) => {
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("UC_FROM_DATE_LABEL")} `}<span>*</span></CardLabel>
+          <CardLabel className="card-label-smaller">
+            {`${t("UC_FROM_DATE_LABEL")} `}
+            <span>*</span>
+          </CardLabel>
           <div className="form-field">
             <Controller
               name="fromDate"
@@ -354,18 +418,15 @@ const OwnerForm1 = (_props) => {
               isMandatory={true}
               defaultValue={consumerdetail?.fromDate}
               control={control}
-              render={(props) => (
-                <DatePicker
-                  date={props.value}
-                  name="fromDate"
-                  onChange={props.onChange}
-                />
-              )}
+              render={(props) => <DatePicker date={props.value} name="fromDate" onChange={props.onChange} />}
             />
           </div>
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("UC_TO_DATE_LABEL")} `}<span>*</span></CardLabel>
+          <CardLabel className="card-label-smaller">
+            {`${t("UC_TO_DATE_LABEL")} `}
+            <span>*</span>
+          </CardLabel>
           <div className="form-field">
             <Controller
               name="toDate"
@@ -373,13 +434,7 @@ const OwnerForm1 = (_props) => {
               isMandatory={true}
               defaultValue={consumerdetail?.toDate}
               control={control}
-              render={(props) => (
-                <DatePicker
-                  date={props.value}
-                  name="toDate"
-                  onChange={props.onChange}
-                />
-              )}
+              render={(props) => <DatePicker date={props.value} name="toDate" onChange={props.onChange} />}
             />
           </div>
         </LabelFieldPair>
@@ -390,7 +445,7 @@ const OwnerForm1 = (_props) => {
               <LabelFieldPair>
                 <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>
                   {`${t(stringReplaceAll(tax?.name, ".", "_"))}`}
-                 <span>{tax.isRequired ? "*" : ""}</span> 
+                  <span>{tax.isRequired ? "*" : ""}</span>
                 </CardLabel>
                 <div className="form-field">
                   <Controller
@@ -401,11 +456,7 @@ const OwnerForm1 = (_props) => {
                     render={(props) => (
                       <div style={{ display: "flex" }}>
                         <div className="employee-card-input employee-card-input--front">₹</div>
-                        <TextInput
-                          value={props.value}
-                          onChange={(e) => props.onChange(e.target.value)}
-                          onBlur={props.onBlur}
-                        />
+                        <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} />
                       </div>
                     )}
                   />
@@ -440,6 +491,19 @@ const OwnerForm1 = (_props) => {
           </div>
         </LabelFieldPair>
       </div>
+      {showModal && (
+        <Modal
+          headerBarMain={
+            <CardSubHeader style={{ color: "#a82227", margin: "25px" }}>
+              {modalMsg}
+            </CardSubHeader>
+          }
+          headerBarEnd={<CloseBtn onClick={() => setShowModal(false)} />}
+          className="noc-popupStyles"
+          hideSubmit={true}
+          isOpen={showModal}
+        />
+      )}
     </div>
   );
 };

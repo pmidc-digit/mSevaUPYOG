@@ -391,10 +391,6 @@ public class DxfToPdfConverterv2 {
 
         @Override
         String toSvg(DxfDocument doc, double[] t) {
-            // HATCH boundary paths are construction geometry defining fill areas.
-            // Rendering them as visible lines creates unwanted overlap with the
-            // actual LINE/POLYLINE entities that already draw the same boundaries.
-            // Skip entirely — no visible output.
             return "";
         }
     }
@@ -440,6 +436,9 @@ public class DxfToPdfConverterv2 {
 
             String fontFamily = resolveFontFamily(doc, styleName);
             String cleanText = processTextCodes(text);
+            if (isDimensionPlaceholderText(cleanText)) {
+                return "";
+            }
             
             // Build SVG text element - NO transforms, simple and clean
             StringBuilder svg = new StringBuilder();
@@ -590,7 +589,7 @@ public class DxfToPdfConverterv2 {
         StringBuilder out = new StringBuilder();
         for (MTextSegment run : runs) {
             String text = cleanMTextVisibleText(run.text);
-            if (text.isEmpty()) continue;
+            if (text.isEmpty() || isDimensionPlaceholderText(text)) continue;
             StringBuilder attrs = new StringBuilder();
             if (run.color != null && !run.color.equalsIgnoreCase(baseColor)) {
                 attrs.append(String.format(" fill=\"%s\"", run.color));
@@ -727,7 +726,7 @@ public class DxfToPdfConverterv2 {
                 }
             }
 
-            if (text != null && !text.isEmpty() && !text.equals("<>") && !text.equals("{}")) {
+            if (text != null && !text.isEmpty() && !isDimensionPlaceholderText(text)) {
                 String cleanText = processTextCodes(stripNonStandardCodes(text));
                 if (!cleanText.isEmpty()) {
                     String color = resolveColor(doc, this);
@@ -1761,10 +1760,10 @@ public class DxfToPdfConverterv2 {
                         e.boundaryLoops.add(currentLoop);
                     }
                     currentLoop = new ArrayList<>();
-                } else if (c == 10 && inBoundaryData) {
+                } else if ((c == 10 || c == 11) && inBoundaryData) {
                     pendingX = Double.parseDouble(tok[1].trim());
                     waitingForY = true;
-                } else if (c == 20 && waitingForY && currentLoop != null) {
+                } else if ((c == 20 || c == 21) && waitingForY && currentLoop != null) {
                     currentLoop.add(new double[]{pendingX, Double.parseDouble(tok[1].trim())});
                     waitingForY = false;
                 }
@@ -2024,11 +2023,10 @@ public class DxfToPdfConverterv2 {
     }
 
     if (toExclude.isEmpty()) {
-        // No outlier evidence found -> this file is "already correct".
-        // Trust the header extents exactly like the original code did.
-        // Only fall back to the raw entity bbox if the header is missing
-        // or invalid.
-        if (!applyHeaderExtentsIfValid(doc)) {
+        // Prefer header extents only when they actually contain the rendered
+        // geometry. Some DXFs have valid-looking but stale $EXTMIN/$EXTMAX
+        // values, especially when block INSERT contents were edited later.
+        if (!applyHeaderExtentsIfValid(doc) || !currentExtentsContain(fullBox, doc)) {
             doc.minX = fullBox[0]; doc.minY = fullBox[1];
             doc.maxX = fullBox[2]; doc.maxY = fullBox[3];
             doc.extentsSet = true;
@@ -2071,6 +2069,16 @@ private static void useHeaderOrDefaultExtents(DxfDocument doc) {
         doc.minX = 0; doc.minY = 0; doc.maxX = 100; doc.maxY = 100;
         doc.extentsSet = true;
     }
+}
+
+private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
+    double width = Math.max(1.0, doc.maxX - doc.minX);
+    double height = Math.max(1.0, doc.maxY - doc.minY);
+    double tolerance = Math.max(width, height) * 0.02;
+    return box[0] >= doc.minX - tolerance
+            && box[1] >= doc.minY - tolerance
+            && box[2] <= doc.maxX + tolerance
+            && box[3] <= doc.maxY + tolerance;
 }
 
     // A cluster is only ever a candidate for exclusion if it's small BOTH
@@ -2188,13 +2196,13 @@ private static void useHeaderOrDefaultExtents(DxfDocument doc) {
      * entirely part of a cluster or not, avoiding the point-density bias that
      * broke the earlier IQR-based approach. */
     private static void collectEntityBoxes(DxfDocument doc, List<double[]> boxes, List<String> labels) {
-        for (Entity e : doc.entities) addEntityBox(e, boxes, labels);
+        for (Entity e : doc.entities) addEntityBox(doc, e, boxes, labels, 0);
         // Note: block-definition entities are NOT included — INSERT points
         // (collected via InsertEntity below) represent where those blocks are
         // actually placed in the drawing, which is what matters for page-fit.
     }
 
-    private static void addEntityBox(Entity e, List<double[]> boxes, List<String> labels) {
+    private static void addEntityBox(DxfDocument doc, Entity e, List<double[]> boxes, List<String> labels, int depth) {
         String label = e.layer + "/" + e.getClass().getSimpleName();
         double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
         boolean valid = false;
@@ -2242,7 +2250,14 @@ private static void useHeaderOrDefaultExtents(DxfDocument doc) {
             minX = maxX = m.x; minY = maxY = m.y; valid = true;
         } else if (e instanceof InsertEntity) {
             InsertEntity ins = (InsertEntity) e;
-            minX = maxX = ins.x; minY = maxY = ins.y; valid = true;
+            double[] insertedBox = getInsertedBlockBox(doc, ins, depth);
+            if (insertedBox != null) {
+                minX = insertedBox[0]; minY = insertedBox[1];
+                maxX = insertedBox[2]; maxY = insertedBox[3];
+            } else {
+                minX = maxX = ins.x; minY = maxY = ins.y;
+            }
+            valid = true;
         } else if (e instanceof LeaderEntity) {
             for (double[] v : ((LeaderEntity) e).vertices) {
                 minX = Math.min(minX, v[0]); maxX = Math.max(maxX, v[0]);
@@ -2260,12 +2275,87 @@ private static void useHeaderOrDefaultExtents(DxfDocument doc) {
             maxY = Math.max(Math.max(c[1], c[3]), Math.max(c[5], c[7]));
             valid = true;
         }
-        // HATCH intentionally skipped — same known coverage gap as before.
 
         if (valid) {
             boxes.add(new double[]{minX, minY, maxX, maxY});
             labels.add(label);
         }
+    }
+
+    private static double[] getInsertedBlockBox(DxfDocument doc, InsertEntity insert, int depth) {
+        if (doc == null || insert == null || insert.blockName == null || insert.blockName.startsWith("*") || depth > 8) {
+            return null;
+        }
+
+        Block block = doc.blocks.get(insert.blockName.toUpperCase());
+        if (block == null || block.entities.isEmpty()) {
+            return null;
+        }
+
+        List<double[]> blockBoxes = new ArrayList<>();
+        List<String> blockLabels = new ArrayList<>();
+        for (Entity blockEntity : block.entities) {
+            if (blockEntity.visible) {
+                addEntityBox(doc, blockEntity, blockBoxes, blockLabels, depth + 1);
+            }
+        }
+        if (blockBoxes.isEmpty()) {
+            return null;
+        }
+
+        double[] blockBox = unionBoxes(blockBoxes);
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+        int cols = Math.max(1, insert.cols);
+        int rows = Math.max(1, insert.rows);
+
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                double insertX = insert.x + col * insert.colSpacing;
+                double insertY = insert.y + row * insert.rowSpacing;
+                double[] transformed = transformBlockBox(blockBox, block, insert, insertX, insertY);
+                minX = Math.min(minX, transformed[0]); minY = Math.min(minY, transformed[1]);
+                maxX = Math.max(maxX, transformed[2]); maxY = Math.max(maxY, transformed[3]);
+            }
+        }
+
+        return new double[]{minX, minY, maxX, maxY};
+    }
+
+    private static double[] unionBoxes(List<double[]> boxes) {
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+        for (double[] box : boxes) {
+            minX = Math.min(minX, box[0]); minY = Math.min(minY, box[1]);
+            maxX = Math.max(maxX, box[2]); maxY = Math.max(maxY, box[3]);
+        }
+        return new double[]{minX, minY, maxX, maxY};
+    }
+
+    private static double[] transformBlockBox(double[] box, Block block, InsertEntity insert,
+            double insertX, double insertY) {
+        double angle = Math.toRadians(insert.rotation);
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+        double[][] corners = {
+                {box[0], box[1]},
+                {box[0], box[3]},
+                {box[2], box[1]},
+                {box[2], box[3]}
+        };
+
+        for (double[] corner : corners) {
+            double localX = (corner[0] - block.baseX) * insert.scaleX;
+            double localY = (corner[1] - block.baseY) * insert.scaleY;
+            double worldX = insertX + localX * cos - localY * sin;
+            double worldY = insertY + localX * sin + localY * cos;
+            minX = Math.min(minX, worldX); minY = Math.min(minY, worldY);
+            maxX = Math.max(maxX, worldX); maxY = Math.max(maxY, worldY);
+        }
+
+        return new double[]{minX, minY, maxX, maxY};
     }
 
     static class EntityExtentVisitor {
@@ -2320,15 +2410,17 @@ private static void useHeaderOrDefaultExtents(DxfDocument doc) {
         dxfW = adjMaxX - adjMinX;
         dxfH = adjMaxY - adjMinY;
 
-        // Fit to target keeping aspect ratio
+        // Fit to a fixed target canvas keeping aspect ratio.
         double scale = Math.min(targetWidthPx / dxfW, targetHeightPx / dxfH);
-        double svgW = dxfW * scale;
-        double svgH = dxfH * scale;
+        double drawnW = dxfW * scale;
+        double drawnH = dxfH * scale;
+        double offsetX = (targetWidthPx - drawnW) / 2.0;
+        double offsetY = (targetHeightPx - drawnH) / 2.0;
 
         // transform: [scale, translateX, translateY, viewHeight]
-        // tx(x) = (x - adjMinX) * scale
-        // ty(y) = svgH - (y - adjMinY) * scale
-        double[] t = new double[]{scale, -adjMinX * scale, -adjMinY * scale, svgH};
+        // tx(x) = offsetX + (x - adjMinX) * scale
+        // ty(y) = offsetY + drawnH - (y - adjMinY) * scale
+        double[] t = new double[]{scale, offsetX - adjMinX * scale, -adjMinY * scale, offsetY + drawnH};
 
         StringBuilder sb = new StringBuilder();
         sb.append(String.format(Locale.US,
@@ -2337,7 +2429,7 @@ private static void useHeaderOrDefaultExtents(DxfDocument doc) {
             "xmlns:xlink=\"http://www.w3.org/1999/xlink\" " +
             "width=\"%.2fpx\" height=\"%.2fpx\" " +
             "viewBox=\"0 0 %.4f %.4f\">\n",
-            svgW, svgH, svgW, svgH));
+            (double) targetWidthPx, (double) targetHeightPx, (double) targetWidthPx, (double) targetHeightPx));
 
         // Defs: block symbols + arrowhead marker
         sb.append("<defs>\n");
@@ -2389,7 +2481,8 @@ private static void useHeaderOrDefaultExtents(DxfDocument doc) {
 
         // White background
         sb.append(String.format(Locale.US,
-            "<rect width=\"%.4f\" height=\"%.4f\" fill=\"white\"/>\n", svgW, svgH));
+            "<rect width=\"%.4f\" height=\"%.4f\" fill=\"white\"/>\n",
+            (double) targetWidthPx, (double) targetHeightPx));
 
         // Render entities layer by layer (visible layers first, then by draw order)
         // Collect layer names in order
@@ -2429,8 +2522,14 @@ private static void useHeaderOrDefaultExtents(DxfDocument doc) {
     static String stripNonStandardCodes(String text) {
         if (text == null) return "";
         return text
+                .replaceAll("\\{\\s*\\\\[Hh][^;{}]*;\\s*<>\\s*\\}", "")
+                .replaceAll("\\{\\s*<>\\s*\\}", "")
+                .replaceAll("\\\\[Hh][^;\\s{}]*;", "")
                 // ^I is a tab in DXF MTEXT — replace with space
                 .replace("^I", " ")
+                .replace("<>", "")
+                .replace("{", "")
+                .replace("}", "")
                 // %%U/%%u = underline toggle — strip
                 .replace("%%U", "").replace("%%u", "")
                 // Strip CAD-specific italic/indent codes: i-12.64; i0.6218; i-3.462; etc.
@@ -2441,6 +2540,21 @@ private static void useHeaderOrDefaultExtents(DxfDocument doc) {
                 // Collapse multiple spaces
                 .replaceAll("  +", " ")
                 .trim();
+    }
+
+    static boolean isDimensionPlaceholderText(String text) {
+        if (text == null) {
+            return true;
+        }
+        String cleaned = text
+                .replaceAll("\\{\\s*\\\\[Hh][^;{}]*;\\s*<>\\s*\\}", "")
+                .replaceAll("\\{\\s*<>\\s*\\}", "")
+                .replaceAll("\\\\[Hh][^;\\s{}]*;", "")
+                .replace("<>", "")
+                .replace("{", "")
+                .replace("}", "")
+                .trim();
+        return cleaned.isEmpty();
     }
 
     // ── MAIN ENTRY POINT ──────────────────────────────────────────────────────

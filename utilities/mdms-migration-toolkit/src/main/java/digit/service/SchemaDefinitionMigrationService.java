@@ -4,12 +4,11 @@ import static digit.constants.MDMSMigrationToolkitConstants.DOT_SEPARATOR;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -17,15 +16,12 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.egov.common.contract.request.RequestInfo;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import com.saasquatch.jsonschemainferrer.*;
+import com.saasquatch.jsonschemainferrer.JsonSchemaInferrer;
 
 import digit.config.Configuration;
 import digit.repository.ServiceRequestRepository;
@@ -62,6 +58,9 @@ public class SchemaDefinitionMigrationService {
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
 
+    @Autowired
+    private LocalizationService localizationService;
+
     private Map<String, JsonNode> schemaCodeToSchemaJsonMap;
 
     public void beginMigration(SchemaMigrationRequest schemaMigrationRequest) {
@@ -82,8 +81,7 @@ public class SchemaDefinitionMigrationService {
             schemaDefinitionPOJOs.add(schemaDefinition);
         });
 
-        schemaDefinitionPOJOs.forEach(schemaDefinition -> {
-            SchemaDefinitionRequest schemaDefinitionRequest = SchemaDefinitionRequest.builder()
+        schemaDefinitionPOJOs.forEach(schemaDefinition -> {            SchemaDefinitionRequest schemaDefinitionRequest = SchemaDefinitionRequest.builder()
                     .requestInfo(schemaMigrationRequest.getRequestInfo())
                     .schemaDefinition(schemaDefinition)
                     .build();
@@ -91,6 +89,13 @@ public class SchemaDefinitionMigrationService {
             // Send it to kafka/make API calls to MDMS service schema APIs
             try {
             	serviceRequestRepository.fetchResult(new StringBuilder(config.getMdmsV2Host() + config.getMdmsV2SchemaCreateEndPoint()), schemaDefinitionRequest);
+            	// Push schema and property localization codes to egov-localization
+            	localizationService.pushSchemaLocalization(
+            			schemaDefinition.getCode(),
+            			schemaDefinition.getDefinition(),
+            			schemaMigrationRequest.getRequestInfo(),
+            			schemaMigrationRequest.getSchemaMigrationCriteria().getTenantId()
+            	);
 			} catch (Exception e) {
 				log.error("Error in : " + schemaDefinition);
 			}
@@ -128,6 +133,9 @@ public class SchemaDefinitionMigrationService {
                         		addIdFieldInSchema(schemaNode);
                             }
                         	
+                        	// Fix array fields missing items definition
+                        	fixArrayFieldsInSchema(schemaNode);
+                        	
                         	// Populate schemaCodeToSchemaJsonMap
                             schemaCodeToSchemaJsonMap.put(module + DOT_SEPARATOR + master, schemaNode);
                             log.info("Schema generated for : " + module + DOT_SEPARATOR + master);
@@ -158,6 +166,35 @@ public class SchemaDefinitionMigrationService {
     	
     	ArrayNode required = (ArrayNode)schemaNode.get("required");
     	required.add("id");
+    }
+
+    /**
+     * Recursively fix array properties in schema that miss an 'items' definition
+     * 
+     * @param node
+     */
+    private void fixArrayFieldsInSchema(JsonNode node) {
+        if (node == null || !node.isObject()) return;
+        ObjectNode objNode = (ObjectNode) node;
+
+        if (objNode.has("type") && "array".equals(objNode.get("type").asText())) {
+            if (!objNode.has("items")) {
+                ObjectNode itemsNode = objectMapper.createObjectNode();
+                itemsNode.put("type", "string");
+                objNode.set("items", itemsNode);
+            }
+        }
+
+        if (objNode.has("properties") && objNode.get("properties").isObject()) {
+            Iterator<JsonNode> elements = objNode.get("properties").elements();
+            while (elements.hasNext()) {
+                fixArrayFieldsInSchema(elements.next());
+            }
+        }
+
+        if (objNode.has("items") && objNode.get("items").isObject()) {
+            fixArrayFieldsInSchema(objNode.get("items"));
+        }
     }
     
     /**

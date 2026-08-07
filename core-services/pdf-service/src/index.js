@@ -854,6 +854,33 @@ formatConfigUrls &&
     }
   });
 
+// ═══════════════════════════════════════════════════════════════════
+// HEALTH CHECK ENDPOINT - For Kubernetes monitoring
+// Responds to liveness and readiness probes
+// ═══════════════════════════════════════════════════════════════════
+app.get('/health', asyncHandler(async (req, res) => {
+  try {
+    res.status(200).json({
+      status: 'UP',
+      timestamp: new Date().toISOString(),
+      service: 'pdf-service',
+      version: '1.0.0',
+      pods: 1,
+      concurrency: 1,
+      uptime: process.uptime(),
+      mode: '1 Pod - 1 Concurrency (Stable)'
+    });
+  } catch (error) {
+    logger.error("Health check error: " + error.message);
+    res.status(500).json({
+      status: 'DOWN',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+}));
+// ═══════════════════════════════════════════════════════════════════
+
 app.listen(serverport, () => {
   logger.info(`Server running at http:${serverport}/`);
 });

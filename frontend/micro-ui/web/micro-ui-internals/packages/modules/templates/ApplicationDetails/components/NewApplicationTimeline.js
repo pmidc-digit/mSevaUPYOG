@@ -50,20 +50,46 @@ export default function NewApplicationTimeline({ workflowDetails, prefix = null,
 
 
   const parseActionDateTime = (auditDetails) => {
-    if (!auditDetails?.created || !auditDetails?.timing) return null;
+    if (!auditDetails) return null;
+    if (auditDetails?.lastModifiedTime) return new Date(auditDetails.lastModifiedTime);
+    if (auditDetails?.createdTime) return new Date(auditDetails.createdTime);
 
-    // created = "21/12/2025"
-    // timing  = "03:52 PM"
-    const [day, month, year] = auditDetails.created.split("/");
+    const dateStr = auditDetails?.created || auditDetails?.lastModified;
+    if (!dateStr) return null;
 
-    // build a safe datetime string
-    return new Date(`${year}-${month}-${day} ${auditDetails.timing}`);
+    let year, month, day;
+    if (typeof dateStr === "string" && dateStr.includes("/")) {
+      const parts = dateStr.split("/");
+      if (parts.length === 3) {
+        [day, month, year] = parts;
+      }
+    } else if (typeof dateStr === "string" && dateStr.includes("-")) {
+      const parts = dateStr.split("-");
+      if (parts.length === 3) {
+        if (parts[0].length === 4) {
+          [year, month, day] = parts;
+        } else {
+          [day, month, year] = parts;
+        }
+      }
+    }
+
+    const timingStr = auditDetails?.timing || "";
+    if (year && month && day) {
+      const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")} ${timingStr}`.trim();
+      const parsed = new Date(formattedDate);
+      if (!isNaN(parsed.getTime())) return parsed;
+    }
+
+    const fallback = new Date(dateStr);
+    return isNaN(fallback.getTime()) ? null : fallback;
   };
 
   const calculateSLA = (currentDate, previousDate) => {
     if (!currentDate || !previousDate) return null;
 
-    const diffMs = currentDate - previousDate;
+    const diffMs = currentDate.getTime() - previousDate.getTime();
+    if (isNaN(diffMs) || diffMs < 0) return null;
 
     const totalMinutes = Math.floor(diffMs / (1000 * 60));
     const hours = Math.floor(totalMinutes / 60);
@@ -78,14 +104,18 @@ export default function NewApplicationTimeline({ workflowDetails, prefix = null,
     const details = workflowDetails?.data || workflowDetails;
     const rawTimeline = details?.timeline;
 
-    if (!Array.isArray(rawTimeline)) return [];
+    if (!Array.isArray(rawTimeline) || rawTimeline.length === 0) return [];
 
-    // IMPORTANT: oldest → newest for SLA calculation
-    const orderedTimeline = [...rawTimeline].reverse();
+    // Sort timeline chronologically (oldest to newest) to calculate SLA between sequential actions
+    const chronologicalTimeline = [...rawTimeline].sort((a, b) => {
+      const timeA = parseActionDateTime(a?.auditDetails)?.getTime() || 0;
+      const timeB = parseActionDateTime(b?.auditDetails)?.getTime() || 0;
+      return timeA - timeB;
+    });
 
-    const normalized = orderedTimeline.map((item, index) => {
+    const normalized = chronologicalTimeline.map((item, index) => {
       const currentDate = parseActionDateTime(item.auditDetails);
-      const previousDate = index > 0 ? parseActionDateTime(orderedTimeline[index - 1]?.auditDetails) : null;
+      const previousDate = index > 0 ? parseActionDateTime(chronologicalTimeline[index - 1]?.auditDetails) : null;
 
       return {
         ...item,

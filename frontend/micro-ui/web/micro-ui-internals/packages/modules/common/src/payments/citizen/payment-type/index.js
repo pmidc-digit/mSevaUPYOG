@@ -72,6 +72,7 @@ export const SelectPaymentType = (props) => {
   const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PAYMENT", [{ name: "PaymentGateway" }]); // will change back to pb.testing -> tenantId
   console.log("menuList", menuList);
 
+
   const [isPaymentLoading, setPaymentLoading] = useState(false);
   const { data: paymentdetails, isLoading: paymentLoading } = Digit.Hooks.useFetchPayment(
     { tenantId: tenantId, consumerCode: wrkflow === "WNS" ? connectionNo : consumerCode, businessService },
@@ -286,6 +287,7 @@ export const SelectPaymentType = (props) => {
       }else {
         //Do Nothing
         setPaymentLoading(false);
+        setShowToast({ key: true, label: t("CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER") });
       }
     } catch (error) {
       let messageToShow = "CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER";

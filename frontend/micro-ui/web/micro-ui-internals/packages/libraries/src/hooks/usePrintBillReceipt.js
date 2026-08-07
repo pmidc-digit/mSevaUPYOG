@@ -7,15 +7,24 @@ import { useCallback } from "react";
 const cleanBillAccountDetails = (billAccountDetails = []) => {
   const hasArrears = billAccountDetails?.some((item) => item?.taxHeadCode === "RL_ARREAR_FEE" && Number(item?.amount) > 0);
 
-  return billAccountDetails?.filter((item) => {
-    // remove roundoff always
-    const normalizedCode = item?.taxHeadCode?.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-    if (normalizedCode?.includes("ROUNDOFF")) return false;
-    // remove security deposit ONLY if arrears exist
-    if (hasArrears && normalizedCode?.includes("SECURITYDEPOSIT")) return false;
+ return billAccountDetails
+    ?.map((item) => ({
+      ...item,
+      amount:
+        item?.taxHeadCode?.toUpperCase().includes("ADVANCE")
+          ? Math.abs(Number(item?.amount))
+          : item?.amount,
+    }))
+    ?.filter((item) => {
+      // remove roundoff always
+      const normalizedCode = item?.taxHeadCode?.replace(/[^a-zA-Z0-9]/g, "")?.toUpperCase();
+      if (normalizedCode?.includes("ROUNDOFF")) return false;
 
-    return true;
-  });
+      // remove security deposit ONLY if arrears exist
+      if (hasArrears && normalizedCode?.includes("SECURITYDEPOSIT")) return false;
+
+      return true;
+    });
 };
 
 const normalizeBills = (data) => {

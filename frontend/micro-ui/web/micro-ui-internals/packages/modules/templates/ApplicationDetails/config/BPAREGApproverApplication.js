@@ -16,7 +16,7 @@ export const configBPAREGApproverApplication = ({
     error
 }) => {
     let checkCondtions = true;
-    if (action?.action == "SENDBACKTOCITIZEN" || action?.action == "SEND_BACK_TO_CITIZEN") checkCondtions = false;
+    if (action?.action == "SENDBACKTOCITIZEN" || action?.action == "SEND_BACK_TO_CITIZEN" || action?.action == "CORRECTION") checkCondtions = false;
     if (action.isTerminateState) checkCondtions = false;
 
     return {

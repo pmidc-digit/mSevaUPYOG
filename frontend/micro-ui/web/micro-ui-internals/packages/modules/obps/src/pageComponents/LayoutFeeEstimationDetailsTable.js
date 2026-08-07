@@ -348,7 +348,7 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
         // cluCalculatorLoading ? (
         //   <Loader />
         // ) :
-        <div style={{ width: "100%" }}>
+       
           <LayoutFeeTable
             feeDataWithTotal={applicationFeeDataWithTotal}
             feeData={feeAdjustments}
@@ -363,7 +363,7 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
             onAdjustedAmountBlur={onAdjustedAmountBlur}
             feeHistory={feeHistory}
           />
-        </div>
+       
       }
       {showToast && (
         <Toast

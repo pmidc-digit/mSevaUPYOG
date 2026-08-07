@@ -151,9 +151,20 @@ t,
   }, [action])
 
   function submit(data) {
-    const mandatoryActions = ["APPROVE", "VERIFY", "REJECT", "SENDBACKTOPROFESSIONAL", "SENDBACKTOVERIFIER", "FORWARD"]
+    const mandatoryActions = [
+      "APPROVE",
+      "SENDBACKTOPROFESSIONAL",
+      "REJECT",
+      "INTERNAL_QUERY",
+      "OBSERVATION",
+      "SEND_FOR_INSPECTION_REPORT",
+      "VERIFY",
+      "SENDBACKTOVERIFIER",
+      "FORWARD",
+    ]
 
-    let checkCommentsMandatory = mandatoryActions.includes(action?.action)
+    const actName = action?.action?.toUpperCase() || ""
+    let checkCommentsMandatory = mandatoryActions.includes(action?.action) || actName.includes("FORWARD")
 
     //console.log(checkCommentsMandatory, "CHECK1111111111");
 

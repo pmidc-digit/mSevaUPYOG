@@ -192,6 +192,149 @@ const ApplicationDetails = () => {
     }
   }, [applicationDetailLoadingDynamic, applicationDetailLoadingPunjab]);
 
+  const { data: reminderPeriod, isLoading: isreminderLoading } = Digit.Hooks.useCustomMDMS(tenantId, "TradeLicense", [{ name: "ReminderPeriods" }]);
+
+  const isRenewalEnabled = (validToEpoch) => {
+    if (!validToEpoch || isreminderLoading) return false;
+    const today = new Date();
+    const validToDate = new Date(validToEpoch);
+    const diffInMs = validToDate.getTime() - today.getTime();
+    return diffInMs <= (reminderPeriod?.TradeLicense?.ReminderPeriods?.[0]?.reminderPeriods || 0);
+  };
+
+  const getBPAREGFormData = (data, appType = "EDIT") => {
+    let license = data;
+    const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
+    const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
+    const district = license?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
+    const permanentAddress = address;
+    const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name?.trim()?.split(/\s+/) || [];
+
+    let name = "";
+    let middleName = "";
+    let lastName = "";
+
+    if (nameParts.length === 1) {
+      name = nameParts[0];
+    } else if (nameParts.length === 2) {
+      name = nameParts[0];
+      lastName = nameParts[1];
+    } else if (nameParts.length > 2) {
+      name = nameParts[0];
+      lastName = nameParts[nameParts.length - 1];
+      middleName = nameParts.slice(1, -1).join(" ");
+    }
+
+    let intermediateData = {
+      Correspondenceaddress:
+        license?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress ||
+        `${license?.tradeLicenseDetail?.address?.doorNo ? `${license?.tradeLicenseDetail?.address?.doorNo}, ` : ""} ${
+          license?.tradeLicenseDetail?.address?.street ? `${license?.tradeLicenseDetail?.address?.street}, ` : ""
+        }${license?.tradeLicenseDetail?.address?.landmark ? `${license?.tradeLicenseDetail?.address?.landmark}, ` : ""}${t(
+          license?.tradeLicenseDetail?.address?.locality?.code
+        )}, ${t(license?.tradeLicenseDetail?.address?.city ? license?.tradeLicenseDetail?.address?.city?.code : "")},${
+          t(license?.tradeLicenseDetail?.address?.pincode) ? `${license?.tradeLicenseDetail?.address?.pincode}` : " "
+        }`,
+      formData: {
+        LicneseDetails: {
+          PanNumber: license?.tradeLicenseDetail?.owners?.[0]?.pan,
+          PermanentAddress: permanentAddress,
+          email: license?.tradeLicenseDetail?.owners?.[0]?.emailId,
+          gender: {
+            code: license?.tradeLicenseDetail?.owners?.[0]?.gender,
+            i18nKey: `COMMON_GENDER_${license?.tradeLicenseDetail?.owners?.[0]?.gender}`,
+            value: license?.tradeLicenseDetail?.owners?.[0]?.gender,
+          },
+          mobileNumber: license?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
+          name: name,
+          lastName: lastName,
+          middleName: middleName,
+          SelectedState: state || "",
+          SelectedDistrict: district || "",
+          Pincode: license?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || "",
+          Ulb: license?.tradeLicenseDetail?.additionalDetail?.Ulb || [],
+          dateOfBirth: license?.tradeLicenseDetail?.owners?.[0]?.dob ? Digit.Utils.date.getDate(license?.tradeLicenseDetail?.owners?.[0]?.dob) || null : null,
+          SelectedCorrespondentState: license?.tradeLicenseDetail?.additionalDetail?.correspondenceState,
+          SelectedCorrespondentDistrict: license?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict,
+          PincodeCorrespondent: license?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode,
+        },
+        LicneseType: {
+          LicenseType: {
+            i18nKey: `TRADELICENSE_TRADETYPE_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`,
+            role: [`BPA_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`],
+            tradeType: license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
+          },
+          ArchitectNo: license?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || null,
+          selfCertification: license?.tradeLicenseDetail?.additionalDetail?.isSelfCertificationRequired || false,
+          qualificationType: license?.tradeLicenseDetail?.additionalDetail?.qualificationType || null,
+        },
+      },
+      isAddressSame:
+        license?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress === license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress ? true : false,
+      result: {
+        Licenses: [{ ...data }],
+      },
+      initiationFlow: true,
+      editableFields: {
+        "provide-license-type": true,
+        "licensee-details": false,
+        "Permanent-address": true,
+        "professional-document-details": true,
+        isCreate: false,
+        applicationType: appType,
+      },
+    };
+
+    sessionStorage.setItem("BPAREGintermediateValue", JSON.stringify(intermediateData));
+    history.push("/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required");
+  };
+
+  const { data: workflowDetails } = Digit.Hooks.useWorkflowDetails({
+    tenantId: License?.tenantId || tenantId,
+    id: id,
+    moduleCode: "BPAREG",
+  });
+
+  const workflowActions =
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => userRoles?.some((role) => e.roles?.includes(role)) || !e.roles) ||
+    workflowDetails?.data?.nextActions?.filter((e) => userRoles?.some((role) => e.roles?.includes(role)) || !e.roles) || [];
+
+  let actions = [...workflowActions];
+
+  if (License) {
+    if (License.status === "CITIZEN_ACTION_REQUIRED" && !actions.some((a) => a.action === "EDIT")) {
+      actions.push({ action: "EDIT" });
+    }
+    if (License.status === "INITIATED" && !actions.some((a) => a.action === "BPA_COMP_WORKFLOW")) {
+      actions.push({ action: "BPA_COMP_WORKFLOW" });
+    }
+    if (License.status === "APPROVED" && !License?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("ARCHITECT") && !actions.some((a) => a.action === "BPA_PROFESSIONAL_UPGRADE")) {
+      actions.push({ action: "BPA_PROFESSIONAL_UPGRADE" });
+    }
+    if (((License.status === "APPROVED" && isRenewalEnabled(License?.validTo)) || License.status === "EXPIRED") && !actions.some((a) => a.action === "BPA_PROFESSIONAL_RENEW")) {
+      actions.push({ action: "BPA_PROFESSIONAL_RENEW" });
+    }
+    if (License.status === "PENDINGPAYMENT" && !actions.some((a) => a.action === "COMMON_MAKE_PAYMENT" || a.action === "PAY")) {
+      actions.push({ action: "COMMON_MAKE_PAYMENT" });
+    }
+  }
+
+  const onActionSelect = (action) => {
+    setDisplayMenu(false);
+    const act = action?.action;
+    if (act === "EDIT" || act === "BPA_COMP_WORKFLOW") {
+      getBPAREGFormData(License, "EDIT");
+    } else if (act === "BPA_PROFESSIONAL_UPGRADE" || act === "UPGRADE") {
+      getBPAREGFormData(License, "UPGRADE");
+    } else if (act === "BPA_PROFESSIONAL_RENEW" || act === "RENEW" || act === "RENEWAL") {
+      getBPAREGFormData(License, "RENEWAL");
+    } else if (act === "COMMON_MAKE_PAYMENT" || act === "PAY") {
+      history.push(
+        `/digit-ui/citizen/payment/collect/${License?.businessService || "BPAREG"}/${License?.applicationNumber}/${License?.tenantId}?tenantId=${License?.tenantId}`
+      );
+    }
+  };
+
   const handleViewTimeline = () => {
     setViewTimeline(true);
     const timelineSection = document.getElementById("timeline");
@@ -299,98 +442,6 @@ const ApplicationDetails = () => {
 
   const ulbName = getFormattedULBName(License?.tradeLicenseDetail?.additionalDetail?.Ulb);
 
-  const getBPAREGFormDataForUpgrade = (data) => {
-    let license = data;
-    const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
-    const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
-    const distrcit = license?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
-    const permanentAddress = address;
-    const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name.trim()?.split(/\s+/);
-
-    let name = "";
-    let middleName = "";
-    let lastName = "";
-
-    if (nameParts.length === 1) {
-      // Single name
-      name = nameParts[0];
-    } else if (nameParts.length === 2) {
-      // Two names → first is name, second is lastName
-      name = nameParts[0];
-      lastName = nameParts[1];
-    } else if (nameParts.length > 2) {
-      // More than two names → first = name, last = lastName, middle = rest
-      name = nameParts[0];
-      lastName = nameParts[nameParts.length - 1];
-      middleName = nameParts.slice(1, -1).join(" ");
-    }
-
-    let intermediateData = {
-      Correspondenceaddress:
-        license?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress ||
-        `${license?.tradeLicenseDetail?.address?.doorNo ? `${license?.tradeLicenseDetail?.address?.doorNo}, ` : ""} ${
-          license?.tradeLicenseDetail?.address?.street ? `${license?.tradeLicenseDetail?.address?.street}, ` : ""
-        }${license?.tradeLicenseDetail?.address?.landmark ? `${license?.tradeLicenseDetail?.address?.landmark}, ` : ""}${t(
-          license?.tradeLicenseDetail?.address?.locality.code
-        )}, ${t(license?.tradeLicenseDetail?.address?.city ? license?.tradeLicenseDetail?.address?.city.code : "")},${
-          t(license?.tradeLicenseDetail?.address?.pincode) ? `${license.tradeLicenseDetail?.address?.pincode}` : " "
-        }`,
-      formData: {
-        LicneseDetails: {
-          PanNumber: license?.tradeLicenseDetail?.owners?.[0]?.pan,
-          PermanentAddress: permanentAddress,
-
-          email: license?.tradeLicenseDetail?.owners?.[0]?.emailId,
-          gender: {
-            code: license?.tradeLicenseDetail?.owners?.[0]?.gender,
-            i18nKey: `COMMON_GENDER_${license?.tradeLicenseDetail?.owners?.[0]?.gender}`,
-            value: license?.tradeLicenseDetail?.owners?.[0]?.gender,
-          },
-          mobileNumber: license?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
-          name: name,
-          lastName: lastName,
-          middleName: middleName,
-          SelectedState: state || "",
-          SelectedDistrict: distrcit || "",
-          Pincode: license?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || "",
-          Ulb: license?.tradeLicenseDetail?.additionalDetail?.Ulb || [],
-          dateOfBirth: data?.tradeLicenseDetail?.owners?.[0]?.dob
-            ? Digit.Utils.date.getDate(data?.tradeLicenseDetail?.owners?.[0]?.dob) || null
-            : null,
-          SelectedCorrespondentState: license?.tradeLicenseDetail?.additionalDetail?.correspondenceState,
-          SelectedCorrespondentDistrict: license?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict,
-          PincodeCorrespondent: license?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode,
-        },
-        LicneseType: {
-          LicenseType: {
-            i18nKey: `TRADELICENSE_TRADETYPE_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`,
-            role: [`BPA_${license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`],
-            tradeType: license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
-          },
-          ArchitectNo: license?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || null,
-          selfCertification: license?.tradeLicenseDetail?.additionalDetail?.isSelfCertificationRequired || false,
-          qualificationType: license?.tradeLicenseDetail?.additionalDetail?.qualificationType || null,
-        },
-      },
-      isAddressSame:
-        license?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress === license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress ? true : false,
-      result: {
-        Licenses: [{ ...data }],
-      },
-      initiationFlow: true,
-      editableFields: {
-        "provide-license-type": true,
-        "licensee-details": false,
-        "Permanent-address": true,
-        "professional-document-details": true,
-        isCreate: false,
-        applicationType: "UPGRADE",
-      },
-    };
-    sessionStorage.setItem("BPAREGintermediateValue", JSON.stringify(intermediateData));
-    history.push("/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required");
-  };
-
   return (
     <Fragment>
       <div style={pageStyle}>
@@ -429,11 +480,6 @@ const ApplicationDetails = () => {
               )}
               {/* <DownloadCertificateButton applicationNumber={id} /> */}
               <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
-
-              {applicationDetail?.applicationData?.status === "APPROVED" &&
-                !applicationDetail?.applicationData?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("ARCHITECT") && (
-                  <LinkButton label={t("BPA_PROFESSIONAL_UPGRADE")} onClick={() => getBPAREGFormDataForUpgrade(License)} />
-                )}
             </div>
           </div>
 
@@ -679,6 +725,21 @@ const ApplicationDetails = () => {
           {/* <h2 style={headingStyle}>{t("BPA_TASK_TIMELINE")}</h2> */}
           <ApplicationTimeline id={id} tenantId={License?.tenantId} />
         </div>
+
+        {actions && actions.length > 0 && (
+          <ActionBar>
+            {displayMenu ? (
+              <Menu
+                localeKeyPrefix="BPA_PROFESSIONAL"
+                options={actions}
+                optionKey={"action"}
+                t={t}
+                onSelect={onActionSelect}
+              />
+            ) : null}
+            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          </ActionBar>
+        )}
       </div>
     </Fragment>
   );

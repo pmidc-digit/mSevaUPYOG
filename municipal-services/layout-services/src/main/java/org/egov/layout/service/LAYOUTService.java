@@ -89,6 +89,20 @@ public class LAYOUTService {
 		String acres=null;
 // Access values
 		String ulbType = (String) siteDetails.get("ulbType");
+		Map<String, Object> applicationAppliedUnder = (Map<String, Object>) siteDetails.get("applicationAppliedUnder");
+		String appAppliedUnderCode = null;
+		if (applicationAppliedUnder != null) {
+			appAppliedUnderCode = (String) applicationAppliedUnder.get("code");
+		}
+
+		if ("TOWN_PLANNING".equalsIgnoreCase(appAppliedUnderCode) || "TOWN PLANNING".equalsIgnoreCase(appAppliedUnderCode)) {
+			if ("Nagar Panchayat".equalsIgnoreCase(ulbType) || "Municipal Council".equalsIgnoreCase(ulbType)) {
+				return "Layout_mcl_abv";
+			} else if ("Municipal Corporation".equalsIgnoreCase(ulbType)) {
+				return "Layout_mco_abv";
+			}
+		}
+
 		Map<String, Object> buildingCategory = (Map<String, Object>) siteDetails.get("buildingCategory");
 		String buildingCategoryType = (String) buildingCategory.get("code");
 		if(buildingCategoryType.equals("RESIDENTIAL")){

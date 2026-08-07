@@ -70,6 +70,7 @@ export const SelectPaymentType = (props) => {
   const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PAYMENT", [{ name: "PaymentGateway", "filter": `$.*.[?(@.businessService contains '${businessService}')]` }]); // will change back to pb.testing -> tenantId
   console.log("menuList", menuList);
 
+
   const [isPaymentLoading, setPaymentLoading] = useState(false);
   const { data: paymentdetails, isLoading: paymentLoading } = Digit.Hooks.useFetchPayment(
     { tenantId: tenantId, consumerCode: wrkflow === "WNS" ? connectionNo : consumerCode, businessService },
@@ -177,7 +178,8 @@ export const SelectPaymentType = (props) => {
 
     try {
       const data = await Digit.PaymentService.createCitizenReciept(billDetails?.tenantId, filterData);
-      console.log("data=========", data);
+      console.log("data=========", data)
+      const redirectUrl = _.get(data, TRANSACTION_REDIRECTURL) || "";
       if (paymentAmount === 0 || billDetails.totalAmount === 0) {
         setPaymentLoading(false);
         if (data?.ResponseInfo?.status === "SUCCESSFUL") {
@@ -280,9 +282,13 @@ export const SelectPaymentType = (props) => {
         d?.paymentType?.toUpperCase()?.includes("RAZORPAY")
       ) {
         displayRazorpay(data);
-      } else {
+      }else if (redirectUrl) {
+        //redirection to non razorpay payment gateway url provided by transaction api response
+        window.location = redirectUrl;
+      }else {
         //Do Nothing
         setPaymentLoading(false);
+        setShowToast({ key: true, label: t("CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER") });
       }
     } catch (error) {
       let messageToShow = "CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER";

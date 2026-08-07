@@ -170,7 +170,7 @@ export const SelectPaymentType = (props) => {
     console.log("coming here", filterData);
     try {
       const data = await Digit.PaymentService.createCitizenReciept(billDetails?.tenantId, filterData);
-      console.log("data=========", data);
+      const redirectUrl = _.get(data, TRANSACTION_REDIRECTURL) || "";
       if (paymentAmount === 0 || billDetails.totalAmount === 0) {
         setPaymentLoading(false);
         if (data?.ResponseInfo?.status === "SUCCESSFUL") {
@@ -187,6 +187,9 @@ export const SelectPaymentType = (props) => {
         d?.paymentType?.toUpperCase()?.includes("RAZORPAY")
       ) {
         displayRazorpay(data);
+      }else if (redirectUrl) {
+        //redirection to non razorpay payment gateway url provided by transaction api response
+        window.location = redirectUrl;
       } else {
         //Do Nothing
         setPaymentLoading(false);

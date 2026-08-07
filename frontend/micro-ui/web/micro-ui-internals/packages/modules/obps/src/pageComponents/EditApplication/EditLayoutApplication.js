@@ -504,8 +504,38 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
           const districtObj = cities?.find((obj) => obj?.name === siteDetails?.district?.name || obj?.name === siteDetails?.district);
           setSelectedDistrict(districtObj);
     
+          const buildingCategoryOptions = [
+            { code: "RESIDENTIAL", name: "Residential" },
+            { code: "COMMERCIAL", name: "Commercial" },
+            { code: "INDUSTRIAL_WAREHOUSE", name: "Industrial-Warehouse" },
+            { code: "INSTITUTIONAL", name: "Institutional" },
+          ];
+
+          const residentialTypeOptions = [
+            { code: "RESIDENTIAL_PLOTTED", name: "Residential Plotted" },
+            { code: "AFFORDABLE", name: "Affordable Housing" },
+            { code: "EWS", name: "EWS Housing" },
+          ];
+
+          const buildingCategoryObj =
+            buildingCategoryOptions.find(
+              (obj) =>
+                obj.code === (siteDetails?.buildingCategory?.code || siteDetails?.buildingCategory || "").toUpperCase() ||
+                obj.name.toUpperCase() === (siteDetails?.buildingCategory?.name || siteDetails?.buildingCategory || "").toUpperCase()
+            ) || (typeof siteDetails?.buildingCategory === "object" ? siteDetails?.buildingCategory : null);
+
+          const residentialTypeObj =
+            residentialTypeOptions.find(
+              (obj) =>
+                obj.code === (siteDetails?.residentialType?.code || siteDetails?.residentialType || "").toUpperCase() ||
+                obj.name.toUpperCase() === (siteDetails?.residentialType?.name || siteDetails?.residentialType || "").toUpperCase()
+            ) || (typeof siteDetails?.residentialType === "object" ? siteDetails?.residentialType : null);
+
           const updatedSiteDetails = {
             ...siteDetails,
+            buildingCategory: buildingCategoryObj || siteDetails?.buildingCategory,
+            residentialType: residentialTypeObj || siteDetails?.residentialType,
+            specificationBuildingCategory: buildingCategoryObj?.name || siteDetails?.buildingCategory?.name || siteDetails?.specificationBuildingCategory || "",
             localityAreaType: areaTypeOptions?.find(
               (obj) => obj?.name === siteDetails?.localityAreaType?.name || obj?.name === siteDetails?.localityAreaType
             ),

@@ -229,7 +229,25 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       }
     }
 
-    //console.log("All validations passed, proceeding...");
+    if (!isResidential) {
+      data.areaUnderResidentialUseInSqM = "";
+      data.areaUnderResidentialUseInPct = "";
+      data.residentialType = "";
+    }
+    if (!isCommercial) {
+      data.areaUnderCommercialUseInSqM = "";
+      data.areaUnderCommercialUseInPct = "";
+    }
+    if (!isInstitutional) {
+      data.areaUnderInstutionalUseInSqM = "";
+      data.areaUnderInstutionalUseInPct = "";
+    }
+    if (!isIndustrial) {
+      data.areaUnderIndustrialUseInSqM = "";
+      data.areaUnderIndustrialUseInPct = "";
+    }
+
+    data.specificationBuildingCategory = data?.buildingCategory?.name || data?.buildingCategory?.code || data?.buildingCategory || "";
 
     // Save data in redux
     dispatch(UPDATE_LayoutNewApplication_FORM(config.key, data))
@@ -245,7 +263,11 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const callCreateAPI = async (formData) => {
     const userInfo = Digit.UserService.getUser()?.info || {};
 
-    //console.log("  Form data for CREATE API:", formData);
+    const catCode = (formData?.siteDetails?.buildingCategory?.code || formData?.siteDetails?.buildingCategory?.name || formData?.siteDetails?.buildingCategory || "").toUpperCase();
+    const isRes = catCode.includes("RESIDENTIAL");
+    const isComm = catCode.includes("COMMERCIAL");
+    const isInst = catCode.includes("INSTITUTIONAL");
+    const isInd = catCode.includes("INDUSTRIAL") || catCode.includes("WAREHOUSE");
 
     const transformedSiteDetails = {
       ...formData?.siteDetails,
@@ -253,13 +275,22 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       roadType: formData?.siteDetails?.roadType || "",  // Keep full object
       //buildingStatus: formData?.siteDetails?.buildingStatus?.name || formData?.siteDetails?.buildingStatus || "",  // Extract name
       buildingCategory: formData?.siteDetails?.buildingCategory || "",  // Keep full object
+      residentialType: isRes ? formData?.siteDetails?.residentialType || "" : "",
+      areaUnderResidentialUseInSqM: isRes ? formData?.siteDetails?.areaUnderResidentialUseInSqM || "" : "",
+      areaUnderResidentialUseInPct: isRes ? formData?.siteDetails?.areaUnderResidentialUseInPct || "" : "",
+      areaUnderCommercialUseInSqM: isComm ? formData?.siteDetails?.areaUnderCommercialUseInSqM || "" : "",
+      areaUnderCommercialUseInPct: isComm ? formData?.siteDetails?.areaUnderCommercialUseInPct || "" : "",
+      areaUnderInstutionalUseInSqM: isInst ? formData?.siteDetails?.areaUnderInstutionalUseInSqM || "" : "",
+      areaUnderInstutionalUseInPct: isInst ? formData?.siteDetails?.areaUnderInstutionalUseInPct || "" : "",
+      areaUnderIndustrialUseInSqM: isInd ? formData?.siteDetails?.areaUnderIndustrialUseInSqM || "" : "",
+      areaUnderIndustrialUseInPct: isInd ? formData?.siteDetails?.areaUnderIndustrialUseInPct || "" : "",
       schemeType: formData?.siteDetails?.schemeType || "",  // Keep full object
       layoutAreaType: formData?.siteDetails?.layoutAreaType || "",  // Keep full object
       cluIsApproved: formData?.siteDetails?.cluIsApproved || { code: "NO", i18nKey: "NO" },  // Keep full object
       isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || formData?.siteDetails?.isBasementAreaAvailable || "",
       district: formData?.siteDetails?.district?.name || formData?.siteDetails?.district || "",
       zone: formData?.siteDetails?.zone,
-      specificationBuildingCategory: formData?.siteDetails?.specificationBuildingCategory?.name || "",
+      specificationBuildingCategory: formData?.siteDetails?.buildingCategory?.name || formData?.siteDetails?.buildingCategory?.code || formData?.siteDetails?.specificationBuildingCategory?.name || formData?.siteDetails?.specificationBuildingCategory || "",
       specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
       specificationRestrictedArea: formData?.siteDetails?.specificationRestrictedArea?.code || "",
       specificationIsSiteUnderMasterPlan: formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",

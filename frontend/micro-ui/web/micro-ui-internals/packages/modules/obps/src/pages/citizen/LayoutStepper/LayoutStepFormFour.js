@@ -264,78 +264,88 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     const owners = [...updatedOwnersFromApi, ...mappedNewApplicants];
     
 
-  const updatedApplication = {
-    ...layoutData,
-    vasikaDate: layoutFormData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(layoutFormData?.siteDetails?.vasikaDate) : "",
-    vasikaNumber: layoutFormData?.siteDetails?.vasikaNumber || "",
-    // Only send workflow action for NEW applications, not for EDIT
-    // In EDIT mode, the backend should handle updates without workflow action
-    workflow: !isEditMode ? {
-      action: selectedAction?.action || "APPLY",
-    } : {},
-    layoutDetails: {
-      ...layoutData?.layoutDetails,
-      tenantId: tenantId,
-      additionalDetails: {
-        ...layoutData?.layoutDetails?.additionalDetails,
-        // Keep ONLY professional and applicant-specific details
-        // DO NOT include applicant owner name/address - that info is already in owners array
-        applicationDetails: {
-          // Professional details (only these fields belong here)
-          professionalName: layoutFormData?.applicationDetails?.professionalName,
-          professionalEmailId: layoutFormData?.applicationDetails?.professionalEmailId,
-          professionalRegId: layoutFormData?.applicationDetails?.professionalRegId,
-          professionalMobileNumber: layoutFormData?.applicationDetails?.professionalMobileNumber,
-          professionalAddress: layoutFormData?.applicationDetails?.professionalAddress,
-          professionalRegistrationValidity: layoutFormData?.applicationDetails?.professionalRegistrationValidity,
-          // Applicant-specific fields (not duplicating owner info from owners array)
-          panNumber: layoutFormData?.applicationDetails?.panNumber,
-          primaryOwnerPhoto: layoutFormData?.applicationDetails?.primaryOwnerPhoto,
-          primaryOwnerDocument: layoutFormData?.applicationDetails?.primaryOwnerDocument,
+    const siteDet = layoutFormData?.siteDetails || {};
+    const catCode = (siteDet?.buildingCategory?.code || siteDet?.buildingCategory?.name || siteDet?.buildingCategory || "").toUpperCase();
+    const isRes = catCode.includes("RESIDENTIAL");
+    const isComm = catCode.includes("COMMERCIAL");
+    const isInst = catCode.includes("INSTITUTIONAL");
+    const isInd = catCode.includes("INDUSTRIAL") || catCode.includes("WAREHOUSE");
+
+    const updatedApplication = {
+      ...layoutData,
+      vasikaDate: layoutFormData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(layoutFormData?.siteDetails?.vasikaDate) : "",
+      vasikaNumber: layoutFormData?.siteDetails?.vasikaNumber || "",
+      // Only send workflow action for NEW applications, not for EDIT
+      // In EDIT mode, the backend should handle updates without workflow action
+      workflow: !isEditMode ? {
+        action: selectedAction?.action || "APPLY",
+      } : {},
+      layoutDetails: {
+        ...layoutData?.layoutDetails,
+        tenantId: tenantId,
+        additionalDetails: {
+          ...layoutData?.layoutDetails?.additionalDetails,
+          // Keep ONLY professional and applicant-specific details
+          // DO NOT include applicant owner name/address - that info is already in owners array
+          applicationDetails: {
+            // Professional details (only these fields belong here)
+            professionalName: layoutFormData?.applicationDetails?.professionalName,
+            professionalEmailId: layoutFormData?.applicationDetails?.professionalEmailId,
+            professionalRegId: layoutFormData?.applicationDetails?.professionalRegId,
+            professionalMobileNumber: layoutFormData?.applicationDetails?.professionalMobileNumber,
+            professionalAddress: layoutFormData?.applicationDetails?.professionalAddress,
+            professionalRegistrationValidity: layoutFormData?.applicationDetails?.professionalRegistrationValidity,
+            // Applicant-specific fields (not duplicating owner info from owners array)
+            panNumber: layoutFormData?.applicationDetails?.panNumber,
+            primaryOwnerPhoto: layoutFormData?.applicationDetails?.primaryOwnerPhoto,
+            primaryOwnerDocument: layoutFormData?.applicationDetails?.primaryOwnerDocument,
+          },
+          siteDetails: {
+            ...layoutData?.layoutDetails?.additionalDetails?.siteDetails,
+            ...layoutFormData?.siteDetails,
+            specificationBuildingCategory: layoutFormData?.siteDetails?.buildingCategory?.name || layoutFormData?.siteDetails?.buildingCategory?.code || layoutFormData?.siteDetails?.specificationBuildingCategory?.name || layoutFormData?.siteDetails?.specificationBuildingCategory || "",
+            residentialType: isRes ? layoutFormData?.siteDetails?.residentialType || "" : "",
+            areaUnderResidentialUseInSqM: isRes ? layoutFormData?.siteDetails?.areaUnderResidentialUseInSqM || "" : "",
+            areaUnderResidentialUseInPct: isRes ? layoutFormData?.siteDetails?.areaUnderResidentialUseInPct || "" : "",
+            areaUnderCommercialUseInSqM: isComm ? layoutFormData?.siteDetails?.areaUnderCommercialUseInSqM || "" : "",
+            areaUnderCommercialUseInPct: isComm ? layoutFormData?.siteDetails?.areaUnderCommercialUseInPct || "" : "",
+            areaUnderInstutionalUseInSqM: isInst ? layoutFormData?.siteDetails?.areaUnderInstutionalUseInSqM || "" : "",
+            areaUnderInstutionalUseInPct: isInst ? layoutFormData?.siteDetails?.areaUnderInstutionalUseInPct || "" : "",
+            areaUnderIndustrialUseInSqM: isInd ? layoutFormData?.siteDetails?.areaUnderIndustrialUseInSqM || "" : "",
+            areaUnderIndustrialUseInPct: isInd ? layoutFormData?.siteDetails?.areaUnderIndustrialUseInPct || "" : "",
+            ...(layoutFormData?.siteDetails?.ulbName && { ulbName: typeof layoutFormData?.siteDetails?.ulbName === 'object' ? layoutFormData?.siteDetails?.ulbName?.name || "" : layoutFormData?.siteDetails?.ulbName }),
+            ...(layoutFormData?.siteDetails?.roadType && { 
+              roadType: typeof layoutFormData?.siteDetails?.roadType === 'string' 
+                ? { code: layoutFormData?.siteDetails?.roadType, name: layoutFormData?.siteDetails?.roadType }
+                : layoutFormData?.siteDetails?.roadType
+            }),
+            ...(layoutFormData?.siteDetails?.applicationAppliedUnder && { 
+              applicationAppliedUnder: typeof layoutFormData?.siteDetails?.applicationAppliedUnder === 'string' 
+                ? { code: layoutFormData?.siteDetails?.applicationAppliedUnder, name: layoutFormData?.siteDetails?.applicationAppliedUnder }
+                : layoutFormData?.siteDetails?.applicationAppliedUnder
+            }),
+            ...(layoutFormData?.siteDetails?.district && { 
+              district: typeof layoutFormData?.siteDetails?.district === 'string'
+                ? { code: layoutFormData?.siteDetails?.district, name: layoutFormData?.siteDetails?.district }
+                : layoutFormData?.siteDetails?.district
+            }),
+            ...(layoutFormData?.siteDetails?.zone && { 
+              zone: typeof layoutFormData?.siteDetails?.zone === 'string'
+                ? { code: layoutFormData?.siteDetails?.zone, name: layoutFormData?.siteDetails?.zone }
+                : layoutFormData?.siteDetails?.zone
+            }),
+            ...(layoutFormData?.siteDetails?.proposedSiteAddress && { proposedSiteAddress: layoutFormData?.siteDetails?.proposedSiteAddress }),
+            ...(layoutFormData?.siteDetails?.vasikaNumber && { vasikaNumber: layoutFormData?.siteDetails?.vasikaNumber }),
+            ...(layoutFormData?.siteDetails?.vasikaDate && { vasikaDate: convertToDDMMYYYY(layoutFormData?.siteDetails?.vasikaDate) }),
+          },
+          selectedCheckBox,
+          coordinates: { ...coordinates },
         },
-        siteDetails: {
-          ...layoutData?.layoutDetails?.additionalDetails?.siteDetails,  // Keep original siteDetails structure
-          ...layoutFormData?.siteDetails, // Spread form values to override original ones
-          ...(layoutFormData?.siteDetails?.ulbName && { ulbName: layoutFormData?.siteDetails?.ulbName?.name || "" }),
-          ...(layoutFormData?.siteDetails?.roadType && { 
-            roadType: typeof layoutFormData?.siteDetails?.roadType === 'string' 
-              ? { code: layoutFormData?.siteDetails?.roadType, name: layoutFormData?.siteDetails?.roadType }
-              : layoutFormData?.siteDetails?.roadType
-          }),
-           ...(layoutFormData?.siteDetails?.applicationAppliedUnder && { 
-            applicationAppliedUnder: typeof layoutFormData?.siteDetails?.applicationAppliedUnder === 'string' 
-              ? { code: layoutFormData?.siteDetails?.applicationAppliedUnder, name: layoutFormData?.siteDetails?.applicationAppliedUnder }
-              : layoutFormData?.siteDetails?.applicationAppliedUnder
-          }),
-          // ...(layoutFormData?.siteDetails?.buildingStatus && { 
-          //   buildingStatus: typeof layoutFormData?.siteDetails?.buildingStatus === 'string' 
-          //     ? { code: layoutFormData?.siteDetails?.buildingStatus, name: layoutFormData?.siteDetails?.buildingStatus }
-          //     : layoutFormData?.siteDetails?.buildingStatus
-          // }),
-          // ...(layoutFormData?.siteDetails?.isBasementAreaAvailable && { isBasementAreaAvailable: layoutFormData?.siteDetails?.isBasementAreaAvailable?.code || "" }),
-          ...(layoutFormData?.siteDetails?.district && { 
-            district: typeof layoutFormData?.siteDetails?.district === 'string'
-              ? { code: layoutFormData?.siteDetails?.district, name: layoutFormData?.siteDetails?.district }
-              : layoutFormData?.siteDetails?.district
-          }),
-          ...(layoutFormData?.siteDetails?.zone && { 
-            zone: typeof layoutFormData?.siteDetails?.zone === 'string'
-              ? { code: layoutFormData?.siteDetails?.zone, name: layoutFormData?.siteDetails?.zone }
-              : layoutFormData?.siteDetails?.zone
-          }),
-          // ...(layoutFormData?.siteDetails?.plotNo && { plotNo: layoutFormData?.siteDetails?.plotNo }),
-          ...(layoutFormData?.siteDetails?.proposedSiteAddress && { proposedSiteAddress: layoutFormData?.siteDetails?.proposedSiteAddress }),
-          ...(layoutFormData?.siteDetails?.vasikaNumber && { vasikaNumber: layoutFormData?.siteDetails?.vasikaNumber }),
-          ...(layoutFormData?.siteDetails?.vasikaDate && { vasikaDate: convertToDDMMYYYY(layoutFormData?.siteDetails?.vasikaDate) }),
-        },
-        selectedCheckBox,
-        coordinates: { ...coordinates },
       },
-    },
-    // Initialize empty documents array - will be populated below
-    documents: [],
-    owners: owners,  // ← Top-level owners array (preserved from API response)
-  };
+      // Initialize empty documents array - will be populated below
+      documents: [],
+      owners: owners,  // ← Top-level owners array (preserved from API response)
+    };
 
     // ========== DOCUMENT HANDLING (Following CLU Pattern) ==========
     // CLU uses: cluFormData?.documents?.documents?.documents    

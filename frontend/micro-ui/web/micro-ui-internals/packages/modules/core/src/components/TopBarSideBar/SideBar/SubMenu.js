@@ -44,12 +44,13 @@ const SubMenu = ({ item, onLinkClick }) => {
   const leftIconArray = item?.icon?.leftIcon?.split?.(":")?.[1] || item?.leftIcon?.split?.(":")[1];
   const leftIcon = IconsObject[leftIconArray] || IconsObject.collections;
   const getModuleName = item?.moduleName?.replace(/[ -]/g, "_");
-  const appendTranslate = t(`ACTION_TEST_${getModuleName}`);
+  const appendTranslate = t(`ACTION_TEST_${getModuleName.toUpperCase()}`);
   const trimModuleName = t(appendTranslate);
   // const trimModuleName = t(appendTranslate?.length > 20 ? appendTranslate.substring(0, 20) + "..." : appendTranslate);
 
   if (item.type === "single") {
     const getOrigin = window.location.origin;
+
     return (
       <div className="submenu-container">
         <div className={`sidebar-link  ${pathname === item?.navigationURL ? "active" : ""}`}>
@@ -70,7 +71,7 @@ const SubMenu = ({ item, onLinkClick }) => {
 
                 {trimModuleName?.includes("...") && (
                   <ReactTooltip textColor="white" backgroundColor="grey" place="right" type="info" effect="solid" id={`jk-side-${getModuleName}`}>
-                    {t(`ACTION_TEST_${getModuleName}`)}
+                    {t(`ACTION_TEST_${getModuleName.toUpperCase()}`)}
                   </ReactTooltip>
                 )}
               </a>
@@ -86,7 +87,7 @@ const SubMenu = ({ item, onLinkClick }) => {
 
                 {trimModuleName?.includes("...") && (
                   <ReactTooltip textColor="white" backgroundColor="grey" place="right" type="info" effect="solid" id={`jk-side-${getModuleName}`}>
-                    {t(`ACTION_TEST_${getModuleName}`)}
+                    {t(`ACTION_TEST_${getModuleName.toUpperCase()}`)}
                   </ReactTooltip>
                 )}
               </a>
@@ -103,7 +104,7 @@ const SubMenu = ({ item, onLinkClick }) => {
 
                   {trimModuleName?.includes("...") && (
                     <ReactTooltip textColor="white" backgroundColor="grey" place="right" type="info" effect="solid" id={`jk-side-${getModuleName}`}>
-                      {t(`ACTION_TEST_${getModuleName}`)}
+                      {t(`ACTION_TEST_${getModuleName.toUpperCase()}`)}
                     </ReactTooltip>
                   )}
                 </div>
@@ -129,7 +130,7 @@ const SubMenu = ({ item, onLinkClick }) => {
 
                 {trimModuleName?.includes("...") && (
                   <ReactTooltip textColor="white" backgroundColor="grey" place="right" type="info" effect="solid" id={`jk-side-${getModuleName}`}>
-                    {t(`ACTION_TEST_${getModuleName}`)}
+                    {t(`ACTION_TEST_${getModuleName.toUpperCase()}`)}
                   </ReactTooltip>
                 )}
               </div>
@@ -148,7 +149,7 @@ const SubMenu = ({ item, onLinkClick }) => {
             .filter((item) => item.url === "url" || item.url !== "")
             .map((item, index) => {
               const getChildName = item?.displayName?.toUpperCase()?.replace(/[ -]/g, "_");
-              const appendTranslate = t(`ACTION_TEST_${getChildName}`);
+              const appendTranslate = t(`ACTION_TEST_${getChildName.toUpperCase()}`);
               const trimModuleName = t(appendTranslate);
               // const trimModuleName = t(appendTranslate?.length > 20 ? appendTranslate.substring(0, 20) + "..." : appendTranslate);
 
@@ -165,7 +166,7 @@ const SubMenu = ({ item, onLinkClick }) => {
                       <span> {trimModuleName} </span>
                       {trimModuleName?.includes("...") && (
                         <ReactTooltip textColor="white" backgroundColor="grey" place="right" type="info" effect="solid" id={`jk-side-${index}`}>
-                          {t(`ACTION_TEST_${getChildName}`)}
+                          {t(`ACTION_TEST_${getChildName.toUpperCase()}`)}
                         </ReactTooltip>
                       )}
                     </div>
@@ -189,7 +190,7 @@ const SubMenu = ({ item, onLinkClick }) => {
                     <span> {trimModuleName} </span>
                     {trimModuleName?.includes("...") && (
                       <ReactTooltip textColor="white" backgroundColor="grey" place="right" type="info" effect="solid" id={`jk-side-${index}`}>
-                        {t(`ACTION_TEST_${getChildName}`)}
+                        {t(`ACTION_TEST_${getChildName.toUpperCase()}`)}
                       </ReactTooltip>
                     )}
                     {/* <div className="tooltip">

@@ -1,19 +1,50 @@
 import React, { useRef, useEffect, useState } from "react";
 import SubMenu from "./SubMenu";
-import { Loader, SearchIcon } from "@mseva/digit-ui-react-components";
+import {
+  Loader,
+  SearchIcon,
+  ArrowForward,
+  HomeIcon,
+  ComplaintIcon,
+  BPAHomeIcon,
+  PropertyHouse,
+  CaseIcon,
+  ReceiptIcon,
+  PersonIcon,
+  DocumentIconSolid,
+  DropIcon,
+  CollectionsBookmarIcons,
+  FinanceChartIcon,
+  CollectionIcon,
+} from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import NavItem from "./NavItem";
-import _, { findIndex } from "lodash";
+import { some, orderBy } from "lodash";
 
 const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogout }) => {
   const sidebarRef = useRef(null);
   const { isLoading, data } = Digit.Hooks.useAccessControl();
   const [search, setSearch] = useState("");
+  const [currentPath, setCurrentPath] = useState("");
   const { t } = useTranslation();
+
+  const IconsObject = {
+    home: <HomeIcon />,
+    announcement: <ComplaintIcon />,
+    business: <BPAHomeIcon />,
+    store: <PropertyHouse />,
+    assignment: <CaseIcon />,
+    receipt: <ReceiptIcon />,
+    "business-center": <PersonIcon />,
+    description: <DocumentIconSolid />,
+    "water-tap": <DropIcon />,
+    "collections-bookmark": <CollectionsBookmarIcons />,
+    "insert-chart": <FinanceChartIcon />,
+    edcr: <CollectionIcon />,
+    collections: <CollectionIcon />,
+  };
+
   useEffect(() => {
-    if (isLoading) {
-      return <Loader />;
-    }
+    if (isLoading) return;
     if (sidebarRef.current && !mobileView) {
       sidebarRef.current.style.cursor = "pointer";
       collapseNav();
@@ -23,142 +54,175 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
   const expandNav = () => {
     sidebarRef.current.style.width = "350px";
     sidebarRef.current.style.overflow = "auto";
-
-    sidebarRef.current.querySelectorAll(".dropdown-link").forEach((element) => {
-      element.style.display = "flex";
+    sidebarRef.current.querySelectorAll(".dropdown-link").forEach((el) => {
+      el.style.display = "flex";
     });
   };
+
   const collapseNav = () => {
     sidebarRef.current.style.width = "65px";
     sidebarRef.current.style.overflow = "hidden";
-
-    sidebarRef.current.querySelectorAll(".dropdown-link").forEach((element) => {
-      element.style.display = "none";
+    sidebarRef.current.querySelectorAll(".dropdown-link").forEach((el) => {
+      el.style.display = "none";
     });
-    sidebarRef.current.querySelectorAll(".actions").forEach((element) => {
-      element.style.padding = "0";
-    });
-  };
-
-  const configEmployeeSideBar = {};
-
-  //creating the object structure from mdms value for easy iteration
-  let configEmployeeSideBar1 = {};
-  data?.actions
-    ?.filter((e) => e.url === "url")
-    ?.forEach((item) => {
-      _.set(configEmployeeSideBar1, item.path, { ...item });
-    });
-
-  data?.actions
-    .filter((e) => e.url === "url")
-    .forEach((item) => {
-      let index = item.path.split(".")[0];
-      if (search == "" && item.path !== "") {
-        index = item.path.split(".")[0];
-        if (index === "TradeLicense") index = "Trade License";
-        if (!configEmployeeSideBar[index]) {
-          configEmployeeSideBar[index] = [item];
-        } else {
-          configEmployeeSideBar[index].push(item);
-        }
-      } else if (
-        item.path !== "" &&
-        t(`ACTION_TEST_${index?.toUpperCase()?.replace(/[ -]/g, "_")}`)
-          ?.toLowerCase()
-          .includes(search.toLowerCase())
-      ) {
-        index = item.path.split(".")[0];
-        if (index === "TradeLicense") index = "Trade License";
-        if (!configEmployeeSideBar[index]) {
-          configEmployeeSideBar[index] = [item];
-        } else {
-          configEmployeeSideBar[index].push(item);
-        }
-      }
-    });
-  let res = [];
-
-  //method is used for restructing of configEmployeeSideBar1 nested object into nested array object
-  function restructuringOfConfig(tempconfig) {
-    const result = [];
-    for (const key in tempconfig) {
-      const value = tempconfig[key];
-      if (typeof value === "object" && !value?.id) {
-        const children = restructuringOfConfig(value);
-        result.push({ label: key, children, icon: children?.[0]?.icon, to: "" });
-      } else {
-        result.push({ label: key, value, icon: value?.leftIcon, to: key === "Home" ? "/digit-ui/employee" : value?.navigationURL });
-      }
-    }
-
-    return result;
-  }
-  const splitKeyValue = (onLinkClick) => {
-    const keys = Object.keys(configEmployeeSideBar);
-    keys.sort((a, b) => a.orderNumber - b.orderNumber);
-    for (let i = 0; i < keys.length; i++) {
-      if (configEmployeeSideBar[keys[i]][0].path.indexOf(".") === -1 || keys[i] === "KibanaDashboard") {
-        if (configEmployeeSideBar[keys[i]][0].displayName === "Home") {
-          const homeURL = "/digit-ui/employee";
-          res.unshift({
-            moduleName: keys[i].toUpperCase(),
-            icon: configEmployeeSideBar[keys[i]][0],
-            navigationURL: homeURL,
-            type: "single",
-          });
-        } else {
-          res.push({
-            moduleName: configEmployeeSideBar[keys[i]][0]?.displayName.toUpperCase(),
-            type: "single",
-            icon: configEmployeeSideBar[keys[i]][0],
-            navigationURL: configEmployeeSideBar[keys[i]][0].navigationURL,
-            isKibana: keys[i] === "KibanaDashboard",
-          });
-        }
-      } else {
-        res.push({
-          moduleName: keys[i].toUpperCase(),
-          links: configEmployeeSideBar[keys[i]],
-          icon: configEmployeeSideBar[keys[i]][0],
-          orderNumber: configEmployeeSideBar[keys[i]][0].orderNumber,
-        });
-      }
-    }
-    if (res.find((a) => a.moduleName === "HOME")) {
-      //res.splice(0,1);
-      const indx = res.findIndex((a) => a.moduleName === "HOME");
-      const home = res?.filter((ob) => ob?.moduleName === "HOME");
-      let res1 = res?.filter((ob) => ob?.moduleName !== "HOME");
-      res = res1.sort((a, b) => a.moduleName.localeCompare(b.moduleName));
-      home?.[0] && res.unshift(home[0]);
-    } else {
-      res.sort((a, b) => a.moduleName.localeCompare(b.moduleName));
-    }
-    //reverting the newsidebar change for now, in order to solve ndss login issue
-    //let newconfig = restructuringOfConfig(configEmployeeSideBar1);
-    //below lines are used for shifting home object to first place
-    // newconfig.splice(newconfig.findIndex((ob) => ob?.label === ""),1);
-    // newconfig.sort((a,b) => a.label.localeCompare(b.label));
-    // const fndindex = newconfig?.findIndex((el) => el?.label === "Home");
-    // const homeitem = newconfig.splice(fndindex,1);
-    // newconfig.unshift(homeitem?.[0]);
-    // return (
-    //   newconfig.map((item, index) => {
-    //       return <NavItem key={`${item?.label}-${index}`} item={item} />;
-    //     })
-    // );
-    return res?.map((item, index) => {
-      return <SubMenu item={item} key={index + 1} onLinkClick={onLinkClick} />;
+    sidebarRef.current.querySelectorAll(".actions").forEach((el) => {
+      el.style.padding = "0";
     });
   };
 
-  if (isLoading) {
-    return <Loader />;
-  }
-  if (!res) {
-    return "";
-  }
+  const buildMenuItems = (path) => {
+    let menuItems = [];
+    const actionList = data?.actions?.filter((e) => e.url === "url") || [];
+
+    actionList.forEach((item) => {
+      if (item.path === "") return;
+
+      if (!path) {
+        const splitArray = item.path.split(".");
+        const topLevel = splitArray[0];
+
+        if (!some(menuItems, { path: topLevel })) {
+          const leftIcon = item.leftIcon ? item.leftIcon.split(".")[0] : null;
+
+          menuItems.push({
+            path: topLevel,
+            name: topLevel,
+            url: "",
+            queryParams: item.queryParams,
+            orderNumber: item.orderNumber,
+            navigationURL: item.navigationURL,
+            leftIcon,
+            displayName: topLevel,
+            moduleName: topLevel,
+            type: "parent",
+            originalItem: item,
+          });
+        }
+      } else if (item.path.startsWith(path + ".")) {
+        const remainder = item.path.substring(path.length + 1);
+        const splitArray = remainder.split(".");
+
+        if (splitArray.length > 1) {
+          const parentName = splitArray[0];
+          if (!some(menuItems, { path: path + "." + parentName })) {
+            const leftIconArray = item.leftIcon ? item.leftIcon.split(".") : [];
+            const pathDepth = path.split(".").length;
+            const leftIcon = leftIconArray.length > pathDepth ? leftIconArray[pathDepth] : null;
+
+            menuItems.push({
+              path: path + "." + parentName,
+              name: parentName,
+              url: "",
+              queryParams: item.queryParams,
+              orderNumber: item.orderNumber,
+              navigationURL: "",
+              leftIcon,
+              displayName: parentName,
+              moduleName: parentName,
+              type: "parent",
+              originalItem: item,
+            });
+          }
+        } else {
+          const displayName = item.displayName || splitArray[0];
+          const leftIconArray = item.leftIcon ? item.leftIcon.split(".") : [];
+          const pathDepth = path.split(".").length;
+          const leftIcon = leftIconArray.length > pathDepth ? leftIconArray[pathDepth] : null;
+
+          menuItems.push({
+            path: item.path,
+            name: displayName,
+            url: item.url,
+            queryParams: item.queryParams,
+            orderNumber: item.orderNumber,
+            navigationURL: item.navigationURL,
+            leftIcon,
+            displayName,
+            moduleName: displayName,
+            type: "single",
+            originalItem: item,
+          });
+        }
+      }
+    });
+
+    return orderBy(menuItems, ["orderNumber"], ["asc"]);
+  };
+
+  const getSearchResults = () => {
+    if (!search || currentPath) return [];
+
+    const actionList = data?.actions?.filter((e) => e.url === "url") || [];
+    return actionList.filter((item) => item.url && item.displayName.toLowerCase().includes(search.toLowerCase()));
+  };
+
+  const navigateToMenu = (path) => {
+    setCurrentPath(path);
+    setSearch("");
+  };
+
+  const navigateBack = () => {
+    if (!currentPath) return;
+
+    const pathArray = currentPath.split(".");
+    pathArray.pop();
+    setCurrentPath(pathArray.join("."));
+    setSearch("");
+  };
+
+  const getBreadcrumbTitle = () => {
+    if (!currentPath) return "";
+    const pathArray = currentPath.split(".");
+    return pathArray[pathArray.length - 1];
+  };
+
+  const getIconComponent = (iconString) => {
+    if (!iconString) return IconsObject.collections;
+
+    const iconArray = iconString.split(":");
+    const iconName = iconArray[iconArray.length - 1];
+    return IconsObject[iconName] || IconsObject.collections;
+  };
+
+  const convertItemsForSubMenu = (items) => {
+    return items.map((item, index) => {
+      const iconComponent = getIconComponent(item.leftIcon);
+
+      if (!item.url) {
+        const moduleName = item.moduleName?.replace(/[ -]/g, "_").toUpperCase();
+        const appendTranslate = t(`ACTION_TEST_${moduleName}`);
+        const trimModuleName = t(appendTranslate);
+
+        return (
+          <div key={index} className="submenu-container">
+            <div onClick={() => navigateToMenu(item.path)} className="sidebar-link" style={{ cursor: "pointer" }}>
+              <div className="actions">
+                {iconComponent}
+                <span id="sdbshvdsh">{trimModuleName}</span>
+              </div>
+              <div>
+                <ArrowForward />
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <SubMenu
+          key={index}
+          item={{
+            type: "single",
+            moduleName: item.originalItem?.displayName,
+            navigationURL: item.navigationURL,
+            leftIcon: item.originalItem?.leftIcon,
+            isKibana: false,
+          }}
+          onLinkClick={() => {}}
+        />
+      );
+    });
+  };
 
   const renderSearch = () => {
     return (
@@ -169,10 +233,11 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
             <input
               className="employee-search-input"
               type="text"
-              placeholder={t(`ACTION_TEST_SEARCH`)}
+              placeholder={t("ACTION_TEST_SEARCH")}
               name="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              disabled={currentPath !== ""}
             />
           </div>
         </div>
@@ -184,51 +249,37 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
     toggleSidebar(false);
   };
 
-  // Mobile sidebar styles
-  const mobileOverlayStyle = {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100vw",
-    height: "100vh",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    zIndex: 9998,
-    display: isSidebarOpen ? "block" : "none",
-  };
+  if (isLoading) {
+    return <Loader />;
+  }
 
-  const mobileSidebarStyle = {
-    position: "fixed",
-    top: 0,
-    left: isSidebarOpen ? 0 : "-280px",
-    width: "280px",
-    height: "100vh",
-    backgroundColor: "#fff",
-    zIndex: 9999,
-    transition: "left 0.3s ease",
-    overflowY: "auto",
-    boxShadow: isSidebarOpen ? "2px 0 8px rgba(0,0,0,0.15)" : "none",
-  };
+  const displayItems = search ? getSearchResults() : buildMenuItems(currentPath);
 
-  const mobileHeaderStyle = {
-    padding: "16px",
-    borderBottom: "1px solid #e5e7eb",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#f9fafb",
-  };
-
-  const closeButtonStyle = {
-    background: "none",
-    border: "none",
-    fontSize: "24px",
-    cursor: "pointer",
-    color: "#6b7280",
-    padding: "4px 8px",
-  };
-
-  // Mobile view render
   if (mobileView) {
+    const mobileOverlayStyle = {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100vw",
+      height: "100vh",
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      zIndex: 9998,
+      display: isSidebarOpen ? "block" : "none",
+    };
+
+    const mobileSidebarStyle = {
+      position: "fixed",
+      top: 0,
+      left: isSidebarOpen ? 0 : "-280px",
+      width: "280px",
+      height: "100vh",
+      backgroundColor: "#fff",
+      zIndex: 9999,
+      transition: "left 0.3s ease",
+      overflowY: "auto",
+      boxShadow: isSidebarOpen ? "2px 0 8px rgba(0,0,0,0.15)" : "none",
+    };
+
     return (
       <React.Fragment>
         <div style={mobileOverlayStyle} onClick={closeSidebar}></div>
@@ -305,18 +356,51 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
                 font-size: 14px !important;
                 width: 100% !important;
               }
+              .employee-mobile-sidebar .employee-search-input:disabled {
+                opacity: 0.5 !important;
+                cursor: not-allowed !important;
+              }
             `}
           </style>
-          <div style={mobileHeaderStyle}>
-            <span style={{ fontWeight: 600, fontSize: "16px", color: "#1f2937" }}>{t("")}</span>
-            <button style={closeButtonStyle} onClick={closeSidebar}>
+
+          <div style={{ padding: "16px", borderBottom: "1px solid #e5e7eb", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontWeight: 600, fontSize: "16px", color: "#1f2937" }}>{currentPath ? getBreadcrumbTitle() : t("CORE_COMMON_MENU")}</span>
+            <button
+              onClick={closeSidebar}
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#6b7280",
+                padding: "4px 8px",
+              }}
+            >
               ×
             </button>
           </div>
+
           <div style={{ padding: "8px 0" }}>
             {renderSearch()}
-            {splitKeyValue(closeSidebar)}
+
+            {currentPath && (
+              <div
+                onClick={navigateBack}
+                style={{
+                  padding: "12px 16px",
+                  cursor: "pointer",
+                  color: "#4f46e5",
+                  fontWeight: 500,
+                  borderBottom: "1px solid #e5e7eb",
+                }}
+              >
+                ← Back
+              </div>
+            )}
+
+            {convertItemsForSubMenu(displayItems)}
           </div>
+
           {handleLogout && (
             <div style={{ borderTop: "1px solid #e5e7eb", padding: "16px" }}>
               <button
@@ -324,13 +408,11 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
                 style={{
                   width: "100%",
                   padding: "12px",
-
                   color: "black",
                   border: "none",
                   borderRadius: "6px",
                   cursor: "pointer",
                   fontWeight: 500,
-                  marginTop: "-1rem",
                 }}
               >
                 {t("CORE_COMMON_LOGOUT")}
@@ -342,17 +424,151 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
     );
   }
 
-  // Desktop view render
   return (
     <div
       className="sidebar"
       ref={sidebarRef}
       onMouseOver={expandNav}
       onMouseLeave={collapseNav}
-      style={{ display: window.location.href.includes("main-dashboard-landing") ? "none" : "" }}
+      style={{
+        display: window.location.href.includes("main-dashboard-landing") ? "none" : "",
+        backgroundColor: "#f8f9fa",
+        borderRight: "1px solid #e5e7eb",
+      }}
     >
+      <style>
+        {`
+          .sidebar .submenu-container {
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+
+          .sidebar .sidebar-link {
+            padding: 12px 16px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            border-bottom: 1px solid #f3f4f6 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            background-color: transparent !important;
+          }
+
+          .sidebar .sidebar-link:hover {
+            background-color: #f0f2f5 !important;
+            border-left: 3px solid #4f46e5 !important;
+            padding-left: 13px !important;
+          }
+
+          .sidebar .sidebar-link.active {
+            background-color: #eef2ff !important;
+            border-left: 3px solid #4f46e5 !important;
+            padding-left: 13px !important;
+          }
+
+          .sidebar .actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding: 0 !important;
+            flex: 1;
+          }
+
+          .sidebar .actions svg {
+            width: 20px !important;
+            height: 20px !important;
+            flex-shrink: 0;
+            color: #6b7280 !important;
+          }
+
+          .sidebar .actions span,
+          .sidebar .actions a,
+          .sidebar .custom-link {
+            font-size: 14px !important;
+            color: #1f2937 !important;
+            text-decoration: none !important;
+            font-weight: 500 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+          }
+
+          .sidebar .dropdown-link {
+            display: flex !important;
+            padding: 10px 16px 10px 48px !important;
+            font-size: 13px !important;
+            color: #4b5563 !important;
+            text-decoration: none !important;
+            border-bottom: 1px solid #f9fafb !important;
+            transition: all 0.2s ease !important;
+          }
+
+          .sidebar .dropdown-link:hover {
+            background-color: #f3f4f6 !important;
+            color: #4f46e5 !important;
+          }
+
+          .sidebar .dropdown-link.active {
+            background-color: #eef2ff !important;
+            color: #4f46e5 !important;
+            border-left: 3px solid #4f46e5 !important;
+            padding-left: 45px !important;
+          }
+
+          .sidebar .search-icon-wrapper {
+            padding: 8px 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            background-color: #fff !important;
+            margin: 12px !important;
+            border-radius: 6px !important;
+            border: 1px solid #d1d5db !important;
+          }
+
+          .sidebar .employee-search-input {
+            border: none !important;
+            background: transparent !important;
+            outline: none !important;
+            font-size: 13px !important;
+            width: 100% !important;
+            color: #1f2937 !important;
+          }
+
+          .sidebar .employee-search-input::placeholder {
+            color: #9ca3af !important;
+          }
+
+          .sidebar .employee-search-input:disabled {
+            opacity: 0.5 !important;
+            cursor: not-allowed !important;
+          }
+        `}
+      </style>
+
       {renderSearch()}
-      {splitKeyValue()}
+
+      {currentPath && (
+        <div
+          onClick={navigateBack}
+          style={{
+            padding: "12px 16px",
+            cursor: "pointer",
+            color: "#4f46e5",
+            fontSize: "13px",
+            borderBottom: "1px solid #e5e7eb",
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            backgroundColor: "#f0f2f5",
+          }}
+        >
+          ← Back
+        </div>
+      )}
+
+      {convertItemsForSubMenu(displayItems)}
     </div>
   );
 };

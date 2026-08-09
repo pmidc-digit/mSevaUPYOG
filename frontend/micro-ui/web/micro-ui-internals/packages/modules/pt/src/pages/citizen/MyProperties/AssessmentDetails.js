@@ -702,6 +702,8 @@ console.log("isCheck",isCheck)
                     ?.sort?.((a, b) => a.floorNo - b.floorNo)
                     ?.map((unit, index) => {
                       let floorName = `PROPERTYTAX_FLOOR_${unit.floorNo}`;
+                      console.log('unit in assess page:', unit);
+                      
                       const values = [
                         {
                           title: `${t("ES_APPLICATION_DETAILS_UNIT")} ${index + 1}`,
@@ -713,7 +715,7 @@ console.log("isCheck",isCheck)
                         },
                         {
                           title: "PT_ASSESSMENT_UNIT_USAGE_TYPE",
-                          value: `PROPERTYTAX_BILLING_SLAB_${unit?.usageCategory != "RESIDENTIAL" ? unit?.usageCategory?.split(".")[1] : unit?.usageCategory
+                          value: `PROPERTYTAX_BILLING_SLAB_${unit?.usageCategory != "RESIDENTIAL" && unit?.usageCategory != "MIXED" ? unit?.usageCategory?.split(".")[1] : unit?.usageCategory
                             }`,
                         },
                         {
@@ -722,7 +724,7 @@ console.log("isCheck",isCheck)
                         },
                         {
                           title: "PT_FORM2_BUILT_AREA",
-                          value: unit?.constructionDetail?.builtUpArea,
+                          value: Math.round(Number(unit?.constructionDetail?.builtUpArea) * 9).toFixed(2),
                         },
                       ];
 
@@ -796,9 +798,20 @@ console.log("isCheck",isCheck)
         setIsCheck={setIsCheck}
         isCheck={isCheck}
       />
-      {/* {popup && (<RebatePenalityPoPup/>)} */}
-       {/* <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                   <CheckBox onChange={}/><p>{t("PT_FINAL_DECLARATION_MESSAGE")}</p></div> */}
+      {!queryClient.getQueryData(["PT_ASSESSMENT", AssessmentData?.propertyId, location?.state?.Assessment?.financialYear]) && (
+        <Card style={{ marginTop: '16px' }}>
+          <CardSubHeader style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>
+            {t("DECLARATION")}
+          </CardSubHeader>
+          <CheckBox
+            checked={isCheck}
+            value={isCheck}
+            onChange={(e) => setIsCheck(e.target.checked)}
+            label={t("PT_FINAL_DECLARATION_MESSAGE") !== "PT_FINAL_DECLARATION_MESSAGE" ? t("PT_FINAL_DECLARATION_MESSAGE") : "I hereby declare and affirm that the above-furnished information is true and correct and nothing has been concealed therefrom. I am also aware of the fact that in case this information is found false/incorrect, the authorities are at liberty to initiate recovery of amount/interest/penalty/fine as provided in Punjab Municipal Act 1911 or Punjab Municipal Corporation Act 1976."}
+            styles={{ height: "auto" }}
+          />
+        </Card>
+      )}
       {showCalc && <Modal
         headerBarMain={<Heading label={t("PT_CALC_DETAILS")} />}
         headerBarEnd={<CloseBtn onClick={() => { setShowCalc(false) }} />}
@@ -815,7 +828,7 @@ console.log("isCheck",isCheck)
           <h3 style={{ fontFamily: 'Noto Sans', marginBottom: '3px' }}>
             Property Tax = Built up area on GF*Rates per unit of GF-built up empty land on GF * Rate per unit of GF-empty land 𝝨(built-up on nth floor*Rate per unit of nth floor-built up)
           </h3>
-          <h3 style={{ color: 'red', fontFamily: 'Noto Sans', marginBottom: '5px' }}>* 5% increase in Gross Tax is applicable for FY 2021-22</h3>
+          <h3 style={{ color: 'red', fontFamily: 'Noto Sans', marginBottom: '5px' }}>* 5% increase in Gross Tax is applicable for FY 2022-2023</h3>
           <h2 style={{ color: '#2947a3', fontSize: '18px', fontFamily: 'Noto Sans', marginBottom: '2px' }}>Applicable Charge Slabs</h2>
           <StatusTable>
             {applicationDetails?.applicationData?.units

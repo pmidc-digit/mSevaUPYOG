@@ -5,7 +5,8 @@ import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails";
 import PropertyOwnerHistory from "../citizen/MyProperties/propertyOwnerHistory";
-import usePropertyAPI from "../../../../../libraries/src/hooks/pt/usePropertyAPI"
+import usePropertyAPI from "../../../../../libraries/src/hooks/pt/usePropertyAPI";
+import UpdateSurveyId from "./updateSurveyId";
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -31,6 +32,7 @@ const PropertyDetails = () => {
   const [enableAudit, setEnableAudit] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showUpdateNo, setShowUpdateNo] = useState(false);
+  const [showUpdateSurveyId, setShowUpdateSurveyId] = useState(null);
   const [showDuesPopup, setShowDuesPopup] = useState(false);
 
   const [showDocsPopup, setShowDocsPopup] = useState(false);
@@ -152,6 +154,29 @@ const PropertyDetails = () => {
 
   if (appDetailsToShow?.applicationDetails) {
     appDetailsToShow.applicationDetails = appDetailsToShow?.applicationDetails?.map((e) => {
+      if (e.title === "PT_PROPERTY_ADDRESS_SUB_HEADER") {
+        if (["ACTIVE", "INWORKFLOW"].includes(applicationDetails?.applicationData?.status)) {
+          e.values.map((value) => {
+            if (value.title === "Survey Id/UID") {
+              value.textStyle = { display: "flex", alignItems: "center", wordBreak: "revert" };
+              value.caption = (
+                <span
+                  onClick={() => {
+                    setShowModal((prev) => !prev);
+                    setShowUpdateSurveyId({
+                      existingSurveyId: appDetailsToShow?.applicationData?.surveyId || "NA",
+                      propertyId: appDetailsToShow?.applicationData?.propertyId,
+                    });
+                  }}
+                  style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", marginLeft: "8px", verticalAlign: "middle" }}
+                >
+                  <EditIcon style={{ width: "16px", height: "16px" }} />
+                </span>
+              );
+            }
+          });
+        }
+      }
       if (e.title === "PT_OWNERSHIP_INFO_SUB_HEADER") {
         if (applicationDetails?.applicationData?.status === "ACTIVE") {
           e.additionalDetails.owners.map((owner, ind) => {
@@ -300,7 +325,21 @@ const PropertyDetails = () => {
           isDuesSection: true,
           belowComponent: () => (
             <LinkLabel
-              onClick={() => history.push({ pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`})}
+              onClick={() => {
+                const element = document.getElementById("payment-history");
+                if (element) {
+                  const header = element.querySelector(".accordion-header");
+                  const body = element.querySelector(".accordion-body");
+                  if (header && !body) {
+                    header.click();
+                  }
+                  setTimeout(() => {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }, 100);
+                } else {
+                  history.push({ pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`});
+                }
+              }}
               style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
             >
               {t("PT_VIEW_PAYMENT")}
@@ -424,28 +463,42 @@ const PropertyDetails = () => {
         mutate={null}
         workflowDetails={appDetailsToShow?.applicationData?.status === "ACTIVE" ? workflowDetails : {}}
         businessService="PT"
+        moduleCode="PT"
         showToast={showToast}
         setShowToast={setShowToast}
         closeToast={closeToast}
         showTimeLine={false}
         timelineStatusPrefix={"ES_PT_COMMON_STATUS_"}
         forcedActionPrefix={"WF_EMPLOYEE_PT.CREATE"}
-      />
-      {showModal ? (
-  
+        propertyId={applicationNumber}
+      />      {showModal ? (
+   
           <Modal
-            headerBarMain={<h1 className="heading-m">{showUpdateNo ? t("PTUPNO_HEADER") : t("PT_OWNER_HISTORY")}</h1>}
+            headerBarMain={
+              <h1 className="heading-m">
+                {showUpdateSurveyId
+                  ? `PropertiesId${showUpdateSurveyId.propertyId} Existing Survey Id/UID: ${showUpdateSurveyId.existingSurveyId}`
+                  : showUpdateNo
+                  ? t("PTUPNO_HEADER")
+                  : t("PT_OWNER_HISTORY")}
+              </h1>
+            }
             headerBarEnd={
               <CloseBtn
                 onClick={() => {
                   setShowModal(false);
                   setShowUpdateNo(false);
+                  setShowUpdateSurveyId(null);
                 }}
               />
             }
             hideSubmit={true}
             isDisabled={false}
-            popupStyles={showUpdateNo ? { width: isMobile ? "473px" : "50%", zIndex: 100001, overflow: "visible" } : { width: "75%", zIndex: 100001, overflow: "visible" }}
+            popupStyles={
+              showUpdateNo || showUpdateSurveyId
+                ? { width: isMobile ? "473px" : "50%", zIndex: 100001, overflow: "visible" }
+                : { width: "75%", zIndex: 100001, overflow: "visible" }
+            }
           >
           {showUpdateNo && (
             <UpdatePropertyNumberComponent
@@ -490,7 +543,42 @@ const PropertyDetails = () => {
               }}
             ></UpdatePropertyNumberComponent>
           )}
-          {!showUpdateNo && <PropertyOwnerHistory propertyId={applicationNumber} userType={"employee"} />}
+          {showUpdateSurveyId && (
+            <UpdateSurveyId
+              t={t}
+              propertyId={showUpdateSurveyId.propertyId}
+              existingSurveyId={showUpdateSurveyId.existingSurveyId}
+              showPopup={setShowModal}
+              onValidation={(data) => {
+                let newProp = { ...appDetailsToShow?.applicationData };
+                newProp.surveyId = data.surveyId;
+                newProp.creationReason = "UPDATE";
+                newProp.tenantId = tenantId;
+                newProp.workflow = null;
+                mutation.mutate(
+                  {
+                    Property: newProp,
+                  },
+                  {
+                    onError: (error) => {
+                      console.error("Property update failed:", error);
+                      setShowToast({ key: "error", message: "Failed to update property survey ID", type: "error" });
+                    },
+                    onSuccess: async (successRes) => {
+                      console.log("Property updated successfully", successRes);
+                      setShowToast({ key: "success", message: t("PT_SURVEY_ID_UPDATED_SUCCESS") || "Survey ID updated successfully!", type: "success" });
+                      setShowModal(false);
+                      setShowUpdateSurveyId(null);
+                      setTimeout(() => {
+                        window.location.reload();
+                      }, 2000);
+                    },
+                  }
+                );
+              }}
+            />
+          )}
+          {!showUpdateNo && !showUpdateSurveyId && <PropertyOwnerHistory propertyId={applicationNumber} userType={"employee"} />}
           </Modal>
        
       ) : null}

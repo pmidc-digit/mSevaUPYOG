@@ -161,7 +161,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                     </span>
                     {formState?.dirtyFields?.[input.name] ? (
                       <span
-                        style={{ fontWeight: "700", color: "rgba(212, 53, 28)", paddingLeft: "8px", marginTop: "-20px", fontSize: "12px" }}
+                        style={{ fontWeight: "700", color: "rgba(212, 53, 28)", paddingLeft: "8px", marginTop: "5px", fontSize: "12px" }}
                         className="inbox-search-form-error"
                       >
                         {formState?.errors?.[input.name]?.message}
@@ -208,7 +208,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                     submit
                   />
                   {/* style={{ paddingTop: "16px", textAlign: "center" }} className="clear-search" */}
-                  <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
+                  <div style={{ width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
                     {clearAll()}
                   </div>
                 </div>

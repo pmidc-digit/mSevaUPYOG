@@ -137,6 +137,12 @@ function SelectDocument({
   const reasonForTransfer = reduxFormData?.additionalDetails?.reasonForTransfer || reduxFormData?.TransferorDetails?.additionalDetails?.reasonForTransfer || formData?.additionalDetails?.reasonForTransfer || formData?.TransferorDetails?.additionalDetails?.reasonForTransfer;
   const reasonForTransferCode = typeof reasonForTransfer === "object" ? reasonForTransfer?.code : reasonForTransfer;
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const transfereeOwners = reduxFormData?.TransferorDetails?.owners || reduxFormData?.owners || [];
+  const isSpecialCategoryRequired = transfereeOwners.some((owner) => {
+    const code = owner?.ownerType?.code || owner?.ownerType;
+    return code && code !== "NONE";
+  });
+  const isDocRequired = !isMutation || doc.required || (doc.code === "OWNER.SPECIALCATEGORYPROOF" && isSpecialCategoryRequired);
   console.log("dropdowndata1", doc?.dropdownData);
   console.log("filteredDocument", filteredDocument);
   console.log("documents", documents);
@@ -383,7 +389,7 @@ function SelectDocument({
      {(doc?.hasDropdown )? (
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">
-            {t(doc?.code.replaceAll(".", "_"))} {isMutation ? "" : <span style={{ color: 'red' }}>*</span>}
+            {t(doc?.code.replaceAll(".", "_"))} {isDocRequired ? <span style={{ color: 'red' }}>*</span> : ""}
           </CardLabel>
           <Dropdown
             className="form-field"

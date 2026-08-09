@@ -469,6 +469,7 @@ export const getunitsindependent = (data) => {
 export const setPropertyDetails = (data) => {
   // let unitleghtvalue = getnumberoffloors(data);
   let propertyDetails = {};
+  const categoryArray = data?.units?.[0]?.usageCategory?.split(".") || [];
   if (data?.PropertyType?.code?.includes("VACANT")) {
     propertyDetails = {
       units: [],
@@ -476,26 +477,38 @@ export const setPropertyDetails = (data) => {
       propertyType: data?.PropertyType?.code,
       noOfFloors: 0,
       usageCategory: data?.propertyStructureDetails?.usageCategory?.code,
+      usageCategoryMajor: categoryArray[0] || null,
+      usageCategoryMinor: categoryArray[1] || null,
     };
   } else if (data?.PropertyType?.code?.includes("SHAREDPROPERTY")) {
     /*  update this case tulika*/
     propertyDetails = {
-      units: data?.units,
+      units: data?.units?.map(unit => ({
+        ...unit,
+        unitType: unit?.usageCategory?.split(".")[3] || null
+      })),
       landArea: data?.units?.reduce((acc, curr) => Number(curr?.constructionDetail?.builtUpArea) + acc, 0),
       propertyType: data?.PropertyType?.code,
       noOfFloors: 1,
       superBuiltUpArea: data?.units?.reduce((acc, curr) => Number(curr?.constructionDetail?.builtUpArea) + acc, 0),
       usageCategory: data?.units?.[0]?.usageCategory,
+      usageCategoryMajor: categoryArray[0] || null,
+      usageCategoryMinor: categoryArray[1] || null,
     };
   } else if (data?.PropertyType?.code?.includes("INDEPENDENTPROPERTY")) {
     /*  update this case tulika*/
     propertyDetails = {
-      units: data?.units,
+      units: data?.units?.map(unit => ({
+        ...unit,
+        unitType: unit?.usageCategory?.split(".")[3] || null
+      })),
       landArea: data?.landArea?.floorarea,
       propertyType: data?.PropertyType?.code,
       noOfFloors: data?.noOfFloors?.code + 1,
       superBuiltUpArea: null,
       usageCategory: data?.units?.[0]?.usageCategory,
+      usageCategoryMajor: categoryArray[0] || null,
+      usageCategoryMinor: categoryArray[1] || null,
     };
   } else {
     propertyDetails = {
@@ -1226,3 +1239,40 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     imageURL,
   };
 };
+
+  export const deduplicateUsageOptions = (options) => {
+    const uniqueOptions = [];
+    const nameMap = new Map();
+    
+    options?.forEach((item) => {
+      if (!nameMap.has(item?.name)) {
+        nameMap.set(item.name, item);
+        uniqueOptions.push(item);
+      } else {
+        const existing = nameMap.get(item.name);
+        let shouldReplace = false;
+
+        // 1. Prefer the object that explicitly has the 'usageCategoryMinor' key
+        if (item.usageCategoryMinor && !existing.usageCategoryMinor) {
+          shouldReplace = true;
+        } 
+        else if (!item.usageCategoryMinor && existing.usageCategoryMinor) {
+          shouldReplace = false;
+        } 
+        // 2. Fallback (e.g. for usagecategorymajor where it doesn't exist on either): prefer the longer code
+        else if (item?.code?.length > existing?.code?.length) {
+          shouldReplace = true;
+        }
+
+        if (shouldReplace) {
+          const index = uniqueOptions?.findIndex((opt) => opt?.name === item?.name);
+          uniqueOptions[index] = item;
+          nameMap.set(item?.name, item);
+        }
+      }
+    });
+
+    return uniqueOptions;
+  };
+
+ 

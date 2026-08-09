@@ -199,7 +199,7 @@ const PTApplicationDetails = () => {
     const applications = application || {};
     const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
     const acknowldgementDataAPI = await getPTAcknowledgementData({ ...applications }, tenantInfo, t);
-    Digit.Utils.pdf.generate(acknowldgementDataAPI);
+    Digit.Utils.pdf.generateFormatted(acknowldgementDataAPI);
     //setAcknowldgementData(acknowldgementDataAPI);
   };
 
@@ -527,7 +527,7 @@ const PTApplicationDetails = () => {
                             <Row
                               className="border-none"
                               label={t("PT_BUILTUP_AREA_LABEL")}
-                              text={`${`${unit?.constructionDetail?.builtUpArea} sq.ft` || t("CS_NA")}`}
+                              text={`${`${Math.round(Number(unit?.constructionDetail?.builtUpArea) * 9).toFixed(2)} sq.ft` || t("CS_NA")}`}
                             />
                           
                             {unit.occupancyType == "RENTED" && (

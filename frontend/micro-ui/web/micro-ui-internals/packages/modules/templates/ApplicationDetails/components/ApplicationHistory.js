@@ -104,7 +104,10 @@ const ApplicationHistory = ({ applicationData }) => {
                         </div>
                         <div>
                             <Link to={{
-                                pathname:`/digit-ui/citizen/pt/property/application-preview/${applicationData.acknowldgementNumber}`,state:{propertyId:applicationData.propertyId}
+                                pathname: window.location.pathname.includes("/employee")
+                                    ? `/digit-ui/employee/pt/property/application-preview/${applicationData.acknowldgementNumber}`
+                                    : `/digit-ui/citizen/pt/property/application-preview/${applicationData.acknowldgementNumber}`,
+                                state: { propertyId: applicationData.propertyId }
                             }} style={{color:'#2947a3',display:'inline',border:'1px solid',padding:'8px',borderRadius:'8px'}}>
                             {"View History"}
                             </Link>

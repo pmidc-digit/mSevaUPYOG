@@ -293,7 +293,21 @@ const handleClick=()=>{
             <Row className="border-none" label={t("PT_PROPERTY_PTUID")} text={`${property.propertyId || t("CS_NA")}`} /* textStyle={{ whiteSpace: "pre" }} */ />
             <Row className="border-none" label={t("CS_COMMON_TOTAL_AMOUNT_DUE")} text={`₹${t(getBillAmount(fetchBillData))}`} />
             <LinkLabel
-            onClick={() => history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${property?.propertyId}`})}
+            onClick={() => {
+              const element = document.getElementById("payment-history");
+              if (element) {
+                const header = element.querySelector(".accordion-header");
+                const body = element.querySelector(".accordion-body");
+                if (header && !body) {
+                  header.click();
+                }
+                setTimeout(() => {
+                  element.scrollIntoView({ behavior: "smooth" });
+                }, 100);
+              } else {
+                history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${property?.propertyId}`, state: { tenantId: property?.tenantId } });
+              }
+            }}
             style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
           >
             {t("PT_VIEW_PAYMENT")}
@@ -352,7 +366,7 @@ const handleClick=()=>{
                           }
                         />
                         <Row className="border-none" label={t("PT_OCCUPANY_TYPE_LABEL")} text={`${t("PROPERTYTAX_OCCUPANCYTYPE_" + unit?.occupancyType)}` || t("CS_NA")} />
-                        <Row className="border-none" label={t("PT_BUILTUP_AREA_LABEL")} text={`${`${unit?.constructionDetail?.builtUpArea} sq.ft` || t("CS_NA")}`} />
+                        <Row className="border-none" label={t("PT_BUILTUP_AREA_LABEL")} text={`${`${Math.round(Number(unit?.constructionDetail?.builtUpArea) * 9).toFixed(2)} sq.ft` || t("CS_NA")}`} />
                         {unit.occupancyType == "RENTED" && (
                           <Row className="border-none" label={t("PT_FORM2_TOTAL_ANNUAL_RENT")} text={`${(unit?.arv && `₹${unit?.arv}`) || t("CS_NA")}`} />
                         )}

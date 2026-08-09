@@ -199,6 +199,8 @@ export const PTSearch = {
     return response.Properties[0];
   },
   transformPropertyToApplicationDetails: ({ property: response, t }) => {
+    console.log('response in property:', response);
+    
     return [
       {
         title: "PT_PROPERTY_ADDRESS_SUB_HEADER",
@@ -274,12 +276,13 @@ export const PTSearch = {
             ?.filter((e) => e.active)
             ?.sort?.((a, b) => a.floorNo - b.floorNo)
             ?.map((unit, index) => {
-              let floorName = `PROPERTYTAX_FLOOR_${unit.floorNo}`;
+              
+              let floorName = `PROPERTYTAX_FLOOR_${unit?.floorNo}`;
               const values = [
                 {
                   title: "PT_ASSESSMENT_UNIT_USAGE_TYPE",
                   value: `PROPERTYTAX_BILLING_SLAB_${
-                    unit?.usageCategory != "RESIDENTIAL" ? unit?.usageCategory?.split(".")[1] : unit?.usageCategory
+                    unit?.usageCategory !== "RESIDENTIAL" && unit?.usageCategory !== "MIXED" ? unit?.usageCategory?.split(".")[1] : unit?.usageCategory
                   }`,
                 },
                 {
@@ -288,7 +291,7 @@ export const PTSearch = {
                 },
                 {
                   title: "PT_FORM2_BUILT_AREA",
-                  value: unit?.constructionDetail?.builtUpArea,
+                  value: unit?.constructionDetail?.builtUpArea ? Math.round(Number(unit?.constructionDetail?.builtUpArea) * 9).toFixed(2) : null,
                 },
                 {
                   title: "Floor No",
@@ -296,8 +299,8 @@ export const PTSearch = {
                 },
               ];
 
-              if (unit.occupancyType === "RENTED") values.push({ title: "PT_FORM2_TOTAL_ANNUAL_RENT", value: unit.arv },{ title: "Months on Rent", value: unit?.months },{ title: "Usage for Pending Months", value: unit?.usage });
-
+              if (unit.occupancyType === "RENTED") values.push({ title: "PT_FORM2_TOTAL_ANNUAL_RENT", value: unit.arv },{ title: "Months on Rent", value: unit?.months || unit?.additionalDetails?.rentedformonths },{ title: "Usage for Pending Months", value: unit?.usage || unit?.additionalDetails?.usageForDueMonths });
+ 
               return {
                 title: floorName,
                 values: [
@@ -373,7 +376,7 @@ export const PTSearch = {
                     isArray: false,
                   }, },
                 },
-                { title: "Ownership Percentage", value: response?.owners[0]?.ownerShipPercentage},
+                { title: "Ownership Percentage", value: owner?.ownerShipPercentage},
                 
               
                 {

@@ -1,9 +1,9 @@
 import React, { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FormComposer, Toast, ActionBar, Menu, SubmitBar } from "@mseva/digit-ui-react-components";
+import { FormComposer, Toast, ActionBar, Menu, SubmitBar, CheckBox } from "@mseva/digit-ui-react-components";
 import { useState } from "react";
 import _ from "lodash";
-import { useHistory, useRouteMatch } from "react-router-dom";
+import { useHistory, useRouteMatch, useLocation } from "react-router-dom";
 import { UPDATE_PTNewApplication_FORM } from "../../redux/action/PTNewApplicationActions";
 import { Loader } from "../../components/Loader";
 
@@ -13,6 +13,10 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
   const [showToast, setShowToast] = useState(false);
   const [loader, setLoader] = useState(false);
   const [error, setError] = useState("");
+  const [isDeclared, setIsDeclared] = useState(false);
+  const { pathname } = useLocation();
+  const isEdit = pathname.includes("edit");
+
   const history = useHistory();
   const isCitizen = window.location.href.includes("citizen");
   const tenantId = window.location.href.includes("citizen")
@@ -60,6 +64,9 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
     // debugger
 
     const { propertyDetails, propertyAddress, ownerDetails, documents } = data;
+    const cleanedCode = propertyDetails?.propertyType?.code
+      ?.toUpperCase()
+      ?.replace(/[^A-Z0-9]/g, "");
     const originalProperty = data._originalProperty;
     const isEditMode = !!originalProperty;
 
@@ -71,7 +78,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       propertyDetails?.unitDetails
         ?.filter((unit) => unit?.floor) // skip units without floor
         ?.map((unit, index) => {
-          const unitUsageCategory = unit?.subUsageType?.code || propertyUsageCode;
+          const unitUsageCategory = unit?.subUsageType?.code || unit?.unitUsageType?.code || propertyUsageCode; // Case : Mixed Property = unit usage cateory extracted from unit details over property usage detail
           const originalUnit = originalProperty?.units?.[index];
           const unitPayload = {
             // Preserve original unit fields (id, etc.) in edit mode
@@ -95,7 +102,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
 
             ...(unit?.area && {
               constructionDetail: {
-                builtUpArea: Number(unit.area),
+                builtUpArea: Number((Number(unit.area) / 9).toFixed(2)),
               },
             }),
 
@@ -105,13 +112,13 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
               unitType: unit.subUsageType.code.split(".").pop(),
             }),
 
-            tenantId: stateTenantId,
+            tenantId: tenantId,
           };
 
           return unitPayload;
         }) || [];
 
-    const superBuiltUpArea = units.reduce((sum, u) => sum + (u?.constructionDetail?.builtUpArea || 0), 0) || null;
+    const superBuiltUpArea = cleanedCode?.includes("SHAREDPROPERTY") ? units?.reduce((sum, u) => sum + (u?.constructionDetail?.builtUpArea || 0), 0).toFixed(2) : null;
 
     const computedOwners = ownerDetails?.owners?.map((owner, index) => {
       const originalOwner = originalProperty?.owners?.[index];
@@ -179,7 +186,12 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       landArea: propertyDetails?.plotSize || null,
       superBuiltUpArea: superBuiltUpArea,
       propertyType: propertyDetails?.propertyType?.code,
-      noOfFloors: propertyDetails?.propertyType?.code == "VACANT" ? 1 : propertyDetails?.noOfFloors?.code || 1,
+      noOfFloors: 
+        cleanedCode?.includes("SHAREDPROPERTY") //for shared properties number of floors are expected to be 2 for further tax estimation
+        ? 2
+        : propertyDetails?.propertyType?.code == "VACANT" 
+          ? 1 
+          : propertyDetails?.noOfFloors?.code || 1,
       ownershipCategory: `${ownerDetails?.ownerShip?.value}`,
       usageCategory: usageCategoryMajor === propertyUsageCode ? propertyUsageCode : `${usageCategoryMajor}.${propertyUsageCode}`,
       owners: computedOwners,
@@ -221,13 +233,20 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       
     
       }
-      const id = response?.Properties[0]?.propertyId;
+      const id = response?.Properties[0]?.propertyId || response?.Properties[0]?.acknowldgementNumber;
+      const ackNo = response?.Properties[0]?.acknowldgementNumber;
       setLoader(false);
       if (isCitizen) {
-        history.push("/digit-ui/citizen/pt/property/response/" + id);
+        history.push({
+          pathname: "/digit-ui/citizen/pt/property/response/" + id,
+          state: { ackNo }
+        });
       } else {
         // history.push("/digit-ui/employee/garbagecollection/response/" + id);
-        history.push("/digit-ui/employee/pt/property/response/" + id);
+        history.push({
+          pathname: "/digit-ui/employee/pt/property/response/" + id,
+          state: { ackNo }
+        });
 
       }
     } catch (error) {
@@ -311,8 +330,12 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
         {/* {displayMenu && actions ? (
           <Menu localeKeyPrefix={t(`WF_CITIZEN_${"PTR"}`)} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
         ) : null} */}
+        {isCitizen && <CheckBox
+          label={t("PT_FINAL_DECLARATION_MESSAGE")}
+          onChange={() => setIsDeclared(!isDeclared)}
+        />}
 
-        <SubmitBar ref={menuRef} label={t("Submit")} onSubmit={() => goNext()} />
+        <SubmitBar ref={menuRef} label={t("Submit")} disabled={isCitizen && isEdit && !isDeclared} onSubmit={() => goNext()} />
       </ActionBar>
 
       {showToast && <Toast isDleteBtn={true} error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}

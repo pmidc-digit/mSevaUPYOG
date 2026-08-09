@@ -17,7 +17,7 @@ import { Loader } from "../components/Loader";
 import { useTranslation } from "react-i18next";
 
 const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
-const colItem = { flex: 1, minWidth: "250px", flexDirection: "column", alignItems: "stretch" };
+const colItem = { flex: 1, minWidth: "250px", flexDirection: "column", alignItems: "stretch" , alignContent: "center" };
 const punjabPincodePattern = /^((14|15)\d{4}|160\d{3})$/;
 
 const PropertyAddressDetails = ({ goNext }) => {
@@ -27,7 +27,8 @@ const PropertyAddressDetails = ({ goNext }) => {
   const userType = window.location.href.includes("citizen") ? "citizen" : "employee";
   const [loader, setLoader] = useState(false);
   const tenants = Digit.Hooks.pt.useTenants();
-  const isCitizen = window.location.href.includes("citizen");
+  const isEmployee = window.location.href.includes("employee");
+
   const stateDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData?.propertyAddress);
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
@@ -49,6 +50,9 @@ const PropertyAddressDetails = ({ goNext }) => {
   } = useForm();
 
   const onSubmit = async (data) => {
+    if (location?.state) {
+      data.surveyData = location.state;
+    }
     goNext(data);
   };
 
@@ -109,8 +113,8 @@ const PropertyAddressDetails = ({ goNext }) => {
       console.log("getLocality", getLocality);
       const checkYearOfCreation = getYearCreation?.find((item) => item?.code == stateDataCheck?.yearOfCreation?.code);
       const checkCity = tenants?.find((item) => item?.name === stateDataCheck?.city?.name)
-        || tenants?.find((item) => item?.code === stateDataCheck?.city?.code);
-      setValue("city", checkCity);
+        || tenants?.find((item) => item?.code === stateDataCheck?.city?.code) ||tenants?.find((item) => item?.code === tenantId);
+      if (checkCity) setValue("city", checkCity);
       setValue("surveyId", checkSurveyId);
       setValue("houseNo", checkHouseNo);
       setValue("buildingName", checkBuildingName);
@@ -182,7 +186,7 @@ const PropertyAddressDetails = ({ goNext }) => {
               name="city"
               rules={{ required: t("City is Required") }}
               render={(props) => (
-                <Dropdown select={props.onChange} selected={props.value} option={tenants} optionKey="name" t={t} disable={true} />
+                <Dropdown select={props.onChange} selected={props.value} option={tenants} optionKey="name" t={t} disable={isEmployee} />
               )}
             />
             {errors.city && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.city?.message}</p>}

@@ -35,6 +35,17 @@ export const getCurrentEpoch = () => Date.now();
 export const groupKeyForCart = (c) =>
   `${c.location || "NA"}|${c.advertisementId || "NA"}|${c.addType || "NA"}|${c.faceArea || "NA"}|${c.advertisementName || "NA"}|${c.poleNo || "NA"}`;
 
+const inferScheduleType = (startDate, endDate) => {
+  if (!startDate || !endDate) return null;
+  // Calculate day difference (inclusive)
+  const diffDays = Math.round(Math.abs(new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
+  if (diffDays > 31) return "yearly";     // ~365/366 days
+  if (diffDays > 16) return "monthly";    // 28 to 31 days
+  if (diffDays > 8)  return "fortnight";  // 13 to 16 days
+  if (diffDays > 4)  return "weekly";     // 5 to 8 days
+  return "daily";                         // 1 to 4 days (and default fallback)
+};
+
 export const transformBookingResponseToBookingData = (apiResponse = {}) => {
   const resp = apiResponse || {};
   const apps = Array.isArray(resp.bookingApplication) ? resp.bookingApplication : [];
@@ -80,8 +91,20 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
       const items = groups[key];
 
       const sorted = items.slice().sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate));
-      const GAP = 7;
+      const startDate = sorted[0]?.bookingDate || null;
+      const endDate = sorted[sorted.length - 1]?.bookingDate || null;
 
+      const inferredScheduleType = inferScheduleType(startDate, endDate);
+      const GAPS = {
+        "weekly": 7,
+        "biweekly": 14,
+        "fortnight": 15,
+        "monthly": 30,
+        "yearly": 365,
+        "daily": 1,
+      };
+
+      const GAP = GAPS[inferredScheduleType] || 7;
       const dateRanges = [];
       if (sorted.length) {
         let rangeStart = sorted[0].bookingDate || null;
@@ -105,9 +128,6 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
         dateRanges.push([rangeStart, rangeEnd]);
       }
       const dateRangesFlat = dateRanges.map(([start, end]) => `${start} to ${end}`).join(", ");
-
-      const startDate = sorted[0]?.bookingDate || null;
-      const endDate = sorted[sorted.length - 1]?.bookingDate || null;
       const numberOfDays = sorted.length;
 
       const first = sorted[0] || {};
@@ -139,6 +159,8 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
         poleNo: first.poleNo,
         amount,
         amountForDaysChosen,
+        bookingFromTime: first.bookingFromTime,
+        bookingToTime: first.bookingToTime,
       };
     });
 

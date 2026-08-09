@@ -92,6 +92,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   }, [file]);
 
   function submit(data) {
+    let Property = { ...applicationData };
     if (action?.action == "INACTIVE_PROPERTY"){
       // console.log("dataaaaa123",data)
       let workflow = { action: "OPEN", comment: data?.comments, businessService:"PT.CREATE", moduleName: "PT" };
@@ -118,7 +119,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
 
       submitAction({
         Property: {
-          ...applicationData,
+          ...Property,
           workflow,
         },
       });

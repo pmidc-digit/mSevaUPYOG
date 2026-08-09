@@ -174,6 +174,7 @@ const CreateEmployeeStepForm = ({ applicationData, responsePath = "/digit-ui/emp
               relationship,
               institutionType,
               landlineNumber: owner?.altContactNumber,
+              ownerShipPercentage: owner?.ownershipPercentage ? Number(owner.ownershipPercentage) : owner?.ownerShipPercentage,
               ...obj,
               status: "ACTIVE",
               additionalDetails: additionalOwnerDetails,
@@ -207,6 +208,8 @@ const CreateEmployeeStepForm = ({ applicationData, responsePath = "/digit-ui/emp
         tenantId: originalData.tenantId,
         type: typeof transfereeOwners[0]?.institutionType === "object" ? transfereeOwners[0]?.institutionType?.code : transfereeOwners[0]?.institutionType,
       };
+    }else {
+      submitData.Property.institution = null;
     }
 
     console.log("Submitting mutation data:", submitData);

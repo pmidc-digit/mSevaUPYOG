@@ -148,7 +148,7 @@ export const newConfigMutate = [
         labels: [
           {
             label: "PT_OWNERSHIP_INSTI_NAME",
-            keyPath: ["searchResult", "property", "institution", "institutionName"],
+            keyPath: ["searchResult", "property", "institution", "name"],
             ownershipType: "INSTITUTIONAL",
           },
           {
@@ -158,7 +158,7 @@ export const newConfigMutate = [
           },
           {
             label: "PT_INSTI_OWNERSHIP_TYPE",
-            keyPath: ["searchResult", "property", "institution", "institutionType"],
+            keyPath: ["searchResult", "property", "institution", "type"],
             ownershipType: "INSTITUTIONAL",
           },
           {
@@ -200,6 +200,16 @@ export const newConfigMutate = [
             label: "PT_OWNERSHIP_INFO_CORR_ADDR",
             keyPath: ["searchResult", "property", "owners", "_index_", "correspondenceAddress"],
             ownershipType: "ALL",
+          },
+          {
+            label: "PT_FORM3_GENDER",
+            keyPath: ["searchResult", "property", "owners", "_index_", "gender"],
+            ownershipType: "INDIVIDUAL",
+          },
+          {
+            label: "PT_OWNER_PERCENTAGE",
+            keyPath: ["searchResult", "property", "owners", "_index_", "ownerShipPercentage"],
+            ownershipType: "INDIVIDUAL",
           },
           
         ],

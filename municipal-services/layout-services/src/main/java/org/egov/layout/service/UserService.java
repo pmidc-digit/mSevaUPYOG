@@ -131,13 +131,8 @@ public class UserService {
 				map.put("createdDate", dateTolong((String) map.get("createdDate"), format1));
 				if ((String) map.get("lastModifiedDate") != null)
 					map.put("lastModifiedDate", dateTolong((String) map.get("lastModifiedDate"), format1));
-				if ((String) map.get("dob") != null && dobFormat != null) {
-					String dob = (String) map.get("dob");
-					if(dob.contains("/"))
-						map.put("dob", dateTolong((String) map.get("dob"), "dd/MM/yyyy"));
-					else if(dob.contains("-"))
-						map.put("dob", dateTolong((String) map.get("dob"), "yyyy-MM-dd"));
-				}
+				if ((String) map.get("dob") != null && dobFormat != null)
+					map.put("dob", dateTolong((String) map.get("dob"), dobFormat));
 				if ((String) map.get("pwdExpiryDate") != null)
 					map.put("pwdExpiryDate", dateTolong((String) map.get("pwdExpiryDate"), format1));
 			});
@@ -286,8 +281,7 @@ public class UserService {
 				addUserDefaultFields(noc.getTenantId(), role, owner);
 
 				UserResponse existingUserResponse = userExists(owner, requestInfo);
-				existingUserResponse = new UserResponse();
-				if (!CollectionUtils.isEmpty(existingUserResponse.getUser())) {
+				if (!existingUserResponse.getUser().isEmpty()) {
 					OwnerInfo existingUser = existingUserResponse.getUser().get(0);
 					log.info("User already exists with UUID: " + existingUser.getUuid());
 					owner.setUuid(existingUser.getUuid());
@@ -296,7 +290,6 @@ public class UserService {
 //						  UserResponse userResponse = userExists(owner,requestInfo);
 					StringBuilder uri = new StringBuilder(userHost).append(userContextPath).append(userCreateEndpoint);
 					setUserName(owner);
-					owner.setUserName(UUID.randomUUID().toString());
 					UserResponse userResponse = userCall(new CreateUserRequest(requestInfo, owner), uri);
 					if (userResponse.getUser().get(0).getUuid() == null) {
 						throw new CustomException("INVALID USER RESPONSE", "The user created has uuid as null");

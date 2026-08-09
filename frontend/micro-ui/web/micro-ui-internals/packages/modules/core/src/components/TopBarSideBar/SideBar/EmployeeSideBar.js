@@ -18,7 +18,8 @@ import {
   CollectionIcon,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import { some, orderBy } from "lodash";
+import _ from "lodash";
+const { some, orderBy } = _;
 
 const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogout }) => {
   const sidebarRef = useRef(null);

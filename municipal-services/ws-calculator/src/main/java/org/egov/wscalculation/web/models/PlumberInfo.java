@@ -2,7 +2,7 @@ package org.egov.wscalculation.web.models;
 
 import java.util.Objects;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 
 import org.springframework.validation.annotation.Validated;
 
@@ -10,13 +10,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import io.swagger.annotations.ApiModelProperty;
 
 /**
  * PlumberInfo
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-01-22T12:39:45.543+05:30[Asia/Kolkata]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-01-22T12:39:45.543+05:30[Asia/Kolkata]")
 public class PlumberInfo   {
 	@JsonProperty("id")
 	private String id = null;
@@ -93,8 +92,6 @@ public class PlumberInfo   {
 	 * 
 	 * @return name
 	 **/
-	@ApiModelProperty(value = "The name of the user.")
-
 	@Size(max = 256)
 	public String getName() {
 		return name;
@@ -114,8 +111,6 @@ public class PlumberInfo   {
 	 * 
 	 * @return licenseNo
 	 **/
-	@ApiModelProperty(value = "Plumber unique license number.")
-
 	@Size(max = 256)
 	public String getLicenseNo() {
 		return licenseNo;
@@ -135,8 +130,6 @@ public class PlumberInfo   {
 	 * 
 	 * @return mobileNumber
 	 **/
-	@ApiModelProperty(value = "MobileNumber of the user.")
-
 	@Size(max = 256)
 	public String getMobileNumber() {
 		return mobileNumber;
@@ -156,8 +149,6 @@ public class PlumberInfo   {
 	 * 
 	 * @return gender
 	 **/
-	@ApiModelProperty(value = "Gender of the user.")
-
 	@Size(max = 256)
 	public String getGender() {
 		return gender;
@@ -177,8 +168,6 @@ public class PlumberInfo   {
 	 * 
 	 * @return fatherOrHusbandName
 	 **/
-	@ApiModelProperty(value = "Father or Husband name of the user.")
-
 	@Size(max = 256)
 	public String getFatherOrHusbandName() {
 		return fatherOrHusbandName;
@@ -198,8 +187,6 @@ public class PlumberInfo   {
 	 * 
 	 * @return correspondenceAddress
 	 **/
-	@ApiModelProperty(value = "The current address of the owner for correspondence.")
-
 	@Size(max = 1024)
 	public String getCorrespondenceAddress() {
 		return correspondenceAddress;
@@ -219,8 +206,6 @@ public class PlumberInfo   {
 	 * 
 	 * @return relationship
 	 **/
-	@ApiModelProperty(value = "The relationship of gaurdian.")
-
 	public String getRelationship() {
 		return relationship;
 	}
@@ -240,8 +225,6 @@ public class PlumberInfo   {
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
 	public Object getAdditionalDetails() {
 		return additionalDetails;
 	}
@@ -260,8 +243,6 @@ public class PlumberInfo   {
 	 * 
 	 * @return name
 	 **/
-	@ApiModelProperty(value = "The id of the user.")
-
 	@Size(max = 256)
 	public String getId() {
 		return id;
@@ -281,7 +262,6 @@ public class PlumberInfo   {
 	 * 
 	 * @return auditDetails
 	 **/
-	@ApiModelProperty(value = "")
 	public AuditDetails getAuditDetails() {
 		return auditDetails;
 	}

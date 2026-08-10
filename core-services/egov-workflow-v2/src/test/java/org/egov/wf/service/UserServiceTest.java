@@ -5,6 +5,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,23 +26,24 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ContextConfiguration(classes = {UserService.class})
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class UserServiceTest {
-    @MockBean
+    @Mock
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @Mock
     private ServiceRequestRepository serviceRequestRepository;
 
-    @Autowired
+    @InjectMocks
     private UserService userService;
 
-    @MockBean
+    @Mock
     private WorkflowConfig workflowConfig;
 
 
@@ -78,11 +80,11 @@ class UserServiceTest {
     void testSearchUserWithNull() throws IllegalArgumentException {
 
 
-        when(this.workflowConfig.getUserSearchEndpoint()).thenReturn("https://config.us-east-2.amazonaws.com");
-        when(this.workflowConfig.getUserHost()).thenReturn(null);
-        when(this.serviceRequestRepository.fetchResult((StringBuilder) any(), (Object) any()))
+    	 lenient().when(this.workflowConfig.getUserSearchEndpoint()).thenReturn("https://config.us-east-2.amazonaws.com");
+        lenient().when(this.workflowConfig.getUserHost()).thenReturn(null);
+        lenient(). when(this.serviceRequestRepository.fetchResult((StringBuilder) any(), (Object) any()))
                 .thenReturn(new LinkedHashMap<>());
-        when(this.objectMapper.convertValue((Object) any(), (Class<Object>) any())).thenReturn("Convert Value");
+        lenient().when(this.objectMapper.convertValue((Object) any(), (Class<Object>) any())).thenReturn("Convert Value");
         RequestInfo requestInfo = new RequestInfo();
 
     }
@@ -108,11 +110,11 @@ class UserServiceTest {
     void testSearchUserNull() throws IllegalArgumentException {
 
 
-        when(this.workflowConfig.getUserSearchEndpoint()).thenReturn("https://config.us-east-2.amazonaws.com");
-        when(this.workflowConfig.getUserHost()).thenReturn("localhost");
-        when(this.serviceRequestRepository.fetchResult((StringBuilder) any(), (Object) any()))
+    	 lenient().when(this.workflowConfig.getUserSearchEndpoint()).thenReturn("https://config.us-east-2.amazonaws.com");
+    	 lenient().when(this.workflowConfig.getUserHost()).thenReturn("localhost");
+    	 lenient().when(this.serviceRequestRepository.fetchResult((StringBuilder) any(), (Object) any()))
                 .thenReturn(new LinkedHashMap<>());
-        when(this.objectMapper.convertValue((Object) any(), (Class<Object>) any())).thenReturn(null);
+    	 lenient().when(this.objectMapper.convertValue((Object) any(), (Class<Object>) any())).thenReturn(null);
         RequestInfo requestInfo = new RequestInfo();
 
     }
@@ -186,11 +188,11 @@ class UserServiceTest {
     void testSearchUserUuidsBasedOnRoleCodesWithNull() throws IllegalArgumentException {
 
 
-        when(this.workflowConfig.getUserSearchEndpoint()).thenReturn("https://config.us-east-2.amazonaws.com");
-        when(this.workflowConfig.getUserHost()).thenReturn(null);
-        when(this.serviceRequestRepository.fetchResult((StringBuilder) any(), (Object) any()))
+    	 lenient().when(this.workflowConfig.getUserSearchEndpoint()).thenReturn("https://config.us-east-2.amazonaws.com");
+        lenient().when(this.workflowConfig.getUserHost()).thenReturn(null);
+        lenient(). when(this.serviceRequestRepository.fetchResult((StringBuilder) any(), (Object) any()))
                 .thenReturn(new LinkedHashMap<>());
-        when(this.objectMapper.convertValue((Object) any(), (Class<Object>) any())).thenReturn("Convert Value");
+        lenient().when(this.objectMapper.convertValue((Object) any(), (Class<Object>) any())).thenReturn("Convert Value");
 
         UserSearchRequest userSearchRequest = new UserSearchRequest();
         userSearchRequest.setAadhaarNumber("42");
@@ -251,11 +253,11 @@ class UserServiceTest {
 
     void testSearchUserUuidsBasedOnRoleCodesWithList() throws IllegalArgumentException {
 
-        when(this.workflowConfig.getUserSearchEndpoint()).thenReturn("https://config.us-east-2.amazonaws.com");
-        when(this.workflowConfig.getUserHost()).thenReturn("localhost");
-        when(this.serviceRequestRepository.fetchResult((StringBuilder) any(), (Object) any()))
+    	 lenient().when(this.workflowConfig.getUserSearchEndpoint()).thenReturn("https://config.us-east-2.amazonaws.com");
+    	 lenient().when(this.workflowConfig.getUserHost()).thenReturn("localhost");
+    	 lenient().when(this.serviceRequestRepository.fetchResult((StringBuilder) any(), (Object) any()))
                 .thenReturn(new LinkedHashMap<>());
-        when(this.objectMapper.convertValue((Object) any(), (Class<Object>) any())).thenReturn(null);
+    	 lenient().when(this.objectMapper.convertValue((Object) any(), (Class<Object>) any())).thenReturn(null);
 
         UserSearchRequest userSearchRequest = new UserSearchRequest();
         userSearchRequest.setAadhaarNumber("42");

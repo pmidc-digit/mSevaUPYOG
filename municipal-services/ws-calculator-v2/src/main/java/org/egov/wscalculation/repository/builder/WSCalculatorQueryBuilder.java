@@ -70,8 +70,13 @@ public class WSCalculatorQueryBuilder {
 
 	private static final String distinctTenantIdsCriteria = "SELECT distinct(tenantid) FROM eg_ws_connection ws";
 
-	private static final String connectionNoByLocality = "SELECT distinct(conn.connectionno) FROM eg_ws_connection conn INNER JOIN eg_ws_service ws ON conn.id = ws.connection_id  ";
+//	private static final String connectionNoByLocality = "SELECT distinct(conn.connectionno) FROM eg_ws_connection conn INNER JOIN eg_ws_service ws ON conn.id = ws.connection_id  ";
 
+	private static final String connectionNoByLocality = "SELECT DISTINCT(conn.connectionno) FROM eg_ws_connection conn " +
+		    "INNER JOIN eg_ws_service ws ON conn.id = ws.connection_id " +
+		    "INNER JOIN eg_pt_property p ON conn.property_id = p.propertyid " +
+		    "INNER JOIN eg_pt_address a ON a.propertyid = p.id ";
+	
 	private static final String BILL_SCHEDULER_STATUS_SEARCH_QUERY = "select status from eg_ws_scheduler ";
 	private static final String LAST_DEMAND_GEN_FOR_CONN = " SELECT d.taxperiodfrom FROM egbs_demand_v1 d ";
 
@@ -142,10 +147,6 @@ public class WSCalculatorQueryBuilder {
 			+ "VALUES (?,?,?,?,?,?,?,?,?,?);";
 	
 	public static final String RELATED_SW_CONNECTION_SEARCH_QUERY = "SELECT conn.relatedSwConn from eg_ws_connection conn ";
-	
-	public static final String METERREADINGQUERY = "SELECT mr.id, mr.connectionNo as connectionId, epp.usagecategory as usageCategory, mr.billingPeriod, mr.meterStatus, mr.lastReading, mr.lastReadingDate, mr.currentReading,"
-			+ " mr.currentReadingDate, mr.createdBy as mr_createdBy, mr.tenantid, mr.lastModifiedBy as mr_lastModifiedBy,"
-			+ " mr.createdTime as mr_createdTime, mr.lastModifiedTime as mr_lastModifiedTime FROM eg_ws_meterreading mr";
 
 	public String getDistinctTenantIds() {
 		return distinctTenantIdsCriteria;
@@ -457,44 +458,59 @@ public class WSCalculatorQueryBuilder {
 
 	}
 
-	public String getConnectionsNoByLocality(String tenantId, String connectionType, String status, String locality,String groups,
-			List<Object> preparedStatement) {
-		StringBuilder query = new StringBuilder(connectionNoByLocality);
 
-		// add tenantid
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" conn.tenantid = ? ");
-		preparedStatement.add(tenantId);
+	
+	public String getConnectionsNoByLocality(String tenantId, String connectionType, String status, String locality, String groups, List<Object> preparedStatement) {
+	    StringBuilder query = new StringBuilder(connectionNoByLocality);
 
-		// Add connection type
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" ws.connectiontype = ? ");
-		preparedStatement.add(connectionType);
+	    // 1. Tenant ID
+	    if (tenantId != null) {
+	        addClauseIfRequired(preparedStatement, query);
+	        query.append(" conn.tenantid = ? ");
+	        preparedStatement.add(tenantId);
+	    }
 
-		// Active status
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" conn.status = ? ");
-		preparedStatement.add(status);
+	    // 2. Connection Type
+	    if (connectionType != null) {
+	        addClauseIfRequired(preparedStatement, query);
+	        query.append(" ws.connectiontype = ? ");
+	        preparedStatement.add(connectionType);
+	    }
 
-		if (locality != null) {
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" conn.locality = ? ");
-			preparedStatement.add(locality);
-		}
+	    // 3. Connection Status
+	    if (status != null) {
+	        addClauseIfRequired(preparedStatement, query);
+	        query.append(" conn.status = ? ");
+	        preparedStatement.add(status);
+	    }
 
-		if (groups != null) {
+	    // 4. Locality (Now using the 'a' alias from eg_pt_address)
+	    if (locality != null) {
+	        addClauseIfRequired(preparedStatement, query);
+	        query.append(" a.locality = ? ");
+	        preparedStatement.add(locality);
+	    }
+
+	    // 5. Property Status Filter (Added based on your successful reference query)
+	    addClauseIfRequired(preparedStatement, query);
+	    query.append(" p.status != 'INACTIVE' ");
+
+	    // 6. Groups filter
+	    if (groups != null) {
 	        addClauseIfRequired(preparedStatement, query);
 	        query.append(" conn.additionaldetails->>'groups' = ? ");
-	        preparedStatement.add(groups); // Exact match
+	        preparedStatement.add(groups);
 	    }
-		// Getting only non exempted connection to generate bill
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" (conn.additionaldetails->>'isexempted')::boolean is not true ");
 
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" conn.connectionno is not null");
-		return query.toString();
+	    // 7. Exemption Filter
+	    addClauseIfRequired(preparedStatement, query);
+	    query.append(" (conn.additionaldetails->>'isexempted')::boolean IS NOT TRUE ");
 
+	    // 8. Connection Number Null Check
+	    addClauseIfRequired(preparedStatement, query);
+	    query.append(" conn.connectionno IS NOT NULL ");
+
+	    return query.toString();
 	}
 
 	public String getConnectionNumberListForDemand(String tenantId, String connectionType,
@@ -1123,55 +1139,11 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 		}
 		
 		addClauseIfRequired(preparedStatement, query);
-		query.append(" conn.applicationstatus IN ('CONNECTION_ACTIVATED', 'APPROVED') ");
+		query.append(" conn.applicationstatus = 'CONNECTION_ACTIVATED' ");
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" conn.status = 'Active' ");
 		
 		return query.toString();
 		
-	}
-	
-	/**
-	 * 
-	 * @param criteria          would be meter reading criteria
-	 * @param preparedStatement Prepared SQL Statement
-	 * @return Query for given criteria
-	 */
-	public String getSearchQueryStringV2(MeterReadingSearchCriteria criteria, List<Object> preparedStatement) {
-		if (criteria.isEmpty()) {
-			return null;
-		}
-		StringBuilder query = new StringBuilder(METERREADINGQUERY);
-		query.append("\r\n INNER JOIN eg_ws_connection conn \r\n"
-				+ "  ON mr.connectionno = conn.connectionno \r\n"
-				+ " AND mr.tenantid = conn.tenantid  \r\n"
-				+" INNER JOIN eg_ws_service ews  \r\n"
-				+ "  ON conn.id = ews.connection_id \r\n"
-				+ " INNER JOIN eg_pt_property epp \r\n"
-				+ "  ON conn.property_id = epp.propertyid\r\n"
-				+ "INNER JOIN eg_pt_address epa \r\n"
-				+ "  ON epa.propertyid = epp.id   ");
-		
-		if (!StringUtils.isEmpty(criteria.getTenantId())) {
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" mr.tenantid= ? ");
-			preparedStatement.add(criteria.getTenantId());
-		}
-		if (!StringUtils.isEmpty(criteria.getLocality())) {
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" epa.locality= ? ");
-			preparedStatement.add(criteria.getLocality());
-		}
-		
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" ews.connectiontype = 'Metered' \r\n");
-		
-		if (!CollectionUtils.isEmpty(criteria.getConnectionNos())) {
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" mr.connectionNo IN (").append(createQuery(criteria.getConnectionNos())).append(" )");
-			addToPreparedStatement(preparedStatement, criteria.getConnectionNos());
-		}
-		addOrderBy(query);
-		return addPaginationWrapper(query, preparedStatement, criteria);
 	}
 }

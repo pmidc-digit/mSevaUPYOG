@@ -264,25 +264,6 @@ public class Util {
 			demand.setIsPaymentCompleted(false);
 	}
 	
-//	public void updateDemandPaymentStatus(Demand demand, Boolean isUpdateFromPayment) {
-//	    // 1. Sum ALL tax amounts (including ADVANCE/Adjustments)
-//	    BigDecimal totalTax = demand.getDemandDetails().stream()
-//	            .map(DemandDetail::getTaxAmount)
-//	            .reduce(BigDecimal.ZERO, BigDecimal::add);
-//	    
-//	    // 2. Sum ALL collection amounts
-//	    BigDecimal totalCollection = demand.getDemandDetails().stream()
-//	            .map(DemandDetail::getCollectionAmount)
-//	            .reduce(BigDecimal.ZERO, BigDecimal::add);
-//
-//	    // 3. Match them. If net balance is 0, then it's completed.
-//	    if (totalTax.compareTo(totalCollection) == 0) {
-//	        demand.setIsPaymentCompleted(true);
-//	    } else {
-//	        demand.setIsPaymentCompleted(false);
-//	    }
-//	}
-//	
 	/**
 	 * validates state level tenant-id for citizens and employees
 	 * 

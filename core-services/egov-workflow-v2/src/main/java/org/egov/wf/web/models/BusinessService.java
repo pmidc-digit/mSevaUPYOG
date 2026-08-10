@@ -5,8 +5,8 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,15 +14,16 @@ import lombok.*;
 import org.egov.wf.web.models.AuditDetails;
 import org.egov.wf.web.models.State;
 import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
 
 /**
  * A Object holds the
  */
-@ApiModel(description = "A Object holds the")
+@Schema(description = "A Object holds the")
 @Validated
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-12-04T11:26:25.532+05:30")
+@jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-12-04T11:26:25.532+05:30")
 
 @Getter
 @Setter
@@ -37,40 +38,40 @@ public class BusinessService   {
         @NotNull
         @Size(max=256)
         @JsonProperty("tenantId")
-        private String tenantId = null;
+        private String tenantId;
 
         @Size(max=256)
         @JsonProperty("uuid")
-        private String uuid = null;
+        private String uuid ;
 
         @NotNull
         @Size(max=256)
         @JsonProperty("businessService")
-        private String businessService = null;
+        private String businessService;
 
         @NotNull
         @Size(max=256)
         @JsonProperty("business")
-        private String business = null;
+        private String business;
 
         @Size(max=1024)
         @JsonProperty("getUri")
-        private String getUri = null;
+        private String getUri;
 
         @Size(max=1024)
         @JsonProperty("postUri")
-        private String postUri = null;
+        private String postUri;
 
         @JsonProperty("businessServiceSla")
-        private Long businessServiceSla = null;
+        private Long businessServiceSla;
 
         @NotNull
         @Valid
         @JsonProperty("states")
-        private List<State> states = null;
+        private List<State> states;
 
         @JsonProperty("auditDetails")
-        private AuditDetails auditDetails = null;
+        private AuditDetails auditDetails;
 
 
         public BusinessService addStatesItem(State statesItem) {

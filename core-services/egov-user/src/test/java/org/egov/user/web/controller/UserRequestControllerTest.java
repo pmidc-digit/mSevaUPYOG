@@ -19,8 +19,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,7 +34,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -48,16 +48,16 @@ public class UserRequestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private PasswordEncoder passwordEncoder;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
-    @MockBean
+    @MockitoBean
     private TokenService tokenService;
 
-    @MockBean
+    @MockitoBean
     private CustomAuthenticationKeyGenerator authenticationKeyGenerator;
 
 /*
@@ -69,11 +69,11 @@ public class UserRequestControllerTest {
 
         String fileContents = getFileContents("createCitizenUnsuccessfulRequest.json");
         mockMvc.perform(post("/citizen/_create/")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(fileContents)
         )
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("createCitizenUnsuccessfulResponse.json")));
     }
 */
@@ -87,11 +87,11 @@ public class UserRequestControllerTest {
 
         String fileContents = getFileContents("createValidatedCitizenSuccessRequest.json");
         mockMvc.perform(post("/citizen/_create")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(fileContents)
         )
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("createCitizenOtpFailureResponse.json")));
     }
 
@@ -156,11 +156,11 @@ public class UserRequestControllerTest {
 
         String fileContents = getFileContents("updateValidatedCitizenSuccessRequest.json");
         mockMvc.perform(post("/users/_updatenovalidate")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(fileContents)
         )
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("updateValidatedCitizenSuccessResponse.json")));
     }
 
@@ -174,11 +174,11 @@ public class UserRequestControllerTest {
 
         String fileContents = getFileContents("updateCitizenUnsuccessfulRequest.json");
         mockMvc.perform(post("/users/1/_updatenovalidate")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(fileContents)
         )
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("updateCitizenUnsuccessfulResponse.json")));
     }
 
@@ -192,11 +192,11 @@ public class UserRequestControllerTest {
 
         String fileContents = getFileContents("updateCitizenUnsuccessfulRequest.json");
         mockMvc.perform(post("/users/1/_updatenovalidate")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(fileContents)
         )
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(getFileContents("updateInvalidCitizenUnsuccessfulResponse.json")));
     }
 }

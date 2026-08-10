@@ -1117,4 +1117,3 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/ws-calculator-v2/src/main/resources/db"
         image-name: "ws-calculator-v2-db"
-

@@ -1,6 +1,6 @@
 package org.egov.pt.models;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.egov.pt.models.enums.Status;
 

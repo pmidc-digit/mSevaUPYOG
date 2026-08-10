@@ -3,8 +3,8 @@ package org.egov.wf.web.controllers;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 import org.egov.wf.service.WorkflowService;
 import org.egov.wf.util.ResponseInfoFactory;

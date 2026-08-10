@@ -1,5 +1,7 @@
 package org.egov.encryption;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,8 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -30,6 +34,7 @@ class EncryptionServiceRestConnection {
 
 
     Object callEncrypt(String tenantId, String type, Object value) throws IOException {
+    	value = objectMapper.convertValue(value, new TypeReference<List<Map<String, Object>>>() {});
         EncReqObject encReqObject = new EncReqObject(tenantId, type, value);
         EncryptionRequest encryptionRequest = new EncryptionRequest();
         encryptionRequest.setEncryptionRequests(new ArrayList<>(Collections.singleton(encReqObject)));
@@ -46,9 +51,13 @@ class EncryptionServiceRestConnection {
 
     JsonNode callDecrypt(Object ciphertext) {
         try {
-            ResponseEntity<JsonNode> response = restTemplate.postForEntity(
-                    encProperties.getEgovEncHost() + encProperties.getEgovEncDecryptPath(), ciphertext, JsonNode.class);
-            return response.getBody();
+        	ciphertext = objectMapper.convertValue(ciphertext, new TypeReference<List<Map<String, Object>>>() {});
+        	ResponseEntity<String> resp = restTemplate.postForEntity(
+                    encProperties.getEgovEncHost() + encProperties.getEgovEncDecryptPath(), ciphertext, String.class);
+        	JsonNode response = objectMapper.readTree(resp.getBody());
+//            ResponseEntity<JsonNode> response = restTemplate.postForEntity(
+//                    encProperties.getEgovEncHost() + encProperties.getEgovEncDecryptPath(), ciphertext, JsonNode.class);
+            return response;
         } catch (Exception e) {
             throw new CustomException(ErrorConstants.ENCRYPTION_SERVICE_ERROR, ErrorConstants.ENCRYPTION_SERVICE_ERROR_MESSAGE);
         }

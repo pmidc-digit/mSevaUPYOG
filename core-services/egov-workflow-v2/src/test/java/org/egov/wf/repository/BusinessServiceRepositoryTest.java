@@ -2,6 +2,7 @@ package org.egov.wf.repository;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,31 +22,33 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ContextConfiguration(classes = {BusinessServiceRepository.class})
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class BusinessServiceRepositoryTest {
-    @MockBean
+    @Mock
     private BusinessServiceQueryBuilder businessServiceQueryBuilder;
 
-    @Autowired
+    @InjectMocks
     private BusinessServiceRepository businessServiceRepository;
 
-    @MockBean
+    @Mock
     private BusinessServiceRowMapper businessServiceRowMapper;
 
-    @MockBean
+    @Mock
     private JdbcTemplate jdbcTemplate;
 
-    @MockBean
+    @Mock
     private MDMSService mDMSService;
 
-    @MockBean
+    @Mock
     private WorkflowConfig workflowConfig;
 
 
@@ -85,10 +88,10 @@ class BusinessServiceRepositoryTest {
 
     void testGetBusinessServicesWithnull() throws DataAccessException {
 
-        when(this.mDMSService.getStateLevelMapping()).thenReturn(new HashMap<>());
-        when(this.jdbcTemplate.query((String) any(), (Object[]) any(),
+    	lenient().when(this.mDMSService.getStateLevelMapping()).thenReturn(new HashMap<>());
+    	lenient().when(this.jdbcTemplate.query((String) any(), (Object[]) any(),
                 (org.springframework.jdbc.core.ResultSetExtractor<Object>) any())).thenReturn(null);
-        when(this.businessServiceQueryBuilder.getBusinessServices((BusinessServiceSearchCriteria) any(),
+    	lenient().when(this.businessServiceQueryBuilder.getBusinessServices((BusinessServiceSearchCriteria) any(),
                 (List<Object>) any())).thenReturn("Business Services");
 
         ArrayList<String> stringList = new ArrayList<>();
@@ -102,10 +105,10 @@ class BusinessServiceRepositoryTest {
 
     void testGetBusinessServiceswithstring() throws DataAccessException {
 
-        when(this.mDMSService.getStateLevelMapping()).thenReturn(new HashMap<>());
-        when(this.jdbcTemplate.query((String) any(), (Object[]) any(),
+    	lenient().when(this.mDMSService.getStateLevelMapping()).thenReturn(new HashMap<>());
+    	lenient().when(this.jdbcTemplate.query((String) any(), (Object[]) any(),
                 (org.springframework.jdbc.core.ResultSetExtractor<Object>) any())).thenReturn("Query");
-        when(this.businessServiceQueryBuilder.getBusinessServices((BusinessServiceSearchCriteria) any(),
+    	lenient().when(this.businessServiceQueryBuilder.getBusinessServices((BusinessServiceSearchCriteria) any(),
                 (List<Object>) any())).thenReturn("Business Services");
 
         ArrayList<String> stringList = new ArrayList<>();
@@ -136,10 +139,10 @@ class BusinessServiceRepositoryTest {
     void testGetRoleTenantAndStatusMappingwithnull() throws DataAccessException {
 
 
-        when(this.mDMSService.getStateLevelMapping()).thenReturn(new HashMap<>());
-        when(this.jdbcTemplate.query((String) any(), (Object[]) any(),
+    	lenient().when(this.mDMSService.getStateLevelMapping()).thenReturn(new HashMap<>());
+    	lenient().when(this.jdbcTemplate.query((String) any(), (Object[]) any(),
                 (org.springframework.jdbc.core.ResultSetExtractor<Object>) any())).thenReturn(null);
-        when(this.businessServiceQueryBuilder
+    	lenient().when(this.businessServiceQueryBuilder
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any(), (List<Object>) any()))
                 .thenReturn("Business Services");
 
@@ -150,11 +153,11 @@ class BusinessServiceRepositoryTest {
 
     void testGetRoleTenantAndStatusMapping() throws DataAccessException {
 
-        when(this.mDMSService.getStateLevelMapping()).thenReturn(new HashMap<>());
-        when(this.jdbcTemplate.query((String) any(), (Object[]) any(),
+    	lenient().when(this.mDMSService.getStateLevelMapping()).thenReturn(new HashMap<>());
+    	lenient().when(this.jdbcTemplate.query((String) any(), (Object[]) any(),
                 (org.springframework.jdbc.core.ResultSetExtractor<Object>) any()))
                 .thenReturn((COWArrayList<Object>) mock(COWArrayList.class));
-        when(this.businessServiceQueryBuilder
+    	lenient().when(this.businessServiceQueryBuilder
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any(), (List<Object>) any()))
                 .thenReturn("Business Services");
 

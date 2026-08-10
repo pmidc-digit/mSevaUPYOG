@@ -7,7 +7,6 @@ import org.egov.util.ResponseInfoFactory;
 import org.egov.web.models.ApportionRequest;
 import org.egov.web.models.ApportionResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.*;
 import org.egov.web.models.AuditDetails;
 import org.egov.web.models.Bill;
 import org.slf4j.Logger;
@@ -22,9 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2019-02-25T15:07:36.183+05:30")
+@jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2019-02-25T15:07:36.183+05:30")
 
 @Controller
 @RequestMapping("/v1")

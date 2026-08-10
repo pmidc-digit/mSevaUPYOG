@@ -2,7 +2,7 @@ package org.egov.wscalculation.web.models;
 
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.egov.wscalculation.web.models.MeterReading.MeterStatusEnum;
 import org.springframework.validation.annotation.Validated;
@@ -62,12 +62,6 @@ public class CalculationCriteria {
 	private String applicationNo;
 	
 	private MeterStatusEnum meterStatus;
-	
-	// ✅ isBulkMeter: passed from MeterReading request to drive Reset consumption formula.
-	// true  → use bulkMeterMaxReading from MDMS billingPeriod master
-	// false → use meterMaxReading from MDMS billingPeriod master
-	// null  → treated as false (normal meter)
-	private Boolean isBulkMeter;
 	
 	@JsonIgnore
     private List<MeterReading> meterReadings;

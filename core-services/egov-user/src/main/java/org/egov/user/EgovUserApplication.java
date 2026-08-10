@@ -31,7 +31,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,10 +41,9 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import redis.clients.jedis.JedisShardInfo;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -69,6 +69,9 @@ public class EgovUserApplication {
     @Value("${spring.redis.host}")
     private String host;
 
+    @Value("${spring.redis.port:6379}")
+    private int port;
+
     @Autowired
     private CustomAuthenticationKeyGenerator customAuthenticationKeyGenerator;
 
@@ -81,12 +84,12 @@ public class EgovUserApplication {
     }
 
     @Bean
-    public WebMvcConfigurerAdapter webMvcConfigurerAdapter() {
-        return new WebMvcConfigurerAdapter() {
+    public WebMvcConfigurer webMvcConfigurer() {
+        return new WebMvcConfigurer() {
 
             @Override
             public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-                configurer.defaultContentType(MediaType.APPLICATION_JSON_UTF8);
+                configurer.defaultContentType(MediaType.APPLICATION_JSON);
             }
         };
     }
@@ -123,6 +126,25 @@ public class EgovUserApplication {
         return redisTokenStore;
     }
 
+    @Value("${kafka.config.bootstrap_server_config:localhost:9092}")
+    private String bootstrapServers;
+
+    @Bean
+    public org.springframework.kafka.core.ProducerFactory<String, Object> producerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, 
+            org.apache.kafka.common.serialization.StringSerializer.class);
+        configProps.put(org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, 
+            org.springframework.kafka.support.serializer.JsonSerializer.class);
+        return new org.springframework.kafka.core.DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public org.springframework.kafka.core.KafkaTemplate<String, Object> kafkaTemplate() {
+        return new org.springframework.kafka.core.KafkaTemplate<>(producerFactory());
+    }
+
 //    @Bean
 //	@Profile("!test")
 //	public CacheManager cacheManager() {
@@ -131,8 +153,8 @@ public class EgovUserApplication {
 //	}
 	
 	 @Bean
-    public JedisConnectionFactory connectionFactory() {
-        return new JedisConnectionFactory(new JedisShardInfo(host));
+    public RedisConnectionFactory connectionFactory() {
+        return new LettuceConnectionFactory(host, port);
     }
 
     public static void main(String[] args) {

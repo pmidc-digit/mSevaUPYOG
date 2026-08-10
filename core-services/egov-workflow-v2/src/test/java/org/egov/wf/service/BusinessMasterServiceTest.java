@@ -9,10 +9,13 @@ import org.egov.wf.web.models.BusinessServiceSearchCriteria;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.test.context.ContextConfiguration;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.ArrayList;
@@ -21,61 +24,89 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ContextConfiguration(classes = {BusinessMasterService.class})
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class BusinessMasterServiceTest {
-    @Autowired
+	 @InjectMocks
     private BusinessMasterService businessMasterService;
 
-    @MockBean
+    @Mock
     private BusinessServiceRepository businessServiceRepository;
 
-    @MockBean
+    @Mock
     private CacheManager cacheManager;
 
-    @MockBean
+    @Mock
     private EnrichmentService enrichmentService;
 
-    @MockBean
+    @Mock
     private MDMSService mDMSService;
 
-    @MockBean
+    @Mock
     private Producer producer;
 
-    @MockBean
+    @Mock
     private WorkflowConfig workflowConfig;
 
 
     @Test
     void testCreate() {
         when(this.workflowConfig.getSaveBusinessServiceTopic()).thenReturn("Save Business Service Topic");
-        doNothing().when(this.producer).push((String) any(), (Object) any());
-        doNothing().when(this.enrichmentService).enrichCreateBusinessService((BusinessServiceRequest) any());
-        when(this.cacheManager.getCache((String) any())).thenReturn(new ConcurrentMapCache("Name"));
-        assertNull(this.businessMasterService.create(new BusinessServiceRequest()));
+
+        doNothing().when(this.producer).push(
+                anyString(),
+                any(),
+                any(BusinessServiceRequest.class)
+        );
+
+        doNothing().when(this.enrichmentService)
+                .enrichCreateBusinessService((BusinessServiceRequest) any());
+
+        when(this.cacheManager.getCache((String) any()))
+                .thenReturn(new ConcurrentMapCache("Name"));
+
+        BusinessServiceRequest request = new BusinessServiceRequest();
+
+        List<BusinessService> list = new ArrayList<>();
+        list.add(new BusinessService());
+        request.setBusinessServices(list);
+
+        // ✅ FIXED ASSERTION
+        List<BusinessService> result = this.businessMasterService.create(request);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
         verify(this.workflowConfig).getSaveBusinessServiceTopic();
-        verify(this.producer).push((String) any(), (Object) any());
-        verify(this.enrichmentService).enrichCreateBusinessService((BusinessServiceRequest) any());
+
+        // ✅ FIXED VERIFY
+        verify(this.producer).push(
+                anyString(),
+                any(),
+                any(BusinessServiceRequest.class)
+        );
+
+        verify(this.enrichmentService)
+                .enrichCreateBusinessService((BusinessServiceRequest) any());
+
         verify(this.cacheManager, atLeast(1)).getCache((String) any());
     }
 
-
     @Test
     void testCreateWithNull() {
-        when(this.workflowConfig.getSaveBusinessServiceTopic()).thenReturn("Save Business Service Topic");
-        doNothing().when(this.producer).push((String) any(), (Object) any());
-        doNothing().when(this.enrichmentService).enrichCreateBusinessService((BusinessServiceRequest) any());
-        when(this.cacheManager.getCache((String) any())).thenReturn(null);
+    	 lenient().when(this.workflowConfig.getSaveBusinessServiceTopic()).thenReturn("Save Business Service Topic");
+        lenient().doNothing().when(this.producer).push((String) any(), (Object) any());
+        lenient().doNothing().when(this.enrichmentService).enrichCreateBusinessService((BusinessServiceRequest) any());
+        lenient().when(this.cacheManager.getCache((String) any())).thenReturn(null);
 
     }
 
 
     @Test
     void testCreateWithString() {
-        when(this.workflowConfig.getSaveBusinessServiceTopic()).thenReturn("Save Business Service Topic");
-        doNothing().when(this.producer).push((String) any(), (Object) any());
-        doNothing().when(this.enrichmentService).enrichCreateBusinessService((BusinessServiceRequest) any());
-        when(this.cacheManager.getCache((String) any())).thenReturn(new ConcurrentMapCache("Name"));
+    	 lenient().when(this.workflowConfig.getSaveBusinessServiceTopic()).thenReturn("Save Business Service Topic");
+        lenient().doNothing().when(this.producer).push((String) any(), (Object) any());
+        lenient().doNothing().when(this.enrichmentService).enrichCreateBusinessService((BusinessServiceRequest) any());
+        lenient().when(this.cacheManager.getCache((String) any())).thenReturn(new ConcurrentMapCache("Name"));
 
     }
 
@@ -95,8 +126,8 @@ class BusinessMasterServiceTest {
 
     @Test
     void testSearchNull() {
-        doNothing().when(this.enrichmentService).enrichTenantIdForStateLevel((String) any(), (List<BusinessService>) any());
-        when(this.businessServiceRepository.getBusinessServices((BusinessServiceSearchCriteria) any()))
+    	 lenient().doNothing().when(this.enrichmentService).enrichTenantIdForStateLevel((String) any(), (List<BusinessService>) any());
+        lenient().when(this.businessServiceRepository.getBusinessServices((BusinessServiceSearchCriteria) any()))
                 .thenReturn(new ArrayList<>());
 
     }
@@ -104,24 +135,55 @@ class BusinessMasterServiceTest {
 
     @Test
     void testUpdate() {
-        when(this.workflowConfig.getUpdateBusinessServiceTopic()).thenReturn("2020-03-01");
-        doNothing().when(this.producer).push((String) any(), (Object) any());
-        doNothing().when(this.enrichmentService).enrichUpdateBusinessService((BusinessServiceRequest) any());
-        when(this.cacheManager.getCache((String) any())).thenReturn(new ConcurrentMapCache("Name"));
-        assertNull(this.businessMasterService.update(new BusinessServiceRequest()));
+        when(this.workflowConfig.getUpdateBusinessServiceTopic()).thenReturn("Update Business Service Topic");
+
+        doNothing().when(this.producer).push(
+                anyString(),
+                any(),
+                any(BusinessServiceRequest.class)
+        );
+
+        doNothing().when(this.enrichmentService)
+                .enrichUpdateBusinessService((BusinessServiceRequest) any());
+
+        when(this.cacheManager.getCache((String) any()))
+                .thenReturn(new ConcurrentMapCache("Name"));
+
+        // ✅ FIX: initialize properly
+        BusinessServiceRequest request = new BusinessServiceRequest();
+
+        List<BusinessService> list = new ArrayList<>();
+        list.add(new BusinessService());  // 🔥 important
+
+        request.setBusinessServices(list);
+
+        // call method
+        List<BusinessService> result = this.businessMasterService.update(request);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
         verify(this.workflowConfig).getUpdateBusinessServiceTopic();
-        verify(this.producer).push((String) any(), (Object) any());
-        verify(this.enrichmentService).enrichUpdateBusinessService((BusinessServiceRequest) any());
+
+        verify(this.producer).push(
+                anyString(),
+                any(),
+                any(BusinessServiceRequest.class)
+        );
+
+        verify(this.enrichmentService)
+                .enrichUpdateBusinessService((BusinessServiceRequest) any());
+
         verify(this.cacheManager, atLeast(1)).getCache((String) any());
     }
 
 
     @Test
     void testUpdateWithNull() {
-        when(this.workflowConfig.getUpdateBusinessServiceTopic()).thenReturn("2020-03-01");
-        doNothing().when(this.producer).push((String) any(), (Object) any());
-        doNothing().when(this.enrichmentService).enrichUpdateBusinessService((BusinessServiceRequest) any());
-        when(this.cacheManager.getCache((String) any())).thenReturn(null);
+    	 lenient().when(this.workflowConfig.getUpdateBusinessServiceTopic()).thenReturn("2020-03-01");
+        lenient().doNothing().when(this.producer).push((String) any(), (Object) any());
+        lenient().doNothing().when(this.enrichmentService).enrichUpdateBusinessService((BusinessServiceRequest) any());
+        lenient().when(this.cacheManager.getCache((String) any())).thenReturn(null);
 
     }
 
@@ -129,10 +191,10 @@ class BusinessMasterServiceTest {
     @Test
     void testUpdateWithStirng() {
 
-        when(this.workflowConfig.getUpdateBusinessServiceTopic()).thenReturn("2020-03-01");
-        doNothing().when(this.producer).push((String) any(), (Object) any());
-        doNothing().when(this.enrichmentService).enrichUpdateBusinessService((BusinessServiceRequest) any());
-        when(this.cacheManager.getCache((String) any())).thenReturn(new ConcurrentMapCache("Name"));
+    	 lenient().when(this.workflowConfig.getUpdateBusinessServiceTopic()).thenReturn("2020-03-01");
+    	 lenient().doNothing().when(this.producer).push((String) any(), (Object) any());
+        lenient().doNothing().when(this.enrichmentService).enrichUpdateBusinessService((BusinessServiceRequest) any());
+        lenient().when(this.cacheManager.getCache((String) any())).thenReturn(new ConcurrentMapCache("Name"));
 
     }
 }

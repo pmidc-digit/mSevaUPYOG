@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.TimeZone;
 
 @Data
@@ -30,7 +30,6 @@ public class ApportionConfig {
     }*/
 
     @Bean
-    @Autowired
     public MappingJackson2HttpMessageConverter jacksonConverter(ObjectMapper objectMapper) {
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
         converter.setObjectMapper(objectMapper);

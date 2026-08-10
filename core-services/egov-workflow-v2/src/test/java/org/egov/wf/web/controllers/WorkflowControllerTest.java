@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
@@ -16,31 +16,32 @@ import org.egov.wf.web.models.ProcessInstanceRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ContextConfiguration(classes = {WorkflowController.class})
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class WorkflowControllerTest {
-    @MockBean
+    @Mock
     private HttpServletRequest httpServletRequest;
 
-    @MockBean
+    @Mock
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @Mock
     private ResponseInfoFactory responseInfoFactory;
 
-    @Autowired
+    @InjectMocks
     private WorkflowController workflowController;
 
-    @MockBean
+    @Mock
     private WorkflowService workflowService;
 
 

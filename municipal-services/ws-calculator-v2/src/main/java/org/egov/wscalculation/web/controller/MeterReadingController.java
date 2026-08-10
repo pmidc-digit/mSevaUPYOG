@@ -2,10 +2,8 @@ package org.egov.wscalculation.web.controller;
 
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
-import org.egov.wscalculation.web.models.BulkMeterReading;
-import org.egov.wscalculation.web.models.BulkMeterReadingResponse;
 import org.egov.wscalculation.web.models.MeterConnectionRequest;
 import org.egov.wscalculation.web.models.MeterConnectionRequests;
 import org.egov.wscalculation.web.models.MeterReading;
@@ -64,31 +62,16 @@ public class MeterReadingController {
 	}
 
 
-//	@RequestMapping(value = "/_createmultiple", method = RequestMethod.POST, produces = "application/json")
-//	public ResponseEntity<MeterReadingResponses> createMeterReadings(
-//			@Valid @RequestBody MeterConnectionRequests meterConnectionRequests) {
-////				meterConnectionRequests.getMeterReadingslist().setGenerateDemand(Boolean.TRUE);
-//		List<MeterReadingList> meterReadings = meterService.createMeterReadings(meterConnectionRequests);
-//		MeterReadingResponses response = MeterReadingResponses.builder().meterReadingslist(meterReadings).responseInfo(
-//				responseInfoFactory.createResponseInfoFromRequestInfo(meterConnectionRequests.getRequestInfo(), true))
-//				.build();
-//		return new ResponseEntity<>(response, HttpStatus.OK);
-//
-//	}
-	
 	@RequestMapping(value = "/_createmultiple", method = RequestMethod.POST, produces = "application/json")
 	public ResponseEntity<MeterReadingResponses> createMeterReadings(
-	        @Valid @RequestBody MeterConnectionRequests meterConnectionRequests) {
+			@Valid @RequestBody MeterConnectionRequests meterConnectionRequests) {
+//				meterConnectionRequests.getMeterReadingslist().setGenerateDemand(Boolean.TRUE);
+		List<MeterReadingList> meterReadings = meterService.createMeterReadings(meterConnectionRequests);
+		MeterReadingResponses response = MeterReadingResponses.builder().meterReadingslist(meterReadings).responseInfo(
+				responseInfoFactory.createResponseInfoFromRequestInfo(meterConnectionRequests.getRequestInfo(), true))
+				.build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
 
-	    List<Object> meterReadings = meterService.createMeterReadings(meterConnectionRequests);
-
-	    MeterReadingResponses response = MeterReadingResponses.builder()
-	        .meterReadingslist(meterReadings)
-	        .responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(
-	            meterConnectionRequests.getRequestInfo(), true))
-	        .build();
-
-	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	
@@ -103,14 +86,4 @@ public class MeterReadingController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
-	@RequestMapping(value = "/_searchV2", method = RequestMethod.POST)
-	public ResponseEntity<BulkMeterReadingResponse> searchV2(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
-			@Valid @ModelAttribute MeterReadingSearchCriteria criteria) {
-		List<BulkMeterReading> meterReadingLists = meterService.searchMeterReadingsV2(criteria, requestInfoWrapper.getRequestInfo());
-		BulkMeterReadingResponse response = BulkMeterReadingResponse.builder().bulkMeterReadings(meterReadingLists)
-				.responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(),
-						true))
-				.build();
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
 }

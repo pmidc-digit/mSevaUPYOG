@@ -2,6 +2,7 @@ package org.egov.wf.service;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,24 +22,27 @@ import org.egov.wf.web.models.State;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+
 import org.springframework.test.context.ContextConfiguration;
+
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ContextConfiguration(classes = {TransitionService.class})
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class TransitionServiceTest {
-    @MockBean
+    @Mock
     private BusinessServiceRepository businessServiceRepository;
 
-    @Autowired
+    @InjectMocks
     private TransitionService transitionService;
 
-    @MockBean
+    @Mock
     private WorKflowRepository worKflowRepository;
 
-    @MockBean
+    @Mock
     private WorkflowUtil workflowUtil;
 
 
@@ -64,13 +68,13 @@ class TransitionServiceTest {
     void testGetProcessStateAndActionsWithBusinessServiceList() {
 
 
-        when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
-        when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
+    	 lenient().when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
+        lenient().when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
                 .thenReturn(new ArrayList<>());
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(new BusinessService());
-        when(this.businessServiceRepository
+        lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
 
@@ -82,13 +86,13 @@ class TransitionServiceTest {
 
     @Test
     void testGetProcessStateAndActionsWithCodeError() {
-        when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
-        when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
+    	 lenient().when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
+    	 lenient().when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
                 .thenThrow(new CustomException("Code", "An error occurred"));
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(new BusinessService());
-        when(this.businessServiceRepository
+        lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
 
@@ -107,16 +111,16 @@ class TransitionServiceTest {
     void testGetProcessStateAndActions() {
 
 
-        when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
+    	 lenient().when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
 
         ArrayList<ProcessInstance> processInstanceList = new ArrayList<>();
         processInstanceList.add(new ProcessInstance());
-        when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
+        lenient().when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
                 .thenReturn(processInstanceList);
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(new BusinessService());
-        when(this.businessServiceRepository
+        lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
 
@@ -127,14 +131,14 @@ class TransitionServiceTest {
 
     @Test
     void testGetProcessStateAndAction() {
-        when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
-        when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
+    	 lenient().when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
+    	 lenient().when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
                 .thenReturn(new ArrayList<>());
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(new BusinessService());
         businessServiceList.add(new BusinessService());
-        when(this.businessServiceRepository
+        lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
 
@@ -178,8 +182,8 @@ class TransitionServiceTest {
     void testGetProcessStateAndActionsWithList() {
 
 
-        when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
-        when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
+    	 lenient().when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
+    	 lenient().when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
                 .thenReturn(new ArrayList<>());
 
         BusinessService businessService = new BusinessService();
@@ -187,7 +191,7 @@ class TransitionServiceTest {
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(businessService);
-        when(this.businessServiceRepository
+        lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
 
@@ -200,8 +204,8 @@ class TransitionServiceTest {
 
     void testGetProcessStateAndActionsWithDoc() {
 
-        when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
-        when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
+    	 lenient().when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
+    	 lenient().when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
                 .thenReturn(new ArrayList<>());
 
         ArrayList<State> stateList = new ArrayList<>();
@@ -214,7 +218,7 @@ class TransitionServiceTest {
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(businessService);
-        when(this.businessServiceRepository
+        lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
 
@@ -227,8 +231,8 @@ class TransitionServiceTest {
 
     void testGetProcessStateAndActionsWithBusinessListTrue() {
 
-        when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
-        when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
+    	 lenient().when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
+    	 lenient().when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
                 .thenReturn(new ArrayList<>());
 
         ArrayList<State> stateList = new ArrayList<>();
@@ -239,7 +243,7 @@ class TransitionServiceTest {
         businessService.setStates(stateList);
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(businessService);
-        when(this.businessServiceRepository
+        lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
 
@@ -252,8 +256,8 @@ class TransitionServiceTest {
 
     void testGetProcessStateAndActionsStateList() {
 
-        when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
-        when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
+    	 lenient().when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
+    	 lenient().when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
                 .thenReturn(new ArrayList<>());
 
         ArrayList<State> stateList = new ArrayList<>();
@@ -266,7 +270,7 @@ class TransitionServiceTest {
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(businessService);
-        when(this.businessServiceRepository
+        lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
         ArrayList<ProcessInstance> processInstanceList = new ArrayList<>();
@@ -279,8 +283,8 @@ class TransitionServiceTest {
 
     void testGetProcessStateAndActionsAddState() {
 
-        when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
-        when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
+    	 lenient().when(this.workflowUtil.rolesAllowedInService((BusinessService) any())).thenReturn(new ArrayList<>());
+    	 lenient().when(this.worKflowRepository.getProcessInstances((org.egov.wf.web.models.ProcessInstanceSearchCriteria) any()))
                 .thenReturn(new ArrayList<>());
 
         State state = new State();
@@ -294,7 +298,7 @@ class TransitionServiceTest {
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(businessService);
-        when(this.businessServiceRepository
+        lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
 

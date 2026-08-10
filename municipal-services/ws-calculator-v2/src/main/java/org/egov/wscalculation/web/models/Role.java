@@ -2,20 +2,19 @@ package org.egov.wscalculation.web.models;
 
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 
 /**
  * minimal representation of the Roles in the system to be carried along in
  * UserInfo with RequestInfo meta data. Actual authorization service to extend
  * this to have more role related attributes
  */
-@ApiModel(description = "minimal representation of the Roles in the system to be carried along in UserInfo with RequestInfo meta data. Actual authorization service to extend this to have more role related attributes ")
+@Schema(description = "minimal representation of the Roles in the system to be carried along in UserInfo with RequestInfo meta data. Actual authorization service to extend this to have more role related attributes ")
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-10-24T10:29:25.253+05:30[Asia/Kolkata]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-10-24T10:29:25.253+05:30[Asia/Kolkata]")
 public class Role {
 	@JsonProperty("name")
 	private String name = null;
@@ -36,7 +35,6 @@ public class Role {
 	 * 
 	 * @return name
 	 **/
-	@ApiModelProperty(required = true, value = "Unique name of the role")
 	@NotNull
 
 	@Size(max = 64)
@@ -58,8 +56,6 @@ public class Role {
 	 * 
 	 * @return code
 	 **/
-	@ApiModelProperty(value = "Unique code of the role")
-
 	@Size(max = 64)
 	public String getCode() {
 		return code;
@@ -79,8 +75,6 @@ public class Role {
 	 * 
 	 * @return description
 	 **/
-	@ApiModelProperty(value = "brief description of the role")
-
 	public String getDescription() {
 		return description;
 	}

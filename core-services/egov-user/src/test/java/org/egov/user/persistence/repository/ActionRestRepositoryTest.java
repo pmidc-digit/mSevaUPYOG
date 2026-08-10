@@ -41,7 +41,7 @@ public class ActionRestRepositoryTest {
 				.andExpect(method(HttpMethod.POST))
 				.andExpect(content().string(resources.getFileContents("actionRequest.json")))
 				.andRespond(withSuccess(resources.getFileContents("actionsResponse.json"),
-						MediaType.APPLICATION_JSON_UTF8));
+						MediaType.APPLICATION_JSON));
 
 		final List<Action> actions = actionRestRepository.getActionByRoleCodes(getRoles(), "default");
 

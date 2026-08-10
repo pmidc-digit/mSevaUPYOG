@@ -2,20 +2,19 @@ package org.egov.wscalculation.web.models;
 
 import java.util.Objects;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModelProperty;
 
 /**
  * ConnectionCategory
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-10-24T10:29:25.253+05:30[Asia/Kolkata]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-10-24T10:29:25.253+05:30[Asia/Kolkata]")
 public class ConnectionCategory {
 	@JsonProperty("code")
 	private String code = null;
@@ -33,7 +32,6 @@ public class ConnectionCategory {
 	 * 
 	 * @return code
 	 **/
-	@ApiModelProperty(required = true, value = "code of the connection category")
 	@NotNull
 
 	@Size(min = 2, max = 64)
@@ -55,8 +53,6 @@ public class ConnectionCategory {
 	 * 
 	 * @return active
 	 **/
-	@ApiModelProperty(value = "describes Whether propertyType is Active or not.")
-
 	public Boolean isActive() {
 		return active;
 	}

@@ -38,8 +38,10 @@ public class IdGenRepo {
 
 		IdGenerationRequest req = IdGenerationRequest.builder().requestInfo(requestInfo).idRequests(reqList).build();
 
-		String uri = UriComponentsBuilder.fromHttpUrl(appProps.getIdGenHost()).path(appProps.getIdGenUrl()).build()
-				.toUriString();
+		String uri = UriComponentsBuilder.fromUriString(appProps.getIdGenHost())
+			    .path(appProps.getIdGenUrl())
+			    .build()
+			    .toUriString();
 		try {
 			IdGenerationResponse idGenerationResponse = rest.postForObject(uri, req, IdGenerationResponse.class);
 			return idGenerationResponse.getIdResponses().stream().map(IdResponse::getId).collect(Collectors.toList());

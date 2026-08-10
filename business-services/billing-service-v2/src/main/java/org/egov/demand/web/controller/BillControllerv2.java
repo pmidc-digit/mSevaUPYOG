@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
@@ -66,21 +66,6 @@ public class BillControllerv2 {
 		billValidator.validateBillSearchCriteria(billCriteria, requestInfo);
 		return new ResponseEntity<>(billService.searchBill(billCriteria,requestInfo), HttpStatus.OK);
 	}
-	
-	/*	PI-19980 Patiala Penalty not apply in W/S*/
-	
-	@PostMapping("_searchv2")
-	@ResponseBody
-	public ResponseEntity<?> searchbill(@RequestBody @Valid final RequestInfoWrapper requestInfoWrapper,
-			@ModelAttribute @Valid final BillSearchCriteria billCriteria) {
-
-		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
-		log.info("bill _search billcriteria : "+billCriteria); // added logger
-		billValidator.validateBillSearchCriteriaLatest(billCriteria, requestInfo);
-		return new ResponseEntity<>(billService.searchBillLatest(billCriteria,requestInfo), HttpStatus.OK);
-	}
-	
-	/*	PI-19980 Patiala Penalty not apply in W/S*/
 
 
 	@PostMapping("_fetchbill")

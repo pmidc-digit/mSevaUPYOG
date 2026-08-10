@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,17 +25,18 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ContextConfiguration(classes = {EscalationUtil.class})
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class EscalationUtilTest {
-    @MockBean
+    @Mock
     private BusinessMasterService businessMasterService;
 
-    @Autowired
+    @InjectMocks
     private EscalationUtil escalationUtil;
 
 
@@ -63,9 +65,9 @@ class EscalationUtilTest {
         ArrayList<String> stringList = new ArrayList<>();
         stringList.add("foo");
         Escalation escalation = mock(Escalation.class);
-        when(escalation.getAction()).thenThrow(new CustomException("Code", "An error occurred"));
-        when(escalation.getBusinessService()).thenThrow(new CustomException("Code", "An error occurred"));
-        when(escalation.getModuleName()).thenThrow(new CustomException("Code", "An error occurred"));
+        lenient().when(escalation.getAction()).thenThrow(new CustomException("Code", "An error occurred"));
+        lenient().when(escalation.getBusinessService()).thenThrow(new CustomException("Code", "An error occurred"));
+        lenient().when(escalation.getModuleName()).thenThrow(new CustomException("Code", "An error occurred"));
         assertThrows(CustomException.class, () -> this.escalationUtil.getProcessInstances("42", stringList, escalation));
         verify(escalation).getAction();
     }
@@ -85,7 +87,7 @@ class EscalationUtilTest {
     void TestGetStatusUUID() {
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(new BusinessService());
-        when(this.businessMasterService.search((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
+        lenient().when(this.businessMasterService.search((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
           }
 
@@ -121,7 +123,7 @@ class EscalationUtilTest {
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(null);
-        when(this.businessMasterService.search((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
+        lenient().when(this.businessMasterService.search((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
           }
 
@@ -135,7 +137,7 @@ class EscalationUtilTest {
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(businessService);
-        when(this.businessMasterService.search((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
+        lenient().when(this.businessMasterService.search((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
            }
 

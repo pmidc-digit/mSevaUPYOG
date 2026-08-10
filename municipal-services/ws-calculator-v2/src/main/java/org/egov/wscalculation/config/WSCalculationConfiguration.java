@@ -220,9 +220,6 @@ public class WSCalculationConfiguration {
 
 	@Value("${egov.bill.search.endpoint}")
 	private String searchBillEndPoint;
-	
-	@Value("${egov.bill.search.endpoints}")
-	private String searchBillEndPoints;
 
 	@Value("${egov.ws.view.history.link}")
 	private String viewHistoryLink;
@@ -235,18 +232,5 @@ public class WSCalculationConfiguration {
 	
 	@Value("${kafka.topics.save.demand}")
 	private String saveDemand;
-
-	@Value("${kafka.topics.save.ws.batch.demand.log}")
-	private String saveBatchDemandLogTopic;
-
-	@Value("${kafka.topics.save.ws.batch.connection.log}")
-	private String saveBatchConnectionLogTopic;
-
-	// Multi-threading configuration
-	@Value("${ws.tenant.thread.pool.size:5}")
-	private Integer tenantThreadPoolSize;
-
-	@Value("${ws.connection.thread.pool.size:3}")
-	private Integer connectionThreadPoolSize;
 
 }

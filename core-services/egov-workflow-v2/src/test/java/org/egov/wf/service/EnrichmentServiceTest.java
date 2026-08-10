@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,27 +37,29 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+
 import org.springframework.test.context.ContextConfiguration;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
-@ContextConfiguration(classes = {EnrichmentService.class})
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class EnrichmentServiceTest {
-    @Autowired
+    @InjectMocks
     private EnrichmentService enrichmentService;
 
-    @MockBean
+    @Mock
     private RestTemplate restTemplate;
 
-    @MockBean
+    @Mock
     private TransitionService transitionService;
 
-    @MockBean
+    @Mock
     private UserService userService;
 
-    @MockBean
+    @Mock
     private WorkflowUtil workflowUtil;
 
 
@@ -94,8 +97,8 @@ class EnrichmentServiceTest {
 
     void EnrichProcessRequest() {
 
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+    	 lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
+    	 lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
 
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User());
@@ -115,14 +118,14 @@ class EnrichmentServiceTest {
 
     @Test
     void testEnrichProcessRequestWithError() {
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+    	 lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
+    	 lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
 
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User());
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getAction()).thenThrow(new CustomException("Code", "An error occurred"));
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
+        lenient().when(processStateAndAction.getAction()).thenThrow(new CustomException("Code", "An error occurred"));
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
         doNothing().when(processStateAndAction).setAction((Action) any());
         doNothing().when(processStateAndAction).setCurrentState((State) any());
         doNothing().when(processStateAndAction).setProcessInstanceFromDb((ProcessInstance) any());
@@ -152,18 +155,18 @@ class EnrichmentServiceTest {
 
     void testEnrichProcessRequestWithProcessStateAndActionList() {
 
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+    	 lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
+    	 lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
 
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User());
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getProcessInstanceFromDb()).thenReturn(new ProcessInstance());
-        when(processStateAndAction.getResultantState()).thenReturn(new State());
+        lenient().when(processStateAndAction.getProcessInstanceFromDb()).thenReturn(new ProcessInstance());
+        lenient().when(processStateAndAction.getResultantState()).thenReturn(new State());
         ArrayList<String> roles = new ArrayList<>();
-        when(processStateAndAction.getAction()).thenReturn(new Action("01234567-89AB-CDEF-FEDC-BA9876543210", "42",
+        lenient().when(processStateAndAction.getAction()).thenReturn(new Action("01234567-89AB-CDEF-FEDC-BA9876543210", "42",
                 "Current State", "Action", "Next State", roles, new AuditDetails(), true));
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
         doNothing().when(processStateAndAction).setAction((Action) any());
         doNothing().when(processStateAndAction).setCurrentState((State) any());
         doNothing().when(processStateAndAction).setProcessInstanceFromDb((ProcessInstance) any());
@@ -183,19 +186,19 @@ class EnrichmentServiceTest {
 
     @Test
     void testEnrichProcessRequestWithInvalidUuid() {
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+    	 lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
+    	 lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
 
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User());
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getProcessInstanceFromDb())
+        lenient().when(processStateAndAction.getProcessInstanceFromDb())
                 .thenThrow(new CustomException("INVALID UUID", "An error occurred"));
-        when(processStateAndAction.getResultantState()).thenReturn(new State());
+        lenient().when(processStateAndAction.getResultantState()).thenReturn(new State());
         ArrayList<String> roles = new ArrayList<>();
-        when(processStateAndAction.getAction()).thenReturn(new Action("01234567-89AB-CDEF-FEDC-BA9876543210", "42",
+        lenient().when(processStateAndAction.getAction()).thenReturn(new Action("01234567-89AB-CDEF-FEDC-BA9876543210", "42",
                 "Current State", "Action", "Next State", roles, new AuditDetails(), true));
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
         doNothing().when(processStateAndAction).setAction((Action) any());
         doNothing().when(processStateAndAction).setCurrentState((State) any());
         doNothing().when(processStateAndAction).setProcessInstanceFromDb((ProcessInstance) any());
@@ -229,18 +232,18 @@ class EnrichmentServiceTest {
 
         AuditDetails auditDetails = new AuditDetails();
         auditDetails.setLastModifiedTime(1L);
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(auditDetails);
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+        lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(auditDetails);
+        lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
 
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User());
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getProcessInstanceFromDb()).thenReturn(new ProcessInstance());
-        when(processStateAndAction.getResultantState()).thenReturn(new State());
+        lenient().when(processStateAndAction.getProcessInstanceFromDb()).thenReturn(new ProcessInstance());
+        lenient().when(processStateAndAction.getResultantState()).thenReturn(new State());
         ArrayList<String> roles = new ArrayList<>();
-        when(processStateAndAction.getAction()).thenReturn(new Action("01234567-89AB-CDEF-FEDC-BA9876543210", "42",
+        lenient().when(processStateAndAction.getAction()).thenReturn(new Action("01234567-89AB-CDEF-FEDC-BA9876543210", "42",
                 "Current State", "Action", "Next State", roles, new AuditDetails(), true));
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
         doNothing().when(processStateAndAction).setAction((Action) any());
         doNothing().when(processStateAndAction).setCurrentState((State) any());
         doNothing().when(processStateAndAction).setProcessInstanceFromDb((ProcessInstance) any());
@@ -263,20 +266,20 @@ class EnrichmentServiceTest {
     void EnrichProcessRequestwithAction() {
 
         AuditDetails auditDetails = mock(AuditDetails.class);
-        when(auditDetails.getLastModifiedTime()).thenReturn(1L);
+        lenient().when(auditDetails.getLastModifiedTime()).thenReturn(1L);
         doNothing().when(auditDetails).setLastModifiedTime((Long) any());
         auditDetails.setLastModifiedTime(4L);
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(auditDetails);
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+        lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(auditDetails);
+        lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User());
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getProcessInstanceFromDb()).thenReturn(new ProcessInstance());
-        when(processStateAndAction.getResultantState()).thenReturn(new State());
+        lenient().when(processStateAndAction.getProcessInstanceFromDb()).thenReturn(new ProcessInstance());
+        lenient().when(processStateAndAction.getResultantState()).thenReturn(new State());
         ArrayList<String> roles = new ArrayList<>();
-        when(processStateAndAction.getAction()).thenReturn(new Action("01234567-89AB-CDEF-FEDC-BA9876543210", "42",
+        lenient().when(processStateAndAction.getAction()).thenReturn(new Action("01234567-89AB-CDEF-FEDC-BA9876543210", "42",
                 "Current State", "Action", "Next State", roles, new AuditDetails(), true));
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
         doNothing().when(processStateAndAction).setAction((Action) any());
         doNothing().when(processStateAndAction).setCurrentState((State) any());
         doNothing().when(processStateAndAction).setProcessInstanceFromDb((ProcessInstance) any());
@@ -297,22 +300,22 @@ class EnrichmentServiceTest {
 
     void testEnrichProcessRequestReturnAuditDetails() {
         AuditDetails auditDetails = mock(AuditDetails.class);
-        when(auditDetails.getLastModifiedTime()).thenReturn(1L);
+        lenient().when(auditDetails.getLastModifiedTime()).thenReturn(1L);
         doNothing().when(auditDetails).setLastModifiedTime((Long) any());
         auditDetails.setLastModifiedTime(4L);
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(auditDetails);
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+        lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(auditDetails);
+        lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User());
         ProcessInstance processInstance = new ProcessInstance();
         processInstance.setAuditDetails(new AuditDetails());
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getProcessInstanceFromDb()).thenReturn(processInstance);
-        when(processStateAndAction.getResultantState()).thenReturn(new State());
+        lenient().when(processStateAndAction.getProcessInstanceFromDb()).thenReturn(processInstance);
+        lenient().when(processStateAndAction.getResultantState()).thenReturn(new State());
         ArrayList<String> roles = new ArrayList<>();
-        when(processStateAndAction.getAction()).thenReturn(new Action("01234567-89AB-CDEF-FEDC-BA9876543210", "42",
+        lenient().when(processStateAndAction.getAction()).thenReturn(new Action("01234567-89AB-CDEF-FEDC-BA9876543210", "42",
                 "Current State", "Action", "Next State", roles, new AuditDetails(), true));
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
         doNothing().when(processStateAndAction).setAction((Action) any());
         doNothing().when(processStateAndAction).setCurrentState((State) any());
         doNothing().when(processStateAndAction).setProcessInstanceFromDb((ProcessInstance) any());
@@ -335,11 +338,11 @@ class EnrichmentServiceTest {
     void TestEnrichProcessRequest() {
 
         AuditDetails auditDetails = mock(AuditDetails.class);
-        when(auditDetails.getLastModifiedTime()).thenReturn(1L);
+        lenient().when(auditDetails.getLastModifiedTime()).thenReturn(1L);
         doNothing().when(auditDetails).setLastModifiedTime((Long) any());
         auditDetails.setLastModifiedTime(4L);
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(auditDetails);
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+        lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(auditDetails);
+        lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
 
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User());
@@ -350,12 +353,12 @@ class EnrichmentServiceTest {
         ProcessInstance processInstance = new ProcessInstance();
         processInstance.setAuditDetails(auditDetails1);
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getProcessInstanceFromDb()).thenReturn(processInstance);
-        when(processStateAndAction.getResultantState()).thenReturn(new State());
+        lenient().when(processStateAndAction.getProcessInstanceFromDb()).thenReturn(processInstance);
+        lenient().when(processStateAndAction.getResultantState()).thenReturn(new State());
         ArrayList<String> roles = new ArrayList<>();
-        when(processStateAndAction.getAction()).thenReturn(new Action("01234567-89AB-CDEF-FEDC-BA9876543210", "42",
+        lenient().when(processStateAndAction.getAction()).thenReturn(new Action("01234567-89AB-CDEF-FEDC-BA9876543210", "42",
                 "Current State", "Action", "Next State", roles, new AuditDetails(), true));
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
         doNothing().when(processStateAndAction).setAction((Action) any());
         doNothing().when(processStateAndAction).setCurrentState((State) any());
         doNothing().when(processStateAndAction).setProcessInstanceFromDb((ProcessInstance) any());
@@ -444,7 +447,7 @@ class EnrichmentServiceTest {
 
     void testEnrichUsers() {
 
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+    	 lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
         RequestInfo requestInfo = new RequestInfo();
 
         ProcessStateAndAction processStateAndAction = new ProcessStateAndAction();
@@ -638,11 +641,11 @@ class EnrichmentServiceTest {
 
     void testEnrichUsersWithNull() {
 
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+    	 lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
         RequestInfo requestInfo = new RequestInfo();
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getProcessInstanceFromDb()).thenReturn(new ProcessInstance());
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(null);
+        lenient().when(processStateAndAction.getProcessInstanceFromDb()).thenReturn(new ProcessInstance());
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(null);
         doNothing().when(processStateAndAction).setAction((Action) any());
         doNothing().when(processStateAndAction).setCurrentState((State) any());
         doNothing().when(processStateAndAction).setProcessInstanceFromDb((ProcessInstance) any());
@@ -671,7 +674,7 @@ class EnrichmentServiceTest {
 
     void testEnrichUsersFromSearchWithNull() {
 
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+    	 lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
         RequestInfo requestInfo = new RequestInfo();
 
         ArrayList<ProcessInstance> processInstanceList = new ArrayList<>();
@@ -711,7 +714,7 @@ class EnrichmentServiceTest {
     void testEnrichUsersFromSearchAddNull() {
 
 
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+    	 lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
         RequestInfo requestInfo = new RequestInfo();
 
         ArrayList<ProcessInstance> processInstanceList = new ArrayList<>();
@@ -724,7 +727,7 @@ class EnrichmentServiceTest {
     void testEnrichUsersFromSearchMapUser() {
 
 
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+    	 lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
         RequestInfo requestInfo = new RequestInfo();
 
         ProcessInstance processInstance = new ProcessInstance();
@@ -757,7 +760,7 @@ class EnrichmentServiceTest {
 
     void testEnrichUsersFromSearchWithNullItem() {
 
-        when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
+    	 lenient().when(this.userService.searchUser((RequestInfo) any(), (java.util.List<String>) any())).thenReturn(new HashMap<>());
         RequestInfo requestInfo = new RequestInfo();
 
         ProcessInstance processInstance = new ProcessInstance();
@@ -840,10 +843,10 @@ class EnrichmentServiceTest {
     @Test
     void testEnrichNextActionForSearchWithNull() {
 
-        when(this.transitionService.getProcessStateAndActions((List<ProcessInstance>) any(), (Boolean) any()))
+    	 lenient().when(this.transitionService.getProcessStateAndActions((List<ProcessInstance>) any(), (Boolean) any()))
                 .thenReturn(new ArrayList<>());
         RequestInfo requestInfo = mock(RequestInfo.class);
-        when(requestInfo.getUserInfo()).thenReturn(new User());
+        lenient().when(requestInfo.getUserInfo()).thenReturn(new User());
 
         ArrayList<ProcessInstance> processInstanceList = new ArrayList<>();
         processInstanceList.add(null);
@@ -852,7 +855,7 @@ class EnrichmentServiceTest {
 
     @Test
     void testEnrichNextActionForSearchWithCodeNull() {
-        when(this.transitionService.getProcessStateAndActions((List<ProcessInstance>) any(), (Boolean) any()))
+    	 lenient().when(this.transitionService.getProcessStateAndActions((List<ProcessInstance>) any(), (Boolean) any()))
                 .thenThrow(new CustomException("Code", "An error occurred"));
         RequestInfo requestInfo = mock(RequestInfo.class);
         when(requestInfo.getUserInfo()).thenReturn(new User());
@@ -932,8 +935,8 @@ class EnrichmentServiceTest {
     @Test
     void TestEnrichNextActionForSearchWithUser() {
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getCurrentState()).thenReturn(null);
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
+        lenient().when(processStateAndAction.getCurrentState()).thenReturn(null);
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
         doNothing().when(processStateAndAction).setAction((Action) any());
         doNothing().when(processStateAndAction).setCurrentState((State) any());
         doNothing().when(processStateAndAction).setProcessInstanceFromDb((ProcessInstance) any());
@@ -947,10 +950,10 @@ class EnrichmentServiceTest {
 
         ArrayList<ProcessStateAndAction> processStateAndActionList = new ArrayList<>();
         processStateAndActionList.add(processStateAndAction);
-        when(this.transitionService.getProcessStateAndActions((List<ProcessInstance>) any(), (Boolean) any()))
+        lenient().when(this.transitionService.getProcessStateAndActions((List<ProcessInstance>) any(), (Boolean) any()))
                 .thenReturn(processStateAndActionList);
         RequestInfo requestInfo = mock(RequestInfo.class);
-        when(requestInfo.getUserInfo()).thenReturn(new User());
+        lenient().when(requestInfo.getUserInfo()).thenReturn(new User());
         ArrayList<ProcessInstance> processInstanceList = new ArrayList<>();
         processInstanceList.add(new ProcessInstance());
 
@@ -1088,14 +1091,14 @@ class EnrichmentServiceTest {
 
     @Test
     void testEnrichNextActionForSearchWithTrueUser() {
-        when(this.workflowUtil.isRoleAvailable((String) any(), (List<org.egov.common.contract.request.Role>) any(),
+    	 lenient().when(this.workflowUtil.isRoleAvailable((String) any(), (List<org.egov.common.contract.request.Role>) any(),
                 (List<String>) any())).thenReturn(true);
 
         State state = new State();
         state.addActionsItem(null);
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getCurrentState()).thenReturn(state);
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
+        lenient().when(processStateAndAction.getCurrentState()).thenReturn(state);
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(new ProcessInstance());
         doNothing().when(processStateAndAction).setAction((Action) any());
         doNothing().when(processStateAndAction).setCurrentState((State) any());
         doNothing().when(processStateAndAction).setProcessInstanceFromDb((ProcessInstance) any());
@@ -1109,10 +1112,10 @@ class EnrichmentServiceTest {
 
         ArrayList<ProcessStateAndAction> processStateAndActionList = new ArrayList<>();
         processStateAndActionList.add(processStateAndAction);
-        when(this.transitionService.getProcessStateAndActions((List<ProcessInstance>) any(), (Boolean) any()))
+        lenient().when(this.transitionService.getProcessStateAndActions((List<ProcessInstance>) any(), (Boolean) any()))
                 .thenReturn(processStateAndActionList);
         RequestInfo requestInfo = mock(RequestInfo.class);
-        when(requestInfo.getUserInfo()).thenReturn(new User());
+        lenient().when(requestInfo.getUserInfo()).thenReturn(new User());
 
         ArrayList<ProcessInstance> processInstanceList = new ArrayList<>();
         processInstanceList.add(new ProcessInstance());
@@ -1124,7 +1127,7 @@ class EnrichmentServiceTest {
     @Test
     void testEnrichCreateBusinessService() {
 
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
+    	 lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
 
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User(123L, "janedoe", "Name", "Type", "42", "42", new ArrayList<>(), "42",
@@ -1137,7 +1140,7 @@ class EnrichmentServiceTest {
 
     @Test
     void testEnrichCreateBusinessServiceWithList() {
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
+    	 lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
 
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User(123L, "janedoe", "Name", "Type", "42", "42", new ArrayList<>(), "42",
@@ -1151,7 +1154,7 @@ class EnrichmentServiceTest {
 
     @Test
     void testEnrichCreateBusinessServiceWithSave() {
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
+    	 lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
         RequestInfo requestInfo = new RequestInfo();
         ArrayList<Role> roleList = new ArrayList<>();
         requestInfo.setUserInfo(
@@ -1200,7 +1203,7 @@ class EnrichmentServiceTest {
     @Test
     void testEnrichCreateBusinessServiceWithNull() {
 
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
+    	 lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
 
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User(123L, "janedoe", "Name", "Type", "42", "42", new ArrayList<>(), "42",
@@ -1214,7 +1217,7 @@ class EnrichmentServiceTest {
 
     @Test
     void TestEnrichCreateBusinessServiceWithList() {
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
+    	 lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
 
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User(123L, "janedoe", "Name", "Type", "42", "42", new ArrayList<>(), "42",
@@ -1251,7 +1254,7 @@ class EnrichmentServiceTest {
 
     @Test
     void testEnrichUpdateBusinessService3() {
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
+    	 lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
 
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User(123L, "janedoe", "Name", "Type", "42", "42", new ArrayList<>(), "42",
@@ -1265,7 +1268,7 @@ class EnrichmentServiceTest {
     @Test
     void testEnrichUpdateBusinessServiceWithUuid() {
 
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
+    	 lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
 
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User(123L, "janedoe", "Name", "Type", "42", "42", new ArrayList<>(), "42",
@@ -1329,7 +1332,7 @@ class EnrichmentServiceTest {
     @Test
     void testEnrichUpdateBusinessServiceWithBusinessServiceItemNull() {
 
-        when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
+    	 lenient().when(this.workflowUtil.getAuditDetails((String) any(), (Boolean) any())).thenReturn(new AuditDetails());
 
         RequestInfo requestInfo = new RequestInfo();
         requestInfo.setUserInfo(new User(123L, "janedoe", "Name", "Type", "42", "42", new ArrayList<>(), "42",
@@ -1602,8 +1605,8 @@ class EnrichmentServiceTest {
         ArrayList<State> stateList = new ArrayList<>();
         stateList.add(state);
         BusinessService businessService = mock(BusinessService.class);
-        when(businessService.getStates()).thenReturn(stateList);
-        doNothing().when(businessService).setTenantId((String) any());
+        lenient().when(businessService.getStates()).thenReturn(stateList);
+        lenient().doNothing().when(businessService).setTenantId((String) any());
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(businessService);

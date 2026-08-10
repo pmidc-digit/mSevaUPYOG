@@ -321,8 +321,6 @@ public class CalculatorUtil {
 				.filter("[?(@.isActive== " + true + ")]").build());
 		details.add(MasterDetail.builder().name(WSCalculationConstant.WC_ROADTYPE_MASTER)
 				.filter("[?(@.isActive== " + true + ")]").build());
-		details.add(MasterDetail.builder().name(WSCalculationConstant.WC_DISCONNECTION_MASTER)
-				.filter("[?(@.isActive== " + true + ")]").build());
 		ModuleDetail mdDtl = ModuleDetail.builder().masterDetails(details)
 				.moduleName(WSCalculationConstant.WS_TAX_MODULE).build();
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(mdDtl)).tenantId(tenantId)

@@ -286,7 +286,7 @@ public class NotificationConsumer {
 	}
 
 	public String getShortnerURL(String actualURL) {
-		net.minidev.json.JSONObject obj = new net.minidev.json.JSONObject();
+		JSONObject obj = new JSONObject();
 		obj.put("url", actualURL);
 		String url = config.getShortenerHost() + config.getEgovShortenerUrl();
 		// Object response = serviceRequestRepository.getShorteningURL(new

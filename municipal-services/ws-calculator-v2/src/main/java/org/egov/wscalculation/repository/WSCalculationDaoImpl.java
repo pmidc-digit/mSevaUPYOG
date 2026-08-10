@@ -14,7 +14,6 @@ import org.egov.wscalculation.repository.builder.WSCalculatorQueryBuilder;
 import org.egov.wscalculation.web.models.MeterConnectionRequests;
 import org.egov.wscalculation.repository.rowmapper.BillSearchRowMapper;
 import org.egov.wscalculation.repository.rowmapper.BillSearchRowMappers;
-import org.egov.wscalculation.repository.rowmapper.BulkMeterReadingRowMapper;
 import org.egov.wscalculation.repository.rowmapper.DemandSchedulerRowMapper;
 import org.egov.wscalculation.repository.rowmapper.Demandcancelwrapper;
 import org.egov.wscalculation.repository.rowmapper.MeterReadingCurrentReadingRowMapper;
@@ -24,7 +23,6 @@ import org.egov.wscalculation.repository.rowmapper.WaterDemandRowMapper;
 import org.egov.wscalculation.repository.rowmapper.WaterRowMapper;
 import org.egov.wscalculation.web.models.BillSearch;
 import org.egov.wscalculation.web.models.BillSearchs;
-import org.egov.wscalculation.web.models.BulkMeterReading;
 import org.egov.wscalculation.web.models.CancelDemand;
 import org.egov.wscalculation.web.models.CancelDemandReq;
 import org.egov.wscalculation.web.models.Canceldemandsearch;
@@ -57,9 +55,6 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 
 	@Autowired
 	private MeterReadingRowMapper meterReadingRowMapper;
-	
-	@Autowired
-	private BulkMeterReadingRowMapper bulkMeterReadingRowMapper;
 
 	@Autowired
 	private MeterReadingCurrentReadingRowMapper currentMeterReadingRowMapper;
@@ -521,30 +516,7 @@ public List<BillSearchs> getBillss(String tenantId, String demandid) {
 	}
 
 
-	/**
-	 * 
-	 * @param criteria would be meter reading criteria
-	 * @return List of meter readings based on criteria
-	 */
-	@Override
-	public List<BulkMeterReading> searchMeterReadingsV2(MeterReadingSearchCriteria criteria) {
-		List<Object> preparedStatement = new ArrayList<>();
-		String query = queryBuilder.getSearchQueryStringV2(criteria, preparedStatement);
-		if (query == null)
-			return Collections.emptyList();
-		log.debug("Query: " + query);
-		log.debug("Prepared Statement" + preparedStatement.toString());
-		return jdbcTemplate.query(query, preparedStatement.toArray(), bulkMeterReadingRowMapper);
-	}
 
-	@Override
-	public Boolean isBatchDemandExecuted(String tenantId, Long taxPeriodFrom, Long taxPeriodTo) {
-		try {
-			String query = "SELECT EXISTS (SELECT 1 FROM eg_ws_batch_demand_log WHERE tenantid = ? AND taxperiodfrom = ? AND taxperiodto = ? AND isdemandexecuted = true)";
-			return jdbcTemplate.queryForObject(query, new Object[]{tenantId, taxPeriodFrom, taxPeriodTo}, Boolean.class);
-		} catch (Exception e) {
-			log.error("Error checking batch demand execution status for tenantId: " + tenantId, e);
-			return false;
-		}
-	}
+	
+	
 }

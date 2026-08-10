@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
@@ -44,8 +44,6 @@ public class TokenServiceTest {
         when(tokenStore.readAuthentication(accessToken)).thenReturn(oAuth2Authentication);
         SecureUser secureUser = new SecureUser(getUser());
         when(oAuth2Authentication.getPrincipal()).thenReturn(secureUser);
-        final List<Action> expectedActions = getActions();
-        when(actionRestRepository.getActionByRoleCodes(getRoleCodes(), "default")).thenReturn(expectedActions);
         UserDetail actualUserDetails = tokenService.getUser(accessToken);
 
         assertEquals(secureUser, actualUserDetails.getSecureUser());

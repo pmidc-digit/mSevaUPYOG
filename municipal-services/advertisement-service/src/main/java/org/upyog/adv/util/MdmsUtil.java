@@ -92,7 +92,9 @@ public class MdmsUtil {
 		
 		if (result == null) {
             result = serviceRequestRepository.fetchResult(getMdmsV2SearchUrl(), mdmsCriteriaReq);
-            setMDMSDataMap(tenantId, result);
+            if (result == null) {
+            	setMDMSDataMap(tenantId, result);
+            }
         }
 		
 		if (result == null) {
@@ -146,7 +148,7 @@ public class MdmsUtil {
 	}
 	
 	public StringBuilder getMdmsV2SearchUrl() {
-		return new StringBuilder().append(config.getMdmsHost()).append(config.getMdmsPathV2());
+		return new StringBuilder().append(config.getMdmsV2Host()).append(config.getMdmsPathV2());
 	}
 
 	/**

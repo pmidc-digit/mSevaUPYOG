@@ -77,17 +77,11 @@ const LayoutDocumentsRequired = ({
   //console.log("geocoordinates", geocoordinates)
 
 
-  const isLayoutArray = Array.isArray(currentStepData?.apiData?.Layout);
-  const layoutData = isLayoutArray
-    ? currentStepData?.apiData?.Layout?.[0]
-    : (currentStepData?.apiData?.Layout || currentStepData?.apiData);
-  const layoutOwners = layoutData?.owners || [];
+  const layoutOwners = currentStepData?.apiData?.Layout?.[0]?.owners || [];
   const primaryOwnerFromLayout = layoutOwners?.find((owner) => owner?.isPrimaryOwner) || layoutOwners?.[0];
-  const primaryApplicant = currentStepData?.applicationDetails || currentStepData?.applicants?.find((app) => app?.isPrimaryOwner) || primaryOwnerFromLayout || currentStepData?.applicants?.[0] || {};
-
+  const primaryApplicant = currentStepData?.applicants?.find((app) => app?.isPrimaryOwner) || primaryOwnerFromLayout || currentStepData?.applicants?.[0] || {};
   
   const applicantType = 
-    currentStepData?.applicationDetails?.aplicantType?.code || 
     primaryApplicant?.aplicantType?.code || 
     primaryApplicant?.additionalDetails?.aplicantType?.code;
 

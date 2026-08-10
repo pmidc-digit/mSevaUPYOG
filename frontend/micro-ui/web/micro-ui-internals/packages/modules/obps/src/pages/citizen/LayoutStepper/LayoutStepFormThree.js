@@ -27,17 +27,12 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   const currentStepDataNew = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {};
 
-  const isLayoutArray = Array.isArray(currentStepDataNew?.apiData?.Layout);
-  const layoutData = isLayoutArray
-    ? currentStepDataNew?.apiData?.Layout?.[0]
-    : (currentStepDataNew?.apiData?.Layout || currentStepDataNew?.apiData);
-  const layoutOwners = layoutData?.owners || [];
+  const layoutOwners = currentStepDataNew?.apiData?.Layout?.[0]?.owners || [];
   const primaryOwnerFromLayout = layoutOwners?.find((owner) => owner?.isPrimaryOwner) || layoutOwners?.[0];
-  const primaryApplicant = currentStepDataNew?.applicationDetails || currentStepDataNew?.applicants?.find((app) => app?.isPrimaryOwner) || primaryOwnerFromLayout || currentStepDataNew?.applicants?.[0] || {};
-
+  const primaryApplicant = currentStepDataNew?.applicants?.find((app) => app?.isPrimaryOwner) || primaryOwnerFromLayout || currentStepDataNew?.applicants?.[0] || {};
+  
   const applicantType = 
-    currentStepDataNew?.applicationDetails?.aplicantType?.code || 
-    primaryApplicant?.aplicantType?.code ||
+    primaryApplicant?.aplicantType?.code || 
     primaryApplicant?.additionalDetails?.aplicantType?.code;
 
     

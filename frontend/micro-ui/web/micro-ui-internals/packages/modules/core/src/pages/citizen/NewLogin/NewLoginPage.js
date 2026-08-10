@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
-import { Toast, MarqueeBanner } from "@mseva/digit-ui-react-components";
+import { Toast } from "@mseva/digit-ui-react-components";
 import LanguageSelect from "./NewLanguageSelect";
 import LocationSelect from "./NewLocationSelect";
 import MobileInput from "./NewSelectMobileNumber";
@@ -202,14 +202,7 @@ const NewLogin = ({ stateCode }) => {
 
   return (
     <div className="login-page-cover">
-      <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-      }}
-    >
-      <MarqueeBanner/>
+      
       <div className="login-container">
         {/* Left Panel - Hero Section */}
         <div className="login-hero-panel">
@@ -302,7 +295,6 @@ const NewLogin = ({ stateCode }) => {
         </div>
       </div>
       </div>
-    </div>
   );
 };
 

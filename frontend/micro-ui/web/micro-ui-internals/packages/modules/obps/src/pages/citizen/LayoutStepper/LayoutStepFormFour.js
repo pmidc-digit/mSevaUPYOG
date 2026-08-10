@@ -61,31 +61,28 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       ? currentStepData?.apiData 
       : currentStepData?.apiData?.Layout?.[0];
     
-    const sortedOwners = layoutData?.owners ? [...layoutData.owners].sort((a, b) => {
-      const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
-      const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
-      if (aPrimary && !bPrimary) return -1;
-      if (!aPrimary && bPrimary) return 1;
-      return 0;
-    }) : [];
-    const primaryOwner = sortedOwners[0] || {};
+    const layoutOwners = layoutData?.owners || [];
+    const primaryOwnerFromLayout = layoutOwners?.find((owner) => owner?.isPrimaryOwner === true || owner?.isPrimaryOwner === "true") || layoutOwners?.[0];
+    const primaryApplicant = currentStepData?.applicants?.find((app) => app?.isPrimaryOwner === true || app?.isPrimaryOwner === "true") || primaryOwnerFromLayout || currentStepData?.applicants?.[0] || {};
     
-    const aplicantType = currentStepData?.applicationDetails?.aplicantType?.code 
-      || primaryOwner?.additionalDetails?.aplicantType?.code;
+    const aplicantType = 
+      primaryApplicant?.aplicantType?.code || 
+      primaryApplicant?.additionalDetails?.aplicantType?.code;
 
     // Primary owner name - try form state and API owner fallback based on applicantType
     let primaryOwnerName = "";
     if (aplicantType === "FIRM") {
-      primaryOwnerName = currentStepData?.applicationDetails?.authorisedPerson
-        || primaryOwner?.additionalDetails?.authorisedPerson;
+      primaryOwnerName = primaryApplicant?.authorisedPerson
+        || primaryApplicant?.additionalDetails?.authorisedPerson
+        || currentStepData?.applicationDetails?.authorisedPerson;
     } else {
-      primaryOwnerName = currentStepData?.applicationDetails?.applicantOwnerOrFirmName
-        || primaryOwner?.name;
+      primaryOwnerName = primaryApplicant?.name
+        || currentStepData?.applicationDetails?.applicantOwnerOrFirmName;
     }
     
-    // Get newly added applicants from Redux state (starts from index 1, index 0 is placeholder)
+    // Get newly added applicants from Redux state (additional applicants, excluding primary)
     const applicantsFromRedux = currentStepData?.applicants || [];
-    const newlyAddedApplicants = applicantsFromRedux.filter(app => (app?.name && app?.status));
+    const newlyAddedApplicants = applicantsFromRedux.filter(app => (app?.name && app?.status && !app?.isPrimaryOwner && app !== primaryApplicant));
     
     // Get all applicant names (primary + additional)
     const allApplicantNames = [
@@ -218,7 +215,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             permanentAddress: applicant.address || owner.permanentAddress || "",
             dob: applicant.dob ? new Date(applicant.dob).getTime() : owner.dob || null,
             gender: applicant.gender?.code || applicant.gender || owner.gender || null,
-            pan: applicant.panNumber || owner.pan || null,
+            pan: applicant.panNumber || applicant.pan || owner.pan || null,
             status: applicant.status !== undefined ? applicant.status : owner.status,
             additionalDetails: {
               ...owner?.additionalDetails,
@@ -248,7 +245,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           permanentAddress: applicant.address,
           dob: applicant.dob ? new Date(applicant.dob).getTime() : null,
           gender: applicant.gender?.code || applicant.gender,
-          pan: applicant.panNumber || null,
+          pan: applicant.panNumber || applicant.pan || null,
           status: applicant.status,
           additionalDetails: {
             ownerPhoto: applicant?.photoUploadedFiles || null,

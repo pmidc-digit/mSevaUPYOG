@@ -1114,7 +1114,7 @@ const LayoutEmployeeApplicationOverview = () => {
                   <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(applicant?.dob)} />
                   <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={applicant?.gender} />
                   <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={applicant?.permanentAddress} />
-                  <Row label={t("BPA_PAN_NUMBER_LABEL")} text={applicant?.pan || "N/A"} />
+                  <Row label={t("BPA_PAN_NUMBER_LABEL")} text={applicant?.pan || applicant?.panNumber || "N/A"} />
                   <Row
                     label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"}
                     text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />}
@@ -1245,7 +1245,7 @@ const LayoutEmployeeApplicationOverview = () => {
          
             <StatusTable key={index}>
               <RenderRow label={t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL")} value={detail?.specificationPlotArea} />
-              <RenderRow
+              {/* <RenderRow
                 label={t("NOC_BUILDING_CATEGORY_LABEL")}
                 value={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory}
               />
@@ -1257,7 +1257,7 @@ const LayoutEmployeeApplicationOverview = () => {
               <RenderRow
                 label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")}
                 value={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan}
-              />
+              /> */}
             </StatusTable>
           
         ))}

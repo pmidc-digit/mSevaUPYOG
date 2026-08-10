@@ -154,7 +154,7 @@ const LayoutStepperForm = () => {
     photoUploadedFiles: primaryOwner?.additionalDetails?.ownerPhoto || "",
     panDocumentUploadedFiles: primaryOwner?.additionalDetails?.panDocument || "",
     fatherOrHusbandName: primaryOwner?.fatherOrHusbandName || "",
-    panNumber: professionalDetails?.panNumber || primaryOwner?.pan || "",
+    panNumber: primaryOwner?.pan || "",
     aplicantType: primaryOwner?.additionalDetails?.aplicantType,
     authorisedPerson: primaryOwner?.additionalDetails?.authorisedPerson,
     
@@ -392,7 +392,7 @@ const LayoutStepperForm = () => {
             address: owner?.permanentAddress || owner?.address || "",
             dob: formattedDob,
             gender: genderObj,
-            panNumber: owner?.pan || "",
+            panNumber: owner?.pan || owner?.panNumber || "",
             photoUploadedFiles: owner?.additionalDetails?.ownerPhoto ,
             documentUploadedFiles: owner?.additionalDetails?.documentFile ,
             panDocumentUploadedFiles: owner?.additionalDetails?.panDocument,

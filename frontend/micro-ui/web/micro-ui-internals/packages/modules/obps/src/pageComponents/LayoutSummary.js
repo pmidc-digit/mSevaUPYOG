@@ -252,7 +252,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
               <Row label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(0, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
               <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(0, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
               <Row label={t("BPA_PAN_DOCUMENT") || "PAN Document"} text={<DocumentLink fileStoreId={findOwnerDocument(0, "PANDOCUMENT")} stateCode={stateCode} t={t} />} />
-              {renderRow(t("BPA_PAN_NUMBER_LABEL"), formData?.applicationDetails?.panNumber)}
+              {renderRow(t("BPA_PAN_NUMBER_LABEL"), formData?.applicationDetails?.panNumber || owners[0]?.panNumber || owners[0]?.pan)}
             </StatusTable>
           </Card>
 
@@ -277,7 +277,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
                   <Row label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={owner?.photoUploadedFiles} stateCode={stateCode} t={t} />} />
                   <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={owner?.documentUploadedFiles} stateCode={stateCode} t={t} />} />
                   <Row label={t("BPA_PAN_DOCUMENT") || "PAN Document"} text={<DocumentLink fileStoreId={owner?.panDocumentUploadedFiles} stateCode={stateCode} t={t} />} />
-                  {renderRow(t("BPA_PAN_NUMBER_LABEL"), owner?.panNumber)}
+                  {renderRow(t("BPA_PAN_NUMBER_LABEL"), owner?.panNumber || owner?.pan)}
                 </StatusTable>
               </Card>
             );

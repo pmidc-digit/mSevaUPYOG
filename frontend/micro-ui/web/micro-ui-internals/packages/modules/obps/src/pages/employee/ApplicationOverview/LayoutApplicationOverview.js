@@ -37,9 +37,8 @@ import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
-import { amountToWords, formatDuration, formatDate, decryptId } from "../../../utils/index";
+import { formatDuration, formatDate, decryptId } from "../../../utils/index";
 import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
-import PdfPreviewModal from "../../../components/PdfPreviewModal";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -189,9 +188,6 @@ const LayoutEmployeeApplicationOverview = () => {
   const [feeAdjustments, setFeeAdjustments] = useState([]);
   const [showZoneModal, setShowZoneModal] = useState(false);
   const [empDesignation, setEmpDesignation] = useState(null);
-  const [showPdfModal, setShowPdfModal] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState(null);
-  const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, {
     cacheTime: 0,
   });
@@ -476,120 +472,13 @@ const LayoutEmployeeApplicationOverview = () => {
     }
   };
 
-  async function getRecieptSearch({ tenantId, payments, pdfkey, filestoreId = null, returnFileStoreId = false, ...params }) {
+  async function getRecieptSearch({ tenantId, payments, pdfkey = "layout-receipt", filestoreId = null, ...params }) {
     try {
       setLoader(true);
       if (!filestoreId) {
-        const site = displayData?.siteDetails?.[0];
-        const owner = displayData?.owners?.[0];
-        const city = site?.district?.city;
-
-        const usage = site?.buildingCategory?.name;
-        const fee = payments?.totalAmountPaid;
-        const amountinwords = amountToWords(fee);
-
-        // --- core fields, single source each, no aliasing ---
-        const ulbType = site?.ulbType || city?.ulbType;
-        const ulbName = site?.ulbName || city?.ulbName;
-        const ulbGrade = city?.ulbGrade; // confirm exact codes: NP / MC / Corp
-        const districtName = city?.districtName;
-        const applicationNo = displayData?.applicationNo || applicationDetails?.Layout?.[0]?.applicationNo;
-        const rawSubmissionDate = applicationDetails?.Layout?.[0]?.submissionDate || applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn;
-        const submissionDate = rawSubmissionDate ? Number(rawSubmissionDate) : undefined;
-        const rawIssueDate = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate;
-        const issueDate = rawIssueDate ? Number(rawIssueDate) : undefined;
-        const colonyTypeName = usage;
-        const proposedSiteAddress = site?.proposedSiteAddress || site?.district?.proposedSiteAddress;
-        const hadbastNo = site?.hadbastNo || site?.district?.hadbastNo;
-        const villageName = site?.villageName || site?.district?.villageName;
-        const areaSqm = site?.netTotalArea || site?.district?.netTotalArea;
-
-        const primaryOwner = applicationDetails?.Layout?.[0]?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") || displayData?.owners?.[0] || owner;
-        const applicantType = (
-          primaryOwner?.additionalDetails?.aplicantType?.code ||
-          primaryOwner?.additionalDetails?.applicantType?.code ||
-          "INDIVIDUAL"
-        ).toUpperCase();
-
-        const isFirm = applicantType !== "INDIVIDUAL";
-
-        // Authorized Person vs Owner Name
-        const rawAuthPerson = primaryOwner?.additionalDetails?.authorisedPerson || primaryOwner?.additionalDetails?.authorisedPersonName;
-        const authorisedPersonName = typeof rawAuthPerson === "object" ? rawAuthPerson?.name : rawAuthPerson;
-
-        const applicantName = isFirm
-          ? (authorisedPersonName || primaryOwner?.name || owner?.name || "")
-          : (primaryOwner?.name || owner?.name || "");
-
-        // Firm / Company Name vs Individual Promoter
-        const firmName =
-          primaryOwner?.additionalDetails?.firmName ||
-          primaryOwner?.additionalDetails?.companyName ||
-          primaryOwner?.additionalDetails?.promoterFirmName ||
-          primaryOwner?.additionalDetails?.institutionName;
-
-        const promoterFirmName = isFirm
-          ? (firmName || primaryOwner?.name || "")
-          : " ";
-
-        const applicantAddress = primaryOwner?.permanentAddress || primaryOwner?.correspondenceAddress || primaryOwner?.address || proposedSiteAddress || "N/A";
-
-        // --- derived once, reused for both officerDesignation and signatoryDesignation ---
-        const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm exact grade codes
-        const officerDesignation = isSmallerUlb ? "Executive Officer" : "Municipal Commissioner";
-        const signatoryDesignation = isSmallerUlb
-          ? "Additional Deputy Commissioner (Urban Development)"
-          : "Commissioner, Municipal Corporation";
-
-        // same isSmallerUlb split decides which name goes with the Competent Authority
-        const jurisdictionName = isSmallerUlb ? districtName : ulbName;
-
-        // --- composed projectDescription (fill in Project Name once that field exists) ---
-        const projectDescription = `${proposedSiteAddress || ""} on Land Measuring Area ${areaSqm || ""} sqm, Situated at Hadbast No. ${
-          hadbastNo || ""
-        }, Village - ${villageName || ""}, ${ulbName || ""}, Punjab.`;
-
-        const response = await Digit.PaymentService.generatePdf(
-          tenantId,
-          {
-            Payments: [
-              {
-                ...payments,
-                usage,
-                amountinwords,
-                applicationDetails,
-                ulbType,
-                ulbName,
-                ulbGrade,
-                districtName,
-                jurisdictionName,
-                officerDesignation,
-                signatoryDesignation,
-                applicantName,
-                applicationNo,
-                submissionDate,
-                issueDate,
-                colonyTypeName,
-                projectDescription,
-
-                // still open / not sourced yet:
-                officeName: signatoryDesignation, // ADC/MC basis for the header still to be confirmed
-                officeSubLine: isSmallerUlb ? `Office Wing, ${districtName}` : `${ulbType} - ${ulbName}`,
-                applicantAddress,
-                promoterFirmName,
-                dcrNo: undefined, // placeholder pending scrutiny module
-                dcrApprovalDate: undefined,
-                complianceDays: undefined,
-                extensionDays: undefined,
-              },
-            ],
-          },
-          pdfkey
-        );
-        filestoreId = response?.filestoreIds[0];
-      }
-      if (returnFileStoreId) {
-        return filestoreId;
+        let response = { filestoreIds: [payments?.fileStoreId] };
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, pdfkey);
+        filestoreId = response.filestoreIds[0];
       }
       let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
 
@@ -598,68 +487,11 @@ const LayoutEmployeeApplicationOverview = () => {
       }
       window.open(fileStore[filestoreId], "_blank");
     } catch (error) {
-      console.error("receipt download error:", error);
+      console.log("error:", error);
     } finally {
       setLoader(false);
     }
   }
-
-  async function openLOIPopup() {
-    try {
-      setLoader(true);
-      const fileStoreId = await getRecieptSearch({
-        tenantId: reciept_data2?.Payments?.[0]?.tenantId || tenantId,
-        payments: reciept_data2?.Payments?.[0] || {},
-        pdfkey: "layout-loi",
-        returnFileStoreId: true,
-      });
-      if (!fileStoreId) throw new Error("No filestoreId found for LOI");
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      const receiptUrl = fileStore?.[fileStoreId];
-      if (!receiptUrl) throw new Error("Could not resolve filestore URL");
-      const urlObj = new URL(receiptUrl);
-      const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
-      setPdfUrl(downloadUrl);
-      setShowPdfModal(true);
-    } catch (error) {
-      console.error("LOI popup error:", error);
-    } finally {
-      setLoader(false);
-    }
-  }
-
-  const printCertificateWithESign = async () => {
-    try {
-      const fileStoreId = await getRecieptSearch({
-        tenantId: reciept_data2?.Payments?.[0]?.tenantId || tenantId,
-        payments: reciept_data2?.Payments?.[0] || {},
-        pdfkey: "layout-loi",
-        returnFileStoreId: true,
-      });
-      if (!fileStoreId) throw new Error("No filestoreId found for LOI eSign");
-      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/layout/esign/complete/${encodeURIComponent(id)}`;      
-      const authToken = localStorage.getItem("token");
-      eSignCertificate(
-        { fileStoreId, tenantId, callbackUrl, authToken },
-        {
-          onSuccess: () => console.log("✅ LOI eSign initiated successfully"),
-          onError: (error) => {
-            setShowToast({
-              key: "true",
-              error: true,
-              message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
-            });
-          },
-        }
-      );
-    } catch (error) {
-      setShowToast({
-        key: "true",
-        error: true,
-        message: error.message || "Failed to prepare LOI for eSign, Kindly check if the document is e-signed already",
-      });
-    }
-  };
 
   function routeToImage(filestoreId) {
     getUrlForDocumentView(filestoreId);
@@ -694,11 +526,10 @@ const LayoutEmployeeApplicationOverview = () => {
     ) {
       dowloadOptions.push({
         label: t("LETTER_OF_INTENT"),
-       onClick: () =>
+        onClick: () =>
           getRecieptSearch({
             tenantId: tenantId,
             payments: {},
-            filestoreId : applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
           }),
       });
     }
@@ -716,16 +547,6 @@ const LayoutEmployeeApplicationOverview = () => {
       onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey: "layoutreceipt-second" }),
     });
   }
-
-  useEffect(() => {
-    if (eSignError) {
-      setShowToast({
-        key: "true",
-        error: true,
-        message: "eSign process failed. Please try again.",
-      });
-    }
-  }, [eSignError]);
 
   useEffect(() => {
     //console.log(" useEffect triggered - id changed to:", id);
@@ -1080,11 +901,7 @@ const LayoutEmployeeApplicationOverview = () => {
       submitAction(payload);
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/layout/${appNo}/${tenantId}?tenantId=${tenantId}`);
-    } else if (action?.action == "ESIGN") {
-      // opens the sanctionletter popup
-      // printCertificateWithESign();
-      openLOIPopup();
-    }else if (action?.action == "UPDATE_ZONE") {
+    } else if (action?.action == "UPDATE_ZONE") {
       setShowZoneModal(true);
     } else {
       // Validation: Prevent forwarding without required site images during field inspection
@@ -1740,22 +1557,6 @@ const LayoutEmployeeApplicationOverview = () => {
       )}
 
       {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} />}
-
-      {showPdfModal && (
-        <PdfPreviewModal
-          open={showPdfModal}
-          url={pdfUrl}
-          onClose={() => {
-            setShowPdfModal(false);
-            setPdfUrl(null);
-          }}
-          title={t("LETTER_OF_INTENT")}
-        >
-          <ActionBar>
-            <SubmitBar label={t("ESIGN")} onSubmit={printCertificateWithESign} disabled={eSignLoading} />
-          </ActionBar>
-        </PdfPreviewModal>
-      )}
 
       {/* {(isLoading || getLoader) && <Loader page={true} />} */}
       {(isLoading || isDetailsLoading || getLoader || recieptDataLoading1 || recieptDataLoading2) && <Loader page={true} />}

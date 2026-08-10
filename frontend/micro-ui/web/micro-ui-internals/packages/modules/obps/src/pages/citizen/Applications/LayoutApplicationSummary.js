@@ -360,16 +360,15 @@ const LayoutApplicationOverview = () => {
     }
   }
   if (
-      applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId || applicationDetails?.Layout?.[0]?.applicationStatus === "ESIGNED"
+      applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
     ) {
       dowloadOptions.push({
         label: t("LETTER_OF_INTENT"),
         onClick: () =>
           getRecieptSearch({
             tenantId: tenantId,
-            payments: reciept_data_pay?.Payments[0],
-            filestoreId: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId,
-            pdfkey: "layout-loi"
+            payments: {},
+            filestoreId: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
           }),
       });
     }
@@ -648,129 +647,27 @@ const LayoutApplicationOverview = () => {
   // }
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, filestoreId = null, ...params }) {
-  try {
-    setLoading(true);
-    if (!filestoreId) {
-      const site = displayData?.siteDetails?.[0];
-      const owner = displayData?.owners?.[0];
-      const city = site?.district?.city;
+    try {
+      setLoading(true);
+      if (!filestoreId) {
+        const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name;
+        const fee = payments?.totalAmountPaid;
+        const amountinwords = amountToWords(fee);
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, usage, amountinwords }] }, pdfkey);
+        filestoreId = response?.filestoreIds[0];
+      }
+      let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
 
-      const usage = site?.buildingCategory?.name;
-      const fee = payments?.totalAmountPaid;
-      const amountinwords = amountToWords(fee);
-
-      // --- core fields, single source each, no aliasing ---
-      const ulbType = site?.ulbType || city?.ulbType;
-      const ulbName = site?.ulbName || city?.ulbName;
-      const ulbGrade = city?.ulbGrade; // confirm exact codes: NP / MC / Corp
-      const districtName = city?.districtName;
-      const applicationNo = displayData?.applicationNo;
-      const rawSubmissionDate = applicationDetails?.Layout?.[0]?.submissionDate || applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn;
-      const submissionDate = rawSubmissionDate ? Number(rawSubmissionDate) : undefined;
-      const rawIssueDate = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate;
-      const issueDate = rawIssueDate ? Number(rawIssueDate) : undefined;
-      const colonyTypeName = usage;
-      const proposedSiteAddress = site?.proposedSiteAddress || site?.district?.proposedSiteAddress;
-      const hadbastNo = site?.hadbastNo || site?.district?.hadbastNo;
-      const villageName = site?.villageName || site?.district?.villageName;
-      const areaSqm = site?.netTotalArea || site?.district?.netTotalArea;
-
-      const primaryOwner = applicationDetails?.Layout?.[0]?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") || displayData?.owners?.[0] || owner;
-      const applicantType = (
-        primaryOwner?.additionalDetails?.aplicantType?.code ||
-        primaryOwner?.additionalDetails?.applicantType?.code ||
-        "INDIVIDUAL"
-      ).toUpperCase();
-
-      const isFirm = applicantType !== "INDIVIDUAL";
-
-      // Authorized Person vs Owner Name
-      const rawAuthPerson = primaryOwner?.additionalDetails?.authorisedPerson || primaryOwner?.additionalDetails?.authorisedPersonName;
-      const authorisedPersonName = typeof rawAuthPerson === "object" ? rawAuthPerson?.name : rawAuthPerson;
-
-      const applicantName = isFirm
-        ? (authorisedPersonName || primaryOwner?.name || owner?.name || "")
-        : (primaryOwner?.name || owner?.name || "");
-
-      // Firm / Company Name vs Individual Promoter
-      const firmName =
-        primaryOwner?.additionalDetails?.firmName ||
-        primaryOwner?.additionalDetails?.companyName ||
-        primaryOwner?.additionalDetails?.promoterFirmName ||
-        primaryOwner?.additionalDetails?.institutionName;
-
-      const promoterFirmName = isFirm
-        ? (firmName || primaryOwner?.name || "")
-        : " ";
-
-      const applicantAddress = primaryOwner?.permanentAddress || primaryOwner?.correspondenceAddress || primaryOwner?.address || proposedSiteAddress || "N/A";
-
-      // --- derived once, reused for both officerDesignation and signatoryDesignation ---
-      const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm actual grade codes
-      const officerDesignation = isSmallerUlb ? "Executive Officer" : "Municipal Commissioner";
-      const signatoryDesignation = isSmallerUlb
-        ? "Additional Deputy Commissioner (Urban Development)"
-        : "Commissioner, Municipal Corporation";
-
-      // same isSmallerUlb split decides which name goes with the Competent Authority
-      const jurisdictionName = isSmallerUlb ? districtName : ulbName;
-
-      // --- composed projectDescription (fill in Project Name once that field exists) ---
-      const projectDescription = `${proposedSiteAddress || ""} on Land Measuring Area ${areaSqm || ""} sqm, Situated at Hadbast No. ${
-        hadbastNo || ""
-      }, Village - ${villageName || ""}, ${ulbName || ""}, Punjab.`;
-
-      const response = await Digit.PaymentService.generatePdf(
-        tenantId,
-        {
-          Payments: [
-            {
-              ...payments,
-              usage,
-              amountinwords,
-              applicationDetails,
-              ulbType,
-              ulbName,
-              ulbGrade,
-              districtName,
-              jurisdictionName,
-              officerDesignation,
-              signatoryDesignation,
-              applicantName,
-              applicationNo,
-              submissionDate,
-              issueDate,
-              colonyTypeName,
-              projectDescription,
-
-              // still open / not sourced yet:
-              officeName: signatoryDesignation, // ADC/MC basis for the header still to be confirmed
-              officeSubLine: isSmallerUlb ? `Office Wing, ${districtName}` : `${ulbType} - ${ulbName}`,
-              applicantAddress,
-              promoterFirmName,
-              dcrNo: undefined, // placeholder pending scrutiny module
-              dcrApprovalDate: undefined,
-              complianceDays: undefined,
-              extensionDays: undefined,
-            },
-          ],
-        },
-        pdfkey
-      );
-      filestoreId = response?.filestoreIds[0];
+      if (!fileStore?.[filestoreId]?.length) {
+        fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
+      }
+      window.open(fileStore[filestoreId], "_blank");
+    } catch (error) {
+      console.error("receipt download error:", error);
+    } finally {
+      setLoading(false);
     }
-    let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
-
-    if (!fileStore?.[filestoreId]?.length) {
-      fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
-    }
-    window.open(fileStore[filestoreId], "_blank");
-  } catch (error) {
-    console.error("receipt download error:", error);
-  } finally {
-    setLoading(false);
   }
-}
 
   const getTimelineCaptions = (checkpoint, index, arr) => {
     const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint

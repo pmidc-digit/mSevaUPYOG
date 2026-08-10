@@ -821,7 +821,7 @@ const LayoutApplicationOverview = () => {
                 <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={formatDate(applicant?.dob)} />
                 <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
                 <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
-                <RenderRow label={t("BPA_PAN_NUMBER_LABEL")} value={applicant?.pan || "N/A"} />
+                <RenderRow label={t("BPA_PAN_NUMBER_LABEL")} value={applicant?.pan || applicant?.panNumber || "N/A"} />
                 <Row label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
                 <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
                 <Row label={t("BPA_PAN_DOCUMENT") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />

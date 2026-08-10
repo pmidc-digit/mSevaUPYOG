@@ -215,7 +215,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             permanentAddress: applicant.address || owner.permanentAddress || "",
             dob: applicant.dob ? new Date(applicant.dob).getTime() : owner.dob || null,
             gender: applicant.gender?.code || applicant.gender || owner.gender || null,
-            pan: applicant.panNumber || owner.pan || null,
+            pan: applicant.panNumber || applicant.pan || owner.pan || null,
             status: applicant.status !== undefined ? applicant.status : owner.status,
             additionalDetails: {
               ...owner?.additionalDetails,
@@ -245,7 +245,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           permanentAddress: applicant.address,
           dob: applicant.dob ? new Date(applicant.dob).getTime() : null,
           gender: applicant.gender?.code || applicant.gender,
-          pan: applicant.panNumber || null,
+          pan: applicant.panNumber || applicant.pan || null,
           status: applicant.status,
           additionalDetails: {
             ownerPhoto: applicant?.photoUploadedFiles || null,

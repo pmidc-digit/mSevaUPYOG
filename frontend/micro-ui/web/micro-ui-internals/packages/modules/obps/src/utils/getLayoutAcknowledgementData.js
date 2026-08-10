@@ -132,20 +132,14 @@ const getApplicantDetails = (appData, t) => {
         title: t("NOC_APPLICANT_ADDRESS_LABEL"),
         value: owner?.permanentAddress || "N/A",
       },
+      {
+        title: t("BPA_PAN_NUMBER_LABEL") || t("NOC_PAN_NO"),
+        value: owner?.pan || owner?.panNumber || (index === 0 ? appData?.layoutDetails?.additionalDetails?.applicationDetails?.panNumber : null) || "N/A",
+      },
     ];
     values.push(...value?.filter((v) => v !== null));
   });
 
-  values.push(
-    ...(appData?.layoutDetails?.additionalDetails?.applicationDetails?.panNumber
-      ? [
-          {
-            title: t("NOC_PAN_NO"),
-            value: appData?.layoutDetails?.additionalDetails?.applicationDetails?.panNumber,
-          },
-        ]
-      : [])
-  );
   return {
     title: t("BPA_APPLICANT_DETAILS"),
     values: values,

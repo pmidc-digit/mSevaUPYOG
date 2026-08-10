@@ -345,7 +345,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           dob: applicant?.dob ? Digit.Utils.pt.convertDateToEpoch(applicant?.dob) : null,
           fatherOrHusbandName: applicant?.fatherOrHusbandName || "",
           permanentAddress: applicant?.address || "",
-          pan: applicant?.panNumber || null,
+          pan: applicant?.panNumber || applicant?.pan || null,
           status: applicant?.status,
           additionalDetails: {
             documentFile: applicant?.documentUploadedFiles || null,

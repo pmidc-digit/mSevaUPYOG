@@ -1114,7 +1114,7 @@ const LayoutEmployeeApplicationOverview = () => {
                   <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(applicant?.dob)} />
                   <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={applicant?.gender} />
                   <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={applicant?.permanentAddress} />
-                  <Row label={t("BPA_PAN_NUMBER_LABEL")} text={applicant?.pan || "N/A"} />
+                  <Row label={t("BPA_PAN_NUMBER_LABEL")} text={applicant?.pan || applicant?.panNumber || "N/A"} />
                   <Row
                     label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"}
                     text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />}

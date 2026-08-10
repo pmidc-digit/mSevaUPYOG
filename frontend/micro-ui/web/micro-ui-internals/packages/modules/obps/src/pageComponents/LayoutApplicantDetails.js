@@ -157,7 +157,7 @@ const LayoutApplicantDetails = (_props) => {
           address: owner?.permanentAddress || owner?.address || "",
           dob: formattedDob,
           gender: genderObj,
-          panNumber: owner?.pan || "",
+          panNumber: owner?.pan || owner?.panNumber || "",
           photoUploadedFiles: owner?.additionalDetails?.ownerPhoto || null,
           documentUploadedFiles: owner?.additionalDetails?.documentFile || null,
           panDocumentUploadedFiles: owner?.additionalDetails?.panDocument || null,

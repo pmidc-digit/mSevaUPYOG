@@ -65,38 +65,9 @@ public class MdmsUtil {
 	 * @param tenantId
 	 * @return
 	 */
-//	public Object mDMSCall(RequestInfo requestInfo, String tenantId) {
-//		MdmsCriteriaReq mdmsCriteriaReq = getMDMSRequest(requestInfo, tenantId);
-//		Object result = mdmsMapByTenant.get(tenantId);
-//		if (result == null) {
-//			result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
-//			setMDMSDataMap(tenantId, result);
-//		}
-//
-//		// Object result = mdmsClient.getMDMSData(mdmsCriteriaReq);
-//		// log.info("Master data fetched from MDMSfrom feign client : " + result);
-//
-//		return result;
-//	}
-	
-	/**
-	 * makes mdms call with the given criteria and reutrn mdms data
-	 *
-	 * @param requestInfo
-	 * @param tenantId
-	 * @return
-	 */
 	public Object mDMSCall(RequestInfo requestInfo, String tenantId) {
 		MdmsCriteriaReq mdmsCriteriaReq = getMDMSRequest(requestInfo, tenantId);
 		Object result = mdmsMapByTenant.get(tenantId);
-		
-		if (result == null) {
-            result = serviceRequestRepository.fetchResult(getMdmsV2SearchUrl(), mdmsCriteriaReq);
-            if (result == null) {
-            	setMDMSDataMap(tenantId, result);
-            }
-        }
-		
 		if (result == null) {
 			result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
 			setMDMSDataMap(tenantId, result);
@@ -107,8 +78,6 @@ public class MdmsUtil {
 
 		return result;
 	}
-	
-	
 
 	/**
 	 * prepares the mdms request object specifically for AutoEscalation master
@@ -145,10 +114,6 @@ public class MdmsUtil {
 	 */
 	public StringBuilder getMdmsSearchUrl() {
 		return new StringBuilder().append(config.getMdmsHost()).append(config.getMdmsPath());
-	}
-	
-	public StringBuilder getMdmsV2SearchUrl() {
-		return new StringBuilder().append(config.getMdmsV2Host()).append(config.getMdmsPathV2());
 	}
 
 	/**

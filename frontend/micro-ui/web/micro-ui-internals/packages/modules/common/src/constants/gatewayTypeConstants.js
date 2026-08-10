@@ -1,3 +1,4 @@
 export const gatewayType = {
-    RAZORPAY: "RAZORPAY"
+    RAZORPAY: "RAZORPAY",
+    OBPASRAZORPAY: "OBPASRAZORPAY"
 }

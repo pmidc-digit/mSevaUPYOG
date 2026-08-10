@@ -274,7 +274,11 @@ export const SelectPaymentType = (props) => {
       //   }
       // }
       // window.location = redirectUrl;
-      if (d?.paymentType === gatewayType.RAZORPAY) {
+      if (
+        d?.paymentType === gatewayType.RAZORPAY ||
+        d?.paymentType === gatewayType.OBPASRAZORPAY ||
+        d?.paymentType?.toUpperCase()?.includes("RAZORPAY")
+      ) {
         displayRazorpay(data);
       } else {
         //Do Nothing

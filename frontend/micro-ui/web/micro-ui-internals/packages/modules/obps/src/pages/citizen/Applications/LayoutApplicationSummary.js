@@ -540,11 +540,11 @@ const LayoutApplicationOverview = () => {
       });
 
   const modifiedActions = actions?.map((action) => ({
-  ...action,
-  forcedName: action.action?.toUpperCase().includes("FORWARD")
-    ? "CS_ACTION_FORWARD"
-    : undefined,
-}));
+      ...action,
+      action: action.action?.toUpperCase().includes("FORWARD")
+        ? "FORWARD"
+        : action.action,
+      }));
   function onActionSelect(action) {
     const appNo = applicationDetails?.Layout?.[0]?.applicationNo
 

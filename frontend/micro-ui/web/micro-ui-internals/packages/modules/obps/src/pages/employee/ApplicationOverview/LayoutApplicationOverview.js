@@ -308,11 +308,11 @@ const LayoutEmployeeApplicationOverview = () => {
     });
 
   const modifiedActions = actions?.map((action) => ({
-  ...action,
-  forcedName: action.action?.toUpperCase().includes("FORWARD")
-    ? "CS_ACTION_FORWARD"
-    : undefined,
-}));
+      ...action,
+      action: action.action?.toUpperCase().includes("FORWARD")
+        ? "FORWARD"
+        : action.action,
+      }));
 
   // console.log("actions here", actions);
 
@@ -575,7 +575,6 @@ const LayoutEmployeeApplicationOverview = () => {
     //console.log(" submitAction called with data:", data);
     setIsSubmitting(true);
 
-    console.log(data ,"data received in submit")
     try {
       const filtData = data?.Licenses?.[0];
 

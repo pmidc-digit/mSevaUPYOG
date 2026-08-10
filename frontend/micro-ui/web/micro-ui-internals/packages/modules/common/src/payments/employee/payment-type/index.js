@@ -181,7 +181,11 @@ export const SelectPaymentType = (props) => {
         return;
       }
 
-      if (d?.paymentType === gatewayType.RAZORPAY) {
+      if (
+        d?.paymentType === gatewayType.RAZORPAY ||
+        d?.paymentType === gatewayType.OBPASRAZORPAY ||
+        d?.paymentType?.toUpperCase()?.includes("RAZORPAY")
+      ) {
         displayRazorpay(data);
       } else {
         //Do Nothing

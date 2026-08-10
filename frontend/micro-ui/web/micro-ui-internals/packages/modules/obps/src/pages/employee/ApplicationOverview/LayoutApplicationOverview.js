@@ -1246,7 +1246,7 @@ const LayoutEmployeeApplicationOverview = () => {
          
             <StatusTable key={index}>
               <RenderRow label={t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL")} value={detail?.specificationPlotArea} />
-              <RenderRow
+              {/* <RenderRow
                 label={t("NOC_BUILDING_CATEGORY_LABEL")}
                 value={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory}
               />
@@ -1258,7 +1258,7 @@ const LayoutEmployeeApplicationOverview = () => {
               <RenderRow
                 label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")}
                 value={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan}
-              />
+              /> */}
             </StatusTable>
           
         ))}

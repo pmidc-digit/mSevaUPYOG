@@ -79,7 +79,7 @@ const LayoutDocumentsRequired = ({
 
   const layoutOwners = currentStepData?.apiData?.Layout?.[0]?.owners || [];
   const primaryOwnerFromLayout = layoutOwners?.find((owner) => owner?.isPrimaryOwner) || layoutOwners?.[0];
-  const primaryApplicant = currentStepData?.applicants?.find((app) => app?.isPrimaryOwner) || primaryOwnerFromLayout || currentStepData?.applicationDetails || currentStepData?.applicants?.[0] || {};
+  const primaryApplicant = currentStepData?.applicants?.find((app) => app?.isPrimaryOwner) || primaryOwnerFromLayout || currentStepData?.applicants?.[0] || {};
   
   const applicantType = 
     primaryApplicant?.aplicantType?.code || 

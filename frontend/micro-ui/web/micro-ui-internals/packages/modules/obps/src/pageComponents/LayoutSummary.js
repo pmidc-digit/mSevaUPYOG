@@ -369,9 +369,9 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
       {/* SPECIFICATION DETAILS */}
       <Card>
-        <CardSubHeader>{t("BPA_SPECIFICATION_DETAILS")}</CardSubHeader>
+        <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
         <StatusTable>
-          {renderRow(t("BPA_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}
+          {renderRow(t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}
         </StatusTable>
       </Card>
 

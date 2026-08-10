@@ -40,9 +40,21 @@ const ChallanDocuments = ({
 
   useEffect(() => {
     if (formData?.documents?.documents && formData?.documents?.documents?.length > 0) {
-      setDocuments(formData.documents.documents);
+      if (JSON.stringify(formData?.documents?.documents) !== JSON.stringify(documents)) {
+        setDocuments(formData.documents.documents);
+      }
     }
   }, [formData?.documents?.documents]);
+
+  useEffect(() => {
+    if (documents && documents.length > 0) {
+      if (JSON.stringify(formData?.documents?.documents) !== JSON.stringify(documents)) {
+        let document = formData.documents;
+        let documentStep = { ...document, documents: documents };
+        onSelect(config.key, documentStep);
+      }
+    }
+  }, [documents]);
 
   useEffect(() => {
     let count = 0;
@@ -240,9 +252,10 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   function updateDocument(selectedDoc, extraFields = {}) {
     const docCode = selectedDoc?.code || doc?.code;
     setDocuments((prev = []) => {
-      const updated = prev.map((item) => (item?.documentType === docCode ? { ...item, ...extraFields } : item));
+      const isMatch = (item) => item?.documentType === docCode || (docCode && item?.documentType?.includes(docCode)) || (item?.documentType && docCode?.includes(item?.documentType));
+      const updated = prev.map((item) => (isMatch(item) ? { ...item, ...extraFields } : item));
 
-      if (!updated.some((i) => i?.documentType === docCode)) {
+      if (!updated.some(isMatch)) {
         updated.push({
           documentType: docCode,
           filestoreId: null,
@@ -292,28 +305,35 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   // }, [uploadedFile, selectedDocument]);
 
   useEffect(() => {
-    if (selectedDocument?.code) {
-      setDocuments((prev) => {
-        return prev.map((item) => {
-          if (item?.documentType === selectedDocument?.code) {
-            // ✅ Preserve existing fields (like latitude, longitude)
-            return {
-              ...item,
+    const docCode = selectedDocument?.code || doc?.code;
+    if (docCode && uploadedFile) {
+      setDocuments((prev = []) => {
+        const isMatch = (item) => item?.documentType === docCode || (docCode && item?.documentType?.includes(docCode)) || (item?.documentType && docCode?.includes(item?.documentType));
+        const hasMatchingDoc = prev.some(isMatch);
+        if (hasMatchingDoc) {
+          return prev.map((item) => {
+            if (isMatch(item)) {
+              return {
+                ...item,
+                filestoreId: uploadedFile,
+                documentUid: uploadedFile,
+              };
+            }
+            return item;
+          });
+        } else {
+          return [
+            ...prev,
+            {
+              documentType: docCode,
               filestoreId: uploadedFile,
               documentUid: uploadedFile,
-            };
-          }
-          return item;
-        });
+            },
+          ];
+        }
       });
     }
   }, [uploadedFile, selectedDocument]);
-
-  useEffect(() => {
-    if (documents?.length > 0) {
-      handleSubmit();
-    }
-  }, [documents]);
 
   useEffect(() => {
     if (action === "update") {

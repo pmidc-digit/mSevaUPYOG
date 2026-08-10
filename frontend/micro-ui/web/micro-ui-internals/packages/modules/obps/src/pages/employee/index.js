@@ -101,6 +101,7 @@ const EmployeeApp = ({ path }) => {
   const LayoutEmployeeApplicationDetails = Digit.ComponentRegistryService.getComponent("LayoutEmployeeApplicationDetails");
   const CLUResponse = Digit?.ComponentRegistryService?.getComponent("CLUResponse"); 
   const CLUEsignResponse = Digit?.ComponentRegistryService?.getComponent("CLUEsignResponse"); 
+  const LayoutEsignResponse = Digit?.ComponentRegistryService?.getComponent("LayoutEsignResponse"); 
 
   return (
     <Fragment>
@@ -111,6 +112,7 @@ const EmployeeApp = ({ path }) => {
           <PrivateRoute path={`${path}/layout/response/:id`} component={(props) => <LayoutResponseEmployee {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/layout/inbox/application-overview/:layid`} component={(props) => <LayoutApplicationOverview {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/layout/edit-application/:id`} component={(props) => <NewLayoutEditLayoutApplication {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/layout/esign/complete/:id/:file`} component={LayoutEsignResponse} />
           <PrivateRoute path={`${path}/layout/inbox`} component={(props) => <LayoutInbox {...props} parentRoute={path} />} />        
           <PrivateRoute path={`${path}/stakeholder-inbox/stakeholder/:id`} component={ApplicationDetail} />
           <PrivateRoute path={`${path}/search/application/stakeholder/:id`} component={ApplicationDetail} />

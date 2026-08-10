@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 
 public class BookingUtil {
-	
+
 	public final static String DATE_FORMAT = "yyyy-MM-dd";
 
 	public static ResponseInfo createReponseInfo(final RequestInfo requestInfo, String resMsg, StatusEnum status) {
@@ -47,7 +47,7 @@ public class BookingUtil {
 	public static Long getCurrentTimestamp() {
 		return Instant.now().toEpochMilli();
 	}
-	
+
 	public static LocalDate getCurrentDate() {
 		return LocalDate.now();
 	}
@@ -61,7 +61,7 @@ public class BookingUtil {
 		else
 			return AuditDetails.builder().lastModifiedBy(by).lastModifiedTime(time).build();
 	}
-	
+
 	/*Commented and used Instant
 	 * public static Long getCurrentTimestamp() { return System.currentTimeMillis();
 	 * }
@@ -80,24 +80,24 @@ public class BookingUtil {
 	public static Long minusOneDay(LocalDate date) {
 		return date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
 	}
-	
+
 	public static boolean isDateWithinRange(String startDate, String endDate, String bookingDate) {
-	    LocalDate start = LocalDate.parse(startDate);
-	    LocalDate end = LocalDate.parse(endDate);
-	    LocalDate booking = LocalDate.parse(bookingDate);
+		LocalDate start = LocalDate.parse(startDate);
+		LocalDate end = LocalDate.parse(endDate);
+		LocalDate booking = LocalDate.parse(bookingDate);
 
-	    return (booking.isEqual(start) || booking.isAfter(start)) &&
-	           (booking.isEqual(end) || booking.isBefore(end));
+		return (booking.isEqual(start) || booking.isAfter(start)) &&
+				(booking.isEqual(end) || booking.isBefore(end));
 	}
-	
-	
-	public static boolean isDateRangeOverlap(String searchStart, String searchEnd, String bookedStart, String bookedEnd) {
-	    LocalDate searchStartDate = LocalDate.parse(searchStart);
-	    LocalDate searchEndDate = LocalDate.parse(searchEnd);
-	    LocalDate bookedStartDate = LocalDate.parse(bookedStart);
-	    LocalDate bookedEndDate = LocalDate.parse(bookedEnd);
 
-	    return !(searchStartDate.isAfter(bookedEndDate) || searchEndDate.isBefore(bookedStartDate));
+
+	public static boolean isDateRangeOverlap(String searchStart, String searchEnd, String bookedStart, String bookedEnd) {
+		LocalDate searchStartDate = LocalDate.parse(searchStart);
+		LocalDate searchEndDate = LocalDate.parse(searchEnd);
+		LocalDate bookedStartDate = LocalDate.parse(bookedStart);
+		LocalDate bookedEndDate = LocalDate.parse(bookedEnd);
+
+		return !(searchStartDate.isAfter(bookedEndDate) || searchEndDate.isBefore(bookedStartDate));
 	}
 
 	/**
@@ -204,24 +204,24 @@ public class BookingUtil {
 	public static String getTenantId(String tenantId) {
 		return tenantId.split("\\.")[0];
 	}
-	
+
 	public static LocalDate getMonthsAgo(int month) {
 		LocalDate currentDate = LocalDate.now();
 		LocalDate monthsAgo = currentDate.minusMonths(month);
 		return monthsAgo;
 	}
-	
+
 	public static int getDaysInMonth(LocalDate date) {
 		return YearMonth.from(date).lengthOfMonth();
 	}
-	
+
 	public static long getDaysBetween(LocalDate start, LocalDate end) {
 		if (start == null || end == null || end.isBefore(start)) {
 			return 0;
 		}
 		return ChronoUnit.DAYS.between(start, end) + 1;
 	}
-	
+
 	public static List<LocalDate> expandDateRange(LocalDate start, LocalDate end) {
 		List<LocalDate> dates = new ArrayList<>();
 		if (start == null || end == null || end.isBefore(start)) {

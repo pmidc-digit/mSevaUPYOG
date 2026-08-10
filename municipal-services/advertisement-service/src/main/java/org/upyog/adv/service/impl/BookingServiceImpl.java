@@ -272,19 +272,25 @@ public class BookingServiceImpl implements BookingService {
 	public List<AdvertisementSlotAvailabilityDetail> checkAdvertisementSlotAvailability(
 			AdvertisementSlotSearchCriteria criteria, RequestInfo requestInfo) {
 
-		// Quantity-based — "ANYWHERE" location means no specific slot, always available
+		// Quantity-based — "ANYWHERE" location means no specific slot, always available.
+		// Still expand the date range so the frontend gets one entry per day.
 		if ("ANYWHERE".equalsIgnoreCase(criteria.getLocation())) {
 			List<AdvertisementSlotAvailabilityDetail> result = new ArrayList<>();
-			AdvertisementSlotAvailabilityDetail detail = new AdvertisementSlotAvailabilityDetail();
-			detail.setSlotStaus("AVAILABLE");
-			detail.setBookingDate(criteria.getBookingStartDate());
-			detail.setAdvertisementId(criteria.getAdvertisementId());
-			detail.setAddType(criteria.getAddType());
-			detail.setLocation(criteria.getLocation());
-			detail.setFaceArea(criteria.getFaceArea());
-			detail.setNightLight(criteria.getNightLight());
-			result.add(detail);
-			log.info("Quantity-based ad {} — always available, skipping slot check", criteria.getAdvertisementId());
+			LocalDate start = BookingUtil.parseStringToLocalDate(criteria.getBookingStartDate());
+			LocalDate end = BookingUtil.parseStringToLocalDate(criteria.getBookingEndDate());
+			while (!start.isAfter(end)) {
+				AdvertisementSlotAvailabilityDetail detail = new AdvertisementSlotAvailabilityDetail();
+				detail.setSlotStaus("AVAILABLE");
+				detail.setBookingDate(BookingUtil.parseLocalDateToString(start, BookingUtil.DATE_FORMAT));
+				detail.setAdvertisementId(criteria.getAdvertisementId());
+				detail.setAddType(criteria.getAddType());
+				detail.setLocation(criteria.getLocation());
+				detail.setFaceArea(criteria.getFaceArea());
+				detail.setNightLight(criteria.getNightLight());
+				result.add(detail);
+				start = start.plusDays(1);
+			}
+			log.info("Quantity-based ad {} — expanded {} dates, skipping slot check", criteria.getAdvertisementId(), result.size());
 			return result;
 		}
 

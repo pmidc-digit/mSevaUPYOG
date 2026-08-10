@@ -159,14 +159,14 @@ const TopBar = ({
             {!urlsToDisableNotificationIcon(pathname) && !mobileView && <div style={{marginTop: "20px"}}>
               {/* <ChangeLanguage dropdown={true} /> */}
             </div>}
-            {(isUserProfessional && loggedin) && (
+            {/* {(isUserProfessional && loggedin) && (
               <div className="left">
                 {!window.location.href.includes("employee/user/login") &&
                   !window.location.href.includes("employee/user/language-selection") && (
                     <ProfessionalChangeCity dropdown={true} t={t} selectedCity={ulbDetails} userInfo={userInfo} obps={true}/>
                   )}
               </div>
-            )}
+            )} */}
             {(!mobileView && loggedin && !isUserProfessional) && (
               <div className="ulb-name" style={{paddingRight: "20px", textOverflow: "ellipsis", fontSize: "15px", whiteSpace: "nowrap"}}>
                 {`Hello, ${userName}`}
@@ -216,9 +216,9 @@ const TopBar = ({
                 />
               </div>
             )} */}
-           {tenantId && !mobileView && isCitizen &&
-            <ProfessionalChangeCity dropdown={true} t={t} selectedCity={ulbDetails} userInfo={userInfo} obps={false}/>
-            }
+           {tenantId && !mobileView && isCitizen  &&
+            <div className="left"><ProfessionalChangeCity dropdown={true} t={t} selectedCity={ulbDetails} userInfo={userInfo} obps={false}/></div>
+            } 
             {!urlsToDisableNotificationIcon(pathname) && (
               <div className="notification-wrapper" onClick={onNotificationIconClick}>
                 {notificationCountLoaded && unreadNotificationCount ? (

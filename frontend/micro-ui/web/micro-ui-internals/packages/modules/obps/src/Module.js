@@ -85,6 +85,7 @@ import CLUInbox from "./pages/employee/cluInbox/CLUInbox"
 import CLUEmployeeApplicationDetails from "./pages/employee/ApplicationOverview/CLUApplicationOverview";
 import CLUEsignResponse from "./pages/employee/CLUEsignResponse";
 import LayoutEmployeeApplicationDetails from "./pages/employee/ApplicationOverview/LayoutApplicationOverview";
+import LayoutEsignResponse from "./pages/employee/LayoutEsignResponse";
 
 import LayoutStepperForm from "./pages/citizen/LayoutStepper/LayoutStepperForm";
 import LayoutStepFormOne from "./pages/citizen/LayoutStepper/LayoutStepFormOne";
@@ -295,6 +296,7 @@ const componentsToRegister = {
   CLUInbox,
   CLUEmployeeApplicationDetails,
   CLUEsignResponse,
+  LayoutEsignResponse,
   OCStepFormOne,
   OCStepFormTwo,
   OCStepFormThree,

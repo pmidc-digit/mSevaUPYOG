@@ -8,6 +8,7 @@ const ChevronDown = () => (
 );
 
 const OBPSPaymentHistory = ({ payments }) => {
+  console.log("payments",payments)
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -62,7 +63,7 @@ const OBPSPaymentHistory = ({ payments }) => {
                     const rawStatus = payment.paymentStatus || 'N/A';
                     const status = rawStatus === 'DEPOSITED' ? 'Deposited' : (rawStatus === 'SUCCESSFUL' ? 'Successful' : rawStatus);
                     const paymentDate = payment.transactionDate || payment.paymentDetails?.[0]?.receiptDate || payment.receiptDate;
-                    const transactionId = (payment.transactionNumber || payment.instrumentNumber || 'N/A').split(' ')[0];
+                    const transactionId = (payment.transactionNumber || payment.instrumentNumber || 'N/A');
                     const isDeposited = rawStatus === 'DEPOSITED' || rawStatus === 'SUCCESSFUL';
 
                     return (

@@ -293,8 +293,9 @@ const LayoutApplicantDetails = (_props) => {
         const genderObj = menu.find((obj) => obj.code === u.gender) || u.gender;
         if (genderObj) setValue("applicantGender", genderObj, { shouldValidate: true, shouldDirty: true });
       }
+      if (u.pan || u.panNumber) setValue("panNumber", u.pan || u.panNumber, { shouldValidate: true, shouldDirty: true });
 
-      clearErrors(["applicantOwnerOrFirmName", "applicantEmailId", "applicantDateOfBirth", "applicantAddress", "applicantGender"]);
+      clearErrors(["applicantOwnerOrFirmName", "applicantEmailId", "applicantDateOfBirth", "applicantAddress", "applicantGender", "panNumber"]);
 
       setShowToast({
         key: "true",
@@ -354,6 +355,7 @@ const LayoutApplicantDetails = (_props) => {
 
       // Map gender to the dropdown format
       const genderObj = menu.find((g) => g.code === user?.gender) || user?.gender;
+      const userPan = user?.pan || user?.panNumber;
 
       // Update the applicant at the given index with user data
       const updatedApplicants = [...applicants];
@@ -367,6 +369,7 @@ const LayoutApplicantDetails = (_props) => {
         dob: formattedDob,
         gender: genderObj,
         uuid: user?.uuid || "",
+        ...(userPan ? { panNumber: userPan } : {}),
       };
       clearErrors(`applicants.${index}`);
       setApplicants(updatedApplicants);

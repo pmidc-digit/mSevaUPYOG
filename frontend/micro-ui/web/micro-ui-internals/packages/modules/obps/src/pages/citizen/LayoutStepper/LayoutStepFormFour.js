@@ -57,32 +57,35 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   // Get all applicant names (primary owner + newly added applicants)
   const getAllApplicantNames = () => {
-    const layoutData = !currentStepData?.apiData?.Layout 
-      ? currentStepData?.apiData 
-      : currentStepData?.apiData?.Layout?.[0];
+    const isLayoutArray = Array.isArray(currentStepData?.apiData?.Layout);
+    const layoutData = isLayoutArray 
+      ? currentStepData?.apiData?.Layout?.[0] 
+      : (currentStepData?.apiData?.Layout || currentStepData?.apiData);
     
     const layoutOwners = layoutData?.owners || [];
     const primaryOwnerFromLayout = layoutOwners?.find((owner) => owner?.isPrimaryOwner === true || owner?.isPrimaryOwner === "true") || layoutOwners?.[0];
-    const primaryApplicant = currentStepData?.applicants?.find((app) => app?.isPrimaryOwner === true || app?.isPrimaryOwner === "true") || primaryOwnerFromLayout || currentStepData?.applicants?.[0] || {};
     
     const aplicantType = 
-      primaryApplicant?.aplicantType?.code || 
-      primaryApplicant?.additionalDetails?.aplicantType?.code;
+      currentStepData?.applicationDetails?.aplicantType?.code ||
+      primaryOwnerFromLayout?.aplicantType?.code || 
+      primaryOwnerFromLayout?.additionalDetails?.aplicantType?.code;
 
-    // Primary owner name - try form state and API owner fallback based on applicantType
+    // Primary owner name - prioritize latest form state (applicationDetails) over stale apiData
     let primaryOwnerName = "";
     if (aplicantType === "FIRM") {
-      primaryOwnerName = primaryApplicant?.authorisedPerson
-        || primaryApplicant?.additionalDetails?.authorisedPerson
-        || currentStepData?.applicationDetails?.authorisedPerson;
-    } else {
-      primaryOwnerName = primaryApplicant?.name
+      primaryOwnerName = currentStepData?.applicationDetails?.authorisedPerson
+        || primaryOwnerFromLayout?.additionalDetails?.authorisedPerson
+        || primaryOwnerFromLayout?.authorisedPerson
+        || primaryOwnerFromLayout?.name
         || currentStepData?.applicationDetails?.applicantOwnerOrFirmName;
+    } else {
+      primaryOwnerName = currentStepData?.applicationDetails?.applicantOwnerOrFirmName
+        || primaryOwnerFromLayout?.name;
     }
     
     // Get newly added applicants from Redux state (additional applicants, excluding primary)
     const applicantsFromRedux = currentStepData?.applicants || [];
-    const newlyAddedApplicants = applicantsFromRedux.filter(app => (app?.name && app?.status && !app?.isPrimaryOwner && app !== primaryApplicant));
+    const newlyAddedApplicants = applicantsFromRedux.filter(app => (app?.name && app?.status && !app?.isPrimaryOwner && app !== primaryOwnerFromLayout));
     
     // Get all applicant names (primary + additional)
     const allApplicantNames = [
@@ -451,11 +454,10 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   //console.log("currentStepData in StepFour", currentStepData);
 
   // Handle both NEW mode (Layout array) and EDIT mode (Layout object)
-  const isEditMode = window.location.pathname.includes("edit");
-  console.log("isEditMode",isEditMode)
-  const layoutData = isEditMode 
-    ? currentStepData?.apiData?.Layout?.[0]
-    : currentStepData?.apiData?.Layout;
+  const isLayoutArray = Array.isArray(currentStepData?.apiData?.Layout);
+  const layoutData = isLayoutArray 
+    ? currentStepData?.apiData?.Layout?.[0] 
+    : (currentStepData?.apiData?.Layout || currentStepData?.apiData);
 
   const applicationNo = layoutData?.applicationNo || "";
   const businessServiceCode = layoutData?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";

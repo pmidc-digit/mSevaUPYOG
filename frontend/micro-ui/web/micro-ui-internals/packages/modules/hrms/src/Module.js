@@ -36,6 +36,7 @@ import Summary from "./components/employeeCreationFormSteps/Summary";
 import SummaryStep from "./components/employeeCreationFormSteps/SummaryStep";
 //
 import getRootReducer from "./redux/reducers";
+import ObpasEmployeeType from "./components/pageComponents/ObpasEmployeeType";
 
 export const HRMSReducers = getRootReducer;
 
@@ -87,7 +88,8 @@ const componentsToRegister = {
   Summary,
   SummaryStep,
   EmpMaping: EmpMaping,
-  HRMSEMPMAPDetails: HRMSEMPMAPDetails
+  HRMSEMPMAPDetails: HRMSEMPMAPDetails,
+  EmployeeType: ObpasEmployeeType
 };
 
 export const initHRMSComponents = () => {

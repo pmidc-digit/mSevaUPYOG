@@ -173,24 +173,6 @@ const NewRegistration = ({ stateCode }) => {
   };
 
   return (
-    <div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    width: "100%",
-  }}
->
-  <div
-  style={{
-    position: "fixed", // or absolute
-    top: 0,
-    left: 0,
-    width: "100vw",
-    zIndex: 9999,
-  }}
->
-  <MarqueeBanner />
-</div>
 
     <div className="login-page-cover">
       <div className="login-container">
@@ -295,7 +277,6 @@ const NewRegistration = ({ stateCode }) => {
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 };

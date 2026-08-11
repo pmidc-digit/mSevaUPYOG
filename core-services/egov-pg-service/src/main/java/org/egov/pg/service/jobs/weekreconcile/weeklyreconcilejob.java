@@ -73,9 +73,13 @@ public class weeklyreconcilejob implements Job {
         log.info("Attempting to reconcile {} pending transactions", pendingTxns.size());
 
         for (Transaction txn : pendingTxns) {
-            log.info(transactionService.updateTransaction(requestInfo, Collections.singletonMap(PgConstants.PG_TXN_IN_LABEL, txn
-                    .getTxnId
-                    ())).toString());
+        	try {
+        		log.info(transactionService.updateTransaction(requestInfo, Collections.singletonMap(PgConstants.PG_TXN_IN_LABEL, txn
+                        .getTxnId
+                        ())).toString());
+			} catch (Exception e) {
+				log.error("Error while reconciling transaction with txnId: " + txn.getTxnId() + " and Consumer Code: " + txn.getConsumerCode(), e);
+			}
         }
 
     }

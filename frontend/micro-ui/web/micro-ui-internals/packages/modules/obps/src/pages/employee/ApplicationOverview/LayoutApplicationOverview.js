@@ -327,8 +327,7 @@ const LayoutEmployeeApplicationOverview = () => {
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails;
       const rawOwners = layoutObject?.owners || [];
-      const activeOwners = rawOwners.filter(o => o?.status !== false && o?.status !== "false");
-      const owners = [...activeOwners].sort((a, b) => {
+      const owners = [...rawOwners].sort((a, b) => {
         const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
         const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
         if (aPrimary && !bPrimary) return -1;

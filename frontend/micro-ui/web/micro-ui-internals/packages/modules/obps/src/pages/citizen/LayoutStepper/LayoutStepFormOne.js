@@ -68,29 +68,11 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 // };
 
 
-  const validateApplicants = (applicants, applicantType) => {
+  const validateApplicants = (applicants) => {
     let hasError = false;
     //console.log("errorFound: Step 1 validation started for applicants", applicants);
 
-    // if (applicantType?.code === "INDIVIDUAL") {
-    //   if (applicants.length !== 1) {
-    //     setError(`applicants`, {
-    //       type: "manual",
-    //       message: t("MULTIPLE_OWNER_TYPE_REQUIRES_MORE_THAN_ONE_OWNER"),
-    //     });
-    //     hasError = true;
-    //   }
-    // } else if (applicantType?.code === "MULTIPLE") {
-    //   if (applicants.length < 2) {
-    //     setError(`applicants`, {
-    //       type: "manual",
-    //       message: t("MULTIPLE_OWNER_TYPE_REQUIRES_MORE_THAN_ONE_OWNER"),
-    //     });
-    //     hasError = true;
-    //   }
-    // }
-
-    applicants?.forEach((applicant) => {
+    applicants?.filter(obj => obj?.status)?.forEach((applicant) => {
       const originalIndex = applicant.actualIndex !== undefined ? applicant.actualIndex : applicants.indexOf(applicant);
       // Clear old errors for this applicant
       clearErrors([
@@ -259,14 +241,13 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   const onSubmit = async (data) => {
     const applicants = currentStepData?.applicants || [];
-    const applicantType = currentStepData?.applicationDetails?.applicantType;
 
     // 1. Validate applicants manually    
-    // const isApplicantsValid = validateApplicants(applicants, applicantType);
+    const isApplicantsValid = validateApplicants(applicants);
 
-    // if (!isApplicantsValid) {
-    //   return; // stop submission
-    // }
+    if (!isApplicantsValid) {
+      return; // stop submission
+    }
 
     // 2. Trigger RHF validation and WAIT
     const isFormValid = await trigger();
@@ -281,8 +262,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   const onInvalid = () => {
     const applicants = currentStepData?.applicants || [];
-    const applicantType = currentStepData?.applicationDetails?.applicantType;
-    validateApplicants(applicants, applicantType);
+    validateApplicants(applicants);
   };
 
 
@@ -331,8 +311,6 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
       }
     }, [stakeHolderDetailsLoading]);
 
-    console.log("CurrentStepDataInStepOne", currentStepData)
-
   useEffect(() => {
     if (currentStepData?.applicationDetails?.isRegisteredStakeHolder) {
      setValue("isRegisteredStakeHolder", "true");
@@ -340,23 +318,22 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
   }, []);
 
   const LayoutProfessionalDetails = React.useMemo(() => Digit?.ComponentRegistryService?.getComponent("LayoutProfessionalDetails"), []);
-  const LayoutNewApplicantDetails = React.useMemo(() => Digit?.ComponentRegistryService?.getComponent("LayoutNewApplicantDetails"), []);
+  const LayoutApplicantDetails = React.useMemo(() => Digit?.ComponentRegistryService?.getComponent("LayoutApplicantDetails"), []);
 
   return (
     <React.Fragment>
-      {/* <form onSubmit={handleSubmit(onSubmit, onInvalid)}> */}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
         <div className="employeeCard">
             
         {isRegisteredStakeHolder ? (
             <React.Fragment>
             
               <LayoutProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-              <LayoutNewApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+              <LayoutApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
           ): (
             <React.Fragment>
-             <LayoutNewApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+             <LayoutApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
           )
         }   

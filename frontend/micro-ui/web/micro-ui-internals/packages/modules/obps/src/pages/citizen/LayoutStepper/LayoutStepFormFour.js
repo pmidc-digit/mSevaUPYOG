@@ -458,7 +458,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   // Handle both NEW mode (Layout array) and EDIT mode (Layout object)
   const isEditMode = window.location.pathname.includes("edit");
-  console.log("isEditMode",isEditMode)
+  // console.log("isEditMode",isEditMode)
   const layoutData = isEditMode 
     ? currentStepData?.apiData?.Layout?.[0]
     : currentStepData?.apiData?.Layout;

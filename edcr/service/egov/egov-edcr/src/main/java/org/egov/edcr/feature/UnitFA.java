@@ -68,6 +68,7 @@ public class UnitFA extends FeatureProcess {
     private static final BigDecimal MIN_TOILET_AREA = BigDecimal.valueOf(1.8);
     private static final BigDecimal MIN_TOILET_WIDTH = BigDecimal.valueOf(1.2);
     private static final BigDecimal MIN_TOILET_VENTILATION = BigDecimal.valueOf(0.3);
+    private static final BigDecimal MIN_BALCONY_WIDTH = BigDecimal.valueOf(0.91);
 
     // Thresholds mirrored from HeightOfRoom.java's door/window/ventilation
     // logic, now applied at unit level since the layers themselves are
@@ -149,6 +150,9 @@ public class UnitFA extends FeatureProcess {
 
                                     // 6. Halls inside this Unit
                                     processHall(unit, pl, block, unitIdentifier, floorLabel);
+
+                                    // Unit-scoped balconies
+                                    processBalcony(unit, pl, block, unitIdentifier, floorLabel);
 
                                     // 7. Bathroom inside this Unit
                                     processBathroom(unit, pl, block, unitIdentifier, floorLabel, mostRestrictive);
@@ -1112,9 +1116,7 @@ public class UnitFA extends FeatureProcess {
                     BigDecimal unitArea = unit.getArea() != null
                             ? unit.getArea().setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
                     totalUnitArea = totalUnitArea.add(unitArea);
-                    if (unit.getTotalUnitDeduction() != null) {
-                        totalDeduction = totalDeduction.add(unit.getTotalUnitDeduction());
-                    }
+                    totalDeduction = totalDeduction.add(getUnitDeduction(unit));
                     if (unitAreas.length() > 0) {
                         unitAreas.append("\n");
                     }
@@ -1195,6 +1197,66 @@ public class UnitFA extends FeatureProcess {
         details.put(DEDUCTION_HEADER, grandTotalDeduction.setScale(2, RoundingMode.HALF_UP).toPlainString());
         details.put(FLOOR_AREA_HEADER, grandTotalFloorArea.setScale(2, RoundingMode.HALF_UP).toPlainString());
         return details;
+    }
+
+    /**
+     * Validates balconies extracted from UNITFA_{unit}_BALCONY_{number} layers.
+     */
+    public void processBalcony(FloorUnit unit, Plan pl, Block block, String unitIdentifier, String floorNo) {
+        if (unit.getBalconies() == null || unit.getBalconies().isEmpty()) {
+            return;
+        }
+
+        for (org.egov.common.entity.edcr.Balcony balcony : unit.getBalconies()) {
+            BigDecimal area = BigDecimal.ZERO;
+            if (balcony.getMeasurements() != null) {
+                for (Measurement measurement : balcony.getMeasurements()) {
+                    if (measurement != null && measurement.getArea() != null) {
+                        area = area.add(measurement.getArea());
+                    }
+                }
+            }
+
+            BigDecimal minWidth = BigDecimal.ZERO;
+            if (balcony.getWidths() != null && !balcony.getWidths().isEmpty()) {
+                minWidth = balcony.getWidths().stream().filter(Objects::nonNull)
+                        .min(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+            }
+
+            area = area.setScale(2, RoundingMode.HALF_UP);
+            minWidth = minWidth.setScale(2, RoundingMode.HALF_UP);
+            boolean isAccepted = minWidth.compareTo(MIN_BALCONY_WIDTH) >= 0;
+            String balconyNumber = balcony.getNumber() != null ? balcony.getNumber() : "-";
+
+            ReportData balconyData = new ReportData(
+                    "Block_" + block.getNumber() + "_Dwelling Unit-Balconies",
+                    "4.4.4 (iii)",
+                    "Minimum Width of Balcony",
+                    floorNo,
+                    unitIdentifier,
+                    "Balcony " + balconyNumber,
+                    "Width >= " + MIN_BALCONY_WIDTH.toPlainString() + " m",
+                    "Area = " + area.toPlainString() + " m², Width = " + minWidth.toPlainString() + " m",
+                    isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal()
+            );
+            addReportDetails(pl, block, balconyData);
+        }
+    }
+
+    private BigDecimal getUnitDeduction(FloorUnit unit) {
+        if (unit.getTotalUnitDeduction() != null) {
+            return unit.getTotalUnitDeduction();
+        }
+
+        BigDecimal deduction = BigDecimal.ZERO;
+        if (unit.getDeductions() != null) {
+            for (Measurement measurement : unit.getDeductions()) {
+                if (measurement != null && measurement.getArea() != null) {
+                    deduction = deduction.add(measurement.getArea());
+                }
+            }
+        }
+        return deduction;
     }
 
     private Map<Integer, List<Integer>> getTypicalFloorsByModelFloor(Block block) {

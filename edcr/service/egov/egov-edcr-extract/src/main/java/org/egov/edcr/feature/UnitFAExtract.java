@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.egov.common.entity.edcr.Block;
+import org.egov.common.entity.edcr.Balcony;
 import org.egov.common.entity.edcr.Door;
 import org.egov.common.entity.edcr.Floor;
 import org.egov.common.entity.edcr.FloorUnit;
@@ -135,16 +136,6 @@ public class UnitFAExtract extends FeatureExtract {
 		Map<Integer, FloorUnit> unitMap = new HashMap<>();
 		Map<Integer, DXFLWPolyline> unitPolyMap = new HashMap<>();
 
-		String layerRegEx = "BLK_\\d+_FLR_\\d+_UNITFA_\\d+";
-
-		List<String> unitFALayers1 = Util.printLayerNamesLike(pl.getDoc(), layerRegEx);
-		String globalUnitFAPattern = "^BLK_\\d+_FLR_\\d+_UNITFA_\\d+_.*$";
-		LOG.info("-------------------------------------------------------");
-		List<String> allUnitFALayers = Util.getLayerNamesLike(pl.getDoc(), globalUnitFAPattern);
-		for (String layer : allUnitFALayers) {
-		    LOG.info(layer);
-		}
-		LOG.info("-------------------------------------------------------");
 		// STEP 1: Parent UnitFA Extraction
 		for (DXFLWPolyline flrUnitPLine : occupancyUnits) {
 			String layerName = flrUnitPLine.getLayerName();
@@ -181,6 +172,7 @@ public class UnitFAExtract extends FeatureExtract {
 
 		// STEP 3: Modularized Sub-component Extractions Directly onto FloorUnit
 		for (FloorUnit unit : floorUnits) {
+			extractUnitBalconies(pl, block, floor, unit);
 			extractUnitKitchens(pl, block, floor, unit);
 			extractUnitRegularRooms(pl, block, floor, unit);
 			extractUnitHabitationRooms(pl, block, floor, unit);
@@ -221,69 +213,120 @@ public class UnitFAExtract extends FeatureExtract {
 
 		floor.setUnits(floorUnits);
 	}
+
+	/**
+	 * Extracts unit-scoped balconies from layers such as
+	 * BLK_1_FLR_1_UNITFA_1_BALCONY_1.
+	 */
+	private void extractUnitBalconies(PlanDetail pl, Block block, Floor floor, FloorUnit unit) {
+		String balconyLayerRegex = String.format("^BLK_%s_FLR_%s_UNITFA_%s_BALCONY_\\d+$",
+				block.getNumber(), floor.getNumber(), unit.getUnitNo());
+		List<String> balconyLayers = Util.getLayerNamesLike(pl.getDoc(), balconyLayerRegex);
+		List<Balcony> balconies = new ArrayList<>();
+
+		for (String balconyLayer : balconyLayers) {
+			List<DXFLWPolyline> balconyPolylines = Util.getPolyLinesByLayer(pl.getDoc(), balconyLayer);
+			List<BigDecimal> widths = Util.getListOfDimensionValueByLayer(pl, balconyLayer);
+			if (balconyPolylines.isEmpty() && widths.isEmpty()) {
+				continue;
+			}
+
+			if (!balconyPolylines.isEmpty()) {
+				Util.validateLayerColor(balconyLayer, Util.getColorByPolyLine(balconyPolylines), pl);
+			}
+
+			Balcony balcony = new Balcony();
+			balcony.setNumber(balconyLayer.substring(balconyLayer.lastIndexOf('_') + 1));
+			balcony.setWidths(widths);
+			balcony.setMeasurements(balconyPolylines.stream()
+					.map(polyline -> new MeasurementDetail(polyline, true))
+					.collect(Collectors.toList()));
+			balconies.add(balcony);
+		}
+
+		unit.setBalconies(balconies);
+	}
 	
 	// =========================================================================
 			// DEDUCTIONS & SUB-COMPONENT EXTRACTION METHODS
 			// =========================================================================
 
-			private void extractUnitDeductions(PlanDetail pl, String blockPrefix, String floorPrefix,
-					List<FloorUnit> floorUnits, Map<Integer, DXFLWPolyline> unitPolyMap) {
-				String deductLayerName = blockPrefix + "_" + floorPrefix + "_"
-						+ layerNames.getLayerName("LAYER_NAME_UNITFA_DEDUCT");
-				List<DXFLWPolyline> deductPolylines = Util.getPolyLinesByLayer(pl.getDoc(), deductLayerName);
+	private void extractUnitDeductions(PlanDetail pl, String blockPrefix, String floorPrefix,
+			List<FloorUnit> floorUnits, Map<Integer, DXFLWPolyline> unitPolyMap) {
 
-				if (!deductPolylines.isEmpty()) {
-					Util.validateLayerColor(deductLayerName, Util.getColorByPolyLine(deductPolylines), pl);
+		if (floorUnits == null || floorUnits.isEmpty()) {
+			return;
+		}
 
-					int unitIndex = 0;
-					for (FloorUnit floorUnit : floorUnits) {
-						unitIndex++;
-						DXFLWPolyline flrUnitPLine = unitPolyMap.get(floorUnit.getUnitNo());
-						if (flrUnitPLine == null)
-							continue;
+		for (FloorUnit floorUnit : floorUnits) {
 
-						Polygon polygon = Util.getPolygon(flrUnitPLine);
-						BigDecimal unitDeduction = BigDecimal.ZERO;
-
-						for (DXFLWPolyline occupancyDeduct : deductPolylines) {
-							boolean contains = false;
-							Iterator<?> buildingIterator = occupancyDeduct.getVertexIterator();
-
-							while (buildingIterator.hasNext()) {
-								DXFVertex dxfVertex = (DXFVertex) buildingIterator.next();
-								Point point = dxfVertex.getPoint();
-
-								if (rayCasting.contains(point, polygon)) {
-									contains = true;
-									BigDecimal deductArea = Util.getPolyLineArea(occupancyDeduct);
-
-									MeasurementDetail measurement = new MeasurementDetail();
-									measurement.setPolyLine(occupancyDeduct);
-									measurement.setArea(deductArea);
-
-									if (floorUnit.getDeductions() == null) {
-										floorUnit.setDeductions(new ArrayList<>());
-									}
-									floorUnit.getDeductions().add(measurement);
-									break;
-								}
-							}
-
-							if (contains) {
-								BigDecimal deductArea = Util.getPolyLineArea(occupancyDeduct);
-								LOG.info("current deduct {} :add deduct for rest unit {} area added {}", unitDeduction,
-										unitIndex, deductArea);
-								unitDeduction = unitDeduction.add(deductArea);
-							}
-						}
-
-						if (floorUnit.getArea() != null) {
-							floorUnit.setArea(floorUnit.getArea().subtract(unitDeduction));
-						}
-						floorUnit.setTotalUnitDeduction(unitDeduction);
-					}
-				}
+			if (floorUnit == null || floorUnit.getUnitNo() == null) {
+				continue;
 			}
+
+			Integer unitNo = floorUnit.getUnitNo();
+
+			String deductLayerRegex = "^" + blockPrefix + "_" + floorPrefix + "_"
+					+ layerNames.getLayerName("LAYER_NAME_UNITFA") + "_" + unitNo + "_DEDUCT_\\d+$";
+
+			LOG.info("Searching deductions for UNITFA_{} using regex [{}]", unitNo, deductLayerRegex);
+
+			// getPolyLinesByLayer expects an exact layer name. Resolve the regex to
+			// actual DXF layers first, otherwise names such as ..._DEDUCT_1 are never read.
+			List<String> deductLayers = Util.getLayerNamesLike(pl.getDoc(), deductLayerRegex);
+			List<DXFLWPolyline> deductPolylines = Util.getPolyLinesByLayerV2(pl.getDoc(), deductLayers);
+
+			if (deductPolylines == null || deductPolylines.isEmpty()) {
+
+				LOG.info("No deduction found for UNITFA_{}", unitNo);
+
+				floorUnit.setTotalUnitDeduction(BigDecimal.ZERO);
+				continue;
+			}
+
+			LOG.info("Found {} deduction polyline(s) for UNITFA_{}", deductPolylines.size(), unitNo);
+
+			BigDecimal totalDeduction = BigDecimal.ZERO;
+
+			for (DXFLWPolyline deduction : deductPolylines) {
+
+				BigDecimal deductionArea = Util.getPolyLineArea(deduction);
+				if (deductionArea == null) {
+					deductionArea = BigDecimal.ZERO;
+				}
+
+				LOG.info("UNITFA_{} -> Deduction Layer [{}], Area [{}]", unitNo, deduction.getLayerName(),
+						deductionArea);
+
+				MeasurementDetail measurement = new MeasurementDetail();
+
+				measurement.setPolyLine(deduction);
+				measurement.setArea(deductionArea);
+
+				if (floorUnit.getDeductions() == null) {
+					floorUnit.setDeductions(new ArrayList<>());
+				}
+
+				floorUnit.getDeductions().add(measurement);
+
+				totalDeduction = totalDeduction.add(deductionArea);
+			}
+
+			BigDecimal grossArea = floorUnit.getArea();
+
+			if (grossArea != null) {
+
+				BigDecimal netArea = grossArea.subtract(totalDeduction);
+
+				floorUnit.setArea(netArea);
+
+				LOG.info("UNITFA_{} FINAL AREA -> Gross: {}, Deduction: {}, Net: {}", unitNo, grossArea, totalDeduction,
+						netArea);
+			}
+
+			floorUnit.setTotalUnitDeduction(totalDeduction);
+		}
+	}
 			
 			/**
 			 * Generic reusable extractor for simple room-like unit sub-features.

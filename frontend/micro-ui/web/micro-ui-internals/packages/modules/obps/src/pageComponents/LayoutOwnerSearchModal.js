@@ -14,9 +14,9 @@ import {
   LabelFieldPair,
   LinkButton,
   Dropdown,
+  DatePicker,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import CustomDatePicker from "./CustomDatePicker";
 import CustomUploadFile from "../components/CustomUploadFile";
 
 const applicantTypeOptions = [
@@ -643,10 +643,10 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
               <CardLabel style={{ marginBottom: "6px", fontWeight: "500" }}>
                 {t("BPA_APPLICANT_DOB_LABEL")} <span className="requiredField">*</span>
               </CardLabel>
-              <CustomDatePicker
-                value={manualDob}
-                onChange={(e) => {
-                  setManualDob(e.target.value);
+              <DatePicker
+                date={manualDob}
+                onChange={(val) => {
+                  setManualDob(val);
                   setManualErrors((prev) => ({ ...prev, dob: "" }));
                 }}
                 min="1900-01-01"

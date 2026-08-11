@@ -1379,14 +1379,15 @@ const LayoutEmployeeApplicationOverview = () => {
               {/* {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)} */}
 
               {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
-              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}
-              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), detail?.residentialType?.name || detail?.buildingCategory?.name)}
               {renderLabel(t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL"), detail?.areaLeftForRoadWidening)}
               {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.netPlotAreaAfterWidening)}
               {renderLabel(t("BPA_BALANCE_AREA_IN_SQ_M_LABEL"), parseFloat(detail?.areaLeftForRoadWidening - detail?.netPlotAreaAfterWidening))}
               {renderLabel(t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL"), detail?.areaUnderEWS)}
               {renderLabel(t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL"), detail?.areaUnderEWSInPct)}
               {renderLabel(t("BPA_NET_SITE_AREA_IN_SQ_M_LABEL"), detail?.netTotalArea)}
+              {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
+              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}
+              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), detail?.residentialType?.name || detail?.buildingCategory?.name)}
               {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderResidentialUseInSqM)}
               {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL"), detail?.areaUnderResidentialUseInPct)}
               {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderCommercialUseInSqM)}
@@ -1416,7 +1417,6 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_SQ_M_LABEL"), detail?.areaUnderOtherAmenitiesInSqM)}
               {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
 
-              {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
               {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
           

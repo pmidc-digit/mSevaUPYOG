@@ -5,7 +5,7 @@
   import Timeline from "../components/PTRTimeline";
 
   const PTRSelectStreet = ({ t, config, onSelect, userType, formData, formState, setError, clearErrors }) => {
-    
+
     const onSkip = () => onSelect();
     const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
     const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
@@ -16,8 +16,8 @@
     let inputs;
 
 
-    //To do - Need to change this whole page and have to make like same as owner details page because when uncomment the validation , it is throwing error  
-    
+    //To do - Need to change this whole page and have to make like same as owner details page because when uncomment the validation , it is throwing error
+
       inputs = [
         {
           label: "PTR_STREET_NAME",
@@ -79,8 +79,8 @@
             // title: t("CORE_COMMON_DOOR_INVALID"),
            },
         },
-      
-        
+
+
       ];
 
    ;
@@ -120,12 +120,12 @@
                 control={control}
                 defaultValue={formData?.address?.[input.name]}
                 name={input.name}
-                
+
                 rules={{
                   // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                   validate: { pattern: (val) => (/^[A-Za-z]+( +[A-Za-z]+)*$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) },
                 }}
-                
+
                 render={(_props) => (
                   <TextInput
                     id={input.name}
@@ -153,7 +153,7 @@
         _defaultValues={{
           street: formData?.address.street,
           doorNo: formData?.address.doorNo,
-           
+
          }}
 
         onSelect={(data) => onSelect(config.key, data)}

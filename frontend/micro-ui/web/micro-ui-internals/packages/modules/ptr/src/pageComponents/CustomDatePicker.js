@@ -3,19 +3,6 @@ import { TextInput } from "@mseva/digit-ui-react-components";
 import { format } from "date-fns";
 import { CalendarIcon } from "../../../../../packages/react-components/src/atoms/svgindex";
 
-const hiddenDateInputStyle = {
-  position: "absolute",
-  top: 0,
-  right: 0,
-  width: "32px",
-  height: "100%",
-  opacity: 0,
-  cursor: "pointer",
-  border: "none",
-  padding: 0,
-  margin: 0,
-};
-
 const CustomDatePicker = ({ value, onChange, placeholder = "DD/MM/YYYY", min, max, ...props }) => {
   const [selectedDate, setSelectedDate] = useState(value ? new Date(value) : null);
   const [inputValue, setInputValue] = useState(value ? format(new Date(value), "dd/MM/yyyy") : "");
@@ -37,7 +24,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "DD/MM/YYYY", min, ma
       setSelectedDate(newDate);
       setInputValue(format(newDate, "dd/MM/yyyy"));
       onChange({
-        target: { value: format(newDate, "yyyy-MM-dd") },
+        target: { value: format(newDate, "yyyy-MM-dd") }
       });
     }
   };
@@ -55,34 +42,34 @@ const CustomDatePicker = ({ value, onChange, placeholder = "DD/MM/YYYY", min, ma
 
   return (
     <div
-      style={{ position: "relative", maxWidth: "540px", cursor: "pointer" }}
+
       onMouseDown={openCalendar}
       onTouchStart={openCalendar}
       // onMouseDown={openCalendar} // triggers on click anywhere in container
-    >
+      className="ptr-style-3647f40150">
       <TextInput
         value={inputValue}
         placeholder={placeholder}
         readOnly
-        style={{
-          cursor: "pointer",
-          caretColor: "transparent", // hides caret if somehow focused
-        }}
-        tabIndex={-1}
-        {...props}
-      />
 
-      <CalendarIcon
-        style={{
-          position: "absolute",
-          right: "2%", // closer to text
-          top: "50%", // pushed slightly up
-          transform: "translateY(-50%)",
-          pointerEvents: "none", // let container handle click
-          width: "16px",
-          height: "16px",
-        }}
-      />
+
+
+
+        tabIndex={-1}
+        {...props} className="ptr-style-9fc225d522" />
+
+
+      <CalendarIcon className="ptr-style-a3347904b1" />
+
+
+
+
+
+
+
+
+
+
 
       <input
         ref={dateRef}
@@ -92,10 +79,10 @@ const CustomDatePicker = ({ value, onChange, placeholder = "DD/MM/YYYY", min, ma
         onChange={(e) => handleDateChange(e.target.value)}
         min={min}
         max={max}
-        style={hiddenDateInputStyle}
-      />
-    </div>
-  );
+        className="ptr-hidden-date-input" />
+
+    </div>);
+
 };
 
 export default CustomDatePicker;

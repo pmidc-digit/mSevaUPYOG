@@ -117,10 +117,10 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   }, [getChallanData]);
 
   return (
-    <div style={{ marginTop: "16px" }}>
+    <div className="gc-style-d265a6b9b9">
       <div>
         {header && (
-          <Header style={{ marginLeft: "8px" }}>
+          <Header className="gc-style-c937f3b834">
             {t(header)} ({getChallanData?.length})
           </Header>
         )}
@@ -136,10 +136,7 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
               <KeyNote keyValue={t("STATUS")} note={t(bill.status)} />
               <KeyNote keyValue={t("GC_CONNECTION_TYPE")} note={t(`${bill.connectionCategory || t("CS_NA")}`)} />
               <div
-                style={{
-                  display: "flex",
-                  gap: "20px",
-                }}
+                className="gc-style-0b9a47eb61"
               >
                 {
                   <Link to={`/digit-ui/citizen/garbagecollection/application/${bill?.applicationNo}/${bill?.tenantId}`}>
@@ -160,7 +157,7 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
                 {/* ✅ SHOW ONLY ONCE PER UNIQUE connectionNo */}
                 {showDiscontinueButton && (
                   <SubmitBar
-                    style={{ width: "200px" }}
+                    className="gc-style-ec060bac5e"
                     label={t("GC_DISCONTINUE_SERVICE")}
                     onSubmit={() => handleDiscontinue(bill)}
                     disabled={loader}
@@ -175,11 +172,11 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
           );
         })}
 
-        {getChallanData?.length === 0 && !loader && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("CHB_NO_APPLICATION_FOUND_MSG")}</p>}
+        {getChallanData?.length === 0 && !loader && <p className="gc-style-eda36bf913">{t("CHB_NO_APPLICATION_FOUND_MSG")}</p>}
 
         {getChallanData?.length !== 0 && getCount > t1 && (
-          <div style={{ marginLeft: "16px", marginTop: "16px" }}>
-            <span className="link" style={{ cursor: "pointer", color: "#007bff" }} onClick={handleLoadMore}>
+          <div className="gc-style-eda36bf913">
+            <span className="link gc-style-029f4a9edb"  onClick={handleLoadMore}>
               {t("CHB_LOAD_MORE_MSG")}
             </span>
           </div>

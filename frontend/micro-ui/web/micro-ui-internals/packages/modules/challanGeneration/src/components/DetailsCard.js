@@ -8,11 +8,11 @@ const Details = ({ label, name, onClick }) => {
       <span className="label">
         <h2>{label}</h2>
       </span>
-      <span className="name" style={{ overflowWrap: "break-word" }}>
+      <span className="name challan-generation-style-1ec56a5983">
         {name}
       </span>
-    </div>
-  );
+    </div>);
+
 };
 
 const DetailsCard = ({
@@ -25,7 +25,7 @@ const DetailsCard = ({
   handleDetailCardClick,
   isTwoDynamicPrefix = false,
   getRedirectionLink,
-  handleClickEnabled = true,
+  handleClickEnabled = true
 }) => {
   const tenantId = Digit.ULBService.getCurrentPermanentCity();
   if (linkPrefix && serviceRequestIdKey) {
@@ -41,11 +41,11 @@ const DetailsCard = ({
                   return <Details label={name} name={object[name]} key={index} />;
                 })}
               </div>
-            </Link>
-          );
+            </Link>);
+
         })}
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -54,28 +54,27 @@ const DetailsCard = ({
         return (
           <div
             key={itemIndex}
-            style={{ border: selectedItems?.includes(object[keyForSelected]) ? "2px solid #a82227" : "2px solid #fff" }}
-            className="details-container"
-            onClick={() => handleClickEnabled && handleSelect(object)}
-          >
-            {Object.keys(object)
-              .filter((rowEle) => !(typeof object[rowEle] == "object" && object[rowEle]?.hidden == true))
-              .map((name, index) => {
-                return <Details label={name} name={object[name]} key={index} onClick={() => handleClickEnabled && handleDetailCardClick(object)} />;
-              })}
-          </div>
-        );
+            className={`details-container challan-generation-details-card${selectedItems?.includes(object[keyForSelected]) ? " challan-generation-details-card--selected" : ""}`}
+            onClick={() => handleClickEnabled && handleSelect(object)}>
+
+            {Object.keys(object).
+            filter((rowEle) => !(typeof object[rowEle] == "object" && object[rowEle]?.hidden == true)).
+            map((name, index) => {
+              return <Details label={name} name={object[name]} key={index} onClick={() => handleClickEnabled && handleDetailCardClick(object)} />;
+            })}
+          </div>);
+
       })}
-    </div>
-  );
+    </div>);
+
 };
 
 DetailsCard.propTypes = {
-  data: PropTypes.array,
+  data: PropTypes.array
 };
 
 DetailsCard.defaultProps = {
-  data: [],
+  data: []
 };
 
 export default DetailsCard;

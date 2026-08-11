@@ -19,7 +19,7 @@ const MobileInbox = ({
   sortParams,
   linkPrefix,
   tableConfig,
-  filterComponent,
+  filterComponent
 }) => {
   const { t } = useTranslation();
   const GetMobCell = (value) => <span className="sla-cell">{value}</span>;
@@ -43,37 +43,37 @@ const MobileInbox = ({
     return str;
   };
   const inboxColumns = (props) => [
-    {
-      Header: t("APPLICATION_NUMBER"),
-      mobileCell: (original) => GetMobCell(original?.searchData?.["applicationNumber"]),
-    },
-    {
-      Header: t("RENT_LEASE_PROPERTY_NAME"),
-      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.propertyDetails[0]?.["propertyName"]),
-    },
-    {
-      Header: t("RAL_ALLOTMENT_TYPE"),
-      mobileCell: (original) => {
-        const additionalDetails = original?.searchData?.additionalDetails || {};
-        const propertyDetails = additionalDetails?.propertyDetails?.[0] || (Array.isArray(additionalDetails) ? additionalDetails[0] : additionalDetails);
-        const appType = additionalDetails?.applicationType || propertyDetails?.applicationType || original?.searchData?.applicationType || "NEW";
-        const allotmentType = propertyDetails?.allotmentType || "NA";
-        return GetMobCell(`${t(allotmentType.toUpperCase())} (${t(appType.toUpperCase())})`);
-      },
-    },
-    {
-      Header: t("RENT_AMOUNT "),
-      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.propertyDetails[0]?.["baseRent"] || "-"),
-    },
-    {
-      Header: t("CS_CREATED_DATE"),
-      mobileCell: (original) => GetMobCell(convertEpochToDate(original?.searchData?.auditDetails?.["createdTime"])),
-    },
-    {
-      Header: t("UC_COMMON_TABLE_COL_STATUS"),
-      mobileCell: (original) => GetMobCell(t(original?.searchData?.["status"])),
-    },
-  ];
+  {
+    Header: t("APPLICATION_NUMBER"),
+    mobileCell: (original) => GetMobCell(original?.searchData?.["applicationNumber"])
+  },
+  {
+    Header: t("RENT_LEASE_PROPERTY_NAME"),
+    mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.propertyDetails[0]?.["propertyName"])
+  },
+  {
+    Header: t("RAL_ALLOTMENT_TYPE"),
+    mobileCell: (original) => {
+      const additionalDetails = original?.searchData?.additionalDetails || {};
+      const propertyDetails = additionalDetails?.propertyDetails?.[0] || (Array.isArray(additionalDetails) ? additionalDetails[0] : additionalDetails);
+      const appType = additionalDetails?.applicationType || propertyDetails?.applicationType || original?.searchData?.applicationType || "NEW";
+      const allotmentType = propertyDetails?.allotmentType || "NA";
+      return GetMobCell(`${t(allotmentType.toUpperCase())} (${t(appType.toUpperCase())})`);
+    }
+  },
+  {
+    Header: t("RENT_AMOUNT "),
+    mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.propertyDetails[0]?.["baseRent"] || "-")
+  },
+  {
+    Header: t("CS_CREATED_DATE"),
+    mobileCell: (original) => GetMobCell(convertEpochToDate(original?.searchData?.auditDetails?.["createdTime"]))
+  },
+  {
+    Header: t("UC_COMMON_TABLE_COL_STATUS"),
+    mobileCell: (original) => GetMobCell(t(original?.searchData?.["status"]))
+  }];
+
 
   const serviceRequestIdKey = "applicationNo";
 
@@ -90,24 +90,24 @@ const MobileInbox = ({
   };
 
   return (
-    <div style={{ padding: 0 }}>
+    <div className="ral-style-a2e94d72eb">
       <div className="inbox-container">
         <div className="filters-container">
-          {!isSearch && (
-            <ApplicationLinks
-              linkPrefix={parentRoute}
-              // allLinks={[
-              //   {
-              //     text: t("UC_GENERATE_NEW_CHALLAN"),
-              //     link: "/digit-ui/employee/mcollect/new-application",
-              //     roles: [],
-              //   },
-              // ]}
-              allLinks={[]}
-              headerText={t("RAL_TITLE")}
-              isMobile={true}
-            />
-          )}
+          {!isSearch &&
+          <ApplicationLinks
+            linkPrefix={parentRoute}
+            // allLinks={[
+            //   {
+            //     text: t("UC_GENERATE_NEW_CHALLAN"),
+            //     link: "/digit-ui/employee/mcollect/new-application",
+            //     roles: [],
+            //   },
+            // ]}
+            allLinks={[]}
+            headerText={t("RAL_TITLE")}
+            isMobile={true} />
+
+          }
           <ApplicationCard
             t={t}
             data={getData()}
@@ -121,12 +121,12 @@ const MobileInbox = ({
             linkPrefix={linkPrefix ? linkPrefix : `${parentRoute}/property/`}
             sortParams={sortParams}
             serviceRequestIdKey={serviceRequestIdKey}
-            filterComponent={filterComponent}
-          />
+            filterComponent={filterComponent} />
+
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default MobileInbox;

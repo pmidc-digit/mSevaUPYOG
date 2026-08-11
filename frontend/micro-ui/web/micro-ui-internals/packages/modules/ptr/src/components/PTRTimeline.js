@@ -18,7 +18,7 @@ const Timeline = ({ currentStep = 1, flow = "" }) => {
   const isMobile = window.Digit.Utils.browser.isMobile();
   getAction(flow);
   return (
-    <div className="timeline-container" style={isMobile ? {} : { maxWidth: "960px", minWidth: "640px", marginRight: "auto" }}>
+    <div className={`timeline-container${isMobile ? "" : " ptr-timeline-container--desktop"}`}>
       {actions.map((action, index, arr) => (
         <div className="timeline-checkpoint" key={index}>
           <div className="timeline-content">

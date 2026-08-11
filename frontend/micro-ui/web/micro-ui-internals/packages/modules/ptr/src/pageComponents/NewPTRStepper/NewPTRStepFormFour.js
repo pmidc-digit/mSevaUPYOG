@@ -234,7 +234,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         <SubmitBar
           label={t("CS_COMMON_BACK")}
           onSubmit={() => onGoBack(currentStepData)}
-        
+
         />
 
         {/* Take Action menu */}

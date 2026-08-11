@@ -233,6 +233,309 @@
   margin-top: 30px;
 }
 
+.ral-bill-generate {
+  max-width: 100%;
+}
+
+.ral-bill-generate__header {
+  margin: 16px;
+}
+
+.ral-bill-generate__form {
+  padding: 0;
+  margin: 0;
+}
+
+.ral-bill-generate__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+@media (min-width: 641px) {
+  .ral-bill-generate__fields {
+    width: 100%;
+    max-width: 500px;
+  }
+}
+
+@media (max-width: 640px) {
+  .ral-bill-generate__card {
+    margin: 0 12px;
+  }
+
+  .ral-bill-generate__header {
+    margin: 16px 12px;
+  }
+
+  .ral-bill-generate__fields,
+  .ral-bill-generate__fields .input-fields,
+  .ral-bill-generate__fields .complaint-input,
+  .ral-bill-generate__fields .form-field,
+  .ral-bill-generate__fields input {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .ral-bill-generate__actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .ral-bill-generate__actions .submit-bar {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .ral-bill-generate__actions .ral-back-btn {
+    margin-right: 0;
+  }
+}
+
 .mandatory-asterisk {
   color: #ff0000 !important;
+}
+
+
+/* Generated from static Rent and Lease JSX styles. */
+
+.ral-style-07e09bd50b {
+  justify-content:flex-start;
+}
+
+.ral-style-09fe054f3c {
+  font-size:13px;
+  color:green;
+  padding-bottom:10px;
+}
+
+.ral-style-13e42518aa {
+  cursor:pointer;
+  caret-color:transparent;
+}
+
+.ral-style-16a8a8b00c {
+  overflow:auto;
+}
+
+.ral-style-16b4c2d840 {
+  flex:none;
+}
+
+.ral-style-1ca832ca6c {
+  align-items:center;
+}
+
+.ral-style-2122396076 {
+  width:100%;
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+  gap:16px;
+  margin:0;
+}
+
+.ral-style-25d0175a45 {
+  font-weight:normal;
+}
+
+.ral-style-26afc10d19 {
+  border:1px solid #e0e0e0;
+  padding:6px;
+  margin-top:5px;
+}
+
+.ral-style-44b6015a79 {
+  display:flex;
+  align-items:center;
+  margin-top:auto;
+}
+
+.ral-style-463f21217a {
+  display:flex;
+  gap:15px;
+}
+
+.ral-style-526d2de178 {
+  margin:16px;
+}
+
+.ral-style-5c357d95f7 {
+  margin-top:20px;
+}
+
+.ral-style-63d465e80f {
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  z-index:9999;
+}
+
+.ral-style-669a0ee4e0 {
+  display:flex;
+  justify-content:flex-end;
+  align-items:baseline;
+}
+
+.ral-style-705874e93f {
+  width:100%;
+  text-align:right;
+  width:240px;
+  text-align:right;
+  margin-left:96px;
+  margin-top:8px;
+}
+
+.ral-style-7623f05545 {
+  flex:1;
+}
+
+.ral-style-7f90823361 {
+  margin-left:10px;
+}
+
+.ral-style-806dcbc2f3 {
+  border:1px solid #e0e0e0;
+  padding:6px;
+}
+
+.ral-style-8119d65878 {
+  margin-left:8px;
+  font-weight:normal;
+}
+
+.ral-style-8556ab25bb {
+  position:relative;
+  width:100%;
+  cursor:pointer;
+}
+
+.ral-style-8f96e7bd84 {
+  color:#FE7A51;
+  cursor:pointer;
+}
+
+.ral-style-99871d5ffa {
+  margin-right:1rem;
+}
+
+.ral-style-9be68d3ddc {
+  position:absolute;
+  right:12px;
+  top:45%;
+  transform:translateY(-50%);
+  pointer-events:none;
+  width:16px;
+  height:16px;
+}
+
+.ral-style-a2e94d72eb {
+  padding:0;
+}
+
+.ral-style-a527bac1ee {
+  text-align:right;
+}
+
+.ral-style-aa35c0473f {
+  padding-right:0;
+  margin-top:0;
+}
+
+.ral-style-b46b779814 {
+  margin-top:24px;
+  background:white;
+  padding:16px;
+  border-radius:8px;
+}
+
+.ral-style-b89d6f781b {
+  padding:0;
+  margin:0;
+}
+
+.ral-style-ba53c25006 {
+  padding-top:9px;
+}
+
+.ral-style-bd1c956dbd {
+  z-index:1000;
+}
+
+.ral-style-cad980f4b7 {
+  width:100%;
+}
+
+.ral-style-dac4fe6c9b {
+  text-align:center;
+}
+
+.ral-style-fbb51b7b95 {
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:24px;
+}
+
+.ral-style-fcab9f05b8 {
+  width:70%;
+  margin-left:30%;
+  font-size:12px;
+  margin-top:-21px;
+}
+
+.ral-citizen-breadcrumb--offset {
+  margin-left: 10px;
+}
+
+.ral-hidden-date-input {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ral-desktop-inbox__result {
+  flex: 1;
+}
+
+.ral-desktop-inbox__result--inbox {
+  margin-left: 24px;
+}
+
+.ral-inbox-search {
+  width: auto;
+}
+
+.ral-inbox-search--inbox {
+  margin-left: 24px;
+}
+
+.ral-inbox-search__fields {
+  width: 100%;
+  display: grid;
+}
+
+.ral-inbox-search__clear-link {
+  display: inline;
+}
+
+.ral-inbox-search__clear-link--mobile {
+  margin: 0;
+}
+
+.ral-property-details__non-legacy--hidden {
+  display: none;
 }

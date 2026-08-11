@@ -76,7 +76,7 @@ const EmployeeApp = ({ path, url, userType }) => {
     <React.Fragment>
       <div className="ground-container">
         {!isRes ? (
-          <div style={{ marginLeft: "10px" }}>
+          <div className="gc-style-22f61d20c1">
             <GCBreadCrumbs location={location} t={t} />
           </div>
         ) : null}

@@ -49,43 +49,43 @@ const SearchApplicationDesktopView = ({ columns, SearchFormFieldsComponent, onSu
     if (isLoading) {
       return <Loader />;
     } else {
-      return data?.[0]?.display ? (
-        <Card style={{ marginTop: 20 }}>
-          {t(data?.[0]?.display)
-            .split("\\n")
-            .map((text, index) => (
-              <p key={index} style={{ textAlign: "center" }}>
+      return data?.[0]?.display ?
+      <Card className="ndc-style-a26bda7d11">
+          {t(data?.[0]?.display).
+        split("\\n").
+        map((text, index) =>
+        <p key={index} className="ndc-style-91a87015f4">
                 {text}
               </p>
-            ))}
-        </Card>
-      ) : (
-        <Table
-          t={t}
-          data={data}
-          columns={columns}
-          getCellProps={(cellInfo) => {
-            return {
-              style: {
-                minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-                padding: "20px 18px",
-                fontSize: "16px",
-              },
-            };
-          }}
-          onPageSizeChange={onPageSizeChange}
-          currentPage={currPage}
-          onNextPage={nextPage}
-          onPrevPage={previousPage}
-          pageSizeLimit={Number(getValues("limit"))}
-          onSort={onSort}
-          totalRecords={Count}
-          disableSort={false}
-          onLastPage={fetchLastPage}
-          onFirstPage={fetchFirstPage}
-          sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
-        />
-      );
+        )}
+        </Card> :
+
+      <Table
+        t={t}
+        data={data}
+        columns={columns}
+        getCellProps={(cellInfo) => {
+          return {
+            style: {
+              minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
+              padding: "20px 18px",
+              fontSize: "16px"
+            }
+          };
+        }}
+        onPageSizeChange={onPageSizeChange}
+        currentPage={currPage}
+        onNextPage={nextPage}
+        onPrevPage={previousPage}
+        pageSizeLimit={Number(getValues("limit"))}
+        onSort={onSort}
+        totalRecords={Count}
+        disableSort={false}
+        onLastPage={fetchLastPage}
+        onFirstPage={fetchFirstPage}
+        sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]} />;
+
+
     }
   };
 
@@ -95,8 +95,8 @@ const SearchApplicationDesktopView = ({ columns, SearchFormFieldsComponent, onSu
         <SearchFormFieldsComponent onSubmit={onSubmit} handleSubmit={handleSubmit} isMobileView={false} />
       </SearchForm>
       <TableComponent />
-    </React.Fragment>
-  );
+    </React.Fragment>);
+
 };
 
 export default SearchApplicationDesktopView;

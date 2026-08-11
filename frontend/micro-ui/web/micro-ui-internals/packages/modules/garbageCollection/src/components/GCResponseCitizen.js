@@ -104,7 +104,7 @@ const GCResponseCitizen = (props) => {
           applicationNumber={applicationNumber}
           info={nocData?.applicationStatus == "REJECTED" ? "" : t(`APPLICATION_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
+          className="gc-style-801160c3ea"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         {/* {nocData?.applicationStatus !== "REJECTED" ? (
@@ -119,7 +119,7 @@ const GCResponseCitizen = (props) => {
           </svg>
           {t("CHB_DOWNLOAD_ACK_FORM")}
         </div>
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: " 20px" }}>
+        <ActionBar className="gc-style-a815f49ebe">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           {/* <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
         </ActionBar>

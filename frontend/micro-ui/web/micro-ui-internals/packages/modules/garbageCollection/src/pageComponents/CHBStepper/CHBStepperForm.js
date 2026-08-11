@@ -110,7 +110,7 @@ const NewADSStepperForm = () => {
 
   // console.log("formState: ",formState);
   return (
-    <div className="card">
+    <React.Fragment>
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
         {t("GARBAGE_COLLECTION")}
       </CardHeader>
@@ -125,7 +125,7 @@ const NewADSStepperForm = () => {
           isDleteBtn={"true"}
         />
       )}
-    </div>
+    </React.Fragment>
   );
 };
 

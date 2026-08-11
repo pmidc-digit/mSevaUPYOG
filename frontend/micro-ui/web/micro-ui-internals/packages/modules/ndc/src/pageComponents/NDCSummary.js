@@ -8,8 +8,8 @@ import {
   ActionBar,
   SubmitBar,
   Menu,
-  CardSectionHeader,
-} from "@mseva/digit-ui-react-components";
+  CardSectionHeader } from
+"@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setNDCStep } from "../redux/actions/NDCFormActions";
@@ -33,9 +33,9 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
 
   const filterType = propertyDet?.filter((item) => item?.businessService == "PT");
 
-  const tenantId = window.location.href.includes("citizen")
-    ? window.localStorage.getItem("CITIZEN.CITY")
-    : window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.location.href.includes("citizen") ?
+  window.localStorage.getItem("CITIZEN.CITY") :
+  window.localStorage.getItem("Employee.tenant-id");
 
   const isCitizen = window.location.href.includes("citizen");
 
@@ -51,12 +51,12 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
   const fetchCalculations = async () => {
     const payload = {
       CalculationCriteria: [
-        {
-          applicationNumber: appId,
-          tenantId: tenantId,
-          propertyType: filterType?.[0]?.additionalDetails?.propertyType,
-        },
-      ],
+      {
+        applicationNumber: appId,
+        tenantId: tenantId,
+        propertyType: filterType?.[0]?.additionalDetails?.propertyType
+      }]
+
     };
     const response = await Digit.NDCService.NDCCalculator({ tenantId, filters: { getCalculationOnly: true }, details: payload });
     setData(response?.Calculation?.[0]);
@@ -69,17 +69,17 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: appId,
-    moduleCode: "ndc-services",
+    moduleCode: "ndc-services"
   });
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
-    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    }) ||
-    workflowDetails?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    });
+  workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+    return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  }) ||
+  workflowDetails?.data?.nextActions?.filter((e) => {
+    return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  });
 
   function onActionSelect(action) {
     goNext(action);
@@ -95,20 +95,20 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
     padding: "0.75rem",
     border: "1px solid #e0e0e0",
     borderRadius: "6px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
   };
 
   const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
-  const renderLabel = (label, value) => (
-    <div className="bpa-summary-label-field-pair">
-      <CardLabel className="bpa-summary-bold-label" style={{ width: "auto" }}>
+  const renderLabel = (label, value) =>
+  <div className="bpa-summary-label-field-pair">
+      <CardLabel className="bpa-summary-bold-label ndc-style-30e741d98e">
         {label}
       </CardLabel>
 
       <div>{value || "NA"}</div>
-    </div>
-  );
+    </div>;
+
 
   return (
     <div className="bpa-summary-page">
@@ -123,25 +123,25 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
         {renderLabel(t("Email ID"), formData?.NDCDetails?.PropertyDetails?.email)}
         {renderLabel(t("Address"), formData?.NDCDetails?.PropertyDetails?.address)}
         {/* {renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))} */}
-        {formData?.NDCDetails?.NDCReason?.i18nKey === "OTHERS"
-          ? renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.reason))
-          : renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))}
+        {formData?.NDCDetails?.NDCReason?.i18nKey === "OTHERS" ?
+        renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.reason)) :
+        renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))}
         {renderLabel(t("Remarks"), formData?.NDCDetails?.PropertyDetails?.remarks)}
         {renderLabel(t("Vasika Number"), formData?.NDCDetails?.PropertyDetails?.vashikaNumber)}
         {/* {renderLabel(t("Remarks"), formData?.NDCDetails?.PropertyDetails?.remarks)} */}
 
         {renderLabel(
           t("Water Connection"),
-          formData?.NDCDetails?.PropertyDetails?.waterConnection?.length > 0
-            ? formData?.NDCDetails?.PropertyDetails?.waterConnection?.map((item, index) => <div key={index}>{item?.connectionNo}</div>)
-            : "NA"
+          formData?.NDCDetails?.PropertyDetails?.waterConnection?.length > 0 ?
+          formData?.NDCDetails?.PropertyDetails?.waterConnection?.map((item, index) => <div key={index}>{item?.connectionNo}</div>) :
+          "NA"
         )}
 
         {renderLabel(
           t("Sewerage Connection"),
-          formData?.NDCDetails?.PropertyDetails?.sewerageConnection?.length > 0
-            ? formData?.NDCDetails?.PropertyDetails?.sewerageConnection?.map((item, index) => <div key={index}>{item?.connectionNo}</div>)
-            : "NA"
+          formData?.NDCDetails?.PropertyDetails?.sewerageConnection?.length > 0 ?
+          formData?.NDCDetails?.PropertyDetails?.sewerageConnection?.map((item, index) => <div key={index}>{item?.connectionNo}</div>) :
+          "NA"
         )}
 
         {renderLabel(t("Property ID"), formData?.NDCDetails?.cpt?.id)}
@@ -163,13 +163,13 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
       {/* Action Section */}
       <ActionBar>
         <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />
-        {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-          <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
-        ) : null}
+        {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ?
+        <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} /> :
+        null}
         <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
       </ActionBar>
-    </div>
-  );
+    </div>);
+
 };
 
 export default NDCSummary;

@@ -7,23 +7,23 @@ import { useTranslation } from "react-i18next";
 const PTRBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
   const crumbs = [
-    {
-      path: "/digit-ui/citizen",
-      content: t("ES_COMMON_HOME"),
-      show: true,
-    },
-    {
-      path: "/digit-ui/citizen/ptr-home",
-      content: `${t("PET_SERVICE")} Home`,
-      show: location.pathname.includes("ptr/petservice/") ? true : false,
-    },
+  {
+    path: "/digit-ui/citizen",
+    content: t("ES_COMMON_HOME"),
+    show: true
+  },
+  {
+    path: "/digit-ui/citizen/ptr-home",
+    content: `${t("PET_SERVICE")} Home`,
+    show: location.pathname.includes("ptr/petservice/") ? true : false
+  },
 
-    {
-      path: "/digit-ui/citizen/ptr-home",
-      content: t("PET_SERVICE"),
-      show: location.pathname.includes("ptr/petservice/test") ? true : false,
-    },
-  ];
+  {
+    path: "/digit-ui/citizen/ptr-home",
+    content: t("PET_SERVICE"),
+    show: location.pathname.includes("ptr/petservice/test") ? true : false
+  }];
+
   return <BreadCrumb crumbs={crumbs} />;
 };
 
@@ -32,7 +32,7 @@ const App = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const inboxInitialState = {
-    searchParams: {},
+    searchParams: {}
   };
 
   // const PTRCreate = Digit?.ComponentRegistryService?.getComponent("PTRCreatePet");
@@ -46,14 +46,14 @@ const App = () => {
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   return (
-    <span className={"pet-citizen"} style={{ width: "100%" }}>
+    <span className="pet-citizen ptr-style-0466783d98">
       <Switch>
         <AppContainer>
-          {!isResponse ? (
-            <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px" } : {}}>
+          {!isResponse ?
+          <div className={window.location.href.includes("application-overview") || isMobile ? "ptr-citizen-breadcrumb--offset" : ""}>
               <PTRBreadCrumbs location={location} />
-            </div>
-          ) : null}
+            </div> :
+          null}
           <PrivateRoute path={`${path}/petservice/new-application/:id?`} component={PTRCreate} />
           <PrivateRoute path={`${path}/petservice/application/:acknowledgementIds/:tenantId`} component={PTRApplicationDetails}></PrivateRoute>
           <PrivateRoute path={`${path}/petservice/my-applications`} component={PTRMyApplications}></PrivateRoute>
@@ -64,8 +64,8 @@ const App = () => {
           <PrivateRoute path={`${path}/petservice/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
         </AppContainer>
       </Switch>
-    </span>
-  );
+    </span>);
+
 };
 
 export default App;

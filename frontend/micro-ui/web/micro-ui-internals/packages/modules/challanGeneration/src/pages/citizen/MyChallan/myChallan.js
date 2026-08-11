@@ -25,9 +25,9 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
     t1 = 4;
   }
 
-  let initialFilters = !isNaN(parseInt(filter))
-    ? { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId }
-    : { limit: "10", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId };
+  let initialFilters = !isNaN(parseInt(filter)) ?
+  { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId } :
+  { limit: "10", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId };
 
   useEffect(() => {
     setFilters(initialFilters);
@@ -58,7 +58,7 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
     setFilters((prev) => ({
       ...prev,
       // offset: prev.offset + 5, // 🔹 Add 5 more each click
-      limit: Number(prev.limit) + 5, // Load next 5 items only
+      limit: Number(prev.limit) + 5 // Load next 5 items only
     }));
   };
 
@@ -69,11 +69,11 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   return (
     <div className="mychallan-custom">
       <div>
-        {header && (
-          <Header>
+        {header &&
+        <Header>
             {t(header)} ({getChallanData?.challans?.length})
           </Header>
-        )}
+        }
 
         {getChallanData?.challans?.map((bill, index) => {
           const checkAmount = Math.max(bill?.amount?.[0]?.amount || 0, bill?.challanAmount || 0);
@@ -88,46 +88,46 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
               <KeyNote keyValue={t("UC_OWNER_NAME_LABEL")} note={t(`${bill.citizen?.name || t("CS_NA")}`)} />
               <div className="action-button-myapplication">
                 {
-                  <Link to={`/digit-ui/citizen/challangeneration/application/${bill?.challanNo}/${bill?.tenantId}`}>
+                <Link to={`/digit-ui/citizen/challangeneration/application/${bill?.challanNo}/${bill?.tenantId}`}>
                     <SubmitBar
-                      label={t("CS_VIEW_DETAILS")}
-                      //  label={CS_VIEW_DETAILS}
-                    />
+                    label={t("CS_VIEW_DETAILS")}
+                    //  label={CS_VIEW_DETAILS}
+                  />
                   </Link>
                 }
-                {bill.applicationStatus == "ACTIVE" && (
-                  <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(bill?.challanNo)} />
-                )}
+                {bill.applicationStatus == "ACTIVE" &&
+                <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(bill?.challanNo)} />
+                }
               </div>
-            </Card>
-          );
+            </Card>);
+
         })}
 
         {getChallanData?.challans?.length === 0 && !loader && <p className="challan-load-message">{t("CHB_NO_APPLICATION_FOUND_MSG")}</p>}
 
-        {getChallanData?.challans?.length !== 0 && getChallanData?.totalCount > t1 && (
-          <div className="challan-load-message">
-            <span className="link" style={{ cursor: "pointer", color: "#007bff" }} onClick={handleLoadMore}>
+        {getChallanData?.challans?.length !== 0 && getChallanData?.totalCount > t1 &&
+        <div className="challan-load-message">
+            <span className="link challan-generation-style-e0f04f86f4" onClick={handleLoadMore}>
               {t("CHB_LOAD_MORE_MSG")}
             </span>
           </div>
-        )}
+        }
       </div>
       {loader && <Loader page={true} />}
-    </div>
-  );
+    </div>);
+
 };
 
 MyChallanResult.propTypes = {
   template: PropTypes.any,
   header: PropTypes.string,
-  actionButtonLabel: PropTypes.string,
+  actionButtonLabel: PropTypes.string
 };
 
 MyChallanResult.defaultProps = {
   template: [],
   header: null,
-  actionButtonLabel: null,
+  actionButtonLabel: null
 };
 
 export default MyChallanResult;

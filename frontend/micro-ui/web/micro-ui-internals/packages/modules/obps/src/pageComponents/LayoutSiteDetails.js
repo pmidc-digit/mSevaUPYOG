@@ -13,10 +13,10 @@ import {
   CardSectionHeader,
   UploadFile,
   CardLabelError,
+  DatePicker,
 } from "@mseva/digit-ui-react-components";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
-import CustomDatePicker from "./CustomDatePicker";
 
 const LayoutSiteDetails = (_props) => {
   let tenantId;
@@ -1045,10 +1045,10 @@ const LayoutSiteDetails = (_props) => {
                           },
                         }}
                         render={(props) => (
-                          <CustomDatePicker
-                            value={props.value}
-                            onChange={(e) => {
-                              props.onChange(e.target.value);
+                          <DatePicker
+                            date={props.value}
+                            onChange={(val) => {
+                              props.onChange(val);
                             }}
                             onBlur={(e) => {
                               props.onBlur(e);
@@ -1582,10 +1582,10 @@ const LayoutSiteDetails = (_props) => {
                   },
                 }}
                 render={(props) => (
-                  <CustomDatePicker
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
+                  <DatePicker
+                    date={props.value}
+                    onChange={(val) => {
+                      props.onChange(val);
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);

@@ -170,8 +170,7 @@ const LayoutApplicationOverview = () => {
   const { isLoading: mdmsLoading, data: mdmsDocsData } = Digit.Hooks.pt.usePropertyMDMS(stateCode, "LAYOUT", ["LayoutDocuments"]);
   const layoutDocuments = applicationDetails?.Layout?.[0]?.documents || [];
   const rawOwners = applicationDetails?.Layout?.[0]?.owners || [];
-  const activeOwners = rawOwners.filter(o => o?.status !== false && o?.status !== "false");
-  const sortedOwners = [...activeOwners].sort((a, b) => {
+  const sortedOwners = [...rawOwners].sort((a, b) => {
     const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
     const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
     if (aPrimary && !bPrimary) return -1;

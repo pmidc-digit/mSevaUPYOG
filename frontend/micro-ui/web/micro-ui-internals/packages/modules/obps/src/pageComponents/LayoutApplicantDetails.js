@@ -19,13 +19,13 @@ import {
   DeleteIcon,
   LinkButton,
   Loader,
+  DatePicker,
 } from "@mseva/digit-ui-react-components";
 import { getPattern } from "../utils";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { useHistory, useLocation } from "react-router-dom";
 import { UPDATE_LayoutNewApplication_FORM } from "../redux/actions/LayoutNewApplicationActions";
 import { LoaderNew } from "../components/LoaderNew";
-import CustomDatePicker from "./CustomDatePicker";
 
 const applicantTypeOptions = [
   { name: "Individual", code: "INDIVIDUAL" },
@@ -906,10 +906,10 @@ const LayoutApplicantDetails = (_props) => {
                   },
                 }}
                 render={(props) => (
-                  <CustomDatePicker
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
+                  <DatePicker
+                    date={props.value}
+                    onChange={(val) => {
+                      props.onChange(val);
                       clearErrors("applicantDateOfBirth");
                     }}
                     onBlur={props.onBlur}
@@ -1195,9 +1195,9 @@ const LayoutApplicantDetails = (_props) => {
                           <span className="requiredField">*</span>
                         </CardLabel>
                         <div className="field">
-                          <CustomDatePicker
-                            value={applicant.dob}
-                            onChange={(e) => updateApplicant(index, "dob", e.target.value)}
+                          <DatePicker
+                            date={applicant.dob}
+                            onChange={(val) => updateApplicant(index, "dob", val)}
                             min="1900-01-01"
                             max={new Date().toISOString().split("T")[0]}
                           />

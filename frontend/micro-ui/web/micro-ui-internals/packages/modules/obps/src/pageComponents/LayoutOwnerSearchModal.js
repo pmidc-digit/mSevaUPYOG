@@ -778,7 +778,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                   }}
                   uploadedFile={photoUploadedFile}
                   message={photoUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                  error={errors?.photo}
                   uploadMessage="Invalid File Format"
                   accept=".png, .jpeg, .jpg"
                 />
@@ -801,7 +800,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                   }}
                   uploadedFile={documentUploadedFile}
                   message={documentUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                  error={errors?.document}
                   uploadMessage="Invalid File Format"
                   accept=".pdf, .png, .jpeg, .jpg"
                 />
@@ -824,7 +822,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                   }}
                   uploadedFile={panDocumentUploadedFile}
                   message={panDocumentUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                  error={errors?.panDocument}
                   uploadMessage="Invalid File Format"
                   accept=".pdf, .png, .jpeg, .jpg"
                 />

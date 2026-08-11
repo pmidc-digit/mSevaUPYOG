@@ -12,7 +12,7 @@ import { Controller, useForm } from "react-hook-form";
 const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  // const [showToast, setShowToast] = useState(null);
+  const [showToast, setShowToast] = useState(null);
   // const [error, setError] = useState("");
 
   const currentStepData = useSelector(function (state) {
@@ -259,7 +259,18 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   const onSubmit = async (data) => {
     const applicants = currentStepData?.applicants || [];
-    const applicantType = currentStepData?.applicationDetails?.applicantType;
+    const rawApplicantType = currentStepData?.applicationDetails?.aplicantType || currentStepData?.applicationDetails?.applicantType;
+    const typeCode = (typeof rawApplicantType === "string" ? rawApplicantType : rawApplicantType?.code || rawApplicantType?.name || "").toUpperCase();
+
+    if (applicants?.length === 0) {
+      setShowToast({ error: true, label: t("AT LEAST ONE OWNER REQUIRED") });
+      return;
+    }
+
+    if (typeCode === "MULTIPLE" && applicants?.length < 2) {
+      setShowToast({ error: true, label: t("MULTIPLE OWNER TYPE REQUIRES MORE THAN ONE OWNER") });
+      return;
+    }
 
     // 1. Validate applicants manually    
     // const isApplicantsValid = validateApplicants(applicants, applicantType);
@@ -295,10 +306,9 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     onBackClick(config.key, data);
   }
 
-  // const closeToast = () => {
-    // setShowToast(null);
-    // setError("");
-  // };
+  const closeToast = () => {
+    setShowToast(null);
+  };
   
   
   const [isRegisteredStakeHolder, setIsRegisteredStakeHolder]=useState(currentStepData?.applicationDetails?.isRegisteredStakeHolder || false);
@@ -366,7 +376,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
         </ActionBar>
       </form>
 
-      {/* {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />} */}
+      {showToast && <Toast isDleteBtn={true} error={showToast?.error} label={showToast?.label} onClose={closeToast} />}
     </React.Fragment>
   );
 };

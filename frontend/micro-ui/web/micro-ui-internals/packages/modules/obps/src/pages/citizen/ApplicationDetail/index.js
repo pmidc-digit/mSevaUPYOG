@@ -274,6 +274,7 @@ const ApplicationDetails = () => {
       result: {
         Licenses: [{ ...data }],
       },
+      isPaid: reciept_data?.Payments?.length > 0 || false,
       initiationFlow: true,
       editableFields: {
         "provide-license-type": true,

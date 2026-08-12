@@ -12,12 +12,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 
 import com.fasterxml.jackson.core.type.*;
 import org.apache.commons.io.*;
+import org.egov.infra.mdms.service.MdmsCacheService;
 import org.egov.infra.mdms.utils.MDMSConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,15 +50,19 @@ public class MDMSApplicationRunnerImpl {
     @Value("${egov.mdms.stopOnAnyConfigError:true}")
     public boolean stopOnAnyConfigError;
 
-    private static Map<String, Map<String, Map<String, JSONArray>>> tenantMap = new HashMap<>();
+    @Autowired
+    private MdmsCacheService mdmsCacheService;
 
-    private static Map<String, Map<String, Object>> masterConfigMap = new HashMap<>();
+    private static Map<String, Map<String, Map<String, JSONArray>>> tenantMap = new ConcurrentHashMap<>();
+
+    private static Map<String, Map<String, Object>> masterConfigMap = new ConcurrentHashMap<>();
 
     ObjectMapper objectMapper = new ObjectMapper();
 
     @PostConstruct
     public void run() {
         try {
+            // Step 1: Load data from files (existing logic)
             log.info("Reading files from: " + mdmsFileDirectory);
             LinkedList<String> errorFilesList = new LinkedList<>();
             readMdmsConfigFiles(masterConfigUrl);
@@ -67,6 +72,8 @@ public class MDMSApplicationRunnerImpl {
                 log.info("Stopping as all files could not be loaded");
                 System.exit(1);
             }
+            // Step 2: Load data from database and merge into cache (optional/legacy)
+            mdmsCacheService.loadAndMergeDbData();
         } catch (Exception e) {
             log.error("Exception while loading yaml files: ", e);
         }

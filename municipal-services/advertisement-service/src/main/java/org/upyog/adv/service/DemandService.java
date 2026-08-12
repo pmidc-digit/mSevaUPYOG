@@ -77,14 +77,25 @@ public class DemandService {
 		String consumerCode = bookingRequest.getBookingApplication().getBookingNo();
 		BookingDetail bookingDetail = bookingRequest.getBookingApplication();
 
-		// Get the first owner from the owners list and convert to User
+		// Get the payer — for estimates without owners, fall back to RequestInfo user
+		User owner;
 		List<org.upyog.adv.web.models.OwnerInfo> owners = bookingRequest.getBookingApplication().getOwners();
-		if (CollectionUtils.isEmpty(owners)) {
+		if (!CollectionUtils.isEmpty(owners)) {
+			owner = owners.get(0).toCommonUser();
+		} else if (!generateDemand) {
+			// Estimate mode: no owner needed, derive from RequestInfo
+			org.egov.common.contract.request.User requestUser = bookingRequest.getRequestInfo().getUserInfo();
+			owner = org.egov.common.contract.request.User.builder()
+					.uuid(requestUser.getUuid())
+					.userName(requestUser.getUserName())
+					.name(requestUser.getName())
+					.mobileNumber(requestUser.getMobileNumber())
+					.tenantId(requestUser.getTenantId())
+					.type(requestUser.getType())
+					.build();
+		} else {
 			throw new CustomException("OWNER_NOT_FOUND", "No owner found in booking application for demand creation");
 		}
-		org.upyog.adv.web.models.OwnerInfo ownerInfo = owners.get(0);
-
-		User owner = ownerInfo.toCommonUser();
 
 		Map<String, Object> mdmsDataMap = (Map<String, Object>) mdmsData;
 

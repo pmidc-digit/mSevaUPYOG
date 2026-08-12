@@ -842,16 +842,16 @@ public class GeneralStair extends FeatureProcess {
     }
 
 	private BigDecimal getRequiredTread(OccupancyTypeHelper mostRestrictiveOccupancyType) {
-//        if (mostRestrictiveOccupancyType != null
-//        		//&& mostRestrictiveOccupancyType.getSubtype() != null
-//                //&& DxfFileConstants.A_AF.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())) {
-//        	 && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
-//            return BigDecimal.valueOf(0.25);
-//        } else {
-//            return BigDecimal.valueOf(0.3);
-//        	//return null;
-//        }
-		 return BigDecimal.valueOf(0.3);
+        if (mostRestrictiveOccupancyType != null
+        		//&& mostRestrictiveOccupancyType.getSubtype() != null
+                //&& DxfFileConstants.A_AF.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())) {
+        	 && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
+            return BigDecimal.valueOf(0.25);
+        } else {
+            return BigDecimal.valueOf(0.3);
+        	//return null;
+        }
+		 //return BigDecimal.valueOf(0.3);
     }
 	
 	private BigDecimal getMinRiserHeight(OccupancyTypeHelper mostRestrictiveOccupancyType) {

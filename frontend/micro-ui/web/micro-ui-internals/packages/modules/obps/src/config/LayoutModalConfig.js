@@ -19,9 +19,7 @@ export const LayoutModalConfig = ({
   return {
   label: {
       heading: action?.action === "APPROVE" ? `WF_EMPLOYEE_APPROVE_APPLICATION` : `WF_EMPLOYEE_FORWARD_APPLICATION`,
-      submit: action?.action?.toUpperCase().includes("FORWARD")
-        ? t("FORWARD")
-        : t(`WF_EMPLOYEE_LAYOUT_${businessService}`.toUpperCase() + `_${action?.action?.toUpperCase()}`) ,
+      submit: `WF_EMPLOYEE_LAYOUT_${businessService}`?.toUpperCase() + `_${action?.action}`,
       cancel: "WF_EMPLOYEE_LAYOUT_CANCEL",
     },
     form: [

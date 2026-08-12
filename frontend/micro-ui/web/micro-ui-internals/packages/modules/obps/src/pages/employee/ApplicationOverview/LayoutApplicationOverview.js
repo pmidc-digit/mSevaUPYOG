@@ -311,12 +311,6 @@ const LayoutEmployeeApplicationOverview = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  const modifiedActions = actions?.map((action) => ({
-  ...action,
-  forcedName: action.action?.toUpperCase().includes("FORWARD")
-    ? "CS_ACTION_FORWARD"
-    : undefined,
-}));
 
   // console.log("actions here", actions);
 
@@ -968,19 +962,7 @@ const LayoutEmployeeApplicationOverview = () => {
         //     window.location.href = "/digit-ui/employee/obps/layout/inbox";
         //   }, 3000);
         // } else
-          if (
-          filtData?.action === "CANCEL" ||
-          filtData?.action === "APPLY" ||
-          filtData?.action === "APPROVE" ||
-          filtData?.action === "RESUBMIT" ||
-          filtData?.action === "DRAFT" ||
-          filtData?.action?.includes("FORWARD" || "forward") ||
-          filtData?.action === "SENDBACKTOPROFESSIONAL" ||
-          filtData?.action === "REJECT" ||
-          filtData?.action === "INTERNAL_QUERY" ||
-          filtData?.action === "OBSERVATION" ||
-          filtData?.action === "SEND_FOR_INSPECTION_REPORT"
-        ) {
+          if (filtData?.action) {
           //console.log("We are calling employee response page");
           history.replace({
             pathname: `/digit-ui/employee/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
@@ -1701,7 +1683,7 @@ const LayoutEmployeeApplicationOverview = () => {
       {actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-            <Menu localeKeyPrefix={prefix} options={modifiedActions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+            <Menu localeKeyPrefix={prefix} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>

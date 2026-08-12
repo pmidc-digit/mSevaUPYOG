@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { FilterFormField, Loader } from "@mseva/digit-ui-react-components";
 import { useController } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -18,7 +18,6 @@ const NewFilterFormFieldsComponent = ({
 }) => {
   const { t } = useTranslation();
   const [showAllStatuses, setShowAllStatuses] = useState(false);
-  const [isMigratedApplications, setIsMigratedApplications] = useState(false);
   const duplicateStatusCodes = useMemo(() => {
     const counts = (statuses || []).reduce((acc, status) => {
       const key = status?.applicationstatus;
@@ -158,7 +157,6 @@ const NewFilterFormFieldsComponent = ({
       code: option.code,
       icon: "⌂",
     })),
-
     ...(statuses || []).map((status) => {
       // Include businessService in key if available to avoid deduplication
       const fallbackStatusId = status?.statusids?.[0] || status?.statusid;
@@ -197,17 +195,9 @@ const NewFilterFormFieldsComponent = ({
 
   const visibleCards = showAllStatuses ? cards : cards.slice(0, 6);
 
-  const stakeholderPrimaryCards = cards.filter(
-    (card) => card.type === "assignee" || card.type === "licenseType" || card.type === "migratedApplications"
-  );
+  const stakeholderPrimaryCards = cards.filter((card) => card.type === "assignee" || card.type === "licenseType");
   const stakeholderStatusCards = cards.filter((card) => card.type === "status");
   const displayCards = showLicenseTypeFilter ? stakeholderPrimaryCards : visibleCards;
-
-  useEffect(() => {
-    handleFilter({
-      migration: isMigratedApplications,
-    });
-  }, [isMigratedApplications]);
 
   return (
     <div className="ndc-new-inbox-filter-card" style={{ marginTop: 16, marginBottom: 16 }}>
@@ -219,8 +209,6 @@ const NewFilterFormFieldsComponent = ({
               const isActive =
                 card.type === "assignee"
                   ? assigneeField.value === card.code
-                  : card.type === "migratedApplications"
-                  ? isMigratedApplications
                   : card.type === "licenseType"
                   ? licenseTypeValues.includes(card.code)
                   : isStatusCardActive(card);
@@ -243,9 +231,6 @@ const NewFilterFormFieldsComponent = ({
                           licenseType: licenseTypeValues,
                         });
                       }
-                    } else if (card.type === "migratedApplications") {
-                      // This is UI-only until the inbox API supports the migrated flag.
-                      setIsMigratedApplications((previousValue) => !previousValue);
                     } else if (card.type === "licenseType") {
                       toggleLicenseType(card.code);
                     } else {

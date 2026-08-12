@@ -51,8 +51,8 @@ export default function NewApplicationTimeline({ workflowDetails, prefix = null,
 
   const parseActionDateTime = (auditDetails) => {
     if (!auditDetails) return null;
-    if (auditDetails?.lastModifiedTime) return new Date(auditDetails.lastModifiedTime);
     if (auditDetails?.createdTime) return new Date(auditDetails.createdTime);
+    if (auditDetails?.lastModifiedTime) return new Date(auditDetails.lastModifiedTime);
 
     const dateStr = auditDetails?.created || auditDetails?.lastModified;
     if (!dateStr) return null;
@@ -105,13 +105,18 @@ export default function NewApplicationTimeline({ workflowDetails, prefix = null,
     const rawTimeline = details?.timeline;
 
     if (!Array.isArray(rawTimeline) || rawTimeline.length === 0) return [];
+    const indexedTimeline = rawTimeline.map((item, originalIndex) => ({ item, originalIndex }));
 
     // Sort timeline chronologically (oldest to newest) to calculate SLA between sequential actions
-    const chronologicalTimeline = [...rawTimeline].sort((a, b) => {
-      const timeA = parseActionDateTime(a?.auditDetails)?.getTime() || 0;
-      const timeB = parseActionDateTime(b?.auditDetails)?.getTime() || 0;
-      return timeA - timeB;
-    });
+    const chronologicalTimeline = indexedTimeline.sort((a, b) => {
+      const timeA = parseActionDateTime(a.item?.auditDetails)?.getTime() || 0;
+      const timeB = parseActionDateTime(b.item?.auditDetails)?.getTime() || 0;
+
+      if (timeA !== timeB) {
+        return timeA - timeB;
+      }
+      return b.originalIndex - a.originalIndex;
+    }).map((entry) => entry.item);
 
     const normalized = chronologicalTimeline.map((item, index) => {
       const currentDate = parseActionDateTime(item.auditDetails);

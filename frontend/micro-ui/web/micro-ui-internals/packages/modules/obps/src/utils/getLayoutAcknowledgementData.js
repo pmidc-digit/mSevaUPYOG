@@ -73,10 +73,17 @@ const getProfessionalDetails = (appData, t) => {
 
 const getApplicantDetails = (appData, t) => {
   const values = [];
+  const rawOwners = appData?.owners || [];
 
-  const sortedOwners = [...appData?.owners]
-    ?.sort((a, b) => (b?.isPrimaryOwner === true ? 1 : 0) - (a?.isPrimaryOwner === true ? 1 : 0));
+  const activeOwners = rawOwners?.filter(
+    (o) => o?.status !== false && o?.status !== "false"
+  );
 
+  const sortedOwners = [...activeOwners]?.sort(
+    (a, b) =>
+      (b?.isPrimaryOwner === true ? 1 : 0) -
+      (a?.isPrimaryOwner === true ? 1 : 0)
+  );
   const primaryOwner = sortedOwners?.find((o) => o?.isPrimaryOwner === true) || sortedOwners?.[0];
 
   sortedOwners?.forEach((owner, i) => {

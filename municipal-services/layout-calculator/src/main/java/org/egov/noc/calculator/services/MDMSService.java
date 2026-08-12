@@ -74,6 +74,36 @@ public class MDMSService {
     	MdmsCriteriaReq mdmsCriteriaReq = getMDMSSanctionFeeRequest(requestInfo, tenantId, code, category, fromFY,feeType);
 		StringBuilder url = getMdmsSearchUrl();
 		Object result = serviceRequestRepository.fetchResult(url , mdmsCriteriaReq);
+
+		if (result instanceof java.util.Map && LAYOUTConstants.FEE_TYPE_PAY2.equalsIgnoreCase(feeType)) {
+			try {
+				java.util.Map<String, Object> resultMap = (java.util.Map<String, Object>) result;
+				if (resultMap.containsKey("MdmsRes")) {
+					java.util.Map<String, Object> mdmsRes = (java.util.Map<String, Object>) resultMap.get("MdmsRes");
+					String moduleKey = LAYOUTConstants.LAYOUT_MODULE.toLowerCase();
+					if (mdmsRes.containsKey(moduleKey)) {
+						java.util.Map<String, Object> moduleMap = (java.util.Map<String, Object>) mdmsRes.get(moduleKey);
+						if (moduleMap.containsKey(LAYOUTConstants.MDMS_CHARGES_TYPE)) {
+							java.util.List<java.util.Map<String, Object>> chargesTypeList = 
+									(java.util.List<java.util.Map<String, Object>>) moduleMap.get(LAYOUTConstants.MDMS_CHARGES_TYPE);
+							if (chargesTypeList != null) {
+								java.util.List<java.util.Map<String, Object>> filteredList = new java.util.ArrayList<>();
+								for (java.util.Map<String, Object> chargesType : chargesTypeList) {
+									Object bCategory = chargesType.get("BuildingCategory");
+									if (bCategory == null || bCategory.toString().trim().isEmpty() || bCategory.toString().equalsIgnoreCase(category)) {
+										filteredList.add(chargesType);
+									}
+								}
+								moduleMap.put(LAYOUTConstants.MDMS_CHARGES_TYPE, filteredList);
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				log.error("Error filtering MDMS charges by BuildingCategory: " + e.getMessage(), e);
+			}
+		}
+
 		return result;
 	}
 
@@ -82,12 +112,7 @@ public class MDMSService {
         
         List<MasterDetail> sanctionFeeChargesDetails = new ArrayList<>();
         Long currentTime = System.currentTimeMillis();
-      String filterCodeForCharges;
-        if (LAYOUTConstants.FEE_TYPE_PAY2.equalsIgnoreCase(feeType)) {
-            filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.type == '" + feeType + "' && @.BuildingCategory == '" + category + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
-        } else {
-            filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.type == '" + feeType + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
-        }
+        String filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.type == '" + feeType + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
         sanctionFeeChargesDetails.add(MasterDetail.builder().name(LAYOUTConstants.MDMS_CHARGES_TYPE).filter(filterCodeForCharges).build());
         ModuleDetail fyModuleDtls = ModuleDetail.builder().masterDetails(sanctionFeeChargesDetails)
                 .moduleName(LAYOUTConstants.LAYOUT_MODULE.toLowerCase()).build();

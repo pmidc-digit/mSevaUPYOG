@@ -108,13 +108,33 @@ public class DemandService {
 
 		List<DemandDetail> demandDetails = calculationService.calculateDemand(bookingRequest, taxRateCodes, mdmsData);
 
-		// 🔹 Round off each tax head independently before creating Demand
-		// Use HALF_UP for standard rounding (≥0.5 rounds up, <0.5 rounds down)
+		// Compute unrounded total before rounding individual heads
+		BigDecimal unroundedTotal = demandDetails.stream()
+				.map(DemandDetail::getTaxAmount)
+				.filter(Objects::nonNull)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		// Round each tax head to whole rupees (HALF_UP)
 		demandDetails.forEach(detail -> {
 			if (detail.getTaxAmount() != null) {
 				detail.setTaxAmount(detail.getTaxAmount().setScale(0, java.math.RoundingMode.HALF_UP));
 			}
 		});
+
+		// Compute rounded total and add explicit round-off tax head
+		BigDecimal roundedTotal = demandDetails.stream()
+				.map(DemandDetail::getTaxAmount)
+				.filter(Objects::nonNull)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal roundOff = unroundedTotal.setScale(0, java.math.RoundingMode.HALF_UP)
+				.subtract(roundedTotal);
+		if (roundOff.compareTo(BigDecimal.ZERO) != 0) {
+			demandDetails.add(DemandDetail.builder()
+					.taxAmount(roundOff)
+					.taxHeadMasterCode("ADV_ROUND_OFF")
+					.tenantId(tenantId)
+					.build());
+		}
 
 		LocalDate maxdate = getMaxBookingDate(bookingDetail);
 

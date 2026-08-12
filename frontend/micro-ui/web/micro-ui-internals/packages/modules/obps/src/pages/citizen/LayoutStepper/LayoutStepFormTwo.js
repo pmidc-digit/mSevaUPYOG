@@ -344,7 +344,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           mobileNumber: applicant?.mobileNumber || "",
           name: applicant?.name || "",
           emailId: applicant?.emailId || "",
-          userName: applicant?.mobileNumber || "",
+          userName: applicant?.userName || "",
           gender: applicant?.gender?.code || applicant?.gender || null,
           dob: applicant?.dob ? Digit.Utils.pt.convertDateToEpoch(applicant?.dob) : null,
           fatherOrHusbandName: applicant?.fatherOrHusbandName || "",

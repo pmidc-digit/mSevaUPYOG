@@ -280,7 +280,16 @@ export const SelectPaymentType = (props) => {
         displayRazorpay(data);
       }else if (redirectUrl) {
         //redirection to non razorpay payment gateway url provided by transaction api response
-        window.location = redirectUrl;
+        console.log('redirectUrl', redirectUrl)
+        console.log('typeof(redirectUrl', typeof(redirectUrl))
+        const link = document.createElement("a");
+        link.href = redirectUrl;
+        link.target = "_self";
+        link.rel = "noreferrer";
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
       }else {
         //Do Nothing
         setPaymentLoading(false);

@@ -41,23 +41,15 @@ package org.egov.demand.repository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import org.egov.demand.model.AuditDetails;
-import org.egov.demand.model.Demand;
-import org.egov.demand.model.DemandCriteria;
-import org.egov.demand.model.DemandDetail;
-import org.egov.demand.model.PaymentBackUpdateAudit;
+import org.egov.demand.model.*;
 import org.egov.demand.repository.querybuilder.DemandQueryBuilder;
 import org.egov.demand.repository.rowmapper.DemandRowMapper;
 import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.DemandRequest;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -67,6 +59,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
 @Repository
 @Slf4j
@@ -440,4 +433,45 @@ public class DemandRepository {
 
 		return paymentId;
 	}
+
+    public void updateDemandsPayer(UpdateDemandPayerRequest updateDemandPayerRequest){
+
+        List<Demand> demands = getUnpaidDemandsForConsumer(updateDemandPayerRequest);
+
+        if (CollectionUtils.isEmpty(demands)) {
+            log.info("No unpaid demands found. Skipping update.");
+            return;
+        }
+
+        List<String> demandIds = new ArrayList<>();
+
+        for (Demand demand : demands) {
+            demandIds.add(demand.getId());
+        }
+
+        String demandIdsSql = demandIds.stream()
+                .map(id -> "'" + id + "'")
+                .collect(Collectors.joining(", "));
+
+        jdbcTemplate.update(DemandQueryBuilder.DEMAND_PAYER_UPDATE_QUERY, new PreparedStatementSetter() {
+
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setString(1, updateDemandPayerRequest.getPropertyId());
+                ps.setString(2, demandIdsSql);
+            }
+        });
+    }
+
+    public List<Demand> getUnpaidDemandsForConsumer(UpdateDemandPayerRequest request) {
+
+        List<Object> presparedStmtList = new ArrayList<>();
+        Set<String> consumers = new HashSet<>();
+        consumers.add(request.getConsumer());
+        DemandCriteria criteria = DemandCriteria.builder().tenantId(request.getTenant()).consumerCode(consumers).businessService(request.getBusiness()).isPaymentDone(false).build();
+
+        String query = demandQueryBuilder.getDemandQuery(criteria,presparedStmtList);
+
+        return jdbcTemplate.query(query, presparedStmtList.toArray(), demandRowMapper);
+    }
 }

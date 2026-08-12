@@ -157,7 +157,6 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       formId="modal-action"
       isOBPSFlow={true}
       popupStyles={mobileView ? { width: "720px" } : {}}
-      style={!mobileView ? { height: "45px", width: "107px", paddingLeft: "0px", paddingRight: "0px" } : { height: "45px", width: "44%" }}
       popupModuleMianStyles={mobileView ? { paddingLeft: "5px" } : {}}
     >
       {PTALoading ? (

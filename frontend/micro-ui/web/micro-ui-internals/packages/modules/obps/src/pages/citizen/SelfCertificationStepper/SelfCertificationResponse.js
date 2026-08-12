@@ -83,7 +83,7 @@ const SelfCertificationResponse = (props) => {
           applicationNumber={selfCertificationCode}
           info={bpaData?.status == "REJECTED" ? "" : t(`BPA_APPROVAL_NUMBER`)}
           successful={bpaData?.status == "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
+          className="obps-pages-citizen-self-certification-stepper-self-certification-response--style-1"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         {/* {nocData?.applicationStatus !== "REJECTED" ? (
@@ -91,7 +91,7 @@ const SelfCertificationResponse = (props) => {
             {t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_SUB_HEADER`)}
           </CardText>
         ) : null} */}
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: " 20px" }}>
+        <ActionBar className="obps-pages-citizen-self-certification-stepper-self-certification-response--style-2">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           {/* <SubmitBar label={t("WF_BPA_PAY")} style={{ marginRight: "10px" }} /> */}
           {/* <SubmitBar label={t("CORE_COMMON_GO_TO_NDC")} onSubmit={onGoToNDC} /> */}

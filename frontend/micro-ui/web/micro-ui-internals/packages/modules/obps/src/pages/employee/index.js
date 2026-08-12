@@ -99,9 +99,9 @@ const EmployeeApp = ({ path }) => {
   const CLUInbox = Digit.ComponentRegistryService.getComponent("CLUInbox");
   const CLUEmployeeApplicationDetails = Digit.ComponentRegistryService.getComponent("CLUEmployeeApplicationDetails");
   const LayoutEmployeeApplicationDetails = Digit.ComponentRegistryService.getComponent("LayoutEmployeeApplicationDetails");
-  const CLUResponse = Digit?.ComponentRegistryService?.getComponent("CLUResponse"); 
-  const CLUEsignResponse = Digit?.ComponentRegistryService?.getComponent("CLUEsignResponse"); 
-  const LayoutEsignResponse = Digit?.ComponentRegistryService?.getComponent("LayoutEsignResponse"); 
+  const CLUResponse = Digit?.ComponentRegistryService?.getComponent("CLUResponse");
+  const CLUEsignResponse = Digit?.ComponentRegistryService?.getComponent("CLUEsignResponse");
+  const LayoutEsignResponse = Digit?.ComponentRegistryService?.getComponent("LayoutEsignResponse");
 
   return (
     <Fragment>
@@ -113,7 +113,7 @@ const EmployeeApp = ({ path }) => {
           <PrivateRoute path={`${path}/layout/inbox/application-overview/:layid`} component={(props) => <LayoutApplicationOverview {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/layout/edit-application/:id`} component={(props) => <NewLayoutEditLayoutApplication {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/layout/esign/complete/:id/:file`} component={LayoutEsignResponse} />
-          <PrivateRoute path={`${path}/layout/inbox`} component={(props) => <LayoutInbox {...props} parentRoute={path} />} />        
+          <PrivateRoute path={`${path}/layout/inbox`} component={(props) => <LayoutInbox {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/stakeholder-inbox/stakeholder/:id`} component={ApplicationDetail} />
           <PrivateRoute path={`${path}/search/application/stakeholder/:id`} component={ApplicationDetail} />
           <PrivateRoute path={`${path}/search/application/editApplication/bpa/:bpaid`} component={BpaApplicationDetail} />
@@ -130,9 +130,9 @@ const EmployeeApp = ({ path }) => {
           <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
           <PrivateRoute path={`${path}/stakeholder-response`} component={StakeholderResponse} />
 
-          <PrivateRoute path={`${path}/clu/inbox`} component={(props) => <CLUInbox {...props} parentRoute={path} />} />  
-          <PrivateRoute path={`${path}/clu/application-overview/:cluid/:tenant`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
-          <PrivateRoute path={`${path}/clu/application-overview/:cluid`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
+          <PrivateRoute path={`${path}/clu/inbox`} component={(props) => <CLUInbox {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/clu/application-overview/:cluid/:tenant`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/clu/application-overview/:cluid`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/clu/response/:id`} component={(props) => <CLUResponse {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/clu/esign/complete/:id/:file`} component={CLUEsignResponse} />
         </Switch>

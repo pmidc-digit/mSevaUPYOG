@@ -25,7 +25,7 @@ const CLUFilterFormFieldsComponent = ({
   return (
     <React.Fragment>
       {(window.location.href.includes("/employee") && tenantId === "pb.punjab") ? <FilterFormField>
-        <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
+        <div className="filter-label sub-filter-label obps-pages-employee-clu-inbox-clufilter-form-fields-component--style-1" >{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
         {cities && cities.length > 0 ? (
           <Dropdown
             option={cities}
@@ -72,7 +72,7 @@ const CLUFilterFormFieldsComponent = ({
               <React.Fragment>
                 {statuses?.map((status, index) => (
                   <CheckBox
-                    key={status.applicationstatus}              
+                    key={status.applicationstatus}
                     label={`${t(`BPA_STATUS_${status.applicationstatus}`)} - ${status.totalCount}`}
                     value={status.applicationstatus}
                     checked={props.value.includes(status.applicationstatus)}

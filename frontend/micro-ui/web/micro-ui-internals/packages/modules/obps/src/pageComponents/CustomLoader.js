@@ -3,7 +3,7 @@
 
 // export const CustomLoader = ({ message }) => {
 //     const { t } = useTranslation();
-    
+
 //     return (
 //         <div className="loader-message">
 //             <div className="body">

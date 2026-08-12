@@ -80,11 +80,11 @@ export const ActionMenu = ({ options, icon = <PrimaryDownlaodIcon /> }) => {
   };
 
   return (
-    <div ref={menuRef} style={{ position: "relative", display: "inline-block" }}>
+    <div ref={menuRef} className="obps-components-action-menu--style-1">
       <div
         ref={iconRef}
         onClick={handleIconClick}
-        style={{ cursor: "pointer", display: "flex", alignItems: "center", padding: "4px" }}
+        className="obps-components-action-menu--style-2"
       >
         {icon}
       </div>

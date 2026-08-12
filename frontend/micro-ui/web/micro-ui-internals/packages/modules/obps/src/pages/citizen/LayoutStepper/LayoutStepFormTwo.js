@@ -22,14 +22,14 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const [error, setError] = useState("");
   const cluValidationRef = useRef({ isCluValidated: false, isCluRequired: false });
   //console.log("LOOK APPLICATION NUMBER +++++>", isEditApplication);
-  const history = useHistory();  
+  const history = useHistory();
 
     useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   }, []);
-  
+
   // Get Redux data BEFORE using it in useForm
   const currentStepData = useSelector(function (state) {
     return state.obps.LayoutNewApplicationFormReducer.formData;
@@ -140,7 +140,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
 
   const siteDetails = currentStepData?.siteDetails;
-  
+
   // Restore zone from zoneOptions after they load
   useEffect(() => {
     if (zoneOptions?.length > 0 && siteDetails?.zone) {
@@ -187,13 +187,13 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
     const total = (residential + commercial + institutional + industrial + communityCenter + park + road + parking + otherAmenities).toFixed(2);
 
-    if (Math.abs(netArea-total) !== 0) {      
+    if (Math.abs(netArea-total) !== 0) {
       setShowToast({ key: "true", error: true, message: `Area Mismatch: Total Site Area (${total} Sq M) does not match Net Site Area (${netArea} Sq M)` })
       return;
     }
-    
+
     if (!isValid) {
-      
+
       Object.keys(errors).forEach(key => {
         if (errors[key]) {
 
@@ -201,13 +201,13 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       });
       setShowToast({ key: "true", error: true, message: "Please fill all required fields correctly" })
       return;
-    }    
+    }
 
     const cluNotRequired = data?.isCluRequired?.code === "NO" || data?.isCluRequired === "NO";
     const cluType = data?.cluType?.code || data?.cluType;
-    
-    
-    
+
+
+
     if (cluNotRequired && cluType === "ONLINE") {
       // For online CLU, check if it was validated by user
       if (!cluValidationRef.current.isCluValidated) {
@@ -221,7 +221,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       //console.log("data?.cluDocumentUpload:", data?.cluDocumentUpload);
       //console.log("data?.cluNumberOffline:", data?.cluNumberOffline);
       //console.log("data?.cluApprovalDate:", data?.cluApprovalDate);
-      
+
       if (!data?.cluDocumentUpload) {
         //console.log("CLU Validation Failed - Document not uploaded");
         setShowToast({ key: "true", error: true, message: "CLU Document is required for Offline CLU. Please upload." })
@@ -255,7 +255,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     // If create api is already called then move to next step
     if (isEditApplication || currentStepData?.apiData?.Layout?.applicationNo) {
       onGoNext()
-    } else {    
+    } else {
       callCreateAPI({ ...currentStepData, siteDetails: { ...data } })
     }
   }
@@ -311,7 +311,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
     // Build applicants array: Primary applicant from form fields + additional applicants
     const applicants = [];
-    
+
     // First applicant: from primary applicant form fields (top section of LayoutApplicantDetails)
     // applicants.push({
     //   mobileNumber: formData?.applicationDetails?.applicantMobileNumber || "",
@@ -416,21 +416,21 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
       if (response?.ResponseInfo?.status === "successful") {
         //console.log("  Success: create api executed successfully!");
-        
+
         // Restructure: Convert Layout array to object
         const restructuredResponse = {
           ...response,
           Layout: response?.Layout?.[0] || response?.Layout, // Get first element if array
         };
-        
+
         //console.log("  Restructured response - Layout is now:", restructuredResponse?.Layout);
         //console.log("  Layout applicationNo:", restructuredResponse?.Layout?.applicationNo);
         //console.log("  Full restructured response:", restructuredResponse);
-        
+
         // Save API response to Redux
         dispatch(UPDATE_LayoutNewApplication_FORM("apiData", restructuredResponse));
         history.push(`/digit-ui/citizen/obps/layout/apply?applicationNo=${restructuredResponse?.Layout?.applicationNo}`);
-        //console.log("  Dispatched to Redux, calling onGoNext()");        
+        //console.log("  Dispatched to Redux, calling onGoNext()");
         onGoNext();
       } else {
         console.error("  Error: create api not executed properly!", response);

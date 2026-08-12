@@ -238,16 +238,8 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
 
   return (
     <div>
-      <div className={isOpenLinkFlow ? "OpenlinkContainer" : ""} style={{ paddingBottom: "30px" }}>
-          {<div style={{
-            cursor: "pointer",
-            width: "fit-content",
-            display: "flex",
-            fontFamily: "'Roboto Condensed', sans-serif",
-            color: "rgba(13, 67, 167, var(--text-opacity))",
-            fontSize: "16px",
-            lineHeight: "24px"
-          }} onClick={() => history.push("/digit-ui/citizen/obps/stakeholder/apply/provide-license-type")}>{(<React.Fragment><ArrowLeft />
+      <div className={[isOpenLinkFlow ? "OpenlinkContainer" : "", "obps-page-components-license-details--style-1"].filter(Boolean).join(" ")} >
+          {<div className="obps-page-components-license-details--style-2" onClick={() => history.push("/digit-ui/citizen/obps/stakeholder/apply/provide-license-type")}>{(<React.Fragment><ArrowLeft />
         <p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
         {/* {isMobile && <Timeline currentStep={1} flow="STAKEHOLDER" />} */}
         {!isLoading || !isUserLoading ? (
@@ -324,7 +316,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
               />
               {errorMessage?.dateOfBirth?.length>0 && (
                   <div
-                   
+
                   >
                     {errorMessage?.dateOfBirth}
                   </div>
@@ -366,7 +358,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
 
                 {errorMessage?.gender?.length>0 && (
                   <div
-                  
+
                   >
                     {errorMessage?.gender}
                   </div>
@@ -393,7 +385,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 onChange={selectEmail}
                 // disable={userInfo?.info?.emailId && !isOpenLinkFlow ? true : false}
                  disable={!isEditable && (userInfo?.info?.emailId && !isOpenLinkFlow ? true : false)}
-                
+
                 // disable={editScreen}
                 {...{
                   required: true,
@@ -404,7 +396,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
               />
               {errorMessage?.email?.length>0 && (
                   <div
-                   
+
                   >
                     {errorMessage?.email}
                   </div>

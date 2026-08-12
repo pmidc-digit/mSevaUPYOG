@@ -133,7 +133,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
   return (
     <React.Fragment>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
-        {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
+        {isopenlink && <BackButton className="obps-page-components-corrospondence-address--style-1">{t("CS_COMMON_BACK")}</BackButton>}
         {isMobile && <Timeline currentStep={2} flow="STAKEHOLDER" />}
         <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={isDisableForNext}>
           <CheckBox
@@ -141,7 +141,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
             onChange={(e) => selectChecked(e)}
             //value={field.isPrimaryOwner}
             checked={isAddressSame}
-            style={{ paddingBottom: "10px", paddingTop: "10px" }}
+            className="obps-page-components-corrospondence-address--style-2"
           />
           <CardLabel>{`${t("BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL")}`}</CardLabel>
           <TextArea
@@ -156,7 +156,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
           />
         </FormStep>
       </div>
-      <div style={{ disabled: "true", height: "30px", width: "100%", fontSize: "14px" }}></div>
+      <div className="obps-page-components-corrospondence-address--style-3"></div>
       {showToast && (
         <Toast
           error={showToast?.key === "error" ? true : false}

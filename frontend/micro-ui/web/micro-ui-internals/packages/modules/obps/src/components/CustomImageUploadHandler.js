@@ -191,7 +191,7 @@ export const CustomImageUploadHandler = (props) => {
         var newThumbsList = uploadedImagesThumbs?.filter((thumbs, thumbIndex) => index !== thumbIndex);
         var newUploadedImagesIds = uploadedImagesIds?.filter((key, imageIndex) => index !== imageIndex);
         var updatedGeolocations = props?.geoLocations?.filter((key, imageIndex) => index !== imageIndex);
-    
+
         console.log("deleteImageKey", newThumbsList, newUploadedImagesIds, updatedGeolocations, index)
         props.setGeoLocations(updatedGeolocations)
         setUploadedImagesThumbs(newThumbsList);

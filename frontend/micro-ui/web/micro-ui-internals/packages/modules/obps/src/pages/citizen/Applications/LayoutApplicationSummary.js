@@ -117,7 +117,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
       {comment?.length > 0 && (
         <div className="TLComments">
           <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
+          <p className="obps-pages-citizen-applications-layout-application-summary--style-1">{comment}</p>
         </div>
       )}
 
@@ -139,7 +139,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         </div>
       )}
 
-      <div style={{ marginTop: "8px" }}>
+      <div className="obps-pages-citizen-applications-layout-application-summary--style-2">
         {caption.time && <p>{caption.time}</p>}
         {caption.date && <p>{caption.date}</p>}
         {caption.name && <p>{caption.name}</p>}
@@ -411,7 +411,7 @@ const LayoutApplicationOverview = () => {
   const businessServiceCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
   const prefix= `WF_EMPLOYEE_${"LAYOUT"}_${businessServiceCode}`?.toUpperCase();
   const Statusprefix= `WF_EMPLOYEE_LAYOUT_STATUS_${businessServiceCode}`?.toUpperCase();
-  
+
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -788,7 +788,7 @@ const LayoutApplicationOverview = () => {
         {comment?.length > 0 && (
           <div className="TLComments">
             <h3>{t("WF_COMMON_COMMENTS")}</h3>
-            <p style={{ overflowX: "scroll" }}>{comment}</p>
+            <p className="obps-pages-citizen-applications-layout-application-summary--style-3">{comment}</p>
           </div>
         )}
 
@@ -810,7 +810,7 @@ const LayoutApplicationOverview = () => {
           </div>
         )}
 
-        <div style={{ marginTop: "8px" }}>
+        <div className="obps-pages-citizen-applications-layout-application-summary--style-4">
           {caption.time && <p>{caption.time}</p>}
           {caption.date && <p>{caption.date}</p>}
           {caption.name && <p>{caption.name}</p>}
@@ -847,9 +847,9 @@ const LayoutApplicationOverview = () => {
 
   return (
     <div className={"employee-main-application-details"}>
-      <div className="cardHeaderWithOptions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="cardHeaderWithOptions obps-pages-citizen-applications-layout-application-summary--style-5" >
         <Header styles={{ fontSize: "32px" }}>{t("Application Overview")}</Header>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginLeft: "auto" }}>
+        <div className="obps-pages-citizen-applications-layout-application-summary--style-6">
           <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
           {loading && <Loader />}
           {dowloadOptions && dowloadOptions.length > 0 && (
@@ -903,7 +903,7 @@ const LayoutApplicationOverview = () => {
                 <RenderRow label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} value={formatDate(detail?.professionalRegistrationValidity)} />
 
               </StatusTable>
-            
+
           </Card>
         ))}
 
@@ -913,7 +913,7 @@ const LayoutApplicationOverview = () => {
         <Card>
           <CardSubHeader>{t("Owners Details") || "Owners Details"}</CardSubHeader>
           {sortedOwners.map((applicant, index) => (
-            <div key={index} style={{ marginBottom: "20px" }}>
+            <div key={index} className="obps-pages-citizen-applications-layout-application-summary--style-7">
               <StatusTable key={index}>
 
                 {index === 0 && <RenderRow label={t(`CLU_OWNER_TYPE_LABEL`)} value={applicant?.additionalDetails?.aplicantType?.name} />}
@@ -936,13 +936,13 @@ const LayoutApplicationOverview = () => {
       )}
 
 
-      
+
 
       {/* -------------------- SITE DETAILS -------------------- */}
       <Card>
         <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          
+
             <StatusTable key={index}>
               {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
               {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
@@ -994,11 +994,11 @@ const LayoutApplicationOverview = () => {
               {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
               {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
               {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
-              
-              
-              
+
+
+
               {/* {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)} */}
-              
+
               {/* {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)} */}
 
 
@@ -1041,7 +1041,7 @@ const LayoutApplicationOverview = () => {
               {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
 
-          
+
         ))}
       </Card>
 
@@ -1055,22 +1055,17 @@ const LayoutApplicationOverview = () => {
                         ))}
             </Card>
 
-      
-      
 
-      
+
+
+
 
       {/* 1️⃣ SITE COORDINATES CARD */}
       {displayData?.coordinates && displayData.coordinates.length > 0 && (
         <Card>
           <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
           <StatusTable
-            style={{
-              display: "flex",
-              gap: "20px",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-            }}
+            className="obps-pages-citizen-applications-layout-application-summary--style-8"
           >
             {sitePhotos?.length > 0 &&
               [...sitePhotos]
@@ -1098,7 +1093,7 @@ const LayoutApplicationOverview = () => {
       )}
 
       {/* 3️⃣ FEE DETAILS CARD */}
-    
+
         <Card>
           <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
   {applicationDetails?.Layout?.[0]?.layoutDetails && (
@@ -1117,7 +1112,7 @@ const LayoutApplicationOverview = () => {
           />
           )}
           {hasPayments && (
-                <div style={{ marginTop: "16px" }}>
+                <div className="obps-pages-citizen-applications-layout-application-summary--style-9">
                   <OBPSPaymentHistory payments={combinedPayments} />
                 </div>
               )}

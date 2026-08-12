@@ -149,10 +149,10 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
           <Fragment>
             {codedDocs.map((doc, index) => (
               <div className="documentation-list" key={index}>
-            
+
                   <div>{`${index + 1}.`}&nbsp;</div>
                   <div>{t(doc.code)}</div>
-            
+
               </div>
             ))}
           </Fragment>

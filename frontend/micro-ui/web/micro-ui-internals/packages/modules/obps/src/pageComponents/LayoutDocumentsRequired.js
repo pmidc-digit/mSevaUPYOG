@@ -35,15 +35,15 @@ const LayoutDocumentsRequired = ({
   const tenantId = Digit.ULBService.getStateId()
   const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
   const [documents, setDocuments] = useState(
-    formData?.documents?.documents?.documents || 
-    currentStepData?.documents?.documents?.documents || 
+    formData?.documents?.documents?.documents ||
+    currentStepData?.documents?.documents?.documents ||
     []
   )
-  
+
   useEffect(() => {
-    const docs = 
-      formData?.documents?.documents?.documents || 
-      currentStepData?.documents?.documents?.documents || 
+    const docs =
+      formData?.documents?.documents?.documents ||
+      currentStepData?.documents?.documents?.documents ||
       [];
     if (documents?.length === 0 && docs?.length > 0) {
       setDocuments(docs);
@@ -80,13 +80,13 @@ const LayoutDocumentsRequired = ({
   const layoutOwners = currentStepData?.apiData?.Layout?.[0]?.owners || [];
   const primaryOwnerFromLayout = layoutOwners?.find((owner) => owner?.isPrimaryOwner) || layoutOwners?.[0];
   const primaryApplicant = currentStepData?.applicants?.find((app) => app?.isPrimaryOwner) || primaryOwnerFromLayout || currentStepData?.applicants?.[0] || {};
-  
-  const applicantType = 
-    primaryApplicant?.aplicantType?.code || 
+
+  const applicantType =
+    primaryApplicant?.aplicantType?.code ||
     primaryApplicant?.additionalDetails?.aplicantType?.code;
 
 
-  
+
   const [applicationNo, setApplicationNo] = useState("");
   // const [isVacant, setIsVacant] = useState(false);
   const [isCluApproved, setIsCluApproved] = useState(false);
@@ -141,11 +141,11 @@ const LayoutDocumentsRequired = ({
 
     // Institutional and Industrial checks
     const bc = currentStepData?.siteDetails?.buildingCategory;
-  
+
 
     const isInstitutionVal = bc ? (
       typeof bc === "object" ? (
-        (bc.code || "").toLowerCase().includes("institutional") || 
+        (bc.code || "").toLowerCase().includes("institutional") ||
         (bc.name || "").toLowerCase().includes("institutional")
       ) : (
         bc.toLowerCase().includes("institutional")
@@ -154,7 +154,7 @@ const LayoutDocumentsRequired = ({
 
     const isIndustrialVal = bc ? (
       typeof bc === "object" ? (
-        (bc.code || "").toLowerCase().includes("industrial") || 
+        (bc.code || "").toLowerCase().includes("industrial") ||
         (bc.name || "").toLowerCase().includes("industrial")
       ) : (
         bc.toLowerCase().includes("industrial")
@@ -175,15 +175,15 @@ const LayoutDocumentsRequired = ({
   const filteredDocuments = useMemo(() => {
     let docs = data?.LAYOUT?.LayoutDocuments || []
 
-    
+
     // Filter and process documents
     const processedDocs = docs
       .map((doc) => {
         // Set default required status based on backend config
         let isRequired = doc.required || false
-        
+
         // Override required status based on conditions
-        
+
         // Site photographs are ALWAYS mandatory (regardless of CLU)
         if (doc.code === "OWNER.SITEPHOTOGRAPHONE" || doc.code === "OWNER.SITEPHOTOGRAPHTWO") {
           isRequired = true
@@ -191,7 +191,7 @@ const LayoutDocumentsRequired = ({
         // National Highway NOC is mandatory only when it's a National Highway
         else if (doc.code === "OWNER.NATIONALHIGHWAYNOC") {
           isRequired = isNationalHighway
-        }        
+        }
         // authorization document is mandatory for FIRM and NOT mandatory for INDIVIDUAL
         else if (doc.code === "OWNER.AUTHORIZATIONLETTER") {
           if (applicantType === "FIRM") {
@@ -204,17 +204,17 @@ const LayoutDocumentsRequired = ({
         else if (doc.code === "OWNER.INDUSTRYCATEGORYDOCUMENT") {
           isRequired = isIndustrial;
         }
-        
+
         // Filter out building drawing if vacant
         // if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
         //   return null
         // }
-        
+
         return { ...doc, required: isRequired }
       }).filter(doc => !(doc?.cluRequired && !isCluApproved))
       .filter(doc => doc !== null)
-    
-    
+
+
     return processedDocs
   }, [isCluApproved, isNationalHighway, isInstitution, isIndustrial, applicantType, data?.LAYOUT?.LayoutDocuments?.length])
 
@@ -387,7 +387,7 @@ function LayoutSelectDocument({
           }
         }
       })
-    }    
+    }
   }
 
   function selectfileWithCordinates(e) {
@@ -398,7 +398,7 @@ function LayoutSelectDocument({
     if (selectedFile && (fileType?.includes("image/jpeg") || fileType?.includes("image/jpg") || fileType?.includes("image/png"))) {
       extractGeoLocation(selectedFile).then((location) => {
         // console.log("Latitude:", location.latitude)
-        // console.log("Longitude:", location.longitude)        
+        // console.log("Longitude:", location.longitude)
 
         if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
           if (location.latitude !== null && location.longitude !== null) {
@@ -446,7 +446,7 @@ function LayoutSelectDocument({
       })
     }
 
-    
+
     // console.log("selectedFile here", selectedFile)
   }
 
@@ -653,14 +653,14 @@ function LayoutSelectDocument({
   };
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div className="obps-page-components-layout-documents-required--style-1">
       {getLoading && <Loader />}
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller" style={{ width: "100%" }}>
-            {getDocumentLabel()} {doc?.required && <span className="requiredField">*</span>} 
+          <CardLabel className="card-label-smaller obps-page-components-layout-documents-required--style-2" >
+            {getDocumentLabel()} {doc?.required && <span className="requiredField">*</span>}
           </CardLabel>
 
-      <div className="field" style={{display: "flex", flexDirection:"column", gap: "10px"}}>
+      <div className="field obps-page-components-layout-documents-required--style-3" >
         {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO" ? (
           <div>
           <CustomUploadFile
@@ -675,7 +675,7 @@ function LayoutSelectDocument({
             uploadMessage = "Invalid File Format"
             accept=".jpeg, .jpg, .png"
           />
-            <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+            <p className="obps-page-components-layout-documents-required--style-4">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           </div>
         ):(
           <div>
@@ -693,12 +693,12 @@ function LayoutSelectDocument({
             required={doc?.required}
             isRemovable={!doc?.required}
           />
-             <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+             <p className="obps-page-components-layout-documents-required--style-5">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           </div>
         )}
 
-            {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&  <p style={{ padding: "10px", fontSize: "14px" }}>Latitude: {geocoordinates.Latitude1} & Longitude: {geocoordinates.Longitude1} </p>}
-            {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  (geocoordinates?.Latitude2 && geocoordinates?.Longitude2) &&  <p style={{ padding: "10px", fontSize: "14px" }}>Latitude: {geocoordinates.Latitude2} & Longitude: {geocoordinates.Longitude2}</p>}
+            {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&  <p className="obps-page-components-layout-documents-required--style-6">Latitude: {geocoordinates.Latitude1} & Longitude: {geocoordinates.Longitude1} </p>}
+            {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  (geocoordinates?.Latitude2 && geocoordinates?.Longitude2) &&  <p className="obps-page-components-layout-documents-required--style-7">Latitude: {geocoordinates.Latitude2} & Longitude: {geocoordinates.Longitude2}</p>}
           </div>
 
       </LabelFieldPair>

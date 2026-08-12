@@ -7,7 +7,7 @@ export const config = [
                 name: "BPA_BASIC_DETAILS",
                 type: "component",
                 component: "dummy",
-                key: "BasicDetails",                
+                key: "BasicDetails",
                 withoutLabel: true,
             }
         ]
@@ -20,7 +20,7 @@ export const config = [
                 name: "BPA_PLOT_DETAILS",
                 type: "component",
                 component: "dummy",
-                key: "PlotDetails",                
+                key: "PlotDetails",
                 withoutLabel: true,
             }
         ]
@@ -33,7 +33,7 @@ export const config = [
                 name: "BPA_SCRUTINY_DETAILS",
                 type: "component",
                 component: "dummy",
-                key: "ScrutinyDetails",                
+                key: "ScrutinyDetails",
                 withoutLabel: true,
             }
         ]
@@ -46,7 +46,7 @@ export const config = [
     //             name: "BPA_LOCATION_DETAILS",
     //             type: "component",
     //             component: "dummy",
-    //             key: "LocationDetails",                
+    //             key: "LocationDetails",
     //             withoutLabel: true,
     //         }
     //     ]
@@ -59,7 +59,7 @@ export const config = [
     //             name: "BPA_ADDITIONAL_DETAILS",
     //             type: "component",
     //             component: "dummy",
-    //             key: "AdditionalDetails",                
+    //             key: "AdditionalDetails",
     //             withoutLabel: true,
     //         }
     //     ]
@@ -72,7 +72,7 @@ export const config = [
     //             name: "BPA_OWNER_DETAILS",
     //             type: "component",
     //             component: "dummy",
-    //             key: "OwnerDetails",                
+    //             key: "OwnerDetails",
     //             withoutLabel: true,
     //         }
     //     ]
@@ -85,7 +85,7 @@ export const config = [
                 name: "BPA_DOCUMENT_DETAILS",
                 type: "component",
                 component: "dummy",
-                key: "OwnerDetails",                
+                key: "OwnerDetails",
                 withoutLabel: true,
             }
         ]
@@ -98,7 +98,7 @@ export const config = [
                 name: "BPA_SUMMARY_DETAILS",
                 type: "component",
                 component: "dummy",
-                key: "SummaryDetails",                
+                key: "SummaryDetails",
                 withoutLabel: true,
             }
         ]

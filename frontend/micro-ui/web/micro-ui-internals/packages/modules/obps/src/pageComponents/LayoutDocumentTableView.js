@@ -14,7 +14,7 @@ const LayoutDocumentTableView = ({documents}) => {
           Header: t("SR_NO"),
           accessor: "srNo",
           width: "20px",
-          Cell: ({ row }) => <div style={{ width: "20px" }}>{row.index + 1}</div>,
+          Cell: ({ row }) => <div className="obps-page-components-layout-document-table-view--style-1">{row.index + 1}</div>,
         },
         {
           Header: t("BPA_DOCUMENT_NAME"),
@@ -26,7 +26,7 @@ const LayoutDocumentTableView = ({documents}) => {
           accessor: "fileUrl",
           Cell: ({ value }) =>
             value ? (
-              <LinkButton style={{ float: "right", display: "inline" }}
+              <LinkButton className="obps-page-components-layout-document-table-view--style-2"
                 label={t("View")}
                 onClick={() => routeTo(value)}
               />
@@ -53,7 +53,7 @@ const LayoutDocumentTableView = ({documents}) => {
       enabled: documents?.length > 0 ? true : false
     }
   );
-  
+
   const mappedDocuments = documents?.map(doc => {
    const { documentUid, documentType } = doc;
    const url = urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
@@ -74,10 +74,10 @@ const LayoutDocumentTableView = ({documents}) => {
     }, [mappedDocuments]);
 
   return (
-    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", display: "block" }}>
+    <div className="obps-page-components-layout-document-table-view--style-3">
       {documentsData && (
         <Table
-          className="customTable table-border-style"
+          className="customTable table-border-style obps-page-components-layout-document-table-view--style-4"
           t={t}
           data={documentsData}
           columns={documentsColumns}
@@ -87,7 +87,7 @@ const LayoutDocumentTableView = ({documents}) => {
           autoSort={false}
           manualPagination={false}
           isPaginationRequired={false}
-          style={{ width: "100%", minWidth: "400px", tableLayout: "auto" }}
+
         />
       )}
     </div>

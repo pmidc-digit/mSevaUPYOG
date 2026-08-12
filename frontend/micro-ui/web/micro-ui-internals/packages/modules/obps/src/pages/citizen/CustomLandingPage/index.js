@@ -105,7 +105,7 @@ const ServiceCard = ({ link, colorIndex, onCardClick }) => {
 
       {/* Subtitle */}
       {link.subtitle && (
-        <div style={{ fontSize: "11px", color: "#626A6E", marginBottom: "10px", lineHeight: "1.4" }}>
+        <div className="obps-pages-citizen-custom-landing-page-index--style-1">
           {link.subtitle}
         </div>
       )}
@@ -130,15 +130,15 @@ const ServiceCard = ({ link, colorIndex, onCardClick }) => {
   );
 
   if (onCardClick) {
-    return <div onClick={onCardClick} style={{ textDecoration: "none" }}>{inner}</div>;
+    return <div onClick={onCardClick} className="obps-pages-citizen-custom-landing-page-index--style-2">{inner}</div>;
   }
   if (link.external && link.url) {
-    return <a href={link.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>{inner}</a>;
+    return <a href={link.url} target="_blank" rel="noopener noreferrer" className="obps-pages-citizen-custom-landing-page-index--style-3">{inner}</a>;
   }
   if (link.external && !link.url) {
-    return <div style={{ cursor: "default" }}>{inner}</div>;
+    return <div className="obps-pages-citizen-custom-landing-page-index--style-4">{inner}</div>;
   }
-  return <Link to={link.url} style={{ textDecoration: "none" }}>{inner}</Link>;
+  return <Link to={link.url} className="obps-pages-citizen-custom-landing-page-index--style-5">{inner}</Link>;
 };
 
 const CustomLandingPage = () => {
@@ -202,27 +202,27 @@ const CustomLandingPage = () => {
   const visibleLinks = links.filter((link) => !(link.showForNonArchitect && isArchitect));
 
   return (
-    <div className="HomePageWrapper" style={{ marginTop: "-25px" }}>
+    <div className="HomePageWrapper obps-pages-citizen-custom-landing-page-index--style-6" >
 
       {/* ── Hero Banner ── reuses same classes as citizen Home dashboard */}
-      <div className="hero-banner-styles" style={{ position: "relative", textAlign: "center" }}>
+      <div className="hero-banner-styles obps-pages-citizen-custom-landing-page-index--style-7" >
         {/* Decorative circles */}
-        <div style={{ position: "absolute", top: "-40px", right: "-40px", width: "200px", height: "200px", background: "rgba(255,255,255,0.05)", borderRadius: "50%", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "-60px", left: "-30px", width: "250px", height: "250px", background: "rgba(255,255,255,0.04)", borderRadius: "50%", pointerEvents: "none" }} />
+        <div className="obps-pages-citizen-custom-landing-page-index--style-8" />
+        <div className="obps-pages-citizen-custom-landing-page-index--style-9" />
 
         {/* Govt badge pill */}
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.15)", borderRadius: "20px", padding: "4px 14px", marginBottom: "14px", border: "1px solid rgba(255,255,255,0.2)" }}>
+        <div className="obps-pages-citizen-custom-landing-page-index--style-10">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="#FFBF00"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-          <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.9)", fontWeight: "500", letterSpacing: "0.5px" }}>Government of Punjab — OBPS</span>
+          <span className="obps-pages-citizen-custom-landing-page-index--style-11">Government of Punjab — OBPS</span>
         </div>
 
         <h1 className="hero-title-styles">Building Plan Approval</h1>
         <p className="heroSubtitleStyles">Online Building Plan Approval System for Urban Local Bodies of Punjab</p>
 
         {/* Quick-info chips */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center", marginTop: "8px" }}>
+        <div className="obps-pages-citizen-custom-landing-page-index--style-12">
           {["Fast-track approvals", "Paperless process", "Real-time tracking"].map((tag) => (
-            <span key={tag} style={{ fontSize: "11px", background: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.85)", padding: "4px 12px", borderRadius: "20px", border: "1px solid rgba(255,255,255,0.18)" }}>
+            <span key={tag} className="obps-pages-citizen-custom-landing-page-index--style-13">
               {tag}
             </span>
           ))}
@@ -230,17 +230,17 @@ const CustomLandingPage = () => {
       </div>
 
       {/* ── Services Section ── */}
-      <div style={{ padding: "28px 0 40px" }}>
+      <div className="obps-pages-citizen-custom-landing-page-index--style-14">
 
         {/* Section header — reuses new-card-header-section / new-card-header-title */}
         <div
-          className="new-card-header-section"
-          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", paddingBottom: "14px", borderBottom: "2px solid #003C71" }}
+          className="new-card-header-section obps-pages-citizen-custom-landing-page-index--style-15"
+
         >
-          <h2 className="new-card-header-title" style={{ fontSize: "20px", fontWeight: "700", color: "#003C71", margin: 0 }}>
+          <h2 className="new-card-header-title obps-pages-citizen-custom-landing-page-index--style-16" >
             Services &amp; Resources
           </h2>
-          <span style={{ fontSize: "12px", color: "#626A6E", background: "#F3F2F1", padding: "4px 12px", borderRadius: "20px" }}>
+          <span className="obps-pages-citizen-custom-landing-page-index--style-17">
             {visibleLinks.length} services
           </span>
         </div>
@@ -259,16 +259,16 @@ const CustomLandingPage = () => {
       </div>
 
       {/* ── Test / Demo Credentials (collapsible) ── */}
-      <div style={{ background: "#FFF8E1", border: "1px solid #FFE082", borderRadius: "12px", padding: "16px 20px", marginBottom: "40px" }}>
+      <div className="obps-pages-citizen-custom-landing-page-index--style-18">
         <div
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", userSelect: "none" }}
+          className="obps-pages-citizen-custom-landing-page-index--style-19"
           onClick={() => setShowCredentials(!showCredentials)}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="obps-pages-citizen-custom-landing-page-index--style-20">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B5451B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
-            <span style={{ fontSize: "13px", fontWeight: "600", color: "#B5451B" }}>Test / Demo Credentials</span>
+            <span className="obps-pages-citizen-custom-landing-page-index--style-21">Test / Demo Credentials</span>
           </div>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B5451B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             {showCredentials ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
@@ -276,10 +276,10 @@ const CustomLandingPage = () => {
         </div>
 
         {showCredentials && (
-          <div style={{ marginTop: "14px", borderTop: "1px solid #FFE082", paddingTop: "14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          <div className="obps-pages-citizen-custom-landing-page-index--style-22">
             <div>
-              <div style={{ fontSize: "11px", fontWeight: "600", color: "#626A6E", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Mobile Numbers</div>
-              <div style={{ fontFamily: "monospace", fontSize: "12px", color: "#1F1F1F", background: "rgba(255,255,255,0.7)", padding: "8px 12px", borderRadius: "6px", lineHeight: "1.9" }}>
+              <div className="obps-pages-citizen-custom-landing-page-index--style-23">Mobile Numbers</div>
+              <div className="obps-pages-citizen-custom-landing-page-index--style-24">
                 9988112233 &nbsp;9988112234<br />
                 9988112235 &nbsp;9988112236<br />
                 8888888889 &nbsp;9988112237<br />
@@ -287,15 +287,15 @@ const CustomLandingPage = () => {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: "11px", fontWeight: "600", color: "#626A6E", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Access Details</div>
-              <div style={{ fontSize: "13px", color: "#1F1F1F", display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div className="obps-pages-citizen-custom-landing-page-index--style-25">Access Details</div>
+              <div className="obps-pages-citizen-custom-landing-page-index--style-26">
                 <div>
                   OTP&nbsp;
-                  <span style={{ fontFamily: "monospace", background: "rgba(255,255,255,0.8)", padding: "2px 10px", borderRadius: "4px", fontWeight: "700", border: "1px solid #FFE082" }}>
+                  <span className="obps-pages-citizen-custom-landing-page-index--style-27">
                     123456
                   </span>
                 </div>
-                <div>Location&nbsp;<span style={{ fontWeight: "600" }}>Amritsar</span></div>
+                <div>Location&nbsp;<span className="obps-pages-citizen-custom-landing-page-index--style-28">Amritsar</span></div>
               </div>
             </div>
           </div>

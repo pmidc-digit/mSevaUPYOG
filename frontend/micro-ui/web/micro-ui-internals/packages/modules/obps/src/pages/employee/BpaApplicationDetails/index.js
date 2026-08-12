@@ -115,7 +115,7 @@ const BpaApplicationDetail = () => {
   const [fileUrls, setFileUrls] = useState({});
   const [ownerFileUrls, setOwnerFileUrls] = useState({});
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
-  
+
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
@@ -303,7 +303,7 @@ const BpaApplicationDetail = () => {
     }
   }, [isLoading, data]);
 
-  
+
 
   useEffect(() => {
     if (!bpaDocsLoading && !isLoading) {
@@ -450,21 +450,21 @@ const BpaApplicationDetail = () => {
       let response = null
       console.log('payments here here', payments)
       const fee = payments?.totalAmountPaid;
-      
-  
+
+
       const adjustedAmounts = data?.applicationData?.additionalDetails?.adjustedAmounts;
       const totalAdjustedAmount = adjustedAmounts?.reduce((sum, item) => sum + (item?.adjustedAmount || 0), 0);
       const totalULBAmount = adjustedAmounts?.reduce((s,i)=>(s +(i?.amount || 0)),0)
 
-  
+
       data.additionalDetails = {
         ...data?.applicationData?.additionalDetails,
         adjustedAmounts,
         totalAdjustedAmount,
         totalULBAmount
       };
-  
-  
+
+
     const amountinwords = amountToWords(fee)
     console.log('amountinwords', amountinwords)
       if (payments?.fileStoreId) {
@@ -482,7 +482,7 @@ const BpaApplicationDetail = () => {
           response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords , BPA: [data]  }] }, "bpa-receipt") //to do: bpa-obps-receipt
           console.log("Final Payments array:", [{ ...payments, usage }]);
       }
-  
+
       const fileStore = await Digit.PaymentService.printReciept(stateCode, { fileStoreIds: response.filestoreIds[0] })
       window.open(fileStore[response?.filestoreIds[0]], "_blank")
     }
@@ -613,7 +613,7 @@ const BpaApplicationDetail = () => {
       Header: t(" "),
       accessor: "fileUrl",
       Cell: ({ value }) =>
-        value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
+        value ? <LinkButton className="obps-pages-employee-bpa-application-details-index--style-1" label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
     },
   ];
   const documentsColumns = [
@@ -626,7 +626,7 @@ const BpaApplicationDetail = () => {
       Header: t(" "),
       accessor: "fileUrl",
       Cell: ({ value }) =>
-        value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
+        value ? <LinkButton className="obps-pages-employee-bpa-application-details-index--style-2" label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
     },
   ];
   const documentsColumnsECBC = [
@@ -639,7 +639,7 @@ const BpaApplicationDetail = () => {
       Header: t(" "),
       accessor: "fileUrl",
       Cell: ({ value }) =>
-        value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
+        value ? <LinkButton className="obps-pages-employee-bpa-application-details-index--style-3" label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
     },
   ];
 
@@ -653,7 +653,7 @@ const BpaApplicationDetail = () => {
       Header: t(" "),
       accessor: "value",
       Cell: ({ value, row }) => {
-        return value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => row?.original?.title === "BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL" ? window.open(value) : fetchUrl(value, tenantId)} /> : t("CS_NA");
+        return value ? <LinkButton className="obps-pages-employee-bpa-application-details-index--style-4" label={t("View")} onClick={() => row?.original?.title === "BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL" ? window.open(value) : fetchUrl(value, tenantId)} /> : t("CS_NA");
       },
     },
   ];
@@ -667,7 +667,7 @@ const BpaApplicationDetail = () => {
     {
       Header: t(""),
       accessor: "planReport",
-      Cell: ({ value }) => (value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA")),
+      Cell: ({ value }) => (value ? <LinkButton className="obps-pages-employee-bpa-application-details-index--style-5" label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA")),
     },
   ];
   // const ecbcDocumentsData = useMemo(() => {
@@ -908,7 +908,7 @@ const BpaApplicationDetail = () => {
         onClick: () => handleDownloadPdf(),
       });
     }
-  
+
     if (data?.collectionBillDetails?.length > 0) {
       const bpaPayments = cloneDeep(data?.collectionBillDetails)
       bpaPayments.forEach((pay) => {
@@ -924,7 +924,7 @@ const BpaApplicationDetail = () => {
               }),
           })
         }
-  
+
         if (pay?.paymentDetails[0]?.businessService === "BPA.NC_OC_SAN_FEE") {
           dowloadOptions.push({
             order: 2,
@@ -937,7 +937,7 @@ const BpaApplicationDetail = () => {
               }),
           })
         }
-  
+
         if (pay?.paymentDetails[0]?.businessService === "BPA.LOW_RISK_PERMIT_FEE") {
           dowloadOptions.push({
             order: 1,
@@ -950,7 +950,7 @@ const BpaApplicationDetail = () => {
               }),
           })
         }
-  
+
         if (pay?.paymentDetails[0]?.businessService === "BPA.NC_APP_FEE") {
           dowloadOptions.push({
             order: 1,
@@ -963,7 +963,7 @@ const BpaApplicationDetail = () => {
               }),
           })
         }
-  
+
         if (pay?.paymentDetails[0]?.businessService === "BPA.NC_SAN_FEE") {
           dowloadOptions.push({
             order: 2,
@@ -978,7 +978,7 @@ const BpaApplicationDetail = () => {
         }
       })
     }
-  
+
     if (
       data &&
       data?.applicationData?.businessService === "BPA_LOW" &&
@@ -1022,7 +1022,7 @@ const BpaApplicationDetail = () => {
         });
       }
     }
-  
+
     if (data?.comparisionReport) {
       dowloadOptions.push({
         order: 4,
@@ -1030,7 +1030,7 @@ const BpaApplicationDetail = () => {
         onClick: () => window.open(data?.comparisionReport?.comparisonReport, "_blank"),
       })
     }
-  
+
     dowloadOptions.sort((a, b) => a.order - b.order)
 
   if (workflowDetails?.data?.nextActions?.length > 0) {
@@ -1290,7 +1290,7 @@ const BpaApplicationDetail = () => {
    }
 
   async function getPermitOccupancyOrderSearchFilestoreNew({ tenantId }, order, mode = "download") {
-    const prevGetLang = Digit.StoreData.getCurrentLanguage; 
+    const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
        setIsEnableLoader(true);
        const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
@@ -1440,7 +1440,7 @@ const BpaApplicationDetail = () => {
         setLoader(true);
         console.log("Drawing download URL:", data?.edcrDetails?.updatedDxfFile);
         const downloadUrl = await fetchOnlyUrl(data?.edcrDetails?.updatedDxfFile, tenantId);
-  
+
         setPdfUrl(downloadUrl);
         setShowPdfModal(true);
       } catch (error) {
@@ -1561,7 +1561,7 @@ const BpaApplicationDetail = () => {
       accessor: "fileStoreId",
       Cell: ({ value }) => {
         return value ? (
-          <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeToImage(value)} />
+          <LinkButton className="obps-pages-employee-bpa-application-details-index--style-6" label={t("View")} onClick={() => routeToImage(value)} />
         ) : (
           t("CS_NA")
         );
@@ -1574,7 +1574,7 @@ const BpaApplicationDetail = () => {
 
     //remove null enteries
     const nonNullEntries = remainingDoc.filter((value) => !!value?.fileURL);
-    // Rule 1: Must have exact entries equal to 
+    // Rule 1: Must have exact entries equal to
     if (entries.length !== nonNullEntries?.length) {
       return false;
     }
@@ -1832,7 +1832,7 @@ const BpaApplicationDetail = () => {
 
       const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
       const uploadedDiagramObject = fetchFilestoreAndTenant(data?.edcrDetails?.updatedDxfFile, tenantId)
-      
+
       const payload = {
         uploadedDiagram: {
           ...uploadedDiagramObject
@@ -1887,15 +1887,15 @@ const BpaApplicationDetail = () => {
   const printDrawingWithESign = async () => {
       try {
         // console.log("🎯 Starting certificate eSign process...");
-  
+
         const { id: fileStoreId, fullTenantId: tenant } = fetchOnlyFileStore(data?.edcrDetails?.updatedDxfFile);
-  
+
         // const callbackUrl = `${window.location.origin}/digit-ui/citizen/obps/bpa/esign/complete/${id}/${fileStoreId}`;
         const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/filestore/${id}`;
-        const authToken = localStorage.getItem("token");      
-  
+        const authToken = localStorage.getItem("token");
+
         console.log("📁 FileStore ID In Drawing:", fileStoreId, tenant, callbackUrl, authToken);
-  
+
         // Trigger eSign
         eSignCertificate(
           { fileStoreId, tenantId: tenant, callbackUrl, authToken },
@@ -2186,7 +2186,7 @@ const BpaApplicationDetail = () => {
     <Fragment>
       <div className={"employee-main-application-details"}>
         <div
-          className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}
+          className="cardHeaderWithOptions obps-pages-employee-bpa-application-details-index--style-7"
         >
           <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
           <div
@@ -2206,10 +2206,10 @@ const BpaApplicationDetail = () => {
                 />
               )}
             </div>
-            <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
+            <LinkButton label={t("VIEW_TIMELINE")} className="obps-pages-employee-bpa-application-details-index--style-8" onClick={handleViewTimeline}></LinkButton>
             {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
               (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
-                <LinkButton label={t("VIEW_INSPECTION")} style={{ color: "#A52A2A" }} onClick={handleViewInspecction}></LinkButton>
+                <LinkButton label={t("VIEW_INSPECTION")} className="obps-pages-employee-bpa-application-details-index--style-9" onClick={handleViewInspecction}></LinkButton>
               )}
           </div>
         </div>
@@ -2240,13 +2240,13 @@ const BpaApplicationDetail = () => {
               return (
                 <div key={index}>
                   {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && <CitizenAndArchitectPhoto data={data?.applicationData} />}
-                  {!detail?.isNotAllowed ? (detail?.isFieldInspection && data?.applicationData?.additionalDetails?.isSelfCertification) ? null : (                    
+                  {!detail?.isNotAllowed ? (detail?.isFieldInspection && data?.applicationData?.additionalDetails?.isSelfCertification) ? null : (
                     <Card
                       key={index}
                       // style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
                     >
                       {!detail?.isTitleVisible ? (
-                        <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(detail?.title)}</CardSubHeader>
+                        <CardSubHeader className="obps-pages-employee-bpa-application-details-index--style-10">{t(detail?.title)}</CardSubHeader>
                       ) : null}
 
                       <div
@@ -2269,7 +2269,7 @@ const BpaApplicationDetail = () => {
                           ? detail?.additionalDetails?.values?.map((value) => (
                               <div key={value?.title}>
                                 {!detail?.isTitleRepeat && value?.isHeader ? (
-                                  <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(value?.title)}</CardSubHeader>
+                                  <CardSubHeader className="obps-pages-employee-bpa-application-details-index--style-11">{t(value?.title)}</CardSubHeader>
                                 ) : null}
                               </div>
                             ))
@@ -2435,16 +2435,11 @@ const BpaApplicationDetail = () => {
                               ))
                             : null}
 
-                          {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && 
+                          {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" &&
                           (data?.applicationData?.additionalDetails?.isSelfCertification ? (
                             <div>
                               <StatusTable
-                                style={{
-                                  display: "flex",
-                                  gap: "20px",
-                                  flexWrap: "wrap",
-                                  justifyContent: "space-between",
-                                }}
+                                className="obps-pages-employee-bpa-application-details-index--style-12"
                               >
                                 {sitePhotos?.length > 0 &&
                                   [...sitePhotos]
@@ -2503,12 +2498,7 @@ const BpaApplicationDetail = () => {
                               {/* <CardSubHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
                           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
                               <StatusTable
-                                style={{
-                                  display: "flex",
-                                  gap: "20px",
-                                  flexWrap: "wrap",
-                                  justifyContent: "space-between",
-                                }}
+                                className="obps-pages-employee-bpa-application-details-index--style-13"
                               >
                                 {sitePhotos?.length > 0 &&
                                   [...sitePhotos]
@@ -2645,12 +2635,7 @@ const BpaApplicationDetail = () => {
                                     isPaginationRequired={false}
                                   /> */}
                                   <StatusTable
-                                    style={{
-                                      display: "flex",
-                                      gap: "20px",
-                                      flexWrap: "wrap",
-                                      justifyContent: "space-between",
-                                    }}
+                                    className="obps-pages-employee-bpa-application-details-index--style-14"
                                   >
                                     {siteImages?.documents?.length > 0 && siteImages?.documents?.map((doc) =>
                                       <BPASitePhotographs
@@ -2666,7 +2651,7 @@ const BpaApplicationDetail = () => {
                                   </StatusTable>
                                   {geoLocations?.length > 0 && (
                                     <React.Fragment>
-                                      <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
+                                      <CardSectionHeader className="obps-pages-employee-bpa-application-details-index--style-15">
                                         {t("SITE_INSPECTION_IMAGES_LOCATIONS")}
                                       </CardSectionHeader>
                                       <CustomLocationSearch position={geoLocations} />
@@ -2682,7 +2667,7 @@ const BpaApplicationDetail = () => {
                                       fiReport={fieldInspectionPending?.length > 0 ? fieldInspectionPending : data?.applicationData?.additionalDetails?.fieldinspection_pending}
                                       onSelect={onChangeReport}
                                     />
-                                    <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
+                                    <SubmitBar ref={menuRef} className="obps-pages-employee-bpa-application-details-index--style-16" label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
                                   </Card>
                                 )}
                               {data?.applicationData?.status != "INSPECTION_REPORT_PENDING" &&
@@ -2699,16 +2684,7 @@ const BpaApplicationDetail = () => {
                             ? detail?.additionalDetails?.noc.map((nocob, ind) => (
                                 <div
                                   key={ind}
-                                  style={{
-                                    marginTop: "19px",
-                                    background: "#FAFAFA",
-                                    border: "1px solid #D6D5D4",
-                                    borderRadius: "4px",
-                                    padding: "8px",
-                                    lineHeight: "19px",
-                                    maxWidth: "960px",
-                                    minWidth: "280px",
-                                  }}
+                                  className="obps-pages-employee-bpa-application-details-index--style-17"
                                 >
                                   <StatusTable>
                                     <Row
@@ -2798,16 +2774,7 @@ const BpaApplicationDetail = () => {
                               workflowDetails?.data?.actionState?.state == "POST_PAYMENT_CITIZEN_APPROVAL_PENDING" ||
                               workflowDetails?.data?.actionState?.state == "POST_PAYMENT_INPROGRESS") && (
                               <div
-                                style={{
-                                  marginTop: "19px",
-                                  background: "#FAFAFA",
-                                  border: "1px solid #D6D5D4",
-                                  borderRadius: "4px",
-                                  padding: "8px",
-                                  lineHeight: "19px",
-                                  maxWidth: "950px",
-                                  minWidth: "280px",
-                                }}
+                                className="obps-pages-employee-bpa-application-details-index--style-18"
                               >
                                 <Row
                                   className="border-none"
@@ -2821,7 +2788,7 @@ const BpaApplicationDetail = () => {
                             )}
                         </StatusTable>
                         {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && (
-                          <div style={{ marginTop: "5px" }}>
+                          <div className="obps-pages-employee-bpa-application-details-index--style-19">
                             {pdfLoading || isOwnerFileLoading ? (
                               <Loader />
                             ) : (
@@ -2848,14 +2815,7 @@ const BpaApplicationDetail = () => {
         </div>
 
         <Card
-          style={{
-            padding: "20px",
-            marginBottom: "30px",
-            borderRadius: "12px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            border: "1px solid #f0f0f0",
-            background: "#fff",
-          }}
+          className="obps-pages-employee-bpa-application-details-index--style-20"
         >
           {/* <CardSubHeader style={{fontSize:"20px", color:"#3f4351"}}>{t("BPA_P2_SUMMARY_FEE_EST_MANUAL")}</CardSubHeader>
            <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
@@ -2951,7 +2911,7 @@ const BpaApplicationDetail = () => {
               {!workflowDetails?.isLoading && !isLoading && (
                 <Fragment>
                   <div id="timeline">
-                    <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
+                    <CardSectionHeader className="obps-pages-employee-bpa-application-details-index--style-21">
                       {t("ES_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
                     </CardSectionHeader>
                     {/* {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
@@ -3008,18 +2968,18 @@ const BpaApplicationDetail = () => {
         </Card>
 
         {actions?.length > 0 && !(data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length === 0) && <Card>
-          <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
+          <CardSectionHeader className="obps-pages-employee-bpa-application-details-index--style-22">
             {t("Add Comments")}
           </CardSectionHeader>
           <RichTextBox
             value={draftComment}
             onChange={(e) => setDraftComment(e.target.value)}
             placeholder={t("Add Comments")}
-            className="checklist-table-textarea"
-            style={{ overflow: "hidden", maxHeight: "1500px" }}
+            className="checklist-table-textarea obps-pages-employee-bpa-application-details-index--style-23"
+
             maxLength={5000}
           />
-          <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
+          <SubmitBar ref={menuRef} className="obps-pages-employee-bpa-application-details-index--style-24" label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
         </Card>}
 
         {showPdfModal && (
@@ -3116,11 +3076,11 @@ const BpaApplicationDetail = () => {
           <Modal headerBarEnd={<CloseBtn onClick={closeImageModal} />} hideSubmit={true}>
             {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
             {imageUrl?.toLowerCase().endsWith(".pdf") ? (
-              <a style={{ color: "blue" }} href={imageUrl} target="_blank" rel="noopener noreferrer">
+              <a className="obps-pages-employee-bpa-application-details-index--style-25" href={imageUrl} target="_blank" rel="noopener noreferrer">
                 {t("CS_VIEW_DOCUMENT")}
               </a>
             ) : (
-              <img src={imageUrl} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+              <img src={imageUrl} alt="Preview" className="obps-pages-employee-bpa-application-details-index--style-26" />
             )}
           </Modal>
         )}

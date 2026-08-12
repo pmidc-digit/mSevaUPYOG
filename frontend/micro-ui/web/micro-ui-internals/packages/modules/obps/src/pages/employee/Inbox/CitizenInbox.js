@@ -695,7 +695,7 @@ const CitizenInbox = ({ parentRoute }) => {
           tenantSelector={
             isEmployee && tenantId === "pb.punjab" && cities?.length ? (
               <div className="new-inbox-tenant-selector">
-                <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>
+                <div className="filter-label sub-filter-label obps-pages-employee-inbox-citizen-inbox--style-1" >
                   {t("BPA_CITIES_DROPDOWN_LABEL")}
                 </div>
                 <div className="new-inbox-tenant-dropdown">

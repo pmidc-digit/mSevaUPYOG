@@ -184,11 +184,11 @@ const OCBasicDetails = ({ formData, onSelect, config }) => {
       {/* <Timeline currentStep={1} flow="OCBPA" /> */}
       <div className={isMobile ? "obps-search" : ""} style={!isMobile ? { maxWidth: "960px", minWidth: "640px", marginRight: "auto" } : {}}>
         <Label>{t(`OBPS_SEARCH_EDCR_NUMBER`)}</Label>
-        <TextInput className="searchInput"
+        <TextInput className="searchInput obps-page-components-ocbasic-details--style-1"
           onKeyPress={handleKeyPress}
           onChange={event => setScrutinyNumber({ edcrNumber: event.target.value })} value={scrutinyNumber?.edcrNumber} signature={true} signatureImg={!disableVlaue && <SearchIconSvg className="signature-img" onClick={!disableVlaue && scrutinyNumber?.edcrNumber ? () => handleSearch() : null} />}
           disable={isDisabled}
-          style={{ marginBottom: "10px" }}
+
         />
       </div>
       {isLoadingApplication ? <Loader /> : null}

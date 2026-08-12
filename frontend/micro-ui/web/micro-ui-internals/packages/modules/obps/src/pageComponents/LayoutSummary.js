@@ -201,7 +201,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
     <div className="employee-main-application-details">
       <style>{` .data-table .row {border: 2px solid lightgrey;}`}</style>
 
-      <StatusTable style={{ border: "none" }}>
+      <StatusTable className="obps-page-components-layout-summary--style-1">
         <Card>
           <CardSubHeader>{t("OWNER_OWNERPHOTO") || "Owner Photo"}</CardSubHeader>
           <CustomOwnerImage
@@ -267,7 +267,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
         );
       })}
 
-      
+
 
       {/* SITE DETAILS */}
       <Card>
@@ -322,10 +322,10 @@ function LayoutSummary({ currentStepData: formData, t }) {
           {renderRow(t("BPA_VASIKA_DATE_LABEL"), formatDate(formData?.siteDetails?.vasikaDate))}
           {renderRow(t("BPA_ROAD_TYPE_LABEL"), formData?.siteDetails?.roadType?.name)}
           {renderRow(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), formData?.siteDetails?.isAreaUnderMasterPlan?.i18nKey)}
-          
-          
-          
-          
+
+
+
+
           {/* {renderRow(t("BPA_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)} */}
 
           {renderRow(t("BPA_BUILDING_CATEGORY_LABEL"), formData?.siteDetails?.buildingCategory?.name)}
@@ -379,12 +379,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
         <StatusTable
-          style={{
-            display: "flex",
-            gap: "20px",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-          }}
+          className="obps-page-components-layout-summary--style-2"
         >
           {sitePhotos?.length > 0 &&
             [...sitePhotos].map((doc) => (
@@ -401,7 +396,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
       {/* DOCUMENTS UPLOADED */}
       <Card>
         <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <div style={{ padding: "0 0.5rem" }}>
+        <div className="obps-page-components-layout-summary--style-3">
           {formData?.documents?.documents?.documents?.length > 0 && (
             <LayoutDocumentTableView documents={formData?.documents?.documents?.documents?.filter((doc) => doc.documentType != "OWNER.SITEPHOTOGRAPHONE" && doc.documentType != "OWNER.SITEPHOTOGRAPHTWO")} />
           )}
@@ -411,7 +406,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
       {/* FEE DETAILS */}
       <Card>
         <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
-        <div style={{ padding: "0 0.5rem" }}>
+        <div className="obps-page-components-layout-summary--style-4">
           {formData && <LayoutFeeEstimationDetails formData={formData} feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true} />}
         </div>
       </Card>

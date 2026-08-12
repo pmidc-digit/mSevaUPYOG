@@ -57,16 +57,16 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   // Get all applicant names (primary owner + newly added applicants)
   const getAllApplicantNames = () => {
-    const layoutData = !currentStepData?.apiData?.Layout 
-      ? currentStepData?.apiData 
+    const layoutData = !currentStepData?.apiData?.Layout
+      ? currentStepData?.apiData
       : currentStepData?.apiData?.Layout?.[0];
-    
+
     const layoutOwners = layoutData?.owners || [];
     const primaryOwnerFromLayout = layoutOwners?.find((owner) => owner?.isPrimaryOwner === true || owner?.isPrimaryOwner === "true") || layoutOwners?.[0];
     const primaryApplicant = currentStepData?.applicants?.find((app) => app?.isPrimaryOwner === true || app?.isPrimaryOwner === "true") || primaryOwnerFromLayout || currentStepData?.applicants?.[0] || {};
-    
-    const aplicantType = 
-      primaryApplicant?.aplicantType?.code || 
+
+    const aplicantType =
+      primaryApplicant?.aplicantType?.code ||
       primaryApplicant?.additionalDetails?.aplicantType?.code;
 
     // Primary owner name - try form state and API owner fallback based on applicantType
@@ -79,18 +79,18 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       primaryOwnerName = primaryApplicant?.name
         || currentStepData?.applicationDetails?.applicantOwnerOrFirmName;
     }
-    
+
     // Get newly added applicants from Redux state (additional applicants, excluding primary)
     const applicantsFromRedux = currentStepData?.applicants || [];
     const newlyAddedApplicants = applicantsFromRedux.filter(app => (app?.name && app?.status && !app?.isPrimaryOwner && app !== primaryApplicant));
-    
+
     // Get all applicant names (primary + additional)
     const allApplicantNames = [
       primaryOwnerName,
       ...newlyAddedApplicants.map(app => app.name)
     ].filter(name => name); // Filter out undefined/null names
-    
-    
+
+
     return allApplicantNames.length > 0 ? allApplicantNames.join(", ") : "NA";
   };
 
@@ -101,7 +101,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    const finalPayload = mapToLayoutPayload(data, selectedAction);    
+    const finalPayload = mapToLayoutPayload(data, selectedAction);
 
     try {
       const response = await Digit.OBPSService.LayoutUpdate(finalPayload, tenantId);
@@ -146,13 +146,13 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
 
   function mapToLayoutPayload(layoutFormData, selectedAction) {
-  
+
   // Check if we're in EDIT mode or NEW mode
   // Layout can be either an object (from CREATE response) or array (from some API responses)
   const isLayoutArray = Array.isArray(layoutFormData?.apiData?.Layout);
   const isEditMode = !layoutFormData?.apiData?.Layout;
-  const layoutData = isEditMode 
-    ? layoutFormData?.apiData 
+  const layoutData = isEditMode
+    ? layoutFormData?.apiData
     : (isLayoutArray ? layoutFormData?.apiData?.Layout?.[0] : layoutFormData?.apiData?.Layout)
 
   // Get documents from Redux (following CLU pattern - 3 levels deep)
@@ -167,16 +167,16 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       if (!aPrimary && bPrimary) return 1;
       return 0;
     }) : [];
-    
+
     // Get newly added applicants from Redux state (starts from index 1, index 0 is placeholder)
     const applicantsFromRedux = layoutFormData?.applicants || [];
     const newlyAddedApplicants = applicantsFromRedux?.filter(app => app?.name); // Filter out empty entries
-    
+
     // Get document files
     const docFiles = layoutFormData?.documentUploadedFiles || {};
     const photoFiles = layoutFormData?.photoUploadedFiles || {};
     const panDocFiles = layoutFormData?.panDocumentUploadedFiles || {};
-    
+
     // Update primary owner (index 0) with new documents if available
     // const updatedOwnersFromApi = ownersFromApi.map((owner, index) => {
     //   if (index === 0) {
@@ -194,7 +194,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     //       isPrimaryOwner: true,
     //       pan: layoutFormData?.applicationDetails?.panNumber || owner?.pan || null,
     //       additionalDetails: {
-    //         ...owner?.additionalDetails,            
+    //         ...owner?.additionalDetails,
     //         ownerPhoto: layoutFormData?.applicationDetails?.primaryOwnerPhoto || photoFiles[0]?.fileStoreId || owner?.additionalDetails?.ownerPhoto || null,
     //         documentFile: layoutFormData?.applicationDetails?.primaryOwnerDocument || docFiles[0]?.fileStoreId || owner?.additionalDetails?.documentFile || null,
     //         panDocument: layoutFormData?.applicationDetails?.panDocumentUploadedFiles || panDocFiles[0]?.fileStoreId || owner?.additionalDetails?.panDocument || null,
@@ -228,11 +228,11 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     //   }
     //   return owner;
     // });
-    
+
     // Map newly added applicants to owner format for API
     const mappedNewApplicants = newlyAddedApplicants
       .map((applicant) => {
-        
+
         // For new applicants, don't send uuid - let backend create/assign it
         // Sending uuid with mobileNumber causes InvalidUserSearchCriteriaException
         const ownerObj = {
@@ -258,13 +258,13 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           },
           uuid: applicant?.uuid || null
         };
-        
+
         return ownerObj;
       });
-    
+
     // Merge: existing owners from API (updated) + newly added applicants
     const owners = [...mappedNewApplicants];
-    
+
 
     const siteDet = layoutFormData?.siteDetails || {};
     const catCode = (siteDet?.buildingCategory?.code || siteDet?.buildingCategory?.name || siteDet?.buildingCategory || "").toUpperCase();
@@ -316,22 +316,22 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             areaUnderIndustrialUseInSqM: isInd ? layoutFormData?.siteDetails?.areaUnderIndustrialUseInSqM || "" : "",
             areaUnderIndustrialUseInPct: isInd ? layoutFormData?.siteDetails?.areaUnderIndustrialUseInPct || "" : "",
             ...(layoutFormData?.siteDetails?.ulbName && { ulbName: typeof layoutFormData?.siteDetails?.ulbName === 'object' ? layoutFormData?.siteDetails?.ulbName?.name || "" : layoutFormData?.siteDetails?.ulbName }),
-            ...(layoutFormData?.siteDetails?.roadType && { 
-              roadType: typeof layoutFormData?.siteDetails?.roadType === 'string' 
+            ...(layoutFormData?.siteDetails?.roadType && {
+              roadType: typeof layoutFormData?.siteDetails?.roadType === 'string'
                 ? { code: layoutFormData?.siteDetails?.roadType, name: layoutFormData?.siteDetails?.roadType }
                 : layoutFormData?.siteDetails?.roadType
             }),
-            ...(layoutFormData?.siteDetails?.applicationAppliedUnder && { 
-              applicationAppliedUnder: typeof layoutFormData?.siteDetails?.applicationAppliedUnder === 'string' 
+            ...(layoutFormData?.siteDetails?.applicationAppliedUnder && {
+              applicationAppliedUnder: typeof layoutFormData?.siteDetails?.applicationAppliedUnder === 'string'
                 ? { code: layoutFormData?.siteDetails?.applicationAppliedUnder, name: layoutFormData?.siteDetails?.applicationAppliedUnder }
                 : layoutFormData?.siteDetails?.applicationAppliedUnder
             }),
-            ...(layoutFormData?.siteDetails?.district && { 
+            ...(layoutFormData?.siteDetails?.district && {
               district: typeof layoutFormData?.siteDetails?.district === 'string'
                 ? { code: layoutFormData?.siteDetails?.district, name: layoutFormData?.siteDetails?.district }
                 : layoutFormData?.siteDetails?.district
             }),
-            ...(layoutFormData?.siteDetails?.zone && { 
+            ...(layoutFormData?.siteDetails?.zone && {
               zone: typeof layoutFormData?.siteDetails?.zone === 'string'
                 ? { code: layoutFormData?.siteDetails?.zone, name: layoutFormData?.siteDetails?.zone }
                 : layoutFormData?.siteDetails?.zone
@@ -350,18 +350,18 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     };
 
     // ========== DOCUMENT HANDLING (Following CLU Pattern) ==========
-    // CLU uses: cluFormData?.documents?.documents?.documents    
-    
+    // CLU uses: cluFormData?.documents?.documents?.documents
+
     if (isEditMode) {
       // EDIT MODE: Merge API documents with Redux documents (like CLU)
       const apiResponseDocuments = layoutFormData?.documents?.documents?.documents || [];
       const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d) => d.documentType));
-      
-      
+
+
       // Update existing API documents with new filestoreIds/documentAttachments from Redux
       const updatedApiResponseDocuments = apiResponseDocuments?.map((doc) => {
         const matchingDoc = docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType);
-        
+
         if (matchingDoc) {
           const fileStoreId = matchingDoc.filestoreId !== undefined ? matchingDoc.filestoreId : matchingDoc.documentAttachment;
           const uuid = matchingDoc.uuid || matchingDoc.documentUid || doc.uuid;
@@ -374,10 +374,10 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         }
         return doc;
       });
-      
+
       // Find newly added documents that don't exist in API response
       const newlyAddedDocs = docsArrayFromRedux?.filter((d) => !apiResponseDocumentType.has(d.documentType)) || [];
-      
+
       const updatedNewlyAddedDocs = newlyAddedDocs?.map((doc) => {
         return {
           layoutId: doc?.layoutId,
@@ -387,17 +387,17 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           documentAttachment: doc?.filestoreId || doc?.documentAttachment,
         };
       });
-      
+
       const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
-      
+
       overallDocs.forEach((doc) => {
         updatedApplication?.documents?.push({ ...doc });
       });
-      
+
     } else {
       // NEW MODE: Use Redux documents directly (like CLU)
       //console.log("[v0] NEW MODE - docsArrayFromRedux:", docsArrayFromRedux);
-      
+
       docsArrayFromRedux.forEach((doc) => {
         updatedApplication.documents.push({
           // ...doc,
@@ -410,13 +410,13 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       });
     }
 
-    
+
     // For newly added applicants, add their documents with proper document type keys
     // The key in docFiles/photoFiles corresponds to the applicant index in applicantsFromRedux
     // newlyAddedApplicants.forEach((applicant, index) => {
     //   const applicantIndex = applicantsFromRedux.indexOf(applicant);
     //   const ownerIndex = ownersFromApi.length + index; // Position in final owners array
-      
+
     //   // Add photo document
     //   if (photoFiles[applicantIndex]?.fileStoreId) {
     //     updatedApplication.documents.push({
@@ -424,7 +424,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     //       documentAttachment: photoFiles[applicantIndex].fileStoreId,
     //     });
     //   }
-      
+
     //   // Add ID proof document
     //   if (docFiles[applicantIndex]?.fileStoreId) {
     //     updatedApplication.documents.push({
@@ -458,7 +458,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   // Handle both NEW mode (Layout array) and EDIT mode (Layout object)
   const isEditMode = window.location.pathname.includes("edit");
   // console.log("isEditMode",isEditMode)
-  const layoutData = isEditMode 
+  const layoutData = isEditMode
     ? currentStepData?.apiData?.Layout?.[0]
     : currentStepData?.apiData?.Layout;
 

@@ -468,7 +468,7 @@ const MyApplication = () => {
         My Applications
         {/* ${getTotalCount(data?.Licenses?.length, bpaData?.length)} */}
       </Header>
-      <div style={{ marginTop: "6%" }} className="ndc-new-filter-status-wrapper">
+      <div  className="ndc-new-filter-status-wrapper obps-pages-citizen-my-application-index--style-1">
         <div className="ndc-new-filter-status-grid ndc-new-filter-card-grid">
           <button
             onClick={() => {
@@ -547,8 +547,8 @@ const MyApplication = () => {
               )}
               <KeyNote keyValue={t("BPA_APPLICANT_NAME_LABEL")} note={application?.tradeLicenseDetail?.owners?.[0]?.name} />
               <KeyNote keyValue={t("TL_COMMON_TABLE_COL_STATUS")} note={t(`WF_ARCHITECT_${application?.status}`)} noteStyle={application?.status === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }} />
-            
-              
+
+
               <div style={{display: "flex", flexDirection: "row", gap: "5px"}}>
 
                 {application.status === "CITIZEN_ACTION_REQUIRED" ? (
@@ -574,7 +574,7 @@ const MyApplication = () => {
 
                 {(application.status === "APPROVED" && !application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("ARCHITECT")) ? (
                   <React.Fragment>
-                  
+
                     <SubmitBar
                       label={t("BPA_PROFESSIONAL_UPGRADE")}
                       onSubmit={() => getBPAREGFormDataForUpgrade(application)}
@@ -584,7 +584,7 @@ const MyApplication = () => {
 
                 {((application.status === "APPROVED" && isRenewButtonVisible )|| application.status === "EXPIRED") ? (
                   <React.Fragment>
-                 
+
                     <SubmitBar
                       label={t("BPA_PROFESSIONAL_RENEW")}
                       onSubmit={() => getBPAREGFormDataForRenew(application)}
@@ -608,7 +608,7 @@ const MyApplication = () => {
 
             </CustomCard>
           );
-        } 
+        }
          else {
           const encryptedId = encryptId(application?.applicationNo);
           return (
@@ -631,7 +631,7 @@ const MyApplication = () => {
                 <Link to={{ pathname: `/digit-ui/citizen/obps/bpa-app/${encryptedId}`, state: { tenantId: "" } }}>
                   <SubmitBar label={t("TL_VIEW_DETAILS")} />
                 </Link>
-             
+
               {application.status === "PENDINGPAYMENT" ? (
                 <Link
                   to={{

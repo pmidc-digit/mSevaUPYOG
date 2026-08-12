@@ -59,7 +59,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
       {comment?.length > 0 && (
         <div className="TLComments">
           <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
+          <p className="obps-pages-employee-application-overview-layout-application-overview--style-1">{comment}</p>
         </div>
       )}
 
@@ -81,7 +81,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         </div>
       )}
 
-      <div style={{ marginTop: "8px" }}>
+      <div className="obps-pages-employee-application-overview-layout-application-overview--style-2">
         {caption.time && <p>{caption.time}</p>}
         {caption.date && <p>{caption.date}</p>}
         {caption.name && <p>{caption.name}</p>}
@@ -222,7 +222,7 @@ const LayoutEmployeeApplicationOverview = () => {
     const siteInspectionEmp = useMemo(() => {
       return workflowDetails?.data?.processInstances?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")?.assigner;
     }, [workflowDetails]);
-  
+
     const empUserName = siteInspectionEmp?.userName || "";
     const empName = siteInspectionEmp?.name || "";
 
@@ -638,7 +638,7 @@ const LayoutEmployeeApplicationOverview = () => {
         returnFileStoreId: true,
       });
       if (!fileStoreId) throw new Error("No filestoreId found for LOI eSign");
-      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/layout/esign/complete/${encodeURIComponent(id)}`;      
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/layout/esign/complete/${encodeURIComponent(id)}`;
       const authToken = localStorage.getItem("token");
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl, authToken },
@@ -689,7 +689,7 @@ const LayoutEmployeeApplicationOverview = () => {
     });
   }
 
- 
+
   if (
       applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
     ) {
@@ -1214,10 +1214,10 @@ const LayoutEmployeeApplicationOverview = () => {
   return (
     <div className={"employee-main-application-details"}>
       {/* <CustomOwnerImage ownerFileStoreId={displayData?.owners?.[0]?.additionalDetails?.ownerPhoto} ownerName={displayData?.owners?.[0]?.name} /> */}
-      <div className="cardHeaderWithOptions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="cardHeaderWithOptions obps-pages-employee-application-overview-layout-application-overview--style-3" >
         <Header styles={{ fontSize: "32px" }}>{t("LAYOUT_APP_OVER_VIEW_HEADER")}</Header>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginLeft: "auto" }}>
-          <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
+        <div className="obps-pages-employee-application-overview-layout-application-overview--style-4">
+          <LinkButton label={t("VIEW_TIMELINE")} className="obps-pages-employee-application-overview-layout-application-overview--style-5" onClick={handleViewTimeline} />
           {getLoader && <Loader />}
           {dowloadOptions && dowloadOptions.length > 0 && (
             (recieptDataLoading1 || recieptDataLoading2) ?
@@ -1251,14 +1251,14 @@ const LayoutEmployeeApplicationOverview = () => {
         </StatusTable>
       </Card>
 
-      
+
 
       {/* -------------------- PROFESSIONAL DETAILS -------------------- */}
 
       {displayData?.applicantDetails?.[0]?.professionalName && (
         <Card>
           <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
-      
+
             <StatusTable>
               <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalName || "N/A"} />
               <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalEmailId || "N/A"} />
@@ -1270,7 +1270,7 @@ const LayoutEmployeeApplicationOverview = () => {
                 text={formatDate(displayData?.applicantDetails?.[0]?.professionalRegistrationValidity || "N/A")}
               />
             </StatusTable>
-          
+
         </Card>
       )}
 
@@ -1281,7 +1281,7 @@ const LayoutEmployeeApplicationOverview = () => {
           <React.Fragment key={index}>
             <Card>
               <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `${t("Owner") || "Owner"} ${index + 1}`}</CardSubHeader>
-         
+
                 <StatusTable>
 
                   {index === 0 && <Row label={t(`CLU_OWNER_TYPE_LABEL`)} text={applicant?.additionalDetails?.aplicantType?.name} />}
@@ -1313,7 +1313,7 @@ const LayoutEmployeeApplicationOverview = () => {
                     text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />}
                   />
                 </StatusTable>
-             
+
             </Card>
           </React.Fragment>
         ))}
@@ -1322,7 +1322,7 @@ const LayoutEmployeeApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-     
+
             <StatusTable key={index}>
               {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
               {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
@@ -1372,10 +1372,10 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
               {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
               {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
-              
-              
+
+
               {/* {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)} */}
-              
+
               {/* {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)} */}
 
               {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
@@ -1419,7 +1419,7 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
               {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
-          
+
         ))}
       </Card>
 
@@ -1427,7 +1427,7 @@ const LayoutEmployeeApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-         
+
             <StatusTable key={index}>
               <RenderRow label={t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL")} value={detail?.specificationPlotArea} />
               {/* <RenderRow
@@ -1444,7 +1444,7 @@ const LayoutEmployeeApplicationOverview = () => {
                 value={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan}
               /> */}
             </StatusTable>
-          
+
         ))}
       </Card>
 
@@ -1474,12 +1474,7 @@ const LayoutEmployeeApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
         <StatusTable
-          style={{
-            display: "flex",
-            gap: "20px",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-          }}
+          className="obps-pages-employee-application-overview-layout-application-overview--style-6"
         >
           {sitePhotos?.length > 0 &&
             [...sitePhotos]
@@ -1509,12 +1504,7 @@ const LayoutEmployeeApplicationOverview = () => {
         <Card>
            <CardSubHeader>{empName ? `FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}` : t("SITE_INPECTION_IMAGES")}</CardSubHeader>
           <StatusTable
-            style={{
-              display: "flex",
-              gap: "20px",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-            }}
+            className="obps-pages-employee-application-overview-layout-application-overview--style-7"
           >
             {documentData?.length > 0 &&
               documentData.map((doc) => (
@@ -1626,7 +1616,7 @@ const LayoutEmployeeApplicationOverview = () => {
           />
         )}
          {hasPayments && (
-                  <div style={{ marginTop: "16px" }}>
+                  <div className="obps-pages-employee-application-overview-layout-application-overview--style-8">
                     <OBPSPaymentHistory payments={combinedPayments} />
                   </div>
                 )}
@@ -1692,12 +1682,12 @@ const LayoutEmployeeApplicationOverview = () => {
                 prefix= {prefix}
                 t={t}
                 timeObj={timeObj}
-                Statusprefix ={Statusprefix} 
+                Statusprefix ={Statusprefix}
                 empUserName={empUserName}
                 handleSetEmpDesignation={handleSetEmpDesignation}
               />
             </div>
-     
+
       {actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (

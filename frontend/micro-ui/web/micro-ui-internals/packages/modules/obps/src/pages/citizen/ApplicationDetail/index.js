@@ -385,7 +385,7 @@ const ApplicationDetails = () => {
   const renderLabel = (label, value) => (
     <div style={labelFieldPairStyle}>
       <CardLabel style={boldLabelStyle}>{label}</CardLabel>
-      <div style={{ wordBreak: "break-word" }}>{value || t("CS_NA")}</div>
+      <div className="obps-pages-citizen-application-detail-index--style-1">{value || t("CS_NA")}</div>
     </div>
   );
 
@@ -448,16 +448,10 @@ const ApplicationDetails = () => {
         {/* Header */}
 
         <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: "2rem",
-            gap: "1rem",
-          }}
+          className="obps-pages-citizen-application-detail-index--style-2"
         >
-          <div style={{ flex: 1 }}>
-            <h2 style={{ fontSize: "2rem", color: "#2e4a66", marginBottom: "1rem" }}>{t("BPA_TASK_DETAILS_HEADER")}</h2>
+          <div className="obps-pages-citizen-application-detail-index--style-3">
+            <h2 className="obps-pages-citizen-application-detail-index--style-4">{t("BPA_TASK_DETAILS_HEADER")}</h2>
             <div
               style={{
                 display: "flex",
@@ -471,7 +465,7 @@ const ApplicationDetails = () => {
                 <Loader />
               ) : (
                 <MultiLink
-                  style={{ position: "static" }}
+                  className="obps-pages-citizen-application-detail-index--style-5"
                   optionsStyle={{ position: "static" }}
                   onHeadClick={() => setShowOptions(!showOptions)}
                   displayOptions={showOptions}
@@ -491,18 +485,11 @@ const ApplicationDetails = () => {
             if (!passportPhoto || !documents[passportPhoto.fileStoreId]) return null;
 
             return (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "1rem" }}>
+              <div className="obps-pages-citizen-application-detail-index--style-6">
                 <img
                   src={documents[passportPhoto.fileStoreId]?.split(",")[0] || "/placeholder.svg"}
                   alt="Owner Photograph"
-                  style={{
-                    maxWidth: "120px",
-                    maxHeight: "120px",
-                    border: "2px solid #e0e0e0",
-                    borderRadius: "8px",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                    flexShrink: 0,
-                  }}
+                  className="obps-pages-citizen-application-detail-index--style-7"
                   onError={(e) => {
                     e.target.style.display = "none";
                   }}
@@ -566,50 +553,26 @@ const ApplicationDetails = () => {
         {License?.tradeLicenseDetail?.applicationDocuments?.length > 0 && (
           <div style={sectionStyle}>
             <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
-            <div style={{ overflowX: "auto" }}>
+            <div className="obps-pages-citizen-application-detail-index--style-8">
               <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  marginTop: "1rem",
-                }}
+                className="obps-pages-citizen-application-detail-index--style-9"
               >
                 <thead>
                   <tr
-                    style={{
-                      backgroundColor: "#f5f5f5",
-                      borderBottom: "2px solid #ddd",
-                    }}
+                    className="obps-pages-citizen-application-detail-index--style-10"
                   >
                     <th
-                      style={{
-                        padding: "0.75rem",
-                        textAlign: "center",
-                        fontWeight: "600",
-                        color: "#2e4a66",
-                        width: "100px",
-                      }}
+                      className="obps-pages-citizen-application-detail-index--style-11"
                     >
                       {t("BPA_SL_NO")}
                     </th>
                     <th
-                      style={{
-                        padding: "0.75rem",
-                        textAlign: "left",
-                        fontWeight: "600",
-                        color: "#2e4a66",
-                      }}
+                      className="obps-pages-citizen-application-detail-index--style-12"
                     >
                       {t("BPA_DOCUMENT_TYPE")}
                     </th>
                     <th
-                      style={{
-                        padding: "0.75rem",
-                        textAlign: "center",
-                        fontWeight: "600",
-                        color: "#2e4a66",
-                        width: "150px",
-                      }}
+                      className="obps-pages-citizen-application-detail-index--style-13"
                     >
                       {t("BPA_ACTION")}
                     </th>
@@ -619,39 +582,25 @@ const ApplicationDetails = () => {
                   {License?.tradeLicenseDetail?.applicationDocuments?.map((document, index) => (
                     <tr
                       key={index}
-                      style={{
-                        borderBottom: "1px solid #e0e0e0",
-                      }}
+                      className="obps-pages-citizen-application-detail-index--style-14"
                     >
                       <td
-                        style={{
-                          padding: "0.75rem",
-                          textAlign: "center",
-                          color: "#333",
-                          fontWeight: "500",
-                        }}
+                        className="obps-pages-citizen-application-detail-index--style-15"
                       >
                         {index + 1}
                       </td>
-                      <td style={{ padding: "0.75rem" }}>
-                        <div style={{ color: "#333" }}>{t(`BPAREG_HEADER_${stringReplaceAll(document?.documentType?.toUpperCase(), ".", "_")}`)}</div>
+                      <td className="obps-pages-citizen-application-detail-index--style-16">
+                        <div className="obps-pages-citizen-application-detail-index--style-17">{t(`BPAREG_HEADER_${stringReplaceAll(document?.documentType?.toUpperCase(), ".", "_")}`)}</div>
                         {document?.info && (
                           <div
-                            style={{
-                              fontSize: "12px",
-                              color: "#505A5F",
-                              marginTop: "5px",
-                            }}
+                            className="obps-pages-citizen-application-detail-index--style-18"
                           >
                             {t(document?.info)}
                           </div>
                         )}
                       </td>
                       <td
-                        style={{
-                          padding: "0.75rem",
-                          textAlign: "center",
-                        }}
+                        className="obps-pages-citizen-application-detail-index--style-19"
                       >
                         <button
                           onClick={() => {
@@ -660,17 +609,7 @@ const ApplicationDetails = () => {
                               window.open(fileUrl, "_blank");
                             }
                           }}
-                          style={{
-                            padding: "0.5rem 1rem",
-                            backgroundColor: "#2e4a66",
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            fontSize: "0.875rem",
-                            fontWeight: "500",
-                            transition: "background-color 0.2s",
-                          }}
+                          className="obps-pages-citizen-application-detail-index--style-20"
                           onMouseOver={(e) => (e.target.style.backgroundColor = "#1e3a56")}
                           onMouseOut={(e) => (e.target.style.backgroundColor = "#2e4a66")}
                         >

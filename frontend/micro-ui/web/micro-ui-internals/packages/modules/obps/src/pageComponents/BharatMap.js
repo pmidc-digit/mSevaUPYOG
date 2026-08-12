@@ -7,7 +7,7 @@ const BharatMap = ({mapUrl}) => {
         src={`https://bharatmaps.gov.in/BharatMaps/Home/Map?${mapUrl}`} // You can replace this with any BharatMap embed URL or GIS portal link
         width="100%"
         height="100%"
-        style={{ border: "none" }}
+        className="obps-page-components-bharat-map--style-1"
         allowFullScreen
         loading="lazy"
         title="Bharat Map"

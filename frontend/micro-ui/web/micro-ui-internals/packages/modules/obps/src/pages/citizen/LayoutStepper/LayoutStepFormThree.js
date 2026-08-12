@@ -30,13 +30,13 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const layoutOwners = currentStepDataNew?.apiData?.Layout?.[0]?.owners || [];
   const primaryOwnerFromLayout = layoutOwners?.find((owner) => owner?.isPrimaryOwner) || layoutOwners?.[0];
   const primaryApplicant = currentStepDataNew?.applicants?.find((app) => app?.isPrimaryOwner) || primaryOwnerFromLayout || currentStepDataNew?.applicants?.[0] || {};
-  
-  const applicantType = 
-    primaryApplicant?.aplicantType?.code || 
+
+  const applicantType =
+    primaryApplicant?.aplicantType?.code ||
     primaryApplicant?.additionalDetails?.aplicantType?.code;
 
-    
-  
+
+
 
   const [applicationNo, setApplicationNo] = useState("");
     // const [isVacant, setIsVacant] = useState(false);
@@ -46,56 +46,56 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     const [isNationalHighway, setIsNationalHighway] = useState(false);
     const [isInstitution, setIsInstitution] = useState(false);
     const [isIndustrial, setIsIndustrial] = useState(false);
-  
+
     useEffect(() => {
       if (!currentStepDataNew) return;
-  
+
       // Application No
       setApplicationNo(
         currentStepDataNew?.apiData?.Layout?.applicationNo || ""
       );
-  
+
       // Vacant
       // setIsVacant(
       //   currentStepDataNew?.siteDetails?.buildingStatus?.code === "VACANT"
       // );
-  
+
       // CLU Approved
       const cluApprovedValue =
         currentStepDataNew?.siteDetails?.isCluRequired?.code ||
         currentStepDataNew?.siteDetails?.isCluRequired;
-  
+
       setIsCluApproved(
         cluApprovedValue === "YES" || cluApprovedValue === true
       );
-  
+
       // Restricted Area
       setIsRestrictedArea(
         currentStepDataNew?.siteDetails?.specificationRestrictedArea?.code === "YES"
       );
-  
+
       // Under Master Plan
       setIsUnderMasterPlan(
         currentStepDataNew?.siteDetails?.specificationIsSiteUnderMasterPlan?.code === "YES"
       );
-  
+
       // National Highway
       const roadType =
         currentStepDataNew?.siteDetails?.roadType?.name ||
         currentStepDataNew?.siteDetails?.roadType ||
         "";
-  
+
       setIsNationalHighway(
         roadType.toLowerCase().includes("national") ||
         roadType.toLowerCase().includes("nh")
       );
-  
+
       // Institutional and Industrial checks
       const bc = currentStepDataNew?.siteDetails?.buildingCategory;
 
       const isInstitutionVal = bc ? (
         typeof bc === "object" ? (
-          (bc.code || "").toLowerCase().includes("institutional") || 
+          (bc.code || "").toLowerCase().includes("institutional") ||
           (bc.name || "").toLowerCase().includes("institutional")
         ) : (
           bc.toLowerCase().includes("institutional")
@@ -104,7 +104,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
       const isIndustrialVal = bc ? (
         typeof bc === "object" ? (
-          (bc.code || "").toLowerCase().includes("industrial") || 
+          (bc.code || "").toLowerCase().includes("industrial") ||
           (bc.name || "").toLowerCase().includes("industrial")
         ) : (
           bc.toLowerCase().includes("industrial")
@@ -121,21 +121,21 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const filteredDocuments = useMemo(() => {
       //console.log("🔄 useMemo CALLED - isCluApproved:", isCluApproved, "isNationalHighway:", isNationalHighway, "isInstitution:", isInstitution)
       let docs = docData?.LAYOUT?.LayoutDocuments || []
-      
+
       //console.log("=== FILTER DEBUG ===")
       //console.log("Initial docs count:", docs.length, docs)
       //console.log("isCluApproved:", isCluApproved)
       //console.log("isNationalHighway:", isNationalHighway)
       //console.log("isInstitution:", isInstitution)
-      
+
       // Filter and process documents
       const processedDocs = docs
         .map((doc) => {
           // Set default required status based on backend config
           let isRequired = doc.required || false
-          
+
           // Override required status based on conditions
-          
+
           // Site photographs are ALWAYS mandatory (regardless of CLU)
           if (doc.code === "OWNER.SITEPHOTOGRAPHONE" || doc.code === "OWNER.SITEPHOTOGRAPHTWO") {
             isRequired = true
@@ -164,20 +164,20 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
           // else if (!isCluApproved && doc.cluRequired) {
           //   isRequired = false
           // }
-          
+
           // Filter out building drawing if vacant
           // if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
           //   return null
           // }
-          
+
           return { ...doc, required: isRequired }
         }).filter(doc => !(doc?.cluRequired && !isCluApproved))
         .filter(doc => doc !== null)
-      
+
       //console.log("Final docs count:", processedDocs.length)
       //console.log("Mandatory docs:", processedDocs.filter(d => d.required).map(d => ({ code: d.code, required: d.required, cluRequired: d.cluRequired })))
       //console.log("=== END DEBUG ===")
-      
+
       return processedDocs
     }, [ isCluApproved, isNationalHighway, isInstitution, isIndustrial, applicantType, docData?.LAYOUT?.LayoutDocuments?.length])
 
@@ -323,7 +323,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
           onBackClick={onGoBack}
         />
       ) : (
-        <div style={{ padding: "20px", textAlign: "center" }}>
+        <div className="obps-pages-citizen-layout-stepper-layout-step-form-three--style-1">
           <p>Loading documents...</p>
         </div>
       )}

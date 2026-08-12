@@ -6,19 +6,19 @@ import {
 // import NOCCustomUploadFile from "./NOCCustomUploadFile";
 
 import { amountToWords } from "../utils";
-export const FeeHistoryTable = ({  
-  t,  
+export const FeeHistoryTable = ({
+  t,
   feeHistory,
 }) => {
-  
+
 const [showHistory, setShowHistory] = useState(false);
 
- 
+
   return (
-    <div className="noc-table-container">      
+    <div className="noc-table-container">
       {feeHistory && Object.keys(feeHistory).length > 0 && (
-        <div style={{ marginTop: "16px" }}>
-          <div onClick={() => setShowHistory(!showHistory)} style={{ cursor: "pointer" }}>
+        <div className="obps-page-components-fee-history-table--style-1">
+          <div onClick={() => setShowHistory(!showHistory)} className="obps-page-components-fee-history-table--style-2">
             <CardSubHeader>
               {t("BPA_FEE_HISTORY_LABEL")} {showHistory ? "▲" : "▼"}
             </CardSubHeader>

@@ -397,3 +397,4845 @@
   margin-top: 24px;
   line-height: 1.4;
 }
+
+/* OBPS active inline style extraction. */
+.obps-components-action-menu--style-1 {
+  position: relative;
+  display: inline-block;
+}
+
+.obps-components-action-menu--style-2 {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.obps-components-bpasite-photographs--style-1 {
+  padding: 20px 0px;
+}
+
+.obps-components-bpasite-photographs--style-2 {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 0px 20px;
+}
+
+.obps-components-bpasite-photographs--style-3 {
+  text-align: start;
+}
+
+.obps-components-challan-documents--style-1 {
+  margin-bottom: 24px;
+}
+
+.obps-components-challan-documents--style-2 {
+  display: inline;
+}
+
+.obps-components-challan-documents--style-3 {
+  color: red;
+}
+
+.obps-components-custom-owner-image--style-1 {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  padding: 0px 20px;
+}
+
+.obps-components-custom-owner-image--style-2 {
+  text-align: center;
+}
+
+.obps-components-custom-upload-file--style-1 {
+  fill: red;
+}
+
+.obps-components-employee-module-card--style-1 {
+  color: inherit;
+  text-decoration: none;
+}
+
+.obps-components-layout-site-photographs--style-1 {
+  padding: 20px 0px;
+}
+
+.obps-components-layout-site-photographs--style-2 {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 0px 20px;
+}
+
+.obps-components-layout-site-photographs--style-3 {
+  text-align: start;
+}
+
+.obps-components-noc-site-photographs--style-1 {
+  padding: 20px 0px;
+}
+
+.obps-components-noc-site-photographs--style-2 {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 0px 20px;
+}
+
+.obps-components-noc-site-photographs--style-3 {
+  text-align: start;
+}
+
+.obps-components-noc-site-photographs-new--style-1 {
+  padding: 20px 0px;
+}
+
+.obps-components-noc-site-photographs-new--style-2 {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 0px 20px;
+}
+
+.obps-components-noc-site-photographs-new--style-3 {
+  text-align: start;
+}
+
+.obps-components-pdf-preview-modal--style-1 {
+  height: 80vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.obps-components-pdf-preview-modal--style-2 {
+  flex: 1;
+  border: none;
+  width: 100%;
+}
+
+.obps-components-zone-update--style-1 {
+  margin-bottom: 16px;
+}
+
+.obps-components-zone-update--style-2 {
+  margin-bottom: 20px;
+}
+
+.obps-components-zone-update--style-3 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-bpadocument-checklist--style-1 {
+  overflow: hidden;
+}
+
+.obps-page-components-bpadocument-checklist--style-2 {
+  overflow: hidden;
+}
+
+.obps-page-components-bpadocuments--style-1 {
+  color: #505A5F;
+}
+
+.obps-page-components-bpadocuments--style-2 {
+  color: #333;
+}
+
+.obps-page-components-bpadocuments--style-3 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.obps-page-components-bpadocuments--style-4 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  margin-right: 10px;
+  color: #505A5F;
+}
+
+.obps-page-components-bpadocuments--style-5 {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: #505A5F;
+  word-break: break-word;
+}
+
+.obps-page-components-bpanew-buildingdetails--style-1 {
+  margin-bottom: 15px;
+}
+
+.obps-page-components-bpanew-buildingdetails--style-2 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-bpanew-buildingdetails--style-3 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-bpanew-buildingdetails--style-4 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-bpasearch-modal--style-1 {
+  color: white;
+  width: 100%;
+  max-width: 100px;
+}
+
+.obps-page-components-bharat-map--style-1 {
+  border: none;
+}
+
+.obps-page-components-cluapplicant-details--style-1 {
+  margin-top: 20px;
+}
+
+.obps-page-components-cluapplicant-details--style-2 {
+  color: red;
+  margin: 10px 0px;
+}
+
+.obps-page-components-cluapplicant-details--style-3 {
+  border: 1px solid #ddd;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.obps-page-components-cluapplicant-details--style-4 {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.obps-page-components-cluapplicant-details--style-5 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluapplicant-details--style-6 {
+  color: red;
+  margin-bottom: 0;
+}
+
+.obps-page-components-cluapplicant-details--style-7 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluapplicant-details--style-8 {
+  display: flex;
+  position: relative;
+  align-items: center;
+  width: 100%;
+}
+
+.obps-page-components-cluapplicant-details--style-9 {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.obps-page-components-cluapplicant-details--style-10 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluapplicant-details--style-11 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluapplicant-details--style-12 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluapplicant-details--style-13 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluapplicant-details--style-14 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluapplicant-details--style-15 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluapplicant-details--style-16 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluapplicant-details--style-17 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluapplicant-details--style-18 {
+  margin-bottom: 15px;
+  margin-top: 20px;
+}
+
+.obps-page-components-cluapplicant-details--style-19 {
+  width: 100%;
+}
+
+.obps-page-components-cluapplicant-details--style-20 {
+  margin-bottom: 15px;
+  margin-top: 20px;
+}
+
+.obps-page-components-cluapplicant-details--style-21 {
+  width: 100%;
+}
+
+.obps-page-components-cluapplicant-details--style-22 {
+  cursor: pointer;
+}
+
+.obps-page-components-cludocument-check-list--style-1 {
+  overflow: hidden;
+}
+
+.obps-page-components-cludocument-check-list--style-2 {
+  overflow: hidden;
+}
+
+.obps-page-components-cludocument-table-view--style-1 {
+  width: 20px;
+}
+
+.obps-page-components-cludocument-table-view--style-2 {
+  float: right;
+  display: inline;
+}
+
+.obps-page-components-cludocument-table-view--style-3 {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  display: block;
+}
+
+.obps-page-components-cludocument-table-view--style-4 {
+  width: 100%;
+  min-width: 400px;
+  table-layout: auto;
+}
+
+.obps-page-components-cludocuments-required--style-1 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-cludocuments-required--style-2 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-clufee-estimation-details--style-1 {
+  color: green;
+  font-weight: bold;
+}
+
+.obps-page-components-clufee-table--style-1 {
+  font-size: 14px;
+}
+
+.obps-page-components-clufee-table--style-2 {
+  font-size: 0.85em;
+  color: #555;
+  margin-top: 4px;
+  line-height: 1.3;
+}
+
+.obps-page-components-clufee-table--style-3 {
+  height: 50px;
+  overflow: hidden;
+}
+
+.obps-page-components-clufee-table--style-4 {
+  overflow: hidden;
+}
+
+.obps-page-components-clufees-estimation-details-table--style-1 {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.obps-page-components-clufees-estimation-details-table--style-2 {
+  width: 100%;
+}
+
+.obps-page-components-cluimge-view--style-1 {
+  padding: 20px 0px;
+}
+
+.obps-page-components-cluimge-view--style-2 {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  padding: 0px 20px;
+}
+
+.obps-page-components-cluimge-view--style-3 {
+  text-align: center;
+}
+
+.obps-page-components-clulocality-info--style-1 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clulocality-info--style-2 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluprofessional-details--style-1 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluprofessional-details--style-2 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluprofessional-details--style-3 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluprofessional-details--style-4 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluprofessional-details--style-5 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-cluresponse--style-1 {
+  padding: 10px;
+}
+
+.obps-page-components-cluresponse--style-2 {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.obps-page-components-cluresponse--style-3 {
+  overflow: hidden;
+}
+
+.obps-page-components-cluresponse--style-4 {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+}
+
+.obps-page-components-clusite-details--style-1 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-2 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-3 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-4 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-5 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-6 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-7 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-8 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-9 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-10 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-11 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-12 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-13 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-14 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-15 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-16 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-17 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-18 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-19 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-20 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-21 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-22 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-23 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-clusite-details--style-24 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-corrospondence-address--style-1 {
+  border: none;
+}
+
+.obps-page-components-corrospondence-address--style-2 {
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+.obps-page-components-corrospondence-address--style-3 {
+  disabled: true;
+  height: 30px;
+  width: 100%;
+  font-size: 14px;
+}
+
+.obps-page-components-digit-camera-capture--style-1 {
+  text-align: center;
+}
+
+.obps-page-components-digit-camera-capture--style-2 {
+  display: none;
+}
+
+.obps-page-components-digit-camera-capture--style-3 {
+  font-size: 12px;
+  color: #B45309;
+  margin-top: 4px;
+}
+
+.obps-page-components-digit-camera-capture--style-4 {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.obps-page-components-document-details--style-1 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-fee-estimation--style-1 {
+  font-size: 20px;
+  margin-top: 20px;
+}
+
+.obps-page-components-fee-estimation--style-2 {
+  font-size: 20px;
+  color: #3f4351;
+}
+
+.obps-page-components-fee-estimation--style-3 {
+  font-size: 20px;
+  color: #3f4351;
+}
+
+.obps-page-components-fee-history-table--style-1 {
+  margin-top: 16px;
+}
+
+.obps-page-components-fee-history-table--style-2 {
+  cursor: pointer;
+}
+
+.obps-page-components-gis--style-1 {
+  position: fixed;
+  background: #00000050;
+  width: 100%;
+  height: 100vh;
+  top: 0;
+  left: 0;
+}
+
+.obps-page-components-gis--style-2 {
+  position: relative;
+  margin-top: 60px;
+}
+
+.obps-page-components-gis--style-3 {
+  position: relative;
+  margin-top: 100px;
+  margin-bottom: -100px;
+}
+
+.obps-page-components-inspection-report--style-1 {
+  float: right;
+  display: inline;
+}
+
+.obps-page-components-inspection-report--style-2 {
+  width: 100px;
+  display: inline;
+  background: black;
+}
+
+.obps-page-components-inspection-report--style-3 {
+  float: right;
+  position: relative;
+  bottom: -6px;
+}
+
+.obps-page-components-inspection-report--style-4 {
+  width: 100px;
+}
+
+.obps-page-components-inspection-report--style-5 {
+  width: 100px;
+}
+
+.obps-page-components-inspection-report-display--style-1 {
+  margin-top: 16px;
+}
+
+.obps-page-components-layout-applicant-details--style-1 {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.obps-page-components-layout-applicant-details--style-2 {
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-applicant-details--style-3 {
+  color: red;
+  margin: 10px 0px 20px 0px;
+}
+
+.obps-page-components-layout-applicant-details--style-4 {
+  margin-top: 20px;
+}
+
+.obps-page-components-layout-applicant-details--style-5 {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.obps-page-components-layout-applicant-details--style-6 {
+  display: flex;
+}
+
+.obps-page-components-layout-applicant-details--style-7 {
+  margin-top: 25px;
+}
+
+.obps-page-components-layout-applicant-details--style-8 {
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-applicant-details--style-9 {
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-applicant-details--style-10 {
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-applicant-details--style-11 {
+  margin-bottom: 15px;
+  margin-top: 20px;
+}
+
+.obps-page-components-layout-applicant-details--style-12 {
+  width: 100%;
+}
+
+.obps-page-components-layout-applicant-details--style-13 {
+  margin-bottom: 15px;
+  margin-top: 20px;
+}
+
+.obps-page-components-layout-applicant-details--style-14 {
+  width: 100%;
+}
+
+.obps-page-components-layout-applicant-details--style-15 {
+  margin-bottom: 15px;
+  margin-top: 20px;
+}
+
+.obps-page-components-layout-applicant-details--style-16 {
+  width: 100%;
+}
+
+.obps-page-components-layout-applicant-details--style-17 {
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.obps-page-components-layout-applicant-details--style-18 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.obps-page-components-layout-applicant-details--style-19 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.obps-page-components-layout-applicant-details--style-20 {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.obps-page-components-layout-applicant-details--style-21 {
+  display: flex;
+}
+
+.obps-page-components-layout-applicant-details--style-22 {
+  margin-top: 23px;
+  cursor: pointer;
+}
+
+.obps-page-components-layout-applicant-details--style-23 {
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-applicant-details--style-24 {
+  margin-bottom: 15px;
+  margin-top: 3rem;
+}
+
+.obps-page-components-layout-applicant-details--style-25 {
+  width: 100%;
+}
+
+.obps-page-components-layout-applicant-details--style-26 {
+  margin-bottom: 15px;
+  margin-top: 3rem;
+}
+
+.obps-page-components-layout-applicant-details--style-27 {
+  width: 100%;
+}
+
+.obps-page-components-layout-applicant-details--style-28 {
+  margin-bottom: 15px;
+  margin-top: 20px;
+}
+
+.obps-page-components-layout-applicant-details--style-29 {
+  width: 100%;
+}
+
+.obps-page-components-layout-applicant-details--style-30 {
+  margin-top: 20px;
+}
+
+.obps-page-components-layout-applicant-details--style-31 {
+  color: #a82227;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.obps-page-components-layout-cludetails--style-1 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-cludetails--style-2 {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.obps-page-components-layout-cludetails--style-3 {
+  flex: 1;
+}
+
+.obps-page-components-layout-cludetails--style-4 {
+  padding: 10px 16px;
+  background: #1976d2;
+  color: white;
+  cursor: pointer;
+  margin-top: 4px;
+  border: none;
+  border-radius: 2px;
+  font-weight: bold;
+  min-width: 120px;
+}
+
+.obps-page-components-layout-cludetails--style-5 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-cludetails--style-6 {
+  width: 100%;
+}
+
+.obps-page-components-layout-cludetails--style-7 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-cludetails--style-8 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-cludetails--style-9 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-cludetails--style-10 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-cludetails--style-11 {
+  color: #999;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-cludetails--style-12 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-cludetails--style-13 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-document-table-view--style-1 {
+  width: 20px;
+}
+
+.obps-page-components-layout-document-table-view--style-2 {
+  float: right;
+  display: inline;
+}
+
+.obps-page-components-layout-document-table-view--style-3 {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  display: block;
+}
+
+.obps-page-components-layout-document-table-view--style-4 {
+  width: 100%;
+  min-width: 400px;
+  table-layout: auto;
+}
+
+.obps-page-components-layout-documents-required--style-1 {
+  margin-bottom: 24px;
+}
+
+.obps-page-components-layout-documents-required--style-2 {
+  width: 100%;
+}
+
+.obps-page-components-layout-documents-required--style-3 {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.obps-page-components-layout-documents-required--style-4 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-layout-documents-required--style-5 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-layout-documents-required--style-6 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-layout-documents-required--style-7 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-layout-fee-estimation-details--style-1 {
+  color: green;
+  font-weight: bold;
+}
+
+.obps-page-components-layout-fee-estimation-details-table--style-1 {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.obps-page-components-layout-fee-table--style-1 {
+  font-size: 14px;
+}
+
+.obps-page-components-layout-fee-table--style-2 {
+  font-size: 0.85em;
+  color: #555;
+  margin-top: 4px;
+  line-height: 1.3;
+}
+
+.obps-page-components-layout-fee-table--style-3 {
+  font-size: 14px;
+}
+
+.obps-page-components-layout-fee-table--style-4 {
+  font-size: 0.85em;
+  color: #555;
+  margin-top: 4px;
+  line-height: 1.3;
+}
+
+.obps-page-components-layout-image-view--style-1 {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  padding: 0px 20px;
+}
+
+.obps-page-components-layout-image-view--style-2 {
+  text-align: center;
+}
+
+.obps-page-components-layout-new-applicant-details--style-1 {
+  word-break: break-all;
+}
+
+.obps-page-components-layout-new-applicant-details--style-2 {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+.obps-page-components-layout-new-applicant-details--style-3 {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.obps-page-components-layout-new-applicant-details--style-4 {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.obps-page-components-layout-new-applicant-details--style-5 {
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-new-applicant-details--style-6 {
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-new-applicant-details--style-7 {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.obps-page-components-layout-new-applicant-details--style-8 {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.obps-page-components-layout-new-applicant-details--style-9 {
+  color: red;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.obps-page-components-layout-new-applicant-details--style-10 {
+  color: red;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.obps-page-components-layout-new-applicant-details--style-11 {
+  margin-top: 20px;
+}
+
+.obps-page-components-layout-new-applicant-details--style-12 {
+  color: #a82227;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.obps-page-components-layout-owner-search-modal--style-1 {
+  color: white;
+  width: 100%;
+  max-width: 120px;
+  height: 40px;
+  margin: 0;
+}
+
+.obps-page-components-layout-owner-search-modal--style-2 {
+  border: 1px solid #d6d6d6;
+  padding: 20px;
+  border-radius: 4px;
+  background: #fff;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.obps-page-components-layout-owner-search-modal--style-3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-4 {
+  margin: 0;
+}
+
+.obps-page-components-layout-owner-search-modal--style-5 {
+  margin-bottom: 20px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-6 {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.obps-page-components-layout-owner-search-modal--style-7 {
+  flex: 1;
+}
+
+.obps-page-components-layout-owner-search-modal--style-8 {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-owner-search-modal--style-9 {
+  color: white;
+  width: 100%;
+  max-width: 120px;
+  height: 40px;
+  margin: 0;
+}
+
+.obps-page-components-layout-owner-search-modal--style-10 {
+  margin-top: 20px;
+  overflow-x: auto;
+  width: 100%;
+  display: block;
+}
+
+.obps-page-components-layout-owner-search-modal--style-11 {
+  margin-top: 20px;
+  border-top: 1px solid #d1d5db;
+  padding-top: 15px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-12 {
+  margin-top: 10px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-13 {
+  color: #a82227;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.obps-page-components-layout-owner-search-modal--style-14 {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.obps-page-components-layout-owner-search-modal--style-15 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #111827;
+}
+
+.obps-page-components-layout-owner-search-modal--style-16 {
+  margin-bottom: 16px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-17 {
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.obps-page-components-layout-owner-search-modal--style-18 {
+  width: 100%;
+}
+
+.obps-page-components-layout-owner-search-modal--style-19 {
+  margin-top: 4px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-20 {
+  margin-bottom: 16px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-21 {
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.obps-page-components-layout-owner-search-modal--style-22 {
+  width: 100%;
+}
+
+.obps-page-components-layout-owner-search-modal--style-23 {
+  margin-bottom: 16px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-24 {
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.obps-page-components-layout-owner-search-modal--style-25 {
+  width: 100%;
+}
+
+.obps-page-components-layout-owner-search-modal--style-26 {
+  margin-top: 4px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-27 {
+  margin-bottom: 16px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-28 {
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.obps-page-components-layout-owner-search-modal--style-29 {
+  width: 100%;
+}
+
+.obps-page-components-layout-owner-search-modal--style-30 {
+  margin-top: 4px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-31 {
+  margin-bottom: 16px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-32 {
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.obps-page-components-layout-owner-search-modal--style-33 {
+  margin-top: 4px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-34 {
+  margin-bottom: 16px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-35 {
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.obps-page-components-layout-owner-search-modal--style-36 {
+  margin-top: 4px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-37 {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.obps-page-components-layout-owner-search-modal--style-38 {
+  color: #0b0c0c;
+  background: #f4f5f5;
+  border: 1px solid #0b0c0c;
+  cursor: pointer;
+}
+
+.obps-page-components-layout-owner-search-modal--style-39 {
+  color: white;
+  cursor: pointer;
+}
+
+.obps-page-components-layout-owner-search-modal--style-40 {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.obps-page-components-layout-owner-search-modal--style-41 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-42 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.obps-page-components-layout-owner-search-modal--style-43 {
+  background: #ffffff;
+  padding: 12px 16px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 20px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-44 {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-45 {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-46 {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-47 {
+  color: red;
+  font-size: 12px;
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-48 {
+  color: red;
+  font-size: 12px;
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-49 {
+  width: 100%;
+}
+
+.obps-page-components-layout-owner-search-modal--style-50 {
+  color: red;
+  font-size: 12px;
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-51 {
+  width: 100%;
+}
+
+.obps-page-components-layout-owner-search-modal--style-52 {
+  color: red;
+  font-size: 12px;
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-53 {
+  width: 100%;
+}
+
+.obps-page-components-layout-owner-search-modal--style-54 {
+  color: red;
+  font-size: 12px;
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-55 {
+  color: red;
+  font-size: 12px;
+  margin-bottom: 15px;
+}
+
+.obps-page-components-layout-owner-search-modal--style-56 {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.obps-page-components-layout-owner-search-modal--style-57 {
+  color: #0b0c0c;
+  background: #f4f5f5;
+  border: 1px solid #0b0c0c;
+  cursor: pointer;
+}
+
+.obps-page-components-layout-owner-search-modal--style-58 {
+  color: white;
+  cursor: pointer;
+}
+
+.obps-page-components-layout-professional-details--style-1 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-professional-details--style-2 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-professional-details--style-3 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-professional-details--style-4 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-professional-details--style-5 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-professional-details--style-6 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-1 {
+  margin-bottom: 16px;
+}
+
+.obps-page-components-layout-site-details--style-2 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-3 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-4 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-5 {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.obps-page-components-layout-site-details--style-6 {
+  visibility: hidden;
+}
+
+.obps-page-components-layout-site-details--style-7 {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.obps-page-components-layout-site-details--style-8 {
+  color: #00703c;
+  font-weight: 500;
+}
+
+.obps-page-components-layout-site-details--style-9 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+
+.obps-page-components-layout-site-details--style-10 {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.obps-page-components-layout-site-details--style-11 {
+  padding: 8px 16px;
+  background: #2947a3;
+  color: white;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.obps-page-components-layout-site-details--style-12 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-13 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-14 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-15 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-16 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-17 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-18 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-19 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-20 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-21 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-22 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-23 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-24 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-25 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-26 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-27 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-28 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-29 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-30 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-31 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-32 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-33 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-34 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-35 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-36 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-37 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-38 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-39 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-40 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-41 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-42 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-43 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-44 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-45 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-46 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-47 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-48 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-49 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-50 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-51 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-52 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-53 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-54 {
+  color: red;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.obps-page-components-layout-site-details--style-55 {
+  margin-bottom: 12px;
+  padding: 12px;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+}
+
+.obps-page-components-layout-site-details--style-56 {
+  color: #856404;
+  margin: 0;
+  font-size: 14px;
+}
+
+.obps-page-components-layout-site-photographs--style-1 {
+  padding: 50px 0px;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.obps-page-components-layout-site-photographs--style-2 {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  height: 200px;
+  align-items: center;
+}
+
+.obps-page-components-layout-site-photographs--style-3 {
+  margin: 5px;
+}
+
+.obps-page-components-layout-site-photographs--style-4 {
+  width: 120px;
+  height: 120px;
+  object-fit: fill;
+  border-radius: 10%;
+  cursor: pointer;
+}
+
+.obps-page-components-layout-summary--style-1 {
+  border: none;
+}
+
+.obps-page-components-layout-summary--style-2 {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.obps-page-components-layout-summary--style-3 {
+  padding: 0 0.5rem;
+}
+
+.obps-page-components-layout-summary--style-4 {
+  padding: 0 0.5rem;
+}
+
+.obps-page-components-license-details--style-1 {
+  padding-bottom: 30px;
+}
+
+.obps-page-components-license-details--style-2 {
+  cursor: pointer;
+  width: fit-content;
+  display: flex;
+  font-family: 'Roboto Condensed', sans-serif;
+  color: rgba(13, 67, 167, var(--text-opacity));
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.obps-page-components-license-type--style-1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 60px;
+}
+
+.obps-page-components-license-type--style-2 {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.obps-page-components-license-type--style-3 {
+  margin-top: 32px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.obps-page-components-license-type--style-4 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 16px;
+  margin-top: 0;
+}
+
+.obps-page-components-license-type--style-5 {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.obps-page-components-license-type--style-6 {
+  position: absolute;
+  left: 0;
+  top: 12px;
+  width: 6px;
+  height: 6px;
+  background-color: #2563eb;
+  border-radius: 50%;
+}
+
+.obps-page-components-license-type--style-7 {
+  padding: 0 0;
+  padding-left: 28px;
+  position: relative;
+  font-size: 13px;
+  color: #666666;
+  font-style: italic;
+  line-height: 1.6;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #fff;
+}
+
+.obps-page-components-license-type--style-8 {
+  position: absolute;
+  left: 0;
+  top: 16px;
+  width: 6px;
+  height: 6px;
+  background-color: #f59e0b;
+  border-radius: 50%;
+}
+
+.obps-page-components-location-details--style-1 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-location-details--style-2 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-location-details--style-3 {
+  padding-top: 10px;
+}
+
+.obps-page-components-nocdetails--style-1 {
+  border: 1px solid #D6D5D4;
+  padding: 16px 8px 16px 8px;
+  background: #FAFAFA;
+  border-radius: 5px;
+  margin-bottom: 24px;
+  margin-top: 5px;
+}
+
+.obps-page-components-nocdetails--style-2 {
+  color: #0B0C0C;
+  line-height: 37px;
+  font-weight: 700;
+  font-size: 32px;
+  font-family: Roboto Condensed;
+  padding-bottom: 24px;
+}
+
+.obps-page-components-nocdetails--style-3 {
+  display: flex;
+  padding-bottom: 24px;
+}
+
+.obps-page-components-nocdetails--style-4 {
+  color: #0B0C0C;
+  line-height: 19px;
+  font-weight: 700;
+  font-size: 16px;
+  font-family: Roboto;
+  margin-right: 10px;
+}
+
+.obps-page-components-obpsdocuments--style-1 {
+  width: 250px;
+}
+
+.obps-page-components-obpsdocuments-emp--style-1 {
+  margin-bottom: 24px;
+}
+
+.obps-page-components-obpsdocuments-emp--style-2 {
+  width: 100%;
+}
+
+.obps-page-components-obpsdocuments-emp--style-3 {
+  width: 100%;
+}
+
+.obps-page-components-obpsdocuments-emp--style-4 {
+  width: 100%;
+}
+
+.obps-page-components-obpsdocuments-holder--style-1 {
+  margin-top: 19px;
+}
+
+.obps-page-components-obpsdocuments-holder--style-2 {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.obps-page-components-obpsdocuments-holder--style-3 {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.obps-page-components-obpsdocuments-holder--style-4 {
+  min-width: 80px;
+  margin-right: 10px;
+  max-width: 100px;
+  height: auto;
+}
+
+.obps-page-components-obpsdocuments-holder--style-5 {
+  display: flex;
+  justify-content: center;
+}
+
+.obps-page-components-obpsdocuments-holder--style-6 {
+  margin-top: 8px;
+  text-align: center;
+  color: #505A5F;
+}
+
+.obps-page-components-obpsdocuments-holder--style-7 {
+  color: #cccccc;
+  background-color: #cccccc;
+  height: 2px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.obps-page-components-ocbasic-details--style-1 {
+  margin-bottom: 10px;
+}
+
+.obps-page-components-ocedcrdocs-required--style-1 {
+  color: #0B0C0C;
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.obps-page-components-ocedcrdocs-required--style-2 {
+  font-weight: 700;
+}
+
+.obps-page-components-ocedcrdocs-required--style-3 {
+  display: flex;
+}
+
+.obps-page-components-ocupload-plan-diagram--style-1 {
+  disabled: true;
+  height: 30px;
+  width: 100%;
+  font-size: 14px;
+}
+
+.obps-page-components-oce-dcrscrutiny--style-1 {
+  color: #cccccc;
+  background-color: #cccccc;
+  height: 2px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.obps-page-components-oce-dcrscrutiny--style-2 {
+  font-size: 18px;
+  line-height: 21px;
+  font-weight: 700;
+  padding: 0px 0px 16px 0px;
+}
+
+.obps-page-components-oce-dcrscrutiny--style-3 {
+  font-size: 18px;
+  line-height: 21px;
+  font-weight: 700;
+  padding: 0px 0px 16px 0px;
+}
+
+.obps-page-components-oce-dcrscrutiny--style-4 {
+  min-width: 160px;
+  margin-right: 20px;
+}
+
+.obps-page-components-oce-dcrscrutiny--style-5 {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 19px;
+  color: #505A5F;
+  font-weight: 400;
+}
+
+.obps-page-components-oce-dcrscrutiny--style-6 {
+  font-size: 18px;
+  line-height: 21px;
+  font-weight: 700;
+  padding: 0px 0px 16px 0px;
+}
+
+.obps-page-components-oce-dcrscrutiny--style-7 {
+  min-width: 160px;
+  margin-right: 20px;
+}
+
+.obps-page-components-oce-dcrscrutiny--style-8 {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 19px;
+  color: #505A5F;
+  font-weight: 400;
+}
+
+.obps-page-components-owner-details--style-1 {
+  width: 24px;
+  height: 24px;
+}
+
+.obps-page-components-owner-details--style-2 {
+  cursor: pointer;
+}
+
+.obps-page-components-owner-details--style-3 {
+  margin-bottom: 10px;
+}
+
+.obps-page-components-owner-details--style-4 {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  color: green;
+  font-weight: bold;
+  gap: 4px;
+}
+
+.obps-page-components-owner-details--style-5 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-owner-details--style-6 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-owner-details--style-7 {
+  margin-top: 30px;
+}
+
+.obps-page-components-pay-two-table--style-1 {
+  margin-top: 24px;
+}
+
+.obps-page-components-pay-two-table--style-2 {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 4px;
+}
+
+.obps-page-components-pay-two-table--style-3 {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.obps-page-components-pay-two-table-regular--style-1 {
+  margin-top: 24px;
+}
+
+.obps-page-components-pay-two-table-regular--style-2 {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 4px;
+}
+
+.obps-page-components-pay-two-table-regular--style-3 {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.obps-page-components-permanent-address--style-1 {
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+.obps-page-components-plot-details--style-1 {
+  margin-top: 1rem;
+}
+
+.obps-page-components-plot-details--style-2 {
+  font-size: 12px;
+  color: red;
+}
+
+.obps-page-components-plot-details--style-3 {
+  font-size: 12px;
+  color: black;
+}
+
+.obps-page-components-plot-details--style-4 {
+  font-size: 12px;
+  color: red;
+}
+
+.obps-page-components-plot-details--style-5 {
+  font-size: 12px;
+  color: red;
+}
+
+.obps-page-components-plot-details--style-6 {
+  margin-bottom: 1rem;
+}
+
+.obps-page-components-plot-details--style-7 {
+  margin-bottom: 1rem;
+}
+
+.obps-page-components-plot-details--style-8 {
+  font-size: 12px;
+  color: red;
+}
+
+.obps-page-components-plot-details--style-9 {
+  font-size: 12px;
+  color: red;
+}
+
+.obps-page-components-plot-details-oc--style-1 {
+  font-size: 12px;
+  color: red;
+}
+
+.obps-page-components-professional-sign-update--style-1 {
+  color: black;
+}
+
+.obps-page-components-professional-sign-update--style-2 {
+  color: black;
+}
+
+.obps-page-components-property-search--style-1 {
+  margin-bottom: 16px;
+  margin-top: 20px;
+}
+
+.obps-page-components-property-search--style-2 {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  width: 100%;
+}
+
+.obps-page-components-property-search--style-3 {
+  color: white;
+  width: 100%;
+  max-width: 100px;
+}
+
+.obps-page-components-property-search-bathinda--style-1 {
+  margin-bottom: 16px;
+  margin-top: 20px;
+}
+
+.obps-page-components-property-search-bathinda--style-2 {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  width: 100%;
+}
+
+.obps-page-components-property-search-bathinda--style-3 {
+  color: white;
+  width: 100%;
+  max-width: 100px;
+}
+
+.obps-page-components-property-search-ludhiana--style-1 {
+  margin-bottom: 16px;
+  margin-top: 20px;
+}
+
+.obps-page-components-property-search-ludhiana--style-2 {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  width: 100%;
+}
+
+.obps-page-components-property-search-ludhiana--style-3 {
+  color: white;
+  width: 100%;
+  max-width: 100px;
+}
+
+.obps-page-components-property-search-modal--style-1 {
+  width: 100px;
+}
+
+.obps-page-components-property-search-modal--style-2 {
+  color: white;
+  width: 100%;
+  max-width: 100px;
+}
+
+.obps-page-components-scrutiny-details--style-1 {
+  overflow-wrap: break-word;
+}
+
+.obps-page-components-site-inspection--style-1 {
+  float: right;
+  display: inline;
+}
+
+.obps-page-components-site-inspection--style-2 {
+  margin-bottom: 16px;
+  margin-top: 32px;
+}
+
+.obps-page-components-site-inspection--style-3 {
+  margin-top: 20px;
+}
+
+.obps-page-components-site-inspection--style-4 {
+  margin-bottom: 16px;
+  margin-top: 32px;
+}
+
+.obps-page-components-stakeholder-docs-required--style-1 {
+  display: flex;
+}
+
+.obps-page-components-stakeholder-documents--style-1 {
+  cursor: pointer;
+  width: fit-content;
+  display: flex;
+  font-family: 'Roboto Condensed', sans-serif;
+  color: rgba(13, 67, 167, var(--text-opacity));
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.obps-page-components-stakeholder-documents--style-2 {
+  margin-bottom: 24px;
+}
+
+.obps-page-components-stakeholder-documents--style-3 {
+  margin-bottom: 10px;
+}
+
+.obps-page-components-stakeholder-documents--style-4 {
+  font-size: 12px;
+  color: #505A5F;
+  font-weight: 400;
+  line-height: 15px;
+  margin-bottom: 10px;
+}
+
+.obps-page-components-stakeholder-documents--style-5 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-stakeholder-documents--style-6 {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.obps-page-components-summary-details--style-1 {
+  overflow-wrap: break-word;
+}
+
+.obps-page-components-summary-details--style-2 {
+  width: 20px;
+}
+
+.obps-page-components-summary-details--style-3 {
+  margin-top: 20px;
+}
+
+.obps-page-components-summary-details--style-4 {
+  margin-top: 16px;
+}
+
+.obps-page-components-summary-details--style-5 {
+  margin-top: 16px;
+}
+
+.obps-page-components-summary-details--style-6 {
+  margin-top: 16px;
+}
+
+.obps-page-components-summary-details--style-7 {
+  margin-top: 16px;
+}
+
+.obps-page-components-summary-details--style-8 {
+  margin-top: 8px;
+}
+
+.obps-page-components-summary-details--style-9 {
+  word-break: break-word;
+}
+
+.obps-page-components-summary-details--style-10 {
+  margin-top: 16px;
+}
+
+.obps-page-components-summary-details--style-11 {
+  margin-top: 16px;
+}
+
+.obps-page-components-summary-details--style-12 {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.obps-pages-citizen-application-detail-index--style-1 {
+  word-break: break-word;
+}
+
+.obps-pages-citizen-application-detail-index--style-2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.obps-pages-citizen-application-detail-index--style-3 {
+  flex: 1;
+}
+
+.obps-pages-citizen-application-detail-index--style-4 {
+  font-size: 2rem;
+  color: #2e4a66;
+  margin-bottom: 1rem;
+}
+
+.obps-pages-citizen-application-detail-index--style-5 {
+  position: static;
+}
+
+.obps-pages-citizen-application-detail-index--style-6 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.obps-pages-citizen-application-detail-index--style-7 {
+  max-width: 120px;
+  max-height: 120px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+
+.obps-pages-citizen-application-detail-index--style-8 {
+  overflow-x: auto;
+}
+
+.obps-pages-citizen-application-detail-index--style-9 {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.obps-pages-citizen-application-detail-index--style-10 {
+  background-color: #f5f5f5;
+  border-bottom: 2px solid #ddd;
+}
+
+.obps-pages-citizen-application-detail-index--style-11 {
+  padding: 0.75rem;
+  text-align: center;
+  font-weight: 600;
+  color: #2e4a66;
+  width: 100px;
+}
+
+.obps-pages-citizen-application-detail-index--style-12 {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: #2e4a66;
+}
+
+.obps-pages-citizen-application-detail-index--style-13 {
+  padding: 0.75rem;
+  text-align: center;
+  font-weight: 600;
+  color: #2e4a66;
+  width: 150px;
+}
+
+.obps-pages-citizen-application-detail-index--style-14 {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.obps-pages-citizen-application-detail-index--style-15 {
+  padding: 0.75rem;
+  text-align: center;
+  color: #333;
+  font-weight: 500;
+}
+
+.obps-pages-citizen-application-detail-index--style-16 {
+  padding: 0.75rem;
+}
+
+.obps-pages-citizen-application-detail-index--style-17 {
+  color: #333;
+}
+
+.obps-pages-citizen-application-detail-index--style-18 {
+  font-size: 12px;
+  color: #505A5F;
+  margin-top: 5px;
+}
+
+.obps-pages-citizen-application-detail-index--style-19 {
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.obps-pages-citizen-application-detail-index--style-20 {
+  padding: 0.5rem 1rem;
+  background-color: #2e4a66;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.obps-pages-citizen-applications-cluapplication-details--style-1 {
+  margin-right: auto;
+  max-width: 960px;
+}
+
+.obps-pages-citizen-applications-cluapplication-details--style-2 {
+  margin-bottom: 30px;
+  background: #FAFAFA;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.obps-pages-citizen-applications-cluapplication-details--style-3 {
+  margin-bottom: 30px;
+  background: #FAFAFA;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.obps-pages-citizen-applications-cluapplication-details--style-4 {
+  margin-bottom: 30px;
+  background: #FAFAFA;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.obps-pages-citizen-applications-cluapplication-details--style-5 {
+  margin-bottom: 30px;
+  background: #FAFAFA;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.obps-pages-citizen-applications-cluapplication-details--style-6 {
+  margin-bottom: 30px;
+  background: #FAFAFA;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.obps-pages-citizen-applications-cluapplication-details--style-7 {
+  margin-bottom: 16px;
+  margin-top: 32px;
+}
+
+.obps-pages-citizen-applications-cluapplication-details--style-8 {
+  margin-top: 16px;
+}
+
+.obps-pages-citizen-applications-clumy-applications--style-1 {
+  text-align: center;
+}
+
+.obps-pages-citizen-applications-clumy-applications--style-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.obps-pages-citizen-applications-clumy-applications--style-3 {
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+}
+
+.obps-pages-citizen-applications-clumy-applications--style-4 {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.obps-pages-citizen-applications-clumy-applications--style-5 {
+  margin: 4px 0;
+}
+
+.obps-pages-citizen-applications-clumy-applications--style-6 {
+  margin: 4px 0;
+}
+
+.obps-pages-citizen-applications-layout-application-summary--style-1 {
+  overflow-x: scroll;
+}
+
+.obps-pages-citizen-applications-layout-application-summary--style-2 {
+  margin-top: 8px;
+}
+
+.obps-pages-citizen-applications-layout-application-summary--style-3 {
+  overflow-x: scroll;
+}
+
+.obps-pages-citizen-applications-layout-application-summary--style-4 {
+  margin-top: 8px;
+}
+
+.obps-pages-citizen-applications-layout-application-summary--style-5 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.obps-pages-citizen-applications-layout-application-summary--style-6 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.obps-pages-citizen-applications-layout-application-summary--style-7 {
+  margin-bottom: 20px;
+}
+
+.obps-pages-citizen-applications-layout-application-summary--style-8 {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.obps-pages-citizen-applications-layout-application-summary--style-9 {
+  margin-top: 16px;
+}
+
+.obps-pages-citizen-applications-layout-document-view--style-1 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-citizen-applications-layout-document-view--style-2 {
+  padding: 16px;
+  text-align: center;
+  color: #666;
+}
+
+.obps-pages-citizen-applications-layout-my-applications--style-1 {
+  text-align: center;
+}
+
+.obps-pages-citizen-applications-layout-my-applications--style-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.obps-pages-citizen-applications-layout-my-applications--style-3 {
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+}
+
+.obps-pages-citizen-applications-layout-my-applications--style-4 {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.obps-pages-citizen-applications-layout-my-applications--style-5 {
+  margin: 4px 0;
+}
+
+.obps-pages-citizen-applications-layout-my-applications--style-6 {
+  margin: 4px 0;
+}
+
+.obps-pages-citizen-applications-layout-response-citizen--style-1 {
+  padding: 10px;
+}
+
+.obps-pages-citizen-applications-layout-response-citizen--style-2 {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+}
+
+.obps-pages-citizen-architect-inbox-application-card--style-1 {
+  margin-top: 20px;
+}
+
+.obps-pages-citizen-architect-inbox-application-card--style-2 {
+  text-align: center;
+}
+
+.obps-pages-citizen-architect-inbox-application-links--style-1 {
+  justify-content: flex-start;
+}
+
+.obps-pages-citizen-architect-inbox-desktop-inbox--style-1 {
+  margin-top: 20px;
+}
+
+.obps-pages-citizen-architect-inbox-desktop-inbox--style-2 {
+  text-align: center;
+}
+
+.obps-pages-citizen-architect-inbox-desktop-inbox--style-3 {
+  flex: 1;
+}
+
+.obps-pages-citizen-architect-inbox-desktop-inbox--style-4 {
+  margin-left: 24px;
+  flex: 1;
+}
+
+.obps-pages-citizen-architect-inbox-filter--style-1 {
+  border: 1px solid #e0e0e0;
+  padding: 6px;
+}
+
+.obps-pages-citizen-architect-inbox-filter--style-2 {
+  flex: 1;
+}
+
+.obps-pages-citizen-architect-inbox-mobile-inbox--style-1 {
+  padding: 0;
+}
+
+.obps-pages-citizen-architect-inbox-search--style-1 {
+  font-weight: 700;
+  font-size: 24px;
+  margin-top: 30px;
+  line-height: 28px;
+}
+
+.obps-pages-citizen-architect-inbox-search--style-2 {
+  position: relative;
+  float: right;
+  margin-top: -60px;
+}
+
+.obps-pages-citizen-architect-inbox-search--style-3 {
+  width: 100%;
+  display: grid;
+}
+
+.obps-pages-citizen-architect-inbox-search--style-4 {
+  font-weight: 700;
+  color: rgba(212, 53, 28);
+  padding-left: 8px;
+  margin-top: -20px;
+  font-size: 12px;
+}
+
+.obps-pages-citizen-architect-inbox-search--style-5 {
+  margin-top: 56px;
+}
+
+.obps-pages-citizen-architect-inbox-search--style-6 {
+  padding-top: 65px;
+  margin-left: -75px;
+}
+
+.obps-pages-citizen-architect-inbox-search--style-7 {
+  flex: 1;
+}
+
+.obps-pages-citizen-architect-inbox-search--style-8 {
+  flex: 1;
+}
+
+.obps-pages-citizen-architect-inbox-sort-by--style-1 {
+  border: 1px solid #e0e0e0;
+  padding: 6px;
+}
+
+.obps-pages-citizen-architect-inbox-status--style-1 {
+  font-weight: 400;
+  font-size: 16px;
+}
+
+.obps-pages-citizen-architect-inbox-status-count--style-1 {
+  margin-top: 4px;
+}
+
+.obps-pages-citizen-bpa-application-detail-bpaapplication-timeline--style-1 {
+  margin-bottom: 16px;
+  margin-top: 32px;
+}
+
+.obps-pages-citizen-bpa-application-detail-bpacaption--style-1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1px;
+  -webkit-box-orient: vertical;
+}
+
+.obps-pages-citizen-bpa-application-detail-bpacaption--style-2 {
+  color: #800000;
+}
+
+.obps-pages-citizen-bpa-application-detail-bpacaption--style-3 {
+  overflow: visible;
+}
+
+.obps-pages-citizen-bpa-application-detail-bpacaption--style-4 {
+  color: #800000;
+}
+
+.obps-pages-citizen-bpa-application-detail-citizen-consent--style-1 {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  text-align: justify;
+  font-family: Roboto, serif;
+}
+
+.obps-pages-citizen-bpa-application-detail-citizen-consent--style-2 {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.obps-pages-citizen-bpa-application-detail-citizen-consent--style-3 {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.obps-pages-citizen-bpa-application-detail-citizen-consent--style-4 {
+  color: red;
+}
+
+.obps-pages-citizen-bpa-application-detail-citizen-consent--style-5 {
+  color: green;
+}
+
+.obps-pages-citizen-bpa-application-detail-modal-index--style-1 {
+  margin-left: 22px;
+}
+
+.obps-pages-citizen-bpa-application-detail-modal-index--style-2 {
+  background-color: #FFFFFF;
+}
+
+.obps-pages-citizen-bpa-application-detail-modal-index--style-3 {
+  height: 100%;
+}
+
+.obps-pages-citizen-bpa-application-detail-modal-index--style-4 {
+  height: 95%;
+}
+
+.obps-pages-citizen-bpa-application-detail-modal-index--style-5 {
+  font-size: 18px;
+  padding-bottom: 16px;
+  color: #000000;
+  font-weight: 700;
+}
+
+.obps-pages-citizen-bpa-application-detail-modal-index--style-6 {
+  height: 90%;
+  overflow: auto;
+}
+
+.obps-pages-citizen-bpa-application-detail-modal-index--style-7 {
+  display: flex;
+  justify-content: center;
+  min-height: 5%;
+}
+
+.obps-pages-citizen-bpa-application-detail-modal-index--style-8 {
+  min-width: 240px;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-1 {
+  color: green;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-2 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-3 {
+  width: 20px;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-4 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-5 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-6 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-7 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-8 {
+  color: #a82227;
+  cursor: pointer;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-9 {
+  padding-bottom: 50px;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-10 {
+  margin-right: auto;
+  max-width: 960px;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-11 {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-12 {
+  color: #A52A2A;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-13 {
+  font-size: 20px;
+  margin-top: 20px;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-14 {
+  font-size: 20px;
+  margin-top: 20px;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-15 {
+  color: #a82227;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-16 {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-17 {
+  margin-top: 19px;
+  background: #FAFAFA;
+  border: 1px solid #D6D5D4;
+  border-radius: 4px;
+  padding: 8px;
+  line-height: 19px;
+  max-width: 960px;
+  min-width: 280px;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-18 {
+  margin-top: 19px;
+  background: #FAFAFA;
+  border: 1px solid #D6D5D4;
+  border-radius: 4px;
+  padding: 8px;
+  line-height: 19px;
+  max-width: 950px;
+  min-width: 280px;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-19 {
+  margin-top: 5px;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-20 {
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-21 {
+  font-size: 20px;
+  margin-top: 20px;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-22 {
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-23 {
+  width: 100%;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-24 {
+  min-width: 310px;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-25 {
+  width: 100%;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-26 {
+  width: 100%;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-27 {
+  min-width: 310px;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-28 {
+  width: 100%;
+}
+
+.obps-pages-citizen-bpa-application-detail-index--style-29 {
+  z-index: 1000;
+}
+
+.obps-pages-citizen-clusearch-application-search-atom-desktop--style-1 {
+  margin-top: 20px;
+}
+
+.obps-pages-citizen-clusearch-application-search-atom-desktop--style-2 {
+  text-align: center;
+}
+
+.obps-pages-citizen-clusearch-application-search-atom-mobile--style-1 {
+  margin-top: 20px;
+}
+
+.obps-pages-citizen-clusearch-application-search-atom-mobile--style-2 {
+  text-align: center;
+}
+
+.obps-pages-citizen-clusearch-application-search-field-component--style-1 {
+  width: 100%;
+  gap: 20px;
+}
+
+.obps-pages-citizen-clusearch-application-search-field-component--style-2 {
+  margin-top: 24px;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-1 {
+  font-size: 11px;
+  color: #626A6E;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-2 {
+  text-decoration: none;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-3 {
+  text-decoration: none;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-4 {
+  cursor: default;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-5 {
+  text-decoration: none;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-6 {
+  margin-top: -25px;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-7 {
+  position: relative;
+  text-align: center;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-8 {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 200px;
+  height: 200px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-9 {
+  position: absolute;
+  bottom: -60px;
+  left: -30px;
+  width: 250px;
+  height: 250px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-10 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 4px 14px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-11 {
+  font-size: 12px;
+  color: rgba(255,255,255,0.9);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-12 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-13 {
+  font-size: 11px;
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.85);
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-14 {
+  padding: 28px 0 40px;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-15 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #003C71;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-16 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #003C71;
+  margin: 0;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-17 {
+  font-size: 12px;
+  color: #626A6E;
+  background: #F3F2F1;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-18 {
+  background: #FFF8E1;
+  border: 1px solid #FFE082;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 40px;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-19 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-20 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-21 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #B5451B;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-22 {
+  margin-top: 14px;
+  border-top: 1px solid #FFE082;
+  padding-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-23 {
+  font-size: 11px;
+  font-weight: 600;
+  color: #626A6E;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-24 {
+  font-family: monospace;
+  font-size: 12px;
+  color: #1F1F1F;
+  background: rgba(255,255,255,0.7);
+  padding: 8px 12px;
+  border-radius: 6px;
+  line-height: 1.9;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-25 {
+  font-size: 11px;
+  font-weight: 600;
+  color: #626A6E;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-26 {
+  font-size: 13px;
+  color: #1F1F1F;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-27 {
+  font-family: monospace;
+  background: rgba(255,255,255,0.8);
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-weight: 700;
+  border: 1px solid #FFE082;
+}
+
+.obps-pages-citizen-custom-landing-page-index--style-28 {
+  font-weight: 600;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-1 {
+  padding: 0px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-2 {
+  width: 100%;
+  padding: 10px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-3 {
+  padding: 10px;
+  padding-bottom: 10px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-4 {
+  padding: 0px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-5 {
+  width: 100%;
+  padding: 10px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-6 {
+  padding: 0px 8px;
+  margin-bottom: 10px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-7 {
+  margin-left: unset;
+  margin-bottom: 10px;
+  padding: 0px 8px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-8 {
+  display: flex;
+  gap: 8px;
+  margin-top: 15px;
+  flex-wrap: nowrap;
+  padding-left: 8px;
+  padding-bottom: 15px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-9 {
+  padding-bottom: 15px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-10 {
+  padding: 0px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-11 {
+  width: 100%;
+  padding: 10px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-12 {
+  padding: 0px 8px;
+  margin-bottom: 10px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-13 {
+  padding: 0px 8px;
+  margin-bottom: 10px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-14 {
+  margin-left: unset;
+  margin-bottom: 10px;
+  padding: 0px 8px;
+}
+
+.obps-pages-citizen-edcr-edcracknowledgement--style-15 {
+  padding: 10px;
+  padding-bottom: 10px;
+}
+
+.obps-pages-citizen-edcr-index--style-1 {
+  background-color: #FFFFFF;
+}
+
+.obps-pages-citizen-edcr-index--style-2 {
+  min-height: 45px;
+  height: auto;
+  width: 160px;
+}
+
+.obps-pages-citizen-edcr-inbox-filter-form-fields-component--style-1 {
+  font-weight: 400;
+  font-size: 16px;
+}
+
+.obps-pages-citizen-edcr-inbox-filter-form-fields-component--style-2 {
+  font-weight: 400;
+  font-size: 16px;
+}
+
+.obps-pages-citizen-edcr-inbox-search-form-fields-component--style-1 {
+  margin-left: 24px;
+}
+
+.obps-pages-citizen-edcr-inbox-search-form-fields-component--style-2 {
+  text-align: start;
+}
+
+.obps-pages-citizen-edcr-inbox-search-form-fields-component--style-3 {
+  width: 100%;
+}
+
+.obps-pages-citizen-edcr-inbox-use-inbox-mobile-cards-data--style-1 {
+  background: none;
+  padding: 0px;
+}
+
+.obps-pages-citizen-edcr-inbox-use-inbox-mobile-cards-data--style-2 {
+  background: none;
+  padding: 0px;
+}
+
+.obps-pages-citizen-edcr-inbox-use-inbox-table-config--style-1 {
+  background: none;
+  padding: unset;
+}
+
+.obps-pages-citizen-edcr-inbox-use-inbox-table-config--style-2 {
+  background: none;
+  padding: unset;
+}
+
+.obps-pages-citizen-layout-search-application-search-atom-desktop--style-1 {
+  margin-top: 20px;
+}
+
+.obps-pages-citizen-layout-search-application-search-atom-desktop--style-2 {
+  text-align: center;
+}
+
+.obps-pages-citizen-layout-search-application-search-atom-mobile--style-1 {
+  margin-top: 20px;
+}
+
+.obps-pages-citizen-layout-search-application-search-atom-mobile--style-2 {
+  text-align: center;
+}
+
+.obps-pages-citizen-layout-search-application-search-field-component--style-1 {
+  width: 100%;
+  gap: 20px;
+}
+
+.obps-pages-citizen-layout-search-application-search-field-component--style-2 {
+  display: flex;
+  flex-direction: column;
+}
+
+.obps-pages-citizen-layout-search-application-search-field-component--style-3 {
+  margin-top: 24px;
+}
+
+.obps-pages-citizen-layout-stepper-layout-step-form-three--style-1 {
+  padding: 20px;
+  text-align: center;
+}
+
+.obps-pages-citizen-my-application-index--style-1 {
+  margin-top: 6%;
+}
+
+.obps-pages-citizen-new-building-permit-architectconcent--style-1 {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  text-align: justify;
+  font-family: Roboto, serif;
+}
+
+.obps-pages-citizen-new-building-permit-architectconcent--style-2 {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.obps-pages-citizen-new-building-permit-architectconcent--style-3 {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.obps-pages-citizen-new-building-permit-architectconcent--style-4 {
+  color: red;
+}
+
+.obps-pages-citizen-new-building-permit-architectconcent--style-5 {
+  color: green;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-1 {
+  margin-left: -55px;
+  background: #fff;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-2 {
+  color: green;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-3 {
+  float: right;
+  display: inline;
+  margin-top: -80px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-4 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-5 {
+  margin-top: 30px;
+  padding-bottom: 30px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-6 {
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-7 {
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-8 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-9 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-10 {
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-11 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-12 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-13 {
+  float: right;
+  display: inline;
+  margin-top: -80px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-14 {
+  color: white;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-15 {
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-16 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-17 {
+  font-size: 20px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-18 {
+  margin-top: 19px;
+  background: #FAFAFA;
+  border: 1px solid #D6D5D4;
+  border-radius: 4px;
+  padding: 12px;
+  max-width: 960px;
+  min-width: 280px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-19 {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-20 {
+  border-bottom: 1px solid #eaeaea;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-21 {
+  padding: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-22 {
+  padding: 8px;
+  text-align: right;
+  color: #555;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-23 {
+  padding: 12px 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-24 {
+  padding: 12px 8px;
+  text-align: right;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-25 {
+  padding: 12px 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-26 {
+  padding: 12px 8px;
+  text-align: right;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-27 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-28 {
+  font-size: 20px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-29 {
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-30 {
+  font-size: 20px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-31 {
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-32 {
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-33 {
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-34 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-35 {
+  font-size: 20px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-36 {
+  margin-top: 15px;
+  font-size: 18px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-37 {
+  overflow: scroll;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-38 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-39 {
+  font-size: 20px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-40 {
+  border: none;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-41 {
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-42 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-43 {
+  float: right;
+  display: inline;
+  margin-top: -80px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-44 {
+  color: white;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-45 {
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-46 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-47 {
+  float: right;
+  display: inline;
+  margin-top: -80px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-48 {
+  color: white;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-49 {
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-50 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-51 {
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-52 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-53 {
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-54 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-55 {
+  font-size: 20px;
+  color: #3f4351;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-56 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-57 {
+  font-size: 20px;
+  color: #3f4351;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-58 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-59 {
+  font-size: 20px;
+  color: #3f4351;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-60 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-61 {
+  margin-bottom: 200px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-62 {
+  margin-top: 15px;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-63 {
+  display: inline;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-64 {
+  color: red;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-65 {
+  color: green;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-66 {
+  border: 0.5px solid #eaeaea;
+  margin: 0 0 16px 0;
+}
+
+.obps-pages-citizen-new-building-permit-check-page--style-67 {
+  border: 1px solid;
+  background: transparent;
+  color: #2947a3;
+  margin-right: 5px;
+}
+
+.obps-pages-citizen-new-building-permit-obpsacknowledgement--style-1 {
+  margin-top: 10px;
+}
+
+.obps-pages-citizen-new-building-permit-index--style-1 {
+  display: flex;
+  flex-direction: row;
+}
+
+.obps-pages-citizen-new-building-permit-index--style-2 {
+  flex-grow: 1;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-1 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-2 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-3 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-4 {
+  width: 100px;
+  display: inline;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-5 {
+  margin-top: -10px;
+  float: right;
+  position: relative;
+  bottom: 32px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-6 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-7 {
+  border: none;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-8 {
+  margin-top: 8px;
+  margin-bottom: 20px;
+  text-align: Left;
+  font-size: 16px;
+  line-height: 19px;
+  color: #505A5F;
+  font-weight: 400;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-9 {
+  margin-top: 8px;
+  margin-bottom: 20px;
+  text-align: Left;
+  font-size: 16px;
+  line-height: 19px;
+  color: #505A5F;
+  font-weight: 400;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-10 {
+  color: #cccccc;
+  background-color: #cccccc;
+  height: 2px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-11 {
+  color: #cccccc;
+  background-color: #cccccc;
+  height: 2px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-12 {
+  margin-top: 15px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-13 {
+  overflow-x: scroll;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-14 {
+  color: #cccccc;
+  background-color: #cccccc;
+  height: 2px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-15 {
+  border: none;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-16 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-17 {
+  width: 100px;
+  display: inline;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-18 {
+  margin-top: -10px;
+  float: right;
+  position: relative;
+  bottom: 32px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-19 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-20 {
+  width: 100px;
+  display: inline;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-21 {
+  margin-top: -10px;
+  float: right;
+  position: relative;
+  bottom: 32px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-22 {
+  margin-bottom: 24px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-23 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocbuilding-permit-check-page--style-24 {
+  color: #cccccc;
+  background-color: #cccccc;
+  height: 2px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-1 {
+  padding: 0px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-2 {
+  width: 100%;
+  padding: 10px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-3 {
+  padding: 10px;
+  padding-bottom: 10px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-4 {
+  padding: 0px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-5 {
+  width: 100%;
+  padding: 10px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-6 {
+  padding: 0px 8px;
+  margin-bottom: 10px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-7 {
+  margin-left: unset;
+  margin-bottom: 10px;
+  padding: 0px 8px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-8 {
+  padding: 10px 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-9 {
+  padding: 0px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-10 {
+  width: 100%;
+  padding: 10px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-11 {
+  padding: 0px 8px;
+  margin-bottom: 10px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-12 {
+  padding: 0px 8px;
+  margin-bottom: 10px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-13 {
+  margin-left: unset;
+  margin-bottom: 10px;
+  padding: 0px 8px;
+}
+
+.obps-pages-citizen-ocedcr-edcracknowledgement--style-14 {
+  padding: 10px;
+  padding-bottom: 10px;
+  padding-left: 10px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-acknowledgement--style-1 {
+  padding: 10px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-acknowledgement--style-2 {
+  margin-top: 12px;
+  padding: 10px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-1 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-2 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-3 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-4 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-5 {
+  border: none;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-6 {
+  margin-top: 8px;
+  margin-bottom: 20px;
+  text-align: Left;
+  font-size: 16px;
+  line-height: 19px;
+  color: #505A5F;
+  font-weight: 400;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-7 {
+  margin-top: 8px;
+  margin-bottom: 20px;
+  text-align: Left;
+  font-size: 16px;
+  line-height: 19px;
+  color: #505A5F;
+  font-weight: 400;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-8 {
+  color: #cccccc;
+  background-color: #cccccc;
+  height: 2px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-9 {
+  color: #cccccc;
+  background-color: #cccccc;
+  height: 2px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-10 {
+  margin-top: 15px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-11 {
+  overflow: scroll;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-12 {
+  color: #cccccc;
+  background-color: #cccccc;
+  height: 2px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-13 {
+  border: none;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-14 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-15 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-16 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-17 {
+  width: 100px;
+  display: inline;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-18 {
+  margin-top: -10px;
+  float: right;
+  position: relative;
+  bottom: 32px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-19 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-20 {
+  margin-bottom: 24px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-21 {
+  padding-right: 16px;
+}
+
+.obps-pages-citizen-ocsend-back-to-citizen-check-page--style-22 {
+  color: #cccccc;
+  background-color: #cccccc;
+  height: 2px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.obps-pages-citizen-self-certification-stepper-self-certification-response--style-1 {
+  padding: 10px;
+}
+
+.obps-pages-citizen-self-certification-stepper-self-certification-response--style-2 {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap:  20px;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-1 {
+  cursor: pointer;
+  width: fit-content;
+  display: flex;
+  font-family: 'Roboto Condensed', sans-serif;
+  color: rgba(13, 67, 167, var(--text-opacity));
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-4 {
+  max-width: 100px;
+  max-height: 100px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 10px;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-5 {
+  overflow-x: auto;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-6 {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-7 {
+  background-color: #f5f5f5;
+  border-bottom: 2px solid #ddd;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-8 {
+  padding: 0.75rem;
+  text-align: center;
+  font-weight: 600;
+  color: #2e4a66;
+  width: 100px;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-9 {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: #2e4a66;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-10 {
+  padding: 0.75rem;
+  text-align: center;
+  font-weight: 600;
+  color: #2e4a66;
+  width: 150px;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-11 {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-12 {
+  padding: 0.75rem;
+  text-align: center;
+  color: #333;
+  font-weight: 500;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-13 {
+  padding: 0.75rem;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-14 {
+  pointer-events: none;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-15 {
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.obps-pages-citizen-stakeholder-registration-check-page--style-16 {
+  padding: 0.5rem 1rem;
+  background-color: #2e4a66;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.obps-pages-citizen-stakeholder-registration-stakeholder-acknowledgement--style-1 {
+  padding: 10px;
+}
+
+.obps-pages-citizen-stakeholder-registration-stakeholder-acknowledgement--style-2 {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.obps-pages-citizen-stakeholder-registration-stakeholder-acknowledgement--style-3 {
+  border: none;
+}
+
+.obps-pages-citizen-stakeholder-registration-index--style-1 {
+  display: flex;
+  flex-direction: row;
+}
+
+.obps-pages-citizen-stakeholder-registration-index--style-2 {
+  margin-left: 30px;
+}
+
+.obps-pages-citizen-stakeholder-registration-index--style-3 {
+  flex-grow: 1;
+}
+
+.obps-pages-citizen-index--style-1 {
+  text-decoration: none;
+  margin-right: 5px;
+}
+
+.obps-pages-citizen-index--style-2 {
+  margin-right: 5px;
+}
+
+.obps-pages-citizen-index--style-3 {
+  text-decoration: none;
+  margin-right: 5px;
+}
+
+.obps-pages-citizen-index--style-4 {
+  margin-right: 5px;
+}
+
+.obps-pages-citizen-index--style-5 {
+  text-decoration: none;
+}
+
+.obps-pages-citizen-index--style-6 {
+  text-decoration: none;
+}
+
+.obps-pages-citizen-index--style-7 {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.obps-pages-employee-application-detail-index--style-1 {
+  margin-bottom: 40px;
+}
+
+.obps-pages-employee-application-detail-index--style-2 {
+  z-index: 10;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.obps-pages-employee-application-detail-index--style-3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.obps-pages-employee-application-detail-index--style-4 {
+  max-width: 120px;
+  max-height: 120px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+  margin-top: 245px;
+}
+
+.obps-pages-employee-application-overview-cluapplication-overview--style-1 {
+  overflow-x: scroll;
+}
+
+.obps-pages-employee-application-overview-cluapplication-overview--style-2 {
+  margin-top: 8px;
+}
+
+.obps-pages-employee-application-overview-cluapplication-overview--style-3 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-employee-application-overview-cluapplication-overview--style-4 {
+  margin-bottom: 30px;
+  background: #FAFAFA;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.obps-pages-employee-application-overview-cluapplication-overview--style-5 {
+  margin-bottom: 30px;
+  background: #FAFAFA;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.obps-pages-employee-application-overview-cluapplication-overview--style-6 {
+  margin-bottom: 30px;
+  background: #FAFAFA;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.obps-pages-employee-application-overview-cluapplication-overview--style-7 {
+  margin-bottom: 30px;
+  background: #FAFAFA;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.obps-pages-employee-application-overview-cluapplication-overview--style-8 {
+  margin-bottom: 30px;
+  background: #FAFAFA;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.obps-pages-employee-application-overview-cluapplication-overview--style-9 {
+  margin-bottom: 16px;
+  margin-top: 32px;
+}
+
+.obps-pages-employee-application-overview-cluapplication-overview--style-10 {
+  margin-top: 16px;
+}
+
+.obps-pages-employee-application-overview-cluapplication-overview--style-11 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.obps-pages-employee-application-overview-cluapplication-overview--style-12 {
+  color: blue;
+}
+
+.obps-pages-employee-application-overview-cluapplication-overview--style-13 {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.obps-pages-employee-application-overview-layout-application-overview--style-1 {
+  overflow-x: scroll;
+}
+
+.obps-pages-employee-application-overview-layout-application-overview--style-2 {
+  margin-top: 8px;
+}
+
+.obps-pages-employee-application-overview-layout-application-overview--style-3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.obps-pages-employee-application-overview-layout-application-overview--style-4 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.obps-pages-employee-application-overview-layout-application-overview--style-5 {
+  color: #A52A2A;
+}
+
+.obps-pages-employee-application-overview-layout-application-overview--style-6 {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.obps-pages-employee-application-overview-layout-application-overview--style-7 {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.obps-pages-employee-application-overview-layout-application-overview--style-8 {
+  margin-top: 16px;
+}
+
+.obps-pages-employee-application-overview-layout-response-employee--style-1 {
+  padding: 10px;
+}
+
+.obps-pages-employee-application-overview-layout-response-employee--style-2 {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+}
+
+.obps-pages-employee-bpaesign-response--style-1 {
+  padding: 10px;
+}
+
+.obps-pages-employee-bpaesign-response--style-2 {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.obps-pages-employee-bpasanction-esign-response--style-1 {
+  padding: 10px;
+}
+
+.obps-pages-employee-bpasanction-esign-response--style-2 {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-1 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-2 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-3 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-4 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-5 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-6 {
+  float: right;
+  display: inline;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-7 {
+  margin-right: auto;
+  max-width: 960px;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-8 {
+  color: #A52A2A;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-9 {
+  color: #A52A2A;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-10 {
+  font-size: 20px;
+  margin-top: 20px;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-11 {
+  font-size: 20px;
+  margin-top: 20px;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-12 {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-13 {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-14 {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-15 {
+  margin-bottom: 16px;
+  margin-top: 32px;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-16 {
+  margin-top: 10px;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-17 {
+  margin-top: 19px;
+  background: #FAFAFA;
+  border: 1px solid #D6D5D4;
+  border-radius: 4px;
+  padding: 8px;
+  line-height: 19px;
+  max-width: 960px;
+  min-width: 280px;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-18 {
+  margin-top: 19px;
+  background: #FAFAFA;
+  border: 1px solid #D6D5D4;
+  border-radius: 4px;
+  padding: 8px;
+  line-height: 19px;
+  max-width: 950px;
+  min-width: 280px;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-19 {
+  margin-top: 5px;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-20 {
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-21 {
+  margin-bottom: 16px;
+  margin-top: 32px;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-22 {
+  margin-bottom: 16px;
+  margin-top: 32px;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-23 {
+  overflow: hidden;
+  max-height: 1500px;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-24 {
+  margin-top: 10px;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-25 {
+  color: blue;
+}
+
+.obps-pages-employee-bpa-application-details-index--style-26 {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.obps-pages-employee-cluesign-response--style-1 {
+  padding: 10px;
+}
+
+.obps-pages-employee-cluesign-response--style-2 {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.obps-pages-employee-inbox-citizen-inbox--style-1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.obps-pages-employee-inbox-citizen-laoyout-inbox--style-1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.obps-pages-employee-inbox-filter-form-fields-component--style-1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.obps-pages-employee-inbox-filter-form-fields-component--style-2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.obps-pages-employee-inbox-filter-form-fields-component--style-3 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.obps-pages-employee-inbox-filter-form-fields-component--style-4 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.obps-pages-employee-inbox-layout-inbox--style-1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.obps-pages-employee-inbox-layout-search-form-fields--style-1 {
+  margin-left: 24px;
+}
+
+.obps-pages-employee-inbox-layout-search-form-fields--style-2 {
+  width: 100%;
+}
+
+.obps-pages-employee-inbox-search-form-fields-component--style-1 {
+  width: auto;
+  margin-left: 24px;
+}
+
+.obps-pages-employee-inbox-search-form-fields-component--style-2 {
+  width: 100%;
+}
+
+.obps-pages-employee-inbox-index--style-1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.obps-pages-employee-layout-esign-response--style-1 {
+  margin-top: 16px;
+  font-size: 16px;
+}
+
+.obps-pages-employee-obpsresponse--style-1 {
+  padding: 10px;
+}
+
+.obps-pages-employee-obpsresponse--style-2 {
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.obps-pages-employee-obpsresponse--style-3 {
+  margin-left: unset;
+  margin-bottom: 10px;
+  padding: 0px 8px;
+}
+
+.obps-pages-employee-obpsresponse--style-4 {
+  gap: 5px;
+}
+
+.obps-pages-employee-obpsresponse--style-5 {
+  margin-right: 10px;
+}
+
+.obps-pages-employee-obpsresponse--style-6 {
+  margin: 10px 10px 0px 0px;
+}
+
+.obps-pages-employee-obpsresponse--style-7 {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+}
+
+.obps-pages-employee-obpsresponse--style-8 {
+  margin: 10px 0px 0px 0px;
+}
+
+.obps-pages-employee-obpsresponse--style-9 {
+  color: #a82227;
+  margin: 0px 10px;
+}
+
+.obps-pages-employee-obpsresponse--style-10 {
+  margin: 10px 10px 0px 0px;
+}
+
+.obps-pages-employee-stakeholder-response--style-1 {
+  padding: 10px;
+}
+
+.obps-pages-employee-stakeholder-response--style-2 {
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.obps-pages-employee-stakeholder-response--style-3 {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+}
+
+.obps-pages-employee-clu-inbox-clufilter-form-fields-component--style-1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.obps-pages-employee-clu-inbox-cluinbox--style-1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.obps-pages-employee-clu-inbox-clusearch-form-fields--style-1 {
+  margin-left: 24px;
+}
+
+.obps-pages-employee-clu-inbox-clusearch-form-fields--style-2 {
+  width: 100%;
+}
+
+.obps-pages-employee-clu-inbox-citizen-cluinbox--style-1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.obps-pages-employee-components-rich-text-box--style-1 {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.obps-pages-employee-components-rich-text-box--style-2 {
+  margin-left: auto;
+  font-size: 12px;
+  color: #666;
+}
+
+.obps-pages-employee-components-rich-text-box--style-3 {
+  resize: none;
+  overflow: hidden;
+  min-height: 80px;
+  max-height: 1500px;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.obps-pages-employee-stakeholder-inbox-filter-form-fields-component--style-1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.obps-pages-employee-stakeholder-inbox-filter-form-fields-component--style-2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.obps-pages-employee-stakeholder-inbox-search-form-fields-component--style-1 {
+  width: auto;
+  margin-left: 24px;
+}
+
+.obps-pages-employee-stakeholder-inbox-search-form-fields-component--style-2 {
+  text-align: start;
+}
+
+.obps-pages-employee-stakeholder-inbox-search-form-fields-component--style-3 {
+  width: 100%;
+}

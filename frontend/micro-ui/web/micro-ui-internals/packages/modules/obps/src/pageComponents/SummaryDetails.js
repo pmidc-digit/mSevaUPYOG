@@ -62,20 +62,20 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
       });
     const [userSelected, setUser] = useState(null);
     const [showToast, setShowToast] = useState(null)
-    
-    
+
+
       const [otherCharges, setOtherCharges] = useState(() => {
         return currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_OTHER_CHARGES || "0";
       });
-    
+
       const [lessAdjusment, setLessAdjusment] = useState(() => {
         return currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_LESS_ADJUSMENT_PLOT || "0";
       });
-    
+
       const [otherChargesDisc, setOtherChargesDisc] = useState(() => {
         return currentStepData?.createdResponse?.additionalDetails?.otherFeesDiscription || "";
       });
-    
+
       const [uploadedFile, setUploadedFile] = useState();
       const [uploadedFileLess, setUploadedFileLess] = useState(() => {
         return currentStepData?.createdResponse?.additionalDetails?.lessAdjustmentFeeFiles || [];
@@ -117,7 +117,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
           Digit.UserService.setUser(userSelected);
           setCitizenDetail(userSelected?.info, userSelected?.access_token, state);
       }, [userSelected]);
-    
+
       const setCitizenDetail = (userObject, token, tenantId) => {
         let locale = JSON.parse(sessionStorage.getItem("Digit.initData"))?.value?.selectedLanguage;
         localStorage.setItem("Citizen.tenant-id", tenantId);
@@ -135,23 +135,23 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
       if (currentStepData?.createdResponse?.additionalDetails) {
         const selfCert = currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges || {};
         const otherDetails = currentStepData?.createdResponse?.additionalDetails || {};
-    
+
         setLabourCess(selfCert.BPA_LABOUR_CESS || "0");
         setGaushalaFees(selfCert.BPA_GAUSHALA_CHARGES_CESS || "0");
         setMalbafees(selfCert.BPA_MALBA_CHARGES || "0");
         setWaterCharges(selfCert.BPA_WATER_CHARGES || "0");
-    
+
         setDevelopment(selfCert.BPA_DEVELOPMENT_CHARGES || "0");
         setOtherCharges(selfCert.BPA_OTHER_CHARGES || "0");
         setLessAdjusment(selfCert.BPA_LESS_ADJUSMENT_PLOT || "0");
-    
+
         setOtherChargesDisc(otherDetails.otherFeesDiscription || "");
         setUploadedFileLess(otherDetails.lessAdjustmentFeeFiles || []);
       }
       if(currentStepData?.Timestamp?.isArchitectDeclared){
         setIsArchitectDeclared(currentStepData?.Timestamp?.isArchitectDeclared);
       }
-      if(currentStepData?.Timestamp?.TimeStamp){        
+      if(currentStepData?.Timestamp?.TimeStamp){
         setOTPVerifiedTimestamp(currentStepData?.Timestamp?.TimeStamp);
       }
     }, [currentStepData]);
@@ -159,7 +159,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     useEffect(()=>{
         if(!uploadedFile && uploadedFileLess?.length >0){
             console.log("ApplicationFeesAndSanctionFee 1", uploadedFileLess);
-            
+
             setUploadedFile(uploadedFileLess[0]?.fileStoreId)
         }
     },[uploadedFileLess])
@@ -335,7 +335,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const accessData = (plot) => {
         const name = plot;
         return (originalRow, rowIndex, columns) => {
-            return <div style={{overflowWrap: "break-word"}}>{originalRow[name]}</div>;
+            return <div className="obps-page-components-summary-details--style-1">{originalRow[name]}</div>;
         };
     };
 
@@ -372,8 +372,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     // },[ecbcDocumentsData])
       const ecbcDocumentsData = useMemo(() => {
       const docs = getDocsFromFileUrls(fileUrls) || [];
-          
-    
+
+
       return docs.map((doc, index) => ({
         id: index,
         index: index,
@@ -389,7 +389,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
     const setdeclarationhandler = (e) => {
         // e.preventDefault(); // Prevent form submission
-        
+
         if (!otpVerifiedTimestamp || otpVerifiedTimestamp === "") {
             console.log("setdeclarationhandler", e, isOTPVerified);
             setShowTermsPopup(true);
@@ -399,7 +399,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         }
     };
 
-    const setFeesDeclaration = (e) => {        
+    const setFeesDeclaration = (e) => {
         setIsFeesDeclared(true);
     };
 
@@ -417,9 +417,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
       const ownerDocumentsData = useMemo(() => {
       // ownerFileUrls: { 0: { documentFile: 'url', ownerPhoto: 'url' }, 1: { ... } }
       if (!ownerFileUrls || typeof ownerFileUrls !== "object") return [];
-    
+
       const ownersCount = Object.keys(ownerFileUrls).length;
-    
+
       // Flatten into { "0_documentFile": "url", "1_ownerPhoto": "url", ... }
       const flatFileUrls = Object.entries(ownerFileUrls).reduce((acc, [ownerIdx, files]) => {
         if (files && typeof files === "object") {
@@ -431,18 +431,18 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         }
         return acc;
       }, {});
-    
+
       const docs = getDocsFromFileUrls(flatFileUrls) || [];
-    
+
       return docs.map((doc, index) => {
         // doc.id will be like "0_documentFile"
         const [ownerIdx, ...propParts] = String(doc.id).split("_");
         const prop = propParts.join("_"); // "documentFile" or "ownerPhoto"
         const baseTitle = (prop ? prop.toUpperCase() : (doc.title || "").toUpperCase());
-    
+
         // Append index if more than 1 owner (ownerIdx is 0-based so +1)
         const title = ownersCount > 1 ? `${t(baseTitle)} ${parseInt(ownerIdx, 10) + 1}` : t(baseTitle);
-    
+
         return {
           id: index,
           index: index,
@@ -458,7 +458,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             Header: t("SR_NO"),
             accessor: "index",
             width: "20px",
-            Cell: ({ value }) => <div style={{ width: "20px" }}>{value + 1}</div>,
+            Cell: ({ value }) => <div className="obps-page-components-summary-details--style-2">{value + 1}</div>,
         },
         {
             Header: t("BPA_DOCUMENT_NAME"),
@@ -697,9 +697,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     useEffect(() => {
         const fetchFileUrls = async () => {
           if (!currentStepData?.createdResponse?.additionalDetails) return;
-    
+
           const fileKeys = ["ecbcCertificateFile", "greenuploadedFile", "uploadedFile", "lessAdjustmentFeeFiles"];
-    
+
           // Collect valid fileStoreIds
           const validFileStoreIds = fileKeys
             .map((key) => {
@@ -709,12 +709,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             .filter(
               (id) => id && id !== "NA" && id !== "" && id !== null && id !== undefined
             );
-    
+
           if (validFileStoreIds.length === 0) return;
-    
+
           try {
             setIsFileLoading(true);
-    
+
             // Call Digit service
             const result = await Digit.UploadServices.Filefetch(validFileStoreIds, state);
             if (result?.data?.fileStoreIds) {
@@ -725,7 +725,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                   urls[key] = result.data?.[fileId];
                 }
               });
-    
+
               // Store URLs in state (example: object with keys)
               setFileUrls(urls);
             }
@@ -735,7 +735,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             setIsFileLoading(false);
           }
         };
-    
+
         fetchFileUrls();
       }, [currentStepData?.createdResponse?.additionalDetails]);
 
@@ -743,15 +743,15 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
       const fetchOwnerFileUrls = async () => {
         const owners = currentStepData?.createdResponse?.landInfo?.owners || [];
         if (owners.length === 0) return;
-    
+
         // Collect valid fileStoreIds from each owner
         const fileIdsMap = []; // keeps mapping of ownerIndex + propertyName to fileStoreId
         const validFileStoreIds = [];
-    
+
         owners.forEach((owner, index) => {
           const docFile = owner?.additionalDetails?.documentFile;
           const photoFile = owner?.additionalDetails?.ownerPhoto;
-    
+
           if (docFile && docFile !== "NA") {
             validFileStoreIds.push(docFile);
             fileIdsMap.push({ index, key: "documentFile", fileId: docFile });
@@ -761,24 +761,24 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             fileIdsMap.push({ index, key: "ownerPhoto", fileId: photoFile });
           }
         });
-    
+
         if (validFileStoreIds.length === 0) return;
-    
+
         try {
           setIsOwnerFileLoading(true);
-    
+
           // Fetch URLs
           const result = await Digit.UploadServices.Filefetch(validFileStoreIds, state);
           if (result?.data) {
             const urls = {};
-    
+
             fileIdsMap.forEach(({ index, key, fileId }) => {
               if (result.data[fileId]) {
                 if (!urls[index]) urls[index] = {};
                 urls[index][key] = result.data[fileId];
               }
             });
-    
+
             // Example final structure:
             // {
             //   0: { documentFile: "url1", ownerPhoto: "url2" },
@@ -792,7 +792,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
           setIsOwnerFileLoading(false);
         }
       };
-    
+
       fetchOwnerFileUrls();
     }, [currentStepData?.createdResponse?.landInfo?.owners]);
 
@@ -915,8 +915,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                 </div>
                             </div>
                         ))}
-                    
-                    <CardSubHeader className="bpa-section-header" style={{marginTop: "20px"}}>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
+
+                    <CardSubHeader className="bpa-section-header obps-page-components-summary-details--style-3" >{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
                     <div className="bpa-table-container">
                         {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
                             className="customTable table-border-style"
@@ -1168,7 +1168,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.MAUZA || t("CS_NA")}</div>
                         </div> */}
                     </div>
-                    <CardSubHeader className="bpa-block-header" style={{marginTop: "16px"}}>{t("BPA_PLOT_DIMENSIONS")}</CardSubHeader>
+                    <CardSubHeader className="bpa-block-header obps-page-components-summary-details--style-4" >{t("BPA_PLOT_DIMENSIONS")}</CardSubHeader>
                     <div className="data-table">
                         <div className="row border-none">
                             <h2>{t("BPA_AVG_PLOT_DEPTH")}</h2>
@@ -1179,7 +1179,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.AVG_PLOT_WIDTH || t("CS_NA")}</div>
                         </div>
                     </div>
-                    <CardSubHeader className="bpa-block-header" style={{marginTop: "16px"}}>{t("BPA_ROAD_DETAILS")}</CardSubHeader>
+                    <CardSubHeader className="bpa-block-header obps-page-components-summary-details--style-5" >{t("BPA_ROAD_DETAILS")}</CardSubHeader>
                     <div className="data-table">
                         <div className="row border-none">
                             <h2>{t("BPA_ROAD_TYPE")}</h2>
@@ -1190,26 +1190,26 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.ROAD_WIDTH || t("CS_NA")}</div>
                         </div>
                     </div>
-                    <CardSubHeader className="bpa-block-header" style={{marginTop: "16px"}}>{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
+                    <CardSubHeader className="bpa-block-header obps-page-components-summary-details--style-6" >{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
                     <div className="data-table">
                         <div className="row border-none">
                             <h2>{t("BPA_GREEN_BUILDINGS_SUSTAINABILITY")}</h2>
                             <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.PROVISION_FOR_GREEN_BUILDINGS_AND_SUSTAINABILITY || t("CS_NA")}</div>
                         </div>
                     </div>
-                    <CardSubHeader className="bpa-block-header" style={{marginTop: "16px"}}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
+                    <CardSubHeader className="bpa-block-header obps-page-components-summary-details--style-7" >{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
                     {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.map((block, index) => (
                         <div className={currentStepData?.createdResponse?.landInfo?.owners.length > 1 ? "owner-details-card" : ""}
                             key={index}
-                          
+
                         >
-                            <CardSubHeader className="bpa-block-header" style={{marginTop: "8px"}}>
+                            <CardSubHeader className="bpa-block-header obps-page-components-summary-details--style-8" >
                                 {t("BPA_BLOCK_SUBHEADER")} {index + 1}
                             </CardSubHeader>
                             <div className="data-table">
                                 <div className="row border-none">
                                     <h2>{t("BPA_SUB_OCCUPANCY_LABEL")}</h2>
-                                    <div className="value" style={{ wordBreak: "break-word" }}>{getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}</div>
+                                    <div className="value obps-page-components-summary-details--style-9" >{getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}</div>
                                 </div>
                             </div>
                             <div className="bpa-table-container">
@@ -1234,7 +1234,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         </div>
                     ))}
 
-                    <CardSubHeader className="bpa-block-header" style={{marginTop: "16px"}}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
+                    <CardSubHeader className="bpa-block-header obps-page-components-summary-details--style-10" >{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
                     <div className="data-table">
                         <div className="row border-none">
                             <h2>{t("BPA_APPLICATION_DEMOLITION_AREA_LABEL")}</h2>
@@ -1246,7 +1246,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         </div>
                     </div>
                 </div>
-                            
+
                 {currentStepData?.createdResponse?.applicationType !== "BUILDING_OC_PLAN_SCRUTINY" && <div className="bpa-stepper-form-section">
                     <CardSubHeader className="bpa-section-header">{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardSubHeader>
                     <div className="data-table">
@@ -1289,7 +1289,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <h2>{t(`BPA_NOC_APPROVED_ON`)}</h2>
                             <div className="value">{nocApprovedDate || t("CS_NA")}</div>
                         </div>
-                        }                        
+                        }
                         <div className="row border-none">
                             <h2>{t(`BPA_ULB_TYPE_LABEL`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.Ulblisttype || t("CS_NA")}</div>
@@ -1336,37 +1336,37 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <h2>{t(`BPA_PURCHASED_FAR_LABEL`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.purchasedFAR ? "YES" : "NO" || t("CS_NA")}</div>
                         </div>
-                        {currentStepData?.createdResponse?.additionalDetails?.purchasedFAR && 
+                        {currentStepData?.createdResponse?.additionalDetails?.purchasedFAR &&
                         <div className="row border-none">
                             <h2>{t(`BPA_PROVIDED_FAR`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.providedFAR || t("CS_NA")}</div>
                         </div>
                         }
-                        {currentStepData?.createdResponse?.additionalDetails?.purchasedFAR && 
+                        {currentStepData?.createdResponse?.additionalDetails?.purchasedFAR &&
                         <div className="row border-none">
                             <h2>{t(`BPA_ALLOWED_PROVIDED_FAR`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.purchasableFAR || t("CS_NA")}</div>
                         </div>
                         }
-                        {currentStepData?.createdResponse?.additionalDetails?.permissableFar && 
+                        {currentStepData?.createdResponse?.additionalDetails?.permissableFar &&
                         <div className="row border-none">
                             <h2>{t(`BPA_PERMISSIBLE_FAR`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.permissableFar || t("CS_NA")}</div>
                         </div>
                         }
-                        {currentStepData?.createdResponse?.additionalDetails?.achievedFar && 
+                        {currentStepData?.createdResponse?.additionalDetails?.achievedFar &&
                         <div className="row border-none">
                             <h2>{t(`BPA_FAR_ACHIEVED`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.achievedFar || t("CS_NA")}</div>
                         </div>
                         }
-                        {currentStepData?.createdResponse?.additionalDetails?.ecsRequired && 
+                        {currentStepData?.createdResponse?.additionalDetails?.ecsRequired &&
                         <div className="row border-none">
                             <h2>{t(`BPA_ECS_REQUIRED`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.ecsRequired || t("CS_NA")}</div>
                         </div>
                         }
-                        {currentStepData?.createdResponse?.additionalDetails?.ecsProvided && 
+                        {currentStepData?.createdResponse?.additionalDetails?.ecsProvided &&
                         <div className="row border-none">
                             <h2>{t(`BPA_ECS_PROVIDED`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.ecsProvided || t("CS_NA")}</div>
@@ -1376,7 +1376,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <h2>{t(`BPA_MASTER_PLAN_LABEL`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.masterPlan || t("CS_NA")}</div>
                         </div>
-                        {currentStepData?.createdResponse?.additionalDetails?.masterPlan === "YES" && 
+                        {currentStepData?.createdResponse?.additionalDetails?.masterPlan === "YES" &&
                         <div className="row border-none">
                             <h2>{t(`BPA_USE`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.use || t("CS_NA")}</div>
@@ -1394,7 +1394,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         }
                     </div>
 
-                    <CardSubHeader className="bpa-block-header" style={{marginTop: "16px"}}>{t("BPA_APP_DETAILS_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                    <CardSubHeader className="bpa-block-header obps-page-components-summary-details--style-11" >{t("BPA_APP_DETAILS_ECBC_DETAILS_LABEL")}</CardSubHeader>
                     <div className="data-table">
                         <div className="row border-none">
                             <h2>{t(`ECBC - Proposed Connected Electrical Load is above 100 Kw`)}</h2>
@@ -1431,12 +1431,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 <div className="bpa-stepper-form-section">
                     <CardSubHeader className="bpa-section-header" >{t("BPA_DOCUMENT_SITE_DETAILS_LABEL")}</CardSubHeader>
                     <StatusTable
-                        style={{
-                            display: "flex",
-                            gap: "20px",
-                            flexWrap: "wrap",
-                            justifyContent: "space-between",
-                        }}
+                        className="obps-page-components-summary-details--style-12"
                     >
                         {sitePhotos?.length > 0 &&
                             [...sitePhotos]
@@ -1472,15 +1467,15 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     <div className="bpa-table-container">
                         {(isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees) ? <Loader/> : <FeeEstimation
                             disable = {!currentStepData?.createdResponse?.additionalDetails?.isSelfCertification}
-                            currentStepData={currentStepData}                        
+                            currentStepData={currentStepData}
                             development={development}
                             otherCharges={otherCharges}
                             lessAdjusment={lessAdjusment}
                             otherChargesDisc={otherChargesDisc}
-                            labourCess={labourCess}                  
-                            gaushalaFees={gaushalaFees}                 
-                            malbafees={malbafees}                    
-                            waterCharges={waterCharges}                 
+                            labourCess={labourCess}
+                            gaushalaFees={gaushalaFees}
+                            malbafees={malbafees}
+                            waterCharges={waterCharges}
                             errorFile={errorFile}
                             setError={setError}
                             adjustedAmounts={adjustedAmounts}
@@ -1542,7 +1537,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 <ActionBar>
                     <SubmitBar className="back-submit-button"
                         label="Back"
-                      
+
                         onSubmit={onGoBack}
                     />
                     {/* <SubmitBar

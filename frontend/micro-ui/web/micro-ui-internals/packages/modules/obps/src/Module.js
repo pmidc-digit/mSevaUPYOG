@@ -178,7 +178,7 @@ const OBPSLinks = ({ matchPath, userType }) => {
       Info={() => <CitizenInfoLabel info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)} />} isInfo={true}
     />
   );
-} 
+}
 
 const dummy = () => {
   return <div></div>

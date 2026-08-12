@@ -25,7 +25,7 @@ const LayoutDocumentTableView = ({documents}) => {
       accessor: "fileUrl",
       Cell: ({ value }) =>
         value ? (
-          <LinkButton 
+          <LinkButton
             label={t("View")}
             onClick={() => routeTo(value)}
           />
@@ -52,7 +52,7 @@ const LayoutDocumentTableView = ({documents}) => {
       enabled: documents?.length > 0 ? true : false
     }
   );
-  
+
   const mappedDocuments = documents?.filter(doc => !!(doc?.filestoreId || doc?.documentAttachment))?.sort((a,b) => a?.order - b?.order)?.map((doc, index) => {
    const { documentUid, documentType } = doc;
    const url = urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
@@ -75,7 +75,7 @@ const LayoutDocumentTableView = ({documents}) => {
 
   return (
     <div>
-      {documentsData && 
+      {documentsData &&
         <Table
           className="customTable table-border-style obps-documents-table"
           t={t}

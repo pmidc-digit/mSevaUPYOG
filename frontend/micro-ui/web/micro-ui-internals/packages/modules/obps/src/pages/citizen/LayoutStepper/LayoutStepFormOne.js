@@ -141,7 +141,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
         });
         hasError = true;
         //console.log("errorFound: email id error for applicant index", originalIndex);
-      } 
+      }
 
       /* ---------------- Address ---------------- */
       if (!applicant.address || !applicant.address.trim()) {
@@ -261,7 +261,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     const applicants = currentStepData?.applicants || [];
     const applicantType = currentStepData?.applicationDetails?.applicantType;
 
-    // 1. Validate applicants manually    
+    // 1. Validate applicants manually
     // const isApplicantsValid = validateApplicants(applicants, applicantType);
 
     // if (!isApplicantsValid) {
@@ -299,8 +299,8 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     // setShowToast(null);
     // setError("");
   // };
-  
-  
+
+
   const [isRegisteredStakeHolder, setIsRegisteredStakeHolder]=useState(currentStepData?.applicationDetails?.isRegisteredStakeHolder || false);
   const stateCode = Digit.ULBService.getStateId();
   const [stakeHolderRoles, setStakeholderRoles] = useState(false);
@@ -327,7 +327,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
             setIsRegisteredStakeHolder(true);
           }
         });
-      
+
       }
     }, [stakeHolderDetailsLoading]);
 
@@ -347,10 +347,10 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
       {/* <form onSubmit={handleSubmit(onSubmit, onInvalid)}> */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="employeeCard">
-            
+
         {isRegisteredStakeHolder ? (
             <React.Fragment>
-            
+
               <LayoutProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
               <LayoutNewApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
@@ -359,7 +359,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
              <LayoutNewApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
           )
-        }   
+        }
         </div>
         <ActionBar>
           <SubmitBar label="Next" submit="submit" />

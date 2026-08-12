@@ -347,7 +347,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   };
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div className="noc-components-challan-documents--style-1">
       {/* {doc?.hasDropdown ? (
         <LabelFieldPair style={{ display: "inline" }}>
           <CardLabel style={{ width: "auto" }}>
@@ -369,13 +369,13 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + "  *"}</CardLabel>
         </LabelFieldPair>
       ) : null} */}
-      <LabelFieldPair style={{ display: "inline" }}>
+      <LabelFieldPair className="noc-components-challan-documents--style-2">
         <CardLabel className="bpa-owner-cardlabel-negative-margin ads-search-container"
         //  style={{ marginBottom: "8px", width: "auto" }}
          >
-          {t(doc?.code)} <span 
+          {t(doc?.code)} <span
           // className="bpa-newbuilding-ecbc-error-text"
-           style={{ color: "red" }}
+           className="noc-components-challan-documents--style-3"
            > {doc?.required && " *"}</span>
         </CardLabel>
         <div className="field payment-form-text-input-correction"
@@ -398,7 +398,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           /> */}
           <div className={`upload-file upload-file-max-width`}>
             <div className="obps-document-detail-item zero-margin-padding" >
-              <div className="auto-height-box-43"> 
+              <div className="auto-height-box-43">
                 <SubmitBar
                   label={t("CAPTURE_IMAGE")}
                   onSubmit={() => {
@@ -406,7 +406,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
                     setShowCameraModal(true);
                     }else{
                       setError(t("CS_MOBILE_CAMERA_ERROR"));
-                    }                    
+                    }
                   }}
                 />
               </div>

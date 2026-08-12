@@ -40,7 +40,7 @@ const SearchApplication = ({ tenantId, t, onSubmit, data, error, isLoading, Coun
     [data]
   );
 
- 
+
 
   if (isMobile) return <FormProvider {...methods}><SearchApplicationMobileView {...{SearchFormFieldsComponent, propsMobileInboxCards, isLoading, data, getRedirectionLink, onSubmit}} /></FormProvider>
 

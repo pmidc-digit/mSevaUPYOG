@@ -35,21 +35,14 @@ const NocUploadedDocument = ({ filestoreId, documentType, documentName, latitude
   };
 
   return (
-    <div style={{ padding: "20px 0px" }}>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", marginTop: "10px", padding: "0px 20px" }}>
-        <span style={{ fontWeight: "500" }}>{t(documentType?.replaceAll(".", "_"))}</span>
+    <div className="noc-components-noc-uploaded-document--style-1">
+      <div className="noc-components-noc-uploaded-document--style-2">
+        <span className="noc-components-noc-uploaded-document--style-3">{t(documentType?.replaceAll(".", "_"))}</span>
 
         <img
           src={docUrl}
           alt={documentName || t(documentType?.replaceAll(".", "_"))}
-          style={{
-            width: "100px",
-            height: "100px",
-            objectFit: "cover",
-            borderRadius: "10%",
-            cursor: docUrl ? "pointer" : "default",
-            marginTop: "8px",
-          }}
+          className={docUrl ? "noc-uploaded-document__image noc-uploaded-document__image--clickable" : "noc-uploaded-document__image"}
           onClick={() => docUrl && setZoomUrl(docUrl)}
         />
 
@@ -61,7 +54,7 @@ const NocUploadedDocument = ({ filestoreId, documentType, documentName, latitude
         )}
 
         {dateTaken && (
-          <div style={{ marginTop: "4px", fontSize: "12px", color: "#666" }}>
+          <div className="noc-components-noc-uploaded-document--style-4">
             <span>Date Taken: {dateTaken}</span>
           </div>
         )}

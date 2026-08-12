@@ -530,7 +530,7 @@ const NOCApplicantDetails = (_props) => {
       <div>
         {(loader || isMenuListLoading) && <Loader page={true} />}
         {isEdit && (
-          <CardSectionSubText style={{ color: "red", margin: "10px 0px" }}>
+          <CardSectionSubText className="noc-page-components-nocapplicant-details--style-1">
             {" "}
             To update your Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section
           </CardSectionSubText>
@@ -540,7 +540,7 @@ const NOCApplicantDetails = (_props) => {
           <div key={field.id}>
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `${t("Owner")} ${index + 1}`}</CardSubHeader>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, cursor: "pointer" }} onClick={() => removeOwner(index)}>
+            <div className="noc-page-components-nocapplicant-details--style-2" onClick={() => removeOwner(index)}>
               {fields.length > 1 && `❌`}
             </div>
 
@@ -623,7 +623,7 @@ const NOCApplicantDetails = (_props) => {
                       render={(props) => (
                         <>
                           <TextInput
-                            style={{ display: "none" }}
+                            className="noc-page-components-nocapplicant-details--style-3"
                             value={props.value}
                             onChange={(e) => props.onChange(e.target.value)}
                             onBlur={(e) => props.onBlur(e)}
@@ -635,10 +635,10 @@ const NOCApplicantDetails = (_props) => {
                   </div>
                 </LabelFieldPair>
                 {errors.isPropertyAvailable && (
-                  <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors.isPropertyAvailable.message}</CardLabelError>
+                  <CardLabelError className="noc-page-components-nocapplicant-details--style-4">{errors.isPropertyAvailable.message}</CardLabelError>
                 )}
                 {isPropertyAvailable?.value === false && (
-                  <CardLabelError style={{ fontSize: "12px", color: "black" }}>{t("NO_PROPERTY_AVAILABLE_DISCLAIMER")}</CardLabelError>
+                  <CardLabelError className="noc-page-components-nocapplicant-details--style-5">{t("NO_PROPERTY_AVAILABLE_DISCLAIMER")}</CardLabelError>
                 )}
 
                 {tenantId === LUDHIANA_TENANT && isPropertyAvailable?.value && (
@@ -679,9 +679,9 @@ const NOCApplicantDetails = (_props) => {
                 <Controller control={control} name={`owners[${index}].localityAreaType`} />
 
                 <div className="field">
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div className="noc-page-components-nocapplicant-details--style-6">
                     {watch(`owners[${index}].PropertyOwnerName`) && (
-                      <StatusTable style={{ marginBottom: "1rem" }}>
+                      <StatusTable className="noc-page-components-nocapplicant-details--style-7">
                         <Row className="border-none" label={t(`PROPERTY_ID`)} text={watch(`owners[${index}].propertyId`)} />
                         <Row label={t("PROPERTY_OWNER_NAME")} text={watch(`owners[${index}].PropertyOwnerName`)} />{" "}
                         <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={watch(`owners[${index}].PropertyOwnerMobileNumber`)} />{" "}
@@ -722,7 +722,7 @@ const NOCApplicantDetails = (_props) => {
                     />
 
                     {errors?.owners?.[index]?.ownerType && (
-                      <p style={{ color: "red", marginBottom: "0" }}>{errors?.owners?.[index]?.ownerType?.message}</p>
+                      <p className="noc-page-components-nocapplicant-details--style-8">{errors?.owners?.[index]?.ownerType?.message}</p>
                     )}
                   </div>
                 </LabelFieldPair>
@@ -751,7 +751,7 @@ const NOCApplicantDetails = (_props) => {
                         )}
                       />
                       {errors?.owners?.[index]?.firmName && (
-                        <p style={{ color: "red", marginBottom: 0 }}>{errors?.owners?.[index]?.firmName?.message}</p>
+                        <p className="noc-page-components-nocapplicant-details--style-9">{errors?.owners?.[index]?.firmName?.message}</p>
                       )}
                     </div>
                   </LabelFieldPair>
@@ -765,7 +765,7 @@ const NOCApplicantDetails = (_props) => {
                 <span className="requiredField">*</span>
               </CardLabel>
               <div className="field">
-                <div style={{ display: "flex" }}>
+                <div className="noc-page-components-nocapplicant-details--style-10">
                   <Controller
                     control={control}
                     name={`owners[${index}].mobileNumber`}
@@ -795,8 +795,8 @@ const NOCApplicantDetails = (_props) => {
                     )}
                   />
                   <div
-                    style={{ marginTop: "23px" }}
-                    className="search-icon"
+
+                    className="search-icon noc-page-components-nocapplicant-details--style-11"
                     onClick={
                       Boolean(nocCpt?.details?.owners?.[0]?.mobileNumber) ||
                       Boolean(cptObj?.owners?.[0]?.mobileNumber) ||
@@ -810,7 +810,7 @@ const NOCApplicantDetails = (_props) => {
                   </div>
                 </div>
                 {errors?.owners?.[index]?.mobileNumber && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].mobileNumber.message}</p>
+                  <p className="noc-page-components-nocapplicant-details--style-12">{errors.owners[index].mobileNumber.message}</p>
                 )}
               </div>
             </LabelFieldPair>
@@ -854,7 +854,7 @@ const NOCApplicantDetails = (_props) => {
                   )}
                 />
                 {errors?.owners?.[index]?.ownerOrFirmName && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].ownerOrFirmName.message}</p>
+                  <p className="noc-page-components-nocapplicant-details--style-13">{errors.owners[index].ownerOrFirmName.message}</p>
                 )}
               </div>
             </LabelFieldPair>
@@ -889,7 +889,7 @@ const NOCApplicantDetails = (_props) => {
                   )}
                 />
                 {errors?.owners?.[index]?.emailId && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].emailId.message}</p>
+                  <p className="noc-page-components-nocapplicant-details--style-14">{errors.owners[index].emailId.message}</p>
                 )}
               </div>
             </LabelFieldPair>
@@ -925,7 +925,7 @@ const NOCApplicantDetails = (_props) => {
                   )}
                 />
                 {errors?.owners?.[index]?.fatherOrHusbandName && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].fatherOrHusbandName.message}</p>
+                  <p className="noc-page-components-nocapplicant-details--style-15">{errors.owners[index].fatherOrHusbandName.message}</p>
                 )}
               </div>
             </LabelFieldPair>
@@ -969,7 +969,7 @@ const NOCApplicantDetails = (_props) => {
                   )}
                 />
                 {errors?.owners?.[index]?.address && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].address.message}</p>
+                  <p className="noc-page-components-nocapplicant-details--style-16">{errors.owners[index].address.message}</p>
                 )}
               </div>
             </LabelFieldPair>
@@ -1012,7 +1012,7 @@ const NOCApplicantDetails = (_props) => {
                   )}
                 />
                 {errors?.owners?.[index]?.dateOfBirth && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].dateOfBirth.message}</p>
+                  <p className="noc-page-components-nocapplicant-details--style-17">{errors.owners[index].dateOfBirth.message}</p>
                 )}
               </div>
             </LabelFieldPair>
@@ -1042,17 +1042,17 @@ const NOCApplicantDetails = (_props) => {
                   )}
                 />
                 {errors?.owners?.[index]?.gender && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].gender.message}</p>
+                  <p className="noc-page-components-nocapplicant-details--style-18">{errors.owners[index].gender.message}</p>
                 )}
               </div>
             </LabelFieldPair>
 
-            <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+            <LabelFieldPair className="noc-page-components-nocapplicant-details--style-19">
               <CardLabel className="card-label-smaller">
                 {t("NOC_APPLICANT_PASSPORT_PHOTO")}
                 <span className="requiredField">*</span>
               </CardLabel>
-              <div className="field" style={{ width: "100%" }}>
+              <div className="field noc-page-components-nocapplicant-details--style-20" >
                 <NOCCustomUploadFile
                   id={`passport-photo-${index}`}
                   onUpload={selectOwnerPhotoFile(index)}
@@ -1067,12 +1067,12 @@ const NOCApplicantDetails = (_props) => {
               </div>
             </LabelFieldPair>
 
-            <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+            <LabelFieldPair className="noc-page-components-nocapplicant-details--style-21">
               <CardLabel className="card-label-smaller">
                 {t("NOC_APPLICANT_ID_PROOF")}
                 <span className="requiredField">*</span>
               </CardLabel>
-              <div className="field" style={{ width: "100%" }}>
+              <div className="field noc-page-components-nocapplicant-details--style-22" >
                 <NOCCustomUploadFile
                   id={`id-proof-${index}`}
                   onUpload={selectOwnerIdFile(index)}
@@ -1091,7 +1091,7 @@ const NOCApplicantDetails = (_props) => {
       </div>
 
       <div>
-        <button type="button" onClick={() => append(defaultOwner())} style={{ cursor: "pointer" }}>
+        <button type="button" onClick={() => append(defaultOwner())} className="noc-page-components-nocapplicant-details--style-23">
           {`➕ Add Owner`}
         </button>
       </div>

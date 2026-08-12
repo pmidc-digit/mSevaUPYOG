@@ -92,7 +92,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
       {comment?.length > 0 && (
         <div className="TLComments">
           <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
+          <p className="noc-pages-employee-application-overview-application-overview--style-1">{comment}</p>
         </div>
       )}
 
@@ -114,7 +114,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         </div>
       )}
 
-      <div style={{ marginTop: "8px" }}>
+      <div className="noc-pages-employee-application-overview-application-overview--style-2">
         {caption.time && <p>{caption.time}</p>}
         {caption.date && <p>{caption.date}</p>}
         {caption.name && <p>{caption.name}</p>}
@@ -1168,7 +1168,7 @@ const NOCEmployeeApplicationOverview = () => {
 
   return (
     <div className={"employee-main-application-details"}>
-      <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+      <div className="cardHeaderWithOptions noc-pages-employee-application-overview-application-overview--style-3" >
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
         {loading && <Loader />}
@@ -1203,7 +1203,7 @@ const NOCEmployeeApplicationOverview = () => {
       {id.length > 0 && (
         <React.Fragment>
           <Card>
-            <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <div className="noc-pages-employee-application-overview-application-overview--style-4">
               <StatusTable>
                 <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
               </StatusTable>
@@ -1224,7 +1224,7 @@ const NOCEmployeeApplicationOverview = () => {
         <React.Fragment>
           <Card>
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <div key={index} className="noc-pages-employee-application-overview-application-overview--style-5">
               <StatusTable>
                 {detail?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(detail?.ownerType?.code)} />}
                 {detail?.firmName && <Row label={t("NOC_FIRM_NAME")} text={detail?.firmName} />}
@@ -1261,7 +1261,7 @@ const NOCEmployeeApplicationOverview = () => {
           <React.Fragment>
             <Card>
               <CardSubHeader>{t("NOC_PROFESSIONAL_DETAILS")}</CardSubHeader>
-              <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <div key={index} className="noc-pages-employee-application-overview-application-overview--style-6">
                 <StatusTable>
                   <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
                   <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
@@ -1277,7 +1277,7 @@ const NOCEmployeeApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("NOC_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          <div key={index} className="noc-pages-employee-application-overview-application-overview--style-7">
             <StatusTable>
               <Row label={t("NOC_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
               <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
@@ -1335,7 +1335,7 @@ const NOCEmployeeApplicationOverview = () => {
           const isOffline = existNocCode === "OFFLINE";
 
           return (
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <div key={index} className="noc-pages-employee-application-overview-application-overview--style-8">
               <StatusTable>
                 <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
                 <Row
@@ -1387,12 +1387,7 @@ const NOCEmployeeApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
         <StatusTable
-          style={{
-            display: "flex",
-            gap: "20px",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-          }}
+          className="noc-pages-employee-application-overview-application-overview--style-9"
         >
           {sitePhotos?.length > 0 &&
             [...sitePhotos].map((doc) => (
@@ -1416,12 +1411,7 @@ const NOCEmployeeApplicationOverview = () => {
         <Card>
           <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
           <StatusTable
-            style={{
-              display: "flex",
-              gap: "20px",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-            }}
+            className="noc-pages-employee-application-overview-application-overview--style-10"
           >
             {documentData?.length > 0 &&
               documentData.map((doc) => (
@@ -1438,7 +1428,7 @@ const NOCEmployeeApplicationOverview = () => {
 
           {geoLocations?.length > 0 && (
             <>
-              <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+              <CardSectionHeader className="noc-pages-employee-application-overview-application-overview--style-11">{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
               <CustomLocationSearch position={geoLocations} />
             </>
           )}
@@ -1571,11 +1561,11 @@ const NOCEmployeeApplicationOverview = () => {
         <Modal headerBarEnd={<CloseBtn onClick={closeImageModal} />}>
           {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
           {imageUrl?.toLowerCase().endsWith(".pdf") ? (
-            <a style={{ color: "blue" }} href={imageUrl} target="_blank" rel="noopener noreferrer">
+            <a className="noc-pages-employee-application-overview-application-overview--style-12" href={imageUrl} target="_blank" rel="noopener noreferrer">
               {t("CS_VIEW_DOCUMENT")}
             </a>
           ) : (
-            <img src={imageUrl} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            <img src={imageUrl} alt="Preview" className="noc-pages-employee-application-overview-application-overview--style-13" />
           )}
         </Modal>
       )}

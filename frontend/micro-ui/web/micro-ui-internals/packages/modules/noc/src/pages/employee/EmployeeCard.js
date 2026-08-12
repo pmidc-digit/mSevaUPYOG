@@ -10,9 +10,9 @@ const NOCEmployeeHomeCard = () => {
     const tenantId = Digit.ULBService.getCurrentTenantId();
 
     if (!Digit.Utils.NOCAccess()) return null;
-       
+
     const searchFormDefaultValues = {}
-  
+
     const filterFormDefaultValues = {
         moduleName: "noc-services",
         applicationStatus: "",
@@ -27,7 +27,7 @@ const NOCEmployeeHomeCard = () => {
         offset: 0,
         // sortOrder: "DESC"
     }
-  
+
     const formInitValue = {
       filterForm: filterFormDefaultValues,
       searchForm: searchFormDefaultValues,
@@ -63,7 +63,7 @@ const NOCEmployeeHomeCard = () => {
         {   count:!isInboxLoading ?nearingSlaCount:"-",
             label: t("TOTAL_NEARING_SLA"),
             link: `/digit-ui/employee/obps/inbox`
-        }  
+        }
       ],
       links: [
         {
@@ -77,7 +77,7 @@ const NOCEmployeeHomeCard = () => {
         }
       ]
     }),[isInboxLoading, totalCount]);
-  
+
     return Digit.Utils.NOCAccess() ? <EmployeeModuleCard {...propsForModuleCard} /> : null
   }
 

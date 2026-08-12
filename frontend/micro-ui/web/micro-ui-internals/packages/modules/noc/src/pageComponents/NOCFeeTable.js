@@ -21,7 +21,7 @@ export const NOCFeeTable = ({
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
@@ -45,16 +45,11 @@ export const NOCFeeTable = ({
         if (row.taxHeadCode === "NOC_TOTAL") {
           return (
             <div>
-              <strong style={{ fontSize: "14px" }}>
+              <strong className="noc-page-components-nocfee-table--style-1">
                 ₹ {row.grandTotal.toLocaleString("en-IN")}
               </strong>
               <div
-                style={{
-                  fontSize: "0.85em",
-                  color: "#555",
-                  marginTop: "4px",
-                  lineHeight: "1.3",
-                }}
+                className="noc-page-components-nocfee-table--style-2"
               >
                {amountToWords(row.grandTotal)} only
               </div>
@@ -134,7 +129,7 @@ export const NOCFeeTable = ({
     return (
       <div className="custom-fix-fee-history-wrapper">
         {/* Toggle Header */}
-        <div 
+        <div
           className="custom-fix-fee-history-toggle"
           onClick={() => setShowHistory(!showHistory)}
         >

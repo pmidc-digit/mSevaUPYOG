@@ -341,11 +341,11 @@ function PTRSelectDocument({
         setDocuments((prev) => {
           const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
           const selectedDoc = documents?.find((item) => item?.documentType === doc?.code);
-  
+
           if (uploadedFile === null) {
             return filteredDocumentsByDocumentType;
           }
-  
+
           const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
           return [
             ...filteredDocumentsByFileStoreId,
@@ -367,7 +367,7 @@ function PTRSelectDocument({
           }else{
             setDocuments((prev) => {
           const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
-  
+
           const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
           return [
             ...filteredDocumentsByFileStoreId,
@@ -544,9 +544,9 @@ function PTRSelectDocument({
         </div>
 
         {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO" ? (
-          <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+          <p className="noc-page-components-nocdocuments-required--style-1">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
         ) : (
-          <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+          <p className="noc-page-components-nocdocuments-required--style-2">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
         )}
         {doc?.code === "OWNER.SITEPHOTOGRAPHONE" && geocoordinates?.Latitude1 && geocoordinates?.Longitude1 && (
           <p className="bpa-doc-required-coordinates">

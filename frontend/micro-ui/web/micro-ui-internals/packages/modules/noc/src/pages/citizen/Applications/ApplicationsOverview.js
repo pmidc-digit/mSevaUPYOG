@@ -83,7 +83,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
       {comment?.length > 0 && (
         <div className="TLComments">
           <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
+          <p className="noc-pages-citizen-applications-applications-overview--style-1">{comment}</p>
         </div>
       )}
 
@@ -110,7 +110,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         </div>
       )}
 
-      <div style={{ marginTop: "8px" }}>
+      <div className="noc-pages-citizen-applications-applications-overview--style-2">
         {caption.time && <p>{caption.time}</p>}
         {caption.date && <p>{caption.date}</p>}
         {caption.name && <p>{caption.name}</p>}
@@ -673,7 +673,7 @@ const CitizenApplicationOverview = () => {
 
   return (
     <div className={"employee-main-application-details"}>
-      <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+      <div className="cardHeaderWithOptions noc-pages-citizen-applications-applications-overview--style-3" >
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
 
@@ -718,7 +718,7 @@ const CitizenApplicationOverview = () => {
         <React.Fragment>
           <Card>
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <div key={index} className="noc-pages-citizen-applications-applications-overview--style-4">
               <StatusTable>
                 {detail?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(detail?.ownerType?.code)} />}
                 {detail?.firmName && <Row label={t("NOC_FIRM_NAME")} text={detail?.firmName} />}
@@ -747,7 +747,7 @@ const CitizenApplicationOverview = () => {
           <React.Fragment>
             <Card>
               <CardSubHeader>{t("NOC_PROFESSIONAL_DETAILS")}</CardSubHeader>
-              <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <div key={index} className="noc-pages-citizen-applications-applications-overview--style-5">
                 <StatusTable>
                   <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
                   <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
@@ -773,7 +773,7 @@ const CitizenApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("NOC_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          <div key={index} className="noc-pages-citizen-applications-applications-overview--style-6">
             <StatusTable>
               <Row label={t("NOC_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
               <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
@@ -826,7 +826,7 @@ const CitizenApplicationOverview = () => {
           const isOffline = existNocCode === "OFFLINE";
 
           return (
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <div key={index} className="noc-pages-citizen-applications-applications-overview--style-7">
               <StatusTable>
                 <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
                 <Row
@@ -874,7 +874,7 @@ const CitizenApplicationOverview = () => {
           );
         })}
       </Card>
-      {/* 
+      {/*
      <Card>
         <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
         {displayData?.coordinates?.map((detail, index) => {
@@ -915,12 +915,7 @@ const CitizenApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
         <StatusTable
-          style={{
-            display: "flex",
-            gap: "20px",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-          }}
+          className="noc-pages-citizen-applications-applications-overview--style-8"
         >
           {sitePhotos?.length > 0 &&
             [...sitePhotos].map((doc) => (
@@ -938,12 +933,7 @@ const CitizenApplicationOverview = () => {
         <Card>
           <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
           <StatusTable
-            style={{
-              display: "flex",
-              gap: "20px",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-            }}
+            className="noc-pages-citizen-applications-applications-overview--style-9"
           >
             {documentData?.length > 0 &&
               documentData.map((doc) => (
@@ -960,7 +950,7 @@ const CitizenApplicationOverview = () => {
 
           {geoLocations?.length > 0 && (
             <>
-              <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+              <CardSectionHeader className="noc-pages-citizen-applications-applications-overview--style-10">{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
               <CustomLocationSearch position={geoLocations} />
             </>
           )}

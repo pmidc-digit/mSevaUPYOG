@@ -203,7 +203,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   }, [isHidden]);
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div className="ads-page-components-adssite-inspection--style-1">
       {getLoading && <Loader />}
 
       {/* Dropdown case */}
@@ -211,12 +211,12 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">
             {t(doc?.code.replaceAll(".", "_"))}
-            {isRequired && <span style={{ color: "red" }}> *</span>}
+            {isRequired && <span className="ads-page-components-adssite-inspection--style-2"> *</span>}
           </CardLabel>
           <Dropdown
-            className="form-field"
+            className="form-field ads-page-components-adssite-inspection--style-3"
             selected={selectedDocument}
-            style={{ width: "100%" }}
+
             option={dropDownData.map((e) => ({
               ...e,
               i18nKey: e.code?.replaceAll(".", "_"),
@@ -233,7 +233,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">
             {t(doc?.code.replaceAll(".", "_"))}
-            {isRequired && <span style={{ color: "red" }}> *</span>}
+            {isRequired && <span className="ads-page-components-adssite-inspection--style-4"> *</span>}
           </CardLabel>
         </LabelFieldPair>
       )}

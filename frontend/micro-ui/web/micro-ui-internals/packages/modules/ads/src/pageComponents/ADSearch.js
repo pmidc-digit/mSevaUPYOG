@@ -206,7 +206,7 @@ const ADSSearch = ({ t, onSelect, config, userType, formData }) => {
   const checkboxColumn = {
     id: "selection",
     Header: ({ getToggleAllRowsSelectedProps }) => (
-      <div style={{ paddingLeft: "50px" }}>
+      <div className="ads-page-components-adsearch--style-1">
         <input
           type="checkbox"
           checked={selectedCheckboxes.length === data.length}
@@ -222,7 +222,7 @@ const ADSSearch = ({ t, onSelect, config, userType, formData }) => {
       </div>
     ),
     Cell: ({ row }) => (
-      <div style={{ paddingLeft: "50px" }}>
+      <div className="ads-page-components-adsearch--style-2">
         <input
           type="checkbox"
           checked={selectedCheckboxes.includes(row.original.slotId)}
@@ -519,7 +519,7 @@ const ADSSearch = ({ t, onSelect, config, userType, formData }) => {
           name="fromDate"
           value={fromDate}
           onChange={SetFromDate}
-          style={{ width: user.type === "EMPLOYEE" ? "50%" : "86%" }}
+          className={user.type === "EMPLOYEE" ? "ads-search__date-input--employee" : "ads-search__date-input--citizen"}
           min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split("T")[0]}
           rules={{
             required: t("CORE_COMMON_REQUIRED_ERRMSG"),
@@ -537,7 +537,7 @@ const ADSSearch = ({ t, onSelect, config, userType, formData }) => {
           name="toDate"
           value={toDate}
           onChange={SetToDate}
-          style={{ width: user.type === "EMPLOYEE" ? "50%" : "86%" }}
+          className={user.type === "EMPLOYEE" ? "ads-search__date-input--employee" : "ads-search__date-input--citizen"}
           min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split("T")[0]}
           rules={{
             required: t("CORE_COMMON_REQUIRED_ERRMSG"),
@@ -559,7 +559,7 @@ const ADSSearch = ({ t, onSelect, config, userType, formData }) => {
           onSelect={setselectNight}
           isDependent={true}
         />
-        <div style={{ display: "flex", flexDirection: "row", gap: "15px" }}>
+        <div className="ads-page-components-adsearch--style-3">
           <SubmitBar label={t("ES_COMMON_SEARCH")} onSubmit={handleSearch} />
           <SubmitBar label={t("ADS_ADD_TO_CART")} onSubmit={handleCartClick} />
 
@@ -568,31 +568,13 @@ const ADSSearch = ({ t, onSelect, config, userType, formData }) => {
           </div>
           <div
             class="container"
-            style={{
-              width: "1px",
-            }}
+            className="ads-page-components-adsearch--style-4"
           >
             <div
-              style={{
-                width: "1px",
-                position: "relative",
-              }}
+              className="ads-page-components-adsearch--style-5"
             >
               <div
-                style={{
-                  position: "absolute", // or "relative" depending on parent element
-                  // fontSize: "335px",
-                  right: "83px", // Position it 0 from the right edge
-                  backgroundColor: "#FFFFFF",
-                  color: "#008000",
-                  padding: "4px",
-                  borderRadius: "30px",
-                  margin: "1px 0 1px 0",
-                  width: "31px",
-                  height: "30px",
-                  textAlign: "center",
-                  transform: "translateX(100%)", // Move left by 100% of its own width
-                }}
+                className="ads-page-components-adsearch--style-6"
               >
                 <div> {cartDetails.length}</div>
               </div>
@@ -604,7 +586,7 @@ const ADSSearch = ({ t, onSelect, config, userType, formData }) => {
         </div>
       </FormStep>
       {showTable && ( // Only show table when showTable is true
-        <Card style={{ overflowX: "auto" }}>
+        <Card className="ads-page-components-adsearch--style-7">
           <ApplicationTable
             t={t}
             data={data}
@@ -618,7 +600,7 @@ const ADSSearch = ({ t, onSelect, config, userType, formData }) => {
             })}
             isPaginationRequired={false}
             totalRecords={data.length}
-            style={{ width: "100%", overflowX: "auto" }}
+            className="ads-page-components-adsearch--style-8"
           />
         </Card>
       )}
@@ -649,3 +631,19 @@ const ADSSearch = ({ t, onSelect, config, userType, formData }) => {
   );
 };
 export default ADSSearch;
+
+/*
+or "relative" depending on parent element
+*/
+
+/*
+fontSize: "335px",
+*/
+
+/*
+Position it 0 from the right edge
+*/
+
+/*
+Move left by 100% of its own width
+*/

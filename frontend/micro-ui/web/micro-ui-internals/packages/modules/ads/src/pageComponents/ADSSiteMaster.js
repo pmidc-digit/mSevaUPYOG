@@ -274,44 +274,31 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
     <React.Fragment>
       {/* Added advertisements preview */}
       {adsList.length > 0 && (
-        <div style={{ margin: "12px 0", padding: 8, border: "1px dashed #ddd", borderRadius: 6 }}>
-          <div style={{ fontWeight: 600, marginBottom: 8 }}>{t ? t("Added Advertisements") : "Added Advertisements"}</div>
+        <div className="ads-page-components-adssite-master--style-1">
+          <div className="ads-page-components-adssite-master--style-2">{t ? t("Added Advertisements") : "Added Advertisements"}</div>
           {adsList.map((ad, i) => (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 8,
-                alignItems: "center",
-                padding: "6px 0",
-                borderBottom: i < adsList.length - 1 ? "1px solid #eee" : "none",
-                cursor: "pointer",
-                background: editingIndex === i ? "#fafafa" : "transparent",
-                paddingRight: 12,
-              }}
-            >
-              <div onClick={() => editAdvertisement(i)} style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 500 }}>{ad.siteName?.name || ad.siteId || `Ad ${i + 1}`}</div>
-                <div style={{ fontSize: 12, color: "#666" }}>
+            <div key={i} className={["ads-site-master__item", editingIndex === i && "ads-site-master__item--editing"].filter(Boolean).join(" ")}>
+              <div onClick={() => editAdvertisement(i)} className="ads-page-components-adssite-master--style-3">
+                <div className="ads-page-components-adssite-master--style-4">{ad.siteName?.name || ad.siteId || `Ad ${i + 1}`}</div>
+                <div className="ads-page-components-adssite-master--style-5">
                   {ad.cartAddress ||
                     ad.geoLocation?.formattedAddress ||
                     (ad.geoLocation?.latitude ? `${ad.geoLocation.latitude}, ${ad.geoLocation.longitude}` : "")}
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: 8 }}>
+              <div className="ads-page-components-adssite-master--style-6">
                 <button
                   type="button"
                   onClick={() => editAdvertisement(i)}
-                  style={{ background: "#fff", border: "1px solid #ccc", padding: "6px 8px", borderRadius: 4, cursor: "pointer" }}
+                  className="ads-page-components-adssite-master--style-7"
                 >
                   {t ? t("Edit") : "Edit"}
                 </button>
                 <button
                   type="button"
                   onClick={() => removeAdvertisement(i)}
-                  style={{ background: "transparent", border: "1px solid #ccc", padding: "6px 8px", borderRadius: 4, cursor: "pointer" }}
+                  className="ads-page-components-adssite-master--style-8"
                 >
                   {t ? t("Remove") : "Remove"}
                 </button>
@@ -323,7 +310,7 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           <CardLabel>
-            Enter site id <span style={{ color: "red" }}>*</span>
+            Enter site id <span className="ads-page-components-adssite-master--style-9">*</span>
           </CardLabel>
 
           <Controller
@@ -350,10 +337,10 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
               />
             )}
           />
-          {errors.siteId && <p style={{ color: "red" }}>{errors.siteId.message}</p>}
+          {errors.siteId && <p className="ads-page-components-adssite-master--style-10">{errors.siteId.message}</p>}
 
           <CardLabel>
-            Site Name <span style={{ color: "red" }}>*</span>
+            Site Name <span className="ads-page-components-adssite-master--style-11">*</span>
           </CardLabel>
 
           <Controller
@@ -404,10 +391,10 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
             )}
           />
 
-          {errors.siteName && <p style={{ color: "red" }}>{errors.siteName.message}</p>}
+          {errors.siteName && <p className="ads-page-components-adssite-master--style-12">{errors.siteName.message}</p>}
 
           <CardLabel>
-            Geo Location <span style={{ color: "red" }}>*</span>
+            Geo Location <span className="ads-page-components-adssite-master--style-13">*</span>
           </CardLabel>
           <Controller
             control={control}
@@ -428,11 +415,11 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
               />
             )}
           />
-          {errors.geoLocation && <p style={{ color: "red" }}>{errors.geoLocation.message}</p>}
+          {errors.geoLocation && <p className="ads-page-components-adssite-master--style-14">{errors.geoLocation.message}</p>}
 
           {/* <CardLabel>{`${t("PT_COMMON_COL_ADDRESS")}`}</CardLabel> */}
           <CardLabel>
-            Address <span style={{ color: "red" }}>*</span>
+            Address <span className="ads-page-components-adssite-master--style-15">*</span>
           </CardLabel>
 
           <Controller
@@ -459,10 +446,10 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
               />
             )}
           />
-          {errors.cartAddress && <p style={{ color: "red" }}>{errors.cartAddress.message}</p>}
+          {errors.cartAddress && <p className="ads-page-components-adssite-master--style-16">{errors.cartAddress.message}</p>}
 
           <CardLabel>
-            Size <span style={{ color: "red" }}>*</span>
+            Size <span className="ads-page-components-adssite-master--style-17">*</span>
           </CardLabel>
 
           {/* Height Dropdown */}
@@ -482,7 +469,7 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
             )}
           />
 
-          {errors.height && <p style={{ color: "red" }}>{errors.height.message}</p>}
+          {errors.height && <p className="ads-page-components-adssite-master--style-18">{errors.height.message}</p>}
 
           {/* Width Dropdown */}
 
@@ -501,10 +488,10 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
             )}
           />
 
-          {errors.width && <p style={{ color: "red" }}>{errors.width.message}</p>}
+          {errors.width && <p className="ads-page-components-adssite-master--style-19">{errors.width.message}</p>}
 
           <CardLabel>
-            Advertisement Type <span style={{ color: "red" }}>*</span>
+            Advertisement Type <span className="ads-page-components-adssite-master--style-20">*</span>
           </CardLabel>
           <Controller
             control={control}
@@ -515,10 +502,10 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
             )}
           />
 
-          {errors.advertisementType && <p style={{ color: "red" }}>{errors.advertisementType.message}</p>}
+          {errors.advertisementType && <p className="ads-page-components-adssite-master--style-21">{errors.advertisementType.message}</p>}
 
-          <CardLabel style={{ marginTop: "12px" }}>
-            Rate / Price of the site (₹) <span style={{ color: "red" }}>*</span>
+          <CardLabel className="ads-page-components-adssite-master--style-22">
+            Rate / Price of the site (₹) <span className="ads-page-components-adssite-master--style-23">*</span>
           </CardLabel>
           <Controller
             control={control}
@@ -539,10 +526,10 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
               />
             )}
           />
-          {errors.rate && <p style={{ color: "red" }}>{errors.rate.message}</p>}
+          {errors.rate && <p className="ads-page-components-adssite-master--style-24">{errors.rate.message}</p>}
 
           <CardLabel>
-            Availability Status <span style={{ color: "red" }}>*</span>
+            Availability Status <span className="ads-page-components-adssite-master--style-25">*</span>
           </CardLabel>
           <Controller
             control={control}
@@ -552,10 +539,10 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
               <Dropdown className="form-field" select={props.onChange} selected={props.value} option={Availability_Options} optionKey="i18nKey" />
             )}
           />
-          {errors.availabilityStatus && <p style={{ color: "red" }}>{errors.availabilityStatus.message}</p>}
+          {errors.availabilityStatus && <p className="ads-page-components-adssite-master--style-26">{errors.availabilityStatus.message}</p>}
 
-          <CardLabel style={{ marginTop: "12px" }}>
-            GST Applicable <span style={{ color: "red" }}>*</span>
+          <CardLabel className="ads-page-components-adssite-master--style-27">
+            GST Applicable <span className="ads-page-components-adssite-master--style-28">*</span>
           </CardLabel>
           <Controller
             control={control}
@@ -564,16 +551,16 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
             render={(props) => (
               <div>
                 <input type="checkbox" checked={!!props.value} onChange={(e) => props.onChange(e.target.checked)} id="gstApplicable" />
-                <label htmlFor="gstApplicable" style={{ marginLeft: 8 }}>
+                <label htmlFor="gstApplicable" className="ads-page-components-adssite-master--style-29">
                   Yes
                 </label>
               </div>
             )}
           />
-          {errors.availabilityStatus && <p style={{ color: "red" }}>{errors.gstApplicable.message}</p>}
+          {errors.availabilityStatus && <p className="ads-page-components-adssite-master--style-30">{errors.gstApplicable.message}</p>}
 
-          <CardLabel style={{ marginTop: "12px" }}>
-            Cow Cess Applicable <span style={{ color: "red" }}>*</span>
+          <CardLabel className="ads-page-components-adssite-master--style-31">
+            Cow Cess Applicable <span className="ads-page-components-adssite-master--style-32">*</span>
           </CardLabel>
           <Controller
             control={control}
@@ -582,19 +569,19 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
             render={(props) => (
               <div>
                 <input type="checkbox" checked={!!props.value} onChange={(e) => props.onChange(e.target.checked)} id="cowCessApplicable" />
-                <label htmlFor="cowCessApplicable" style={{ marginLeft: 8 }}>
+                <label htmlFor="cowCessApplicable" className="ads-page-components-adssite-master--style-33">
                   Yes
                 </label>
               </div>
             )}
           />
-          {errors.cowCessApplicable && <p style={{ color: "red" }}>{errors.cowCessApplicable.message}</p>}
+          {errors.cowCessApplicable && <p className="ads-page-components-adssite-master--style-34">{errors.cowCessApplicable.message}</p>}
         </div>
-        <div style={{ margin: "12px 0" }}>
+        <div className="ads-page-components-adssite-master--style-35">
           <button
             type="button"
             onClick={addAdvertisement}
-            style={{ background: "#f1f1f1", border: "1px solid #ccc", padding: "8px 12px", borderRadius: 4, cursor: "pointer" }}
+            className="ads-page-components-adssite-master--style-36"
           >
             {editingIndex !== null ? (t ? t("Save Site") : "Save Site") : t ? t("Add Site") : "Add Site"}
           </button>

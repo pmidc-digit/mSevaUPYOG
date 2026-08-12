@@ -61,11 +61,10 @@ const InboxLinks = ({ parentRoute, businessService }) => {
   );
 
   return (
-    // <Card style={{ paddingRight: 0, marginTop: 0 }} className="employeeCard filter inboxLinks">
     <Card className="employeeCard filter inboxLinks">
       <div className="complaint-links-container">
         {GetLogo()}
-        {/* <div style={{ marginLeft: "unset", paddingLeft: "0px" }} className="body"> */}
+
         <div className="body">
           {links.map(({ link, text, hyperlink = false, roles = [] }, index) => {
             return (
@@ -81,3 +80,11 @@ const InboxLinks = ({ parentRoute, businessService }) => {
 };
 
 export default InboxLinks;
+
+/*
+<Card style={{ paddingRight: 0, marginTop: 0 }} className="employeeCard filter inboxLinks">
+*/
+
+/*
+<div style={{ marginLeft: "unset", paddingLeft: "0px" }} className="body">
+*/

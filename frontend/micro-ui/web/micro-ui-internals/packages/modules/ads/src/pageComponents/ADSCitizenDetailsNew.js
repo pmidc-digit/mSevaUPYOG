@@ -289,7 +289,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
               />
             )}
           />
-          {errors.mobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.mobileNumber.message}</p>}
+          {errors.mobileNumber && <p className="ads-page-components-adscitizen-details-new--style-1">{errors.mobileNumber.message}</p>}
         </div>
       </LabelFieldPair>
       {/* Name */}
@@ -322,7 +322,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
               />
             )}
           />
-          {errors?.name && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors?.name?.message}</p>}
+          {errors?.name && <p className="ads-page-components-adscitizen-details-new--style-2">{errors?.name?.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -342,7 +342,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
             }}
             render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
           />
-          {errors.emailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.emailId.message}</p>}
+          {errors.emailId && <p className="ads-page-components-adscitizen-details-new--style-3">{errors.emailId.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -377,7 +377,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
               />
             )}
           />
-          {errors?.address && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors?.address?.message}</p>}
+          {errors?.address && <p className="ads-page-components-adscitizen-details-new--style-4">{errors?.address?.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -414,12 +414,12 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
               />
             )}
           />
-          {errors.pincode && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors?.pincode?.message}</p>}
+          {errors.pincode && <p className="ads-page-components-adscitizen-details-new--style-5">{errors?.pincode?.message}</p>}
         </div>
       </LabelFieldPair>
 
       {/* checkbox self declaration */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+      <div className="ads-page-components-adscitizen-details-new--style-6">
         <Controller
           control={control}
           name="termsAccepted"
@@ -433,15 +433,15 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
                 props.onChange(e.target.checked);
                 handleModalData(e);
               }}
-              style={{ width: "18px", height: "18px", cursor: "pointer" }}
+              className="ads-page-components-adscitizen-details-new--style-7"
             />
           )}
         />
-        <label htmlFor="termsAccepted" style={{ cursor: "pointer", color: "#007bff", textDecoration: "underline", margin: 0 }}>
+        <label htmlFor="termsAccepted" className="ads-page-components-adscitizen-details-new--style-8">
           {t("CHB_SELF_LABEL")}
         </label>
       </div>
-      {errors.termsAccepted && <p style={{ color: "red" }}>{errors.termsAccepted.message}</p>}
+      {errors.termsAccepted && <p className="ads-page-components-adscitizen-details-new--style-9">{errors.termsAccepted.message}</p>}
 
       <ActionBar>
         <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />

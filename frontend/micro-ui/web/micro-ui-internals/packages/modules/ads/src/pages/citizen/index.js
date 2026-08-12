@@ -46,11 +46,11 @@ const App = () => {
   const isMobile = window.Digit.Utils.browser.isMobile();
   //this has been added in order show my bookings page
   return (
-    <span className={"ads-citizen"} style={{ width: "100%" }}>
+    <span className={["ads-citizen", "ads-pages-citizen-index--style-1"].filter(Boolean).join(" ")} >
       <Switch>
         <AppContainer>
           {!isResponse ? (
-            <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px" } : {}}>
+            <div className={window.location.href.includes("application-overview") || isMobile ? "ads-citizen__breadcrumbs--offset" : "ads-citizen__breadcrumbs"}>
               <ADSBreadCrumbs location={location} />
             </div>
           ) : null}

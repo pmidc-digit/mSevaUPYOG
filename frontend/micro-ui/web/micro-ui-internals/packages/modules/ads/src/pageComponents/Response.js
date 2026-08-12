@@ -54,7 +54,7 @@ const ADSResponseCitizen = (props) => {
           applicationNumber={ptrCode}
           info={applicationData?.bookingStatus == "REJECTED" ? "" : t(`ADS_APPROVAL_NUMBER`)}
           successful={applicationData?.applicationStatus == "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
+          className="ads-page-components-response--style-1"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         {applicationData?.bookingStatus !== "REJECTED" ? (
@@ -70,7 +70,7 @@ const ADSResponseCitizen = (props) => {
             {t(`ADS_BOOKED_SUB_HEADER`)}
           </CardText>
         ) : null}
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+        <ActionBar className="ads-page-components-response--style-2">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_ADS")} onSubmit={onGoToNDC} />
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} />

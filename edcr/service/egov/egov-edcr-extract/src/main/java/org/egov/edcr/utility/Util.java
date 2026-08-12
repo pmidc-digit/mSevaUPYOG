@@ -212,6 +212,12 @@ public class Util {
         LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_TOILET_\\d+_VENTILATION$", 92));
 
         
+     // Normal balcony layer
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_BALCONY_\\d+$", 121));
+
+        // UnitFA balcony layer
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_UNITFA_\\d+_BALCONY_\\d+$", 121));
+        
     }
 
     public static int resolveLayerColor(String layerName) {

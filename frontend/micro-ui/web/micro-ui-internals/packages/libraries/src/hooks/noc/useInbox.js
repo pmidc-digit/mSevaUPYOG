@@ -5,7 +5,7 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
   const queryClient = useQueryClient();
 
   const { filterForm, searchForm, tableForm, getFilter } = filters;
-  let { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray, migration } = filterForm;
+  let { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray, isMigrated = false } = filterForm;
   const { mobileNumber, applicationNo } = searchForm;
   const { sortBy, limit, offset, sortOrder } = tableForm;
   const user = Digit.UserService.getUser();
@@ -28,7 +28,7 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
       ...(sortOrder ? { sortOrder } : {}),
       ...(sortBy ? { sortBy } : {}),
       isCitizenView: checkCitizenView,
-      isMigrated: migration,
+      isMigrated,
       ...(locality?.length > 0 ? { locality: locality.map((item) => item.code.split("_").pop()).join(",") } : {}),
     },
     // sortBy,

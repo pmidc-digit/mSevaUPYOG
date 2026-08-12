@@ -170,6 +170,9 @@ const InboxTopBar = ({
   totalCount = 0,
   showClearTab = true,
   showAll = true,
+  showMigrationTabs = false,
+  isMigrated = false,
+  onMigrationChange,
 }) => {
   const { t } = useTranslation();
   const businessServiceLabelMap = React.useMemo(
@@ -200,6 +203,16 @@ const InboxTopBar = ({
             {t("ALL")}
             <span className={`new-inbox-tab-count ${activeTab === "ALL" ? "new-inbox-tab-count-active" : ""}`}>{totalCount || 0}</span>
           </button>
+        )}
+        {showMigrationTabs && (
+          <>
+            <button type="button" className={`new-inbox-tab ${!isMigrated ? "new-inbox-tab-active" : ""}`} onClick={() => onMigrationChange?.(false)}>
+              {t("OBPAS")}
+            </button>
+            <button type="button" className={`new-inbox-tab ${isMigrated ? "new-inbox-tab-active" : ""}`} onClick={() => onMigrationChange?.(true)}>
+              {t("eNaksha")}
+            </button>
+          </>
         )}
         {(statuses || []).map((status) => {
           const businessService = status?.businessService || status?.businessservice;

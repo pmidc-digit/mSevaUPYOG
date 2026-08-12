@@ -38,11 +38,8 @@ const getTimelineAcknowledgementData = ({workflowDetails, prefix=null, Statuspre
     const assignerName = item?.assigner?.name || "N/A";    
     const assignerType = item?.assigner?.type || "N/A";
     const mobileNumber = item?.assigner?.mobileNumber || "N/A";
-    const action = item?.performedAction?.toUpperCase().includes("FORWARD")
-      ? "FORWARD"
-      : prefix
-        ? `${prefix}_${item?.performedAction}`.toUpperCase()
-    : item?.performedAction || "N/A";    const status = item?.status || item?.state || "N/A";
+    const action = prefix ? `${prefix}_${item?.performedAction}` : item?.performedAction || "N/A";
+    const status = item?.status || item?.state || "N/A";
     const designationKey = item?.designationKey || null;
     const designation = designationKey ? t(designationKey) : (assignerType || "N/A");
     // sanitize wfComment before using

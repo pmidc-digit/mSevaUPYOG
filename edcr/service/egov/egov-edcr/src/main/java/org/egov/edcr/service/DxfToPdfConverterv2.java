@@ -2020,17 +2020,73 @@ public class DxfToPdfConverterv2 {
                 toExclude.add(candidate);
             }
         }
+
+        /*
+         * Also remove isolated dot-like clusters that do not change the full
+         * diagonal by 10x but still create visible empty space around the sheet.
+         */
+        Cluster dominant = null;
+        for (Cluster c : clusters) {
+            if (dominant == null || c.entityCount > dominant.entityCount) {
+                dominant = c;
+            }
+        }
+
+        if (dominant != null) {
+            double dominantDiagonal = Math.max(1.0, dominant.diagonal());
+
+            for (Cluster candidate : clusters) {
+                if (candidate == dominant || toExclude.contains(candidate)) {
+                    continue;
+                }
+
+                boolean microEntityCount =
+                        candidate.entityCount <= MICRO_STRAY_MAX_ENTITIES;
+
+                boolean microPhysicalSize =
+                        candidate.diagonal() <= dominantDiagonal * MICRO_STRAY_MAX_SIZE_RATIO;
+
+                boolean separated =
+                        bboxGap(candidate, dominant) >= dominantDiagonal * MICRO_STRAY_MIN_GAP_RATIO;
+
+                if (microEntityCount && microPhysicalSize && separated) {
+                    toExclude.add(candidate);
+
+                    LOG.info(
+                            "Ignoring isolated micro-stray cluster for page-fit: entities={}, bbox=[{}, {}, {}, {}], gap={}",
+                            candidate.entityCount,
+                            candidate.minX, candidate.minY,
+                            candidate.maxX, candidate.maxY,
+                            bboxGap(candidate, dominant));
+                }
+            }
+        }
     }
 
     if (toExclude.isEmpty()) {
-        // Prefer header extents only when they actually contain the rendered
-        // geometry. Some DXFs have valid-looking but stale $EXTMIN/$EXTMAX
-        // values, especially when block INSERT contents were edited later.
-        if (!applyHeaderExtentsIfValid(doc) || !currentExtentsContain(fullBox, doc)) {
-            doc.minX = fullBox[0]; doc.minY = fullBox[1];
-            doc.maxX = fullBox[2]; doc.maxY = fullBox[3];
-            doc.extentsSet = true;
-        }
+        /*
+         * IMPORTANT:
+         * Always fit the generated SVG/PDF to the geometry-derived extents.
+         *
+         * A DXF header can contain a perfectly valid but very large/stale
+         * $EXTMIN/$EXTMAX box. The old logic accepted that box whenever it
+         * merely contained the geometry. That makes the real drawing occupy
+         * only a small part of the generated PDF page.
+         *
+         * Header extents are therefore used only as a fallback when no
+         * geometry bounds can be calculated (handled above).
+         */
+        doc.minX = fullBox[0];
+        doc.minY = fullBox[1];
+        doc.maxX = fullBox[2];
+        doc.maxY = fullBox[3];
+        doc.extentsSet = true;
+
+        LOG.info(
+                "Using geometry-derived fit extents: minX={}, minY={}, maxX={}, maxY={}, width={}, height={}",
+                doc.minX, doc.minY, doc.maxX, doc.maxY,
+                doc.maxX - doc.minX, doc.maxY - doc.minY);
+
         return;
     }
 
@@ -2090,6 +2146,20 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
 
     // Must be a dramatic, unambiguous improvement — not a marginal one.
     private static final double MIN_DIAGONAL_SHRINK_RATIO = 10.0;
+
+    /*
+     * Secondary protection for isolated dot-like garbage.
+     *
+     * This is deliberately conservative:
+     * - at most 2 entities
+     * - physically tiny compared with the dominant drawing cluster
+     * - spatially separated from the dominant drawing cluster
+     *
+     * Real staircase/details normally contain many entities and are untouched.
+     */
+    private static final int MICRO_STRAY_MAX_ENTITIES = 2;
+    private static final double MICRO_STRAY_MAX_SIZE_RATIO = 0.025;
+    private static final double MICRO_STRAY_MIN_GAP_RATIO = 0.10;
 
     private static double[] unionBoxOfClusters(List<Cluster> clusters) {
         double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
@@ -2196,10 +2266,45 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
      * entirely part of a cluster or not, avoiding the point-density bias that
      * broke the earlier IQR-based approach. */
     private static void collectEntityBoxes(DxfDocument doc, List<double[]> boxes, List<String> labels) {
-        for (Entity e : doc.entities) addEntityBox(doc, e, boxes, labels, 0);
-        // Note: block-definition entities are NOT included — INSERT points
-        // (collected via InsertEntity below) represent where those blocks are
-        // actually placed in the drawing, which is what matters for page-fit.
+        for (Entity e : doc.entities) {
+            if (!isEntityUsedForPageFit(doc, e)) {
+                continue;
+            }
+            addEntityBox(doc, e, boxes, labels, 0);
+        }
+
+        // Note: block-definition entities are NOT included directly. INSERT
+        // entities expand to the actual transformed block bounds in addEntityBox().
+    }
+
+    /**
+     * Page-fit extents must be calculated from the same entities that can actually
+     * appear in the generated SVG. Hidden layers/entities and empty text must not
+     * enlarge the drawing canvas.
+     */
+    private static boolean isEntityUsedForPageFit(DxfDocument doc, Entity e) {
+        if (e == null || !e.visible) {
+            return false;
+        }
+
+        Layer layer = e.layer == null ? null : doc.layers.get(e.layer.toUpperCase(Locale.ROOT));
+        if (layer != null && !layer.visible) {
+            return false;
+        }
+
+        if (e instanceof TextEntity) {
+            TextEntity t = (TextEntity) e;
+            String value = processTextCodes(t.text);
+            return value != null && !value.trim().isEmpty() && !isDimensionPlaceholderText(value);
+        }
+
+        if (e instanceof MTextEntity) {
+            MTextEntity m = (MTextEntity) e;
+            String value = processTextCodes(m.text);
+            return value != null && !value.trim().isEmpty() && !isDimensionPlaceholderText(value);
+        }
+
+        return true;
     }
 
     private static void addEntityBox(DxfDocument doc, Entity e, List<double[]> boxes, List<String> labels, int depth) {
@@ -2557,6 +2662,43 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
         return cleaned.isEmpty();
     }
 
+    /**
+     * Creates a tight SVG canvas using the actual drawing aspect ratio.
+     *
+     * Previously every drawing was forced into a fixed 3508x2480 landscape
+     * canvas. For drawings whose real extents had a different aspect ratio,
+     * that introduced large internal white bands. The overlay service then
+     * scaled the blank page instead of the visible drawing.
+     */
+    private static int[] calculateDynamicRenderCanvas(DxfDocument doc) {
+        final int LONG_EDGE_PX = 3508;
+        final int MIN_SHORT_EDGE_PX = 900;
+        final int MAX_SHORT_EDGE_PX = 3508;
+
+        double width = Math.max(1.0, doc.maxX - doc.minX);
+        double height = Math.max(1.0, doc.maxY - doc.minY);
+        double aspect = width / height;
+
+        int canvasW;
+        int canvasH;
+
+        if (aspect >= 1.0) {
+            canvasW = LONG_EDGE_PX;
+            canvasH = (int) Math.round(LONG_EDGE_PX / aspect);
+            canvasH = Math.max(MIN_SHORT_EDGE_PX, Math.min(MAX_SHORT_EDGE_PX, canvasH));
+        } else {
+            canvasH = LONG_EDGE_PX;
+            canvasW = (int) Math.round(LONG_EDGE_PX * aspect);
+            canvasW = Math.max(MIN_SHORT_EDGE_PX, Math.min(MAX_SHORT_EDGE_PX, canvasW));
+        }
+
+        LOG.info(
+                "Dynamic DXF render canvas -> {}x{} px | drawingAspect={} | drawingWidth={} | drawingHeight={}",
+                canvasW, canvasH, aspect, width, height);
+
+        return new int[]{canvasW, canvasH};
+    }
+
     // ── MAIN ENTRY POINT ──────────────────────────────────────────────────────
 
 //    public static void main(String[] args) throws Exception {
@@ -2595,8 +2737,8 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
     public static void convertDxfToPdf(InputStream dxfInputStream, File outputPdfFile, boolean saveSvg)
             throws Exception {
 
-        int width  = 3508; // A3 at 300dpi
-        int height = 2480;
+        int width;
+        int height;
 
         File tempDxf = null;
         try {
@@ -2621,10 +2763,15 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
                 throw new Exception("DXF parsing failed: " + e.getMessage(), e);
             }
 
-            LOG.info("Extents: ({}, {}) to ({}, {})",
-                    doc.minX, doc.minY, doc.maxX, doc.maxY);
+            LOG.info("Final render extents: ({}, {}) to ({}, {}) | width={} | height={}",
+                    doc.minX, doc.minY, doc.maxX, doc.maxY,
+                    (doc.maxX - doc.minX), (doc.maxY - doc.minY));
             LOG.info("Entities: {}, Blocks: {}, Layers: {}",
                     doc.entities.size(), doc.blocks.size(), doc.layers.size());
+
+            int[] renderCanvas = calculateDynamicRenderCanvas(doc);
+            width = renderCanvas[0];
+            height = renderCanvas[1];
 
             // --- Step 3: Generate SVG in memory ---
             LOG.info("Generating SVG...");

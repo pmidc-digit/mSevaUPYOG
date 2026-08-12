@@ -14,9 +14,9 @@ import {
   LabelFieldPair,
   LinkButton,
   Dropdown,
+  DatePicker,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import CustomDatePicker from "./CustomDatePicker";
 import CustomUploadFile from "../components/CustomUploadFile";
 
 const applicantTypeOptions = [
@@ -643,10 +643,10 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
               <CardLabel style={{ marginBottom: "6px", fontWeight: "500" }}>
                 {t("BPA_APPLICANT_DOB_LABEL")} <span className="requiredField">*</span>
               </CardLabel>
-              <CustomDatePicker
-                value={manualDob}
-                onChange={(e) => {
-                  setManualDob(e.target.value);
+              <DatePicker
+                date={manualDob}
+                onChange={(val) => {
+                  setManualDob(val);
                   setManualErrors((prev) => ({ ...prev, dob: "" }));
                 }}
                 min="1900-01-01"
@@ -778,7 +778,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                   }}
                   uploadedFile={photoUploadedFile}
                   message={photoUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                  error={errors?.photo}
                   uploadMessage="Invalid File Format"
                   accept=".png, .jpeg, .jpg"
                 />
@@ -801,7 +800,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                   }}
                   uploadedFile={documentUploadedFile}
                   message={documentUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                  error={errors?.document}
                   uploadMessage="Invalid File Format"
                   accept=".pdf, .png, .jpeg, .jpg"
                 />
@@ -824,7 +822,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                   }}
                   uploadedFile={panDocumentUploadedFile}
                   message={panDocumentUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                  error={errors?.panDocument}
                   uploadMessage="Invalid File Format"
                   accept=".pdf, .png, .jpeg, .jpg"
                 />

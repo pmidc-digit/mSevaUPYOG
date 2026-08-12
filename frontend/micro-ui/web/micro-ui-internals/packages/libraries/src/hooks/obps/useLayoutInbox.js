@@ -6,7 +6,7 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
   const queryClient = useQueryClient();
 
   const { filterForm, searchForm, tableForm, getFilter } = filters;
-  const { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray } = filterForm;
+  const { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray, isMigrated = false } = filterForm;
   const { mobileNumber, applicationNumber } = searchForm;
   const { sortBy, limit, offset, sortOrder, isCitizenView } = tableForm;
   const user = Digit.UserService.getUser();
@@ -28,6 +28,7 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
       ...(sortOrder ? { sortOrder } : {}),
       isCitizenView: checkCitizenView,
       ...(sortBy ? { sortBy } : {}),
+      isMigrated,
       ...(locality?.length > 0 ? { locality: locality.map((item) => item.code.split("_").pop()).join(",") } : {}),
     },
     limit,

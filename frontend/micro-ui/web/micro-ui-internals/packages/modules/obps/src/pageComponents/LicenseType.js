@@ -15,9 +15,6 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   let currentPath = pathname.split("/").pop();
   let isEditable = !formData?.editableFields || formData?.editableFields?.[currentPath];
   const history = useHistory();
-  const licenseObj = formData?.result?.Licenses?.[0] || formData?.formData?.result?.Licenses?.[0];
-  const isPaid = formData?.isPaid || formData?.formData?.isPaid;
-  const isQualificationDisabled = !isEditable || (licenseObj?.action === "CORRECTION" && isPaid);
 
   const [qualificationType, setQualificationType] = useState(() => {
     // const saved = localStorage.getItem("licenseForm_qualificationType");
@@ -547,7 +544,7 @@ console.log("validTo",validTo);
                 select={(value) => {
                   selectQualificationType(value);
                 }}
-                disable={isQualificationDisabled}
+                disable={!isEditable}
               />
             </div>
 

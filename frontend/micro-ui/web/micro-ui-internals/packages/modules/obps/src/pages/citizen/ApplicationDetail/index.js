@@ -274,7 +274,6 @@ const licenseType = t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tra
       result: {
         Licenses: [{ ...data }],
       },
-      isPaid: reciept_data?.Payments?.length > 0 || false,
       initiationFlow: true,
       editableFields: {
         "provide-license-type": true,

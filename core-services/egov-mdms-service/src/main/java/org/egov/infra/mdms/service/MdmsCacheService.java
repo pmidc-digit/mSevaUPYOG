@@ -78,7 +78,7 @@ public class MdmsCacheService {
 					LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>) dataObj;
 
 					JSONArray masterData = getOrCreateMasterData(tenantId, moduleName, masterName);
-					upsertRecord(masterData, data);
+					upsertRecord(masterData, data, moduleName, masterName);
 					recordCount++;
 				} catch (Exception e) {
 					log.error("Error processing DB row: {}", row, e);
@@ -135,7 +135,7 @@ public class MdmsCacheService {
 		 * If record is inactive, remove it
 		 */
 		if (Boolean.FALSE.equals(isActive)) {
-			removeMasterRecord(masterData, uniqueIdentifier);
+			removeMasterRecord(masterData, uniqueIdentifier, moduleName, masterName);
 			return;
 		}
 
@@ -144,10 +144,10 @@ public class MdmsCacheService {
 		 */
 		if (data instanceof List) {
 			for (Object record : (List<?>) data) {
-				upsertRecord(masterData, record);
+				upsertRecord(masterData, record, moduleName, masterName);
 			}
 		} else if (data != null) {
-			upsertRecord(masterData, data);
+			upsertRecord(masterData, data, moduleName, masterName);
 		}
 	}
 
@@ -167,82 +167,145 @@ public class MdmsCacheService {
 	 * "code" exists, it is replaced; otherwise the new record is added. Used by
 	 * both DB startup loading and Kafka runtime updates.
 	 */
-	private void upsertRecord(JSONArray masterData, Object newRecord) {
+	private void upsertRecord(JSONArray masterData, Object newRecord, String moduleName, String masterName) {
 		if (newRecord == null || !(newRecord instanceof Map)) {
 			return;
 		}
 
 		Map<?, ?> newRecordMap = (Map<?, ?>) newRecord;
-		Object uniqueValue = newRecordMap.get("code");
-		String uniqueKeyField = "code";
+		List<String> configuredKeys = getUniqueKeysFromConfig(moduleName, masterName);
 
-		if (uniqueValue == null) {
-			uniqueValue = newRecordMap.get("model");
-			uniqueKeyField = "model";
-		}
-		if (uniqueValue == null) {
-			uniqueValue = newRecordMap.get("id");
-			uniqueKeyField = "id";
-		}
-		if (uniqueValue == null) {
-			uniqueValue = newRecordMap.get("name");
-			uniqueKeyField = "name";
-		}
-
-		if (uniqueValue == null) {
-			// No code field — just add the record
-			masterData.add(newRecord);
-			log.debug("Added MDMS cache record (no unique field)");
-			return;
-		}
-
-		// Search for existing record with same unique field
 		for (int i = 0; i < masterData.size(); i++) {
 			Object existing = masterData.get(i);
-			if (!(existing instanceof Map)) {
+			if (!(existing instanceof Map))
 				continue;
+
+			Map<?, ?> existingMap = (Map<?, ?>) existing;
+			boolean matched = false;
+
+			if (configuredKeys != null && !configuredKeys.isEmpty()) {
+				matched = true;
+				for (String key : configuredKeys) {
+					Object existingVal = getNestedValue(existingMap, key);
+					Object newVal = getNestedValue(newRecordMap, key);
+					if (existingVal == null || newVal == null
+							|| !String.valueOf(existingVal).equals(String.valueOf(newVal))) {
+						matched = false;
+						break;
+					}
+				}
+			} else {
+				matched = compareWithoutUuid(existingMap, newRecordMap);
 			}
-			Object existingCode = ((Map<?, ?>) existing).get(uniqueKeyField);
-			if (uniqueValue.toString().equals(String.valueOf(existingCode))) {
+
+			if (matched) {
 				masterData.set(i, newRecord);
-				log.info("Updated MDMS cache record with {}={}", uniqueKeyField, uniqueValue);
+				log.info("Updated MDMS cache record for {}.{}", moduleName, masterName);
 				return;
 			}
 		}
-		log.info("Added new MDMS cache record with {}={}", uniqueKeyField, uniqueValue);
-		// No existing record found — add new
+		log.info("Added new MDMS cache record for {}.{}", moduleName, masterName);
 		masterData.add(newRecord);
 	}
 
 	/**
-	 * Removes a record from the master data array by its code.
+	 * Removes a record from the master data array by its unique identifier.
 	 */
-	private void removeMasterRecord(JSONArray masterData, String uniqueIdentifier) {
+	private void removeMasterRecord(JSONArray masterData, String uniqueIdentifier, String moduleName,
+			String masterName) {
 		if (uniqueIdentifier == null) {
 			return;
 		}
+		List<String> configuredKeys = getUniqueKeysFromConfig(moduleName, masterName);
+
 		for (int i = 0; i < masterData.size(); i++) {
 			Object record = masterData.get(i);
-			if (!(record instanceof Map)) {
+			if (!(record instanceof Map))
 				continue;
-			}
+
 			Map<?, ?> recordMap = (Map<?, ?>) record;
-			Object existingValue = recordMap.get("code");
-			if (existingValue == null) {
-				existingValue = recordMap.get("model");
-			}
-			if (existingValue == null) {
-				existingValue = recordMap.get("id");
-			}
-			if (existingValue == null) {
-				existingValue = recordMap.get("name");
-			}
-			
-			if (uniqueIdentifier.equals(String.valueOf(existingValue))) {
-				masterData.remove(i);
-				log.info("Removed inactive MDMS cache record with uniqueIdentifier={}", uniqueIdentifier);
-				return;
+
+			if (configuredKeys != null && !configuredKeys.isEmpty()) {
+				String firstKey = configuredKeys.get(0);
+				Object existingValue = getNestedValue(recordMap, firstKey);
+				if (existingValue != null && uniqueIdentifier.equals(String.valueOf(existingValue))) {
+					masterData.remove(i);
+					log.info("Removed inactive MDMS cache record for {}.{}", moduleName, masterName);
+					return;
+				}
+			} else {
+				for (Object val : recordMap.values()) {
+					if (val != null && uniqueIdentifier.equals(String.valueOf(val))) {
+						masterData.remove(i);
+						log.info("Removed inactive MDMS cache record for {}.{}", moduleName, masterName);
+						return;
+					}
+				}
 			}
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<String> getUniqueKeysFromConfig(String moduleName, String masterName) {
+		Map<String, Map<String, Object>> configMap = org.egov.MDMSApplicationRunnerImpl.getMasterConfigMap();
+		if (configMap != null && configMap.containsKey(moduleName)
+				&& configMap.get(moduleName).containsKey(masterName)) {
+			Object masterConfig = configMap.get(moduleName).get(masterName);
+			if (masterConfig instanceof Map) {
+				List<String> configKeys = (List<String>) ((Map<?, ?>) masterConfig).get("uniqueKeys");
+				if (configKeys != null && !configKeys.isEmpty()) {
+					List<String> cleanedKeys = new java.util.ArrayList<>();
+					for (String k : configKeys) {
+						cleanedKeys.add(k.replace("$.", ""));
+					}
+					return cleanedKeys;
+				}
+			}
+		}
+		return null;
+	}
+
+	private Object getNestedValue(Map<?, ?> map, String path) {
+		if (path == null || map == null)
+			return null;
+		String[] parts = path.split("\\.");
+		Object current = map;
+		for (String part : parts) {
+			if (current instanceof Map) {
+				current = ((Map<?, ?>) current).get(part);
+			} else {
+				return null;
+			}
+		}
+		return current;
+	}
+
+	private boolean compareWithoutUuid(Map<?, ?> existingMap, Map<?, ?> newRecordMap) {
+		java.util.Set<String> ignoreKeys = new java.util.HashSet<>(
+				java.util.Arrays.asList("id", "uuid", "auditDetails"));
+
+		for (Object keyObj : existingMap.keySet()) {
+			String key = String.valueOf(keyObj);
+			if (ignoreKeys.contains(key))
+				continue;
+
+			Object existingVal = existingMap.get(key);
+			Object newVal = newRecordMap.get(key);
+
+			if (existingVal == null && newVal != null)
+				return false;
+			if (existingVal != null && !existingVal.equals(newVal))
+				return false;
+		}
+
+		for (Object keyObj : newRecordMap.keySet()) {
+			String key = String.valueOf(keyObj);
+			if (ignoreKeys.contains(key))
+				continue;
+			if (!existingMap.containsKey(key))
+				return false;
+		}
+
+		return true;
 	}
 }

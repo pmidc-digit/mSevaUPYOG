@@ -1,3 +1,4 @@
+import React from "react";
 import cloneDeep from "lodash/cloneDeep";
 import { useParams, useLocation } from "react-router-dom";
 import CryptoJS from "crypto-js";
@@ -1703,4 +1704,25 @@ export const decryptId = (cipherText) => {
     console.error("Error decrypting ID:", e);
     return null;
   }
+};
+
+export const getDocumentLabel = (docType, t, fallbackValue = "") => {
+  if (!docType && !fallbackValue) return t ? t("CS_NA") : "CS_NA";
+  const code = docType || fallbackValue;
+  const translationKey = code ? code.replaceAll(".", "_") : "";
+  const text = t ? t(translationKey) : translationKey;
+  if (code === "OWNER.SITEMARKEDONGOOGLEPLAN") {
+    const splitWord = " and ";
+    const splitIndex = text.indexOf(splitWord);
+    if (splitIndex !== -1) {
+      return (
+        <React.Fragment>
+          {text.substring(0, splitIndex)}
+          <br />
+          {text.substring(splitIndex + 1)}
+        </React.Fragment>
+      );
+    }
+  }
+  return text;
 };

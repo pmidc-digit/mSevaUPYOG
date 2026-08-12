@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useMemo} from 'react'
 import { Table, StatusTable, LinkButton } from '@mseva/digit-ui-react-components'
 import { useTranslation } from "react-i18next";
+import { getDocumentLabel } from "../utils";
 
 const LayoutDocumentTableView = ({documents}) => {
   const { t } = useTranslation();
@@ -18,7 +19,10 @@ const LayoutDocumentTableView = ({documents}) => {
     {
       Header: t("BPA_DOCUMENT_NAME"),
       accessor: "title",
-      Cell: ({ value }) => <strong>{t(value)}</strong> || t("CS_NA"),
+      Cell: ({ row, value }) => {
+        const docType = row?.original?.documentType || value;
+        return <strong>{getDocumentLabel(docType, t, value)}</strong> || t("CS_NA");
+      },
     },
     {
       Header: t("BPA_DOCUMENT_FILE"),
@@ -68,7 +72,8 @@ const LayoutDocumentTableView = ({documents}) => {
      return (mappedDocuments)?.map((doc, index) => ({
       id: index,
       srNo: index + 1,
-      title: t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA"),
+      documentType: doc?.documentType,
+      title: doc?.documentType,
       fileUrl: doc.url,
      }));
     }, [mappedDocuments]);

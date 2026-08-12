@@ -57,7 +57,8 @@ public class DxfValidator {
         checkMissingBlockReferences(doc, plan);
         checkMissingDimensionBlocks(doc, plan);
         checkAllUsedLayersInvisible(doc, plan);
-        checkExcludedRegions(doc, plan);   // add this line instead
+        // Isolated micro-geometry may be excluded only to improve PDF page-fit.
+        // It is not a building-rule violation, so do not add it to plan errors.
     }
 
     private static void checkHasEntities(DxfToPdfConverterv2.DxfDocument doc, Plan plan) {

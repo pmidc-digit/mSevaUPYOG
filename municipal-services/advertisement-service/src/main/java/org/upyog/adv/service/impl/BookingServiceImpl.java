@@ -317,7 +317,20 @@ public class BookingServiceImpl implements BookingService {
 			List<AdvertisementSlotAvailabilityDetail> availabilityDetails = checkAdvertisementSlotAvailability(criteria,
 					requestInfo);
 			allAvailabilityDetails.addAll(availabilityDetails);
+		}
 
+		// Deduplicate: when multiple criteria have overlapping date ranges —
+		// applicable to both ANYWHERE (range expansion) and non-ANYWHERE
+		// (convertToAdvertisementAvailabilityResponse expands per-criteria).
+		// @EqualsAndHashCode on (addType, location, faceArea, nightLight,
+		// bookingDate, advertisementId) ensures correct dedup for both paths.
+		if (criteriaList.size() > 1) {
+			long beforeDedup = allAvailabilityDetails.size();
+			List<AdvertisementSlotAvailabilityDetail> deduped =
+					allAvailabilityDetails.stream().distinct().collect(Collectors.toList());
+			log.info("Deduplicated slot results: {} → {} ({} criteria)",
+					beforeDedup, deduped.size(), criteriaList.size());
+			allAvailabilityDetails = deduped;
 		}
 
 		boolean isTimerRequiredForAnyCriteria = criteriaList.stream()

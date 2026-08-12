@@ -311,7 +311,7 @@ public class CalculationService {
 				throw new CustomException("ADVERTISEMENT_NOT_FOUND",
 						"No advertisement found with id: " + adId);
 			}
-			if (!"BOOKING_FEES".equals(advertisement.getFeeType())) {
+			if (!"ADV_BOOKING_FEES".equals(advertisement.getFeeType())) {
 				continue;
 			}
 			if (advertisement.getRentalType() == RentalType.FIXED) {

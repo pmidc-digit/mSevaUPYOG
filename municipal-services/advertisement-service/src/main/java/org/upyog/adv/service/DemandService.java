@@ -165,8 +165,9 @@ public class DemandService {
 	private LocalDate getMaxBookingDate(BookingDetail bookingDetail) {
 		return bookingDetail.getCartDetails().stream()
 				.map(detail -> detail.getBookingDate())
+				.filter(Objects::nonNull)
 				.max(LocalDate::compareTo)
-				.get();
+				.orElse(LocalDate.now());
 	}
 
 	public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {

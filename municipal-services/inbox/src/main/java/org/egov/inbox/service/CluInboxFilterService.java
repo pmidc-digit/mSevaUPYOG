@@ -196,6 +196,14 @@ public class CluInboxFilterService {
             searchCriteria.put("ownerType", moduleSearchCriteria.get("ownerType"));
         }
 
+        // Migration filter: default to false (non-migrated) unless isMigrated is true
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("isMigrated")
+                && Boolean.parseBoolean(String.valueOf(moduleSearchCriteria.get("isMigrated")))) {
+            searchCriteria.put("isMigrationTrue", "true");
+        } else {
+            searchCriteria.put("isMigrationTrue", "false");
+        }
+
         // Assignee from workflow
         if (!ObjectUtils.isEmpty(processCriteria.getAssignee())) {
             searchCriteria.put(ASSIGNEE_PARAM, processCriteria.getAssignee());

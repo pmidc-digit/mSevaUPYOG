@@ -1299,6 +1299,7 @@ public class EdcrApplicationService {
 
 			tempPdf = pdfOverlayTemplateService.impose(tempPdf, tempPdf.getAbsolutePath(), additionalDetails,
 					EXPAND_RIGHT, EXPAND_BOTTOM, GAP_DRAWING_TO_TABLES, GAP_TOP);
+			validateGeneratedPdf(tempPdf);
 
 			FileStoreMapper fileStoreMapper = fileStoreService.store(tempPdf, newFileName, "application/pdf",
 					FILESTORE_MODULECODE);
@@ -1436,6 +1437,8 @@ public class EdcrApplicationService {
                     EXPAND_BOTTOM,
                     GAP_DRAWING_TO_TABLES,
                     GAP_TOP);
+
+            validateGeneratedPdf(tempPdf);
 
             
             FileStoreMapper fileStoreMapper = fileStoreService.store(
@@ -1889,6 +1892,18 @@ public class EdcrApplicationService {
                 EXPAND_BOTTOM,
                 GAP_DRAWING_TO_TABLES,
                 GAP_TOP);
+    }
+
+    private void validateGeneratedPdf(File pdf) throws IOException {
+        if (pdf == null || !pdf.isFile() || pdf.length() == 0L) {
+            throw new IOException("Generated scrutinized PDF is missing or empty.");
+        }
+        try (PDDocument document = PDDocument.load(pdf)) {
+            if (document.getNumberOfPages() == 0) {
+                throw new IOException("Generated scrutinized PDF contains no pages.");
+            }
+        }
+        LOG.info("Validated scrutinized PDF: {} bytes", pdf.length());
     }
     
     public Object getUserData(String uuid) {

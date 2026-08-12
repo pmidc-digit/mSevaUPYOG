@@ -968,19 +968,7 @@ const LayoutEmployeeApplicationOverview = () => {
         //     window.location.href = "/digit-ui/employee/obps/layout/inbox";
         //   }, 3000);
         // } else
-          if (
-          filtData?.action === "CANCEL" ||
-          filtData?.action === "APPLY" ||
-          filtData?.action === "APPROVE" ||
-          filtData?.action === "RESUBMIT" ||
-          filtData?.action === "DRAFT" ||
-          filtData?.action?.includes("FORWARD" || "forward") ||
-          filtData?.action === "SENDBACKTOPROFESSIONAL" ||
-          filtData?.action === "REJECT" ||
-          filtData?.action === "INTERNAL_QUERY" ||
-          filtData?.action === "OBSERVATION" ||
-          filtData?.action === "SEND_FOR_INSPECTION_REPORT"
-        ) {
+          if (filtData?.action) {
           //console.log("We are calling employee response page");
           history.replace({
             pathname: `/digit-ui/employee/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,

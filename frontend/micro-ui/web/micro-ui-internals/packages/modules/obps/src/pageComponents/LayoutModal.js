@@ -184,21 +184,15 @@ t,
     //   return
     // }
 
-    // Do NOT require assignee when SEND BACK TO PROFESSIONAL
-if (
-  action?.action !== "APPROVE" && action?.action !== "SENDBACKTOPROFESSIONAL"  && action?.action !== "SEND_FOR_INSPECTION_REPORT" && action?.action == "SENDBACKTOCITIZEN"  && action?.action == "REJECT" && action?.action == "SENDBACK" &&
-  !selectedApprover?.uuid
-) {
-  setShowToast({ key: "true", warning: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") })
-  return
-}
+
+
 
     if (action?.action === "FORWARD_FOR_TECH_REVIEW" && !selectedApprover?.uuid) {
       setShowToast({ key: "true", warning: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
       return;
     }
 
-    if (checkCommentsMandatory && !commentsText) {
+    if (!commentsText) {
       setShowToast({ key: "true", warning: true, message: t("COMMON_COMMENTS_REQUIRED_LABEL") })
       return
     }

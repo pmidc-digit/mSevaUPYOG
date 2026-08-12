@@ -6,7 +6,7 @@ import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilte
 import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templates/Inbox/components";
 import useCLUTableConfig from "./useCLUTableConfig";
 
-const CLUInbox = ({ parentRoute }) => {
+const CitizenCLUInbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
 
@@ -46,7 +46,6 @@ const CLUInbox = ({ parentRoute }) => {
       applicationStatus: [],
       businessService: "clu_mcl",
       assignee: defaultAssignee,
-      isMigrated: false,
       // assignee: "ASSIGNED_TO_ME",
     }),
     []
@@ -96,12 +95,11 @@ const CLUInbox = ({ parentRoute }) => {
     if (inboxObjectInSessionStorage) {
       const sessionLimit = parseInt(inboxObjectInSessionStorage.tableForm?.limit, 10);
       const validLimit = [10, 20, 30, 40, 50].includes(sessionLimit) ? sessionLimit : tableOrderFormDefaultValues.limit;
+      const sessionFilterForm = inboxObjectInSessionStorage.filterForm || filterFormDefaultValues;
       return {
         filterForm: {
-          ...filterFormDefaultValues,
-          ...(inboxObjectInSessionStorage.filterForm || {}),
+          ...sessionFilterForm,
           applicationStatus: [],
-          isMigrated: inboxObjectInSessionStorage.filterForm?.isMigrated ?? false,
         },
         searchForm: inboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
         tableForm: {
@@ -236,13 +234,13 @@ const CLUInbox = ({ parentRoute }) => {
     [assigneeCountBaseFilters]
   );
 
-  const { data: assignedToMeInboxData } = Digit.Hooks.obps.useCLUInbox({
-    tenantId: effectiveTenantId,
-    filters: assignedToMeFilters,
-    config: {
-      enabled: !!tenantId,
-    },
-  });
+  // const { data: assignedToMeInboxData } = Digit.Hooks.obps.useCLUInbox({
+  //   tenantId: effectiveTenantId,
+  //   filters: assignedToMeFilters,
+  //   config: {
+  //     enabled: !!tenantId,
+  //   },
+  // });
 
   const { data: assignedToAllInboxData } = Digit.Hooks.obps.useCLUInbox({
     tenantId: effectiveTenantId,
@@ -263,15 +261,24 @@ const CLUInbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (!isEmployee) return;
-    if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+    if (
+      // !assignedToMeInboxData ||
+      !assignedToAllInboxData
+    )
+      return;
     if (capturedAssigneeCountsTenant.current === effectiveTenantId) return;
 
     setAssigneeCounts({
-      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      // ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
     });
     capturedAssigneeCountsTenant.current = effectiveTenantId;
-  }, [assignedToAllInboxData, assignedToMeInboxData, effectiveTenantId, isEmployee]);
+  }, [
+    assignedToAllInboxData,
+    // assignedToMeInboxData,
+    effectiveTenantId,
+    isEmployee,
+  ]);
 
   useEffect(() => {
     if (inboxData) {
@@ -446,14 +453,12 @@ const CLUInbox = ({ parentRoute }) => {
       setFilterFormValue("applicationStatus", formState.filterForm.applicationStatus || []);
       setFilterFormValue("assignee", formState.filterForm.assignee || "ASSIGNED_TO_ME");
       setFilterFormValue("businessService", formState.filterForm.businessService || "clu_mcl");
-      setFilterFormValue("isMigrated", formState.filterForm.isMigrated === true);
     }
   }, [
     formState?.filterForm?.moduleName,
     formState?.filterForm?.applicationStatus,
     formState?.filterForm?.assignee,
     formState?.filterForm?.businessService,
-    formState?.filterForm?.isMigrated,
     setFilterFormValue,
   ]);
 
@@ -493,17 +498,6 @@ const CLUInbox = ({ parentRoute }) => {
       handleFilterFormSubmit(onFilterFormSubmit)();
     },
     [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
-  );
-
-  const onMigrationChange = useCallback(
-    (isMigrated) => {
-      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
-      dispatch({
-        action: "mutateFilterForm",
-        data: { ...formState.filterForm, isMigrated },
-      });
-    },
-    [formState.filterForm, formState.tableForm]
   );
 
   useEffect(() => {
@@ -566,9 +560,6 @@ const CLUInbox = ({ parentRoute }) => {
               totalCount={totalCountData}
               showClearTab={false}
               showAll={false}
-              showMigrationTabs={isEmployee}
-              isMigrated={formState?.filterForm?.isMigrated === true}
-              onMigrationChange={onMigrationChange}
             />
           }
           isLoading={isInboxLoading}
@@ -592,4 +583,4 @@ const CLUInbox = ({ parentRoute }) => {
   );
 };
 
-export default CLUInbox;
+export default CitizenCLUInbox;

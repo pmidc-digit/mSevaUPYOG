@@ -6,10 +6,12 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
   const queryClient = useQueryClient();
 
   const { filterForm, searchForm, tableForm, getFilter } = filters;
-  const { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray } = filterForm;
+  const { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray, isMigrated = false } = filterForm;
   const { mobileNumber, applicationNumber } = searchForm;
-  const { sortBy, limit, offset, sortOrder } = tableForm;
+  const { sortBy, limit, offset, sortOrder, isCitizenView } = tableForm;
   const user = Digit.UserService.getUser();
+
+  const checkCitizenView = window.location.href.includes("citizen-layout");
 
   const _filters = {
     tenantId,
@@ -24,7 +26,9 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
       ...(mobileNumber ? { mobileNumber } : {}),
       ...(applicationNumber ? { applicationNumber } : {}),
       ...(sortOrder ? { sortOrder } : {}),
+      isCitizenView: checkCitizenView,
       ...(sortBy ? { sortBy } : {}),
+      isMigrated,
       ...(locality?.length > 0 ? { locality: locality.map((item) => item.code.split("_").pop()).join(",") } : {}),
     },
     limit,
@@ -51,6 +55,8 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
         const tableData = (data?.items || [])?.map((application) => {
           const submittedOn = Number(application?.businessObject?.layoutDetails?.additionalDetails?.SubmittedOn); // or submissionDate
           const approvalDate = application?.businessObject?.layoutDetails?.additionalDetails?.approvalDate;
+          const siteDetails = application?.businessObject?.layoutDetails?.additionalDetails?.siteDetails;
+          const typeOfApp = siteDetails?.typeOfApplication;
 
           const endDate = approvalDate ? Number(approvalDate) : Date.now();
 
@@ -63,13 +69,14 @@ const useLayoutInbox = ({ tenantId, filters, config = {} }) => {
             locality: application?.businessObject?.tenantId ? `${application.businessObject.tenantId.toUpperCase().split(".").join("_")}` : "-",
             status: application?.businessObject?.applicationStatus,
             owner: (() => {
-              const owner = application?.businessObject?.owners?.[0];
+              const owners = application?.businessObject?.owners || [];
+              const owner = owners.find((o) => o?.isPrimaryOwner === true) || owners[0];
               const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
               return isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name;
             })(),
-            category: application.businessObject?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name,
-            zone: application.businessObject?.layoutDetails?.additionalDetails?.siteDetails?.zone?.name,
-            applicationType: application?.businessObject?.applicationType,
+            category: siteDetails?.buildingCategory?.name,
+            zone: siteDetails?.zone?.name,
+            applicationType: (typeof typeOfApp === "object" ? typeOfApp?.name : typeOfApp) || application?.businessObject?.applicationType,
             documents: application?.businessObject?.documents || application?.documents,
             sla: Math.floor((endDate - submittedOn) / (1000 * 60 * 60 * 24)),
           };

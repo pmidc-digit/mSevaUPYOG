@@ -11,7 +11,7 @@ import useLayoutTableConfig from "./useLayoutTableConfig";
 import { Link } from "react-router-dom";
 import { businessServiceListLayout } from "../../../utils";
 
-const LayoutInbox = ({ parentRoute }) => {
+const CitizenLaoyoutInbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
   const queryClient = useQueryClient();
@@ -32,7 +32,6 @@ const LayoutInbox = ({ parentRoute }) => {
   const { data: cities } = Digit.Hooks.useTenants();
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
-  const prefix = "WF_EMPLOYEE_LAYOUT_STATUS";
 
   const searchFormDefaultValues = useMemo(
     () => ({
@@ -47,8 +46,7 @@ const LayoutInbox = ({ parentRoute }) => {
       moduleName: "layout-service",
       applicationStatus: [],
       businessService: "Layout_mcUp",
-      assignee: defaultAssignee,
-      isMigrated: false,
+      assignee: "ASSIGNED_TO_ALL",
       // businessServiceArray: businessServiceListLayout(true) || [],
     }),
     []
@@ -103,7 +101,7 @@ const LayoutInbox = ({ parentRoute }) => {
   const onFilterFormReset = (setFilterFormValue) => {
     setFilterFormValue("moduleName", "layout-service");
     setFilterFormValue("applicationStatus", "");
-    setFilterFormValue("assignee", defaultAssignee);
+    setFilterFormValue("assignee", "ASSIGNED_TO_ALL");
     dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
   };
 
@@ -118,11 +116,7 @@ const LayoutInbox = ({ parentRoute }) => {
       const sessionLimit = parseInt(InboxObjectInSessionStorage.tableForm?.limit, 10);
       const validLimit = [10, 20, 30, 40, 50].includes(sessionLimit) ? sessionLimit : tableOrderFormDefaultValues.limit;
       return {
-        filterForm: {
-          ...filterFormDefaultValues,
-          ...(InboxObjectInSessionStorage.filterForm || {}),
-          isMigrated: InboxObjectInSessionStorage.filterForm?.isMigrated ?? false,
-        },
+        filterForm: InboxObjectInSessionStorage.filterForm || filterFormDefaultValues,
         searchForm: InboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
         tableForm: {
           ...tableOrderFormDefaultValues,
@@ -217,8 +211,6 @@ const LayoutInbox = ({ parentRoute }) => {
     },
   });
 
-  console.log('inboxData', inboxData)
-
   const assigneeCountBaseFilters = useMemo(() => {
     const countFilterForm = { ...(memoizedFilters?.filterForm || {}) };
     delete countFilterForm.applicationStatus;
@@ -251,14 +243,14 @@ const LayoutInbox = ({ parentRoute }) => {
     [assigneeCountBaseFilters]
   );
 
-  const { data: assignedToMeInboxData } = Digit.Hooks.obps.useLayoutInbox({
-    tenantId: effectiveTenantId,
-    filters: assignedToMeFilters,
-    config: {
-      staleTime: 0,
-      refetchOnMount: "always",
-    },
-  });
+  // const { data: assignedToMeInboxData } = Digit.Hooks.obps.useLayoutInbox({
+  //   tenantId: effectiveTenantId,
+  //   filters: assignedToMeFilters,
+  //   config: {
+  //     staleTime: 0,
+  //     refetchOnMount: "always",
+  //   },
+  // });
 
   const { data: assignedToAllInboxData } = Digit.Hooks.obps.useLayoutInbox({
     tenantId: effectiveTenantId,
@@ -277,13 +269,20 @@ const LayoutInbox = ({ parentRoute }) => {
   }, [effectiveTenantId]);
 
   useEffect(() => {
-    if (!assignedToMeInboxData || !assignedToAllInboxData) return;
+    if (
+      // !assignedToMeInboxData ||
+      !assignedToAllInboxData
+    )
+      return;
 
     setAssigneeCounts({
-      ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
+      // ASSIGNED_TO_ME: assignedToMeInboxData?.totalCount || 0,
       ASSIGNED_TO_ALL: assignedToAllInboxData?.totalCount || 0,
     });
-  }, [assignedToAllInboxData, assignedToMeInboxData]);
+  }, [
+    assignedToAllInboxData,
+    // assignedToMeInboxData
+  ]);
 
   useEffect(() => {
     if (inboxData) {
@@ -397,11 +396,11 @@ const LayoutInbox = ({ parentRoute }) => {
         data: {
           ...formState?.filterForm,
           applicationStatus: resolvedStatuses,
-          assignee: filterData.assignee || formState?.filterForm?.assignee || defaultAssignee,
+          assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ALL",
         },
       });
     },
-    [formState?.filterForm, getResolvedStatusIds, setFilterFormValue, defaultAssignee]
+    [formState?.filterForm, getResolvedStatusIds, setFilterFormValue]
   );
 
   const searchDebounceRef = useRef(null);
@@ -424,18 +423,15 @@ const LayoutInbox = ({ parentRoute }) => {
     if (formState?.filterForm) {
       setFilterFormValue("moduleName", formState.filterForm.moduleName || "layout-service");
       setFilterFormValue("applicationStatus", formState.filterForm.applicationStatus || []);
-      setFilterFormValue("assignee", formState.filterForm.assignee || defaultAssignee);
+      setFilterFormValue("assignee", formState.filterForm.assignee || "ASSIGNED_TO_ALL");
       setFilterFormValue("businessService", formState.filterForm.businessService || "Layout_mcUp");
-      setFilterFormValue("isMigrated", formState.filterForm.isMigrated === true);
     }
   }, [
     formState?.filterForm?.moduleName,
     formState?.filterForm?.applicationStatus,
     formState?.filterForm?.assignee,
     formState?.filterForm?.businessService,
-    formState?.filterForm?.isMigrated,
     setFilterFormValue,
-    defaultAssignee,
   ]);
 
   // Search debounce
@@ -479,17 +475,6 @@ const LayoutInbox = ({ parentRoute }) => {
     [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
   );
 
-  const onMigrationChange = useCallback(
-    (isMigrated) => {
-      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
-      dispatch({
-        action: "mutateFilterForm",
-        data: { ...formState.filterForm, isMigrated },
-      });
-    },
-    [formState.filterForm, formState.tableForm]
-  );
-
   return (
     <InboxWrapper
       title={t("ES_COMMON_INBOX")}
@@ -523,8 +508,6 @@ const LayoutInbox = ({ parentRoute }) => {
           isInboxLoading={isInboxLoading}
           assigneeCounts={assigneeCounts}
           handleFilter={handleFilterChange}
-          prefix= {prefix}
-          rawStatuses={inboxData?.statuses || []}
         />
       }
       topBar={
@@ -538,9 +521,6 @@ const LayoutInbox = ({ parentRoute }) => {
           totalCount={totalCountData}
           showClearTab={false}
           showAll={false}
-          showMigrationTabs={isEmployee}
-          isMigrated={formState?.filterForm?.isMigrated === true}
-          onMigrationChange={onMigrationChange}
         />
       }
       isLoading={isInboxLoading}
@@ -561,4 +541,4 @@ const LayoutInbox = ({ parentRoute }) => {
   );
 };
 
-export default LayoutInbox;
+export default CitizenLaoyoutInbox;

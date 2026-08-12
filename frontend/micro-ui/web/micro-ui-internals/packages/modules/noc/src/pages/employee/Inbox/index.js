@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } 
 import { Toast, Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "react-query";
 import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
 import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templates/Inbox/components";
 import useInboxTableConfig from "./useInboxTableConfig";
@@ -9,6 +10,7 @@ import useInboxTableConfig from "./useInboxTableConfig";
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
+  const queryClient = useQueryClient();
   const [error, setError] = useState({
     error: false,
     label: "",
@@ -20,6 +22,7 @@ const Inbox = ({ parentRoute }) => {
 
   useEffect(() => {
     window.scroll(0, 0);
+    queryClient.invalidateQueries("INBOX_DATA");
   }, []);
 
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
@@ -42,6 +45,7 @@ const Inbox = ({ parentRoute }) => {
       // assignee: "ASSIGNED_TO_ME",
       assignee: defaultAssignee,
       businessServiceArray: [],
+      isMigrated: false,
     }),
     []
   );
@@ -91,7 +95,11 @@ const Inbox = ({ parentRoute }) => {
       const sessionLimit = parseInt(inboxObjectInSessionStorage.tableForm?.limit, 10);
       const validLimit = [10, 20, 30, 40, 50].includes(sessionLimit) ? sessionLimit : tableOrderFormDefaultValues.limit;
       return {
-        filterForm: inboxObjectInSessionStorage.filterForm || filterFormDefaultValues,
+        filterForm: {
+          ...filterFormDefaultValues,
+          ...(inboxObjectInSessionStorage.filterForm || {}),
+          isMigrated: inboxObjectInSessionStorage.filterForm?.isMigrated ?? false,
+        },
         searchForm: inboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
         tableForm: {
           ...tableOrderFormDefaultValues,
@@ -322,6 +330,8 @@ const Inbox = ({ parentRoute }) => {
 
   const handleFilterChange = useCallback(
     (filterData) => {
+      console.log("here", filterData);
+
       const resolvedStatuses = filterData.applicationStatus?.map((item) => item.applicationstatus || item.statusCode || item.code) || [];
 
       if (filterData.applicationStatus) {
@@ -413,6 +423,17 @@ const Inbox = ({ parentRoute }) => {
     [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
   );
 
+  const onMigrationChange = useCallback(
+    (isMigrated) => {
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({
+        action: "mutateFilterForm",
+        data: { ...formState.filterForm, isMigrated },
+      });
+    },
+    [formState.filterForm, formState.tableForm]
+  );
+
   useEffect(() => {
     if (isError) {
       setError({
@@ -473,6 +494,9 @@ const Inbox = ({ parentRoute }) => {
               totalCount={totalCountData}
               showClearTab={false}
               showAll={false}
+              showMigrationTabs={isEmployee}
+              isMigrated={formState?.filterForm?.isMigrated === true}
+              onMigrationChange={onMigrationChange}
             />
           }
           isLoading={isInboxLoading}

@@ -30,6 +30,9 @@ import BPAEsignResponse from "../employee/BPAEsignResponse";
 import BPASanctionEsignResponse from "../employee/BPASanctionEsignResponse";
 import CLUInbox from "../employee/cluInbox/CLUInbox";
 import LayoutInbox from "../employee/Inbox/LayoutInbox";
+import CitizenLaoyoutInbox from "../employee/Inbox/CitizenLaoyoutInbox";
+import CitizenCLUInbox from "../employee/cluInbox/CitizenCLUInbox";
+import CitizenInbox from "../employee/Inbox/CitizenInbox";
 
 const OBPSBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
@@ -60,6 +63,12 @@ const OBPSBreadCrumbs = ({ location }) => {
       location.pathname.includes("obps/ocbpa/PB") ||
       location.pathname.includes("/obps/search/application");
 
+    const layoutinbox =
+      location.pathname.includes("obps/layout/application-overview") ||
+      location.pathname.includes("obps/layout/my-applications") ||
+      location.pathname.includes("obps/layout/response") ||
+      location.pathname.includes("/obps/my-applications/citizen-layout");
+
     breadcrumbs.push(
       <span key="home">
         <Link to="/digit-ui/citizen" style={{ textDecoration: "none", marginRight: "5px" }}>
@@ -78,7 +87,7 @@ const OBPSBreadCrumbs = ({ location }) => {
           >
             {t("OBAPS Home")}
           </Link>
-          {bpainbox && isUserRegistered && <span style={{ marginRight: "5px" }}>/</span>}
+          {(bpainbox || layoutinbox) && isUserRegistered && <span style={{ marginRight: "5px" }}>/</span>}
         </span>
       );
     }
@@ -90,6 +99,16 @@ const OBPSBreadCrumbs = ({ location }) => {
             {t("CS_COMMON_INBOX")}
           </Link>
           {/* {hasThirdBreadcrumb && <span style={{ marginRight: "5px" }}>/</span>} */}
+        </span>
+      );
+    }
+
+    if (layoutinbox && isUserRegistered) {
+      breadcrumbs.push(
+        <span key="layout-inbox">
+          <Link to="/digit-ui/citizen/obps/layout/my-applications" style={{ textDecoration: "none" }}>
+             {t("CS_COMMON_INBOX")}
+          </Link>
         </span>
       );
     }
@@ -176,7 +195,7 @@ const App = ({ path }) => {
           )}
         />
         <PrivateRoute
-          path={`${path}/layout/application-overview/:id`}
+          path={`${path}/layout/application-overview/:layid`}
           component={(props) => (
             <AppContainer>
               <LayoutApplicationSummary {...props} />
@@ -340,6 +359,46 @@ const App = ({ path }) => {
           component={(props) => (
             <AppContainer>
               <StakeholderRegistration {...props} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/my-applications/citizen-layout`}
+          component={(props) => (
+            <AppContainer>
+              <CitizenLaoyoutInbox {...props} parentRoute={path} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/my-applications/citizen-bpa`}
+          component={(props) => (
+            <AppContainer>
+              <CitizenInbox {...props} parentRoute={path} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/my-applications/citizen-stakeholder-inbox`}
+          component={(props) => (
+            <AppContainer>
+              <CitizenInbox {...props} parentRoute={path} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/my-applications/stakeholder-inbox/citizen-others`}
+          component={(props) => (
+            <AppContainer>
+              <CitizenInbox {...props} parentRoute={path} />
+            </AppContainer>
+          )}
+        />
+        <PrivateRoute
+          path={`${path}/my-applications/citizen-clu`}
+          component={(props) => (
+            <AppContainer>
+              <CitizenCLUInbox {...props} parentRoute={path} />
             </AppContainer>
           )}
         />

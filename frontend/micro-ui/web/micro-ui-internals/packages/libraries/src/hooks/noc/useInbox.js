@@ -5,10 +5,12 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
   const queryClient = useQueryClient();
 
   const { filterForm, searchForm, tableForm, getFilter } = filters;
-  let { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray } = filterForm;
+  let { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray, isMigrated = false } = filterForm;
   const { mobileNumber, applicationNo } = searchForm;
   const { sortBy, limit, offset, sortOrder } = tableForm;
   const user = Digit.UserService.getUser();
+
+  const checkCitizenView = window.location.href.includes("noc-my-application");
 
   const _filters = {
     tenantId,
@@ -25,6 +27,8 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
       ...(applicationNo ? { applicationNo } : {}),
       ...(sortOrder ? { sortOrder } : {}),
       ...(sortBy ? { sortBy } : {}),
+      isCitizenView: checkCitizenView,
+      isMigrated,
       ...(locality?.length > 0 ? { locality: locality.map((item) => item.code.split("_").pop()).join(",") } : {}),
     },
     // sortBy,
@@ -41,8 +45,6 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
     config: {
       select: (data) => {
         const tableData = data?.items?.map((application) => {
-          console.log("application", application);
-
           const ownerObj = application?.businessObject?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0];
           const displayOwner = ownerObj?.firmName?.trim?.() || ownerObj?.ownerOrFirmName?.trim?.() || "-";
           const submittedOn = Number(application?.businessObject?.nocDetails?.additionalDetails?.SubmittedOn); // or submissionDate

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { FilterFormField, Loader } from "@mseva/digit-ui-react-components";
 import { useController } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -13,6 +13,8 @@ const NewFilterFormFieldsComponent = ({
   assigneeCounts = {},
   showAssigneeCards = true,
   showLicenseTypeFilter = false,
+  prefix = null,
+  rawStatuses = [],
 }) => {
   const { t } = useTranslation();
   const [showAllStatuses, setShowAllStatuses] = useState(false);
@@ -26,6 +28,15 @@ const NewFilterFormFieldsComponent = ({
     return new Set(Object.keys(counts).filter((key) => counts[key] > 1));
   }, [statuses]);
 
+  const businessServiceByStatusId = useMemo(() => {
+    const map = {};
+    (rawStatuses || []).forEach((s) => {
+      const svc = s?.businessService || s?.businessservice;
+      if (s?.statusid && svc) map[s.statusid] = svc;
+    });
+    return map;
+  }, [rawStatuses]);
+
   const availableOptions = showAssigneeCards
     ? [
         { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
@@ -34,12 +45,14 @@ const NewFilterFormFieldsComponent = ({
     : [];
 
   // License Type options for BPAREG (Professional Registration) - Only shown in stakeholder inbox
-  const licenseTypeOptions = showLicenseTypeFilter ? [
-    { code: "ARCHITECT", name: "Architect" },
-    { code: "ENGINEER", name: "Engineer" },
-    { code: "TOWNPLANNER", name: "Town Planner" },
-    { code: "SUPERVISOR", name: "Supervisor" },
-  ] : [];
+  const licenseTypeOptions = showLicenseTypeFilter
+    ? [
+        { code: "ARCHITECT", name: "Architect" },
+        { code: "ENGINEER", name: "Engineer" },
+        { code: "TOWNPLANNER", name: "Town Planner" },
+        { code: "SUPERVISOR", name: "Supervisor" },
+      ]
+    : [];
 
   applicationTypesOfBPA?.forEach((type) => {
     type.name = t(`WF_BPA_${type.code}`);
@@ -58,7 +71,8 @@ const NewFilterFormFieldsComponent = ({
 
   const colorVariants = ["primary", "success", "warning", "danger", "info", "indigo", "teal", "pink", "amber", "slate"];
   const getVariantByIndex = (index, fallback) => colorVariants[index % colorVariants.length] || fallback;
-  const getStatusCount = (status) => status?.totalCount ?? status?.count ?? status?.noOfRecords ?? status?.totalRecords ?? status?.applicationCount ?? 0;
+  const getStatusCount = (status) =>
+    status?.totalCount ?? status?.count ?? status?.noOfRecords ?? status?.totalRecords ?? status?.applicationCount ?? 0;
 
   const { field: assigneeField } = useController({ name: "assignee", control: controlFilterForm });
   const { field: statusField } = useController({ name: "applicationStatus", control: controlFilterForm, defaultValue: [] });
@@ -145,14 +159,17 @@ const NewFilterFormFieldsComponent = ({
     })),
     ...(statuses || []).map((status) => {
       // Include businessService in key if available to avoid deduplication
-      const businessService = status.businessService || status.businessservice;
+      const fallbackStatusId = status?.statusids?.[0] || status?.statusid;
+      const businessService = businessServiceByStatusId[fallbackStatusId] || status?.businessService || status?.businessservice;
       const uniqueKey = status.statusid || (businessService ? `${status.applicationstatus}-${businessService}` : status.applicationstatus);
       const hasDuplicateName = duplicateStatusCodes.has(status.applicationstatus);
       const count = getStatusCount(status);
+      const statusKey = prefix ? `${prefix}_${businessService}_${status?.applicationstatus}`?.toUpperCase() : status?.applicationstatus;
+
       return {
         key: uniqueKey,
         type: "status",
-        label: t(status.applicationstatus),
+        label: t(statusKey),
         subtitle: hasDuplicateName && businessService ? `${businessService} (${count})` : null,
         count,
         code: status.selectionValue || status.statusid || status.applicationstatus,
@@ -202,9 +219,7 @@ const NewFilterFormFieldsComponent = ({
                 <button
                   key={card.key}
                   type="button"
-                  className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card ${variant} ${
-                    isActive ? "active" : ""
-                  }`}
+                  className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card ${variant} ${isActive ? "active" : ""}`}
                   onClick={() => {
                     if (card.type === "assignee") {
                       assigneeField.onChange(card.code);
@@ -261,9 +276,7 @@ const NewFilterFormFieldsComponent = ({
                       <button
                         key={card.key}
                         type="button"
-                        className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card ${variant} ${
-                          isActive ? "active" : ""
-                        }`}
+                        className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card ${variant} ${isActive ? "active" : ""}`}
                         onClick={() => toggleStatus(card)}
                       >
                         {isActive ? (
@@ -290,17 +303,16 @@ const NewFilterFormFieldsComponent = ({
           {!showLicenseTypeFilter && cards.length > 6 ? (
             <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
               <button
-              type="button"
-              className="ndc-new-filter-show-more"
-              onClick={() => setShowAllStatuses((prev) => !prev)}
-              aria-label={showAllStatuses ? t("ES_COMMON_SHOW_LESS") : t("ES_COMMON_SHOW_MORE")}
-            >
-              <span className="ndc-new-filter-show-more-icon" aria-hidden="true">
-                {showAllStatuses ? "▲" : "▼"}
-              </span>
-            </button>
+                type="button"
+                className="ndc-new-filter-show-more"
+                onClick={() => setShowAllStatuses((prev) => !prev)}
+                aria-label={showAllStatuses ? t("ES_COMMON_SHOW_LESS") : t("ES_COMMON_SHOW_MORE")}
+              >
+                <span className="ndc-new-filter-show-more-icon" aria-hidden="true">
+                  {showAllStatuses ? "▲" : "▼"}
+                </span>
+              </button>
             </div>
-          
           ) : null}
         </div>
       </FilterFormField>

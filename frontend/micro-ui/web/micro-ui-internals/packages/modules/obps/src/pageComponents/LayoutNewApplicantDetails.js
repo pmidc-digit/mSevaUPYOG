@@ -359,6 +359,15 @@ const LayoutNewApplicantDetails = (_props) => {
       },
     },
     {
+      Header: t("FIRM NAME"),
+      id: "authorisedPerson",
+      Cell: ({ row }) => {
+        const appType = row.original?.aplicantType || row.original?.additionalDetails?.aplicantType;
+        const code = typeof appType === "string" ? appType : appType?.code || "";
+        return code.toUpperCase() === "FIRM" ? row.original?.additionalDetails?.authorisedPerson : "-";
+      },
+    },
+    {
       Header: t("MOBILE NO"),
       accessor: "mobileNumber",
       Cell: ({ value }) => value || t("CS_NA"),

@@ -207,10 +207,10 @@ const InboxTopBar = ({
         {showMigrationTabs && (
           <>
             <button type="button" className={`new-inbox-tab ${!isMigrated ? "new-inbox-tab-active" : ""}`} onClick={() => onMigrationChange?.(false)}>
-              {t("NEW")}
+              {t("OBPAS")}
             </button>
             <button type="button" className={`new-inbox-tab ${isMigrated ? "new-inbox-tab-active" : ""}`} onClick={() => onMigrationChange?.(true)}>
-              {t("OLD")}
+              {t("eNaksha")}
             </button>
           </>
         )}

@@ -11,10 +11,10 @@ const SelectDateofEmployment = ({ t, config, onSelect, formData = {}, userType, 
       type: "date",
       name: "dateOfAppointment",
       validation: {
-        isRequired: true,
+        isRequired: false,
         title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
       },
-      isMandatory: true,
+      isMandatory: false,
     },
   ];
 

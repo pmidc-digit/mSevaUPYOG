@@ -361,15 +361,16 @@ const LayoutApplicationOverview = () => {
     }
   }
   if (
-      applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
+      applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId || applicationDetails?.Layout?.[0]?.applicationStatus === "ESIGNED"
     ) {
       dowloadOptions.push({
         label: t("LETTER_OF_INTENT"),
         onClick: () =>
           getRecieptSearch({
             tenantId: tenantId,
-            payments: {},
-            filestoreId: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
+            payments: reciept_data_pay?.Payments[0],
+            filestoreId: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId,
+            pdfkey: "layout-loi"
           }),
       });
     }
@@ -541,11 +542,11 @@ const LayoutApplicationOverview = () => {
       });
 
   const modifiedActions = actions?.map((action) => ({
-      ...action,
-      action: action.action?.toUpperCase().includes("FORWARD")
-        ? "FORWARD"
-        : action.action,
-      }));
+  ...action,
+  forcedName: action.action?.toUpperCase().includes("FORWARD")
+    ? "CS_ACTION_FORWARD"
+    : undefined,
+}));
   function onActionSelect(action) {
     const appNo = applicationDetails?.Layout?.[0]?.applicationNo
 
@@ -648,27 +649,129 @@ const LayoutApplicationOverview = () => {
   // }
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, filestoreId = null, ...params }) {
-    try {
-      setLoading(true);
-      if (!filestoreId) {
-        const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name;
-        const fee = payments?.totalAmountPaid;
-        const amountinwords = amountToWords(fee);
-        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, usage, amountinwords }] }, pdfkey);
-        filestoreId = response?.filestoreIds[0];
-      }
-      let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
+  try {
+    setLoading(true);
+    if (!filestoreId) {
+      const site = displayData?.siteDetails?.[0];
+      const owner = displayData?.owners?.[0];
+      const city = site?.district?.city;
 
-      if (!fileStore?.[filestoreId]?.length) {
-        fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
-      }
-      window.open(fileStore[filestoreId], "_blank");
-    } catch (error) {
-      console.error("receipt download error:", error);
-    } finally {
-      setLoading(false);
+      const usage = site?.buildingCategory?.name;
+      const fee = payments?.totalAmountPaid;
+      const amountinwords = amountToWords(fee);
+
+      // --- core fields, single source each, no aliasing ---
+      const ulbType = site?.ulbType || city?.ulbType;
+      const ulbName = site?.ulbName || city?.ulbName;
+      const ulbGrade = city?.ulbGrade; // confirm exact codes: NP / MC / Corp
+      const districtName = city?.districtName;
+      const applicationNo = displayData?.applicationNo;
+      const rawSubmissionDate = applicationDetails?.Layout?.[0]?.submissionDate || applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn;
+      const submissionDate = rawSubmissionDate ? Number(rawSubmissionDate) : undefined;
+      const rawIssueDate = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate;
+      const issueDate = rawIssueDate ? Number(rawIssueDate) : undefined;
+      const colonyTypeName = usage;
+      const proposedSiteAddress = site?.proposedSiteAddress || site?.district?.proposedSiteAddress;
+      const hadbastNo = site?.hadbastNo || site?.district?.hadbastNo;
+      const villageName = site?.villageName || site?.district?.villageName;
+      const areaSqm = site?.netTotalArea || site?.district?.netTotalArea;
+
+      const primaryOwner = applicationDetails?.Layout?.[0]?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") || displayData?.owners?.[0] || owner;
+      const applicantType = (
+        primaryOwner?.additionalDetails?.aplicantType?.code ||
+        primaryOwner?.additionalDetails?.applicantType?.code ||
+        "INDIVIDUAL"
+      ).toUpperCase();
+
+      const isFirm = applicantType !== "INDIVIDUAL";
+
+      // Authorized Person vs Owner Name
+      const rawAuthPerson = primaryOwner?.additionalDetails?.authorisedPerson || primaryOwner?.additionalDetails?.authorisedPersonName;
+      const authorisedPersonName = typeof rawAuthPerson === "object" ? rawAuthPerson?.name : rawAuthPerson;
+
+      const applicantName = isFirm
+        ? (authorisedPersonName || primaryOwner?.name || owner?.name || "")
+        : (primaryOwner?.name || owner?.name || "");
+
+      // Firm / Company Name vs Individual Promoter
+      const firmName =
+        primaryOwner?.additionalDetails?.firmName ||
+        primaryOwner?.additionalDetails?.companyName ||
+        primaryOwner?.additionalDetails?.promoterFirmName ||
+        primaryOwner?.additionalDetails?.institutionName;
+
+      const promoterFirmName = isFirm
+        ? (firmName || primaryOwner?.name || "")
+        : " ";
+
+      const applicantAddress = primaryOwner?.permanentAddress || primaryOwner?.correspondenceAddress || primaryOwner?.address || proposedSiteAddress || "N/A";
+
+      // --- derived once, reused for both officerDesignation and signatoryDesignation ---
+      const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm actual grade codes
+      const officerDesignation = isSmallerUlb ? "Executive Officer" : "Municipal Commissioner";
+      const signatoryDesignation = isSmallerUlb
+        ? "Additional Deputy Commissioner (Urban Development)"
+        : "Commissioner, Municipal Corporation";
+
+      // same isSmallerUlb split decides which name goes with the Competent Authority
+      const jurisdictionName = isSmallerUlb ? districtName : ulbName;
+
+      // --- composed projectDescription (fill in Project Name once that field exists) ---
+      const projectDescription = `${proposedSiteAddress || ""} on Land Measuring Area ${areaSqm || ""} sqm, Situated at Hadbast No. ${
+        hadbastNo || ""
+      }, Village - ${villageName || ""}, ${ulbName || ""}, Punjab.`;
+
+      const response = await Digit.PaymentService.generatePdf(
+        tenantId,
+        {
+          Payments: [
+            {
+              ...payments,
+              usage,
+              amountinwords,
+              applicationDetails,
+              ulbType,
+              ulbName,
+              ulbGrade,
+              districtName,
+              jurisdictionName,
+              officerDesignation,
+              signatoryDesignation,
+              applicantName,
+              applicationNo,
+              submissionDate,
+              issueDate,
+              colonyTypeName,
+              projectDescription,
+
+              // still open / not sourced yet:
+              officeName: signatoryDesignation, // ADC/MC basis for the header still to be confirmed
+              officeSubLine: isSmallerUlb ? `Office Wing, ${districtName}` : `${ulbType} - ${ulbName}`,
+              applicantAddress,
+              promoterFirmName,
+              dcrNo: undefined, // placeholder pending scrutiny module
+              dcrApprovalDate: undefined,
+              complianceDays: undefined,
+              extensionDays: undefined,
+            },
+          ],
+        },
+        pdfkey
+      );
+      filestoreId = response?.filestoreIds[0];
     }
+    let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
+
+    if (!fileStore?.[filestoreId]?.length) {
+      fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
+    }
+    window.open(fileStore[filestoreId], "_blank");
+  } catch (error) {
+    console.error("receipt download error:", error);
+  } finally {
+    setLoading(false);
   }
+}
 
   const getTimelineCaptions = (checkpoint, index, arr) => {
     const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint
@@ -725,11 +828,20 @@ const LayoutApplicationOverview = () => {
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
 
-  const renderLabel = (label, value) => {
-    return (
-      <RenderRow label={t(label)} value={value} />
-    )
-  }
+  // Helper function to render label-value pairs only when value exists
+ const renderLabel = (label, value) => {
+     if (!value || value === "NA" || value === "" || value === null || value === undefined || value === "0.00") {
+       return null;
+     }
+ 
+     // Extract value from object if it has 'name' property
+     let displayValue = value;
+     if (typeof value === "object" && value !== null) {
+       displayValue = value?.name || value?.code || JSON.stringify(value);
+     }
+ 
+     return <Row label={label} text={displayValue} />;
+   };
 
   const RenderRow = ({ label, value }) => {
     if (!value) return null;
@@ -810,6 +922,7 @@ const LayoutApplicationOverview = () => {
         <Card>
           <CardSubHeader>{t("Owners Details") || "Owners Details"}</CardSubHeader>
           {sortedOwners.map((applicant, index) => (
+            <div key={index} style={{ marginBottom: "20px" }}>
               <StatusTable key={index}>
 
                 {index === 0 && <RenderRow label={t(`CLU_OWNER_TYPE_LABEL`)} value={applicant?.additionalDetails?.aplicantType?.name} />}
@@ -826,7 +939,7 @@ const LayoutApplicationOverview = () => {
                 <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
                 <Row label={t("BPA_PAN_DOCUMENT") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />
               </StatusTable>
-
+            </div>
           ))}
         </Card>
       )}
@@ -899,14 +1012,15 @@ const LayoutApplicationOverview = () => {
 
 
               {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
-              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}
-              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), detail?.residentialType?.name || detail?.buildingCategory?.name)}
               {renderLabel(t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL"), detail?.areaLeftForRoadWidening)}
               {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.netPlotAreaAfterWidening)}
               {renderLabel(t("BPA_BALANCE_AREA_IN_SQ_M_LABEL"), parseFloat(detail?.areaLeftForRoadWidening - detail?.netPlotAreaAfterWidening))}
               {renderLabel(t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL"), detail?.areaUnderEWS)}
               {renderLabel(t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL"), detail?.areaUnderEWSInPct)}
-              {renderLabel(t("Net Total Area"), detail?.netTotalArea)}
+              {renderLabel(t("BPA_NET_SITE_AREA_IN_SQ_M_LABEL"), detail?.netTotalArea)}
+              {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
+              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}
+              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), detail?.residentialType?.name || detail?.buildingCategory?.name)}
               {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderResidentialUseInSqM)}
               {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL"), detail?.areaUnderResidentialUseInPct)}
               {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderCommercialUseInSqM)}
@@ -933,7 +1047,6 @@ const LayoutApplicationOverview = () => {
               {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_SQ_M_LABEL"), detail?.areaUnderOtherAmenitiesInSqM)}
               {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
 
-              {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
               {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
 
@@ -941,31 +1054,17 @@ const LayoutApplicationOverview = () => {
         ))}
       </Card>
 
-      {/* 3️⃣ FEE DETAILS CARD */}
-    
-        <Card>
-          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
-  {applicationDetails?.Layout?.[0]?.layoutDetails && (
-          <LayoutFeeEstimationDetails
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
-              },
-              siteDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
-              },
-            }}
-            feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
-            hasPayments={reciept_data?.Payments?.length > 0}
-          />
-          )}
-          {hasPayments && (
-                <div style={{ marginTop: "16px" }}>
-                  <OBPSPaymentHistory payments={combinedPayments} />
-                </div>
-              )}
-        </Card>
+      {/* -------------------- SPECIFICATIONS -------------------- */}
+            <Card>
+              <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
+               {displayData?.siteDetails?.map((detail, index) => (
+                   <StatusTable key={index}>
+                     {renderLabel(t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL"), detail?.specificationPlotArea)}
+                  </StatusTable>
+                        ))}
+            </Card>
+
+      
       
 
       
@@ -1006,6 +1105,32 @@ const LayoutApplicationOverview = () => {
           </StatusTable>
         </Card>
       )}
+
+      {/* 3️⃣ FEE DETAILS CARD */}
+    
+        <Card>
+          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
+  {applicationDetails?.Layout?.[0]?.layoutDetails && (
+          <LayoutFeeEstimationDetails
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
+              },
+              siteDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
+              },
+            }}
+            feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
+            hasPayments={reciept_data?.Payments?.length > 0}
+          />
+          )}
+          {hasPayments && (
+                <div style={{ marginTop: "16px" }}>
+                  <OBPSPaymentHistory payments={combinedPayments} />
+                </div>
+              )}
+        </Card>
 
       {/* -------------------- SPECIFICATIONS -------------------- */}
       {/* <Card>

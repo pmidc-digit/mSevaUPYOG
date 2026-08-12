@@ -181,7 +181,11 @@ export const SelectPaymentType = (props) => {
         return;
       }
 
-      if ((d?.paymentType === gatewayType.RAZORPAY) === gatewayType.RAZORPAY  && redirectUrl?.includes("razorpay")) {
+      if (
+        d?.paymentType === gatewayType.RAZORPAY ||
+        d?.paymentType === gatewayType.OBPASRAZORPAY ||
+        d?.paymentType?.toUpperCase()?.includes("RAZORPAY")
+      ) {
         displayRazorpay(data);
       }else if (redirectUrl) {
         //redirection to non razorpay payment gateway url provided by transaction api response

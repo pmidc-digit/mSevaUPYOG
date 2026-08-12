@@ -12,7 +12,7 @@ import {
 const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
 const colItem = { flex: 1, minWidth: "250px" };
 
-const noOfFloorsOptions = Array.from({ length: 20 }, (_, i) => ({
+const noOfFloorsOptions = Array.from({ length: 50 }, (_, i) => ({
   code: String(i + 1),
   name: String(i + 1),
 }));

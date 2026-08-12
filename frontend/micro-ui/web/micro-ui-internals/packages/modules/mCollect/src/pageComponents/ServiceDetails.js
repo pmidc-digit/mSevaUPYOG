@@ -213,13 +213,13 @@ useEffect(() => {
 
   const shouldShow =
     matchesPopupCategory(selectedCategory) ||
-    matchesPopupCategory(selectedCategoryType);
+    categoiresType.some(matchesPopupCategory);
 
   if (shouldShow && !shownForCurrentParent.current) {
     shownForCurrentParent.current = true;
     setShowModal(true);
   }
-}, [selectedCategory, selectedCategoryType]);
+}, [selectedCategory, categoiresType]);
 
   console.log("tax Master Fields", TaxHeadMasterFields);
   useEffect(() => {

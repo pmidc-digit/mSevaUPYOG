@@ -608,15 +608,21 @@ const LayoutApplicationOverview = () => {
       const response = await Digit.OBPSService.LayoutUpdate({ tenantId, ...finalPayload })
 
       if (response?.ResponseInfo?.status === "successful") {
-        if (filtData?.action === "CANCEL") {
-          setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" })
-          workflowDetails.revalidate()
-          setSelectedAction(null)
-        } else {
+        // if (filtData?.action === "CANCEL") {
+        //   setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" })
+        //   workflowDetails.revalidate()
+        //   setSelectedAction(null)
+        // } else 
+         if (filtData?.action) {
           history.replace({
             pathname: `/digit-ui/citizen/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
             state: { data: response },
           })
+        }else{
+          setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" })
+          workflowDetails.revalidate()
+          setSelectedAction(null);
+
         }
       } else {
         setShowToast({ key: "true", warning: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" })

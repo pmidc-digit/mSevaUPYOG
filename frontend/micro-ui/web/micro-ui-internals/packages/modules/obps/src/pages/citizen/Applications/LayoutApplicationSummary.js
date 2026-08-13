@@ -914,14 +914,15 @@ const LayoutApplicationOverview = () => {
       {/* -------------------- APPLICANTS/OWNERS DETAILS -------------------- */}
       {sortedOwners && sortedOwners.length > 0 && (
         <Card>
-          <CardSubHeader>{t("Owners Details") || "Owners Details"}</CardSubHeader>
+          {/* <CardSubHeader>{t("Owners Details") || "Owners Details"}</CardSubHeader> */}
           {sortedOwners.map((applicant, index) => (
             <div key={index} style={{ marginBottom: "20px" }}>
+               <CardSubHeader>{index === 0 ? t("PRIMARY_OWNER") : `${t("Owner") || "Owner"} ${index + 1}`}</CardSubHeader>
               <StatusTable key={index}>
 
                 {index === 0 && <RenderRow label={t(`CLU_OWNER_TYPE_LABEL`)} value={applicant?.additionalDetails?.aplicantType?.name} />}
                 {applicant?.additionalDetails?.aplicantType?.code === "FIRM" && <RenderRow label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} value={applicant?.additionalDetails?.authorisedPerson} />}
-                <RenderRow label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : `${t("Owner") || "Owner"} ${index + 1}`} - ${applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")}`} value={applicant?.name} />
+                <RenderRow label={`${applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")}`} value={applicant?.name} />
                 <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
                 <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
                 <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={applicant?.mobileNumber} />
@@ -935,6 +936,7 @@ const LayoutApplicationOverview = () => {
               </StatusTable>
             </div>
           ))}
+
         </Card>
       )}
 

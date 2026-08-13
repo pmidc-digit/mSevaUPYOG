@@ -1262,7 +1262,7 @@ const LayoutEmployeeApplicationOverview = () => {
         displayData?.owners?.map((applicant, index) => (
           <React.Fragment key={index}>
             <Card>
-              <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `${t("Owner") || "Owner"} ${index + 1}`}</CardSubHeader>
+              <CardSubHeader>{index === 0 ? t("PRIMARY_OWNER") : `${t("Owner") || "Owner"} ${index + 1}`}</CardSubHeader>
          
                 <StatusTable>
 
@@ -1271,7 +1271,7 @@ const LayoutEmployeeApplicationOverview = () => {
                     <Row label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} text={applicant?.additionalDetails?.authorisedPerson} />
                   )}
                   <Row
-                    label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : `${t("Owner") || "Owner"} ${index + 1}`} - ${applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")
+                    label={`${applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")
                       }`}
                     text={applicant?.name}
                   />

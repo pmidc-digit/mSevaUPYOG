@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { TextArea, LinkButton } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+import { getDocumentLabel } from "../utils";
 
 const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, value, readOnly = false,applicationStatus }) => {
   const { t } = useTranslation();
@@ -59,7 +60,7 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
             return (
               <tr key={doc.documentUid || i}>
                 <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>
-                <td className="checklist-table-cell checklist-table-cell-doc-name">{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
+                <td className="checklist-table-cell checklist-table-cell-doc-name">{getDocumentLabel(doc?.documentType, t) || t("CS_NA")}</td>
                 <td className="checklist-table-cell checklist-table-cell-file">
                   {url ? <LinkButton label={t("View")} onClick={() => window.open(url, "_blank")} /> : t("CS_NA")}
                 </td>

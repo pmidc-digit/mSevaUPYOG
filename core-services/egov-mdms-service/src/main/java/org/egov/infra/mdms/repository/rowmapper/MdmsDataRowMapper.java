@@ -26,6 +26,8 @@ public class MdmsDataRowMapper implements RowMapper<Map<String, Object>> {
         Map<String, Object> map = new HashMap<>();
         map.put("tenantid", rs.getString("tenantid"));
         map.put("schemacode", rs.getString("schemacode"));
+        map.put("id", rs.getString("id"));
+        map.put("uniqueidentifier", rs.getString("uniqueidentifier"));
         
         Object dataObj = rs.getObject("data");
         try {

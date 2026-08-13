@@ -1,9 +1,12 @@
 package org.egov.infra.mdms.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.egov.MDMSApplicationRunnerImpl;
 import org.egov.infra.mdms.repository.MdmsDataRepository;
@@ -54,6 +57,7 @@ public class MdmsCacheService {
 
 		try {
 			List<Map<String, Object>> rows = mdmsDataRepository.searchAll();
+			Set<String> clearedMasters = new HashSet<>();
 			int recordCount = 0;
 
 			for (Map<String, Object> row : rows) {
@@ -75,10 +79,19 @@ public class MdmsCacheService {
 					String moduleName = parts[0];
 					String masterName = parts[1];
 
+					@SuppressWarnings("unchecked")
 					LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>) dataObj;
 
 					JSONArray masterData = getOrCreateMasterData(tenantId, moduleName, masterName);
-					upsertRecord(masterData, data, moduleName, masterName);
+					
+					String masterKey = tenantId + "-" + moduleName + "-" + masterName;
+					if (!clearedMasters.contains(masterKey)) {
+						masterData.clear();
+						clearedMasters.add(masterKey);
+						log.info("Cleared file-based cache for DB replacement: {}", masterKey);
+					}
+
+					masterData.add(data);
 					recordCount++;
 				} catch (Exception e) {
 					log.error("Error processing DB row: {}", row, e);
@@ -146,10 +159,10 @@ public class MdmsCacheService {
 		 */
 		if (data instanceof List) {
 			for (Object record : (List<?>) data) {
-				upsertRecord(masterData, record, moduleName, masterName, id, uniqueIdentifier);
+				upsertRecordFromKafka(masterData, record, moduleName, masterName, id, uniqueIdentifier);
 			}
 		} else if (data != null) {
-			upsertRecord(masterData, data, moduleName, masterName, id, uniqueIdentifier);
+			upsertRecordFromKafka(masterData, data, moduleName, masterName, id, uniqueIdentifier);
 		}
 	}
 
@@ -166,28 +179,23 @@ public class MdmsCacheService {
 
 	/**
 	 * Upserts a single record into the master data array. If a record with the same
-	 * "code" or id/uniqueIdentifier exists, it is replaced; otherwise the new record is added.
+	 * "code" or id/uniqueIdentifier exists, it is replaced; otherwise the new
+	 * record is added.
 	 * Used by both DB startup loading and Kafka runtime updates.
 	 */
-	private void upsertRecord(JSONArray masterData, Object newRecord, String moduleName, String masterName) {
-		upsertRecord(masterData, newRecord, moduleName, masterName, null, null);
-	}
-
-	private void upsertRecord(JSONArray masterData, Object newRecord, String moduleName, String masterName,
+    @SuppressWarnings("unchecked")
+	private void upsertRecordFromKafka(JSONArray masterData, Object newRecord, String moduleName, String masterName,
 			String topLevelId, String topLevelUniqueIdentifier) {
 		if (newRecord == null || !(newRecord instanceof Map)) {
 			return;
 		}
 
 		Map<?, ?> newRecordMap = (Map<?, ?>) newRecord;
-		List<String> configuredKeys = getUniqueKeysFromConfig(moduleName, masterName);
-
+		
+		// For Kafka, we expect 'id' to be present and used strictly to identify the data
 		Object newIdObj = newRecordMap.get("id") != null ? newRecordMap.get("id") : topLevelId;
-		String newId = newIdObj != null ? String.valueOf(newIdObj) : null;
-
-		Object newUniqueObj = newRecordMap.get("uniqueIdentifier") != null ? newRecordMap.get("uniqueIdentifier")
-				: topLevelUniqueIdentifier;
-		String newUniqueIdentifier = newUniqueObj != null ? String.valueOf(newUniqueObj) : null;
+		String newIdStr = topLevelId != null ? topLevelId
+				: (newRecordMap.get("id") != null ? String.valueOf(newRecordMap.get("id")) : null);
 
 		for (int i = 0; i < masterData.size(); i++) {
 			Object existing = masterData.get(i);
@@ -197,72 +205,46 @@ public class MdmsCacheService {
 			Map<?, ?> existingMap = (Map<?, ?>) existing;
 			boolean matched = false;
 
-			// 1. Primary check by 'id'
 			Object existingIdObj = existingMap.get("id");
-			String existingId = existingIdObj != null ? String.valueOf(existingIdObj) : null;
 
-			if (newId != null && existingId != null && newId.equalsIgnoreCase(existingId)) {
-				matched = true;
+			// Match strictly by 'id'
+			if (!matched && newIdObj != null && existingIdObj != null) {
+				matched = isDeepEqual(newIdObj, existingIdObj);
+			}
+			if (!matched && newIdStr != null && existingIdObj != null) {
+				matched = newIdStr.equalsIgnoreCase(String.valueOf(existingIdObj));
 			}
 
-			// 2. Primary check by 'uniqueIdentifier'
-			if (!matched) {
+			// Fallback to uniqueIdentifier for Kafka updates if id is missing in existing record
+			// This prevents duplicates when a file record (no id) is updated via Kafka
+			if (!matched && existingIdObj == null) {
+				Object newUniqueObj = newRecordMap.get("uniqueIdentifier") != null ? newRecordMap.get("uniqueIdentifier")
+						: topLevelUniqueIdentifier;
 				Object existingUniqueObj = existingMap.get("uniqueIdentifier");
-				String existingUniqueIdentifier = existingUniqueObj != null ? String.valueOf(existingUniqueObj) : null;
+				String newUniqueStr = topLevelUniqueIdentifier != null ? topLevelUniqueIdentifier
+						: (newRecordMap.get("uniqueIdentifier") instanceof String
+								? (String) newRecordMap.get("uniqueIdentifier")
+								: null);
 
-				if (newUniqueIdentifier != null && existingUniqueIdentifier != null
-						&& newUniqueIdentifier.equalsIgnoreCase(existingUniqueIdentifier)) {
-					matched = true;
-				} else if (newUniqueIdentifier != null && existingId != null
-						&& newUniqueIdentifier.equalsIgnoreCase(existingId)) {
-					matched = true;
-				} else if (newId != null && existingUniqueIdentifier != null
-						&& newId.equalsIgnoreCase(existingUniqueIdentifier)) {
-					matched = true;
+				if (newUniqueObj != null && existingUniqueObj != null) {
+					matched = isDeepEqual(newUniqueObj, existingUniqueObj);
 				}
-			}
-
-			// 3. Match by configured keys if available
-			if (!matched && configuredKeys != null && !configuredKeys.isEmpty()) {
-				boolean configKeysMatch = true;
-				for (String key : configuredKeys) {
-					Object existingVal = getNestedValue(existingMap, key);
-					Object newVal = getNestedValue(newRecordMap, key);
-					if (existingVal == null || newVal == null
-							|| !String.valueOf(existingVal).equals(String.valueOf(newVal))) {
-						configKeysMatch = false;
-						break;
-					}
+				if (!matched && newUniqueStr != null && existingUniqueObj != null) {
+					matched = newUniqueStr.equalsIgnoreCase(String.valueOf(existingUniqueObj));
 				}
-				if (configKeysMatch) {
-					matched = true;
-				}
-			}
-
-			// 4. Match by 'code' property if present on both records
-			if (!matched) {
-				Object existingCode = existingMap.get("code");
-				Object newCode = newRecordMap.get("code");
-				if (existingCode != null && newCode != null
-						&& String.valueOf(existingCode).equals(String.valueOf(newCode))) {
-					matched = true;
-				}
-			}
-
-			// 5. Fallback comparison
-			if (!matched && (configuredKeys == null || configuredKeys.isEmpty())) {
-				matched = compareWithoutUuid(existingMap, newRecordMap);
 			}
 
 			if (matched) {
 				masterData.set(i, newRecord);
-				log.info("Updated MDMS cache record for {}.{}", moduleName, masterName);
+				log.info("Updated MDMS cache record from Kafka for {}.{}", moduleName, masterName);
 				return;
 			}
 		}
-		log.info("Added new MDMS cache record for {}.{}", moduleName, masterName);
+		log.info("Added new MDMS cache record from Kafka for {}.{}", moduleName, masterName);
 		masterData.add(newRecord);
 	}
+
+
 
 	private void removeMasterRecord(JSONArray masterData, String id, String uniqueIdentifier, String moduleName,
 			String masterName) {
@@ -282,24 +264,24 @@ public class MdmsCacheService {
 			Object recUnique = recordMap.get("uniqueIdentifier");
 			Object recCode = recordMap.get("code");
 
-			if (id != null && recId != null && id.equalsIgnoreCase(String.valueOf(recId))) {
+			if (id != null && recId != null && isDeepEqual(id, recId)) {
 				masterData.remove(i);
 				log.info("Removed inactive MDMS cache record for {}.{}", moduleName, masterName);
 				return;
 			}
 
 			if (uniqueIdentifier != null) {
-				if (recUnique != null && uniqueIdentifier.equalsIgnoreCase(String.valueOf(recUnique))) {
+				if (recUnique != null && isDeepEqual(uniqueIdentifier, recUnique)) {
 					masterData.remove(i);
 					log.info("Removed inactive MDMS cache record for {}.{}", moduleName, masterName);
 					return;
 				}
-				if (recId != null && uniqueIdentifier.equalsIgnoreCase(String.valueOf(recId))) {
+				if (recId != null && isDeepEqual(uniqueIdentifier, recId)) {
 					masterData.remove(i);
 					log.info("Removed inactive MDMS cache record for {}.{}", moduleName, masterName);
 					return;
 				}
-				if (recCode != null && uniqueIdentifier.equalsIgnoreCase(String.valueOf(recCode))) {
+				if (recCode != null && isDeepEqual(uniqueIdentifier, recCode)) {
 					masterData.remove(i);
 					log.info("Removed inactive MDMS cache record for {}.{}", moduleName, masterName);
 					return;
@@ -309,14 +291,15 @@ public class MdmsCacheService {
 			if (configuredKeys != null && !configuredKeys.isEmpty()) {
 				String firstKey = configuredKeys.get(0);
 				Object existingValue = getNestedValue(recordMap, firstKey);
-				if (existingValue != null && (uniqueIdentifier != null && uniqueIdentifier.equals(String.valueOf(existingValue)))) {
+				if (existingValue != null
+						&& (uniqueIdentifier != null && isDeepEqual(uniqueIdentifier, existingValue))) {
 					masterData.remove(i);
 					log.info("Removed inactive MDMS cache record for {}.{}", moduleName, masterName);
 					return;
 				}
 			} else {
 				for (Object val : recordMap.values()) {
-					if (val != null && (uniqueIdentifier != null && uniqueIdentifier.equals(String.valueOf(val)))) {
+					if (val != null && (uniqueIdentifier != null && isDeepEqual(uniqueIdentifier, val))) {
 						masterData.remove(i);
 						log.info("Removed inactive MDMS cache record for {}.{}", moduleName, masterName);
 						return;
@@ -328,14 +311,14 @@ public class MdmsCacheService {
 
 	@SuppressWarnings("unchecked")
 	private List<String> getUniqueKeysFromConfig(String moduleName, String masterName) {
-		Map<String, Map<String, Object>> configMap = org.egov.MDMSApplicationRunnerImpl.getMasterConfigMap();
+		Map<String, Map<String, Object>> configMap = MDMSApplicationRunnerImpl.getMasterConfigMap();
 		if (configMap != null && configMap.containsKey(moduleName)
 				&& configMap.get(moduleName).containsKey(masterName)) {
 			Object masterConfig = configMap.get(moduleName).get(masterName);
 			if (masterConfig instanceof Map) {
 				List<String> configKeys = (List<String>) ((Map<?, ?>) masterConfig).get("uniqueKeys");
 				if (configKeys != null && !configKeys.isEmpty()) {
-					List<String> cleanedKeys = new java.util.ArrayList<>();
+					List<String> cleanedKeys = new ArrayList<>();
 					for (String k : configKeys) {
 						cleanedKeys.add(k.replace("$.", ""));
 					}
@@ -361,32 +344,42 @@ public class MdmsCacheService {
 		return current;
 	}
 
-	private boolean compareWithoutUuid(Map<?, ?> existingMap, Map<?, ?> newRecordMap) {
-		java.util.Set<String> ignoreKeys = new java.util.HashSet<>(
-				java.util.Arrays.asList("id", "uuid", "auditDetails"));
-
-		for (Object keyObj : existingMap.keySet()) {
-			String key = String.valueOf(keyObj);
-			if (ignoreKeys.contains(key))
-				continue;
-
-			Object existingVal = existingMap.get(key);
-			Object newVal = newRecordMap.get(key);
-
-			if (existingVal == null && newVal != null)
-				return false;
-			if (existingVal != null && !existingVal.equals(newVal))
-				return false;
+	private boolean isDeepEqual(Object obj1, Object obj2) {
+		if (obj1 == obj2) {
+			return true;
 		}
-
-		for (Object keyObj : newRecordMap.keySet()) {
-			String key = String.valueOf(keyObj);
-			if (ignoreKeys.contains(key))
-				continue;
-			if (!existingMap.containsKey(key))
-				return false;
+		if (obj1 == null || obj2 == null) {
+			return false;
 		}
-
-		return true;
+		if (obj1 instanceof Map && obj2 instanceof Map) {
+			Map<?, ?> map1 = (Map<?, ?>) obj1;
+			Map<?, ?> map2 = (Map<?, ?>) obj2;
+			if (map1.size() != map2.size()) {
+				return false;
+			}
+			for (Object key : map1.keySet()) {
+				if (!map2.containsKey(key)) {
+					return false;
+				}
+				if (!isDeepEqual(map1.get(key), map2.get(key))) {
+					return false;
+				}
+			}
+			return true;
+		}
+		if (obj1 instanceof List && obj2 instanceof List) {
+			List<?> list1 = (List<?>) obj1;
+			List<?> list2 = (List<?>) obj2;
+			if (list1.size() != list2.size()) {
+				return false;
+			}
+			for (int i = 0; i < list1.size(); i++) {
+				if (!isDeepEqual(list1.get(i), list2.get(i))) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return String.valueOf(obj1).equalsIgnoreCase(String.valueOf(obj2));
 	}
 }

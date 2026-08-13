@@ -57,7 +57,7 @@ public interface SewerageCalculatorDao {
 	
 	public Boolean getexpiryBills(List billSearchsss);
 
-	Boolean isBatchDemandExecuted(String tenantId, Long taxPeriodFrom, Long taxPeriodTo);
+	Boolean isBatchDemandExecuted(String tenantId, String locality, Long taxPeriodFrom, Long taxPeriodTo);
 
 
 }

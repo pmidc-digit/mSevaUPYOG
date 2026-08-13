@@ -1469,7 +1469,7 @@ public class DemandService {
 			throw new CustomException("NO_BILLING_PERIODS","MDMS Billing Period does not available for tenant: "+ tenantId);
 		}
 
-		if (sewerageCalculatorDao.isBatchDemandExecuted(tenantId, taxPeriodFrom, taxPeriodTo)) {
+		if (sewerageCalculatorDao.isBatchDemandExecuted(tenantId, locality, taxPeriodFrom, taxPeriodTo)) {
 			log.info("Sewerage demand generation already successfully executed for tenant: " + tenantId + " period: " + taxPeriodFrom + " - " + taxPeriodTo + ". Skipping.");
 			return;
 		}

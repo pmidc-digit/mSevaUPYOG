@@ -68,7 +68,7 @@ public class UnitFA extends FeatureProcess {
     private static final BigDecimal MIN_TOILET_AREA = BigDecimal.valueOf(1.8);
     private static final BigDecimal MIN_TOILET_WIDTH = BigDecimal.valueOf(1.2);
     private static final BigDecimal MIN_TOILET_VENTILATION = BigDecimal.valueOf(0.3);
-    private static final BigDecimal MIN_BALCONY_WIDTH = BigDecimal.valueOf(0.91);
+    private static final BigDecimal MIN_BALCONY_WIDTH = BigDecimal.valueOf(1.83);
 
     // Thresholds mirrored from HeightOfRoom.java's door/window/ventilation
     // logic, now applied at unit level since the layers themselves are
@@ -1156,7 +1156,11 @@ public class UnitFA extends FeatureProcess {
                         floorArea = floorArea.add(contribution);
                     }
                 }
-                floorArea = floorArea.setScale(2, RoundingMode.HALF_UP);
+                // UnitFA deductions are reported separately, but the Floor Area
+                // column must represent the net area after those deductions.
+                // Keep the calculation at full precision and round only the
+                // final value so the floor and grand totals remain consistent.
+                floorArea = floorArea.subtract(totalDeduction).setScale(2, RoundingMode.HALF_UP);
 
                 Map<String, String> details = new HashMap<>();
                 details.put(FLOOR_HEADER, floor.getNumber().toString());

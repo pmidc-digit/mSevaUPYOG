@@ -106,16 +106,19 @@ t,
 
   useEffect(() => {
     if (approverData && EmployeeStatusData) {
-      const departments = EmployeeStatusData["common-masters"].Department
+      const loggedInUserUuid = Digit.UserService.getUser()?.info?.uuid;
+      const departments = EmployeeStatusData["common-masters"].Department;
       setApprovers(
-        approverData?.Employees?.map((employee) => {
-          const deptCode = employee?.assignments?.[0]?.department
-          const matchedDept = departments?.find((d) => d?.code === deptCode)
-          return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}` }
-        }),
-      )
+        approverData?.Employees
+          ?.filter((employee) => employee?.uuid !== loggedInUserUuid)
+          ?.map((employee) => {
+            const deptCode = employee?.assignments?.[0]?.department;
+            const matchedDept = departments?.find((d) => d?.code === deptCode);
+            return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}` };
+          })
+      );
     }
-  }, [approverData,EmployeeStatusData])
+  }, [approverData, EmployeeStatusData])
 
   function selectFile(e) {
     setFile(e.target.files[0])
@@ -173,11 +176,11 @@ t,
     }
 
     const commentsText = data?.comments?.toString().trim()
-    const conditionalText = data?.conditionalComments?.trim();
+    // const conditionalText = data?.conditionalComments?.trim();
     let finalComments = commentsText;
-    if (action?.action === "APPROVE" && conditionalText) {
-      finalComments = `${commentsText}[#?..**]${conditionalText}`;
-    }
+    // if (action?.action === "APPROVE" && conditionalText) {
+    //   finalComments = `${commentsText}[#?..**]${conditionalText}`;
+    // }
 
     // if (action?.action !== "APPROVE" && !selectedApprover?.uuid) {
     //   setShowToast({ key: "true", warning: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") })

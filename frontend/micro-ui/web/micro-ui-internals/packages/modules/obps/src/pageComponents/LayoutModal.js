@@ -173,11 +173,11 @@ t,
     }
 
     const commentsText = data?.comments?.toString().trim()
-    const conditionalText = data?.conditionalComments?.trim();
+    // const conditionalText = data?.conditionalComments?.trim();
     let finalComments = commentsText;
-    if (action?.action === "APPROVE" && conditionalText) {
-      finalComments = `${commentsText}[#?..**]${conditionalText}`;
-    }
+    // if (action?.action === "APPROVE" && conditionalText) {
+    //   finalComments = `${commentsText}[#?..**]${conditionalText}`;
+    // }
 
     // if (action?.action !== "APPROVE" && !selectedApprover?.uuid) {
     //   setShowToast({ key: "true", warning: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") })

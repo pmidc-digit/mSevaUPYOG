@@ -1,7 +1,7 @@
 FROM node:22-alpine AS build
 
-RUN apk update && apk upgrade
-RUN apk add --no-cache git
+#RUN apk update && apk upgrade
+#RUN apk add --no-cache git
 
 ARG WORK_DIR
 WORKDIR /app

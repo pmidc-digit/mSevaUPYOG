@@ -2,6 +2,7 @@ package org.upyog.adv.service;
 
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +74,30 @@ public class PaymentService {
 	
    	public void processTransaction(HashMap<String, Object> record, String topic, BookingStatusEnum status){
 
+        // Lightweight pre-filter: extract module/consumerCode directly from the map
+        // to skip expensive deserialization for transactions belonging to other services.
+        String moduleName = null;
+        String bookingNo = null;
+        String txnStatusRaw = null;
+        Object transactionObj = record.get("Transaction");
+        if (transactionObj instanceof Map) {
+        	@SuppressWarnings("unchecked")
+            Map<String, Object> txnMap = (Map<String, Object>) transactionObj;
+        	moduleName = txnMap.get("module") != null ? txnMap.get("module").toString() : null;
+        	bookingNo = txnMap.get("consumerCode") != null ? txnMap.get("consumerCode").toString() : null;
+        	txnStatusRaw = txnMap.get("txnStatus") != null ? txnMap.get("txnStatus").toString() : null;
+        }
+
+        // Payment failure status JSON may not contain module name — derive from consumer code
+        if (moduleName == null && bookingNo != null) {
+        	moduleName = bookingNo.startsWith("ADV") ? configs.getBusinessServiceName() : null;
+        }
+
+        // If this transaction does not belong to ADV, skip all further processing
+        if (!configs.getBusinessServiceName().equals(moduleName)) {
+        	return;
+        }
+
         TransactionRequest transactionRequest = mapper.convertValue(record, TransactionRequest.class);
 
         RequestInfo requestInfo = transactionRequest.getRequestInfo();
@@ -81,21 +106,11 @@ public class PaymentService {
         log.info("Transaction in process transaction : " + transaction);
         
         Transaction.TxnStatusEnum transactionStatus = transaction.getTxnStatus();
-        String bookingNo = transaction.getConsumerCode();
-        
-        String moduleName = transaction.getModule();
-        
-        //Payment failure status JSON does not contain module name so added this condition
-        if(null == moduleName && null != bookingNo) {
-        	//Update module name from consumer code
-        	moduleName = bookingNo.startsWith("ADV") ? configs.getBusinessServiceName() : null;
-        }
         
         log.info("moduleName : " + moduleName + "  transactionStatus  : " + transactionStatus);
         
-        if(configs.getBusinessServiceName()
-				.equals(moduleName) && (Transaction.TxnStatusEnum.FAILURE.equals(transactionStatus) ||
-						Transaction.TxnStatusEnum.PENDING.equals(transactionStatus))){
+        if((Transaction.TxnStatusEnum.FAILURE.equals(transactionStatus) ||
+        		Transaction.TxnStatusEnum.PENDING.equals(transactionStatus))){
         	
         	if(Transaction.TxnStatusEnum.FAILURE.equals(transactionStatus)){
         		status = BookingStatusEnum.PAYMENT_FAILED;

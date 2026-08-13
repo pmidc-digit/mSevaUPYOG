@@ -749,7 +749,7 @@ public class BookingRepositoryImpl implements BookingRepository {
 			if (!result.isEmpty()) {
 				status = (String) result.get(0).get("status");
 			} else {
-				System.out.println("No records found for bookingId: " + bookingId);
+				log.warn("No records found for bookingId: " + bookingId);
 			}
 		}
 		return status;

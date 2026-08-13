@@ -196,8 +196,7 @@ public class BookingServiceImpl implements BookingService {
 					.collect(Collectors.toList());
 			criteria.setOwnerIds(ownerIds);
 		}
-        System.out.println("BOOKINGNO!!!" + bookingDetail.getBookingNo());
-        System.out.println("CRITERIA!!!!!!" + criteria.toString());
+        log.debug("Enriching booking {} with owners {}", bookingDetail.getBookingNo(), criteria);
         if(criteria.getOwnerIds()!=null)
         {
             UserResponse userDetailResponse = userService.getUser(criteria, info);

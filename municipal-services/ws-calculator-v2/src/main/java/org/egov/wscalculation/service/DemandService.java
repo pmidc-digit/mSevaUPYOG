@@ -1721,7 +1721,7 @@ public class DemandService {
 					"MDMS Billing Period does not available for tenant: " + tenantId);
 		}
 
-		if (waterCalculatorDao.isBatchDemandExecuted(tenantId, locality, taxPeriodFrom, taxPeriodTo)) {
+		if (waterCalculatorDao.isBatchDemandExecuted(tenantId, taxPeriodFrom, taxPeriodTo)) {
 			log.info("Demand generation already successfully executed for tenant: " + tenantId +" locality: "+ locality + " period: " + taxPeriodFrom + " - " + taxPeriodTo + ". Skipping.");
 			return;
 		}

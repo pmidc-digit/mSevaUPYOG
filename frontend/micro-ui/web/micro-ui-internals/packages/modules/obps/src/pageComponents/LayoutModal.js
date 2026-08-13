@@ -106,16 +106,19 @@ t,
 
   useEffect(() => {
     if (approverData && EmployeeStatusData) {
-      const departments = EmployeeStatusData["common-masters"].Department
+      const loggedInUserUuid = Digit.UserService.getUser()?.info?.uuid;
+      const departments = EmployeeStatusData["common-masters"].Department;
       setApprovers(
-        approverData?.Employees?.map((employee) => {
-          const deptCode = employee?.assignments?.[0]?.department
-          const matchedDept = departments?.find((d) => d?.code === deptCode)
-          return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}` }
-        }),
-      )
+        approverData?.Employees
+          ?.filter((employee) => employee?.uuid !== loggedInUserUuid)
+          ?.map((employee) => {
+            const deptCode = employee?.assignments?.[0]?.department;
+            const matchedDept = departments?.find((d) => d?.code === deptCode);
+            return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}` };
+          })
+      );
     }
-  }, [approverData,EmployeeStatusData])
+  }, [approverData, EmployeeStatusData])
 
   function selectFile(e) {
     setFile(e.target.files[0])

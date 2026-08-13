@@ -187,7 +187,7 @@ public class UserService {
 
         user.put("name", transaction.getUser().getName());
         user.put("mobileNumber", transaction.getUser().getMobileNumber());
-        user.put("userName", transaction.getUser().getName());
+        user.put("userName",  UUID.randomUUID().toString());
         user.put("active", true);
         user.put("type", "CITIZEN");
         user.put("tenantId", transaction.getTenantId().split("\\.")[0]);

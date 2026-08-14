@@ -898,7 +898,9 @@ const hasCMCApproval =
         <StatusTable>
           <Row label={t("BPA_APPLICATION_NUMBER_LABEL") || t("Application No")} text={id} />
           <Row label={t("Application Date")} text={applicationDetails?.Layout?.[0]?.auditDetails?.createdTime ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.auditDetails?.createdTime), "dd/MM/yyyy") : "N/A"} />
+          {(applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED") && (
           <Row label={t("Application Submission Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn), "dd/MM/yyyy") : "N/A"} />
+          )}
           {(applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") && (
             <Row label={t("Application Approval Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate), "dd/MM/yyyy") : "N/A"} />
           )}

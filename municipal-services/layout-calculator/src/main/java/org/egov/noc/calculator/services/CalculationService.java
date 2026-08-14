@@ -152,6 +152,13 @@ public class CalculationService {
 			if(estimates.isEmpty())
 				estimates = calculateFee(calculationReq.getRequestInfo(), mdmsData, plotArea, builtUpArea, basementArea, roadTypeVal, landType, criteria.getFeeType(), isCluRequired);
 
+			if (!"YES".equalsIgnoreCase(isCluRequired)) {
+				estimates = estimates.stream().filter(est -> 
+					!LAYOUTConstants.NOC_CLU_CHARGES.equalsIgnoreCase(est.getTaxHeadCode()) &&
+					!"LAYOUT_CLU_FEE".equalsIgnoreCase(est.getTaxHeadCode())
+				).collect(Collectors.toList());
+			}
+
 			if(estimates.isEmpty())
 				throw new CustomException("NO_FEE_CONFIGURED","No fee configured for the application");	
 			

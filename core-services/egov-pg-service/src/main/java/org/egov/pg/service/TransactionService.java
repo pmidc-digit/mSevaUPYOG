@@ -93,7 +93,8 @@ public class TransactionService {
         if (orderId!=null && orderId.length > 1)
             transaction.setGatewayTxnId(orderId[1]);
     }
-    if(uri.getRawQuery() != null && transaction.getGateway().equals("CCAVANUE")){
+    if (transaction.getGateway().equals("PAYU") ||
+            (uri.getRawQuery() != null && transaction.getGateway().equals("CCAVANUE"))) {
         dump.setTxnRequest(transaction.getRedirectUrl());
     }
     else{

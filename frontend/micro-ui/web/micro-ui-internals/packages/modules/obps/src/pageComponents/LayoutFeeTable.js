@@ -208,10 +208,16 @@ export const LayoutFeeTable = ({
           if (row.taxHeadCode === "LAYOUT_TOTAL") {
             return " ";
           }
-          return (
+          return feeData[row.index]?.remark ? (
             <div className="custom-fee-remark-display">
               {feeData[row.index]?.remark || ""}
             </div>
+          ) : (
+            <TextArea
+              placeholder=""
+              disabled={true}
+              className="custom-fee-table-textarea"
+            />
           );
         },
       },

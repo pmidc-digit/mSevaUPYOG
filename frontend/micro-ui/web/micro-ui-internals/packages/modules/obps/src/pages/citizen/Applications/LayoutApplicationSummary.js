@@ -163,7 +163,7 @@ const LayoutApplicationOverview = () => {
   const [loading, setLoading] = useState(false);
   const [timeObj, setTimeObj] = useState(null);
   const state = Digit.ULBService.getStateId()
-
+ const [feeAdjustments, setFeeAdjustments] = useState([]);
   // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, { cacheTime: 0 })
   const applicationDetails = data?.resData
@@ -437,6 +437,15 @@ const LayoutApplicationOverview = () => {
       data.revalidate()
     }
   }, [])
+  
+const hasCMCApproval =
+  workflowDetails?.data?.actionState?.timeline?.some(
+    (item) =>
+      item?.performedAction === "APPROVE" &&
+      item?.assigner?.roles?.some(
+        (role) => role?.code === "OBPAS_LAYOUT_CMC"
+      )
+  );
 
   const isApplicationComplete = () => {
     const layout = applicationDetails?.Layout?.[0];
@@ -1133,6 +1142,26 @@ const LayoutApplicationOverview = () => {
                 </div>
               )}
         </Card>
+
+       {hasCMCApproval && (
+                <Card>
+                  <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+                  {applicationDetails?.Layout?.[0]?.layoutDetails && (
+                    <LayoutFeeEstimationDetailsTable
+                      formData={{
+                        apiData: { ...applicationDetails },
+                        applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
+                        siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
+                        calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
+                      }}
+                      feeType="PAY2"
+                      feeAdjustments={feeAdjustments}
+                      setFeeAdjustments={setFeeAdjustments}
+                      disable={true}
+                    />
+                  )}
+                </Card>
+              )}
       
 
       {/* -------------------- SPECIFICATIONS -------------------- */}

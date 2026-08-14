@@ -516,7 +516,8 @@ public class NOCService {
 				List<BPA> bpaList = new ArrayList<BPA>();
 				bpaList = bpaResponse.getBPA();
 				bpaList.forEach(bpa -> {
-					additionalDetails.put("applicantName", bpa.getLandInfo().getOwners().get(0).getName());
+					if(bpa.getLandInfo() != null && !CollectionUtils.isEmpty(bpa.getLandInfo().getOwners()))
+						additionalDetails.put("applicantName", bpa.getLandInfo().getOwners().get(0).getName());
 				});
 				log.info("ADDITIONAL DETAILS :: " + additionalDetails.get("applicantName"));
 				// PROCESS CALL

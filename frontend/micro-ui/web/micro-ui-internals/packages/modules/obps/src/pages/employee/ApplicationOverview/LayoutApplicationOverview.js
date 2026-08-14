@@ -311,6 +311,7 @@ const LayoutEmployeeApplicationOverview = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
+    console.log('actions', actions)
   const modifiedActions = actions?.map((action) => ({
   ...action,
   forcedName: action.action?.toUpperCase().includes("FORWARD")
@@ -1689,7 +1690,7 @@ const LayoutEmployeeApplicationOverview = () => {
       {actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-            <Menu localeKeyPrefix={prefix} options={modifiedActions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+            <Menu localeKeyPrefix={prefix} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>

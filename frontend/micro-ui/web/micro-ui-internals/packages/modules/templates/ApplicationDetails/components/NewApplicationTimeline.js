@@ -297,9 +297,8 @@ export default function NewApplicationTimeline({ workflowDetails, prefix = null,
                         <h3 className="custom-action-title">{t("Action")}</h3>
                         <div className={`custom-status-text ${item?.performedAction === "OBSERVATION" ? "chb-slot-status--unavailable" : ""}`}>
                           {
-                            item?.performedAction?.toUpperCase().includes("FORWARD")
-                              ? t("FORWARD")
-                              : prefix
+                            
+                              prefix
                                 ? t(`${prefix}_${item?.performedAction}`.toUpperCase())
                                 : t(item?.performedAction || "CS_COMMON_NA")
                           }

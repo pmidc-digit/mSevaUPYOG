@@ -1165,7 +1165,7 @@ const LayoutApplicationOverview = () => {
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
               localeKeyPrefix={prefix}
-              options={modifiedActions}
+              options={actions}
               optionKey={"action"}
               t={t}
               onSelect={onActionSelect}

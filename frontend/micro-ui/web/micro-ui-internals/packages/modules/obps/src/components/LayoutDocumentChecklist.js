@@ -11,10 +11,14 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
   const isReadOnly = readOnly === true || readOnly === "true";
   //console.log("LayoutDocumentChecklist - readOnly prop:", readOnly, "isReadOnly:", isReadOnly);
 
+  const validDocuments = (documents || []).filter(
+    (d) => (d?.documentAttachment && String(d.documentAttachment).trim() !== "") || (d?.filestoreId && String(d.filestoreId).trim() !== "")
+  );
+
   // fetch urls
   const { data: urlsList } = Digit.Hooks.obps.useLayoutDocumentSearch(
-    { value: { workflowDocs: (documents || []).map((d) => ({ documentUid: d.documentUid })) } },
-    { enabled: documents?.length > 0 }
+    { value: { workflowDocs: validDocuments.map((d) => ({ documentUid: d.documentUid })) } },
+    { enabled: validDocuments?.length > 0 }
   );
 
   //console.log(urlsList, "USER LIST");
@@ -55,7 +59,7 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
           </tr>
         </thead>
         <tbody>
-          {documents?.map((doc, i) => {
+          {validDocuments?.map((doc, i) => {
             const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
             return (
               <tr key={doc.documentUid || i}>

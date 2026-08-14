@@ -312,12 +312,6 @@ const LayoutEmployeeApplicationOverview = () => {
     });
 
     console.log('actions', actions)
-  const modifiedActions = actions?.map((action) => ({
-  ...action,
-  forcedName: action.action?.toUpperCase().includes("FORWARD")
-    ? "CS_ACTION_FORWARD"
-    : undefined,
-}));
 
   // console.log("actions here", actions);
 
@@ -538,10 +532,10 @@ const LayoutEmployeeApplicationOverview = () => {
 
         // --- derived once, reused for both officerDesignation and signatoryDesignation ---
         const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm exact grade codes
-        const officerDesignation = isSmallerUlb ? "Executive Officer" : "Municipal Commissioner";
+        const officerDesignation = isSmallerUlb ? t("SMALLER_ULB_OFFICER") : t("BIGGER_ULB_OFFICER");
         const signatoryDesignation = isSmallerUlb
-          ? "Additional Deputy Commissioner (Urban Development)"
-          : "Commissioner, Municipal Corporation";
+          ? t("SMALLER_ULB_DESIG")
+          : t("BIGGER_ULB_DESIG");
 
         // same isSmallerUlb split decides which name goes with the Competent Authority
         const jurisdictionName = isSmallerUlb ? districtName : ulbName;

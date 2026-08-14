@@ -708,10 +708,10 @@ const LayoutApplicationOverview = () => {
 
       // --- derived once, reused for both officerDesignation and signatoryDesignation ---
       const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm actual grade codes
-      const officerDesignation = isSmallerUlb ? "Executive Officer" : "Municipal Commissioner";
+      const officerDesignation = isSmallerUlb ? t("SMALLER_ULB_OFFICER") : t("BIGGER_ULB_OFFICER");
       const signatoryDesignation = isSmallerUlb
-        ? "Additional Deputy Commissioner (Urban Development)"
-        : "Commissioner, Municipal Corporation";
+        ? t("SMALLER_ULB_DESIG")
+        : t("BIGGER_ULB_DESIG");
 
       // same isSmallerUlb split decides which name goes with the Competent Authority
       const jurisdictionName = isSmallerUlb ? districtName : ulbName;

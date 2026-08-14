@@ -199,6 +199,22 @@ export const LayoutFeeTable = ({
           );
         },
       },
+      {
+        key: "remark",
+        label: "BPA_REMARKS",
+        headerLabel: "BPA_REMARKS",
+        type: "custom",
+        render: (row, rowIndex, t) => {
+          if (row.taxHeadCode === "LAYOUT_TOTAL") {
+            return " ";
+          }
+          return (
+            <div className="custom-fee-remark-display">
+              {feeData[row.index]?.remark || ""}
+            </div>
+          );
+        },
+      },
     ];
   }
 

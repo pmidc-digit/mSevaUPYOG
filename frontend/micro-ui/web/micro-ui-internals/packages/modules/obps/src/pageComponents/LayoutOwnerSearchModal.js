@@ -149,7 +149,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             dob: formattedDob,
             fatherOrHusbandName: u.fatherOrHusbandName || "",
             permanentAddress: u.permanentAddress || u.address || "",
-            gender: genderObj,
+            gender: genderObj || null,
             mobileNumber: u.mobileNumber || u.userName || currentMobile,
             uuid: u.uuid || "",
             panNumber: u.panNumber || u.pan || "",

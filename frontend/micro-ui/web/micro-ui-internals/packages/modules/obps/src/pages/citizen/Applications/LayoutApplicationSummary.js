@@ -163,7 +163,7 @@ const LayoutApplicationOverview = () => {
   const [loading, setLoading] = useState(false);
   const [timeObj, setTimeObj] = useState(null);
   const state = Digit.ULBService.getStateId()
-
+ const [feeAdjustments, setFeeAdjustments] = useState([]);
   // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, { cacheTime: 0 })
   const applicationDetails = data?.resData
@@ -437,6 +437,15 @@ const LayoutApplicationOverview = () => {
       data.revalidate()
     }
   }, [])
+  
+const hasCMCApproval =
+  workflowDetails?.data?.actionState?.timeline?.some(
+    (item) =>
+      item?.performedAction === "APPROVE" &&
+      item?.assigner?.roles?.some(
+        (role) => role?.code === "OBPAS_LAYOUT_CMC"
+      )
+  );
 
   const isApplicationComplete = () => {
     const layout = applicationDetails?.Layout?.[0];
@@ -608,15 +617,21 @@ const LayoutApplicationOverview = () => {
       const response = await Digit.OBPSService.LayoutUpdate({ tenantId, ...finalPayload })
 
       if (response?.ResponseInfo?.status === "successful") {
-        if (filtData?.action === "CANCEL") {
-          setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" })
-          workflowDetails.revalidate()
-          setSelectedAction(null)
-        } else {
+        // if (filtData?.action === "CANCEL") {
+        //   setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" })
+        //   workflowDetails.revalidate()
+        //   setSelectedAction(null)
+        // } else 
+         if (filtData?.action) {
           history.replace({
             pathname: `/digit-ui/citizen/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
             state: { data: response },
           })
+        }else{
+          setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" })
+          workflowDetails.revalidate()
+          setSelectedAction(null);
+
         }
       } else {
         setShowToast({ key: "true", warning: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" })
@@ -889,7 +904,9 @@ const LayoutApplicationOverview = () => {
         <StatusTable>
           <Row label={t("BPA_APPLICATION_NUMBER_LABEL") || t("Application No")} text={id} />
           <Row label={t("Application Date")} text={applicationDetails?.Layout?.[0]?.auditDetails?.createdTime ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.auditDetails?.createdTime), "dd/MM/yyyy") : "N/A"} />
+          {(applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED") && (
           <Row label={t("Application Submission Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn), "dd/MM/yyyy") : "N/A"} />
+          )}
           {(applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") && (
             <Row label={t("Application Approval Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate), "dd/MM/yyyy") : "N/A"} />
           )}
@@ -1133,6 +1150,27 @@ const LayoutApplicationOverview = () => {
                 </div>
               )}
         </Card>
+
+       {hasCMCApproval && (
+                <Card>
+                  <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+                  {applicationDetails?.Layout?.[0]?.layoutDetails && (
+                    <LayoutFeeEstimationDetailsTable
+                      formData={{
+                        apiData: { ...applicationDetails },
+                        applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
+                        siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
+                        calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
+                      }}
+                      feeType="PAY2"
+                      feeAdjustments={feeAdjustments}
+                      setFeeAdjustments={setFeeAdjustments}
+                      disable={true}
+                    />
+                  )}
+                </Card>
+              )}
+      
 
       {/* -------------------- SPECIFICATIONS -------------------- */}
       {/* <Card>

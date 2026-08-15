@@ -71,6 +71,68 @@ public class CalculationService {
 		return demandDetails;
 	}
 
+	/**
+	 * Compute per-advertisement breakdown (id, name, days, base rental) for the
+	 * estimate response. Taxes/fees are allocated pro-rata separately in DemandService.
+	 */
+	public List<AdvertisementSlotWiseBreakdown> calculateSlotWiseBreakdown(
+			BookingRequest bookingRequest, Object mdmsData) throws JsonProcessingException {
+
+		String tenantId = bookingRequest.getBookingApplication().getTenantId();
+		List<CartDetail> cartDetails = bookingRequest.getBookingApplication().getCartDetails();
+		if (cartDetails == null || cartDetails.isEmpty()) {
+			throw new CustomException("EMPTY_CART", "Cart details cannot be empty for demand calculation");
+		}
+
+		List<Advertisements> advertisements = mdmsUtil.getAdvertisements(
+				bookingRequest.getRequestInfo(), tenantId, config.getModuleName(), null);
+
+		Map<Integer, Advertisements> advById = advertisements.stream()
+				.filter(a -> a.getId() != null)
+				.collect(Collectors.toMap(Advertisements::getId, a -> a, (existing, replacement) -> existing));
+
+		Map<String, List<LocalDate>> adDatesMap = cartDetails.stream()
+				.filter(cd -> cd.getAdvertisementId() != null)
+				.collect(Collectors.groupingBy(
+						CartDetail::getAdvertisementId,
+						Collectors.mapping(CartDetail::getBookingDate, Collectors.toList())));
+
+		Map<String, Long> daysPerAd = cartDetails.stream()
+				.map(CartDetail::getAdvertisementId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.groupingBy(id -> id, Collectors.counting()));
+
+		List<AdvertisementSlotWiseBreakdown> breakdown = new LinkedList<>();
+		for (Map.Entry<String, List<LocalDate>> entry : adDatesMap.entrySet()) {
+			String adId = entry.getKey();
+			List<LocalDate> dates = entry.getValue();
+			Advertisements adv = advById.get(Integer.parseInt(adId));
+			if (adv == null) {
+				throw new CustomException("ADVERTISEMENT_NOT_FOUND",
+						"No advertisement found with id: " + adId);
+			}
+
+			BigDecimal base = BigDecimal.ZERO;
+			if (adv.getRentalType() == RentalType.FIXED) {
+				BigDecimal fixed = BookingUtil.calculateFixedRentalAmount(adv, dates);
+				if (fixed != null) base = fixed;
+			} else {
+				long bookingDaysForAd = daysPerAd.getOrDefault(adId, 0L);
+				LocalDate refDate = dates.isEmpty() ? null : dates.get(0);
+				BigDecimal perDay = BookingUtil.getPerDayRate(adv, refDate, bookingDaysForAd);
+				if (perDay != null) base = perDay.multiply(BigDecimal.valueOf(bookingDaysForAd));
+			}
+
+			breakdown.add(AdvertisementSlotWiseBreakdown.builder()
+					.advertisementId(adId)
+					.advertisementName(adv.getName())
+					.numberOfDays(dates.size())
+					.baseRentalAmount(base)
+					.build());
+		}
+		return breakdown;
+	}
+
 	private List<DemandDetail> processCalculationForDemandGeneration(String tenantId,
 																	 List<Advertisements> advertisements, BookingRequest bookingRequest, List<TaxHeadMaster> headMasters, List<String> taxRateCodes, Object taxRateList) {
 

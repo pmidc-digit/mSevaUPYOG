@@ -21,6 +21,7 @@ import org.upyog.adv.util.DemandUtil;
 import org.upyog.adv.util.MdmsUtil;
 import org.upyog.adv.validator.BookingValidator;
 import org.upyog.adv.web.models.AdvertisementDemandEstimationCriteria;
+import org.upyog.adv.web.models.AdvertisementSlotWiseBreakdown;
 import org.upyog.adv.web.models.BookingDetail;
 import org.upyog.adv.web.models.BookingRequest;
 import org.upyog.adv.web.models.RequestInfoWrapper;
@@ -163,12 +164,53 @@ public class DemandService {
 			BigDecimal totalAmount = demandDetails.stream()
 					.map(DemandDetail::getTaxAmount)
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
-			demand.setAdditionalDetails(totalAmount);
+			demand.setAdditionalDetails(buildEstimationDetails(bookingRequest, mdmsData, demandDetails, totalAmount));
 			return demands;
 		}
 
 		log.info("Sending call to billing service for generating demand for booking no : " + consumerCode);
 		return demandRepository.saveDemand(bookingRequest.getRequestInfo(), demands);
+	}
+
+	/**
+	 * Builds the structured estimate payload: overall total plus a per-advertisement
+	 * slot breakdown. Service charge, taxes (CGST/SGST) and round-off are allocated
+	 * to each slot pro-rata by its base rental amount.
+	 */
+	private Map<String, Object> buildEstimationDetails(BookingRequest bookingRequest, Object mdmsData,
+			List<DemandDetail> demandDetails, BigDecimal totalAmount) throws JsonProcessingException {
+
+		List<AdvertisementSlotWiseBreakdown> slots = calculationService
+				.calculateSlotWiseBreakdown(bookingRequest, mdmsData);
+
+		BigDecimal totalBase = slots.stream()
+				.map(AdvertisementSlotWiseBreakdown::getBaseRentalAmount)
+				.filter(Objects::nonNull)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		Set<String> allocatableCodes = new HashSet<>(Arrays.asList(
+				"ADV_SERVICE_CHARGE", "ADV_CGST", "ADV_SGST", "ADV_ROUND_OFF"));
+		BigDecimal allocatableTotal = demandDetails.stream()
+				.filter(detail -> allocatableCodes.contains(detail.getTaxHeadMasterCode()))
+				.map(DemandDetail::getTaxAmount)
+				.filter(Objects::nonNull)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		for (AdvertisementSlotWiseBreakdown slot : slots) {
+			BigDecimal base = slot.getBaseRentalAmount() == null ? BigDecimal.ZERO : slot.getBaseRentalAmount();
+			BigDecimal allocated = BigDecimal.ZERO;
+			if (totalBase.compareTo(BigDecimal.ZERO) > 0) {
+				allocated = allocatableTotal.multiply(base)
+						.divide(totalBase, 2, java.math.RoundingMode.HALF_UP);
+			}
+			slot.setAllocatedTaxesAndFees(allocated);
+			slot.setSlotTotal(base.add(allocated));
+		}
+
+		Map<String, Object> details = new LinkedHashMap<>();
+		details.put("totalAmount", totalAmount);
+		details.put("slotWiseBreakdown", slots);
+		return details;
 	}
 
 

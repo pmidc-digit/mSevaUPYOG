@@ -1229,7 +1229,7 @@ const LayoutEmployeeApplicationOverview = () => {
            {(applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED") && (
           <Row label={t("Application Submission Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn), "dd/MM/yyyy") : "N/A"} />
            )}
-          {(applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") && (
+          {(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate) && (
             <Row label={t("Application Approval Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate), "dd/MM/yyyy") : "N/A"} />
           )}
         </StatusTable>
@@ -1284,15 +1284,15 @@ const LayoutEmployeeApplicationOverview = () => {
                   <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
                   <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
                   <RenderRow label={t("BPA_PAN_NUMBER_LABEL")} value={applicant?.pan || applicant?.panNumber || "N/A"} />
-                  <Row
+                  <Row className="document-row"
                     label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"}
                     text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />}
                   />
-                  <Row
+                  <Row className="document-row"
                     label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"}
                     text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />}
                   />
-                  <Row
+                  <Row className="document-row"
                     label={t("BPA_PAN_DOCUMENT") || "Pan"}
                     text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />}
                   />
@@ -1315,7 +1315,7 @@ const LayoutEmployeeApplicationOverview = () => {
                   {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
                   {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") && renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
                   {(Boolean(detail?.cluDocumentUpload) || detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && (
-                    <Row
+                    <Row className="document-row"
                       label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
                       text={
                         <DocumentLink

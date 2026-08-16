@@ -201,7 +201,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
     <div className="employee-main-application-details">
       <style>{` .data-table .row {border: 2px solid lightgrey;}`}</style>
 
-      <StatusTable style={{ border: "none" }}>
+      
         <Card>
           <CardSubHeader>{t("OWNER_OWNERPHOTO") || "Owner Photo"}</CardSubHeader>
           <CustomOwnerImage
@@ -209,7 +209,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
             ownerName={owners[0]?.name}
           />
         </Card>
-      </StatusTable>
+
 
        {/* PROFESSIONAL DETAILS */}
       {formData?.applicationDetails?.professionalName && (
@@ -244,24 +244,24 @@ function LayoutSummary({ currentStepData: formData, t }) {
           <Card key={index}>
             <CardSubHeader>{cardHeader}</CardSubHeader>
             <StatusTable>
+              {isPrimary && renderRow(t("CLU_OWNER_TYPE_LABEL"), owner?.aplicantType?.name || owner?.aplicantType?.code || owner?.aplicantType)}
+              {owner?.aplicantType?.code === "FIRM" && renderRow(t("NEW_LAYOUT_FIRM_NAME_LABEL"), owner?.authorisedPerson || "N/A")}
               {renderRow(
                 owner?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME"),
                 owner?.name
               )}
-              {isPrimary && renderRow(t("CLU_OWNER_TYPE_LABEL"), owner?.aplicantType?.name || owner?.aplicantType?.code || owner?.aplicantType)}
-              {owner?.aplicantType?.code === "FIRM" && renderRow(t("NEW_LAYOUT_FIRM_NAME_LABEL"), owner?.authorisedPerson || "N/A")}
-              {renderRow(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
-              {renderRow(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
-              {renderRow(t("BPA_APPLICANT_GENDER_LABEL"), owner?.gender?.code || owner?.gender?.value || owner?.gender)}
-              {renderRow(t("BPA_APPLICANT_DOB_LABEL"), formatDate(owner?.dob))}
-              {renderRow(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
-              {renderRow(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.permanentAddress || owner?.address)}
+              {renderRow(t("NOC_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
+              {renderRow(t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
+              {renderRow(t("NOC_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
+               {renderRow(t("NOC_APPLICANT_DOB_LABEL"), formatDate(owner?.dob))}
+              {renderRow(t("NOC_APPLICANT_GENDER_LABEL"), owner?.gender?.code || owner?.gender?.value || owner?.gender)}
+              {renderRow(t("NOC_APPLICANT_ADDRESS_LABEL"), owner?.permanentAddress || owner?.address)}
+              {renderRow(t("BPA_PAN_NUMBER_LABEL"), panNum)}
 
               {/* Documents */}
-              <Row label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={photoFile} stateCode={stateCode} t={t} />} />
-              <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={idProofFile} stateCode={stateCode} t={t} />} />
-              <Row label={t("BPA_PAN_DOCUMENT") || "PAN Document"} text={<DocumentLink fileStoreId={panDocFile} stateCode={stateCode} t={t} />} />
-              {renderRow(t("BPA_PAN_NUMBER_LABEL"), panNum)}
+              <Row className="document-row" label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={photoFile} stateCode={stateCode} t={t} />} />
+              <Row className="document-row" label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={idProofFile} stateCode={stateCode} t={t} />} />
+              <Row className="document-row" label={t("BPA_PAN_DOCUMENT") || "PAN Document"} text={<DocumentLink fileStoreId={panDocFile} stateCode={stateCode} t={t} />} />
             </StatusTable>
           </Card>
         );
@@ -336,7 +336,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
               {(formData?.siteDetails?.cluType?.code === "OFFLINE" || formData?.siteDetails?.cluType === "OFFLINE") &&
                 renderRow(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), formData?.siteDetails?.cluNumberOffline)}
               {(Boolean(formData?.siteDetails?.cluDocumentUpload) || formData?.siteDetails?.cluType?.code === "ONLINE" || formData?.siteDetails?.cluType === "ONLINE") && (
-                <Row
+                <Row className="document-row"
                   label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
                   text={
                     <DocumentLink

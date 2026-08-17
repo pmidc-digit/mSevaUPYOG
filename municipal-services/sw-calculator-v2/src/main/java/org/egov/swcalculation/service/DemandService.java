@@ -1633,7 +1633,7 @@ public class DemandService {
 							.isDemandExecuted(true)
 							.build();
 					swCalculationProducer.push(configs.getSaveBatchDemandLogTopic(), startLog);
-					demandSchedulerNotificationService.sendStartEmail(tenantId, taxPeriodFrom, taxPeriodTo, connectionNos.size(), requestInfo);
+//					demandSchedulerNotificationService.sendStartEmail(tenantId, taxPeriodFrom, taxPeriodTo, connectionNos.size(), requestInfo);
 				} catch (Exception e) {
 					log.error("⚠️ Non-fatal: failed to push start BatchDemandLog or send start email for tenant: {} | {}",
 							tenantId, e.getMessage(), e);
@@ -1714,7 +1714,7 @@ public class DemandService {
 				// Send Completion Email & Poll
 				try {
 					List<String> allConnNos = connectionNos.stream().map(SewerageDetails::getConnectionNo).collect(Collectors.toList());
-					demandSchedulerNotificationService.sendCompletionEmail(tenantId, taxPeriodFrom, taxPeriodTo, allConnNos, System.currentTimeMillis(), requestInfo);
+//					demandSchedulerNotificationService.sendCompletionEmail(tenantId, taxPeriodFrom, taxPeriodTo, allConnNos, System.currentTimeMillis(), requestInfo);
 				} catch (Exception e) {
 					log.error("❌ Failed to send completion email for tenant: {} | {}", tenantId, e.getMessage(), e);
 				}

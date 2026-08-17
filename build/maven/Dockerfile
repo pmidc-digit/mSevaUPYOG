@@ -16,6 +16,7 @@ COPY build/maven/start.sh ./start.sh
 # Copy source code
 COPY ${WORK_DIR}/src ./src
 
+COPY ./_.lgpunjab.gov.in.cer ./src/main/resources/_.lgpunjab.gov.in.cer
 # Build application
 RUN mvn -B -f /app/pom.xml clean package \
     -Dmaven.test.skip=true \

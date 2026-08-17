@@ -366,7 +366,7 @@ const LayoutEmployeeApplicationOverview = () => {
 
   // Initialize checklist remarks from API data
   useEffect(() => {
-    if (checklistData?.checkList?.length > 0 && Object.keys(checklistRemarks).length === 0) {
+    if (checklistData?.checkList?.length > 0) {
       const remarksMap = {};
       checklistData.checkList.forEach((item) => {
         remarksMap[item.documentUid || item.documentuid] = item.remarks || "";
@@ -399,7 +399,9 @@ const LayoutEmployeeApplicationOverview = () => {
         doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" ||
         doc?.documentType === "SITE.PHOTOGRAPHONE" ||
         doc?.documentType === "SITE.PHOTOGRAPHTWO"
-      )
+      ) &&
+      ((doc?.documentAttachment && String(doc.documentAttachment).trim() !== "") ||
+        (doc?.filestoreId && String(doc.filestoreId).trim() !== ""))
   );
 
   // Calculate geo locations from site images
@@ -1596,8 +1598,11 @@ const LayoutEmployeeApplicationOverview = () => {
 
       {/* FEE DETAILS CARD - CLU STYLE PART 1 */}
       <Card>
-        <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
+        <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
+    
         {applicationDetails?.Layout?.[0]?.layoutDetails && (
+          <>
+              <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY1")}</CardSubHeader>
           <LayoutFeeEstimationDetails
             formData={{
               apiData: { ...applicationDetails },
@@ -1609,6 +1614,7 @@ const LayoutEmployeeApplicationOverview = () => {
             disable={isFeeDisabled}
             hasPayments={hasPayments}
           />
+          </>
         )}
          {hasPayments && (
                   <div style={{ marginTop: "16px" }}>
@@ -1616,12 +1622,12 @@ const LayoutEmployeeApplicationOverview = () => {
                   </div>
                 )}
 
-      </Card>
+    
 
       {/* FEE DETAILS TABLE CARD - CLU STYLE PART 2 */}
       {(applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS") && (
-        <Card>
-          <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+      <>
+          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY2")}</CardSubHeader>
           {applicationDetails?.Layout?.[0]?.layoutDetails && (
             <LayoutFeeEstimationDetailsTable
               formData={{
@@ -1636,8 +1642,9 @@ const LayoutEmployeeApplicationOverview = () => {
               disable={isFeeDisabled}
             />
           )}
-        </Card>
+        </>
       )}
+      </Card>
 
       {/* {siteImages?.documents?.length > 0 && (
         <Card>

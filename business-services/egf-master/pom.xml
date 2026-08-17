@@ -131,7 +131,7 @@
     <snapshotRepository>
       <id>repo.egovernments.org</id>
       <name>eGov ERP Snapshots Repository</name>
-      <url>https://nexus-repo.egovernments.org/nexus/content/repositories/snapshots/</url>
+      <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots</url>
     </snapshotRepository>
   </distributionManagement>
   <build>

@@ -237,7 +237,7 @@ const LayoutDocumentsRequired = ({
 
       let isRequired = false
       ;(documents || []).map((data) => {
-        if (doc.required && data?.documentType.includes(doc.code)) isRequired = true
+        if (doc.required && data?.documentType.includes(doc.code) && ((data?.filestoreId && String(data.filestoreId).trim() !== "") || (data?.documentAttachment && String(data.documentAttachment).trim() !== ""))) isRequired = true
       })
       if (!isRequired && doc.required) count = count + 1
     })

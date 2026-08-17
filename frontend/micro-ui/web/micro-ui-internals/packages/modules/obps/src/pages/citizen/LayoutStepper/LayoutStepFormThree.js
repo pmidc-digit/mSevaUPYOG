@@ -283,7 +283,9 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     .map(doc => doc.code);
 
   // 2️⃣ Get uploaded document types
-  const uploadedDocTypes = uploadedDocs.map(doc => doc.documentType);
+  const uploadedDocTypes = uploadedDocs
+    .filter(doc => (doc?.filestoreId && String(doc.filestoreId).trim() !== "") || (doc?.documentAttachment && String(doc.documentAttachment).trim() !== ""))
+    .map(doc => doc.documentType);
 
   // 3️⃣ Find missing required documents
   const missingDocs = requiredDocCodes.filter(

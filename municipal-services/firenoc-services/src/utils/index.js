@@ -33,60 +33,71 @@ export const requestInfoToResponseInfo = (requestinfo, success) => {
 };
 
 export const addIDGenId = async (requestInfo, idRequests) => {
-  let requestBody = {
-    RequestInfo: requestInfo,
-    idRequests
-  };
-  // console.log(JSON.stringify(requestBody));
-  let idGenResponse = await httpRequest({
-    hostURL: envVariables.EGOV_IDGEN_HOST,
-    endPoint: `${envVariables.EGOV_IDGEN_CONTEXT_PATH}${
-      envVariables.EGOV_IDGEN_GENERATE_ENPOINT
-    }`,
-    requestBody
-  });
-  // console.log("idgenresponse",idGenResponse);
-  return get(idGenResponse, "idResponses[0].id");
+  try {
+    let requestBody = {
+      RequestInfo: requestInfo,
+      idRequests
+    };
+    // console.log(JSON.stringify(requestBody));
+    let idGenResponse = await httpRequest({
+      hostURL: envVariables.EGOV_IDGEN_HOST,
+      endPoint: `${envVariables.EGOV_IDGEN_CONTEXT_PATH}${
+        envVariables.EGOV_IDGEN_GENERATE_ENPOINT
+      }`,
+      requestBody
+    });
+    // console.log("idgenresponse",idGenResponse);
+    return get(idGenResponse, "idResponses[0].id");
+  } catch (error) {
+    console.error("Error in addIDGenId:", error);
+    throw error;
+  }
 };
 
 export const getLocationDetails = async (requestInfo, tenantId) => {
-  let requestBody = {
-    RequestInfo: requestInfo
-  };
-   console.log(JSON.stringify(requestBody));
-  let locationResponse = await httpRequest({
-    hostURL: envVariables.EGOV_LOCATION_HOST,
-    endPoint: `${envVariables.EGOV_LOCATION_CONTEXT_PATH}${
-      envVariables.EGOV_LOCATION_SEARCH_ENDPOINT
-    }?hierarchyTypeCode=${
-      envVariables.EGOV_LOCATION_HIERARCHY_TYPE_CODE
-    }&boundaryType=${
-      envVariables.EGOV_LOCATION_BOUNDARY_TYPE_CODE
-    }&tenantId=${tenantId}`,
-    requestBody
-  });
-   console.log("idgenresponse",locationResponse);
-  return locationResponse;
+  try {
+    let requestBody = {
+      RequestInfo: requestInfo
+    };
+    console.log(JSON.stringify(requestBody));
+    let locationResponse = await httpRequest({
+      hostURL: envVariables.EGOV_LOCATION_HOST,
+      endPoint: `${envVariables.EGOV_LOCATION_CONTEXT_PATH}${
+        envVariables.EGOV_LOCATION_SEARCH_ENDPOINT
+      }?hierarchyTypeCode=${
+        envVariables.EGOV_LOCATION_HIERARCHY_TYPE_CODE
+      }&boundaryType=${
+        envVariables.EGOV_LOCATION_BOUNDARY_TYPE_CODE
+      }&tenantId=${tenantId}`,
+      requestBody
+    });
+    console.log("idgenresponse",locationResponse);
+    return locationResponse;
+  } catch (error) {
+    console.error("Error in getLocationDetails:", error);
+    throw error;
+  }
 };
 
 export const createWorkFlow = async body => {
-  console.log("WorkFlow Method Calling Now")
+  try {
+    console.log("WorkFlow Method Calling Now")
 
-  let processInstances = [];
-  for (let i = 0; i < body.FireNOCs.length; i++) {
-    let fireNOC = body.FireNOCs[i];
-    let assignesValue = null;
+    let processInstances = [];
+    for (let i = 0; i < body.FireNOCs.length; i++) {
+      let fireNOC = body.FireNOCs[i];
+      let assignesValue = null;
 
-    if (fireNOC.fireNOCDetails.action === 'SENDBACKTOCITIZEN') {
-      let owners = get(fireNOC, "fireNOCDetails.applicantDetails.owners", []);
-      assignesValue = await ownerAssignee(owners, body.RequestInfo);
-    } else {
-      assignesValue = (fireNOC.fireNOCDetails.assignee
-        && fireNOC.fireNOCDetails.assignee[0] != null
-        && fireNOC.fireNOCDetails.assignee[0] !== '')
-        ? [{ uuid: fireNOC.fireNOCDetails.assignee[0] }]
-        : null;
-    }
+      if (fireNOC.fireNOCDetails.action === 'SENDBACKTOCITIZEN') {
+        let owners = get(fireNOC, "fireNOCDetails.applicantDetails.owners", []);
+        assignesValue = await ownerAssignee(owners, body.RequestInfo);
+      } else {
+        assignesValue = (fireNOC.fireNOCDetails.assignee
+          && fireNOC.fireNOCDetails.assignee[0] != null
+          && fireNOC.fireNOCDetails.assignee[0] !== '')
+          ? [{ uuid: fireNOC.fireNOCDetails.assignee[0] }]
+          : null;
+      }
 
     processInstances.push({
       tenantId: fireNOC.tenantId,

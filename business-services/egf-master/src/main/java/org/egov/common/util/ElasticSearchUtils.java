@@ -1,42 +1,19 @@
 package org.egov.common.util;
 
-import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
-
 import java.util.List;
 
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.stereotype.Service;
 
+/**
+ * Elasticsearch utility class.
+ * Note: Elasticsearch TransportClient has been removed in the Spring Boot 4.x upgrade.
+ * This class is stubbed out. Re-implement with the new Elasticsearch Java API Client
+ * (co.elastic.clients:elasticsearch-java) when ES support is needed.
+ */
 @Service
 public class ElasticSearchUtils {
 
-	public void add(Object fieldValue, String field, BoolQueryBuilder boolQueryBuilder) {
-		if (fieldValue != null) {
-			boolQueryBuilder = boolQueryBuilder.filter(termsQuery(field, fieldValue));
-		}
-
-	}
-
-	public void in(List fieldValue, String field, BoolQueryBuilder boolQueryBuilder) {
-		if (fieldValue != null) {
-			boolQueryBuilder.filter(QueryBuilders.termsQuery(field, fieldValue));
-		}
-
-	}
-
-	public void gte(Object fieldValue, String field, BoolQueryBuilder boolQueryBuilder) {
-		if (fieldValue != null) {
-			boolQueryBuilder = boolQueryBuilder.filter(QueryBuilders.rangeQuery(field).from(fieldValue));
-		}
-
-	}
-
-	public void lte(Object fieldValue, String field, BoolQueryBuilder boolQueryBuilder) {
-		if (fieldValue != null) {
-			boolQueryBuilder = boolQueryBuilder.filter(QueryBuilders.rangeQuery(field).to(fieldValue));
-		}
-
-	}
+	// Stubbed out - ES TransportClient removed in Elasticsearch 8.x
+	// Methods previously used BoolQueryBuilder which is no longer available
 
 }

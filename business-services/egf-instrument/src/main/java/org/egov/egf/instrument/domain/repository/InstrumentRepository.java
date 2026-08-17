@@ -35,7 +35,8 @@ public class InstrumentRepository {
 
     private String persistThroughKafka;
 
-    private InstrumentESRepository instrumentESRepository;
+    // TODO: Restore after Elasticsearch migration
+    // private InstrumentESRepository instrumentESRepository;
 
     private FinancialConfigurationContractRepository financialConfigurationContractRepository;
     
@@ -45,14 +46,15 @@ public class InstrumentRepository {
     public InstrumentRepository(InstrumentJdbcRepository instrumentJdbcRepository,
             InstrumentQueueRepository instrumentQueueRepository,
             @Value("${persist.through.kafka}") String persistThroughKafka,
-            InstrumentESRepository instrumentESRepository,
+            // TODO: Restore after Elasticsearch migration
+            // InstrumentESRepository instrumentESRepository,
             FinancialConfigurationContractRepository financialConfigurationContractRepository,
             InstrumentVoucherJdbcRepository instrumentVoucherJdbcRepository,
             DishonorReasonJdbcRepository dishonorReasonJdbcRepository) {
         this.instrumentJdbcRepository = instrumentJdbcRepository;
         this.instrumentQueueRepository = instrumentQueueRepository;
         this.persistThroughKafka = persistThroughKafka;
-        this.instrumentESRepository = instrumentESRepository;
+        // this.instrumentESRepository = instrumentESRepository;
         this.financialConfigurationContractRepository = financialConfigurationContractRepository;
         this.instrumentVoucherJdbcRepository = instrumentVoucherJdbcRepository;
         this.dishonorReasonJdbcRepository = dishonorReasonJdbcRepository;
@@ -217,6 +219,8 @@ public class InstrumentRepository {
 
     public Pagination<Instrument> search(InstrumentSearch domain) {
 
+        // TODO: Restore ES search branch after Elasticsearch migration
+        /*
         if (financialConfigurationContractRepository.fetchDataFrom() != null
                 && financialConfigurationContractRepository.fetchDataFrom().equalsIgnoreCase("es")) {
 
@@ -228,6 +232,7 @@ public class InstrumentRepository {
             return instruments;
 
         } else
+        */
             return instrumentJdbcRepository.search(domain);
 
     }

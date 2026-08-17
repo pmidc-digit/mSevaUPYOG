@@ -28,7 +28,8 @@ public class InstrumentAccountCodeRepository {
 
     private String persistThroughKafka;
 
-    private InstrumentAccountCodeESRepository instrumentAccountCodeESRepository;
+    // TODO: Restore after Elasticsearch migration
+    // private InstrumentAccountCodeESRepository instrumentAccountCodeESRepository;
 
     private FinancialConfigurationContractRepository financialConfigurationContractRepository;
 
@@ -36,13 +37,14 @@ public class InstrumentAccountCodeRepository {
     public InstrumentAccountCodeRepository(InstrumentAccountCodeJdbcRepository instrumentAccountCodeJdbcRepository,
             InstrumentAccountCodeQueueRepository instrumentAccountCodeQueueRepository,
             @Value("${persist.through.kafka}") String persistThroughKafka,
-            InstrumentAccountCodeESRepository instrumentAccountCodeESRepository,
+            // TODO: Restore after Elasticsearch migration
+            // InstrumentAccountCodeESRepository instrumentAccountCodeESRepository,
             FinancialConfigurationContractRepository financialConfigurationContractRepository) {
         this.instrumentAccountCodeJdbcRepository = instrumentAccountCodeJdbcRepository;
         this.instrumentAccountCodeQueueRepository = instrumentAccountCodeQueueRepository;
         this.persistThroughKafka = persistThroughKafka;
         this.financialConfigurationContractRepository = financialConfigurationContractRepository;
-        this.instrumentAccountCodeESRepository = instrumentAccountCodeESRepository;
+        // this.instrumentAccountCodeESRepository = instrumentAccountCodeESRepository;
 
     }
 
@@ -199,6 +201,8 @@ public class InstrumentAccountCodeRepository {
 
     public Pagination<InstrumentAccountCode> search(InstrumentAccountCodeSearch domain) {
 
+        // TODO: Restore ES search branch after Elasticsearch migration
+        /*
         if (financialConfigurationContractRepository.fetchDataFrom() != null
                 && financialConfigurationContractRepository.fetchDataFrom().equalsIgnoreCase("es")) {
 
@@ -209,6 +213,7 @@ public class InstrumentAccountCodeRepository {
             return instrumentAccountCodeESRepository.search(instrumentAccountCodeSearchContract);
 
         } else
+        */
             return instrumentAccountCodeJdbcRepository.search(domain);
 
     }

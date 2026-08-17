@@ -1,6 +1,6 @@
 package org.egov.egf.master.web.controller;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -23,8 +23,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -35,11 +35,15 @@ import org.springframework.validation.BindingResult;
 @WebMvcTest(RecoveryController.class)
 @Import(TestConfiguration.class)
 public class RecoveryControllerTest {
+	@org.junit.Before
+	public void setUp() {
+		org.mockito.MockitoAnnotations.openMocks(this);
+	}
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     RecoveryService recoveryService;
 
     @Captor
@@ -53,8 +57,8 @@ public class RecoveryControllerTest {
                 .thenReturn(getRecoverys());
         mockMvc.perform(post("/recoverys/_create?tenantId=default")
                 .content(resources.readRequest("recovery/recovery_create_valid_request.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(content().json(resources
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON)).andExpect(content().json(resources
                 .readResponse("recovery/recovery_create_valid_response.json")));
     }
 
@@ -64,7 +68,7 @@ public class RecoveryControllerTest {
                 .thenReturn(getRecoverys());
         mockMvc.perform(
                 post("/recoverys/_create").content(resources.readRequest("recovery/recovery_create_invalid_field_value.json"))
-                        .contentType(MediaType.APPLICATION_JSON_UTF8))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is5xxServerError());
 
     }
@@ -76,8 +80,8 @@ public class RecoveryControllerTest {
 
         mockMvc.perform(post("/recoverys/_update?tenantId=default")
                 .content(resources.readRequest("recovery/recovery_update_valid_request.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(content().json(resources
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON)).andExpect(content().json(resources
                 .readResponse("recovery/recovery_update_valid_response.json")));
     }
 
@@ -94,8 +98,8 @@ public class RecoveryControllerTest {
         when(recoveryService.search(any(RecoverySearch.class), any(BindingResult.class))).thenReturn(page);
 
         mockMvc.perform(
-                post("/recoverys/_search?tenantId=default").content(resources.getRequestInfo()).contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(status().is(200)).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                post("/recoverys/_search?tenantId=default").content(resources.getRequestInfo()).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(200)).andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(resources.readResponse("recovery/recovery_search_valid_response.json")));
 
     }

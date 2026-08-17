@@ -41,7 +41,7 @@ public class InstrumentTypeContractRepositoryTest {
         server.expect(once(), requestTo("http://host/egf-instrument/instrumenttypes/_search?id=1&tenantId=default"))
                 .andExpect(method(HttpMethod.POST))
                 .andRespond(withSuccess(resources.getFileContents("instrumenttype/search_by_id_response.json"),
-                        MediaType.APPLICATION_JSON_UTF8));
+                        MediaType.APPLICATION_JSON));
 
         InstrumentTypeContract instrumentTypeContract = new InstrumentTypeContract();
 

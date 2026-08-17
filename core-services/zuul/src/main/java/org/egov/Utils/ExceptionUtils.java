@@ -120,7 +120,7 @@ public class ExceptionUtils {
                 if (existingResponse.contains("InvalidAccessTokenException"))
                     _setExceptionBody(HttpStatus.UNAUTHORIZED, existingResponse);
                 else
-                    _setExceptionBody(((HttpClientErrorException) e).getStatusCode(), existingResponse);
+                    _setExceptionBody(HttpStatus.valueOf(((HttpClientErrorException) e).getStatusCode().value()), existingResponse);
             } else if (exceptionName.equalsIgnoreCase("InvalidAccessTokenException")) {
                 _setExceptionBody(HttpStatus.UNAUTHORIZED, getErrorInfoObject(exceptionName, exceptionMessage, exceptionMessage));
             } else if (exceptionName.equalsIgnoreCase("RateLimitExceededException")) {

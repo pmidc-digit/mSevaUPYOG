@@ -3,14 +3,14 @@ package org.egov.userevent.web.contract;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import org.egov.userevent.model.AuditDetails;
 import org.egov.userevent.model.RecepientEvent;
 import org.egov.userevent.model.enums.Source;
 import org.egov.userevent.model.enums.Status;
-import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.userevent.validator.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import lombok.AllArgsConstructor;

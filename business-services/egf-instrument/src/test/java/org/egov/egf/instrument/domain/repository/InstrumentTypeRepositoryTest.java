@@ -47,16 +47,16 @@ public class InstrumentTypeRepositoryTest {
 
     private RequestInfo requestInfo = new RequestInfo();
 
-    @Mock
-    private InstrumentTypeESRepository instrumentTypeESRepository;
+    // @Mock
+    // private InstrumentTypeESRepository instrumentTypeESRepository;
 
     @Before
     public void setup() {
         instrumentTypeRepositoryWithKafka = new InstrumentTypeRepository(instrumentTypeJdbcRepository,
-                instrumentTypeQueueRepository, "yes", financialConfigurationContractRepository, instrumentTypeESRepository);
+                instrumentTypeQueueRepository, "yes", financialConfigurationContractRepository);
 
         instrumentTypeRepositoryWithOutKafka = new InstrumentTypeRepository(instrumentTypeJdbcRepository,
-                instrumentTypeQueueRepository, "no", financialConfigurationContractRepository, instrumentTypeESRepository);
+                instrumentTypeQueueRepository, "no", financialConfigurationContractRepository);
     }
 
     @Test
@@ -246,7 +246,7 @@ public class InstrumentTypeRepositoryTest {
         expectedResult.setPageSize(500);
         expectedResult.setOffset(0);
 
-        when(financialConfigurationContractRepository.fetchDataFrom()).thenReturn("db");
+        // when(financialConfigurationContractRepository.fetchDataFrom()).thenReturn("db");
         when(instrumentTypeJdbcRepository.search(any(InstrumentTypeSearch.class))).thenReturn(expectedResult);
 
         Pagination<InstrumentType> actualResult = instrumentTypeRepositoryWithKafka.search(getInstrumentTypeSearch());

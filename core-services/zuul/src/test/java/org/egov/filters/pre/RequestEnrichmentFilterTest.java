@@ -61,7 +61,7 @@ public class RequestEnrichmentFilterTest {
         final MockHttpServletRequest request = new MockHttpServletRequest();
         request.setMethod("POST");
         request.setRequestURI("http://foo/bar/v1/_create");
-        request.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        request.setContentType(MediaType.APPLICATION_JSON_VALUE);
         request.setContent(getContent("postRequestFromConsumer.json"));
         currentContext.setRequest(request);
         final String expectedCorrelationId = "someCorrelationId";

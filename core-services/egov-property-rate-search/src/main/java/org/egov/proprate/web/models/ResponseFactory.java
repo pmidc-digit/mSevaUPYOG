@@ -1,6 +1,5 @@
 package org.egov.proprate.web.models;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.proprate.web.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +14,6 @@ import java.util.Map;
 @Component
 public class ResponseFactory {
 
-    @Autowired
-    private ObjectMapper mapper;
 
     @Autowired
     private ResponseInfoFactory responseInfoFactory;

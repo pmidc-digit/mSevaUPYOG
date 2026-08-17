@@ -44,8 +44,8 @@ public class InstrumentAccountCodeRepositoryTest {
     @Mock
     private FinancialConfigurationContractRepository financialConfigurationContractRepository;
 
-    @Mock
-    private InstrumentAccountCodeESRepository instrumentAccountCodeESRepository;
+    // @Mock
+    // private InstrumentAccountCodeESRepository instrumentAccountCodeESRepository;
 
     @Captor
     private ArgumentCaptor<InstrumentAccountCodeRequest> captor;
@@ -56,11 +56,11 @@ public class InstrumentAccountCodeRepositoryTest {
     public void setup() {
         instrumentAccountCodeRepositoryWithKafka = new InstrumentAccountCodeRepository(
                 instrumentAccountCodeJdbcRepository, instrumentAccountCodeQueueRepository, "yes",
-                instrumentAccountCodeESRepository, financialConfigurationContractRepository);
+                financialConfigurationContractRepository);
 
         instrumentAccountCodeRepositoryWithOutKafka = new InstrumentAccountCodeRepository(
                 instrumentAccountCodeJdbcRepository, instrumentAccountCodeQueueRepository, "no",
-                instrumentAccountCodeESRepository, financialConfigurationContractRepository);
+                financialConfigurationContractRepository);
     }
 
     @Test
@@ -253,7 +253,7 @@ public class InstrumentAccountCodeRepositoryTest {
         expectedResult.setPageSize(500);
         expectedResult.setOffset(0);
 
-        when(financialConfigurationContractRepository.fetchDataFrom()).thenReturn("db");
+        // when(financialConfigurationContractRepository.fetchDataFrom()).thenReturn("db");
         when(instrumentAccountCodeJdbcRepository.search(any(InstrumentAccountCodeSearch.class)))
                 .thenReturn(expectedResult);
 

@@ -1,6 +1,6 @@
 package com.mseva.gisintegration.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "watertax_backup") // Updated to a standard table name

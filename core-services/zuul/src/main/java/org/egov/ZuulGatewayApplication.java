@@ -28,11 +28,12 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @EnableZuulProxy
 @EnableCaching
 @SpringBootApplication
+@org.springframework.context.annotation.ComponentScan(basePackages = {"org.egov", "com.marcosbarbero.cloud", "com.netflix.zuul"})
 @PropertySource({"${zuul.routes.filepath}","${zuul.limiter.filepath}"})
 public class ZuulGatewayApplication {
     public static void main(String[] args) {

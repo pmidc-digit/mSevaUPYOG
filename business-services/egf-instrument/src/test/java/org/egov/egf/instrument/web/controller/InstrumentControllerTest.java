@@ -27,8 +27,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -43,7 +43,7 @@ public class InstrumentControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private InstrumentService instrumentService;
 
     @Captor
@@ -59,8 +59,8 @@ public class InstrumentControllerTest {
 
         mockMvc.perform(post("/instruments/_create")
                 .content(resources.readRequest("instrument/instrument_create_valid_request.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(resources.readResponse("instrument/instrument_create_valid_response.json")));
 
     }
@@ -73,7 +73,7 @@ public class InstrumentControllerTest {
 
         mockMvc.perform(post("/instruments/_create")
                 .content(resources.readRequest("instrument/instrument_create_invalid_field_value.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is5xxServerError());
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is5xxServerError());
 
     }
 
@@ -88,8 +88,8 @@ public class InstrumentControllerTest {
 
         mockMvc.perform(post("/instruments/_update")
                 .content(resources.readRequest("instrument/instrument_update_valid_request.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(resources.readResponse("instrument/instrument_update_valid_response.json")));
 
     }
@@ -105,8 +105,8 @@ public class InstrumentControllerTest {
 
         mockMvc.perform(post("/instruments/_delete")
                 .content(resources.readRequest("instrument/instrument_delete_valid_request.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(resources.readResponse("instrument/instrument_delete_valid_response.json")));
 
     }
@@ -119,7 +119,7 @@ public class InstrumentControllerTest {
 
         mockMvc.perform(post("/instruments/_update")
                 .content(resources.readRequest("instrument/instrument_create_invalid_field_value.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is5xxServerError());
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is5xxServerError());
 
     }
 
@@ -131,7 +131,7 @@ public class InstrumentControllerTest {
 
         mockMvc.perform(post("/instruments/_delete")
                 .content(resources.readRequest("instrument/instrument_delete_invalid_field_value.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is5xxServerError());
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is5xxServerError());
 
     }
 
@@ -148,8 +148,8 @@ public class InstrumentControllerTest {
         when(instrumentService.search(any(InstrumentSearch.class))).thenReturn(page);
 
         mockMvc.perform(post("/instruments/_search").content(resources.getRequestInfo())
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(200))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(200))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(resources.readResponse("instrument/instrument_search_valid_response.json")));
 
     }
@@ -163,8 +163,8 @@ public class InstrumentControllerTest {
 
         mockMvc.perform(post("/instruments/_deposit")
                 .content(resources.readRequest("instrument/instrument_deposit_valid_request.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(resources.readResponse("instrument/instrument_deposit_valid_response.json")));
     }
 
@@ -177,8 +177,8 @@ public class InstrumentControllerTest {
 
         mockMvc.perform(post("/instruments/_dishonor")
                 .content(resources.readRequest("instrument/instrument_dishonor_valid_request.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(resources.readResponse("instrument/instrument_dishonor_valid_response.json")));
     }
 

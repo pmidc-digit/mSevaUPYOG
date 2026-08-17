@@ -15,4 +15,13 @@ public class TestConfiguration {
         return mock(KafkaTemplate.class);
     }
 
+    @Bean
+    public org.springframework.web.client.RestTemplate restTemplate() {
+        return new org.springframework.web.client.RestTemplate();
+    }
+
+    @Bean
+    public org.springframework.cache.CacheManager cacheManager() {
+        return new org.springframework.cache.support.NoOpCacheManager();
+    }
 }

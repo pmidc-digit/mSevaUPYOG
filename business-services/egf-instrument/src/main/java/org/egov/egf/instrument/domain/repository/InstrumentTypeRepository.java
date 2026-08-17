@@ -30,19 +30,22 @@ public class InstrumentTypeRepository {
 
     private FinancialConfigurationContractRepository financialConfigurationContractRepository;
 
-    private InstrumentTypeESRepository instrumentTypeESRepository;
+    // TODO: Restore after Elasticsearch migration
+    // private InstrumentTypeESRepository instrumentTypeESRepository;
 
     @Autowired
     public InstrumentTypeRepository(InstrumentTypeJdbcRepository instrumentTypeJdbcRepository,
             InstrumentTypeQueueRepository instrumentTypeQueueRepository,
             @Value("${persist.through.kafka}") String persistThroughKafka,
-            FinancialConfigurationContractRepository financialConfigurationContractRepository,
-            InstrumentTypeESRepository instrumentTypeESRepository) {
+            FinancialConfigurationContractRepository financialConfigurationContractRepository
+            // TODO: Restore after Elasticsearch migration
+            // , InstrumentTypeESRepository instrumentTypeESRepository
+            ) {
         this.instrumentTypeJdbcRepository = instrumentTypeJdbcRepository;
         this.instrumentTypeQueueRepository = instrumentTypeQueueRepository;
         this.persistThroughKafka = persistThroughKafka;
         this.financialConfigurationContractRepository = financialConfigurationContractRepository;
-        this.instrumentTypeESRepository = instrumentTypeESRepository;
+        // this.instrumentTypeESRepository = instrumentTypeESRepository;
 
     }
 
@@ -195,6 +198,8 @@ public class InstrumentTypeRepository {
 
     public Pagination<InstrumentType> search(InstrumentTypeSearch domain) {
 
+        // TODO: Restore ES search branch after Elasticsearch migration
+        /*
         if (financialConfigurationContractRepository.fetchDataFrom() != null
                 && financialConfigurationContractRepository.fetchDataFrom().equalsIgnoreCase("es")) {
 
@@ -207,6 +212,7 @@ public class InstrumentTypeRepository {
             return instrumenttypes;
 
         } else
+        */
             return instrumentTypeJdbcRepository.search(domain);
 
     }

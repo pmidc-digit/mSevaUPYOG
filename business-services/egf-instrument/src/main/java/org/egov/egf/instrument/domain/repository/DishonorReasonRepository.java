@@ -37,18 +37,21 @@ public class DishonorReasonRepository {
 
     private FinancialConfigurationContractRepository financialConfigurationContractRepository;
 
-    private SurrenderReasonESRepository surrenderReasonESRepository;
+    // TODO: Restore after Elasticsearch migration
+    // private SurrenderReasonESRepository surrenderReasonESRepository;
 
     @Autowired
     public DishonorReasonRepository(DishonorReasonJdbcRepository dishonorReasonJdbcRepository,
             @Value("${persist.through.kafka}") String persistThroughKafka,
-            FinancialConfigurationContractRepository financialConfigurationContractRepository,
-            SurrenderReasonESRepository surrenderReasonESRepository) {
+            FinancialConfigurationContractRepository financialConfigurationContractRepository
+            // TODO: Restore after Elasticsearch migration
+            // , SurrenderReasonESRepository surrenderReasonESRepository
+            ) {
         this.dishonorReasonJdbcRepository = dishonorReasonJdbcRepository;
 //        this.surrenderReasonQueueRepository = surrenderReasonQueueRepository;
         this.persistThroughKafka = persistThroughKafka;
         this.financialConfigurationContractRepository = financialConfigurationContractRepository;
-        this.surrenderReasonESRepository = surrenderReasonESRepository;
+        // this.surrenderReasonESRepository = surrenderReasonESRepository;
 
     }
 

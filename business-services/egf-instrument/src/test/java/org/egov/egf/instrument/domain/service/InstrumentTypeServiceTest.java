@@ -43,6 +43,7 @@ public class InstrumentTypeServiceTest {
 
     @Before
     public void setup() {
+        org.mockito.MockitoAnnotations.openMocks(this);
         instrumentTypeService = new InstrumentTypeService(validator, instrumentTypeRepository);
     }
 

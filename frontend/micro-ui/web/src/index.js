@@ -1,7 +1,6 @@
 import { initLibraries } from "@mseva/digit-ui-libraries";
 import React from "react";
 import ReactDOM from "react-dom";
-import "../micro-ui-internals/packages/css/dist/index.css";
 import "./index.css";
 import "./theme.css";
 import App from "./App";

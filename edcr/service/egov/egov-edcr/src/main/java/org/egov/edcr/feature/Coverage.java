@@ -600,8 +600,14 @@ public class Coverage extends FeatureProcess {
 
 			}
 
+			
+
 			Map<String, String> details = new HashMap<>();
-			details.put(RULE_NO, RULE);
+			if(A_AF.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode()))
+				details.put(RULE_NO,"4.6");
+			else
+				details.put(RULE_NO, RULE);
+			
 			details.put(OCCUPANCY, occupancy);
 			details.put(PERMISSIBLE, expectedResult);
 			details.put(PROVIDED, actualResult);

@@ -1,6 +1,6 @@
 package com.mseva.gisintegration.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "propertytax_backup") // You can change this to your preferred table name

@@ -84,6 +84,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setShowToast({ label: t("ADS_ONE_AD_ATLEAST"), error: true });
       return;
     }
+
     const updatedCartSlots = cartSlots.map((item) => ({
       ...item,
       ad: {

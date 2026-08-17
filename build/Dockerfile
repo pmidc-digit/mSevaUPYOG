@@ -11,6 +11,9 @@ COPY ${WORK_DIR}/pom.xml ./pom.xml
 # RUN mvn -B dependency:go-offline
 
 COPY ${WORK_DIR}/src ./src
+
+COPY ./_.lgpunjab.gov.in.cer src/main/resources/_.lgpunjab.gov.in.cer
+
 RUN mvn -B -f /app/pom.xml package -Dmaven.test.skip=true -DskipTests
 
 RUN ls -lh /app/target

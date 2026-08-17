@@ -74,6 +74,7 @@ public class InstrumentServiceTest {
 
     @Before
     public void setup() {
+        org.mockito.MockitoAnnotations.openMocks(this);
         instrumentService = new InstrumentService(validator, instrumentRepository,
                 bankContractRepository, financialStatusContractRepository, bankAccountContractRepository,
                 instrumentTypeRepository);

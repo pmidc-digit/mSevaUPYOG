@@ -1,7 +1,7 @@
 package org.egov.egf.master.web.controller;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -30,8 +30,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -46,7 +46,7 @@ public class BankAccountControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
-	@MockBean
+	@MockitoBean
 	private BankAccountService bankAccountService;
 
 	private RequestJsonReader resources = new RequestJsonReader();
@@ -56,6 +56,7 @@ public class BankAccountControllerTest {
 
 	@Before
 	public void setUp() throws Exception {
+		org.mockito.MockitoAnnotations.openMocks(this);
 	}
 
 	@After
@@ -69,8 +70,8 @@ public class BankAccountControllerTest {
 
 		mockMvc.perform(post("/bankaccounts/_create?tenantId=default")
 				.content(resources.readRequest("bankaccount/bankAccount_create_valid_request.json"))
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON)).andExpect(
 						content().json(resources.readResponse("bankaccount/bankAccount_create_valid_response.json")));
 
 		verify(bankAccountService).create(captor.capture(), any(BindingResult.class), any(RequestInfo.class));
@@ -90,8 +91,8 @@ public class BankAccountControllerTest {
 
 		mockMvc.perform(post("/bankaccounts/_update?tenantId=default")
 				.content(resources.readRequest("bankaccount/bankAccount_update_valid_request.json"))
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON)).andExpect(
 						content().json(resources.readResponse("bankaccount/bankAccount_update_valid_response.json")));
 
 		verify(bankAccountService).update(captor.capture(), any(BindingResult.class), any(RequestInfo.class));
@@ -113,7 +114,7 @@ public class BankAccountControllerTest {
 
 		mockMvc.perform(post("/bankaccounts/_create")
 				.content(resources.readRequest("bankaccount/bankaccount_create_invalid_field_value.json"))
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is5xxServerError());
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is5xxServerError());
 
 	}
 
@@ -129,8 +130,8 @@ public class BankAccountControllerTest {
 		when(bankAccountService.search(any(BankAccountSearch.class), any(BindingResult.class))).thenReturn(page);
 
 		mockMvc.perform(post("/bankaccounts/_search?tenantId=default").content(resources.getRequestInfo())
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(200))
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(200))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON)).andExpect(
 						content().json(resources.readResponse("bankaccount/bankAccount_search_valid_response.json")));
 	}
 

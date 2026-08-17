@@ -15,9 +15,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @EnableCaching
-@Import(TracerConfiguration.class)
+// @Import(TracerConfiguration.class) // Incompatible with Spring Boot 4.x due to javax.servlet -> jakarta.servlet migration
 public class EgovAccesscontrolApplication {
 
 	private static final String DATE_FORMAT = "dd-MM-yyyy HH:mm:ss";
@@ -64,12 +64,17 @@ public class EgovAccesscontrolApplication {
 	}
 
 	@Bean
-	public WebMvcConfigurerAdapter webMvcConfigurerAdapter() {
-		return new WebMvcConfigurerAdapter() {
+	public org.springframework.web.client.RestTemplate restTemplate() {
+		return new org.springframework.web.client.RestTemplate();
+	}
+
+	@Bean
+	public WebMvcConfigurer webMvcConfigurer() {
+		return new WebMvcConfigurer() {
 
 			@Override
 			public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-				configurer.defaultContentType(MediaType.APPLICATION_JSON_UTF8);
+				configurer.defaultContentType(MediaType.APPLICATION_JSON);
 			}
 
 		};

@@ -23,8 +23,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -39,7 +39,7 @@ public class InstrumentTypeControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private InstrumentTypeService instrumentTypeService;
 
     @Captor
@@ -55,8 +55,8 @@ public class InstrumentTypeControllerTest {
 
         mockMvc.perform(post("/instrumenttypes/_create")
                 .content(resources.readRequest("instrumenttype/instrumenttype_create_valid_request.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(content()
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON)).andExpect(content()
                         .json(resources.readResponse("instrumenttype/instrumenttype_create_valid_response.json")));
     }
 
@@ -68,7 +68,7 @@ public class InstrumentTypeControllerTest {
 
         mockMvc.perform(post("/instrumenttypes/_create")
                 .content(resources.readRequest("instrumenttype/instrumenttype_create_invalid_field_value.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is5xxServerError());
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is5xxServerError());
 
     }
 
@@ -83,8 +83,8 @@ public class InstrumentTypeControllerTest {
 
         mockMvc.perform(post("/instrumenttypes/_update")
                 .content(resources.readRequest("instrumenttype/instrumenttype_update_valid_request.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(content()
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON)).andExpect(content()
                         .json(resources.readResponse("instrumenttype/instrumenttype_update_valid_response.json")));
 
     }
@@ -100,8 +100,8 @@ public class InstrumentTypeControllerTest {
 
         mockMvc.perform(post("/instrumenttypes/_delete")
                 .content(resources.readRequest("instrumenttype/instrumenttype_delete_valid_request.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(201))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(content()
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(201))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON)).andExpect(content()
                         .json(resources.readResponse("instrumenttype/instrumenttype_delete_valid_response.json")));
 
     }
@@ -114,7 +114,7 @@ public class InstrumentTypeControllerTest {
 
         mockMvc.perform(post("/instrumenttypes/_update")
                 .content(resources.readRequest("instrumenttype/instrumenttype_create_invalid_field_value.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is5xxServerError());
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is5xxServerError());
 
     }
 
@@ -126,7 +126,7 @@ public class InstrumentTypeControllerTest {
 
         mockMvc.perform(post("/instrumenttypes/_delete")
                 .content(resources.readRequest("instrumenttype/instrumenttype_delete_invalid_field_value.json"))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is5xxServerError());
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is5xxServerError());
 
     }
 
@@ -143,8 +143,8 @@ public class InstrumentTypeControllerTest {
         when(instrumentTypeService.search(any(InstrumentTypeSearch.class))).thenReturn(page);
 
         mockMvc.perform(post("/instrumenttypes/_search").content(resources.getRequestInfo())
-                .contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().is(200))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(content()
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(200))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON)).andExpect(content()
                         .json(resources.readResponse("instrumenttype/instrumenttype_search_valid_response.json")));
 
     }

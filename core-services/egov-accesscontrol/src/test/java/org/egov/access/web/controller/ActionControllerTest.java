@@ -1,6 +1,6 @@
 package org.egov.access.web.controller;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -24,11 +24,11 @@ import org.egov.common.contract.response.ResponseInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @RunWith(SpringRunner.class)
@@ -36,10 +36,10 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(TestConfiguration.class)
 public class ActionControllerTest {
 
-	@MockBean
+	@MockitoBean
 	private ActionService actionService;
 
-	@MockBean
+	@MockitoBean
 	ResponseInfoFactory responseInfoFactory;
 
 	@Autowired
@@ -56,9 +56,9 @@ public class ActionControllerTest {
 		when(actionService.getActions(actionSearchCriteria)).thenReturn(actions);
 		when(actionService.getAllMDMSActions(actionSearchCriteria)).thenReturn(actions);
 
-		mockMvc.perform(post("/v1/actions/_search").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/actions/_search").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("actionRequest.json"))).andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("actionResponse.json")));
 	}*/
 
@@ -70,9 +70,9 @@ public class ActionControllerTest {
 				.build();
 		when(actionService.validate(criteria)).thenReturn(actionValidation);
 
-		mockMvc.perform(post("/v1/actions/_validate").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/actions/_validate").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("validateActionRequest.json"))).andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("validateActionResponse.json")));
 	}*/
 
@@ -99,9 +99,9 @@ public class ActionControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/actions/_create").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/actions/_create").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("actionRequest.json"))).andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("actionResponse.json")));
 
 	}
@@ -118,9 +118,9 @@ public class ActionControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/actions/_create").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/actions/_create").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("actionRequestWithoutActions.json")))
-				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("actionResponseWithoutActions.json")));
 
 	}
@@ -135,7 +135,7 @@ public class ActionControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/actions/_create").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/actions/_create").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("actionCreateRequestWithWrongRequestInfo.json")))
 				.andExpect(status().isBadRequest());
 
@@ -151,7 +151,7 @@ public class ActionControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/actions/_update").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/actions/_update").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("actionCreateRequestWithWrongRequestInfo.json")))
 				.andExpect(status().isBadRequest());
 
@@ -169,9 +169,9 @@ public class ActionControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/actions/_update").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/actions/_update").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("actionUpdateRequest.json")))
-				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("actionUpdateResponse.json")));
 
 	}
@@ -219,9 +219,9 @@ public class ActionControllerTest {
 		responseInfo.setTs("Thu Mar 09 18:30:00 UTC 2017");
 		responseInfo.setResMsgId("uief87324");
 
-		mockMvc.perform(post("/v1/actions/_update").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/actions/_update").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("actionUpdateRequest.json"))).andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("actionUpdateSuccessResponse.json")));
 
 	}
@@ -238,9 +238,9 @@ public class ActionControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/actions/_update").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/actions/_update").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("actionUpdateRequestWithoutName.json")))
-				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("actionUpdateResponseWithoutName.json")));
 
 	}
@@ -261,7 +261,7 @@ public class ActionControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/actions/_get").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/actions/_get").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("actionListRequest.json"))).andExpect(status().isOk());
 
 	}
@@ -276,9 +276,9 @@ public class ActionControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/actions/_get").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/actions/_get").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("actionListRequestWithoutTenant.json")))
-				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("actionListResponseWithoutTenant.json")));
 
 	}
@@ -293,9 +293,9 @@ public class ActionControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/actions/_get").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/actions/_get").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("actionListRequestWithoutRoleCode.json")))
-				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("actionListResponseWithoutRoleCode.json")));
 
 	}

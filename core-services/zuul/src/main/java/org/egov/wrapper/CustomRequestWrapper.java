@@ -5,8 +5,8 @@ import com.netflix.zuul.http.ServletInputStreamWrapper;
 import org.apache.commons.io.IOUtils;
 import org.egov.tracer.model.CustomException;
 
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 public class CustomRequestWrapper extends HttpServletRequestWrapper {

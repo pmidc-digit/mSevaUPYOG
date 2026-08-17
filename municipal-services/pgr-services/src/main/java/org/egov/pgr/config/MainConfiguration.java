@@ -7,14 +7,28 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import java.util.TimeZone;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
     import com.fasterxml.jackson.databind.DeserializationFeature;
     import com.fasterxml.jackson.databind.ObjectMapper;
-import org.egov.tracer.config.TracerConfiguration;
 
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.egov.tracer.kafka.CustomKafkaTemplate;
 
-@Import({TracerConfiguration.class})
+@Configuration
 public class MainConfiguration {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+
+    @Bean
+    public CustomKafkaTemplate<String, Object> customKafkaTemplate(KafkaTemplate<String, Object> kafkaTemplate) {
+        return new CustomKafkaTemplate<>(kafkaTemplate);
+    }
 
     @Value("${app.timezone}")
     private String timeZone;

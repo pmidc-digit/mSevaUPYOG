@@ -39,7 +39,7 @@
  */
 package org.egov.receipt.consumer.model;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
 
 import lombok.AllArgsConstructor;

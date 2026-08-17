@@ -1,6 +1,6 @@
 package org.egov.userevent.model;
 
-import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.userevent.validator.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import lombok.AllArgsConstructor;

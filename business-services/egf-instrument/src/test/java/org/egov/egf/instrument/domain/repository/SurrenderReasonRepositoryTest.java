@@ -47,16 +47,16 @@ public class SurrenderReasonRepositoryTest {
     @Mock
     private FinancialConfigurationContractRepository financialConfigurationContractRepository;
 
-    @Mock
-    private SurrenderReasonESRepository surrenderReasonESRepository;
+    // @Mock
+    // private SurrenderReasonESRepository surrenderReasonESRepository;
 
     @Before
     public void setup() {
         surrenderReasonRepositoryWithKafka = new SurrenderReasonRepository(surrenderReasonJdbcRepository,
-                surrenderReasonQueueRepository, "yes", financialConfigurationContractRepository, surrenderReasonESRepository);
+                surrenderReasonQueueRepository, "yes", financialConfigurationContractRepository);
 
         surrenderReasonRepositoryWithOutKafka = new SurrenderReasonRepository(surrenderReasonJdbcRepository,
-                surrenderReasonQueueRepository, "no", financialConfigurationContractRepository, surrenderReasonESRepository);
+                surrenderReasonQueueRepository, "no", financialConfigurationContractRepository);
     }
 
     @Test
@@ -237,7 +237,7 @@ public class SurrenderReasonRepositoryTest {
         expectedResult.setPageSize(500);
         expectedResult.setOffset(0);
 
-        when(financialConfigurationContractRepository.fetchDataFrom()).thenReturn("db");
+        // when(financialConfigurationContractRepository.fetchDataFrom()).thenReturn("db");
         when(surrenderReasonJdbcRepository.search(any(SurrenderReasonSearch.class))).thenReturn(expectedResult);
 
         Pagination<SurrenderReason> actualResult = surrenderReasonRepositoryWithKafka

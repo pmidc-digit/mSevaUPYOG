@@ -1,6 +1,6 @@
 package org.egov.access.web.controller;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -23,10 +23,10 @@ import org.egov.common.contract.response.ResponseInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,10 +35,10 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(TestConfiguration.class)
 public class RoleControllerTest {
 
-	@MockBean
+	@MockitoBean
 	private RoleService roleService;
 
-	@MockBean
+	@MockitoBean
 	private ResponseInfoFactory responseInfoFactory;
 
 	@Autowired
@@ -50,9 +50,9 @@ public class RoleControllerTest {
 		RoleSearchCriteria criteria = RoleSearchCriteria.builder().codes(Arrays.asList("CITIZEN", "EMPLOYEE")).tenantId("default").build();
 		when(roleService.getRoles(criteria)).thenReturn(roles);
 
-		mockMvc.perform(post("/v1/roles/_search").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/roles/_search").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("roleRequest.json")).param("code", "CITIZEN,EMPLOYEE").param("tenantId", "default"))
-				.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("roleResponse.json")));
 
 	}
@@ -63,9 +63,9 @@ public class RoleControllerTest {
 		RoleSearchCriteria criteria = RoleSearchCriteria.builder().codes(Arrays.asList("CITIZEN", "EMPLOYEE")).tenantId("default").build();
 		when(roleService.getRoles(criteria)).thenReturn(roles);
 
-		mockMvc.perform(post("/v1/roles/_search").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/roles/_search").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("roleRequest.json")).param("code", "  CITIZEN,   EMPLOYEE   ").param("tenantId", "default"))
-				.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("roleResponse.json")));
 
 	}
@@ -82,9 +82,9 @@ public class RoleControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/roles/_create").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/roles/_create").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("roleRequest.json"))).andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("roleResponse.json")));
 
 	}
@@ -101,9 +101,9 @@ public class RoleControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/roles/_create").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/roles/_create").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("roleRequestWithoutRoles.json")))
-				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("roleResponseWithoutRoles.json")));
 
 	}
@@ -118,7 +118,7 @@ public class RoleControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/roles/_create").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/roles/_create").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("roleCreateRequestWithWrongRequestInfo.json")))
 				.andExpect(status().isBadRequest());
 	}
@@ -135,9 +135,9 @@ public class RoleControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/roles/_update").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/roles/_update").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("roleUpdateRequest.json"))).andExpect(status().isBadRequest())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("roleUpdateResponse.json")));
 
 	}
@@ -152,7 +152,7 @@ public class RoleControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/roles/_update").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/roles/_update").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("roleCreateRequestWithWrongRequestInfo.json")))
 				.andExpect(status().isBadRequest());
 	}
@@ -183,9 +183,9 @@ public class RoleControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/roles/_update").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/roles/_update").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("roleUpdateRequest.json"))).andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("roleUpdateSuccessResponse.json")));
 
 	}
@@ -202,9 +202,9 @@ public class RoleControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 
-		mockMvc.perform(post("/v1/roles/_update").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/v1/roles/_update").contentType(MediaType.APPLICATION_JSON)
 				.content(new Resources().getFileContents("roleUpdateRequestWithoutName.json")))
-				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(new Resources().getFileContents("roleUpdateResponseWithoutName.json")));
 
 	}

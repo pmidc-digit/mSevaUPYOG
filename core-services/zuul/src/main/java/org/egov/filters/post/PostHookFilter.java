@@ -1,13 +1,13 @@
 package org.egov.filters.post;
 
-import com.google.common.io.CharStreams;
+import org.apache.commons.io.IOUtils;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.UrlProvider;
 import org.egov.Utils.ExceptionUtils;
 import org.egov.model.PostHookFilterRequest;
@@ -52,7 +52,7 @@ public class PostHookFilter extends ZuulFilter {
                 String.class);
         } catch (HttpClientErrorException| HttpServerErrorException e) {
             log.error("POST-Hook - Http Exception Occurred", e);
-            ExceptionUtils.raiseCustomException(e.getStatusCode(), "POST_HOOK_ERROR - Post-hook url threw an error - " + e.getMessage());
+            ExceptionUtils.raiseCustomException(org.springframework.http.HttpStatus.valueOf(e.getStatusCode().value()), "POST_HOOK_ERROR - Post-hook url threw an error - " + e.getMessage());
         } catch (Exception e) {
             log.error("POST-Hook - Exception Occurred", e);
             ExceptionUtils.raiseCustomException(HttpStatus.BAD_REQUEST, "POST_HOOK_ERROR - Post-hook url threw an error - " + e.getMessage());
@@ -85,7 +85,7 @@ public class PostHookFilter extends ZuulFilter {
     private String readResponseBody(RequestContext ctx) {
         String responseBody = null;
         try (final InputStream responseDataStream = ctx.getResponseDataStream()) {
-            responseBody = CharStreams.toString(new InputStreamReader(responseDataStream, "UTF-8"));
+            responseBody = IOUtils.toString(new InputStreamReader(responseDataStream, "UTF-8"));
             //ctx.setResponseBody(responseBody);
         } catch (IOException e) {
             log.error("Error reading body", e);

@@ -15,4 +15,8 @@ public class TestConfiguration {
         return mock(KafkaTemplate.class);
     }
 
+    @Bean
+    public org.springframework.boot.web.client.RestTemplateBuilder restTemplateBuilder() {
+        return new org.springframework.boot.web.client.RestTemplateBuilder();
+    }
 }

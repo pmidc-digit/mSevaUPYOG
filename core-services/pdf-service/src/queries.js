@@ -294,11 +294,9 @@ export async function getBulkPdfRecordsDetails(userid, offset, limit, jobId){
           lastmodifiedtime: row.lastmodifiedtime,
           tenantId: row.tenantid,
           locality: row.locality,
-          group: row.group_name,
           bussinessService: row.businessservice,
           consumercode: row.consumercode,
           isConsolidated: row.isconsolidated,
-          group: row.group_name,
           status: row.status
         };
         data.push(value);

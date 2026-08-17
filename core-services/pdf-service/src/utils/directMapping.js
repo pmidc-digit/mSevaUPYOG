@@ -91,15 +91,7 @@ export const directMapping = async (
     }
     else if (directArr[i].type == "function") {
       var fun = Function("type", directArr[i].format);
-      // Check if val exists and is an array before accessing [0]
-      let funcValue = (directArr[i].val && Array.isArray(directArr[i].val) && directArr[i].val.length > 0)
-        ? directArr[i].val[0]
-        : directArr[i].val;
-      if (funcValue && funcValue !== "NA") {
-        variableTovalueMap[directArr[i].jPath] = fun(funcValue);
-      } else {
-        variableTovalueMap[directArr[i].jPath] = "NA";
-      }
+      variableTovalueMap[directArr[i].jPath] = fun(directArr[i].val[0]);
     } else if (directArr[i].type == "image") {
       try {
         var response = await axios.get(directArr[i].url, {
@@ -282,21 +274,12 @@ export const directMapping = async (
     } 
     
     else if (directArr[i].type == "date") {
-      // Check if val exists and is an array before accessing [0]
-      let dateValue = (directArr[i].val && Array.isArray(directArr[i].val) && directArr[i].val.length > 0)
-        ? directArr[i].val[0]
-        : directArr[i].val;
-
-      if (dateValue && dateValue !== "NA") {
-        let myDate = new Date(dateValue);
-        if (isNaN(myDate) || dateValue === 0) {
-          variableTovalueMap[directArr[i].jPath] = "NA";
-        } else {
-          let replaceValue = getDateInRequiredFormat(dateValue, directArr[i].format);
-          variableTovalueMap[directArr[i].jPath] = replaceValue;
-        }
-      } else {
+      let myDate = new Date(directArr[i].val[0]);
+      if (isNaN(myDate) || directArr[i].val[0] === 0) {
         variableTovalueMap[directArr[i].jPath] = "NA";
+      } else {
+        let replaceValue = getDateInRequiredFormat(directArr[i].val[0],directArr[i].format);
+        variableTovalueMap[directArr[i].jPath] = replaceValue;
       }
     } 
 

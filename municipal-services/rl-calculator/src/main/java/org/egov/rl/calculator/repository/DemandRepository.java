@@ -92,23 +92,18 @@ public class DemandRepository {
 
 	public List<Demand> getDemandsByConsumerCode(List<String> rentableIds) {
 		if (rentableIds == null || rentableIds.isEmpty()) {
-			return Collections.emptyList(); // avoid "IN ()" SQL
+			return Collections.emptyList();
 		}
 		List<Object> preparedStmtList = new ArrayList<>();
-		List<Object> subQueryParams = new ArrayList<>();
 
-		String consumerCode = rentableIds.stream().map(id ->id).collect(Collectors.joining(", "));
-
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) ORDER BY createdtime DESC LIMIT 1";
-		log.info("consumerCode :: " + consumerCode);
-		subQueryParams.add(consumerCode);
+		String placeholders = rentableIds.stream().map(id -> "?").collect(Collectors.joining(", "));
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (" + placeholders + ") ORDER BY createdtime DESC LIMIT 1";
+		preparedStmtList.addAll(rentableIds);
 		try {
-			preparedStmtList.addAll(subQueryParams);
 			return jdbcTemplate.query(sql, preparedStmtList.toArray(), demandRowMapper);
 		} catch (NoSuchElementException e) {
 			return Collections.emptyList();
 		} catch (Exception e) {
-			e.printStackTrace();
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",
 					"Failed to fetch demands for the given rentable IDs and period");
@@ -117,23 +112,18 @@ public class DemandRepository {
 	
 	public List<Demand> getDemandsNotiByConsumerCode(List<String> rentableIds) {
 		if (rentableIds == null || rentableIds.isEmpty()) {
-			return Collections.emptyList(); // avoid "IN ()" SQL
+			return Collections.emptyList();
 		}
 		List<Object> preparedStmtList = new ArrayList<>();
-		List<Object> subQueryParams = new ArrayList<>();
 
-		String consumerCode = rentableIds.stream().map(id ->id).collect(Collectors.joining(", "));
-
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) AND ispaymentcompleted=false ORDER BY createdtime DESC LIMIT 1";
-		log.info("consumerCode :: " + consumerCode);
-		subQueryParams.add(consumerCode);
+		String placeholders = rentableIds.stream().map(id -> "?").collect(Collectors.joining(", "));
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (" + placeholders + ") AND ispaymentcompleted=false ORDER BY createdtime DESC LIMIT 1";
+		preparedStmtList.addAll(rentableIds);
 		try {
-			preparedStmtList.addAll(subQueryParams);
 			return jdbcTemplate.query(sql, preparedStmtList.toArray(), demandRowMapper);
 		} catch (NoSuchElementException e) {
 			return Collections.emptyList();
 		} catch (Exception e) {
-			e.printStackTrace();
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",
 					"Failed to fetch demands for the given rentable IDs and period");
@@ -175,17 +165,14 @@ public class DemandRepository {
 
 	public List<Demand> getDemandsByConsumerCodeByOrderBy(List<String> applicationNumber) {
 		if (applicationNumber == null || applicationNumber.isEmpty()) {
-			return Collections.emptyList(); // avoid "IN ()" SQL
+			return Collections.emptyList();
 		}
 		List<Object> preparedStmtList = new ArrayList<>();
-		List<Object> subQueryParams = new ArrayList<>();
-		String consumerCode = applicationNumber.stream().map(id ->id).collect(Collectors.joining(", "));
 
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) ORDER BY textperiodto DESC limit 1";
-		subQueryParams.add(consumerCode);
+		String placeholders = applicationNumber.stream().map(id -> "?").collect(Collectors.joining(", "));
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (" + placeholders + ") ORDER BY textperiodto DESC limit 1";
+		preparedStmtList.addAll(applicationNumber);
 		try {
-
-			preparedStmtList.addAll(subQueryParams);
 			return jdbcTemplate.query(sql, preparedStmtList.toArray(), demandRowMapper);
 		} catch (NoSuchElementException e) {
 			return Collections.emptyList();
@@ -201,57 +188,37 @@ public class DemandRepository {
 			return Collections.emptyList();
 		}
 		List<Object> preparedStmtList = new ArrayList<>();
-		List<Object> subQueryParams = new ArrayList<>();
-		String demandId = dId.stream().map(id ->id).collect(Collectors.joining(", "));
 
-		String query = "SELECT * FROM egbs_demanddetail_v1 WHERE demandid IN (?)";
-
-		subQueryParams.add(demandId);
+		String placeholders = dId.stream().map(id -> "?").collect(Collectors.joining(", "));
+		String query = "SELECT * FROM egbs_demanddetail_v1 WHERE demandid IN (" + placeholders + ")";
+		preparedStmtList.addAll(dId);
 		try {
-			preparedStmtList.addAll(subQueryParams);
 			return jdbcTemplate.query(query, preparedStmtList.toArray(), demandDetailRowMapper);
 		} catch (NoSuchElementException e) {
 			return Collections.emptyList();
 		} catch (Exception e) {
-			log.error("Error while fetching demands for rentable IDs and period", e);
+			log.error("Error while fetching demand details for IDs", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",
-					"Failed to fetch demands for the given rentable IDs and period");
+					"Failed to fetch demand details for the given IDs");
 		}
 	}
 
 	/**
-	 * Fetches unpaid RL demands for a tenant (and optionally a specific consumerCode).
-	 *
-	 * Hybrid Expiry Filtering Strategy:
-	 *  - fixedbillexpirydate does NOT persist in egbs_demand_v1 (billing-service does not save it).
-	 *  - billexpirytime IS persisted but stores a RELATIVE DURATION in ms (not an absolute epoch).
-	 *  - createdtime IS persisted as an absolute epoch ms.
-	 *
-	 *  Therefore, to reconstruct the absolute expiry epoch in SQL:
-	 *    absolute_expiry = createdtime + billexpirytime
-	 *
-	 *  SQL Filter:
-	 *   CASE 1 — billexpirytime IS NOT NULL:
-	 *     SQL filters in-place: (createdtime + billexpirytime) < currentTime → demand has expired.
-	 *   CASE 2 — billexpirytime IS NULL (legacy demands, old data with no expiry set):
-	 *     Demand is passed through to Java for in-memory getDueCutoffEpoch() evaluation.
+	 * Fetches ALL unpaid ACTIVE rl-services demands for a tenant (and optionally a consumerCode).
+	 * No expiry-based pre-filtering — the caller (sendNotificationUpdateDemand) applies
+	 * {@code getDueCutoffEpoch(taxPeriodFrom, dueDay)} in Java as the authoritative overdue check.
 	 */
 	public List<Demand> getExpiredUnpaidDemands(String tenantId, long currentTime, String consumerCode) {
 		List<Object> preparedStmtList = new ArrayList<>();
 
-		// WHERE clause:
-		//   CASE 1 — billexpirytime is non-null: SQL evaluates (createdtime + billexpirytime) < currentTime
-		//   CASE 2 — billexpirytime IS NULL: pass through for Java in-memory getDueCutoffEpoch() evaluation
 		StringBuilder queryBuilder = new StringBuilder(
 			"SELECT * FROM egbs_demand_v1 " +
 			"WHERE tenantid = ? " +
 			"  AND ispaymentcompleted = false " +
 			"  AND businessservice = 'rl-services' " +
-			"  AND status = 'ACTIVE' " +
-			"  AND (billexpirytime IS NULL OR (createdtime + billexpirytime) < ?)"
+			"  AND status = 'ACTIVE'"
 		);
 		preparedStmtList.add(tenantId);
-		preparedStmtList.add(currentTime); // Compared against (createdtime + billexpirytime) = absolute expiry epoch
 
 		if (consumerCode != null && !consumerCode.trim().isEmpty()) {
 			queryBuilder.append(" AND consumercode = ?");
@@ -259,16 +226,15 @@ public class DemandRepository {
 		}
 
 		log.info("getExpiredUnpaidDemands SQL query: {}", queryBuilder);
-		log.info("getExpiredUnpaidDemands params: tenantId={}, currentTime={}, consumerCode={}", tenantId, currentTime, consumerCode);
+		log.info("getExpiredUnpaidDemands params: tenantId={}, consumerCode={}", tenantId, consumerCode);
 
 		try {
 			List<Demand> demands = jdbcTemplate.query(queryBuilder.toString(), preparedStmtList.toArray(), demandRowMapper);
-			log.info("getExpiredUnpaidDemands: total fetched from DB = {}. " +
-					"(SQL-expired via (createdtime + billexpirytime) + NULL-expiry for in-memory evaluation)", demands.size());
+			log.info("getExpiredUnpaidDemands: total fetched from DB = {} (all unpaid ACTIVE, overdue filtering in Java)", demands.size());
 			return demands;
 		} catch (Exception e) {
-			log.error("Error while fetching expired unpaid demands for tenantId={}, consumerCode={}", tenantId, consumerCode, e);
-			throw new CustomException("DEMAND_FETCH_ERROR", "Failed to fetch expired unpaid demands");
+			log.error("Error while fetching unpaid demands for tenantId={}, consumerCode={}", tenantId, consumerCode, e);
+			throw new CustomException("DEMAND_FETCH_ERROR", "Failed to fetch unpaid demands");
 		}
 	}
 

@@ -143,6 +143,7 @@ public class ccAvanueGateway implements Gateway {
         pairList.add(new KeyValuePair("redirect_url",  transaction.getCallbackUrl()));
         pairList.add(new KeyValuePair("cancel_url",  transaction.getCallbackUrl()));
         pairList.add(new KeyValuePair("language", "EN"));
+        pairList.add(new KeyValuePair("integration_type","iframe_normal"));
 
         pairList.add(new KeyValuePair("billing_name", transaction.getUser().getName()));
         pairList.add(new KeyValuePair("billing_address",transaction.getUser().getTenantId()));

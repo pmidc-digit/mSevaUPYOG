@@ -109,6 +109,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
@@ -224,6 +225,7 @@ public class Far extends FeatureProcess {
 																									// upper bound
 
 	public static final BigDecimal EXCLUDE_BALCONY_WIDTH_ABOVE_4_FEET_FROM_FAR = new BigDecimal("0.91");
+	public static final BigDecimal EXCLUDE_BALCONY_WIDTH_ABOVE_6_FEET_FROM_FAR = new BigDecimal("1.83");
 	
 	// Constants for Commercial
 	private static final BigDecimal COMMERCIAL_PLOTAREA_LIMIT_41_82   = BigDecimal.valueOf(41.82);
@@ -2258,110 +2260,82 @@ public class Far extends FeatureProcess {
 		return new LinkedHashMap<>();
 	}
 	
-	private void updateFarAsPerBalconyWidth(Plan pl){
-		BigDecimal totalBuiltUpArea1 = pl.getVirtualBuilding().getTotalBuitUpArea();
-		//LOG.info("Far before new case added 0.91 > -> Far : " +  " totalBuildUpArea : " + totalBuiltUpArea);
-		// Code added for: Balcony width > 0.91m is included in FAR calculation
-		//BigDecimal totalBuiltUpArea1 = BigDecimal.ZERO;
+	private void updateFarAsPerBalconyWidth(Plan pl) {
+
+		BigDecimal totalBuiltUpArea = pl.getVirtualBuilding().getTotalBuitUpArea();
+		OccupancyHelperDetail occupancyType = Optional.ofNullable(pl).map(Plan::getVirtualBuilding)
+				.map(vb -> vb.getMostRestrictiveFarHelper())
+				.map(far -> far.getSubtype() != null ? far.getSubtype() : far.getType()).orElse(null);
+
+		final BigDecimal threshold = occupancyType != null
+				&& (DxfFileConstants.A_AF.equalsIgnoreCase(occupancyType.getCode())
+						|| DxfFileConstants.A_AIF.equalsIgnoreCase(occupancyType.getCode()))
+								? EXCLUDE_BALCONY_WIDTH_ABOVE_6_FEET_FROM_FAR
+								: EXCLUDE_BALCONY_WIDTH_ABOVE_4_FEET_FROM_FAR;
 
 		for (Block block : pl.getBlocks()) {
-		    for (Floor floor : block.getBuilding().getFloors()) {
-	            //BigDecimal floorArea = floor.getArea() != null ? floor.getArea() : BigDecimal.ZERO;
-	            
-	            //LOG.info("Floor Area : -> " + floorArea);
+			for (Floor floor : block.getBuilding().getFloors()) {
+				if (floor.getBalconies() == null || floor.getBalconies().isEmpty()) {
+					continue;
+				}
 
-		        for (org.egov.common.entity.edcr.Balcony balcony : floor.getBalconies()) {
-		        	
-		        	LOG.info("Data for Floor :::: " + floor.getNumber());
+				for (org.egov.common.entity.edcr.Balcony balcony : floor.getBalconies()) {
+					List<Measurement> measurements = balcony.getMeasurements();
+					List<BigDecimal> widths = balcony.getWidths();
+					if (measurements == null || measurements.isEmpty()) {
+						LOG.warn("No measurement found for balcony, skipping.");
+						continue;
+					}
 
-		            List<BigDecimal> widths = balcony.getWidths();
-		            List<Measurement> measurements = balcony.getMeasurements();
+					if (widths == null || widths.isEmpty()) {
+						LOG.warn("No width found for balcony, skipping.");
+						continue;
+					}
 
-		            // Skip if measurement list is empty
-		            if (measurements == null || measurements.isEmpty()) {
-		                LOG.warn("No measurement found for balcony, skipping.");
-		                continue;
-		            }
+					Measurement measurement = measurements.get(0);
+					BigDecimal area = Optional.ofNullable(measurement.getArea()).orElse(BigDecimal.ZERO)
+							.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
 
-		            Measurement m = measurements.get(0);
+					boolean includeInFar = false;
+					for (BigDecimal widthValue : widths) {
+						if (widthValue == null) {
+							continue;
+						}
+						BigDecimal width = widthValue.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+								DcrConstants.ROUNDMODE_MEASUREMENTS);
+						if (width.compareTo(threshold) > 0) {
+							includeInFar = true;
+							break;
+						}
+					}
 
-		            // Round measurement values once
-		            BigDecimal area = m.getArea() != null
-		                ? m.getArea().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
-		                : BigDecimal.ZERO;
-		            BigDecimal length = m.getLength() != null
-		                ? m.getLength().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
-		                : BigDecimal.ZERO;
-		            BigDecimal height = m.getHeight() != null
-		                ? m.getHeight().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
-		                : BigDecimal.ZERO;
+					if (!includeInFar) {
+						LOG.info("Balcony width <= {}, excluded from FAR.", threshold);
+						continue;
+					}
 
-		            // Round threshold for comparison
-		            BigDecimal threshold = EXCLUDE_BALCONY_WIDTH_ABOVE_4_FEET_FROM_FAR.setScale(
-		                DcrConstants.DECIMALDIGITS_MEASUREMENTS,
-		                DcrConstants.ROUNDMODE_MEASUREMENTS
-		            );
+					totalBuiltUpArea = totalBuiltUpArea.add(area);
+					if (floor.getOccupancies() != null) {
+						for (Occupancy occupancy : floor.getOccupancies()) {
+							BigDecimal floorArea = Optional.ofNullable(occupancy.getFloorArea())
+									.orElse(BigDecimal.ZERO);
+							BigDecimal builtUpArea = Optional.ofNullable(occupancy.getBuiltUpArea())
+									.orElse(BigDecimal.ZERO);
+							occupancy.setFloorArea(floorArea.add(area));
+							occupancy.setBuiltUpArea(builtUpArea.add(area));
+							LOG.info("Updated Occupancy [type={}] floorArea={}, builtUpArea={}", occupancy.getType(),
+									occupancy.getFloorArea(), occupancy.getBuiltUpArea());
+						}
+					}
 
-		            boolean addedToFar = false;
-
-		            for (BigDecimal rawWidth : widths) {
-		                BigDecimal width = rawWidth.setScale(
-		                    DcrConstants.DECIMALDIGITS_MEASUREMENTS,
-		                    DcrConstants.ROUNDMODE_MEASUREMENTS
-		                );
-
-		                LOG.info("Balcony width above 0.91m, included in FAR: " + width);
-	                    LOG.info("Balcony area   : " + area);
-	                    LOG.info("Balcony length : " + length);
-	                    LOG.info("Balcony height : " + height);
-		                if (width.compareTo(threshold) > 0) {
-		                    
-
-		                    //totalBuiltUpArea1 = totalBuiltUpArea1.add(area);
-		                    //providedFar = providedFar.add(area);
-		                    
-		                    // Add to this floor’s floor area
-	                        //floorArea = floorArea.add(area);
-		                    
-		                 // Add to total built-up area
-	                        totalBuiltUpArea1 = totalBuiltUpArea1.add(area);
-
-	                        // ✅ Also distribute balcony area into each occupancy of this floor
-	                        for (Occupancy occ : floor.getOccupancies()) {
-	                            BigDecimal occFloorArea = occ.getFloorArea() != null ? occ.getFloorArea() : BigDecimal.ZERO;
-	                            BigDecimal occBuiltUpArea = occ.getBuiltUpArea() != null ? occ.getBuiltUpArea() : BigDecimal.ZERO;
-
-	                            LOG.info("Floor Area : " + occ.getFloorArea());
-	                            LOG.info("Floor Built Up Area : " + occ.getBuiltUpArea());
-
-	                            
-	                            occ.setFloorArea(occFloorArea.add(area));
-	                            occ.setBuiltUpArea(occBuiltUpArea.add(area));
-
-	                            LOG.info("Updated Occupancy [type=" + occ.getType() + "] floorArea=" + occ.getFloorArea()
-	                                    + ", builtUpArea=" + occ.getBuiltUpArea());
-	                        }
-		                    
-		                    addedToFar = true;
-		                    break; // Only add once per balcony
-		                }
-		            }
-
-		            if (!addedToFar) {
-		                LOG.info("Balcony width <= 0.91m, excluded from FAR.");
-		            }
-		        }
-		     // update floor area for current floor
-	            //floor.setArea(floorArea);
-	            //LOG.info("Updated floor area for Floor " + floor.getNumber() + " : " + floorArea);
-		    }
+					LOG.info("Balcony included in FAR. Area added={}, Threshold={}", area, threshold);
+				}
+			}
 		}
 
-		//pl.getVirtualBuilding().setTotalBuitUpArea(totalBuiltUpArea1);
+		pl.getVirtualBuilding().setTotalBuitUpArea(totalBuiltUpArea);
 
-
-		LOG.info("Far after new case added 0.91 > " + " totalBuildUpArea : " + totalBuiltUpArea1);
-		pl.getVirtualBuilding().setTotalBuitUpArea(totalBuiltUpArea1);
+		LOG.info("Updated Total Built Up Area={}", totalBuiltUpArea);
 	}
 	
 	static boolean shouldSkipValidation(EdcrRequest edcrRequest, String validationType) {

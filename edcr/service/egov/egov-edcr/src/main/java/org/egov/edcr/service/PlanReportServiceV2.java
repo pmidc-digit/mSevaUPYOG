@@ -561,7 +561,11 @@ public class PlanReportServiceV2 {
             boolean repetitiveFloorRow = rowFloorNo != null && typicalFloor.getRepetitiveFloorNos().contains(rowFloorNo);
             boolean existingTypicalRow = isTypicalFloorLabel(floorValue);
 
-            if ((repetitiveFloorRow || existingTypicalRow) && !typicalRowsAdded && modelFloorRows.isEmpty()) {
+            // Stair processors label every row of the model floor with the
+            // typical-floor label. Convert every such row back to the model
+            // floor; converting only the first row drops Flight 2 and later
+            // flights from the generated report.
+            if (existingTypicalRow) {
                 Map<String, String> modelRow = new HashMap<>(row);
                 modelRow.put("Floor", typicalFloor.getModelFloorNo().toString());
                 String signature = getTypicalRowSignature(modelRow);
@@ -583,7 +587,7 @@ public class PlanReportServiceV2 {
                 continue;
             }
 
-            if (repetitiveFloorRow || existingTypicalRow) {
+            if (repetitiveFloorRow) {
                 continue;
             }
 

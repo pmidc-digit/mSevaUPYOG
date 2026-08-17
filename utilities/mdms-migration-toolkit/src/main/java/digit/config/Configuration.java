@@ -96,4 +96,20 @@ public class Configuration {
     //SMSNotification
     @Value("${egov.sms.notification.topic}")
     private String smsNotificationTopic;
+
+    //Localization
+    @Value("${egov.localization.host}")
+    private String localizationHost;
+
+    @Value("${egov.localization.context.path}")
+    private String localizationContextPath;
+
+    @Value("${egov.localization.upsert.endpoint}")
+    private String localizationUpsertEndpoint;
+
+    @Value("${egov.localization.default.module}")
+    private String localizationDefaultModule;
+
+    @Value("${egov.localization.default.locale}")
+    private String localizationDefaultLocale;
 }

@@ -223,7 +223,7 @@
 			<id>repo.egovernments.org</id>
 			<name>eGov ERP Releases Repository</name>
 			<url>
-				https://nexus-repo.digit.org/nexus/content/repositories/snapshots/
+				https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/
 			</url>
 		</repository>
 
@@ -365,8 +365,6 @@
 					</customTypeMappings>
 
 					<namespace>Digit</namespace>
-
-					<debug>true</debug>
 
 					<outputKind>module</outputKind>
 

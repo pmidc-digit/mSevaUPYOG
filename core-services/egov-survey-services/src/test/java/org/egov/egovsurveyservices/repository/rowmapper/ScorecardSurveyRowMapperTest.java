@@ -78,6 +78,7 @@ public class ScorecardSurveyRowMapperTest {
         when(resultSet.getString("question_status")).thenReturn("ACTIVE");
         when(resultSet.getBoolean("question_required")).thenReturn(true);
         when(resultSet.getString("question_categoryid")).thenReturn("cat-123");
+        when(resultSet.getString("question_category_label")).thenReturn("General Feedback");
         when(resultSet.getString("question_tenantid")).thenReturn("pb.testing");
         when(resultSet.getLong("question_createdtime")).thenReturn(1672531200000L);
         when(resultSet.getLong("question_lastmodifiedtime")).thenReturn(1675219600000L);

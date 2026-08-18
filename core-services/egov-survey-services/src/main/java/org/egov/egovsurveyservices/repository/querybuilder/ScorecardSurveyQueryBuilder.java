@@ -221,7 +221,6 @@ public class ScorecardSurveyQueryBuilder {
                 "answer.uuid, " +
                 "answer.questionuuid, " +
                 "answer.sectionuuid, " +
-                "section.title AS section_title, " +
                 "answer.comments, " +
                 "answer.createdby, " +
                 "answer.lastmodifiedby, " +
@@ -238,8 +237,6 @@ public class ScorecardSurveyQueryBuilder {
                 "surveyresponse.citizenid AS survey_citizen_id," +
                 "surveyresponse.tenantid AS survey_tenant_id " +
                 "FROM public.eg_ss_answer AS answer " +
-                "LEFT JOIN public.eg_ss_survey_section AS section " +
-                "ON answer.sectionuuid = section.uuid " +
                 "LEFT JOIN public.eg_ss_question AS question " +
                 "ON answer.questionuuid = question.uuid " +
                 "JOIN public.eg_ss_answer_detail AS ansdetail " +
@@ -270,7 +267,6 @@ public class ScorecardSurveyQueryBuilder {
                 "answer.uuid, " +
                 "answer.questionuuid, " +
                 "answer.sectionuuid, " +
-                "section.title AS section_title, " +
                 "answer.comments, " +
                 "answer.createdby, " +
                 "answer.lastmodifiedby, " +
@@ -287,8 +283,6 @@ public class ScorecardSurveyQueryBuilder {
                 "surveyresponse.citizenid AS survey_citizen_id," +
                 "surveyresponse.tenantid AS survey_tenant_id " +
                 "FROM public.eg_ss_answer AS answer " +
-                "LEFT JOIN public.eg_ss_survey_section AS section " +
-                "ON answer.sectionuuid = section.uuid " +
                 "LEFT JOIN public.eg_ss_question AS question " +
                 "ON answer.questionuuid = question.uuid " +
                 "JOIN public.eg_ss_answer_detail AS ansdetail " +

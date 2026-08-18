@@ -5,7 +5,7 @@ import static org.egov.egovsurveyservices.utils.SurveyServiceConstants.CITIZEN;
 import java.util.Collections;
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.egovsurveyservices.service.ScorecardSurveyService;

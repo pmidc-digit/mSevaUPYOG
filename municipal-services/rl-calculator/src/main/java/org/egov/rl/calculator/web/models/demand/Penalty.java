@@ -14,6 +14,9 @@ import java.math.BigDecimal;
 @Builder
 public class Penalty {
 
+    @JsonProperty("billingCycle")
+    private String billingCycle;
+
     @JsonProperty("rate")
     private BigDecimal rate;
 

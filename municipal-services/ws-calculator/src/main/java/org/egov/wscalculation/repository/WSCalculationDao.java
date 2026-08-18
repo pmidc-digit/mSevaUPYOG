@@ -15,6 +15,7 @@ import org.egov.wscalculation.web.models.MeterReading;
 import org.egov.wscalculation.web.models.MeterReadingSearchCriteria;
 import org.egov.wscalculation.web.models.WaterConnection;
 import org.egov.wscalculation.web.models.WaterDetails;
+import org.egov.wscalculation.web.models.BulkMeterReading;
 
 public interface WSCalculationDao {
 
@@ -82,6 +83,13 @@ public interface WSCalculationDao {
 	String searchLastMeterId(String connectionNo, Long lastReadingDate, Long currentReadingDate, String tenantId);
 
 	String getSwConnection(String tenantId, String consumerCode);
+	
+	/**
+	 * 
+	 * @param criteria would be meter reading criteria
+	 * @return List of meter readings based on criteria
+	 */
+	List<BulkMeterReading> searchMeterReadingsV2(MeterReadingSearchCriteria criteria);
 
 		
 }

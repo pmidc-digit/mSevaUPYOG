@@ -407,45 +407,65 @@ router.post(
   );  
 
   router.post(
-    "/wnsgroupbill",
-    asyncMiddleware(async function (req, res, next) {
-      var tenantId = req.query.tenantId;
-      var locality = req.query.locality;
-      var bussinessService = req.query.bussinessService;
-      var isConsolidated = (req.query.isConsolidated != undefined && req.query.isConsolidated.toLowerCase() === 'true' ? true : false)
-      var consumerCode = null;
-      var pdfKey = req.query.key;
-      var headers = JSON.parse(JSON.stringify(req.headers));
-      headers['tenantId']=headers.tenantid;
-      if(req.query.consumerCode)
-        consumerCode = req.query.consumerCode;
-      var requestinfo = req.body;
-      
-      if (requestinfo == undefined) {
-        return renderError(res, "requestinfo can not be null");
-      }
-      if (!tenantId || !locality || !bussinessService) {
-        return renderError(
-          res,
-          "Bussiness Service, TenantId and Locality are mandatory to generate the water and sewerage bill"
-        );
-      }
+  "/wnsgroupbill",
+  asyncMiddleware(async function (req, res, next) {
 
-      var id = uuidv4();
-      //var jobid = `${config.pdf.wns_bill}-${new Date().getTime()}-${id}`;
-      var jobid = await createNewJobId(bussinessService);
-      var kafkaData = {
-        requestinfo: requestinfo,
-        tenantId: tenantId,
-        locality: locality,
-        bussinessService: bussinessService,
-        isConsolidated: isConsolidated,
-        consumerCode: consumerCode,
-        jobid: jobid,
-        pdfkey : pdfKey,
-        headers:headers
-      };
+    const requestinfo = req.body;
 
+    if (!requestinfo) {
+      return renderError(res, "RequestInfo is required");
+    }
+
+    // ✅ Read from QUERY (as per your curl)
+    const tenantId = req.query.tenantId;
+    const bussinessService = req.query.businesService;
+    const batchType = req.query.batchType;
+    const group = req.query.group;
+    const url = req.query.url;
+    const pdfKey = req.query.key;
+
+    let locality = req.query.locality; // string OR array
+
+    const isConsolidated =
+      req.query.isConsolidated &&
+      req.query.isConsolidated.toLowerCase() === "true";
+
+    const consumerCode = req.query.consumerCode || null;
+
+    const headers = { ...req.headers, tenantId: req.headers.tenantid };
+
+    // ✅ Normalize locality (important)
+    if (locality) {
+      if (!Array.isArray(locality)) {
+        locality = [locality];
+      }
+    }
+
+    // ✅ Flexible validation (FIXED)
+    if (!tenantId || !bussinessService || (!group && !locality)) {
+      return renderError(
+        res,
+        "tenantId, businesService and either group or locality is required"
+      );
+    }
+
+    const jobid = await createNewJobId(bussinessService);
+
+    // ✅ Build Kafka Payload
+    const kafkaData = {
+      requestinfo,
+      tenantId,
+      bussinessService,
+      batchType,
+      group: group || null,
+      locality: locality || [],
+      url, 
+      isConsolidated,
+      consumerCode,
+      jobid,
+      pdfkey: pdfKey,
+      headers
+    };
       try {
         var payloads = [];
         payloads.push({
@@ -467,10 +487,10 @@ router.post(
           const result = await pool.query('select * from egov_bulk_pdf_info where jobid = $1', [jobid]);
           if(result.rowCount<1){
             var userid = requestinfo.RequestInfo.userInfo.uuid;
-            const insertQuery = 'INSERT INTO egov_bulk_pdf_info(jobid, uuid, recordscompleted, totalrecords, createdtime, filestoreid, lastmodifiedby, lastmodifiedtime, tenantid, locality, businessservice, consumercode, isconsolidated, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)';
+            const insertQuery = 'INSERT INTO egov_bulk_pdf_info(jobid, uuid, recordscompleted, totalrecords, createdtime, filestoreid, lastmodifiedby, lastmodifiedtime, tenantid, locality, businessservice, consumercode, isconsolidated, status, group_name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,$15)';
             const curentTimeStamp = new Date().getTime();
             const status = 'INPROGRESS';
-            await pool.query(insertQuery,[jobid, userid, 0, 0, curentTimeStamp, null, userid, curentTimeStamp, tenantId, locality, bussinessService, consumerCode, isConsolidated, status]);
+            await pool.query(insertQuery,[jobid, userid, 0, 0, curentTimeStamp, null, userid, curentTimeStamp, tenantId, locality, bussinessService, consumerCode, isConsolidated, status, group]);
           }
         } catch (err) {
           logger.error(err.stack || err);

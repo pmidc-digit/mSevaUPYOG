@@ -85,7 +85,7 @@ public class NotificationUtil {
 	@SuppressWarnings("unchecked")
 	public String getCustomizedMsg(RequestInfo requestInfo, BPA bpa, String localizationMessage) {
 		String message = null, messageTemplate;
-		Map<String, String> edcrResponse = edcrService.getEDCRDetails(requestInfo, bpa);
+		Map<String, String> edcrResponse = edcrService.getEDCRDetails(requestInfo, bpa, null);
 		
 		String applicationType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);
 		String serviceType = edcrResponse.get(BPAConstants.SERVICETYPE);
@@ -282,7 +282,7 @@ public class NotificationUtil {
 	 * @param smsRequestList
 	 *            The list of SMSRequest to be sent
 	 */
-	public void sendSMS(List<org.egov.bpa.web.model.SMSRequest> smsRequestList, boolean isSMSEnabled) {
+	public void sendSMS(List<SMSRequest> smsRequestList, boolean isSMSEnabled) {
 		if (isSMSEnabled) {
 			if (CollectionUtils.isEmpty(smsRequestList))
 				log.info("Messages from localization couldn't be fetched!");
@@ -341,7 +341,7 @@ public class NotificationUtil {
 
 	public String getEmailCustomizedMsg(RequestInfo requestInfo, BPA bpa, String localizationMessage) {
 		String message = null, messageTemplate;
-		Map<String, String> edcrResponse = edcrService.getEDCRDetails(requestInfo, bpa);
+		Map<String, String> edcrResponse = edcrService.getEDCRDetails(requestInfo, bpa, null);
 
 		String applicationType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);
 		String serviceType = edcrResponse.get(BPAConstants.SERVICETYPE);

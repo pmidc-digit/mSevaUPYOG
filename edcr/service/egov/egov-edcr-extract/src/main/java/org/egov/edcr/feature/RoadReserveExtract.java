@@ -44,14 +44,17 @@ public class RoadReserveExtract extends FeatureExtract {
                 DXFDimension dimension = (DXFDimension) dxfEntity;
                 List<BigDecimal> values = new ArrayList<>();
                 Util.extractDimensionValue(planDetail, values, dimension, layerName);
-
                 if (!values.isEmpty()) {
-                    for (BigDecimal width : values) {
-                        Road road = new Road();  
-                        road.setWidth(width);
-                        road.setName(layerName);
-                        roadReserves.add(road);  
-                    }
+                	 Road road = new Road();  
+                     road.setWidth(values.get(0));
+                     road.setName(layerName);
+                     roadReserves.add(road);
+//                    for (BigDecimal width : values) {
+//                        Road road = new Road();  
+//                        road.setWidth(width);
+//                        road.setName(layerName);
+//                        roadReserves.add(road);  
+//                    }
                 } else {
                     Road road = new Road();
                     road.setWidth(BigDecimal.ZERO);
@@ -78,12 +81,16 @@ public class RoadReserveExtract extends FeatureExtract {
                 Util.extractDimensionValue(planDetail, values, dimension, layerNameRear);
 
                 if (!values.isEmpty()) {
-                    for (BigDecimal width : values) {
-                        Road road = new Road();
-                        road.setWidth(width);  // Set width
-                        road.setName(layerNameRear);  // Set name based on layer
-                        roadReserves.add(road);  // Add to the list
-                    }
+                	Road road = new Road();  
+                    road.setWidth(values.get(0));
+                    road.setName(layerNameRear);
+                    roadReserves.add(road);
+//                    for (BigDecimal width : values) {
+//                        Road road = new Road();
+//                        road.setWidth(width);  // Set width
+//                        road.setName(layerNameRear);  // Set name based on layer
+//                        roadReserves.add(road);  // Add to the list
+//                    }
                 } else {
                     Road road = new Road();
                     road.setWidth(BigDecimal.ZERO);  // Set default width
@@ -104,38 +111,71 @@ public class RoadReserveExtract extends FeatureExtract {
         }
 
         // Process Side Road Reserves
-//        String layerNameSide = layerNames.getLayerName("LAYER_NAME_ROAD_RESERVE_SIDE1");
-//        List<DXFDimension> roadReserveSide = Util.getDimensionsByLayer(planDetail.getDoc(), layerNameSide);
-//
-//        if (roadReserveSide != null && !roadReserveSide.isEmpty()) {
-//            for (Object dxfEntity : roadReserveSide) {
-//                DXFDimension dimension = (DXFDimension) dxfEntity;
-//                List<BigDecimal> values = new ArrayList<>();
-//                Util.extractDimensionValue(planDetail, values, dimension, layerNameSide);
-//
-//                if (!values.isEmpty()) {
+        String layerNameSide = layerNames.getLayerName("LAYER_NAME_ROAD_RESERVE_SIDE1");
+        List<DXFDimension> roadReserveSide = Util.getDimensionsByLayer(planDetail.getDoc(), layerNameSide);
+
+        if (roadReserveSide != null && !roadReserveSide.isEmpty()) {
+            for (Object dxfEntity : roadReserveSide) {
+                DXFDimension dimension = (DXFDimension) dxfEntity;
+                List<BigDecimal> values = new ArrayList<>();
+                Util.extractDimensionValue(planDetail, values, dimension, layerNameSide);                
+                if (!values.isEmpty()) {
+                	Road road = new Road();  
+                    road.setWidth(values.get(0));
+                    road.setName(layerNameSide);
+                    roadReserves.add(road);
 //                    for (BigDecimal width : values) {
 //                        Road road = new Road();
 //                        road.setWidth(width);  // Set width
 //                        road.setName(layerNameSide);  // Set name based on layer
 //                        roadReserves.add(road);  // Add to the list
 //                    }
-//                } else {
-//                    Road road = new Road();
-//                    road.setWidth(BigDecimal.ZERO);  // Set default width
-//                    road.setName(layerNameSide);  // Set name based on layer
-//                    roadReserves.add(road);
-//                }
-//            }
+                } else {
+                    Road road = new Road();
+                    road.setWidth(BigDecimal.ZERO);  // Set default width
+                    road.setName(layerNameSide);  // Set name based on layer
+                    roadReserves.add(road);
+                }
+            }
+            
+            // Process Side Road Reserves
+            String layerNameSide2 = layerNames.getLayerName("LAYER_NAME_ROAD_RESERVE_SIDE2");
+            List<DXFDimension> roadReserveSide2 = Util.getDimensionsByLayer(planDetail.getDoc(), layerNameSide2);
+
+            if (roadReserveSide2 != null && !roadReserveSide2.isEmpty()) {
+                for (Object dxfEntity : roadReserveSide2) {
+                    DXFDimension dimension = (DXFDimension) dxfEntity;
+                    List<BigDecimal> values = new ArrayList<>();
+                    Util.extractDimensionValue(planDetail, values, dimension, layerNameSide2);                
+                    if (!values.isEmpty()) {
+                    	Road road = new Road();  
+                        road.setWidth(values.get(0));
+                        road.setName(layerNameSide2);
+                        roadReserves.add(road);
+//                        for (BigDecimal width : values) {
+//                            Road road = new Road();
+//                            road.setWidth(width);  // Set width
+//                            road.setName(layerNameSide);  // Set name based on layer
+//                            roadReserves.add(road);  // Add to the list
+//                        }
+                    } else {
+                        Road road = new Road();
+                        road.setWidth(BigDecimal.ZERO);  // Set default width
+                        road.setName(layerNameSide2);  // Set name based on layer
+                        roadReserves.add(road);
+                    }
+                }
+            }
+            
 //            for (Road road : roadReserves) {
-//                if (layerNameSide.equals(road.getName())) {
+//                //if (layerNameSide.equals(road.getName())) {
 //                    // Process front road reserve
-//                	plInfo.setRoadReserveSide(road.getWidth());          
-//                  }
+//                	planDetail.setRoadReserveSide(road.getWidth());          
+//                  //}
 //                
 //                
 //            }
-    //    }
+        }
         
         
 			

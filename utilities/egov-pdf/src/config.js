@@ -13,7 +13,7 @@ module.exports = {
   KAFKA_BROKER_HOST: process.env.KAFKA_BROKER_HOST || "localhost:9092",
   KAFKA_RECEIVE_CREATE_JOB_TOPIC: process.env.KAFKA_RECEIVE_CREATE_JOB_TOPIC || "PDF_GEN_RECEIVE",
   KAFKA_BULK_PDF_TOPIC: process.env.KAFKA_BULK_PDF_TOPIC || "BULK_PDF_GEN",
-  PDF_BATCH_SIZE: process.env.PDF_BATCH_SIZE || 40,
+  PDF_BATCH_SIZE: process.env.PDF_BATCH_SIZE || 20,
   DB_USER: process.env.DB_USER || "egovprod",
   DB_PASSWORD: process.env.DB_PASSWORD || "jr88WZdM#4YU##1Q",
   DB_HOST: process.env.DB_HOST || "10.44.237.25",
@@ -97,6 +97,9 @@ module.exports = {
     bill_genie_sewerageBills:"/egov-searcher/bill-genie/seweragebills/_get",
     fetch_bill: "/billing-service/bill/v2/_fetchbill",
     searcher_api_water : "/egov-searcher/bill-genie/waterbills/_get?",
-    searcher_api_sewerage : "/egov-searcher/bill-genie/seweragebills/_get?"
+    searcher_api_water_group : "/egov-searcher/bill-genie/groupbills/_get",
+    searcher_api_sw_integrated : "/egov-searcher/bill-genie/integratedbills/_get?",
+    searcher_api_sewerage : "/egov-searcher/bill-genie/seweragebills/_get?",
+    searcher_api_sewerage_group : "/egov-searcher/bill-genie/groupbillssw/_get?",
   },
 };

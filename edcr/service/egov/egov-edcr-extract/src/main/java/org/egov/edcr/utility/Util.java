@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +31,7 @@ import org.egov.common.entity.edcr.OccupancyType;
 import org.egov.common.entity.edcr.OccupancyTypeHelper;
 import org.egov.common.entity.edcr.Plot;
 import org.egov.common.entity.edcr.TypicalFloor;
+import org.egov.commons.mdms.LayerErrorType;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.entity.blackbox.PlanDetail;
 import org.egov.edcr.service.LayerNames;
@@ -64,9 +66,335 @@ public class Util {
     private static final BigDecimal FIFTY = BigDecimal.valueOf(50);
     private static final BigDecimal THREEHUNDRED = BigDecimal.valueOf(300);
 
+    
+    private static final double DEFAULT_EPS = 0.02;
+
+    
+    
     @Autowired
     public LayerNames layerNames;
 
+    
+    private static class LayerRule {
+        Pattern pattern;
+        int colorCode;
+
+        LayerRule(String regex, int colorCode) {
+            String finalizedRegex = regex
+                .replace("_n_", "_\\d+_")
+                .replace("_l_", "_\\d+_")
+                .replace("_i_", "_\\d+_")
+                .replace("_k", "_\\d+")
+                .replace("_m", "_\\d+");
+            this.pattern = Pattern.compile(finalizedRegex, Pattern.CASE_INSENSITIVE);
+            this.colorCode = colorCode;
+        }
+    }
+
+    private static final List<LayerRule> LAYER_RULES = new ArrayList<>();
+
+    static {
+        // --- SITE & BUILDING BASICS ---
+        LAYER_RULES.add(new LayerRule(".*BLDG_FOOT_PRINT$", 61));
+        LAYER_RULES.add(new LayerRule(".*BLDG_FOOT_PRINT_BASEMENT$", 62));
+        LAYER_RULES.add(new LayerRule(".*COVERED_AREA$", 63));
+        LAYER_RULES.add(new LayerRule(".*COVERED_AREA_DEDUCT$", 64));
+        LAYER_RULES.add(new LayerRule(".*FLOOR_HEIGHT$", 66));
+        LAYER_RULES.add(new LayerRule(".*HT_OF_BLDG$", 67));
+        LAYER_RULES.add(new LayerRule(".*HT_OF_BLDG_EXCLUDING_MP$", 68));
+        LAYER_RULES.add(new LayerRule(".*PLINTH_HEIGHT$", 69));
+        LAYER_RULES.add(new LayerRule(".*FRONT_SETBACK$", 70));
+        LAYER_RULES.add(new LayerRule(".*REAR_SETBACK$", 71));
+        LAYER_RULES.add(new LayerRule(".*SIDE_SETBACK1$", 72));
+        LAYER_RULES.add(new LayerRule(".*SIDE_SETBACK2$", 73));
+        
+     // FIRE STAIR (handle FIRESTAIR and FIRE_STAIR both)
+        LAYER_RULES.add(new LayerRule(".*FIRE[_]?STAIR(_\\d+)?$", 97));
+        LAYER_RULES.add(new LayerRule(".*FIRE[_]?STAIR(_\\d+)?_FLIGHT(_\\d+)?$", 98));
+        LAYER_RULES.add(new LayerRule(".*FIRE[_]?STAIR(_\\d+)?_LANDING(_\\d+)?$", 99));
+        LAYER_RULES.add(new LayerRule(".*SPIRA[_]?FIRE[_]?STAIR(_\\d+)?$", 102));
+
+
+        // --- STAIRS & CIRCULATION ---
+        LAYER_RULES.add(new LayerRule(".*STAIR_k$", 74));
+        LAYER_RULES.add(new LayerRule(".*STAIR_k_FLIGHT_k$", 75));
+        LAYER_RULES.add(new LayerRule(".*STAIR_k_FLIGHT_m_LENGTH$", 1));      // Sub-code 01 (Length)
+        LAYER_RULES.add(new LayerRule(".*STAIR_k_FLIGHT_m_WIDTH$", 2));       // Sub-code 02 (Width)
+        LAYER_RULES.add(new LayerRule(".*STAIR_k_FLIGHT_m_TREADS$", 3));	// Sub-code 03 (Treads)
+        
+        LAYER_RULES.add(new LayerRule(".*STAIR_k_LANDING_m$", 76));
+        LAYER_RULES.add(new LayerRule(".*STAIR_k_LANDING_m_LENGTH$", 1));     // Sub-code 01
+        LAYER_RULES.add(new LayerRule(".*STAIR_k_LANDING_m_WIDTH$", 2));      // Sub-code 02
+ 
+        // --- ROOMS & SANITATION ---
+        //LAYER_RULES.add(new LayerRule(".*REGULAR_ROOM_k$", 77)); 
+        LAYER_RULES.add(new LayerRule(".*REGULAR_ROOM_k$", 78)); 
+        //LAYER_RULES.add(new LayerRule(".*REGULAR_ROOM_k$", 79)); 
+        LAYER_RULES.add(new LayerRule(".*STORE_ROOM_k$", 80));
+        LAYER_RULES.add(new LayerRule(".*KITCHEN(_\\d+)?$", 81));
+        LAYER_RULES.add(new LayerRule(".*KITCHEN(_\\d+)?$", 82));
+        LAYER_RULES.add(new LayerRule(".*KITCHEN(_\\d+)?$", 83));
+        LAYER_RULES.add(new LayerRule(".*REGULAR_ROOM_k$", 84)); 
+        LAYER_RULES.add(new LayerRule(".*BATH_k$", 85));
+        LAYER_RULES.add(new LayerRule(".*WATER_CLOSET_k$", 86));
+        LAYER_RULES.add(new LayerRule(".*URINAL$", 87));
+        LAYER_RULES.add(new LayerRule(".*WASH$", 88));
+        LAYER_RULES.add(new LayerRule(".*WATER_CLOSET$", 89));
+        LAYER_RULES.add(new LayerRule(".*DRINKING_WATER$", 90));
+        LAYER_RULES.add(new LayerRule(".*TOILET_k$", 91));
+        //LAYER_RULES.add(new LayerRule(".*TOILET_VENTILATION$", 92));
+        // --- TOILET VENTILATION ---
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_TOILET(?:_\\d+)?_VENTILATION$",92));
+        LAYER_RULES.add(new LayerRule(".*CINEMA_k$", 150));
+
+        // --- BASEMENT & PARKING ---
+        LAYER_RULES.add(new LayerRule(".*BASEMENT_FOOT_PRINT$", 110));
+        LAYER_RULES.add(new LayerRule(".*BSMNT_FRONT_SETBACK$", 103));
+        LAYER_RULES.add(new LayerRule(".*BSMNT_REAR_SETBACK$", 104));
+        LAYER_RULES.add(new LayerRule(".*BSMNT_SIDE_SETBACK1$", 7));
+        LAYER_RULES.add(new LayerRule(".*BSMNT_SIDE_SETBACK2$", 8));
+        LAYER_RULES.add(new LayerRule(".*OPEN_PARKING$", 116));
+        LAYER_RULES.add(new LayerRule(".*STILT(_PARKING)?(_\\d+)?$", 117));
+        LAYER_RULES.add(new LayerRule(".*MECH_PARKING$", 118));
+        LAYER_RULES.add(new LayerRule(".*VISITOR_PARKING$", 119));
+        LAYER_RULES.add(new LayerRule(".*SPECIAL_PARKING$", 120));
+        LAYER_RULES.add(new LayerRule("^TWO_WHEELER_PARKING$", 132));
+        LAYER_RULES.add(new LayerRule("^DA_PARKING$", 134));
+        LAYER_RULES.add(new LayerRule("^LOADING_UNLOADING$", 133));
+
+        // --- UNIT AREA & LIFTS (Added from previous tables) ---
+        LAYER_RULES.add(new LayerRule(".*UNITFA$", 126));
+        LAYER_RULES.add(new LayerRule(".*UNITFA_DEDUCT$", 127));
+        LAYER_RULES.add(new LayerRule(".*LIFT_k$", 128));
+        LAYER_RULES.add(new LayerRule(".*DA_LIFT$", 138));
+
+        // --- DOORS, WINDOWS & SERVICES ---
+        LAYER_RULES.add(new LayerRule(".*REGULAR_ROOM_\\d+_DOOR_\\d+$", 139));
+        LAYER_RULES.add(new LayerRule(".*WINDOW_\\d+$", 140));
+        LAYER_RULES.add(new LayerRule(".*NON_HABITATIONAL_DOOR_\\d+$", 146));
+        LAYER_RULES.add(new LayerRule("^SOLAR_PANEL$", 143));
+        LAYER_RULES.add(new LayerRule("^SOLAR_WATER_HEATER$", 144));
+        LAYER_RULES.add(new LayerRule("^WASTE_MANAGEMENT$", 14));
+        LAYER_RULES.add(new LayerRule(".*SHADE_OVERHANG$", 3));
+        LAYER_RULES.add(new LayerRule(".*FIRE_TENDER_MOVEMENT$", 148));
+        LAYER_RULES.add(new LayerRule("^MAIN_GATE$", 1));
+        LAYER_RULES.add(new LayerRule("^DIST_EXIT$", 149));
+        LAYER_RULES.add(new LayerRule(".*BLT_UP_AREA_DEDUCT_.*$", 147));
+        
+        // --- GREEN ---
+        LAYER_RULES.add(new LayerRule("^PLANTATION_GREENSTRIP$", 125));
+
+        // --- ROOF WATER TANK HEIGHT ---
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_ROOF_WATER_TANK_HT$", 131));
+
+        // --- PARAPET HEIGHT ---
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_PARAPET_HT$", 110));
+
+        // --- EXIT WIDTH DOOR ---
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_EXIT_WIDTH_DOOR$", 100));
+
+        // --- RAIN WATER HARVESTING ---
+        LAYER_RULES.add(new LayerRule("^RWH$", 112));
+
+        // --- NORTH DIRECTION ---
+        LAYER_RULES.add(new LayerRule("^NORTH_DIRECTION$", 108));
+
+        // --- LOCATION PLAN ---
+        LAYER_RULES.add(new LayerRule("^LOCATION_PLAN$", 109));
+
+        // --- STAIR HEADROOM ---
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_STAIR_HEADROOM$", 107));
+
+        // --- LIGHT & VENTILATION ---
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_LIGHT_VENTILATION$", 121));
+
+        // --- TOILET VENTILATION ---
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_TOILET_\\d+_VENTILATION$", 92));
+
+        
+     // Normal balcony layer
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_BALCONY_\\d+$", 121));
+
+        // UnitFA balcony layer
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_UNITFA_\\d+_BALCONY_\\d+$", 121));
+        
+    }
+
+    public static int resolveLayerColor(String layerName) {
+        try {
+            if (StringUtils.isBlank(layerName)) {
+                throw new IllegalArgumentException("Layer name cannot be null or empty.");
+            }
+            final String normalized = layerName.trim().toUpperCase();
+            return LAYER_RULES.stream()
+                    .filter(rule -> rule.pattern.matcher(normalized).matches())
+                    .map(rule -> rule.colorCode)
+                    .findFirst()
+                    .orElseThrow(() -> new NoSuchElementException("Layer '" + layerName + "' is not defined in building plan standards."));
+
+        } catch (IllegalArgumentException | NoSuchElementException e) {
+            LOG.error("Color Resolution Failed: " + e.getMessage());
+            return -1;
+        } catch (Exception e) {
+            LOG.error("Unexpected error resolving layer: " + layerName, e);
+            return -1;
+        }
+    }
+    
+    /**
+     * Resolves color codes for specific features (Length, Width, Treads) within a layer.
+     * This prevents impact on the standard resolveLayerColor method.
+     */
+    public static int resolveLayerFeatureColor(String layerName, String feature) {
+        try {
+            if (StringUtils.isBlank(layerName) || StringUtils.isBlank(feature)) {
+                throw new IllegalArgumentException("Layer name and Feature cannot be null.");
+            }
+
+            // Combine layer name and feature to match the sub-rules (e.g., "STAIR_1_FLIGHT_1_LENGTH")
+            final String lookupName = layerName.trim().toUpperCase() + "_" + feature.trim().toUpperCase();
+
+            return LAYER_RULES.stream()
+                    .filter(rule -> rule.pattern.matcher(lookupName).matches())
+                    .map(rule -> rule.colorCode)
+                    .findFirst()
+                    .orElseThrow(() -> new NoSuchElementException("Feature '" + feature + "' not found for layer: " + layerName));
+
+        } catch (Exception e) {
+            LOG.error("Feature Resolution Failed: " + e.getMessage());
+            return -1;
+        }
+    }
+    
+    public static void validateLayerColor(String layerName, int actualColorCode, PlanDetail pl) {
+        int expectedColorCode = resolveLayerColor(layerName);
+        if (expectedColorCode == -1) {
+            Map<String, String> errors = new HashMap<>();
+            errors.put(LayerErrorType.INVALID_LAYER.getKey(layerName),LayerErrorType.INVALID_LAYER.getMessage(layerName));
+            pl.addErrors(errors);
+            return;
+        }
+
+        if (actualColorCode != expectedColorCode) {
+            Map<String, String> errors = new HashMap<>();
+            errors.put(
+                    LayerErrorType.INVALID_COLOR.getKey(layerName),
+                    LayerErrorType.INVALID_COLOR.getMessage(layerName,expectedColorCode,actualColorCode));
+            pl.addErrors(errors);
+        }
+    }
+
+    public static void validateSubLayerColor(String layerName, String feature, int actualColorCode, PlanDetail pl) {
+        // 1. Resolve the expected sub-color (01, 02, 03, etc.)
+        int expectedColorCode = resolveLayerFeatureColor(layerName, feature);
+
+        // 2. Handle cases where the layer/feature combo isn't in our standards
+        if (expectedColorCode == -1) {
+            Map<String, String> errors = new HashMap<>();
+            // Using a unique key for the sub-layer error
+            String errorKey = "INVALID_SUB_LAYER_" + layerName + "_" + feature;
+            String message = String.format("Sub-feature '%s' is not defined for layer '%s'.", feature, layerName);
+            errors.put(errorKey, message);
+            pl.addErrors(errors);
+            return;
+        }
+
+        // 3. Compare the actual DXF entity color against the expected sub-color
+        if (actualColorCode != expectedColorCode) {
+            Map<String, String> errors = new HashMap<>();
+            String errorKey = "INVALID_SUB_COLOR_" + layerName + "_" + feature;
+            String message = String.format("Invalid color for %s on layer %s. Expected: %d, Found: %d", 
+                                            feature, layerName, expectedColorCode, actualColorCode);
+            errors.put(errorKey, message);
+            pl.addErrors(errors);
+        }
+    }
+    
+    public static Map<String, String> getColorByDimensionByLayer(PlanDetail planDetail,String name) {
+        Map<String, String> result = new HashMap<>();
+        if (planDetail == null || planDetail.getDoc() == null || name == null) {
+            return result;
+        }
+        DXFDocument dxfDocument = planDetail.getDoc();
+        String layerName = name.trim().toUpperCase();
+        DXFLayer dxfLayer = dxfDocument.getDXFLayer(layerName);
+        if (dxfLayer != null && dxfLayer.getName().equalsIgnoreCase(layerName)) {
+            List<?> dxfEntities = dxfLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_DIMENSION);
+            if (dxfEntities != null && !dxfEntities.isEmpty()) {
+                Object entity = dxfEntities.get(0);
+                if (entity instanceof DXFDimension) {
+                    int colorCode = ((DXFDimension) entity).getColor();
+                    result.put("layerName", layerName);
+                    result.put("colorCode", String.valueOf(colorCode));
+                    return result;
+                }
+            }
+        }
+
+        // Optional fallback
+        result.put("layerName", layerName);
+        result.put("colorCode", "0");
+
+        return result;
+    }
+    
+    public static Map<String, String> getColorByDimensionByLayerByColorCode(PlanDetail planDetail,String name, 
+    		int expectedColorCode) {
+    	Map<String, String> result = new HashMap<>();
+
+        if (planDetail == null || planDetail.getDoc() == null || name == null) {
+            return result;
+        }
+
+        DXFDocument dxfDocument = planDetail.getDoc();
+        String layerName = name.trim().toUpperCase();
+        DXFLayer dxfLayer = dxfDocument.getDXFLayer(layerName);
+        if (dxfLayer != null && dxfLayer.getName().equalsIgnoreCase(layerName)) {
+            List<?> dxfEntities = dxfLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_DIMENSION);
+            if (dxfEntities != null && !dxfEntities.isEmpty()) {
+                for (Object entity : dxfEntities) {
+                    if (entity instanceof DXFDimension) {
+                        DXFDimension dimension = (DXFDimension) entity;
+                        int actualColorCode = dimension.getColor();
+                        if (actualColorCode == expectedColorCode) {
+                            result.put("layerName", layerName);
+                            result.put("colorCode", String.valueOf(actualColorCode));
+                            return result;
+                        }
+                    }
+                }
+            }
+        }
+        result.put("layerName", layerName);
+        result.put("colorCode", "0");
+        return result;
+    }
+    
+    public static int getColorByPolyLine(List<DXFLWPolyline> polyLinesByLayer) {
+    	if (polyLinesByLayer !=null && !polyLinesByLayer.isEmpty()) {
+    		return polyLinesByLayer.get(0).getColor();
+        }
+        return 0;
+    }
+    
+    public static int getColorCodeByMTextANDLayerName(DXFDocument doc, String layerName) {
+          DXFLayer planInfoLayer = doc.getDXFLayer(layerName);
+            if (planInfoLayer != null) {
+                List texts = planInfoLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_MTEXT);
+                DXFText text = null;
+                if (texts != null) {
+                    Iterator iterator = texts.iterator();
+                    while (iterator.hasNext()) {
+                        text = (DXFText) iterator.next();
+                        if (text != null && text.getText() != null) {                           
+                        	return text.getColor();
+                        }
+                    }
+                }
+            }
+            return 0;
+    }
+    
     public static List<Point> findPointsOnPolylines(List<Point> yardInSidePoints) {
         Point old = null;
         Point point1 = new Point();
@@ -197,6 +525,28 @@ public class Util {
         disNames.addAll(layerNames);
         return disNames;
     }
+    
+    public static List<String> getAllLayersNameLike(DXFDocument doc, String regExp) {
+    	List<String> layerNames = new ArrayList<>();
+        if (doc == null || regExp == null) {
+            return layerNames;
+        }
+        Pattern pattern = Pattern.compile(regExp, Pattern.CASE_INSENSITIVE);
+        Iterator<?> iterator = doc.getDXFLayerIterator();
+        while (iterator.hasNext()) {
+            DXFLayer layer = (DXFLayer) iterator.next();
+            String name = layer.getName();
+            if (name == null) {
+                continue;
+            }
+            Matcher matcher = pattern.matcher(name);
+            if (matcher.matches()) {
+                layerNames.add(name);
+            }
+        }
+        return layerNames;
+    }
+
 
     public static List<DXFLine> getLinesByLayer(DXFDocument dxfDocument, String name) {
         List<DXFLine> lines = new ArrayList<>();
@@ -593,8 +943,8 @@ public class Util {
          */
         return values;
 
-    }
-
+    } 
+    
     public static String getMtextByLayerName(DXFDocument doc, String name) {
         if (name == null)
             return null;
@@ -950,6 +1300,57 @@ public class Util {
 
     }
 
+    public static List<DXFLWPolyline> getPolyLinesByLayerV2(DXFDocument dxfDocument, List<String> layerNames) {
+
+        List<DXFLWPolyline> dxflwPolylines = new ArrayList<>();
+
+        if (dxfDocument == null || layerNames == null || layerNames.isEmpty()) {
+            return dxflwPolylines;
+        }
+
+        for (String layerName : layerNames) {
+
+            if (layerName == null || !dxfDocument.containsDXFLayer(layerName)) {
+                continue;
+            }
+
+            DXFLayer dxfLayer = dxfDocument.getDXFLayer(layerName);
+
+            if (dxfLayer != null
+                    && dxfLayer.getName().equalsIgnoreCase(layerName)
+                    && dxfLayer.hasDXFEntities(DXFConstants.ENTITY_TYPE_LWPOLYLINE)) {
+
+                List<?> dxfPolyLineEntities =
+                        dxfLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_LWPOLYLINE);
+
+                for (Object dxfEntity : dxfPolyLineEntities) {
+                    dxflwPolylines.add((DXFLWPolyline) dxfEntity);
+                }
+            }
+        }
+
+        return dxflwPolylines;
+    }
+    
+    public static List<DXFLWPolyline> getPolyLinesByLayerPattern(DXFDocument doc, String regex) {
+
+        List<DXFLWPolyline> result = new ArrayList<>();
+
+        List<String> layers = getLayerNamesLike(doc, regex);
+
+        for (String layer : layers) {
+
+            List<DXFLWPolyline> polylines = getPolyLinesByLayer(doc, layer);
+
+            if (polylines != null && !polylines.isEmpty()) {
+                result.addAll(polylines);
+            }
+        }
+
+        return result;
+    }
+
+    
     public static List<DXFLWPolyline> getPolyLinesByLayerAndColor(DXFDocument dxfDocument, String layerName,
             int colorCode, PlanDetail pl) {
 
@@ -1311,45 +1712,105 @@ public class Util {
 
     }
 
+//    public static void setDimension(Measurement measurement, DXFLWPolyline polyLine) {
+//        Iterator vertexIterator2 = polyLine.getVertexIterator();
+//        if (LOG.isDebugEnabled())
+//            while (vertexIterator2.hasNext()) {
+//                DXFVertex dxfVertex = (DXFVertex) vertexIterator2.next();
+//                Point p = dxfVertex.getPoint();
+//                LOG.debug(p.getX() + " " + p.getY());
+//            }
+//
+//        // if (polyLine.getVertexCount() == 4 || polyLine.getVertexCount() == 5) {
+//        if (polyLine.getVertexCount() > 1) {
+//            Iterator vertexIterator = polyLine.getVertexIterator();
+//            Point next = null, first = null;
+//            List<Double> distances = new ArrayList<>();
+//            while (vertexIterator.hasNext()) {
+//                DXFVertex dxfVertex = (DXFVertex) vertexIterator.next();
+//                Point p = dxfVertex.getPoint();
+//                if (next == null) {
+//                    next = p;
+//                    first = p;
+//                    continue;
+//                }
+//                distances.add(MathUtils.distance(next, p));
+//                next = p;
+//            }
+//            if (!pointsEquals(next, first))
+//                distances.add(MathUtils.distance(next, first));
+//
+//            if (!distances.isEmpty()) {
+//                measurement.setWidth(BigDecimal.valueOf(Collections.min(distances)));
+//                measurement.setHeight(BigDecimal.valueOf(Collections.max(distances)));
+//                measurement.setMinimumSide(BigDecimal.valueOf(Collections.min(distances)));
+//            } else {
+//                measurement.setWidth(BigDecimal.ZERO);
+//                measurement.setHeight(BigDecimal.ZERO);
+//                measurement.setMinimumSide(BigDecimal.ZERO);
+//            }
+//        } else
+//            measurement.setInvalidReason("It is not rectangle, found " + polyLine.getVertexCount() + " points");
+//    }
+    
     public static void setDimension(Measurement measurement, DXFLWPolyline polyLine) {
+
         Iterator vertexIterator2 = polyLine.getVertexIterator();
-        if (LOG.isDebugEnabled())
+
+        if (LOG.isDebugEnabled()) {
             while (vertexIterator2.hasNext()) {
                 DXFVertex dxfVertex = (DXFVertex) vertexIterator2.next();
                 Point p = dxfVertex.getPoint();
                 LOG.debug(p.getX() + " " + p.getY());
             }
+        }
 
-        // if (polyLine.getVertexCount() == 4 || polyLine.getVertexCount() == 5) {
         if (polyLine.getVertexCount() > 1) {
+
             Iterator vertexIterator = polyLine.getVertexIterator();
+
             Point next = null, first = null;
             List<Double> distances = new ArrayList<>();
+
             while (vertexIterator.hasNext()) {
+
                 DXFVertex dxfVertex = (DXFVertex) vertexIterator.next();
                 Point p = dxfVertex.getPoint();
+
                 if (next == null) {
                     next = p;
                     first = p;
                     continue;
                 }
+
                 distances.add(MathUtils.distance(next, p));
                 next = p;
             }
-            if (!pointsEquals(next, first))
+
+            if (!pointsEquals(next, first)) {
                 distances.add(MathUtils.distance(next, first));
+            }
+
+            double actualWidth = getPolylineWidth(polyLine);
+
+            if (actualWidth == 0 && !distances.isEmpty()) {
+                actualWidth = Collections.min(distances);
+            }
 
             if (!distances.isEmpty()) {
-                measurement.setWidth(BigDecimal.valueOf(Collections.min(distances)));
+                measurement.setWidth(BigDecimal.valueOf(actualWidth));
                 measurement.setHeight(BigDecimal.valueOf(Collections.max(distances)));
-                measurement.setMinimumSide(BigDecimal.valueOf(Collections.min(distances)));
+                measurement.setMinimumSide(BigDecimal.valueOf(actualWidth));
             } else {
                 measurement.setWidth(BigDecimal.ZERO);
                 measurement.setHeight(BigDecimal.ZERO);
                 measurement.setMinimumSide(BigDecimal.ZERO);
             }
-        } else
-            measurement.setInvalidReason("It is not rectangle, found " + polyLine.getVertexCount() + " points");
+
+        } else {
+            measurement.setInvalidReason(
+                "It is not rectangle, found " + polyLine.getVertexCount() + " points");
+        }
     }
 
     public static void setOccupancyType(DXFLWPolyline pline, Occupancy occupancy) {
@@ -1367,20 +1828,20 @@ public class Util {
             occupancy.setType(OccupancyType.OCCUPANCY_B1);
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B2_COLOR_CODE)
 //            occupancy.setType(OccupancyType.OCCUPANCY_B2);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B3_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_B3);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B3_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_B3);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C1_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_C1);
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C2_COLOR_CODE)
 //            occupancy.setType(OccupancyType.OCCUPANCY_C2);
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C3_COLOR_CODE)
 //            occupancy.setType(OccupancyType.OCCUPANCY_C3);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_D);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D1_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_D1);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D2_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_D2);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_D);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D1_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_D1);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D2_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_D2);
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_E_COLOR_CODE)
 //            occupancy.setType(OccupancyType.OCCUPANCY_E);
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F_COLOR_CODE)
@@ -1448,24 +1909,24 @@ public class Util {
             return OccupancyType.OCCUPANCY_A2;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_BOARDING_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_A3;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_B1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_B1;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B2_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_B2;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B3_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_B3;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_C1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B3_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_B3;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_C1;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C2_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_C2;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C3_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_C3;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_D;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_D1;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D2_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_D2;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_D;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_D1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_D2;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_E_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_E;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F_COLOR_CODE)
@@ -1508,6 +1969,10 @@ public class Util {
             return OccupancyType.OCCUPANCY_F15;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F16_COLOR_CODE)
             return OccupancyType.OCCUPANCY_F16;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F17_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F17;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F18_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F18;
         
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F2_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_F2;
@@ -1544,22 +2009,22 @@ public class Util {
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G12_COLOR_CODE)
             return OccupancyType.OCCUPANCY_G12;
         
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_H_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_H;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_I1;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I2_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_I2;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I2_KIOSK_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_F4;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_J;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_J1;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J2_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_J2;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J3_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_J3;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_H_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_H;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_I1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_I2;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I2_KIOSK_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_F4;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_J;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_J1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_J2;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J3_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_J3;
         
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L1_COLOR_CODE)
             return OccupancyType.OCCUPANCY_L1;
@@ -1944,9 +2409,19 @@ public class Util {
     }
     
     public static boolean isPointStrictlyInsidePolygon(DXFLWPolyline poly, Point p) {
+        return isPointStrictlyInsidePolygon(poly, p, DEFAULT_EPS);
+    }
+
+    public static boolean isPointStrictlyInsidePolygon(DXFLWPolyline poly, Point p, double eps) {
+
+        // Check boundary FIRST — avoids running ray casting on points that are
+        // going to be rejected anyway, and guarantees boundary always wins over
+        // any float noise in the ray-cast result.
+        if (isPointOnPolygonBoundary(poly, p, eps)) {
+            return false;
+        }
 
         List<Point> pts = new ArrayList<>();
-
         Iterator it = poly.getVertexIterator();
         while (it.hasNext()) {
             DXFVertex v = (DXFVertex) it.next();
@@ -1970,15 +2445,44 @@ public class Util {
                 inside = !inside;
         }
 
-        // strictly inside → not on boundary
-        if (inside && !isPointOnPolygonBoundary(poly, p)) {
-            return true;
-        }
-
-        return false;
+        return inside;
     }
     
+    public static double minDistanceToPolygonBoundary(DXFLWPolyline poly, Point p) {
+        List<Point> pts = new ArrayList<>();
+        Iterator it = poly.getVertexIterator();
+        while (it.hasNext()) {
+            DXFVertex v = (DXFVertex) it.next();
+            pts.add(v.getPoint());
+        }
+        int n = pts.size();
+        double min = Double.MAX_VALUE;
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            min = Math.min(min, distanceToSegment(p, pts.get(j), pts.get(i)));
+        }
+        return min;
+    }
+
+    // point-to-segment distance, shared helper
+    private static double distanceToSegment(Point p, Point a, Point b) {
+        double px = p.getX(), py = p.getY();
+        double ax = a.getX(), ay = a.getY();
+        double bx = b.getX(), by = b.getY();
+        double abx = bx - ax, aby = by - ay;
+        double apx = px - ax, apy = py - ay;
+        double lenSq = abx * abx + aby * aby;
+        double t = lenSq < 1e-12 ? 0 : (apx * abx + apy * aby) / lenSq;
+        t = Math.max(0, Math.min(1, t));
+        double cx = ax + t * abx, cy = ay + t * aby;
+        return Math.hypot(px - cx, py - cy);
+    }
+    
+
     public static boolean isPointOnPolygonBoundary(DXFLWPolyline poly, Point p) {
+        return isPointOnPolygonBoundary(poly, p, DEFAULT_EPS);
+    }
+
+    public static boolean isPointOnPolygonBoundary(DXFLWPolyline poly, Point p, double eps) {
 
         Iterator it = poly.getVertexIterator();
         Point prev = null;
@@ -1989,32 +2493,44 @@ public class Util {
 
         while (it.hasNext()) {
             Point curr = ((DXFVertex) it.next()).getPoint();
-            if (isPointOnLine(prev, curr, p)) return true;
+            if (isPointOnLine(prev, curr, p, eps)) return true;
             prev = curr;
         }
 
         // close last-to-first segment
         Point first = ((DXFVertex) poly.getVertex(0)).getPoint();
-        if (isPointOnLine(prev, first, p)) return true;
+        if (isPointOnLine(prev, first, p, eps)) return true;
 
         return false;
     }
 
     public static boolean isPointOnLine(Point a, Point b, Point p) {
-        double cross = (p.getY() - a.getY()) * (b.getX() - a.getX())
-                - (p.getX() - a.getX()) * (b.getY() - a.getY());
+        return isPointOnLine(a, b, p, DEFAULT_EPS);
+    }
 
-        if (Math.abs(cross) > 1e-6) return false;
+    public static boolean isPointOnLine(Point a, Point b, Point p, double eps) {
+        double abx = b.getX() - a.getX();
+        double aby = b.getY() - a.getY();
+        double apx = p.getX() - a.getX();
+        double apy = p.getY() - a.getY();
 
-        double dot = (p.getX() - a.getX()) * (b.getX() - a.getX()) +
-                (p.getY() - a.getY()) * (b.getY() - a.getY());
+        double lenSq = abx * abx + aby * aby;
+        if (lenSq < 1e-12) {
+            // degenerate segment, treat as point comparison
+            return Math.hypot(apx, apy) <= eps;
+        }
 
-        if (dot < 0) return false;
+        double cross = apy * abx - apx * aby;
+        double perpDist = Math.abs(cross) / Math.sqrt(lenSq); // <-- normalize!
 
-        double lenSq = (b.getX() - a.getX()) * (b.getX() - a.getX())
-                + (b.getY() - a.getY()) * (b.getY() - a.getY());
+        if (perpDist > eps) return false;
 
-        return dot <= lenSq;
+        double dot = apx * abx + apy * aby;
+        if (dot < -eps) return false; // small tolerance at ends too
+
+        if (dot > lenSq + eps) return false;
+
+        return true;
     }
 
     public static boolean doLineSegmentsIntersect(Point p1, Point p2, Point q1, Point q2) {
@@ -2044,11 +2560,140 @@ public class Util {
         if (Math.abs(val) < 1e-10) return 0;  // Collinear
         return (val > 0) ? 1 : 2;            // Clockwise or Counterclockwise
     }
+    
+    public static boolean isPointInsideOrOnPolygon(DXFLWPolyline poly, Point p) {
+        return isPointInsideOrOnPolygon(poly, p, DEFAULT_EPS);
+    }
+
+    public static boolean isPointInsideOrOnPolygon(DXFLWPolyline poly, Point p, double eps) {
+        if (isPointOnPolygonBoundary(poly, p, eps)) {
+            return true;
+        }
+        List<Point> pts = new ArrayList<>();
+        Iterator it = poly.getVertexIterator();
+        while (it.hasNext()) {
+            DXFVertex v = (DXFVertex) it.next();
+            pts.add(v.getPoint());
+        }
+        int n = pts.size();
+        boolean inside = false;
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            double xi = pts.get(i).getX(), yi = pts.get(i).getY();
+            double xj = pts.get(j).getX(), yj = pts.get(j).getY();
+            boolean intersect =
+                    ((yi > p.getY()) != (yj > p.getY())) &&
+                            (p.getX() < (xj - xi) * (p.getY() - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
 
     private static boolean onSegment(Point a, Point b, Point c) {
-        return b.getX() <= Math.max(a.getY(), c.getX()) && b.getX() >= Math.min(a.getX(), c.getX()) &&
+        return b.getX() <= Math.max(a.getX(), c.getX()) && b.getX() >= Math.min(a.getX(), c.getX()) &&
                b.getY() <= Math.max(a.getY(), c.getY()) && b.getY() >= Math.min(a.getY(), c.getY());
     }
 
+    public static class Segment {
+
+        Point p1;
+        Point p2;
+
+        public Segment(Point p1, Point p2) {
+            this.p1 = p1;
+            this.p2 = p2;
+        }
+
+        public double length() {
+            return MathUtils.distance(p1, p2);
+        }
+    }
+    
+    private static boolean areParallel(Segment s1, Segment s2) {
+
+        double dx1 = s1.p2.getX() - s1.p1.getX();
+        double dy1 = s1.p2.getY() - s1.p1.getY();
+
+        double dx2 = s2.p2.getX() - s2.p1.getX();
+        double dy2 = s2.p2.getY() - s2.p1.getY();
+
+        double cross = dx1 * dy2 - dy1 * dx2;
+
+        return Math.abs(cross) < 0.001;
+    }
+    
+    private static double perpendicularDistance(Segment s1, Segment s2) {
+
+        double x1 = s1.p1.getX();
+        double y1 = s1.p1.getY();
+
+        double x2 = s1.p2.getX();
+        double y2 = s1.p2.getY();
+
+        double x0 = s2.p1.getX();
+        double y0 = s2.p1.getY();
+
+        return Math.abs(
+                (y2 - y1) * x0
+              - (x2 - x1) * y0
+              + x2 * y1
+              - y2 * x1)
+                / Math.sqrt(
+                Math.pow(y2 - y1, 2)
+              + Math.pow(x2 - x1, 2));
+    }
+    
+    private static double getPolylineWidth(DXFLWPolyline polyLine) {
+
+        List<Point> points = new ArrayList<>();
+
+        Iterator<?> iterator = polyLine.getVertexIterator();
+
+        while (iterator.hasNext()) {
+            DXFVertex vertex = (DXFVertex) iterator.next();
+            points.add(vertex.getPoint());
+        }
+
+        if (!pointsEquals(points.get(0), points.get(points.size() - 1))) {
+            points.add(points.get(0));
+        }
+
+        List<Segment> segments = new ArrayList<>();
+
+        for (int i = 0; i < points.size() - 1; i++) {
+
+            Segment segment = new Segment(
+                    points.get(i),
+                    points.get(i + 1));
+
+            /*
+             * Ignore tiny chamfer/notch edges.
+             */
+            if (segment.length() > 1.0) {
+                segments.add(segment);
+            }
+        }
+
+        double width = Double.MAX_VALUE;
+
+        for (int i = 0; i < segments.size(); i++) {
+
+            for (int j = i + 1; j < segments.size(); j++) {
+
+                Segment s1 = segments.get(i);
+                Segment s2 = segments.get(j);
+
+                if (!areParallel(s1, s2))
+                    continue;
+
+                double distance = perpendicularDistance(s1, s2);
+
+                if (distance > 0.01) {
+                    width = Math.min(width, distance);
+                }
+            }
+        }
+
+        return width == Double.MAX_VALUE ? 0 : width;
+    }
     
 }

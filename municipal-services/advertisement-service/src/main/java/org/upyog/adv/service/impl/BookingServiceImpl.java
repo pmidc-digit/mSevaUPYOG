@@ -30,6 +30,7 @@ import org.upyog.adv.web.models.*;
 import org.upyog.adv.web.models.billing.PaymentDetail;
 import org.upyog.adv.workflow.WorkflowIntegrator;
 import org.upyog.adv.web.models.workflow.Workflow;
+import org.upyog.adv.web.models.workflow.ProcessInstance;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -72,8 +73,7 @@ public class BookingServiceImpl implements BookingService {
 	public BookingDetail createBooking(@Valid BookingRequest bookingRequest) throws JsonProcessingException {
 		log.info("Create advertisement booking for user : " + bookingRequest.getRequestInfo().getUserInfo().getId());
 		String uuid = bookingRequest.getRequestInfo().getUserInfo().getUuid();
-		// TODO move to util calss 
-		String tenantId = bookingRequest.getBookingApplication().getTenantId().split("\\.")[0];
+		String tenantId = bookingRequest.getBookingApplication().getTenantId();
 		if (bookingRequest.getBookingApplication().getTenantId().split("\\.").length == 1) {
 			throw new CustomException(BookingConstants.INVALID_TENANT,
 					"Please provide valid tenant id for booking creation");
@@ -87,6 +87,15 @@ public class BookingServiceImpl implements BookingService {
 
 		// 2. Add fields that has custom logic like booking no, ids using UUID
 		enrichmentService.enrichCreateBookingRequest(bookingRequest);
+
+		// 2a. Concurrency guard: check that no other active booking or timer already holds these slots.
+		// Queries eg_adv_cart_detail (bookings) and eg_adv_payment_timer (active timers) — no DB changes needed.
+		String bookingId = bookingRequest.getBookingApplication().getBookingId();
+		String userId = bookingRequest.getRequestInfo().getUserInfo().getUuid();
+//		if (bookingRepository.hasActiveSlotConflict(bookingId, userId, bookingRequest.getBookingApplication().getCartDetails())) {
+//			throw new CustomException("SLOT_ALREADY_BOOKED",
+//					"One or more selected advertisement slots are already booked by another user. Please choose different slots/dates.");
+//		}
 
 		// ENcrypt PII data of applicant
 		encryptionService.encryptObject(bookingRequest);
@@ -115,7 +124,7 @@ public class BookingServiceImpl implements BookingService {
 		String draftId = bookingRequest.getBookingApplication().getDraftId();
 		// 5
 
-		String bookingId = bookingRequest.getBookingApplication().getBookingId();
+//		String bookingId = bookingRequest.getBookingApplication().getBookingId();
 
 		BookingDetail bookingDetails = encryptionService.decryptObject(bookingRequest.getBookingApplication(),
 				bookingRequest.getRequestInfo());
@@ -200,7 +209,44 @@ public class BookingServiceImpl implements BookingService {
 		enrichCartDetailsWithAdvertisementInfo(bookingDetail, info);
 	}
 
-		// Fetch remaining timer values for the booking details
+	// Enrich search results with workflow data (action, comment, documents)
+	if (bookingDetails != null && !bookingDetails.isEmpty() && workflowIntegrator != null) {
+		List<String> bookingNos = bookingDetails.stream()
+				.map(BookingDetail::getBookingNo)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+		if (!bookingNos.isEmpty()) {
+			try {
+				Map<String, ProcessInstance> wfMap = workflowIntegrator.fetchProcessInstances(info, 
+							bookingDetails.get(0).getTenantId(), bookingNos);
+				for (BookingDetail bd : bookingDetails) {
+					ProcessInstance pi = wfMap.get(bd.getBookingNo());
+					if (pi != null) {
+						// Map workflow documents back to DocumentDetail for response
+						List<DocumentDetail> wfDocs = null;
+						if (pi.getDocuments() != null && !pi.getDocuments().isEmpty()) {
+							wfDocs = pi.getDocuments().stream()
+									.map(d -> DocumentDetail.builder()
+											.fileStoreId(d.getFileStoreId())
+											.documentType(d.getDocumentType())
+											.build())
+									.collect(Collectors.toList());
+						}
+						Workflow wf = Workflow.builder()
+								.action(pi.getAction())
+								.comment(pi.getComment())
+								.documents(wfDocs)
+								.build();
+						bd.setWorkflow(wf);
+					}
+				}
+			} catch (Exception ex) {
+				log.warn("Failed to enrich booking search results with workflow data", ex);
+			}
+		}
+	}
+
+	// Fetch remaining timer values for the booking details
 		// paymentTimerService.getRemainingTimerValue(bookingDetails);
 
 		if (CollectionUtils.isEmpty(bookingDetails)) {
@@ -225,6 +271,28 @@ public class BookingServiceImpl implements BookingService {
 	@Override
 	public List<AdvertisementSlotAvailabilityDetail> checkAdvertisementSlotAvailability(
 			AdvertisementSlotSearchCriteria criteria, RequestInfo requestInfo) {
+
+		// Quantity-based — "ANYWHERE" location means no specific slot, always available.
+		// Still expand the date range so the frontend gets one entry per day.
+		if ("ANYWHERE".equalsIgnoreCase(criteria.getLocation())) {
+			List<AdvertisementSlotAvailabilityDetail> result = new ArrayList<>();
+			LocalDate start = BookingUtil.parseStringToLocalDate(criteria.getBookingStartDate());
+			LocalDate end = BookingUtil.parseStringToLocalDate(criteria.getBookingEndDate());
+			while (!start.isAfter(end)) {
+				AdvertisementSlotAvailabilityDetail detail = new AdvertisementSlotAvailabilityDetail();
+				detail.setSlotStaus("AVAILABLE");
+				detail.setBookingDate(BookingUtil.parseLocalDateToString(start, BookingUtil.DATE_FORMAT));
+				detail.setAdvertisementId(criteria.getAdvertisementId());
+				detail.setAddType(criteria.getAddType());
+				detail.setLocation(criteria.getLocation());
+				detail.setFaceArea(criteria.getFaceArea());
+				detail.setNightLight(criteria.getNightLight());
+				result.add(detail);
+				start = start.plusDays(1);
+			}
+			log.info("Quantity-based ad {} — expanded {} dates, skipping slot check", criteria.getAdvertisementId(), result.size());
+			return result;
+		}
 
 		List<AdvertisementSlotAvailabilityDetail> availabilityDetails = bookingRepository
 				.getAdvertisementSlotAvailability(criteria);
@@ -261,10 +329,17 @@ public class BookingServiceImpl implements BookingService {
 			bookingRepository.deleteDataFromTimerAndDraft(requestInfo.getUserInfo().getUuid(),
 					criteriaList.get(0).getDraftId(), criteriaList.get(0).getBookingId());
 		}
+
+		boolean isQuantityBased = criteriaList.stream()
+				.allMatch(c -> "ANYWHERE".equalsIgnoreCase(c.getLocation()));
+
 		if (isTimerRequiredForAnyCriteria && !slotBookedFlag) {
-			// Insert the timer for all criteria at once
-			paymentTimerService.insertBookingIdForTimer(criteriaList, requestInfo, allAvailabilityDetails);
-			log.info("Inserted booking ID for timer for all criteria.");
+			if (isQuantityBased) {
+				log.info("Quantity-based booking — skipping timer insertion. Multiple users can book concurrently.");
+			} else {
+				paymentTimerService.insertBookingIdForTimer(criteriaList, requestInfo, allAvailabilityDetails);
+				log.info("Inserted booking ID for timer for all criteria.");
+			}
 		}
 
 		return allAvailabilityDetails;
@@ -442,9 +517,6 @@ public class BookingServiceImpl implements BookingService {
 
 		// Fetch advertisement data from MDMS
 		String tenantId = bookingDetail.getTenantId();
-		if (tenantId != null && tenantId.contains(".")) {
-			tenantId = tenantId.split("\\.")[0];
-		}
 		
 		List<Advertisements> advertisementsList = mdmsUtil.fetchAdvertisementsData(requestInfo, tenantId);
 		if (advertisementsList == null || advertisementsList.isEmpty()) {

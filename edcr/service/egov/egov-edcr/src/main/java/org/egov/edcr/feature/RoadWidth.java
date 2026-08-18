@@ -70,6 +70,7 @@ import static org.egov.edcr.constants.DxfFileConstants.G;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -99,7 +100,7 @@ public class RoadWidth extends FeatureProcess {
     public static final String NEW = "NEW";
     public static final String ROADWIDTH = "Road Width";
     
- // Road Width Required (in meters)
+    // Road Width Required (in meters)
     private static final BigDecimal ROAD_WIDTH_12  = BigDecimal.valueOf(12);
     private static final BigDecimal ROAD_WIDTH_18  = BigDecimal.valueOf(18);
     private static final BigDecimal ROAD_WIDTH_24  = BigDecimal.valueOf(24);
@@ -118,7 +119,8 @@ public class RoadWidth extends FeatureProcess {
     public Plan process(Plan pl) {
     	
         if (pl.getPlanInformation() != null && pl.getPlanInformation().getRoadWidth() != null) {
-            BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
+//            BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
+        	BigDecimal roadWidth = pl.getRoadReserveFront().setScale(2, RoundingMode.HALF_UP);            
             if (roadWidth == null || roadWidth.compareTo(BigDecimal.ZERO) == 0) {
                 boolean skipValidation = false;
 
@@ -175,14 +177,14 @@ public class RoadWidth extends FeatureProcess {
                                 details.put(PERMITTED, String.valueOf(roadWidthRequired) + "m");
                                 details.put(PROVIDED, roadWidth.toString() + "m");
                                 details.put(STATUS, Result.Accepted.getResultVal());
-                                scrutinyDetail.getDetail().add(details);
-                                pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+                                //scrutinyDetail.getDetail().add(details);
+                                //pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
                             } else {
                                 details.put(PERMITTED, String.valueOf(roadWidthRequired) + "m");
                                 details.put(PROVIDED, roadWidth.toString() + "m");
                                 details.put(STATUS, Result.Not_Accepted.getResultVal());
-                                scrutinyDetail.getDetail().add(details);
-                                pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+                                //scrutinyDetail.getDetail().add(details);
+                                //pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
                             }
                         }
                     }

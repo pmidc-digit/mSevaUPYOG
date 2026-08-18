@@ -1,0 +1,58 @@
+package org.egov.wscalculation.repository.rowmapper;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
+
+import org.egov.wscalculation.web.models.AuditDetails;
+import org.egov.wscalculation.web.models.BulkMeterReading;
+import org.egov.wscalculation.web.models.BulkMeterReading.MeterStatusEnum;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.stereotype.Component;
+
+@Component
+public class BulkMeterReadingRowMapper implements ResultSetExtractor<List<BulkMeterReading>> {
+
+	@Override
+	public List<BulkMeterReading> extractData(ResultSet rs) throws SQLException, DataAccessException {
+
+	    Map<String, BulkMeterReading> maxReadingMap = new LinkedHashMap<>();
+
+	    while (rs.next()) {
+	    		BulkMeterReading bulkMeterReading = new BulkMeterReading();
+	    		
+	            bulkMeterReading.setId(rs.getString("id"));
+	            bulkMeterReading.setConnectionNo(rs.getString("connectionId"));
+	            bulkMeterReading.setUsageCategory(rs.getString("usageCategory"));
+	            bulkMeterReading.setBillingPeriod(rs.getString("billingPeriod"));
+	            bulkMeterReading.setCurrentReading(rs.getDouble("currentReading"));
+	            bulkMeterReading.setCurrentReadingDate(rs.getLong("currentReadingDate"));
+	            bulkMeterReading.setLastReading(rs.getDouble("lastReading"));
+	            bulkMeterReading.setLastReadingDate(rs.getLong("lastReadingDate"));
+	            bulkMeterReading.setMeterStatus(
+	                    MeterStatusEnum.fromValue(rs.getString("meterStatus")));
+	            bulkMeterReading.setTenantId(rs.getString("tenantid"));
+
+	            AuditDetails auditdetails = AuditDetails.builder()
+	                    .createdBy(rs.getString("mr_createdBy"))
+	                    .createdTime(rs.getLong("mr_createdTime"))
+	                    .lastModifiedBy(rs.getString("mr_lastModifiedBy"))
+	                    .lastModifiedTime(rs.getLong("mr_lastModifiedTime"))
+	                    .build();
+	            
+	            bulkMeterReading.setZone(rs.getString("zonecode"));
+	            bulkMeterReading.setBlock(rs.getString("blockcode"));
+	            bulkMeterReading.setLocality(rs.getString("localitycode"));
+	            bulkMeterReading.setGroups(rs.getString("groups"));
+
+	            bulkMeterReading.setAuditDetails(auditdetails);
+	            maxReadingMap.put(bulkMeterReading.getConnectionNo(), bulkMeterReading);
+	        }
+	    return new ArrayList<>(maxReadingMap.values());
+	}
+}

@@ -26,5 +26,5 @@ public class MeterReadingResponses {
     
     @JsonProperty("meterReadingslist")
     @Valid
-    private List<MeterReadingList> meterReadingslist = new ArrayList<>(); 
+    private List<Object> meterReadingslist = new ArrayList<>();  // ← changed from List<MeterReadingList> to List<Object> 
 }

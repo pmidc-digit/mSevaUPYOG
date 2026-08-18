@@ -95,7 +95,7 @@ public class WSCalculationUtil {
 					.append(getBillCriteria.getConnectionNumber())
 					.append(WSCalculationConstant.SEPARATER)
 					.append(WSCalculationConstant.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
-					.append("WS")
+                    .append(WSCalculationConstant.SERVICE_FIELD_VALUE_WS)
 				
 						;
 
@@ -108,7 +108,7 @@ public class WSCalculationUtil {
 					.append(StringUtils.join(getBillCriteria.getConsumerCodes(), ","))
 					.append(WSCalculationConstant.SEPARATER)
 					.append(WSCalculationConstant.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
-					.append("WS");
+                     .append(WSCalculationConstant.SERVICE_FIELD_VALUE_WS);
 
 			 if(getBillCriteria.getIsPaymentCompleted() != null)
 				 url.append(WSCalculationConstant.SEPARATER)
@@ -263,6 +263,21 @@ public class WSCalculationUtil {
 			url.append("limit=").append(criteria.getLimit());
 		}
 		return url;
+	}
+	
+	
+	public StringBuilder getBillSearchUrl(GetBillCriteria getBillCriteria) {
+	    return new StringBuilder().append(configurations.getBillingServiceHost())
+	            .append(configurations.getSearchBillEndPoints())
+	            .append(WSCalculationConstant.URL_PARAMS_SEPARATER)
+	            .append(WSCalculationConstant.TENANT_ID_FIELD_FOR_SEARCH_URL).append(getBillCriteria.getTenantId())
+	            .append(WSCalculationConstant.SEPARATER)
+	            .append(WSCalculationConstant.CONSUMER_CODE_SEARCH_FIELD_NAME)
+	            .append(StringUtils.join(getBillCriteria.getConsumerCodes(), ","))
+	            .append(WSCalculationConstant.SEPARATER)
+	            // Use the constant instead of hardcoding "service=" and "WS"
+	            .append(WSCalculationConstant.SERVICE_FIELD_FOR_SEARCH_URL) 
+	            .append(WSCalculationConstant.SERVICE_FIELD_VALUE_WS);
 	}
 
 	/**

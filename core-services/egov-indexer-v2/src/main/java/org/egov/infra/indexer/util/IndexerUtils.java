@@ -54,6 +54,12 @@ public class IndexerUtils {
 	@Value("${egov.infra.indexer.host}")
 	private String esHostUrl;
 
+	@Value("${elasticsearch.username}")
+	private String esUsername;
+
+	@Value("${elasticsearch.password}")
+	private String esPassword;
+
 	@Value("${elasticsearch.poll.interval.seconds}")
 	private String pollInterval;
 
@@ -103,7 +109,14 @@ public class IndexerUtils {
 					try {
 						StringBuilder url = new StringBuilder();
 						url.append(esHostUrl).append("/_search");
-						response = restTemplate.getForObject(url.toString(), Map.class);
+						org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+						String base64Creds = java.util.Base64.getEncoder()
+								.encodeToString((esUsername + ":" + esPassword).getBytes());
+						headers.add("Authorization", "Basic " + base64Creds);
+						org.springframework.http.HttpEntity<Void> entity =
+								new org.springframework.http.HttpEntity<>(headers);
+						response = restTemplate.exchange(url.toString(),
+								org.springframework.http.HttpMethod.GET, entity, Map.class).getBody();
 					} catch (Exception e) {
 						log.error("ES is DOWN..");
 					}

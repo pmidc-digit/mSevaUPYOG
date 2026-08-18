@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Property
@@ -17,6 +18,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RLProperty {// extends PropertyInfo {
 
 	@JsonProperty("propertyId")
@@ -43,37 +45,23 @@ public class RLProperty {// extends PropertyInfo {
 	@JsonProperty("propertyImage")
 	private String propertyImage;
 	
-	@JsonProperty("propertyType")
-//	@SafeHtml
-	private String propertyType;
-	
-	
-	@JsonProperty("locationType")
-	private String locationType;
-
 	@JsonProperty("baseRent")
 	private String baseRent;
 	
 	@JsonProperty("securityDeposit")
 	private String securityDeposit;
 	
-	@JsonProperty("financialYear")
-	private String financialYear;
-	
 	@JsonProperty("type")
 	private String type;
 	
-	@JsonProperty("taxApplicable")
-	private boolean taxApplicable;
-
-	@JsonProperty("refundApplicableOnDiscontinuation")
-	private boolean refundApplicableOnDiscontinuation;
-	
-	@JsonProperty("cowCessApplicable")
-	private boolean cowCessApplicable;
-	
 	@JsonProperty("penaltyType")
 	private String penaltyType;
+	
+	@JsonProperty("penaltyRate")
+	private BigDecimal penaltyRate;
+
+	@JsonProperty("penaltyFlatAmount")
+	private BigDecimal penaltyFlatAmount;
 	
 //	@JsonProperty("latePayment")
 //	private String latePayment;

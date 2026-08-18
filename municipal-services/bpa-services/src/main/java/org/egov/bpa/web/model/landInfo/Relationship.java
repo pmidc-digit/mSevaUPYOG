@@ -1,4 +1,4 @@
-package  org.egov.bpa.web.model.landInfo;
+package org.egov.bpa.web.model.landInfo;
 
 import java.util.Objects;
 import io.swagger.annotations.ApiModel;

@@ -290,7 +290,7 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 		if (CollectionUtils.isEmpty(bills))
 		{
 			log.info( "If bills are empty" +bills.size());
-			if(!billCriteria.getBusinessService().equalsIgnoreCase("WS") && !billCriteria.getBusinessService().equalsIgnoreCase("SW"))
+//			if(!billCriteria.getBusinessService().equalsIgnoreCase("WS") && !billCriteria.getBusinessService().equalsIgnoreCase("SW"))
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
 			return generateBill(billCriteria, requestInfo);
 		}
@@ -431,6 +431,16 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 		return BillResponseV2.builder().resposneInfo(responseFactory.getResponseInfo(requestInfo, HttpStatus.OK))
 				.bill(bills).build();
 	}
+	
+	/*	PI-19980 Patiala Penalty not apply in W/S*/
+	public BillResponseV2 searchBillLatest(BillSearchCriteria billCriteria, RequestInfo requestInfo) {
+
+		List<BillV2> bills = billRepository.findBillLatest(billCriteria);
+
+		return BillResponseV2.builder().resposneInfo(responseFactory.getResponseInfo(requestInfo, HttpStatus.OK))
+				.bill(bills).build();
+	}
+	/*	PI-19980 Patiala Penalty not apply in W/S*/
 	
 	/**
 	 * Generate bill based on the given criteria
@@ -626,24 +636,29 @@ private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
 
 					billAmount = billAmount.setScale(0, RoundingMode.CEILING);
 
-					BillV2 bill = BillV2.builder()
-						.auditDetails(util.getAuditDetail(requestInfo))
-						.payerAddress(payer.getPermanentAddress())
-						.mobileNumber(payer.getMobileNumber())
-						.billDate(System.currentTimeMillis())
-						.businessService(business.getCode())
-						.payerName(payer.getName())
-						.consumerCode(consumerCode)
-						.status(BillStatus.ACTIVE)
-						.billDetails(billDetails)
-						.totalAmount(billAmount)
-						.userId(payer.getUuid())
-						.billNumber(billNumber)
-						.tenantId(tenantId)
-						.id(billId)
-						.build();
-				
-					bills.add(bill);
+					BillV2.BillV2Builder billBuilder = BillV2.builder()
+					        .auditDetails(util.getAuditDetail(requestInfo))
+					        .payerAddress(payer.getPermanentAddress())
+					        .mobileNumber(payer.getMobileNumber())
+					        .billDate(System.currentTimeMillis())
+					        .businessService(business.getCode())
+					        .payerName(payer.getName())
+					        .consumerCode(consumerCode)
+					        .status(BillStatus.ACTIVE)
+					        .billDetails(billDetails)
+					        .totalAmount(billAmount)
+					        .userId(payer.getUuid())
+					        .billNumber(billNumber)
+					        .tenantId(tenantId)
+					        .id(billId);
+
+					    // 2. Add email only if it's not null
+					    if (payer.getEmailId() != null) {
+					        billBuilder.payerEmail(payer.getEmailId());
+					    }
+
+					    // 3. Build and add to list
+					    bills.add(billBuilder.build());
 				}
 			}
 

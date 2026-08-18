@@ -45,6 +45,8 @@ class OtpControllerTest {
     @Test
     void shouldReturnSuccessResponseWhenOtpIsSent() throws Exception {
 
+    @Test
+    void shouldReturnSuccessResponseWhenOtpIsSent() throws Exception {
         mockMvc.perform(post("/v1/_send")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(resources.getFileContents("otpSendRequest.json")))
@@ -57,9 +59,18 @@ class OtpControllerTest {
     @Test
     void shouldReturnBadRequestWhenMandatoryFieldsMissing() throws Exception {
 
+    @Test
+    void shouldReturnBadRequestWhenMandatoryFieldsMissing() throws Exception {
         lenient().doThrow(new InvalidOtpRequestException(
                         new OtpRequest("", "", null, "CITIZEN", false)))
                 .when(otpService).sendOtp(any(OtpRequest.class));
+
+        mockMvc.perform(post("/v1/_send")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resources.getFileContents("otpSendRequest.json")))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json(resources.getFileContents("otpMandatoryFieldsErrorResponse.json")));
+    }
 
         mockMvc.perform(post("/v1/_send")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -70,7 +81,6 @@ class OtpControllerTest {
 
     @Test
     void shouldReturnErrorWhenUserNotFound() throws Exception {
-
         lenient().doThrow(new UserNotFoundException())
                 .when(otpService).sendOtp(any(OtpRequest.class));
 
@@ -81,9 +91,11 @@ class OtpControllerTest {
                 .andExpect(content().json(resources.getFileContents("unknownMobileNumberErrorResponse.json")));
     }
 
+        lenient().doThrow(new UserNotFoundException())
+                .when(otpService).sendOtp(any(OtpRequest.class));
+
     @Test
     void shouldReturnErrorWhenUserAlreadyExists() throws Exception {
-
         lenient().doThrow(new UserAlreadyExistInSystemException())
                 .when(otpService).sendOtp(any(OtpRequest.class));
 
@@ -95,7 +107,38 @@ class OtpControllerTest {
     }
 
     @Test
+    void shouldReturnErrorWhenUserAlreadyExists() throws Exception {
+
+    @Test
     void shouldReturnErrorWhenUserDoesNotExist() throws Exception {
+        lenient().doThrow(new UserNotExistingInSystemException())
+                .when(otpService).sendOtp(any(OtpRequest.class));
+
+        mockMvc.perform(post("/v1/_send")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resources.getFileContents("otpSendLoginRequest.json")))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json(resources.getFileContents("userNotFoundInSystemResponse.json")));
+    }
+
+        mockMvc.perform(post("/v1/_send")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resources.getFileContents("otpSendRegisterRequest.json")))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json(resources.getFileContents("userAlreadyExistInSystemResponse.json")));
+    }
+
+    @Test
+    void shouldReturnErrorForUnhandledException() throws Exception {
+        final String exceptionMessage = "Some exception message";
+        doThrow(new RuntimeException(exceptionMessage)).when(otpService).sendOtp(any(OtpRequest.class));
+
+        mockMvc.perform(post("/v1/_send")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resources.getFileContents("otpSendRequest.json")))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Some exception message")));
+    }
 
         lenient().doThrow(new UserNotExistingInSystemException())
                 .when(otpService).sendOtp(any(OtpRequest.class));

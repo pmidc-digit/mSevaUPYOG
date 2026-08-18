@@ -104,6 +104,7 @@ public class AdditionalFeature extends FeatureProcess {
     private static final String RULE_47 = "47";
     private static final String RULE_50 = "50";
     private static final String RULE_56 = "56";
+    private static final String HEIGHT_EXC_MUMTY = "4.4.4";
     private static final BigDecimal TWO = BigDecimal.valueOf(2);
     private static final BigDecimal ONE_POINTFIVE = BigDecimal.valueOf(1.5);
     private static final BigDecimal THREE = BigDecimal.valueOf(3);
@@ -205,7 +206,8 @@ public class AdditionalFeature extends FeatureProcess {
         validate(pl);
 
         String typeOfArea = pl.getPlanInformation().getTypeOfArea();
-        BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
+        //BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
+        BigDecimal roadWidth =  pl.getRoadReserveFront().setScale(2, RoundingMode.HALF_UP);
 
         if (StringUtils.isNotBlank(typeOfArea) && roadWidth != null) {
             validateNumberOfFloors(pl, errors, typeOfArea, roadWidth);
@@ -561,7 +563,7 @@ public class AdditionalFeature extends FeatureProcess {
         for (Block block : pl.getBlocks()) {
 
             boolean isAccepted = false;
-            String ruleNo = RULE_38;
+            String ruleNo = HEIGHT_EXC_MUMTY;
             ScrutinyDetail scrutinyDetail = getNewScrutinyDetailRoadArea(
                     "Block_" + block.getNumber() + "_" + "Height of Building (excluding mumty)");
             String requiredBuildingHeight = StringUtils.EMPTY;

@@ -77,6 +77,7 @@ import java.util.Arrays;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.egov.common.entity.edcr.Block;
+import org.egov.common.entity.edcr.Building;
 import org.egov.common.entity.edcr.Floor;
 import org.egov.common.entity.edcr.Measurement;
 import org.egov.common.entity.edcr.Occupancy;
@@ -463,19 +464,54 @@ public class Parking extends FeatureProcess {
             	//            }
         	}
         }else if (mostRestrictiveOccupancy != null && F.equals(mostRestrictiveOccupancy.getType().getCode())) {
+        	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
             BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
-            if (plotCoveredArea != null && plotCoveredArea.compareTo(BigDecimal.ZERO) > 0) {
-                // 1 ECS per 50 sqm
-                BigDecimal divisor = BigDecimal.valueOf(50);
+//            if (plotCoveredArea != null && plotCoveredArea.compareTo(BigDecimal.ZERO) > 0) {
+//                BigDecimal divisor = BigDecimal.valueOf(50);
+//                BigDecimal requiredParking = plotCoveredArea.divide(divisor, 0, RoundingMode.HALF_UP);
+//                noOfrequiredParking = requiredParking.intValue();
+//            }
+            if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
+                HashMap<String, String> errors = new HashMap<>();
+                errors.put("Plot Area Error:", "Plot covered area must be greater than 0.");
+                pl.addErrors(errors);
+            } else if (F_MIP.equalsIgnoreCase(subType)) {
+            	BigDecimal totalBuiltUpArea = getTotalBuiltUpArea(pl);
+            	BigDecimal totalCinemaArea = getTotalCinemaArea(pl);
 
-                // Divide and always round UP since ECS must be whole
-                BigDecimal requiredParking = plotCoveredArea.divide(divisor, 0, RoundingMode.HALF_UP);
+            	noOfrequiredParking = calculateMiniplexECS(
+            	        totalBuiltUpArea,
+            	        totalCinemaArea)
+            	        .setScale(0, RoundingMode.HALF_UP)
+            	        .intValue();
+            	
+            	
+            }else if(F_MTP.equalsIgnoreCase(subType)){
+            	BigDecimal totalBuiltUpArea = getTotalBuiltUpArea(pl);
+            	BigDecimal totalCinemaArea = getTotalCinemaArea(pl);
 
-                noOfrequiredParking = requiredParking.intValue();
+            	noOfrequiredParking = calculateMultiplexECS(
+            	        totalBuiltUpArea,
+            	        totalCinemaArea)
+            	        .setScale(0, RoundingMode.HALF_UP)
+            	        .intValue();
+            }else {            	
+            	Integer multiplier = getFTypeMultiplier(subType);
+            	BigDecimal divisor = getFTypeDivisor(subType);
+            	if (multiplier == null) {
+            	    HashMap<String, String> errors = new HashMap<>();
+            	    errors.put("Parking Calculation Error",
+            	            "No ECS rule defined for subtype: " + subType);
+            	    pl.addErrors(errors);
+            	} else {
+            	    int baseEcs = plotCoveredArea
+            	            .divide(divisor, 0, RoundingMode.HALF_UP)
+            	            .intValue();
+            	    noOfrequiredParking = baseEcs * multiplier;
+            	}
             }
         } else if (mostRestrictiveOccupancy != null && G.equals(mostRestrictiveOccupancy.getType().getCode())) {
             BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
-
             if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
                 HashMap<String, String> errors = new HashMap<>();
                 errors.put("Plot Area Error:", "Plot covered area must be greater than 0.");
@@ -489,124 +525,11 @@ public class Parking extends FeatureProcess {
             	            "No ECS rule defined for subtype: " + subType);
             	    pl.addErrors(errors);
             	} else {
-            	    // Divide first and round UP
             	    int baseEcs = plotCoveredArea
             	            .divide(BigDecimal.valueOf(100), 0, RoundingMode.CEILING)
             	            .intValue();
-            	    // Multiply after rounding
             	    noOfrequiredParking = baseEcs * multiplier;
             	}
-
-            	
-////                String subType = mostRestrictiveOccupancy.getSubtype().getCode();
-////                BigDecimal divisor = BigDecimal.valueOf(100); // default
-////                int multiplier = 1; // default
-////                boolean ruleFound = true;
-////
-////                switch (subType) {
-////                    case "G-I": // Industrial
-////                    case "G-F": // Factory
-////                    case "G-S": // Storage
-////                    case "G-H": // Hazard
-////                    case "G-T": // Textile
-////                    case "G-K": // Knitwear
-////                    case "G-RS": // Retail
-////                    case "G-SP": // Sports Industry
-////                        divisor = BigDecimal.valueOf(100);
-////                        multiplier = 1;
-////                        break;
-////
-////                    case "G-W": // Warehouse
-////                    case "G-IT": // IT Units
-////                    case "G-GI": // General Industry
-////                        divisor = BigDecimal.valueOf(100);
-////                        multiplier = 2;
-////                        break;
-////
-////                    default:
-////                        ruleFound = false;
-////                        LOGGER.warn("No ECS rule defined for subtype: {}", subType);
-////                }
-////
-////                if (!ruleFound) {
-////                    HashMap<String, String> errors = new HashMap<>();
-////                    errors.put("Parking Calculation Error:", 
-////                        "No ECS rule defined for subtype: " + subType);
-////                    pl.addErrors(errors);
-////                } else {
-////                    // Calculate required ECS, always round UP
-////                    BigDecimal requiredParking = plotCoveredArea
-////                            .divide(divisor, 0, RoundingMode.HALF_UP)
-////                            .multiply(BigDecimal.valueOf(multiplier));
-////
-////                    noOfrequiredParking = requiredParking.intValue();
-////                }
-////            }
-//            	
-//            	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
-//
-//            	BigDecimal divisor = BigDecimal.valueOf(100); // per 100 sqm
-//            	BigDecimal multiplier = BigDecimal.ZERO;
-//            	boolean ruleFound = true;
-//
-////            	Set<String> oneEcs = new HashSet<String>(Arrays.asList(
-////            	        "G-G","G-F","G-S","G-HI","G-RSI","G-TI","G-KI","G-SI"
-////            	));
-////
-////            	Set<String> twoEcs = new HashSet<String>(Arrays.asList(
-////            	        "G-GIP","G-GIF","G-ITF","G-WT"
-////            	));
-////
-////            	String type = (subType == null) ? "" : subType.trim().toUpperCase();
-////
-////            	if (oneEcs.contains(type)) {
-////            	    multiplier = BigDecimal.ONE;
-////            	}
-////            	else if (twoEcs.contains(type)) {
-////            	    multiplier = BigDecimal.valueOf(2);
-////            	}
-////            	else {
-////            	    ruleFound = false;
-////            	    LOGGER.warn("No ECS rule defined for subtype: {}", subType);
-////            	}
-//
-//            	Map<String, BigDecimal> ECS_RULES = new HashMap<String, BigDecimal>();
-//            	ECS_RULES.put("G-G", BigDecimal.ONE);
-//                ECS_RULES.put("G-F", BigDecimal.ONE);
-//                ECS_RULES.put("G-S", BigDecimal.ONE);
-//                ECS_RULES.put("G-HI", BigDecimal.ONE);
-//                ECS_RULES.put("G-RSI", BigDecimal.ONE);
-//                ECS_RULES.put("G-TI", BigDecimal.ONE);
-//                ECS_RULES.put("G-KI", BigDecimal.ONE);
-//                ECS_RULES.put("G-SI", BigDecimal.ONE);
-//
-//                ECS_RULES.put("G-GIP", BigDecimal.valueOf(2));
-//                ECS_RULES.put("G-GIF", BigDecimal.valueOf(2));
-//                ECS_RULES.put("G-ITF", BigDecimal.valueOf(2));
-//                ECS_RULES.put("G-WT", BigDecimal.valueOf(2));
-//                
-//                String type = (subType == null) ? "" : subType.trim().toUpperCase();
-//
-//                if (ECS_RULES.containsKey(type)) {
-//                    multiplier = ECS_RULES.get(type);
-//                } else {
-//                    ruleFound = false;
-//                    LOGGER.warn("No ECS rule defined for subtype: {}", subType);
-//                }
-//
-//            	if (!ruleFound) {
-//            	    HashMap<String, String> errors = new HashMap<>();
-//            	    errors.put("Parking Calculation Error",
-//            	            "No ECS rule defined for subtype: " + subType);
-//            	    pl.addErrors(errors);
-//            	} else {
-//            	    // ECS calculation → ALWAYS round UP
-//            	    BigDecimal requiredParking = plotCoveredArea
-//            	            .divide(divisor, 0, RoundingMode.CEILING)
-//            	            .multiply(multiplier);
-//            	    noOfrequiredParking = requiredParking.intValue();
-//            	}
-//            }
             }
         }else if (mostRestrictiveOccupancy != null && L.equals(mostRestrictiveOccupancy.getType().getCode())) {
         	BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
@@ -634,9 +557,6 @@ public class Parking extends FeatureProcess {
             }
         }
 
-        
-        
-
         BigDecimal requiredCarParkingArea = Util.roundOffTwoDecimal(BigDecimal.valueOf(requiredCarParkArea));
         BigDecimal totalProvidedCarParkingArea = Util.roundOffTwoDecimal(totalProvidedCarParkArea);
         BigDecimal requiredVisitorParkingArea = Util.roundOffTwoDecimal(BigDecimal.valueOf(requiredVisitorParkArea));
@@ -660,7 +580,11 @@ public class Parking extends FeatureProcess {
             } else if (requiredCarParkArea > 0 && totalProvidedCarParkingArea.compareTo(requiredCarParkingArea) < 0) {
 //                setReportOutputDetails(pl, RULE_, RULE__DESCRIPTION, requiredCarParkingArea + SQMTRS,
 //                        totalProvidedCarParkingArea + SQMTRS, Result.Not_Accepted.getResultVal());
-            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
+//            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
+//            			totalECS + " ECS" ,
+//            			Result.Not_Accepted.getResultVal()
+//        				);
+            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS" ,
             			totalECS + " ECS" ,
             			Result.Not_Accepted.getResultVal()
         				);
@@ -670,12 +594,18 @@ public class Parking extends FeatureProcess {
             	if(Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_ECS)) {
             		status=Result.Accepted.getResultVal();
             	}
-                setReportOutputDetails1(pl,"4.2.1","Parking",noOfrequiredParking + " ECS ( Covered Area " + coveredArea + " )",
-                    totalECS + " ECS",status);
+//                setReportOutputDetails1(pl,"4.2.1","Parking",noOfrequiredParking + " ECS ( Covered Area " + coveredArea + " )",
+//                    totalECS + " ECS",status);
+            	setReportOutputDetails1(pl,"4.2.1","Parking",noOfrequiredParking + " ECS",
+                        totalECS + " ECS",status);
             }else {
 //                setReportOutputDetails(pl, RULE_, RULE__DESCRIPTION, requiredCarParkingArea + SQMTRS,
 //                        totalProvidedCarParkingArea + SQMTRS, Result.Accepted.getResultVal());
-            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
+//            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
+//            			totalECS + " ECS" ,
+//            			Result.Accepted.getResultVal()
+//        				);
+            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS" ,
             			totalECS + " ECS" ,
             			Result.Accepted.getResultVal()
         				);
@@ -1173,6 +1103,67 @@ public class Parking extends FeatureProcess {
         }
     }
     
+    private Integer getFTypeMultiplier(String subType) {
+
+        if (subType == null) {
+            return null;
+        }
+
+        String type = subType.trim().toUpperCase();
+        switch (type) {
+            case "F":
+            case "F-RB":
+            case "F-SCC":
+            case "F-PO":
+            case "F-B":
+            case "F-VGP":
+            case "F-BU":
+                return 1;
+            case "F-HM":
+            case "F-LB":
+                return 2;
+            case "F-PFSF":
+            case "F-PFST":
+            case "F-PFSS":
+            case "F-PS":
+            case "F-CNGS":
+            	return 0;
+                
+            default:
+                return null;
+        }
+    }
+    
+    private BigDecimal getFTypeDivisor(String subType) {
+
+        if (subType == null) {
+            return null;
+        }
+
+        String type = subType.trim().toUpperCase();
+        switch (type) {
+            case "F":
+            case "F-RB":
+            case "F-SCC":
+            case "F-PO":
+            case "F-B":
+            case "F-VGP":
+            case "F-BU":
+                return BigDecimal.valueOf(50);
+            case "F-HM":
+            case "F-LB":
+            case "F-PFSF":
+            case "F-PFST":
+            case "F-PFSS":
+            case "F-PS":
+            case "F-CNGS":
+            	return BigDecimal.valueOf(100);
+                
+            default:
+                return null;
+        }
+    }
+    
     private Integer getLTypeMultiplier(String subType) {
 
         if (subType == null) {
@@ -1201,5 +1192,134 @@ public class Parking extends FeatureProcess {
         }
     }
 
+    private BigDecimal calculateMiniplexECS(BigDecimal coveredArea) {
+
+        if (coveredArea == null || coveredArea.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal hundred = BigDecimal.valueOf(100);
+
+        // First 100 sq.m
+        BigDecimal firstSlabArea = coveredArea.min(hundred);
+
+        // Remaining area beyond 100 sq.m
+        BigDecimal remainingArea = coveredArea.subtract(firstSlabArea);
+
+        // 3 ECS per 100 sq.m for first 100 sq.m
+        BigDecimal firstSlabECS = firstSlabArea
+                .multiply(BigDecimal.valueOf(3))
+                .divide(hundred, 10, RoundingMode.HALF_UP);
+
+        // 2 ECS per 100 sq.m for remaining area
+        BigDecimal remainingSlabECS = BigDecimal.ZERO;
+        if (remainingArea.compareTo(BigDecimal.ZERO) > 0) {
+            remainingSlabECS = remainingArea
+                    .multiply(BigDecimal.valueOf(2))
+                    .divide(hundred, 10, RoundingMode.HALF_UP);
+        }
+
+        return firstSlabECS.add(remainingSlabECS);
+    }
+    
+	private BigDecimal calculateMultiplexECS(BigDecimal totalBuiltUpArea, BigDecimal cinemaArea) {
+
+		BigDecimal commercialArea = BigDecimal.ZERO;
+
+		if (totalBuiltUpArea != null && cinemaArea != null) {
+			commercialArea = totalBuiltUpArea.subtract(cinemaArea);
+
+			if (commercialArea.compareTo(BigDecimal.ZERO) < 0) {
+				commercialArea = BigDecimal.ZERO;
+			}
+		}
+
+		BigDecimal totalECS = BigDecimal.ZERO;
+
+		// Cinema component
+		if (cinemaArea != null && cinemaArea.compareTo(BigDecimal.ZERO) > 0) {
+			totalECS = totalECS.add(cinemaArea.multiply(BigDecimal.valueOf(2)).divide(BigDecimal.valueOf(66.91), 10,
+					RoundingMode.HALF_UP));
+		}
+
+		// Commercial / Other component
+		if (commercialArea.compareTo(BigDecimal.ZERO) > 0) {
+			totalECS = totalECS.add(commercialArea.multiply(BigDecimal.valueOf(2)).divide(BigDecimal.valueOf(100), 10,
+					RoundingMode.HALF_UP));
+		}
+
+		return totalECS;
+	}
+	
+	private BigDecimal calculateMiniplexECS(BigDecimal totalBuiltUpArea, BigDecimal cinemaArea) {
+
+		BigDecimal commercialArea = BigDecimal.ZERO;
+
+		if (totalBuiltUpArea != null && cinemaArea != null) {
+			commercialArea = totalBuiltUpArea.subtract(cinemaArea);
+
+			if (commercialArea.compareTo(BigDecimal.ZERO) < 0) {
+				commercialArea = BigDecimal.ZERO;
+			}
+		}
+
+		BigDecimal totalECS = BigDecimal.ZERO;
+
+		// Cinema component
+		if (cinemaArea != null && cinemaArea.compareTo(BigDecimal.ZERO) > 0) {
+			totalECS = totalECS.add(cinemaArea.multiply(BigDecimal.valueOf(3)).divide(BigDecimal.valueOf(100), 10,
+					RoundingMode.HALF_UP));
+		}
+
+		// Commercial / Other component
+		if (commercialArea.compareTo(BigDecimal.ZERO) > 0) {
+			totalECS = totalECS.add(commercialArea.multiply(BigDecimal.valueOf(2)).divide(BigDecimal.valueOf(100), 10,
+					RoundingMode.HALF_UP));
+		}
+
+		return totalECS;
+	}
+	
+	private BigDecimal getTotalCinemaArea(Plan plan) {
+	    BigDecimal totalCinemaArea = BigDecimal.ZERO;
+	    if (plan == null || plan.getBlocks() == null) {
+	        return totalCinemaArea;
+	    }
+	    for (Block block : plan.getBlocks()) {
+	        if (block.getBuilding() == null || block.getBuilding().getFloors() == null) {
+	            continue;
+	        }
+	        for (Floor floor : block.getBuilding().getFloors()) {
+	            if (floor.getCinemas() == null) {
+	                continue;
+	            }
+
+	            for (org.egov.common.entity.edcr.Cinema cinema : floor.getCinemas()) {
+	                if (cinema.getCinemas() == null) {
+	                    continue;
+	                }
+	                for (Measurement measurement : cinema.getCinemas()) {
+	                    if (measurement != null && measurement.getArea() != null) {
+	                        totalCinemaArea = totalCinemaArea.add(measurement.getArea());
+	                    }
+	                }
+	            }
+	        }
+	    }
+
+	    return totalCinemaArea;
+	}
+	
+	private BigDecimal getTotalBuiltUpArea(Plan plan) {
+
+	    if (plan == null
+	            || plan.getVirtualBuilding() == null
+	            || plan.getVirtualBuilding().getTotalBuitUpArea() == null) {
+	        return BigDecimal.ZERO;
+	    }
+
+	    return plan.getVirtualBuilding().getTotalBuitUpArea().max(BigDecimal.ZERO);
+	}
+	
     
 }

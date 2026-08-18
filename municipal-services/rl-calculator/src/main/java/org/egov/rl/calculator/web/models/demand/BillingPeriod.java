@@ -23,13 +23,4 @@ public class BillingPeriod {
 
     @JsonProperty("taxPeriodTo")
     private Long taxPeriodTo;
-
-    @JsonProperty("demandGenerationDateMillis")
-    private Long demandGenerationDateMillis;
-
-    @JsonProperty("demandEndDateMillis")
-    private Long demandEndDateMillis;
-
-    @JsonProperty("demandExpiryDate")
-    private Long demandExpiryDate;
 }

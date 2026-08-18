@@ -48,6 +48,7 @@
 package org.egov.edcr.feature;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -87,16 +88,76 @@ public class RoadReserve extends FeatureProcess {
 			//scrutinyDetail8.addColumnHeading(4, REQUIRED);
 			scrutinyDetail8.addColumnHeading(2, PROVIDED);
 			scrutinyDetail8.addColumnHeading(3, STATUS);
-			scrutinyDetail8.setKey("Common_" + "Road Reserve ");
+			scrutinyDetail8.setKey("Common_" + "Road Width ");
 			LOG.info("ii" + pl.getRoadReserveFront() +  pl.getRoadReserveRear());
          
-        if(pl.getRoadReserveFront() != BigDecimal.ZERO &&  pl.getRoadReserveRear() != BigDecimal.ZERO) {
-     	setReportOutputDetails(pl, "Road Width Front And Rear",
-				"" + pl.getRoadReserveFront() + "m" +  " & " +  pl.getRoadReserveRear() +"m", "", scrutinyDetail8);
-		//LOG.info("Room Height Validation True: (Expected/Actual) " + "" + "/" + "");
-        // setReportOutputDetails(pl, "Road Width Rear", "" + pl.getRoadReserveRear(), scrutinyDetail);
-    
-        }
+//        if(pl.getRoadReserveFront() != BigDecimal.ZERO &&  pl.getRoadReserveRear() != BigDecimal.ZERO) {
+//     	setReportOutputDetails(pl, "Road Width Front , Rear and Side",
+//				"" + pl.getRoadReserveFront() + "m" +  " & " +  pl.getRoadReserveRear() +"m"
+//				 + " & " + pl.getRoadReserveSide() , "", scrutinyDetail8);
+//		//LOG.info("Room Height Validation True: (Expected/Actual) " + "" + "/" + "");
+//        // setReportOutputDetails(pl, "Road Width Rear", "" + pl.getRoadReserveRear(), scrutinyDetail);
+//    
+//        }
+			
+			/*
+			 * if(pl.getRoadReserveFront() != BigDecimal.ZERO && pl.getRoadReserveRear() !=
+			 * BigDecimal.ZERO) { setReportOutputDetails(pl,
+			 * "Road Width Front , Rear and Side", "" + pl.getRoadReserveFront() + "m" +
+			 * " & " + pl.getRoadReserveRear() +"m" + " & " + pl.getRoadReserveSide() , "",
+			 * scrutinyDetail8);
+			 * //LOG.info("Room Height Validation True: (Expected/Actual) " + "" + "/" +
+			 * ""); // setReportOutputDetails(pl, "Road Width Rear", "" +
+			 * pl.getRoadReserveRear(), scrutinyDetail);
+			 * 
+			 * }
+			 */
+			
+			StringBuilder roadWidthBuilder = new StringBuilder();
+			
+			if (roadReserves != null && !roadReserves.isEmpty()) {
+			    
+			    for (Road road : roadReserves) {
+			    	BigDecimal roadWidth = road.getWidth().setScale(2, RoundingMode.HALF_UP);
+			        if (road != null && roadWidth != null && roadWidth.compareTo(BigDecimal.ZERO) > 0) {			        	
+			        	String roadName = "";
+			            if (road.getName() != null) {
+			                String layerName = road.getName().toUpperCase();
+			                if (layerName.contains("FRONT")) {
+			                    roadName = "Front";
+			                } else if (layerName.contains("REAR")) {
+			                    roadName = "Rear";
+			                } else if (layerName.contains("SIDE")) {
+			                    String[] split = layerName.split("_");
+			                    String sideValue = split[split.length - 1];
+			                    roadName = sideValue.substring(0, 1).toUpperCase()
+			                            + sideValue.substring(1).toLowerCase();
+			                } else {
+			                	String value = road.getName();
+			                    roadName = value.substring(0, 1).toUpperCase()
+			                            + value.substring(1).toLowerCase();
+			                }
+			            }
+
+			            if (roadWidthBuilder.length() > 0) {
+			                roadWidthBuilder.append(" , ");
+			            }
+
+			            roadWidthBuilder
+			                    .append(roadName)
+			                    .append("=")
+			                    .append(roadWidth)
+			                    .append("m");
+			        }						 
+			        
+			    }
+
+			    if (roadWidthBuilder.length() > 0) {
+			        setReportOutputDetails(pl, "Road Width", roadWidthBuilder.toString(),
+			        		Result.Accepted.getResultVal(),scrutinyDetail8);
+			    }
+			}
+			
         return pl;
     }
     private void setReportOutputDetails(Plan pl, String ruleDesc,  

@@ -30,6 +30,10 @@ public class PropertyInfo   {
 
         @JsonProperty("acknowldgementNumber")
         public String acknowldgementNumber;
+        
+
+        @JsonProperty("additionalDetails")
+        private Map<String, Object> additionalDetails;
 
     @JsonProperty("oldPropertyId")
     @Pattern(regexp = "^[^\\$\"'<>?\\\\~`!@$%^+={}*,.:;“”‘’]*$", message = "Invalid existing property Id. should be AlphaNumeric with -, /, #, : special characters allowed")

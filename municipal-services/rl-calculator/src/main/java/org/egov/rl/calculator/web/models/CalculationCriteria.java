@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import lombok.*;
 import lombok.Builder.Default;
+import com.fasterxml.jackson.annotation.JsonAlias;
 
 import org.springframework.validation.annotation.Validated;
 
@@ -50,11 +51,13 @@ public class CalculationCriteria   {
         @JsonProperty("tenantId")
         private String tenantId;
 
-        @JsonProperty("fromDate")
-        private Long fromDate;
+        @JsonProperty("arrearStartDate")
+        @JsonAlias("fromDate")
+        private Long arrearStartDate;
 
-        @JsonProperty("toDate")
-        private Long toDate;
+        @JsonProperty("lastBillingPeriod")
+        @JsonAlias({"toDate", "arrearEndDate"})
+        private Long lastBillingPeriod;
         
         @JsonProperty("financialYear")
         private String financialYear;

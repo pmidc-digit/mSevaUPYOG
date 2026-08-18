@@ -232,10 +232,10 @@ public class ReportService {
             try {
             								
             	 User userInfo=getEncrichedandCopiedUserInfo(reportRequest.getRequestInfo().getUserInfo());
-                 maps = encryptionService.decryptJson(maps,reportDefinition.getdecryptionPathId(),
-                         userInfo,Map.class);
+                 reportRequest.getRequestInfo().setUserInfo(userInfo);
+                 maps = encryptionService.decryptJson(reportRequest.getRequestInfo(), maps, reportDefinition.getdecryptionPathId(), reportRequest.getTenantId(), Map.class);
                  auditDecryptRequest(maps, reportDefinition.getdecryptionPathId(),
-                         reportRequest.getRequestInfo().getUserInfo());
+                         reportRequest.getRequestInfo());
             } catch (IOException e) {
                 log.error("IO exception while decrypting report: " + e.getMessage());
                 throw new CustomException("REPORT_DECRYPTION_ERROR", "Error while decrypting report data");
@@ -264,8 +264,9 @@ public class ReportService {
             reportRequest.getRequestInfo().getUserInfo() != null) {
             try {
                 User userInfo = getEncrichedandCopiedUserInfo(reportRequest.getRequestInfo().getUserInfo());
-                maps = encryptionService.decryptJson(maps, reportDefinition.getdecryptionPathId(), userInfo, Map.class);
-                auditDecryptRequest(maps, reportDefinition.getdecryptionPathId(), reportRequest.getRequestInfo().getUserInfo());
+                reportRequest.getRequestInfo().setUserInfo(userInfo);
+                maps = encryptionService.decryptJson(reportRequest.getRequestInfo(), maps, reportDefinition.getdecryptionPathId(), reportRequest.getTenantId(), Map.class);
+                auditDecryptRequest(maps, reportDefinition.getdecryptionPathId(), reportRequest.getRequestInfo());
             } catch (IOException e) {
                 log.error("IO exception while decrypting report: " + e.getMessage());
                 throw new CustomException("REPORT_DECRYPTION_ERROR", "Error while decrypting report data");
@@ -396,11 +397,8 @@ public class ReportService {
         reportResponse.setReportHeader(columnDetails);
     }
 
- private void auditDecryptRequest(List<Map<String, Object>> maps, String decryptionPathId, User userInfo) {
+ private void auditDecryptRequest(List<Map<String, Object>> maps, String decryptionPathId, RequestInfo requestInfo) {
         String purpose = "Report";
-
-        ObjectNode abacParams = objectMapper.createObjectNode();
-        abacParams.set("key", TextNode.valueOf(decryptionPathId));
 
         List<String> decryptedEntityUuid = new ArrayList<>();
 
@@ -413,7 +411,7 @@ public class ReportService {
         ObjectNode auditData = objectMapper.createObjectNode();
         auditData.set("entityType", TextNode.valueOf(User.class.getName()));
         auditData.set("decryptedEntityIds", objectMapper.valueToTree(decryptedEntityUuid));
-        auditService.audit(userInfo.getUuid(), System.currentTimeMillis(), purpose, abacParams, auditData);
+        auditService.audit(auditData, decryptionPathId, purpose, requestInfo);
     }
     private User getEncrichedandCopiedUserInfo(User userInfo)
     {

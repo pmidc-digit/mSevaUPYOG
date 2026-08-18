@@ -28,9 +28,6 @@ public class PaymentUpdateConsumer {
 	@Autowired
 	private PaymentService paymentService;
 
-	@Autowired
-	private ObjectMapper mapper;
-
 
 	@KafkaListener(topics = {"${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}", concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listenPayments(final String rawRecord,@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
@@ -38,7 +35,7 @@ public class PaymentUpdateConsumer {
 		log.info("ADV Appplication Received to update workflow after PAY for topic : " + topic);
 
 		try {
-			PaymentRequest record = mapper.readValue(rawRecord, PaymentRequest.class);
+			PaymentRequest record = new ObjectMapper().readValue(rawRecord, PaymentRequest.class);
 			paymentService.process(record, topic);
 		} catch (JsonProcessingException e) {
 			log.error("Exception occurred while processing payment reciept : ", e.getMessage());

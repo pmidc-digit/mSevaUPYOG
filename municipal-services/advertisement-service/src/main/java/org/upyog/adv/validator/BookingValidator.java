@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,18 +54,8 @@ public class BookingValidator {
 
 		private boolean validateBookingDate(List<CartDetail> CartDetails) {
 			LocalDate currentDate = BookingUtil.getCurrentDate();
-			boolean isBookingDateValid = CartDetails.stream().anyMatch(cartDetail -> {
-				if (cartDetail.getBookingDate() == null) {
-					return false;
-				}
-				// Range-based booking: the end date must not have passed
-				if (cartDetail.getBookingEndDate() != null) {
-					return !cartDetail.getBookingEndDate().isBefore(cartDetail.getBookingDate())
-							&& !currentDate.isAfter(cartDetail.getBookingEndDate());
-				}
-				// Single-day booking: the booking date must be in the future
-				return currentDate.isBefore(cartDetail.getBookingDate());
-			});
+			boolean isBookingDateValid = CartDetails.stream().anyMatch(cartDetail ->
+			currentDate.isBefore(cartDetail.getBookingDate()));
 			return isBookingDateValid;
 		}
 		
@@ -135,20 +125,20 @@ public class BookingValidator {
 
         // Check if booking dates haven't started yet (business rule) can comment it if no need
 
-		// List<CartDetail> cartDetails = bookingRequest.getBookingApplication().getCartDetails();
-		// if (cartDetails != null && !cartDetails.isEmpty()) {
-		// 	LocalDate today = BookingUtil.getCurrentDate();
-		// 	LocalDate minBookingDate = cartDetails.stream()
-		// 		.map(CartDetail::getBookingDate)
-		// 		.filter(date -> date != null)
-		// 		.min(LocalDate::compareTo)
-		// 		.orElse(null);
+		List<CartDetail> cartDetails = bookingRequest.getBookingApplication().getCartDetails();
+		if (cartDetails != null && !cartDetails.isEmpty()) {
+			LocalDate today = BookingUtil.getCurrentDate();
+			LocalDate minBookingDate = cartDetails.stream()
+				.map(CartDetail::getBookingDate)
+				.filter(date -> date != null)
+				.min(LocalDate::compareTo)
+				.orElse(null);
 
-		// 	if (minBookingDate != null && today.isAfter(minBookingDate)) {
-		// 		throw new CustomException("INVALID_CANCELLATION",
-		// 			"Cannot cancel booking after booking dates have started");
-		// 	}
-		// }
+			if (minBookingDate != null && today.isAfter(minBookingDate)) {
+				throw new CustomException("INVALID_CANCELLATION",
+					"Cannot cancel booking after booking dates have started");
+			}
+		}
 
 
         log.info("Cancellation validation passed for booking no: " + bookingRequest.getBookingApplication().getBookingNo());

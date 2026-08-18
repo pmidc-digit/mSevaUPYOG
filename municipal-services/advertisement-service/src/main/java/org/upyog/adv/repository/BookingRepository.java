@@ -3,7 +3,7 @@ package org.upyog.adv.repository;
 import java.util.List;
 import java.util.Map;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.upyog.adv.web.models.*;
@@ -75,12 +75,6 @@ public interface BookingRepository {
             AdvertisementSlotAvailabilityDetail availabilityDetailsResponse);
 
 	void deleteDataFromTimerAndDraft(String uuid, String draftId, String bookingId);
-
-	/**
-	 * Returns true if any of the requested cart slots are already actively booked by
-	 * a different booking (i.e. booking_status is not terminal/cancelled).
-	 */
-	boolean hasActiveSlotConflict(String currentBookingId, String currentUserId, List<org.upyog.adv.web.models.CartDetail> cartDetails);
 
 	/**
 	 * Mark the given cart slots as REMOVED (status) for the booking and create audit.

@@ -64,12 +64,21 @@ public class BillGeneratorService {
 		List<String> listOfLocalities = SewerageCalculatorDao.getLocalityList(billGenerationReq.getBillScheduler().getTenantId(),billGenerationReq.getBillScheduler().getLocality());
 		for(String localityName : listOfLocalities)
 		{		
-			billGenerationReq.getBillScheduler().setLocality(localityName);			
-			boolean localityStatus = billGenerationValidator.checkBillingCycleDates(billGenerationReq, billGenerationReq.getRequestInfo());
+			BillGenerationRequest cloneReq = BillGenerationRequest.builder()
+					.requestInfo(billGenerationReq.getRequestInfo())
+					.billScheduler(BillScheduler.builder()
+							.tenantId(billGenerationReq.getBillScheduler().getTenantId())
+							.locality(localityName)
+							.billingcycleStartdate(billGenerationReq.getBillScheduler().getBillingcycleStartdate())
+							.billingcycleEnddate(billGenerationReq.getBillScheduler().getBillingcycleEnddate())
+							.isBatch(billGenerationReq.getBillScheduler().getIsBatch())
+							.build())
+					.build();
+
+			boolean localityStatus = billGenerationValidator.checkBillingCycleDates(cloneReq, cloneReq.getRequestInfo());
 			if(!localityStatus) 
 			{
-				billDetails =	billGeneratorService.saveBillGenerationDetails(billGenerationReq);
-		
+				billDetails = billGeneratorService.saveBillGenerationDetails(cloneReq);
 			}
 			
 		}
@@ -77,26 +86,27 @@ public class BillGeneratorService {
         else if (billGenerationReq.getBillScheduler().getGroup() != null && !billGenerationReq.getBillScheduler().getGroup().isEmpty()) 
 
 		{
-			
-			
-		
 				List<String> temp=billGenerationReq.getBillScheduler().getGroup();
-				billGenerationReq.getBillScheduler().setGroup(null);
 				for(String grup:temp)
 				{
-					billGenerationReq.getBillScheduler().setGrup(grup);
-					 Boolean Check=billGenerationValidator.checkBillingCycleDates(billGenerationReq, billGenerationReq.getRequestInfo());
+					BillGenerationRequest cloneReq = BillGenerationRequest.builder()
+							.requestInfo(billGenerationReq.getRequestInfo())
+							.billScheduler(BillScheduler.builder()
+									.tenantId(billGenerationReq.getBillScheduler().getTenantId())
+									.grup(grup)
+									.billingcycleStartdate(billGenerationReq.getBillScheduler().getBillingcycleStartdate())
+									.billingcycleEnddate(billGenerationReq.getBillScheduler().getBillingcycleEnddate())
+									.isBatch(billGenerationReq.getBillScheduler().getIsBatch())
+									.build())
+							.build();
+					 Boolean Check=billGenerationValidator.checkBillingCycleDates(cloneReq, cloneReq.getRequestInfo());
 					
 					 if (!Check)
-						 billDetails = billGeneratorService.saveBillGenerationDetails(billGenerationReq);
+						 billDetails = billGeneratorService.saveBillGenerationDetails(cloneReq);
 					 else 
-						 log.info("Bills Are Already In Initieated Or InProgress For Group--> "+ billGenerationReq.getBillScheduler().getGrup());
+						 log.info("Bills Are Already In Initieated Or InProgress For Group--> "+ cloneReq.getBillScheduler().getGrup());
 				}
-			
-			
-
 		}
-    	
     	else {
 				billGenerationValidator.validateBillingCycleDates(billGenerationReq, billGenerationReq.getRequestInfo());
 				billDetails = billGeneratorService.saveBillGenerationDetails(billGenerationReq);

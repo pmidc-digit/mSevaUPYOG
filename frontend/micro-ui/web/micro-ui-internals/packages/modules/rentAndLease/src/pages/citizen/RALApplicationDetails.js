@@ -205,6 +205,10 @@ const RALApplicationDetails = () => {
                   label={t("Last Billing Period")}
                   text={rawAdditionalDetails?.lastBillingPeriod ? new Date(rawAdditionalDetails.lastBillingPeriod).toLocaleDateString("en-IN") : "-"}
                 />
+                <Row
+                  label={t("Last Paid Upto")}
+                  text={rawAdditionalDetails?.lastPaidUpto ? new Date(rawAdditionalDetails.lastPaidUpto).toLocaleDateString("en-IN") : "-"}
+                />
                 {rawAdditionalDetails?.lastRentRevisedDate && (
                   <Row
                     label={t("Last Rent Revised Date")}

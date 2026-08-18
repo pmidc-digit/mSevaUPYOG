@@ -36,6 +36,11 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     { name: t("New"), code: "new" },
   ];
 
+  const arrearTypeOptions = [
+    { name: t("Yes"), code: "Yes" },
+    { name: t("No"), code: "No" },
+  ];
+
   const incrementPeriodMonthsValues = Array.from({ length: 60 }, (_, index) => ({
     name: index + 1,
     code: String(index + 1),
@@ -113,6 +118,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     },
   });
 
+  useEffect(() => {
+    console.log("errors", errors);
+  }, [errors]);
+
   const docUploadData = {
     Challan: {
       Documents: [
@@ -132,6 +141,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const selectedPropertyType = watch("propertyType");
   const selectedPropertySpecific = watch("propertySpecific");
   const selectedLocationType = watch("locationType");
+  const isLegacyApplication = watch("applicationType")?.code === "Legacy";
+  const hasArrears = watch("isArrear")?.code === "Yes";
+  const hasNoArrears = watch("isArrear")?.code === "No";
 
   const [filteredProperties, setFilteredProperties] = useState([]);
 
@@ -142,6 +154,24 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       setFilteredProperties(properties);
     }
   }, [data, selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
+
+  useEffect(() => {
+    if (!isLegacyApplication || !hasArrears) {
+      setValue("arrear", "");
+      setValue("lastBillingPeriod", "");
+      clearErrors(["arrear", "lastBillingPeriod"]);
+    }
+
+    if (!isLegacyApplication || hasArrears) {
+      setValue("lastPaidUpto", "");
+      clearErrors("lastPaidUpto");
+    }
+
+    if (!isLegacyApplication) {
+      setValue("isArrear", null);
+      clearErrors("isArrear");
+    }
+  }, [isLegacyApplication, hasArrears, setValue, clearErrors]);
 
   const todayISO = new Date().toISOString().split("T")[0];
   const minStartDate = new Date();
@@ -184,10 +214,19 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const onSubmit = async (data) => {
     const applicationType = data?.applicationType?.code;
 
-    if (applicationType === "Legacy") {
+    if (applicationType === "Legacy" && data?.isArrear?.code === "Yes") {
       data["arrearDoc"] = documentsData?.[0]?.filestoreId;
     } else {
       delete data["arrearDoc"];
+    }
+
+    if (applicationType !== "Legacy" || data?.isArrear?.code !== "Yes") {
+      delete data["arrear"];
+      delete data["lastBillingPeriod"];
+    }
+
+    if (applicationType !== "Legacy" || data?.isArrear?.code !== "No") {
+      delete data["lastPaidUpto"];
     }
 
     if (validateStep) {
@@ -207,6 +246,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     // Dispatch to Redux under one key
     dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("propertyDetails", propertyDetails));
     triggerLoader(false);
+    console.log("propertyDetails", propertyDetails);
+    // return;
+
     goNext(propertyDetails);
   };
 
@@ -214,14 +256,28 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     if (currentStepData?.propertyDetails) {
       console.log("currentStepData", currentStepData);
 
-      const additionalDetailsRes = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails;
+      const rawAdditionalDetails = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails;
+      const additionalDetailsRes = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
       const findIncrementPeriodMonthsValues = incrementPeriodMonthsValues?.find((item) => item?.code == additionalDetailsRes?.incrementPeriodMonths);
       setValue("securityDeposit", currentStepData?.propertyDetails?.securityDeposit);
       setValue("incrementPercentage", additionalDetailsRes?.incrementPercentage);
       setValue("incrementPeriodMonths", findIncrementPeriodMonthsValues);
       const propertyDetails = currentStepData.propertyDetails;
       const checkBillingPeriod = additionalDetailsRes?.lastBillingPeriod || propertyDetails?.lastBillingPeriod;
+      const checklastPaidUpto = additionalDetailsRes?.lastPaidUpto || propertyDetails?.lastPaidUpto;
       const checkRevisedDatePeriod = additionalDetailsRes?.lastRentRevisedDate || propertyDetails?.lastRentRevisedDate;
+      const savedIsArrear = propertyDetails?.isArrear || additionalDetailsRes?.isArrear;
+      const isArrearCode = savedIsArrear?.code || savedIsArrear;
+      const selectedIsArrear = checklastPaidUpto
+        ? arrearTypeOptions.find((option) => option.code === "No")
+        : arrearTypeOptions.find((option) => option.code === isArrearCode) || null;
+      const formatDateForInput = (value) => {
+        if (!value) return "";
+        if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? "" : date.toISOString().split("T")[0];
+      };
 
       Object.keys(propertyDetails)?.forEach((key) => {
         if (key === "securityDeposit" || key === "duration") return; // Skip this field
@@ -234,9 +290,10 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       // const lastBillingPeriod = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails?.lastBillingPeriod;
 
       setValue("area", findBuildingValue);
-      // setValue("lastBillingPeriod", currentStepData?.CreatedResponse?.AllotmentDetails[0]?.additionalDetails?.lastBillingPeriod);
-      setValue("lastBillingPeriod", checkBillingPeriod ? new Date(checkBillingPeriod).toISOString().split("T")[0] : "");
-      setValue("lastRentRevisedDate", checkRevisedDatePeriod ? new Date(checkRevisedDatePeriod).toISOString().split("T")[0] : "");
+      setValue("isArrear", selectedIsArrear);
+      setValue("lastBillingPeriod", formatDateForInput(checkBillingPeriod));
+      setValue("lastRentRevisedDate", formatDateForInput(checkRevisedDatePeriod));
+      setValue("lastPaidUpto", formatDateForInput(checklastPaidUpto));
 
       // Restore documentsData for persistence
       if (propertyDetails.arrearDoc) {
@@ -379,6 +436,34 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         />
       </LabelFieldPair>
       {errors.applicationType && <CardLabelError className="ral-error-label">{getErrorMessage("applicationType")}</CardLabelError>}
+
+      {isLegacyApplication && (
+        <React.Fragment>
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {t("Is Arrear")} <span className="mandatory-asterisk">*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name="isArrear"
+              rules={{ required: t("RENT_LEASE_APPLICATION_TYPE_REQUIRED") }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={arrearTypeOptions}
+                  defaultValues
+                  optionKey="name"
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          {errors.isArrear && <CardLabelError className="ral-error-label">{getErrorMessage("isArrear")}</CardLabelError>}
+        </React.Fragment>
+      )}
+
       {/* Allotment Type */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
@@ -667,63 +752,85 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         {errors.securityDeposit && <CardLabelError className="ral-error-label">{getErrorMessage("securityDeposit")}</CardLabelError>}
       </div>
       {/* )} */}
-      {watch("applicationType")?.code == "Legacy" && (
+      {isLegacyApplication && (
         <React.Fragment>
-          <LabelFieldPair>
-            <CardLabel>
-              {t("Arrears")} <span className="mandatory-asterisk">*</span>
-            </CardLabel>
+          <div className={hasArrears ? "ral-arrear-details" : "ral-arrear-details ral-arrear-details-hidden"}>
+              <LabelFieldPair>
+                <CardLabel>
+                  {t("Arrears")} <span className="mandatory-asterisk">*</span>
+                </CardLabel>
 
-            <div className="form-field">
-              <div style={{ fontSize: "13px", color: "green", paddingBottom: "10px" }}>
-                Please add Arrears including penalty until last billing period.
-              </div>
-              <Controller
-                control={control}
-                name="arrear"
-                rules={{ required: t("RENT_LEASE_ARREAR_REQUIRED") }}
-                render={({ value, onChange, onBlur }) => (
-                  <input
-                    className="employee-card-input undefined focus-visible undefined"
-                    type="number"
-                    value={value || ""}
-                    onChange={(e) => onChange(e.target.value)}
-                    onWheel={(e) => e.currentTarget.blur()}
-                    onBlur={(e) => {
-                      onBlur(e);
+                <div className="form-field">
+                  <div style={{ fontSize: "13px", color: "green", paddingBottom: "10px" }}>
+                    Please add Arrears including penalty until last billing period.
+                  </div>
+                  <Controller
+                    control={control}
+                    name="arrear"
+                    rules={{ required: hasArrears ? t("RENT_LEASE_ARREAR_REQUIRED") : false }}
+                    render={({ value, onChange, onBlur }) => (
+                      <input
+                        className="employee-card-input undefined focus-visible undefined"
+                        type="number"
+                        value={value || ""}
+                        onChange={(e) => onChange(e.target.value)}
+                        onWheel={(e) => e.currentTarget.blur()}
+                        onBlur={(e) => {
+                          onBlur(e);
+                        }}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+              {errors.arrear && <CardLabelError className="ral-error-label">{getErrorMessage("arrear")}</CardLabelError>}
+
+              {/* Last Billing Month */}
+              <LabelFieldPair>
+                <CardLabel>
+                  {t("Last Billing Month")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
+                </CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name="lastBillingPeriod"
+                    rules={{
+                      validate: (value) => {
+                        const arrear = watch("arrear");
+                        if (hasArrears && arrear > 0 && !value) {
+                          return t("RENT_LEASE_RAL_END_DATE_REQUIRED");
+                        }
+                        return true;
+                      },
+                    }}
+                    render={({ value, onChange }) => {
+                      return <TextInput type="date" value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={true} />;
                     }}
                   />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors.arrear && <CardLabelError className="ral-error-label">{getErrorMessage("arrear")}</CardLabelError>}
+                </div>
+              </LabelFieldPair>
+              {errors.lastBillingPeriod && <CardLabelError className="ral-error-label">{getErrorMessage("lastBillingPeriod")}</CardLabelError>}
+          </div>
 
-          {/* Last Billing Month */}
-          <LabelFieldPair>
-            <CardLabel>
-              {t("Last Billing Month")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
-            </CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name="lastBillingPeriod"
-                rules={{
-                  validate: (value) => {
-                    const arrear = watch("arrear");
-                    if (arrear > 0 && !value) {
-                      return t("RENT_LEASE_RAL_END_DATE_REQUIRED");
-                    }
-                    return true;
-                  },
-                }}
-                render={({ value, onChange }) => {
-                  return <TextInput type="date" value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={true} />;
-                }}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors.lastBillingPeriod && <CardLabelError className="ral-error-label">{getErrorMessage("lastBillingPeriod")}</CardLabelError>}
+          <div className={hasNoArrears ? "ral-last-paid-upto" : "ral-last-paid-upto ral-last-paid-upto-hidden"}>
+            <p className="ral-last-paid-upto-label">Select the last date upto which You have paid the rent</p>
+            <LabelFieldPair>
+              <CardLabel>
+                {t("Last Paid Upto")} <span className="mandatory-asterisk">*</span>
+              </CardLabel>
+              <div className="form-field">
+                <Controller
+                  control={control}
+                  name="lastPaidUpto"
+                  rules={{ required: hasNoArrears ? t("PTR_FIELD_REQUIRED") : false }}
+                  render={({ value, onChange }) => (
+                    <TextInput type="date" max={todayISO} value={value || ""} onChange={(e) => onChange(e.target.value)} />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {errors.lastPaidUpto && <CardLabelError className="ral-error-label">{getErrorMessage("lastPaidUpto")}</CardLabelError>}
+          </div>
 
           {/* last Rent Revised Date */}
           <LabelFieldPair>

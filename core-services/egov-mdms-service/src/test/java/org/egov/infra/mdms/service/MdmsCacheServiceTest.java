@@ -2,6 +2,7 @@ package org.egov.infra.mdms.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import net.minidev.json.JSONArray;
 
@@ -224,6 +226,116 @@ public class MdmsCacheServiceTest {
         mdmsCacheService.updateCache(kafkaMessage);
 
         assertEquals("Should be exactly 1 record (no duplicate)", 1, masterData.size());
+    }
+
+    @Test
+    public void testUpdateCache_ReplacesWholeRecordAndRefreshesTopLevelIdTracking() {
+        String tenantId = "pb";
+        String moduleName = "tenant";
+        String masterName = "tenants";
+        String schemaCode = moduleName + "." + masterName;
+        String id = "tenant-row-1";
+
+        Map<String, Object> fileRecord = new LinkedHashMap<>();
+        fileRecord.put("id", id);
+        fileRecord.put("code", "pb.test");
+        fileRecord.put("name", "Old Name");
+        fileRecord.put("obsolete", "remove-me");
+
+        JSONArray masterData = getOrCreateMasterArray(tenantId, moduleName, masterName);
+        masterData.add(fileRecord);
+
+        Map<String, Object> dbRecord = new LinkedHashMap<>();
+        dbRecord.put("code", "pb.test");
+        dbRecord.put("name", "New Name");
+
+        Map<String, Object> mdmsObj = new HashMap<>();
+        mdmsObj.put("id", id);
+        mdmsObj.put("tenantId", tenantId);
+        mdmsObj.put("schemaCode", schemaCode);
+        mdmsObj.put("uniqueIdentifier", "pb.test");
+        mdmsObj.put("isActive", true);
+        mdmsObj.put("data", dbRecord);
+
+        Map<String, Object> kafkaMessage = new HashMap<>();
+        kafkaMessage.put("Mdms", mdmsObj);
+
+        mdmsCacheService.updateCache(kafkaMessage);
+
+        assertEquals(1, masterData.size());
+        Map<?, ?> updatedRecord = (Map<?, ?>) masterData.get(0);
+        assertEquals("New Name", updatedRecord.get("name"));
+        assertEquals("pb.test", updatedRecord.get("code"));
+        assertEquals(false, updatedRecord.containsKey("id"));
+        assertEquals(false, updatedRecord.containsKey("obsolete"));
+    }
+
+    @Test
+    public void testLoadAndMergeDbData_ReplacesMasterAndRefreshesTopLevelIdTracking() {
+        String tenantId = "pb";
+        String moduleName = "tenant";
+        String masterName = "tenants";
+
+        Map<String, Object> fileRecord = new LinkedHashMap<>();
+        fileRecord.put("id", "file-id");
+        fileRecord.put("code", "pb.test");
+
+        JSONArray masterData = getOrCreateMasterArray(tenantId, moduleName, masterName);
+        masterData.add(fileRecord);
+
+        Map<String, Object> dbRecord = new LinkedHashMap<>();
+        dbRecord.put("code", "pb.test");
+        dbRecord.put("name", "DB Name");
+
+        Map<String, Object> dbRow = new HashMap<>();
+        dbRow.put("tenantid", tenantId);
+        dbRow.put("schemacode", moduleName + "." + masterName);
+        dbRow.put("data", dbRecord);
+
+        when(mdmsDataRepository.searchAll()).thenReturn(Arrays.asList(dbRow));
+        ReflectionTestUtils.setField(mdmsCacheService, "dbLoadEnabled", true);
+
+        mdmsCacheService.loadAndMergeDbData();
+
+        JSONArray currentMasterData = MDMSApplicationRunnerImpl.getTenantMap().get(tenantId).get(moduleName).get(masterName);
+        assertEquals(1, currentMasterData.size());
+        Map<?, ?> replacedRecord = (Map<?, ?>) currentMasterData.get(0);
+        assertEquals("DB Name", replacedRecord.get("name"));
+        assertEquals(false, replacedRecord.containsKey("id"));
+    }
+
+    @Test
+    public void testLoadAndMergeDbData_ReplacesWholeCacheWhenDbHasLessData() {
+        String tenantId = "pb";
+
+        JSONArray fileTenantMaster = getOrCreateMasterArray(tenantId, "tenant", "tenants");
+        Map<String, Object> fileTenantRecord = new LinkedHashMap<>();
+        fileTenantRecord.put("code", "pb.test");
+        fileTenantMaster.add(fileTenantRecord);
+
+        JSONArray fileRentMaster = getOrCreateMasterArray(tenantId, "rentAndLease", "AllotmentType");
+        Map<String, Object> fileRentRecord = new LinkedHashMap<>();
+        fileRentRecord.put("id", "1");
+        fileRentRecord.put("code", "RL_RENT");
+        fileRentMaster.add(fileRentRecord);
+
+        Map<String, Object> dbRecord = new LinkedHashMap<>();
+        dbRecord.put("code", "pb.test");
+        dbRecord.put("name", "DB Name");
+
+        Map<String, Object> dbRow = new HashMap<>();
+        dbRow.put("tenantid", tenantId);
+        dbRow.put("schemacode", "tenant.tenants");
+        dbRow.put("data", dbRecord);
+
+        when(mdmsDataRepository.searchAll()).thenReturn(Arrays.asList(dbRow));
+        ReflectionTestUtils.setField(mdmsCacheService, "dbLoadEnabled", true);
+
+        mdmsCacheService.loadAndMergeDbData();
+
+        Map<String, Map<String, Map<String, JSONArray>>> tenantMap = MDMSApplicationRunnerImpl.getTenantMap();
+        assertEquals(1, tenantMap.get(tenantId).size());
+        assertEquals(false, tenantMap.get(tenantId).containsKey("rentAndLease"));
     }
 
     private JSONArray getOrCreateMasterArray(String tenantId, String moduleName, String masterName) {

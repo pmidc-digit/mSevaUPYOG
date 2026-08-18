@@ -2,7 +2,6 @@ package org.egov.infra.mdms.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,8 @@ import net.minidev.json.JSONArray;
  * Unified service for managing the MDMS in-memory cache (tenantMap).
  *
  * Responsibilities: 1. Load all active MDMS data from the database at
- * application startup and merge into cache. 2. Process Kafka messages
+ * application startup and replace the in-memory cache with a DB snapshot.
+ * 2. Process Kafka messages
  * (create/update) to keep the cache in sync at runtime.
  *
  * Merge strategy (both DB load and Kafka updates): - Records with matching
@@ -43,9 +43,10 @@ public class MdmsCacheService {
 	}
 
 	/**
-	 * Loads all active MDMS data from the database and merges it into the in-memory
-	 * tenantMap cache. Called after file-based loading is complete so DB data takes
-	 * precedence over file data when records share the same "code".
+	 * Loads all active MDMS data from the database and replaces the in-memory
+	 * tenantMap cache with the DB snapshot. Called after file-based loading is
+	 * complete so the runtime cache contains only the data that exists in DB when
+	 * DB loading is enabled.
 	 */
 	public void loadAndMergeDbData() {
 		if (!dbLoadEnabled) {
@@ -57,7 +58,7 @@ public class MdmsCacheService {
 
 		try {
 			List<Map<String, Object>> rows = mdmsDataRepository.searchAll();
-			Set<String> clearedMasters = new HashSet<>();
+			Map<String, Map<String, Map<String, JSONArray>>> dbTenantMap = new HashMap<>();
 			int recordCount = 0;
 
 			for (Map<String, Object> row : rows) {
@@ -82,14 +83,7 @@ public class MdmsCacheService {
 					@SuppressWarnings("unchecked")
 					LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>) dataObj;
 
-					JSONArray masterData = getOrCreateMasterData(tenantId, moduleName, masterName);
-					
-					String masterKey = tenantId + "-" + moduleName + "-" + masterName;
-					if (!clearedMasters.contains(masterKey)) {
-						masterData.clear();
-						clearedMasters.add(masterKey);
-						log.info("Cleared file-based cache for DB replacement: {}", masterKey);
-					}
+					JSONArray masterData = getOrCreateMasterData(dbTenantMap, tenantId, moduleName, masterName);
 
 					masterData.add(data);
 					recordCount++;
@@ -98,7 +92,8 @@ public class MdmsCacheService {
 				}
 			}
 
-			log.info("Successfully loaded {} MDMS records from database into cache.", recordCount);
+			MDMSApplicationRunnerImpl.replaceTenantMap(dbTenantMap);
+			log.info("Replaced in-memory MDMS cache with {} DB records.", recordCount);
 
 		} catch (Exception e) {
 			log.error("Error loading MDMS data from database. File-based cache remains intact.", e);
@@ -151,6 +146,7 @@ public class MdmsCacheService {
 		 */
 		if (Boolean.FALSE.equals(isActive)) {
 			removeMasterRecord(masterData, id, uniqueIdentifier, moduleName, masterName);
+			MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(tenantId, moduleName, masterName, masterData);
 			return;
 		}
 
@@ -164,6 +160,8 @@ public class MdmsCacheService {
 		} else if (data != null) {
 			upsertRecordFromKafka(masterData, data, moduleName, masterName, id, uniqueIdentifier);
 		}
+
+		MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(tenantId, moduleName, masterName, masterData);
 	}
 
 	/**
@@ -171,10 +169,14 @@ public class MdmsCacheService {
 	 * tenantMap.
 	 */
 	private JSONArray getOrCreateMasterData(String tenantId, String moduleName, String masterName) {
-		Map<String, Map<String, Map<String, JSONArray>>> tenantMap = MDMSApplicationRunnerImpl.getTenantMap();
-		Map<String, Map<String, JSONArray>> moduleMap = tenantMap.computeIfAbsent(tenantId, k -> new HashMap<>());
-		Map<String, JSONArray> masterMap = moduleMap.computeIfAbsent(moduleName, k -> new HashMap<>());
-		return masterMap.computeIfAbsent(masterName, k -> new JSONArray());
+		return getOrCreateMasterData(MDMSApplicationRunnerImpl.getTenantMap(), tenantId, moduleName, masterName);
+	}
+
+	private JSONArray getOrCreateMasterData(Map<String, Map<String, Map<String, JSONArray>>> tenantMap, String tenantId,
+			String moduleName, String masterName) {
+		Map<String, Map<String, JSONArray>> moduleMap = tenantMap.computeIfAbsent(tenantId, key -> new HashMap<>());
+		Map<String, JSONArray> masterMap = moduleMap.computeIfAbsent(moduleName, key -> new HashMap<>());
+		return masterMap.computeIfAbsent(masterName, key -> new JSONArray());
 	}
 
 	/**

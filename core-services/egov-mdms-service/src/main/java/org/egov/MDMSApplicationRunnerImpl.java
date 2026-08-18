@@ -57,6 +57,8 @@ public class MDMSApplicationRunnerImpl {
 
     private static Map<String, Map<String, Object>> masterConfigMap = new ConcurrentHashMap<>();
 
+    private static Set<String> mastersWithTopLevelIdInCache = ConcurrentHashMap.newKeySet();
+
     ObjectMapper objectMapper = new ObjectMapper();
 
     @PostConstruct
@@ -164,6 +166,7 @@ public class MDMSApplicationRunnerImpl {
                 tenantMap.put(tenantId, tenantModule);
             }
             masterDataMap.put(masterName, masterDataJsonArray);
+            refreshMasterTopLevelIdState(tenantId, moduleName, masterName, masterDataJsonArray);
         }
     }
 
@@ -208,6 +211,64 @@ public class MDMSApplicationRunnerImpl {
 
     public static Map<String, Map<String, Object>> getMasterConfigMap() {
         return masterConfigMap;
+    }
+
+    public static void replaceTenantMap(Map<String, Map<String, Map<String, JSONArray>>> newTenantMap) {
+        tenantMap.putAll(newTenantMap);
+        clearTopLevelIdTracking();
+        for (Map.Entry<String, Map<String, Map<String, JSONArray>>> tenantEntry : newTenantMap.entrySet()) {
+            String tenantId = tenantEntry.getKey();
+            for (Map.Entry<String, Map<String, JSONArray>> moduleEntry : tenantEntry.getValue().entrySet()) {
+                String moduleName = moduleEntry.getKey();
+                for (Map.Entry<String, JSONArray> masterEntry : moduleEntry.getValue().entrySet()) {
+                    refreshMasterTopLevelIdState(tenantId, moduleName, masterEntry.getKey(), masterEntry.getValue());
+                }
+            }
+        }
+    }
+
+    private static final java.util.regex.Pattern UUID_PATTERN = java.util.regex.Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+
+    public static boolean isRandomUuid(Object idObj) {
+        if (idObj == null) {
+            return false;
+        }
+        String idStr = String.valueOf(idObj).trim();
+        return UUID_PATTERN.matcher(idStr).matches();
+    }
+
+    public static void refreshMasterTopLevelIdState(String tenantId, String moduleName, String masterName,
+                                                    JSONArray masterData) {
+        String masterKey = getMasterKey(tenantId, moduleName, masterName);
+        if (containsTopLevelId(masterData)) {
+            mastersWithTopLevelIdInCache.add(masterKey);
+        } else {
+            mastersWithTopLevelIdInCache.remove(masterKey);
+        }
+    }
+
+    public static boolean hasTopLevelIdInCache(String tenantId, String moduleName, String masterName) {
+        return mastersWithTopLevelIdInCache.contains(getMasterKey(tenantId, moduleName, masterName));
+    }
+
+    public static void clearTopLevelIdTracking() {
+        mastersWithTopLevelIdInCache.clear();
+    }
+
+    private static String getMasterKey(String tenantId, String moduleName, String masterName) {
+        return tenantId + "|" + moduleName + "|" + masterName;
+    }
+
+    private static boolean containsTopLevelId(JSONArray masterDataJsonArray) {
+        for (Object record : masterDataJsonArray) {
+            if (record instanceof Map) {
+                Object idObj = ((Map<?, ?>) record).get("id");
+                if (idObj != null && !isRandomUuid(idObj)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }

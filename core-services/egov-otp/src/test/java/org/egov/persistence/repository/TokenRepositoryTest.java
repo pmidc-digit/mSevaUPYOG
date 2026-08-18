@@ -1,66 +1,69 @@
 package org.egov.persistence.repository;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Date;
-import java.util.UUID;
-
 import org.egov.domain.exception.TokenUpdateException;
 import org.egov.domain.model.Token;
 import org.egov.domain.model.TokenSearchCriteria;
 import org.egov.domain.model.Tokens;
 import org.egov.domain.model.ValidateRequest;
-import org.junit.*;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(SpringRunner.class)
+import java.util.Date;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class TokenRepositoryTest {
 
-    @InjectMocks
-    private TokenRepository tokenRepository;
+    private final TokenRepository tokenRepository;
 
     @Autowired
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    @Before
-    public void before() {
-        tokenRepository = new TokenRepository(namedParameterJdbcTemplate);
+    public TokenRepositoryTest(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        this.tokenRepository = new TokenRepository(namedParameterJdbcTemplate);
     }
 
     @Test
-    public void test_should_save_entity_token() {
+    void test_should_save_entity_token() {
 
-        final Token token = Token.builder().uuid(UUID.randomUUID().toString()).number("99999").identity("someIdentity")
-                .timeToLiveInSeconds(400l).createdDate(new Date()).tenantId("test").build();
+        Token token = Token.builder()
+                .uuid(UUID.randomUUID().toString())
+                .number("99999")
+                .identity("someIdentity")
+                .timeToLiveInSeconds(400L)
+                .createdDate(new Date())
+                .tenantId("test")
+                .build();
+
         Token savedToken = tokenRepository.save(token);
+
         assertNotNull(savedToken);
         assertEquals(token.getTenantId(), savedToken.getTenantId());
         assertEquals(token.getUuid(), savedToken.getUuid());
-
     }
 
     @Test
-    @Ignore
     @Sql(scripts = {"/sql/clearTokens.sql", "/sql/createTokens.sql"})
-    public void test_should_retrieve_otp_for_given_token_number_and_identity() {
-        ValidateRequest validateRequest = ValidateRequest.builder().otp("token2").identity("identity2")
-                .tenantId("tenant2").build();
+    void test_should_retrieve_otp_for_given_token_number_and_identity() {
 
-        final Tokens actualTokens = tokenRepository.findByIdentityAndTenantId(validateRequest);
+        ValidateRequest validateRequest = ValidateRequest.builder()
+                .otp("token2")
+                .identity("identity2")
+                .tenantId("tenant2")
+                .build();
+
+        Tokens actualTokens = tokenRepository.findByIdentityAndTenantId(validateRequest);
 
         assertNotNull(actualTokens);
-        final Token firstToken = actualTokens.getTokens().get(0);
+
+        Token firstToken = actualTokens.getTokens().get(0);
+
         assertEquals("id2", firstToken.getUuid());
         assertEquals("identity2", firstToken.getIdentity());
         assertEquals("tenant2", firstToken.getTenantId());
@@ -72,31 +75,49 @@ public class TokenRepositoryTest {
 
     @Test
     @Sql(scripts = {"/sql/clearTokens.sql", "/sql/createTokens.sql"})
-    public void test_should_fetch_token_by_id() {
-        TokenSearchCriteria searchCriteria = new TokenSearchCriteria("id1", "tenant1");
-        final Token token = tokenRepository.findBy(searchCriteria);
+    void test_should_fetch_token_by_id() {
+
+        TokenSearchCriteria searchCriteria =
+                new TokenSearchCriteria("id1", "tenant1");
+
+        Token token = tokenRepository.findBy(searchCriteria);
+
         assertTrue(token.isValidated());
     }
 
     @Test
     @Sql(scripts = {"/sql/clearTokens.sql", "/sql/createTokens.sql"})
-    public void test_should_return_null_when_token_not_present_for_given_id() {
-        TokenSearchCriteria searchCriteria = new TokenSearchCriteria("id5", "tenant6");
-        final Token token = tokenRepository.findBy(searchCriteria);
+    void test_should_return_null_when_token_not_present_for_given_id() {
+
+        TokenSearchCriteria searchCriteria =
+                new TokenSearchCriteria("id5", "tenant6");
+
+        Token token = tokenRepository.findBy(searchCriteria);
+
         assertNull(token);
     }
 
     @Test
     @Sql(scripts = {"/sql/clearTokens.sql", "/sql/createTokens.sql"})
-    public void test_should_return_true_when_token_is_updated_to_validated() {
-        final Token token = Token.builder().uuid("id1").build();
+    void test_should_return_true_when_token_is_updated_to_validated() {
+
+        Token token = Token.builder()
+                .uuid("id1")
+                .build();
+
         tokenRepository.markAsValidated(token);
+
         assertTrue(token.isValidated());
     }
 
-    @Test(expected = TokenUpdateException.class)
-    public void test_should_return_false_when_token_is_not_updated_successfully() {
-        final Token token = Token.builder().uuid("uuid").build();
-        tokenRepository.markAsValidated(token);
+    @Test
+    void test_should_throw_exception_when_token_is_not_updated_successfully() {
+
+        Token token = Token.builder()
+                .uuid("uuid")
+                .build();
+
+        assertThrows(TokenUpdateException.class,
+                () -> tokenRepository.markAsValidated(token));
     }
 }

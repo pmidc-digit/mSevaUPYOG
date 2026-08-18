@@ -10,6 +10,9 @@ import org.egov.rl.calculator.web.models.demand.DemandResponse;
 import org.egov.rl.calculator.web.models.property.RequestInfoWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
 
 @Slf4j
 @Controller

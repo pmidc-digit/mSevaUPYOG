@@ -2,23 +2,22 @@ package org.egov.rl.calculator.web.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.egov.rl.calculator.web.models.property.Address;
-import org.hibernate.validator.constraints.SafeHtml;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-//@Data
-public class OwnerInfo { // extends User {
+public class OwnerInfo {
 
 
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$")
 	@JsonProperty("ownerId")
 	private String ownerId;
 	
@@ -36,15 +35,15 @@ public class OwnerInfo { // extends User {
 	@JsonProperty("tenantId")
 	private String tenantId;
 	
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$")
 	@JsonProperty("gender")
 	private String gender;
 
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$")
 	@JsonProperty("fatherOrHusbandName")
 	private String fatherOrHusbandName;
 
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$")
 	@JsonProperty("status")
 	private String status;
 
@@ -55,12 +54,12 @@ public class OwnerInfo { // extends User {
 	private Double ownerShipPercentage;
 
 	@NotNull
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$")
 	@JsonProperty("ownerType")
 	private String ownerType;
 	
 //	@NotNull
-//    @SafeHtml
+//    @Pattern(regexp = "^[^<>]*$")
 //    @Size(max=100)
 //    @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
 //    @JsonProperty("firstName")
@@ -72,7 +71,7 @@ public class OwnerInfo { // extends User {
 //	private String middleName;
 //
 //	@NotNull
-//    @SafeHtml
+//    @Pattern(regexp = "^[^<>]*$")
 //    @Size(max=100)
 //    @Pattern(regexp = "^[^\\$\"'<>?~`!@#$%^()+={}\\[\\]*:;“”‘’]*$", message = "Invalid name. Only alphabets and special characters . ")
 //    @JsonProperty("lastName")
@@ -85,7 +84,7 @@ public class OwnerInfo { // extends User {
 	
 	@Pattern(regexp = "(^[4-9][0-9]{9}$)", message = "Inavlid mobile number, should start with 4-9 and contain ten digits of 0-9")
     @NotNull
-    @SafeHtml
+    @Pattern(regexp = "^[^<>]*$")
     @JsonProperty("emailId")
 	private String emailId;
 
@@ -155,11 +154,11 @@ public class OwnerInfo { // extends User {
 //    private List<Role> roles;
 //
 //    @Size(max=32)
-//    @SafeHtml
+//    @Pattern(regexp = "^[^<>]*$")
 //    @JsonProperty("blood_group")
 //    private String bloodGroup;
     
-//	@SafeHtml
+//	@Pattern(regexp = "^[^<>]*$")
 //	@JsonProperty("correspondenceAddress")
 //	private String correspondenceAddress;
 

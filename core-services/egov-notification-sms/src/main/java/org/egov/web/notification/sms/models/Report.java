@@ -2,9 +2,11 @@ package org.egov.web.notification.sms.models;
 
 
 import lombok.*;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 
 import java.util.Date;
+
+import jakarta.validation.constraints.Pattern;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -12,15 +14,16 @@ import java.util.Date;
 @Getter
 @ToString
 public class Report {
-    @SafeHtml
+
+	@Pattern(regexp = "^[a-zA-Z0-9_-]*$")
     private String jobno;
 
-    @SafeHtml
+    @Pattern(regexp = "^[a-zA-Z0-9_-]*$")
     private int messagestatus;
 
-    @SafeHtml
+    @Pattern(regexp = "^[a-zA-Z0-9_-]*$")
     private String DoneTime;
 
-    @SafeHtml
+    @Pattern(regexp = "^[a-zA-Z0-9_-]*$")
     private String usernameHash;
 }

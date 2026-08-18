@@ -1,70 +1,113 @@
 package org.egov.domain.model;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-
 import org.egov.domain.exception.InvalidOtpRequestException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class OtpRequestTest {
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-	@Test(expected = InvalidOtpRequestException.class)
-	public void test_should_throw_validation_exception_when_tenant_id_is_not_present() {
-		final OtpRequest otpRequest = OtpRequest.builder().tenantId(null).mobileNumber("mobile number").build();
+class OtpRequestTest {
 
-		assertTrue(otpRequest.isTenantIdAbsent());
-		otpRequest.validate();
-	}
+    @Test
+    void shouldThrowValidationExceptionWhenTenantIdIsNotPresent() {
 
-	@Test(expected = InvalidOtpRequestException.class)
-	public void test_should_throw_validation_exception_when_mobile_number_is_not_present() {
-		final OtpRequest otpRequest = OtpRequest.builder().tenantId("tenantId").mobileNumber(null).build();
+        OtpRequest otpRequest = OtpRequest.builder()
+                .tenantId(null)
+                .mobileNumber("mobile number")
+                .build();
 
-		assertTrue(otpRequest.isMobileNumberAbsent());
-		otpRequest.validate();
-	}
+        assertTrue(otpRequest.isTenantIdAbsent());
 
-	@Test(expected = InvalidOtpRequestException.class)
-	public void test_should_throw_validation_exception_when_type_is_not_present() {
-		final OtpRequest otpRequest = OtpRequest.builder().tenantId("tenantId").mobileNumber("mobileNumber").type(null)
-				.build();
+        assertThrows(
+                InvalidOtpRequestException.class,
+                otpRequest::validate
+        );
+    }
 
-		assertTrue(otpRequest.isInvalidType());
-		otpRequest.validate();
-	}
+    @Test
+    void shouldThrowValidationExceptionWhenMobileNumberIsNotPresent() {
 
-	@Test
-	public void test_validate_should_not_throw_exception_for_a_valid_request() {
-		final OtpRequest otpRequest = OtpRequest.builder().tenantId("tenantId").mobileNumber("1234567890")
-				.type(OtpRequestType.REGISTER).build();
+        OtpRequest otpRequest = OtpRequest.builder()
+                .tenantId("tenantId")
+                .mobileNumber(null)
+                .build();
 
-		otpRequest.validate();
-	}
+        assertTrue(otpRequest.isMobileNumberAbsent());
 
-	@Test
-	public void test_should_not_throw_exception_for_a_valid_request() {
-		final OtpRequest otpRequest = OtpRequest.builder().tenantId("tenantId").mobileNumber("1234567890")
-				.type(OtpRequestType.LOGIN).build();
+        assertThrows(
+                InvalidOtpRequestException.class,
+                otpRequest::validate
+        );
+    }
 
-		otpRequest.validate();
-	}
+    @Test
+    void shouldThrowValidationExceptionWhenTypeIsNotPresent() {
 
-	@Test
-	public void test_should_returntrue_when_requesttype_login() {
-		final OtpRequest otpRequest = OtpRequest.builder().tenantId("tenantId").mobileNumber("mobileNumber")
-				.type(OtpRequestType.LOGIN).build();
+        OtpRequest otpRequest = OtpRequest.builder()
+                .tenantId("tenantId")
+                .mobileNumber("mobileNumber")
+                .type(null)
+                .build();
 
-		assertTrue(otpRequest.isLoginRequestType());
-		assertFalse(otpRequest.isRegistrationRequestType());
-	}
+        assertTrue(otpRequest.isInvalidType());
 
-	@Test(expected = InvalidOtpRequestException.class)
-	public void test_should_throw_validation_exception_when_mobilenumber_is_not_valid() {
-		final OtpRequest otpRequest = OtpRequest.builder().tenantId("tenantId").mobileNumber("mobileNumber").type(null)
-				.build();
+        assertThrows(
+                InvalidOtpRequestException.class,
+                otpRequest::validate
+        );
+    }
 
-		assertTrue(otpRequest.isInvalidType());
-		otpRequest.validate();
-	}
+    @Test
+    void validateShouldNotThrowExceptionForValidRegisterRequest() {
 
+        OtpRequest otpRequest = OtpRequest.builder()
+                .tenantId("tenantId")
+                .mobileNumber("1234567890")
+                .type(OtpRequestType.REGISTER)
+                .build();
+
+        assertDoesNotThrow(otpRequest::validate);
+    }
+
+    @Test
+    void validateShouldNotThrowExceptionForValidLoginRequest() {
+
+        OtpRequest otpRequest = OtpRequest.builder()
+                .tenantId("tenantId")
+                .mobileNumber("1234567890")
+                .type(OtpRequestType.LOGIN)
+                .build();
+
+        assertDoesNotThrow(otpRequest::validate);
+    }
+
+    @Test
+    void shouldReturnTrueWhenRequestTypeLogin() {
+
+        OtpRequest otpRequest = OtpRequest.builder()
+                .tenantId("tenantId")
+                .mobileNumber("mobileNumber")
+                .type(OtpRequestType.LOGIN)
+                .build();
+
+        assertTrue(otpRequest.isLoginRequestType());
+        assertFalse(otpRequest.isRegistrationRequestType());
+    }
+
+    @Test
+    void shouldThrowValidationExceptionWhenMobileNumberIsInvalid() {
+
+        OtpRequest otpRequest = OtpRequest.builder()
+                .tenantId("tenantId")
+                .mobileNumber("mobileNumber")
+                .type(OtpRequestType.LOGIN)
+                .build();
+
+        assertThrows(
+                InvalidOtpRequestException.class,
+                otpRequest::validate
+        );
+    }
 }

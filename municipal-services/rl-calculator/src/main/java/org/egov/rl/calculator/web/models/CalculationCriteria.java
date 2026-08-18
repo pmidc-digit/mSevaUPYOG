@@ -1,14 +1,13 @@
 package org.egov.rl.calculator.web.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.validation.Valid;
 import lombok.*;
 import lombok.Builder.Default;
 import com.fasterxml.jackson.annotation.JsonAlias;
 
 import org.springframework.validation.annotation.Validated;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 /**
  * CalulationCriteria

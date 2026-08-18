@@ -27,7 +27,7 @@ public class MdmsClientService {
 	@Autowired
 	private RestTemplate restTemplate;
 
-	@Value("${mdms.service.host:http://localhost:8080/}")
+	@Value("${mdms.service.host:https://mseva.lgpunjab.gov.in/}")
 	private String mdmsHost;
 	
 	@Value("${mdms.service.search.uri:egov-mdms-service/v1/_search}")

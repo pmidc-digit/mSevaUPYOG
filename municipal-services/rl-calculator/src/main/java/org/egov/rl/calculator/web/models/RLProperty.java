@@ -1,11 +1,10 @@
 package org.egov.rl.calculator.web.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-import org.hibernate.validator.constraints.SafeHtml;
 
-import java.math.BigDecimal;
-import javax.validation.constraints.Digits;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Pattern;
+import lombok.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -23,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class RLProperty {// extends PropertyInfo {
 
 	@JsonProperty("propertyId")
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$")
 	private String propertyId;
 
 	@JsonProperty("propertyName")

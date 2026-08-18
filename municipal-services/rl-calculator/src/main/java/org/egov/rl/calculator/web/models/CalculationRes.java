@@ -1,10 +1,10 @@
 package org.egov.rl.calculator.web.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.validation.Valid;
 import lombok.*;
 import org.egov.common.contract.response.ResponseInfo;
-
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 

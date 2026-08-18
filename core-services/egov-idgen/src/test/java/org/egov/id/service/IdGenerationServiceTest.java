@@ -18,9 +18,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-//@RunWith(SpringJUnit4ClassRunner.class)
-@ExtendWith(SpringExtension.class)
 
+@ExtendWith(SpringExtension.class)
 class IdGenerationServiceTest {
 
 

@@ -1,20 +1,5 @@
 package org.egov.domain.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.lenient;
-
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import org.egov.domain.exception.TokenAlreadyUsedException;
 import org.egov.domain.exception.TokenValidationFailureException;
 import org.egov.domain.model.Token;
 import org.egov.domain.model.TokenRequest;
@@ -22,17 +7,28 @@ import org.egov.domain.model.TokenSearchCriteria;
 import org.egov.domain.model.Tokens;
 import org.egov.domain.model.ValidateRequest;
 import org.egov.persistence.repository.TokenRepository;
-import org.egov.web.util.*;
-import org.junit.*;
-import org.junit.runner.RunWith;
+//import org.egov.web.util.LocalDateTimeFactory;
+import org.egov.web.util.OtpConfiguration;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.boot.test.context.*;
-import org.springframework.security.crypto.bcrypt.*;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-@RunWith(MockitoJUnitRunner.class)
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
 public class TokenServiceTest {
 
     @Mock
@@ -46,92 +42,128 @@ public class TokenServiceTest {
 
     private LocalDateTime now;
 
-    @Before
-    public void before() {
+    @BeforeEach
+    void setup() {
         now = LocalDateTime.now(ZoneId.of("UTC"));
+
         lenient().when(localDateTimeFactory.now()).thenReturn(now);
-        this.tokenService = new TokenService(
+
+        tokenService = new TokenService(
                 tokenRepository,
                 new BCryptPasswordEncoder(),
-                new OtpConfiguration(90,6, true)
+                new OtpConfiguration(90, 6, true)
         );
     }
 
     @Test
-    public void test_should_save_new_token_with_given_identity_and_tenant() {
-        final Token savedToken = Token.builder().build();
-        final TokenRequest tokenRequest = mock(TokenRequest.class);
-        final ValidateRequest validateRequest = mock(ValidateRequest.class);
+    void test_should_save_new_token_with_given_identity_and_tenant() {
+
+        Token savedToken = Token.builder().build();
+        TokenRequest tokenRequest = mock(TokenRequest.class);
+
         when(tokenRepository.save(any(Token.class))).thenReturn(savedToken);
 
-        final Tokens tokens = mock(Tokens.class);
-        lenient().when(tokenRepository.findByIdentityAndTenantId(validateRequest)).thenReturn(tokens);
-        final Token actualToken = tokenService.create(tokenRequest);
+        Tokens tokens = mock(Tokens.class);
+        when(tokenRepository.findByIdentityAndTenantId(any())).thenReturn(tokens);
+
+        Token actualToken = tokenService.create(tokenRequest);
 
         assertEquals(savedToken, actualToken);
     }
 
     @Test
-    @Ignore
-    public void test_should_validate_token_request() {
-        final TokenRequest tokenRequest = mock(TokenRequest.class);
+    @Disabled
+    void test_should_validate_token_request() {
 
+        TokenRequest tokenRequest = mock(TokenRequest.class);
 
         tokenService.create(tokenRequest);
 
         verify(tokenRequest).validate();
     }
 
-    @Test(expected = TokenValidationFailureException.class)
-    public void test_should_throw_exception_when_no_matching_non_expired_token_is_present() {
-        final ValidateRequest validateRequest = new ValidateRequest("tenant", "otpNumber", "identity");
-        final Tokens tokens = mock(Tokens.class);
-        lenient().when(tokens.hasSingleNonExpiredToken(now)).thenReturn(false);
-        when(tokenRepository.findByIdentityAndTenantId(validateRequest)).thenReturn(tokens);
-        //when(tokenRepository.findByNumberAndIdentityAndTenantIdLike(validateRequest)).thenReturn(tokens);
+    @Test
+    void test_should_throw_exception_when_no_matching_non_expired_token_is_present() {
 
-        tokenService.validate(validateRequest);
-    }
+        ValidateRequest validateRequest =
+                new ValidateRequest("tenant", "otpNumber", "identity");
 
-    @Test(expected = TokenValidationFailureException.class)
-    public void test_should_throw_exception_when_validatingtoken_already_validated() {
-        final ValidateRequest validateRequest = new ValidateRequest("tenant", "otpNumber", "identity");
-        Token token = Token.builder().uuid("").identity("test").validated(true)
-                .timeToLiveInSeconds(300l).number("12345")
-                .tenantId("default").createdTime(new Date().getTime()).build();
-        List<Token> tokenList = new ArrayList<Token>();
-        tokenList.add(token);
-        Tokens tokens = new Tokens(tokenList);
+        Tokens tokens = mock(Tokens.class);
+
+        when(tokens.hasSingleNonExpiredToken(now)).thenReturn(false);
         when(tokenRepository.findByIdentityAndTenantId(validateRequest)).thenReturn(tokens);
 
-        final Token token1 = tokenService.validate(validateRequest);
-        assertThat(token1.isValidated());
+        assertThrows(TokenValidationFailureException.class,
+                () -> tokenService.validate(validateRequest));
     }
 
     @Test
-    public void test_should_return_token_when_token_is_successfully_updated_to_validated() {
-        final ValidateRequest validateRequest = new ValidateRequest("tenant", "12345", "identity");
-        Token token = Token.builder().uuid("").identity("test").validated(false)
-                .timeToLiveInSeconds(300l).number(new BCryptPasswordEncoder().encode("12345"))
-                .tenantId("default").createdTime(new Date().getTime()).build();
-        List<Token> tokenList = new ArrayList<Token>();
+    void test_should_throw_exception_when_token_already_validated() {
+
+        ValidateRequest validateRequest =
+                new ValidateRequest("tenant", "otpNumber", "identity");
+
+        Token token = Token.builder()
+                .uuid("")
+                .identity("test")
+                .validated(true)
+                .timeToLiveInSeconds(300L)
+                .number("12345")
+                .tenantId("default")
+                .createdTime(new Date().getTime())
+                .build();
+
+        List<Token> tokenList = new ArrayList<>();
         tokenList.add(token);
+
         Tokens tokens = new Tokens(tokenList);
+
         when(tokenRepository.findByIdentityAndTenantId(validateRequest)).thenReturn(tokens);
-        final Token token1 = tokenService.validate(validateRequest);
-        assertThat(token1.isValidated());
+
+        Token result = tokenService.validate(validateRequest);
+
+        assertTrue(result.isValidated());
     }
 
     @Test
-    public void test_should_return_otp_for_given_search_criteria() {
-        final Token expectedToken = Token.builder().build();
-        final TokenSearchCriteria searchCriteria = new TokenSearchCriteria("uuid", "tenant");
+    void test_should_return_token_when_token_is_successfully_updated_to_validated() {
+
+        ValidateRequest validateRequest =
+                new ValidateRequest("tenant", "12345", "identity");
+
+        Token token = Token.builder()
+                .uuid("")
+                .identity("test")
+                .validated(false)
+                .timeToLiveInSeconds(300L)
+                .number(new BCryptPasswordEncoder().encode("12345"))
+                .tenantId("default")
+                .createdTime(new Date().getTime())
+                .build();
+
+        List<Token> tokenList = new ArrayList<>();
+        tokenList.add(token);
+
+        Tokens tokens = new Tokens(tokenList);
+
+        when(tokenRepository.findByIdentityAndTenantId(validateRequest)).thenReturn(tokens);
+
+        Token result = tokenService.validate(validateRequest);
+
+        assertTrue(result.isValidated());
+    }
+
+    @Test
+    void test_should_return_token_for_given_search_criteria() {
+
+        Token expectedToken = Token.builder().build();
+        TokenSearchCriteria searchCriteria =
+                new TokenSearchCriteria("uuid", "tenant");
+
         when(tokenRepository.findBy(searchCriteria)).thenReturn(expectedToken);
 
-        final Token actualToken = tokenService.search(searchCriteria);
+        Token actualToken = tokenService.search(searchCriteria);
 
         assertEquals(expectedToken, actualToken);
     }
-
-
 }

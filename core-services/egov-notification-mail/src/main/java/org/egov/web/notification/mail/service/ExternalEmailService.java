@@ -4,7 +4,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
 
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 import org.egov.web.notification.mail.consumer.contract.Email;
 import org.egov.web.notification.mail.consumer.contract.EmailAttachment;
@@ -12,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -26,32 +27,41 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ExternalEmailService implements EmailService {
 
-    private JavaMailSenderImpl mailSender;
+public static final String EXCEPTION_MESSAGE = "Exception creating HTML email";
 
-    @Value("${egov.filestore.internal.host}")
-    private String internalHost;
+private JavaMailSenderImpl mailSender;
 
-    public ExternalEmailService(JavaMailSenderImpl mailSender) {
+@Value("${egov.filestore.internal.host}")
+private String internalHost;
+
+    private final JavaMailSender mailSender;
+
+    public ExternalEmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
 
     @Override
     @Async // CRITICAL FIX: Runs email sending in a background thread to prevent Kafka bottlenecks
     public void sendEmail(Email email) {
-        try {
-            if (email.isHTML()) {
-                sendHTMLEmail(email);
-            } else {
-                sendTextEmail(email);
-            }
-        } catch (Exception e) {
-            log.error("Error in sendEmail for: " + email.getEmailTo(), e);
+@Override
+@Async
+public void sendEmail(Email email) {
+    try {
+        if (email.isHTML()) {
+            sendHTMLEmail(email);
+        } else {
+            sendTextEmail(email);
+        }
+    } catch (Exception e) {
+        log.error("Error in sendEmail for: " + email.getEmailTo(), e);
+    }
+}
         }
     }
 
     private void sendTextEmail(Email email) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setFrom(mailSender.getUsername());
+mailMessage.setFrom(mailSender.getUsername());
         mailMessage.setTo(email.getEmailTo().toArray(new String[0]));
         mailMessage.setSubject(email.getSubject());
         mailMessage.setText(email.getBody());
@@ -64,19 +74,21 @@ public class ExternalEmailService implements EmailService {
         MimeMessage message = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            
             helper.setFrom(mailSender.getUsername());
+            helper.setTo(email.getEmailTo().toArray(new String[0]));
+            helper.setSubject(email.getSubject());
+            helper.setText(email.getBody(), true);
             helper.setTo(email.getEmailTo().toArray(new String[0]));
             helper.setSubject(email.getSubject());
             helper.setText(email.getBody(), true);
 
             // 1. Process NEW Inline Images (For eChallan)
-            if (!CollectionUtils.isEmpty(email.getInlineAttachments())) {
+            if (!org.springframework.util.CollectionUtils.isEmpty(email.getInlineAttachments())) {
                 processInlineAttachments(email.getInlineAttachments(), helper);
             }
 
             // 2. Process LEGACY String Attachments (For PT, TL, WS, etc.)
-            if (!CollectionUtils.isEmpty(email.getAttachments())) {
+            if (!org.springframework.util.CollectionUtils.isEmpty(email.getAttachments())) {
                 processLegacyAttachments(email.getAttachments(), helper);
             }
 
@@ -89,19 +101,18 @@ public class ExternalEmailService implements EmailService {
         }
     }
 
- // --- FOR ECHALLAN (NEW) ---
+    // --- FOR ECHALLAN (NEW) ---
     private void processInlineAttachments(List<EmailAttachment> attachments, MimeMessageHelper helper) {
         for (EmailAttachment attachment : attachments) {
             try {
                 String downloadUrl = attachment.getUrl();
                 
-                // Keep routing bypass if testing locally!
                 if (downloadUrl.contains("/filestore/v1/files/viewfile")) {
                     downloadUrl = downloadUrl.replaceFirst("https?://[^/]+", internalHost);
                 }
 
-                java.net.URL url = new java.net.URL(downloadUrl);
-                java.net.URLConnection conn = url.openConnection();
+                URL url = new URL(downloadUrl);
+                URLConnection conn = url.openConnection();
                 conn.setConnectTimeout(3000);
                 conn.setReadTimeout(7000);
 
@@ -133,8 +144,8 @@ public class ExternalEmailService implements EmailService {
                     downloadUrl = urlString.replaceFirst("https?://[^/]+", internalHost);
                 }
 
-                java.net.URL url = new java.net.URL(downloadUrl);
-                java.net.URLConnection conn = url.openConnection();
+                URL url = new URL(downloadUrl);
+                URLConnection conn = url.openConnection();
                 conn.setConnectTimeout(3000);
                 conn.setReadTimeout(7000);
 
@@ -156,32 +167,28 @@ public class ExternalEmailService implements EmailService {
      */
     private String extractFileName(String urlString) {
         try {
-            String fileName = "attachment.pdf"; // Default fallback
+            String fileName = "attachment.pdf";
             
             if (urlString.contains("name=")) {
-                // 1. Get everything after "name="
                 fileName = urlString.split("name=")[1];
                 
-                // 2. Remove any other parameters after the name (like &tenantId=...)
                 if (fileName.contains("&")) {
                     fileName = fileName.substring(0, fileName.indexOf("&"));
                 }
                 
-                // 3. Get the last part of the path (after the last %2F or /)
                 int lastSlash = Math.max(fileName.lastIndexOf("/"), fileName.lastIndexOf("%2F"));
                 if (lastSlash != -1) {
-                    // If it was %2F, we need to skip 3 characters, if /, just 1
                     int offset = fileName.contains("%2F") && lastSlash == fileName.lastIndexOf("%2F") ? 3 : 1;
                     fileName = fileName.substring(lastSlash + offset);
                 }
             }
             
-            // Decode the URL characters (like %20 to space) just in case
             return java.net.URLDecoder.decode(fileName, "UTF-8");
-            
         } catch (Exception e) {
             log.warn("Could not extract filename from URL, using default. URL: {}", urlString);
             return "Sanction_Document.pdf";
+        }
+    }
         }
     }
 }

@@ -1,6 +1,6 @@
 package org.egov.rl.services.models;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.egov.rl.services.models.enums.Status;
 
@@ -40,7 +40,7 @@ public class Document {
   @JsonProperty("status")
   private Status status;
 
-//  @SafeHtml
+//  @Pattern(regexp = "^[^<>]*$")
   @JsonProperty("auditDetails")
   private AuditDetails auditDetails;
 

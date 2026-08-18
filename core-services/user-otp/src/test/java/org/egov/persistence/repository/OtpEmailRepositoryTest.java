@@ -2,14 +2,14 @@ package org.egov.persistence.repository;
 
 import org.egov.persistence.contract.EmailMessage;
 import org.egov.tracer.kafka.CustomKafkaTemplate;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,48 +20,73 @@ import org.egov.domain.service.LocalizationService;
 import org.egov.domain.model.OtpRequestType;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@RunWith(MockitoJUnitRunner.class)
-public class OtpEmailRepositoryTest {
+@ExtendWith(MockitoExtension.class)
+class OtpEmailRepositoryTest {
 
-	private static final String EMAIL_TOPIC = "email.topic";
-	@Mock
-	private CustomKafkaTemplate<String, EmailMessage> kakfaTemplate;
-	@Mock
-	private LocalizationService localizationService;
-	private OtpEmailRepository repository;
+    private static final String EMAIL_TOPIC = "email.topic";
 
-	@Before
-	public void before() {
-		repository = new OtpEmailRepository(kakfaTemplate, EMAIL_TOPIC);
-		ReflectionTestUtils.setField(repository, "localizationService", localizationService);
-	}
+    @Mock
+    private CustomKafkaTemplate<String, EmailMessage> kafkaTemplate;
 
-	@Test
-	public void test_should_not_send_email_when_email_address_is_not_present() {
-		repository.send(null, "otpNumber", null);
+    @Mock
+    private LocalizationService localizationService;
 
-		verify(kakfaTemplate, never()).send(any(), any());
-	}
+    private OtpEmailRepository repository;
 
-	@Test
-	public void test_should_send_email_message() {
-		when(localizationService.getLocalisedMessages(anyString(), anyString(), anyString())).thenReturn(new HashMap<>());
-		OtpRequest otpRequest = mock(OtpRequest.class);
-		when(otpRequest.getType()).thenReturn(OtpRequestType.PASSWORD_RESET);
-		when(otpRequest.isRegistrationRequestType()).thenReturn(false);
-		when(otpRequest.isLoginRequestType()).thenReturn(false);
+    @BeforeEach
+    void setUp() {
+        repository = new OtpEmailRepository(kafkaTemplate, EMAIL_TOPIC);
+        ReflectionTestUtils.setField(repository, "localizationService", localizationService);
+    }
 
-		final EmailMessage expectedEmailMessage = EmailMessage.builder()
-				.subject("mSeva Punjab - Password Reset Verification")
-				.body("Dear Citizen, Your OTP for recovering password is %s.")
-				.sender("")
-				.emailTo("foo@bar.com")
-				.isHTML(true)
-				.build();
+    @BeforeEach
+    void setUp() {
+        repository = new OtpEmailRepository(kafkaTemplate, EMAIL_TOPIC);
+    }
 
-		repository.send("foo@bar.com", "otpNumber", otpRequest);
+    @Test
+    void shouldNotSendEmailWhenEmailAddressIsNotPresent() {
+        repository.send(null, "otpNumber", null);
+        verify(kafkaTemplate, never()).send(any(), any());
+    }
 
-		verify(kakfaTemplate).send(EMAIL_TOPIC, expectedEmailMessage);
-	}
+    @Test
+    void shouldSendEmailMessage() {
+        when(localizationService.getLocalisedMessages(anyString(), anyString(), anyString()))
+                .thenReturn(new HashMap<>());
+        OtpRequest otpRequest = mock(OtpRequest.class);
+        when(otpRequest.getType()).thenReturn(OtpRequestType.PASSWORD_RESET);
+        when(otpRequest.isRegistrationRequestType()).thenReturn(false);
+        when(otpRequest.isLoginRequestType()).thenReturn(false);
 
+        final EmailMessage expectedEmailMessage = EmailMessage.builder()
+                .subject("mSeva Punjab - Password Reset Verification")
+                .body("Dear Citizen, Your OTP for recovering password is %s.")
+                .sender("")
+                .emailTo("foo@bar.com")
+                .isHTML(true)
+                .build();
+
+        repository.send("foo@bar.com", "otpNumber", otpRequest);
+        verify(kafkaTemplate).send(any(), any());
+    }
+
+        verify(kafkaTemplate, never()).send(any(), any());
+    }
+
+    @Test
+    void shouldSendEmailMessage() {
+
+        EmailMessage expectedEmailMessage = EmailMessage.builder()
+                .subject("Password Reset")
+                .body("Your OTP for recovering password is otpNumber.")
+                .sender("")
+                .email("foo@bar.com")
+                .build();
+
+        repository.send("foo@bar.com", "otpNumber");
+
+        verify(kafkaTemplate)
+                .send(EMAIL_TOPIC, expectedEmailMessage);
+    }
 }

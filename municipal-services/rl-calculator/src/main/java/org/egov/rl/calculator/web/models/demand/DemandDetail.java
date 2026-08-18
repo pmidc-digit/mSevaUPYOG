@@ -49,7 +49,7 @@ import org.egov.rl.calculator.web.models.property.AuditDetails;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 @Data

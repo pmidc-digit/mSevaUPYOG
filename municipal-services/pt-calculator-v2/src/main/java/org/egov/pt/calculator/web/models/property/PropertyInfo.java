@@ -1,8 +1,8 @@
 package org.egov.pt.calculator.web.models.property;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.Map;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

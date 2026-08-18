@@ -266,8 +266,8 @@ public class MdmsCacheServiceTest {
         Map<?, ?> updatedRecord = (Map<?, ?>) masterData.get(0);
         assertEquals("New Name", updatedRecord.get("name"));
         assertEquals("pb.test", updatedRecord.get("code"));
-        assertEquals(false, updatedRecord.containsKey("id"));
-        assertEquals(false, updatedRecord.containsKey("obsolete"));
+        assertEquals(true, updatedRecord.containsKey("id"));
+        assertEquals(true, updatedRecord.containsKey("obsolete"));
     }
 
     @Test
@@ -301,7 +301,7 @@ public class MdmsCacheServiceTest {
         assertEquals(1, currentMasterData.size());
         Map<?, ?> replacedRecord = (Map<?, ?>) currentMasterData.get(0);
         assertEquals("DB Name", replacedRecord.get("name"));
-        assertEquals(false, replacedRecord.containsKey("id"));
+        assertEquals(true, replacedRecord.containsKey("id"));
     }
 
     @Test
@@ -360,6 +360,167 @@ public class MdmsCacheServiceTest {
         Map<?, ?> secondBs = (Map<?, ?>) updatedBusinessServices.get(1);
         assertEquals("ADVT.Hoardings", secondBs.get("code"));
         assertEquals(true, secondBs.get("isVoucherCreationEnabled"));
+    }
+
+    @Test
+    public void testLoadAndMergeDbData_DeepMergeNestedCityAndTenantFields() {
+        String tenantId = "pb";
+
+        // Existing file record with top-level fields and nested city fields
+        Map<String, Object> existingCity = new LinkedHashMap<>();
+        existingCity.put("name", "Itbarnala");
+        existingCity.put("code", "2011");
+        existingCity.put("districtName", "Barnala");
+
+        Map<String, Object> existingTenant = new LinkedHashMap<>();
+        existingTenant.put("code", "pb.itbarnala");
+        existingTenant.put("name", "Improvement Trust Barnala");
+        existingTenant.put("emailId", "info@barnala.gov");
+        existingTenant.put("city", existingCity);
+
+        JSONArray tenantMaster = getOrCreateMasterArray(tenantId, "tenant", "tenants");
+        tenantMaster.add(existingTenant);
+
+        // DB record updating address and city.municipalityName
+        Map<String, Object> dbCity = new LinkedHashMap<>();
+        dbCity.put("code", "2011");
+        dbCity.put("municipalityName", "Improvement Trust Barnala");
+
+        Map<String, Object> dbTenant = new LinkedHashMap<>();
+        dbTenant.put("code", "pb.itbarnala");
+        dbTenant.put("address", "22 Acre Scheme, Barnala");
+        dbTenant.put("city", dbCity);
+
+        Map<String, Object> dbRow = new HashMap<>();
+        dbRow.put("tenantid", tenantId);
+        dbRow.put("schemacode", "tenant.tenants");
+        dbRow.put("data", dbTenant);
+
+        when(mdmsDataRepository.searchAll()).thenReturn(Arrays.asList(dbRow));
+        ReflectionTestUtils.setField(mdmsCacheService, "dbLoadEnabled", true);
+
+        mdmsCacheService.loadAndMergeDbData();
+
+        JSONArray resultMaster = MDMSApplicationRunnerImpl.getTenantMap().get(tenantId).get("tenant").get("tenants");
+        assertEquals(1, resultMaster.size());
+
+        Map<?, ?> mergedTenant = (Map<?, ?>) resultMaster.get(0);
+        // Preserved from file
+        assertEquals("Improvement Trust Barnala", mergedTenant.get("name"));
+        assertEquals("info@barnala.gov", mergedTenant.get("emailId"));
+
+        // Updated/Added from DB
+        assertEquals("22 Acre Scheme, Barnala", mergedTenant.get("address"));
+
+        // Nested city deep-merged
+        Map<?, ?> mergedCity = (Map<?, ?>) mergedTenant.get("city");
+        assertEquals("Itbarnala", mergedCity.get("name"));
+        assertEquals("Barnala", mergedCity.get("districtName"));
+        assertEquals("Improvement Trust Barnala", mergedCity.get("municipalityName"));
+    }
+
+    @Test
+    public void testLoadAndMergeDbData_DifferentCityCodes201And2011DoNotOverlap() {
+        String tenantId = "pb";
+
+        // File record for 201 (pb.barnala)
+        Map<String, Object> city201 = new LinkedHashMap<>();
+        city201.put("code", "201");
+        city201.put("name", "Barnala");
+        city201.put("districtTenantCode", "pb.barnala");
+
+        Map<String, Object> tenant201 = new LinkedHashMap<>();
+        tenant201.put("code", "pb.barnala");
+        tenant201.put("name", "Barnala MC");
+        tenant201.put("city", city201);
+
+        JSONArray tenantMaster = getOrCreateMasterArray(tenantId, "tenant", "tenants");
+        tenantMaster.add(tenant201);
+
+        // DB record for 2011 (pb.itbarnala) sharing the same districtTenantCode "pb.barnala"
+        Map<String, Object> city2011 = new LinkedHashMap<>();
+        city2011.put("code", "2011");
+        city2011.put("name", "Itbarnala");
+        city2011.put("districtTenantCode", "pb.barnala");
+
+        Map<String, Object> tenant2011 = new LinkedHashMap<>();
+        tenant2011.put("code", "pb.itbarnala");
+        tenant2011.put("name", "Improvement Trust Barnala");
+        tenant2011.put("city", city2011);
+
+        Map<String, Object> dbRow = new HashMap<>();
+        dbRow.put("tenantid", tenantId);
+        dbRow.put("schemacode", "tenant.tenants");
+        dbRow.put("data", tenant2011);
+
+        when(mdmsDataRepository.searchAll()).thenReturn(Arrays.asList(dbRow));
+        ReflectionTestUtils.setField(mdmsCacheService, "dbLoadEnabled", true);
+
+        mdmsCacheService.loadAndMergeDbData();
+
+        JSONArray resultMaster = MDMSApplicationRunnerImpl.getTenantMap().get(tenantId).get("tenant").get("tenants");
+        
+        // Should contain BOTH records (size 2), 201 should NOT be replaced by 2011 even though both have districtTenantCode="pb.barnala"!
+        assertEquals(2, resultMaster.size());
+
+        Map<?, ?> first = (Map<?, ?>) resultMaster.get(0);
+        Map<?, ?> second = (Map<?, ?>) resultMaster.get(1);
+
+        assertEquals("pb.barnala", first.get("code"));
+        assertEquals("Barnala MC", first.get("name"));
+        assertEquals("pb.itbarnala", second.get("code"));
+        assertEquals("Improvement Trust Barnala", second.get("name"));
+    }
+
+    @Test
+    public void testLoadAndMergeDbData_MismatchedTopLevelCodeDoesNotOverwrite() {
+        String tenantId = "pb";
+
+        // File record for pb.barnala with city code 201
+        Map<String, Object> city201 = new LinkedHashMap<>();
+        city201.put("code", "201");
+        city201.put("name", "Barnala");
+
+        Map<String, Object> tenant201 = new LinkedHashMap<>();
+        tenant201.put("code", "pb.barnala");
+        tenant201.put("name", "Barnala MC");
+        tenant201.put("city", city201);
+
+        JSONArray tenantMaster = getOrCreateMasterArray(tenantId, "tenant", "tenants");
+        tenantMaster.add(tenant201);
+
+        // Corrupted DB record for pb.itbarnala having city code 201
+        Map<String, Object> cityCorrupted = new LinkedHashMap<>();
+        cityCorrupted.put("code", "201"); // Mismatched nested city code
+        cityCorrupted.put("name", "Itbarnala");
+
+        Map<String, Object> tenant2011 = new LinkedHashMap<>();
+        tenant2011.put("code", "pb.itbarnala");
+        tenant2011.put("name", "Improvement Trust Barnala");
+        tenant2011.put("city", cityCorrupted);
+
+        Map<String, Object> dbRow = new HashMap<>();
+        dbRow.put("tenantid", tenantId);
+        dbRow.put("schemacode", "tenant.tenants");
+        dbRow.put("data", tenant2011);
+
+        when(mdmsDataRepository.searchAll()).thenReturn(Arrays.asList(dbRow));
+        ReflectionTestUtils.setField(mdmsCacheService, "dbLoadEnabled", true);
+
+        mdmsCacheService.loadAndMergeDbData();
+
+        JSONArray resultMaster = MDMSApplicationRunnerImpl.getTenantMap().get(tenantId).get("tenant").get("tenants");
+
+        // Top-level code mismatch ("pb.barnala" vs "pb.itbarnala") MUST prevent pb.barnala from being overwritten!
+        assertEquals(2, resultMaster.size());
+
+        Map<?, ?> first = (Map<?, ?>) resultMaster.get(0);
+        Map<?, ?> second = (Map<?, ?>) resultMaster.get(1);
+
+        assertEquals("pb.barnala", first.get("code"));
+        assertEquals("Barnala MC", first.get("name"));
+        assertEquals("pb.itbarnala", second.get("code"));
+        assertEquals("Improvement Trust Barnala", second.get("name"));
     }
 
     private JSONArray getOrCreateMasterArray(String tenantId, String moduleName, String masterName) {

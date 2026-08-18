@@ -2,6 +2,7 @@ package org.egov.infra.mdms.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,9 +10,13 @@ import java.util.Set;
 
 import org.egov.MDMSApplicationRunnerImpl;
 import org.egov.infra.mdms.repository.MdmsDataRepository;
+import org.egov.infra.mdms.utils.MDMSConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
@@ -40,6 +45,50 @@ public class MdmsCacheService {
 	@Autowired
 	public MdmsCacheService(MdmsDataRepository mdmsDataRepository) {
 		this.mdmsDataRepository = mdmsDataRepository;
+	}
+
+	/**
+	 * Resolves tenantId to root state tenantId if the master is state-level or exists at state level.
+	 */
+	public static String getEffectiveTenantId(String tenantId, String moduleName, String masterName) {
+		if (tenantId == null || !tenantId.contains(".")) {
+			return tenantId;
+		}
+
+		String stateTenantId = tenantId.split("\\.")[0];
+
+		Map<String, Map<String, Object>> masterConfigMap = MDMSApplicationRunnerImpl.getMasterConfigMap();
+		if (masterConfigMap != null && masterConfigMap.containsKey(moduleName)) {
+			Map<String, Object> moduleData = masterConfigMap.get(moduleName);
+			if (moduleData != null && moduleData.containsKey(masterName)) {
+				Object masterConfig = moduleData.get(masterName);
+				if (masterConfig != null) {
+					try {
+						ObjectMapper mapper = new ObjectMapper();
+						Boolean isStateLevel = JsonPath.read(mapper.writeValueAsString(masterConfig),
+								MDMSConstants.STATE_LEVEL_JSONPATH);
+						if (Boolean.TRUE.equals(isStateLevel)) {
+							return stateTenantId;
+						}
+					} catch (Exception e) {
+						// ignore
+					}
+				}
+			}
+		}
+
+		Map<String, Map<String, Map<String, JSONArray>>> tenantMap = MDMSApplicationRunnerImpl.getTenantMap();
+		if (tenantMap != null && tenantMap.containsKey(stateTenantId)) {
+			Map<String, Map<String, JSONArray>> stateModules = tenantMap.get(stateTenantId);
+			if (stateModules != null && stateModules.containsKey(moduleName)) {
+				Map<String, JSONArray> stateMasters = stateModules.get(moduleName);
+				if (stateMasters != null && stateMasters.containsKey(masterName)) {
+					return stateTenantId;
+				}
+			}
+		}
+
+		return tenantId;
 	}
 
 	/**
@@ -86,7 +135,8 @@ public class MdmsCacheService {
 					String moduleName = parts[0];
 					String masterName = parts[1];
 
-					JSONArray masterData = getOrCreateMasterData(tenantId, moduleName, masterName);
+					String effectiveTenantId = getEffectiveTenantId(tenantId, moduleName, masterName);
+					JSONArray masterData = getOrCreateMasterData(effectiveTenantId, moduleName, masterName);
 
 					if (dataObj instanceof List) {
 						for (Object rec : (List<?>) dataObj) {
@@ -98,13 +148,16 @@ public class MdmsCacheService {
 						recordCount++;
 					}
 
-					MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(tenantId, moduleName, masterName, masterData);
+					MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(effectiveTenantId, moduleName, masterName, masterData);
 				} catch (Exception e) {
 					log.error("Error processing DB row: {}", row, e);
 				}
 			}
 
 			log.info("Merged {} DB records into in-memory MDMS cache.", recordCount);
+
+			// Deduplicate all cached master arrays to collapse any duplicate entries originating from seed JSON files or DB loading
+			deduplicateAllMasters();
 
 		} catch (Exception e) {
 			log.error("Error loading MDMS data from database. File-based cache remains intact.", e);
@@ -150,14 +203,15 @@ public class MdmsCacheService {
 		String moduleName = parts[0];
 		String masterName = parts[1];
 
-		JSONArray masterData = getOrCreateMasterData(tenantId, moduleName, masterName);
+		String effectiveTenantId = getEffectiveTenantId(tenantId, moduleName, masterName);
+		JSONArray masterData = getOrCreateMasterData(effectiveTenantId, moduleName, masterName);
 
 		/*
 		 * If record is inactive, remove it
 		 */
 		if (Boolean.FALSE.equals(isActive)) {
 			removeMasterRecord(masterData, id, uniqueIdentifier, moduleName, masterName);
-			MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(tenantId, moduleName, masterName, masterData);
+			MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(effectiveTenantId, moduleName, masterName, masterData);
 			return;
 		}
 
@@ -172,7 +226,7 @@ public class MdmsCacheService {
 			upsertRecordFromKafka(masterData, data, moduleName, masterName, id, uniqueIdentifier);
 		}
 
-		MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(tenantId, moduleName, masterName, masterData);
+		MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(effectiveTenantId, moduleName, masterName, masterData);
 	}
 
 	/**
@@ -213,42 +267,128 @@ public class MdmsCacheService {
 			Map<?, ?> existingMap = (Map<?, ?>) existing;
 
 			if (isRecordMatching(existingMap, newRecordMap, moduleName, masterName, topLevelId, topLevelUniqueIdentifier)) {
-				masterData.set(i, newRecord);
-				log.info("Updated MDMS cache record for {}.{}", moduleName, masterName);
+				Map<String, Object> mergedRecord = deepMergeMaps(existingMap, newRecordMap);
+				masterData.set(i, mergedRecord);
+				log.info("Merged MDMS cache record for {}.{}", moduleName, masterName);
 				return;
 			}
 		}
 
 		log.info("Added new MDMS cache record for {}.{}", moduleName, masterName);
 		masterData.add(newRecord);
+		deduplicateMasterData(masterData, moduleName, masterName);
+	}
+
+	public void deduplicateAllMasters() {
+		Map<String, Map<String, Map<String, JSONArray>>> tenantMap = MDMSApplicationRunnerImpl.getTenantMap();
+		if (tenantMap == null) return;
+
+		for (Map.Entry<String, Map<String, Map<String, JSONArray>>> tEntry : tenantMap.entrySet()) {
+			Map<String, Map<String, JSONArray>> moduleMap = tEntry.getValue();
+			if (moduleMap == null) continue;
+
+			for (Map.Entry<String, Map<String, JSONArray>> mEntry : moduleMap.entrySet()) {
+				String moduleName = mEntry.getKey();
+				Map<String, JSONArray> masterMap = mEntry.getValue();
+				if (masterMap == null) continue;
+
+				for (Map.Entry<String, JSONArray> masterEntry : masterMap.entrySet()) {
+					String masterName = masterEntry.getKey();
+					JSONArray masterData = masterEntry.getValue();
+					if (masterData != null) {
+						deduplicateMasterData(masterData, moduleName, masterName);
+					}
+				}
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void deduplicateMasterData(JSONArray masterData, String moduleName, String masterName) {
+		if (masterData == null || masterData.size() <= 1) {
+			return;
+		}
+
+		for (int i = 0; i < masterData.size(); i++) {
+			Object firstObj = masterData.get(i);
+			if (!(firstObj instanceof Map)) continue;
+
+			Map<?, ?> firstMap = (Map<?, ?>) firstObj;
+
+			for (int j = i + 1; j < masterData.size(); j++) {
+				Object secondObj = masterData.get(j);
+				if (!(secondObj instanceof Map)) continue;
+
+				Map<?, ?> secondMap = (Map<?, ?>) secondObj;
+
+				if (isRecordMatching(firstMap, secondMap, moduleName, masterName, null, null)) {
+					Map<String, Object> merged = deepMergeMaps(secondMap, firstMap);
+					masterData.set(i, merged);
+					masterData.remove(j);
+					j--;
+					firstMap = merged;
+				}
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private Map<String, Object> deepMergeMaps(Map<?, ?> existingMap, Map<?, ?> newMap) {
+		Map<String, Object> merged = new LinkedHashMap<>();
+
+		for (Map.Entry<?, ?> entry : existingMap.entrySet()) {
+			merged.put(String.valueOf(entry.getKey()), entry.getValue());
+		}
+
+		for (Map.Entry<?, ?> entry : newMap.entrySet()) {
+			String key = String.valueOf(entry.getKey());
+			Object newVal = entry.getValue();
+			Object existingVal = merged.get(key);
+
+			if (existingVal instanceof Map && newVal instanceof Map) {
+				merged.put(key, deepMergeMaps((Map<?, ?>) existingVal, (Map<?, ?>) newVal));
+			} else {
+				merged.put(key, newVal);
+			}
+		}
+
+		return merged;
 	}
 
 	private boolean isRecordMatching(Map<?, ?> existingMap, Map<?, ?> newRecordMap, String moduleName, String masterName,
 			String topLevelId, String topLevelUniqueIdentifier) {
 
+		// 1. Strict match by 'id' if present in both and not random UUID
 		Object existingId = existingMap.get("id");
 		Object newId = newRecordMap.get("id") != null ? newRecordMap.get("id") : topLevelId;
-
-		// 1. Match strictly by 'id' if present in both
-		if (newId != null && existingId != null) {
-			if (isDeepEqual(newId, existingId)) return true;
+		if (newId != null && existingId != null && !isRandomUuid(newId) && !isRandomUuid(existingId)) {
+			return isDeepEqual(newId, existingId);
 		}
 
-		// 2. Match by 'uniqueIdentifier' if present in both
-		Object existingUnique = existingMap.get("uniqueIdentifier");
-		Object newUnique = newRecordMap.get("uniqueIdentifier") != null ? newRecordMap.get("uniqueIdentifier") : topLevelUniqueIdentifier;
-		if (newUnique != null && existingUnique != null) {
-			if (isDeepEqual(newUnique, existingUnique)) return true;
+		// 2. Strict mismatch check on top-level 'code': if both records have a 'code' and they differ, they CANNOT match
+		Object existingCode = existingMap.get("code");
+		Object newCode = newRecordMap.get("code");
+		if (existingCode != null && newCode != null) {
+			String exCodeStr = String.valueOf(existingCode).trim();
+			String newCodeStr = String.valueOf(newCode).trim();
+			if (!exCodeStr.isEmpty() && !newCodeStr.isEmpty()) {
+				if (!exCodeStr.equalsIgnoreCase(newCodeStr)) {
+					return false;
+				}
+			}
 		}
 
-		// 3. Match topLevelUniqueIdentifier against primary fields in existing record
-		if (topLevelUniqueIdentifier != null) {
-			for (String idField : new String[]{"code", "businessService", "model", "name", "service", "type", "key"}) {
-				Object exVal = existingMap.get(idField);
-				if (exVal != null && isDeepEqual(topLevelUniqueIdentifier, exVal)) {
+		// 3. Extract candidate identifier codes for both records and check for intersection
+		Set<String> existingCodes = extractCandidateCodes(existingMap, null, null);
+		Set<String> newCodes = extractCandidateCodes(newRecordMap, topLevelId, topLevelUniqueIdentifier);
+
+		if (!existingCodes.isEmpty() && !newCodes.isEmpty()) {
+			for (String code : newCodes) {
+				if (existingCodes.contains(code)) {
 					return true;
 				}
 			}
+			return false;
 		}
 
 		// 4. Match by configured uniqueKeys in masterConfigMap
@@ -266,34 +406,52 @@ public class MdmsCacheService {
 			if (allMatch) return true;
 		}
 
-		// 5. Standard common primary identifier fields: code, businessService, service, model, name, key
-		String[] primaryKeys = new String[]{"code", "businessService", "service", "model", "name", "key"};
-		for (String pk : primaryKeys) {
-			Object exVal = existingMap.get(pk);
-			Object newVal = newRecordMap.get(pk);
-			if (exVal != null && newVal != null) {
-				return isDeepEqual(exVal, newVal);
-			}
-		}
-
-		// 6. Dynamic field matching for arbitrary/custom JSON master schemas
-		// Compare shared fields whose key name ends with Code, Id, Key, Name, Type, Service, Model, Number, No, Identifier
-		for (Object keyObj : newRecordMap.keySet()) {
-			if (!(keyObj instanceof String)) continue;
-			String k = (String) keyObj;
-			String kLower = k.toLowerCase();
-			if (kLower.endsWith("code") || kLower.endsWith("id") || kLower.endsWith("key") 
-					|| kLower.endsWith("name") || kLower.endsWith("type") || kLower.endsWith("service") 
-					|| kLower.endsWith("model") || kLower.endsWith("number") || kLower.endsWith("no")) {
-				Object exVal = existingMap.get(k);
-				Object newVal = newRecordMap.get(k);
-				if (exVal != null && newVal != null) {
-					return isDeepEqual(exVal, newVal);
-				}
-			}
-		}
-
 		return false;
+	}
+
+	private Set<String> extractCandidateCodes(Map<?, ?> map, String topLevelId, String topLevelUniqueIdentifier) {
+		Set<String> codes = new HashSet<>();
+		if (map == null) return codes;
+
+		if (map.get("code") != null) {
+			codes.add(String.valueOf(map.get("code")).trim());
+		}
+		if (map.get("uniqueIdentifier") != null) {
+			codes.add(String.valueOf(map.get("uniqueIdentifier")).trim());
+		}
+		if (map.get("id") != null && !isRandomUuid(map.get("id"))) {
+			codes.add(String.valueOf(map.get("id")).trim());
+		}
+		if (map.get("model") != null) {
+			codes.add(String.valueOf(map.get("model")).trim());
+		}
+		if (map.get("businessService") != null) {
+			codes.add(String.valueOf(map.get("businessService")).trim());
+		}
+		if (map.get("service") != null) {
+			codes.add(String.valueOf(map.get("service")).trim());
+		}
+		if (map.get("city") instanceof Map) {
+			Map<?, ?> cityMap = (Map<?, ?>) map.get("city");
+			if (cityMap.get("code") != null) {
+				codes.add(String.valueOf(cityMap.get("code")).trim());
+			}
+		}
+
+		if (topLevelId != null && !isRandomUuid(topLevelId)) {
+			codes.add(topLevelId.trim());
+		}
+		if (topLevelUniqueIdentifier != null) {
+			codes.add(topLevelUniqueIdentifier.trim());
+		}
+
+		return codes;
+	}
+
+	private boolean isRandomUuid(Object idObj) {
+		if (idObj == null) return false;
+		String str = String.valueOf(idObj).trim();
+		return str.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 	}
 
 

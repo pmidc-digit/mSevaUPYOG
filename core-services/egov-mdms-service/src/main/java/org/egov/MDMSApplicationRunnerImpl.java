@@ -74,6 +74,7 @@ public class MDMSApplicationRunnerImpl {
                 log.info("Stopping as all files could not be loaded");
                 System.exit(1);
             }
+            mdmsCacheService.deduplicateAllMasters();
             // Step 2: Load data from database and merge into cache (optional/legacy)
             mdmsCacheService.loadAndMergeDbData();
         } catch (Exception e) {

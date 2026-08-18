@@ -140,17 +140,6 @@ public class ScorecardSurveyRepository {
         }
     }
 
-    public String getSurveyTitleByUuid(String surveyUuid) {
-        if (ObjectUtils.isEmpty(surveyUuid))
-            return null;
-        String query = "SELECT title FROM eg_ss_survey_entity WHERE uuid = ?";
-        try {
-            return jdbcTemplate.queryForObject(query, new Object[]{surveyUuid}, String.class);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
-
     public List<AnswerDetail> getAnswerDetailsByAnswerUuid(String answerUuid) {
         String query = surveyQueryBuilder.getAnswerDetailsByAnswerUuid();
         return jdbcTemplate.query(query, new Object[]{answerUuid}, (rs, rowNum) ->
@@ -167,7 +156,7 @@ public class ScorecardSurveyRepository {
     public List<AnswerNew> getAnswersForSurvey(String surveyUuid, String tenantId) {
         String query =
                 "SELECT ans.uuid, ans.sectionuuid, ans.questionuuid, ans.comments, " +
-                        "q.questionstatement, sec.title AS section_title, " +
+                        "q.questionstatement, " +
                         "qw.weightage AS question_weightage, " +
                         "sec.weightage AS section_weightage, " +
                         "ad.uuid AS answer_detail_uuid, ad.answertype AS answer_detail_type, " +
@@ -214,40 +203,6 @@ public class ScorecardSurveyRepository {
             }
             return null;
         });
-    }
-
-    // Paginated survey responses for plainsearch
-    public List<SurveyResponseNew> getSurveyResponsesByTenantPaginated(String tenantId, Integer offset, Integer limit) {
-        int l = (limit != null && limit > 0) ? limit : 50;
-        int o = (offset != null && offset >= 0) ? offset : 0;
-        String query = "SELECT * FROM eg_ss_survey_response WHERE tenantid = ? ORDER BY createdtime DESC LIMIT ? OFFSET ?";
-        return jdbcTemplate.query(query, new Object[]{tenantId, l, o}, new SurveyResponseRowMapper());
-    }
-
-    // Fetch answers for a batch of survey response UUIDs
-    public List<AnswerNew> getAnswersForSurveyResponses(List<String> surveyResponseUuids) {
-        if (org.springframework.util.CollectionUtils.isEmpty(surveyResponseUuids)) {
-            return new ArrayList<>();
-        }
-        String placeholders = surveyResponseUuids.stream().map(u -> "?").collect(Collectors.joining(","));
-        String query =
-                "SELECT ans.uuid, ans.sectionuuid, ans.questionuuid, ans.comments, " +
-                        "q.questionstatement, sec.title AS section_title, " +
-                        "qw.weightage AS question_weightage, " +
-                        "sec.weightage AS section_weightage, " +
-                        "ad.uuid AS answer_detail_uuid, ad.answertype AS answer_detail_type, " +
-                        "ad.answercontent AS answer_detail_content, ad.weightage AS answer_detail_weightage, " +
-                        "ans.createdby, ans.lastmodifiedby, ans.createdtime, ans.lastmodifiedtime, " +
-                        "sr.citizenid AS survey_citizen_id, ans.surveyresponseuuid AS surveyresponseuuid " +
-                        "FROM eg_ss_answer ans " +
-                        "JOIN eg_ss_answer_detail ad ON ans.uuid = ad.answeruuid " +
-                        "JOIN eg_ss_question q ON ans.questionuuid = q.uuid " +
-                        "LEFT JOIN eg_ss_question_weightage qw ON ans.questionuuid = qw.questionuuid AND ans.sectionuuid = qw.sectionuuid " +
-                        "LEFT JOIN eg_ss_survey_section sec ON ans.sectionuuid = sec.uuid " +
-                        "JOIN eg_ss_survey_response sr ON ans.surveyresponseuuid = sr.uuid " +
-                        "WHERE ans.surveyresponseuuid IN (" + placeholders + ")";
-
-        return jdbcTemplate.query(query, surveyResponseUuids.toArray(), new AnswerRowMapper());
     }
 
 //    public List<AnswerNew> getAnswersForSurvey(String surveyUuid, String tenantId) {

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.egov.common.contract.response.ResponseInfo;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter
@@ -23,12 +23,6 @@ public class ScorecardAnswerResponse {
     @NotNull
     @JsonProperty("surveyUuid")
     private String surveyUuid;
-
-    @JsonProperty("surveyName")
-    private String surveyName;
-
-    @JsonProperty("surveyTitle")
-    private String surveyTitle;
 
     @NotNull
     @JsonProperty("citizenId")

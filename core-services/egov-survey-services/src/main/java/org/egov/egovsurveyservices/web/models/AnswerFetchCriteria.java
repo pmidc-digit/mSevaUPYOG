@@ -3,7 +3,7 @@ package org.egov.egovsurveyservices.web.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 @Data
 @Getter
@@ -25,11 +25,5 @@ public class AnswerFetchCriteria {
     @NotBlank
     @JsonProperty("tenantId")
     private String tenantId;
-
-    @JsonProperty("offset")
-    private Integer offset = 0;
-
-    @JsonProperty("limit")
-    private Integer limit = 50;
 
 }

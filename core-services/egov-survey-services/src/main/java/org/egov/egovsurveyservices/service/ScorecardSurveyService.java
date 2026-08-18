@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.egovsurveyservices.config.ApplicationProperties;
@@ -136,10 +136,6 @@ public class ScorecardSurveyService {
         return new ArrayList<>();
     }
 
-    public void updateSurveyActive(@Valid UpdateSurveyActiveRequest request) {
-        updateSurvey(request);
-    }
-
     public void updateSurvey(@Valid UpdateSurveyActiveRequest request) {
 		// Validate UUID
 	    if (request.getUuid() == null || request.getUuid().trim().isEmpty()) {
@@ -234,15 +230,6 @@ public class ScorecardSurveyService {
         List<Section> sections = sectionRepository.getSectionsBySurveyId(answerRequest.getSurveyResponse().getSurveyUuid());
         Map<String, BigDecimal> sectionWeightageMap = sections.stream()
                 .collect(Collectors.toMap(Section::getUuid, Section::getWeightage));
-        Map<String, String> sectionTitleMap = sections.stream()
-                .filter(s -> s.getTitle() != null)
-                .collect(Collectors.toMap(Section::getUuid, Section::getTitle, (v1, v2) -> v1));
-
-        String surveyTitle = surveyRepository.getSurveyTitleByUuid(surveyResponse.getSurveyUuid());
-        if (surveyTitle != null) {
-            surveyResponse.setSurveyName(surveyTitle);
-            surveyResponse.setSurveyTitle(surveyTitle);
-        }
 
         Map<String, UserSearchResponseContent> stringUserMap=null;
         UserSearchResponseContent user;
@@ -265,7 +252,6 @@ public class ScorecardSurveyService {
         List<ScorecardSectionResponse> enrichedSectionResponses = surveyResponse.getAnswers().stream()
                 .collect(Collectors.groupingBy(AnswerNew::getSectionUuid)).entrySet().stream()
                 .map(entry -> {
-                    String sectionTitle = sectionTitleMap.get(entry.getKey());
                     List<ScorecardQuestionResponse> enrichedQuestionResponses = entry.getValue().stream()
                             .map(answer -> {
                                 List<Question> questionById = questionRepository.getQuestionById(answer.getQuestionUuid());
@@ -293,8 +279,6 @@ public class ScorecardSurveyService {
                                 }
                                 answer.setQuestionStatement(question.getQuestionStatement());
                                 answer.setSectionUuid(entry.getKey());
-                                answer.setSectionName(sectionTitle);
-                                answer.setSectionTitle(sectionTitle);
                                 BigDecimal sectionWeightage = sectionWeightageMap.getOrDefault(answer.getSectionUuid(), BigDecimal.valueOf(0.0));
                                 answer.setSectionWeightage(sectionWeightage);
                                 answer.setUuid(uuidToUse);
@@ -333,8 +317,6 @@ public class ScorecardSurveyService {
                     producer.push(applicationProperties.getSubmitAnswerScorecardSurveyTopic(), answerRequest);
                     return ScorecardSectionResponse.builder()
                             .sectionUuid(entry.getKey())
-                            .sectionName(sectionTitle)
-                            .sectionTitle(sectionTitle)
                             .questionResponses(enrichedQuestionResponses)
                             .build();
                 }).collect(Collectors.toList());
@@ -345,8 +327,6 @@ public class ScorecardSurveyService {
             .tenantId(surveyResponse.getTenantId())
             .status(surveyResponse.getStatus().toString())
             .surveyUuid(surveyResponse.getSurveyUuid())
-            .surveyName(surveyResponse.getSurveyName())
-            .surveyTitle(surveyResponse.getSurveyTitle())
             .citizenId(surveyResponse.getCitizenId())
             .sectionResponses(enrichedSectionResponses)
             .auditDetails(auditDetails)
@@ -422,24 +402,14 @@ public class ScorecardSurveyService {
         }
 
         List<ScorecardSectionResponse> sectionResponses = sectionResponsesMap.entrySet().stream()
-                .map(entry -> {
-                    String secTitle = (entry.getValue() != null && !entry.getValue().isEmpty() && entry.getValue().get(0).getAnswerResponse() != null)
-                            ? entry.getValue().get(0).getAnswerResponse().getSectionTitle() : null;
-                    return ScorecardSectionResponse.builder()
-                            .sectionUuid(entry.getKey())
-                            .sectionName(secTitle)
-                            .sectionTitle(secTitle)
-                            .questionResponses(entry.getValue())
-                            .build();
-                })
+                .map(entry -> ScorecardSectionResponse.builder()
+                        .sectionUuid(entry.getKey())
+                        .questionResponses(entry.getValue())
+                        .build())
                 .collect(Collectors.toList());
-
-        String sTitle = surveyRepository.getSurveyTitleByUuid(criteria.getSurveyUuid());
 
         return ScorecardAnswerResponse.builder()
                 .surveyUuid(criteria.getSurveyUuid())
-                .surveyName(sTitle)
-                .surveyTitle(sTitle)
                 .citizenId(criteria.getCitizenId())
                 .sectionResponses(sectionResponses)
                 .build();
@@ -467,116 +437,69 @@ public class ScorecardSurveyService {
 //    }
 
     public PlainSearchResponse getAnswersForPlainSearch(AnswerFetchCriteria criteria, RequestInfo requestInfo) {
-        Integer offset = (criteria.getOffset() != null && criteria.getOffset() >= 0) ? criteria.getOffset() : 0;
-        Integer limit = (criteria.getLimit() != null && criteria.getLimit() > 0) ? criteria.getLimit() : 50;
-
-        // 1. Fetch paginated survey responses from DB (e.g., 50 at a time)
-        List<SurveyResponseNew> surveyResponses = surveyRepository.getSurveyResponsesByTenantPaginated(criteria.getTenantId(), offset, limit);
-        if (CollectionUtils.isEmpty(surveyResponses)) {
-            return PlainSearchResponse.builder()
-                    .surveyResponses(new ArrayList<>())
-                    .build();
-        }
-
-        List<String> surveyResponseUuids = surveyResponses.stream()
-                .map(SurveyResponseNew::getUuid)
-                .collect(Collectors.toList());
-
-        // 2. Fetch answers for this paginated batch of survey responses
-        List<AnswerNew> answers = surveyRepository.getAnswersForSurveyResponses(surveyResponseUuids);
-
-        for (AnswerNew answer : answers) {
-            Integer qWeight = surveyRepository.getQuestionWeightage(answer.getQuestionUuid(), answer.getSectionUuid());
-            Integer sWeight = surveyRepository.getSectionWeightage(answer.getSectionUuid());
-            answer.setQuestionWeightage(BigDecimal.valueOf(qWeight != null ? qWeight : 0));
-            answer.setSectionWeightage(BigDecimal.valueOf(sWeight != null ? sWeight : 0));
-        }
-
-        // Group answers by surveyResponseUuid
-        Map<String, List<AnswerNew>> answersByResponseUuid = answers.stream()
-                .filter(a -> a.getSurveyResponseUuid() != null)
-                .collect(Collectors.groupingBy(AnswerNew::getSurveyResponseUuid));
-
-        // 3. Batch user search for all unique citizenIds in this batch
-        List<String> citizenIds = surveyResponses.stream()
-                .map(SurveyResponseNew::getCitizenId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .collect(Collectors.toList());
-
-        Map<String, UserSearchResponseContent> userMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(citizenIds)) {
-            try {
-                userMap = userService.searchUser(requestInfo, citizenIds);
-            } catch (Exception e) {
-                log.error("Failed to search user details for plainsearch batch", e);
-            }
-        }
-
+        List<String> surveyUuids = surveyRepository.getSurveyUuidsByTenant(criteria.getTenantId());
         List<ScorecardAnswerResponse> responses = new ArrayList<>();
 
-        for (SurveyResponseNew sr : surveyResponses) {
-            List<AnswerNew> responseAnswers = answersByResponseUuid.getOrDefault(sr.getUuid(), Collections.emptyList());
-
-            // Skip orphaned survey_response rows with zero answers
-            if (CollectionUtils.isEmpty(responseAnswers)) {
-                log.warn("Skipping survey response uuid={} citizenId={} — no answers found in DB", sr.getUuid(), sr.getCitizenId());
-                continue;
+        for (String surveyUuid : surveyUuids) {
+            List<AnswerNew> answers = surveyRepository.getAnswersForSurvey(surveyUuid, criteria.getTenantId());
+            for (AnswerNew answer : answers) {
+                Integer qWeight = surveyRepository.getQuestionWeightage(answer.getQuestionUuid(), answer.getSectionUuid());
+                Integer sWeight = surveyRepository.getSectionWeightage(answer.getSectionUuid());
+                answer.setQuestionWeightage(BigDecimal.valueOf(qWeight));
+                answer.setSectionWeightage(BigDecimal.valueOf(sWeight));
             }
 
-            UserSearchResponseContent user = userMap.get(sr.getCitizenId());
-            if (user == null) {
-                user = new UserSearchResponseContent();
-                user.setUuid(sr.getCitizenId());
-            }
-            JsonNode userNode = mapper.convertValue(user, JsonNode.class);
+            List<SurveyResponseNew> surveyResponses = surveyRepository.getSurveyResponsesBySurveyAndTenant(surveyUuid, criteria.getTenantId());
 
-            for (AnswerNew answer : responseAnswers) {
-                if (answer.getAnswerDetails() != null) {
-                    answer.getAnswerDetails().forEach(detail -> detail.setUserDetails(userNode));
+            for (SurveyResponseNew sr : surveyResponses) {
+
+                // ✅ ✅ FETCH USER DETAILS USING citizenId
+                String citizenId = sr.getCitizenId();
+                Map<String, UserSearchResponseContent> userMap = null;
+                UserSearchResponseContent user;
+
+                try {
+                    userMap = userService.searchUser(requestInfo,
+                            Collections.singletonList(citizenId));
+                    user = userMap.get(citizenId);
+                } catch (Exception e) {
+                    user = new UserSearchResponseContent();
+                    user.setUuid(citizenId);
                 }
+
+                JsonNode userNode = mapper.convertValue(user, JsonNode.class);
+
+                // ✅ ✅ ATTACH userDetails to each answerDetail
+                for (AnswerNew answer : answers) {
+                    if (answer.getAnswerDetails() != null) {
+                        answer.getAnswerDetails().forEach(detail -> detail.setUserDetails(userNode));
+                    }
+                }
+
+
+
+
+                AnswerFetchCriteria scopedCriteria = AnswerFetchCriteria.builder()
+                        .surveyUuid(surveyUuid)
+                        .citizenId(sr.getCitizenId())
+                        .tenantId(criteria.getTenantId())
+                        .build();
+
+                ScorecardAnswerResponse response = buildScorecardAnswerResponseWithWeightage(answers, scopedCriteria);
+                response.setSurveyUuid(sr.getSurveyUuid());
+                response.setTenantId(sr.getTenantId());
+                response.setCitizenId(sr.getCitizenId());
+                response.setLocality(sr.getLocality());
+                response.setStatus(sr.getStatus().toString());
+                response.setCoordinates(sr.getCoordinates());
+                response.setComments(sr.getComments());
+                responses.add(response);
             }
-
-            AnswerFetchCriteria scopedCriteria = AnswerFetchCriteria.builder()
-                    .surveyUuid(sr.getSurveyUuid())
-                    .citizenId(sr.getCitizenId())
-                    .tenantId(sr.getTenantId())
-                    .build();
-
-            ScorecardAnswerResponse response = buildScorecardAnswerResponseWithWeightage(responseAnswers, scopedCriteria);
-            String surveyTitle = surveyRepository.getSurveyTitleByUuid(sr.getSurveyUuid());
-            response.setSurveyUuid(sr.getSurveyUuid());
-            response.setSurveyName(surveyTitle);
-            response.setSurveyTitle(surveyTitle);
-            response.setTenantId(sr.getTenantId());
-            response.setCitizenId(sr.getCitizenId());
-            response.setLocality(sr.getLocality());
-            response.setStatus(sr.getStatus() != null ? sr.getStatus().toString() : null);
-            response.setCoordinates(sr.getCoordinates());
-            response.setComments(sr.getComments());
-            responses.add(response);
         }
 
-        PlainSearchResponse response = PlainSearchResponse.builder()
+        return PlainSearchResponse.builder()
                 .surveyResponses(responses)
                 .build();
-
-        // Push each survey response individually to avoid Kafka RecordTooLargeException.
-        // Batching all responses into one message can exceed max.request.size (default 1MB)
-        // when data is large. The indexer's jsonPath ($.SurveyResponses.*) handles
-        // a single-element list identically to a full batch.
-        for (ScorecardAnswerResponse individualResponse : responses) {
-            PlainSearchResponse singleItemPayload = PlainSearchResponse.builder()
-                    .surveyResponses(Collections.singletonList(individualResponse))
-                    .build();
-            try {
-                producer.push("csc-answer-legacyIndex", singleItemPayload);
-            } catch (Exception e) {
-                log.error("Failed to push legacy index for surveyUuid={} citizenId={}: {}",
-                        individualResponse.getSurveyUuid(), individualResponse.getCitizenId(), e.getMessage());
-            }
-        }
-        return response;
     }
 
     private ScorecardAnswerResponse buildScorecardAnswerResponseWithWeightage(List<AnswerNew> answers, AnswerFetchCriteria criteria) {
@@ -595,24 +518,14 @@ public class ScorecardSurveyService {
         }
 
         List<ScorecardSectionResponse> sectionResponses = sectionResponsesMap.entrySet().stream()
-                .map(entry -> {
-                    String secTitle = (entry.getValue() != null && !entry.getValue().isEmpty() && entry.getValue().get(0).getAnswerResponse() != null)
-                            ? entry.getValue().get(0).getAnswerResponse().getSectionTitle() : null;
-                    return ScorecardSectionResponse.builder()
-                            .sectionUuid(entry.getKey())
-                            .sectionName(secTitle)
-                            .sectionTitle(secTitle)
-                            .questionResponses(entry.getValue())
-                            .build();
-                })
+                .map(entry -> ScorecardSectionResponse.builder()
+                        .sectionUuid(entry.getKey())
+                        .questionResponses(entry.getValue())
+                        .build())
                 .collect(Collectors.toList());
-
-        String sTitle = surveyRepository.getSurveyTitleByUuid(criteria.getSurveyUuid());
 
         return ScorecardAnswerResponse.builder()
                 .surveyUuid(criteria.getSurveyUuid())
-                .surveyName(sTitle)
-                .surveyTitle(sTitle)
                 .citizenId(criteria.getCitizenId())
                 .sectionResponses(sectionResponses)
                 .build();

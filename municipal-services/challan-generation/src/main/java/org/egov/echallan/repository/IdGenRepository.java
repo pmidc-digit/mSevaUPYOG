@@ -37,9 +37,17 @@ public class IdGenRepository {
             reqList.add(IdRequest.builder().idName(name).format(format).tenantId(tenantId).build());
         }
         IdGenerationRequest req = IdGenerationRequest.builder().idRequests(reqList).requestInfo(requestInfo).build();
+        String host = config.getIdGenHost();
+        String path = config.getIdGenPath();
+        StringBuilder uri = new StringBuilder(host);
+        if (!host.endsWith("/") && !path.startsWith("/")) {
+            uri.append("/");
+        }
+        uri.append(path);
+
         IdGenerationResponse response = null;
         try {
-            response = restTemplate.postForObject( config.getIdGenHost()+ config.getIdGenPath(), req, IdGenerationResponse.class);
+            response = restTemplate.postForObject(uri.toString(), req, IdGenerationResponse.class);
         } catch (HttpClientErrorException e) {
             throw new ServiceCallException(e.getResponseBodyAsString());
         } catch (Exception e) {

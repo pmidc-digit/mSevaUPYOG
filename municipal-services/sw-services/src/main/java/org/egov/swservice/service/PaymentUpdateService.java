@@ -329,7 +329,7 @@ public class PaymentUpdateService {
 		}
 
 		//Send the notification to applicant
-		if(!org.apache.commons.lang.StringUtils.isEmpty(request.getRequestInfo().getUserInfo().getMobileNumber()))
+		if(!org.apache.commons.lang3.StringUtils.isEmpty(request.getRequestInfo().getUserInfo().getMobileNumber()))
 		{
 			mobileNumbersAndNames.put(request.getRequestInfo().getUserInfo().getMobileNumber(), request.getRequestInfo().getUserInfo().getName());
 			mapOfPhnoAndUUIDs.put(request.getRequestInfo().getUserInfo().getMobileNumber(), request.getRequestInfo().getUserInfo().getUuid());
@@ -482,7 +482,7 @@ public class PaymentUpdateService {
 		//send the notification to the connection holders
 		if (!CollectionUtils.isEmpty(sewerageConnectionRequest.getSewerageConnection().getConnectionHolders())) {
 			sewerageConnectionRequest.getSewerageConnection().getConnectionHolders().forEach(holder -> {
-				if (!org.apache.commons.lang.StringUtils.isEmpty(holder.getUuid())) {
+				if (!org.apache.commons.lang3.StringUtils.isEmpty(holder.getUuid())) {
 					ownersUuids.add(holder.getUuid());
 				}
 			});

@@ -717,10 +717,10 @@ const hasCMCApproval =
 
       // --- derived once, reused for both officerDesignation and signatoryDesignation ---
       const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm actual grade codes
-      const officerDesignation = isSmallerUlb ? "Executive Officer" : "Municipal Commissioner";
+      const officerDesignation = isSmallerUlb ? t("SMALLER_ULB_OFFICER") : t("BIGGER_ULB_OFFICER");
       const signatoryDesignation = isSmallerUlb
-        ? "Additional Deputy Commissioner (Urban Development)"
-        : "Commissioner, Municipal Corporation";
+        ? t("SMALLER_ULB_DESIG")
+        : t("BIGGER_ULB_DESIG");
 
       // same isSmallerUlb split decides which name goes with the Competent Authority
       const jurisdictionName = isSmallerUlb ? districtName : ulbName;
@@ -1110,10 +1110,10 @@ const hasCMCApproval =
       {displayData?.Documents && displayData.Documents.length > 0 && (
         <Card>
           <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
-          <StatusTable>
+          {/* <StatusTable> */}
             {/* <LayoutDocumentView documents={displayData.Documents} /> */}
             <LayoutDocumentTableView documents={displayData?.Documents?.filter((doc) => doc.documentType != "OWNER.SITEPHOTOGRAPHONE" && doc.documentType != "OWNER.SITEPHOTOGRAPHTWO")} />
-          </StatusTable>
+          {/* </StatusTable> */}
         </Card>
       )}
 
@@ -1122,7 +1122,9 @@ const hasCMCApproval =
         <Card>
           <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
   {applicationDetails?.Layout?.[0]?.layoutDetails && (
-     <StatusTable>
+    <>
+     <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY1")}</CardSubHeader>
+     {/* <StatusTable> */}
           <LayoutFeeEstimationDetails
             formData={{
               apiData: { ...applicationDetails },
@@ -1136,18 +1138,19 @@ const hasCMCApproval =
             feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
             hasPayments={reciept_data?.Payments?.length > 0}
           />
-          </StatusTable>
+          {/* </StatusTable> */}
+          </>
           )}
           {hasPayments && (
                 <div style={{ marginTop: "16px" }}>
                   <OBPSPaymentHistory payments={combinedPayments} />
                 </div>
               )}
-        </Card>
+        
 
        {hasCMCApproval && (
-                <Card>
-                  <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+                <>
+                  <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY2")}</CardSubHeader>
                   {applicationDetails?.Layout?.[0]?.layoutDetails && (
                     <LayoutFeeEstimationDetailsTable
                       formData={{
@@ -1162,8 +1165,10 @@ const hasCMCApproval =
                       disable={true}
                     />
                   )}
-                </Card>
+                  </>
+               
               )}
+               </Card>
       
 
       {/* -------------------- SPECIFICATIONS -------------------- */}

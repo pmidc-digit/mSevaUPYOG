@@ -463,7 +463,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
       {/* FEE DETAILS */}
       <Card>
-        <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
+        <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY1")}</CardSubHeader>
         <div style={{ padding: "0 0.5rem" }}>
           {formData && <LayoutFeeEstimationDetails formData={formData} feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true} />}
         </div>

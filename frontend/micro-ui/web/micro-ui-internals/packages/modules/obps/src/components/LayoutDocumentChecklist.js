@@ -25,7 +25,7 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
 
   // Initialize remarks for each document
   useEffect(() => {
-    if (documents?.length > 0 && Object.keys(localRemarks).length === 0) {
+    if (documents?.length > 0) {
       const initial = {};
       documents.forEach((d) => {
         initial[d.documentUid || d.uuid] = value?.[d.documentUid || d.uuid] || d.remarks || "";
@@ -33,9 +33,8 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
       //console.log("DEBUG LayoutDocumentChecklist: Initializing remarks:", initial);
       //console.log("DEBUG LayoutDocumentChecklist: Document details:", documents.map(d => ({ documentType: d.documentType, remarks: d.remarks, uuid: d.uuid })));
       setLocalRemarks(initial);
-      onRemarksChange(initial);
     }
-  }, [documents]);
+  }, [documents, value]);
 
   useEffect(() => {}, [localRemarks]);
 

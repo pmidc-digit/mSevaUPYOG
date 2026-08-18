@@ -69,8 +69,7 @@ export const SelectPaymentType = (props) => {
   const moduleName = "testing"; //need to change this back to testing -> tenantId?.split(".")?.[1];
   // const { data: menu2, isLoading } = Digit.Hooks.useCommonMDMS("pb", "testing", "PaymentGateway");
   // const { data: menuList } = Digit.Hooks.useCustomMDMS(tenantId, moduleName, [{ name: "PaymentGateway" }]);
-  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PAYMENT", [{ name: "PaymentGateway" }]); // will change back to pb.testing -> tenantId
-  console.log("menuList", menuList);
+  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PAYMENT", [{ name: "PaymentGateway", "filter": `$.*.[?(@.businessService contains '${businessService}')]` }]); // will change back to pb.testing -> tenantId
 
 
   const [isPaymentLoading, setPaymentLoading] = useState(false);
@@ -281,10 +280,8 @@ export const SelectPaymentType = (props) => {
       // window.location = redirectUrl;
       if (d?.paymentType === gatewayType.RAZORPAY && redirectUrl?.includes("razorpay")) {
         displayRazorpay(data);
-      } else if (redirectUrl) {
+      }else if (redirectUrl?.includes("ccavenue") || redirectUrl?.includes("ccavanue")) {
         //redirection to non razorpay payment gateway url provided by transaction api response
-        console.log('redirectUrl', redirectUrl)
-        console.log('typeof(redirectUrl', typeof(redirectUrl))
         const link = document.createElement("a");
         link.href = redirectUrl;
         link.target = "_self";
@@ -293,6 +290,9 @@ export const SelectPaymentType = (props) => {
         document.body.appendChild(link);
         link.click();
         link.remove();
+      }else if (redirectUrl) {
+        //redirection to non razorpay payment gateway url provided by transaction api response
+        window.location.href = redirectUrl;
       }else {
         //Do Nothing
         setPaymentLoading(false);

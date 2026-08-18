@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import org.upyog.chb.web.models.User;
 import org.upyog.chb.web.models.AuditDetails;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;

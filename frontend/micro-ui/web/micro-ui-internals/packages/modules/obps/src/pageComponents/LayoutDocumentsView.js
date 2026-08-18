@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useMemo} from 'react'
 import { Table, StatusTable, LinkButton } from '@mseva/digit-ui-react-components'
 import { useTranslation } from "react-i18next";
+import { getDocumentLabel } from "../utils";
 
 const LayoutDocumentTableView = ({documents}) => {
   const { t } = useTranslation();
@@ -18,7 +19,10 @@ const LayoutDocumentTableView = ({documents}) => {
     {
       Header: t("BPA_DOCUMENT_NAME"),
       accessor: "title",
-      Cell: ({ value }) => <strong>{t(value)}</strong> || t("CS_NA"),
+      Cell: ({ row, value }) => {
+        const docType = row?.original?.documentType || value;
+        return <strong>{getDocumentLabel(docType, t, value)}</strong> || t("CS_NA");
+      },
     },
     {
       Header: t("BPA_DOCUMENT_FILE"),
@@ -68,27 +72,34 @@ const LayoutDocumentTableView = ({documents}) => {
      return (mappedDocuments)?.map((doc, index) => ({
       id: index,
       srNo: index + 1,
-      title: t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA"),
+      documentType: doc?.documentType,
+      title: doc?.documentType,
       fileUrl: doc.url,
      }));
     }, [mappedDocuments]);
 
   return (
-    <div>
-      {documentsData && 
-        <Table
-          className="customTable table-border-style obps-documents-table"
-          t={t}
-          data={documentsData}
-          columns={documentsColumns}
-          getCellProps={() => ({ style: {} })}
-          disableSort={true}
-          autoSort={false}
-          manualPagination={false}
-          isPaginationRequired={false}
-          pageSizeLimit = {documentsData?.length || 10}
-        />
-      }
+    <div className="checklist-document-table-wrapper">
+      <table className="customTable table-border-style checklist-document-table">
+        <thead>
+          <tr>
+            <th className="checklist-table-header checklist-table-header-srno">{t("SR_NO")}</th>
+            <th className="checklist-table-header checklist-table-header-doc-name">{t("BPA_DOCUMENT_NAME")}</th>
+            <th className="checklist-table-header checklist-table-header-doc-file">{t("BPA_DOCUMENT_FILE")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {documentsData?.map((doc, i) => (
+            <tr key={doc?.id || i}>
+              <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>
+              <td className="checklist-table-cell checklist-table-cell-doc-name">{getDocumentLabel(doc?.documentType, t) || t("CS_NA")}</td>
+              <td className="checklist-table-cell checklist-table-cell-file">
+                {doc?.fileUrl ? <LinkButton label={t("View")} onClick={() => routeTo(doc.fileUrl)} /> : t("CS_NA")}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }

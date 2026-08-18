@@ -832,7 +832,7 @@ const LayoutSiteDetails = (_props) => {
                             onChange={(e) => {
                               const val = e.target.value;
                               props.onChange(val);
-                              if (isCluValidated && validatedCluNumberRef.current && val !== validatedCluNumberRef.current) {
+                              if (isCluValidated && (!validatedCluNumberRef.current || val !== validatedCluNumberRef.current)) {
                                 updateCluValidated(false);
                                 setRetrievedClu(null);
                                 setRetrievedCluDocs([]);
@@ -857,10 +857,10 @@ const LayoutSiteDetails = (_props) => {
                     <CardLabel className="card-label-smaller" style={{ visibility: "hidden" }}>
                       Placeholder
                     </CardLabel>
-                    <div className="field" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "12px" }}>
-                      {isCluValidated && (
+                    <div className="field">
+                      {isCluValidated ? (
                         <span style={{ color: "#00703c", fontWeight: 500 }}>✓ CLU Validated</span>
-                      )}
+                      ):(
                       <button
                         type="button"
                         style={{
@@ -880,6 +880,7 @@ const LayoutSiteDetails = (_props) => {
                       >
                         {cluValidationLoading ? "Searching..." : "Validate CLU"}
                       </button>
+                      )}
                     </div>
                   </LabelFieldPair>
 

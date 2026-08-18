@@ -15,7 +15,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import EXIF from "../utils/exif-compat";
 import { useDispatch, useSelector } from "react-redux";
-import { pdfDownloadLink } from "../utils";
+import { pdfDownloadLink, getDocumentLabel } from "../utils";
 import { UPDATE_LayoutNewApplication_CoOrdinates } from "../redux/actions/LayoutNewApplicationActions";
 import { useParams } from "react-router-dom";
 import CustomUploadFile from "../components/CustomUploadFile";
@@ -237,7 +237,7 @@ const LayoutDocumentsRequired = ({
 
       let isRequired = false
       ;(documents || []).map((data) => {
-        if (doc.required && data?.documentType.includes(doc.code)) isRequired = true
+        if (doc.required && data?.documentType.includes(doc.code) && ((data?.filestoreId && String(data.filestoreId).trim() !== "") || (data?.documentAttachment && String(data.documentAttachment).trim() !== ""))) isRequired = true
       })
       if (!isRequired && doc.required) count = count + 1
     })
@@ -633,31 +633,12 @@ function LayoutSelectDocument({
     });
   }
 
-  const getDocumentLabel = () => {
-    const translationKey = doc?.code ? doc.code.replaceAll(".", "_") : "";
-    const text = t(translationKey);
-    if (doc?.code === "OWNER.SITEMARKEDONGOOGLEPLAN") {
-      const splitWord = " and ";
-      const splitIndex = text.indexOf(splitWord);
-      if (splitIndex !== -1) {
-        return (
-          <React.Fragment>
-            {text.substring(0, splitIndex)}
-            <br />
-            {text.substring(splitIndex + 1)}
-          </React.Fragment>
-        );
-      }
-    }
-    return text;
-  };
-
   return (
     <div style={{ marginBottom: "24px" }}>
       {getLoading && <Loader />}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller" style={{ width: "100%" }}>
-            {getDocumentLabel()} {doc?.required && <span className="requiredField">*</span>} 
+            {getDocumentLabel(doc?.code, t)} {doc?.required && <span className="requiredField">*</span>} 
           </CardLabel>
 
       <div className="field" style={{display: "flex", flexDirection:"column", gap: "10px"}}>

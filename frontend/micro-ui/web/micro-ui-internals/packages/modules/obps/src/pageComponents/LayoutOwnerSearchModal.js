@@ -100,7 +100,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       setPanDocumentUploadedFile(editingOwner?.panDocumentUploadedFiles || editingOwner?.additionalDetails?.panDocument || null);
       setPanNumber(editingOwner?.panNumber || editingOwner?.pan || "");
       const appType = editingOwner?.aplicantType || editingOwner?.additionalDetails?.aplicantType || null;
-      setAplicantType(findApplicantTypeOption(appType));
+      setAplicantType(findApplicantTypeOption(appType) || (isPrimaryOwner ? applicantTypeOptions[0] : null));
       setAuthorisedPerson(editingOwner?.authorisedPerson || editingOwner?.additionalDetails?.authorisedPerson || "");
       setStep(2);
     } else if (initialMobileNumber && /^[6-9]\d{9}$/.test(initialMobileNumber)) {
@@ -149,7 +149,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             dob: formattedDob,
             fatherOrHusbandName: u.fatherOrHusbandName || "",
             permanentAddress: u.permanentAddress || u.address || "",
-            gender: genderObj,
+            gender: genderObj || null,
             mobileNumber: u.mobileNumber || u.userName || currentMobile,
             uuid: u.uuid || "",
             panNumber: u.panNumber || u.pan || "",

@@ -37,13 +37,7 @@ const NOCResponseCitizen = (props) => {
   };
 
   const handlePayment = () => {
-    if(tenantId === "pb.jalandhar" || tenantId === "pb.testing" || tenantId === "pb.itjalandhar"){
-        alert(t("PAYMENT_DISABLED"))
-      return
-    }
-    else{
       history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${nocCode}?tenantId=${tenantId}`);
-    }
   };
 
   const getFirenocNocApplication = async () => {

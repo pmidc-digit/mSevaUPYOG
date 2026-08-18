@@ -241,7 +241,10 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         setShowToast({ key: true, label: t("CORE_SOMETHING_WENT_WRONG") });
       }
     } catch (err) {
-      setShowToast({ key: true, label: t("CORE_SOMETHING_WENT_WRONG") });
+      const errorMessage = err?.response?.data?.Errors[0]?.message;
+
+      setShowToast({ key: true, label: errorMessage });
+      // setShowToast({ key: true, label: t("CORE_SOMETHING_WENT_WRONG") });
     } finally {
       setIsLoading(false);
     }

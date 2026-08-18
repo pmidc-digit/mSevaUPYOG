@@ -11,6 +11,7 @@ COPY ${WORK_DIR}/pom.xml ./pom.xml
 # RUN mvn -B dependency:go-offline
 
 COPY ${WORK_DIR}/src ./src
+
 RUN mvn -B -f /app/pom.xml package -Dmaven.test.skip=true -DskipTests
 
 RUN ls -lh /app/target

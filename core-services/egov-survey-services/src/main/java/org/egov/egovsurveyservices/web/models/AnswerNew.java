@@ -20,10 +20,6 @@ public class AnswerNew {
     private String uuid;
     @JsonProperty("sectionUuid")
     private String sectionUuid;
-    @JsonProperty("sectionName")
-    private String sectionName;
-    @JsonProperty("sectionTitle")
-    private String sectionTitle;
     @JsonProperty("sectionWeightage")
     private BigDecimal sectionWeightage;
     @JsonProperty("questionUuid")
@@ -36,9 +32,5 @@ public class AnswerNew {
     private List<AnswerDetail> answerDetails;
     @JsonProperty("comments")
     private String comments;
-    @JsonProperty("surveyResponseUuid")
-    private String surveyResponseUuid;
-    @JsonProperty("citizenId")
-    private String citizenId;
     private AuditDetails auditDetails;
 }

@@ -24,7 +24,6 @@ public class SectionRepository {
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Section section = new Section();
             section.setUuid(rs.getString("uuid"));
-            section.setTitle(rs.getString("title"));
             section.setWeightage(rs.getBigDecimal("weightage"));
             return section;
         }, surveyId);
@@ -35,7 +34,6 @@ public class SectionRepository {
         return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
             Section section = new Section();
             section.setUuid(rs.getString("uuid"));
-            section.setTitle(rs.getString("title"));
             section.setWeightage(rs.getBigDecimal("weightage"));
             return section;
         }, sectionId);

@@ -1,7 +1,7 @@
 package org.egov.egovsurveyservices.validators;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.egovsurveyservices.web.models.QuestionRequest;
 import org.egov.tracer.model.CustomException;
 import org.springframework.stereotype.Component;

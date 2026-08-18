@@ -50,8 +50,6 @@ function RentAndLeaseSummary({ t }) {
     // latePayment: t("LATE_PAYMENT_PERCENT"),
   };
 
-  console.log("formData", formData);
-
   return (
     <div className="application-summary">
       {/* Citizen Details Section */}
@@ -136,6 +134,7 @@ function RentAndLeaseSummary({ t }) {
             </div>
             {renderRow(t("Arrears"), property?.arrear)}
             {property?.lastBillingPeriod && renderRow(t("Last Billing Period"), property.lastBillingPeriod)}
+            {property?.lastPaidUpto && renderRow(t("Last Paid Upto"), property.lastPaidUpto)}
             {property?.lastRentRevisedDate && renderRow(t("Last Rent Revised Date"), property.lastRentRevisedDate)}
             {property?.incrementPeriodMonths && renderRow(t("Increment Period Months"), property.incrementPeriodMonths?.code)}
             {property?.incrementPercentage && renderRow(t("Increment Percentage"), property.incrementPercentage)}

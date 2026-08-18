@@ -42,7 +42,7 @@ package org.egov.hrms;
 
 import java.util.TimeZone;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.egov.common.utils.MultiStateInstanceUtil;
 import org.egov.tracer.config.TracerConfiguration;
@@ -79,5 +79,6 @@ public class EgovEmployeeApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(EgovEmployeeApplication.class, args);
+        
     }
 }

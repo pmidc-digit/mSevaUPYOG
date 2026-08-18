@@ -48,6 +48,10 @@ public class MdmsCacheService {
 	 * complete so the runtime cache contains only the data that exists in DB when
 	 * DB loading is enabled.
 	 */
+	/**
+	 * Loads all active MDMS data from the database and merges individual records into
+	 * the in-memory tenantMap cache (which was initialized from files).
+	 */
 	public void loadAndMergeDbData() {
 		if (!dbLoadEnabled) {
 			log.info("MDMS DB loading is disabled (egov.mdms.load.from.db.enabled=false). Skipping.");
@@ -58,7 +62,6 @@ public class MdmsCacheService {
 
 		try {
 			List<Map<String, Object>> rows = mdmsDataRepository.searchAll();
-			Map<String, Map<String, Map<String, JSONArray>>> dbTenantMap = new HashMap<>();
 			int recordCount = 0;
 
 			for (Map<String, Object> row : rows) {
@@ -66,6 +69,9 @@ public class MdmsCacheService {
 					String tenantId = (String) row.get("tenantid");
 					String schemaCode = (String) row.get("schemacode");
 					Object dataObj = row.get("data");
+					String dbId = row.get("id") != null ? String.valueOf(row.get("id")) : null;
+					String dbUniqueIdentifier = row.get("uniqueidentifier") != null ? String.valueOf(row.get("uniqueidentifier")) : null;
+
 					if (tenantId == null || schemaCode == null || dataObj == null) {
 						log.warn("Skipping DB row with null tenantId/schemaCode/data: {}", row);
 						continue;
@@ -80,20 +86,25 @@ public class MdmsCacheService {
 					String moduleName = parts[0];
 					String masterName = parts[1];
 
-					@SuppressWarnings("unchecked")
-					LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>) dataObj;
+					JSONArray masterData = getOrCreateMasterData(tenantId, moduleName, masterName);
 
-					JSONArray masterData = getOrCreateMasterData(dbTenantMap, tenantId, moduleName, masterName);
+					if (dataObj instanceof List) {
+						for (Object rec : (List<?>) dataObj) {
+							upsertRecordFromKafka(masterData, rec, moduleName, masterName, dbId, dbUniqueIdentifier);
+							recordCount++;
+						}
+					} else {
+						upsertRecordFromKafka(masterData, dataObj, moduleName, masterName, dbId, dbUniqueIdentifier);
+						recordCount++;
+					}
 
-					masterData.add(data);
-					recordCount++;
+					MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(tenantId, moduleName, masterName, masterData);
 				} catch (Exception e) {
 					log.error("Error processing DB row: {}", row, e);
 				}
 			}
 
-			MDMSApplicationRunnerImpl.replaceTenantMap(dbTenantMap);
-			log.info("Replaced in-memory MDMS cache with {} DB records.", recordCount);
+			log.info("Merged {} DB records into in-memory MDMS cache.", recordCount);
 
 		} catch (Exception e) {
 			log.error("Error loading MDMS data from database. File-based cache remains intact.", e);
@@ -180,12 +191,12 @@ public class MdmsCacheService {
 	}
 
 	/**
-	 * Upserts a single record into the master data array. If a record with the same
-	 * "code" or id/uniqueIdentifier exists, it is replaced; otherwise the new
-	 * record is added.
+	 * Upserts a single record into the master data array. If a record with matching
+	 * id, uniqueIdentifier, code, model, businessService, or dynamic field schema exists,
+	 * it is replaced in place; otherwise the new record is added.
 	 * Used by both DB startup loading and Kafka runtime updates.
 	 */
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	private void upsertRecordFromKafka(JSONArray masterData, Object newRecord, String moduleName, String masterName,
 			String topLevelId, String topLevelUniqueIdentifier) {
 		if (newRecord == null || !(newRecord instanceof Map)) {
@@ -193,11 +204,6 @@ public class MdmsCacheService {
 		}
 
 		Map<?, ?> newRecordMap = (Map<?, ?>) newRecord;
-		
-		// For Kafka, we expect 'id' to be present and used strictly to identify the data
-		Object newIdObj = newRecordMap.get("id") != null ? newRecordMap.get("id") : topLevelId;
-		String newIdStr = topLevelId != null ? topLevelId
-				: (newRecordMap.get("id") != null ? String.valueOf(newRecordMap.get("id")) : null);
 
 		for (int i = 0; i < masterData.size(); i++) {
 			Object existing = masterData.get(i);
@@ -205,45 +211,89 @@ public class MdmsCacheService {
 				continue;
 
 			Map<?, ?> existingMap = (Map<?, ?>) existing;
-			boolean matched = false;
 
-			Object existingIdObj = existingMap.get("id");
-
-			// Match strictly by 'id'
-			if (!matched && newIdObj != null && existingIdObj != null) {
-				matched = isDeepEqual(newIdObj, existingIdObj);
-			}
-			if (!matched && newIdStr != null && existingIdObj != null) {
-				matched = newIdStr.equalsIgnoreCase(String.valueOf(existingIdObj));
-			}
-
-			// Fallback to uniqueIdentifier for Kafka updates if id is missing in existing record
-			// This prevents duplicates when a file record (no id) is updated via Kafka
-			if (!matched && existingIdObj == null) {
-				Object newUniqueObj = newRecordMap.get("uniqueIdentifier") != null ? newRecordMap.get("uniqueIdentifier")
-						: topLevelUniqueIdentifier;
-				Object existingUniqueObj = existingMap.get("uniqueIdentifier");
-				String newUniqueStr = topLevelUniqueIdentifier != null ? topLevelUniqueIdentifier
-						: (newRecordMap.get("uniqueIdentifier") instanceof String
-								? (String) newRecordMap.get("uniqueIdentifier")
-								: null);
-
-				if (newUniqueObj != null && existingUniqueObj != null) {
-					matched = isDeepEqual(newUniqueObj, existingUniqueObj);
-				}
-				if (!matched && newUniqueStr != null && existingUniqueObj != null) {
-					matched = newUniqueStr.equalsIgnoreCase(String.valueOf(existingUniqueObj));
-				}
-			}
-
-			if (matched) {
+			if (isRecordMatching(existingMap, newRecordMap, moduleName, masterName, topLevelId, topLevelUniqueIdentifier)) {
 				masterData.set(i, newRecord);
-				log.info("Updated MDMS cache record from Kafka for {}.{}", moduleName, masterName);
+				log.info("Updated MDMS cache record for {}.{}", moduleName, masterName);
 				return;
 			}
 		}
-		log.info("Added new MDMS cache record from Kafka for {}.{}", moduleName, masterName);
+
+		log.info("Added new MDMS cache record for {}.{}", moduleName, masterName);
 		masterData.add(newRecord);
+	}
+
+	private boolean isRecordMatching(Map<?, ?> existingMap, Map<?, ?> newRecordMap, String moduleName, String masterName,
+			String topLevelId, String topLevelUniqueIdentifier) {
+
+		Object existingId = existingMap.get("id");
+		Object newId = newRecordMap.get("id") != null ? newRecordMap.get("id") : topLevelId;
+
+		// 1. Match strictly by 'id' if present in both
+		if (newId != null && existingId != null) {
+			if (isDeepEqual(newId, existingId)) return true;
+		}
+
+		// 2. Match by 'uniqueIdentifier' if present in both
+		Object existingUnique = existingMap.get("uniqueIdentifier");
+		Object newUnique = newRecordMap.get("uniqueIdentifier") != null ? newRecordMap.get("uniqueIdentifier") : topLevelUniqueIdentifier;
+		if (newUnique != null && existingUnique != null) {
+			if (isDeepEqual(newUnique, existingUnique)) return true;
+		}
+
+		// 3. Match topLevelUniqueIdentifier against primary fields in existing record
+		if (topLevelUniqueIdentifier != null) {
+			for (String idField : new String[]{"code", "businessService", "model", "name", "service", "type", "key"}) {
+				Object exVal = existingMap.get(idField);
+				if (exVal != null && isDeepEqual(topLevelUniqueIdentifier, exVal)) {
+					return true;
+				}
+			}
+		}
+
+		// 4. Match by configured uniqueKeys in masterConfigMap
+		List<String> configuredKeys = getUniqueKeysFromConfig(moduleName, masterName);
+		if (configuredKeys != null && !configuredKeys.isEmpty()) {
+			boolean allMatch = true;
+			for (String k : configuredKeys) {
+				Object exVal = getNestedValue(existingMap, k);
+				Object newVal = getNestedValue(newRecordMap, k);
+				if (exVal == null || newVal == null || !isDeepEqual(exVal, newVal)) {
+					allMatch = false;
+					break;
+				}
+			}
+			if (allMatch) return true;
+		}
+
+		// 5. Standard common primary identifier fields: code, businessService, service, model, name, key
+		String[] primaryKeys = new String[]{"code", "businessService", "service", "model", "name", "key"};
+		for (String pk : primaryKeys) {
+			Object exVal = existingMap.get(pk);
+			Object newVal = newRecordMap.get(pk);
+			if (exVal != null && newVal != null) {
+				return isDeepEqual(exVal, newVal);
+			}
+		}
+
+		// 6. Dynamic field matching for arbitrary/custom JSON master schemas
+		// Compare shared fields whose key name ends with Code, Id, Key, Name, Type, Service, Model, Number, No, Identifier
+		for (Object keyObj : newRecordMap.keySet()) {
+			if (!(keyObj instanceof String)) continue;
+			String k = (String) keyObj;
+			String kLower = k.toLowerCase();
+			if (kLower.endsWith("code") || kLower.endsWith("id") || kLower.endsWith("key") 
+					|| kLower.endsWith("name") || kLower.endsWith("type") || kLower.endsWith("service") 
+					|| kLower.endsWith("model") || kLower.endsWith("number") || kLower.endsWith("no")) {
+				Object exVal = existingMap.get(k);
+				Object newVal = newRecordMap.get(k);
+				if (exVal != null && newVal != null) {
+					return isDeepEqual(exVal, newVal);
+				}
+			}
+		}
+
+		return false;
 	}
 
 

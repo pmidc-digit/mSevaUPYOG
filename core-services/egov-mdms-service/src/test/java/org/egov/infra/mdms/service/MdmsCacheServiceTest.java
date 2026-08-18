@@ -305,28 +305,39 @@ public class MdmsCacheServiceTest {
     }
 
     @Test
-    public void testLoadAndMergeDbData_ReplacesWholeCacheWhenDbHasLessData() {
+    public void testLoadAndMergeDbData_PreservesExistingFileRecordsAndUpdatesMatchingDbRecords() {
         String tenantId = "pb";
 
+        // File-loaded record in tenant.tenants
         JSONArray fileTenantMaster = getOrCreateMasterArray(tenantId, "tenant", "tenants");
         Map<String, Object> fileTenantRecord = new LinkedHashMap<>();
         fileTenantRecord.put("code", "pb.test");
+        fileTenantRecord.put("name", "File Name");
         fileTenantMaster.add(fileTenantRecord);
 
-        JSONArray fileRentMaster = getOrCreateMasterArray(tenantId, "rentAndLease", "AllotmentType");
-        Map<String, Object> fileRentRecord = new LinkedHashMap<>();
-        fileRentRecord.put("id", "1");
-        fileRentRecord.put("code", "RL_RENT");
-        fileRentMaster.add(fileRentRecord);
+        // File-loaded records in BillingService.BusinessService (TL and ADVT.Hoardings)
+        JSONArray fileBusinessServices = getOrCreateMasterArray(tenantId, "BillingService", "BusinessService");
+        Map<String, Object> tlRecord = new LinkedHashMap<>();
+        tlRecord.put("code", "TL");
+        tlRecord.put("businessService", "TradeLicense");
+        fileBusinessServices.add(tlRecord);
 
-        Map<String, Object> dbRecord = new LinkedHashMap<>();
-        dbRecord.put("code", "pb.test");
-        dbRecord.put("name", "DB Name");
+        Map<String, Object> advtFileRecord = new LinkedHashMap<>();
+        advtFileRecord.put("code", "ADVT.Hoardings");
+        advtFileRecord.put("businessService", "Advertisement Tax.Hoardings");
+        advtFileRecord.put("isVoucherCreationEnabled", false);
+        fileBusinessServices.add(advtFileRecord);
+
+        // DB record for ADVT.Hoardings (updated voucher creation setting)
+        Map<String, Object> dbAdvtRecord = new LinkedHashMap<>();
+        dbAdvtRecord.put("code", "ADVT.Hoardings");
+        dbAdvtRecord.put("businessService", "Advertisement Tax.Hoardings");
+        dbAdvtRecord.put("isVoucherCreationEnabled", true);
 
         Map<String, Object> dbRow = new HashMap<>();
         dbRow.put("tenantid", tenantId);
-        dbRow.put("schemacode", "tenant.tenants");
-        dbRow.put("data", dbRecord);
+        dbRow.put("schemacode", "BillingService.BusinessService");
+        dbRow.put("data", dbAdvtRecord);
 
         when(mdmsDataRepository.searchAll()).thenReturn(Arrays.asList(dbRow));
         ReflectionTestUtils.setField(mdmsCacheService, "dbLoadEnabled", true);
@@ -334,8 +345,21 @@ public class MdmsCacheServiceTest {
         mdmsCacheService.loadAndMergeDbData();
 
         Map<String, Map<String, Map<String, JSONArray>>> tenantMap = MDMSApplicationRunnerImpl.getTenantMap();
-        assertEquals(1, tenantMap.get(tenantId).size());
-        assertEquals(false, tenantMap.get(tenantId).containsKey("rentAndLease"));
+        
+        // Assert that tenant.tenants from file is STILL INTACT
+        assertEquals(true, tenantMap.get(tenantId).containsKey("tenant"));
+        assertEquals(1, tenantMap.get(tenantId).get("tenant").get("tenants").size());
+
+        // Assert that BusinessService array still has BOTH TL (from file) and updated ADVT.Hoardings (from DB)
+        JSONArray updatedBusinessServices = tenantMap.get(tenantId).get("BillingService").get("BusinessService");
+        assertEquals(2, updatedBusinessServices.size());
+
+        Map<?, ?> firstBs = (Map<?, ?>) updatedBusinessServices.get(0);
+        assertEquals("TL", firstBs.get("code"));
+
+        Map<?, ?> secondBs = (Map<?, ?>) updatedBusinessServices.get(1);
+        assertEquals("ADVT.Hoardings", secondBs.get("code"));
+        assertEquals(true, secondBs.get("isVoucherCreationEnabled"));
     }
 
     private JSONArray getOrCreateMasterArray(String tenantId, String moduleName, String masterName) {

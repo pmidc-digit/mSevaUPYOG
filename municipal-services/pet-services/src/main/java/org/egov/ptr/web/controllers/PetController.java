@@ -3,7 +3,7 @@ package org.egov.ptr.web.controllers;
 
 import java.util.Collections;
 import java.util.List;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.ptr.models.PetApplicationSearchCriteria;
@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import io.swagger.annotations.ApiParam;
 
 @Controller
 @RequestMapping("/pet-registration")
@@ -33,7 +32,7 @@ public class PetController {
 
 	@RequestMapping(value = "/_create", method = RequestMethod.POST)
 	public ResponseEntity<PetRegistrationResponse> petRegistrationCreate(
-			@ApiParam(value = "Details for the new Pet Registration Application(s) + RequestInfo meta data.", required = true) @Valid @RequestBody PetRegistrationRequest petRegistrationRequest) {
+			@Valid @RequestBody PetRegistrationRequest petRegistrationRequest) {
 		List<PetRegistrationApplication> applications = petRegistrationService
 				.registerPtrRequest(petRegistrationRequest);
 		ResponseInfo responseInfo = responseInfoFactory
@@ -58,7 +57,7 @@ public class PetController {
 
 	@RequestMapping(value = "/_update", method = RequestMethod.POST)
 	public ResponseEntity<PetRegistrationResponse> petRegistrationUpdate(
-			@ApiParam(value = "Details for the new (s) + RequestInfo meta data.", required = true) @Valid @RequestBody PetRegistrationRequest petRegistrationRequest) {
+			@Valid @RequestBody PetRegistrationRequest petRegistrationRequest) {
 		PetRegistrationApplication application = petRegistrationService.updatePtrApplication(petRegistrationRequest);
 
 		ResponseInfo responseInfo = responseInfoFactory

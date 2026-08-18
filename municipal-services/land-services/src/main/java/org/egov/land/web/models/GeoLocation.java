@@ -2,7 +2,6 @@ package org.egov.land.web.models;
 
 import java.util.Objects;
 
-import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,14 +15,12 @@ import lombok.NoArgsConstructor;
  * GeoLocation
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:54:07.373Z[GMT]")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class GeoLocation   {
 
 
-  @SafeHtml
   @JsonProperty("id")
   private String id = null;
 
@@ -113,7 +110,7 @@ public class GeoLocation   {
 
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -147,7 +144,7 @@ public class GeoLocation   {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

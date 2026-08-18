@@ -1,0 +1,1 @@
+package org.egov.land.config;

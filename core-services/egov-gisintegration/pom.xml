@@ -30,15 +30,15 @@
     <repositories>
         <repository>
             <id>egov-releases</id>
-            <url>https://nexus-repo.egovernments.org/nexus/content/repositories/releases/</url>
+            <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/</url>
         </repository>
         <repository>
             <id>egov-snapshots</id>
-            <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots</url>
+            <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/</url>
         </repository>
         <repository>
             <id>egov-public</id>
-            <url>https://nexus-repo.egovernments.org/nexus/content/groups/public/</url>
+            <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/</url>
         </repository>
     </repositories>
 

@@ -21,6 +21,7 @@ import org.upyog.adv.util.DemandUtil;
 import org.upyog.adv.util.MdmsUtil;
 import org.upyog.adv.validator.BookingValidator;
 import org.upyog.adv.web.models.AdvertisementDemandEstimationCriteria;
+import org.upyog.adv.web.models.AdvertisementSlotWiseBreakdown;
 import org.upyog.adv.web.models.BookingDetail;
 import org.upyog.adv.web.models.BookingRequest;
 import org.upyog.adv.web.models.RequestInfoWrapper;
@@ -76,15 +77,26 @@ public class DemandService {
 		String tenantId = bookingRequest.getBookingApplication().getTenantId();
 		String consumerCode = bookingRequest.getBookingApplication().getBookingNo();
 		BookingDetail bookingDetail = bookingRequest.getBookingApplication();
-		
-		// Get the first owner from the owners list and convert to User
+
+		// Get the payer — for estimates without owners, fall back to RequestInfo user
+		User owner;
 		List<org.upyog.adv.web.models.OwnerInfo> owners = bookingRequest.getBookingApplication().getOwners();
-		if (CollectionUtils.isEmpty(owners)) {
+		if (!CollectionUtils.isEmpty(owners)) {
+			owner = owners.get(0).toCommonUser();
+		} else if (!generateDemand) {
+			// Estimate mode: no owner needed, derive from RequestInfo
+			org.egov.common.contract.request.User requestUser = bookingRequest.getRequestInfo().getUserInfo();
+			owner = org.egov.common.contract.request.User.builder()
+					.uuid(requestUser.getUuid())
+					.userName(requestUser.getUserName())
+					.name(requestUser.getName())
+					.mobileNumber(requestUser.getMobileNumber())
+					.tenantId(requestUser.getTenantId())
+					.type(requestUser.getType())
+					.build();
+		} else {
 			throw new CustomException("OWNER_NOT_FOUND", "No owner found in booking application for demand creation");
 		}
-		org.upyog.adv.web.models.OwnerInfo ownerInfo = owners.get(0);
-		
-		User owner = ownerInfo.toCommonUser();
 
 		Map<String, Object> mdmsDataMap = (Map<String, Object>) mdmsData;
 
@@ -97,13 +109,33 @@ public class DemandService {
 
 		List<DemandDetail> demandDetails = calculationService.calculateDemand(bookingRequest, taxRateCodes, mdmsData);
 
-		// 🔹 Round off each tax head independently before creating Demand
-		// Use HALF_UP for standard rounding (≥0.5 rounds up, <0.5 rounds down)
+		// Compute unrounded total before rounding individual heads
+		BigDecimal unroundedTotal = demandDetails.stream()
+				.map(DemandDetail::getTaxAmount)
+				.filter(Objects::nonNull)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		// Round each tax head to whole rupees (HALF_UP)
 		demandDetails.forEach(detail -> {
 			if (detail.getTaxAmount() != null) {
 				detail.setTaxAmount(detail.getTaxAmount().setScale(0, java.math.RoundingMode.HALF_UP));
 			}
 		});
+
+		// Compute rounded total and add explicit round-off tax head
+		BigDecimal roundedTotal = demandDetails.stream()
+				.map(DemandDetail::getTaxAmount)
+				.filter(Objects::nonNull)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal roundOff = unroundedTotal.setScale(0, java.math.RoundingMode.HALF_UP)
+				.subtract(roundedTotal);
+		if (roundOff.compareTo(BigDecimal.ZERO) != 0) {
+			demandDetails.add(DemandDetail.builder()
+					.taxAmount(roundOff)
+					.taxHeadMasterCode("ADV_ROUND_OFF")
+					.tenantId(tenantId)
+					.build());
+		}
 
 		LocalDate maxdate = getMaxBookingDate(bookingDetail);
 
@@ -132,12 +164,53 @@ public class DemandService {
 			BigDecimal totalAmount = demandDetails.stream()
 					.map(DemandDetail::getTaxAmount)
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
-			demand.setAdditionalDetails(totalAmount);
+			demand.setAdditionalDetails(buildEstimationDetails(bookingRequest, mdmsData, demandDetails, totalAmount));
 			return demands;
 		}
 
 		log.info("Sending call to billing service for generating demand for booking no : " + consumerCode);
 		return demandRepository.saveDemand(bookingRequest.getRequestInfo(), demands);
+	}
+
+	/**
+	 * Builds the structured estimate payload: overall total plus a per-advertisement
+	 * slot breakdown. Service charge, taxes (CGST/SGST) and round-off are allocated
+	 * to each slot pro-rata by its base rental amount.
+	 */
+	private Map<String, Object> buildEstimationDetails(BookingRequest bookingRequest, Object mdmsData,
+			List<DemandDetail> demandDetails, BigDecimal totalAmount) throws JsonProcessingException {
+
+		List<AdvertisementSlotWiseBreakdown> slots = calculationService
+				.calculateSlotWiseBreakdown(bookingRequest, mdmsData);
+
+		BigDecimal totalBase = slots.stream()
+				.map(AdvertisementSlotWiseBreakdown::getBaseRentalAmount)
+				.filter(Objects::nonNull)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		Set<String> allocatableCodes = new HashSet<>(Arrays.asList(
+				"ADV_SERVICE_CHARGE", "ADV_CGST", "ADV_SGST", "ADV_ROUND_OFF"));
+		BigDecimal allocatableTotal = demandDetails.stream()
+				.filter(detail -> allocatableCodes.contains(detail.getTaxHeadMasterCode()))
+				.map(DemandDetail::getTaxAmount)
+				.filter(Objects::nonNull)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		for (AdvertisementSlotWiseBreakdown slot : slots) {
+			BigDecimal base = slot.getBaseRentalAmount() == null ? BigDecimal.ZERO : slot.getBaseRentalAmount();
+			BigDecimal allocated = BigDecimal.ZERO;
+			if (totalBase.compareTo(BigDecimal.ZERO) > 0) {
+				allocated = allocatableTotal.multiply(base)
+						.divide(totalBase, 2, java.math.RoundingMode.HALF_UP);
+			}
+			slot.setAllocatedTaxesAndFees(allocated);
+			slot.setSlotTotal(base.add(allocated));
+		}
+
+		Map<String, Object> details = new LinkedHashMap<>();
+		details.put("totalAmount", totalAmount);
+		details.put("slotWiseBreakdown", slots);
+		return details;
 	}
 
 
@@ -165,8 +238,9 @@ public class DemandService {
 	private LocalDate getMaxBookingDate(BookingDetail bookingDetail) {
 		return bookingDetail.getCartDetails().stream()
 				.map(detail -> detail.getBookingDate())
+				.filter(Objects::nonNull)
 				.max(LocalDate::compareTo)
-				.get();
+				.orElse(LocalDate.now());
 	}
 
 	public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {

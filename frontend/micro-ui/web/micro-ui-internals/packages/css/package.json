@@ -2,24 +2,26 @@
   "name": "@pmidc/upyog-css",
   "version": "1.2.36-dev.1.25",
   "license": "MIT",
+  "author": "",
+  "type": "commonjs",
   "main": "dist/index.css",
-  "engines": {
-    "node": ">=10"
+  "directories": {
+    "example": "example"
   },
-  "cssConfig": {
-    "prefix": ""
-  },
+  "files": [
+    "dist/index.min.css",
+    "dist/index.css",
+    "svg/**/*.svg",
+    "img/**/*.png",
+    "src/**/*.scss",
+    "src/**/*.css"
+  ],
   "scripts": {
     "start": "gulp build",
     "build:prod": "gulp build",
     "prepublish": "yarn build:prod",
     "deploy": "gulp && cp -R svg example && cp -R img example && gh-pages -d example"
   },
-  "browserslist": [
-    "> 3%",
-    "last 2 versions"
-  ],
-  "style": "./dist/index.css",
   "dependencies": {
     "normalize.css": "8.0.1",
     "postcss-scss": "3.0.5",
@@ -46,17 +48,16 @@
     "postcss-scss": "3.0.5",
     "sass": "1.49.11"
   },
-  "files": [
-    "dist/index.min.css",
-    "dist/index.css",
-    "svg/**/*.svg",
-    "img/**/*.png",
-    "src/**/*.scss",
-    "src/**/*.css"
-  ],
-  "directories": {
-    "example": "example"
+  "engines": {
+    "node": ">=10"
   },
-  "author": "",
+  "cssConfig": {
+    "prefix": ""
+  },
+  "browserslist": [
+    "> 3%",
+    "last 2 versions"
+  ],
+  "style": "./dist/index.css",
   "description": ""
 }

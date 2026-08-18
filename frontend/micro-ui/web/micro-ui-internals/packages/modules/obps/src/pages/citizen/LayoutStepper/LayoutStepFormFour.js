@@ -246,7 +246,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           fatherOrHusbandName: applicant.fatherOrHusbandName,
           permanentAddress: applicant.address,
           dob: applicant.dob ? new Date(applicant.dob).getTime() : null,
-          gender: applicant.gender?.code || applicant.gender,
+          gender: applicant.gender?.code || applicant.gender || null,
           pan: applicant.panNumber || applicant.pan || null,
           additionalDetails: {
             ...applicant?.additionalDetails,

@@ -113,6 +113,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
 
     const applicationType = currentStepData?.propertyDetails?.applicationType?.code;
     const lastBillingPeriodData = new Date(currentStepData?.propertyDetails?.lastBillingPeriod).getTime();
+    const lastPaidUptoDate = new Date(currentStepData?.propertyDetails?.lastPaidUpto).getTime();
     const lastRentRevisedDate = new Date(currentStepData?.propertyDetails?.lastRentRevisedDate).getTime();
     let additionalDetails =
       applicationType === "Legacy"
@@ -132,6 +133,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
             applicationType: applicationType,
             remarks: currentStepData?.propertyDetails?.remarks,
             lastBillingPeriod: lastBillingPeriodData,
+            lastPaidUpto: lastPaidUptoDate,
           }
         : {};
 

@@ -19,6 +19,56 @@
   margin-top: -18px;
 }
 
+.ral-last-paid-upto-label {
+  position: relative;
+  margin: 18px 0 10px;
+  padding: 12px 14px 12px 42px;
+  color: #163d63;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  background: linear-gradient(90deg, #eaf4fb 0%, #f7fbfe 100%);
+  border: 1px solid #b7d8ed;
+  border-left: 4px solid #fa001d;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(13, 110, 168, 0.08);
+}
+
+.ral-last-paid-upto-hidden {
+  display: none;
+}
+
+.ral-arrear-details-hidden {
+  display: none;
+}
+
+.ral-last-paid-upto-label::before {
+  content: "i";
+  position: absolute;
+  top: 50%;
+  left: 13px;
+  display: flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: Georgia, serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  background: #0d6ea8;
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+
+@media (max-width: 780px) {
+  .ral-last-paid-upto-label {
+    margin-top: 14px;
+    padding: 10px 12px 10px 38px;
+  }
+}
+
 /* Desktop view - margin-left 50% */
 @media (min-width: 768px) {
   .ral-error-label {

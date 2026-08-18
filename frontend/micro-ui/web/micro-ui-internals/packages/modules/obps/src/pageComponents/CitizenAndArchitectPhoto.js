@@ -56,10 +56,43 @@ const CitizenAndArchitectPhoto = ({data}) => {
             // let approvedLicense = LicenseData?.Licenses?.find(license => license?.status === "APPROVED");
             // console.log("imageArchitectZoom",approvedLicense);
             // if (approvedLicense) {
-                let architectPhotoId = data?.additionalDetails?.architectPhoto || null;
-                if(architectPhotoId){
+                let architectPhotoId = null;
+                const architectMobile = data?.additionalDetails?.architectMobileNumber;
+
+                let searchCriteria = null;
+                if (architectMobile) {
+                    searchCriteria = { mobileNumber: architectMobile };
+                }
+
+                if (searchCriteria) {
+                    try {
+                        const userResponse = await Digit.UserService.userSearch(stateCode, searchCriteria, {});
+                        if (userResponse?.user?.length) {
+                            const architectUser =
+                                userResponse.user.find((u) =>
+                                    u?.roles?.some((r) => r?.code === "BPA_ARCHITECT" || r?.code === "ARCHITECT") && u?.photo
+                                ) ||
+                                userResponse.user.find((u) =>
+                                    u?.roles?.some((r) => r?.code === "BPA_ARCHITECT" || r?.code === "ARCHITECT")
+                                ) ||
+                                userResponse.user[0];
+                            if (architectUser?.photo) {
+                                architectPhotoId = architectUser.photo.split(",")[0];
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Error fetching architect photo from user search:", err);
+                    }
+                }
+
+                if (!architectPhotoId) {
+                    architectPhotoId = data?.additionalDetails?.architectPhoto || null;
+                }
+
+                if (architectPhotoId) {
                     const result = await Digit.UploadServices.Filefetch([architectPhotoId], stateCode);
-                    if (result?.data?.fileStoreIds) setImageArchitectZoom(result?.data?.fileStoreIds[0]?.url);
+                    const photoUrl = result?.data?.fileStoreIds?.[0]?.url || (result?.data?.[architectPhotoId] ? result.data[architectPhotoId].split(",")[0] : null);
+                    if (photoUrl) setImageArchitectZoom(photoUrl);
                 }
             // }
         }

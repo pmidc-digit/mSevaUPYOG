@@ -163,7 +163,7 @@ const EditForm = ({ tenantId, data }) => {
       }
     }
     if (
-      formData?.SelectDateofEmployment?.dateOfAppointment &&
+      //formData?.SelectDateofEmployment?.dateOfAppointment &&
       formData?.SelectEmployeeCorrespondenceAddress?.correspondenceAddress &&
       formData?.SelectEmployeeGender?.gender.code &&
       formData?.SelectEmployeeName?.employeeName &&

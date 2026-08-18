@@ -124,7 +124,7 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
     applicantName: primaryOwner?.name || "",
     applicantEmailId: primaryOwner?.emailId || "",
     applicantMobileNumber: primaryOwner?.mobileNumber || "",
-    applicantGender: primaryOwner?.gender || "",
+    applicantGender: primaryOwner?.gender || null,
     applicantDob: primaryOwner?.dob || "",
     applicantAddress: primaryOwner?.permanentAddress || primaryOwner?.address || "",
     documentUploadedFiles: primaryOwner?.additionalDetails?.documentFile || "",
@@ -304,7 +304,7 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
             photoUploadedFiles: applicantDetails?.photoUploadedFiles || "",
             panDocumentUploadedFiles: applicantDetails?.panDocumentUploadedFiles || "",
             applicantDateOfBirth: convertToLocalISODate(applicantDetails?.applicantDob),
-            applicantGender: menu?.find((obj) => obj?.code === applicantDetails?.applicantGender?.code || obj?.code === applicantDetails?.applicantGender),
+            applicantGender: menu?.find((obj) => obj?.code === applicantDetails?.applicantGender?.code || obj?.code === applicantDetails?.applicantGender) || null,
             panNumber: applicantDetails?.panNumber || "",
             // Professional details (if applicable)
             professionalName: applicantDetails?.professionalName || "",
@@ -436,7 +436,7 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
           // Map all owners including primary (index 0)
           // console.log("Ownsers in this field", ownersFromApi)
           const allApplicants = ownersFromApi?.map((owner, index) => {
-            const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender;
+            const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender || null;
             const formattedDob = formatDobToDate(owner?.dob);
 
             return {
@@ -448,8 +448,8 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
               emailId: owner?.emailId || "",
               address: owner?.permanentAddress || owner?.address || "",
               dob: formattedDob,
-              gender: genderObj,
-              panNumber: owner?.pan || "",
+              gender: genderObj || null,
+              panNumber: owner?.pan || owner?.panNumber || "",
               photoUploadedFiles: owner?.additionalDetails?.ownerPhoto ,
               documentUploadedFiles: owner?.additionalDetails?.documentFile ,
               panDocumentUploadedFiles: owner?.additionalDetails?.panDocument,

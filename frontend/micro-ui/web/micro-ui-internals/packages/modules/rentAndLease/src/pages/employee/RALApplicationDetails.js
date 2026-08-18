@@ -9,8 +9,8 @@ import {
   ActionBar,
   Menu,
   SubmitBar,
-  MultiLink } from
-"@mseva/digit-ui-react-components";
+  MultiLink,
+} from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import RALDocuments from "../../components/RALDocument";
@@ -48,7 +48,7 @@ const RALApplicationDetails = () => {
       tenantId: tenantId,
       businessService: "rl-services",
       consumerCodes: acknowledgementIds,
-      isEmployee: false
+      isEmployee: false,
     },
     { enabled: acknowledgementIds ? true : false }
   );
@@ -75,7 +75,7 @@ const RALApplicationDetails = () => {
     tenantId,
     id: acknowledgementIds,
     moduleCode: "RENT_N_LEASE_NEW",
-    role: "EMPLOYEE"
+    role: "EMPLOYEE",
   });
 
   if (workflowDetails?.data?.actionState && !workflowDetails.isLoading) {
@@ -91,9 +91,9 @@ const RALApplicationDetails = () => {
   };
 
   const rawAdditionalDetails = applicationData?.additionalDetails || {};
-  const propertyDetails = Array.isArray(rawAdditionalDetails?.propertyDetails) ?
-  rawAdditionalDetails?.propertyDetails[0] :
-  rawAdditionalDetails?.propertyDetails;
+  const propertyDetails = Array.isArray(rawAdditionalDetails?.propertyDetails)
+    ? rawAdditionalDetails?.propertyDetails[0]
+    : rawAdditionalDetails?.propertyDetails;
 
   const arrearDoc = rawAdditionalDetails?.arrearDoc ? [{ documentType: "Arrear Doc", fileStoreId: rawAdditionalDetails.arrearDoc }] : [];
   const allDocuments = [...(applicationData?.Document || []), ...arrearDoc];
@@ -121,33 +121,33 @@ const RALApplicationDetails = () => {
   if (applicationData?.status === "APPROVED" || applicationData?.status === "CLOSED") {
     dowloadOptions.push({
       label: t("CHB_DOWNLOAD_ACK_FORM"),
-      onClick: () => getAcknowledgement()
+      onClick: () => getAcknowledgement(),
     });
   }
   if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () =>
-      printBillReceipt({
-        businessService: "rl-services",
-        receiptNumber: acknowledgementIds,
-        rootKey: "PAYMENTS"
-      })
+        printBillReceipt({
+          businessService: "rl-services",
+          receiptNumber: acknowledgementIds,
+          rootKey: "PAYMENTS",
+        }),
     });
   }
   let actions =
-  workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-    return (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles) && e.action !== "EDIT";
-  }) ||
-  workflowDetails?.data?.nextActions?.filter((e) => {
-    return (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles) && e.action !== "EDIT";
-  });
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+      return (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles) && e.action !== "EDIT";
+    }) ||
+    workflowDetails?.data?.nextActions?.filter((e) => {
+      return (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles) && e.action !== "EDIT";
+    });
 
   if (
-  actions?.some((action) => action?.action === "REQUEST_FOR_DISCONNECTION") &&
-  !applicationData?.expireFlag &&
-  Date.now() >= applicationData?.endDate - 15 * 24 * 60 * 60 * 1000)
-  {
+    actions?.some((action) => action?.action === "REQUEST_FOR_DISCONNECTION") &&
+    !applicationData?.expireFlag &&
+    Date.now() >= applicationData?.endDate - 15 * 24 * 60 * 60 * 1000
+  ) {
     actions = [...(actions || []), { action: "RENEWAL" }];
   }
 
@@ -159,8 +159,8 @@ const RALApplicationDetails = () => {
       return (
         applicationData?.amountToBeDeducted > 0 &&
         applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit > 0 &&
-        applicationData?.amountToBeRefund == 0);
-
+        applicationData?.amountToBeRefund == 0
+      );
     }
     if (action.action === "CLOSE") {
       return applicationData?.amountToBeRefund > 0;
@@ -193,7 +193,7 @@ const RALApplicationDetails = () => {
 
   function onActionSelect(action) {
     const payload = {
-      action: [action]
+      action: [action],
     };
 
     // history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
@@ -232,7 +232,7 @@ const RALApplicationDetails = () => {
 
     const updatedApplicant = {
       ...payloadData,
-      workflow: {}
+      workflow: {},
     };
 
     let filtData = {};
@@ -241,7 +241,7 @@ const RALApplicationDetails = () => {
         action: data.action[0].action,
         assignee: [],
         comment: "",
-        wfDocuments: null
+        wfDocuments: null,
       };
     } else {
       filtData = data?.Licenses?.[0];
@@ -251,7 +251,7 @@ const RALApplicationDetails = () => {
       action: filtData.action,
       assignes: filtData.action === "SENDBACKTOCITIZEN" ? [applicationData?.auditDetails?.createdBy] : filtData?.assignee,
       comments: filtData?.comment,
-      documents: filtData?.wfDocuments ? filtData?.wfDocuments : null
+      documents: filtData?.wfDocuments ? filtData?.wfDocuments : null,
     };
 
     if (filtData.action === "FORWARD_FOT_SETLEMENT" && filtData?.amountToBeDeducted !== undefined) {
@@ -265,12 +265,12 @@ const RALApplicationDetails = () => {
     //   return;
     // }
     const finalPayload = {
-      AllotmentDetails: [updatedApplicant]
+      AllotmentDetails: [updatedApplicant],
     };
     try {
       const response = await Digit.RentAndLeaseService.update({
         // tenantId,
-        ...finalPayload
+        ...finalPayload,
       });
 
       if (response?.ResponseInfo?.status == "successful") {
@@ -332,22 +332,22 @@ const RALApplicationDetails = () => {
 
     const payload = {
       AllotmentDetails: [
-      {
-        tenantId: data?.tenantId,
-        propertyId: data?.propertyId,
-        previousApplicationNumber: data?.applicationNumber,
-        OwnerInfo: sanitizedOwners,
-        tradeLicenseNumber: data?.tradeLicenseNumber ? data?.tradeLicenseNumber : "",
-        registrationNumber: data?.registrationNumber,
-        additionalDetails: data?.additionalDetails,
-        startDate: newStart.getTime(),
-        endDate: newEnd.getTime(),
-        workflow: {
-          action: "INITIATE"
+        {
+          tenantId: data?.tenantId,
+          propertyId: data?.propertyId,
+          previousApplicationNumber: data?.applicationNumber,
+          OwnerInfo: sanitizedOwners,
+          tradeLicenseNumber: data?.tradeLicenseNumber ? data?.tradeLicenseNumber : "",
+          registrationNumber: data?.registrationNumber,
+          additionalDetails: data?.additionalDetails,
+          startDate: newStart.getTime(),
+          endDate: newEnd.getTime(),
+          workflow: {
+            action: "INITIATE",
+          },
+          Document: null,
         },
-        Document: null
-      }]
-
+      ],
     };
 
     try {
@@ -365,14 +365,14 @@ const RALApplicationDetails = () => {
 
     const payload = {
       AllotmentDetails: [
-      {
-        ...response,
-        Document: sanitizedDocuments,
-        workflow: {
-          action: "APPLY"
-        }
-      }]
-
+        {
+          ...response,
+          Document: sanitizedDocuments,
+          workflow: {
+            action: "APPLY",
+          },
+        },
+      ],
     };
     try {
       await Digit.RentAndLeaseService.update(payload);
@@ -398,47 +398,48 @@ const RALApplicationDetails = () => {
       <div>
         <div className="cardHeaderWithOptions ral-app-details-header">
           <Header className="ral-header-32">{t("RENT_LEASE_APPLICATION_DETAILS")}</Header>
-          {isCemp && dowloadOptions && dowloadOptions.length > 0 &&
-          <MultiLink
-            className="multilinkWrapper"
-            onHeadClick={() => setShowOptions(!showOptions)}
-            displayOptions={showOptions}
-            options={dowloadOptions} />
-
-          }
+          {isCemp && dowloadOptions && dowloadOptions.length > 0 && (
+            <MultiLink
+              className="multilinkWrapper"
+              onHeadClick={() => setShowOptions(!showOptions)}
+              displayOptions={showOptions}
+              options={dowloadOptions}
+            />
+          )}
         </div>
         <Card>
           <CardSubHeader className="ral-card-subheader-24">{t("RAL_CITIZEN_DETAILS")}</CardSubHeader>
           <StatusTable>
-            {applicationData?.OwnerInfo?.length ?
-            applicationData.OwnerInfo.map((owner, index) => {
-              const multipleOwners = applicationData.OwnerInfo.length > 1;
+            {applicationData?.OwnerInfo?.length ? (
+              applicationData.OwnerInfo.map((owner, index) => {
+                const multipleOwners = applicationData.OwnerInfo.length > 1;
 
-              return (
-                <React.Fragment key={owner?.ownerId || index}>
-                    {multipleOwners &&
-                  <CardSectionHeader className="ral-app-details-owner-header">
+                return (
+                  <React.Fragment key={owner?.ownerId || index}>
+                    {multipleOwners && (
+                      <CardSectionHeader className="ral-app-details-owner-header">
                         {t("RAL_APPLICANT")} {index + 1}
                       </CardSectionHeader>
-                  }
+                    )}
 
                     <Row label={t("PT_OWNERSHIP_INFO_NAME")} text={tValue(owner?.name)} />
                     <Row label={t("CORE_COMMON_PROFILE_EMAIL")} text={tValue(owner?.emailId)} />
                     <Row label={t("CORE_MOBILE_NUMBER")} text={tValue(owner?.mobileNo)} />
-                    {rawAdditionalDetails?.alternateMobileNumber &&
-                  <Row label={t("Billing Mobile Number")} text={tValue(rawAdditionalDetails?.alternateMobileNumber)} />
-                  }
+                    {rawAdditionalDetails?.alternateMobileNumber && (
+                      <Row label={t("Billing Mobile Number")} text={tValue(rawAdditionalDetails?.alternateMobileNumber)} />
+                    )}
                     <Row
-                    label={t("PT_COMMON_COL_ADDRESS")}
-                    text={tValue(owner?.correspondenceAddress?.addressId || owner?.permanentAddress?.addressId)} />
+                      label={t("PT_COMMON_COL_ADDRESS")}
+                      text={tValue(owner?.correspondenceAddress?.addressId || owner?.permanentAddress?.addressId)}
+                    />
 
                     <Row label={t("CORE_COMMON_PINCODE")} text={tValue(owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode)} />
-                  </React.Fragment>);
-
-            }) :
-
-            <Row label={t("OWNER")} text={t("CS_NA")} />
-            }
+                  </React.Fragment>
+                );
+              })
+            ) : (
+              <Row label={t("OWNER")} text={t("CS_NA")} />
+            )}
           </StatusTable>
 
           <CardSubHeader className="ral-card-subheader-24">{t("Building/Plot/Shop Details")}</CardSubHeader>
@@ -455,137 +456,138 @@ const RALApplicationDetails = () => {
             <Row
               label={t("RAL_FEE_CYCLE")}
               text={
-              propertyDetails?.feesPeriodCycle ?
-              tValue(propertyDetails?.feesPeriodCycle?.[0]?.toUpperCase() + propertyDetails?.feesPeriodCycle?.slice(1)?.toLowerCase()) :
-              t("CS_NA")
-              } />
+                propertyDetails?.feesPeriodCycle
+                  ? tValue(propertyDetails?.feesPeriodCycle?.[0]?.toUpperCase() + propertyDetails?.feesPeriodCycle?.slice(1)?.toLowerCase())
+                  : t("CS_NA")
+              }
+            />
 
             <Row label={t("Building/Plot/Shop Size")} text={tValue(propertyDetails?.propertySizeOrArea)} />
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={tValue(propertyDetails?.locationType)} />
             <Row label={t("RAL_START_DATE")} text={tValue(getDate(applicationData?.startDate))} />
             <Row label={t("RAL_END_DATE")} text={tValue(getDate(applicationData?.endDate))} />
             {applicationData?.amountToBeDeducted > 0 && <Row label={t("RAL_PROPERTY_PENALTY")} text={tValue(applicationData?.amountToBeDeducted)} />}
-            {rawAdditionalDetails?.applicationType !== "Legacy" &&
-            <Row label={t("SECURITY_DEPOSIT")} text={tValue(propertyDetails?.securityDeposit)} />
-            }
-            {applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit > 0 &&
-            <Row
-              label={t("RAL_AMOUNT_TO_TAKE_FROM_CITIZEN")}
-              text={tValue(applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit)} />
-
-            }
+            {rawAdditionalDetails?.applicationType !== "Legacy" && (
+              <Row label={t("SECURITY_DEPOSIT")} text={tValue(propertyDetails?.securityDeposit)} />
+            )}
+            {applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit > 0 && (
+              <Row
+                label={t("RAL_AMOUNT_TO_TAKE_FROM_CITIZEN")}
+                text={tValue(applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit)}
+              />
+            )}
             {applicationData?.amountToBeRefund > 0 && <Row label={t("RAL_AMOUNT_TO_REFUND")} text={tValue(applicationData?.amountToBeRefund)} />}
-            {applicationData?.tradeLicenseNumber &&
-            <Row label={t("RENT_LEASE_TRADE_LICENSE_NUMBER")} text={tValue(applicationData?.tradeLicenseNumber)} />
-            }
+            {applicationData?.tradeLicenseNumber && (
+              <Row label={t("RENT_LEASE_TRADE_LICENSE_NUMBER")} text={tValue(applicationData?.tradeLicenseNumber)} />
+            )}
             {rawAdditionalDetails?.gstAmount && <Row label={t("GST")} text={tValue(rawAdditionalDetails?.gstAmount)} />}
             {rawAdditionalDetails?.rebateAmount && <Row label={t("Rebate")} text={tValue(rawAdditionalDetails?.rebateAmount)} />}
           </StatusTable>
 
-          {rawAdditionalDetails?.applicationType === "Legacy" &&
-          <React.Fragment>
+          {rawAdditionalDetails?.applicationType === "Legacy" && (
+            <React.Fragment>
               <CardSubHeader className="ral-card-subheader-24">{t("RAL_ARREAR_DETAILS")}</CardSubHeader>
               <StatusTable>
                 <Row label={t("Arrears")} text={tValue(rawAdditionalDetails?.arrear)} />
                 <Row
-                label={t("Last Billing Period")}
-                text={rawAdditionalDetails?.lastBillingPeriod ? new Date(rawAdditionalDetails.lastBillingPeriod).toLocaleDateString("en-IN") : "-"} />
+                  label={t("Last Billing Period")}
+                  text={rawAdditionalDetails?.lastBillingPeriod ? new Date(rawAdditionalDetails.lastBillingPeriod).toLocaleDateString("en-IN") : "-"}
+                />
+                <Row
+                  label={t("Last Paid Upto")}
+                  text={rawAdditionalDetails?.lastPaidUpto ? new Date(rawAdditionalDetails.lastPaidUpto).toLocaleDateString("en-IN") : "-"}
+                />
 
-
-                {rawAdditionalDetails?.lastRentRevisedDate != null &&
-              <Row
-                label={t("Last Rent Revised Date")}
-                text={
-                rawAdditionalDetails?.lastRentRevisedDate ? new Date(rawAdditionalDetails.lastRentRevisedDate).toLocaleDateString("en-IN") : "-"
-                } />
-
-              }
-                {rawAdditionalDetails?.incrementPeriodMonths != null &&
-              <Row label={t("Increment Period Months")} text={Number(rawAdditionalDetails.incrementPeriodMonths) || "-"} />
-              }
-                {rawAdditionalDetails?.incrementPercentage &&
-              <Row label={t("Increment Percentage")} text={rawAdditionalDetails?.incrementPercentage} />
-              }
+                {rawAdditionalDetails?.lastRentRevisedDate != null && (
+                  <Row
+                    label={t("Last Rent Revised Date")}
+                    text={
+                      rawAdditionalDetails?.lastRentRevisedDate ? new Date(rawAdditionalDetails.lastRentRevisedDate).toLocaleDateString("en-IN") : "-"
+                    }
+                  />
+                )}
+                {rawAdditionalDetails?.incrementPeriodMonths != null && (
+                  <Row label={t("Increment Period Months")} text={Number(rawAdditionalDetails.incrementPeriodMonths) || "-"} />
+                )}
+                {/* {rawAdditionalDetails?.incrementPercentage && ( */}
+                <Row label={t("Increment Percentage")} text={rawAdditionalDetails?.incrementPercentage} />
+                {/* )} */}
                 <Row label={t("Reason")} text={tValue(rawAdditionalDetails?.arrearReason)} />
                 <Row label={t("Remarks")} text={tValue(rawAdditionalDetails?.remarks)} />
               </StatusTable>
             </React.Fragment>
-          }
+          )}
 
           <CardSubHeader className="ral-card-subheader-24-margin">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
             <Card className="ral-app-details-docs-card">
-              {allDocuments?.length > 0 ?
-              allDocuments.map((doc, index) =>
-              <div key={index}>
+              {allDocuments?.length > 0 ? (
+                allDocuments.map((doc, index) => (
+                  <div key={index}>
                     <RALDocuments value={allDocuments} Code={doc?.documentType} index={index} />
                     {t(doc?.documentType)}
                   </div>
-              ) :
-
-              <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
-              }
+                ))
+              ) : (
+                <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
+              )}
             </Card>
           </StatusTable>
         </Card>
         {/* <ApplicationTimeline workflowDetails={workflowDetails} t={t} /> */}
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
-        {applicationData?.status != "INITIATED" && actions?.length > 0 && !applicationData?.expireFlag &&
-        <ActionBar>
+        {applicationData?.status != "INITIATED" && actions?.length > 0 && !applicationData?.expireFlag && (
+          <ActionBar>
             <div ref={menuRef}>
-              {displayMenu ?
-            <Menu
-              localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
-              options={actions}
-              optionKey={"action"}
-              t={t}
-              onSelect={onActionSelect}
-            /> :
-            null}
+              {displayMenu ? (
+                <Menu localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+              ) : null}
               <div className="ral-style-a527bac1ee">
                 <SubmitBar label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
               </div>
             </div>
           </ActionBar>
-        }
+        )}
 
-        {applicationData?.status == "INITIATED" &&
-        <ActionBar>
+        {applicationData?.status == "INITIATED" && (
+          <ActionBar>
             <SubmitBar
-            label={t("COMMON_EDIT")}
-            onSubmit={() => {
-              history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
-            }} />
-
+              label={t("COMMON_EDIT")}
+              onSubmit={() => {
+                history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
+              }}
+            />
           </ActionBar>
-        }
+        )}
 
-        {showModal ?
-        <RALModal
-          t={t}
-          action={selectedAction}
-          tenantId={tenantId}
-          state={state}
-          id={acknowledgementIds}
-          applicationDetails={propertyDetails}
-          closeModal={closeModal}
-          submitAction={submitAction}
-          actionData={workflowDetails?.data?.timeline}
-          workflowDetails={workflowDetails?.data}
-          showToast={showToast}
-          closeToast={closeToast}
-          getEmployees={getEmployees}
-          setShowToast={setShowToast}
-          applicationData={applicationData}
-          handleRenewal={handleRenewal} /> :
-
-        null}
+        {showModal ? (
+          <RALModal
+            t={t}
+            action={selectedAction}
+            tenantId={tenantId}
+            state={state}
+            id={acknowledgementIds}
+            applicationDetails={propertyDetails}
+            closeModal={closeModal}
+            submitAction={submitAction}
+            actionData={workflowDetails?.data?.timeline}
+            workflowDetails={workflowDetails?.data}
+            showToast={showToast}
+            closeToast={closeToast}
+            getEmployees={getEmployees}
+            setShowToast={setShowToast}
+            applicationData={applicationData}
+            handleRenewal={handleRenewal}
+          />
+        ) : null}
       </div>
 
-      {showToast && <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={closeToast} className="ral-style-bd1c956dbd" />}
+      {showToast && (
+        <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={closeToast} className="ral-style-bd1c956dbd" />
+      )}
       {(loader || recieptDataLoading || workflowDetails?.isLoading) && <Loader page={true} />}
-    </React.Fragment>);
-
+    </React.Fragment>
+  );
 };
 
 export default RALApplicationDetails;

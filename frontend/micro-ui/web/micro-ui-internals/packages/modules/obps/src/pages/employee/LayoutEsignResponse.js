@@ -88,7 +88,7 @@ const LayoutEsignResponse = () => {
     <div>
       <Card>
         <Banner
-          message={t("COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL")}
+          message={t("ESIGN_LAYOUT_SUCCESSFULLY")}
           applicationNumber={applicationNo}
           info={t("ESIGN_SUCCESS_INFO")}
           successful={true}

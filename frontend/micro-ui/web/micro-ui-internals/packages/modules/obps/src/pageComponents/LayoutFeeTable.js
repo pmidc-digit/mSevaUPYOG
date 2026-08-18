@@ -189,6 +189,28 @@ export const LayoutFeeTable = ({
           );
         },
       },
+      {
+        key: "remark",
+        label: "BPA_REMARKS",
+        headerLabel: "BPA_REMARKS",
+        type: "custom",
+        render: (row, rowIndex, t) => {
+          if (row.taxHeadCode === "LAYOUT_TOTAL") {
+            return " ";
+          }
+          return feeData[row.index]?.remark ? (
+            <div className="custom-fee-remark-display">
+              {feeData[row.index]?.remark || ""}
+            </div>
+          ) : (
+            <TextArea
+              placeholder=""
+              disabled={true}
+              className="custom-fee-table-textarea"
+            />
+          );
+        },
+      },
     ];
   }
 

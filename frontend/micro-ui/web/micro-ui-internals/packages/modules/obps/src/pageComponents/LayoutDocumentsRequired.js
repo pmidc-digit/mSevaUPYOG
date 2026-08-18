@@ -1,5 +1,3 @@
-
-
 import React, { use, useEffect, useState, useMemo } from "react";
 import {
   CardLabel,
@@ -15,77 +13,55 @@ import {
 } from "@mseva/digit-ui-react-components";
 import EXIF from "../utils/exif-compat";
 import { useDispatch, useSelector } from "react-redux";
-import { pdfDownloadLink } from "../utils";
+import { pdfDownloadLink, getDocumentLabel } from "../utils";
 import { UPDATE_LayoutNewApplication_CoOrdinates } from "../redux/actions/LayoutNewApplicationActions";
 import { useParams } from "react-router-dom";
 import CustomUploadFile from "../components/CustomUploadFile";
 
-
-
-const LayoutDocumentsRequired = ({
-  t,
-  config,
-  onSelect,
-  userType,
-  formData,
-  setError: setFormError,
-  clearErrors: clearFormErrors,
-  formState,
-}) => {
-  const tenantId = Digit.ULBService.getStateId()
-  const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
-  const [documents, setDocuments] = useState(
-    formData?.documents?.documents?.documents ||
-    currentStepData?.documents?.documents?.documents ||
-    []
-  )
+const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
+  const tenantId = Digit.ULBService.getStateId();
+  const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {};
+  const [documents, setDocuments] = useState(formData?.documents?.documents?.documents || currentStepData?.documents?.documents?.documents || []);
 
   useEffect(() => {
-    const docs =
-      formData?.documents?.documents?.documents ||
-      currentStepData?.documents?.documents?.documents ||
-      [];
+    const docs = formData?.documents?.documents?.documents || currentStepData?.documents?.documents?.documents || [];
     if (documents?.length === 0 && docs?.length > 0) {
       setDocuments(docs);
     }
   }, [formData?.documents?.documents?.documents, currentStepData?.documents?.documents?.documents]);
 
-  console.log("documents in childStep three", documents, formData, currentStepData)
-  const [error, setError] = useState(null)
-  const [enableSubmit, setEnableSubmit] = useState(true)
-  const [checkRequiredFields, setCheckRequiredFields] = useState(false)
-  const [geocoordinates, setGeoCoordinates] = useState(null)
+  console.log("documents in childStep three", documents, formData, currentStepData);
+  const [error, setError] = useState(null);
+  const [enableSubmit, setEnableSubmit] = useState(true);
+  const [checkRequiredFields, setCheckRequiredFields] = useState(false);
+  const [geocoordinates, setGeoCoordinates] = useState(null);
 
-  const { id } = useParams()
-  const isEditApplication = Boolean(id)
+  const { id } = useParams();
+  const isEditApplication = Boolean(id);
 
-  const stateId = Digit.ULBService.getStateId()
-  const dispatch = useDispatch()
+  const stateId = Digit.ULBService.getStateId();
+  const dispatch = useDispatch();
 
   // Module: LAYOUT, Master: LayoutDocuments
-  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "LAYOUT", ["LayoutDocuments"])
+  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "LAYOUT", ["LayoutDocuments"]);
 
-  const coordinates = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.coordinates || {})
+  const coordinates = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.coordinates || {});
 
   useEffect(() => {
     if (Object.keys(coordinates).length > 0) {
-      setGeoCoordinates(coordinates)
+      setGeoCoordinates(coordinates);
     }
-  }, [coordinates])
+  }, [coordinates]);
 
   // console.log("coordinates (from redux)", coordinates, data)
   //console.log("geocoordinates", geocoordinates)
 
-
   const layoutOwners = currentStepData?.apiData?.Layout?.[0]?.owners || [];
   const primaryOwnerFromLayout = layoutOwners?.find((owner) => owner?.isPrimaryOwner) || layoutOwners?.[0];
-  const primaryApplicant = currentStepData?.applicants?.find((app) => app?.isPrimaryOwner) || primaryOwnerFromLayout || currentStepData?.applicants?.[0] || {};
+  const primaryApplicant =
+    currentStepData?.applicants?.find((app) => app?.isPrimaryOwner) || primaryOwnerFromLayout || currentStepData?.applicants?.[0] || {};
 
-  const applicantType =
-    primaryApplicant?.aplicantType?.code ||
-    primaryApplicant?.additionalDetails?.aplicantType?.code;
-
-
+  const applicantType = primaryApplicant?.aplicantType?.code || primaryApplicant?.additionalDetails?.aplicantType?.code;
 
   const [applicationNo, setApplicationNo] = useState("");
   // const [isVacant, setIsVacant] = useState(false);
@@ -100,9 +76,7 @@ const LayoutDocumentsRequired = ({
     if (!currentStepData) return;
 
     // Application No
-    setApplicationNo(
-      currentStepData?.apiData?.Layout?.applicationNo || ""
-    );
+    setApplicationNo(currentStepData?.apiData?.Layout?.applicationNo || "");
 
     // Vacant
     // setIsVacant(
@@ -110,87 +84,59 @@ const LayoutDocumentsRequired = ({
     // );
 
     // CLU Approved
-    const cluApprovedValue =
-      currentStepData?.siteDetails?.isCluRequired?.code ||
-      currentStepData?.siteDetails?.isCluRequired;
+    const cluApprovedValue = currentStepData?.siteDetails?.isCluRequired?.code || currentStepData?.siteDetails?.isCluRequired;
 
-    setIsCluApproved(
-      cluApprovedValue === "YES" || cluApprovedValue === true
-    );
+    setIsCluApproved(cluApprovedValue === "YES" || cluApprovedValue === true);
 
     // Restricted Area
-    setIsRestrictedArea(
-      currentStepData?.siteDetails?.specificationRestrictedArea?.code === "YES"
-    );
+    setIsRestrictedArea(currentStepData?.siteDetails?.specificationRestrictedArea?.code === "YES");
 
     // Under Master Plan
-    setIsUnderMasterPlan(
-      currentStepData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code === "YES"
-    );
+    setIsUnderMasterPlan(currentStepData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code === "YES");
 
     // National Highway
-    const roadType =
-      currentStepData?.siteDetails?.roadType?.name ||
-      currentStepData?.siteDetails?.roadType ||
-      "";
+    const roadType = currentStepData?.siteDetails?.roadType?.name || currentStepData?.siteDetails?.roadType || "";
 
-    setIsNationalHighway(
-      roadType.toLowerCase().includes("national") ||
-      roadType.toLowerCase().includes("nh")
-    );
+    setIsNationalHighway(roadType.toLowerCase().includes("national") || roadType.toLowerCase().includes("nh"));
 
     // Institutional and Industrial checks
     const bc = currentStepData?.siteDetails?.buildingCategory;
 
+    const isInstitutionVal = bc
+      ? typeof bc === "object"
+        ? (bc.code || "").toLowerCase().includes("institutional") || (bc.name || "").toLowerCase().includes("institutional")
+        : bc.toLowerCase().includes("institutional")
+      : false;
 
-    const isInstitutionVal = bc ? (
-      typeof bc === "object" ? (
-        (bc.code || "").toLowerCase().includes("institutional") ||
-        (bc.name || "").toLowerCase().includes("institutional")
-      ) : (
-        bc.toLowerCase().includes("institutional")
-      )
-    ) : false;
-
-    const isIndustrialVal = bc ? (
-      typeof bc === "object" ? (
-        (bc.code || "").toLowerCase().includes("industrial") ||
-        (bc.name || "").toLowerCase().includes("industrial")
-      ) : (
-        bc.toLowerCase().includes("industrial")
-      )
-    ) : false;
-
-
+    const isIndustrialVal = bc
+      ? typeof bc === "object"
+        ? (bc.code || "").toLowerCase().includes("industrial") || (bc.name || "").toLowerCase().includes("industrial")
+        : bc.toLowerCase().includes("industrial")
+      : false;
 
     setIsInstitution(isInstitutionVal);
     setIsIndustrial(isIndustrialVal);
-
   }, [currentStepData]);
-
-
-
 
   // Filter documents based on building status, CLU approval, road type, and category
   const filteredDocuments = useMemo(() => {
-    let docs = data?.LAYOUT?.LayoutDocuments || []
-
+    let docs = data?.LAYOUT?.LayoutDocuments || [];
 
     // Filter and process documents
     const processedDocs = docs
       .map((doc) => {
         // Set default required status based on backend config
-        let isRequired = doc.required || false
+        let isRequired = doc.required || false;
 
         // Override required status based on conditions
 
         // Site photographs are ALWAYS mandatory (regardless of CLU)
         if (doc.code === "OWNER.SITEPHOTOGRAPHONE" || doc.code === "OWNER.SITEPHOTOGRAPHTWO") {
-          isRequired = true
+          isRequired = true;
         }
         // National Highway NOC is mandatory only when it's a National Highway
         else if (doc.code === "OWNER.NATIONALHIGHWAYNOC") {
-          isRequired = isNationalHighway
+          isRequired = isNationalHighway;
         }
         // authorization document is mandatory for FIRM and NOT mandatory for INDIVIDUAL
         else if (doc.code === "OWNER.AUTHORIZATIONLETTER") {
@@ -210,40 +156,46 @@ const LayoutDocumentsRequired = ({
         //   return null
         // }
 
-        return { ...doc, required: isRequired }
-      }).filter(doc => !(doc?.cluRequired && !isCluApproved))
-      .filter(doc => doc !== null)
+        return { ...doc, required: isRequired };
+      })
+      .filter((doc) => !(doc?.cluRequired && !isCluApproved))
+      .filter((doc) => doc !== null);
 
+    return processedDocs;
+  }, [isCluApproved, isNationalHighway, isInstitution, isIndustrial, applicantType, data?.LAYOUT?.LayoutDocuments?.length]);
 
-    return processedDocs
-  }, [isCluApproved, isNationalHighway, isInstitution, isIndustrial, applicantType, data?.LAYOUT?.LayoutDocuments?.length])
-
-   console.log("filteredDocs and documents", filteredDocuments, documents)
+  console.log("filteredDocs and documents", filteredDocuments, documents);
 
   const handleSubmit = () => {
-    const document = formData.documents
-    let documentStep
-    documentStep = { ...document, documents: documents }
-    onSelect(config.key, documentStep)
-  }
+    const document = formData.documents;
+    let documentStep;
+    documentStep = { ...document, documents: documents };
+    onSelect(config.key, documentStep);
+  };
 
-  const onSkip = () => onSelect()
+  const onSkip = () => onSelect();
   function onAdd() {}
 
   useEffect(() => {
-    let count = 0
+    let count = 0;
     filteredDocuments?.map((doc) => {
-      doc.hasDropdown = true
+      doc.hasDropdown = true;
 
-      let isRequired = false
-      ;(documents || []).map((data) => {
-        if (doc.required && data?.documentType.includes(doc.code)) isRequired = true
-      })
-      if (!isRequired && doc.required) count = count + 1
-    })
-    if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false)
-    else setEnableSubmit(true)
-  }, [documents, checkRequiredFields, filteredDocuments])
+      let isRequired = false;
+      (documents || []).map((data) => {
+        if (
+          doc.required &&
+          data?.documentType.includes(doc.code) &&
+          ((data?.filestoreId && String(data.filestoreId).trim() !== "") ||
+            (data?.documentAttachment && String(data.documentAttachment).trim() !== ""))
+        )
+          isRequired = true;
+      });
+      if (!isRequired && doc.required) count = count + 1;
+    });
+    if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);
+    else setEnableSubmit(true);
+  }, [documents, checkRequiredFields, filteredDocuments]);
 
   // useEffect(() => {
   //   const currentStatus = currentStepData?.siteDetails?.buildingStatus?.code
@@ -262,14 +214,14 @@ const LayoutDocumentsRequired = ({
         documentAttachment: doc.documentAttachment || doc.filestoreId,
       })),
     },
-  }
+  };
 
-  const { isLoading: isDocLoading, data: docPreviewData } = Digit.Hooks.obps.useLayoutDocumentSearch(documentObj)
+  const { isLoading: isDocLoading, data: docPreviewData } = Digit.Hooks.obps.useLayoutDocumentSearch(documentObj);
 
   const documentLinks = (documents || []).map((doc) => ({
     code: doc.documentType,
     link: pdfDownloadLink(docPreviewData?.pdfFiles, doc.filestoreId || doc.documentAttachment),
-  }))
+  }));
 
   return (
     <div>
@@ -289,7 +241,7 @@ const LayoutDocumentsRequired = ({
               <LayoutSelectDocument
                 key={document?.code}
                 document={document}
-                value={documents?.find(val => val?.documentType === document?.code)?.filestoreId}
+                value={documents?.find((val) => val?.documentType === document?.code)?.filestoreId}
                 t={t}
                 error={error}
                 setError={setError}
@@ -302,17 +254,17 @@ const LayoutDocumentsRequired = ({
                 dispatch={dispatch}
                 previewLink={documentLinks?.find((link) => link.code === document.code)?.link}
               />
-            )
+            );
           })}
           {error && <Toast label={error} isDleteBtn={true} onClose={() => setError(null)} error />}
-          </React.Fragment>
-        // </FormStep>
+        </React.Fragment>
       ) : (
+        // </FormStep>
         <Loader />
       )}
     </div>
-  )
-}
+  );
+};
 
 function LayoutSelectDocument({
   t,
@@ -328,16 +280,15 @@ function LayoutSelectDocument({
   setGeoCoordinates,
   dispatch,
   previewLink,
-  value
+  value,
 }) {
-  const filteredDocument = (documents || []).filter((item) => item?.documentType?.includes(doc?.code))[0]
-  const [file, setFile] = useState(null)
-  const [uploadedFile, setUploadedFile] = useState(() => value || null)
-
+  const filteredDocument = (documents || []).filter((item) => item?.documentType?.includes(doc?.code))[0];
+  const [file, setFile] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(() => value || null);
 
   function selectfile(e) {
-    const selectedFile = e.target.files[0]
-    setFile(selectedFile)
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
     // console.log("selectedFile here", selectedFile, doc, selectedDocument)
 
     const fileType = selectedFile?.type?.toLowerCase();
@@ -349,49 +300,49 @@ function LayoutSelectDocument({
 
         if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
           if (location.latitude !== null && location.longitude !== null) {
-            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", location.latitude))
-            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", location.longitude))
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", location.latitude));
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", location.longitude));
             setGeoCoordinates((prev) => {
               return {
                 ...prev,
                 Latitude1: location.latitude,
                 Longitude1: location.longitude,
-              }
-            })
+              };
+            });
           } else {
             if (window.location.pathname.includes("edit")) {
-              dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", ""))
-              dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", ""))
+              dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", ""));
+              dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", ""));
             }
-            alert("Please upload a photo with location details.")
+            alert("Please upload a photo with location details.");
           }
         }
 
         if (doc?.code === "OWNER.SITEPHOTOGRAPHTWO") {
           if (location.latitude !== null && location.longitude !== null) {
-            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude2", location.latitude))
-            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude2", location.longitude))
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude2", location.latitude));
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude2", location.longitude));
             setGeoCoordinates((prev) => {
               return {
                 ...prev,
                 Latitude2: location.latitude,
                 Longitude2: location.longitude,
-              }
-            })
+              };
+            });
           } else {
             if (window.location.pathname.includes("edit")) {
-              dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude2", ""))
-              dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude2", ""))
+              dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude2", ""));
+              dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude2", ""));
             }
-            alert("Please upload a photo with location details.")
+            alert("Please upload a photo with location details.");
           }
         }
-      })
+      });
     }
   }
 
   function selectfileWithCordinates(e) {
-    const selectedFile = e.target.files[0]
+    const selectedFile = e.target.files[0];
 
     const fileType = selectedFile?.type?.toLowerCase();
 
@@ -402,50 +353,49 @@ function LayoutSelectDocument({
 
         if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
           if (location.latitude !== null && location.longitude !== null) {
-            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", location.latitude))
-            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", location.longitude))
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", location.latitude));
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", location.longitude));
             setGeoCoordinates((prev) => {
               return {
                 ...prev,
                 Latitude1: location.latitude,
                 Longitude1: location.longitude,
-              }
-            })
+              };
+            });
           } else {
             // if (window.location.pathname.includes("edit")) {
             //   dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", ""))
             //   dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", ""))
             // }
-            alert("Please upload a photo with location details.")
-            return ;
+            alert("Please upload a photo with location details.");
+            return;
           }
         }
 
         if (doc?.code === "OWNER.SITEPHOTOGRAPHTWO") {
           if (location.latitude !== null && location.longitude !== null) {
-            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude2", location.latitude))
-            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude2", location.longitude))
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude2", location.latitude));
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude2", location.longitude));
             setGeoCoordinates((prev) => {
               return {
                 ...prev,
                 Latitude2: location.latitude,
                 Longitude2: location.longitude,
-              }
-            })
+              };
+            });
           } else {
             // if (window.location.pathname.includes("edit")) {
             //   dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude2", ""))
             //   dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude2", ""))
             // }
-            alert("Please upload a photo with location details.")
-            return
+            alert("Please upload a photo with location details.");
+            return;
           }
         }
 
-        setFile(selectedFile)
-      })
+        setFile(selectedFile);
+      });
     }
-
 
     // console.log("selectedFile here", selectedFile)
   }
@@ -453,23 +403,19 @@ function LayoutSelectDocument({
   // const { dropdownData } = doc
   // var dropDownData = dropdownData
 
-  const [isHidden, setHidden] = useState(false)
-  const [getLoading, setLoading] = useState(false)
+  const [isHidden, setHidden] = useState(false);
+  const [getLoading, setLoading] = useState(false);
 
   useEffect(() => {
     if (doc?.code) {
       if (uploadedFile) {
         setDocuments((prev) => {
-          const filteredDocumentsByDocumentType = (prev || []).filter(
-            (item) => item?.documentType !== doc?.code,
-          )
+          const filteredDocumentsByDocumentType = (prev || []).filter((item) => item?.documentType !== doc?.code);
 
-          const selectedDocument = (prev || []).filter(
-            (item) => item?.documentType === doc?.code
-          )
+          const selectedDocument = (prev || []).filter((item) => item?.documentType === doc?.code);
 
           if (uploadedFile?.length === 0 || uploadedFile === null) {
-            return filteredDocumentsByDocumentType
+            return filteredDocumentsByDocumentType;
           }
 
           return [
@@ -480,10 +426,10 @@ function LayoutSelectDocument({
               filestoreId: uploadedFile,
               documentUid: uploadedFile,
               documentAttachment: uploadedFile,
-              order: doc?.order
+              order: doc?.order,
             },
-          ]
-        })
+          ];
+        });
       } else if (uploadedFile === "") {
         const selectedDoc = (documents || [])?.find((item) => item?.documentType === doc?.code);
         if (!selectedDoc?.layoutId) {
@@ -508,20 +454,20 @@ function LayoutSelectDocument({
         }
       }
     }
-  }, [uploadedFile, doc])
+  }, [uploadedFile, doc]);
 
   useEffect(() => {
     if (value !== uploadedFile) {
       setUploadedFile(value || null);
     }
-  }, [value])
+  }, [value]);
 
   useEffect(() => {
     if ((documents || []).length > 0) {
       // console.log("documents here", documents)
-      handleSubmit()
+      handleSubmit();
     }
-  }, [documents])
+  }, [documents]);
 
   // useEffect(() => {
   //   if (action === "update") {
@@ -545,31 +491,31 @@ function LayoutSelectDocument({
   // }, [])
 
   useEffect(() => {
-    ;(async () => {
-      setError(null)
+    (async () => {
+      setError(null);
       if (file) {
-        setLoading(true)
+        setLoading(true);
         if (file.size >= 5242880) {
-          setLoading(false)
-          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"))
+          setLoading(false);
+          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
         } else {
           try {
-            setUploadedFile(null)
-            const response = await Digit.UploadServices.Filestorage("BPA", file, Digit.ULBService.getStateId())
-            setLoading(false)
+            setUploadedFile(null);
+            const response = await Digit.UploadServices.Filestorage("BPA", file, Digit.ULBService.getStateId());
+            setLoading(false);
             if (response?.data?.files?.length > 0) {
-              setUploadedFile(response?.data?.files[0]?.fileStoreId)
+              setUploadedFile(response?.data?.files[0]?.fileStoreId);
             } else {
-              setError(t("CS_FILE_UPLOAD_ERROR"))
+              setError(t("CS_FILE_UPLOAD_ERROR"));
             }
           } catch (err) {
-            setLoading(false)
-            setError(t("CS_FILE_UPLOAD_ERROR"))
+            setLoading(false);
+            setError(t("CS_FILE_UPLOAD_ERROR"));
           }
         }
       }
-    })()
-  }, [file])
+    })();
+  }, [file]);
 
   // useEffect(() => {
   //   if (isHidden) setUploadedFile(null)
@@ -633,78 +579,69 @@ function LayoutSelectDocument({
     });
   }
 
-  const getDocumentLabel = () => {
-    const translationKey = doc?.code ? doc.code.replaceAll(".", "_") : "";
-    const text = t(translationKey);
-    if (doc?.code === "OWNER.SITEMARKEDONGOOGLEPLAN") {
-      const splitWord = " and ";
-      const splitIndex = text.indexOf(splitWord);
-      if (splitIndex !== -1) {
-        return (
-          <React.Fragment>
-            {text.substring(0, splitIndex)}
-            <br />
-            {text.substring(splitIndex + 1)}
-          </React.Fragment>
-        );
-      }
-    }
-    return text;
-  };
-
   return (
     <div className="obps-page-components-layout-documents-required--style-1">
       {getLoading && <Loader />}
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller obps-page-components-layout-documents-required--style-2" >
-            {getDocumentLabel()} {doc?.required && <span className="requiredField">*</span>}
-          </CardLabel>
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller" style={{ width: "100%" }}>
+          {getDocumentLabel(doc?.code, t)} {doc?.required && <span className="requiredField">*</span>}
+        </CardLabel>
 
-      <div className="field obps-page-components-layout-documents-required--style-3" >
-        {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO" ? (
-          <div>
-          <CustomUploadFile
-            id={"clu-doc"}
-            onUpload={selectfileWithCordinates}
-            onDelete={() => {
-              setUploadedFile("");
-            }}
-            uploadedFile={uploadedFile}
-            message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-            textStyles={{ width: "100%" }}
-            uploadMessage = "Invalid File Format"
-            accept=".jpeg, .jpg, .png"
-          />
-            <p className="obps-page-components-layout-documents-required--style-4">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
-        ):(
-          <div>
-          <CustomUploadFile
-            id={"clu-doc"}
-            onUpload={selectfile}
-            onDelete={() => {
-              setUploadedFile("");
-            }}
-            uploadedFile={uploadedFile}
-            message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-            textStyles={{ width: "100%" }}
-            accept=".pdf, .jpeg, .jpg, .png"
-            uploadMessage = "Invalid File Format"
-            required={doc?.required}
-            isRemovable={!doc?.required}
-          />
-             <p className="obps-page-components-layout-documents-required--style-5">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          </div>
-        )}
+        <div className="field obps-page-components-layout-documents-required--style-3">
+          {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO" ? (
+            <div>
+              <CustomUploadFile
+                id={"clu-doc"}
+                onUpload={selectfileWithCordinates}
+                onDelete={() => {
+                  setUploadedFile("");
+                }}
+                uploadedFile={uploadedFile}
+                message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+                textStyles={{ width: "100%" }}
+                uploadMessage="Invalid File Format"
+                accept=".jpeg, .jpg, .png"
+              />
+              <p className="obps-page-components-layout-documents-required--style-4">
+                {t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <CustomUploadFile
+                id={"clu-doc"}
+                onUpload={selectfile}
+                onDelete={() => {
+                  setUploadedFile("");
+                }}
+                uploadedFile={uploadedFile}
+                message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+                textStyles={{ width: "100%" }}
+                accept=".pdf, .jpeg, .jpg, .png"
+                uploadMessage="Invalid File Format"
+                required={doc?.required}
+                isRemovable={!doc?.required}
+              />
+              <p className="obps-page-components-layout-documents-required--style-5">
+                {t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
+              </p>
+            </div>
+          )}
 
-            {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&  <p className="obps-page-components-layout-documents-required--style-6">Latitude: {geocoordinates.Latitude1} & Longitude: {geocoordinates.Longitude1} </p>}
-            {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  (geocoordinates?.Latitude2 && geocoordinates?.Longitude2) &&  <p className="obps-page-components-layout-documents-required--style-7">Latitude: {geocoordinates.Latitude2} & Longitude: {geocoordinates.Longitude2}</p>}
-          </div>
-
+          {doc?.code === "OWNER.SITEPHOTOGRAPHONE" && geocoordinates?.Latitude1 && geocoordinates?.Longitude1 && (
+            <p className="obps-page-components-layout-documents-required--style-6">
+              Latitude: {geocoordinates.Latitude1} & Longitude: {geocoordinates.Longitude1}{" "}
+            </p>
+          )}
+          {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" && geocoordinates?.Latitude2 && geocoordinates?.Longitude2 && (
+            <p className="obps-page-components-layout-documents-required--style-7">
+              Latitude: {geocoordinates.Latitude2} & Longitude: {geocoordinates.Longitude2}
+            </p>
+          )}
+        </div>
       </LabelFieldPair>
     </div>
-  )
+  );
 }
 
-export default LayoutDocumentsRequired
-
+export default LayoutDocumentsRequired;

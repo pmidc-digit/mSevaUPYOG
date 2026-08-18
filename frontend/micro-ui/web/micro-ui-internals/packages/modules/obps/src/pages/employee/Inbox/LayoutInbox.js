@@ -48,6 +48,7 @@ const LayoutInbox = ({ parentRoute }) => {
       applicationStatus: [],
       businessService: "Layout_mcUp",
       assignee: defaultAssignee,
+      isMigrated: false,
       // businessServiceArray: businessServiceListLayout(true) || [],
     }),
     []
@@ -117,7 +118,11 @@ const LayoutInbox = ({ parentRoute }) => {
       const sessionLimit = parseInt(InboxObjectInSessionStorage.tableForm?.limit, 10);
       const validLimit = [10, 20, 30, 40, 50].includes(sessionLimit) ? sessionLimit : tableOrderFormDefaultValues.limit;
       return {
-        filterForm: InboxObjectInSessionStorage.filterForm || filterFormDefaultValues,
+        filterForm: {
+          ...filterFormDefaultValues,
+          ...(InboxObjectInSessionStorage.filterForm || {}),
+          isMigrated: InboxObjectInSessionStorage.filterForm?.isMigrated ?? false,
+        },
         searchForm: InboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
         tableForm: {
           ...tableOrderFormDefaultValues,
@@ -421,12 +426,14 @@ const LayoutInbox = ({ parentRoute }) => {
       setFilterFormValue("applicationStatus", formState.filterForm.applicationStatus || []);
       setFilterFormValue("assignee", formState.filterForm.assignee || defaultAssignee);
       setFilterFormValue("businessService", formState.filterForm.businessService || "Layout_mcUp");
+      setFilterFormValue("isMigrated", formState.filterForm.isMigrated === true);
     }
   }, [
     formState?.filterForm?.moduleName,
     formState?.filterForm?.applicationStatus,
     formState?.filterForm?.assignee,
     formState?.filterForm?.businessService,
+    formState?.filterForm?.isMigrated,
     setFilterFormValue,
     defaultAssignee,
   ]);
@@ -470,6 +477,17 @@ const LayoutInbox = ({ parentRoute }) => {
       handleFilterFormSubmit(onFilterFormSubmit)();
     },
     [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
+  );
+
+  const onMigrationChange = useCallback(
+    (isMigrated) => {
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({
+        action: "mutateFilterForm",
+        data: { ...formState.filterForm, isMigrated },
+      });
+    },
+    [formState.filterForm, formState.tableForm]
   );
 
   return (
@@ -520,6 +538,9 @@ const LayoutInbox = ({ parentRoute }) => {
           totalCount={totalCountData}
           showClearTab={false}
           showAll={false}
+          showMigrationTabs={isEmployee}
+          isMigrated={formState?.filterForm?.isMigrated === true}
+          onMigrationChange={onMigrationChange}
         />
       }
       isLoading={isInboxLoading}

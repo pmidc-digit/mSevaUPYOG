@@ -46,6 +46,7 @@ const CLUInbox = ({ parentRoute }) => {
       applicationStatus: [],
       businessService: "clu_mcl",
       assignee: defaultAssignee,
+      isMigrated: false,
       // assignee: "ASSIGNED_TO_ME",
     }),
     []
@@ -95,11 +96,12 @@ const CLUInbox = ({ parentRoute }) => {
     if (inboxObjectInSessionStorage) {
       const sessionLimit = parseInt(inboxObjectInSessionStorage.tableForm?.limit, 10);
       const validLimit = [10, 20, 30, 40, 50].includes(sessionLimit) ? sessionLimit : tableOrderFormDefaultValues.limit;
-      const sessionFilterForm = inboxObjectInSessionStorage.filterForm || filterFormDefaultValues;
       return {
         filterForm: {
-          ...sessionFilterForm,
+          ...filterFormDefaultValues,
+          ...(inboxObjectInSessionStorage.filterForm || {}),
           applicationStatus: [],
+          isMigrated: inboxObjectInSessionStorage.filterForm?.isMigrated ?? false,
         },
         searchForm: inboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
         tableForm: {
@@ -444,12 +446,14 @@ const CLUInbox = ({ parentRoute }) => {
       setFilterFormValue("applicationStatus", formState.filterForm.applicationStatus || []);
       setFilterFormValue("assignee", formState.filterForm.assignee || "ASSIGNED_TO_ME");
       setFilterFormValue("businessService", formState.filterForm.businessService || "clu_mcl");
+      setFilterFormValue("isMigrated", formState.filterForm.isMigrated === true);
     }
   }, [
     formState?.filterForm?.moduleName,
     formState?.filterForm?.applicationStatus,
     formState?.filterForm?.assignee,
     formState?.filterForm?.businessService,
+    formState?.filterForm?.isMigrated,
     setFilterFormValue,
   ]);
 
@@ -489,6 +493,17 @@ const CLUInbox = ({ parentRoute }) => {
       handleFilterFormSubmit(onFilterFormSubmit)();
     },
     [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
+  );
+
+  const onMigrationChange = useCallback(
+    (isMigrated) => {
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({
+        action: "mutateFilterForm",
+        data: { ...formState.filterForm, isMigrated },
+      });
+    },
+    [formState.filterForm, formState.tableForm]
   );
 
   useEffect(() => {
@@ -551,6 +566,9 @@ const CLUInbox = ({ parentRoute }) => {
               totalCount={totalCountData}
               showClearTab={false}
               showAll={false}
+              showMigrationTabs={isEmployee}
+              isMigrated={formState?.filterForm?.isMigrated === true}
+              onMigrationChange={onMigrationChange}
             />
           }
           isLoading={isInboxLoading}

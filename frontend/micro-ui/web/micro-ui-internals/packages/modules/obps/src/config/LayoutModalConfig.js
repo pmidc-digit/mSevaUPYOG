@@ -14,30 +14,18 @@ export const LayoutModalConfig = ({
   assigneeLabel,
   businessService,
 }) => {
-  let checkCondtions = true
-  if (
-    action?.action == "SENDBACKTOCITIZEN" ||
-    action?.action == "APPROVE" ||
-    action?.action == "REJECT" ||
-    action?.action == "SENDBACK" ||
-    action?.action == "SENDBACKTOPROFESSIONAL" ||
-    action?.action == "SEND_FOR_INSPECTION_REPORT"
-  )
-    checkCondtions = false
-  if (action.isTerminateState) checkCondtions = false
+  let checkCondtions = action?.action === "FORWARD_FOR_TECH_REVIEW"
 
   return {
   label: {
       heading: action?.action === "APPROVE" ? `WF_EMPLOYEE_APPROVE_APPLICATION` : `WF_EMPLOYEE_FORWARD_APPLICATION`,
-      submit: action?.action?.toUpperCase().includes("FORWARD")
-        ? t("FORWARD")
-        : t(`WF_EMPLOYEE_LAYOUT_${businessService}`.toUpperCase() + `_${action?.action?.toUpperCase()}`) ,
+      submit: t(`WF_EMPLOYEE_LAYOUT_${businessService}`.toUpperCase() + `_${action?.action?.toUpperCase()}`) ,
       cancel: "WF_EMPLOYEE_LAYOUT_CANCEL",
     },
     form: [
       {
         body: [
-          /* {
+          {
             label: !checkCondtions ? null : `${t("WF_ASSIGNEE_NAME_LABEL")}*`,
             placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
             type: "dropdown",
@@ -52,7 +40,7 @@ export const LayoutModalConfig = ({
                  t={t}
               />
             ),
-          }, */
+          },
           {
             label: `${t("WF_COMMON_COMMENTS_LABEL")}*`,
             type: "textarea",
@@ -60,19 +48,19 @@ export const LayoutModalConfig = ({
               name: "comments",
             },
           },
-          action?.action === "APPROVE"
-            ? {
-                label: t("WF_CONDITIONAL_COMMENTS_LABEL"),
-                type: "textarea",
-                populators: {
-                  name: "conditionalComments",
-                },
-                validation: {
-                  required: false, // not mandatory
-                  title: t("WF_COMMON_COMMENTS_ERROR"),
-                },
-              }
-            : null,
+          // action?.action === "APPROVE"
+          //   ? {
+          //       label: t("WF_CONDITIONAL_COMMENTS_LABEL"),
+          //       type: "textarea",
+          //       populators: {
+          //         name: "conditionalComments",
+          //       },
+          //       validation: {
+          //         required: false, // not mandatory
+          //         title: t("WF_COMMON_COMMENTS_ERROR"),
+          //       },
+          //     }
+          //   : null,
           {
             label: t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),
             populators: (

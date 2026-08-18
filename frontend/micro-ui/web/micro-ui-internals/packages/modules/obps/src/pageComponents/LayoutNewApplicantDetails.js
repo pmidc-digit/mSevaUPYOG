@@ -34,6 +34,20 @@ const findOwnerTypeOption = (val) => {
   return ownerTypeOptions.find((opt) => opt.code.toUpperCase() === strVal || opt.name.toUpperCase() === strVal) || null;
 };
 
+const defaultPrimaryApplicantType = { name: "Individual", code: "INDIVIDUAL" };
+
+const findApplicantTypeOrIndividual = (val) => {
+  if (!val) return defaultPrimaryApplicantType;
+  if (typeof val === "object" && (val.code || val.name)) {
+    const code = (val.code || val.name).toUpperCase();
+    if (code === "FIRM") return { name: "Firm", code: "FIRM" };
+    return defaultPrimaryApplicantType;
+  }
+  const strVal = String(val).toUpperCase();
+  if (strVal === "FIRM") return { name: "Firm", code: "FIRM" };
+  return defaultPrimaryApplicantType;
+};
+
 const areApplicantsEqual = (arr1, arr2) => {
   if (!arr1 && !arr2) return true;
   if (!arr1 || !arr2) return false;
@@ -146,10 +160,24 @@ const LayoutNewApplicantDetails = (_props) => {
       primaryIdx = 0;
     }
 
-    const updatedActive = active.map((owner, idx) => ({
-      ...owner,
-      isPrimaryOwner: idx === primaryIdx ? true : null,
-    }));
+    const updatedActive = active.map((owner, idx) => {
+      const isPrimary = idx === primaryIdx;
+      const rawAppType = owner.aplicantType || owner.additionalDetails?.aplicantType;
+      const appType = isPrimary ? findApplicantTypeOrIndividual(rawAppType) : null;
+      const authPerson = isPrimary && appType?.code === "FIRM" ? owner.authorisedPerson || owner.additionalDetails?.authorisedPerson || null : null;
+
+      return {
+        ...owner,
+        isPrimaryOwner: isPrimary ? true : null,
+        aplicantType: appType,
+        authorisedPerson: authPerson,
+        additionalDetails: {
+          ...owner.additionalDetails,
+          aplicantType: appType,
+          authorisedPerson: authPerson,
+        },
+      };
+    });
 
     if (primaryIdx > 0) {
       const [primaryObj] = updatedActive.splice(primaryIdx, 1);
@@ -172,7 +200,7 @@ const LayoutNewApplicantDetails = (_props) => {
       fatherOrHusbandName: owner.fatherOrHusbandName || "",
       address: owner.permanentAddress || owner.address || "",
       dob: owner.dob || "",
-      gender: owner.gender || "",
+      gender: owner.gender || null,
       panNumber: owner.panNumber || owner.pan || "",
       isPrimaryOwner: owner.isPrimaryOwner,
       photoUploadedFiles: owner.photoUploadedFiles || owner.additionalDetails?.ownerPhoto || null,
@@ -229,7 +257,7 @@ const LayoutNewApplicantDetails = (_props) => {
       fatherOrHusbandName: userObj.fatherOrHusbandName || "",
       permanentAddress: userObj.permanentAddress || userObj.address || "",
       dob: userObj.dob || "",
-      gender: userObj.gender || "",
+      gender: userObj.gender || null,
       panNumber: userObj.panNumber || userObj.pan || "",
       photoUploadedFiles: userObj.photoUploadedFiles || userObj.additionalDetails?.ownerPhoto || null,
       documentUploadedFiles: userObj.documentUploadedFiles || userObj.additionalDetails?.documentFile || null,
@@ -356,6 +384,15 @@ const LayoutNewApplicantDetails = (_props) => {
         const appType = row.original?.aplicantType || row.original?.additionalDetails?.aplicantType;
         const code = typeof appType === "string" ? appType : appType?.code || "";
         return code.toUpperCase() === "FIRM" ? t("YES") : t("NO");
+      },
+    },
+    {
+      Header: t("FIRM NAME"),
+      id: "authorisedPerson",
+      Cell: ({ row }) => {
+        const appType = row.original?.aplicantType || row.original?.additionalDetails?.aplicantType;
+        const code = typeof appType === "string" ? appType : appType?.code || "";
+        return code.toUpperCase() === "FIRM" ? row.original?.additionalDetails?.authorisedPerson : "-";
       },
     },
     {

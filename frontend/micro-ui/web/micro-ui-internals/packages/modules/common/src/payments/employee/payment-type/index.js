@@ -61,7 +61,6 @@ export const SelectPaymentType = (props) => {
   // const { data: menu2, isLoading } = Digit.Hooks.useCommonMDMS("pb", "testing", "PaymentGateway");
   // const { data: menuList } = Digit.Hooks.useCustomMDMS(tenantId, moduleName, [{ name: "PaymentGateway" }]);
   const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PAYMENT", [{ name: "PaymentGateway" }]); // will change back to pb.testing -> tenantId
-  console.log("menuList", menuList);
 
   const [isPaymentLoading, setPaymentLoading] = useState(false);
   const { data: paymentdetails, isLoading: paymentLoading } = Digit.Hooks.useFetchPayment(
@@ -167,10 +166,9 @@ export const SelectPaymentType = (props) => {
         },
       },
     };
-    console.log("coming here", filterData);
     try {
       const data = await Digit.PaymentService.createCitizenReciept(billDetails?.tenantId, filterData);
-      console.log("data=========", data);
+      const redirectUrl = _.get(data, TRANSACTION_REDIRECTURL) || "";
       if (paymentAmount === 0 || billDetails.totalAmount === 0) {
         setPaymentLoading(false);
         if (data?.ResponseInfo?.status === "SUCCESSFUL") {
@@ -181,8 +179,22 @@ export const SelectPaymentType = (props) => {
         return;
       }
 
-      if (d?.paymentType === gatewayType.RAZORPAY) {
+      if (
+        d?.paymentType === gatewayType.RAZORPAY ||
+        d?.paymentType === gatewayType.OBPASRAZORPAY ||
+        d?.paymentType?.toUpperCase()?.includes("RAZORPAY")
+      ) {
         displayRazorpay(data);
+      }else if (redirectUrl?.includes("ccavenue") || redirectUrl?.includes("ccavanue")) {
+        //redirection to non razorpay payment gateway url provided by transaction api response
+        const link = document.createElement("a");
+        link.href = redirectUrl;
+        link.target = "_self";
+        link.rel = "noreferrer";
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
       } else {
         //Do Nothing
         setPaymentLoading(false);

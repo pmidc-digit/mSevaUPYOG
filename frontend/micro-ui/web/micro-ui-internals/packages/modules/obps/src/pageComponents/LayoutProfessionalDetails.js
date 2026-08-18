@@ -13,8 +13,8 @@ import {
   SubmitBar,
   CardSectionHeader,
   Loader,
+  DatePicker,
 } from "@mseva/digit-ui-react-components";
-import CustomDatePicker from "./CustomDatePicker";
 
 const LayoutProfessionalDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle } = _props;
@@ -375,10 +375,10 @@ const LayoutProfessionalDetails = (_props) => {
               required: t("REQUIRED_FIELD"),
             }}
             render={(props) => (
-              <CustomDatePicker
-                value={props.value}
-                onChange={(e) => {
-                  props.onChange(e.target.value);
+              <DatePicker
+                date={props.value}
+                onChange={(val) => {
+                  props.onChange(val);
                 }}
                 onBlur={props.onBlur}
                 disabled={true}

@@ -2,17 +2,14 @@ package org.egov.ptr.models;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
 
-@ApiModel(description = "A Object holds the basic data for a Pet Registration Application")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -24,7 +21,6 @@ public class PetRegistrationApplication {
 	private String id;
 
 	@NotBlank
-	@ApiModelProperty(required = true, value = "Tenant ID for the application")
 	@JsonProperty("tenantId")
 	private String tenantId;
 
@@ -53,7 +49,6 @@ public class PetRegistrationApplication {
 	private PetRenewalAuditDetails renewalAuditDetails;
 
 	@NotBlank
-	@ApiModelProperty(required = true, value = "Type of application")
 	@JsonProperty("applicationType")
 	private String applicationType;
 

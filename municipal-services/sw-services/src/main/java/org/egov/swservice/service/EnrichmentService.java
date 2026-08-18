@@ -350,7 +350,7 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
 	 */
 	public void enrichUpdateSewerageConnection(SewerageConnectionRequest sewerageConnectionRequest) {
 		AuditDetails auditDetails = sewerageServicesUtil
-				.getAuditDetails(sewerageConnectionRequest.getRequestInfo().getUserInfo().getUuid(), true);
+				.getAuditDetails(sewerageConnectionRequest.getRequestInfo().getUserInfo().getUuid(), false);
 		sewerageConnectionRequest.getSewerageConnection().setAuditDetails(auditDetails);
 		SewerageConnection connection = sewerageConnectionRequest.getSewerageConnection();
 		if (!CollectionUtils.isEmpty(connection.getDocuments())) {

@@ -22,7 +22,4 @@ public class CalculationType {
 	String feeType;
 	BigDecimal amount;
 	boolean taxApplicable;
-	/** HAPPY or SAD — present only when the tenant uses purpose-based pricing.
-	 *  Null/absent means no differentiation (backward compatible). */
-	String functionType;
 }

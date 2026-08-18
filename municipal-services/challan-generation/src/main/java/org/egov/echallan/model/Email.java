@@ -3,7 +3,6 @@ package org.egov.echallan.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.util.List;
 import java.util.Set;
 
 @Setter
@@ -19,4 +18,5 @@ public class Email {
 	private String body;
 	@JsonProperty("isHTML")
 	private boolean isHTML;
-	private List<EmailAttachment> inlineAttachments;}
+
+}

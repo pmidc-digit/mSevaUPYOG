@@ -3,11 +3,11 @@ package org.egov.swservice.web.models.workflow;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 
 import org.egov.swservice.web.models.AuditDetails;
-import org.hibernate.validator.constraints.SafeHtml;
+
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,7 +26,7 @@ import lombok.ToString;
  */
 @ApiModel(description = "A Object holds the basic data for a Trade License")
 @Validated
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-12-04T11:26:25.532+05:30")
+@jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-12-04T11:26:25.532+05:30")
 
 @Getter
 @Setter
@@ -38,17 +38,14 @@ import lombok.ToString;
 public class State   {
 
         @Size(max=256)
-        @SafeHtml
         @JsonProperty("uuid")
         private String uuid;
 
         @Size(max=256)
-        @SafeHtml
         @JsonProperty("tenantId")
         private String tenantId;
 
         @Size(max=256)
-        @SafeHtml
         @JsonProperty("businessServiceId")
         private String businessServiceId;
 
@@ -56,12 +53,10 @@ public class State   {
         private Long sla;
 
         @Size(max=256)
-        @SafeHtml
         @JsonProperty("state")
         private String state;
 
         @Size(max=256)
-        @SafeHtml
         @JsonProperty("applicationStatus")
         private String applicationStatus;
 

@@ -4,20 +4,18 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 import lombok.Data;
 import org.egov.common.contract.request.Role;
 
-import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -26,38 +24,37 @@ import lombok.NoArgsConstructor;
  * OwnerInfo
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:54:07.373Z[GMT]")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class OwnerInfo extends User{
  
-	@SafeHtml
+	
 	@JsonProperty("tenantId")
 	private String tenantId = null;
 
-	@SafeHtml
+	
 	@JsonProperty("name")
 	private String name = null;
 
-	@SafeHtml
+	
 	@JsonProperty("ownerId")
 	private String ownerId = null;
 
-	@SafeHtml
+	
 	@JsonProperty("mobileNumber")
 	private String mobileNumber = null;
 
-	@SafeHtml
+	
 	@JsonProperty("gender")
 	private String gender = null;
 
-	@SafeHtml
+	
 	@JsonProperty("fatherOrHusbandName")
 	private String fatherOrHusbandName = null;
 
-	@SafeHtml
+	
 	@JsonProperty("correspondenceAddress")
 	private String correspondenceAddress = null;
 
@@ -70,11 +67,11 @@ public class OwnerInfo extends User{
 	@JsonProperty("ownerShipPercentage")
 	private BigDecimal ownerShipPercentage = null;
 
-	@SafeHtml
+	
 	@JsonProperty("ownerType")
 	private String ownerType = null;
 
-	@SafeHtml
+	
 	@JsonProperty("institutionId")
 	private String institutionId = null;
 
@@ -92,66 +89,66 @@ public class OwnerInfo extends User{
     private Long id;
 	 
     @Size(max=64)
-	@SafeHtml
+	
     @JsonProperty("uuid")
     private String uuid;
 
     @Size(max=64)
-	@SafeHtml
+	
     @JsonProperty("userName")
     private String userName;
 
     @Size(max=64)
-	@SafeHtml
+	
     @JsonProperty("password")
     private String password;
 
-	@SafeHtml
+	
     @JsonProperty("salutation")
     private String salutation;
 
     @Size(max=128)
-	@SafeHtml
+	
     @JsonProperty("emailId")
     private String emailId;
 
     @Size(max=50)
-	@SafeHtml
+	
     @JsonProperty("altContactNumber")
     private String altContactNumber;
 
     @Size(max=10)
-	@SafeHtml
+	
     @JsonProperty("pan")
     private String pan;
 
     @Pattern(regexp = "^[0-9]{12}$", message = "AdharNumber should be 12 digit number")
-	@SafeHtml
+	
     @JsonProperty("aadhaarNumber")
     private String aadhaarNumber;
 
     @Size(max=300)
-	@SafeHtml
+	
     @JsonProperty("permanentAddress")
     private String permanentAddress;
 
     @Size(max=300)
-	@SafeHtml
+	
     @JsonProperty("permanentCity")
     private String permanentCity;
 
     @Size(max=10)
-	@SafeHtml
+	
     @JsonProperty("permanentPinCode")
     private String permanentPincode;
 
     @Size(max=300)
-	@SafeHtml
+	
     @JsonProperty("correspondenceCity")
     private String correspondenceCity;
 
     @Size(max=10)
-	@SafeHtml
+	
     @JsonProperty("correspondencePinCode")
     private String correspondencePincode;
 
@@ -165,16 +162,16 @@ public class OwnerInfo extends User{
     private Long pwdExpiryDate;
 
     @Size(max=16)
-	@SafeHtml
+	
     @JsonProperty("locale")
     private String locale;
 
     @Size(max=50)
-	@SafeHtml
+	
     @JsonProperty("type")
     private String type;
 
-	@SafeHtml
+	
     @JsonProperty("signature")
     private String signature;
 
@@ -186,15 +183,15 @@ public class OwnerInfo extends User{
     private List<Role> roles;
 
     @Size(max=32)
-	@SafeHtml
+	
     @JsonProperty("bloodGroup")
     private String bloodGroup;
 
-	@SafeHtml
+	
     @JsonProperty("identificationMark")
     private String identificationMark;
 
-	@SafeHtml
+	
 	@JsonProperty("photo")
     private String photo;
 
@@ -212,7 +209,7 @@ public class OwnerInfo extends User{
     @JsonProperty("lastModifiedDate")
     private Long lastModifiedDate;
 
-	@SafeHtml
+	
     @JsonProperty("otpReference")
     private String otpReference;
 
@@ -231,10 +228,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return name
 	 **/
-	@ApiModelProperty(value = "The name of the owner.")
-	
-
-	@Size(max = 256)
+		@Size(max = 256)
 	public String getTenantId() {
 		return tenantId;
 	}
@@ -253,8 +247,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return name
 	 **/
-	@ApiModelProperty(required = true, value = "The name of the owner.")
-	@NotNull
+		@NotNull
 
 	@Size(max = 256)
 	public String getName() {
@@ -275,10 +268,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return mobileNumber
 	 **/
-	@ApiModelProperty(value = "MobileNumber of the owner.")
-	
-
-	@Size(max = 256)
+		@Size(max = 256)
 	public String getOwnerId() {
 		return ownerId;
 	}
@@ -297,8 +287,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return mobileNumber
 	 **/
-	@ApiModelProperty(required = true, value = "MobileNumber of the owner.")
-	@NotNull
+		@NotNull
 
 	@Size(max = 256)
 	public String getMobileNumber() {
@@ -319,8 +308,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return gender
 	 **/
-	@ApiModelProperty(required = true, value = "Gender of the owner.")
-	@NotNull
+		@NotNull
 
 	@Size(max = 256)
 	public String getGender() {
@@ -341,8 +329,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return fatherOrHusbandName
 	 **/
-	@ApiModelProperty(required = true, value = "Father or Husband name of the owner.")
-	@NotNull
+		@NotNull
 
 	@Size(max = 256)
 	public String getFatherOrHusbandName() {
@@ -363,9 +350,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return correspondenceAddress
 	 **/
-	@ApiModelProperty(value = "The current address of the owner for correspondence.")
-
-	@Size(max = 1024)
+		@Size(max = 1024)
 	public String getCorrespondenceAddress() {
 		return correspondenceAddress;
 	}
@@ -384,9 +369,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return isPrimaryOwner
 	 **/
-	@ApiModelProperty(value = "The owner is primary or not")
-
-	public Boolean isIsPrimaryOwner() {
+		public Boolean isIsPrimaryOwner() {
 		return isPrimaryOwner;
 	}
 
@@ -404,9 +387,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return ownerShipPercentage
 	 **/
-	@ApiModelProperty(value = "Ownership percentage.")
-
-	@Valid
+		@Valid
 	public BigDecimal getOwnerShipPercentage() {
 		return ownerShipPercentage;
 	}
@@ -426,9 +407,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return ownerType
 	 **/
-	@ApiModelProperty(value = "Type of owner, based on this option Exemptions will be applied. This is master data defined in mdms.")
-
-	@Size(max = 256)
+		@Size(max = 256)
 	public String getOwnerType() {
 		return ownerType;
 	}
@@ -447,9 +426,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return institutionId
 	 **/
-	@ApiModelProperty(value = "The id of the institution if the owner is the authorized person for one")
-
-	@Size(max = 64)
+		@Size(max = 64)
 	public String getInstitutionId() {
 		return institutionId;
 	}
@@ -476,8 +453,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return documents
 	 **/
-	@ApiModelProperty(value = "The documents attached by owner for exemption.")
-	@Valid
+		@Valid
 	public List<DocumentDetail> getDocuments() {
 		return documents;
 	}
@@ -496,9 +472,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return relationship
 	 **/
-	@ApiModelProperty(value = "")
-
-	@Valid
+		@Valid
 	public Relationship getRelationship() {
 		return relationship;
 	}
@@ -518,9 +492,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public Object getAdditionalDetails() {
+		public Object getAdditionalDetails() {
 		return additionalDetails;
 	}
 
@@ -538,9 +510,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public Long getId() {
+		public Long getId() {
 		return id;
 	}
 
@@ -558,9 +528,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getUuid() {
+		public String getUuid() {
 		return uuid;
 	}
 
@@ -578,9 +546,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getUserName() {
+		public String getUserName() {
 		return userName;
 	}
 
@@ -599,9 +565,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getPassword() {
+		public String getPassword() {
 		return password;
 	}
 
@@ -620,9 +584,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getSalutation() {
+		public String getSalutation() {
 		return salutation;
 	}
 
@@ -641,9 +603,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getEmailId() {
+		public String getEmailId() {
 		return emailId;
 	}
 
@@ -663,9 +623,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getAltContactNumber() {
+		public String getAltContactNumber() {
 		return altContactNumber;
 	}
 
@@ -685,9 +643,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getPan() {
+		public String getPan() {
 		return pan;
 	}
 
@@ -707,9 +663,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getAadhaarNumber() {
+		public String getAadhaarNumber() {
 		return aadhaarNumber;
 	}
 
@@ -728,9 +682,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getPermanentAddress() {
+		public String getPermanentAddress() {
 		return permanentAddress;
 	}
 
@@ -749,9 +701,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getPermanentCity() {
+		public String getPermanentCity() {
 		return permanentCity;
 	}
 
@@ -770,9 +720,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getPermanentPincode() {
+		public String getPermanentPincode() {
 		return permanentPincode;
 	}
 
@@ -791,9 +739,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getCorrespondenceCity() {
+		public String getCorrespondenceCity() {
 		return correspondenceCity;
 	}
 
@@ -812,9 +758,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getCorrespondencePincode() {
+		public String getCorrespondencePincode() {
 		return correspondencePincode;
 	}
 	public void setCorrespondencePincode(String correspondencePincode) {
@@ -832,9 +776,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public Boolean getActive() {
+		public Boolean getActive() {
 		return active;
 	}
 
@@ -853,9 +795,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public Long getDob() {
+		public Long getDob() {
 		return dob;
 	}
 
@@ -875,9 +815,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public Long getPwdExpiryDate() {
+		public Long getPwdExpiryDate() {
 		return pwdExpiryDate;
 	}
 
@@ -897,9 +835,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getLocale() {
+		public String getLocale() {
 		return locale;
 	}
 
@@ -919,9 +855,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getType() {
+		public String getType() {
 		return type;
 	}
 
@@ -941,9 +875,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getsignature() {
+		public String getsignature() {
 		return signature;
 	}
 
@@ -963,9 +895,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public Boolean getAccountLocked() {
+		public Boolean getAccountLocked() {
 		return accountLocked;
 	}
 
@@ -985,9 +915,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public @Valid List<Role> getRoles() {
+		public @Valid List<Role> getRoles() {
 		return roles;
 	}
 
@@ -1007,9 +935,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getBloodGroup() {
+		public String getBloodGroup() {
 		return bloodGroup;
 	}
 
@@ -1029,9 +955,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getIdentificationMark() {
+		public String getIdentificationMark() {
 		return identificationMark;
 	}
 
@@ -1051,9 +975,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return additionalDetails
 	 **/
-	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
-
-	public String getPhoto() {
+		public String getPhoto() {
 		return photo;
 	}
 
@@ -1072,10 +994,7 @@ public class OwnerInfo extends User{
 	 * 
 	 * @return relationship
 	 **/
-	@ApiModelProperty(value = "")
-	
-
-	@Valid
+		@Valid
 	public AuditDetails getAuditDetails() {
 		return auditDetails;
 	}

@@ -15,7 +15,7 @@ import org.upyog.adv.web.models.RequestInfoWrapper;
 import org.upyog.adv.web.models.billing.DemandResponse;
 import org.upyog.adv.web.models.billing.GetBillCriteria;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/booking")

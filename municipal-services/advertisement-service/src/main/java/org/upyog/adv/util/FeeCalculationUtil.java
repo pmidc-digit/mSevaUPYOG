@@ -99,10 +99,9 @@ public class FeeCalculationUtil {
             log.debug("Using flat amount: {} for fee: {}", calculatedAmount, feeRate.getFeeType());
         }
         // Priority 2: Calculate using rate
-        // Use scale 6 HALF_UP to avoid accumulated rounding errors before final rounding
         else if (feeRate.getRate() != null && baseAmount != null) {
             calculatedAmount = baseAmount.multiply(feeRate.getRate())
-                    .divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.CEILING);
             log.debug("Calculated amount: {} (base: {}, rate: {}%) for fee: {}",
                     calculatedAmount, baseAmount, feeRate.getRate(), feeRate.getFeeType());
         }

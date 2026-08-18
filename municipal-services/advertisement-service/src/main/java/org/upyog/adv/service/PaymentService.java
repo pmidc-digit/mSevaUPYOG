@@ -113,7 +113,7 @@ public class PaymentService {
 					.build();
 			BookingRequest bookingRequest = BookingRequest.builder()
 					.requestInfo(requestInfo).bookingApplication(bookingDetail).build();
-			bookingService.updateBookingSynchronously(bookingRequest, null, status);
+			bookingService.updateBooking(bookingRequest, null, status);
         }
     }
 }

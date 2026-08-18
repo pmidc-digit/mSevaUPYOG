@@ -9,8 +9,6 @@ import org.egov.ptr.models.PetApplicationSearchCriteria;
 import org.egov.ptr.models.PetRegistrationApplication;
 import org.egov.ptr.models.PetRegistrationRequest;
 import org.egov.ptr.repository.PetRegistrationRepository;
-import org.egov.ptr.service.PetRegistrationService;
-import org.egov.ptr.service.WorkflowService;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,13 +25,7 @@ public class PetApplicationValidator {
 	private PetConfiguration configs;
 
 	@Autowired
-	private PetRegistrationService service;
-
-	@Autowired
 	private ObjectMapper mapper;
-
-	@Autowired
-	private WorkflowService workflowService;
 
 	@Autowired
 	private PetRegistrationRepository repository;

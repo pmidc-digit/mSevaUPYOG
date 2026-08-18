@@ -26,8 +26,11 @@ public class CHBEncryptionService {
 	public CommunityHallBookingDetail encryptObject(CommunityHallBookingRequest bookingRequest) {
 		ApplicantDetail applicantDetail = bookingRequest.getHallsBookingApplication().getApplicantDetail();
 		log.info("Applicant detail before encyption : " + applicantDetail.getApplicantMobileNo());
-		applicantDetail = encryptionDecryptionUtil.encryptObject(applicantDetail,
-				CommunityHallBookingConstants.CHB_APPLICANT_DETAIL_ENCRYPTION_KEY, ApplicantDetail.class);
+		applicantDetail.setApplicantName(encryptionDecryptionUtil.encryptValue(applicantDetail.getApplicantName()));
+		applicantDetail.setApplicantMobileNo(encryptionDecryptionUtil.encryptValue(applicantDetail.getApplicantMobileNo()));
+		applicantDetail.setApplicantAlternateMobileNo(
+				encryptionDecryptionUtil.encryptValue(applicantDetail.getApplicantAlternateMobileNo()));
+		applicantDetail.setApplicantEmailId(encryptionDecryptionUtil.encryptValue(applicantDetail.getApplicantEmailId()));
 		log.info("Applicant detail after encyption : " + applicantDetail.getApplicantMobileNo());
 		bookingRequest.getHallsBookingApplication().setApplicantDetail(applicantDetail);
 		return bookingRequest.getHallsBookingApplication();
@@ -37,8 +40,11 @@ public class CHBEncryptionService {
 	public CommunityHallBookingDetail decryptObject(CommunityHallBookingDetail bookingDetail, RequestInfo requestInfo) {
 		ApplicantDetail applicantDetail = bookingDetail.getApplicantDetail();
 		log.info("Applicant detail before decryption : " + applicantDetail.getApplicantMobileNo());
-		applicantDetail = encryptionDecryptionUtil.decryptObject(applicantDetail, 
-				CommunityHallBookingConstants.CHB_APPLICANT_DETAIL_PLAIN_DECRYPTION_KEY, ApplicantDetail.class, requestInfo);
+		applicantDetail.setApplicantName(encryptionDecryptionUtil.decryptValue(applicantDetail.getApplicantName()));
+		applicantDetail.setApplicantMobileNo(encryptionDecryptionUtil.decryptValue(applicantDetail.getApplicantMobileNo()));
+		applicantDetail.setApplicantAlternateMobileNo(
+				encryptionDecryptionUtil.decryptValue(applicantDetail.getApplicantAlternateMobileNo()));
+		applicantDetail.setApplicantEmailId(encryptionDecryptionUtil.decryptValue(applicantDetail.getApplicantEmailId()));
 				
 		log.info("Applicant detail after decryption : " + applicantDetail.getApplicantMobileNo());
 		bookingDetail.setApplicantDetail(applicantDetail);
@@ -47,23 +53,26 @@ public class CHBEncryptionService {
 	}
 	
 	public List<CommunityHallBookingDetail> decryptObject(List<CommunityHallBookingDetail> bookingDetails, RequestInfo requestInfo) {
-		Map<String, CommunityHallBookingDetail> applicantDetailMap = bookingDetails.stream().collect(
-				Collectors.toMap(CommunityHallBookingDetail::getBookingId, Function.identity()));
-		
-		List<ApplicantDetail> applicantDetails = bookingDetails.stream().map(detail -> detail.getApplicantDetail()).collect(Collectors.toList());
-		
+		List<ApplicantDetail> applicantDetails = bookingDetails.stream()
+				.map(CommunityHallBookingDetail::getApplicantDetail)
+				.collect(Collectors.toList());
+
 		log.info("Applicant detail before decryption : " + applicantDetails.get(0).getApplicantMobileNo());
-		applicantDetails = encryptionDecryptionUtil.decryptObject(applicantDetails, 
-				CommunityHallBookingConstants.CHB_APPLICANT_DETAIL_PLAIN_DECRYPTION_KEY, ApplicantDetail.class, requestInfo);
-		
-		applicantDetails.stream().forEach( detail ->{
-			if(applicantDetailMap.containsKey(detail.getBookingId())) {
-				applicantDetailMap.get(detail.getBookingId()).setApplicantDetail(detail);
+		bookingDetails.forEach(detail -> {
+			ApplicantDetail applicantDetail = detail.getApplicantDetail();
+			if (applicantDetail != null) {
+				applicantDetail.setApplicantName(
+						encryptionDecryptionUtil.decryptValue(applicantDetail.getApplicantName()));
+				applicantDetail.setApplicantMobileNo(
+						encryptionDecryptionUtil.decryptValue(applicantDetail.getApplicantMobileNo()));
+				applicantDetail.setApplicantAlternateMobileNo(
+						encryptionDecryptionUtil.decryptValue(applicantDetail.getApplicantAlternateMobileNo()));
+				applicantDetail.setApplicantEmailId(
+						encryptionDecryptionUtil.decryptValue(applicantDetail.getApplicantEmailId()));
 			}
 		});
-				
+
 		log.info("Applicant detail after decryption : " + applicantDetails.get(0).getApplicantMobileNo());
-		//bookingDetail.setApplicantDetail(applicantDetail);
 
 		return bookingDetails;
 	}

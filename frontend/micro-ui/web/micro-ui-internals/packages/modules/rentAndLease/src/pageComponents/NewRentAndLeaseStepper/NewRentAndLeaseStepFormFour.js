@@ -130,8 +130,10 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       const rawAdditionalDetails = CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails || {};
       const originalAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
       const checkBillingPeriod = updatedPropertyDetails?.lastBillingPeriod || originalAdditionalDetails?.lastBillingPeriod;
+      const checklastPaidUpto = updatedPropertyDetails?.lastPaidUpto || originalAdditionalDetails?.lastPaidUpto;
       const checkLastRentRevisedDate = updatedPropertyDetails?.lastRentRevisedDate || originalAdditionalDetails?.lastRentRevisedDate;
       const lastBillingPeriodData = new Date(checkBillingPeriod).getTime();
+      const checklastPaidUptoData = new Date(checklastPaidUpto).getTime();
       const lastRentRevisedDate = new Date(checkLastRentRevisedDate).getTime();
 
       const applicationType = updatedPropertyDetails?.applicationType?.code || originalAdditionalDetails?.applicationType;
@@ -153,6 +155,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
               applicationType: applicationType,
               securityDeposit: null,
               lastBillingPeriod: lastBillingPeriodData,
+              lastPaidUpto: checklastPaidUptoData,
               lastRentRevisedDate: lastRentRevisedDate,
               incrementPeriodMonths: updatedPropertyDetails?.incrementPeriodMonths?.code,
               incrementPercentage: updatedPropertyDetails?.incrementPercentage,
@@ -240,6 +243,8 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       const originalAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
 
       const checkBillingPeriod = updatedPropertyDetails?.lastBillingPeriod || originalAdditionalDetails?.lastBillingPeriod;
+      const checklastPaidUpto = updatedPropertyDetails?.lastPaidUpto || originalAdditionalDetails?.lastPaidUpto;
+      const checklastPaidUptoData = new Date(checklastPaidUpto).getTime();
       const checkLastRentRevisedDate = updatedPropertyDetails?.lastRentRevisedDate || originalAdditionalDetails?.lastRentRevisedDate;
       const lastBillingPeriodData = new Date(checkBillingPeriod).getTime();
       const lastRentRevisedDate = new Date(checkLastRentRevisedDate).getTime();
@@ -262,6 +267,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
               locationType: updatedPropertyDetails?.locationType?.code || originalAdditionalDetails?.locationType,
               applicationType: applicationType,
               lastBillingPeriod: lastBillingPeriodData,
+              lastPaidUpto: checklastPaidUptoData,
               lastRentRevisedDate: lastRentRevisedDate,
               incrementPeriodMonths: updatedPropertyDetails?.incrementPeriodMonths?.code,
               incrementPercentage: updatedPropertyDetails?.incrementPercentage,

@@ -54,8 +54,8 @@ public class OBPASRazorpayGateway implements Gateway{
         ACTIVE = Boolean.valueOf(environment.getRequiredProperty("razorpay.active"));
         CURRENCY = environment.getRequiredProperty("razorpay.currency");
         LOCALE = environment.getRequiredProperty("razorpay.locale");
-        MERCHANT_ID = environment.getRequiredProperty("obpas.razorpay.merchant.id");
-        SECURE_SECRET = environment.getRequiredProperty("obpas.razorpay.merchant.secret.key");
+        MERCHANT_ID = environment.getRequiredProperty("razorpay.obpas.merchant.id");
+        SECURE_SECRET = environment.getRequiredProperty("razorpay.obpas.merchant.secret.key");
         MERCHANT_URL_PAY = environment.getRequiredProperty("razorpay.url.debit");
         PAYMENT_CAPTURE = environment.getRequiredProperty("razorpay.payment_capture");
         try {

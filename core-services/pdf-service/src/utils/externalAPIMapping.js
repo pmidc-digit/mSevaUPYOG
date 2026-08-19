@@ -178,53 +178,26 @@ export const externalAPIMapping = async function (
 
     var resPromise;
     if (externalAPIArray[i].requesttype == "POST") {
-      console.log("externalAPIArray[i].uri", externalAPIArray[i].uri);
-      console.log("externalAPIArray[i].queryParams", externalAPIArray[i].queryParams)
       resPromise = axios_instance.post(
-        externalAPIArray[i].uri + "?" + externalAPIArray[i].queryParams,
-        { RequestInfo: requestInfo },
-        { headers }
-      )
-        .then(response => {
-          console.log("API Success:", response.data);
-          return response;
-        })
-        .catch(error => {
-          logger.error("External API Error:", error.message);
-          if (error.response) {
-            logger.error("API Error Response:", {
-              url: externalAPIArray[i].uri,
-              status: error.response.status,
-              message: error.response.data || error.message,
-            });
-            return { data: {} };
-          } else if (error.request) {
-            logger.error("No Response Received:", error.request);
-            return { data: {} };
-          } else {
-            logger.error("Axios Error:", error.message);
-            return { data: {} };
-          }
-        });
+        externalAPIArray[i].uri + "?" + externalAPIArray[i].queryParams, {
+          RequestInfo: requestInfo
+        }, {
+          headers: headers
+        }
+      );
     } else {
       resPromise = axios_instance.get(
         externalAPIArray[i].uri + "?" + externalAPIArray[i].queryParams, {
-        responseType: "application/json"
-      }
+          responseType: "application/json"
+        }
       );
     }
-    console.log("resPromise", resPromise)
     responsePromises.push(resPromise)
   }
 
   responses = await Promise.all(responsePromises)
   for (let i = 0; i < externalAPIArray.length; i++) {
-    // Handle undefined responses
-    var res = (responses[i] && responses[i].data) ? responses[i].data : {};
-
-    if (!res || Object.keys(res).length === 0) {
-      logger.warn(`External API response empty for index: ${i}`);
-    }
+    var res = responses[i].data
 
     //putting required data from external API call in format config
 
@@ -244,8 +217,8 @@ export const externalAPIMapping = async function (
             var len = replaceValue[0].split(",").length;
             var response = await axios_instance.get(
               replaceValue[0].split(",")[len - 1], {
-              responseType: "arraybuffer"
-            }
+                responseType: "arraybuffer"
+              }
             );
             imageData =
               "data:" +
@@ -306,21 +279,21 @@ export const externalAPIMapping = async function (
                 scema[k].localisation.required
               ) {
                 let loc = scema[k].localisation;
-                fieldValue = await getLocalisationkey(
-                  loc.prefix,
-                  fieldValue,
-                  loc.isCategoryRequired,
-                  loc.isMainTypeRequired,
-                  loc.isSubTypeRequired,
-                  loc.delimiter
-                );
-                if (!localisationCodes.includes(fieldValue))
-                  localisationCodes.push(fieldValue);
+              fieldValue = await getLocalisationkey(
+                loc.prefix,
+                fieldValue,
+                loc.isCategoryRequired,
+                loc.isMainTypeRequired,
+                loc.isSubTypeRequired,
+                loc.delimiter
+              );
+              if(!localisationCodes.includes(fieldValue))
+                localisationCodes.push(fieldValue);
 
-                if (!localisationModules.includes(loc.module))
-                  localisationModules.push(loc.module);
+              if(!localisationModules.includes(loc.module))
+                localisationModules.push(loc.module);
 
-                variableToModuleMap[scema[k].variable] = loc.module;
+              variableToModuleMap[scema[k].variable] = loc.module;
               }
               //console.log("\nvalue-->"+fieldValue)
               let currentValue = fieldValue;
@@ -347,8 +320,8 @@ export const externalAPIMapping = async function (
           externalAPIArray[i].jPath[j].localisation &&
           externalAPIArray[i].jPath[j].localisation.required &&
           externalAPIArray[i].jPath[j].localisation.prefix
-        ) {
-          let currentValue = await getLocalisationkey(
+        ){
+          let currentValue= await getLocalisationkey(
             loc.prefix,
             replaceValue,
             loc.isCategoryRequired,
@@ -360,10 +333,10 @@ export const externalAPIMapping = async function (
             currentValue = currentValue[0];
 
           //currentValue = escapeRegex(currentValue);
-          if (!localisationCodes.includes(currentValue))
+          if(!localisationCodes.includes(currentValue))
             localisationCodes.push(currentValue);
 
-          if (!localisationModules.includes(loc.module))
+          if(!localisationModules.includes(loc.module))
             localisationModules.push(loc.module);
 
           variableTovalueMap[
@@ -402,12 +375,12 @@ export const externalAPIMapping = async function (
   }
 
   let localisationMap = [];
-  try {
+  try{
     let resposnseMap = await findLocalisation(
       requestInfo,
       localisationModules,
       localisationCodes,
-      pdfKey + '-externalMapping'
+      pdfKey+'-externalMapping'
     );
     resposnseMap.messages.map((item) => {
       localisationMap[item.code + "_" + item.module] = item.message;
@@ -415,48 +388,48 @@ export const externalAPIMapping = async function (
   }
   catch (error) {
     logger.error(error.stack || error);
-    throw {
+    throw{
       message: `Error in localisation service call: ${error.Errors[0].message}`
-    };
+    }; 
   }
 
-  Object.keys(variableTovalueMap).forEach(function (key) {
-    if (variableToModuleMap[key] && typeof variableTovalueMap[key] == 'string') {
+  Object.keys(variableTovalueMap).forEach(function(key) {
+    if(variableToModuleMap[key] && typeof variableTovalueMap[key] == 'string'){
       var code = variableTovalueMap[key];
       var module = variableToModuleMap[key];
-      if (localisationMap[code + "_" + module]) {
-        variableTovalueMap[key] = localisationMap[code + "_" + module];
-        if (unregisteredLocalisationCodes.includes(code)) {
+      if(localisationMap[code+"_"+module]){
+        variableTovalueMap[key] = localisationMap[code+"_"+module];
+        if(unregisteredLocalisationCodes.includes(code)){
           var index = unregisteredLocalisationCodes.indexOf(code);
           unregisteredLocalisationCodes.splice(index, 1);
         }
       }
-      else {
-        if (!unregisteredLocalisationCodes.includes(code))
+      else{
+        if(!unregisteredLocalisationCodes.includes(code))
           unregisteredLocalisationCodes.push(code);
       }
     }
 
-    if (typeof variableTovalueMap[key] == 'object') {
-      Object.keys(variableTovalueMap[key]).forEach(function (objectKey) {
-        Object.keys(variableTovalueMap[key][objectKey]).forEach(function (objectItemkey) {
-          if (variableToModuleMap[objectItemkey]) {
+    if(typeof variableTovalueMap[key] =='object'){
+      Object.keys(variableTovalueMap[key]).forEach(function(objectKey){
+        Object.keys(variableTovalueMap[key][objectKey]).forEach(function(objectItemkey) {
+          if(variableToModuleMap[objectItemkey]){
             var module = variableToModuleMap[objectItemkey];
             var code = variableTovalueMap[key][objectKey][objectItemkey];
-            if (localisationMap[code + "_" + module]) {
-              variableTovalueMap[key][objectKey][objectItemkey] = localisationMap[code + "_" + module];
-              if (unregisteredLocalisationCodes.includes(code)) {
+            if(localisationMap[code+"_"+module]){
+              variableTovalueMap[key][objectKey][objectItemkey] = localisationMap[code+"_"+module];
+              if(unregisteredLocalisationCodes.includes(code)){
                 var index = unregisteredLocalisationCodes.indexOf(code);
                 unregisteredLocalisationCodes.splice(index, 1);
               }
             }
-            else {
-              if (!unregisteredLocalisationCodes.includes(code))
+            else{
+              if(!unregisteredLocalisationCodes.includes(code))
                 unregisteredLocalisationCodes.push(code);
             }
           }
         });
-      });
+      });    
     }
 
   });

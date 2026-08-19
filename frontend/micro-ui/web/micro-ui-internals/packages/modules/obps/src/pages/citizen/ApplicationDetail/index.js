@@ -732,7 +732,13 @@ const ApplicationDetails = () => {
             {displayMenu ? (
               <Menu
                 localeKeyPrefix="BPA_PROFESSIONAL"
-                options={actions}
+                options={actions?.map((action) => ({
+                  ...action,
+                  forcedName:
+                    action?.action === "EDIT"
+                      ? `BPA_PROFESSIONAL_${action?.action}`
+                      : action?.action,
+                }))}
                 optionKey={"action"}
                 t={t}
                 onSelect={onActionSelect}

@@ -56,20 +56,17 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.2</version>
         </dependency>
 
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
-            <version>10.7.1</version>
         </dependency>
 
         <!-- Utils -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3-version}</version>
         </dependency>
 
         <dependency>
@@ -122,12 +119,12 @@
     <repositories>
         <repository>
             <id>egov-releases</id>
-            <url>https://nexus-repo.egovernments.org/nexus/content/repositories/releases/</url>
+            <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-releases/</url>
         </repository>
 
         <repository>
             <id>egov-snapshots</id>
-            <url>https://nexus-repo.egovernments.org/nexus/content/repositories/snapshots/</url>
+            <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/</url>
         </repository>
     </repositories>
 

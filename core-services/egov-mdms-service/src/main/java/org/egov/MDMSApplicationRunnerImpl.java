@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
@@ -74,7 +75,6 @@ public class MDMSApplicationRunnerImpl {
                 log.info("Stopping as all files could not be loaded");
                 System.exit(1);
             }
-            mdmsCacheService.deduplicateAllMasters();
             // Step 2: Load data from database and merge into cache (optional/legacy)
             mdmsCacheService.loadAndMergeDbData();
         } catch (Exception e) {
@@ -228,7 +228,7 @@ public class MDMSApplicationRunnerImpl {
         }
     }
 
-    private static final java.util.regex.Pattern UUID_PATTERN = java.util.regex.Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+    private static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
     public static boolean isRandomUuid(Object idObj) {
         if (idObj == null) {

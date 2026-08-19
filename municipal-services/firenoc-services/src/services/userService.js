@@ -2,60 +2,74 @@ import envVariables from "../envVariables";
 import { httpRequest } from "../utils/api";
 
 export const searchUser = async (requestInfo, userSearchReqCriteria) => {
- // console.log ()
-  let requestBody = { RequestInfo: requestInfo, ...userSearchReqCriteria };
-  //console.log("User search request Body: "+JSON.stringify(requestBody))
-  var userSearchResponse = await httpRequest({
-    hostURL: envVariables.EGOV_USER_HOST,
-    endPoint: `${envVariables.EGOV_USER_CONTEXT_PATH}${
-      envVariables.EGOV_USER_SEARCH_ENDPOINT
-    }`,
-    requestBody
-  });
-  //console.log("User search response: "+JSON.stringify(userSearchResponse));
+  try {
+    let requestBody = { RequestInfo: requestInfo, ...userSearchReqCriteria };
+    //console.log("User search request Body: "+JSON.stringify(requestBody))
+    var userSearchResponse = await httpRequest({
+      hostURL: envVariables.EGOV_USER_HOST,
+      endPoint: `${envVariables.EGOV_USER_CONTEXT_PATH}${
+        envVariables.EGOV_USER_SEARCH_ENDPOINT
+      }`,
+      requestBody
+    });
+    //console.log("User search response: "+JSON.stringify(userSearchResponse));
 
-  var dobFormat = "yyyy-MM-dd";
-  userSearchResponse = parseResponse(userSearchResponse, dobFormat);
-  // console.log(userSearchResponse);
-  //console.log("User search response: "+JSON.stringify(userSearchResponse));
-  return userSearchResponse;
+    var dobFormat = "yyyy-MM-dd";
+    userSearchResponse = parseResponse(userSearchResponse, dobFormat);
+    // console.log(userSearchResponse);
+    //console.log("User search response: "+JSON.stringify(userSearchResponse));
+    return userSearchResponse;
+  } catch (error) {
+    console.error("Error in searchUser:", error);
+    throw error;
+  }
 };
 
 export const createUser = async (requestInfo, user) => {
-  let requestBody = { RequestInfo: requestInfo, user: user };
-  //console.log("Create USer Req Body"+ JSON.stringify(requestBody))
-  user.dob=dobConvetion(user.dob);
-  var userCreateResponse = await httpRequest({
-    hostURL: envVariables.EGOV_USER_HOST,
-    endPoint: `${envVariables.EGOV_USER_CONTEXT_PATH}${
-      envVariables.EGOV_USER_CREATE_ENDPOINT
-    }`,
-    requestBody
-  });
+  try {
+    let requestBody = { RequestInfo: requestInfo, user: user };
+    //console.log("Create USer Req Body"+ JSON.stringify(requestBody))
+    user.dob=dobConvetion(user.dob);
+    var userCreateResponse = await httpRequest({
+      hostURL: envVariables.EGOV_USER_HOST,
+      endPoint: `${envVariables.EGOV_USER_CONTEXT_PATH}${
+        envVariables.EGOV_USER_CREATE_ENDPOINT
+      }`,
+      requestBody
+    });
 
-  var dobFormat = "dd/MM/yyyy";
-  userCreateResponse = parseResponse(userCreateResponse, dobFormat);
+    var dobFormat = "dd/MM/yyyy";
+    userCreateResponse = parseResponse(userCreateResponse, dobFormat);
 
-  return userCreateResponse;
+    return userCreateResponse;
+  } catch (error) {
+    console.error("Error in createUser:", error);
+    throw error;
+  }
 };
 
 export const updateUser = async (requestInfo, user) => {
-   console.log(user);
-  user.dob=dobConvetion(user.dob);
-   console.info(user.dob);
-  let requestBody = { RequestInfo: requestInfo, user: user };
-  var userUpdateResponse = await httpRequest({
-    hostURL: envVariables.EGOV_USER_HOST,
-    endPoint: `${envVariables.EGOV_USER_CONTEXT_PATH}${
-      envVariables.EGOV_USER_UPDATE_ENDPOINT
-    }`,
-    requestBody
-  });
+  try {
+    console.log(user);
+    user.dob=dobConvetion(user.dob);
+    console.info(user.dob);
+    let requestBody = { RequestInfo: requestInfo, user: user };
+    var userUpdateResponse = await httpRequest({
+      hostURL: envVariables.EGOV_USER_HOST,
+      endPoint: `${envVariables.EGOV_USER_CONTEXT_PATH}${
+        envVariables.EGOV_USER_UPDATE_ENDPOINT
+      }`,
+      requestBody
+    });
 
-  var dobFormat = "yyyy-MM-dd";
-  userUpdateResponse = parseResponse(userUpdateResponse, dobFormat);
-    //console.log("userUpdateResponse"+JSON.stringify(userUpdateResponse))
-  return userUpdateResponse;
+    var dobFormat = "yyyy-MM-dd";
+    userUpdateResponse = parseResponse(userUpdateResponse, dobFormat);
+      //console.log("userUpdateResponse"+JSON.stringify(userUpdateResponse))
+    return userUpdateResponse;
+  } catch (error) {
+    console.error("Error in updateUser:", error);
+    throw error;
+  }
 };
 
 const parseResponse = (userResponse, dobFormat) => {

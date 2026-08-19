@@ -26,7 +26,7 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import Timeline from "../components/Timeline"
-import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments, getDocsFromFileUrls, scrutinyDetailsData, fetchUrl } from "../utils"
+import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments, getDocsFromFileUrls, scrutinyDetailsData, fetchUrl, formatDate } from "../utils"
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview"
 import Architectconcent from "../pages/citizen/NewBuildingPermit/Architectconcent"
 import { OTPInput, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
@@ -939,6 +939,56 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         />}
                     </div>
                 </div>
+
+                {(currentStepData?.createdResponse?.additionalDetails?.stakeholderName ||
+                    currentStepData?.createdResponse?.additionalDetails?.architectid ||
+                    currentStepData?.createdResponse?.additionalDetails?.architectMobileNumber) && (
+                    <div className="bpa-stepper-form-section">
+                        <CardSubHeader className="bpa-section-header">{t("BPA_PROFESSIONAL_DETAILS") || "Professional Details"}</CardSubHeader>
+                        <div className="data-table">
+                            <div className="row border-none">
+                                <h2>{t("BPA_PROFESSIONAL_NAME_LABEL")}</h2>
+                                <div className="value">
+                                    {currentStepData?.createdResponse?.additionalDetails?.stakeholderName ||
+                                        currentStepData?.createdResponse?.additionalDetails?.architectName ||
+                                        "N/A"}
+                                </div>
+                            </div>
+                            <div className="row border-none">
+                                <h2>{t("BPA_PROFESSIONAL_EMAIL_LABEL")}</h2>
+                                <div className="value">
+                                    {currentStepData?.createdResponse?.additionalDetails?.architectEmailId || "N/A"}
+                                </div>
+                            </div>
+                            <div className="row border-none">
+                                <h2>{t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}</h2>
+                                <div className="value">
+                                    {currentStepData?.createdResponse?.additionalDetails?.architectid ||
+                                        currentStepData?.createdResponse?.additionalDetails?.stakeholderRegistrationNumber ||
+                                        "N/A"}
+                                </div>
+                            </div>
+                            <div className="row border-none">
+                                <h2>{t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}</h2>
+                                <div className="value">
+                                    {formatDate(currentStepData?.createdResponse?.additionalDetails?.professionalRegIdValidity) || "N/A"}
+                                </div>
+                            </div>
+                            <div className="row border-none">
+                                <h2>{t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}</h2>
+                                <div className="value">
+                                    {currentStepData?.createdResponse?.additionalDetails?.architectMobileNumber || "N/A"}
+                                </div>
+                            </div>
+                            <div className="row border-none">
+                                <h2>{t("BPA_PROFESSIONAL_ADDRESS_LABEL")}</h2>
+                                <div className="value">
+                                    {currentStepData?.createdResponse?.additionalDetails?.stakeholderAddress || "N/A"}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className="bpa-stepper-form-section">
                     <CardSubHeader className="bpa-section-header">

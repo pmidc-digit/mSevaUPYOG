@@ -365,7 +365,7 @@ const LayoutEmployeeApplicationOverview = () => {
 
   // Initialize checklist remarks from API data
   useEffect(() => {
-    if (checklistData?.checkList?.length > 0 && Object.keys(checklistRemarks).length === 0) {
+    if (checklistData?.checkList?.length > 0) {
       const remarksMap = {};
       checklistData.checkList.forEach((item) => {
         remarksMap[item.documentUid || item.documentuid] = item.remarks || "";
@@ -398,7 +398,9 @@ const LayoutEmployeeApplicationOverview = () => {
         doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" ||
         doc?.documentType === "SITE.PHOTOGRAPHONE" ||
         doc?.documentType === "SITE.PHOTOGRAPHTWO"
-      )
+      ) &&
+      ((doc?.documentAttachment && String(doc.documentAttachment).trim() !== "") ||
+        (doc?.filestoreId && String(doc.filestoreId).trim() !== ""))
   );
 
   // Calculate geo locations from site images
@@ -531,10 +533,10 @@ const LayoutEmployeeApplicationOverview = () => {
 
         // --- derived once, reused for both officerDesignation and signatoryDesignation ---
         const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm exact grade codes
-        const officerDesignation = isSmallerUlb ? "Executive Officer" : "Municipal Commissioner";
+        const officerDesignation = isSmallerUlb ? t("SMALLER_ULB_OFFICER") : t("BIGGER_ULB_OFFICER");
         const signatoryDesignation = isSmallerUlb
-          ? "Additional Deputy Commissioner (Urban Development)"
-          : "Commissioner, Municipal Corporation";
+          ? t("SMALLER_ULB_DESIG")
+          : t("BIGGER_ULB_DESIG");
 
         // same isSmallerUlb split decides which name goes with the Competent Authority
         const jurisdictionName = isSmallerUlb ? districtName : ulbName;
@@ -1226,8 +1228,10 @@ const LayoutEmployeeApplicationOverview = () => {
         <StatusTable>
           <Row label={t("Application Number")} text={applicationDetails?.Layout?.[0]?.applicationNo || "N/A"} />
           <Row label={t("Application Date")} text={applicationDetails?.Layout?.[0]?.auditDetails?.createdTime ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.auditDetails?.createdTime), "dd/MM/yyyy") : "N/A"} />
+           {(applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED") && (
           <Row label={t("Application Submission Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn), "dd/MM/yyyy") : "N/A"} />
-          {(applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") && (
+           )}
+          {(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate) && (
             <Row label={t("Application Approval Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate), "dd/MM/yyyy") : "N/A"} />
           )}
         </StatusTable>
@@ -1242,14 +1246,14 @@ const LayoutEmployeeApplicationOverview = () => {
           <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
       
             <StatusTable>
-              <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalName || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalEmailId || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalRegId || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalMobileNumber || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalAddress || "N/A"} />
-              <Row
+              <RenderRow label={t("NOC_PROFESSIONAL_NAME_LABEL")} value={displayData?.applicantDetails?.[0]?.professionalName || "N/A"} />
+              <RenderRow label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} value={displayData?.applicantDetails?.[0]?.professionalEmailId || "N/A"} />
+              <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={displayData?.applicantDetails?.[0]?.professionalRegId || "N/A"} />
+              <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={displayData?.applicantDetails?.[0]?.professionalMobileNumber || "N/A"} />
+              <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={displayData?.applicantDetails?.[0]?.professionalAddress || "N/A"} />
+              <RenderRow
                 label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}
-                text={formatDate(displayData?.applicantDetails?.[0]?.professionalRegistrationValidity || "N/A")}
+                value={formatDate(displayData?.applicantDetails?.[0]?.professionalRegistrationValidity || "N/A")}
               />
             </StatusTable>
           
@@ -1266,31 +1270,31 @@ const LayoutEmployeeApplicationOverview = () => {
          
                 <StatusTable>
 
-                  {index === 0 && <Row label={t(`CLU_OWNER_TYPE_LABEL`)} text={applicant?.additionalDetails?.aplicantType?.name} />}
+                  {index === 0 && <RenderRow label={t(`CLU_OWNER_TYPE_LABEL`)} value={applicant?.additionalDetails?.aplicantType?.name} />}
                   {applicant?.additionalDetails?.aplicantType?.code === "FIRM" && (
-                    <Row label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} text={applicant?.additionalDetails?.authorisedPerson} />
+                    <RenderRow label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} value={applicant?.additionalDetails?.authorisedPerson} />
                   )}
-                  <Row
+                  <RenderRow
                     label={`${applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")
                       }`}
-                    text={applicant?.name}
+                    value={applicant?.name}
                   />
-                  <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={applicant?.emailId} />
-                  <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={applicant?.fatherOrHusbandName} />
-                  <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={applicant?.mobileNumber} />
-                  <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(applicant?.dob)} />
-                  <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={applicant?.gender} />
-                  <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={applicant?.permanentAddress} />
-                  <Row label={t("BPA_PAN_NUMBER_LABEL")} text={applicant?.pan || applicant?.panNumber || "N/A"} />
-                  <Row
+                  <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
+                  <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
+                  <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={applicant?.mobileNumber} />
+                  <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={formatDate(applicant?.dob)} />
+                  <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
+                  <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
+                  <RenderRow label={t("BPA_PAN_NUMBER_LABEL")} value={applicant?.pan || applicant?.panNumber || "N/A"} />
+                  <Row className="document-row"
                     label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"}
                     text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />}
                   />
-                  <Row
+                  <Row className="document-row"
                     label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"}
                     text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />}
                   />
-                  <Row
+                  <Row className="document-row"
                     label={t("BPA_PAN_DOCUMENT") || "Pan"}
                     text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />}
                   />
@@ -1313,7 +1317,7 @@ const LayoutEmployeeApplicationOverview = () => {
                   {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
                   {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") && renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
                   {(Boolean(detail?.cluDocumentUpload) || detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && (
-                    <Row
+                    <Row className="document-row"
                       label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
                       text={
                         <DocumentLink
@@ -1593,8 +1597,11 @@ const LayoutEmployeeApplicationOverview = () => {
 
       {/* FEE DETAILS CARD - CLU STYLE PART 1 */}
       <Card>
-        <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
+        <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
+    
         {applicationDetails?.Layout?.[0]?.layoutDetails && (
+          <>
+              <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY1")}</CardSubHeader>
           <LayoutFeeEstimationDetails
             formData={{
               apiData: { ...applicationDetails },
@@ -1606,6 +1613,7 @@ const LayoutEmployeeApplicationOverview = () => {
             disable={isFeeDisabled}
             hasPayments={hasPayments}
           />
+          </>
         )}
          {hasPayments && (
                   <div style={{ marginTop: "16px" }}>
@@ -1613,12 +1621,12 @@ const LayoutEmployeeApplicationOverview = () => {
                   </div>
                 )}
 
-      </Card>
+    
 
       {/* FEE DETAILS TABLE CARD - CLU STYLE PART 2 */}
       {(applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS") && (
-        <Card>
-          <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+      <>
+          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY2")}</CardSubHeader>
           {applicationDetails?.Layout?.[0]?.layoutDetails && (
             <LayoutFeeEstimationDetailsTable
               formData={{
@@ -1633,8 +1641,9 @@ const LayoutEmployeeApplicationOverview = () => {
               disable={isFeeDisabled}
             />
           )}
-        </Card>
+        </>
       )}
+      </Card>
 
       {/* {siteImages?.documents?.length > 0 && (
         <Card>

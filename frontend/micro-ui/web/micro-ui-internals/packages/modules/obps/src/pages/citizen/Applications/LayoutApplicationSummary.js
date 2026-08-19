@@ -163,7 +163,7 @@ const LayoutApplicationOverview = () => {
   const [loading, setLoading] = useState(false);
   const [timeObj, setTimeObj] = useState(null);
   const state = Digit.ULBService.getStateId()
-
+ const [feeAdjustments, setFeeAdjustments] = useState([]);
   // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, { cacheTime: 0 })
   const applicationDetails = data?.resData
@@ -437,6 +437,15 @@ const LayoutApplicationOverview = () => {
       data.revalidate()
     }
   }, [])
+  
+const hasCMCApproval =
+  workflowDetails?.data?.actionState?.timeline?.some(
+    (item) =>
+      item?.performedAction === "APPROVE" &&
+      item?.assigner?.roles?.some(
+        (role) => role?.code === "OBPAS_LAYOUT_CMC"
+      )
+  );
 
   const isApplicationComplete = () => {
     const layout = applicationDetails?.Layout?.[0];
@@ -602,15 +611,21 @@ const LayoutApplicationOverview = () => {
       const response = await Digit.OBPSService.LayoutUpdate({ tenantId, ...finalPayload })
 
       if (response?.ResponseInfo?.status === "successful") {
-        if (filtData?.action === "CANCEL") {
-          setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" })
-          workflowDetails.revalidate()
-          setSelectedAction(null)
-        } else {
+        // if (filtData?.action === "CANCEL") {
+        //   setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" })
+        //   workflowDetails.revalidate()
+        //   setSelectedAction(null)
+        // } else 
+         if (filtData?.action) {
           history.replace({
             pathname: `/digit-ui/citizen/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
             state: { data: response },
           })
+        }else{
+          setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" })
+          workflowDetails.revalidate()
+          setSelectedAction(null);
+
         }
       } else {
         setShowToast({ key: "true", warning: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" })
@@ -702,10 +717,10 @@ const LayoutApplicationOverview = () => {
 
       // --- derived once, reused for both officerDesignation and signatoryDesignation ---
       const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm actual grade codes
-      const officerDesignation = isSmallerUlb ? "Executive Officer" : "Municipal Commissioner";
+      const officerDesignation = isSmallerUlb ? t("SMALLER_ULB_OFFICER") : t("BIGGER_ULB_OFFICER");
       const signatoryDesignation = isSmallerUlb
-        ? "Additional Deputy Commissioner (Urban Development)"
-        : "Commissioner, Municipal Corporation";
+        ? t("SMALLER_ULB_DESIG")
+        : t("BIGGER_ULB_DESIG");
 
       // same isSmallerUlb split decides which name goes with the Competent Authority
       const jurisdictionName = isSmallerUlb ? districtName : ulbName;
@@ -883,8 +898,10 @@ const LayoutApplicationOverview = () => {
         <StatusTable>
           <Row label={t("BPA_APPLICATION_NUMBER_LABEL") || t("Application No")} text={id} />
           <Row label={t("Application Date")} text={applicationDetails?.Layout?.[0]?.auditDetails?.createdTime ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.auditDetails?.createdTime), "dd/MM/yyyy") : "N/A"} />
+          {(applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED") && (
           <Row label={t("Application Submission Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn), "dd/MM/yyyy") : "N/A"} />
-          {(applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") && (
+          )}
+          {(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate) && (
             <Row label={t("Application Approval Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate), "dd/MM/yyyy") : "N/A"} />
           )}
         </StatusTable>
@@ -930,9 +947,9 @@ const LayoutApplicationOverview = () => {
                 <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
                 <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
                 <RenderRow label={t("BPA_PAN_NUMBER_LABEL")} value={applicant?.pan || applicant?.panNumber || "N/A"} />
-                <Row label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
-                <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
-                <Row label={t("BPA_PAN_DOCUMENT") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />
+                <Row className="document-row" label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
+                <Row className="document-row" label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
+                <Row className="document-row" label={t("BPA_PAN_DOCUMENT") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />
               </StatusTable>
             </div>
           ))}
@@ -958,7 +975,7 @@ const LayoutApplicationOverview = () => {
                   {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
                     renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
                   {(Boolean(detail?.cluDocumentUpload) || detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && (
-                    <Row
+                    <Row className="document-row"
                       label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
                       text={
                         <DocumentLink
@@ -1093,10 +1110,10 @@ const LayoutApplicationOverview = () => {
       {displayData?.Documents && displayData.Documents.length > 0 && (
         <Card>
           <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
-          <StatusTable>
+          {/* <StatusTable> */}
             {/* <LayoutDocumentView documents={displayData.Documents} /> */}
             <LayoutDocumentTableView documents={displayData?.Documents?.filter((doc) => doc.documentType != "OWNER.SITEPHOTOGRAPHONE" && doc.documentType != "OWNER.SITEPHOTOGRAPHTWO")} />
-          </StatusTable>
+          {/* </StatusTable> */}
         </Card>
       )}
 
@@ -1105,7 +1122,9 @@ const LayoutApplicationOverview = () => {
         <Card>
           <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
   {applicationDetails?.Layout?.[0]?.layoutDetails && (
-     <StatusTable>
+    <>
+     <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY1")}</CardSubHeader>
+     {/* <StatusTable> */}
           <LayoutFeeEstimationDetails
             formData={{
               apiData: { ...applicationDetails },
@@ -1119,14 +1138,37 @@ const LayoutApplicationOverview = () => {
             feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
             hasPayments={reciept_data?.Payments?.length > 0}
           />
-          </StatusTable>
+          {/* </StatusTable> */}
+          </>
           )}
           {hasPayments && (
                 <div style={{ marginTop: "16px" }}>
                   <OBPSPaymentHistory payments={combinedPayments} />
                 </div>
               )}
-        </Card>
+        
+
+       {hasCMCApproval && (
+                <>
+                  <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY2")}</CardSubHeader>
+                  {applicationDetails?.Layout?.[0]?.layoutDetails && (
+                    <LayoutFeeEstimationDetailsTable
+                      formData={{
+                        apiData: { ...applicationDetails },
+                        applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
+                        siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
+                        calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
+                      }}
+                      feeType="PAY2"
+                      feeAdjustments={feeAdjustments}
+                      setFeeAdjustments={setFeeAdjustments}
+                      disable={true}
+                    />
+                  )}
+                  </>
+               
+              )}
+               </Card>
       
 
       {/* -------------------- SPECIFICATIONS -------------------- */}

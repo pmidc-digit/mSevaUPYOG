@@ -90,7 +90,9 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     //   }
     // }
 
-    applicants?.forEach((applicant) => {
+      const activeApplicants = applicants?.filter((a) => a?.status !== false && a?.status !== "false") || [];
+
+    activeApplicants.forEach((applicant) => {
       const originalIndex = applicant.actualIndex !== undefined ? applicant.actualIndex : applicants.indexOf(applicant);
       // Clear old errors for this applicant
       clearErrors([
@@ -259,16 +261,22 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   const onSubmit = async (data) => {
     const applicants = currentStepData?.applicants || [];
+    const activeApplicants = applicants.filter((a) => a?.status !== false && a?.status !== "false");
     const rawApplicantType = currentStepData?.applicationDetails?.aplicantType || currentStepData?.applicationDetails?.applicantType;
     const typeCode = (typeof rawApplicantType === "string" ? rawApplicantType : rawApplicantType?.code || rawApplicantType?.name || "").toUpperCase();
 
-    if (applicants?.length === 0) {
+    if (activeApplicants?.length === 0) {
       setShowToast({ error: true, label: t("AT LEAST ONE OWNER REQUIRED") });
       return;
     }
 
-    if (typeCode === "MULTIPLE" && applicants?.length < 2) {
+    if (typeCode === "MULTIPLE" && activeApplicants?.length < 2) {
       setShowToast({ error: true, label: t("MULTIPLE OWNER TYPE REQUIRES MORE THAN ONE OWNER") });
+      return;
+    }
+
+    if (typeCode === "INDIVIDUAL" && activeApplicants?.length > 1) {
+      setShowToast({ error: true, label: t("INDIVIDUAL OWNER TYPE CAN HAVE ONLY ONE OWNER") });
       return;
     }
 

@@ -228,18 +228,21 @@ const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
     <div>
       {layoutCalculatorLoading ? (
         <Loader />
-      ) : isCitizen ? (
-        <Table
-          className="customTable table-border-style"
-          t={t}
-          data={applicationFeeDataWithTotal}
-          columns={applicationFeeColumns}
-          getCellProps={() => ({ style: {} })}
-          disableSort={true}
-          manualPagination={false}
-          isPaginationRequired={false}
-        />
-      ) : (
+      ) 
+      
+      // : isCitizen ? (
+      //   <Table
+      //     className="customTable table-border-style"
+      //     t={t}
+      //     data={applicationFeeDataWithTotal}
+      //     columns={applicationFeeColumns}
+      //     getCellProps={() => ({ style: {} })}
+      //     disableSort={true}
+      //     manualPagination={false}
+      //     isPaginationRequired={false}
+      //   />
+      // ) 
+      : (
         <div className="bpa-table-container">
         <table className="customTable table-border-style">
           <thead>

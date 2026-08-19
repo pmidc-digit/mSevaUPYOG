@@ -333,7 +333,7 @@ const getDocuments = async ({ appData, t }) => {
 
   const otherDocs =
     appData?.documents
-      ?.filter((doc) => doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" && doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO")
+      ?.filter((doc) => !!(doc?.filestoreId || doc?.documentAttachment) && doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" && doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO")
       ?.sort((a, b) => a?.order - b?.order) || [];
 
   const filteredDocs = [...applicantDocs, ...otherDocs];

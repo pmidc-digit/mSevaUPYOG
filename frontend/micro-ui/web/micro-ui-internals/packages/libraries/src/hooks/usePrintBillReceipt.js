@@ -105,7 +105,7 @@ const transformBillsForPdf = (Bills, meta = {}) => {
   const billsArray = normalizeBills(Bills);
   if (!billsArray?.length) return { Bills: [] };
 
-  const { searchDataMap = {}, businessService, rootKey = "BILLS", ...commonMeta } = meta;
+  const { searchDataMap = {}, businessService, rootKey = "BILLS", t, ...commonMeta } = meta;
 
   const mergedBillDetails = [];
 
@@ -114,6 +114,25 @@ const transformBillsForPdf = (Bills, meta = {}) => {
 
     const identifier = consumerCode || applicationNumber;
     const searchData = searchDataMap[identifier] || null;
+    const rlAmountPaid = Number(bill?.totalAmountPaid || 0);
+    const rlAmountLeft = Math.max(
+      Number(bill?.totalDue || 0) - rlAmountPaid,
+      0
+    );
+
+    const hasRlAmountPaid =
+      businessService === "rl-services" && rlAmountPaid > 0;
+
+    const rlReceiptFields = {
+      rlAmountPaidLabel: hasRlAmountPaid
+        ? t("PDF_STATIC_LABEL_CONSOLIDATED_RECEIPT_PAID_AMOUNT")
+        : " ",
+      rlAmountPaid: hasRlAmountPaid ? rlAmountPaid : " ",
+      rlAmountLeftLabel: hasRlAmountPaid
+        ? t("NDC_DUE_AMOUNT")
+        : " ",
+      rlAmountLeft: hasRlAmountPaid ? rlAmountLeft : " ",
+    };
 
     billDetails?.forEach((detail) => {
       const cleanedAccountDetails = cleanBillAccountDetails(detail?.billAccountDetails);
@@ -121,6 +140,7 @@ const transformBillsForPdf = (Bills, meta = {}) => {
       mergedBillDetails?.push({
         billRootData: {
           ...billRootData,
+          ...rlReceiptFields,
           identifier,
 
           ...(searchData && {
@@ -154,7 +174,7 @@ const transformBillsForPdf = (Bills, meta = {}) => {
 };
 
 const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
-  const { searchDataMap = {}, businessService, generatedAt } = meta;
+  const { searchDataMap = {}, businessService, generatedAt , t } = meta;
 
   if (!Array.isArray(paymentsResponse?.Payments)) {
     return { Payments: [] };
@@ -302,12 +322,14 @@ export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, 
                 businessService,
                 generatedAt: Date.now(),
                 searchDataMap,
+                t :t,
               })
             : transformBillsForPdf(billsArray, {
                 businessService,
                 generatedAt: Date.now(),
                 searchDataMap,
                 rootKey,
+                t :t
               });
 
         // Generate PDF

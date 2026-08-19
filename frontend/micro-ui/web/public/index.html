@@ -13,7 +13,7 @@
     <!-- <link rel="stylesheet" href="https://unpkg.com/@egovernments/digit-ui-css/dist/index.css"/> -->
     <link
       rel="stylesheet"
-      href="https://unpkg.com/@pmidc/upyog-css@1.2.36-UAT.21/dist/index.css"
+      href="https://unpkg.com/@pmidc/upyog-css@1.2.36-UAT.23/dist/index.css"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#00bcd1" />
@@ -21,7 +21,7 @@
 
     <title>UPYOG</title>
     <!-- <script src="https://s3.ap-south-1.amazonaws.com/egov-dev-assets/globalConfigs.js"></script> -->
-     <script>
+    <script>
       var globalConfigs = (function () {
         var stateTenantId = "pb";
         var contextPath = "digit-ui";
@@ -29,8 +29,10 @@
         var gmaps_api_key = "AIzaSyDjSk-Bw1OuiOE-5K7jsP6KGN2rbcN7iBk";
         var finEnv = "uat";
         var centralInstanceEnabled = false;
-        var footerBWLogoURL = "https://s3.ap-south-1.amazonaws.com/egov-uat-assets/digit-footer-bw.png";
-        var footerLogoURL = "https://s3.ap-south-1.amazonaws.com/egov-uat-assets/digit-footer.png";
+        var footerBWLogoURL =
+          "https://s3.ap-south-1.amazonaws.com/egov-uat-assets/digit-footer-bw.png";
+        var footerLogoURL =
+          "https://s3.ap-south-1.amazonaws.com/egov-uat-assets/digit-footer.png";
         var digitHomeURL = "https://mseva-uat.lgpunjab.gov.in/";
         var assetS3Bucket = "pg-egov-assets";
         var getConfig = function (key) {
@@ -61,206 +63,450 @@
         };
       })();
     </script>
-<!-- Matomo -->
-  <script>
-    (function () {
-      var _paq = window._paq = window._paq || [];
+    <!-- Matomo -->
+    <script>
+      (function () {
+        var _paq = (window._paq = window._paq || []);
 
-      _paq.push(["setExcludedQueryParams", ["account", "accountnum", "address", "address1", "address2", "address3", "addressline1", "addressline2", "adres", "adresse", "age", "alter", "auth", "authpw", "bic", "billingaddress", "billingaddress1", "billingaddress2", "calle", "cardnumber", "cc", "ccc", "cccsc", "cccvc", "cccvv", "ccexpiry", "ccexpmonth", "ccexpyear", "ccname", "ccnumber", "cctype", "cell", "cellphone", "city", "clientid", "clientsecret", "company", "consumerkey", "consumersecret", "contrasenya", "contraseña", "creditcard", "creditcardnumber", "cvc", "cvv", "dateofbirth", "debitcard", "dirección", "dob", "domain", "ebost", "email", "emailaddress", "emailadresse", "epos", "epost", "eposta", "exp", "familyname", "firma", "firstname", "formlogin", "fullname", "gender", "geschlecht", "gst", "gstnumber", "handynummer", "hasło", "heslo", "iban", "ibanaccountnum", "ibanaccountnumber", "id", "identifier", "indirizzo", "kartakredytowa", "kennwort", "keyconsumerkey", "keyconsumersecret", "konto", "kontonr", "kontonummer", "kredietkaart", "kreditkarte", "kreditkort", "lastname", "login", "mail", "mobiili", "mobile", "mobilne", "nachname", "name", "nickname", "osoite", "parole", "pass", "passord", "password", "passwort", "pasword", "paswort", "paword", "phone", "pin", "plz", "postalcode", "postcode", "postleitzahl", "privatekey", "publickey", "pw", "pwd", "pword", "pwrd", "rue", "secret", "secretq", "secretquestion", "shippingaddress", "shippingaddress1", "shippingaddress2", "socialsec", "socialsecuritynumber", "socsec", "sokak", "ssn", "steuernummer", "strasse", "street", "surname", "swift", "tax", "taxnumber", "tel", "telefon", "telefonnr", "telefonnummer", "telefono", "telephone", "token", "token_auth", "tokenauth", "téléphone", "ulica", "user", "username", "vat", "vatnumber", "via", "vorname", "wachtwoord", "wagwoord", "webhooksecret", "website", "zip", "zipcode"]]);
+        _paq.push([
+          "setExcludedQueryParams",
+          [
+            "account",
+            "accountnum",
+            "address",
+            "address1",
+            "address2",
+            "address3",
+            "addressline1",
+            "addressline2",
+            "adres",
+            "adresse",
+            "age",
+            "alter",
+            "auth",
+            "authpw",
+            "bic",
+            "billingaddress",
+            "billingaddress1",
+            "billingaddress2",
+            "calle",
+            "cardnumber",
+            "cc",
+            "ccc",
+            "cccsc",
+            "cccvc",
+            "cccvv",
+            "ccexpiry",
+            "ccexpmonth",
+            "ccexpyear",
+            "ccname",
+            "ccnumber",
+            "cctype",
+            "cell",
+            "cellphone",
+            "city",
+            "clientid",
+            "clientsecret",
+            "company",
+            "consumerkey",
+            "consumersecret",
+            "contrasenya",
+            "contraseña",
+            "creditcard",
+            "creditcardnumber",
+            "cvc",
+            "cvv",
+            "dateofbirth",
+            "debitcard",
+            "dirección",
+            "dob",
+            "domain",
+            "ebost",
+            "email",
+            "emailaddress",
+            "emailadresse",
+            "epos",
+            "epost",
+            "eposta",
+            "exp",
+            "familyname",
+            "firma",
+            "firstname",
+            "formlogin",
+            "fullname",
+            "gender",
+            "geschlecht",
+            "gst",
+            "gstnumber",
+            "handynummer",
+            "hasło",
+            "heslo",
+            "iban",
+            "ibanaccountnum",
+            "ibanaccountnumber",
+            "id",
+            "identifier",
+            "indirizzo",
+            "kartakredytowa",
+            "kennwort",
+            "keyconsumerkey",
+            "keyconsumersecret",
+            "konto",
+            "kontonr",
+            "kontonummer",
+            "kredietkaart",
+            "kreditkarte",
+            "kreditkort",
+            "lastname",
+            "login",
+            "mail",
+            "mobiili",
+            "mobile",
+            "mobilne",
+            "nachname",
+            "name",
+            "nickname",
+            "osoite",
+            "parole",
+            "pass",
+            "passord",
+            "password",
+            "passwort",
+            "pasword",
+            "paswort",
+            "paword",
+            "phone",
+            "pin",
+            "plz",
+            "postalcode",
+            "postcode",
+            "postleitzahl",
+            "privatekey",
+            "publickey",
+            "pw",
+            "pwd",
+            "pword",
+            "pwrd",
+            "rue",
+            "secret",
+            "secretq",
+            "secretquestion",
+            "shippingaddress",
+            "shippingaddress1",
+            "shippingaddress2",
+            "socialsec",
+            "socialsecuritynumber",
+            "socsec",
+            "sokak",
+            "ssn",
+            "steuernummer",
+            "strasse",
+            "street",
+            "surname",
+            "swift",
+            "tax",
+            "taxnumber",
+            "tel",
+            "telefon",
+            "telefonnr",
+            "telefonnummer",
+            "telefono",
+            "telephone",
+            "token",
+            "token_auth",
+            "tokenauth",
+            "téléphone",
+            "ulica",
+            "user",
+            "username",
+            "vat",
+            "vatnumber",
+            "via",
+            "vorname",
+            "wachtwoord",
+            "wagwoord",
+            "webhooksecret",
+            "website",
+            "zip",
+            "zipcode",
+          ],
+        ]);
 
-      function getPageTitle(url) {
-        try {
-          if (url.includes("auto-login")) {
-            const params = new URL(url).searchParams;
-            const module = params.get("module");
-            const userType = params.get("userType");
+        function getPageTitle(url) {
+          try {
+            if (url.includes("auto-login")) {
+              const params = new URL(url).searchParams;
+              const module = params.get("module");
+              const userType = params.get("userType");
 
-            if (module && userType) {
-              const moduleMap = {
-                PT: "Property Tax", WS: "Water & Sewerage", TL: "Trade License",
-                PGR: "Complaints", OBPS: "Building Permit", mCollect: "mCollect",
-                FSM: "FSM", SURVEY: "Survey", Firenoc: "FNOC", Finance: "Finance", BND: "Birth & Death"
-              };
-              const userTypeLabel = { citizen: "Citizen", employee: "Employee", stakeholder: "Stakeholder" }[userType.toLowerCase()] || userType;
-              const moduleName = moduleMap[module] || module;
-              document.title = `${moduleName} ${userTypeLabel}`;
-              return `${moduleName} ${userTypeLabel}`;
+              if (module && userType) {
+                const moduleMap = {
+                  PT: "Property Tax",
+                  WS: "Water & Sewerage",
+                  TL: "Trade License",
+                  PGR: "Complaints",
+                  OBPS: "Building Permit",
+                  mCollect: "mCollect",
+                  FSM: "FSM",
+                  SURVEY: "Survey",
+                  Firenoc: "FNOC",
+                  Finance: "Finance",
+                  BND: "Birth & Death",
+                };
+                const userTypeLabel =
+                  {
+                    citizen: "Citizen",
+                    employee: "Employee",
+                    stakeholder: "Stakeholder",
+                  }[userType.toLowerCase()] || userType;
+                const moduleName = moduleMap[module] || module;
+                document.title = `${moduleName} ${userTypeLabel}`;
+                return `${moduleName} ${userTypeLabel}`;
+              }
+            }
+
+            const pathname = new URL(url).pathname;
+            const path = pathname.replace(/^\/+|\/+$/g, "");
+
+            const pageTitleMap = {
+              "https://sdc-uat.lgpunjab.gov.in/digit-ui/citizen/select-location":
+                "Citizen Select Location",
+              "https://sdc-uat.lgpunjab.gov.in/digit-ui/citizen/error":
+                "Citizen Error",
+              "https://sdc-uat.lgpunjab.gov.in/digit-ui/employee/error":
+                "Employee Error",
+              "citizen/tl": "Business License Citizen",
+              "employee/tl": "Business License Employee",
+              "employee/dss/dashboard/tradelicense":
+                "Business License Employee",
+              "citizen/pt": "Property Tax Citizen",
+              "employee/pt": "Property Tax Employee",
+              "employee/dss/dashboard/propertytax": "Property Tax Employee",
+              "citizen/obps": "Building Permit Citizen",
+              "employee/obps": "Building Permit Employee",
+              "employee/dss/dashboard/obps": "Building Permit Employee",
+              "employee/noc": "Building Permit Employee",
+              "citizen/mcollect": "mCollect Citizen",
+              "employee/mcollect": "mCollect Employee",
+              "employee/dss/dashboard/mcollect": "mCollect Employee",
+              "employee/finance": "Finance Employee",
+              "citizen/ws": "WS Citizen",
+              "employee/ws": "WS Employee",
+              "employee/dss/dashboard/ws": "WS Employee",
+              "citizen/birth": "Birth Citizen",
+              "employee/birth": "Birth Employee",
+              "employee/dss/dashboard/birth-death":
+                "Birth&Death Dashboard Employee",
+              "citizen/death": "Death Citizen",
+              "employee/death": "Death Employee",
+              "citizen/fsm": "FSM Citizen",
+              "employee/fsm": "FSM Administrator",
+              "employee/dss/dashboard/fsm": "FSM Administrator",
+              "employee/tqm": "FSM Plant Operator",
+              "employee/dss/dashboard/pqm": "FSM Plant Operator",
+              "citizen/fire-noc": "FNOC Citizen",
+              "employee/fire-noc": "FNOC Employee",
+              "citizen/engagement/surveys": "Survey Citizen",
+              "employee/engagement/surveys": "Survey Employee",
+            };
+
+            if (pageTitleMap[path]) return pageTitleMap[path];
+            for (const key in pageTitleMap) {
+              if (path.includes(key)) return pageTitleMap[key];
+            }
+            return "DIGIT";
+          } catch (e) {
+            console.error("Error getting page title:", e);
+            return "DIGIT";
+          }
+        }
+
+        const initialPageTitle = getPageTitle(location.href);
+        document.title = initialPageTitle;
+        _paq.push(["setDocumentTitle", initialPageTitle]);
+        _paq.push(["trackPageView"]);
+        _paq.push(["enableLinkTracking"]);
+
+        (function () {
+          var u = "https://sdc-uat.lgpunjab.gov.in/matomo/";
+          _paq.push(["setTrackerUrl", u + "matomo.php"]);
+          _paq.push(["setSiteId", "1"]);
+          var d = document,
+            g = d.createElement("script"),
+            s = d.getElementsByTagName("script")[0];
+          g.async = true;
+          g.src = u + "matomo.js";
+          s.parentNode.insertBefore(g, s);
+        })();
+
+        (function () {
+          let lastUrl = location.href;
+          let lastPageTitle = getPageTitle(location.href);
+          let userFlow = [];
+
+          function getUserFlow() {
+            try {
+              const flow = sessionStorage.getItem("matomoUserFlow");
+              return flow ? JSON.parse(flow) : [];
+            } catch (e) {
+              return [];
             }
           }
 
-          const pathname = new URL(url).pathname;
-          const path = pathname.replace(/^\/+|\/+$/g, '');
-
-          const pageTitleMap = {
-            "https://sdc-uat.lgpunjab.gov.in/digit-ui/citizen/select-location": "Citizen Select Location",
-            "https://sdc-uat.lgpunjab.gov.in/digit-ui/citizen/error": "Citizen Error",
-            "https://sdc-uat.lgpunjab.gov.in/digit-ui/employee/error": "Employee Error",
-            "citizen/tl": "Business License Citizen", "employee/tl": "Business License Employee",
-            "employee/dss/dashboard/tradelicense": "Business License Employee",
-            "citizen/pt": "Property Tax Citizen", "employee/pt": "Property Tax Employee",
-            "employee/dss/dashboard/propertytax": "Property Tax Employee",
-            "citizen/obps": "Building Permit Citizen", "employee/obps": "Building Permit Employee",
-            "employee/dss/dashboard/obps": "Building Permit Employee", "employee/noc": "Building Permit Employee",
-            "citizen/mcollect": "mCollect Citizen", "employee/mcollect": "mCollect Employee",
-            "employee/dss/dashboard/mcollect": "mCollect Employee", "employee/finance": "Finance Employee",
-            "citizen/ws": "WS Citizen", "employee/ws": "WS Employee",
-            "employee/dss/dashboard/ws": "WS Employee",
-            "citizen/birth": "Birth Citizen", "employee/birth": "Birth Employee",
-            "employee/dss/dashboard/birth-death": "Birth&Death Dashboard Employee",
-            "citizen/death": "Death Citizen", "employee/death": "Death Employee",
-            "citizen/fsm": "FSM Citizen", "employee/fsm": "FSM Administrator",
-            "employee/dss/dashboard/fsm": "FSM Administrator", "employee/tqm": "FSM Plant Operator",
-            "employee/dss/dashboard/pqm": "FSM Plant Operator",
-            "citizen/fire-noc": "FNOC Citizen", "employee/fire-noc": "FNOC Employee",
-            "citizen/engagement/surveys": "Survey Citizen", "employee/engagement/surveys": "Survey Employee"
-          };
-
-          if (pageTitleMap[path]) return pageTitleMap[path];
-          for (const key in pageTitleMap) {
-            if (path.includes(key)) return pageTitleMap[key];
-          }
-          return "DIGIT";
-        } catch (e) {
-          console.error("Error getting page title:", e);
-          return "DIGIT";
-        }
-      }
-
-      const initialPageTitle = getPageTitle(location.href);
-      document.title = initialPageTitle;
-      _paq.push(['setDocumentTitle', initialPageTitle]);
-      _paq.push(['trackPageView']);
-      _paq.push(['enableLinkTracking']);
-
-      (function () {
-        var u = "https://sdc-uat.lgpunjab.gov.in/matomo/";
-        _paq.push(['setTrackerUrl', u + 'matomo.php']);
-        _paq.push(['setSiteId', '1']);
-        var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
-        g.async = true; g.src = u + 'matomo.js';
-        s.parentNode.insertBefore(g, s);
-      })();
-
-      (function () {
-        let lastUrl = location.href;
-        let lastPageTitle = getPageTitle(location.href);
-        let userFlow = [];
-
-        function getUserFlow() {
-          try {
-            const flow = sessionStorage.getItem('matomoUserFlow');
-            return flow ? JSON.parse(flow) : [];
-          } catch (e) { return []; }
-        }
-
-        function saveUserFlow(flow) {
-          try {
-            userFlow = flow;
-            sessionStorage.setItem('matomoUserFlow', JSON.stringify(flow));
-          } catch (e) { console.error('Failed to save user flow:', e); }
-        }
-
-        function sendCompleteFlow(reason) {
-          if (userFlow.length > 1) {
-            const journeySummary = userFlow.join(' → ');
-            _paq.push(['trackEvent', 'User Journey', reason || 'Session End', journeySummary, userFlow.length]);
+          function saveUserFlow(flow) {
             try {
-              sessionStorage.removeItem('matomoUserFlow');
-              userFlow = [];
-            } catch (e) { console.error('Failed to clear user flow:', e); }
+              userFlow = flow;
+              sessionStorage.setItem("matomoUserFlow", JSON.stringify(flow));
+            } catch (e) {
+              console.error("Failed to save user flow:", e);
+            }
+          }
+
+          function sendCompleteFlow(reason) {
+            if (userFlow.length > 1) {
+              const journeySummary = userFlow.join(" → ");
+              _paq.push([
+                "trackEvent",
+                "User Journey",
+                reason || "Session End",
+                journeySummary,
+                userFlow.length,
+              ]);
+              try {
+                sessionStorage.removeItem("matomoUserFlow");
+                userFlow = [];
+              } catch (e) {
+                console.error("Failed to clear user flow:", e);
+              }
+            } else {
+              console.error(
+                "[Matomo] Flow too short (length=" +
+                  userFlow.length +
+                  "), not sending.",
+              );
+            }
+          }
+
+          function trackUrlChange() {
+            const url = location.href;
+            if (url !== lastUrl) {
+              const pageTitle = getPageTitle(url);
+              const flow = getUserFlow();
+              flow.push(pageTitle);
+              saveUserFlow(flow);
+              _paq.push([
+                "trackEvent",
+                "User Flow",
+                "Navigation",
+                `${lastPageTitle} → ${pageTitle}`,
+              ]);
+              document.title = pageTitle;
+              _paq.push(["setCustomUrl", url]);
+              _paq.push(["setDocumentTitle", pageTitle]);
+              _paq.push(["deleteCustomVariables", "page"]);
+              _paq.push(["trackPageView"]);
+              lastUrl = url;
+              lastPageTitle = pageTitle;
+            }
+          }
+
+          userFlow = getUserFlow();
+          if (
+            userFlow.length === 0 ||
+            userFlow[userFlow.length - 1] !== lastPageTitle
+          ) {
+            userFlow.push(lastPageTitle);
+            saveUserFlow(userFlow);
           } else {
-            console.error('[Matomo] Flow too short (length=' + userFlow.length + '), not sending.');
+            console.error("[Matomo] Initial page already in flow:", userFlow);
           }
-        }
 
-        function trackUrlChange() {
-          const url = location.href;
-          if (url !== lastUrl) {
-            const pageTitle = getPageTitle(url);
-            const flow = getUserFlow();
-            flow.push(pageTitle);
-            saveUserFlow(flow);
-            _paq.push(['trackEvent', 'User Flow', 'Navigation', `${lastPageTitle} → ${pageTitle}`]);
-            document.title = pageTitle;
-            _paq.push(['setCustomUrl', url]);
-            _paq.push(['setDocumentTitle', pageTitle]);
-            _paq.push(['deleteCustomVariables', 'page']);
-            _paq.push(['trackPageView']);
-            lastUrl = url;
-            lastPageTitle = pageTitle;
-          }
-        }
-
-        userFlow = getUserFlow();
-        if (userFlow.length === 0 || userFlow[userFlow.length - 1] !== lastPageTitle) {
-          userFlow.push(lastPageTitle);
-          saveUserFlow(userFlow);
-        } else {
-          console.error('[Matomo] Initial page already in flow:', userFlow);
-        }
-
-        window.sendMatomoUserFlow = function (reason) { sendCompleteFlow(reason || 'Manual Trigger'); };
-        window.clearMatomoUserFlow = function () {
-          try { sessionStorage.removeItem('matomoUserFlow'); }
-          catch (e) { console.error('[Matomo] Failed to clear user flow:', e); }
-        };
-
-        window.addEventListener('beforeunload', function () { sendCompleteFlow('Tab Close'); });
-
-        let lastAccessToken = null;
-        let isInitialCheck = true;
-        setInterval(function () {
-          try {
-            const currentToken = window.Digit?.UserService?.getUser()?.access_token;
-            if (isInitialCheck) { lastAccessToken = currentToken; isInitialCheck = false; return; }
-            if (lastAccessToken && !currentToken) sendCompleteFlow('Logout - Token Removed');
-            else if (lastAccessToken && currentToken && lastAccessToken !== currentToken) sendCompleteFlow('Logout - Token Changed');
-            lastAccessToken = currentToken;
-          } catch (e) { console.error('[Matomo] Error checking access token:', e); }
-        }, 500);
-
-        history.pushState = (function (original) {
-          return function pushState() {
-            const result = original.apply(this, arguments);
-            trackUrlChange();
-            return result;
+          window.sendMatomoUserFlow = function (reason) {
+            sendCompleteFlow(reason || "Manual Trigger");
           };
-        })(history.pushState);
-
-        history.replaceState = (function (original) {
-          return function replaceState() {
-            const result = original.apply(this, arguments);
-            trackUrlChange();
-            return result;
+          window.clearMatomoUserFlow = function () {
+            try {
+              sessionStorage.removeItem("matomoUserFlow");
+            } catch (e) {
+              console.error("[Matomo] Failed to clear user flow:", e);
+            }
           };
-        })(history.replaceState);
 
-        window.addEventListener('popstate', trackUrlChange);
-      })();
+          window.addEventListener("beforeunload", function () {
+            sendCompleteFlow("Tab Close");
+          });
 
-      (function () {
-        document.addEventListener("click", function (e) {
-          const selector = `
+          let lastAccessToken = null;
+          let isInitialCheck = true;
+          setInterval(function () {
+            try {
+              const currentToken =
+                window.Digit?.UserService?.getUser()?.access_token;
+              if (isInitialCheck) {
+                lastAccessToken = currentToken;
+                isInitialCheck = false;
+                return;
+              }
+              if (lastAccessToken && !currentToken)
+                sendCompleteFlow("Logout - Token Removed");
+              else if (
+                lastAccessToken &&
+                currentToken &&
+                lastAccessToken !== currentToken
+              )
+                sendCompleteFlow("Logout - Token Changed");
+              lastAccessToken = currentToken;
+            } catch (e) {
+              console.error("[Matomo] Error checking access token:", e);
+            }
+          }, 500);
+
+          history.pushState = (function (original) {
+            return function pushState() {
+              const result = original.apply(this, arguments);
+              trackUrlChange();
+              return result;
+            };
+          })(history.pushState);
+
+          history.replaceState = (function (original) {
+            return function replaceState() {
+              const result = original.apply(this, arguments);
+              trackUrlChange();
+              return result;
+            };
+          })(history.replaceState);
+
+          window.addEventListener("popstate", trackUrlChange);
+        })();
+
+        (function () {
+          document.addEventListener("click", function (e) {
+            const selector = `
             button, input[type="button"], input[type="submit"],
             input[type="actionButton"], [role="button"],
             a[href]:not([href^="mailto:"]):not([href^="tel:"]):not([href^="#"]):not([href^="javascript:"])
           `;
-          const target = e.target.closest(selector);
-          if (target) {
-            const elementType = target.tagName.toLowerCase();
-            const text = target.innerText.trim() || target.value || 'Unnamed';
-            const id = target.id || 'no-id';
-            const classes = target.className || 'no-class';
-            const href = target.getAttribute('href') || '';
-            const pageTitle = getPageTitle(location.href);
-            _paq.push(['trackEvent', 'UI Interaction', `${elementType} click`,
-              `Text: ${text}, Page: ${pageTitle}, ID: ${id}, Class: ${classes}, Href: ${href}`]);
-          }
-        });
+            const target = e.target.closest(selector);
+            if (target) {
+              const elementType = target.tagName.toLowerCase();
+              const text = target.innerText.trim() || target.value || "Unnamed";
+              const id = target.id || "no-id";
+              const classes = target.className || "no-class";
+              const href = target.getAttribute("href") || "";
+              const pageTitle = getPageTitle(location.href);
+              _paq.push([
+                "trackEvent",
+                "UI Interaction",
+                `${elementType} click`,
+                `Text: ${text}, Page: ${pageTitle}, ID: ${id}, Class: ${classes}, Href: ${href}`,
+              ]);
+            }
+          });
+        })();
       })();
-    })();
-  </script>
-<!-- End Matomo Code -->
+    </script>
+    <!-- End Matomo Code -->
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

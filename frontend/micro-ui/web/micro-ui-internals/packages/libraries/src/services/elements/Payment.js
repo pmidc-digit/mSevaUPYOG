@@ -1,6 +1,29 @@
 import Urls from "../atoms/urls";
 import { Request } from "../atoms/Utils/Request";
 
+const formatTransactionNumber = (txnId) => {
+  if (!txnId || typeof txnId !== "string") return txnId;
+  if (txnId.includes("order_")) {
+    const match = txnId.match(/\((order_[^)]+)\)/i) || txnId.match(/\(([^)]+)\)/) || txnId.match(/(order_[^\s)]+)/i);
+    if (match) return match[1].trim();
+  }
+  return txnId;
+};
+
+const transformPayments = (response) => {
+  if (response?.Payments && Array.isArray(response.Payments)) {
+    return {
+      ...response,
+      Payments: response.Payments.map((payment) => ({
+        ...payment,
+        rawTransactionNumber: payment?.transactionNumber,
+        transactionNumber: formatTransactionNumber(payment?.transactionNumber),
+      })),
+    };
+  }
+  return response;
+};
+
 export const PaymentService = {
   fetchBill: (tenantId, filters = {}) =>
     Request({
@@ -60,7 +83,7 @@ export const PaymentService = {
       auth: true,
       userService: true,
       params: { tenantId, ...filters },
-    }),
+    }).then(transformPayments),
 
   generatePdf: (tenantId, data = {}, key) =>
     Request({
@@ -129,15 +152,15 @@ export const PaymentService = {
       // do not change this directly add a param if needed
       auth: true,
       params: { tenantId, ...params },
-    }),
-    recieptSearchNew: (tenantId, params) =>
+    }).then(transformPayments),
+  recieptSearchNew: (tenantId, params) =>
     Request({
       url:Urls.payment.obps_Reciept_Search,
       method: "POST",
       // do not change this directly add a param if needed
       auth: true,
       params: { tenantId, ...params },
-    }),
+    }).then(transformPayments),
   getBulkPdfRecordsDetails: (filters) =>
     Request({
       url: Urls.payment.getBulkPdfRecordsDetails,

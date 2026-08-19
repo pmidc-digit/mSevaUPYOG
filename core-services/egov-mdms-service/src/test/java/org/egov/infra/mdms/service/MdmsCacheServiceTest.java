@@ -350,16 +350,13 @@ public class MdmsCacheServiceTest {
         assertEquals(true, tenantMap.get(tenantId).containsKey("tenant"));
         assertEquals(1, tenantMap.get(tenantId).get("tenant").get("tenants").size());
 
-        // Assert that BusinessService array still has BOTH TL (from file) and updated ADVT.Hoardings (from DB)
+        // Assert that BusinessService master array is replaced by DB records for BusinessService
         JSONArray updatedBusinessServices = tenantMap.get(tenantId).get("BillingService").get("BusinessService");
-        assertEquals(2, updatedBusinessServices.size());
+        assertEquals(1, updatedBusinessServices.size());
 
         Map<?, ?> firstBs = (Map<?, ?>) updatedBusinessServices.get(0);
-        assertEquals("TL", firstBs.get("code"));
-
-        Map<?, ?> secondBs = (Map<?, ?>) updatedBusinessServices.get(1);
-        assertEquals("ADVT.Hoardings", secondBs.get("code"));
-        assertEquals(true, secondBs.get("isVoucherCreationEnabled"));
+        assertEquals("ADVT.Hoardings", firstBs.get("code"));
+        assertEquals(true, firstBs.get("isVoucherCreationEnabled"));
     }
 
     @Test

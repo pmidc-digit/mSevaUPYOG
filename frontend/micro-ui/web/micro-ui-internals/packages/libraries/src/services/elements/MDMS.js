@@ -99,6 +99,7 @@ const getCriteria = (tenantId, moduleDetails) => {
 };
 
 export const getGeneralCriteria = (tenantId, moduleCode, type) => ({
+  type,
   details: {
     moduleDetails: [
       {
@@ -114,6 +115,7 @@ export const getGeneralCriteria = (tenantId, moduleCode, type) => ({
 });
 
 export const getMultipleTypes = (tenantId, moduleCode, types) => ({
+  type: "MultipleTypes",
   details: {
     moduleDetails: [
       {
@@ -124,6 +126,7 @@ export const getMultipleTypes = (tenantId, moduleCode, types) => ({
   },
 });
 export const getMultipleTypesWithFilter = (moduleCode, masterDetails) => ({
+  type: "MultipleTypesWithFilter",
   details: {
     moduleDetails: [
       {
@@ -135,6 +138,7 @@ export const getMultipleTypesWithFilter = (moduleCode, masterDetails) => ({
 });
 
 const getReceiptKey = (tenantId, moduleCode) => ({
+  type: "ReceiptKey",
   details: {
     tenantId,
     moduleDetails: [
@@ -151,6 +155,7 @@ const getReceiptKey = (tenantId, moduleCode) => ({
 });
 
 const getBillsGenieKey = (tenantId, moduleCode) => ({
+  type: "BillsGenieKey",
   details: {
     tenantId,
     moduleDetails: [
@@ -227,6 +232,7 @@ const getSanitationTypeCriteria = (tenantId, moduleCode) => ({
 });
 
 const getPetDocumentsRequiredScreenCategory = (tenantId, moduleCode) => ({
+  type: "PetDocuments",
   details: {
     tenantId: tenantId,
     moduleDetails: [
@@ -243,6 +249,7 @@ const getPetDocumentsRequiredScreenCategory = (tenantId, moduleCode) => ({
 });
 
 const getSVDocumentsCategory = (tenantId, moduleCode) => ({
+  type: "SVDocuments",
   details: {
     tenantId: tenantId,
     moduleDetails: [
@@ -259,6 +266,7 @@ const getSVDocumentsCategory = (tenantId, moduleCode) => ({
 });
 
 const getADSDocumentsCategory = (tenantId, moduleCode) => ({
+  type: "ADSDocuments",
   details: {
     tenantId: tenantId,
     moduleDetails: [
@@ -672,6 +680,7 @@ const getVehicleTypeCriteria = (tenantId, moduleCode, type) => ({
 });
 
 const getChecklistCriteria = (tenantId, moduleCode) => ({
+  type: "CheckList",
   details: {
     tenantId,
     moduleDetails: [
@@ -756,6 +765,7 @@ const getTradeOwnerShipCategoryCriteria = (tenantId, moduleCode, type) => ({
 });
 
 const getDocumentRequiredScreenCategory = (tenantId, moduleCode) => ({
+  type: "DocumentRequiredScreen",
   details: {
     tenantId: tenantId,
     moduleDetails: [
@@ -772,6 +782,7 @@ const getDocumentRequiredScreenCategory = (tenantId, moduleCode) => ({
 });
 
 const getDefaultMapConfig = (tenantId, moduleCode) => ({
+  type: "MapConfig",
   details: {
     tenantId: tenantId,
     moduleDetails: [
@@ -915,6 +926,7 @@ const getRoleStatusCriteria = (tenantId, moduleCode, type) => ({
   },
 });
 const getRentalDetailsCategoryCriteria = (tenantId, moduleCode) => ({
+  type: "RentalDetails",
   details: {
     tenantId: tenantId,
     moduleDetails: [
@@ -931,6 +943,7 @@ const getRentalDetailsCategoryCriteria = (tenantId, moduleCode) => ({
 });
 
 const getChargeSlabsCategoryCriteria = (tenantId, moduleCode) => ({
+  type: "ChargeSlabs",
   details: {
     tenantId: tenantId,
     moduleDetails: [
@@ -992,6 +1005,7 @@ const getBillingPeriodValidation = (tenantId) => ({
 });
 
 const getDssDashboardCriteria = (tenantId, moduleCode) => ({
+  type: "DssDashboard",
   details: {
     tenantId,
     moduleDetails: [
@@ -1361,6 +1375,7 @@ const GetEgovLocations = (MdmsRes) => {
 
 //Adding Asset Document
 const getAssetDocumentsCategory = (tenantId, moduleCode) => ({
+  type: "AssetDocuments",
   details: {
     tenantId: tenantId,
     moduleDetails: [
@@ -1987,14 +2002,16 @@ const debouncedCall = ({ serviceName, url, data, useCache, params }, resolve, re
 };
 
 export const MdmsService = {
-  init: (stateCode) =>
-    ServiceRequest({
+  init: (stateCode) => {
+    PersistantStorage.cleanup();
+    return ServiceRequest({
       serviceName: "mdmsInit",
       url: Urls.MDMS,
       data: initRequestBody(stateCode),
       useCache: true,
       params: { tenantId: stateCode },
-    }),
+    });
+  },
   call: (tenantId, details) => {
     return new Promise((resolve, reject) =>
       debouncedCall(

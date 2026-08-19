@@ -104,7 +104,7 @@ public class BookingConstants {
 	
 	public static final String DRAFT_DISCARDED = "Draft discarded";
 	
-	public static final String ACTIVE = "active";
+	public static final String ACTIVE = "ACTIVE";
 
 	public static final String URL_PARAMS_SEPARATER = "?";
 

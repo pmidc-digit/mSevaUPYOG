@@ -346,7 +346,7 @@ public class MdmsCacheServiceTest {
 
         Map<String, Map<String, Map<String, JSONArray>>> tenantMap = MDMSApplicationRunnerImpl.getTenantMap();
         
-        // Assert that tenant.tenants from file is STILL INTACT
+        // Assert that tenant.tenants from file is STILL INTACT (not present in DB)
         assertEquals(true, tenantMap.get(tenantId).containsKey("tenant"));
         assertEquals(1, tenantMap.get(tenantId).get("tenant").get("tenants").size());
 
@@ -521,86 +521,6 @@ public class MdmsCacheServiceTest {
         assertEquals("Barnala MC", first.get("name"));
         assertEquals("pb.itbarnala", second.get("code"));
         assertEquals("Improvement Trust Barnala", second.get("name"));
-    }
-
-    @Test
-    public void testDeduplicateAllMasters_PerformanceAndCorrectness() {
-        String tenantId = "pb";
-        String moduleName = "common-masters";
-        String masterName = "UOM";
-
-        JSONArray masterData = getOrCreateMasterArray(tenantId, moduleName, masterName);
-
-        // Add 3000 records (100 distinct codes, each duplicated 30 times)
-        for (int i = 0; i < 3000; i++) {
-            Map<String, Object> record = new LinkedHashMap<>();
-            record.put("code", "UOM_" + (i % 100));
-            record.put("name", "Unit " + (i % 100));
-            record.put("description", "Description " + i);
-            masterData.add(record);
-        }
-
-        assertEquals(3000, masterData.size());
-
-        long startTime = System.currentTimeMillis();
-        mdmsCacheService.deduplicateAllMasters();
-        long duration = System.currentTimeMillis() - startTime;
-
-        // Verify deduplicated down to 100 distinct records
-        assertEquals(100, masterData.size());
-
-        // Verify it completed quickly (under 500ms for 3,000 records)
-        org.junit.Assert.assertTrue("Deduplication took too long: " + duration + " ms", duration < 500);
-    }
-
-    @Test
-    public void testDeduplicateAllMasters_PreservesDistinctRecordsWithDifferentCityCodes() {
-        String tenantId = "pb";
-        String moduleName = "tenant";
-        String masterName = "tenants";
-
-        JSONArray masterData = getOrCreateMasterArray(tenantId, moduleName, masterName);
-
-        // Record 1: code="pb.itbarnala", city.code="2011"
-        Map<String, Object> city2011 = new LinkedHashMap<>();
-        city2011.put("code", "2011");
-        city2011.put("name", "Itbarnala");
-        Map<String, Object> rec1 = new LinkedHashMap<>();
-        rec1.put("code", "pb.itbarnala");
-        rec1.put("name", "Itbarnala");
-        rec1.put("city", city2011);
-        rec1.put("address", "22 Acre Scheme, Barnala");
-
-        // Record 2: code="pb.barnala", city.code="201"
-        Map<String, Object> city201 = new LinkedHashMap<>();
-        city201.put("code", "201");
-        city201.put("name", "Barnala");
-        Map<String, Object> rec2 = new LinkedHashMap<>();
-        rec2.put("code", "pb.barnala");
-        rec2.put("name", "Barnala");
-        rec2.put("city", city201);
-        rec2.put("address", "MC Barnala");
-
-        // Record 3: code="pb.itbarnala", city.code="201"
-        Map<String, Object> city201_b = new LinkedHashMap<>();
-        city201_b.put("code", "201");
-        city201_b.put("name", "Itbarnala");
-        Map<String, Object> rec3 = new LinkedHashMap<>();
-        rec3.put("code", "pb.itbarnala");
-        rec3.put("name", "Itbarnala");
-        rec3.put("city", city201_b);
-        rec3.put("address", "MC Barnala");
-
-        masterData.add(rec1);
-        masterData.add(rec2);
-        masterData.add(rec3);
-
-        assertEquals(3, masterData.size());
-
-        mdmsCacheService.deduplicateAllMasters();
-
-        // Should preserve all 3 records because rec1 has city.code 2011, rec2 has pb.barnala, rec3 has city.code 201
-        assertEquals("All 3 records must be preserved (2011 must not be lost)", 3, masterData.size());
     }
 
     private JSONArray getOrCreateMasterArray(String tenantId, String moduleName, String masterName) {

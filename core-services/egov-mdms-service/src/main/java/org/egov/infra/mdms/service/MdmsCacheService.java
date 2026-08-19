@@ -48,7 +48,8 @@ public class MdmsCacheService {
 	}
 
 	/**
-	 * Resolves tenantId to root state tenantId if the master is state-level or exists at state level.
+	 * Resolves tenantId to root state tenantId if the master is state-level or
+	 * exists at state level.
 	 */
 	public static String getEffectiveTenantId(String tenantId, String moduleName, String masterName) {
 		if (tenantId == null || !tenantId.contains(".")) {
@@ -98,7 +99,8 @@ public class MdmsCacheService {
 	 * DB loading is enabled.
 	 */
 	/**
-	 * Loads all active MDMS data from the database and merges individual records into
+	 * Loads all active MDMS data from the database and merges individual records
+	 * into
 	 * the in-memory tenantMap cache (which was initialized from files).
 	 */
 	public void loadAndMergeDbData() {
@@ -107,7 +109,6 @@ public class MdmsCacheService {
 			return;
 		}
 
-		deduplicateAllMasters();
 		log.info("Starting to load MDMS data from database...");
 
 		try {
@@ -120,7 +121,9 @@ public class MdmsCacheService {
 					String schemaCode = (String) row.get("schemacode");
 					Object dataObj = row.get("data");
 					String dbId = row.get("id") != null ? String.valueOf(row.get("id")) : null;
-					String dbUniqueIdentifier = row.get("uniqueidentifier") != null ? String.valueOf(row.get("uniqueidentifier")) : null;
+					String dbUniqueIdentifier = row.get("uniqueidentifier") != null
+							? String.valueOf(row.get("uniqueidentifier"))
+							: null;
 
 					if (tenantId == null || schemaCode == null || dataObj == null) {
 						log.warn("Skipping DB row with null tenantId/schemaCode/data: {}", row);
@@ -149,16 +152,14 @@ public class MdmsCacheService {
 						recordCount++;
 					}
 
-					MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(effectiveTenantId, moduleName, masterName, masterData);
+					MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(effectiveTenantId, moduleName, masterName,
+							masterData);
 				} catch (Exception e) {
 					log.error("Error processing DB row: {}", row, e);
 				}
 			}
 
 			log.info("Merged {} DB records into in-memory MDMS cache.", recordCount);
-
-			// Deduplicate all cached master arrays to collapse any duplicate entries originating from seed JSON files or DB loading
-			deduplicateAllMasters();
 
 		} catch (Exception e) {
 			log.error("Error loading MDMS data from database. File-based cache remains intact.", e);
@@ -212,7 +213,8 @@ public class MdmsCacheService {
 		 */
 		if (Boolean.FALSE.equals(isActive)) {
 			removeMasterRecord(masterData, id, uniqueIdentifier, moduleName, masterName);
-			MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(effectiveTenantId, moduleName, masterName, masterData);
+			MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(effectiveTenantId, moduleName, masterName,
+					masterData);
 			return;
 		}
 
@@ -247,7 +249,8 @@ public class MdmsCacheService {
 
 	/**
 	 * Upserts a single record into the master data array. If a record with matching
-	 * id, uniqueIdentifier, code, model, businessService, or dynamic field schema exists,
+	 * id, uniqueIdentifier, code, model, businessService, or dynamic field schema
+	 * exists,
 	 * it is replaced in place; otherwise the new record is added.
 	 * Used by both DB startup loading and Kafka runtime updates.
 	 */
@@ -267,7 +270,8 @@ public class MdmsCacheService {
 
 			Map<?, ?> existingMap = (Map<?, ?>) existing;
 
-			if (isRecordMatching(existingMap, newRecordMap, moduleName, masterName, topLevelId, topLevelUniqueIdentifier)) {
+			if (isRecordMatching(existingMap, newRecordMap, moduleName, masterName, topLevelId,
+					topLevelUniqueIdentifier)) {
 				Map<String, Object> mergedRecord = deepMergeMaps(existingMap, newRecordMap);
 				masterData.set(i, mergedRecord);
 				log.info("Merged MDMS cache record for {}.{}", moduleName, masterName);
@@ -277,131 +281,10 @@ public class MdmsCacheService {
 
 		log.info("Added new MDMS cache record for {}.{}", moduleName, masterName);
 		masterData.add(newRecord);
-		deduplicateMasterData(masterData, moduleName, masterName);
 	}
 
-	private static final java.util.regex.Pattern UUID_PATTERN = java.util.regex.Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-
-	public void deduplicateAllMasters() {
-		Map<String, Map<String, Map<String, JSONArray>>> tenantMap = MDMSApplicationRunnerImpl.getTenantMap();
-		if (tenantMap == null) return;
-
-		for (Map.Entry<String, Map<String, Map<String, JSONArray>>> tEntry : tenantMap.entrySet()) {
-			Map<String, Map<String, JSONArray>> moduleMap = tEntry.getValue();
-			if (moduleMap == null) continue;
-
-			for (Map.Entry<String, Map<String, JSONArray>> mEntry : moduleMap.entrySet()) {
-				String moduleName = mEntry.getKey();
-				Map<String, JSONArray> masterMap = mEntry.getValue();
-				if (masterMap == null) continue;
-
-				for (Map.Entry<String, JSONArray> masterEntry : masterMap.entrySet()) {
-					String masterName = masterEntry.getKey();
-					JSONArray masterData = masterEntry.getValue();
-					if (masterData != null && masterData.size() > 1) {
-						deduplicateMasterData(masterData, moduleName, masterName);
-					}
-				}
-			}
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private void deduplicateMasterData(JSONArray masterData, String moduleName, String masterName) {
-		if (masterData == null || masterData.size() <= 1) {
-			return;
-		}
-
-		List<String> configuredKeys = getUniqueKeysFromConfig(moduleName, masterName);
-
-		List<Object> deduplicatedList = new ArrayList<>(masterData.size());
-		Map<String, List<Integer>> codeToIndicesMap = new HashMap<>();
-		Map<String, Integer> uniqueKeyToIdxMap = (configuredKeys != null && !configuredKeys.isEmpty()) ? new HashMap<>() : null;
-		List<Set<String>> indexToCandidateCodes = new ArrayList<>();
-
-		for (Object item : masterData) {
-			if (!(item instanceof Map)) {
-				deduplicatedList.add(item);
-				indexToCandidateCodes.add(java.util.Collections.emptySet());
-				continue;
-			}
-
-			Map<?, ?> currentMap = (Map<?, ?>) item;
-			Set<String> candidateCodes = extractCandidateCodes(currentMap, null, null);
-			String currentTopCode = getTopLevelCode(currentMap);
-			String currentCityCode = getNestedCityCode(currentMap);
-
-			int matchIdx = -1;
-
-			if (!candidateCodes.isEmpty()) {
-				for (String code : candidateCodes) {
-					String lowerCode = code.toLowerCase();
-					List<Integer> existingIndices = codeToIndicesMap.get(lowerCode);
-					if (existingIndices != null) {
-						for (int idx : existingIndices) {
-							Object exObj = deduplicatedList.get(idx);
-							if (exObj instanceof Map) {
-								String exTopCode = getTopLevelCode((Map<?, ?>) exObj);
-								if (hasTopCodeConflict(exTopCode, currentTopCode)) {
-									continue;
-								}
-								String exCityCode = getNestedCityCode((Map<?, ?>) exObj);
-								if (hasCityCodeConflict(exCityCode, currentCityCode)) {
-									continue;
-								}
-								matchIdx = idx;
-								break;
-							}
-						}
-						if (matchIdx != -1) {
-							break;
-						}
-					}
-				}
-			}
-
-			if (matchIdx == -1 && candidateCodes.isEmpty() && uniqueKeyToIdxMap != null) {
-				String ukVal = buildUniqueKeysString(currentMap, configuredKeys);
-				if (ukVal != null) {
-					Integer existingIdx = uniqueKeyToIdxMap.get(ukVal);
-					if (existingIdx != null) {
-						matchIdx = existingIdx;
-					}
-				}
-			}
-
-			if (matchIdx != -1) {
-				Map<?, ?> existingMap = (Map<?, ?>) deduplicatedList.get(matchIdx);
-				Map<String, Object> merged = deepMergeMaps(currentMap, existingMap);
-				deduplicatedList.set(matchIdx, merged);
-
-				Set<String> existingCodesSet = indexToCandidateCodes.get(matchIdx);
-				for (String code : candidateCodes) {
-					if (existingCodesSet.add(code)) {
-						codeToIndicesMap.computeIfAbsent(code.toLowerCase(), k -> new ArrayList<>()).add(matchIdx);
-					}
-				}
-			} else {
-				int newIdx = deduplicatedList.size();
-				deduplicatedList.add(currentMap);
-				indexToCandidateCodes.add(new HashSet<>(candidateCodes));
-
-				for (String code : candidateCodes) {
-					codeToIndicesMap.computeIfAbsent(code.toLowerCase(), k -> new ArrayList<>()).add(newIdx);
-				}
-
-				if (candidateCodes.isEmpty() && uniqueKeyToIdxMap != null) {
-					String ukVal = buildUniqueKeysString(currentMap, configuredKeys);
-					if (ukVal != null) {
-						uniqueKeyToIdxMap.put(ukVal, newIdx);
-					}
-				}
-			}
-		}
-
-		masterData.clear();
-		masterData.addAll(deduplicatedList);
-	}
+	private static final java.util.regex.Pattern UUID_PATTERN = java.util.regex.Pattern
+			.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
 	@SuppressWarnings("unchecked")
 	private Map<String, Object> deepMergeMaps(Map<?, ?> existingMap, Map<?, ?> newMap) {
@@ -426,7 +309,8 @@ public class MdmsCacheService {
 		return merged;
 	}
 
-	private boolean isRecordMatching(Map<?, ?> existingMap, Map<?, ?> newRecordMap, String moduleName, String masterName,
+	private boolean isRecordMatching(Map<?, ?> existingMap, Map<?, ?> newRecordMap, String moduleName,
+			String masterName,
 			String topLevelId, String topLevelUniqueIdentifier) {
 
 		// 1. Strict match by 'id' if present in both and not random UUID
@@ -436,7 +320,8 @@ public class MdmsCacheService {
 			return isDeepEqual(newId, existingId);
 		}
 
-		// 2. Strict mismatch check on top-level 'code': if both records have a 'code' and they differ, they CANNOT match
+		// 2. Strict mismatch check on top-level 'code': if both records have a 'code'
+		// and they differ, they CANNOT match
 		Object existingCode = existingMap.get("code");
 		Object newCode = newRecordMap.get("code");
 		if (existingCode != null && newCode != null) {
@@ -449,7 +334,8 @@ public class MdmsCacheService {
 			}
 		}
 
-		// 2b. Strict mismatch check on nested 'city.code': if both records have 'city.code' and they differ, they CANNOT match
+		// 2b. Strict mismatch check on nested 'city.code': if both records have
+		// 'city.code' and they differ, they CANNOT match
 		String existingCityCode = getNestedCityCode(existingMap);
 		String newCityCode = getNestedCityCode(newRecordMap);
 		if (existingCityCode != null && newCityCode != null) {
@@ -458,7 +344,8 @@ public class MdmsCacheService {
 			}
 		}
 
-		// 3. Extract candidate identifier codes for both records and check for intersection
+		// 3. Extract candidate identifier codes for both records and check for
+		// intersection
 		Set<String> existingCodes = extractCandidateCodes(existingMap, null, null);
 		Set<String> newCodes = extractCandidateCodes(newRecordMap, topLevelId, topLevelUniqueIdentifier);
 
@@ -483,7 +370,8 @@ public class MdmsCacheService {
 					break;
 				}
 			}
-			if (allMatch) return true;
+			if (allMatch)
+				return true;
 		}
 
 		return false;
@@ -491,7 +379,8 @@ public class MdmsCacheService {
 
 	private Set<String> extractCandidateCodes(Map<?, ?> map, String topLevelId, String topLevelUniqueIdentifier) {
 		Set<String> codes = new HashSet<>();
-		if (map == null) return codes;
+		if (map == null)
+			return codes;
 
 		if (map.get("code") != null) {
 			codes.add(String.valueOf(map.get("code")).trim());
@@ -528,23 +417,9 @@ public class MdmsCacheService {
 		return codes;
 	}
 
-	private String getTopLevelCode(Map<?, ?> map) {
-		if (map == null) return null;
-		Object codeObj = map.get("code");
-		if (codeObj == null) return null;
-		String str = String.valueOf(codeObj).trim();
-		return str.isEmpty() ? null : str;
-	}
-
-	private boolean hasTopCodeConflict(String code1, String code2) {
-		if (code1 != null && code2 != null) {
-			return !code1.equalsIgnoreCase(code2);
-		}
-		return false;
-	}
-
 	private String getNestedCityCode(Map<?, ?> map) {
-		if (map == null) return null;
+		if (map == null)
+			return null;
 		if (map.get("city") instanceof Map) {
 			Map<?, ?> cityMap = (Map<?, ?>) map.get("city");
 			if (cityMap.get("code") != null) {
@@ -555,31 +430,12 @@ public class MdmsCacheService {
 		return null;
 	}
 
-	private boolean hasCityCodeConflict(String cityCode1, String cityCode2) {
-		if (cityCode1 != null && cityCode2 != null) {
-			return !cityCode1.equalsIgnoreCase(cityCode2);
-		}
-		return false;
-	}
-
-	private String buildUniqueKeysString(Map<?, ?> map, List<String> configuredKeys) {
-		if (configuredKeys == null || configuredKeys.isEmpty()) return null;
-		StringBuilder sb = new StringBuilder();
-		for (String k : configuredKeys) {
-			Object val = getNestedValue(map, k);
-			if (val == null) return null;
-			sb.append(String.valueOf(val).toLowerCase().trim()).append("\u0000");
-		}
-		return sb.toString();
-	}
-
 	private boolean isRandomUuid(Object idObj) {
-		if (idObj == null) return false;
+		if (idObj == null)
+			return false;
 		String str = String.valueOf(idObj).trim();
 		return UUID_PATTERN.matcher(str).matches();
 	}
-
-
 
 	private void removeMasterRecord(JSONArray masterData, String id, String uniqueIdentifier, String moduleName,
 			String masterName) {

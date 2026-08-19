@@ -1735,10 +1735,16 @@ public class DemandService {
 		        String tenantId = cancelList.gettenantId();
 		        String demandid = cancelList.getdemandid();
 		        List<Canceldemandsearch> demandlists = sewerageCalculatorDao.getConnectionCancels(tenantId, demandid);
-		        
-		        if (demandlists.isEmpty()) {
-		            throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
-		        }
+
+              if (!demandlists.isEmpty()) {
+                  String consumerCode = demandlists.get(0).getConsumercode();
+                  String wsConnection= sewerageCalculatorDao.getRelatedConnection(tenantId, consumerCode);
+                  if (StringUtils.isNotBlank(wsConnection)) {
+                      throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for water related sewerageConnection.");
+                  }
+              }else {
+                  throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
+              }
 
 		        Boolean cancels = sewerageCalculatorDao.getUpdates(demandlists);
 

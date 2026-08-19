@@ -605,10 +605,15 @@ useEffect(() => {
     const stakeholderRegistrationNumber= JSON.parse(
         sessionStorage.getItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER"),
       ) || null;
-    const stakeholderAddress= userDetails?.user[0]?.correspondenceAddress || null;
+    
     const stakeholderState = userDetails?.user[0]?.correspondenceState
     const stakeholderDistrict = userDetails?.user[0]?.correspondenceDistrict
     const architectMobileNumber = userInfo?.info?.mobileNumber || "";
+    const licOwner = approvedLicense?.tradeLicenseDetail?.owners?.[0];
+    const architectEmailId = licOwner?.emailId || userInfo?.info?.emailId || userDetails?.user?.[0]?.emailId || "";
+    const professionalRegIdValidity = approvedLicense?.validTo || null;
+    const stakeholderAddress= userDetails?.user[0]?.correspondenceAddress || licOwner?.permanentAddress || licOwner?.correspondenceAddress || null;
+
     // const base64Signature = await getBase64Img(userDetails?.user[0]?.signature, state);
     // const result = await Digit.UploadServices.Filefetch([userDetails?.user[0]?.signature], state);
     const signURL = userDetails?.user[0]?.signature || "";
@@ -660,6 +665,8 @@ useEffect(() => {
       serviceType,
       architectName,
       architectMobileNumber,
+      architectEmailId,
+      professionalRegIdValidity,
       typeOfArchitect,
       stakeholderName,
       stakeholderRegistrationNumber,
@@ -708,6 +715,8 @@ useEffect(() => {
       serviceType,
       architectName,
       architectMobileNumber,
+      architectEmailId,
+      professionalRegIdValidity,
       typeOfArchitect,
       stakeholderName,
       stakeholderRegistrationNumber,

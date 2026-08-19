@@ -74,14 +74,12 @@
 		<dependency>
 			<groupId>org.cache2k</groupId>
 			<artifactId>cache2k-core</artifactId>
-			<version>${cache2k-version}</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cache2k</groupId>
 			<artifactId>cache2k-spring</artifactId>
-			<version>${cache2k-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -103,7 +101,6 @@
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
-			<version>10.7.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -113,7 +110,6 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.7.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -157,17 +153,17 @@
 		<repository>
 			<id>nexus-repo.digit.org</id>
 			<name>eGov ERP Releases Repository</name>
-			<url>https://nexus-repo.digit.org/nexus/content/repositories/releases/</url>
+			<url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-releases/</url>
 		</repository>
 		<repository>
 			<id>nexus-repo.digit.org.snapshots</id>
 			<name>eGov ERP Releases Repository</name>
-			<url>https://nexus-repo.digit.org/nexus/content/repositories/snapshots/</url>
+			<url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/</url>
 		</repository>
 		<repository>
 			<id>nexus-repo.digit.org.public</id>
 			<name>eGov Public Repository Group</name>
-			<url>https://nexus-repo.digit.org/nexus/content/groups/public/</url>
+			<url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-public/</url>
 		</repository>
 	</repositories>
 </project>

@@ -69,6 +69,7 @@ import org.egov.demand.model.DemandCriteria;
 import org.egov.demand.model.DemandDetail;
 import org.egov.demand.model.PaymentBackUpdateAudit;
 import org.egov.demand.model.UpdateBillCriteria;
+import org.egov.demand.model.enums.DemandStatus;
 import org.egov.demand.repository.AmendmentRepository;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.repository.DemandRepository;
@@ -357,7 +358,7 @@ public class DemandService {
 		List<Demand> activeDemands = new ArrayList<Demand>();
 
 		for (Demand d : demands) {
-			if (d.getStatus().toString().equalsIgnoreCase("ACTIVE"))
+			if (DemandStatus.ACTIVE.equals(d.getStatus()))
 				activeDemands.add(d);
 		}
 		return activeDemands;

@@ -47,7 +47,8 @@ import {
   fetchFilestoreAndTenant,
   amountToWords,
   fetchOnlyUrl,
-  fetchOnlyFileStore
+  fetchOnlyFileStore,
+  formatDate
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
@@ -2842,6 +2843,51 @@ const BpaApplicationDetail = () => {
                       </div>
                     </Card>
                   ) : null}
+
+                  {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" &&
+                    (data?.applicationData?.additionalDetails?.stakeholderName ||
+                      data?.applicationData?.additionalDetails?.architectid ||
+                      data?.applicationData?.additionalDetails?.architectMobileNumber) && (
+                      <Card>
+                        <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS") || "Professional Details"}</CardSubHeader>
+                        <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+                          <StatusTable>
+                            <Row
+                              label={t("BPA_PROFESSIONAL_NAME_LABEL")}
+                              text={
+                                data?.applicationData?.additionalDetails?.stakeholderName ||
+                                data?.applicationData?.additionalDetails?.architectName ||
+                                "N/A"
+                              }
+                            />
+                            <Row
+                              label={t("BPA_PROFESSIONAL_EMAIL_LABEL")}
+                              text={data?.applicationData?.additionalDetails?.architectEmailId || "N/A"}
+                            />
+                            <Row
+                              label={t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}
+                              text={
+                                data?.applicationData?.additionalDetails?.architectid ||
+                                data?.applicationData?.additionalDetails?.stakeholderRegistrationNumber ||
+                                "N/A"
+                              }
+                            />
+                            <Row
+                              label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}
+                              text={formatDate(data?.applicationData?.additionalDetails?.professionalRegIdValidity) || "N/A"}
+                            />
+                            <Row
+                              label={t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}
+                              text={data?.applicationData?.additionalDetails?.architectMobileNumber || "N/A"}
+                            />
+                            <Row
+                              label={t("BPA_PROFESSIONAL_ADDRESS_LABEL")}
+                              text={data?.applicationData?.additionalDetails?.stakeholderAddress || "N/A"}
+                            />
+                          </StatusTable>
+                        </div>
+                      </Card>
+                    )}
                 </div>
               );
             })}

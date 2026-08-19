@@ -470,6 +470,14 @@ public class EmployeeService {
 		employee.getUser().setUserName(employee.getCode());
 		employee.getUser().setActive(true);
 		employee.getUser().setType(UserType.EMPLOYEE.toString());
+		if ("pb.punjab".equalsIgnoreCase(employee.getTenantId()) && !CollectionUtils.isEmpty(employee.getUser().getRoles())) {
+			for (org.egov.hrms.model.Role role : employee.getUser().getRoles()) {
+				if (role.getTenantId() != null && !role.getTenantId().equalsIgnoreCase("pb.punjab")) {
+					employee.getUser().setTenantId(role.getTenantId());
+					break;
+				}
+			}
+		}
 	}
 
 	/**
@@ -601,6 +609,15 @@ public class EmployeeService {
 			employee.getUser().setActive(false);
 		else
 			employee.getUser().setActive(true);
+
+		if ("pb.punjab".equalsIgnoreCase(employee.getTenantId()) && !CollectionUtils.isEmpty(employee.getUser().getRoles())) {
+			for (org.egov.hrms.model.Role role : employee.getUser().getRoles()) {
+				if (role.getTenantId() != null && !role.getTenantId().equalsIgnoreCase("pb.punjab")) {
+					employee.getUser().setTenantId(role.getTenantId());
+					break;
+				}
+			}
+		}
 
 		employee.getJurisdictions().stream().forEach(jurisdiction -> {
 

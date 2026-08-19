@@ -101,13 +101,27 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     }
 
     const applicationDate = Date.now();
-    const cartDetails = currentStepData?.ads?.flatMap((item) =>
-      item.slots.map((slot) => ({
-        ...slot,
-        advertisementId: item.ad.id,
+
+    const cartDetails = (currentStepData?.ads || [])
+      .filter(({ ad }) => ad)
+      .map(({ ad }) => ({
+        ...ad,
+        advertisementId: String(ad.id),
+        bookingDate: ad.bookingStartDate,
+        bookingEndDate: ad.bookingEndDate,
+        location: ad?.locationCode,
+        bookingFromTime: "00:00",
+        bookingToTime: "23:59",
         status: "BOOKING_CREATED",
-      }))
-    );
+      }));
+
+    // const cartDetails = currentStepData?.ads?.flatMap((item) =>
+    //   item.slots.map((slot) => ({
+    //     ...slot,
+    //     advertisementId: item.ad.id,
+    //     status: "BOOKING_CREATED",
+    //   }))
+    // );
 
     const formData = {
       tenantId,
@@ -149,20 +163,52 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     }
 
     setIsLoading(true);
+
+    const advertisementSlotSearchCriteria = currentStepData?.ads?.map(({ ad }) => ({
+      advertisementId: String(ad?.id),
+      bookingId: "",
+      addType: ad?.adType,
+      bookingStartDate: ad?.bookingStartDate,
+      bookingEndDate: ad?.bookingEndDate,
+      faceArea: `${ad?.adType}_${ad?.width}_X_${ad?.height}`,
+      tenantId,
+      location: ad?.locationCode,
+      nightLight: ad?.light === "With Light" ? "true" : "false",
+      isTimerRequired: true,
+      amount: ad?.amount,
+    }));
+
+    const payload = {
+      advertisementSlotSearchCriteria,
+    };
+
+    // const currentStepDataRes = [currentStepData?.ads?.[0]?.slots?.[0]];
+
     try {
       // 1. Prepare enriched slots for slot_search
-      const enrichedSlots =
-        currentStepData?.ads?.flatMap((item) =>
-          item?.slots?.map((slot) => ({
-            ...slot,
-            isTimerRequired: true,
-          }))
-        ) || [];
+      // const enrichedSlots =
+      //   currentStepData?.ads?.flatMap((item) =>
+      //     item?.slots?.map((slot) => ({
+      //       advertisementId: slot?.advertisementId,
+      //       bookingId: "",
+      //       addType: slot?.addType,
+      //       bookingStartDate: slot?.bookingStartDate,
+      //       bookingEndDate: slot?.bookingEndDate,
+      //       faceArea: slot?.faceArea,
+      //       tenantId,
+      //       location: slot?.location,
+      //       nightLight: slot?.nightLight,
+      //       isTimerRequired: true,
+      //       amount: slot?.amount,
+      //     }))
+      //   ) || [];
 
-      const payload = { advertisementSlotSearchCriteria: enrichedSlots };
+      // const payload = { advertisementSlotSearchCriteria: [enrichedSlots[0]] };
 
       // 2. Call slot_search
       const slotResponse = await Digit.ADSServices.slot_search(payload, tenantId);
+
+      // return;
 
       if (!slotResponse) {
         setShowToast({ key: true, label: t("COMMON_SOMETHING_WENT_WRONG_LABEL") });
@@ -178,11 +224,8 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
 
       const formattedData = {
         ...formData,
-        cartDetails: formData.cartDetails?.map(({ bookingStartDate, bookingEndDate, ...rest }) => rest),
+        cartDetails: formData.cartDetails?.map(({ locationName, locationCode, bookingStartDate, endDate, startDate, ...rest }) => rest),
       };
-
-      // console.log("formattedData", formattedData);
-      // return;
 
       // 5. Call create API
       const response = await Digit.ADSServices.create({ bookingApplication: formattedData }, tenantId);
@@ -198,7 +241,10 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         setShowToast({ key: true, label: t("CORE_SOMETHING_WENT_WRONG") });
       }
     } catch (err) {
-      setShowToast({ key: true, label: t("CORE_SOMETHING_WENT_WRONG") });
+      const errorMessage = err?.response?.data?.Errors[0]?.message;
+
+      setShowToast({ key: true, label: errorMessage });
+      // setShowToast({ key: true, label: t("CORE_SOMETHING_WENT_WRONG") });
     } finally {
       setIsLoading(false);
     }

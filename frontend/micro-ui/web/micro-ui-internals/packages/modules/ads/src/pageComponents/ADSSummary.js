@@ -1,18 +1,23 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardLabel } from "@mseva/digit-ui-react-components";
 import { useDispatch, useSelector } from "react-redux";
 import { SET_ADSNewApplication_STEP } from "../redux/action/ADSNewApplicationActions";
+import { Loader } from "../../../challanGeneration/src/components/Loader";
 import ADSDocument from "./ADSDocument";
 import ADSCartDetails from "./ADSCartDetails";
 
 function ADSSummary({ t }) {
   const dispatch = useDispatch();
   const TT = (key) => (t ? t(key) : key);
-
+  const isCitizen = window.location.href.includes("citizen");
+  const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : window.localStorage.getItem("Employee.tenant-id");
   const rawFormData = useSelector((state) => state?.ads?.ADSNewApplicationFormReducer?.formData);
   const formData = React.useMemo(() => rawFormData || {}, [rawFormData]);
   const applicant = formData?.ownerDetails?.applicantDetail || formData?.CreatedResponse?.applicantDetail || {};
   const address = formData?.ownerDetails?.address || formData?.CreatedResponse?.address || {};
+  const [getDemands, setDemands] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
   // const cartArray = Array.isArray(formData.ads?.selectedCards) ? formData.ads?.selectedCards : [];
 
   const docs = Array.isArray(formData?.documents?.documents?.documents)
@@ -35,12 +40,29 @@ function ADSSummary({ t }) {
 
   // const updatedCartSlots = formData?.ads?.flatMap((item) => item.slots);
 
+  const fetchEstimate = async (data) => {
+    setIsLoading(true);
+    const payload = data?.CreatedResponse?.cartDetails;
+    try {
+      const response = await Digit.ADSServices.estimateCreate({ cartDetails: payload, tenantId }, tenantId);
+      setIsLoading(false);
+      setDemands(response?.demands?.[0]?.additionalDetails?.slotWiseBreakdown);
+    } catch (error) {
+      setIsLoading(false);
+      console.log("error", error);
+    }
+  };
+
+  useEffect(() => {
+    if (formData) fetchEstimate(formData);
+  }, [formData]);
+
   return (
     <div className="bpa-summary-page">
       <h2 className="bpa-summary-heading">{TT("ADS_APPLICANT_DETAILS")}</h2>
-      <div className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>
+      {/* <div className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>
         {TT("TL_SUMMARY_EDIT")}
-      </div>
+      </div> */}
       <div className="bpa-summary-section">
         {renderRow(TT("NOC_APPLICANT_NAME_LABEL"), applicant?.applicantName)}
         {renderRow(TT("CORE_Mobile_Number"), applicant?.applicantMobileNo)}
@@ -50,18 +72,18 @@ function ADSSummary({ t }) {
       </div>
 
       <h2 className="bpa-summary-heading">{TT("ADS_DETAILS")}</h2>
-      <div className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(1))}>
+      {/* <div className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(1))}>
         {TT("TL_SUMMARY_EDIT")}
-      </div>
+      </div> */}
       <div className="bpa-summary-section">
-        <ADSCartDetails cartDetails={cartDetails} t={t} />
+        <ADSCartDetails demands={getDemands} cartDetails={cartDetails} t={t} />
       </div>
 
       <div className="document-section-wrapper">
         <div className="document-section-header">{TT("ADS_DOCUMENTS_DETAILS")}</div>
-        <div className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}>
+        {/* <div className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}>
           {TT("TL_SUMMARY_EDIT")}
-        </div>
+        </div> */}
 
         {docs?.length > 0 ? (
           <div className="document-container">
@@ -77,6 +99,7 @@ function ADSSummary({ t }) {
           <div className="document-empty-state">{t("TL_NO_DOCUMENTS_MSG")}</div>
         )}
       </div>
+      {isLoading && <Loader page={true} />}
     </div>
   );
 }

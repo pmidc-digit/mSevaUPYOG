@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Table } from "@mseva/digit-ui-react-components";
 
-const ADSCartDetails = ({ cartDetails, t }) => {
+const ADSCartDetails = ({ cartDetails, t, demands }) => {
   // Build a unique key for each cart entry
   const getKey = (ad) => `${ad?.id}_${ad?.bookingStartDate}_${ad?.bookingEndDate}`;
 
@@ -34,16 +34,17 @@ const ADSCartDetails = ({ cartDetails, t }) => {
         cartDetails?.map((item, idx) => {
           const key = getKey(item?.ad);
           const isOpen = expanded?.includes(key);
+          const matchedDemand = demands?.find((demand) => String(demand?.advertisementId) === String(item?.ad?.id));
+
           return (
             <div key={idx} className="ads-cart-item">
               {/* Ad Header (clickable) */}
               <div onClick={() => toggleExpand(key)} className="ads-cart-item-header ads-cart-item-header--clickable">
                 <span>
-                  {/* {item?.ad?.name} — ₹{item?.ad?.amount * item?.slots?.length} */}
-                  {/* {item?.ad?.amount ? ` — ₹${(item.ad.amount * 0.09 * 0.09 * item.slots?.length).toFixed(2)}` : ""} */}
                   {t(item?.ad?.name || item?.ad?.location)}
+                  {matchedDemand?.slotTotal != null ? ` — ₹${Number(matchedDemand?.slotTotal)?.toFixed(2)}` : ""}
                   {/*  Apply 9% tax + 9% service (18%) on each slot amount, then multiply by number of slots */}
-                  {item?.ad?.amount ? ` — ₹${(item?.ad?.amount * 1.18 * item?.slots?.length).toFixed(2)}` : ""}
+                  {/* {item?.ad?.amount ? ` — ₹${(item?.ad?.amount * 1.18 * item?.slots?.length).toFixed(2)}` : ""} */}
                   {/* Apply 9% tax + 9% service (18%) once on base amount, then add base × slots */}
                   {/* {item?.ad?.amount ? ` — ₹${(item?.ad?.amount * item?.slots?.length + item?.ad?.amount * 0.18).toFixed(2)}` : ""} */}
                 </span>

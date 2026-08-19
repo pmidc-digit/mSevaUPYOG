@@ -18,6 +18,7 @@ const AdCard = ({
   const minDate = getMinDateForType(scheduleType);
   // check if this ad is already in cart
   const isAdded = cartSlots?.some((item) => item?.ad?.id === ad?.id && item?.slots?.length > 0);
+  const isEmployee = window.location?.href?.includes("employee");
 
   return (
     <div className="ads-card">
@@ -56,7 +57,7 @@ const AdCard = ({
             render={(props) => (
               <input
                 type="date"
-                min={minDate}
+                min={isEmployee ? "" : minDate}
                 value={props.value || ""}
                 onChange={(e) => props.onChange(e.target.value)}
                 className="ads-card-input"

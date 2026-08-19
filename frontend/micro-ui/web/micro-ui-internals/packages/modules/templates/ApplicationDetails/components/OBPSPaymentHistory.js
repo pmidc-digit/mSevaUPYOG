@@ -16,6 +16,15 @@ const OBPSPaymentHistory = ({ payments }) => {
     setIsOpen(!isOpen);
   };
 
+  const formatTransactionId = (txnId) => {
+    if (!txnId || txnId === 'N/A') return 'N/A';
+    if (typeof txnId === 'string' && txnId.includes('order_')) {
+      const match = txnId.match(/\((order_[^)]+)\)/i) || txnId.match(/\(([^)]+)\)/) || txnId.match(/(order_[^\s)]+)/i);
+      if (match) return match[1].trim();
+    }
+    return txnId;
+  };
+
   const formatDate = (epoch) => {
     if (!epoch) return "N/A";
     const date = new Date(epoch);
@@ -48,12 +57,12 @@ const OBPSPaymentHistory = ({ payments }) => {
               <table className="obps-payment-history-table">
                 <thead>
                   <tr>
-                    <th>{t("PT_RECEIPT_NO") || "Receipt Number"}</th>
-                    <th>{t("PT_TRANSACTION_DATE") || "Transaction Date"}</th>
-                    <th>{t("PT_AMOUNT_PAID") || "Amount Paid"}</th>
-                    <th>{t("PT_PAYMENT_MODE") || "Payment Mode"}</th>
-                    <th>{t("PT_TRANSACTION_ID") || "Transaction ID"}</th>
-                    <th>{t("PT_STATUS") || "Status"}</th>
+                    <th className="custom-fix-fee-history-table-header">{t("PT_RECEIPT_NO") || "Receipt Number"}</th>
+                    <th className="custom-fix-fee-history-table-header">{t("PT_TRANSACTION_DATE") || "Transaction Date"}</th>
+                    <th className="custom-fix-fee-history-table-header">{t("PT_AMOUNT_PAID") || "Amount Paid"}</th>
+                    <th className="custom-fix-fee-history-table-header">{t("PT_PAYMENT_MODE") || "Payment Mode"}</th>
+                    <th className="custom-fix-fee-history-table-header">{t("PT_UTR_ID") || "UTR ID"}</th>
+                    <th className="custom-fix-fee-history-table-header">{t("PT_STATUS") || "Status"}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -61,19 +70,20 @@ const OBPSPaymentHistory = ({ payments }) => {
                     const receiptNo = payment.paymentDetails?.[0]?.receiptNumber || payment.receiptNumber || 'N/A';
                     const amountPaid = payment.totalAmountPaid !== undefined ? payment.totalAmountPaid : (payment.amount !== undefined ? payment.amount : '0');
                     const rawStatus = payment.paymentStatus || 'N/A';
-                    const status = rawStatus === 'DEPOSITED' ? 'Deposited' : (rawStatus === 'SUCCESSFUL' ? 'Successful' : rawStatus);
+                    const status = rawStatus === 'DEPOSITED' ? 'Paid' : (rawStatus === 'SUCCESSFUL' ? 'Paid' : rawStatus);
                     const paymentDate = payment.transactionDate || payment.paymentDetails?.[0]?.receiptDate || payment.receiptDate;
-                    const transactionId = (payment.transactionNumber || payment.instrumentNumber || 'N/A');
+                    const rawTxnId = payment.transactionNumber || payment.instrumentNumber || 'N/A';
+                    const utrId = formatTransactionId(rawTxnId);
                     const isDeposited = rawStatus === 'DEPOSITED' || rawStatus === 'SUCCESSFUL';
 
                     return (
                       <tr key={payment.id || index}>
-                        <td>{receiptNo}</td>
-                        <td>{formatDate(paymentDate)}</td>
-                        <td>₹{amountPaid}</td>
-                        <td>{payment.paymentMode || 'N/A'}</td>
-                        <td>{transactionId}</td>
-                        <td>
+                        <td className="custom-fix-fee-history-table-cell-value">{receiptNo}</td>
+                        <td className="custom-fix-fee-history-table-cell-value">{formatDate(paymentDate)}</td>
+                        <td className="custom-fix-fee-history-table-cell-value">₹{amountPaid}</td>
+                        <td className="custom-fix-fee-history-table-cell-value">{payment.paymentMode || 'N/A'}</td>
+                        <td className="custom-fix-fee-history-table-cell-value">{utrId}</td>
+                        <td className="custom-fix-fee-history-table-cell-value">
                           <span className={`obps-payment-history-status ${isDeposited ? "deposited" : ""}`}>
                             {t(status)}
                           </span>

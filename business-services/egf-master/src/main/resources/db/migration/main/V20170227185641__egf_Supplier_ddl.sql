@@ -1,5 +1,5 @@
 
-Create table egf_supplier( 
+CREATE TABLE IF NOT EXISTS egf_supplier( 
 	id bigint,
 	code varchar(50) NOT NULL,
 	name varchar(50) NOT NULL,
@@ -22,4 +22,4 @@ Create table egf_supplier(
 );
 alter table egf_supplier add constraint pk_egf_supplier primary key (id);
 alter table egf_supplier add constraint fk_egf_supplier_bank  FOREIGN KEY (bank) REFERENCES egf_bank(id);
-create sequence seq_egf_supplier;
+CREATE SEQUENCE IF NOT EXISTS seq_egf_supplier;

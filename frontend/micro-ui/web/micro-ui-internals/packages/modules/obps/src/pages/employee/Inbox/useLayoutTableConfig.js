@@ -69,6 +69,8 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
                 // /digit-ui/citizen/obps/layout/application-overview/${row.original?.Applications?.applicationNo}
                 window.location.href.includes("/citizen")
                   ? `${parentRoute}/layout/application-overview/${encryptId(row.original?.applicationId)}`
+                  : row.original?.tenantId
+                  ? `${parentRoute}/layout/inbox/application-overview/${encryptId(row.original?.applicationId)}?tenantId=${row.original?.tenantId}`
                   : `${parentRoute}/layout/inbox/application-overview/${encryptId(row.original?.applicationId)}`
               }
               // to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`}

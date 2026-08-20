@@ -1,13 +1,16 @@
 import { Banner, Card, Loader, Toast } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory , useParams } from "react-router-dom";
+import { useHistory, useParams, useLocation } from "react-router-dom";
 import { encryptId } from "../../utils";
 
 const LayoutEsignResponse = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const location = useLocation();
+  const queryTenantId = new URLSearchParams(location?.search).get("tenantId");
+  const fallbackTenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = queryTenantId || fallbackTenantId;
 
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(10);
@@ -55,7 +58,8 @@ const LayoutEsignResponse = () => {
 
           const timeout = setTimeout(() => {
             const encryptedID = encryptId(applicationNo);
-              history.push(`/digit-ui/employee/obps/layout/inbox/application-overview/${encryptedID}`);
+            const appTenant = application?.tenantId || tenantId;
+            history.push(`/digit-ui/employee/obps/layout/inbox/application-overview/${encryptedID}?tenantId=${appTenant}`);
           }, 10000);
 
           return () => {
@@ -70,7 +74,8 @@ const LayoutEsignResponse = () => {
 
           const timeout = setTimeout(() => {
             const encryptedID = encryptId(applicationNo);
-            history.push(`/digit-ui/employee/obps/layout/inbox/application-overview/${encryptedID}`);
+            const appTenant = application?.tenantId || tenantId;
+            history.push(`/digit-ui/employee/obps/layout/inbox/application-overview/${encryptedID}?tenantId=${appTenant}`);
           }, 10000);
 
           return () => clearTimeout(timeout);

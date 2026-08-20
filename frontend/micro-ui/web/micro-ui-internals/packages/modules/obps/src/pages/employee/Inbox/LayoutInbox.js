@@ -177,7 +177,8 @@ const LayoutInbox = ({ parentRoute }) => {
     ];
   }, []);
 
-  const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+  // const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+  const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
 
   useEffect(() => {
     if (tenantId !== "pb.punjab") return;
@@ -216,8 +217,6 @@ const LayoutInbox = ({ parentRoute }) => {
       refetchOnMount: "always",
     },
   });
-
-  console.log('inboxData', inboxData)
 
   const assigneeCountBaseFilters = useMemo(() => {
     const countFilterForm = { ...(memoizedFilters?.filterForm || {}) };
@@ -523,7 +522,7 @@ const LayoutInbox = ({ parentRoute }) => {
           isInboxLoading={isInboxLoading}
           assigneeCounts={assigneeCounts}
           handleFilter={handleFilterChange}
-          prefix= {prefix}
+          prefix={prefix}
           rawStatuses={inboxData?.statuses || []}
         />
       }

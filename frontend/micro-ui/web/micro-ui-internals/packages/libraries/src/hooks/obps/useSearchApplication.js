@@ -75,7 +75,7 @@ export const useLayoutCitizenSearchApplication = (params, tenantId, applicationN
 
 export const useLayoutSearchApplication = (params, tenantId, config = {}, t) => {
   const client = useQueryClient();
-  const result = useQuery(["LAYOUT_SEARCH_APPLICATION", params], useLayoutSearch(params, tenantId, config), {
+  const result = useQuery(["LAYOUT_SEARCH_APPLICATION", params, tenantId], useLayoutSearch(params, tenantId, config), {
     staleTime: config?.cacheTime === 0 ? 0 : Infinity,
     cacheTime: config?.cacheTime || undefined,
     ...config,
@@ -83,12 +83,12 @@ export const useLayoutSearchApplication = (params, tenantId, config = {}, t) => 
       console.log("useLayoutSearchApplication - Raw API data:", data);
       return {
         resData: data?.data,
-        revalidate: () => client.invalidateQueries(["LAYOUT_SEARCH_APPLICATION", params]),
+        revalidate: () => client.invalidateQueries(["LAYOUT_SEARCH_APPLICATION", params, tenantId]),
       };
     },
   });
 
-  return { ...result, revalidate: () => client.invalidateQueries(["LAYOUT_SEARCH_APPLICATION", params]) };
+  return { ...result, revalidate: () => client.invalidateQueries(["LAYOUT_SEARCH_APPLICATION", params, tenantId]) };
 };
 
 export const useLayoutSearchApplicationByIdOrMobile = (params, tenantId, config = {}, t) => {

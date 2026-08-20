@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory, useParams, useLocation } from "react-router-dom";
 
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
 
@@ -89,9 +89,12 @@ const EditLayoutApplication = () => {
 
   //console.log("FORM DATA FOR EDIT", formState);
 
+  const location = useLocation();
+  const queryTenantId = new URLSearchParams(location?.search).get("tenantId");
+
   let tenantId;
   if (window.location.pathname.includes("employee")) {
-    tenantId = window.localStorage.getItem("Employee.tenant-id");
+    tenantId = queryTenantId || window.localStorage.getItem("Employee.tenant-id");
   } else {
     tenantId = window.localStorage.getItem("CITIZEN.CITY");
   }

@@ -17,7 +17,7 @@ const CloseBtn = (props) => {
     );
 };
 
-const ZoneModal = ({ onClose, onSelect, currentZoneCode }) => {
+const ZoneModal = ({ onClose, onSelect, currentZoneCode, tenantId }) => {
   return (
     <Modal
       headerBarEnd={<CloseBtn onClick={onClose} />}
@@ -33,6 +33,7 @@ const ZoneModal = ({ onClose, onSelect, currentZoneCode }) => {
         onSelect={onSelect}
         onClose={onClose}
         defaultZoneCode={currentZoneCode}
+        tenantId={tenantId}
       />
     </Modal>
   );

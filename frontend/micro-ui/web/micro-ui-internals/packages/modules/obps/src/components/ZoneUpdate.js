@@ -12,14 +12,15 @@ import {
   CardLabelError
 } from "@mseva/digit-ui-react-components";
 
-const ZoneUpdate = ({ onSelect, onClose, defaultZoneCode }) => {
+const ZoneUpdate = ({ onSelect, onClose, defaultZoneCode, tenantId: propTenantId }) => {
   const [selectedZone, setSelectedZone] = useState(null);
   const [comments, setComments] = useState("");
   const [error, setError] = useState(null);
 //console.log('defaultZoneCode', defaultZoneCode)
+  const queryTenantId = new URLSearchParams(window.location.search).get("tenantId");
   let tenantId;
   if (window.location.pathname.includes("employee")) {
-    tenantId = window.localStorage.getItem("Employee.tenant-id");
+    tenantId = propTenantId || queryTenantId || window.localStorage.getItem("Employee.tenant-id");
   } else {
     tenantId = window.localStorage.getItem("CITIZEN.CITY");
   }

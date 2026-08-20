@@ -48,7 +48,7 @@ import {
   amountToWords,
   fetchOnlyUrl,
   fetchOnlyFileStore,
-  formatDate
+  formatDate,
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
@@ -3111,28 +3111,25 @@ const BpaApplicationDetail = () => {
           )}
         </Card>
 
-        {actions?.length > 0 &&
-          !(
-            data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
-            (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length === 0
-          ) && (
-            <Card>
-              <CardSectionHeader className="obps-pages-employee-bpa-application-details-index--style-22">{t("Add Comments")}</CardSectionHeader>
-              <RichTextBox
-                value={draftComment}
-                onChange={(e) => setDraftComment(e.target.value)}
-                placeholder={t("Add Comments")}
-                className="checklist-table-textarea obps-pages-employee-bpa-application-details-index--style-23"
-                maxLength={5000}
-              />
-              <SubmitBar
-                ref={menuRef}
-                className="obps-pages-employee-bpa-application-details-index--style-24"
-                label={t("Save Draft")}
-                onSubmit={() => employeeDraftSave({ BPA: data?.applicationData }, false, {})}
-              />
-            </Card>
-          )}
+        {actions?.length > 0 && (
+          <Card>
+            <CardSectionHeader>{t("Saved Comments")}</CardSectionHeader>
+            <RichTextBox
+              value={draftComment}
+              onChange={(e) => setDraftComment(e.target.value)}
+              placeholder={t("Add Comments")}
+              className="checklist-table-textarea"
+              style={{ overflow: "hidden", maxHeight: "1500px" }}
+              maxLength={5000}
+            />
+            <SubmitBar
+              ref={menuRef}
+              style={{ marginTop: "10px" }}
+              label={t("Save Draft")}
+              onSubmit={() => employeeDraftSave({ BPA: data?.applicationData }, false, {})}
+            />
+          </Card>
+        )}
 
         {showPdfModal && (
           <PdfPreviewModal

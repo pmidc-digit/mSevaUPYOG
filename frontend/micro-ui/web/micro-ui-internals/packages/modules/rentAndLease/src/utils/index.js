@@ -19,19 +19,19 @@ export const getActionButton = (businessService, receiptNumber) => {
   return (
     <a
       href="javascript:void(0)"
-      style={{
-        color: "#FE7A51",
-        cursor: "pointer",
-      }}
+
+
+
+
       onClick={(value) => {
         // printReciept(businessService, receiptNumber);
         downloadAndPrintReciept(businessService, receiptNumber);
-      }}
-    >
+      }} className="ral-style-8f96e7bd84">
+
       {" "}
       {t(`${"CS_COMMON_DOWNLOAD_RECEIPT"}`)}{" "}
-    </a>
-  );
+    </a>);
+
 };
 
 export const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
@@ -93,9 +93,9 @@ export const downloadAndPrintChallan = async (challanNo, mode) => {
   const response = await Digit.ChallanGenerationService.downloadPdf(challanNo, tenantId);
   const responseStatus = parseInt(response.status, 10);
   if (responseStatus === 201 || responseStatus === 200) {
-    mode == "print"
-      ? printPdf(new Blob([response.data], { type: "application/pdf" }))
-      : downloadPdf(new Blob([response.data], { type: "application/pdf" }), `CHALLAN-${challanNo}.pdf`);
+    mode == "print" ?
+    printPdf(new Blob([response.data], { type: "application/pdf" })) :
+    downloadPdf(new Blob([response.data], { type: "application/pdf" }), `CHALLAN-${challanNo}.pdf`);
   }
 };
 
@@ -113,9 +113,9 @@ export const downloadAndPrintReciept = async (bussinessService, consumerCode, mo
   const responseStatus = parseInt(response.status, 10);
   if (responseStatus === 201 || responseStatus === 200) {
     let fileName =
-      mode == "print"
-        ? printPdf(new Blob([response.data], { type: "application/pdf" }))
-        : downloadPdf(new Blob([response.data], { type: "application/pdf" }), `CHALLAN-${consumerCode}.pdf`);
+    mode == "print" ?
+    printPdf(new Blob([response.data], { type: "application/pdf" })) :
+    downloadPdf(new Blob([response.data], { type: "application/pdf" }), `CHALLAN-${consumerCode}.pdf`);
   }
 };
 
@@ -135,11 +135,11 @@ export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") =
   let differentFormats = downloadLink?.split(",") || [];
   let fileURL = "";
   differentFormats.length > 0 &&
-    differentFormats.map((link) => {
-      if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
-        fileURL = link;
-      }
-    });
+  differentFormats.map((link) => {
+    if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
+      fileURL = link;
+    }
+  });
   return fileURL;
 };
 
@@ -162,144 +162,144 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     details.push({
       title: `Owner ${index + 1} Details`,
       values: [
-        {
-          title: t("CORE_COMMON_NAME"),
-          value: owner?.name || t("CS_NA"),
-        },
-        {
-          title: t("CORE_COMMON_PROFILE_MOBILE_NUMBER"),
-          value: owner?.mobileNo || t("CS_NA"),
-        },
-        {
-          title: t("CORE_EMAIL_ID"),
-          value: owner?.emailId || t("CS_NA"),
-        },
-        {
-          title: t("Permanent Address"),
-          value: `${owner?.permanentAddress?.addressId || t("CS_NA")} , ${owner?.permanentAddress?.pincode || t("CS_NA")}`,
-        },
-        {
-          title: t("Correspondence Address"),
-          value: `${owner?.correspondenceAddress?.addressId || t("CS_NA")} , ${owner?.correspondenceAddress?.pincode || t("CS_NA")}`,
-        },
-      ],
+      {
+        title: t("CORE_COMMON_NAME"),
+        value: owner?.name || t("CS_NA")
+      },
+      {
+        title: t("CORE_COMMON_PROFILE_MOBILE_NUMBER"),
+        value: owner?.mobileNo || t("CS_NA")
+      },
+      {
+        title: t("CORE_EMAIL_ID"),
+        value: owner?.emailId || t("CS_NA")
+      },
+      {
+        title: t("Permanent Address"),
+        value: `${owner?.permanentAddress?.addressId || t("CS_NA")} , ${owner?.permanentAddress?.pincode || t("CS_NA")}`
+      },
+      {
+        title: t("Correspondence Address"),
+        value: `${owner?.correspondenceAddress?.addressId || t("CS_NA")} , ${owner?.correspondenceAddress?.pincode || t("CS_NA")}`
+      }]
+
     });
   });
 
   details.push({
     title: t("PT_PROPERTY_DETAILS"),
     values: [
-      {
-        title: t("STATUS"),
-        value: t(application?.status) || "NA",
-      },
-      {
-        title: t("PROPERTY_ID"),
-        value: t(application?.additionalDetails?.propertyDetails?.[0]?.propertyId) || "NA",
-      },
-      {
-        title: t("PT_ACK_LOCALIZATION_PROPERTY_ADDRESS"),
-        value: application?.additionalDetails?.propertyDetails?.[0]?.address || "NA",
-      },
-      {
-        title: t("Allotment Type"),
-        value: application?.additionalDetails?.propertyDetails?.[0]?.allotmentType || "NA",
-      },
-      {
-        title: t("Property Name"),
-        value: application?.additionalDetails?.propertyDetails?.[0]?.propertyName || "NA",
-      },
-      {
-        title: t("Property Area"),
-        value: `${application?.additionalDetails?.propertyDetails?.[0]?.propertySizeOrArea || "NA"} sq. meters`,
-      },
-      {
-        title: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PROPERTY_TYPE"),
-        value: application?.additionalDetails?.propertyDetails?.[0]?.propertyType || "NA",
-      },
-      {
-        title: t("Location Type"),
-        value: application?.additionalDetails?.propertyDetails?.[0]?.locationType || "NA",
-      },
-      ...(application?.additionalDetails?.applicationType !== "Legacy"
-        ? [
-            {
-              title: t("Security Deposit"),
-              value: `Rs. ${application?.additionalDetails?.propertyDetails?.[0]?.securityDeposit || "NA"}`,
-            },
-          ]
-        : []),
-      {
-        title: t("Base Rent"),
-        value: `Rs. ${application?.additionalDetails?.propertyDetails?.[0]?.baseRent || "NA"}`,
-      },
-      ...(application?.amountToBeDeducted
-        ? [
-            {
-              title: t("Penalty Amount"),
-              value: `Rs. ${application?.amountToBeDeducted || 0}`,
-            },
-            {
-              title: t("Penalty Amount (After Security Deposit)"),
-              value: `Rs. ${
-                Math.abs(Number(application?.additionalDetails?.propertyDetails?.[0]?.securityDeposit) - application?.amountToBeDeducted) || 0
-              }`,
-            },
-          ]
-        : []),
-    ],
+    {
+      title: t("STATUS"),
+      value: t(application?.status) || "NA"
+    },
+    {
+      title: t("PROPERTY_ID"),
+      value: t(application?.additionalDetails?.propertyDetails?.[0]?.propertyId) || "NA"
+    },
+    {
+      title: t("PT_ACK_LOCALIZATION_PROPERTY_ADDRESS"),
+      value: application?.additionalDetails?.propertyDetails?.[0]?.address || "NA"
+    },
+    {
+      title: t("Allotment Type"),
+      value: application?.additionalDetails?.propertyDetails?.[0]?.allotmentType || "NA"
+    },
+    {
+      title: t("Property Name"),
+      value: application?.additionalDetails?.propertyDetails?.[0]?.propertyName || "NA"
+    },
+    {
+      title: t("Property Area"),
+      value: `${application?.additionalDetails?.propertyDetails?.[0]?.propertySizeOrArea || "NA"} sq. meters`
+    },
+    {
+      title: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PROPERTY_TYPE"),
+      value: application?.additionalDetails?.propertyDetails?.[0]?.propertyType || "NA"
+    },
+    {
+      title: t("Location Type"),
+      value: application?.additionalDetails?.propertyDetails?.[0]?.locationType || "NA"
+    },
+    ...(application?.additionalDetails?.applicationType !== "Legacy" ?
+    [
+    {
+      title: t("Security Deposit"),
+      value: `Rs. ${application?.additionalDetails?.propertyDetails?.[0]?.securityDeposit || "NA"}`
+    }] :
+
+    []),
+    {
+      title: t("Base Rent"),
+      value: `Rs. ${application?.additionalDetails?.propertyDetails?.[0]?.baseRent || "NA"}`
+    },
+    ...(application?.amountToBeDeducted ?
+    [
+    {
+      title: t("Penalty Amount"),
+      value: `Rs. ${application?.amountToBeDeducted || 0}`
+    },
+    {
+      title: t("Penalty Amount (After Security Deposit)"),
+      value: `Rs. ${
+      Math.abs(Number(application?.additionalDetails?.propertyDetails?.[0]?.securityDeposit) - application?.amountToBeDeducted) || 0}`
+
+    }] :
+
+    [])]
+
   });
 
   if (application?.additionalDetails?.applicationType === "Legacy") {
     details.push({
       title: t("RAL_ARREAR_DETAILS"),
       values: [
-        {
-          title: t("Arrears"),
-          value: application?.additionalDetails?.arrear || "NA",
-        },
-        {
-          title: t("RAL_START_DATE"),
-          value: convertEpochToDate(application?.additionalDetails?.arrearStartDate) || "NA",
-        },
-        {
-          title: t("RAL_END_DATE"),
-          value: convertEpochToDate(application?.additionalDetails?.arrearEndDate) || "NA",
-        },
-        {
-          title: t("Reason"),
-          value: application?.additionalDetails?.arrearReason?.name || "NA",
-        },
-        {
-          title: t("Remarks"),
-          value: application?.additionalDetails?.remarks || "NA",
-        },
-      ],
+      {
+        title: t("Arrears"),
+        value: application?.additionalDetails?.arrear || "NA"
+      },
+      {
+        title: t("RAL_START_DATE"),
+        value: convertEpochToDate(application?.additionalDetails?.arrearStartDate) || "NA"
+      },
+      {
+        title: t("RAL_END_DATE"),
+        value: convertEpochToDate(application?.additionalDetails?.arrearEndDate) || "NA"
+      },
+      {
+        title: t("Reason"),
+        value: application?.additionalDetails?.arrearReason?.name || "NA"
+      },
+      {
+        title: t("Remarks"),
+        value: application?.additionalDetails?.remarks || "NA"
+      }]
+
     });
   }
 
   const standardDocs =
-    application?.Document?.map((doc, index) => ({
-      title: t(`${doc.documentType}`) || "NA",
-      value: " ",
-      // link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
-    })) || [];
+  application?.Document?.map((doc, index) => ({
+    title: t(`${doc.documentType}`) || "NA",
+    value: " "
+    // link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
+  })) || [];
 
-  const arrearDoc = application?.additionalDetails?.arrearDoc
-    ? [
-        {
-          title: t("Arrear Doc"),
-          value: " ",
-          // link: Digit.Utils.getFileUrl(application.additionalDetails.arrearDoc),
-        },
-      ]
-    : [];
+  const arrearDoc = application?.additionalDetails?.arrearDoc ?
+  [
+  {
+    title: t("Arrear Doc"),
+    value: " "
+    // link: Digit.Utils.getFileUrl(application.additionalDetails.arrearDoc),
+  }] :
+
+  [];
 
   const docDetails = [...standardDocs, ...arrearDoc];
 
   details.push({
     title: t("BPA_APPLICATION_DOCUMENTS"),
-    values: docDetails?.length ? docDetails : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }],
+    values: docDetails?.length ? docDetails : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }]
   });
 
   // const imageURL = application?.additionalDetails?.propertyDetails?.[0]?.propertyImage;
@@ -311,7 +311,7 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     phoneNumber: tenantInfo?.contactNumber,
     heading: t("Allotment letter for Rent and Lease Services"),
     applicationNumber: application?.applicationNumber || "NA",
-    details,
+    details
     // imageURL,
   };
 };

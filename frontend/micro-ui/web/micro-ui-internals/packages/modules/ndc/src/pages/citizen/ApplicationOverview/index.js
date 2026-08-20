@@ -16,8 +16,8 @@ import {
   // TLTimeLine,
   // DisplayPhotos,
   // StarRated,
-  MultiLink,
-} from "@mseva/digit-ui-react-components";
+  MultiLink } from
+"@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
@@ -58,7 +58,7 @@ const CitizenApplicationOverview = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "ndc-services",
+    moduleCode: "ndc-services"
   });
 
   useEffect(() => {
@@ -94,7 +94,7 @@ const CitizenApplicationOverview = () => {
       tenantId: tenantId,
       businessService: "NDC",
       consumerCodes: id,
-      isEmployee: false,
+      isEmployee: false
     },
     { enabled: id ? true : false }
   );
@@ -111,17 +111,17 @@ const CitizenApplicationOverview = () => {
           tenantId,
           {
             Payments: [
-              {
-                ...(payments || {}),
-                ...application,
-              },
-            ],
+            {
+              ...(payments || {}),
+              ...application
+            }]
+
           },
           "ndc-receipt"
         );
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-        fileStoreIds: response.filestoreIds[0],
+        fileStoreIds: response.filestoreIds[0]
       });
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
       setLoader(false);
@@ -133,18 +133,18 @@ const CitizenApplicationOverview = () => {
   const dowloadOptions = [];
 
   if (
-    applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" ||
-    applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED"
-  ) {
+  applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" ||
+  applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED")
+  {
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
-      onClick: () => handleDownloadPdf(),
+      onClick: () => handleDownloadPdf()
     });
   }
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] })
     });
   }
 
@@ -174,24 +174,24 @@ const CitizenApplicationOverview = () => {
         fatherName: primaryOwner?.fatherOrHusbandName,
         address: primaryOwner?.permanentAddress,
         // createdDate: ndcObject?.owners?.[0]?.createdtime ? format(new Date(ndcObject?.owners?.[0]?.createdtime), "dd/MM/yyyy") : "",
-        applicationNo: ndcObject?.applicationNo,
+        applicationNo: ndcObject?.applicationNo
       };
       const Documents = removeDuplicatesByUUID(ndcObject?.Documents || []);
       const NdcDetails = removeDuplicatesByUUID(ndcObject?.NdcDetails || [])?.map((item) => ({
         businessService:
-          item?.businessService === "WS"
-            ? "NDC_WATER_SERVICE_CONNECTION"
-            : item?.businessService === "SW"
-            ? "NDC_SEWERAGE_SERVICE_CONNECTION"
-            : item?.businessService === "PT"
-            ? "NDC_PROPERTY_TAX"
-            : item?.businessService,
+        item?.businessService === "WS" ?
+        "NDC_WATER_SERVICE_CONNECTION" :
+        item?.businessService === "SW" ?
+        "NDC_SEWERAGE_SERVICE_CONNECTION" :
+        item?.businessService === "PT" ?
+        "NDC_PROPERTY_TAX" :
+        item?.businessService,
         consumerCode: item?.consumerCode || "",
         status: item?.status || "",
         dueAmount: item?.dueAmount || 0,
         propertyType: item?.additionalDetails?.propertyType || "",
         remarks: item?.additionalDetails?.remarks,
-        vashikaNumber: item?.additionalDetails?.vashikaNumber,
+        vashikaNumber: item?.additionalDetails?.vashikaNumber
       }));
 
       setDisplayData({ applicantData, Documents, NdcDetails });
@@ -215,8 +215,8 @@ const CitizenApplicationOverview = () => {
       const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
       const propertyOwnerMobiles = owners.map((owner) => owner?.mobileNumber).filter(Boolean);
       const vasikaNo =
-        displayData?.NdcDetails?.find((item) => item?.businessService === "NDC_PROPERTY_TAX")?.vashikaNumber ||
-        propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.vasikaNo;
+      displayData?.NdcDetails?.find((item) => item?.businessService === "NDC_PROPERTY_TAX")?.vashikaNumber ||
+      propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.vasikaNo;
       Property.propertyOwnerNames = propertyOwnerNames;
       Property.propertyOwnerMobiles = propertyOwnerMobiles;
       const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea;
@@ -269,7 +269,7 @@ const CitizenApplicationOverview = () => {
       filters: { propertyIds: getPropertyId },
       tenantId: tenantId,
       enabled: getPropertyId ? true : false,
-      privacy: Digit.Utils.getPrivacyObject(),
+      privacy: Digit.Utils.getPrivacyObject()
     }
   );
 
@@ -278,14 +278,14 @@ const CitizenApplicationOverview = () => {
   if (!checkLoading && propertyDetailsFetch?.Properties?.length > 0) {
     address = propertyDetailsFetch.Properties[0].address;
     formattedAddress = [
-      address?.doorNo,
-      address?.buildingName, // colony/building
-      address?.street,
-      address?.locality?.name, // locality name
-      address?.city,
-    ]
-      .filter(Boolean)
-      .join(", ");
+    address?.doorNo,
+    address?.buildingName, // colony/building
+    address?.street,
+    address?.locality?.name, // locality name
+    address?.city].
+
+    filter(Boolean).
+    join(", ");
   }
   if (isLoading || isDetailsLoading || recieptDataLoading) {
     return <Loader />;
@@ -296,44 +296,42 @@ const CitizenApplicationOverview = () => {
   console.log("displayData?.applicantData", displayData);
 
   const ownerForName = propertyDetailsFetch?.Properties?.[0]?.owners || [];
-  const ownerNames = ownerForName
-    ?.map((owner) => owner?.name)
-    ?.filter(Boolean)
-    ?.join(", ");
+  const ownerNames = ownerForName?.
+  map((owner) => owner?.name)?.
+  filter(Boolean)?.
+  join(", ");
 
   console.log("applicationDetails?.[0]", applicationDetails?.Applications?.[0]);
 
   return (
     <div className={"employee-main-application-details"}>
       <div className="ndc-application-overview">
-        {/* <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header> */}
-
-        <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
+        <div className="ndc-style-56838cf109">
           <div className="cardHeaderWithOptions ral-app-details-header">
             {getLoader && <Loader />}
-            {dowloadOptions && dowloadOptions.length > 0 && (
-              <MultiLink
-                className="multilinkWrapper"
-                onHeadClick={() => setShowOptions(!showOptions)}
-                displayOptions={showOptions}
-                options={dowloadOptions}
-              />
-            )}
+            {dowloadOptions && dowloadOptions.length > 0 &&
+            <MultiLink
+              className="multilinkWrapper"
+              onHeadClick={() => setShowOptions(!showOptions)}
+              displayOptions={showOptions}
+              options={dowloadOptions} />
+
+            }
           </div>
         </div>
 
         {(applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" ||
-          applicationDetails?.Applications?.[0]?.applicationStatus == "CITIZENACTIONREQUIRED") && (
-          <ActionBar>
+        applicationDetails?.Applications?.[0]?.applicationStatus == "CITIZENACTIONREQUIRED") &&
+        <ActionBar>
             <SubmitBar
-              label={t("COMMON_EDIT")}
-              onSubmit={() => {
-                const id = applicationDetails?.Applications?.[0]?.applicationNo;
-                history.push(`/digit-ui/citizen/ndc/new-application/${id}`);
-              }}
-            />
+            label={t("COMMON_EDIT")}
+            onSubmit={() => {
+              const id = applicationDetails?.Applications?.[0]?.applicationNo;
+              history.push(`/digit-ui/citizen/ndc/new-application/${id}`);
+            }} />
+
           </ActionBar>
-        )}
+        }
       </div>
 
       <Card className="ndc_card_main">
@@ -341,22 +339,22 @@ const CitizenApplicationOverview = () => {
         <StatusTable>
           <Row label={t(`Name`)} text={ownerNames} />
           {displayData?.applicantData &&
-            Object.entries(displayData?.applicantData)
-              ?.filter(([key]) => key !== "name")
-              ?.map(([key, value]) => (
-                <Row
-                  key={key}
-                  label={key === "fatherName" ? "Father Name" : t(`${key?.toUpperCase()}`)}
-                  // label={t(`${key?.toUpperCase()}`)}
-                  text={
-                    Array.isArray(value)
-                      ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
-                      : typeof value === "object"
-                      ? t(value?.code || "N/A")
-                      : t(value || "N/A")
-                  }
-                />
-              ))}
+          Object.entries(displayData?.applicantData)?.
+          filter(([key]) => key !== "name")?.
+          map(([key, value]) =>
+          <Row
+            key={key}
+            label={key === "fatherName" ? "Father Name" : t(`${key?.toUpperCase()}`)}
+            // label={t(`${key?.toUpperCase()}`)}
+            text={
+            Array.isArray(value) ?
+            value.map((item) => typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A")).join(", ") :
+            typeof value === "object" ?
+            t(value?.code || "N/A") :
+            t(value || "N/A")
+            } />
+
+          )}
         </StatusTable>
       </Card>
 
@@ -372,36 +370,28 @@ const CitizenApplicationOverview = () => {
                 {/* <Row label={t("Name")} text={t(`${detail.businessService}`) || detail.businessService} /> */}
                 <Row label={t("Property Id")} text={detail.consumerCode || "N/A"} />
                 {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
-                <div
-                  style={{
-                    background: isRed ? "red" : "none",
-                    color: isRed ? "white" : "black",
-                    paddingTop: isRed ? "8px" : "0",
-                    paddingLeft: isRed ? "10px" : "0",
-                  }}
-                >
+                <div className={`ndc-due-amount ${isRed ? "ndc-due-amount--overdue" : ""}`}>
+
                   <Row
-                    rowContainerStyle={{
-                      backgroundColor: isRed ? "red" : "none",
-                    }}
+                    className={isRed ? "ndc-due-amount__row--overdue" : ""}
                     label={t("NDC_DUE_AMOUNT")}
-                    text={detail.dueAmount?.toString() || "0"}
-                  />
+                    text={detail.dueAmount?.toString() || "0"} />
+
                 </div>
                 <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
-                {detail?.businessService == "NDC_PROPERTY_TAX" && propertyDetailsFetch?.Properties && (
-                  <>
+                {detail?.businessService == "NDC_PROPERTY_TAX" && propertyDetailsFetch?.Properties &&
+                <>
                     <Row
-                      label={t("CHB_DISCOUNT_REASON")}
-                      text={t(
-                        `${
-                          applicationDetails?.Applications?.[0]?.reason === "OTHERS"
-                            ? applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
-                                ?.reason
-                            : applicationDetails?.Applications?.[0]?.reason
-                        }`
-                      )}
-                    />
+                    label={t("CHB_DISCOUNT_REASON")}
+                    text={t(
+                      `${
+                      applicationDetails?.Applications?.[0]?.reason === "OTHERS" ?
+                      applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails?.
+                      reason :
+                      applicationDetails?.Applications?.[0]?.reason}`
+
+                    )} />
+
                     <Row label={t("Area")} text={`${propertyDetailsFetch?.Properties?.[0]?.landArea} sq. yd.` || "N/A"} />
                     <Row label={t("Vasika Number")} text={detail?.vashikaNumber || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city || "N/A"} />
@@ -413,41 +403,32 @@ const CitizenApplicationOverview = () => {
                     {/* <Row label={t("Existing Pid")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
                     <Row label={t("Survey Id/UID")} text={propertyDetailsFetch?.Properties?.[0]?.surveyId || "N/A"} />
                     <Row
-                      label={t("Year of creation of Property")}
-                      text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
-                    />
+                    label={t("Year of creation of Property")}
+                    text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction} />
+
                     {detail?.remarks && <Row label={t("Remarks")} text={detail?.remarks ? detail?.remarks : "N/A"} />}
                   </>
-                )}
+                }
               </StatusTable>
-            </div>
-          );
+            </div>);
+
         })}
       </Card>
-
-      {/* <Card>
-        <CardSubHeader>{t("NDC_APPLICATION_NDC_DETAILS_OVERVIEW")}</CardSubHeader>
-        <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-          <StatusTable>
-            <Row label={t("CANCEL_COMMENT_LABEL ")} text={applicationDetails?.Applications?.[0]?.workflow?.comment} />
-          </StatusTable>
-        </div>
-      </Card> */}
 
       <Card className="ndc_card_main">
         <CardSubHeader className="ndc_label">{t("NDC_APPLICATION_DOCUMENTS_OVERVIEW")}</CardSubHeader>
         <div>
-          {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ? (
-            <NDCDocument value={{ workflowDocs: displayData?.Documents }} />
-          ) : (
-            <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
-          )}
+          {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ?
+          <NDCDocument value={{ workflowDocs: displayData?.Documents }} /> :
+
+          <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
+          }
         </div>
       </Card>
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
       {(isLoading || isDetailsLoading || checkLoading || getLoader) && <Loader page={true} />}
-    </div>
-  );
+    </div>);
+
 };
 
 export default CitizenApplicationOverview;

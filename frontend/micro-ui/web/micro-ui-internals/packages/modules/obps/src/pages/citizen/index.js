@@ -71,10 +71,10 @@ const OBPSBreadCrumbs = ({ location }) => {
 
     breadcrumbs.push(
       <span key="home">
-        <Link to="/digit-ui/citizen" style={{ textDecoration: "none", marginRight: "5px" }}>
+        <Link to="/digit-ui/citizen" className="obps-pages-citizen-index--style-1">
           {t("ES_COMMON_HOME")}
         </Link>
-        {hasSecondBreadcrumb && <span style={{ marginRight: "5px" }}>/</span>}
+        {hasSecondBreadcrumb && <span className="obps-pages-citizen-index--style-2">/</span>}
       </span>
     );
 
@@ -83,11 +83,11 @@ const OBPSBreadCrumbs = ({ location }) => {
         <span key="obps">
           <Link
             to={isUserRegistered ? "/digit-ui/citizen/obps/home" : "/digit-ui/citizen/obps-home"}
-            style={{ textDecoration: "none", marginRight: "5px" }}
+            className="obps-pages-citizen-index--style-3"
           >
             {t("OBAPS Home")}
           </Link>
-          {(bpainbox || layoutinbox) && isUserRegistered && <span style={{ marginRight: "5px" }}>/</span>}
+          {(bpainbox || layoutinbox) && isUserRegistered && <span className="obps-pages-citizen-index--style-4">/</span>}
         </span>
       );
     }
@@ -95,7 +95,7 @@ const OBPSBreadCrumbs = ({ location }) => {
     if (bpainbox && isUserRegistered) {
       breadcrumbs.push(
         <span key="bpa-inbox">
-          <Link to="/digit-ui/citizen/obps/bpa/inbox" style={{ textDecoration: "none" }}>
+          <Link to="/digit-ui/citizen/obps/bpa/inbox" className="obps-pages-citizen-index--style-5">
             {t("CS_COMMON_INBOX")}
           </Link>
           {/* {hasThirdBreadcrumb && <span style={{ marginRight: "5px" }}>/</span>} */}
@@ -106,7 +106,7 @@ const OBPSBreadCrumbs = ({ location }) => {
     if (layoutinbox && isUserRegistered) {
       breadcrumbs.push(
         <span key="layout-inbox">
-          <Link to="/digit-ui/citizen/obps/layout/my-applications" style={{ textDecoration: "none" }}>
+          <Link to="/digit-ui/citizen/obps/layout/my-applications" className="obps-pages-citizen-index--style-6">
              {t("CS_COMMON_INBOX")}
           </Link>
         </span>
@@ -116,7 +116,7 @@ const OBPSBreadCrumbs = ({ location }) => {
     return breadcrumbs;
   };
 
-  return <div style={{ marginBottom: "16px", display: "flex", alignItems: "center" }}>{getBreadcrumbs()}</div>;
+  return <div className="obps-pages-citizen-index--style-7">{getBreadcrumbs()}</div>;
 };
 
 const App = ({ path }) => {

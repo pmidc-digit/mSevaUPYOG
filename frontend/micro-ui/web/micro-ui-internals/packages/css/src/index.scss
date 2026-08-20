@@ -24,6 +24,7 @@
 @import "./components/datewrap.scss";
 @import "./components/datatable.scss";
 @import "./components/checkpoint.scss";
+@import "./components/chb.scss";
 @import "./components/checkbox.scss";
 @import "./components/inputotp.scss";
 @import "./components/map.scss";
@@ -42,6 +43,8 @@
 @import "./components/detailscontainer.scss";
 @import "./components/telephone.scss";
 @import "./components/grey.scss";
+@import "./components/garbageCollection.scss";
+@import "./components/ndc.scss";
 @import "./components/actionLink.scss";
 @import "./components/sectionalDropdown.scss";
 @import "./components/detailscard.scss";
@@ -135,11 +138,14 @@
 @import "./components/SurveyModal.scss";
 
 @import "./modules/adv/index.scss";
+@import "./modules/noc/index.scss";
 @import "./modules/hrms/index.scss";
 @import "./modules/BPA/index.scss";
 @import "./pages/common/sitePhotoGraphs.scss";
 @import "./modules/TL/index.scss";
 @import "./components/newInbox.scss";
+@import "./components/ptr.scss";
+@import "./components/challanGeneration.scss";
 
 .display-none {
   display: none;

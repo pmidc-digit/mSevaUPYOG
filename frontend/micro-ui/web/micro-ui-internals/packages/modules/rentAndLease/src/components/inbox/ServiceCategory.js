@@ -3,7 +3,7 @@ import { Loader, MultiSelectDropdown, RemoveableTag } from "@mseva/digit-ui-reac
 import { useTranslation } from "react-i18next";
 import ServiceCategoryCount from "./ServiceCategoryCount";
 
-const ServiceCategory = ({ onAssignmentChange, searchParams, selectedCategory,setSearchParams, setselectedCategories, businessServices,clearCheck,setclearCheck }) => {
+const ServiceCategory = ({ onAssignmentChange, searchParams, selectedCategory, setSearchParams, setselectedCategories, businessServices, clearCheck, setclearCheck }) => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
@@ -18,19 +18,19 @@ const ServiceCategory = ({ onAssignmentChange, searchParams, selectedCategory,se
     return str;
   };
 
-  Menu && Menu.map((ob) =>{
-    newMenu.push({...ob,i18nKey:`BILLINGSERVICE_BUSINESSSERVICE_${stringReplaceAll(ob?.code,".","_").toUpperCase()}`})
-  })
+  Menu && Menu.map((ob) => {
+    newMenu.push({ ...ob, i18nKey: `BILLINGSERVICE_BUSINESSSERVICE_${stringReplaceAll(ob?.code, ".", "_").toUpperCase()}` });
+  });
 
   const onRemove = (category) => {
     let newbussinessService = searchParams?.businessService.filter((ob) => ob !== category.code);
     let newCategories = [];
     newbussinessService?.map((bs) => {
-      newCategories.push({"code":bs, "i18nKey":`BILLINGSERVICE_BUSINESSSERVICE_${stringReplaceAll(bs,".","_").toUpperCase()}`});
-    })
-    setSearchParams({...searchParams, businessService:[...newbussinessService]});
+      newCategories.push({ "code": bs, "i18nKey": `BILLINGSERVICE_BUSINESSSERVICE_${stringReplaceAll(bs, ".", "_").toUpperCase()}` });
+    });
+    setSearchParams({ ...searchParams, businessService: [...newbussinessService] });
     setselectedCategories([...newCategories]);
-  }
+  };
 
   const translateState = (option) => {
     let code = stringReplaceAll(option.code, ".", "_");
@@ -42,8 +42,8 @@ const ServiceCategory = ({ onAssignmentChange, searchParams, selectedCategory,se
   let menuFirst = [];
   let meuSecond = [];
   Menu?.map((option, index) => {
-    if (index < 5) menuFirst.push(option);
-    else meuSecond.push(option);
+    if (index < 5) menuFirst.push(option);else
+    meuSecond.push(option);
   });
 
   if (isLoading) {
@@ -52,42 +52,29 @@ const ServiceCategory = ({ onAssignmentChange, searchParams, selectedCategory,se
   // translateState(option)
   return (
     <div className="status-container">
-      <div className="filter-label" style={{ fontWeight: "normal" }}>
+      <div className="filter-label ral-style-25d0175a45">
         {t("UC_SERVICE_CATEGORY_LABEL")}
       </div>
       <MultiSelectDropdown
-              className="form-field"
-              isMandatory={true}
-              defaultUnit="Selected"
-              selected={selectedCategory}
-              options={newMenu}
-              onSelect={onAssignmentChange}
-              optionsKey="i18nKey"
-              t={t}
-              ServerStyle={{width:"100%",overflowY:"scroll",overflowX:"hidden"}}
-      />
+        className="form-field"
+        isMandatory={true}
+        defaultUnit="Selected"
+        selected={selectedCategory}
+        options={newMenu}
+        onSelect={onAssignmentChange}
+        optionsKey="i18nKey"
+        t={t}
+        ServerStyle={{ width: "100%", overflowY: "scroll", overflowX: "hidden" }} />
+
       <div className="tag-container">
-      {selectedCategory?.map((value,index) => (
-        <div >
+      {selectedCategory?.map((value, index) =>
+        <div>
         <RemoveableTag key={index} text={`${t(value["i18nKey"])}`} onClick={() => onRemove(value)} />
         </div>
-      )) }
+        )}
       </div>
 
      {/* {menuFirst?.map((option, index) => {
-        return (
-          <ServiceCategoryCount
-            clearCheck={clearCheck}
-            setclearCheck={setclearCheck}
-            key={index}
-            onAssignmentChange={onAssignmentChange}
-            status={{ name: translateState(option), code: option.code }}
-            searchParams={searchParams}
-          />
-        );
-      })}
-      {moreStatus &&
-        meuSecond?.map((option, index) => {
           return (
             <ServiceCategoryCount
               clearCheck={clearCheck}
@@ -99,13 +86,26 @@ const ServiceCategory = ({ onAssignmentChange, searchParams, selectedCategory,se
             />
           );
         })}
-      <div className="filter-button" onClick={() => showMoreStatus(!moreStatus)}>
-        {" "}
-        {moreStatus ? t("UC_LESS_LABEL") : t("UC_MORE_LABEL")}{" "}
-      </div>  */}
-    </div>
-    
-  );
+        {moreStatus &&
+          meuSecond?.map((option, index) => {
+            return (
+              <ServiceCategoryCount
+                clearCheck={clearCheck}
+                setclearCheck={setclearCheck}
+                key={index}
+                onAssignmentChange={onAssignmentChange}
+                status={{ name: translateState(option), code: option.code }}
+                searchParams={searchParams}
+              />
+            );
+          })}
+        <div className="filter-button" onClick={() => showMoreStatus(!moreStatus)}>
+          {" "}
+          {moreStatus ? t("UC_LESS_LABEL") : t("UC_MORE_LABEL")}{" "}
+        </div>  */}
+    </div>);
+
+
 };
 
 export default ServiceCategory;

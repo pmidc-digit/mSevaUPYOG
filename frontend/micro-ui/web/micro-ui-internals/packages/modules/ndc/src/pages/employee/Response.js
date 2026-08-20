@@ -32,27 +32,29 @@ const Response = (props) => {
   return (
     <div>
       <Card>
-        <Banner
-          // message={t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
-          message={"NDC Application Submitted Successfully"}
-          applicationNumber={ndcCode}
-          info={nocData?.applicationStatus == "REJECTED" ? "" : t(`NDC_APPROVAL_NUMBER`)}
-          successful={nocData?.applicationStatus == "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
-          headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
+        <div className="ndc-response-banner ndc-style-59bdf7cb33">
+          <Banner
+        // message={t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
+        message={"NDC Application Submitted Successfully"}
+        applicationNumber={ndcCode}
+        info={nocData?.applicationStatus == "REJECTED" ? "" : t(`NDC_APPROVAL_NUMBER`)}
+        successful={nocData?.applicationStatus == "REJECTED" ? false : true}
+
         />
+        </div>
+
         {/* {nocData?.applicationStatus !== "REJECTED" ? (
-          <CardText>
-            {t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_SUB_HEADER`)}
-          </CardText>
-        ) : null} */}
-        <ActionBar classname="challan-emp-acknowledgement" >
+           <CardText>
+             {t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_SUB_HEADER`)}
+           </CardText>
+          ) : null} */}
+        <ActionBar classname="challan-emp-acknowledgement">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_NDC")} onSubmit={onGoToNDC} />
           {applicationDetails?.Applications?.[0]?.applicationStatus == "PENDINGPAYMENT" && <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} />}
         </ActionBar>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 export default Response;

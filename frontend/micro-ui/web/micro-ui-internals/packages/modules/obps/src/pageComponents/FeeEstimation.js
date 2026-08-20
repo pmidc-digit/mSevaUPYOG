@@ -267,12 +267,12 @@ const FeeEstimation = ({
 
      const feeHistory = useMemo(() => {
       const allCalcs = currentStepData?.createdResponse?.additionalDetails?.calculations || [];
-    
+
       // Discard any calculation where every taxHeadEstimate has estimateAmount = 0
       const filteredCalcs = allCalcs.filter(calc =>
         (calc?.taxHeadEstimates || []).some(tax => tax?.estimateAmount > 0)
       );
-    
+
       return buildFeeHistoryByTax(filteredCalcs, { newestFirst: true });
     }, [currentStepData?.createdResponse?.additionalDetails?.calculations]);
 
@@ -458,7 +458,7 @@ const FeeEstimation = ({
             Cell: ({ value }) => (value !== null && value !== undefined ? typeof value === "string" ? value : `₹ ${value.toLocaleString()}` : t("CS_NA")),
         },
     ];
-    
+
     const sanctionFeeColumns = [
         {
             Header: t("BPA_TAXHEAD_CODE"),
@@ -538,8 +538,8 @@ const FeeEstimation = ({
     return (
         <div>
             {/* Application Fee Table */}
-            <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_FEE_DETAILS")}</CardSubHeader>
-            {bpaCalculatorLoading ? <Loader /> : <div><CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>
+            <CardSubHeader className="obps-page-components-fee-estimation--style-1">{t("BPA_FEE_DETAILS")}</CardSubHeader>
+            {bpaCalculatorLoading ? <Loader /> : <div><CardSubHeader className="obps-page-components-fee-estimation--style-2">
                 {t("BPA_APPLICATION_FEE")}
             </CardSubHeader>
                 <Table
@@ -558,8 +558,8 @@ const FeeEstimation = ({
             {collectionData?.length > 0 && <OBPSPaymentHistory payments={collectionData} t={t} />}
 
             {!hidePayTwo && currentStepData?.createdResponse?.additionalDetails?.isSelfCertification && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange, enabledEmployee}}/>)}
-            
-            {shouldShowCitizenSanctionFee && (bpaCalculatorLoadingSan ? <Loader /> :<div><CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>
+
+            {shouldShowCitizenSanctionFee && (bpaCalculatorLoadingSan ? <Loader /> :<div><CardSubHeader className="obps-page-components-fee-estimation--style-3">
                 {t("BPA_SANCTION_FEE")}
             </CardSubHeader>
                 <Table

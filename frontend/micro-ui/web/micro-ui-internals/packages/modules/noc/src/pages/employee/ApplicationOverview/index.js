@@ -57,7 +57,7 @@ const ApplicationOverview = () => {
       workflowDetails.data.initialActionState=workflowDetails?.data?.initialActionState||{...workflowDetails?.data?.actionState}||{} ;
       workflowDetails.data.actionState = { ...workflowDetails.data };
   }
-  
+
   const closeToast = () => {
     setShowToast(null);
   };
@@ -66,7 +66,7 @@ const ApplicationOverview = () => {
     window.scrollTo({
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
-    });    
+    });
   }, [])
 
   useEffect(() => {
@@ -149,32 +149,24 @@ const ApplicationOverview = () => {
       const status = `WF_${nocDataDetails?.[0]?.additionalDetails.workflowCode}_${nocDataDetails?.[0]?.applicationStatus}`;
       return (
         <Fragment>
-          <div style={{
-            border: "1px solid #D6D5D4",
-            background: "#FAFAFA",
-            boxSizing: "border-box",
-            borderRadius: "4px",
-            padding: "8px",
-            maxWidth: "950px",
-            minWidth: "280px"
-          }}>
-            <CardSectionHeader style={{ marginBottom: "16px", fontSize: "20px" }}>{`${t(`NOC_MAIN_${stringReplaceAll(nocDocumentsList?.[0]?.code, ".", "_")}_LABEL`)}`}</CardSectionHeader>
-            <StatusTable style={{ position: "relative", marginTop: "19px" }}>
+          <div className="noc-pages-employee-application-overview-index--style-1">
+            <CardSectionHeader className="noc-pages-employee-application-overview-index--style-2">{`${t(`NOC_MAIN_${stringReplaceAll(nocDocumentsList?.[0]?.code, ".", "_")}_LABEL`)}`}</CardSectionHeader>
+            <StatusTable className="noc-pages-employee-application-overview-index--style-3">
               <Row className="border-none" label={`${t(`NOC_${nocDataDetails?.[0]?.nocType}_APPLICATION_LABEL`)}`} text={t(nocDataDetails?.[0]?.applicationNo) || "NA"} />
               <Row className="border-none" label={`${t("NOC_STATUS_LABEL")}`} text={t(status) || "NA"} textStyle={nocDataDetails?.[0]?.applicationStatus == "APPROVED" || nocDataDetails?.[0]?.applicationStatus == "AUTO_APPROVED" ? {color : "#00703C"} : {color: "#D4351C"}}/>
               <Row className="border-none" label={`${t("NOC_SUBMITED_ON_LABEL")}`} text={nocDataDetails?.[0]?.additionalDetails?.SubmittedOn ? convertEpochToDate(Number(nocDataDetails?.[0]?.additionalDetails?.SubmittedOn)) : "NA"} />
               <Row className="border-none" label={`${t("NOC_APPROVAL_NO_LABEL")}`} text={nocDataDetails?.[0]?.nocNo || "NA"} />
               <Row className="border-none" label={`${t("NOC_APPROVED_ON_LABEL")}`} text={(status === "APPROVED" || status === "REJECTED" || status === "AUTO_APPROVED" || status === "AUTO_REJECTED") ? convertEpochToDate(Number(nocDataDetails?.[0]?.auditDetails?.lastModifiedTime)) : "NA"} />
-              <Row className="border-none" label={`${t("Documents")}`} text={""} /> 
+              <Row className="border-none" label={`${t("Documents")}`} text={""} />
             </StatusTable>
-            {nocDataDetails?.[0]?.documents && nocDataDetails?.[0]?.documents.length>0 ? 
-            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-start" }}>
+            {nocDataDetails?.[0]?.documents && nocDataDetails?.[0]?.documents.length>0 ?
+            <div className="noc-pages-employee-application-overview-index--style-4">
               {nocDataDetails?.[0]?.documents?.map((value, index) => (
-                <a target="_" href={pdfFiles[value.fileStoreId]?.split(",")[0]} style={{ minWidth: "80px", marginRight: "10px", maxWidth: "100px", height: "auto" }} key={index}>
-                  <div style={{ display: "flex", justifyContent: "center" }}>
+                <a target="_" href={pdfFiles[value.fileStoreId]?.split(",")[0]} className="noc-pages-employee-application-overview-index--style-5" key={index}>
+                  <div className="noc-pages-employee-application-overview-index--style-6">
                       <PDFSvg />
                     </div>
-                  <p style={{ marginTop: "8px", fontWeight: "bold", textAlign: "center", width: "100px", color: "#505A5F" }}>{t(`NOC_MAIN_${stringReplaceAll(nocDocumentsList?.[0]?.code, ".", "_")}_LABEL`)/* t(value?.title ? value?.title : decodeURIComponent( pdfFiles[value.fileStoreId]?.split(",")?.[0]?.split("?")?.[0]?.split("/")?.pop()?.slice(13))) */}</p>
+                  <p className="noc-pages-employee-application-overview-index--style-7">{t(`NOC_MAIN_${stringReplaceAll(nocDocumentsList?.[0]?.code, ".", "_")}_LABEL`)/* t(value?.title ? value?.title : decodeURIComponent( pdfFiles[value.fileStoreId]?.split(",")?.[0]?.split("?")?.[0]?.split("/")?.pop()?.slice(13))) */}</p>
                 </a>
               ))}
             </div> : <div><p>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</p></div>}
@@ -200,8 +192,8 @@ const ApplicationOverview = () => {
   }
   const getBuldingComponent = (details = []) => details.map(detail => ({
     title: detail.title, belowComponent: () => <Fragment>
-      <div style={{maxWidth: "950px"}}>
-      <StatusTable style={{ position: "relative", marginTop: "19px" }}>
+      <div className="noc-pages-employee-application-overview-index--style-8">
+      <StatusTable className="noc-pages-employee-application-overview-index--style-9">
         {detail.values.map(value => <Row className="border-none" label={`${t(value?.title)}`} text={value?.value || "NA"} />
         )}
       </StatusTable>
@@ -304,7 +296,7 @@ function SelectDocument({
   return (
     <div >
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller" style={{fontWeight: "700", width: "50%"}}>{`${t("NOC_UPLOAD_FILE_LABEL")}`}</CardLabel>
+        <CardLabel className="card-label-smaller noc-pages-employee-application-overview-index--style-10" >{`${t("NOC_UPLOAD_FILE_LABEL")}`}</CardLabel>
         <div className="field">
           <MultiUploadWrapper
             module="NOC"

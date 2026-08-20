@@ -13,7 +13,7 @@ const PTRCitizenAddress = ({ t, config, onSelect, userType, formData, formState,
   const checkLocation = window.location.href.includes("ptr/petservice/new-application");
 
   let inputs;
-  
+
     inputs = [
       {
         label: "PTR_STREET_NAME",
@@ -75,8 +75,8 @@ const PTRCitizenAddress = ({ t, config, onSelect, userType, formData, formState,
           title: t("CORE_COMMON_DOOR_INVALID"),
          },
       },
-    
-      
+
+
     ];
   // }
 
@@ -168,7 +168,7 @@ const PTRCitizenAddress = ({ t, config, onSelect, userType, formData, formState,
         buildingName: formData?.address.buildingName,
         addressLine1: formData?.address.addressLine1,
         addressLine2: formData?.address.addressLine2,
-        landmark: formData?.address.landmark  
+        landmark: formData?.address.landmark
        }}
 
       onSelect={(data) => onSelect(config.key, data)}

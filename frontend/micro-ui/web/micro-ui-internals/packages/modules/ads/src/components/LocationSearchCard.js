@@ -23,7 +23,7 @@ const LocationSearchCard = ({
   position,
   onSelect,
   disabled,
-  cardBodyStyle = {},
+  cardBodyClassName = "",
   isPTDefault,
   PTdefaultcoord,
   isPlaceRequired,
@@ -114,10 +114,10 @@ const LocationSearchCard = ({
   };
 
   return (
-    <Card style={{ position: "relative" }}>
-      <div style={{ display: "flex" }}>
+    <Card className="ads-components-location-search-card--style-1">
+      <div className="ads-components-location-search-card--style-2">
         <svg
-          style={{ marginTop: Webview ? "16px" : "8px" }}
+          className={Webview ? "ads-location-search-card__icon ads-location-search-card__icon--web" : "ads-location-search-card__icon"}
           width="24"
           height="24"
           viewBox="0 0 30 30"
@@ -132,34 +132,16 @@ const LocationSearchCard = ({
         <CardHeader>{header}</CardHeader>
       </div>
 
-      <div style={cardBodyStyle}>
+      <div className={["ads-location-search-card__body", cardBodyClassName].filter(Boolean).join(" ")}>
         {isPopUp && (
           <button
             type="button"
             onClick={() => handleRemove && handleRemove()}
-            style={{
-              position: "absolute",
-              left: 12,
-              top: 12,
-              padding: "8px 10px",
-              background: "#fff",
-              color: "#0b74de",
-              border: "none",
-              borderRadius: 6,
-              cursor: "pointer",
-              fontWeight: 700,
-              fontSize: 13,
-              lineHeight: "16px",
-              zIndex: 9999,
-              appearance: "none",
-              WebkitAppearance: "none",
-              backgroundImage: "none",
-              textTransform: "none",
-            }}
+            className="ads-components-location-search-card--style-3"
             aria-label="Close"
             title="Close"
           >
-            <span style={{ color: "red", display: "inline-block" }}>Close</span>
+            <span className="ads-components-location-search-card--style-4">Close</span>
           </button>
         )}
 
@@ -176,7 +158,7 @@ const LocationSearchCard = ({
       </div>
 
       {/* BUTTON: use type="button" so it never submits parent form */}
-      <div style={{ padding: "12px" }}>
+      <div className="ads-components-location-search-card--style-5">
         {(() => {
           const rawLabel = nextText || (t ? t("ADS_PIN_LOCATION_LABEL") : null);
           const labelText = typeof rawLabel === "string" && rawLabel.trim() ? rawLabel : t ? t("ADS_PIN_LOCATION_LABEL") || "Pick" : "Pick";
@@ -191,25 +173,7 @@ const LocationSearchCard = ({
               }}
               disabled={isDisabledState}
               aria-disabled={isDisabledState}
-              style={{
-                display: "inline-block",
-                width: "100%",
-                padding: "10px 12px",
-                background: isDisabledState ? "#ddd" : "#0b74de",
-                color: isDisabledState ? "#666" : "#fff",
-                border: "none",
-                borderRadius: 6,
-                cursor: isDisabledState ? "not-allowed" : "pointer",
-                textAlign: "center",
-                fontWeight: 700,
-                fontSize: 14,
-                lineHeight: "20px",
-                WebkitTextFillColor: isDisabledState ? "#666" : "#fff",
-                appearance: "none",
-                WebkitAppearance: "none",
-                backgroundImage: "none",
-                textTransform: "none",
-              }}
+              className={["ads-location-search-card__submit", isDisabledState && "ads-location-search-card__submit--disabled"].filter(Boolean).join(" ")}
             >
               {labelText || "Pick"}{" "}
             </button>

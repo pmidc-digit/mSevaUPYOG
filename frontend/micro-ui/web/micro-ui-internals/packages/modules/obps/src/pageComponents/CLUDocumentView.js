@@ -12,7 +12,7 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
 function CLUDocumentView({ value = {}}) {
   const { t } = useTranslation();
   const { isLoading, isError, error, data } = Digit.Hooks.noc.useNOCDocumentSearch({value},{value});
-  
+
 
   let documents=[];
   if(value?.workflowDocs) documents = value?.workflowDocs;
@@ -28,7 +28,7 @@ function CLUDocumentView({ value = {}}) {
           {documents?.map((document, index) => {
             let documentLink = pdfDownloadLink(data?.pdfFiles, document?.documentAttachment || document?.documentUid);
             return (
-              <a target="_" href={documentLink} 
+              <a target="_" href={documentLink}
                 className="bpa-doc-view-link"
               key={index}>
                 <PDFSvg width={85} height={100} className="bpa-doc-view-pdf-icon" />
@@ -39,7 +39,7 @@ function CLUDocumentView({ value = {}}) {
             );
           })}
         </div>
-       
+
       </React.Fragment>
     </div>
   );

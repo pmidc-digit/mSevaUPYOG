@@ -456,13 +456,13 @@ const ApplicationDetails = () => {
   return (
     <div className={"employee-main-application-details"}>
       {/* Header with MultiLink download dropdown (merged old feature) */}
-      <div style={{ marginBottom: "15px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="ads-pages-employee-application-details--style-1">
+        <div className="ads-pages-employee-application-details--style-2">
           <Header styles={{ fontSize: "32px" }}>{t("ADS_APP_OVER_VIEW_HEADER")}</Header>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div className="ads-pages-employee-application-details--style-3">
             {downloadOptions && downloadOptions?.length > 0 && (
-              <div style={{ position: "relative", zIndex: 10 }}>
+              <div className="ads-pages-employee-application-details--style-4">
                 <MultiLink
                   className="multilinkWrapper"
                   onHeadClick={() => setShowOptions(!showOptions)}
@@ -480,7 +480,7 @@ const ApplicationDetails = () => {
       {/* Existing cards and document rendering (preserved from your new file) */}
       <Card>
         {displayData?.applicantData?.auditDetails?.createdTime && displayData?.applicantData?.bookingStatus === "PENDING_FOR_PAYMENT" && (
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <div className="ads-pages-employee-application-details--style-5">
             <ReservationTimer
               t={t}
               createTime={displayData?.applicantData?.auditDetails?.createdTime} // supply when reservation created
@@ -531,7 +531,7 @@ const ApplicationDetails = () => {
           </StatusTable>
 
           {applicationDetails?.bookingApplication[0]?.workflow?.documents?.length > 0 ? (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
+            <div className="ads-pages-employee-application-details--style-6">
               {applicationDetails?.bookingApplication[0]?.workflow?.documents.map((doc, idx) => (
                 <div key={idx}>
                   <ADSDocument value={applicationDetails?.bookingApplication[0]?.workflow?.documents} Code={doc?.documentType} index={idx} />
@@ -540,7 +540,7 @@ const ApplicationDetails = () => {
               ))}
             </div>
           ) : (
-            <div style={{ padding: "0 1.5rem" }}>{t("TL_NO_DOCUMENTS_MSG")}</div>
+            <div className="ads-pages-employee-application-details--style-7">{t("TL_NO_DOCUMENTS_MSG")}</div>
           )}
         </Card>
       )}
@@ -549,7 +549,7 @@ const ApplicationDetails = () => {
         <CardSubHeader>{t("ADS_APPLICATION_DOCUMENTS_OVERVIEW")}</CardSubHeader>
         <>
           {application?.documents?.length > 0 ? (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
+            <div className="ads-pages-employee-application-details--style-8">
               {application?.documents.map((doc, idx) => (
                 <div key={idx}>
                   <ADSDocument value={application?.documents} Code={doc?.documentType} index={idx} />
@@ -558,7 +558,7 @@ const ApplicationDetails = () => {
               ))}
             </div>
           ) : (
-            <div style={{ padding: "0 1.5rem" }}>{t("TL_NO_DOCUMENTS_MSG")}</div>
+            <div className="ads-pages-employee-application-details--style-9">{t("TL_NO_DOCUMENTS_MSG")}</div>
           )}
         </>
 

@@ -24,9 +24,9 @@ const NocSitePhotographs = ({ filestoreId, documentType, coordinates }) => {
   }, [filestoreId]);
 
   return (
-    <div style={{ padding: "20px 0px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", padding: "0px 20px" }}>
-        <div style={{ textAlign: "start" }}>
+    <div className="obps-components-noc-site-photographs--style-1">
+      <div className="obps-components-noc-site-photographs--style-2">
+        <div className="obps-components-noc-site-photographs--style-3">
           <div>
           <span>{t(documentType?.replaceAll(".", "_"))}</span>
         </div>

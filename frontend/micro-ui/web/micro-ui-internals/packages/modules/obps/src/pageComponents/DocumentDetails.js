@@ -1,20 +1,20 @@
-/** 
+/**
  * @author - Shivank Shukla  - NIUA
-  
- * Addition of feature of fetching Latitude and Longitude from uploaded photo 
+
+ * Addition of feature of fetching Latitude and Longitude from uploaded photo
 
     - i have added a function (extractGeoLocation)  to extract latitude and longitude from an uploaded image file.
     - It takes the file object as input and returns a promise.
     - Within the promise, EXIF.get() is called with the file object to extract EXIF data.
     - Latitude and longitude are then retrieved from the EXIF data and converted to decimal format using the convertToDecimal function.
-    - If latitude and longitude are found, the promise is resolved with an object containing latitude and longitude. 
+    - If latitude and longitude are found, the promise is resolved with an object containing latitude and longitude.
       Otherwise, if not found still it resolve the promise with latitude and longitude as NULL value.
     - The convertToDecimal function converts GPS coordinates from degrees, minutes, and seconds format to decimal format.
 
     - The getData function is modified to include the geolocation extraction logic.
     - When files are uploaded (e?.length > 0), the function extractGeoLocation extracts geolocation if any
     - If geolocation extraction is successful, it logs the latitude and longitude to the console.
-    - After extracting geolocation, the function continues with the existing logic to handle the uploaded files. 
+    - After extracting geolocation, the function continues with the existing logic to handle the uploaded files.
 */
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -364,7 +364,7 @@ function SelectDocument({
         ];
       });
     } else if (uploadedFile === ""){
-      
+
       const selectedDoc = documents?.find((item) => item?.documentType === doc?.code);
       if(!selectedDoc?.id){
         setDocuments((prev) => prev.filter((item) => item?.documentType !== doc?.code));
@@ -471,7 +471,7 @@ function SelectDocument({
             isRemovable={!doc?.required}
             // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
           />
-          <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+          <p className="obps-page-components-document-details--style-1">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           {/* {uploadedFile ? <div>
             <SubmitBar onSubmit={() => {routeTo(uploadedFile)}} label={t("CS_VIEW_DOCUMENT")} />
           </div> : null } */}

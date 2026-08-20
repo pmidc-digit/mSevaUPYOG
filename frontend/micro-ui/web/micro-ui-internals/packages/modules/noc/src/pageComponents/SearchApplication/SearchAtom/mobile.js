@@ -24,7 +24,7 @@ const SearchApplicationMobileView = ({ SearchFormFieldsComponent, propsMobileInb
         case "remove":
             return false;
         default:
-            break;        
+            break;
         }
     }
 
@@ -92,11 +92,11 @@ const SearchApplicationMobileView = ({ SearchFormFieldsComponent, propsMobileInb
             </PopUp>
         ) : null}
         {data?.[0]?.display ? (
-            <Card style={{ marginTop: 20 }}>
+            <Card className="noc-page-components-search-application-search-atom-mobile--style-1">
             {t(data?.[0]?.display)
                 .split("\\n")
                 .map((text, index) => (
-                <p key={index} style={{ textAlign: "center" }}>
+                <p key={index} className="noc-page-components-search-application-search-atom-mobile--style-2">
                     {text}
                 </p>
                 ))}

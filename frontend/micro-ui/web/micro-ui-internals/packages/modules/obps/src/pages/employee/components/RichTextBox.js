@@ -73,7 +73,7 @@ const RichTextBox = ({ value, onChange, placeholder, className, style, maxLength
 
   return (
     <div className={`rich-textbox-wrapper ${className || ""}`} style={{ display: "flex", flexDirection: "column", gap: "6px", ...style }}>
-      <div style={{ display: "flex", gap: "6px", alignItems: "center" }} className="rich-textbox-toolbar">
+      <div  className="rich-textbox-toolbar obps-pages-employee-components-rich-text-box--style-1">
         {/* <button type="button" onClick={() => wrapSelection("**", "**")} title="Bold">
           <b>B</b>
         </button>
@@ -86,7 +86,7 @@ const RichTextBox = ({ value, onChange, placeholder, className, style, maxLength
         <button type="button" onClick={() => insertAt("\n- ")} title="Bullet list">
           •
         </button>
-        <div style={{ marginLeft: "auto", fontSize: "12px", color: "#666" }}>
+        <div className="obps-pages-employee-components-rich-text-box--style-2">
           {text.length}/{maxLength}
         </div>
       </div>
@@ -95,8 +95,8 @@ const RichTextBox = ({ value, onChange, placeholder, className, style, maxLength
         placeholder={placeholder}
         value={text}
         onChange={handleChange}
-        className={"rich-textbox-textarea"}
-        style={{ resize: "none", overflow: "hidden", minHeight: "80px", maxHeight: "1500px", padding: "8px", fontSize: "14px" }}
+        className={["rich-textbox-textarea", "obps-pages-employee-components-rich-text-box--style-3"].filter(Boolean).join(" ")}
+
       />
     </div>
   );

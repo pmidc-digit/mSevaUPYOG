@@ -17,7 +17,7 @@ export const newConfig = [
             headerCaption: "BPA_LICENSE_DET_CAPTION",
             // header: "BPA_LICENSE_TYPE",
             cardText: "BPA_LICENSE_TYPE_TEXT",
-            // submitBarLabel: "CS_COMMON_NEXT",  
+            // submitBarLabel: "CS_COMMON_NEXT",
           },
           nextStep: "licensee-details",
           key: "LicneseType",
@@ -92,4 +92,4 @@ export const newConfig = [
 
       ]
     }
-  ] 
+  ]

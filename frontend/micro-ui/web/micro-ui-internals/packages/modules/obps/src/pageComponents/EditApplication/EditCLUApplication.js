@@ -93,7 +93,7 @@ const CLUEditApplication = () => {
   const { isLoading, data} = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
   const applicationDetails= data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
-  
+
   const cluObject = applicationDetails?.Clu?.[0] || {};
   const applicantDetails = cluObject?.cluDetails?.additionalDetails?.applicationDetails || {};
   const siteDetails = cluObject?.cluDetails?.additionalDetails?.siteDetails || {};
@@ -102,7 +102,7 @@ const CLUEditApplication = () => {
   const ownerPhotoList= cluObject?.cluDetails?.additionalDetails?.ownerPhotos || [];
   const ownerIdList= cluObject?.cluDetails?.additionalDetails?.ownerIds || [];
 
-  
+
   const setStep = (updatedStepNumber) => {
     dispatch(SET_OBPS_STEP(updatedStepNumber));
   };
@@ -115,7 +115,7 @@ const CLUEditApplication = () => {
 
   const { data: appliedCategoryData, isLoading: isMdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "CLU", [{ name: "AppliedCategory" }]);
   const appliedCluCategoryOptions = appliedCategoryData?.CLU?.AppliedCategory || [];
- 
+
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId);
 
   const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
@@ -195,7 +195,7 @@ const CLUEditApplication = () => {
         const updatedSiteDetails=
         {
           ...siteDetails,
-          localityAreaType: areaTypeOptions?.find((obj)=> obj.name === siteDetails?.localityAreaType?.name  || obj.name === siteDetails?.localityAreaType), 
+          localityAreaType: areaTypeOptions?.find((obj)=> obj.name === siteDetails?.localityAreaType?.name  || obj.name === siteDetails?.localityAreaType),
           appliedCluCategory: appliedCluCategoryOptions?.find((obj)=> obj.name === siteDetails?.appliedCluCategory?.name || obj.name === siteDetails?.appliedCluCategory),
           ulbName: ulbListOptions?.find((obj)=> obj.name === siteDetails?.ulbName?.name  || obj.name === siteDetails?.ulbName),
           roadType: roadType?.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
@@ -203,21 +203,21 @@ const CLUEditApplication = () => {
 
           buildingCategory: buildingCategory?.find((obj) => (obj.name === siteDetails?.buildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory)),
         }
-      
+
         dispatch(UPDATE_OBPS_FORM("applicationDetails", updatedApplicantDetails));
         dispatch(UPDATE_OBPS_FORM("siteDetails", updatedSiteDetails));
         dispatch(UPDATE_OBPS_FORM("documents", formattedDocuments));
         dispatch(UPDATE_OBPS_FORM("apiData", applicationDetails));
-        
+
     }
   }, [isLoading, applicationDetails, isMdmsLoading, isBuildingTypeLoading]);
 
 
   const handleSubmit = (dataGet) => {
-    
+
   };
 
-  
+
    if (isLoading || !formData.applicationDetails) {
     return <div><Loader/></div>; // or a spinner component
    }

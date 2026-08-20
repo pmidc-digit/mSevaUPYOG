@@ -32,7 +32,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   const [PermanentAddress, setPermanentAddress] = useState(
     formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentAddress ||
     formData?.LicneseDetails?.PermanentAddress ||
-      formData?.formData?.LicneseDetails?.PermanentAddress      
+      formData?.formData?.LicneseDetails?.PermanentAddress
   );
   const { pathname } = useLocation();
   const tenantId = window?.localStorage?.getItem("CITIZEN.CITY");
@@ -95,9 +95,9 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
     if (isLoading || !districtList?.["common-masters"]?.DistrictMaster?.length) return [];
 
     return districtList?.["common-masters"]?.DistrictMaster?.filter((district) => district.state_code === selectedState?.state_code);
-      
+
   }, [isLoading, districtList, selectedState]);
-  
+
   const uniqueDistrictsCor = useMemo(() => {
     if (isLoading || !districtList["common-masters"]?.DistrictMaster?.length) return [];
 
@@ -131,14 +131,14 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
 
   useEffect(() => {
     if (typeof selectedState === "string" && stateOptions?.length > 0) {
-      const state = stateOptions.find((state) => state.state_name === selectedState);      
-      setSelectedState(state);     
+      const state = stateOptions.find((state) => state.state_name === selectedState);
+      setSelectedState(state);
     }
   }, [selectedState, stateOptions]);
 
   useEffect(() => {
     if (typeof selectedCorrespondentState === "string" && stateOptions?.length > 0) {
-      const state = stateOptions.find((state) => state.state_name === selectedCorrespondentState);      
+      const state = stateOptions.find((state) => state.state_name === selectedCorrespondentState);
       setSelectedCorrespondentState(state);
     }
   }, [selectedCorrespondentState, stateOptions]);
@@ -190,7 +190,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
         if(!selectedCorrespondentDistrict || !selectedCorrespondentDistrict?.state_code){
           const district = uniqueDistrictsCor.find((district) => district.district_name_english === userDetails?.user[0]?.correspondenceDistrict);
           console.log("SettingSelectedCorrespondentDistrict 2", uniqueDistrictsCor, district, userDetails?.user[0]?.correspondenceDistrict);
-          
+
           setSelectedCorrespondentDistrict(district);
         }
       }
@@ -432,7 +432,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                   correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
                   permanentPinCode : pinCode,
                   permanentState: selectedState.state_name,
-                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,                  
+                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,
                 },
               ],
               subOwnerShipCategory: "INDIVIDUAL",
@@ -445,7 +445,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 qualificationType: formData?.LicneseType?.qualificationType?.name,
                 counsilForArchNo: formData?.LicneseType?.ArchitectNo,
                 isSelfCertificationRequired: formData?.LicneseType?.selfCertification || null,
-                isAddressSame: isAddressSame,                
+                isAddressSame: isAddressSame,
                 // Ulb: selectedUlbTypes,
                 // Ulb: isArchitect ? [] : selectedUlbTypes,
                 Ulb: tenantToSend,
@@ -482,7 +482,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               "professional-document-details": true,
               isCreate: false,
               // applicationType: "NEW"
-            }               
+            }
           };
           onSelect("", data, "", true);
         })
@@ -561,7 +561,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 qualificationType: formData?.LicneseType?.qualificationType?.name || formData?.formData?.LicneseType?.qualificationType?.name,
                 counsilForArchNo: formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo,
                 isSelfCertificationRequired: formData?.LicneseType?.selfCertification || formData?.formData?.LicneseType?.selfCertification || null,
-                isAddressSame: isAddressSame,                
+                isAddressSame: isAddressSame,
                 Ulb: tenantToSend,
               },
               address: {
@@ -595,7 +595,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               "professional-document-details": true,
               isCreate: false,
               // applicationType: "NEW"
-            }                   
+            }
           };
           onSelect("", data, "", true);
         })
@@ -669,7 +669,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 // counsilForArchNo: formData?.LicneseType?.ArchitectNo,
                 // isSelfCertificationRequired: formData?.LicneseType?.selfCertification || null,
                 ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),
-                isAddressSame: isAddressSame,                
+                isAddressSame: isAddressSame,
                 Ulb: tenantToSend,
               },
               address: {
@@ -704,7 +704,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               "professional-document-details": true,
               isCreate: false,
               // applicationType: "NEW"
-            }                   
+            }
           };
           onSelect("", data, "", true);
         })
@@ -778,7 +778,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 // counsilForArchNo: formData?.LicneseType?.ArchitectNo,
                 // isSelfCertificationRequired: formData?.LicneseType?.selfCertification || null,
                 ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),
-                isAddressSame: isAddressSame,                
+                isAddressSame: isAddressSame,
                 Ulb: tenantToSend,
               },
               address: {
@@ -813,7 +813,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               "professional-document-details": true,
               isCreate: false,
               // applicationType: "NEW"
-            }                   
+            }
           };
           onSelect("", data, "", true);
         })
@@ -865,7 +865,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                   mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
                   name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.name,
                   dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob ||null,
-                  emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId,                
+                  emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId,
                   permanentAddress: PermanentAddress,
                   correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
                   pan: formData?.LicneseDetails?.PanNumber,
@@ -882,12 +882,12 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                   tradeType: formData?.LicneseType?.LicenseType?.tradeType || formData?.formData?.LicneseType?.LicenseType?.tradeType,
                 },
               ],
-              additionalDetail: {                
+              additionalDetail: {
                 ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),
                 qualificationType: formData?.LicneseType?.qualificationType?.name || formData?.formData?.LicneseType?.qualificationType?.name,
                 counsilForArchNo: formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo,
                 isSelfCertificationRequired: formData?.LicneseType?.selfCertification || formData?.formData?.LicneseType?.selfCertification || null,
-                isAddressSame: isAddressSame,                
+                isAddressSame: isAddressSame,
                 Ulb: tenantToSend,
               },
               address: {
@@ -915,7 +915,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           setLoader(false);
           let data = {
             ...formData,
-            result: result,  
+            result: result,
             editableFields: {
               "provide-license-type": true,
               "licensee-details": true,
@@ -923,8 +923,8 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               "professional-document-details": true,
               isCreate: false,
               // applicationType: "NEW"
-            }          
-          };          
+            }
+          };
           onSelect("", data, "", true);
         })
         .catch((e) => {
@@ -976,7 +976,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                   mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
                   name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.name,
                   dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob ||null,
-                  emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId,                
+                  emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId,
                   permanentAddress: PermanentAddress,
                   correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
                   pan: formData?.LicneseDetails?.PanNumber,
@@ -993,12 +993,12 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                   tradeType: formData?.LicneseType?.LicenseType?.tradeType || formData?.formData?.LicneseType?.LicenseType?.tradeType,
                 },
               ],
-              additionalDetail: {                
+              additionalDetail: {
                 ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),
                 qualificationType: formData?.LicneseType?.qualificationType?.name || formData?.formData?.LicneseType?.qualificationType?.name,
                 counsilForArchNo: formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo,
                 isSelfCertificationRequired: formData?.LicneseType?.selfCertification || formData?.formData?.LicneseType?.selfCertification || null,
-                isAddressSame: isAddressSame,                
+                isAddressSame: isAddressSame,
                 Ulb: tenantToSend,
               },
               address: {
@@ -1027,7 +1027,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           setLoader(false);
           let data = {
             ...formData,
-            result: result,  
+            result: result,
             editableFields: {
               "provide-license-type": true,
               "licensee-details": false,
@@ -1035,8 +1035,8 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               "professional-document-details": true,
               isCreate: false,
               // applicationType: "NEW"
-            }          
-          };          
+            }
+          };
           onSelect("", data, "", true);
         })
         .catch((e) => {
@@ -1062,11 +1062,11 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       const payload = {
         Licenses: [
           {
-            ...licenseData,            
+            ...licenseData,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
               owners: [
-                {                  
+                {
                   ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
                   gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.gender,
                   mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
@@ -1084,15 +1084,15 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                   correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,
                 },
               ],
-              additionalDetail: {                
-                ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),                
-                counsilForArchNo: formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,                
-                isAddressSame: isAddressSame,                
+              additionalDetail: {
+                ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),
+                counsilForArchNo: formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
+                isAddressSame: isAddressSame,
                 Ulb: tenantToSend,
               },
               applicationDocuments: formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments || []
-            },         
-            action: "SAVE_AS_DRAFT",            
+            },
+            action: "SAVE_AS_DRAFT",
           },
         ],
       };
@@ -1103,7 +1103,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           setLoader(false);
           let data = {
             ...formData,
-            result: result,  
+            result: result,
             editableFields: {
               "provide-license-type": true,
               "licensee-details": true,
@@ -1111,8 +1111,8 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               "professional-document-details": true,
               isCreate: false,
               // applicationType: "NEW"
-            }          
-          };          
+            }
+          };
           onSelect("", data, "", true);
         })
         .catch((e) => {
@@ -1175,7 +1175,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
             onChange={handleAddressSame}
             checked={isAddressSame}
-           
+
             //  disable={!isCitizenEditable}
           />
 
@@ -1262,7 +1262,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
             onChange={handleAddressSame}
             checked={isAddressSame}
-            style={{ paddingBottom: "10px", paddingTop: "10px" }}
+            className="obps-page-components-permanent-address--style-1"
              disable={!isEditable}
           />
 
@@ -1349,9 +1349,9 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
 
           {Array.isArray(formData?.LicneseType?.LicenseType?.role) &&
             formData?.LicneseType?.LicenseType?.role.includes("BPA_ARCHITECT") ? (
-              <div 
+              <div
                 style={{
-                  pointerEvents: "none", 
+                  pointerEvents: "none",
                   opacity: 0.6,
                   cursor: "not-allowed",
                   maxWidth:"540px"

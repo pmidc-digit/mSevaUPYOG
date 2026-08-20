@@ -45,7 +45,7 @@ const CLUFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
       enabled: !!payload,
     }
   );
- 
+
   const [prevSiteDetails, setPrevSiteDetails] = useState(null);
 
   useEffect(() => {
@@ -63,7 +63,7 @@ const CLUFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
     const totalAmount= data?.Calculation?.[0]?.taxHeadEstimates?.reduce((acc,item)=> acc+(item?.estimateAmount || 0),0) || "N/A";
 
     const rows = [{ id: "1", title: t("BPA_FEE_LABEL"), amount: totalAmount }];
-    
+
     rows.push({
       id: "status",
       title: t("BPA_STATUS_LABEL"),
@@ -85,7 +85,7 @@ const CLUFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
       accessor: "amount",
       Cell: ({ row, value }) => {
         if (row.original.isStatus) {
-          return <span style={{ color: "green", fontWeight: "bold" }}>{value}</span>;
+          return <span className="obps-page-components-clufee-estimation-details--style-1">{value}</span>;
         }
         return (value !== null && value !== undefined ? `₹ ${value.toLocaleString()}` : t("CS_NA"));
       },

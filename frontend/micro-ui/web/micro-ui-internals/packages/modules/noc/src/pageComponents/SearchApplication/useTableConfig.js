@@ -5,9 +5,9 @@ import { encodeURIComponentCustom } from "../../utils";
 
 const useSearchApplicationTableConfig = () => {
     const {t} = useTranslation();
-    
+
     const GetCell = (value) => <span className="cell-text">{value}</span>;
-    
+
     return useMemo( () => ([
         {
           Header: t("NOC_APPLICATION_NUMBER"),

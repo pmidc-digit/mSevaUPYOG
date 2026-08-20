@@ -295,7 +295,6 @@ const RenewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             optionKey={"action"}
             t={t}
             onSelect={onActionSelect}
-            // style={MenuStyle}
           />
         ) : null}
         <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />

@@ -12,7 +12,7 @@ const InboxLinks = ({ parentRoute, businessService, allLinks, headerText }) => {
   }, []);
 
   const GetLogo = () => (
-    <div className="header" style={{ justifyContent: "flex-start" }}>
+    <div className="header obps-pages-citizen-architect-inbox-application-links--style-1" >
       <span className="logo">
       <OBPSIconSolidBg />
       </span>{" "}

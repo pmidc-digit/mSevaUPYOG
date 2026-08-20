@@ -77,18 +77,12 @@ const BookingPopup = ({ t, closeModal, onSubmit, setExistingDataSet, Searchdata 
         hideSubmit={true}
         formId="modal-action"
       >
-        <Card style={{ boxShadow: "none" }}>
+        <Card className="ads-components-booking-popup--style-1">
           {showExistingBookingDetails && (
             <ExistingBookingDetails onSubmit={onSubmit} setExistingDataSet={setExistingDataSet} Searchdata={Searchdata} />
           )}
           <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "20px",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
+            className="ads-components-booking-popup--style-2"
           >
             {!showExistingBookingDetails && <SubmitBar label={t("USE_EXISTING_DETAILS")} onSubmit={handleExistingDetailsClick} />}
             {!showExistingBookingDetails && <SubmitBar label={t("FILL_NEW_DETAILS")} onSubmit={setchbData} />}

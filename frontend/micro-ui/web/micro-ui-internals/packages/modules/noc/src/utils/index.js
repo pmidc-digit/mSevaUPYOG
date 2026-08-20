@@ -417,12 +417,12 @@ export const downloadPdfFromURL = async (receiptUrl) => {
 
 export const encodeURIComponentCustom = (text) => {
   const SECRET_KEY = localStorage.getItem("token");
-    
+
   if (!SECRET_KEY) {
     console.error("SECRET_KEY (token) not found in localStorage");
     return null;
   }
-  
+
   const encrypted = CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
 
   // Make URL safe
@@ -435,12 +435,12 @@ export const encodeURIComponentCustom = (text) => {
 // Decrypt
 export const decodeURIComponentCustom = (cipherText) => {
   try {
-    const SECRET_KEY = localStorage.getItem("token"); 
+    const SECRET_KEY = localStorage.getItem("token");
     if (!SECRET_KEY) {
       console.error("SECRET_KEY (token) not found in localStorage");
       return null;
     }
-  
+
     // Restore base64
     const base64 = cipherText
       .replace(/-/g, "+")

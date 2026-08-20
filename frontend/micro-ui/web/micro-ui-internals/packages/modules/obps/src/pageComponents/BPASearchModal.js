@@ -61,10 +61,10 @@ export const BPASearchModal = ({ closeModal, edcrData }) => {
 
         try {
             setIsLoading(true);
-            const response = await Digit.OBPSService.BPASearch(tenantId, { 
+            const response = await Digit.OBPSService.BPASearch(tenantId, {
                 ...(mobileNumber?.length>0? {mobileNumber: mobileNumber} : {}),
                 ...(applicationNumber?.length>0?{ applicationNo: applicationNumber} : {}),
-                status: "BLOCKED,INITIATED",                
+                status: "BLOCKED,INITIATED",
             });
             setIsLoading(false);
             if(response?.BPA?.length>0){
@@ -105,7 +105,7 @@ export const BPASearchModal = ({ closeModal, edcrData }) => {
                 Header: t("Status"),
                 accessor: "status",
                 Cell: ({ value }) => t(value) || t("CS_NA"),
-            },            
+            },
             {
                 Header: t("Mobile Number"),
                 accessor: "landInfo",
@@ -118,15 +118,15 @@ export const BPASearchModal = ({ closeModal, edcrData }) => {
                     }
                     return ownerObject?.mobileNumber || "";
                 },
-            },            
+            },
         {
             Header: t(""),
             accessor: "id",
-            Cell: ({ value }) =>                                    
+            Cell: ({ value }) =>
             <SubmitBar label={t("Select")} onSubmit={() => {
                 const selectedData = searchedData?.find((val) => val?.id === value);
                 console.log("Selected Application", selectedData)
-                getBPAFormDataNewEDCR(selectedData, edcrData?.edcrNumber,history, t)                
+                getBPAFormDataNewEDCR(selectedData, edcrData?.edcrNumber,history, t)
             }}/>
         },
         ];
@@ -137,7 +137,7 @@ export const BPASearchModal = ({ closeModal, edcrData }) => {
                 headerBarEnd={<CloseBtn onClick={closeModal} />}
                 formId="modal-action"
                 popupStyles={{
-                    width: "unset",                    
+                    width: "unset",
                     padding: "20px",
                 }}
                 hideSubmit={true}
@@ -160,21 +160,21 @@ export const BPASearchModal = ({ closeModal, edcrData }) => {
                             disable={false}
                             // maxlength={16}
                             placeholder={t("BPA_SEARCH_APPLICATION_NO_PLACEHOLDER")}
-                            defaultValue={undefined}                            
+                            defaultValue={undefined}
                         />
                         <TextInput
-                            t={t} 
-                            isMandatory={false} 
+                            t={t}
+                            isMandatory={false}
                             key={"mobileNumber"}
                             value={mobileNumber} //{propertyId}
                             onChange={handleMobileNumberChange}
                             maxlength={10}
-                            placeholder={t("BPA_OWNER_MOBILE_NO_PLACEHOLDER")} 
-                            defaultValue={undefined}                         
+                            placeholder={t("BPA_OWNER_MOBILE_NO_PLACEHOLDER")}
+                            defaultValue={undefined}
                         />
 
                         {/* {!isSearchClicked && !isLoading && ( */}
-                            <button className="submit-bar" type="button" style={{ color: "white", width: "100%", maxWidth: "100px" }} onClick={handleSeacrh}>
+                            <button className="submit-bar obps-page-components-bpasearch-modal--style-1" type="button"  onClick={handleSeacrh}>
                                 {`${t("PT_SEARCH")}`}
                             </button>
                         {/* )} */}

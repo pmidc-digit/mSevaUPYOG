@@ -37,11 +37,11 @@ const App = () => {
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
   return (
-    <span className={"chb-citizen"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
+    <span className={["chb-citizen", "gc-style-3892582b1c"].filter(Boolean).join(" ")} >
       <Switch>
         <AppContainer>
           {!isResponse ? (
-            <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px" } : {}}>
+            <div className={window.location.href.includes("application-overview") || isMobile ? "gc-citizen-breadcrumb--offset" : ""}>
               <GCBreadCrumbs location={location} />
             </div>
           ) : null}{" "}

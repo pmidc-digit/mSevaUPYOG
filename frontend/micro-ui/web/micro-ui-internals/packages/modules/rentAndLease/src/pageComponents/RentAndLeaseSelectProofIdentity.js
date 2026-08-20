@@ -227,7 +227,6 @@ function RentAndLeaseSelectDocument({
       {loading && <Loader />}
 
       <LabelFieldPair>
-        {/* <CardLabel className="card-label-smaller" style={{width:"100%"}}>{t(doc?.code.replaceAll(".", "_")) + (doc?.required && <span style={mandatoryStyle}>  *</span>)}</CardLabel> */}
         <CardLabel className="card-label-smaller ral-doc-label">
           {t(doc?.code?.replaceAll(".", "_"))}
           {doc?.required && !checkLegacy && <span className="mandatory-asterisk"> *</span>}

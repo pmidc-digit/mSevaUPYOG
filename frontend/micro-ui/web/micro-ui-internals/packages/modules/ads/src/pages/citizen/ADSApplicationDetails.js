@@ -341,7 +341,7 @@ const ADSApplicationDetails = () => {
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+        <div className="cardHeaderWithOptions ads-pages-citizen-adsapplication-details--style-1" >
           <Header styles={{ fontSize: "32px" }}>{t("ADS_BOOKING_DETAILS")}</Header>
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
@@ -354,7 +354,7 @@ const ADSApplicationDetails = () => {
         </div>
         <Card>
           <StatusTable></StatusTable>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_APPLICANT_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ads-pages-citizen-adsapplication-details--style-2">{t("ADS_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("ADS_APPLICANT_NAME")} text={ads_details?.applicantDetail?.applicantName || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_MOBILE_NUMBER")} text={ads_details?.applicantDetail?.applicantMobileNo || t("CS_NA")} />
@@ -368,7 +368,7 @@ const ADSApplicationDetails = () => {
             )}
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_APPLICATION_ADS_DETAILS_OVERVIEW")}</CardSubHeader>
+          <CardSubHeader className="ads-pages-citizen-adsapplication-details--style-3">{t("ADS_APPLICATION_ADS_DETAILS_OVERVIEW")}</CardSubHeader>
           <ADSCartDetails cartDetails={cartData || []} t={t} />
 
           {ads_details?.workflow?.documents?.length > 0 && (
@@ -379,7 +379,7 @@ const ADSApplicationDetails = () => {
               </StatusTable>
 
               {ads_details?.workflow?.documents?.length > 0 ? (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
+                <div className="ads-pages-citizen-adsapplication-details--style-4">
                   {ads_details?.workflow?.documents.map((doc, idx) => (
                     <div key={idx}>
                       <ADSDocument value={ads_details?.workflow?.documents} Code={doc?.documentType} index={idx} />
@@ -388,15 +388,15 @@ const ADSApplicationDetails = () => {
                   ))}
                 </div>
               ) : (
-                <div style={{ padding: "0 1.5rem" }}>{t("TL_NO_DOCUMENTS_MSG")}</div>
+                <div className="ads-pages-citizen-adsapplication-details--style-5">{t("TL_NO_DOCUMENTS_MSG")}</div>
               )}
             </Card>
           )}
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_DOCUMENTS_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ads-pages-citizen-adsapplication-details--style-6">{t("ADS_DOCUMENTS_DETAILS")}</CardSubHeader>
           <StatusTable>
             {docs?.length > 0 ? (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
+              <div className="ads-pages-citizen-adsapplication-details--style-7">
                 {docs.map((doc, index) => (
                   <div key={index}>
                     <ADSDocument value={docs} Code={doc?.documentType} index={index} />
@@ -405,7 +405,7 @@ const ADSApplicationDetails = () => {
                 ))}
               </div>
             ) : (
-              <div style={{ padding: "0 1.5rem" }}>{t("TL_NO_DOCUMENTS_MSG")}</div>
+              <div className="ads-pages-citizen-adsapplication-details--style-8">{t("TL_NO_DOCUMENTS_MSG")}</div>
             )}
           </StatusTable>
 

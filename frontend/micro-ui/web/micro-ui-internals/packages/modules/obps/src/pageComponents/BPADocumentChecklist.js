@@ -75,9 +75,9 @@ const BPADocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                         handleRemarkChange(doc.id, e.target.value);
                       }}
                       disabled={false}
-                      className="checklist-table-textarea"
+                      className="checklist-table-textarea obps-page-components-bpadocument-checklist--style-1"
                       placeholder="Enter remarks"
-                      style={{ overflow: "hidden" }}
+
                     />
                   )}
                 </div>
@@ -130,9 +130,9 @@ const BPADocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                             handleRemarkChange(doc.id, e.target.value);
                           }}
                           disabled={false}
-                          className="checklist-table-textarea"
+                          className="checklist-table-textarea obps-page-components-bpadocument-checklist--style-2"
                           placeholder="Enter remarks"
-                          style={{ overflow: "hidden" }}
+
                         />
                       )}
                     </td>

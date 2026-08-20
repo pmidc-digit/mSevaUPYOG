@@ -10,7 +10,7 @@ import { Loader } from "../../components/Loader";
 const defaultValues = {
   mobileNumber: "",
   applicationNumber: "",
-  propertyId: "",
+  propertyId: ""
 };
 
 const BillGenie = () => {
@@ -21,7 +21,7 @@ const BillGenie = () => {
   const [loader, setLoader] = useState(false);
   const [getBills, setBills] = useState([]);
   const [showToast, setShowToast] = useState(null);
-  
+
   const { printReceipt } = Digit.Hooks.usePrintBillReceipt({
     tenantId,
     setLoader,
@@ -49,9 +49,9 @@ const BillGenie = () => {
     handleSubmit,
     formState: { errors },
     reset,
-    register,
+    register
   } = useForm({
-    defaultValues,
+    defaultValues
   });
 
   const onSubmit = async (data) => {
@@ -66,7 +66,7 @@ const BillGenie = () => {
       ...(data?.applicationNumber && { applicationNumber: data.applicationNumber }),
       ...(data?.mobileNumber && { mobileNumber: data.mobileNumber }),
       ...(data?.propertyId && { propertyId: data.propertyId }),
-      businesService: "rl-services",
+      businesService: "rl-services"
     };
 
     try {
@@ -85,75 +85,75 @@ const BillGenie = () => {
   };
 
   const columns = [
-    { Header: t("Application Number"), accessor: "consumerCode" },
-    { Header: t("UC_BILL_NO_LABEL"), accessor: "billNumber" },
-    { Header: t("UC_CONSUMER_NAME_LABEL"), accessor: "payerName" },
-    {
-      Header: t("UC_BILL_DATE_LABEL"),
-      accessor: "billDate",
-      Cell: ({ row }) => {
-        return (
-          <div>
+  { Header: t("Application Number"), accessor: "consumerCode" },
+  { Header: t("UC_BILL_NO_LABEL"), accessor: "billNumber" },
+  { Header: t("UC_CONSUMER_NAME_LABEL"), accessor: "payerName" },
+  {
+    Header: t("UC_BILL_DATE_LABEL"),
+    accessor: "billDate",
+    Cell: ({ row }) => {
+      return (
+        <div>
             <span>{row.original?.billDate ? GetCell(format(new Date(row.original?.billDate), "dd/MM/yyyy")) : ""}</span>
-          </div>
-        );
-      },
-    },
-    { Header: t("UC_BILL_AMOUNT_LABEL"), accessor: "totalAmount" },
-    { Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"), accessor: "status" },
-    {
-      Header: t("Action"),
-      accessor: "action",
-      Cell: ({ row }) => {
-        console.log("row", row?.original);
-        return (
-          <div style={{ display: "flex", gap: "15px" }}>
-            <SubmitBar label={t("UC_DOWNLOAD_RECEIPT")} onSubmit={() => getReceiptSearch(row.original)} />
-            {row?.original?.status == "ACTIVE" && (
-              <SubmitBar
-                label="Pay"
-                onSubmit={() => {
-                  console.log("check row", row?.original?.uuid);
-                  const id = row?.original?.consumerCode;
-                  history.push(`/digit-ui/employee/payment/collect/rl-services/${id}/${tenantId}?tenantId=${tenantId}`);
-                }}
-              />
-            )}
-            {/* <SubmitBar label={t("UC_DOWNLOAD_RECEIPT")} onSubmit={() => getReceiptSearch(row.original)} /> */}
-          </div>
-        );
-      },
-    },
-  ];
+          </div>);
 
-  
+    }
+  },
+  { Header: t("UC_BILL_AMOUNT_LABEL"), accessor: "totalAmount" },
+  { Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"), accessor: "status" },
+  {
+    Header: t("Action"),
+    accessor: "action",
+    Cell: ({ row }) => {
+      console.log("row", row?.original);
+      return (
+        <div className="ral-style-463f21217a">
+            <SubmitBar label={t("UC_DOWNLOAD_RECEIPT")} onSubmit={() => getReceiptSearch(row.original)} />
+            {row?.original?.status == "ACTIVE" &&
+          <SubmitBar
+            label="Pay"
+            onSubmit={() => {
+              console.log("check row", row?.original?.uuid);
+              const id = row?.original?.consumerCode;
+              history.push(`/digit-ui/employee/payment/collect/rl-services/${id}/${tenantId}?tenantId=${tenantId}`);
+            }} />
+
+          }
+            {/* <SubmitBar label={t("UC_DOWNLOAD_RECEIPT")} onSubmit={() => getReceiptSearch(row.original)} /> */}
+          </div>);
+
+    }
+  }];
+
+
+
   const getReceiptSearch = async (bill) => {
     printReceipt({
       billOrPaymentResponse: [bill],
       businessService: "rl-services",
-      rootKey: "BILLS",
+      rootKey: "BILLS"
     });
   };
 
 
   return (
     <React.Fragment>
-      <div style={{ margin: "16px" }}>
+      <div className="ral-style-526d2de178">
         <Header>{t("RAL_BILL_GENIE_HEADER")}</Header>
       </div>
       <Card>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="search-complaint-container" style={{ padding: "0", margin: "0" }}>
+          <div className="search-complaint-container ral-style-b89d6f781b">
             <div
-              className="complaint-input-container for-pt"
-              style={{
-                width: "100%",
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                gap: "16px",
-                margin: "0",
-              }}
-            >
+              className="complaint-input-container for-pt ral-style-2122396076">
+
+
+
+
+
+
+
+
               <div className="input-fields">
                 <span className="complaint-input">
                   <Label>{t("CORE_COMMON_MOBILE_NUMBER")}</Label>
@@ -163,11 +163,11 @@ const BillGenie = () => {
                     rules={{
                       pattern: {
                         value: /^[6-9]\d{9}$/,
-                        message: t("CORE_INVALID_MOBILE_NUMBER"),
-                      },
+                        message: t("CORE_INVALID_MOBILE_NUMBER")
+                      }
                     }}
-                    render={(props) => <MobileNumber onChange={props.onChange} value={props.value} t={t} />}
-                  />
+                    render={(props) => <MobileNumber onChange={props.onChange} value={props.value} t={t} />} />
+
                   {errors?.mobileNumber && <CardLabelError>{errors.mobileNumber.message}</CardLabelError>}
                 </span>
               </div>
@@ -186,44 +186,44 @@ const BillGenie = () => {
                 </span>
               </div>
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "24px" }}>
+            <div className="ral-style-fbb51b7b95">
               <SubmitBar
                 label={t("CS_COMMON_RESET")}
                 onSubmit={() => {
                   reset(defaultValues);
                   setBills([]);
                 }}
-                className="submit-bar ral-back-btn"
-              />
+                className="submit-bar ral-back-btn" />
+
               <SubmitBar label={t("ES_COMMON_SEARCH")} submit="submit" />
             </div>
           </div>
         </form>
       </Card>
 
-      {getBills?.length > 0 && (
-        <div style={{ marginTop: "24px", background: "white", padding: "16px", borderRadius: "8px" }}>
+      {getBills?.length > 0 &&
+      <div className="ral-style-b46b779814">
           <ApplicationTable
-            t={t}
-            data={getBills}
-            columns={columns}
-            getCellProps={(cellInfo) => ({
-              style: {
-                minWidth: "150px",
-                padding: "20px 18px",
-                fontSize: "16px",
-              },
-            })}
-            isPaginationRequired={false}
-            totalRecords={getBills.length}
-          />
+          t={t}
+          data={getBills}
+          columns={columns}
+          getCellProps={(cellInfo) => ({
+            style: {
+              minWidth: "150px",
+              padding: "20px 18px",
+              fontSize: "16px"
+            }
+          })}
+          isPaginationRequired={false}
+          totalRecords={getBills.length} />
+
         </div>
-      )}
+      }
       {showToast && <Toast error={showToast.error} label={showToast.label} isDleteBtn={true} onClose={closeToast} />}
 
       {loader && <Loader page={true} />}
-    </React.Fragment>
-  );
+    </React.Fragment>);
+
 };
 
 export default BillGenie;

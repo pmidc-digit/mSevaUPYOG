@@ -39,7 +39,7 @@ const getBPAEditDetails = async (data, APIScrutinyDetails,mdmsData,nocdata,t) =>
     });
 
     return subOcc;
-    
+
   }
 
   data.BlockIds=getBlockIds(data?.landInfo?.unit);
@@ -184,7 +184,7 @@ const BPASendToArchitect = ({ parentRoute }) => {
     goNext(skipStep);
   };
   const handleSkip = () => {};
-  
+
   newConfig = newConfig?.BuildingPermitConfig ? newConfig?.BuildingPermitConfig : newConfigBPA;
   newConfig.forEach((obj) => {
     config = config.concat(obj.body.filter((a) => !a.hideInCitizen));

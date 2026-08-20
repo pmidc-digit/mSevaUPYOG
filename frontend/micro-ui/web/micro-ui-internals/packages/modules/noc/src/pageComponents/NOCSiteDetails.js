@@ -105,7 +105,7 @@ const sortedRoadType = useMemo(
   const  allCities = Digit.Hooks.noc.useTenants();
 
   // console.log('allcities', allCities)
-  
+
   const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [
     { name: "zoneMaster", filter: `$.[?(@.tanentId == '${tenantId}')]` },
   ]);
@@ -163,7 +163,7 @@ const sortedRoadType = useMemo(
 
 // console.log('ulbName', ulbName)
 
-  
+
 
   const nocCpt = useSelector(state => state.noc?.NOCNewApplicationFormReducer?.formData?.cpt);
   console.log('nocCpt', nocCpt)
@@ -223,7 +223,7 @@ const sortedRoadType = useMemo(
     }
   }, [currentStepData, setValue, addFloor, removeFloor]);
 
-  
+
   // Set netTotalArea from property landArea if available
   useEffect(() => {
     const landareaObj = currentStepData?.cpt?.details?.Properties?.[0]?.Properties?.[0]?.Properties?.[0];
@@ -239,7 +239,7 @@ const sortedRoadType = useMemo(
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px" }}>
+      <div className="noc-page-components-nocsite-details--style-1">
         <CardSectionHeader className="card-section-header">{t("NOC_SITE_DETAILS")}</CardSectionHeader>
         <div>
           <LabelFieldPair>
@@ -275,11 +275,11 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              {errors?.plotNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.plotNo.message}</p>}
+              {errors?.plotNo && <p className="noc-page-components-nocsite-details--style-2">{errors.plotNo.message}</p>}
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-3">
             <CardLabel className="card-label-smaller">
               {t("NOC_PROPOSED_SITE_ADDRESS")}
               <span className="requiredField">*</span>
@@ -312,13 +312,13 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>
+              <CardLabelError className="noc-page-components-nocsite-details--style-4">
                 {errors?.proposedSiteAddress ? errors.proposedSiteAddress.message : ""}
               </CardLabelError>
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-5">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_ULB_NAME_LABEL")}`}
               <span className="requiredField">*</span>
@@ -344,11 +344,11 @@ const sortedRoadType = useMemo(
                 )}
               />
 
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.ulbName ? errors.ulbName.message : ""}</CardLabelError>
+              <CardLabelError className="noc-page-components-nocsite-details--style-6">{errors?.ulbName ? errors.ulbName.message : ""}</CardLabelError>
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-7">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_ULB_TYPE_LABEL")}`}
               <span className="requiredField">*</span>
@@ -373,11 +373,11 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              {errors?.ulbType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.ulbType.message}</p>}
+              {errors?.ulbType && <p className="noc-page-components-nocsite-details--style-8">{errors.ulbType.message}</p>}
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-9">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_KHASRA_NO_LABEL")}`}
               <span className="requiredField">*</span>
@@ -409,11 +409,11 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              {errors?.khasraNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.khasraNo.message}</p>}
+              {errors?.khasraNo && <p className="noc-page-components-nocsite-details--style-10">{errors.khasraNo.message}</p>}
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-11">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_HADBAST_NO_LABEL")}`}
               <span className="requiredField">*</span>
@@ -449,11 +449,11 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              {errors?.hadbastNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.hadbastNo.message}</p>}
+              {errors?.hadbastNo && <p className="noc-page-components-nocsite-details--style-12">{errors.hadbastNo.message}</p>}
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-13">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_ROAD_TYPE_LABEL")}`}
               <span className="requiredField">*</span>
@@ -471,11 +471,11 @@ const sortedRoadType = useMemo(
                   )}
                 />
               )}
-              {errors?.roadType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.roadType.message}</p>}
+              {errors?.roadType && <p className="noc-page-components-nocsite-details--style-14">{errors.roadType.message}</p>}
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-15">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_NET_TOTAL_AREA_LABEL")}`}
               <span className="requiredField">*</span>
@@ -509,11 +509,11 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.netTotalArea?.message || ""}</CardLabelError>
+              <CardLabelError className="noc-page-components-nocsite-details--style-16">{errors?.netTotalArea?.message || ""}</CardLabelError>
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-17">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")}`}
               <span className="requiredField">*</span>
@@ -556,13 +556,13 @@ const sortedRoadType = useMemo(
                 )}
               />
               {errors?.areaLeftForRoadWidening && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.areaLeftForRoadWidening.message}</p>
+                <p className="noc-page-components-nocsite-details--style-18">{errors.areaLeftForRoadWidening.message}</p>
               )}
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
-            <CardLabel style={{ marginTop: "0" }} className="card-label-smaller">
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-19">
+            <CardLabel  className="card-label-smaller noc-page-components-nocsite-details--style-20">
               {`${t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}
               <span className="requiredField">*</span>
             </CardLabel>
@@ -595,12 +595,12 @@ const sortedRoadType = useMemo(
                 )}
               />
               {errors?.netPlotAreaAfterWidening && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.netPlotAreaAfterWidening.message}</p>
+                <p className="noc-page-components-nocsite-details--style-21">{errors.netPlotAreaAfterWidening.message}</p>
               )}
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-22">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_ROAD_WIDTH_AT_SITE_LABEL")}`}
               <span className="requiredField">*</span>
@@ -632,13 +632,13 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>
+              <CardLabelError className="noc-page-components-nocsite-details--style-23">
                 {errors?.roadWidthAtSite ? errors.roadWidthAtSite.message : ""}
               </CardLabelError>
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-24">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_BUILDING_STATUS_LABEL")}`}
               <span className="requiredField">*</span>
@@ -664,12 +664,12 @@ const sortedRoadType = useMemo(
                   )}
                 />
               )}
-              {errors?.buildingStatus && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.buildingStatus.message}</p>}
+              {errors?.buildingStatus && <p className="noc-page-components-nocsite-details--style-25">{errors.buildingStatus.message}</p>}
             </div>
           </LabelFieldPair>
 
           {buildingStatus?.code === "BUILTUP" && (
-            <LabelFieldPair style={{ marginBottom: "20px" }}>
+            <LabelFieldPair className="noc-page-components-nocsite-details--style-26">
               <CardLabel className="card-label-smaller">
                 {`${t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}`}
                 <span className="requiredField">*</span>
@@ -696,14 +696,14 @@ const sortedRoadType = useMemo(
                   )}
                 />
                 {errors?.isBasementAreaAvailable && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.isBasementAreaAvailable.message}</p>
+                  <p className="noc-page-components-nocsite-details--style-27">{errors.isBasementAreaAvailable.message}</p>
                 )}
               </div>
             </LabelFieldPair>
           )}
 
           {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
-            <LabelFieldPair style={{ marginBottom: "20px" }}>
+            <LabelFieldPair className="noc-page-components-nocsite-details--style-28">
               <CardLabel className="card-label-smaller">
                 {`${t("NOC_BASEMENT_AREA_LABEL")}`}
                 <span className="requiredField">*</span>
@@ -739,7 +739,7 @@ const sortedRoadType = useMemo(
                     />
                   )}
                 />
-                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>
+                <CardLabelError className="noc-page-components-nocsite-details--style-29">
                   {errors?.basementArea ? errors.basementArea.message : ""}
                 </CardLabelError>
               </div>
@@ -748,11 +748,11 @@ const sortedRoadType = useMemo(
 
           {buildingStatus?.code === "BUILTUP" &&
             areaFields.map((field, index) => (
-              <div style={{ display: "flex", gap: "10px", flexDirection: "column" }}>
+              <div className="noc-page-components-nocsite-details--style-30">
                 <CardLabel className="card-label-smaller">
                   {index === 0 ? "Ground" : `${index}`} Floor Area(sq mt)<span className="requiredField">*</span>
                 </CardLabel>
-                <div key={field.id} className="field" style={{ display: "flex", gap: "10px" }}>
+                <div key={field.id} className="field noc-page-components-nocsite-details--style-31" >
                   <Controller
                     control={control}
                     name={`floorArea.${index}.value`}
@@ -804,7 +804,7 @@ const sortedRoadType = useMemo(
           )}
 
           {buildingStatus?.code === "BUILTUP" && (
-            <LabelFieldPair style={{ marginBottom: "20px" }}>
+            <LabelFieldPair className="noc-page-components-nocsite-details--style-32">
               <CardLabel className="card-label-smaller">{`${t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")}`}</CardLabel>
               <div className="field">
                 <Controller
@@ -828,7 +828,7 @@ const sortedRoadType = useMemo(
             </LabelFieldPair>
           )}
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-33">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_SITE_WARD_NO_LABEL")}`}
               <span className="requiredField">*</span>
@@ -860,11 +860,11 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              {errors?.wardNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.wardNo.message}</p>}
+              {errors?.wardNo && <p className="noc-page-components-nocsite-details--style-34">{errors.wardNo.message}</p>}
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-35">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_DISTRICT_LABEL")}`}
               <span className="requiredField">*</span>
@@ -891,11 +891,11 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              {errors?.district && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.district.message}</p>}
+              {errors?.district && <p className="noc-page-components-nocsite-details--style-36">{errors.district.message}</p>}
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-37">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_ZONE_LABEL")}`}
               <span className="requiredField">*</span>
@@ -920,11 +920,11 @@ const sortedRoadType = useMemo(
                   )}
                 />
               )}
-              {errors?.zone && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.zone.message}</p>}
+              {errors?.zone && <p className="noc-page-components-nocsite-details--style-38">{errors.zone.message}</p>}
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-39">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_SITE_VILLAGE_NAME_LABEL")}`}
               <span className="requiredField">*</span>
@@ -956,11 +956,11 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              {errors?.villageName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.villageName.message}</p>}
+              {errors?.villageName && <p className="noc-page-components-nocsite-details--style-40">{errors.villageName.message}</p>}
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-41">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_SITE_COLONY_NAME_LABEL")}`}
               <span className="requiredField">*</span>
@@ -992,11 +992,11 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              {errors?.colonyName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.colonyName.message}</p>}
+              {errors?.colonyName && <p className="noc-page-components-nocsite-details--style-42">{errors.colonyName.message}</p>}
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-43">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_SITE_VASIKA_NO_LABEL")}`}
               <span className="requiredField">*</span>
@@ -1029,7 +1029,7 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              {errors?.vasikaNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.vasikaNumber.message}</p>}
+              {errors?.vasikaNumber && <p className="noc-page-components-nocsite-details--style-44">{errors.vasikaNumber.message}</p>}
             </div>
           </LabelFieldPair>
           <LabelFieldPair>
@@ -1069,11 +1069,11 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              {errors?.vasikaDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors?.vasikaDate?.message}</p>}
+              {errors?.vasikaDate && <p className="noc-page-components-nocsite-details--style-45">{errors?.vasikaDate?.message}</p>}
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="noc-page-components-nocsite-details--style-46">
             <CardLabel className="card-label-smaller">
               {`${t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")}`}
               <span className="requiredField">*</span>
@@ -1110,7 +1110,7 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
-              {errors?.khewatAndKhatuniNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.khewatAndKhatuniNo.message}</p>}
+              {errors?.khewatAndKhatuniNo && <p className="noc-page-components-nocsite-details--style-47">{errors.khewatAndKhatuniNo.message}</p>}
             </div>
           </LabelFieldPair>
 

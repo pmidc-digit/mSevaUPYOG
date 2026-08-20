@@ -25,7 +25,7 @@ const CustomGeoLocationButton = ({geoLocation}) =>{
     }
 
     return (
-        <LinkButton style={{ float: "right", display: "inline" }}
+        <LinkButton className="obps-page-components-site-inspection--style-1"
             label={t("View")}
             onClick={() => routeTo()}
         />
@@ -40,7 +40,7 @@ export const SiteInspection = ({ siteImages, setSiteImages, customOpen }) => {
     const stateId = Digit.ULBService.getStateId();
     const [error, setError] = useState(null);
     const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(stateId, "FieldInspection", [{ name: "Documents" }]);
-    
+
 
     const handleUpload = (key, ids) => {
         setSiteImages(ids)
@@ -59,9 +59,9 @@ export const SiteInspection = ({ siteImages, setSiteImages, customOpen }) => {
     return (
         <div>
             <React.Fragment>
-                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INPECTION_IMAGES")}</CardSectionHeader>                               
+                <CardSectionHeader className="obps-page-components-site-inspection--style-2">{t("SITE_INPECTION_IMAGES")}</CardSectionHeader>
                 {/* <CustomImageUploadHandler tenantId={stateId} uploadedImages={siteImages || null} onPhotoChange={(ids) => {handleUpload(ids)}} geoLocations={geoLocations} setGeoLocations={setGeoLocations} />                 */}
-                <div style={{ marginTop: "20px" }}>
+                <div className="obps-page-components-site-inspection--style-3">
                     <SelectNDCDocuments
                         t={t}
                         config={{ key: "documents" }}
@@ -80,15 +80,15 @@ export const SiteInspection = ({ siteImages, setSiteImages, customOpen }) => {
 
                 {geoLocations?.length > 0 &&
                 <React.Fragment>
-                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+                <CardSectionHeader className="obps-page-components-site-inspection--style-4">{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
                 <CustomLocationSearch position={geoLocations}/>
                 </React.Fragment>
                 }
                 {/* {geoLocations?.length > 0 &&
-                <React.Fragment>                
+                <React.Fragment>
                 <StatusTable>
-                {geoLocations?.map((value, index) => 
-                    <Row 
+                {geoLocations?.map((value, index) =>
+                    <Row
                         className="border-none"
                         label={t("SITE_GEO_LOCATION_"+(index+1))}
                         actionButton={<CustomGeoLocationButton geoLocation={value}/>}
@@ -97,7 +97,7 @@ export const SiteInspection = ({ siteImages, setSiteImages, customOpen }) => {
                 </StatusTable>
                 </React.Fragment>
                 } */}
-            </React.Fragment>            
+            </React.Fragment>
         </div>
     );
 };

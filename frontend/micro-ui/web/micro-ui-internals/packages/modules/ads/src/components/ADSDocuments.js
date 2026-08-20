@@ -234,7 +234,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           Document
           <span className="requiredField"> {" *"}</span>
         </CardLabel>
-        <div className="field" style={{ width: "100%" }}>
+        <div className="field ads-components-adsdocuments--style-1" >
           <UploadFile
             onUpload={selectfile}
             onDelete={() => {

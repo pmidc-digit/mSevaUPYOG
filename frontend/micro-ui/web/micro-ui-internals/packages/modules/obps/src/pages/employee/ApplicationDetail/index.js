@@ -58,13 +58,13 @@ console.log("licenseType:", licenseType);
   const closeToast = () => {
     setShowToast(null);
   };
-  
+
   const handleViewTimeline=()=>{
     setViewTimeline(true);
       const timelineSection=document.getElementById('timeline');
       if(timelineSection){
         timelineSection.scrollIntoView({behavior: 'smooth'});
-      } 
+      }
   };
   let dowloadOptions = [];
   console.log("applicationDetails",applicationDetails)
@@ -77,9 +77,9 @@ console.log("licenseType:", licenseType);
 
   return (
     <div className={"employee-main-application-details"}>
-        <div  className={"employee-application-details"} style={{marginBottom: "40px"}}>
+        <div  className={["employee-application-details", "obps-pages-employee-application-detail-index--style-1"].filter(Boolean).join(" ")} >
         <Header>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
-        <div style={{zIndex: "10", display: "flex", flexDirection:"row", gap: "10px", justifyContent:"space-between", alignItems:"center"}}> 
+        <div className="obps-pages-employee-application-detail-index--style-2">
                 {(() => {
             const passportPhoto = License?.tradeLicenseDetail?.applicationDocuments?.find(
               (doc) => doc.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO",
@@ -88,19 +88,11 @@ console.log("licenseType:", licenseType);
             if (!passportPhoto || !documents[passportPhoto.fileStoreId]) return null
 
             return (
-              <div style={{display: "flex", flexDirection:"column" , alignItems: "center", marginBottom: "1rem"}}>
+              <div className="obps-pages-employee-application-detail-index--style-3">
               <img
                 src={documents[passportPhoto.fileStoreId]?.split(",")[0] || "/placeholder.svg"}
                 alt="Owner Photograph"
-                style={{
-                  maxWidth: "120px",
-                  maxHeight: "120px",
-                  border: "2px solid #e0e0e0",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                  flexShrink: 0,
-                  marginTop: "245px"
-                }}
+                className="obps-pages-employee-application-detail-index--style-4"
                 onError={(e) => {
                   e.target.style.display = "none"
                 }}
@@ -108,7 +100,7 @@ console.log("licenseType:", licenseType);
               <CardLabel style={boldLabelStyle}>{License?.tradeLicenseDetail?.owners?.[0]?.name}</CardLabel>
               </div>
             )
-          })()}       
+          })()}
         {/* {workflowDetails?.data?.timeline?.length>0 && (
         <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
         )} */}

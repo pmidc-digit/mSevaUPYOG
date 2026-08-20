@@ -30,16 +30,16 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
       onChange([...values, applicationType])
     } else{
       onChange(values.filter( item => item.code !== applicationType.code ))
-    } 
+    }
   }
 
   function isChecked(selectedValues, currentValue ){
-    return !!selectedValues.find(i => i.code === currentValue.code) 
+    return !!selectedValues.find(i => i.code === currentValue.code)
   }
 
   return <>
     {(window.location.href.includes("/employee") && tenantId === "pb.punjab") ? <FilterFormField>
-      <div className="filter-label sub-filter-label" style={{fontSize: "18px", fontWeight: "600"}}>{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
+      <div className="filter-label sub-filter-label obps-pages-employee-inbox-filter-form-fields-component--style-1" >{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
       {cities && cities.length > 0 ? (
         <Dropdown
           option={cities}
@@ -51,7 +51,7 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
         />
       ) : null}
     </FilterFormField>: null}
-    {!window.location.href.includes("/citizen") ? 
+    {!window.location.href.includes("/citizen") ?
     <FilterFormField>
     <Controller
       name="assignee"
@@ -111,7 +111,7 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
         control={controlFilterForm}
         render={(props) => {
           return loadingApplicationTypesOfBPA ? <Loader /> : <>
-            <div className="filter-label sub-filter-label" style={{fontSize: "18px", fontWeight: "600"}}>{t("BPA_SEARCH_APPLICATION_TYPE_LABEL")}</div>
+            <div className="filter-label sub-filter-label obps-pages-employee-inbox-filter-form-fields-component--style-2" >{t("BPA_SEARCH_APPLICATION_TYPE_LABEL")}</div>
             <RadioButtons
               onSelect={(e) => {
                 props.onChange(e.code);
@@ -134,7 +134,7 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
           control={controlFilterForm}
           render={(props) => {
             return <>
-              <div className="filter-label sub-filter-label" style={{fontSize: "18px", fontWeight: "600"}}>{t("ES_INBOX_RISK_TYPE")}</div>
+              <div className="filter-label sub-filter-label obps-pages-employee-inbox-filter-form-fields-component--style-3" >{t("ES_INBOX_RISK_TYPE")}</div>
               <RadioButtons
                 onSelect={(e) => {props.onChange(e.code);
                 setFilterFormValue("applicationStatus",[])}}
@@ -151,7 +151,7 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
     {
     (selectedApplicationType == "BUILDING_OC_PLAN_SCRUTINY" || (selectedApplicationType?.length > 0 && selectedBusinessService?.length > 0)) ?
     <FilterFormField>
-      <div className="filter-label sub-filter-label" style={{fontSize: "18px", fontWeight: "600"}}>{t("ACTION_TEST_APPLICATION_STATUS")}</div>
+      <div className="filter-label sub-filter-label obps-pages-employee-inbox-filter-form-fields-component--style-4" >{t("ACTION_TEST_APPLICATION_STATUS")}</div>
       <Controller
         name="applicationStatus"
         control={controlFilterForm}
@@ -168,13 +168,13 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
                 return e?.businessservice !== "BPA_LOW" && e?.businessservice !== "BPA_OC"
               }
               return e.businessservice === value
-            
+
           } )?.map( (status, index) => {
             return <CheckBox
               //style={{marginTop: "10px"}}
               key={index}
-              onChange={(e) => 
-                // e.target.checked ? changeItemCheckStatus([...props?.value, status?.statusid]) : changeItemCheckStatus(props?.value?.filter( id => id !== status?.statusid)) 
+              onChange={(e) =>
+                // e.target.checked ? changeItemCheckStatus([...props?.value, status?.statusid]) : changeItemCheckStatus(props?.value?.filter( id => id !== status?.statusid))
                 {
                   if (e.target.checked && props?.value) {
                     changeItemCheckStatus([...props?.value, status?.statusid])

@@ -11,12 +11,12 @@ const MyApplications = ({ view }) => {
   const queryClient = useQueryClient();
   const userInfo = Digit.UserService.getUser()?.info || {};
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
-  
+
 
   // Local pagination state
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(window.Digit.Utils.browser.isMobile() ? 50 : 10);
-  
+
   const params = useMemo(
     () => ({
       sortBy: "createdTime",
@@ -130,18 +130,18 @@ const MyApplications = ({ view }) => {
           {`${t("NOC_MY_APPLICATION")}`}({total})
         </Header>
 
-        {list.length === 0 ? <Card style={{ textAlign: "center" }}>{t("NO_APPLICATIONS_MSG")}</Card> : null}
+        {list.length === 0 ? <Card className="noc-pages-citizen-applications-my-applications--style-1">{t("NO_APPLICATIONS_MSG")}</Card> : null}
 
         {window.Digit.Utils.browser.isMobile() ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div className="noc-pages-citizen-applications-my-applications--style-2">
             {list.map((application, index) => (
-              <Card key={index} style={{ padding: "12px", borderRadius: "8px", boxShadow: "0px 2px 6px rgba(0,0,0,0.1)" }}>
-                <h3 style={{ fontSize: "16px", marginBottom: "8px" }}>{application?.Applications?.applicationNo}</h3>
-                <p style={{ margin: "4px 0" }}>
+              <Card key={index} className="noc-pages-citizen-applications-my-applications--style-3">
+                <h3 className="noc-pages-citizen-applications-my-applications--style-4">{application?.Applications?.applicationNo}</h3>
+                <p className="noc-pages-citizen-applications-my-applications--style-5">
                   <b>{t("Owner Name")}:</b>{" "}
                   {application?.Applications?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || t("CS_NA")}
                 </p>
-                <p style={{ margin: "4px 0" }}>
+                <p className="noc-pages-citizen-applications-my-applications--style-6">
                   <b>{t("NOC_APPLICATION_STATUS")}:</b>{" "}
                   {t(application?.Applications?.applicationStatus) || application?.Applications?.applicationStatus || t("CS_NA")}
                 </p>

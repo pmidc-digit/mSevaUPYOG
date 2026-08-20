@@ -50,7 +50,11 @@ const EmployeeApp = ({ path, url, userType }) => {
       },
     ];
 
-    return <BreadCrumb style={isMobile ? { display: "flex" } : {}} spanStyle={{ maxWidth: "min-content" }} crumbs={crumbs} />;
+    return (
+      <div className={`ptr-employee-breadcrumb${isMobile ? " ptr-employee-breadcrumb--mobile" : ""}`}>
+        <BreadCrumb crumbs={crumbs} />
+      </div>
+    );
   };
 
   const PTRCreate = Digit?.ComponentRegistryService?.getComponent("NewPTRStepperForm");

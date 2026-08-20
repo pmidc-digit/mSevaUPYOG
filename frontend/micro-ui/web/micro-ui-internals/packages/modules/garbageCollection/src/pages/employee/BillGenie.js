@@ -129,7 +129,7 @@ const BillGenie = () => {
       accessor: "action",
       Cell: ({ row }) => {
         return (
-          <div style={{ display: "flex", gap: "15px" }}>
+          <div className="gc-style-0bac17190a gc-bill-genie__row-actions">
             <SubmitBar label="Download" onSubmit={() => getReceiptSearch(getBills[row.original._index])} />
             {row?.original?.status == "Active" && (
               <SubmitBar
@@ -165,25 +165,17 @@ const BillGenie = () => {
   };
 
   return (
-    <React.Fragment>
-      <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 40px" }}>
+    <div className={`gc-bill-genie ${isCitizenCheck ? "gc-bill-genie--citizen" : "gc-bill-genie--employee"}`}>
+      <CardSubHeader className="gc-style-3852417c9d">
         {isCitizenCheck ? "Search and Pay" : t("ACTION_TEST_GARBAGE_COLLECTION_BILL_GENIE")}
       </CardSubHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "24px",
-            width: "100%",
-          }}
+          className="gc-style-287885dae7 gc-bill-genie__filters"
         >
           {/*Service Category */}
           <div
-            style={{
-              flex: "0 0 20%", // 2 items per row
-              maxWidth: "20%",
-            }}
+            className="gc-style-af0f5324e8 gc-bill-genie__field"
           >
             <CardLabel>{`${t("CS_SWACH_LOCALITY")}`}*</CardLabel>
             <Controller
@@ -191,8 +183,8 @@ const BillGenie = () => {
               name={"locality"}
               render={(props) => (
                 <Dropdown
-                  style={{ marginBottom: 0, width: "100%" }}
-                  className="form-field"
+
+                  className="form-field gc-style-6b38c97cb9"
                   select={(e) => {
                     props.onChange(e);
                   }}
@@ -203,15 +195,12 @@ const BillGenie = () => {
                 />
               )}
             />
-            {errors?.locality && <p style={{ color: "red" }}>{errors.locality.message}</p>}
+            {errors?.locality && <p className="gc-style-31981a7d51">{errors.locality.message}</p>}
           </div>
 
           {/*Bill No. */}
           <div
-            style={{
-              flex: "0 0 20%", // 2 items per row
-              maxWidth: "20%",
-            }}
+            className="gc-style-af0f5324e8 gc-bill-genie__field"
           >
             <CardLabel>{`${t("Bill No.")}`}</CardLabel>
             <Controller
@@ -219,7 +208,7 @@ const BillGenie = () => {
               name="billNo"
               render={(props) => (
                 <TextInput
-                  style={{ marginBottom: 0 }}
+                  className="gc-style-648149cea2"
                   value={props.value}
                   onChange={(e) => {
                     props.onChange(e.target.value);
@@ -235,10 +224,7 @@ const BillGenie = () => {
 
           {/*Mobile No. */}
           <div
-            style={{
-              flex: "0 0 20%", // 2 items per row
-              maxWidth: "20%",
-            }}
+            className="gc-style-af0f5324e8 gc-bill-genie__field"
           >
             <CardLabel>{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}</CardLabel>
             <Controller
@@ -252,7 +238,7 @@ const BillGenie = () => {
               }}
               render={(props) => (
                 <MobileNumber
-                  style={{ marginBottom: 0 }}
+                  className="gc-style-648149cea2"
                   value={props.value}
                   onChange={(e) => {
                     props.onChange(e);
@@ -266,7 +252,7 @@ const BillGenie = () => {
         </div>
 
         {getBills.length > 0 && (
-          <div className="tableClass">
+          <div className="tableClass gc-bill-genie__results">
             <ApplicationTable
               t={t}
               data={slotlistRows}
@@ -284,9 +270,9 @@ const BillGenie = () => {
             />
           </div>
         )}
-        <ActionBar>
+        <ActionBar className="gc-bill-genie__actions">
           <SubmitBar
-            style={{ background: "#eee", color: "black", border: "1px solid" }}
+            className="gc-style-65b1b5e6ec"
             label="Reset"
             onSubmit={() => {
               reset(defaultValues);
@@ -299,7 +285,7 @@ const BillGenie = () => {
       {showToast && <Toast isDleteBtn={true} error={error} label={getLable} onClose={closeToast} />}
 
       {loader && <Loader page={true} />}
-    </React.Fragment>
+    </div>
   );
 };
 

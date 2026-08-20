@@ -68,16 +68,16 @@ function OBPSDocument({
                   target="_blank"
                   rel="noopener noreferrer"
                   href={documentLink}
-                  className="document-link"
+                  className="document-link obps-page-components-obpsdocuments--style-1"
                   key={index}
-                  style={{width: "250px"}}
+
                 >
                   <div className="document-card">
                     <div className="document-icon-wrapper">
                       <PDFSvg width={80} height={100} />
                     </div>
                     <p className="document-name">
-                      {isStakeHolder 
+                      {isStakeHolder
                         ? t(`BPAREG_HEADER_${stringReplaceAll(Code?.toUpperCase(), ".", "_")}`)
                         : t(Code)
                       }

@@ -395,10 +395,10 @@ const LocationSearch = (props) => {
         <SearchIconSvg className="map-search-bar-icon" />
         <input
           id="pac-input"
-          className="map-search-bar"
+          className="map-search-bar ads-components-location-search--style-1"
           type="text"
           placeholder="Search Address"
-          style={{ backgroundPosition: "left", color: "#222", caretColor: "#222" }}
+
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();

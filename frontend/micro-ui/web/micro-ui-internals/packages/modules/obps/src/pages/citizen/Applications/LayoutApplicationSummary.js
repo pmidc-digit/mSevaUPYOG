@@ -58,8 +58,7 @@ const DocumentLink = ({ fileStoreId, cluNumber, stateCode, t, label }) => {
           });
           const cluApp = searchRes?.Clu?.[0];
           if (cluApp) {
-            fId = cluApp?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId ||
-                  cluApp?.additionalDetails?.sanctionLetterFilestoreId;
+            fId = cluApp?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId || cluApp?.additionalDetails?.sanctionLetterFilestoreId;
             if (cluApp?.tenantId) {
               fetchTenantId = cluApp.tenantId;
             }
@@ -93,31 +92,25 @@ const DocumentLink = ({ fileStoreId, cluNumber, stateCode, t, label }) => {
   if (loading) return <span>{t("LOADING") || "Loading..."}</span>;
   if (!url) return <span>{t("CS_NA") || "NA"}</span>;
 
-  return (
-    <LinkButton
-      label={t("View") || "View"}
-      onClick={() => window.open(url, "_blank")}
-    />
-  );
+  return <LinkButton label={t("View") || "View"} onClick={() => window.open(url, "_blank")} />;
 };
 
-
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint
+  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
     time: checkpoint?.auditDetails?.timing,
     name: checkpoint?.assigner?.name,
     mobileNumber: checkpoint?.assigner?.mobileNumber,
     source: checkpoint?.assigner?.source,
-  }
+  };
 
   return (
     <div>
       {comment?.length > 0 && (
         <div className="TLComments">
           <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
+          <p className="obps-pages-citizen-applications-layout-application-summary--style-1">{comment}</p>
         </div>
       )}
 
@@ -125,8 +118,8 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         <DisplayPhotos
           srcs={thumbnailsToShow.thumbs}
           onClick={(src, idx) => {
-            const fullImage = thumbnailsToShow.fullImage?.[idx] || src
-            Digit.Utils.zoomImage(fullImage)
+            const fullImage = thumbnailsToShow.fullImage?.[idx] || src;
+            Digit.Utils.zoomImage(fullImage);
           }}
         />
       )}
@@ -139,7 +132,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         </div>
       )}
 
-      <div style={{ marginTop: "8px" }}>
+      <div className="obps-pages-citizen-applications-layout-application-summary--style-2">
         {caption.time && <p>{caption.time}</p>}
         {caption.date && <p>{caption.date}</p>}
         {caption.name && <p>{caption.name}</p>}
@@ -147,30 +140,29 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
       </div>
     </div>
-  )
-}
-
+  );
+};
 
 const LayoutApplicationOverview = () => {
-  const { layid } = useParams()
-  const id = decryptId(layid)
-  const { t } = useTranslation()
-  const history = useHistory()
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY")
+  const { layid } = useParams();
+  const id = decryptId(layid);
+  const { t } = useTranslation();
+  const history = useHistory();
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const stateCode = Digit.ULBService.getStateId();
   const [viewTimeline, setViewTimeline] = useState(false);
-  const [displayData, setDisplayData] = useState({})
+  const [displayData, setDisplayData] = useState({});
   const [loading, setLoading] = useState(false);
   const [timeObj, setTimeObj] = useState(null);
-  const state = Digit.ULBService.getStateId()
- const [feeAdjustments, setFeeAdjustments] = useState([]);
+  const state = Digit.ULBService.getStateId();
+  const [feeAdjustments, setFeeAdjustments] = useState([]);
   // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
-  const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, { cacheTime: 0 })
-  const applicationDetails = data?.resData
+  const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, { cacheTime: 0 });
+  const applicationDetails = data?.resData;
   const { isLoading: mdmsLoading, data: mdmsDocsData } = Digit.Hooks.pt.usePropertyMDMS(stateCode, "LAYOUT", ["LayoutDocuments"]);
   const layoutDocuments = applicationDetails?.Layout?.[0]?.documents || [];
   const rawOwners = applicationDetails?.Layout?.[0]?.owners || [];
-  const activeOwners = rawOwners.filter(o => o?.status !== false && o?.status !== "false");
+  const activeOwners = rawOwners.filter((o) => o?.status !== false && o?.status !== "false");
   const sortedOwners = [...activeOwners].sort((a, b) => {
     const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
     const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
@@ -178,9 +170,9 @@ const LayoutApplicationOverview = () => {
     if (!aPrimary && bPrimary) return 1;
     return 0;
   });
-  const sitePhotos = layoutDocuments?.filter(
-    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-  )?.sort((a, b) => a?.order - b?.order);
+  const sitePhotos = layoutDocuments
+    ?.filter((doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO")
+    ?.sort((a, b) => a?.order - b?.order);
 
   // Helper function to find document by type and owner index
   // Searches in both API documents (documents array) and owner's additionalDetails
@@ -224,20 +216,20 @@ const LayoutApplicationOverview = () => {
   //console.log("Owners array:", applicationDetails?.Layout?.[0]?.owners)
   //console.log("Owners count:", applicationDetails?.Layout?.[0]?.owners?.length)
   //console.log("=== End Debug ===")
-  const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name
+  const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name;
 
-  const { data: storeData } = Digit.Hooks.useStore.getInitData()
-  const { tenants } = storeData || {}
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
 
-  let user = Digit.UserService.getUser()
+  let user = Digit.UserService.getUser();
 
   if (window.location.href.includes("/obps") || window.location.href.includes("/layout")) {
-    const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject")
-    const userInfo = userInfos ? JSON.parse(userInfos) : {}
-    user = userInfo?.value
+    const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
+    const userInfo = userInfos ? JSON.parse(userInfos) : {};
+    user = userInfo?.value;
   }
 
-  const userRoles = user?.info?.roles?.map((e) => e.code)
+  const userRoles = user?.info?.roles?.map((e) => e.code);
 
   const handleDownloadPdf = async () => {
     try {
@@ -257,22 +249,22 @@ const LayoutApplicationOverview = () => {
   useEffect(() => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth" // use "auto" for instant scroll
+      behavior: "smooth", // use "auto" for instant scroll
     });
-  }, [])
+  }, []);
 
   useEffect(() => {
-    const layoutObject = applicationDetails?.Layout?.[0]
+    const layoutObject = applicationDetails?.Layout?.[0];
 
     //console.log("=== useEffect for displayData ===")
     //console.log("layoutObject:", layoutObject)
     //console.log("layoutObject?.documents:", layoutObject?.documents)
 
     if (layoutObject) {
-      const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails
-      const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails
-      const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates
-      const Documents = layoutObject?.documents || []
+      const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails;
+      const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails;
+      const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates;
+      const Documents = layoutObject?.documents || [];
 
       //console.log("Documents array:", Documents)
       //console.log("Documents length:", Documents.length)
@@ -282,10 +274,10 @@ const LayoutApplicationOverview = () => {
         siteDetails: siteDetails ? [siteDetails] : [],
         coordinates: coordinates ? [coordinates] : [],
         Documents: Documents.length > 0 ? Documents : [],
-      }
+      };
 
       //console.log("finalDisplayData:", finalDisplayData)
-      setDisplayData(finalDisplayData)
+      setDisplayData(finalDisplayData);
 
       const submittedOn = layoutObject?.layoutDetails?.additionalDetails?.SubmittedOn;
       const endTime = Date.now();
@@ -293,7 +285,7 @@ const LayoutApplicationOverview = () => {
       const time = formatDuration(totalTime);
       setTimeObj(time);
     }
-  }, [applicationDetails?.Layout])
+  }, [applicationDetails?.Layout]);
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -302,8 +294,8 @@ const LayoutApplicationOverview = () => {
       consumerCodes: id,
       isEmployee: false,
     },
-    { enabled: id ? true : false },
-  )
+    { enabled: id ? true : false }
+  );
   const { data: reciept_data_pay, isLoading: recieptDataLoadingPay } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
@@ -311,18 +303,18 @@ const LayoutApplicationOverview = () => {
       consumerCodes: id,
       isEmployee: false,
     },
-    { enabled: id ? true : false },
-  )
+    { enabled: id ? true : false }
+  );
 
- const combinedPayments = useMemo(() => {
-     const p1 = reciept_data?.Payments || [];
-     const p2 = reciept_data_pay?.Payments || [];
-     return [...p1, ...p2];
-   }, [reciept_data, reciept_data_pay]);
+  const combinedPayments = useMemo(() => {
+    const p1 = reciept_data?.Payments || [];
+    const p2 = reciept_data_pay?.Payments || [];
+    return [...p1, ...p2];
+  }, [reciept_data, reciept_data_pay]);
 
-    const hasPayments = combinedPayments.length > 0;
+  const hasPayments = combinedPayments.length > 0;
 
-  const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid
+  const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
 
   const downloadSanctionLetter = async () => {
     const application = applicationDetails?.Layout?.[0];
@@ -337,8 +329,7 @@ const LayoutApplicationOverview = () => {
     }
   };
 
-
-  const dowloadOptions = []
+  const dowloadOptions = [];
   if (applicationDetails?.Layout?.[0]) {
     dowloadOptions.push({
       label: t("Application Form"),
@@ -350,101 +341,101 @@ const LayoutApplicationOverview = () => {
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CLU_FEE_RECEIPT_1"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "layout-receipt" }),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "layout-receipt" }),
       });
     }
     if (reciept_data_pay && reciept_data_pay?.Payments.length > 0 && !recieptDataLoadingPay) {
       dowloadOptions.push({
         label: t("CLU_FEE_RECEIPT_2"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data_pay?.Payments[0]?.tenantId, payments: reciept_data_pay?.Payments[0], pdfkey: "layoutreceipt-second" }),
+        onClick: () =>
+          getRecieptSearch({
+            tenantId: reciept_data_pay?.Payments[0]?.tenantId,
+            payments: reciept_data_pay?.Payments[0],
+            pdfkey: "layoutreceipt-second",
+          }),
       });
     }
   }
   if (
-      applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId || applicationDetails?.Layout?.[0]?.applicationStatus === "ESIGNED"
-    ) {
-      dowloadOptions.push({
-        label: t("LETTER_OF_INTENT"),
-        onClick: () =>
-          getRecieptSearch({
-            tenantId: tenantId,
-            payments: reciept_data_pay?.Payments[0],
-            filestoreId: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId,
-            pdfkey: "layout-loi"
-          }),
-      });
-    }
+    applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId ||
+    applicationDetails?.Layout?.[0]?.applicationStatus === "ESIGNED"
+  ) {
+    dowloadOptions.push({
+      label: t("LETTER_OF_INTENT"),
+      onClick: () =>
+        getRecieptSearch({
+          tenantId: tenantId,
+          payments: reciept_data_pay?.Payments[0],
+          filestoreId: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId,
+          pdfkey: "layout-loi",
+        }),
+    });
+  }
 
   const getFloorLabel = (index) => {
-    if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL")
+    if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
 
-    const floorNumber = index
-    const lastDigit = floorNumber % 10
-    const lastTwoDigits = floorNumber % 100
+    const floorNumber = index;
+    const lastDigit = floorNumber % 10;
+    const lastTwoDigits = floorNumber % 100;
 
-    let suffix = "th"
+    let suffix = "th";
     if (lastTwoDigits < 11 || lastTwoDigits > 13) {
-      if (lastDigit === 1) suffix = "st"
-      else if (lastDigit === 2) suffix = "nd"
-      else if (lastDigit === 3) suffix = "rd"
+      if (lastDigit === 1) suffix = "st";
+      else if (lastDigit === 2) suffix = "nd";
+      else if (lastDigit === 3) suffix = "rd";
     }
 
-    return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`
-  }
+    return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
+  };
 
-  const [showToast, setShowToast] = useState(null)
-  const [displayMenu, setDisplayMenu] = useState(false)
-  const [selectedAction, setSelectedAction] = useState(null)
-  const [showOptions, setShowOptions] = useState(false)
+  const [showToast, setShowToast] = useState(null);
+  const [displayMenu, setDisplayMenu] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [showOptions, setShowOptions] = useState(false);
 
-  const menuRef = useRef()
+  const menuRef = useRef();
 
   const closeToast = () => {
-    setShowToast(null)
-  }
+    setShowToast(null);
+  };
 
   const closeMenu = () => {
-    setDisplayMenu(false)
-  }
+    setDisplayMenu(false);
+  };
 
-  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu)
+  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
   const businessServiceCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
-  const prefix= `WF_EMPLOYEE_${"LAYOUT"}_${businessServiceCode}`?.toUpperCase();
-  const Statusprefix= `WF_EMPLOYEE_LAYOUT_STATUS_${businessServiceCode}`?.toUpperCase();
-  
+  const prefix = `WF_EMPLOYEE_${"LAYOUT"}_${businessServiceCode}`?.toUpperCase();
+  const Statusprefix = `WF_EMPLOYEE_LAYOUT_STATUS_${businessServiceCode}`?.toUpperCase();
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
     moduleCode: businessServiceCode,
-  })
+  });
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
-    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions]
+    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
-    workflowDetails.data.initialActionState =
-      workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {}
-    workflowDetails.data.actionState = { ...workflowDetails.data }
+    workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
+    workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
   useEffect(() => {
     if (workflowDetails) {
-      workflowDetails.revalidate()
+      workflowDetails.revalidate();
     }
 
     if (data) {
-      data.revalidate()
+      data.revalidate();
     }
-  }, [])
-  
-const hasCMCApproval =
-  workflowDetails?.data?.actionState?.timeline?.some(
-    (item) =>
-      item?.performedAction === "APPROVE" &&
-      item?.assigner?.roles?.some(
-        (role) => role?.code === "OBPAS_LAYOUT_CMC"
-      )
+  }, []);
+
+  const hasCMCApproval = workflowDetails?.data?.actionState?.timeline?.some(
+    (item) => item?.performedAction === "APPROVE" && item?.assigner?.roles?.some((role) => role?.code === "OBPAS_LAYOUT_CMC")
   );
 
   const isApplicationComplete = () => {
@@ -499,14 +490,12 @@ const hasCMCApproval =
 
           return { ...doc, required: isRequired };
         })
-        .filter(doc => !(doc?.cluRequired && !isCluApproved))
-        .filter(doc => doc !== null && doc.required);
+        .filter((doc) => !(doc?.cluRequired && !isCluApproved))
+        .filter((doc) => doc !== null && doc.required);
 
       const allRequiredDocsUploaded = requiredDocs.every((reqDoc) => {
         return layoutDocuments.some(
-          (appDoc) =>
-            appDoc?.documentType?.includes(reqDoc.code) &&
-            (appDoc?.fileStoreId || appDoc?.uuid || appDoc?.documentAttachment)
+          (appDoc) => appDoc?.documentType?.includes(reqDoc.code) && (appDoc?.fileStoreId || appDoc?.uuid || appDoc?.documentAttachment)
         );
       });
 
@@ -537,110 +526,106 @@ const hasCMCApproval =
     return true;
   };
 
-  const actions =
-    (workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
+  const actions = (
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     }) ||
-      workflowDetails?.data?.nextActions?.filter((e) => {
-        return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
-      }))?.filter((e) => {
-        if ((e.action === "APPLY" || e.action === "RESUBMIT") && !isApplicationComplete()) {
-          return false;
-        }
-        return true;
-      });
+    workflowDetails?.data?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    })
+  )?.filter((e) => {
+    if ((e.action === "APPLY" || e.action === "RESUBMIT") && !isApplicationComplete()) {
+      return false;
+    }
+    return true;
+  });
 
   const modifiedActions = actions?.map((action) => ({
-  ...action,
-  forcedName: action.action?.toUpperCase().includes("FORWARD")
-    ? "CS_ACTION_FORWARD"
-    : undefined,
-}));
+    ...action,
+    forcedName: action.action?.toUpperCase().includes("FORWARD") ? "CS_ACTION_FORWARD" : undefined,
+  }));
   function onActionSelect(action) {
-    const appNo = applicationDetails?.Layout?.[0]?.applicationNo
+    const appNo = applicationDetails?.Layout?.[0]?.applicationNo;
 
     const payload = {
       Licenses: [action],
-    }
+    };
 
     if (action?.action == "EDIT") {
-      history.push(`/digit-ui/citizen/obps/layout/edit-application/${appNo}`)
+      history.push(`/digit-ui/citizen/obps/layout/edit-application/${appNo}`);
     } else if (action?.action == "DRAFT") {
-      setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" })
+      setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       if (action?.action === "CANCEL") {
-        submitAction(payload)
+        submitAction(payload);
       } else if (isApplicationComplete()) {
-        submitAction(payload)
+        submitAction(payload);
       } else {
-        setShowToast({ key: "true", warning: true, message: "APPLICATION_INCOMPLETE" })
+        setShowToast({ key: "true", warning: true, message: "APPLICATION_INCOMPLETE" });
       }
     } else if (action?.action == "PAY") {
-      let businessService
+      let businessService;
       if (applicationDetails?.Layout?.[0]?.applicationStatus === "PENDINGAPPLICATIONPAYMENT") {
-        businessService = "LAYOUT.PAY1"
+        businessService = "LAYOUT.PAY1";
       } else {
-        businessService = "LAYOUT.PAY2"
+        businessService = "LAYOUT.PAY2";
       }
-      history.push(`/digit-ui/citizen/payment/collect/${businessService}/${appNo}/${tenantId}?tenantId=${tenantId}`) // Changed from Layout_mcUp to LAYOUT
+      history.push(`/digit-ui/citizen/payment/collect/${businessService}/${appNo}/${tenantId}?tenantId=${tenantId}`); // Changed from Layout_mcUp to LAYOUT
     } else {
-      setSelectedAction(action)
+      setSelectedAction(action);
     }
   }
 
   const submitAction = async (data) => {
-    const payloadData = applicationDetails?.Layout?.[0] || {}
+    const payloadData = applicationDetails?.Layout?.[0] || {};
     //console.log("payload data======> ",payloadData);
-
-
 
     const updatedApplicant = {
       ...payloadData,
 
       workflow: {},
-    }
+    };
 
-    const filtData = data?.Licenses?.[0]
+    const filtData = data?.Licenses?.[0];
 
     updatedApplicant.workflow = {
       action: filtData.action,
       assignes: filtData?.assignee,
       comment: filtData?.comment,
       documents: filtData?.wfDocuments,
-    }
+    };
 
     const finalPayload = {
       Layout: { ...updatedApplicant },
-    }
+    };
 
     try {
-      const response = await Digit.OBPSService.LayoutUpdate({ tenantId, ...finalPayload })
+      const response = await Digit.OBPSService.LayoutUpdate({ tenantId, ...finalPayload });
 
       if (response?.ResponseInfo?.status === "successful") {
         // if (filtData?.action === "CANCEL") {
         //   setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" })
         //   workflowDetails.revalidate()
         //   setSelectedAction(null)
-        // } else 
-         if (filtData?.action) {
+        // } else
+        if (filtData?.action) {
           history.replace({
             pathname: `/digit-ui/citizen/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
             state: { data: response },
-          })
-        }else{
-          setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" })
-          workflowDetails.revalidate()
+          });
+        } else {
+          setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
+          workflowDetails.revalidate();
           setSelectedAction(null);
-
         }
       } else {
-        setShowToast({ key: "true", warning: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" })
-        setSelectedAction(null)
+        setShowToast({ key: "true", warning: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
+        setSelectedAction(null);
       }
     } catch (err) {
-      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" })
+      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
     }
-  }
+  };
 
   // async function getRecieptSearch({ tenantId, payments, ...params }) {
   //   try {
@@ -664,146 +649,145 @@ const hasCMCApproval =
   // }
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, filestoreId = null, ...params }) {
-  try {
-    setLoading(true);
-    if (!filestoreId) {
-      const site = displayData?.siteDetails?.[0];
-      const owner = displayData?.owners?.[0];
-      const city = site?.district?.city;
+    try {
+      setLoading(true);
+      if (!filestoreId) {
+        const site = displayData?.siteDetails?.[0];
+        const owner = displayData?.owners?.[0];
+        const city = site?.district?.city;
 
-      const usage = site?.buildingCategory?.name;
-      const fee = payments?.totalAmountPaid;
-      const amountinwords = amountToWords(fee);
+        const usage = site?.buildingCategory?.name;
+        const fee = payments?.totalAmountPaid;
+        const amountinwords = amountToWords(fee);
 
-      // --- core fields, single source each, no aliasing ---
-      const ulbType = site?.ulbType || city?.ulbType;
-      const ulbName = site?.ulbName || city?.ulbName;
-      const ulbGrade = city?.ulbGrade; // confirm exact codes: NP / MC / Corp
-      const districtName = city?.districtName;
-      const applicationNo = displayData?.applicationNo;
-      const rawSubmissionDate = applicationDetails?.Layout?.[0]?.submissionDate || applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn;
-      const submissionDate = rawSubmissionDate ? Number(rawSubmissionDate) : undefined;
-      const rawIssueDate = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate;
-      const issueDate = rawIssueDate ? Number(rawIssueDate) : undefined;
-      const colonyTypeName = usage;
-      const proposedSiteAddress = site?.proposedSiteAddress || site?.district?.proposedSiteAddress;
-      const hadbastNo = site?.hadbastNo || site?.district?.hadbastNo;
-      const villageName = site?.villageName || site?.district?.villageName;
-      const areaSqm = site?.netTotalArea || site?.district?.netTotalArea;
+        // --- core fields, single source each, no aliasing ---
+        const ulbType = site?.ulbType || city?.ulbType;
+        const ulbName = site?.ulbName || city?.ulbName;
+        const ulbGrade = city?.ulbGrade; // confirm exact codes: NP / MC / Corp
+        const districtName = city?.districtName;
+        const applicationNo = displayData?.applicationNo;
+        const rawSubmissionDate =
+          applicationDetails?.Layout?.[0]?.submissionDate || applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn;
+        const submissionDate = rawSubmissionDate ? Number(rawSubmissionDate) : undefined;
+        const rawIssueDate = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate;
+        const issueDate = rawIssueDate ? Number(rawIssueDate) : undefined;
+        const colonyTypeName = usage;
+        const proposedSiteAddress = site?.proposedSiteAddress || site?.district?.proposedSiteAddress;
+        const hadbastNo = site?.hadbastNo || site?.district?.hadbastNo;
+        const villageName = site?.villageName || site?.district?.villageName;
+        const areaSqm = site?.netTotalArea || site?.district?.netTotalArea;
 
-      const primaryOwner = applicationDetails?.Layout?.[0]?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") || displayData?.owners?.[0] || owner;
-      const applicantType = (
-        primaryOwner?.additionalDetails?.aplicantType?.code ||
-        primaryOwner?.additionalDetails?.applicantType?.code ||
-        "INDIVIDUAL"
-      ).toUpperCase();
+        const primaryOwner =
+          applicationDetails?.Layout?.[0]?.owners?.find((o) => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") ||
+          displayData?.owners?.[0] ||
+          owner;
+        const applicantType = (
+          primaryOwner?.additionalDetails?.aplicantType?.code ||
+          primaryOwner?.additionalDetails?.applicantType?.code ||
+          "INDIVIDUAL"
+        ).toUpperCase();
 
-      const isFirm = applicantType !== "INDIVIDUAL";
+        const isFirm = applicantType !== "INDIVIDUAL";
 
-      // Authorized Person vs Owner Name
-      const rawAuthPerson = primaryOwner?.additionalDetails?.authorisedPerson || primaryOwner?.additionalDetails?.authorisedPersonName;
-      const authorisedPersonName = typeof rawAuthPerson === "object" ? rawAuthPerson?.name : rawAuthPerson;
+        // Authorized Person vs Owner Name
+        const rawAuthPerson = primaryOwner?.additionalDetails?.authorisedPerson || primaryOwner?.additionalDetails?.authorisedPersonName;
+        const authorisedPersonName = typeof rawAuthPerson === "object" ? rawAuthPerson?.name : rawAuthPerson;
 
-      const applicantName = isFirm
-        ? (authorisedPersonName || primaryOwner?.name || owner?.name || "")
-        : (primaryOwner?.name || owner?.name || "");
+        const applicantName = isFirm ? authorisedPersonName || primaryOwner?.name || owner?.name || "" : primaryOwner?.name || owner?.name || "";
 
-      // Firm / Company Name vs Individual Promoter
-      const firmName =
-        primaryOwner?.additionalDetails?.firmName ||
-        primaryOwner?.additionalDetails?.companyName ||
-        primaryOwner?.additionalDetails?.promoterFirmName ||
-        primaryOwner?.additionalDetails?.institutionName;
+        // Firm / Company Name vs Individual Promoter
+        const firmName =
+          primaryOwner?.additionalDetails?.firmName ||
+          primaryOwner?.additionalDetails?.companyName ||
+          primaryOwner?.additionalDetails?.promoterFirmName ||
+          primaryOwner?.additionalDetails?.institutionName;
 
-      const promoterFirmName = isFirm
-        ? (firmName || primaryOwner?.name || "")
-        : " ";
+        const promoterFirmName = isFirm ? firmName || primaryOwner?.name || "" : " ";
 
-      const applicantAddress = primaryOwner?.permanentAddress || primaryOwner?.correspondenceAddress || primaryOwner?.address || proposedSiteAddress || "N/A";
+        const applicantAddress =
+          primaryOwner?.permanentAddress || primaryOwner?.correspondenceAddress || primaryOwner?.address || proposedSiteAddress || "N/A";
 
-      // --- derived once, reused for both officerDesignation and signatoryDesignation ---
-      const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm actual grade codes
-      const officerDesignation = isSmallerUlb ? t("SMALLER_ULB_OFFICER") : t("BIGGER_ULB_OFFICER");
-      const signatoryDesignation = isSmallerUlb
-        ? t("SMALLER_ULB_DESIG")
-        : t("BIGGER_ULB_DESIG");
+        // --- derived once, reused for both officerDesignation and signatoryDesignation ---
+        const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm actual grade codes
+        const officerDesignation = isSmallerUlb ? t("SMALLER_ULB_OFFICER") : t("BIGGER_ULB_OFFICER");
+        const signatoryDesignation = isSmallerUlb ? t("SMALLER_ULB_DESIG") : t("BIGGER_ULB_DESIG");
 
-      // same isSmallerUlb split decides which name goes with the Competent Authority
-      const jurisdictionName = isSmallerUlb ? districtName : ulbName;
+        // same isSmallerUlb split decides which name goes with the Competent Authority
+        const jurisdictionName = isSmallerUlb ? districtName : ulbName;
 
-      // --- composed projectDescription (fill in Project Name once that field exists) ---
-      const projectDescription = `${proposedSiteAddress || ""} on Land Measuring Area ${areaSqm || ""} sqm, Situated at Hadbast No. ${
-        hadbastNo || ""
-      }, Village - ${villageName || ""}, ${ulbName || ""}, Punjab.`;
+        // --- composed projectDescription (fill in Project Name once that field exists) ---
+        const projectDescription = `${proposedSiteAddress || ""} on Land Measuring Area ${areaSqm || ""} sqm, Situated at Hadbast No. ${
+          hadbastNo || ""
+        }, Village - ${villageName || ""}, ${ulbName || ""}, Punjab.`;
 
-      const response = await Digit.PaymentService.generatePdf(
-        tenantId,
-        {
-          Payments: [
-            {
-              ...payments,
-              usage,
-              amountinwords,
-              applicationDetails,
-              ulbType,
-              ulbName,
-              ulbGrade,
-              districtName,
-              jurisdictionName,
-              officerDesignation,
-              signatoryDesignation,
-              applicantName,
-              applicationNo,
-              submissionDate,
-              issueDate,
-              colonyTypeName,
-              projectDescription,
+        const response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          {
+            Payments: [
+              {
+                ...payments,
+                usage,
+                amountinwords,
+                applicationDetails,
+                ulbType,
+                ulbName,
+                ulbGrade,
+                districtName,
+                jurisdictionName,
+                officerDesignation,
+                signatoryDesignation,
+                applicantName,
+                applicationNo,
+                submissionDate,
+                issueDate,
+                colonyTypeName,
+                projectDescription,
 
-              // still open / not sourced yet:
-              officeName: signatoryDesignation, // ADC/MC basis for the header still to be confirmed
-              officeSubLine: isSmallerUlb ? `Office Wing, ${districtName}` : `${ulbType} - ${ulbName}`,
-              applicantAddress,
-              promoterFirmName,
-              dcrNo: undefined, // placeholder pending scrutiny module
-              dcrApprovalDate: undefined,
-              complianceDays: undefined,
-              extensionDays: undefined,
-            },
-          ],
-        },
-        pdfkey
-      );
-      filestoreId = response?.filestoreIds[0];
+                // still open / not sourced yet:
+                officeName: signatoryDesignation, // ADC/MC basis for the header still to be confirmed
+                officeSubLine: isSmallerUlb ? `Office Wing, ${districtName}` : `${ulbType} - ${ulbName}`,
+                applicantAddress,
+                promoterFirmName,
+                dcrNo: undefined, // placeholder pending scrutiny module
+                dcrApprovalDate: undefined,
+                complianceDays: undefined,
+                extensionDays: undefined,
+              },
+            ],
+          },
+          pdfkey
+        );
+        filestoreId = response?.filestoreIds[0];
+      }
+      let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
+
+      if (!fileStore?.[filestoreId]?.length) {
+        fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
+      }
+      window.open(fileStore[filestoreId], "_blank");
+    } catch (error) {
+      console.error("receipt download error:", error);
+    } finally {
+      setLoading(false);
     }
-    let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
-
-    if (!fileStore?.[filestoreId]?.length) {
-      fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
-    }
-    window.open(fileStore[filestoreId], "_blank");
-  } catch (error) {
-    console.error("receipt download error:", error);
-  } finally {
-    setLoading(false);
   }
-}
 
   const getTimelineCaptions = (checkpoint, index, arr) => {
-    const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint
+    const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
     const caption = {
       date: checkpoint?.auditDetails?.lastModified,
       time: checkpoint?.auditDetails?.timing,
       name: checkpoint?.assigner?.name,
       mobileNumber: checkpoint?.assigner?.mobileNumber,
       source: checkpoint?.assigner?.source,
-    }
+    };
 
     return (
       <div>
         {comment?.length > 0 && (
           <div className="TLComments">
             <h3>{t("WF_COMMON_COMMENTS")}</h3>
-            <p style={{ overflowX: "scroll" }}>{comment}</p>
+            <p className="obps-pages-citizen-applications-layout-application-summary--style-3">{comment}</p>
           </div>
         )}
 
@@ -811,8 +795,8 @@ const hasCMCApproval =
           <DisplayPhotos
             srcs={thumbnailsToShow.thumbs}
             onClick={(src, idx) => {
-              const fullImage = thumbnailsToShow.fullImage?.[idx] || src
-              Digit.Utils.zoomImage(fullImage)
+              const fullImage = thumbnailsToShow.fullImage?.[idx] || src;
+              Digit.Utils.zoomImage(fullImage);
             }}
           />
         )}
@@ -825,7 +809,7 @@ const hasCMCApproval =
           </div>
         )}
 
-        <div style={{ marginTop: "8px" }}>
+        <div className="obps-pages-citizen-applications-layout-application-summary--style-4">
           {caption.time && <p>{caption.time}</p>}
           {caption.date && <p>{caption.date}</p>}
           {caption.name && <p>{caption.name}</p>}
@@ -833,9 +817,8 @@ const hasCMCApproval =
           {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
         </div>
       </div>
-    )
-  }
-
+    );
+  };
 
   const handleViewTimeline = () => {
     setViewTimeline(true);
@@ -844,19 +827,19 @@ const hasCMCApproval =
   };
 
   // Helper function to render label-value pairs only when value exists
- const renderLabel = (label, value) => {
-     if (!value || value === "NA" || value === "" || value === null || value === undefined || value === "0.00") {
-       return null;
-     }
- 
-     // Extract value from object if it has 'name' property
-     let displayValue = value;
-     if (typeof value === "object" && value !== null) {
-       displayValue = value?.name || value?.code || JSON.stringify(value);
-     }
- 
-     return <Row label={label} text={displayValue} />;
-   };
+  const renderLabel = (label, value) => {
+    if (!value || value === "NA" || value === "" || value === null || value === undefined || value === "0.00") {
+      return null;
+    }
+
+    // Extract value from object if it has 'name' property
+    let displayValue = value;
+    if (typeof value === "object" && value !== null) {
+      displayValue = value?.name || value?.code || JSON.stringify(value);
+    }
+
+    return <Row label={label} text={displayValue} />;
+  };
 
   const RenderRow = ({ label, value }) => {
     if (!value) return null;
@@ -871,14 +854,16 @@ const hasCMCApproval =
 
   return (
     <div className={"employee-main-application-details"}>
-      <div className="cardHeaderWithOptions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="cardHeaderWithOptions obps-pages-citizen-applications-layout-application-summary--style-5">
         <Header styles={{ fontSize: "32px" }}>{t("Application Overview")}</Header>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginLeft: "auto" }}>
+        <div className="obps-pages-citizen-applications-layout-application-summary--style-6">
           <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
           {loading && <Loader />}
-          {dowloadOptions && dowloadOptions.length > 0 && (
-            (recieptDataLoading || recieptDataLoadingPay) ?
-              <Loader /> :
+          {dowloadOptions &&
+            dowloadOptions.length > 0 &&
+            (recieptDataLoading || recieptDataLoadingPay ? (
+              <Loader />
+            ) : (
               <div>
                 <MultiLink
                   className="multilinkWrapper"
@@ -887,28 +872,52 @@ const hasCMCApproval =
                   options={dowloadOptions}
                 />
               </div>
-          )}
+            ))}
         </div>
       </div>
 
       <Card>
         <CardSubHeader>{t("OWNER_OWNERPHOTO") || "OWNER'S PHOTO"}</CardSubHeader>
-        <CustomOwnerImage
-          ownerFileStoreId={findOwnerDocument(0, "OWNERPHOTO")}
-          ownerName={sortedOwners?.[0]?.name}
-        />
+        <CustomOwnerImage ownerFileStoreId={findOwnerDocument(0, "OWNERPHOTO")} ownerName={sortedOwners?.[0]?.name} />
       </Card>
 
       <Card>
         <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
         <StatusTable>
           <Row label={t("BPA_APPLICATION_NUMBER_LABEL") || t("Application No")} text={id} />
-          <Row label={t("Application Date")} text={applicationDetails?.Layout?.[0]?.auditDetails?.createdTime ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.auditDetails?.createdTime), "dd/MM/yyyy") : "N/A"} />
-          {(applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED") && (
-          <Row label={t("Application Submission Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn), "dd/MM/yyyy") : "N/A"} />
+          <Row
+            label={t("Application Date")}
+            text={
+              applicationDetails?.Layout?.[0]?.auditDetails?.createdTime
+                ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.auditDetails?.createdTime), "dd/MM/yyyy")
+                : "N/A"
+            }
+          />
+          {applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED" && (
+            <Row
+              label={t("Application Submission Date")}
+              text={
+                applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn
+                  ? Digit.DateUtils.ConvertTimestampToDate(
+                      Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn),
+                      "dd/MM/yyyy"
+                    )
+                  : "N/A"
+              }
+            />
           )}
-          {(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate) && (
-            <Row label={t("Application Approval Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate), "dd/MM/yyyy") : "N/A"} />
+          {applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate && (
+            <Row
+              label={t("Application Approval Date")}
+              text={
+                applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate
+                  ? Digit.DateUtils.ConvertTimestampToDate(
+                      Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate),
+                      "dd/MM/yyyy"
+                    )
+                  : "N/A"
+              }
+            />
           )}
         </StatusTable>
       </Card>
@@ -919,20 +928,16 @@ const hasCMCApproval =
           <Card key={index}>
             <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
 
-              <StatusTable>
-
-                <RenderRow label={t("NOC_PROFESSIONAL_NAME_LABEL")} value={detail?.professionalName} />
-                <RenderRow label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} value={detail?.professionalEmailId} />
-                <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
-                <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
-                <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
-                <RenderRow label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} value={formatDate(detail?.professionalRegistrationValidity)} />
-
-              </StatusTable>
-            
+            <StatusTable>
+              <RenderRow label={t("NOC_PROFESSIONAL_NAME_LABEL")} value={detail?.professionalName} />
+              <RenderRow label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} value={detail?.professionalEmailId} />
+              <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
+              <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
+              <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
+              <RenderRow label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} value={formatDate(detail?.professionalRegistrationValidity)} />
+            </StatusTable>
           </Card>
         ))}
-
 
       {/* -------------------- APPLICANTS/OWNERS DETAILS -------------------- */}
       {sortedOwners && sortedOwners.length > 0 && (
@@ -940,12 +945,18 @@ const hasCMCApproval =
           {/* <CardSubHeader>{t("Owners Details") || "Owners Details"}</CardSubHeader> */}
           {sortedOwners.map((applicant, index) => (
             <div key={index} style={{ marginBottom: "20px" }}>
-               <CardSubHeader>{index === 0 ? t("PRIMARY_OWNER") : `${t("Owner") || "Owner"} ${index + 1}`}</CardSubHeader>
+              <CardSubHeader>{index === 0 ? t("PRIMARY_OWNER") : `${t("Owner") || "Owner"} ${index + 1}`}</CardSubHeader>
               <StatusTable key={index}>
-
                 {index === 0 && <RenderRow label={t(`CLU_OWNER_TYPE_LABEL`)} value={applicant?.additionalDetails?.aplicantType?.name} />}
-                {applicant?.additionalDetails?.aplicantType?.code === "FIRM" && <RenderRow label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} value={applicant?.additionalDetails?.authorisedPerson} />}
-                <RenderRow label={`${applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")}`} value={applicant?.name} />
+                {applicant?.additionalDetails?.aplicantType?.code === "FIRM" && (
+                  <RenderRow label={t(`NEW_LAYOUT_FIRM_NAME_LABEL`)} value={applicant?.additionalDetails?.authorisedPerson} />
+                )}
+                <RenderRow
+                  label={`${
+                    applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")
+                  }`}
+                  value={applicant?.name}
+                />
                 <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
                 <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
                 <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={applicant?.mobileNumber} />
@@ -953,163 +964,153 @@ const hasCMCApproval =
                 <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
                 <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
                 <RenderRow label={t("BPA_PAN_NUMBER_LABEL")} value={applicant?.pan || applicant?.panNumber || "N/A"} />
-                <Row className="document-row" label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
-                <Row className="document-row" label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
-                <Row className="document-row" label={t("BPA_PAN_DOCUMENT") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />
+                <Row
+                  className="document-row"
+                  label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"}
+                  text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />}
+                />
+                <Row
+                  className="document-row"
+                  label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"}
+                  text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />}
+                />
+                <Row
+                  className="document-row"
+                  label={t("BPA_PAN_DOCUMENT") || "Pan"}
+                  text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />}
+                />
               </StatusTable>
             </div>
           ))}
-
         </Card>
       )}
-
-
-      
 
       {/* -------------------- SITE DETAILS -------------------- */}
       <Card>
         <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          
-            <StatusTable key={index}>
-              {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
-              {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
-                <React.Fragment>
-                  {renderLabel(t("BPA_CLU_TYPE_LABEL"), detail?.cluType?.code || detail?.cluType)}
-                  {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") &&
-                    renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
-                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
-                    renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
-                  {(Boolean(detail?.cluDocumentUpload) || detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && (
-                    <Row className="document-row"
-                      label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
-                      text={
-                        <DocumentLink
-                          fileStoreId={
-                            typeof detail?.cluDocumentUpload === "string"
-                              ? detail?.cluDocumentUpload
-                              : (detail?.cluDocumentUpload?.fileStoreId || detail?.cluDocumentUpload?.filestoreId || detail?.cluDocumentUpload?.uuid)
-                          }
-                          cluNumber={detail?.cluNumber}
-                          stateCode={stateCode}
-                          t={t}
-                        />
-                      }
-                    />
-                  )}
-                  {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
-                </React.Fragment>
+          <StatusTable key={index}>
+            {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
+            {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
+              <React.Fragment>
+                {renderLabel(t("BPA_CLU_TYPE_LABEL"), detail?.cluType?.code || detail?.cluType)}
+                {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
+                {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
+                  renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
+                {(Boolean(detail?.cluDocumentUpload) || detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && (
+                  <Row
+                    className="document-row"
+                    label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
+                    text={
+                      <DocumentLink
+                        fileStoreId={
+                          typeof detail?.cluDocumentUpload === "string"
+                            ? detail?.cluDocumentUpload
+                            : detail?.cluDocumentUpload?.fileStoreId || detail?.cluDocumentUpload?.filestoreId || detail?.cluDocumentUpload?.uuid
+                        }
+                        cluNumber={detail?.cluNumber}
+                        stateCode={stateCode}
+                        t={t}
+                      />
+                    }
+                  />
+                )}
+                {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
+              </React.Fragment>
+            )}
+            {/* {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && ( */}
+            <React.Fragment>
+              {renderLabel(
+                t("Application Applied Under"),
+                detail?.applicationAppliedUnder?.name || detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder
               )}
-              {/* {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && ( */}
-                <React.Fragment>
-                  {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.name || detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
-                </React.Fragment>
-              {/* )} */}
-              {renderLabel(t("Type Of Application"), detail?.typeOfApplication?.name)}
+            </React.Fragment>
+            {/* )} */}
+            {renderLabel(t("Type Of Application"), detail?.typeOfApplication?.name)}
 
-              {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_LOCATION_LABEL")}</CardLabel> */}
-              {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), detail?.proposedSiteAddress)}
-              {renderLabel(t("BPA_ULB_NAME_LABEL"), detail?.ulbName || detail?.ulbName?.name)}
-              {renderLabel(t("BPA_ULB_TYPE_LABEL"), detail?.ulbType)}
-              {renderLabel(t("BPA_DISTRICT_LABEL"), detail?.district?.name)}
-              {renderLabel(t("BPA_ZONE_LABEL"), detail?.zone?.name)}
-              {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
-              {renderLabel(t("BPA_SITE_WARD_NO_LABEL"), detail?.wardNo)}
-              {renderLabel(t("Khatuni No."), detail?.khanutiNo)}
-              {renderLabel(t("BPA_KHASRA_NO_LABEL"), detail?.khasraNo)}
-              {renderLabel(t("BPA_HADBAST_NO_LABEL"), detail?.hadbastNo)}
-              {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
-              {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
-              {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
-              {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
-              
-              
-              
-              {/* {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)} */}
-              
-              {/* {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)} */}
+            {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_LOCATION_LABEL")}</CardLabel> */}
+            {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), detail?.proposedSiteAddress)}
+            {renderLabel(t("BPA_ULB_NAME_LABEL"), detail?.ulbName || detail?.ulbName?.name)}
+            {renderLabel(t("BPA_ULB_TYPE_LABEL"), detail?.ulbType)}
+            {renderLabel(t("BPA_DISTRICT_LABEL"), detail?.district?.name)}
+            {renderLabel(t("BPA_ZONE_LABEL"), detail?.zone?.name)}
+            {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
+            {renderLabel(t("BPA_SITE_WARD_NO_LABEL"), detail?.wardNo)}
+            {renderLabel(t("Khatuni No."), detail?.khanutiNo)}
+            {renderLabel(t("BPA_KHASRA_NO_LABEL"), detail?.khasraNo)}
+            {renderLabel(t("BPA_HADBAST_NO_LABEL"), detail?.hadbastNo)}
+            {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
+            {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
+            {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
+            {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
 
+            {/* {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)} */}
 
-              {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
-              {renderLabel(t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL"), detail?.areaLeftForRoadWidening)}
-              {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.netPlotAreaAfterWidening)}
-              {renderLabel(t("BPA_BALANCE_AREA_IN_SQ_M_LABEL"), parseFloat(detail?.areaLeftForRoadWidening - detail?.netPlotAreaAfterWidening))}
-              {renderLabel(t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL"), detail?.areaUnderEWS)}
-              {renderLabel(t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL"), detail?.areaUnderEWSInPct)}
-              {renderLabel(t("BPA_NET_SITE_AREA_IN_SQ_M_LABEL"), detail?.netTotalArea)}
-              {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
-              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}
-              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), detail?.residentialType?.name || detail?.buildingCategory?.name)}
-              {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderResidentialUseInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL"), detail?.areaUnderResidentialUseInPct)}
-              {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderCommercialUseInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_PCT_LABEL"), detail?.areaUnderCommercialUseInPct)}
-              {usage?.toLowerCase().includes("industrial") ? (
-                <React.Fragment>
-                  {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderIndustrialUseInSqM)}
-                  {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL"), detail?.areaUnderIndustrialUseInPct)}
-                </React.Fragment>
-              ) : (
-                <React.Fragment>
-                  {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderInstutionalUseInSqM)}
-                  {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"), detail?.areaUnderInstutionalUseInPct)}
-                </React.Fragment>
-              )}
-              {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_SQ_M_LABEL"), detail?.areaUnderCommunityCenterInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_PCT_LABEL"), detail?.areaUnderCommunityCenterInPct)}
-              {renderLabel(t("BPA_AREA_UNDER_PARK_IN_SQ_M_LABEL"), detail?.areaUnderParkInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_PARK_IN_PCT_LABEL"), detail?.areaUnderParkInPct)}
-              {renderLabel(t("BPA_AREA_UNDER_ROAD_IN_SQ_M_LABEL"), detail?.areaUnderRoadInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_ROAD_IN_PCT_LABEL"), detail?.areaUnderRoadInPct)}
-              {renderLabel(t("BPA_AREA_UNDER_PARKING_IN_SQ_M_LABEL"), detail?.areaUnderParkingInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_PARKING_IN_PCT_LABEL"), detail?.areaUnderParkingInPct)}
-              {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_SQ_M_LABEL"), detail?.areaUnderOtherAmenitiesInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
+            {/* {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)} */}
 
-              {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
-            </StatusTable>
+            {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
+            {renderLabel(t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL"), detail?.areaLeftForRoadWidening)}
+            {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.netPlotAreaAfterWidening)}
+            {renderLabel(t("BPA_BALANCE_AREA_IN_SQ_M_LABEL"), parseFloat(detail?.areaLeftForRoadWidening - detail?.netPlotAreaAfterWidening))}
+            {renderLabel(t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL"), detail?.areaUnderEWS)}
+            {renderLabel(t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL"), detail?.areaUnderEWSInPct)}
+            {renderLabel(t("BPA_NET_SITE_AREA_IN_SQ_M_LABEL"), detail?.netTotalArea)}
+            {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
+            {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}
+            {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), detail?.residentialType?.name || detail?.buildingCategory?.name)}
+            {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderResidentialUseInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL"), detail?.areaUnderResidentialUseInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderCommercialUseInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_PCT_LABEL"), detail?.areaUnderCommercialUseInPct)}
+            {usage?.toLowerCase().includes("industrial") ? (
+              <React.Fragment>
+                {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderIndustrialUseInSqM)}
+                {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL"), detail?.areaUnderIndustrialUseInPct)}
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderInstutionalUseInSqM)}
+                {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"), detail?.areaUnderInstutionalUseInPct)}
+              </React.Fragment>
+            )}
+            {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_SQ_M_LABEL"), detail?.areaUnderCommunityCenterInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_PCT_LABEL"), detail?.areaUnderCommunityCenterInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_PARK_IN_SQ_M_LABEL"), detail?.areaUnderParkInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_PARK_IN_PCT_LABEL"), detail?.areaUnderParkInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_ROAD_IN_SQ_M_LABEL"), detail?.areaUnderRoadInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_ROAD_IN_PCT_LABEL"), detail?.areaUnderRoadInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_PARKING_IN_SQ_M_LABEL"), detail?.areaUnderParkingInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_PARKING_IN_PCT_LABEL"), detail?.areaUnderParkingInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_SQ_M_LABEL"), detail?.areaUnderOtherAmenitiesInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
 
-          
+            {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
+          </StatusTable>
         ))}
       </Card>
 
       {/* -------------------- SPECIFICATIONS -------------------- */}
-            <Card>
-              <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
-               {displayData?.siteDetails?.map((detail, index) => (
-                   <StatusTable key={index}>
-                     {renderLabel(t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL"), detail?.specificationPlotArea)}
-                  </StatusTable>
-                        ))}
-            </Card>
-
-      
-      
-
-      
+      <Card>
+        <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
+        {displayData?.siteDetails?.map((detail, index) => (
+          <StatusTable key={index}>{renderLabel(t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL"), detail?.specificationPlotArea)}</StatusTable>
+        ))}
+      </Card>
 
       {/* 1️⃣ SITE COORDINATES CARD */}
       {displayData?.coordinates && displayData.coordinates.length > 0 && (
         <Card>
           <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-          <StatusTable
-            style={{
-              display: "flex",
-              gap: "20px",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-            }}
-          >
+          <StatusTable className="obps-pages-citizen-applications-layout-application-summary--style-8">
             {sitePhotos?.length > 0 &&
-              [...sitePhotos]
-                .map((doc) => (
-                  <NocSitePhotographs
-                    key={doc?.filestoreId || doc?.uuid}
-                    filestoreId={doc?.filestoreId || doc?.uuid}
-                    documentType={doc?.documentType}
-                    coordinates={displayData?.coordinates?.[0]}
-                  />
-                ))}
+              [...sitePhotos].map((doc) => (
+                <NocSitePhotographs
+                  key={doc?.filestoreId || doc?.uuid}
+                  filestoreId={doc?.filestoreId || doc?.uuid}
+                  documentType={doc?.documentType}
+                  coordinates={displayData?.coordinates?.[0]}
+                />
+              ))}
           </StatusTable>
         </Card>
       )}
@@ -1119,65 +1120,69 @@ const hasCMCApproval =
         <Card>
           <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
           {/* <StatusTable> */}
-            {/* <LayoutDocumentView documents={displayData.Documents} /> */}
-            <LayoutDocumentTableView documents={displayData?.Documents?.filter((doc) => doc.documentType != "OWNER.SITEPHOTOGRAPHONE" && doc.documentType != "OWNER.SITEPHOTOGRAPHTWO")} />
+          {/* <LayoutDocumentView documents={displayData.Documents} /> */}
+          <LayoutDocumentTableView
+            documents={displayData?.Documents?.filter(
+              (doc) => doc.documentType != "OWNER.SITEPHOTOGRAPHONE" && doc.documentType != "OWNER.SITEPHOTOGRAPHTWO"
+            )}
+          />
           {/* </StatusTable> */}
         </Card>
       )}
 
       {/* 3️⃣ FEE DETAILS CARD */}
-    
-        <Card>
-          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
-  {applicationDetails?.Layout?.[0]?.layoutDetails && (
-    <>
-     <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY1")}</CardSubHeader>
-     {/* <StatusTable> */}
-          <LayoutFeeEstimationDetails
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
-              },
-              siteDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
-              },
-            }}
-            feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
-            hasPayments={reciept_data?.Payments?.length > 0}
-          />
-          {/* </StatusTable> */}
-          </>
-          )}
-          {hasPayments && (
-                <div style={{ marginTop: "16px" }}>
-                  <OBPSPaymentHistory payments={combinedPayments} />
-                </div>
-              )}
-        
 
-       {hasCMCApproval && (
-                <>
-                  <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY2")}</CardSubHeader>
-                  {applicationDetails?.Layout?.[0]?.layoutDetails && (
-                    <LayoutFeeEstimationDetailsTable
-                      formData={{
-                        apiData: { ...applicationDetails },
-                        applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
-                        siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
-                        calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
-                      }}
-                      feeType="PAY2"
-                      feeAdjustments={feeAdjustments}
-                      setFeeAdjustments={setFeeAdjustments}
-                      disable={true}
-                    />
-                  )}
-                  </>
-               
-              )}
-               </Card>
-      
+      <Card>
+        <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
+        {applicationDetails?.Layout?.[0]?.layoutDetails && (
+          <>
+            <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY1")}</CardSubHeader>
+            {/* <StatusTable> */}
+            <LayoutFeeEstimationDetails
+              formData={{
+                apiData: { ...applicationDetails },
+                applicationDetails: {
+                  ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
+                },
+                siteDetails: {
+                  ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
+                },
+              }}
+              feeType="PAY1"
+              feeAdjustments={[]}
+              setFeeAdjustments={() => {}}
+              disable={true}
+              hasPayments={reciept_data?.Payments?.length > 0}
+            />
+            {/* </StatusTable> */}
+          </>
+        )}
+        {hasPayments && (
+          <div className="obps-pages-citizen-applications-layout-application-summary--style-9">
+            <OBPSPaymentHistory payments={combinedPayments} />
+          </div>
+        )}
+
+        {hasCMCApproval && (
+          <>
+            <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY2")}</CardSubHeader>
+            {applicationDetails?.Layout?.[0]?.layoutDetails && (
+              <LayoutFeeEstimationDetailsTable
+                formData={{
+                  apiData: { ...applicationDetails },
+                  applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
+                  siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
+                  calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
+                }}
+                feeType="PAY2"
+                feeAdjustments={feeAdjustments}
+                setFeeAdjustments={setFeeAdjustments}
+                disable={true}
+              />
+            )}
+          </>
+        )}
+      </Card>
 
       {/* -------------------- SPECIFICATIONS -------------------- */}
       {/* <Card>
@@ -1197,40 +1202,24 @@ const hasCMCApproval =
       ))}
     </Card> */}
 
-
-
-
-
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} prefix={prefix} Statusprefix={Statusprefix} t={t} timeObj={timeObj}/>
+        <NewApplicationTimeline workflowDetails={workflowDetails} prefix={prefix} Statusprefix={Statusprefix} t={t} timeObj={timeObj} />
       </div>
 
       {actions && actions.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-            <Menu
-              localeKeyPrefix={prefix}
-              options={actions}
-              optionKey={"action"}
-              t={t}
-              onSelect={onActionSelect}
-            />
+            <Menu localeKeyPrefix={prefix} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>
       )}
 
       {showToast && (
-        <Toast
-          error={showToast?.error}
-          warning={showToast?.warning}
-          label={t(showToast?.message)}
-          isDleteBtn={true}
-          onClose={closeToast}
-        />
+        <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
       )}
     </div>
-  )
-}
+  );
+};
 
-export default LayoutApplicationOverview
+export default LayoutApplicationOverview;

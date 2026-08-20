@@ -45,7 +45,7 @@ const ADSPenalty = ({ t, goNext, currentStepData, onGoBack }) => {
         name="penalty"
         control={control}
         render={(props) => (
-          <div style={{ display: "flex", gap: "20px" }}>
+          <div className="ads-page-components-adspenalty--style-1">
             <label>
               <input type="radio" value="Yes" checked={props.value === "Yes"} onChange={() => props.onChange("Yes")} /> Yes
             </label>
@@ -68,7 +68,7 @@ const ADSPenalty = ({ t, goNext, currentStepData, onGoBack }) => {
           <TextInput value={props.value || ""} onChange={(e) => props.onChange(e.target.value)} disabled={penaltyValue !== "Yes"} t={t} />
         )}
       />
-      {errors.penaltyAmount && <p style={{ color: "red" }}>{errors.penaltyAmount.message}</p>}
+      {errors.penaltyAmount && <p className="ads-page-components-adspenalty--style-2">{errors.penaltyAmount.message}</p>}
 
       {/* Reference ID */}
       <CardLabel>{t("Reference ID")}</CardLabel>
@@ -82,16 +82,11 @@ const ADSPenalty = ({ t, goNext, currentStepData, onGoBack }) => {
           <TextInput value={props.value || ""} onChange={(e) => props.onChange(e.target.value)} disabled={penaltyValue !== "Yes"} t={t} />
         )}
       />
-      {errors.referenceId && <p style={{ color: "red" }}>{errors.referenceId.message}</p>}
+      {errors.referenceId && <p className="ads-page-components-adspenalty--style-3">{errors.referenceId.message}</p>}
 
       <ActionBar>
         <SubmitBar
-          style={{
-            background: "white",
-            color: "black",
-            border: "1px solid",
-            marginRight: "10px",
-          }}
+          className="ads-page-components-adspenalty--style-4"
           label="Back"
           onSubmit={handleSubmit((data) => {
             if (data.penalty === "No") {

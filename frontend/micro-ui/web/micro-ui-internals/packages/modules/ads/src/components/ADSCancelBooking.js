@@ -107,11 +107,11 @@ const ADSCancelBooking = ({ t, closeModal, actionCancelLabel, actionCancelOnSubm
     >
       {/* <Card style={{ boxShadow: "none" }}> */}
       <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <div style={{ width: "80%", justifySelf: "center" }}>
+        <div className="ads-components-adscancel-booking--style-1">
           {/* reason */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("Reason")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("Reason")}`} <span className="ads-components-adscancel-booking--style-2">*</span>
             </CardLabel>
             <div className="form-field">
               <Controller
@@ -135,7 +135,7 @@ const ADSCancelBooking = ({ t, closeModal, actionCancelLabel, actionCancelOnSubm
                   />
                 )}
               />
-              {errors?.reason && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.reason.message}</p>}
+              {errors?.reason && <p className="ads-components-adscancel-booking--style-3">{errors.reason.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -169,6 +169,7 @@ const ADSCancelBooking = ({ t, closeModal, actionCancelLabel, actionCancelOnSubm
               {errors?.remarks && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.remarks.message}</p>}
             </div>
           </LabelFieldPair> */}
+
           <div>
             <ADSDocuments
               t={t}

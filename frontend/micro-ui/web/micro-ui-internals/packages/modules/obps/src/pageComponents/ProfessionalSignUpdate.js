@@ -115,7 +115,7 @@ export const ProfessionalSignUpdate = ({ closeModal, userDetails, refetch }) => 
                 {!loader && <div>
                     <LabelFieldPair>
                         <div
-                            // className="field ndc_property_search"                            
+                            // className="field ndc_property_search"
                             ref={myElementRef}
                             id="search-property-field"
                         >
@@ -132,8 +132,8 @@ export const ProfessionalSignUpdate = ({ closeModal, userDetails, refetch }) => 
                                 error={showToast?.label}
                                 accept="image/*,"
                             />
-                            <CardLabelError style={{ color: "black" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</CardLabelError>
-                            <CardLabelError style={{ color: "black" }}>{t("BPA_NO_SCANNED_SIGNATURE_AVAILABLE_MESSAGE")}</CardLabelError>
+                            <CardLabelError className="obps-page-components-professional-sign-update--style-1">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</CardLabelError>
+                            <CardLabelError className="obps-page-components-professional-sign-update--style-2">{t("BPA_NO_SCANNED_SIGNATURE_AVAILABLE_MESSAGE")}</CardLabelError>
                         </div>
                     </LabelFieldPair>
 

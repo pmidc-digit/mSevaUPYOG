@@ -27,7 +27,7 @@ const LayoutLocalityInfo = (_props) => {
 
 
    const { data: mdmsData } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
-   
+
    const areaTypeOptions=mdmsData?.BPA?.LayoutType?.[0]?.areaType || [];
    const nonSchemeTypeOptions=mdmsData?.BPA?.LayoutType?.[0]?.nonSchemeType || [];
 
@@ -55,17 +55,17 @@ const LayoutLocalityInfo = (_props) => {
               rules={{ required: t("REQUIRED_FIELD") }}
               defaultValue={currentStepData?.siteDetails?.layoutAreaType || null}
               render={(props) => (
-                <Dropdown 
+                <Dropdown
                 t={t}
-                  className="form-field" 
+                  className="form-field"
                   select={(e)=>{
                     props.onChange(e);
                     setSelectedAreaType(e);
-                  }} 
-                  selected={props.value} 
+                  }}
+                  selected={props.value}
                   option={areaTypeOptions}
                   optionKey="name" />
-                  
+
               )}
             />
           )}
@@ -85,7 +85,7 @@ const LayoutLocalityInfo = (_props) => {
               rules={{
                 required: t("REQUIRED_FIELD"),
               }}
-           
+
               render={(props) => (
                 <TextInput
                   className="form-field"
@@ -144,7 +144,7 @@ const LayoutLocalityInfo = (_props) => {
                 defaultValue={currentStepData?.siteDetails?.layoutNonSchemeType || null}
                 rules={{
                 required: t("REQUIRED_FIELD"),
-                
+
                 }}
                 render={(props) => (
                 <Dropdown

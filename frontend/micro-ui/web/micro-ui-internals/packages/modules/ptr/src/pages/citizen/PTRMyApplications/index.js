@@ -19,9 +19,9 @@ export const PTRMyApplications = () => {
     t1 = 4;
   }
 
-  let filter1 = !isNaN(parseInt(filter))
-    ? { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId }
-    : { limit: "20", sortOrder: "ASC", sortBy: "createdTime", offset: "0", mobileNumber: user?.mobileNumber, tenantId };
+  let filter1 = !isNaN(parseInt(filter)) ?
+  { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId } :
+  { limit: "20", sortOrder: "ASC", sortBy: "createdTime", offset: "0", mobileNumber: user?.mobileNumber, tenantId };
 
   const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch({ tenantId, filters: filter1 }, {});
 
@@ -42,7 +42,7 @@ export const PTRMyApplications = () => {
   let combinedApplicationNumber = applicationsList?.length > 0 ? applicationsList?.map((ob) => ob?.applicationNumber) : [];
   let serviceSearchArgs = {
     tenantId: tenantId,
-    referenceIds: combinedApplicationNumber,
+    referenceIds: combinedApplicationNumber
   };
 
   // const { isLoading: serviceloading, data: servicedata } = Digit.Hooks.useFeedBackSearch(
@@ -63,108 +63,68 @@ export const PTRMyApplications = () => {
   if (isLoading) {
     return <Loader />;
   }
-  const styles = {
-    paginationControls: {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      gap: "12px",
-      margin: "20px 0",
-    },
-    paginationBtn: {
-      backgroundColor: "#2947a3",
-      color: "#fff",
-      border: "none",
-      padding: "8px 12px",
-      borderRadius: "50%",
-      fontSize: "18px",
-      cursor: "pointer",
-      transition: "background-color 0.2s ease",
-    },
-    disabledBtn: {
-      backgroundColor: "#ccc",
-      cursor: "not-allowed",
-    },
-    paginationInfo: {
-      fontWeight: 500,
-      color: "#333",
-    },
-  };
-
   return (
     <React.Fragment>
       <Header>{`${t("CS_TITLE_MY_APPLICATIONS")} ${applicationsList ? `(${applicationsList.length})` : ""}`}</Header>
-        <p style={{ marginLeft: "16px", marginTop: "16px" }}>
+        <p className="ptr-style-b0288cd4be">
         {t("PTR_TEXT_NOT_ABLE_TO_FIND_THE_APPLICATION")}{" "}
-        <span className="link" style={{ display: "block" }}>
+        <span className="link ptr-style-2a1b75c911">
           <Link to="/digit-ui/citizen/ptr/petservice/new-application/info">{t("PTR_COMMON_CLICK_HERE_TO_REGISTER_NEW_PET")}</Link>
         </span>
       </p>
       <div>
-        {loadingPage ? (
-          <Loader />
-        ) : (
-          applicationsList?.length > 0 &&
-          currentItems.map((application, index) => (
-            <div key={index}>
+        {loadingPage ?
+        <Loader /> :
+
+        applicationsList?.length > 0 &&
+        currentItems.map((application, index) =>
+        <div key={index}>
               <PetApplication application={application} tenantId={user?.tenantId} buttonLabel={getLabelValue(application)} />
             </div>
-          ))
-        )}
-        {!applicationsList?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PTR_NO_APPLICATION_FOUND_MSG")}</p>}
+        )
+        }
+        {!applicationsList?.length > 0 && <p className="ptr-style-b0288cd4be">{t("PTR_NO_APPLICATION_FOUND_MSG")}</p>}
 
-        {/* {applicationsList?.length !== 0 && (
-          <div>
-            <p style={{ marginLeft: "16px", marginTop: "16px" }}>
-              <span className="link">{<Link to={`/digit-ui/citizen/ptr/petservice/my-application/${t1}`}>{t("PTR_LOAD_MORE_MSG")}</Link>}</span>
-            </p>
-          </div>
-        )} */}
+
       </div>
       {/* Pagination controls */}
-      {applicationsList?.length > itemsPerPage && (
-        <div style={styles.paginationControls}>
+      {applicationsList?.length > itemsPerPage &&
+      <div className="ptr-pagination-controls">
           <button
-            style={{
-              ...styles.paginationBtn,
-              ...(currentPage === 1 ? styles.disabledBtn : {}),
-            }}
-            disabled={currentPage === 1}
-            onClick={() => {
-              setLoadingPage(true);
-              setTimeout(() => {
-                setCurrentPage((prev) => prev - 1);
-                setLoadingPage(false);
-              }, 500);
-            }}
-          >
+          className={`ptr-pagination-button${currentPage === 1 ? " ptr-pagination-button--disabled" : ""}`}
+          disabled={currentPage === 1}
+          onClick={() => {
+            setLoadingPage(true);
+            setTimeout(() => {
+              setCurrentPage((prev) => prev - 1);
+              setLoadingPage(false);
+            }, 500);
+          }}>
+
             &#8592;
           </button>
 
-          <span style={styles.paginationInfo}>
+          <span className="ptr-pagination-info">
             {`${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, applicationsList.length)} of ${applicationsList.length}`}
           </span>
 
           <button
-            style={{
-              ...styles.paginationBtn,
-              ...(currentPage === totalPages ? styles.disabledBtn : {}),
-            }}
-            disabled={currentPage === totalPages}
-            onClick={() => {
-              setLoadingPage(true);
-              setTimeout(() => {
-                setCurrentPage((prev) => prev + 1);
-                setLoadingPage(false);
-              }, 500);
-            }}
-          >
+          className={`ptr-pagination-button${currentPage === totalPages ? " ptr-pagination-button--disabled" : ""}`}
+          disabled={currentPage === totalPages}
+          onClick={() => {
+            setLoadingPage(true);
+            setTimeout(() => {
+              setCurrentPage((prev) => prev + 1);
+              setLoadingPage(false);
+            }, 500);
+          }}>
+
             &#8594;
           </button>
         </div>
-      )}
+      }
 
-    
-    </React.Fragment>
-  );
+
+    </React.Fragment>);
+
 };

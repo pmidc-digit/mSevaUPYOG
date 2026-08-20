@@ -53,45 +53,48 @@ const ChbCommunityHallDetails = ({ hallId, setShowDetails }) => {
     return text
       .split('\n')
       .filter(line => line.trim() !== '')
-      .map((line, index) => <li key={index} style={{ marginBottom: '10px' }}>{line.trim()}</li>);
+      .map((line, index) => <li key={index} className="chb-community-hall-details__list-item">{line.trim()}</li>);
   };
 
   return (
     <div>
       {showPopup && selectedHall && (
         <Modal
-          headerBarMain={<CardSubHeader style={{ color: '#a82227', margin: '35px' }}>Community Hall Details</CardSubHeader>}
+          headerBarMain={<CardSubHeader className="chb-community-hall-details__title">Community Hall Details</CardSubHeader>}
           headerBarEnd={<CloseBtn onClick={handleClosePopup} />}
-          popupStyles={{ backgroundColor: "#fff", position: 'relative', width: '90%', maxWidth: '1200px', maxHeight: '90vh', overflowY: 'auto' }}
+          popupClassName="chb-community-hall-modal"
+          headerBarClassName="chb-community-hall-modal__header"
+          popupModuleMainClassName="chb-community-hall-modal__main"
+          popupModuleActionBarClassName="chb-community-hall-modal__actions"
           children={
-            <div style={{ padding: '15px', paddingTop: '1px' }}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                <div style={{ flex: '1 1 45%' }}>
-                  <CardLabel style={{ fontSize: '20px' }}>Name</CardLabel>
+            <div className="chb-community-hall-details">
+              <div className="chb-community-hall-details__grid">
+                <div className="chb-community-hall-details__item">
+                  <CardLabel className="chb-community-hall-details__label">Name</CardLabel>
                   <CardLabelDesc>{selectedHall.name}</CardLabelDesc>
                 </div>
-                <div style={{ flex: '1 1 45%' }}>
-                  <CardLabel style={{ fontSize: '20px' }}>Geo Location</CardLabel>
+                <div className="chb-community-hall-details__item">
+                  <CardLabel className="chb-community-hall-details__label">Geo Location</CardLabel>
                   <CardLabelDesc>{selectedHall.geoLocation}</CardLabelDesc>
                 </div>
-                <div style={{ flex: '1 1 45%' }}>
-                  <CardLabel style={{ fontSize: '20px' }}>Address</CardLabel>
+                <div className="chb-community-hall-details__item">
+                  <CardLabel className="chb-community-hall-details__label">Address</CardLabel>
                   <CardLabelDesc>{selectedHall.address}</CardLabelDesc>
                 </div>
-                <div style={{ flex: '1 1 45%' }}>
-                  <CardLabel style={{ fontSize: '20px' }}>Contact Details</CardLabel>
+                <div className="chb-community-hall-details__item">
+                  <CardLabel className="chb-community-hall-details__label">Contact Details</CardLabel>
                   <CardLabelDesc>{selectedHall.contactDetails}</CardLabelDesc>
                 </div>
-                <div style={{ flex: '1 1 45%' }}>
-                  <CardLabel style={{ fontSize: '20px' }}>Description</CardLabel>
+                <div className="chb-community-hall-details__item">
+                  <CardLabel className="chb-community-hall-details__label">Description</CardLabel>
                   <CardLabelDesc>{selectedHall.hallDescription}</CardLabelDesc>
                 </div>
-                <div style={{ flex: '1 1 45%' }}>
-                  <CardLabel style={{ fontSize: '20px' }}>Type</CardLabel>
+                <div className="chb-community-hall-details__item">
+                  <CardLabel className="chb-community-hall-details__label">Type</CardLabel>
                   <CardLabelDesc>{selectedHall.type}</CardLabelDesc>
                 </div>
               </div>
-              <CardLabel style={{ fontSize: '20px', marginTop: '10px' }}>Terms and Conditions</CardLabel>
+              <CardLabel className="chb-community-hall-details__label chb-community-hall-details__terms-label">Terms and Conditions</CardLabel>
               <CardLabelDesc>
                 <ul>{renderList(selectedHall.termsAndCondition)}</ul>
               </CardLabelDesc>
@@ -116,11 +119,7 @@ const ChbCommunityHallDetails = ({ hallId, setShowDetails }) => {
           formId="modalForm"
           isDisabled={false}
           hideSubmit={true}  // Ensure submit is hidden
-          style={{}}
-          popupModuleMianStyles={{ padding: "10px" }}
-          headerBarMainStyle={{ position: "sticky",top: 0,backgroundColor: "#f5f5f5" }}
           isOBPSFlow={false}
-          popupModuleActionBarStyles={{ display: 'none' }}  // Hide Action Bar
           isOpen={showPopup}  // Pass isOpen prop
           onClose={handleClosePopup}  // Pass onClose prop
         />

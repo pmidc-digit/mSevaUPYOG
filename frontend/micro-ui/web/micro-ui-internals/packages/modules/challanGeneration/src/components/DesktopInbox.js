@@ -46,188 +46,188 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, statutes, ...prop
   };
   const GetMobCell = (value) => <span className="sla-cell">{value}</span>;
   const inboxColumns = () => [
-    {
-      Header: t("UC_CHALLAN_NO"),
-      Cell: ({ row }) => {
-        return (
-          <div>
+  {
+    Header: t("UC_CHALLAN_NO"),
+    Cell: ({ row }) => {
+      return (
+        <div>
             <span className="link">
               <Link to={`${props.parentRoute}/application/${row.original?.challanNo}/${tenantId}`}>{row.original?.["challanNo"]}</Link>
               {/* <Link to={`${props.parentRoute}/challansearch/` + row.original?.["challanNo"]}>{row.original?.["challanNo"]}</Link> */}
             </span>
-          </div>
-        );
-      },
-      mobileCell: (original) => GetMobCell(original?.["challanNo"]),
-    },
-    {
-      Header: t("UC_COMMON_TABLE_COL_PAYEE_NAME"),
-      Cell: ({ row }) => {
-        return GetCell(`${row.original?.["name"]}`);
-      },
-      mobileCell: (original) => GetMobCell(original?.["name"]),
-    },
-    {
-      Header: t("CHALLAN_OFFENCE_TYPE"),
-      Cell: ({ row }) => {
-        return GetCell(`${row.original?.["offenceName"]}`);
-      },
-      mobileCell: (original) => GetMobCell(original?.["offenceName"]),
-    },
-    {
-      Header: t("UC_COMMON_TOTAL_AMT"),
-      Cell: ({ row }) => {
-        const total = row.original?.totalAmount || 0;
-        const waiver = row.original?.feeWaiver || 0;
-        const finalAmount = total - waiver;
+          </div>);
 
-        return GetCell(finalAmount);
-        // const finalAmount = row.original?.totalAmount - row.original?.feeWaiver;
-        // const finAm = finalAmount ? finalAmount : row.original?.totalAmount;
-        // return GetCell(finAm);
-      },
-      mobileCell: (original) => GetMobCell(original?.["totalAmount"]),
     },
-    {
-      Header: t("UC_COMMON_TABLE_COL_STATUS"),
-      Cell: ({ row }) => {
-        const wf = row.original?.challanStatus;
-        return GetCell(t(`${row.original?.challanStatus}`));
-      },
-      mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
+    mobileCell: (original) => GetMobCell(original?.["challanNo"])
+  },
+  {
+    Header: t("UC_COMMON_TABLE_COL_PAYEE_NAME"),
+    Cell: ({ row }) => {
+      return GetCell(`${row.original?.["name"]}`);
     },
-    {
-      Header: t("WF_INBOX_HEADER_CREATED_DATE"),
-      Cell: ({ row }) => (row.original?.date ? GetCell(format(new Date(row.original?.date), "dd/MM/yyyy")) : ""),
-      // Cell: ({ row }) => {
-      //   return GetCell(t(`${row.original?.date}`));
-      //   Cell: ({ row }) => (row.original?.date ? GetCell(format(new Date(row.original?.date), "dd/MM/yyyy")) : ""),
-      // },
+    mobileCell: (original) => GetMobCell(original?.["name"])
+  },
+  {
+    Header: t("CHALLAN_OFFENCE_TYPE"),
+    Cell: ({ row }) => {
+      return GetCell(`${row.original?.["offenceName"]}`);
     },
+    mobileCell: (original) => GetMobCell(original?.["offenceName"])
+  },
+  {
+    Header: t("UC_COMMON_TOTAL_AMT"),
+    Cell: ({ row }) => {
+      const total = row.original?.totalAmount || 0;
+      const waiver = row.original?.feeWaiver || 0;
+      const finalAmount = total - waiver;
 
-    // {
-    //   Header: t("WS_COMMON_TABLE_COL_ACTION"),
-    //   Cell: ({ row }) => {
-    //     const amount = row.original?.totalAmount;
-    //     let action = "ACTIVE";
-    //     if (amount > 0) action = "COLLECT";
-    //     if (action == "COLLECT") {
-    //       return (
-    //         <div>
-    //           <span className="link">
-    //             <Link
-    //               to={{
-    //                 pathname: `/digit-ui/employee/payment/collect/${row.original?.["businessService"]}/${row.original?.["challanNo"]}/tenantId=${row.original?.["tenantId"]}?workflow=mcollect`,
-    //               }}
-    //             >
-    //               {t(`UC_${action}`)}
-    //             </Link>
-    //           </span>
-    //         </div>
-    //       );
-    //     } else if (row.original?.applicationStatus == "PAID") {
-    //       return (
-    //         <div>
-    //           <span className="link">{getActionButton(row.original?.["businessService"], row.original?.["challanNo"])}</span>
-    //         </div>
-    //       );
-    //     } else {
-    //       return GetCell(t(`${"CS_NA"}`));
-    //     }
-    //   },
-    //   mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
+      return GetCell(finalAmount);
+      // const finalAmount = row.original?.totalAmount - row.original?.feeWaiver;
+      // const finAm = finalAmount ? finalAmount : row.original?.totalAmount;
+      // return GetCell(finAm);
+    },
+    mobileCell: (original) => GetMobCell(original?.["totalAmount"])
+  },
+  {
+    Header: t("UC_COMMON_TABLE_COL_STATUS"),
+    Cell: ({ row }) => {
+      const wf = row.original?.challanStatus;
+      return GetCell(t(`${row.original?.challanStatus}`));
+    },
+    mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"])
+  },
+  {
+    Header: t("WF_INBOX_HEADER_CREATED_DATE"),
+    Cell: ({ row }) => row.original?.date ? GetCell(format(new Date(row.original?.date), "dd/MM/yyyy")) : ""
+    // Cell: ({ row }) => {
+    //   return GetCell(t(`${row.original?.date}`));
+    //   Cell: ({ row }) => (row.original?.date ? GetCell(format(new Date(row.original?.date), "dd/MM/yyyy")) : ""),
     // },
+  }
+
+  // {
+  //   Header: t("WS_COMMON_TABLE_COL_ACTION"),
+  //   Cell: ({ row }) => {
+  //     const amount = row.original?.totalAmount;
+  //     let action = "ACTIVE";
+  //     if (amount > 0) action = "COLLECT";
+  //     if (action == "COLLECT") {
+  //       return (
+  //         <div>
+  //           <span className="link">
+  //             <Link
+  //               to={{
+  //                 pathname: `/digit-ui/employee/payment/collect/${row.original?.["businessService"]}/${row.original?.["challanNo"]}/tenantId=${row.original?.["tenantId"]}?workflow=mcollect`,
+  //               }}
+  //             >
+  //               {t(`UC_${action}`)}
+  //             </Link>
+  //           </span>
+  //         </div>
+  //       );
+  //     } else if (row.original?.applicationStatus == "PAID") {
+  //       return (
+  //         <div>
+  //           <span className="link">{getActionButton(row.original?.["businessService"], row.original?.["challanNo"])}</span>
+  //         </div>
+  //       );
+  //     } else {
+  //       return GetCell(t(`${"CS_NA"}`));
+  //     }
+  //   },
+  //   mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
+  // },
   ];
 
   let result;
   if (data?.length === 0) {
-    result = (
-      <Card style={{ marginTop: 20 }}>
+    result =
+    <Card className="challan-generation-style-5c357d95f7">
         {/* TODO Change localization key */}
-        {t("CS_MYAPPLICATIONS_NO_APPLICATION")
-          .split("\\n")
-          .map((text, index) => (
-            <p key={index} style={{ textAlign: "center" }}>
+        {t("CS_MYAPPLICATIONS_NO_APPLICATION").
+      split("\\n").
+      map((text, index) =>
+      <p key={index} className="challan-generation-style-dac4fe6c9b">
               {text}
             </p>
-          ))}
-      </Card>
-    );
+      )}
+      </Card>;
+
   } else if (data?.length > 0) {
-    result = (
-      <ApplicationTable
-        t={t}
-        data={data}
-        columns={inboxColumns(data)}
-        className="challan-desktop-applicationtable"
-        getCellProps={(cellInfo) => {
-          return {
-            style: {
-              minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-            },
-          };
-        }}
-        onPageSizeChange={props.onPageSizeChange}
-        currentPage={props.currentPage}
-        onNextPage={props.onNextPage}
-        onPrevPage={props.onPrevPage}
-        onLastPage={props.onLastPage}
-        onFirstPage={props.onFirstPage}
-        pageSizeLimit={props.pageSizeLimit}
-        onSort={props.onSort}
-        disableSort={props.disableSort}
-        sortParams={props.sortParams}
-        totalRecords={props.totalRecords}
-      />
-    );
+    result =
+    <ApplicationTable
+      t={t}
+      data={data}
+      columns={inboxColumns(data)}
+      className="challan-desktop-applicationtable"
+      getCellProps={(cellInfo) => {
+        return {
+          style: {
+            minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : ""
+          }
+        };
+      }}
+      onPageSizeChange={props.onPageSizeChange}
+      currentPage={props.currentPage}
+      onNextPage={props.onNextPage}
+      onPrevPage={props.onPrevPage}
+      onLastPage={props.onLastPage}
+      onFirstPage={props.onFirstPage}
+      pageSizeLimit={props.pageSizeLimit}
+      onSort={props.onSort}
+      disableSort={props.disableSort}
+      sortParams={props.sortParams}
+      totalRecords={props.totalRecords} />;
+
+
   }
 
   return (
-    <div className="inbox-container" style={{ overflow: "auto" }}>
-      {!props.isSearch && (
-        <div className="filters-container">
+    <div className="inbox-container challan-generation-style-16a8a8b00c">
+      {!props.isSearch &&
+      <div className="filters-container">
           <InboxLinks parentRoute={props.parentRoute} businessService={props.businessService} />
           <div>
             {/* <FilterComponent
-              defaultSearchParams={props.defaultSearchParams}
-              onFilterChange={props.onFilterChange}
-              searchParams={props.searchParams}
-              type="desktop"
+             defaultSearchParams={props.defaultSearchParams}
+             onFilterChange={props.onFilterChange}
+             searchParams={props.searchParams}
+             type="desktop"
             /> */}
             {/* import InboxFilter from "./components/inbox/NewInboxFilter"; */}
             <InboxFilter
-              defaultSearchParams={props.defaultSearchParams}
-              onFilterChange={props.onFilterChange}
-              searchParams={props.searchParams}
-              type="desktop"
-              statutes={statutes}
-            />
+            defaultSearchParams={props.defaultSearchParams}
+            onFilterChange={props.onFilterChange}
+            searchParams={props.searchParams}
+            type="desktop"
+            statutes={statutes} />
+
             {/* <Filter
-              businessService={props.businessService}
-              searchParams={props.searchParams}
-              applications={props.data}
-              onFilterChange={props.onFilterChange}
-              translatePrefix={props.translatePrefix}
-              type="desktop"
+             businessService={props.businessService}
+             searchParams={props.searchParams}
+             applications={props.data}
+             onFilterChange={props.onFilterChange}
+             translatePrefix={props.translatePrefix}
+             type="desktop"
             /> */}
           </div>
         </div>
-      )}
-      <div style={{ flex: 1 }}>
+      }
+      <div className="challan-generation-style-7623f05545">
         <SearchApplication
           defaultSearchParams={props.defaultSearchParams}
           onSearch={props.onSearch}
           type="desktop"
           searchFields={props.searchFields}
           isInboxPage={!props?.isSearch}
-          searchParams={props.searchParams}
-        />
-        <div className="result" style={{ marginLeft: !props?.isSearch ? "24px" : "", flex: 1 }}>
+          searchParams={props.searchParams} />
+
+        <div className={`result challan-generation-desktop-inbox__result${!props?.isSearch ? " challan-generation-desktop-inbox__result--inbox" : ""}`}>
           {result}
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default DesktopInbox;

@@ -11,6 +11,7 @@ const Modal = ({
   headerBarMain,
   headerBarEnd,
   popupStyles,
+  popupClassName = "",
   children,
   actionCancelLabel,
   actionCancelOnSubmit,
@@ -25,9 +26,12 @@ const Modal = ({
   hideSubmit,
   style = {},
   popupModuleMianStyles,
+  popupModuleMainClassName = "",
   headerBarMainStyle,
+  headerBarClassName = "",
   isOBPSFlow = false,
   popupModuleActionBarStyles = {},
+  popupModuleActionBarClassName = "",
 }) => {
   /**
    * TODO: It needs to be done from the desgin changes
@@ -41,12 +45,12 @@ const Modal = ({
   }, []);
   return (
     <PopUp>
-      <div className="popup-module" style={popupStyles}>
-        <HeaderBar main={headerBarMain} end={headerBarEnd} style={headerBarMainStyle ? headerBarMainStyle : {}} />
-        <div className="popup-module-main" style={popupModuleMianStyles ? popupModuleMianStyles : {}}>
+      <div className={`popup-module ${popupClassName}`} style={popupStyles}>
+        <HeaderBar className={headerBarClassName} main={headerBarMain} end={headerBarEnd} style={headerBarMainStyle ? headerBarMainStyle : {}} />
+        <div className={`popup-module-main ${popupModuleMainClassName}`} style={popupModuleMianStyles ? popupModuleMianStyles : {}}>
           {children}
           <div
-            className="popup-module-action-bar"
+            className={`popup-module-action-bar ${popupModuleActionBarClassName}`}
             style={
               isOBPSFlow
                 ? !mobileView

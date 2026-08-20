@@ -19,7 +19,7 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   const [displayMenu, setDisplayMenu] = useState(false);
   const menuRef = useRef();
 
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY");  
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const tenant = Digit.ULBService.getStateId();
 
 
@@ -36,7 +36,7 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
 
 
 console.log("FormData in CheckPage", result, formData, safeValue, value, isArchitect);
-  const status = value?.result?.Licenses?.[0]?.status;  
+  const status = value?.result?.Licenses?.[0]?.status;
   const isCitizenEditable = status === "CITIZEN_ACTION_REQUIRED";
 
   const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
@@ -46,7 +46,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
 
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
-  const {data: bparegData, isLoading: isBPAREGLoading} = Digit.Hooks.obps.useBPAREGSearch(isArchitect? "pb.punjab" : tenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 });  
+  const {data: bparegData, isLoading: isBPAREGLoading} = Digit.Hooks.obps.useBPAREGSearch(isArchitect? "pb.punjab" : tenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 });
 
   const tradeType = bparegData?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType;
   const moduleCode = tradeType ? tradeType.split(".")[0] : null;
@@ -87,7 +87,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
   }
 
   function mapQualificationToLicense(qualification) {
-    
+
     let qualificationCode = EmployeeStatusData?.BPA?.QualificationType?.find((type) => type.name?.includes(qualification?.trim()))?.role;
     console.log("qualification", qualification,EmployeeStatusData, qualificationCode, getLicenseType());
     let license = getLicenseType().find((type) => type.i18nKey.includes(qualificationCode));
@@ -115,7 +115,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
       sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify(updatedFinalData));
     }
   },[bparegData, isBPAREGLoading])
-  
+
 
   const checkTenant = isArchitect ? "pb.punjab" : tenantId;
 
@@ -136,7 +136,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
       enabled: consumerCode ? true : false,
       retry: false,
     }
-  );  
+  );
 
 
 
@@ -278,19 +278,11 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
 
   return (
     <div style={pageStyle}>
-      {<div style={{
-        cursor: "pointer",
-        width: "fit-content",
-        display: "flex",
-        fontFamily: "'Roboto Condensed', sans-serif",
-        color: "rgba(13, 67, 167, var(--text-opacity))",
-        fontSize: "16px",
-        lineHeight: "24px"
-      }} onClick={() => history.push("/digit-ui/citizen/obps/stakeholder/apply/professional-document-details")}>{(<React.Fragment><ArrowLeft />
+      {<div className="obps-pages-citizen-stakeholder-registration-check-page--style-1" onClick={() => history.push("/digit-ui/citizen/obps/stakeholder/apply/professional-document-details")}>{(<React.Fragment><ArrowLeft />
         <p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
       {/* {isMobile && <Timeline currentStep={4} flow="STAKEHOLDER" />} */}
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="obps-pages-citizen-stakeholder-registration-check-page--style-2">
         <h2 style={headingStyle}>{t("BPA_STEPPER_SUMMARY_HEADER")}</h2>
 
         {(() => {
@@ -299,18 +291,11 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
           if (!passportPhoto) return null;
 
     return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "1rem" }}>
+      <div className="obps-pages-citizen-stakeholder-registration-check-page--style-3">
       <img
         src={`${window.location.origin}/filestore/v1/files/id?tenantId=pb&fileStoreId=${passportPhoto.fileStoreId}`}
         alt="Owner Photograph"
-        style={{
-          maxWidth: "100px",
-          maxHeight: "100px",
-          border: "2px solid #e0e0e0",
-          borderRadius: "8px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          marginBottom:"10px"
-        }}
+        className="obps-pages-citizen-stakeholder-registration-check-page--style-4"
         onError={(e) => {
           e.target.style.display = "none"
         }}
@@ -319,7 +304,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
       </div>
     )
   })()}
-</div>      
+</div>
       {/* Application Details */}
       <div style={sectionStyle}>
         {renderLabel(t("BPA_APPLICATION_NUMBER_LABEL"), result?.Licenses?.[0]?.applicationNumber)}
@@ -345,14 +330,14 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
           : renderLabel(t("BPA_SELECTED_ULB"), ulbName || "NA")}
            {LicenseType?.i18nKey?.includes("ARCHITECT") &&
          renderLabel(
-    t("BPA_CERTIFICATE_EXPIRY_DATE"), 
+    t("BPA_CERTIFICATE_EXPIRY_DATE"),
     (() => {
       const validTo = result?.Licenses?.[0]?.validTo;
       if (!validTo) return "";
-      
+
       // Check if it's a number (epoch timestamp) or a numeric string
       const isEpoch = !isNaN(Number(validTo)) && Number(validTo) > 1000000000;
-      
+
       // If it's epoch, format it; otherwise, return as-is
       return isEpoch ? formatDate(validTo) : validTo;
     })())}
@@ -387,55 +372,31 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
         {renderLabel(t("BPA_DETAILS_PIN_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode)}
       </div>
 
-  
+
 
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
         {documents?.documents?.length > 0 ? (
-          <div style={{ overflowX: "auto" }}>
+          <div className="obps-pages-citizen-stakeholder-registration-check-page--style-5">
             <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                marginTop: "1rem",
-              }}
+              className="obps-pages-citizen-stakeholder-registration-check-page--style-6"
             >
               <thead>
                 <tr
-                  style={{
-                    backgroundColor: "#f5f5f5",
-                    borderBottom: "2px solid #ddd",
-                  }}
+                  className="obps-pages-citizen-stakeholder-registration-check-page--style-7"
                 >
                   <th
-                    style={{
-                      padding: "0.75rem",
-                      textAlign: "center",
-                      fontWeight: "600",
-                      color: "#2e4a66",
-                      width: "100px",
-                    }}
+                    className="obps-pages-citizen-stakeholder-registration-check-page--style-8"
                   >
                     {t("BPA_SL_NO")}
                   </th>
                   <th
-                    style={{
-                      padding: "0.75rem",
-                      textAlign: "left",
-                      fontWeight: "600",
-                      color: "#2e4a66",
-                    }}
+                    className="obps-pages-citizen-stakeholder-registration-check-page--style-9"
                   >
                     {t("BPA_DOCUMENT_TYPE")}
                   </th>
                   <th
-                    style={{
-                      padding: "0.75rem",
-                      textAlign: "center",
-                      fontWeight: "600",
-                      color: "#2e4a66",
-                      width: "150px",
-                    }}
+                    className="obps-pages-citizen-stakeholder-registration-check-page--style-10"
                   >
                     {t("BPA_ACTION")}
                   </th>
@@ -445,31 +406,21 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
                 {(documents?.documents || result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments).map((doc, index) => (
                   <tr
                     key={index}
-                    style={{
-                      borderBottom: "1px solid #e0e0e0",
-                    }}
+                    className="obps-pages-citizen-stakeholder-registration-check-page--style-11"
                   >
                     <td
-                      style={{
-                        padding: "0.75rem",
-                        textAlign: "center",
-                        color: "#333",
-                        fontWeight: "500",
-                      }}
+                      className="obps-pages-citizen-stakeholder-registration-check-page--style-12"
                     >
                       {index + 1}
                     </td>
-                    <td style={{ padding: "0.75rem" }}>
+                    <td className="obps-pages-citizen-stakeholder-registration-check-page--style-13">
                       {/* <CHANGE> Display OBPSDocument to show proper document name like "Identity Proof" */}
-                      <div style={{ pointerEvents: "none" }}>
+                      <div className="obps-pages-citizen-stakeholder-registration-check-page--style-14">
                         <OBPSDocument value={safeValue} Code={doc?.documentType} index={index} isNOC={false} svgStyles={{}} isStakeHolder={true} />
                       </div>
                     </td>
                     <td
-                      style={{
-                        padding: "0.75rem",
-                        textAlign: "center",
-                      }}
+                      className="obps-pages-citizen-stakeholder-registration-check-page--style-15"
                     >
                       <button
                         onClick={() => {
@@ -485,16 +436,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
                             docElement.dispatchEvent(clickEvent);
                           }
                         }}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor: "#2e4a66",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "0.875rem",
-                          fontWeight: "500",
-                        }}
+                        className="obps-pages-citizen-stakeholder-registration-check-page--style-16"
                       >
                         {t("BPA_VIEW")}
                       </button>
@@ -510,14 +452,14 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
       </div>
 
 
- 
+
       {result?.Licenses?.[0]?.applicationType != "UPGRADE" && <div style={sectionStyle}>
 
         <h2 style={headingStyle}>{t("BPA_SUMMARY_FEE_DETAILS")}</h2>
 
           {mainType === "ARCHITECT" ? (
             <div>
-              
+
               {paymentDetails?.billResponse?.Bill[0]?.billDetails[0]?.billAccountDetails.map((bill, index) =>
                 renderLabel(t(bill.taxHeadCode), `₹ ${bill?.amount}`)
               )}
@@ -530,14 +472,14 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
               )}
             </div>
           ) : (
-           
+
   <div>
     {recieptDataLoading ? (
       <Loader message={"Loading Fee..."} />
     ) : (
       <React.Fragment>
         {/* <CHANGE> Conditionally use reciept_data or paymentDetails based on isCitizenEditable */}
-        {(isCitizenEditable === true 
+        {(isCitizenEditable === true
           ? reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.billAccountDetails
           : paymentDetails?.billResponse?.Bill[0]?.billDetails[0]?.billAccountDetails
         )?.map((bill, index) =>

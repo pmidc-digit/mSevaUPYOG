@@ -209,7 +209,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   return (
     <React.Fragment>
-      <form className="employeeCard" onSubmit={handleSubmit(onSubmit)}>
+      <form className="employeeCard chb-venue-details-form" onSubmit={handleSubmit(onSubmit)}>
         <div className="card">
           {/* SELECT_HALL_NAME */}
           <div className="label-field-pair">
@@ -336,7 +336,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           </div>
 
           {/* HALL_CODE */}
-          <div className="label-field-pair chb-margin-top-20">
+          <div className="label-field-pair chb-margin-top-20 chb-venue-code-field">
             <CardLabel>
               {t("HALL_CODE")} <span className="mandatory-asterisk">*</span>
             </CardLabel>
@@ -347,7 +347,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 rules={{ required: t("HALL_CODE_REQ") }}
                 render={(props) => (
                   <Dropdown
-                    className="form-field chb-form-field-margin"
+                    className="form-field chb-form-field-margin chb-venue-code-dropdown"
                     select={(e) => {
                       props.onChange(e);
                       slotsSearch(e);
@@ -356,6 +356,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     option={getHallCodes}
                     optionKey="HallCode"
                     disable={errors.endDate || errors.startDate}
+                    menuPortal={true}
                   />
                 )}
               />

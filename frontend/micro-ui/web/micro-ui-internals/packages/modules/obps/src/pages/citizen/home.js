@@ -37,7 +37,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   const { data: obpsHomePageUI, isLoading: isOBPSHomePageUILoading } = Digit.Hooks.useCustomMDMS(state, "BPA", [{ name: "OBPSHomePageUI" }]);
 
   // console.log("obpsHomePageUI", obpsHomePageUI, isOBPSHomePageUILoading)
-  
+
   useEffect(() => {
     // console.log("userDetails", userDetails, isUserRegistered, user)
     if(isUserRegistered && !userDetails?.user?.[0]?.signature){
@@ -190,7 +190,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   //       },
   //     ],
   //     className: "CitizenHomeCard",
-    
+
   //   },
   //   {
   //     title: t("ACTION_TEST_EDCR_SCRUTINY"),
@@ -205,13 +205,13 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   //         i18nKey: t("BPA_OC_PLAN_SCRUTINY_FOR_NEW_CONSTRUCTION_LABEL"),
   //       },
   //     ],
-    
+
   //   },
   //   {
   //     title: t("ACTION_TEST_BPA_STAKE_HOLDER_HOME"),
   //     Icon: <BPAIcon className="fill-path-primary-main" />,
   //     links: bpaLinks,
-     
+
   //   },
   //   {
   //     title: t("ACTION_TEST_LAYOUT_HOME"),
@@ -230,7 +230,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   //         i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
   //       },
   //     ],
-     
+
   //   },
   //   {
   //     title: t("ACTION_TEST_CLU_HOME"),
@@ -249,7 +249,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   //         i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
   //       },
   //     ],
-     
+
   //   },
   //   {
   //     title: t("ACTION_TEST_NOC"),
@@ -268,7 +268,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   //         i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
   //       },
   //     ],
-     
+
   //   },
   // ];
   const homeDetails = obpsHomePageUI?.BPA?.OBPSHomePageUI?.length > 0 ? obpsHomePageUI?.BPA?.OBPSHomePageUI?.map((data) => {

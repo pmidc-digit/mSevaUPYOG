@@ -61,10 +61,10 @@ const Response = (props) => {
           applicationNumber={nocCode}
           info={nocData?.applicationStatus == "REJECTED" ? "" : t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_APPLICATION_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
+          className="noc-pages-employee-response--style-1"
           headerStyles={{fontSize: "32px", wordBreak: "break-word"}}
         />
-        {/* {nocData?.applicationStatus !== "REJECTED" ? 
+        {/* {nocData?.applicationStatus !== "REJECTED" ?
         (
           <div>
         {/* <CardText>
@@ -72,8 +72,8 @@ const Response = (props) => {
         </CardText>  */}
         {/* <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
         </div>
-        ):null} */} 
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+        ):null} */}
+        <ActionBar className="noc-pages-employee-response--style-2">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_NOC")} onSubmit={onGoToNOC} />
           <SubmitBar label={t("View Application")} onSubmit={onViewApplication} />

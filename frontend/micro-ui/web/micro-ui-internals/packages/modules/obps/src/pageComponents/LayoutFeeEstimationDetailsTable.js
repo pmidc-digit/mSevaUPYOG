@@ -343,12 +343,12 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
   if (layoutCalculatorLoading) return <Loader />;
 
   return (
-    <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+    <div className="obps-page-components-layout-fee-estimation-details-table--style-1">
       {
         // cluCalculatorLoading ? (
         //   <Loader />
         // ) :
-       
+
           <LayoutFeeTable
             feeDataWithTotal={applicationFeeDataWithTotal}
             feeData={feeAdjustments}
@@ -363,7 +363,7 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
             onAdjustedAmountBlur={onAdjustedAmountBlur}
             feeHistory={feeHistory}
           />
-       
+
       }
       {showToast && (
         <Toast

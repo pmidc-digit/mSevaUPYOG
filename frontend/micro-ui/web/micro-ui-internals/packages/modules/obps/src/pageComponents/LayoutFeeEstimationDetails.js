@@ -9,13 +9,13 @@ import _ from "lodash";
 
 const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
   const { t } = useTranslation()
-  
+
   // Handle multiple data formats:
   // 1. From LayoutApplicationSummary: { apiData: {...}, applicationDetails: {...}, siteDetails: {...} }
   // 2. From LayoutSummary (form): { apiData: { Layout: [{...}] }, applicationDetails: {...}, siteDetails: {...} }
-  
+
   let layoutData = null;
-  
+
   if (formData?.apiData?.Layout) {
     // NEW or EDIT mode with Layout in apiData
     const isLayoutArray = Array.isArray(formData?.apiData?.Layout);
@@ -31,7 +31,7 @@ const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
   // Safely get applicationDetails and siteDetails
   const applicationDetails = formData?.applicationDetails || layoutData?.layoutDetails?.additionalDetails?.applicationDetails || {};
   const siteDetails = formData?.siteDetails || layoutData?.layoutDetails?.additionalDetails?.siteDetails || {};
-  
+
   // Function to format siteDetails fields for calculator API
   // Ensures all dropdown/select fields are sent as objects with code and name
   const formatSiteDetailsForCalculator = (details) => {
@@ -105,7 +105,7 @@ const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
 
     return formatted;
   };
-  
+
   const payload = useMemo(
     () => ({
       CalculationCriteria: [
@@ -146,7 +146,7 @@ const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
   )
 
     const [prevSiteDetails, setPrevSiteDetails] = useState(null);
-  
+
   useEffect(() => {
    if (!_.isEqual(prevSiteDetails, formData?.siteDetails)) {
      revalidate();
@@ -207,7 +207,7 @@ const LayoutFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
       accessor: "amount",
       Cell: ({ row, value }) => {
         if (row.original.isStatus) {
-          return <span style={{ color: "green", fontWeight: "bold" }}>{value}</span>;
+          return <span className="obps-page-components-layout-fee-estimation-details--style-1">{value}</span>;
         }
         if (value === null || value === undefined || isNaN(value)) {
           return t("CS_NA");

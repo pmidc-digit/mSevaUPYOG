@@ -63,12 +63,12 @@ const InspectionReportDisplay = ({fiReport}) => {
 
     return [];
   }, [report, t]);
-  
+
     if (!fiReport || fiReport.length === 0) {
       return <div>{t("BPA_NO_INSPECTION_REPORTS_AVAILABLE_LABEL")}</div>;
     }
 
-  
+
     return (
       <div>
         {/* {fiReport.map((report, index) => ( */}
@@ -86,7 +86,7 @@ const InspectionReportDisplay = ({fiReport}) => {
                 {report?.InspectionTime || t("NA")}
               </div>
             </LabelFieldPair>} */}
-            <div style={{ marginTop: "16px" }}>
+            <div className="obps-page-components-inspection-report-display--style-1">
               {/* <CardLabel className="card-label-smaller">{t("BPA_FI_CHECKLIST_LABEL")}:</CardLabel> */}
               {report.questionList && report.questionList.length > 0 ? (
                 // report.questionList.map((questionItem, qIndex) => (
@@ -117,7 +117,7 @@ const InspectionReportDisplay = ({fiReport}) => {
                                 {
                                     Header: t("BPA_CHECK_LIST_DETAILS"),
                                     accessor: "question"
-                                },                                
+                                },
                                 {
                                     Header: t("BPA_REMARKS"),
                                     accessor: "remarks"
@@ -139,5 +139,5 @@ const InspectionReportDisplay = ({fiReport}) => {
       </div>
     );
   };
-  
+
   export default InspectionReportDisplay;

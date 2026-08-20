@@ -156,7 +156,7 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
   };
 
   return (
-    <div style={{ textAlign: "center" }}>
+    <div className="obps-page-components-digit-camera-capture--style-1">
       <video
         ref={videoRef}
         autoPlay
@@ -169,7 +169,7 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
         // }}
       />
 
-      <canvas ref={canvasRef} style={{ display: "none" }} />
+      <canvas ref={canvasRef} className="obps-page-components-digit-camera-capture--style-2" />
 
       {error && (
         <div className="requiredField"
@@ -194,12 +194,12 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
         Capture Photo
       </button> */}
           {location && location.accuracy > 100 && (
-              <div style={{ fontSize: "12px", color: "#B45309", marginTop: "4px" }}>
+              <div className="obps-page-components-digit-camera-capture--style-3">
                   Low GPS accuracy. Move outdoors for better accuracy.
               </div>
           )}
 
-      <div style={{display: "flex",justifyContent: "center",gap: "12px", marginTop: "16px"}}>
+      <div className="obps-page-components-digit-camera-capture--style-4">
         {!error && <SubmitBar label={gpsReady ? t("CAPTURE_IMAGE") : t("WAITING_FOR_GPS")} onSubmit={capturePhoto} />}
         <SubmitBar label={t("CANCEL")} onSubmit={handleCancel} />
       </div>

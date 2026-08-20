@@ -18,7 +18,7 @@ const CloseBtn = (props) => {
 
 /**
  * Reusable PDF preview modal
- * 
+ *
  * Props:
  * - open: boolean
  * - url: string | null
@@ -37,12 +37,12 @@ const PdfPreviewModal = ({ open, url, onClose, title = "Document", className, ch
       popupStyles={{ backgroundColor: "#fff", position: 'relative', maxHeight: '90vh', width: '80%', overflowY: 'auto' }}
     >
       {url ? (
-        <div style={{ height: "80vh", width: "100%", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div className="obps-components-pdf-preview-modal--style-1">
           {/* Inline preview */}
           <iframe
             src={url}
             title={title}
-            style={{ flex: 1, border: "none", width: "100%" }}
+            className="obps-components-pdf-preview-modal--style-2"
           />
           {children /* <- render whatever the parent wants */}
         </div>

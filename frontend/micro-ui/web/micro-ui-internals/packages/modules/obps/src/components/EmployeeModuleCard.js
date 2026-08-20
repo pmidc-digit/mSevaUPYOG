@@ -236,7 +236,7 @@ export const EmployeeModuleCard = ({
                 >
                   <span style={kpiLabelStyle}>
                     {link ? (
-                      <Link to={link} style={{ color: "inherit", textDecoration: "none" }}>
+                      <Link to={link} className="obps-components-employee-module-card--style-1">
                         {t(label)}
                       </Link>
                     ) : (

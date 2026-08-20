@@ -432,6 +432,7 @@ const RALApplicationDetails = () => {
                       label={t("PT_COMMON_COL_ADDRESS")}
                       text={tValue(owner?.correspondenceAddress?.addressId || owner?.permanentAddress?.addressId)}
                     />
+
                     <Row label={t("CORE_COMMON_PINCODE")} text={tValue(owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode)} />
                   </React.Fragment>
                 );
@@ -460,6 +461,7 @@ const RALApplicationDetails = () => {
                   : t("CS_NA")
               }
             />
+
             <Row label={t("Building/Plot/Shop Size")} text={tValue(propertyDetails?.propertySizeOrArea)} />
             <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={tValue(propertyDetails?.locationType)} />
             <Row label={t("RAL_START_DATE")} text={tValue(getDate(applicationData?.startDate))} />
@@ -538,16 +540,9 @@ const RALApplicationDetails = () => {
           <ActionBar>
             <div ref={menuRef}>
               {displayMenu ? (
-                <Menu
-                  localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
-                  options={actions}
-                  optionKey={"action"}
-                  t={t}
-                  onSelect={onActionSelect}
-                  // style={MenuStyle}
-                />
+                <Menu localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
               ) : null}
-              <div style={{ textAlign: "right" }}>
+              <div className="ral-style-a527bac1ee">
                 <SubmitBar label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
               </div>
             </div>
@@ -587,7 +582,9 @@ const RALApplicationDetails = () => {
         ) : null}
       </div>
 
-      {showToast && <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={closeToast} style={{ zIndex: 1000 }} />}
+      {showToast && (
+        <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={closeToast} className="ral-style-bd1c956dbd" />
+      )}
       {(loader || recieptDataLoading || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>
   );

@@ -35,7 +35,7 @@ const FilterFormFieldsComponent = ({
   return (
     <>
       {(window.location.href.includes("/employee") && tenantId === "pb.punjab") ? <FilterFormField>
-        <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
+        <div className="filter-label sub-filter-label noc-pages-employee-inbox-filter-form-fields-component--style-1" >{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
         {cities && cities.length > 0 ? (
           <Dropdown
             option={cities}

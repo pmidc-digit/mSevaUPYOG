@@ -118,13 +118,13 @@ const CLUApplicationDetails = () => {
     window.scrollTo({
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
-    });    
+    });
     EmployeeData(tenantId, id, businessServiceCode).then((res) => {
       setEmpData(res);
     });
     refetch();
     workflowDetails.revalidate()
-  }, []); 
+  }, []);
 
   const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
 
@@ -227,7 +227,7 @@ const CLUApplicationDetails = () => {
         ownersString = firmName;
       }
       let conditionText = "";
-      
+
       if (approvecomments?.includes("[#?..**]")) {
         conditionText = approvecomments.split("[#?..**]")[1] || "";
       }
@@ -439,7 +439,7 @@ const CLUApplicationDetails = () => {
     }
   }
 
-  
+
   const dowloadOptions = [];
   if (applicationDetails?.Clu?.[0]?.applicationStatus === "REJECTED") {
     if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
@@ -672,7 +672,7 @@ const CLUApplicationDetails = () => {
 
   return (
     <div className={"employee-main-application-details"}>
-      <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+      <div className="cardHeaderWithOptions obps-pages-citizen-applications-cluapplication-details--style-1" >
         <Header styles={{ fontSize: "32px" }}>{t("BPA_APP_OVERVIEW_HEADER")}</Header>
         {loading && <Loader />}
         {dowloadOptions && dowloadOptions.length > 0 && (
@@ -703,7 +703,7 @@ const CLUApplicationDetails = () => {
         <React.Fragment>
           <Card>
             <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <div key={index} className="obps-pages-citizen-applications-cluapplication-details--style-2">
               <StatusTable>
                 {detail?.firmName && <Row label={t("CLU_FIRM_NAME_LABEL")} text={detail?.firmName} />}
                 <Row label={t("CLU_APPLICANT_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
@@ -725,7 +725,7 @@ const CLUApplicationDetails = () => {
           <React.Fragment>
             <Card>
               <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS")}</CardSubHeader>
-              <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <div key={index} className="obps-pages-citizen-applications-cluapplication-details--style-3">
                 <StatusTable>
                   <Row label={t("BPA_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
                   <Row label={t("BPA_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
@@ -742,7 +742,7 @@ const CLUApplicationDetails = () => {
       <Card>
         <CardSubHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          <div key={index} className="obps-pages-citizen-applications-cluapplication-details--style-4">
             <StatusTable>
               <Row label={t("BPA_AREA_TYPE_LABEL")} text={detail?.localityAreaType?.name || "N/A"} />
 
@@ -761,7 +761,7 @@ const CLUApplicationDetails = () => {
       <Card>
         <CardSubHeader>{t("BPA_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          <div key={index} className="obps-pages-citizen-applications-cluapplication-details--style-5">
             <StatusTable>
               <Row label={t("BPA_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
               <Row label={t("BPA_KHEWAT_KHATUNI_NO_LABEL")} text={detail?.khewatOrKhatuniNo || "N/A"} />
@@ -807,7 +807,7 @@ const CLUApplicationDetails = () => {
       <Card>
         <CardSubHeader>{t("BPA_SPECIFICATION_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          <div key={index} className="obps-pages-citizen-applications-cluapplication-details--style-6">
             <StatusTable>
               <Row label={t("BPA_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
             </StatusTable>
@@ -845,7 +845,7 @@ const CLUApplicationDetails = () => {
             </StatusTable>
             {geoLocations?.length > 0 && (
               <React.Fragment>
-                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+                <CardSectionHeader className="obps-pages-citizen-applications-cluapplication-details--style-7">{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
                 <CustomLocationSearch position={geoLocations} />
               </React.Fragment>
             )}
@@ -880,7 +880,7 @@ const CLUApplicationDetails = () => {
           />
         )}
         {hasPayments && (
-          <div style={{ marginTop: "16px" }}>
+          <div className="obps-pages-citizen-applications-cluapplication-details--style-8">
             <OBPSPaymentHistory payments={combinedPayments} />
           </div>
         )}

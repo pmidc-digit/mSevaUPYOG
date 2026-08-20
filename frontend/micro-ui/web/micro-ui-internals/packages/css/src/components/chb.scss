@@ -1,0 +1,242 @@
+.chb-slot-summary {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.chb-input-width--employee input {
+  width: 50%;
+}
+
+.chb-input-width--citizen input {
+  width: 86%;
+}
+
+.chb-textarea-width--half {
+  width: 50%;
+}
+
+.chb-citizen-details {
+  width: 100%;
+}
+
+.chb-citizen-details__field {
+  margin-bottom: 20px;
+}
+
+.chb-citizen-details__input {
+  width: 100%;
+}
+
+.chb-citizen-details__required,
+.chb-citizen-details__error {
+  color: red;
+}
+
+.chb-citizen-details__error--field {
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.chb-citizen-details__terms {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.chb-citizen-details__terms-input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.chb-citizen-details__terms-label {
+  margin: 0;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Keep Venue Code options below the select instead of covering the selected value. */
+.chb-venue-code-dropdown {
+  position: relative;
+  overflow: visible;
+}
+
+.chb-venue-details-form,
+.chb-venue-details-form .card,
+.chb-venue-code-field {
+  overflow: visible;
+}
+
+.chb-venue-code-field {
+  position: relative;
+}
+
+.chb-community-hall-modal {
+  position: relative;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: #fff;
+}
+
+.chb-community-hall-modal__header {
+  position: sticky;
+  top: 0;
+  background-color: #f5f5f5;
+}
+
+.chb-community-hall-modal__main {
+  padding: 10px;
+}
+
+.chb-community-hall-modal__actions {
+  display: none;
+}
+
+.chb-community-hall-details {
+  padding: 1px 15px 15px;
+}
+
+.chb-community-hall-details__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chb-community-hall-details__item {
+  flex: 1 1 45%;
+}
+
+.chb-community-hall-details__label {
+  font-size: 20px;
+}
+
+.chb-community-hall-details__terms-label {
+  margin-top: 10px;
+}
+
+.chb-community-hall-details__list-item {
+  margin-bottom: 10px;
+}
+
+.chb-community-hall-details__title {
+  margin: 35px;
+  color: #a82227;
+}
+
+.chb-cancellation-policy__list {
+  padding-left: 20px;
+}
+
+.chb-cancellation-policy__list-item {
+  margin-bottom: 10px;
+}
+
+.chb-cancellation-policy__amount-title,
+.chb-cancellation-policy__link,
+.chb-cancellation-policy__modal-title {
+  color: #a82227;
+}
+
+.chb-cancellation-policy__amount-title {
+  font-size: 18px;
+}
+
+.chb-cancellation-policy__summary,
+.chb-cancellation-policy__total {
+  display: flex;
+  align-items: center;
+}
+
+.chb-cancellation-policy__amount {
+  margin-right: 60px;
+  margin-left: 30px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.chb-cancellation-policy__link {
+  cursor: pointer;
+  font-size: 20px;
+  text-decoration: none;
+}
+
+.chb-cancellation-policy__link--price-breakup {
+  margin: 0 18px;
+}
+
+.chb-cancellation-policy__modal-title {
+  margin: 25px;
+}
+
+.chb-cancellation-policy__loading-label {
+  font-size: 20px;
+}
+
+.chb-cancellation-policy__estimate-label {
+  margin-bottom: 15px;
+}
+
+.chb-cancellation-policy__price-row,
+.chb-cancellation-policy__total {
+  justify-content: space-between;
+}
+
+.chb-cancellation-policy__price-row {
+  display: flex;
+}
+
+.chb-cancellation-policy__total {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.chb-cancellation-policy__modal {
+  position: relative;
+  overflow-y: auto;
+  background-color: #fff;
+}
+
+.chb-cancellation-policy__modal--terms {
+  width: 80%;
+  max-height: 90vh;
+}
+
+.chb-cancellation-policy__modal--price-breakup {
+  width: 60%;
+  max-height: 60vh;
+}
+
+.chb-cancellation-policy__modal-header {
+  position: sticky;
+  top: 0;
+  background-color: #f5f5f5;
+}
+
+.chb-cancellation-policy__modal-actions {
+  display: none;
+}
+
+.chb-check-page__section-title {
+  font-size: 24px;
+}
+
+.chb-check-page__documents {
+  display: flex;
+  flex-direction: row;
+}
+
+.chb-check-page__document {
+  margin-right: 25px;
+}
+
+.chb-check-page__table-cell {
+  min-width: 150px;
+  padding: 10px !important;
+  padding-left: 20px !important;
+  font-size: 16px !important;
+}

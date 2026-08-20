@@ -281,13 +281,13 @@ const StakeholderRegistration = () => {
   console.log("formData in StakeholderRegistration", params);
   console.log("config in StakeholderRegistration", config);
   return (
-    <div style={{ display: "flex", flexDirection: "row" }}>
+    <div className="obps-pages-citizen-stakeholder-registration-index--style-1">
       {!(window.location.href.includes("stakeholder-docs-required") || window.location.href.includes("acknowledgement")) && !isMobile && (
-        <div style={{marginLeft: "30px"}}>
+        <div className="obps-pages-citizen-stakeholder-registration-index--style-2">
           <Stepper stepsList={stepperConfig} step={currentStep} />
         </div>
       )}
-      <div style={{ flexGrow: 1 }}>
+      <div className="obps-pages-citizen-stakeholder-registration-index--style-3">
         <Switch>
           {config.map((routeObj, index) => {
             const { component, texts, inputs, key } = routeObj;

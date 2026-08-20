@@ -73,14 +73,9 @@ export const LayoutFeeTable = ({
         if (row.taxHeadCode === "LAYOUT_TOTAL") {
           return (
             <div>
-              <strong style={{ fontSize: "14px" }}>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
+              <strong className="obps-page-components-layout-fee-table--style-1">₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
               <div
-                style={{
-                  fontSize: "0.85em",
-                  color: "#555",
-                  marginTop: "4px",
-                  lineHeight: "1.3",
-                }}
+                className="obps-page-components-layout-fee-table--style-2"
               >
                 {amountToWords(row.grandTotal)}
               </div>
@@ -165,14 +160,9 @@ export const LayoutFeeTable = ({
           if (row.taxHeadCode === "LAYOUT_TOTAL") {
             return (
               <div>
-                <strong style={{ fontSize: "14px" }}>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
+                <strong className="obps-page-components-layout-fee-table--style-3">₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
                 <div
-                  style={{
-                    fontSize: "0.85em",
-                    color: "#555",
-                    marginTop: "4px",
-                    lineHeight: "1.3",
-                  }}
+                  className="obps-page-components-layout-fee-table--style-4"
                 >
                   {amountToWords(row.grandTotal)}
                 </div>

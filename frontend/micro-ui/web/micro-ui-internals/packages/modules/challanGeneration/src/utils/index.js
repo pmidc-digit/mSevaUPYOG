@@ -19,7 +19,7 @@ export const ChallanData = (tenantId, consumerCode) => {
     tenantId,
     id: consumerCode,
     moduleCode: "challan-generation",
-    role: "EMPLOYEE",
+    role: "EMPLOYEE"
   });
 
   const officerInstance = wfData?.data?.processInstances?.find((pi) => pi?.action === "SUBMIT");
@@ -30,14 +30,14 @@ export const ChallanData = (tenantId, consumerCode) => {
   const officerRaw = employeeData?.data?.Employees?.[0];
   const officerAssignment = officerRaw?.assignments?.[0];
 
-  const officer = officerRaw
-    ? {
-        code: officerRaw?.code,
-        id: officerRaw?.id,
-        name: officerRaw?.user?.name,
-        department: officerAssignment?.department,
-      }
-    : null;
+  const officer = officerRaw ?
+  {
+    code: officerRaw?.code,
+    id: officerRaw?.id,
+    name: officerRaw?.user?.name,
+    department: officerAssignment?.department
+  } :
+  null;
 
   return { officer };
 };
@@ -46,25 +46,25 @@ export const getActionButton = (businessService, receiptNumber) => {
   return (
     <a
       href="javascript:void(0)"
-      style={{
-        color: "#FE7A51",
-        cursor: "pointer",
-      }}
+
+
+
+
       onClick={(value) => {
         // printReciept(businessService, receiptNumber);
         downloadAndPrintReciept(businessService, receiptNumber);
-      }}
-    >
+      }} className="challan-generation-style-8f96e7bd84">
+
       {" "}
       {t(`${"CS_COMMON_DOWNLOAD_RECEIPT"}`)}{" "}
-    </a>
-  );
+    </a>);
+
 };
 
 // location fetch function similar to the one already used in pgrai module used
 export const getLocationName = async (lat, lng) => {
   try {
-    if (lat == null || lng == null || (lat === 0 && lng === 0)) {
+    if (lat == null || lng == null || lat === 0 && lng === 0) {
       return null;
     }
     const res = await fetch(
@@ -129,11 +129,11 @@ export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") =
   let differentFormats = downloadLink?.split(",") || [];
   let fileURL = "";
   differentFormats.length > 0 &&
-    differentFormats.map((link) => {
-      if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
-        fileURL = link;
-      }
-    });
+  differentFormats.map((link) => {
+    if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
+      fileURL = link;
+    }
+  });
   return fileURL;
 };
 
@@ -153,9 +153,9 @@ export const downloadAndPrintChallan = async (challanNo, mode) => {
   const response = await Digit.ChallanGenerationService.downloadPdf(challanNo, tenantId);
   const responseStatus = parseInt(response.status, 10);
   if (responseStatus === 201 || responseStatus === 200) {
-    mode == "print"
-      ? printPdf(new Blob([response.data], { type: "application/pdf" }))
-      : downloadPdf(new Blob([response.data], { type: "application/pdf" }), `CHALLAN-${challanNo}.pdf`);
+    mode == "print" ?
+    printPdf(new Blob([response.data], { type: "application/pdf" })) :
+    downloadPdf(new Blob([response.data], { type: "application/pdf" }), `CHALLAN-${challanNo}.pdf`);
   }
 };
 
@@ -173,28 +173,28 @@ export const downloadAndPrintReciept = async (bussinessService, consumerCode, mo
   const responseStatus = parseInt(response.status, 10);
   if (responseStatus === 201 || responseStatus === 200) {
     let fileName =
-      mode == "print"
-        ? printPdf(new Blob([response.data], { type: "application/pdf" }))
-        : downloadPdf(new Blob([response.data], { type: "application/pdf" }), `CHALLAN-${consumerCode}.pdf`);
+    mode == "print" ?
+    printPdf(new Blob([response.data], { type: "application/pdf" })) :
+    downloadPdf(new Blob([response.data], { type: "application/pdf" }), `CHALLAN-${consumerCode}.pdf`);
   }
 };
 
 export const businessServiceList = (isCode = false) => {
   let isSearchScreen = window.location.href.includes("/search");
   const availableBusinessServices = [
-    {
-      code: isSearchScreen ? "FIRE_NOC" : "FIRE_NOC_SRV",
-      active: true,
-      roles: ["FIRE_NOC_APPROVER"],
-      i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV",
-    },
-    {
-      code: isSearchScreen ? "AIRPORT_AUTHORITY" : "AIRPORT_NOC_SRV",
-      active: true,
-      roles: ["AIRPORT_AUTHORITY_APPROVER"],
-      i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV",
-    },
-  ];
+  {
+    code: isSearchScreen ? "FIRE_NOC" : "FIRE_NOC_SRV",
+    active: true,
+    roles: ["FIRE_NOC_APPROVER"],
+    i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV"
+  },
+  {
+    code: isSearchScreen ? "AIRPORT_AUTHORITY" : "AIRPORT_NOC_SRV",
+    active: true,
+    roles: ["AIRPORT_AUTHORITY_APPROVER"],
+    i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV"
+  }];
+
 
   const newAvailableBusinessServices = [];
   const loggedInUserRoles = Digit.UserService.getUser().info.roles;
@@ -202,9 +202,9 @@ export const businessServiceList = (isCode = false) => {
     roles.map((role) => {
       loggedInUserRoles.map((el) => {
         if (el.code === role) {
-          isCode
-            ? newAvailableBusinessServices.push(availableBusinessServices?.[index]?.code)
-            : newAvailableBusinessServices.push(availableBusinessServices?.[index]);
+          isCode ?
+          newAvailableBusinessServices.push(availableBusinessServices?.[index]?.code) :
+          newAvailableBusinessServices.push(availableBusinessServices?.[index]);
         }
       });
     });

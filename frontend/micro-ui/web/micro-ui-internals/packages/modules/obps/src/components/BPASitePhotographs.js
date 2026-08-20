@@ -35,9 +35,9 @@ const BPASitePhotographs = ({ filestoreId, documentType, coordinates, documents 
   const docTitle = t(actualDocumentType?.replaceAll(".", "_")) || t("CS_NA");
 
   return (
-    <div style={{ padding: "20px 0px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", padding: "0px 20px" }}>
-        <div style={{ textAlign: "start" }}>
+    <div className="obps-components-bpasite-photographs--style-1">
+      <div className="obps-components-bpasite-photographs--style-2">
+        <div className="obps-components-bpasite-photographs--style-3">
           <div>
             <span>{docTitle}</span>
           </div>

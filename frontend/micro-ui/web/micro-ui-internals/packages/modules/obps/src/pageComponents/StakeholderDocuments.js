@@ -37,7 +37,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setForm
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
   let isopenlink = window.location.href.includes("/openlink/");
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const selectedTenantId = formData?.formData?.LicneseType?.LicenseType?.code === "Architect" ? stateId : tenantId;  
+  const selectedTenantId = formData?.formData?.LicneseType?.LicenseType?.code === "Architect" ? stateId : tenantId;
 
   if (isopenlink)
     window.onunload = function () {
@@ -150,15 +150,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setForm
   return (
     <div>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
-        {<div style={{
-                            cursor: "pointer",
-                            width: "fit-content",
-                            display: "flex",
-                            fontFamily: "'Roboto Condensed', sans-serif",
-                            color: "rgba(13, 67, 167, var(--text-opacity))",
-                            fontSize: "16px",
-                            lineHeight: "24px"
-                          }} onClick={() => {history.push("/digit-ui/citizen/obps/stakeholder/apply/Permanent-address"); window.location.reload()}}>{(<React.Fragment><ArrowLeft />
+        {<div className="obps-page-components-stakeholder-documents--style-1" onClick={() => {history.push("/digit-ui/citizen/obps/stakeholder/apply/Permanent-address"); window.location.reload()}}>{(<React.Fragment><ArrowLeft />
                         <p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
         {/* {isMobile && <Timeline currentStep={3} flow="STAKEHOLDER" />} */}
         {!formData?.initiationFlow && (
@@ -316,12 +308,12 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
   }, [file]);
 
   return (
-    <div style={{ marginBottom: "24px" }}>
-      <CardLabel style={{ marginBottom: "10px" }}>
+    <div className="obps-page-components-stakeholder-documents--style-2">
+      <CardLabel className="obps-page-components-stakeholder-documents--style-3">
         {doc?.required ? `${t(`BPAREG_HEADER_${doc?.code?.replace(".", "_")}`)} *` : `${t(`BPAREG_HEADER_${doc?.code?.replace(".", "_")}`)}`}
       </CardLabel>
       {doc?.info ? (
-        <div style={{ fontSize: "12px", color: "#505A5F", fontWeight: 400, lineHeight: "15px", marginBottom: "10px" }}>{`${t(doc?.info)}`}</div>
+        <div className="obps-page-components-stakeholder-documents--style-4">{`${t(doc?.info)}`}</div>
       ) : null}
       {(doc?.code === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO"|| doc?.code === "APPL.BPAREG_SCANNED_SIGNATURE")  ? (
         <CustomUploadFile
@@ -352,7 +344,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
           // iserror={error}
         />
       )}
-      {(doc?.code === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO" || doc?.code === "APPL.BPAREG_SCANNED_SIGNATURE") ? (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>) : (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>)}
+      {(doc?.code === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO" || doc?.code === "APPL.BPAREG_SCANNED_SIGNATURE") ? (<p className="obps-page-components-stakeholder-documents--style-5">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>) : (<p className="obps-page-components-stakeholder-documents--style-6">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>)}
       {loader && <LoaderNew page={true} />}
     </div>
   );

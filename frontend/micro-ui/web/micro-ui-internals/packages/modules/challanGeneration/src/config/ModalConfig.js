@@ -9,52 +9,52 @@ export const ModalConfig = ({ t, action, setAmount, getChallanData, selectFile, 
     label: {
       heading: ``,
       submit: `${action?.action}`,
-      cancel: "WF_EMPLOYEE_NEWTL_CANCEL",
+      cancel: "WF_EMPLOYEE_NEWTL_CANCEL"
     },
     form: [
+    {
+      body: [
       {
-        body: [
-          {
-            label: `${t("FEE_WAIVER_AMOUNT")} *`,
-            populators: (
-              <div style={{ marginBottom: "20px" }}>
+        label: `${t("FEE_WAIVER_AMOUNT")} *`,
+        populators:
+        <div className="challan-generation-style-7dde5e56b3">
                 <input
-                  className="employee-card-input focus-visible"
-                  type="number"
-                  style={{ marginBottom: 0, width: "100%" }}
-                  onChange={(e) => setAmount(e.target.value)}
-                  onWheel={(e) => e.target.blur()}
-                  onKeyDown={(e) => {
-                    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-                      e.preventDefault();
-                    }
-                  }}
-                />
-                <span style={{ color: "green" }}>
-                  <span style={{ color: " red", paddingRight: " 3px" }}>Note:</span>Please enter amount less than{" "}
-                  <span style={{ fontWeight: "bolder", color: "green" }}> {finalAmount}</span>{" "}
+            className="employee-card-input focus-visible challan-generation-style-acb1508a33"
+            type="number"
+
+            onChange={(e) => setAmount(e.target.value)}
+            onWheel={(e) => e.target.blur()}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                e.preventDefault();
+              }
+            }} />
+
+                <span className="challan-generation-style-5bac8467c0">
+                  <span className="challan-generation-style-fca99e6205">Note:</span>Please enter amount less than{" "}
+                  <span className="challan-generation-style-3bec6c4bcc"> {finalAmount}</span>{" "}
                 </span>
               </div>
-            ),
-          },
-          {
-            label: `${t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE")} *`,
-            populators: (
-              <div>
-                <UploadFile
-                  id={"workflow-doc"}
-                  // accept=".jpg"
-                  onUpload={selectFile}
-                  onDelete={() => {
-                    setUploadedFile(null);
-                  }}
-                  message={uploadedFile ? `1 ${t(`ES_PT_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-                />
-              </div>
-            ),
-          },
-        ],
+
       },
-    ],
+      {
+        label: `${t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE")} *`,
+        populators:
+        <div>
+                <UploadFile
+            id={"workflow-doc"}
+            // accept=".jpg"
+            onUpload={selectFile}
+            onDelete={() => {
+              setUploadedFile(null);
+            }}
+            message={uploadedFile ? `1 ${t(`ES_PT_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)} />
+
+              </div>
+
+      }]
+
+    }]
+
   };
 };

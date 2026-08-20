@@ -21,15 +21,15 @@ const SearchFormFieldsComponent = (props) => {
     }, true);
     props?.isMobileView ? props.closeMobilePopupModal() : null;
   }
-  
-  
+
+
   return (
     <>
       <SearchField>
         <label>{t("NOC_APPLICATION_NUMBER")}</label>
         <TextInput name="applicationNo" inputRef={register({})} />
       </SearchField>
-      
+
       <SearchField>
         <label>{t("NOC_APPLICANT_MOBILE_NO_LABEL")}</label>
         <TextInput
@@ -59,7 +59,7 @@ const SearchFormFieldsComponent = (props) => {
       <SearchField className="submit">
         <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
         <p
-          style={{ marginTop: "24px" }}
+          className="noc-pages-employee-search-application-search-form-fields-component--style-1"
           onClick={() => {
             reset({
               applicationNo: "",

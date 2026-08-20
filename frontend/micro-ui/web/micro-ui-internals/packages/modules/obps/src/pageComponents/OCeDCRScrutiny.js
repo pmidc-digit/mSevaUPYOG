@@ -138,13 +138,13 @@ const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 
                 <div onClick={getSearchResults}>
                     <SubmitBar label={t("ACTION_TEST_BPA_STAKE_HOLDER_SEARCH")} disabled={!permitNumber || !permitDate}/>
                 </div>
-                {showToast && 
-                    <Toast 
+                {showToast &&
+                    <Toast
                         error={showToast?.error}
                         warning={showToast?.warning}
                         label={t(showToast?.message)}
                         isDleteBtn={true}
-                        onClose={() => { setShowToast(null) }} 
+                        onClose={() => { setShowToast(null) }}
                     />}
             </FormStep>
             {loading && <Loader />}
@@ -185,8 +185,8 @@ const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 
                             className="border-none"
                         />
                     </StatusTable>
-                    <hr style={{color:"#cccccc",backgroundColor:"#cccccc",height:"2px",marginTop:"20px",marginBottom:"20px"}}/>
-                    <h1 style={{ fontSize: "18px", lineHeight: "21px", fontWeight: "700", padding: "0px 0px 16px 0px" }}>{`${t("BPA_PERMIT_EDCR_DETAILS_LABEL")}`}</h1>
+                    <hr className="obps-page-components-oce-dcrscrutiny--style-1"/>
+                    <h1 className="obps-page-components-oce-dcrscrutiny--style-2">{`${t("BPA_PERMIT_EDCR_DETAILS_LABEL")}`}</h1>
                     <StatusTable>
                         <Row
                             label={`${t("BPA_EDCR_NO_LABEL")}`}
@@ -194,17 +194,17 @@ const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 
                             className="border-none"
                         />
                     </StatusTable>
-                    <h1 style={{ fontSize: "18px", lineHeight: "21px", fontWeight: "700", padding: "0px 0px 16px 0px" }}>{`${t("BPA_UPLOADED_PLAN_DIAGRAM_LABEL")}`}</h1>
-                    <a target="_" href={permitEdcrData?.updatedDxfFile} style={{ minWidth: "160px", marginRight: "20px" }} key={permitEdcrData?.updatedDxfFile}>
+                    <h1 className="obps-page-components-oce-dcrscrutiny--style-3">{`${t("BPA_UPLOADED_PLAN_DIAGRAM_LABEL")}`}</h1>
+                    <a target="_" href={permitEdcrData?.updatedDxfFile} className="obps-page-components-oce-dcrscrutiny--style-4" key={permitEdcrData?.updatedDxfFile}>
                         {/**TODO : refactor it to send height,weight as part of styles object instead of passing seperately */}
                         <PDFSvg />
-                        <p style={{ marginTop: "8px", fontSize: "14px", lineHeight: "19px", color: "#505A5F", fontWeight: "400" }}>{t("BPA_UPLOADED_PLAN_DXF")}</p>
+                        <p className="obps-page-components-oce-dcrscrutiny--style-5">{t("BPA_UPLOADED_PLAN_DXF")}</p>
                     </a>
-                    <h1 style={{ fontSize: "18px", lineHeight: "21px", fontWeight: "700", padding: "0px 0px 16px 0px" }}>{`${t("BPA_SCRUTINY_REPORT_OUTPUT_LABEL")}`}</h1>
-                    <a target="_" href={permitEdcrData?.planReport} style={{ minWidth: "160px", marginRight: "20px" }} key={permitEdcrData?.planReport}>
+                    <h1 className="obps-page-components-oce-dcrscrutiny--style-6">{`${t("BPA_SCRUTINY_REPORT_OUTPUT_LABEL")}`}</h1>
+                    <a target="_" href={permitEdcrData?.planReport} className="obps-page-components-oce-dcrscrutiny--style-7" key={permitEdcrData?.planReport}>
                         {/**TODO : refactor it to send height,weight as part of styles object instead of passing seperately */}
                         <PDFSvg />
-                        <p style={{ marginTop: "8px", fontSize: "14px", lineHeight: "19px", color: "#505A5F", fontWeight: "400" }}>{t("BPA_SCRUTINY_REPORT_PDF")}</p>
+                        <p className="obps-page-components-oce-dcrscrutiny--style-8">{t("BPA_SCRUTINY_REPORT_PDF")}</p>
                     </a>
                     <div onClick={routeToNextPage}>
                         <SubmitBar label={t("BPA_PROCEED_OC_SCRUTINY_LABEL")} />

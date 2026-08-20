@@ -53,7 +53,11 @@ import {
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
 import BPADocuments from "../../../../../templates/ApplicationDetails/components/BPADocuments";
-import SubOccupancyTable , {getFloorData, getSubOccupancyValues , tableHeader} from "../../../../../templates/ApplicationDetails/components/SubOccupancyTable"
+import SubOccupancyTable, {
+  getFloorData,
+  getSubOccupancyValues,
+  tableHeader,
+} from "../../../../../templates/ApplicationDetails/components/SubOccupancyTable";
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview";
 import TLCaption from "../../../../../templates/ApplicationDetails/components/TLCaption";
 import PropertyOwners from "../../../../../templates/ApplicationDetails/components/PropertyOwners";
@@ -92,7 +96,7 @@ const CloseBtn = (props) => {
 
 const BpaApplicationDetail = () => {
   const { bpaid, tenant, filestore } = useParams();
-  const id = decryptId(bpaid)
+  const id = decryptId(bpaid);
   const { t } = useTranslation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = localStorage.getItem("tenant-id") === "pb.punjab" ? tenant : localStorage.getItem("tenant-id");
@@ -100,7 +104,7 @@ const BpaApplicationDetail = () => {
   const [canSubmit, setSubmitValve] = useState({});
   const defaultValues = {};
   const history = useHistory();
-  const stateCode = Digit.ULBService.getStateId()
+  const stateCode = Digit.ULBService.getStateId();
   // delete
   const [_formData, setFormData, _clear] = Digit.Hooks.useSessionStorage("store-data", null);
   const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
@@ -116,7 +120,7 @@ const BpaApplicationDetail = () => {
   const [fileUrls, setFileUrls] = useState({});
   const [ownerFileUrls, setOwnerFileUrls] = useState({});
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
-  
+
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
@@ -136,7 +140,10 @@ const BpaApplicationDetail = () => {
   const [getLoader, setLoader] = useState(false);
   const cities = Digit.Hooks.useTenants();
   const loginCity = JSON.parse(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY"))?.value?.city?.name;
-  let ulbType,districtCode,ulbCode, subjectLine = "";
+  let ulbType,
+    districtCode,
+    ulbCode,
+    subjectLine = "";
   if (cities.data !== undefined) {
     const selectedTenantData = cities.data.find((item) => item?.city?.name === loginCity);
     ulbType = selectedTenantData?.city?.ulbGrade;
@@ -147,15 +154,19 @@ const BpaApplicationDetail = () => {
       ulbType === "Municipal Corporation"
         ? "Sanction u/s 262(1) of PMC Act,1976"
         : ulbType === "Improvement Trust"
-          ? "Sanctioned under Punjab Town Improvement Act, 1922"
-          : "Sanction u/s 193 of PM Act,1911";
+        ? "Sanctioned under Punjab Town Improvement Act, 1922"
+        : "Sanction u/s 193 of PM Act,1911";
   }
 
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["RiskTypeComputation"]);
 
-  const { data = {}, isLoading, refetch } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
-    enabled: !!id, // 👈 only runs when valid
-  });
+  const { data = {}, isLoading, refetch } = Digit.Hooks.obps.useBPADetailsPage(
+    tenantId,
+    { applicationNo: id },
+    {
+      enabled: !!id, // 👈 only runs when valid
+    }
+  );
 
   const addressPincode = data?.applicationData?.landInfo?.address?.pincode;
   const isSelfCertification = data?.applicationData?.additionalDetails?.isSelfCertification || null;
@@ -173,7 +184,6 @@ const BpaApplicationDetail = () => {
   const [draftComment, setDraftComment] = useState(data?.applicationData?.additionalDetails?.draftComment || "");
   // const [geoLocations, setGeoLocations] = useState(data?.applicationData?.additionalDetails?.geoLocations || [])
   const { isLoadingg, data: blockReason } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["BlockReason"]);
-
 
   const [development, setDevelopment] = useState(() => {
     return data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "";
@@ -205,17 +215,13 @@ const BpaApplicationDetail = () => {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [showPdfModal, setShowPdfModal] = useState(false);
 
-  let buildingCategorysection,usage, fileno;
-  if (data){
-        buildingCategorysection = data?.applicationDetails?.find(
-        (section) => section.title === "BPA_BASIC_DETAILS_TITLE"
-      );
-      usage = t(buildingCategorysection?.values?.find(
-        (val) => val.title === "BPA_BASIC_DETAILS_OCCUPANCY_LABEL"
-      )?.value);
-      if(cities.data !== undefined){
-          fileno = `PB/${districtCode}/${ulbCode}/${+data?.applicationData?.approvalNo?.slice(-6) + 500000}`;
-      }
+  let buildingCategorysection, usage, fileno;
+  if (data) {
+    buildingCategorysection = data?.applicationDetails?.find((section) => section.title === "BPA_BASIC_DETAILS_TITLE");
+    usage = t(buildingCategorysection?.values?.find((val) => val.title === "BPA_BASIC_DETAILS_OCCUPANCY_LABEL")?.value);
+    if (cities.data !== undefined) {
+      fileno = `PB/${districtCode}/${ulbCode}/${+data?.applicationData?.approvalNo?.slice(-6) + 500000}`;
+    }
   }
 
   const geoLocations = useMemo(() => {
@@ -254,13 +260,13 @@ const BpaApplicationDetail = () => {
   const { data: searchChecklistData } = Digit.Hooks.obps.useBPACheckListSearch({ applicationNo: id }, tenantId);
 
   React.useEffect(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth" // use "auto" for instant scroll
-      });
-      refetch()
-      workflowDetails.revalidate();
-  }, [])
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth", // use "auto" for instant scroll
+    });
+    refetch();
+    workflowDetails.revalidate();
+  }, []);
 
   useEffect(() => {
     if (!isLoading && data?.applicationData?.additionalDetails) {
@@ -303,8 +309,6 @@ const BpaApplicationDetail = () => {
       }
     }
   }, [isLoading, data]);
-
-  
 
   useEffect(() => {
     if (!bpaDocsLoading && !isLoading) {
@@ -444,68 +448,69 @@ const BpaApplicationDetail = () => {
   }, [data?.applicationData?.landInfo?.owners]);
 
   const onChangeReport = (key, value) => {
-    if(value?.length>0)setFieldInspectionPending(value);
+    if (value?.length > 0) setFieldInspectionPending(value);
   };
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-      let response = null
-      console.log('payments here here', payments)
-      const fee = payments?.totalAmountPaid;
-      
-  
-      const adjustedAmounts = data?.applicationData?.additionalDetails?.adjustedAmounts;
-      const totalAdjustedAmount = adjustedAmounts?.reduce((sum, item) => sum + (item?.adjustedAmount || 0), 0);
-      const totalULBAmount = adjustedAmounts?.reduce((s,i)=>(s +(i?.amount || 0)),0)
+    let response = null;
+    console.log("payments here here", payments);
+    const fee = payments?.totalAmountPaid;
 
-  
-      data.additionalDetails = {
-        ...data?.applicationData?.additionalDetails,
-        adjustedAmounts,
-        totalAdjustedAmount,
-        totalULBAmount
-      };
-  
-  
-    const amountinwords = amountToWords(fee)
-    console.log('amountinwords', amountinwords)
-      if (payments?.fileStoreId) {
-        response = { filestoreIds: [payments?.fileStoreId] }
-      } else if(payments?.paymentDetails?.[0]?.businessService === "BPA.NC_SAN_FEE") {
-        const fileNo = fileno
-        response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords,fileNo, BPA: [data]  }] }, "bpa-receiptsecond")
-        console.log("Final Payments array:", [{ ...payments, usage }]);
-      }
-      else if(payments?.paymentDetails?.[0]?.businessService === "BPA.NC_APP_FEE") {
-        response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords, BPA: [data]}] }, "bpa-obps-receipt")
-        console.log("Final Payments array:", [{ ...payments, usage }]);
-      }
-      else{
-          response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords , BPA: [data]  }] }, "bpa-receipt") //to do: bpa-obps-receipt
-          console.log("Final Payments array:", [{ ...payments, usage }]);
-      }
-  
-      const fileStore = await Digit.PaymentService.printReciept(stateCode, { fileStoreIds: response.filestoreIds[0] })
-      window.open(fileStore[response?.filestoreIds[0]], "_blank")
+    const adjustedAmounts = data?.applicationData?.additionalDetails?.adjustedAmounts;
+    const totalAdjustedAmount = adjustedAmounts?.reduce((sum, item) => sum + (item?.adjustedAmount || 0), 0);
+    const totalULBAmount = adjustedAmounts?.reduce((s, i) => s + (i?.amount || 0), 0);
+
+    data.additionalDetails = {
+      ...data?.applicationData?.additionalDetails,
+      adjustedAmounts,
+      totalAdjustedAmount,
+      totalULBAmount,
+    };
+
+    const amountinwords = amountToWords(fee);
+    console.log("amountinwords", amountinwords);
+    if (payments?.fileStoreId) {
+      response = { filestoreIds: [payments?.fileStoreId] };
+    } else if (payments?.paymentDetails?.[0]?.businessService === "BPA.NC_SAN_FEE") {
+      const fileNo = fileno;
+      response = await Digit.PaymentService.generatePdf(
+        stateCode,
+        { Payments: [{ ...payments, usage, amountinwords, fileNo, BPA: [data] }] },
+        "bpa-receiptsecond"
+      );
+      console.log("Final Payments array:", [{ ...payments, usage }]);
+    } else if (payments?.paymentDetails?.[0]?.businessService === "BPA.NC_APP_FEE") {
+      response = await Digit.PaymentService.generatePdf(
+        stateCode,
+        { Payments: [{ ...payments, usage, amountinwords, BPA: [data] }] },
+        "bpa-obps-receipt"
+      );
+      console.log("Final Payments array:", [{ ...payments, usage }]);
+    } else {
+      response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments, usage, amountinwords, BPA: [data] }] }, "bpa-receipt"); //to do: bpa-obps-receipt
+      console.log("Final Payments array:", [{ ...payments, usage }]);
     }
 
+    const fileStore = await Digit.PaymentService.printReciept(stateCode, { fileStoreIds: response.filestoreIds[0] });
+    window.open(fileStore[response?.filestoreIds[0]], "_blank");
+  }
+
   async function getPermitOccupancyOrderSearch({ tenantId }, order, mode = "download") {
-     const prevGetLang = Digit.StoreData.getCurrentLanguage;
-     let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
+    const prevGetLang = Digit.StoreData.getCurrentLanguage;
+    let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
 
-     try {
-       if (!fileStoreId) {
+    try {
+      if (!fileStoreId) {
         const newValidityDate =
-          data?.applicationData?.approvalDate !== 0 && data?.applicationData?.approvalDate
-            ? data.applicationData.approvalDate
-            : Date.now();
-         const validityDateObj = new Date(newValidityDate);
-         validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
-         const approvalDatePlusThree = validityDateObj.getTime();
+          data?.applicationData?.approvalDate !== 0 && data?.applicationData?.approvalDate ? data.applicationData.approvalDate : Date.now();
+        const validityDateObj = new Date(newValidityDate);
+        validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
+        const approvalDatePlusThree = validityDateObj.getTime();
 
-         let currentDate = new Date();
-         data.applicationData.additionalDetails.runDate = convertDateToEpoch(
-           currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
-         );
+        let currentDate = new Date();
+        data.applicationData.additionalDetails.runDate = convertDateToEpoch(
+          currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
+        );
         const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
         const requestData = {
           ...data?.applicationData,
@@ -526,54 +531,54 @@ const BpaApplicationDetail = () => {
           };
         }
 
-         Digit.StoreData.getCurrentLanguage = () => "pn_IN";
-         const state = Digit.ULBService.getStateId();
-         let count = 0;
+        Digit.StoreData.getCurrentLanguage = () => "pn_IN";
+        const state = Digit.ULBService.getStateId();
+        let count = 0;
 
-         for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
-           if (
-             (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
-               workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
-             workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
-             count == 0
-           ) {
-             requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
-             count = 1;
-           }
-         }
+        for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+          if (
+            (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+              workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+            workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+            count == 0
+          ) {
+            requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+            count = 1;
+          }
+        }
 
-         if (requestData?.additionalDetails?.approvedColony == "NO") {
-           requestData.additionalDetails.permitData =
-             "The plot has been officially regularized under No." +
-             requestData?.additionalDetails?.NocNumber +
-             "  dated " +
-             requestData?.additionalDetails?.nocObject?.approvedOn +
-             " , registered in the name of " +
-             requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName +
-             " . This regularization falls within the jurisdiction of " +
-             state +
-             ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
-         } else if (requestData?.additionalDetails?.approvedColony == "YES") {
-           requestData.additionalDetails.permitData =
-             "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony;
-         } else {
-           requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
-         }
+        if (requestData?.additionalDetails?.approvedColony == "NO") {
+          requestData.additionalDetails.permitData =
+            "The plot has been officially regularized under No." +
+            requestData?.additionalDetails?.NocNumber +
+            "  dated " +
+            requestData?.additionalDetails?.nocObject?.approvedOn +
+            " , registered in the name of " +
+            requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName +
+            " . This regularization falls within the jurisdiction of " +
+            state +
+            ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
+        } else if (requestData?.additionalDetails?.approvedColony == "YES") {
+          requestData.additionalDetails.permitData =
+            "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony;
+        } else {
+          requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
+        }
 
-         const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
-         fileStoreId = response?.filestoreIds?.[0];
-       }
-     } catch (error) {
-       console.log("error", error);
-     } finally {
-       Digit.StoreData.getCurrentLanguage = prevGetLang;
-     }
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
+        fileStoreId = response?.filestoreIds?.[0];
+      }
+    } catch (error) {
+      console.log("error", error);
+    } finally {
+      Digit.StoreData.getCurrentLanguage = prevGetLang;
+    }
 
-     if (fileStoreId) {
-       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-       window.open(fileStore[fileStoreId], "_blank");
-     }
-   }
+    if (fileStoreId) {
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    }
+  }
 
   let applicationDocs = [],
     nocAppDocs = [];
@@ -594,16 +599,20 @@ const BpaApplicationDetail = () => {
     }
   }
 
-  const sitePhotos = getOrderDocuments(applicationDocs)?.filter(
-                (doc) => doc?.title === "SITEPHOTOGRAPH_ONE" || doc?.title === "SITEPHOTOGRAPH_TWO"
-              )?.sort((a,b) => a?.values?.[0]?.order-b?.values?.[0]?.order);
-  const remainingDoc = applicationDocs?.filter((doc) => (doc?.title != "SITEPHOTOGRAPH_ONE" && doc?.title != "SITEPHOTOGRAPH_TWO"))?.filter((doc) => doc?.fileStoreId)
-  const documentsData = (getOrderDocuments(remainingDoc?.filter(doc => doc?.fileStoreId)?.sort((a,b) => a?.order - b?.order)) || []).map((doc, index) => ({
-    id: index,
-    title: doc.title ? (index+1) + ". " + t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
-    fileUrl: doc.values?.[0]?.fileURL || null,
-    fileStoreId: doc?.fileStoreId || null,
-  }));
+  const sitePhotos = getOrderDocuments(applicationDocs)
+    ?.filter((doc) => doc?.title === "SITEPHOTOGRAPH_ONE" || doc?.title === "SITEPHOTOGRAPH_TWO")
+    ?.sort((a, b) => a?.values?.[0]?.order - b?.values?.[0]?.order);
+  const remainingDoc = applicationDocs
+    ?.filter((doc) => doc?.title != "SITEPHOTOGRAPH_ONE" && doc?.title != "SITEPHOTOGRAPH_TWO")
+    ?.filter((doc) => doc?.fileStoreId);
+  const documentsData = (getOrderDocuments(remainingDoc?.filter((doc) => doc?.fileStoreId)?.sort((a, b) => a?.order - b?.order)) || []).map(
+    (doc, index) => ({
+      id: index,
+      title: doc.title ? index + 1 + ". " + t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
+      fileUrl: doc.values?.[0]?.fileURL || null,
+      fileStoreId: doc?.fileStoreId || null,
+    })
+  );
   const documentsColumnsOwner = [
     {
       Header: t("BPA_OWNER_DETAILS_LABEL"),
@@ -614,7 +623,11 @@ const BpaApplicationDetail = () => {
       Header: t(" "),
       accessor: "fileUrl",
       Cell: ({ value }) =>
-        value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
+        value ? (
+          <LinkButton className="obps-pages-employee-bpa-application-details-index--style-1" label={t("View")} onClick={() => routeTo(value)} />
+        ) : (
+          t("CS_NA")
+        ),
     },
   ];
   const documentsColumns = [
@@ -627,7 +640,11 @@ const BpaApplicationDetail = () => {
       Header: t(" "),
       accessor: "fileUrl",
       Cell: ({ value }) =>
-        value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
+        value ? (
+          <LinkButton className="obps-pages-employee-bpa-application-details-index--style-2" label={t("View")} onClick={() => routeTo(value)} />
+        ) : (
+          t("CS_NA")
+        ),
     },
   ];
   const documentsColumnsECBC = [
@@ -640,7 +657,11 @@ const BpaApplicationDetail = () => {
       Header: t(" "),
       accessor: "fileUrl",
       Cell: ({ value }) =>
-        value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
+        value ? (
+          <LinkButton className="obps-pages-employee-bpa-application-details-index--style-3" label={t("View")} onClick={() => routeTo(value)} />
+        ) : (
+          t("CS_NA")
+        ),
     },
   ];
 
@@ -654,7 +675,15 @@ const BpaApplicationDetail = () => {
       Header: t(" "),
       accessor: "value",
       Cell: ({ value, row }) => {
-        return value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => row?.original?.title === "BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL" ? window.open(value) : fetchUrl(value, tenantId)} /> : t("CS_NA");
+        return value ? (
+          <LinkButton
+            className="obps-pages-employee-bpa-application-details-index--style-4"
+            label={t("View")}
+            onClick={() => (row?.original?.title === "BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL" ? window.open(value) : fetchUrl(value, tenantId))}
+          />
+        ) : (
+          t("CS_NA")
+        );
       },
     },
   ];
@@ -668,7 +697,16 @@ const BpaApplicationDetail = () => {
     {
       Header: t(""),
       accessor: "planReport",
-      Cell: ({ value }) => (value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA")),
+      Cell: ({ value }) =>
+        value ? (
+          <LinkButton
+            className="obps-pages-employee-bpa-application-details-index--style-5"
+            label={t("View")}
+            onClick={() => fetchUrl(value, tenantId)}
+          />
+        ) : (
+          t("CS_NA")
+        ),
     },
   ];
   // const ecbcDocumentsData = useMemo(() => {
@@ -799,8 +837,8 @@ const BpaApplicationDetail = () => {
     id: id,
     moduleCode: "BPA",
     config: {
-    enabled: !!id, // 👈 prevents API call if invalid
-  },
+      enabled: !!id, // 👈 prevents API call if invalid
+    },
   });
 
   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
@@ -823,11 +861,11 @@ const BpaApplicationDetail = () => {
   }
 
   const comments = useMemo(() => {
-  if (workflowDetails?.data && !workflowDetails?.isLoading) {
-    return getApproveRejectComments(workflowDetails);
-  }
-  return null;
-}, [workflowDetails?.data, workflowDetails?.isLoading]);
+    if (workflowDetails?.data && !workflowDetails?.isLoading) {
+      return getApproveRejectComments(workflowDetails);
+    }
+    return null;
+  }, [workflowDetails?.data, workflowDetails?.isLoading]);
 
   const userInfo = Digit.UserService.getUser();
   const rolearray = userInfo?.info?.roles.filter((item) => {
@@ -863,131 +901,138 @@ const BpaApplicationDetail = () => {
     if (!fileStoreId) {
       console.error("No fileStoreId provided for drawing download");
       return;
-    }
-    else {
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId })
-    window.open(fileStore[fileStoreId], "_blank")
+    } else {
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
     }
   }
 
-  const dowloadOptions = []
+  const dowloadOptions = [];
 
-    const handleDownloadPdf = async () => {
-        try{
-          setLoader(true)
-          const tenantInfo = cities.data.find((city) => city.code === data.applicationData.tenantId)
-          const ulbName = tenantInfo?.ulbName || tenantInfo?.name;
-          const acknowledgementData = await getBPAAcknowledgement(data?.applicationData, data, tenantInfo, t, ulbType, ulbName, data?.edcrDetails, data?.collectionBillDetails);
-          const colHeaders = tableHeader?.map(h => t(h.name));
-          const preComputedBlocks = (data?.edcrDetails?.planDetail?.blocks || []).map((block, i) => ({
-            subOccupancy: getSubOccupancyValues(i, data?.applicationData, t),
-            floors: getFloorData(block, t)  // returns [{Floor, Level, Occupancy, BuildupArea, Deduction, FloorArea}] + totals row
-          }));
-          acknowledgementData.details = acknowledgementData?.details.map(d =>
-            d?.isSubOccupancyTable
-              ? { ...d, additionalDetails: { ...d.additionalDetails, preComputedBlocks, colHeaders } }
-              : d
-          );
-          Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
-        }catch(error){
-          setShowToast({
-            error: true,
-            label: error?.response?.data?.Errors?.[0]?.message
-              ? error?.response?.data?.Errors?.[0]?.message
-              : error?.message || "Failed to download application form. Please try again.",
-          });
-          setTimeout(closeToast, 5000);
-        }finally{
-          setLoader(false)
-        }
-      };
-
-    if (data?.applicationData && cities?.data?.length > 0) {
-      dowloadOptions.push({
-        order: 0,
-        label: t("Application Form"),
-        onClick: () => handleDownloadPdf(),
+  const handleDownloadPdf = async () => {
+    try {
+      setLoader(true);
+      const tenantInfo = cities.data.find((city) => city.code === data.applicationData.tenantId);
+      const ulbName = tenantInfo?.ulbName || tenantInfo?.name;
+      const acknowledgementData = await getBPAAcknowledgement(
+        data?.applicationData,
+        data,
+        tenantInfo,
+        t,
+        ulbType,
+        ulbName,
+        data?.edcrDetails,
+        data?.collectionBillDetails
+      );
+      const colHeaders = tableHeader?.map((h) => t(h.name));
+      const preComputedBlocks = (data?.edcrDetails?.planDetail?.blocks || []).map((block, i) => ({
+        subOccupancy: getSubOccupancyValues(i, data?.applicationData, t),
+        floors: getFloorData(block, t), // returns [{Floor, Level, Occupancy, BuildupArea, Deduction, FloorArea}] + totals row
+      }));
+      acknowledgementData.details = acknowledgementData?.details.map((d) =>
+        d?.isSubOccupancyTable ? { ...d, additionalDetails: { ...d.additionalDetails, preComputedBlocks, colHeaders } } : d
+      );
+      Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+    } catch (error) {
+      setShowToast({
+        error: true,
+        label: error?.response?.data?.Errors?.[0]?.message
+          ? error?.response?.data?.Errors?.[0]?.message
+          : error?.message || "Failed to download application form. Please try again.",
       });
+      setTimeout(closeToast, 5000);
+    } finally {
+      setLoader(false);
     }
-  
-    if (data?.collectionBillDetails?.length > 0) {
-      const bpaPayments = cloneDeep(data?.collectionBillDetails)
-      bpaPayments.forEach((pay) => {
-        if (pay?.paymentDetails[0]?.businessService === "BPA.NC_OC_APP_FEE") {
-          dowloadOptions.push({
-            order: 1,
-            label: t("BPA_APP_FEE_RECEIPT"),
-            onClick: () =>
-              getRecieptSearch({
-                tenantId: data?.applicationData?.tenantId,
-                payments: pay,
-                consumerCodes: data?.applicationData?.applicationNo,
-              }),
-          })
-        }
-  
-        if (pay?.paymentDetails[0]?.businessService === "BPA.NC_OC_SAN_FEE") {
-          dowloadOptions.push({
-            order: 2,
-            label: t("BPA_OC_DEV_PEN_RECEIPT"),
-            onClick: () =>
-              getRecieptSearch({
-                tenantId: data?.applicationData?.tenantId,
-                payments: pay,
-                consumerCodes: data?.applicationData?.applicationNo,
-              }),
-          })
-        }
-  
-        if (pay?.paymentDetails[0]?.businessService === "BPA.LOW_RISK_PERMIT_FEE") {
-          dowloadOptions.push({
-            order: 1,
-            label: t("BPA_FEE_RECEIPT"),
-            onClick: () =>
-              getRecieptSearch({
-                tenantId: data?.applicationData?.tenantId,
-                payments: pay,
-                consumerCodes: data?.applicationData?.applicationNo,
-              }),
-          })
-        }
-  
-        if (pay?.paymentDetails[0]?.businessService === "BPA.NC_APP_FEE") {
-          dowloadOptions.push({
-            order: 1,
-            label: t("BPA_APP_FEE_RECEIPT"),
-            onClick: () =>
-              getRecieptSearch({
-                tenantId: data?.applicationData?.tenantId,
-                payments: pay,
-                consumerCodes: data?.applicationData?.applicationNo,
-              }),
-          })
-        }
-  
-        if (pay?.paymentDetails[0]?.businessService === "BPA.NC_SAN_FEE") {
-          dowloadOptions.push({
-            order: 2,
-            label: t("BPA_SAN_FEE_RECEIPT"),
-            onClick: () =>
-              getRecieptSearch({
-                tenantId: data?.applicationData?.tenantId,
-                payments: pay,
-                consumerCodes: data?.applicationData?.applicationNo,
-              }),
-          })
-        }
-      })
-    }
-  
-    if (
-      data &&
-      data?.applicationData?.businessService === "BPA_LOW" &&
-      data?.collectionBillDetails?.length > 0 &&
-      data?.applicationData?.additionalDetails?.isSanctionLetterGenerated
-    ) {
-      !data?.applicationData?.status.includes("REVOCATION") &&
+  };
+
+  if (data?.applicationData && cities?.data?.length > 0) {
+    dowloadOptions.push({
+      order: 0,
+      label: t("Application Form"),
+      onClick: () => handleDownloadPdf(),
+    });
+  }
+
+  if (data?.collectionBillDetails?.length > 0) {
+    const bpaPayments = cloneDeep(data?.collectionBillDetails);
+    bpaPayments.forEach((pay) => {
+      if (pay?.paymentDetails[0]?.businessService === "BPA.NC_OC_APP_FEE") {
         dowloadOptions.push({
+          order: 1,
+          label: t("BPA_APP_FEE_RECEIPT"),
+          onClick: () =>
+            getRecieptSearch({
+              tenantId: data?.applicationData?.tenantId,
+              payments: pay,
+              consumerCodes: data?.applicationData?.applicationNo,
+            }),
+        });
+      }
+
+      if (pay?.paymentDetails[0]?.businessService === "BPA.NC_OC_SAN_FEE") {
+        dowloadOptions.push({
+          order: 2,
+          label: t("BPA_OC_DEV_PEN_RECEIPT"),
+          onClick: () =>
+            getRecieptSearch({
+              tenantId: data?.applicationData?.tenantId,
+              payments: pay,
+              consumerCodes: data?.applicationData?.applicationNo,
+            }),
+        });
+      }
+
+      if (pay?.paymentDetails[0]?.businessService === "BPA.LOW_RISK_PERMIT_FEE") {
+        dowloadOptions.push({
+          order: 1,
+          label: t("BPA_FEE_RECEIPT"),
+          onClick: () =>
+            getRecieptSearch({
+              tenantId: data?.applicationData?.tenantId,
+              payments: pay,
+              consumerCodes: data?.applicationData?.applicationNo,
+            }),
+        });
+      }
+
+      if (pay?.paymentDetails[0]?.businessService === "BPA.NC_APP_FEE") {
+        dowloadOptions.push({
+          order: 1,
+          label: t("BPA_APP_FEE_RECEIPT"),
+          onClick: () =>
+            getRecieptSearch({
+              tenantId: data?.applicationData?.tenantId,
+              payments: pay,
+              consumerCodes: data?.applicationData?.applicationNo,
+            }),
+        });
+      }
+
+      if (pay?.paymentDetails[0]?.businessService === "BPA.NC_SAN_FEE") {
+        dowloadOptions.push({
+          order: 2,
+          label: t("BPA_SAN_FEE_RECEIPT"),
+          onClick: () =>
+            getRecieptSearch({
+              tenantId: data?.applicationData?.tenantId,
+              payments: pay,
+              consumerCodes: data?.applicationData?.applicationNo,
+            }),
+        });
+      }
+    });
+  }
+
+  if (
+    data &&
+    data?.applicationData?.businessService === "BPA_LOW" &&
+    data?.collectionBillDetails?.length > 0 &&
+    data?.applicationData?.additionalDetails?.isSanctionLetterGenerated
+  ) {
+    !data?.applicationData?.status.includes("REVOCATION") &&
+      dowloadOptions.push(
+        {
           order: 3,
           label: t("BPA_PERMIT_ORDER"),
           onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit"),
@@ -996,16 +1041,18 @@ const BpaApplicationDetail = () => {
           order: 4,
           label: t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL"),
           onClick: () => getDrawingDownload({ tenantId }, data?.applicationData?.additionalDetails?.drawingFilestoreId),
-        });
-      data?.applicationData?.status.includes("REVOCATION") &&
-        dowloadOptions.push({
-          order: 3,
-          label: t("BPA_REVOCATION_PDF_LABEL"),
-          onClick: () => getRevocationPDFSearch({ tenantId: data?.applicationData?.tenantId }),
-        });
-    } else if (data && data?.collectionBillDetails?.length > 0 ) {
-      if (!data?.applicationData?.additionalDetails?.isSelfCertification && data?.applicationData?.status === "APPROVED") {
-        dowloadOptions.push({
+        }
+      );
+    data?.applicationData?.status.includes("REVOCATION") &&
+      dowloadOptions.push({
+        order: 3,
+        label: t("BPA_REVOCATION_PDF_LABEL"),
+        onClick: () => getRevocationPDFSearch({ tenantId: data?.applicationData?.tenantId }),
+      });
+  } else if (data && data?.collectionBillDetails?.length > 0) {
+    if (!data?.applicationData?.additionalDetails?.isSelfCertification && data?.applicationData?.status === "APPROVED") {
+      dowloadOptions.push(
+        {
           order: 3,
           label: t("BPA_PERMIT_ORDER"),
           onClick: () => getPermitOccupancyOrderSearchFilestoreNew({ tenantId: data?.applicationData?.tenantId }, "buildingpermit-normal"),
@@ -1014,25 +1061,26 @@ const BpaApplicationDetail = () => {
           order: 4,
           label: t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL"),
           onClick: () => getDrawingDownload({ tenantId }, data?.applicationData?.additionalDetails?.drawingFilestoreId),
-        });
-      } else if(data?.applicationData?.status === "APPROVED") {
-        dowloadOptions.push({
-          order: 3,
-          label: t("BPA_OC_CERTIFICATE"),
-          onClick: () => getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
-        });
-      }
-    }
-  
-    if (data?.comparisionReport) {
+        }
+      );
+    } else if (data?.applicationData?.status === "APPROVED") {
       dowloadOptions.push({
-        order: 4,
-        label: t("BPA_COMPARISON_REPORT_LABEL"),
-        onClick: () => window.open(data?.comparisionReport?.comparisonReport, "_blank"),
-      })
+        order: 3,
+        label: t("BPA_OC_CERTIFICATE"),
+        onClick: () => getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
+      });
     }
-  
-    dowloadOptions.sort((a, b) => a.order - b.order)
+  }
+
+  if (data?.comparisionReport) {
+    dowloadOptions.push({
+      order: 4,
+      label: t("BPA_COMPARISON_REPORT_LABEL"),
+      onClick: () => window.open(data?.comparisionReport?.comparisonReport, "_blank"),
+    });
+  }
+
+  dowloadOptions.sort((a, b) => a.order - b.order);
 
   if (workflowDetails?.data?.nextActions?.length > 0) {
     workflowDetails.data.nextActions = workflowDetails?.data?.nextActions?.filter((actn) => actn.action !== "SKIP_PAYMENT");
@@ -1195,133 +1243,135 @@ const BpaApplicationDetail = () => {
     setImageUrl(null);
   };
 
-   async function getPermitOccupancyOrderSearchFilestore({ tenantId }, order, mode = "download") {
-     const prevGetLang = Digit.StoreData.getCurrentLanguage;
-     try {
-       const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
-       const newValidityDate = Date.now();
-       const ownersList = data?.applicationData?.landInfo?.owners?.map((item) => item.name);
-       const firmName = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
-       const isFirm = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
-       const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]
-         ?.filter((v, i, arr) => v && arr.indexOf(v) === i)
-         .join(", ");
-       Digit.StoreData.getCurrentLanguage = () => "pn_IN";
+  async function getPermitOccupancyOrderSearchFilestore({ tenantId }, order, mode = "download") {
+    const prevGetLang = Digit.StoreData.getCurrentLanguage;
+    try {
+      const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
+      const newValidityDate = Date.now();
+      const ownersList = data?.applicationData?.landInfo?.owners?.map((item) => item.name);
+      const firmName = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
+      const isFirm = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
+      const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]
+        ?.filter((v, i, arr) => v && arr.indexOf(v) === i)
+        .join(", ");
+      Digit.StoreData.getCurrentLanguage = () => "pn_IN";
 
-       const validityDateObj = new Date(newValidityDate);
+      const validityDateObj = new Date(newValidityDate);
 
-       validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
+      validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
 
-       const approvalDatePlusThree = validityDateObj.getTime();
+      const approvalDatePlusThree = validityDateObj.getTime();
 
-       const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-       const requestData = {
-         ...data?.applicationData,
-         edcrDetail: [{ ...data?.edcrDetails }],
-         subjectLine,
-         fileno,
-         nowIST,
-         newValidityDate: approvalDatePlusThree,
-         designation,
-         combinedOwnersName,
-         approverComment: comments,
-       };
-       if (requestData?.landInfo?.owners) {
-          requestData.landInfo = {
-            ...requestData.landInfo,
-            owners: requestData.landInfo.owners.map((owner) => ({
-              ...owner,
-              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
-            })),
-          };
+      const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+      const requestData = {
+        ...data?.applicationData,
+        edcrDetail: [{ ...data?.edcrDetails }],
+        subjectLine,
+        fileno,
+        nowIST,
+        newValidityDate: approvalDatePlusThree,
+        designation,
+        combinedOwnersName,
+        approverComment: comments,
+      };
+      if (requestData?.landInfo?.owners) {
+        requestData.landInfo = {
+          ...requestData.landInfo,
+          owners: requestData.landInfo.owners.map((owner) => ({
+            ...owner,
+            permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
+          })),
+        };
+      }
+      let count = 0;
+      for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+        if (
+          (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+            workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+          workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+          count == 0
+        ) {
+          requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+          count = 1;
         }
-       let count = 0;
-       for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
-         if (
-           (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
-             workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
-           workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
-           count == 0
-         ) {
-           requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
-           count = 1;
-         }
-       }
-       if (data?.applicationData?.additionalDetails?.stakeholderAddress && requestData && requestData?.additionalDetails) {
-         requestData.additionalDetails.stakeholderAddress = data?.applicationData?.additionalDetails?.stakeholderAddress;
-       }
-       // if (requestData && requestData?.additionalDetails?.signature?.signURL) {
-       //   const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, stateId);
-       //   requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
-       // }
+      }
+      if (data?.applicationData?.additionalDetails?.stakeholderAddress && requestData && requestData?.additionalDetails) {
+        requestData.additionalDetails.stakeholderAddress = data?.applicationData?.additionalDetails?.stakeholderAddress;
+      }
+      // if (requestData && requestData?.additionalDetails?.signature?.signURL) {
+      //   const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, stateId);
+      //   requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
+      // }
 
-       if (requestData?.additionalDetails?.approvedColony == "NO") {
-         requestData.additionalDetails.permitData =
-           "The plot has been officially regularized under No. " +
-           requestData?.additionalDetails?.NocNumber +
-           "  dated " +
-           requestData?.additionalDetails?.nocObject?.approvedOn +
-           " , registered in the name of " +
-           requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName +
-           ". This regularization falls within the jurisdiction of " +
-           requestData?.additionalDetails?.UlbName +
-           ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
-       } else if (requestData?.additionalDetails?.approvedColony == "YES") {
-         requestData.additionalDetails.permitData =
-           "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony;
-       } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
-         requestData.additionalDetails.permitData =
-           "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony;
-       } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
-         requestData.additionalDetails.permitData = "The building plan falls under Stand-Alone Project.";
-       } else {
-         requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
-       }
+      if (requestData?.additionalDetails?.approvedColony == "NO") {
+        requestData.additionalDetails.permitData =
+          "The plot has been officially regularized under No. " +
+          requestData?.additionalDetails?.NocNumber +
+          "  dated " +
+          requestData?.additionalDetails?.nocObject?.approvedOn +
+          " , registered in the name of " +
+          requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName +
+          ". This regularization falls within the jurisdiction of " +
+          requestData?.additionalDetails?.UlbName +
+          ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
+      } else if (requestData?.additionalDetails?.approvedColony == "YES") {
+        requestData.additionalDetails.permitData =
+          "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony;
+      } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
+        requestData.additionalDetails.permitData =
+          "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony;
+      } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
+        requestData.additionalDetails.permitData = "The building plan falls under Stand-Alone Project.";
+      } else {
+        requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
+      }
 
-       requestData["approvalDate"] = Date.now();
-       const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
-       // const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
+      requestData["approvalDate"] = Date.now();
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
+      // const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
 
-       return response.filestoreIds[0];
-     } catch (error) {
-       console.log("error", error);
-     } finally {
-       Digit.StoreData.getCurrentLanguage = prevGetLang;
-     }
-   }
+      return response.filestoreIds[0];
+    } catch (error) {
+      console.log("error", error);
+    } finally {
+      Digit.StoreData.getCurrentLanguage = prevGetLang;
+    }
+  }
 
   async function getPermitOccupancyOrderSearchFilestoreNew({ tenantId }, order, mode = "download") {
-    const prevGetLang = Digit.StoreData.getCurrentLanguage; 
+    const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
-       setIsEnableLoader(true);
-       const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
-        const ownersList = data?.applicationData?.landInfo?.owners?.map((item) => item.name);
-        const firmName = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
-        const isFirm = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
-        const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]?.filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
+      setIsEnableLoader(true);
+      const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
+      const ownersList = data?.applicationData?.landInfo?.owners?.map((item) => item.name);
+      const firmName = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
+      const isFirm = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
+      const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]
+        ?.filter((v, i, arr) => v && arr.indexOf(v) === i)
+        .join(", ");
 
-       const newValidityDate = Date.now();
+      const newValidityDate = Date.now();
 
-       // validity date = approval date + 3 as per feedback
-       const validityDateObj = new Date(newValidityDate);
-       validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
-       const approvalDatePlusThree = validityDateObj.getTime();
-       let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
+      // validity date = approval date + 3 as per feedback
+      const validityDateObj = new Date(newValidityDate);
+      validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
+      const approvalDatePlusThree = validityDateObj.getTime();
+      let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
 
-       if (!fileStoreId) {
-         const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-         const requestData = {
-           ...data?.applicationData,
-           edcrDetail: [{ ...data?.edcrDetails }],
-           subjectLine,
-           fileno,
-           nowIST,
-           newValidityDate:approvalDatePlusThree,
-           designation,
-           combinedOwnersName,
-           approverComment: comments,
-         };
-         if (requestData?.landInfo?.owners) {
+      if (!fileStoreId) {
+        const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+        const requestData = {
+          ...data?.applicationData,
+          edcrDetail: [{ ...data?.edcrDetails }],
+          subjectLine,
+          fileno,
+          nowIST,
+          newValidityDate: approvalDatePlusThree,
+          designation,
+          combinedOwnersName,
+          approverComment: comments,
+        };
+        if (requestData?.landInfo?.owners) {
           requestData.landInfo = {
             ...requestData.landInfo,
             owners: requestData.landInfo.owners.map((owner) => ({
@@ -1330,18 +1380,18 @@ const BpaApplicationDetail = () => {
             })),
           };
         }
-         let count = 0;
-         for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
-           if (
-             (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
-               workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
-             workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
-             count == 0
-           ) {
-             requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
-             count = 1;
-           }
-         }
+        let count = 0;
+        for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+          if (
+            (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+              workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+            workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+            count == 0
+          ) {
+            requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+            count = 1;
+          }
+        }
         if (data?.applicationData?.additionalDetails?.stakeholderAddress && requestData && requestData?.additionalDetails) {
           requestData.additionalDetails.stakeholderAddress = data?.applicationData?.additionalDetails?.stakeholderAddress;
         }
@@ -1350,73 +1400,75 @@ const BpaApplicationDetail = () => {
         //    requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
         //  }
 
-         if (requestData?.additionalDetails?.approvedColony == "NO") {
-           requestData.additionalDetails.permitData =
-             "The plot has been officially regularized under No. " +
-             requestData?.additionalDetails?.NocNumber +
-             "  dated " +
-             requestData?.additionalDetails?.nocObject?.approvedOn +
-             " , registered in the name of " +
-             requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName +
-             ". This regularization falls within the jurisdiction of " +
-             requestData?.additionalDetails?.UlbName +
-             ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
-         } else if (requestData?.additionalDetails?.approvedColony == "YES") {
-           requestData.additionalDetails.permitData =
-             "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony;
-         } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
-           requestData.additionalDetails.permitData =
-             "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony;
-         } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
-           requestData.additionalDetails.permitData = "The building plan falls under Stand-Alone Project.";
-         } else {
-           requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
-         }
-         Digit.StoreData.getCurrentLanguage = () => "pn_IN";
-         const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
-         fileStoreId = response?.filestoreIds[0];
-       }
-       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-       window.open(fileStore[fileStoreId], "_blank");
-     } catch (error) {
-       console.log("error", error);
-     } finally {
-        Digit.StoreData.getCurrentLanguage = prevGetLang;
-       setIsEnableLoader(false);
-     }
-   }
+        if (requestData?.additionalDetails?.approvedColony == "NO") {
+          requestData.additionalDetails.permitData =
+            "The plot has been officially regularized under No. " +
+            requestData?.additionalDetails?.NocNumber +
+            "  dated " +
+            requestData?.additionalDetails?.nocObject?.approvedOn +
+            " , registered in the name of " +
+            requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName +
+            ". This regularization falls within the jurisdiction of " +
+            requestData?.additionalDetails?.UlbName +
+            ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
+        } else if (requestData?.additionalDetails?.approvedColony == "YES") {
+          requestData.additionalDetails.permitData =
+            "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony;
+        } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
+          requestData.additionalDetails.permitData =
+            "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony;
+        } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
+          requestData.additionalDetails.permitData = "The building plan falls under Stand-Alone Project.";
+        } else {
+          requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
+        }
+        Digit.StoreData.getCurrentLanguage = () => "pn_IN";
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } catch (error) {
+      console.log("error", error);
+    } finally {
+      Digit.StoreData.getCurrentLanguage = prevGetLang;
+      setIsEnableLoader(false);
+    }
+  }
 
   async function openSanctionLetterPopup() {
     try {
       setLoader(true);
 
-      const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
-      const uploadedDiagramObject = fetchFilestoreAndTenant(data?.edcrDetails?.updatedDxfFile, tenantId)
+      const fileStoreId = await getPermitOccupancyOrderSearchFilestore({ tenantId }, "buildingpermit-normal");
+      const uploadedDiagramObject = fetchFilestoreAndTenant(data?.edcrDetails?.updatedDxfFile, tenantId);
       if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
 
       const payload = {
         uploadedDiagram: {
-          ...uploadedDiagramObject
+          ...uploadedDiagramObject,
         },
         sanctionLetter: {
           filestoreId: fileStoreId,
-          tenantId: tenantId
+          tenantId: tenantId,
         },
         details: {
           ulbName: data?.applicationData?.additionalDetails?.UlbName,
-          dateOfApproval: new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST',
+          dateOfApproval: new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST",
           fileNumber: data?.applicationData?.applicationNo,
           buildingCategory: data?.applicationData?.additionalDetails?.categoriesName,
           professionalName: data?.applicationData?.additionalDetails?.stakeholderName,
           plotArea: data?.applicationData?.additionalDetails?.area,
           builtUpArea: data?.applicationData?.additionalDetails?.builtUpArea,
-          isAutoApproved: false
-        }
-      }
+          isAutoApproved: false,
+        },
+      };
 
-      const mergedFilestore = await Digit.EDCRService.mergeSanctionLetter({additionalDetails: payload}, stateId);
+      const mergedFilestore = await Digit.EDCRService.mergeSanctionLetter({ additionalDetails: payload }, stateId);
 
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: mergedFilestore?.mergedFileStoreId?.fileStoreId || fileStoreId });
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+        fileStoreIds: mergedFilestore?.mergedFileStoreId?.fileStoreId || fileStoreId,
+      });
       const receiptUrl = fileStore?.[mergedFilestore?.mergedFileStoreId?.fileStoreId || fileStoreId];
       if (!receiptUrl) throw new Error("Could not resolve filestore URL");
       const urlObj = new URL(receiptUrl);
@@ -1436,25 +1488,25 @@ const BpaApplicationDetail = () => {
     }
   }
 
-    async function openDrawingPopup() {
-      try {
-        setLoader(true);
-        console.log("Drawing download URL:", data?.edcrDetails?.updatedDxfFile);
-        const downloadUrl = await fetchOnlyUrl(data?.edcrDetails?.updatedDxfFile, tenantId);
-  
-        setPdfUrl(downloadUrl);
-        setShowPdfModal(true);
-      } catch (error) {
-        console.error("Drawing popup error:", error);
-        setShowToast({
-          key: "true",
-          error: true,
-          message: "Failed to open drawing. Please try again.",
-        });
-      } finally {
-        setLoader(false);
-      }
+  async function openDrawingPopup() {
+    try {
+      setLoader(true);
+      console.log("Drawing download URL:", data?.edcrDetails?.updatedDxfFile);
+      const downloadUrl = await fetchOnlyUrl(data?.edcrDetails?.updatedDxfFile, tenantId);
+
+      setPdfUrl(downloadUrl);
+      setShowPdfModal(true);
+    } catch (error) {
+      console.error("Drawing popup error:", error);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: "Failed to open drawing. Please try again.",
+      });
+    } finally {
+      setLoader(false);
     }
+  }
 
   function onActionSelect(action) {
     if (
@@ -1466,17 +1518,16 @@ const BpaApplicationDetail = () => {
       return;
     }
     if (action) {
-      if(action?.action == "ESIGN"){
+      if (action?.action == "ESIGN") {
         openSanctionLetterPopup();
-      }else if(action?.action == "DRAWING_ESIGN"){
+      } else if (action?.action == "DRAWING_ESIGN") {
         openDrawingPopup();
-      }
-      else if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
+      } else if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
         window.location.assign(window.location.href.split("bpa")[0] + "editApplication/bpa" + window.location.href.split("bpa")[1]);
       } else if (action?.redirectionUrll) {
         window.location.assign(`${window.location.origin}/digit-ui/employee/payment/collect/${action?.redirectionUrll?.pathname}`);
-      }else if (action?.action === "EMPLOYEE_SAVE_AS_DRAFT") {
-        employeeDraftSave({BPA: data?.applicationData}, false, {});
+      } else if (action?.action === "EMPLOYEE_SAVE_AS_DRAFT") {
+        employeeDraftSave({ BPA: data?.applicationData }, false, {});
         // return;
       } else if (!action?.redirectionUrl && action?.action != "EDIT PAY 2") {
         setShowModal(true);
@@ -1562,7 +1613,7 @@ const BpaApplicationDetail = () => {
       accessor: "fileStoreId",
       Cell: ({ value }) => {
         return value ? (
-          <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeToImage(value)} />
+          <LinkButton className="obps-pages-employee-bpa-application-details-index--style-6" label={t("View")} onClick={() => routeToImage(value)} />
         ) : (
           t("CS_NA")
         );
@@ -1575,7 +1626,7 @@ const BpaApplicationDetail = () => {
 
     //remove null enteries
     const nonNullEntries = remainingDoc.filter((value) => !!value?.fileURL);
-    // Rule 1: Must have exact entries equal to 
+    // Rule 1: Must have exact entries equal to
     if (entries.length !== nonNullEntries?.length) {
       return false;
     }
@@ -1631,7 +1682,6 @@ const BpaApplicationDetail = () => {
       }
     }
 
-
     if (data?.BPA?.comment?.length == 0) {
       closeModal();
       setShowToast({ error: true, label: t("Please fill in the comments before submitting") });
@@ -1665,69 +1715,70 @@ const BpaApplicationDetail = () => {
           return;
         }
       }
-      try{
+      try {
         const nonNullEntries = remainingDoc.filter((value) => !!value?.fileURL);
         const checklistPayload = {
-        checkList: (nonNullEntries || []).map((doc) => {
-          const existing = searchChecklistData?.checkList?.find((c) => c.documentuid === doc.id);
-          return {
-            id: existing?.id, // include if updating
-            documentuid: doc?.id,
-            applicationNo: id,
-            tenantId,
-            action: existing ? "update" : "INITIATE",
-            remarks: checklistRemarks[doc?.id] || "",
-          };
-        }),
-      };
+          checkList: (nonNullEntries || []).map((doc) => {
+            const existing = searchChecklistData?.checkList?.find((c) => c.documentuid === doc.id);
+            return {
+              id: existing?.id, // include if updating
+              documentuid: doc?.id,
+              applicationNo: id,
+              tenantId,
+              action: existing ? "update" : "INITIATE",
+              remarks: checklistRemarks[doc?.id] || "",
+            };
+          }),
+        };
 
-      // if (isSelfCertification) {
-      //   if (searchChecklistData?.checkList?.length > 0) {
-      //     await Digit.OBPSService.BPACheckListUpdate({
-      //       details: checklistPayload,
-      //       filters: { tenantId },
-      //     });
-      //   } else {
-      //     await Digit.OBPSService.BPACheckListCreate({
-      //       details: checklistPayload,
-      //       filters: {},
-      //     });
-      //   }
-      // }
+        // if (isSelfCertification) {
+        //   if (searchChecklistData?.checkList?.length > 0) {
+        //     await Digit.OBPSService.BPACheckListUpdate({
+        //       details: checklistPayload,
+        //       filters: { tenantId },
+        //     });
+        //   } else {
+        //     await Digit.OBPSService.BPACheckListCreate({
+        //       details: checklistPayload,
+        //       filters: {},
+        //     });
+        //   }
+        // }
 
-      if (data?.BPA?.workflow?.action !== "UPDATE_ZONE" && appData?.applicationData?.status === "DOC_VERIFICATION_PENDING" && checklistPayload?.checkList?.length > 0) {
-        if (searchChecklistData?.checkList?.length > 0) {
-          await Digit.OBPSService.BPACheckListUpdate({
-            details: checklistPayload,
-            filters: { tenantId },
-          });
-        } else {
-          await Digit.OBPSService.BPACheckListCreate({
-            details: checklistPayload,
-            filters: {},
-          });
+        if (
+          data?.BPA?.workflow?.action !== "UPDATE_ZONE" &&
+          appData?.applicationData?.status === "DOC_VERIFICATION_PENDING" &&
+          checklistPayload?.checkList?.length > 0
+        ) {
+          if (searchChecklistData?.checkList?.length > 0) {
+            await Digit.OBPSService.BPACheckListUpdate({
+              details: checklistPayload,
+              filters: { tenantId },
+            });
+          } else {
+            await Digit.OBPSService.BPACheckListCreate({
+              details: checklistPayload,
+              filters: {},
+            });
+          }
         }
-      }
-
-      }catch(err){
-
-      }
+      } catch (err) {}
 
       const newCalculation = {
-      isLatest: true,
-      updatedBy: Digit.UserService.getUser()?.info?.name,
-      taxHeadEstimates: adjustedAmounts
-        .filter((row) => row.taxHeadCode !== "BPA_TOTAL") // exclude UI-only total row
-        .map((row) => ({
-          taxHeadCode: row.taxHeadCode,
-          estimateAmount: row.adjustedAmount || 0, // baseline + delta
-          category: row.category,
-          remarks: row.remark || null,
-          filestoreId: row.filestoreId || null,
-        })),
-    };
+        isLatest: true,
+        updatedBy: Digit.UserService.getUser()?.info?.name,
+        taxHeadEstimates: adjustedAmounts
+          .filter((row) => row.taxHeadCode !== "BPA_TOTAL") // exclude UI-only total row
+          .map((row) => ({
+            taxHeadCode: row.taxHeadCode,
+            estimateAmount: row.adjustedAmount || 0, // baseline + delta
+            category: row.category,
+            remarks: row.remark || null,
+            filestoreId: row.filestoreId || null,
+          })),
+      };
 
-      const oldCalculations = (data?.BPA?.additionalDetails?.calculations || [])?.map((c) => ({ ...c, isLatest: false }));;
+      const oldCalculations = (data?.BPA?.additionalDetails?.calculations || [])?.map((c) => ({ ...c, isLatest: false }));
 
       let payload = {
         ...data,
@@ -1756,7 +1807,7 @@ const BpaApplicationDetail = () => {
             // geoLocations: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? geoLocations : data?.BPA?.additionalDetails?.geoLocations,
             // FieldReports: appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 ? canSubmit : null,
             fieldinspection_pending: fieldInspectionPending,
-            draftComment: data?.BPA?.workflow?.comments
+            draftComment: data?.BPA?.workflow?.comments,
           },
         },
       };
@@ -1831,34 +1882,34 @@ const BpaApplicationDetail = () => {
     try {
       // console.log("🎯 Starting certificate eSign process...");
 
-      const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
-      const uploadedDiagramObject = fetchFilestoreAndTenant(data?.edcrDetails?.updatedDxfFile, tenantId)
-      
+      const fileStoreId = await getPermitOccupancyOrderSearchFilestore({ tenantId }, "buildingpermit-normal");
+      const uploadedDiagramObject = fetchFilestoreAndTenant(data?.edcrDetails?.updatedDxfFile, tenantId);
+
       const payload = {
         uploadedDiagram: {
-          ...uploadedDiagramObject
+          ...uploadedDiagramObject,
         },
         sanctionLetter: {
           filestoreId: fileStoreId,
-          tenantId: tenantId
+          tenantId: tenantId,
         },
         details: {
           ulbName: data?.applicationData?.additionalDetails?.UlbName,
-          dateOfApproval: new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST',
+          dateOfApproval: new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST",
           fileNumber: data?.applicationData?.applicationNo,
           buildingCategory: data?.applicationData?.additionalDetails?.categoriesName,
           professionalName: data?.applicationData?.additionalDetails?.stakeholderName,
           plotArea: data?.applicationData?.additionalDetails?.area,
           builtUpArea: data?.applicationData?.additionalDetails?.builtUpArea,
-          isAutoApproved: false
-        }
-      }
+          isAutoApproved: false,
+        },
+      };
 
-      const mergedFilestore = await Digit.EDCRService.mergeSanctionLetter({additionalDetails: payload}, stateId);
+      const mergedFilestore = await Digit.EDCRService.mergeSanctionLetter({ additionalDetails: payload }, stateId);
 
       // const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/filestore/${id}`;
       const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
-      const authToken = localStorage.getItem('token');
+      const authToken = localStorage.getItem("token");
 
       // Trigger eSign
       eSignCertificate(
@@ -1886,41 +1937,41 @@ const BpaApplicationDetail = () => {
   };
 
   const printDrawingWithESign = async () => {
-      try {
-        // console.log("🎯 Starting certificate eSign process...");
-  
-        const { id: fileStoreId, fullTenantId: tenant } = fetchOnlyFileStore(data?.edcrDetails?.updatedDxfFile);
-  
-        // const callbackUrl = `${window.location.origin}/digit-ui/citizen/obps/bpa/esign/complete/${id}/${fileStoreId}`;
-        const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/filestore/${id}`;
-        const authToken = localStorage.getItem("token");      
-  
-        console.log("📁 FileStore ID In Drawing:", fileStoreId, tenant, callbackUrl, authToken);
-  
-        // Trigger eSign
-        eSignCertificate(
-          { fileStoreId, tenantId: tenant, callbackUrl, authToken },
-          {
-            onSuccess: () => console.log("✅ eSign initiated successfully"),
-            onError: (error) => {
-              console.error("❌ eSign failed:", error);
-              setShowToast({
-                key: "true",
-                error: true,
-                message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
-              });
-            },
-          }
-        );
-      } catch (error) {
-        console.error("❌ Certificate preparation failed:", error);
-        setShowToast({
-          key: "true",
-          error: true,
-          message: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
-        });
-      }
-    };
+    try {
+      // console.log("🎯 Starting certificate eSign process...");
+
+      const { id: fileStoreId, fullTenantId: tenant } = fetchOnlyFileStore(data?.edcrDetails?.updatedDxfFile);
+
+      // const callbackUrl = `${window.location.origin}/digit-ui/citizen/obps/bpa/esign/complete/${id}/${fileStoreId}`;
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/filestore/${id}`;
+      const authToken = localStorage.getItem("token");
+
+      console.log("📁 FileStore ID In Drawing:", fileStoreId, tenant, callbackUrl, authToken);
+
+      // Trigger eSign
+      eSignCertificate(
+        { fileStoreId, tenantId: tenant, callbackUrl, authToken },
+        {
+          onSuccess: () => console.log("✅ eSign initiated successfully"),
+          onError: (error) => {
+            console.error("❌ eSign failed:", error);
+            setShowToast({
+              key: "true",
+              error: true,
+              message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
+            });
+          },
+        }
+      );
+    } catch (error) {
+      console.error("❌ Certificate preparation failed:", error);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
+      });
+    }
+  };
 
   let isSingleButton = false;
   let isMenuBotton = false;
@@ -1948,7 +1999,7 @@ const BpaApplicationDetail = () => {
   //   })
   // }
 
-  console.log("actionsforlogs",actions)
+  console.log("actionsforlogs", actions);
 
   const employeeDraftSave = async (data, nocData = false, isOBPS = {}) => {
     // if(appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !canSubmit){
@@ -1991,7 +2042,6 @@ const BpaApplicationDetail = () => {
     //   }
     // }
 
-
     // if (data?.BPA?.comment?.length == 0) {
     //   closeModal();
     //   setShowToast({ error: true, label: t("Please fill in the comments before submitting") });
@@ -1999,35 +2049,35 @@ const BpaApplicationDetail = () => {
     //   closeModal();
     //   setShowToast({ error: true, label: t("Please select Blocking reason") });
     // } else {
-      setIsEnableLoader(true);
-      if (typeof data?.customFunctionToExecute === "function") {
-        data?.customFunctionToExecute({ ...data });
+    setIsEnableLoader(true);
+    if (typeof data?.customFunctionToExecute === "function") {
+      data?.customFunctionToExecute({ ...data });
+    }
+    if (nocData !== false && nocMutation) {
+      const nocPrmomises = nocData?.map((noc) => {
+        return nocMutation?.mutateAsync(noc);
+      });
+      try {
+        setIsEnableLoader(true);
+        const values = await Promise.all(nocPrmomises);
+        values &&
+          values.map((ob) => {
+            Digit.SessionStorage.del(ob?.Noc?.[0]?.nocType);
+          });
+      } catch (err) {
+        setIsEnableLoader(false);
+        let errorValue = err?.response?.data?.Errors?.[0]?.code
+          ? t(err?.response?.data?.Errors?.[0]?.code)
+          : err?.response?.data?.Errors?.[0]?.message || err;
+        closeModal();
+        setShowToast({ key: "error", error: { message: errorValue } });
+        setTimeout(closeToast, 5000);
+        return;
       }
-      if (nocData !== false && nocMutation) {
-        const nocPrmomises = nocData?.map((noc) => {
-          return nocMutation?.mutateAsync(noc);
-        });
-        try {
-          setIsEnableLoader(true);
-          const values = await Promise.all(nocPrmomises);
-          values &&
-            values.map((ob) => {
-              Digit.SessionStorage.del(ob?.Noc?.[0]?.nocType);
-            });
-        } catch (err) {
-          setIsEnableLoader(false);
-          let errorValue = err?.response?.data?.Errors?.[0]?.code
-            ? t(err?.response?.data?.Errors?.[0]?.code)
-            : err?.response?.data?.Errors?.[0]?.message || err;
-          closeModal();
-          setShowToast({ key: "error", error: { message: errorValue } });
-          setTimeout(closeToast, 5000);
-          return;
-        }
-      }
-      try{
-        const nonNullEntries = remainingDoc.filter((value) => !!value?.fileURL);
-        const checklistPayload = {
+    }
+    try {
+      const nonNullEntries = remainingDoc.filter((value) => !!value?.fileURL);
+      const checklistPayload = {
         checkList: (nonNullEntries || []).map((doc) => {
           const existing = searchChecklistData?.checkList?.find((c) => c.documentuid === doc.id);
           return {
@@ -2055,7 +2105,11 @@ const BpaApplicationDetail = () => {
       //   }
       // }
 
-      if (data?.BPA?.workflow?.action !== "UPDATE_ZONE" && appData?.applicationData?.status === "DOC_VERIFICATION_PENDING" && checklistPayload?.checkList?.length > 0) {
+      if (
+        data?.BPA?.workflow?.action !== "UPDATE_ZONE" &&
+        appData?.applicationData?.status === "DOC_VERIFICATION_PENDING" &&
+        checklistPayload?.checkList?.length > 0
+      ) {
         if (searchChecklistData?.checkList?.length > 0) {
           await Digit.OBPSService.BPACheckListUpdate({
             details: checklistPayload,
@@ -2068,10 +2122,7 @@ const BpaApplicationDetail = () => {
           });
         }
       }
-
-      }catch(err){
-
-      }
+    } catch (err) {}
 
     //   const newCalculation = {
     //   isLatest: true,
@@ -2089,94 +2140,93 @@ const BpaApplicationDetail = () => {
 
     //   const oldCalculations = (data?.BPA?.additionalDetails?.calculations || [])?.map((c) => ({ ...c, isLatest: false }));;
 
-      console.log("draftComment", draftComment)
-      let payload = {
-        ...data,
-        BPA: {
-          ...data?.BPA,
-          additionalDetails: {
-            ...data?.BPA?.additionalDetails,
-            otherFeesDiscription: otherChargesDisc || "",
-            adjustedAmounts: adjustedAmounts || [],
-            // calculations: [...oldCalculations, newCalculation],
-            // selfCertificationCharges: {
-            //   ...data?.BPA?.additionalDetails?.selfCertificationCharges,
-            //   BPA_MALBA_CHARGES: malbafees?.length > 0 ? malbafees : "0",
-            //   BPA_LABOUR_CESS: labourCess?.length > 0 ? labourCess : "0",
-            //   BPA_WATER_CHARGES: waterCharges?.length > 0 ? waterCharges : "0",
-            //   BPA_GAUSHALA_CHARGES_CESS: gaushalaFees?.length > 0 ? gaushalaFees : "0",
-            //   BPA_LESS_ADJUSMENT_PLOT: lessAdjusment?.length > 0 ? lessAdjusment : "0",
-            //   BPA_DEVELOPMENT_CHARGES: development?.length > 0 ? development : "0",
-            //   BPA_OTHER_CHARGES: otherCharges?.length > 0 ? otherCharges : "0",
-            // },
-            siteImages:
-              data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" &&
-              (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0
-                ? siteImages?.documents
-                : data?.BPA?.additionalDetails?.siteImages,
-            // geoLocations: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? geoLocations : data?.BPA?.additionalDetails?.geoLocations,
-            // FieldReports: appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 ? canSubmit : null,
-            fieldinspection_pending: fieldInspectionPending,
-            draftComment: draftComment
-          },
-          workflow: null
+    console.log("draftComment", draftComment);
+    let payload = {
+      ...data,
+      BPA: {
+        ...data?.BPA,
+        additionalDetails: {
+          ...data?.BPA?.additionalDetails,
+          otherFeesDiscription: otherChargesDisc || "",
+          adjustedAmounts: adjustedAmounts || [],
+          // calculations: [...oldCalculations, newCalculation],
+          // selfCertificationCharges: {
+          //   ...data?.BPA?.additionalDetails?.selfCertificationCharges,
+          //   BPA_MALBA_CHARGES: malbafees?.length > 0 ? malbafees : "0",
+          //   BPA_LABOUR_CESS: labourCess?.length > 0 ? labourCess : "0",
+          //   BPA_WATER_CHARGES: waterCharges?.length > 0 ? waterCharges : "0",
+          //   BPA_GAUSHALA_CHARGES_CESS: gaushalaFees?.length > 0 ? gaushalaFees : "0",
+          //   BPA_LESS_ADJUSMENT_PLOT: lessAdjusment?.length > 0 ? lessAdjusment : "0",
+          //   BPA_DEVELOPMENT_CHARGES: development?.length > 0 ? development : "0",
+          //   BPA_OTHER_CHARGES: otherCharges?.length > 0 ? otherCharges : "0",
+          // },
+          siteImages:
+            data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" &&
+            (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0
+              ? siteImages?.documents
+              : data?.BPA?.additionalDetails?.siteImages,
+          // geoLocations: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? geoLocations : data?.BPA?.additionalDetails?.geoLocations,
+          // FieldReports: appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 ? canSubmit : null,
+          fieldinspection_pending: fieldInspectionPending,
+          draftComment: draftComment,
         },
-      };
-      if (mutate) {
-        setIsEnableLoader(true);
-        mutate(payload, {
-          onError: (error, variables) => {
-            setIsEnableLoader(false);
-            setShowToast({ key: "error", error });
-            setTimeout(closeToast, 5000);
-          },
-          onSuccess: (data, variables) => {
-            sessionStorage.removeItem("WS_SESSION_APPLICATION_DETAILS");
-            setIsEnableLoader(false);
-            if (isOBPS?.bpa) {
-              data.selectedAction = selectedAction;
-              history.replace(`/digit-ui/employee/obps/response`, { data: data });
+        workflow: null,
+      },
+    };
+    if (mutate) {
+      setIsEnableLoader(true);
+      mutate(payload, {
+        onError: (error, variables) => {
+          setIsEnableLoader(false);
+          setShowToast({ key: "error", error });
+          setTimeout(closeToast, 5000);
+        },
+        onSuccess: (data, variables) => {
+          sessionStorage.removeItem("WS_SESSION_APPLICATION_DETAILS");
+          setIsEnableLoader(false);
+          if (isOBPS?.bpa) {
+            data.selectedAction = selectedAction;
+            history.replace(`/digit-ui/employee/obps/response`, { data: data });
+          }
+          if (isOBPS?.isNoc) {
+            history.push(`/digit-ui/employee/noc/response`, { data: data });
+          }
+          if (data?.Amendments?.length > 0) {
+            if (variables?.AmendmentUpdate?.workflow?.action.includes("SEND_BACK")) {
+              setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_SEND_BACK_UPDATE_SUCCESS") });
+            } else if (variables?.AmendmentUpdate?.workflow?.action.includes("RE-SUBMIT")) {
+              setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_RE_SUBMIT_UPDATE_SUCCESS") });
+            } else if (variables?.AmendmentUpdate?.workflow?.action.includes("APPROVE")) {
+              setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_APPROVE_UPDATE_SUCCESS") });
+            } else if (variables?.AmendmentUpdate?.workflow?.action.includes("REJECT")) {
+              setShowToast({ key: "success", label: t("ES_MODIFYWSCONNECTION_REJECT_UPDATE_SUCCESS") });
             }
-            if (isOBPS?.isNoc) {
-              history.push(`/digit-ui/employee/noc/response`, { data: data });
-            }
-            if (data?.Amendments?.length > 0) {
-              if (variables?.AmendmentUpdate?.workflow?.action.includes("SEND_BACK")) {
-                setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_SEND_BACK_UPDATE_SUCCESS") });
-              } else if (variables?.AmendmentUpdate?.workflow?.action.includes("RE-SUBMIT")) {
-                setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_RE_SUBMIT_UPDATE_SUCCESS") });
-              } else if (variables?.AmendmentUpdate?.workflow?.action.includes("APPROVE")) {
-                setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_APPROVE_UPDATE_SUCCESS") });
-              } else if (variables?.AmendmentUpdate?.workflow?.action.includes("REJECT")) {
-                setShowToast({ key: "success", label: t("ES_MODIFYWSCONNECTION_REJECT_UPDATE_SUCCESS") });
-              }
-              refetch();
-              return;
-            }
-            if (data?.Licenses?.length > 0 && data?.Licenses[0]?.applicationNumber) {
-              if (data?.Licenses[0]?.businessService?.includes("BPAREG")) {
-                setShowToast({ key: "success", action: selectedAction });
-                data.selectedAction = selectedAction;
-                history.push(`/digit-ui/employee/obps/stakeholder-response`, { data: data });
-                return;
-              }
+            refetch();
+            return;
+          }
+          if (data?.Licenses?.length > 0 && data?.Licenses[0]?.applicationNumber) {
+            if (data?.Licenses[0]?.businessService?.includes("BPAREG")) {
               setShowToast({ key: "success", action: selectedAction });
-              history.replace(`/digit-ui/employee/tl/application-details/${data?.Licenses[0]?.applicationNumber}`);
+              data.selectedAction = selectedAction;
+              history.push(`/digit-ui/employee/obps/stakeholder-response`, { data: data });
               return;
             }
-            setShowToast({ key: "success", label: "Application Saved" });
-            // clearDataDetails && setTimeout(clearDataDetails, 3000);
-            setTimeout(closeToast, 5000);
-            // queryClient.clear();
-            // queryClient.refetchQueries("APPLICATION_SEARCH");
-            //push false status when reject
-          },
-        });
-      }
-      // closeModal();
+            setShowToast({ key: "success", action: selectedAction });
+            history.replace(`/digit-ui/employee/tl/application-details/${data?.Licenses[0]?.applicationNumber}`);
+            return;
+          }
+          setShowToast({ key: "success", label: "Application Saved" });
+          // clearDataDetails && setTimeout(clearDataDetails, 3000);
+          setTimeout(closeToast, 5000);
+          // queryClient.clear();
+          // queryClient.refetchQueries("APPLICATION_SEARCH");
+          //push false status when reject
+        },
+      });
+    }
+    // closeModal();
     // }
   };
-
 
   if (isLoading || bpaDocsLoading || isEnableLoader || loading) return <Loader />;
 
@@ -2186,13 +2236,13 @@ const BpaApplicationDetail = () => {
   return (
     <Fragment>
       <div className={"employee-main-application-details"}>
-        <div
-          className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}
-        >
+        <div className="cardHeaderWithOptions obps-pages-employee-bpa-application-details-index--style-7">
           <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
           <div
             style={{
-              display: "flex", gap: "8px", flexWrap: "nowrap",
+              display: "flex",
+              gap: "8px",
+              flexWrap: "nowrap",
               alignItems: !isMobile ? "center" : "left",
               flexDirection: !isMobile ? "row" : "column",
             }}
@@ -2207,10 +2257,18 @@ const BpaApplicationDetail = () => {
                 />
               )}
             </div>
-            <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
+            <LinkButton
+              label={t("VIEW_TIMELINE")}
+              className="obps-pages-employee-bpa-application-details-index--style-8"
+              onClick={handleViewTimeline}
+            ></LinkButton>
             {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
               (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
-                <LinkButton label={t("VIEW_INSPECTION")} style={{ color: "#A52A2A" }} onClick={handleViewInspecction}></LinkButton>
+                <LinkButton
+                  label={t("VIEW_INSPECTION")}
+                  className="obps-pages-employee-bpa-application-details-index--style-9"
+                  onClick={handleViewInspecction}
+                ></LinkButton>
               )}
           </div>
         </div>
@@ -2241,235 +2299,244 @@ const BpaApplicationDetail = () => {
               return (
                 <div key={index}>
                   {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && <CitizenAndArchitectPhoto data={data?.applicationData} />}
-                  {!detail?.isNotAllowed ? (detail?.isFieldInspection && data?.applicationData?.additionalDetails?.isSelfCertification) ? null : (                    
-                    <Card
-                      key={index}
-                      // style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
-                    >
-                      {!detail?.isTitleVisible ? (
-                        <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(detail?.title)}</CardSubHeader>
-                      ) : null}
-
-                      <div
-                        style={
-                          detail?.isBackGroundColor
-                            ? {
-                                marginTop: "19px",
-                                background: "#FAFAFA",
-                                border: "1px solid #D6D5D4",
-                                borderRadius: "4px",
-                                padding: "8px",
-                                lineHeight: "19px",
-                                maxWidth: "950px",
-                                minWidth: "280px",
-                              }
-                            : {}
-                        }
+                  {!detail?.isNotAllowed ? (
+                    detail?.isFieldInspection && data?.applicationData?.additionalDetails?.isSelfCertification ? null : (
+                      <Card
+                        key={index}
+                        // style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
                       >
-                        {!detail?.isFeeDetails && detail?.additionalDetails?.values?.length > 0
-                          ? detail?.additionalDetails?.values?.map((value) => (
-                              <div key={value?.title}>
-                                {!detail?.isTitleRepeat && value?.isHeader ? (
-                                  <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(value?.title)}</CardSubHeader>
-                                ) : null}
-                              </div>
-                            ))
-                          : null}
-                        <StatusTable>
-                          {/* to get common values */}
-                          {detail?.isCommon && detail?.values?.length > 0
-                            ? detail?.values?.map((value) => {
-                                if (value?.isUnit)
-                                  return (
-                                    <Row
-                                      className="border-none"
-                                      label={t(value?.title)}
-                                      text={
-                                        value?.value ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}` : t("CS_NA")
-                                      }
-                                    />
-                                  );
-                                if (value?.isLink)
-                                  return (
-                                    <Row
-                                      className="border-none"
-                                      label={t(value?.title)}
-                                      text={
-                                        <div>
-                                          <Link to={value?.to}>
-                                            <span className="link">{value?.value}</span>
-                                          </Link>
-                                        </div>
-                                      }
-                                    />
-                                  );
-                                else
-                                  return (
-                                    <Row
-                                      className="border-none"
-                                      label={t(value?.title)}
-                                      text={getTranslatedValues(value?.value, value?.isNotTranslated) || t("CS_NA")}
-                                    />
-                                  );
-                              })
-                            : null}
-                          {/* to get additional common values */}
+                        {!detail?.isTitleVisible ? (
+                          <CardSubHeader className="obps-pages-employee-bpa-application-details-index--style-10">{t(detail?.title)}</CardSubHeader>
+                        ) : null}
+
+                        <div
+                          style={
+                            detail?.isBackGroundColor
+                              ? {
+                                  marginTop: "19px",
+                                  background: "#FAFAFA",
+                                  border: "1px solid #D6D5D4",
+                                  borderRadius: "4px",
+                                  padding: "8px",
+                                  lineHeight: "19px",
+                                  maxWidth: "950px",
+                                  minWidth: "280px",
+                                }
+                              : {}
+                          }
+                        >
                           {!detail?.isFeeDetails && detail?.additionalDetails?.values?.length > 0
                             ? detail?.additionalDetails?.values?.map((value) => (
                                 <div key={value?.title}>
-                                  {!detail?.isTitleRepeat && !value?.isHeader && !value?.isUnit ? (
-                                    <Row
-                                      className="border-none"
-                                      label={t(value?.title)}
-                                      textStyle={value?.value === "Paid" ? { color: "darkgreen" } : value?.value === "Unpaid" ? { color: "red" } : {}}
-                                      text={value?.value ? getTranslatedValues(value?.value, value?.isNotTranslated) : t("CS_NA")}
-                                    />
+                                  {!detail?.isTitleRepeat && value?.isHeader ? (
+                                    <CardSubHeader className="obps-pages-employee-bpa-application-details-index--style-11">
+                                      {t(value?.title)}
+                                    </CardSubHeader>
                                   ) : null}
-                                  {!detail?.isTitleRepeat && value?.isUnit ? (
-                                    <Row
-                                      className="border-none"
-                                      label={t(value?.title)}
-                                      text={
-                                        value?.value ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}` : t("CS_NA")
-                                      }
-                                    />
-                                  ) : null}
-                                  {/* {!detail?.isTitleRepeat && value?.isHeader ? (
+                                </div>
+                              ))
+                            : null}
+                          <StatusTable>
+                            {/* to get common values */}
+                            {detail?.isCommon && detail?.values?.length > 0
+                              ? detail?.values?.map((value) => {
+                                  if (value?.isUnit)
+                                    return (
+                                      <Row
+                                        className="border-none"
+                                        label={t(value?.title)}
+                                        text={
+                                          value?.value
+                                            ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}`
+                                            : t("CS_NA")
+                                        }
+                                      />
+                                    );
+                                  if (value?.isLink)
+                                    return (
+                                      <Row
+                                        className="border-none"
+                                        label={t(value?.title)}
+                                        text={
+                                          <div>
+                                            <Link to={value?.to}>
+                                              <span className="link">{value?.value}</span>
+                                            </Link>
+                                          </div>
+                                        }
+                                      />
+                                    );
+                                  else
+                                    return (
+                                      <Row
+                                        className="border-none"
+                                        label={t(value?.title)}
+                                        text={getTranslatedValues(value?.value, value?.isNotTranslated) || t("CS_NA")}
+                                      />
+                                    );
+                                })
+                              : null}
+                            {/* to get additional common values */}
+                            {!detail?.isFeeDetails && detail?.additionalDetails?.values?.length > 0
+                              ? detail?.additionalDetails?.values?.map((value) => (
+                                  <div key={value?.title}>
+                                    {!detail?.isTitleRepeat && !value?.isHeader && !value?.isUnit ? (
+                                      <Row
+                                        className="border-none"
+                                        label={t(value?.title)}
+                                        textStyle={
+                                          value?.value === "Paid" ? { color: "darkgreen" } : value?.value === "Unpaid" ? { color: "red" } : {}
+                                        }
+                                        text={value?.value ? getTranslatedValues(value?.value, value?.isNotTranslated) : t("CS_NA")}
+                                      />
+                                    ) : null}
+                                    {!detail?.isTitleRepeat && value?.isUnit ? (
+                                      <Row
+                                        className="border-none"
+                                        label={t(value?.title)}
+                                        text={
+                                          value?.value
+                                            ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}`
+                                            : t("CS_NA")
+                                        }
+                                      />
+                                    ) : null}
+                                    {/* {!detail?.isTitleRepeat && value?.isHeader ? (
                                 <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(value?.title)}</CardSubHeader>
                               ) : null} */}
-                                </div>
-                              ))
-                            : null}
+                                  </div>
+                                ))
+                              : null}
 
-                          {/* to get subOccupancyValues values */}
-                          {detail?.isSubOccupancyTable && detail?.additionalDetails?.subOccupancyTableDetails ? (
-                            <SubOccupancyTable edcrDetails={detail?.additionalDetails} applicationData={data?.applicationData} />
-                          ) : null}
+                            {/* to get subOccupancyValues values */}
+                            {detail?.isSubOccupancyTable && detail?.additionalDetails?.subOccupancyTableDetails ? (
+                              <SubOccupancyTable edcrDetails={detail?.additionalDetails} applicationData={data?.applicationData} />
+                            ) : null}
 
-                          {/* to get Scrutiny values */}
-                          {detail?.isScrutinyDetails && detail?.additionalDetails?.scruntinyDetails?.length > 0 ? (
-                            // detail?.additionalDetails?.scruntinyDetails.map((scrutiny) => {
-                            //   console.log("scrutinyForReportPlans", scrutiny)
-                            //   return (
-                            //   <Fragment key={scrutiny?.title}>
-                            //     {/* <Row className="border-none" label={t(scrutiny?.title)} />
-                            //     <LinkButton
-                            //       onClick={() => downloadDiagram(scrutiny?.value)}
-                            //       label={<PDFSvg />}
-                            //     ></LinkButton>
-                            //     <p
-                            //       style={{
-                            //         marginTop: "8px",
-                            //         marginBottom: "20px",
-                            //         fontWeight: "bold",
-                            //         fontSize: "16px",
-                            //         lineHeight: "19px",
-                            //         color: "#505A5F",
-                            //         fontWeight: "400",
-                            //       }}
-                            //     >
-                            //       {t(scrutiny?.text)}
-                            //     </p> */}
-                            //   </Fragment>
-                            // )})
-                            <React.Fragment>
-                            <Table
-                              className="customTable table-border-style"
-                              t={t}
-                              data={detail?.additionalDetails?.scruntinyDetails}
-                              columns={documentsColumnsEDCR}
-                              getCellProps={() => ({ style: {} })}
-                              disableSort={false}
-                              autoSort={true}
-                              manualPagination={false}
-                              isPaginationRequired={false}
-                            />
+                            {/* to get Scrutiny values */}
+                            {detail?.isScrutinyDetails && detail?.additionalDetails?.scruntinyDetails?.length > 0 ? (
+                              // detail?.additionalDetails?.scruntinyDetails.map((scrutiny) => {
+                              //   console.log("scrutinyForReportPlans", scrutiny)
+                              //   return (
+                              //   <Fragment key={scrutiny?.title}>
+                              //     {/* <Row className="border-none" label={t(scrutiny?.title)} />
+                              //     <LinkButton
+                              //       onClick={() => downloadDiagram(scrutiny?.value)}
+                              //       label={<PDFSvg />}
+                              //     ></LinkButton>
+                              //     <p
+                              //       style={{
+                              //         marginTop: "8px",
+                              //         marginBottom: "20px",
+                              //         fontWeight: "bold",
+                              //         fontSize: "16px",
+                              //         lineHeight: "19px",
+                              //         color: "#505A5F",
+                              //         fontWeight: "400",
+                              //       }}
+                              //     >
+                              //       {t(scrutiny?.text)}
+                              //     </p> */}
+                              //   </Fragment>
+                              // )})
+                              <React.Fragment>
+                                <Table
+                                  className="customTable table-border-style"
+                                  t={t}
+                                  data={detail?.additionalDetails?.scruntinyDetails}
+                                  columns={documentsColumnsEDCR}
+                                  getCellProps={() => ({ style: {} })}
+                                  disableSort={false}
+                                  autoSort={true}
+                                  manualPagination={false}
+                                  isPaginationRequired={false}
+                                />
 
-                            {detail?.isScrutinyDetails && data?.applicationData?.additionalDetails?.oldEDCR?.length > 0 && (
-                            <Table
-                              className="customTable table-border-style"
-                              t={t}
-                              data={data?.applicationData?.additionalDetails?.oldEDCR}
-                              columns={oldEDCRDocumentsColumns}
-                              getCellProps={() => ({ style: {} })}
-                              disableSort={false}
-                              autoSort={true}
-                              manualPagination={false}
-                              isPaginationRequired={false}
-                            />
-                          )}
-                          </React.Fragment>
-                          ) : null}
+                                {detail?.isScrutinyDetails && data?.applicationData?.additionalDetails?.oldEDCR?.length > 0 && (
+                                  <Table
+                                    className="customTable table-border-style"
+                                    t={t}
+                                    data={data?.applicationData?.additionalDetails?.oldEDCR}
+                                    columns={oldEDCRDocumentsColumns}
+                                    getCellProps={() => ({ style: {} })}
+                                    disableSort={false}
+                                    autoSort={true}
+                                    manualPagination={false}
+                                    isPaginationRequired={false}
+                                  />
+                                )}
+                              </React.Fragment>
+                            ) : null}
 
-                          {/* to get Owner values */}
-                          {detail?.isOwnerDetails && detail?.additionalDetails?.owners?.length > 0
-                            ? detail?.additionalDetails?.owners.map((owner, index) => (
-                                <div
-                                  key={index}
-                                  style={
-                                    detail?.additionalDetails?.owners?.length > 1
-                                      ? {
-                                          marginTop: "19px",
-                                          background: "#FAFAFA",
-                                          border: "1px solid #D6D5D4",
-                                          borderRadius: "4px",
-                                          padding: "8px",
-                                          lineHeight: "19px",
-                                          maxWidth: "950px",
-                                          minWidth: "280px",
-                                        }
-                                      : {}
-                                  }
-                                >
-                                  {detail?.additionalDetails?.owners?.length > 1 ? (
-                                    <Row className="border-none" label={`${t("Owner")} - ${index + 1}`} />
-                                  ) : null}
-                                  {owner?.values.map((value) => (
-                                    <Row
-                                      className="border-none"
-                                      label={t(value?.title)}
-                                      text={getTranslatedValues(value?.value, value?.isNotTranslated) || t("CS_NA")}
-                                      key={value?.title}
-                                    />
-                                  ))}
-                                </div>
-                              ))
-                            : null}
-
-                          {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && 
-                          (data?.applicationData?.additionalDetails?.isSelfCertification ? (
-                            <div>
-                              <StatusTable
-                                style={{
-                                  display: "flex",
-                                  gap: "20px",
-                                  flexWrap: "wrap",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                {sitePhotos?.length > 0 &&
-                                  [...sitePhotos]
-                                    .map((doc, index) => (
-                                      <NocSitePhotographsBPA
-                                        key={doc?.values?.[0]?.filestoreId}
-                                        url={doc?.values?.[0]?.fileURL}
-                                        documentType={doc?.title}
-                                        coordinates={index === 0 ? data?.applicationData?.landInfo?.address?.geoLocation : data?.applicationData?.additionalDetails?.geoLocationTwo}
+                            {/* to get Owner values */}
+                            {detail?.isOwnerDetails && detail?.additionalDetails?.owners?.length > 0
+                              ? detail?.additionalDetails?.owners.map((owner, index) => (
+                                  <div
+                                    key={index}
+                                    style={
+                                      detail?.additionalDetails?.owners?.length > 1
+                                        ? {
+                                            marginTop: "19px",
+                                            background: "#FAFAFA",
+                                            border: "1px solid #D6D5D4",
+                                            borderRadius: "4px",
+                                            padding: "8px",
+                                            lineHeight: "19px",
+                                            maxWidth: "950px",
+                                            minWidth: "280px",
+                                          }
+                                        : {}
+                                    }
+                                  >
+                                    {detail?.additionalDetails?.owners?.length > 1 ? (
+                                      <Row className="border-none" label={`${t("Owner")} - ${index + 1}`} />
+                                    ) : null}
+                                    {owner?.values.map((value) => (
+                                      <Row
+                                        className="border-none"
+                                        label={t(value?.title)}
+                                        text={getTranslatedValues(value?.value, value?.isNotTranslated) || t("CS_NA")}
+                                        key={value?.title}
                                       />
                                     ))}
-                              </StatusTable>
-                              {pdfLoading ? <Loader /> : <Table
-                              className="customTable table-border-style"
-                              t={t}
-                              data={documentsData}
-                              columns={documentsColumns}
-                              getCellProps={() => ({ style: {} })}
-                              disableSort={true}
-                              autoSort={false}
-                              manualPagination={false}
-                              isPaginationRequired={false}
-                            />}
-                              {/* <StatusTable>
+                                  </div>
+                                ))
+                              : null}
+
+                            {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" &&
+                              (data?.applicationData?.additionalDetails?.isSelfCertification ? (
+                                <div>
+                                  <StatusTable className="obps-pages-employee-bpa-application-details-index--style-12">
+                                    {sitePhotos?.length > 0 &&
+                                      [...sitePhotos].map((doc, index) => (
+                                        <NocSitePhotographsBPA
+                                          key={doc?.values?.[0]?.filestoreId}
+                                          url={doc?.values?.[0]?.fileURL}
+                                          documentType={doc?.title}
+                                          coordinates={
+                                            index === 0
+                                              ? data?.applicationData?.landInfo?.address?.geoLocation
+                                              : data?.applicationData?.additionalDetails?.geoLocationTwo
+                                          }
+                                        />
+                                      ))}
+                                  </StatusTable>
+                                  {pdfLoading ? (
+                                    <Loader />
+                                  ) : (
+                                    <Table
+                                      className="customTable table-border-style"
+                                      t={t}
+                                      data={documentsData}
+                                      columns={documentsColumns}
+                                      getCellProps={() => ({ style: {} })}
+                                      disableSort={true}
+                                      autoSort={false}
+                                      manualPagination={false}
+                                      isPaginationRequired={false}
+                                    />
+                                  )}
+                                  {/* <StatusTable>
                                 {remainingDoc?.length > 0 && (
                                   <BPADocumentChecklist
                                     documents={remainingDoc}
@@ -2479,125 +2546,138 @@ const BpaApplicationDetail = () => {
                                   />
                                 )}
                               </StatusTable> */}
-                            {ecbcDocumentsData?.length > 0 && (
-                                <div>
-                                  {pdfLoading || isFileLoading ? (
-                                    <Loader />
-                                  ) : (
-                                    <Table
-                                      className="customTable table-border-style"
-                                      t={t}
-                                      data={ecbcDocumentsData}
-                                      columns={documentsColumnsECBC}
-                                      getCellProps={() => ({ style: {} })}
-                                      disableSort={false}
-                                      autoSort={true}
-                                      manualPagination={false}
-                                      isPaginationRequired={false}
-                                    />
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <>
-                              {/* <CardSubHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
-                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
-                              <StatusTable
-                                style={{
-                                  display: "flex",
-                                  gap: "20px",
-                                  flexWrap: "wrap",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                {sitePhotos?.length > 0 &&
-                                  [...sitePhotos]
-                                    .map((doc, index) => (
-                                      <NocSitePhotographsBPA
-                                        key={doc?.values?.[0]?.filestoreId}
-                                        url={doc?.values?.[0]?.fileURL}
-                                        documentType={doc?.title}
-                                        coordinates={index === 0 ? data?.applicationData?.landInfo?.address?.geoLocation : data?.applicationData?.additionalDetails?.geoLocationTwo}
-                                      />
-                                    ))}
-                              </StatusTable>
-                              {!(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) && ["DOC_VERIFICATION_PENDING", "FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && <div>
-                                  {(
+                                  {ecbcDocumentsData?.length > 0 && (
                                     <div>
-                                      {pdfLoading ? <Loader /> : <Table
-                                        className="customTable table-border-style"
-                                        t={t}
-                                        data={documentsData}
-                                        columns={documentsColumns}
-                                        getCellProps={() => ({ style: {} })}
-                                        disableSort={true}
-                                        autoSort={false}
-                                        manualPagination={false}
-                                        isPaginationRequired={false}
-                                      />}
-                                    </div>
-                                  )}
-                              </div>}
-                              {data?.applicationData?.status != "DOC_VERIFICATION_PENDING" && !(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) && !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && <div>
-                                {(
-                                    <StatusTable>
-                                      {remainingDoc?.length > 0 && (
-                                        <BPADocumentChecklist
-                                          documents={remainingDoc}
-                                          applicationNo={id}
-                                          tenantId={tenantId}
-                                          onRemarksChange={setChecklistRemarks}
-                                          readOnly="true"
+                                      {pdfLoading || isFileLoading ? (
+                                        <Loader />
+                                      ) : (
+                                        <Table
+                                          className="customTable table-border-style"
+                                          t={t}
+                                          data={ecbcDocumentsData}
+                                          columns={documentsColumnsECBC}
+                                          getCellProps={() => ({ style: {} })}
+                                          disableSort={false}
+                                          autoSort={true}
+                                          manualPagination={false}
+                                          isPaginationRequired={false}
                                         />
                                       )}
-                                    </StatusTable>
-                                )}
-                              </div>}
-                              {data?.applicationData?.status === "DOC_VERIFICATION_PENDING" && user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0 && !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) &&  <div>
-                                <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-                                <StatusTable>
-                                  {remainingDoc?.length > 0 && (
-                                    <BPADocumentChecklist
-                                      documents={remainingDoc}
-                                      applicationNo={id}
-                                      tenantId={tenantId}
-                                      onRemarksChange={setChecklistRemarks}
-                                      readOnly={false}
-                                    />
-                                  )}
-                                </StatusTable>
-                              </div>}
-                              {/* <CardSubHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
-                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
-                              {ecbcDocumentsData?.length > 0 && (
-                                <div>
-                                  {pdfLoading || isFileLoading ? (
-                                    <Loader />
-                                  ) : (
-                                    <Table
-                                      className="customTable table-border-style"
-                                      t={t}
-                                      data={ecbcDocumentsData}
-                                      columns={documentsColumnsECBC}
-                                      getCellProps={() => ({ style: {} })}
-                                      disableSort={false}
-                                      autoSort={true}
-                                      manualPagination={false}
-                                      isPaginationRequired={false}
-                                    />
+                                    </div>
                                   )}
                                 </div>
-                              )}
-                              {/* <CardSubHeader>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
+                              ) : (
+                                <>
+                                  {/* <CardSubHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
                           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
-                            </>
-                          ))}
+                                  <StatusTable className="obps-pages-employee-bpa-application-details-index--style-13">
+                                    {sitePhotos?.length > 0 &&
+                                      [...sitePhotos].map((doc, index) => (
+                                        <NocSitePhotographsBPA
+                                          key={doc?.values?.[0]?.filestoreId}
+                                          url={doc?.values?.[0]?.fileURL}
+                                          documentType={doc?.title}
+                                          coordinates={
+                                            index === 0
+                                              ? data?.applicationData?.landInfo?.address?.geoLocation
+                                              : data?.applicationData?.additionalDetails?.geoLocationTwo
+                                          }
+                                        />
+                                      ))}
+                                  </StatusTable>
+                                  {!(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) &&
+                                    ["DOC_VERIFICATION_PENDING", "FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(
+                                      data?.applicationData?.status
+                                    ) && (
+                                      <div>
+                                        {
+                                          <div>
+                                            {pdfLoading ? (
+                                              <Loader />
+                                            ) : (
+                                              <Table
+                                                className="customTable table-border-style"
+                                                t={t}
+                                                data={documentsData}
+                                                columns={documentsColumns}
+                                                getCellProps={() => ({ style: {} })}
+                                                disableSort={true}
+                                                autoSort={false}
+                                                manualPagination={false}
+                                                isPaginationRequired={false}
+                                              />
+                                            )}
+                                          </div>
+                                        }
+                                      </div>
+                                    )}
+                                  {data?.applicationData?.status != "DOC_VERIFICATION_PENDING" &&
+                                    !(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) &&
+                                    !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && (
+                                      <div>
+                                        {
+                                          <StatusTable>
+                                            {remainingDoc?.length > 0 && (
+                                              <BPADocumentChecklist
+                                                documents={remainingDoc}
+                                                applicationNo={id}
+                                                tenantId={tenantId}
+                                                onRemarksChange={setChecklistRemarks}
+                                                readOnly="true"
+                                              />
+                                            )}
+                                          </StatusTable>
+                                        }
+                                      </div>
+                                    )}
+                                  {data?.applicationData?.status === "DOC_VERIFICATION_PENDING" &&
+                                    user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0 &&
+                                    !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && (
+                                      <div>
+                                        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+                                        <StatusTable>
+                                          {remainingDoc?.length > 0 && (
+                                            <BPADocumentChecklist
+                                              documents={remainingDoc}
+                                              applicationNo={id}
+                                              tenantId={tenantId}
+                                              onRemarksChange={setChecklistRemarks}
+                                              readOnly={false}
+                                            />
+                                          )}
+                                        </StatusTable>
+                                      </div>
+                                    )}
+                                  {/* <CardSubHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
+                                  {ecbcDocumentsData?.length > 0 && (
+                                    <div>
+                                      {pdfLoading || isFileLoading ? (
+                                        <Loader />
+                                      ) : (
+                                        <Table
+                                          className="customTable table-border-style"
+                                          t={t}
+                                          data={ecbcDocumentsData}
+                                          columns={documentsColumnsECBC}
+                                          getCellProps={() => ({ style: {} })}
+                                          disableSort={false}
+                                          autoSort={true}
+                                          manualPagination={false}
+                                          isPaginationRequired={false}
+                                        />
+                                      )}
+                                    </div>
+                                  )}
+                                  {/* <CardSubHeader>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
+                                </>
+                              ))}
 
-                          {/* to get FieldInspection values */}
-                          {detail?.isFieldInspection ? (
-                            <div>
-                              {/* { data?.applicationData?.additionalDetails?.isSelfCertification &&
+                            {/* to get FieldInspection values */}
+                            {detail?.isFieldInspection ? (
+                              <div>
+                                {/* { data?.applicationData?.additionalDetails?.isSelfCertification &&
                                 (
                                   <Card>
                                     <InspectionReport
@@ -2607,33 +2687,39 @@ const BpaApplicationDetail = () => {
                                     />
                                   </Card>
                               )} */}
-                              {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
-                                (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
-                                  <div>
-                                  {isMobile ? <Card>
-                                    <div id="fieldInspection"></div>
-                                    <SiteInspection
-                                      siteImages={siteImages}
-                                      setSiteImages={setSiteImages}
-                                      geoLocations={geoLocations}
-                                      customOpen={routeToImage}
-                                    />
-                                  </Card> : <Card>
-                                    <div id="fieldInspection">{t("Please Use Mobile Device for Field Inspection.")}</div>
-                                  </Card>}
-                                  </div>
-                                )}
+                                {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
+                                  (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
+                                    <div>
+                                      {isMobile ? (
+                                        <Card>
+                                          <div id="fieldInspection"></div>
+                                          <SiteInspection
+                                            siteImages={siteImages}
+                                            setSiteImages={setSiteImages}
+                                            geoLocations={geoLocations}
+                                            customOpen={routeToImage}
+                                          />
+                                        </Card>
+                                      ) : (
+                                        <Card>
+                                          <div id="fieldInspection">{t("Please Use Mobile Device for Field Inspection.")}</div>
+                                        </Card>
+                                      )}
+                                    </div>
+                                  )}
 
-                              {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
-                                (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length === 0 && (
+                                {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
+                                  (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length === 0 && (
+                                    <Card>
+                                      <div id="fieldInspection">
+                                        {t("Site Inspection is in progress, Checklist will be available once completed.")}
+                                      </div>
+                                    </Card>
+                                  )}
+
+                                {data?.applicationData?.status !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
                                   <Card>
-                                    <div id="fieldInspection">{t("Site Inspection is in progress, Checklist will be available once completed.")}</div>
-                                  </Card>
-                                )}
-
-                              {data?.applicationData?.status !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
-                                <Card>
-                                  {/* <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader>
+                                    {/* <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader>
                                   <Table
                                     className="customTable table-border-style"
                                     t={t}
@@ -2645,203 +2731,184 @@ const BpaApplicationDetail = () => {
                                     manualPagination={false}
                                     isPaginationRequired={false}
                                   /> */}
-                                  <StatusTable
-                                    style={{
-                                      display: "flex",
-                                      gap: "20px",
-                                      flexWrap: "wrap",
-                                      justifyContent: "space-between",
-                                    }}
-                                  >
-                                    {siteImages?.documents?.length > 0 && siteImages?.documents?.map((doc) =>
-                                      <BPASitePhotographs
-                                        key={doc?.fileStoreId || doc?.documentUid}
-                                        filestoreId={doc?.fileStoreId || doc?.documentUid}
-                                        documentType={doc?.documentType}
-                                        coordinates={{
-                                          latitude: doc?.latitude,
-                                          longitude: doc?.longitude,
-                                        }}
-                                      />
+                                    <StatusTable className="obps-pages-employee-bpa-application-details-index--style-14">
+                                      {siteImages?.documents?.length > 0 &&
+                                        siteImages?.documents?.map((doc) => (
+                                          <BPASitePhotographs
+                                            key={doc?.fileStoreId || doc?.documentUid}
+                                            filestoreId={doc?.fileStoreId || doc?.documentUid}
+                                            documentType={doc?.documentType}
+                                            coordinates={{
+                                              latitude: doc?.latitude,
+                                              longitude: doc?.longitude,
+                                            }}
+                                          />
+                                        ))}
+                                    </StatusTable>
+                                    {geoLocations?.length > 0 && (
+                                      <React.Fragment>
+                                        <CardSectionHeader className="obps-pages-employee-bpa-application-details-index--style-15">
+                                          {t("SITE_INSPECTION_IMAGES_LOCATIONS")}
+                                        </CardSectionHeader>
+                                        <CustomLocationSearch position={geoLocations} />
+                                      </React.Fragment>
                                     )}
-                                  </StatusTable>
-                                  {geoLocations?.length > 0 && (
-                                    <React.Fragment>
-                                      <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
-                                        {t("SITE_INSPECTION_IMAGES_LOCATIONS")}
-                                      </CardSectionHeader>
-                                      <CustomLocationSearch position={geoLocations} />
-                                    </React.Fragment>
+                                  </Card>
+                                )}
+                                {data?.applicationData?.status === "INSPECTION_REPORT_PENDING" &&
+                                  (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
+                                    <Card>
+                                      <InspectionReport
+                                        isCitizen={true}
+                                        fiReport={
+                                          fieldInspectionPending?.length > 0
+                                            ? fieldInspectionPending
+                                            : data?.applicationData?.additionalDetails?.fieldinspection_pending
+                                        }
+                                        onSelect={onChangeReport}
+                                      />
+                                      <SubmitBar
+                                        ref={menuRef}
+                                        className="obps-pages-employee-bpa-application-details-index--style-16"
+                                        label={t("Save Draft")}
+                                        onSubmit={() => employeeDraftSave({ BPA: data?.applicationData }, false, {})}
+                                      />
+                                    </Card>
                                   )}
-                                </Card>
-                              )}
-                              {data?.applicationData?.status === "INSPECTION_REPORT_PENDING" &&
-                                (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
-                                  <Card>
-                                    <InspectionReport
-                                      isCitizen={true}
-                                      fiReport={fieldInspectionPending?.length > 0 ? fieldInspectionPending : data?.applicationData?.additionalDetails?.fieldinspection_pending}
-                                      onSelect={onChangeReport}
-                                    />
-                                    <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
-                                  </Card>
-                                )}
-                              {data?.applicationData?.status != "INSPECTION_REPORT_PENDING" &&
-                                data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0 && (
-                                  <Card>
-                                    <InspectionReportDisplay fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending} />
-                                  </Card>
-                                )}
-                            </div>
-                          ) : null}
-
-                          {/* to get NOC values */}
-                          {detail?.additionalDetails?.noc?.length > 0
-                            ? detail?.additionalDetails?.noc.map((nocob, ind) => (
-                                <div
-                                  key={ind}
-                                  style={{
-                                    marginTop: "19px",
-                                    background: "#FAFAFA",
-                                    border: "1px solid #D6D5D4",
-                                    borderRadius: "4px",
-                                    padding: "8px",
-                                    lineHeight: "19px",
-                                    maxWidth: "960px",
-                                    minWidth: "280px",
-                                  }}
-                                >
-                                  <StatusTable>
-                                    <Row
-                                      className="border-none"
-                                      label={t(`${`BPA_${detail?.additionalDetails?.data?.nocType}_HEADER`}`)}
-                                      labelStyle={{ fontSize: "20px" }}
-                                    ></Row>
-                                    <Row
-                                      className="border-none"
-                                      label={t(`${detail?.values?.[0]?.title}`)}
-                                      textStyle={{ marginLeft: "10px" }}
-                                      text={getTranslatedValues(detail?.values?.[0]?.value, detail?.values?.[0]?.isNotTranslated)}
-                                    />
-                                    <Row
-                                      className="border-none"
-                                      label={t(`${detail?.values?.[1]?.title}`)}
-                                      textStyle={
-                                        detail?.values?.[1]?.value == "APPROVED" || detail?.values?.[1]?.value == "AUTO_APPROVED"
-                                          ? { marginLeft: "10px", color: "#00703C" }
-                                          : { marginLeft: "10px", color: "#D4351C" }
-                                      }
-                                      text={getTranslatedValues(detail?.values?.[1]?.value, detail?.values?.[1]?.isNotTranslated)}
-                                    />
-                                    {detail?.values?.[2]?.value ? (
-                                      <Row
-                                        className="border-none"
-                                        label={t(`${detail?.values?.[2]?.title}`)}
-                                        textStyle={{ marginLeft: "10px" }}
-                                        text={getTranslatedValues(detail?.values?.[2]?.value, detail?.values?.[2]?.isNotTranslated)}
-                                      />
-                                    ) : null}
-                                    {detail?.values?.[3]?.value ? (
-                                      <Row
-                                        className="border-none"
-                                        label={t(`${detail?.values?.[3]?.title}`)}
-                                        textStyle={{ marginLeft: "10px" }}
-                                        text={getTranslatedValues(detail?.values?.[3]?.value, detail?.values?.[3]?.isNotTranslated)}
-                                      />
-                                    ) : null}
-                                    {detail?.values?.[3]?.value ? (
-                                      <Row
-                                        className="border-none"
-                                        label={t(`${detail?.values?.[4]?.title}`)}
-                                        textStyle={{ marginLeft: "10px" }}
-                                        text={getTranslatedValues(detail?.values?.[4]?.value, detail?.values?.[4]?.isNotTranslated)}
-                                      />
-                                    ) : null}
-                                    <Row className="border-none" label={t(`${nocob?.title}`)}></Row>
-                                  </StatusTable>
-                                  <StatusTable>
-                                    {nocob?.values ? (
-                                      <DocumentsPreview
-                                        documents={getOrderDocuments(nocob?.values, true)}
-                                        svgStyles={{}}
-                                        isSendBackFlow={false}
-                                        isHrLine={true}
-                                        titleStyles={{
-                                          fontSize: "18px",
-                                          lineHeight: "24px",
-                                          fontWeight: 700,
-                                          marginBottom: "10px",
-                                        }}
-                                      />
-                                    ) : (
-                                      <div>
-                                        <CardText>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</CardText>
-                                      </div>
-                                    )}
-                                  </StatusTable>
-                                </div>
-                              ))
-                            : null}
-
-                          {/* to get permit values */}
-                          {!detail?.isTitleVisible && detail?.additionalDetails?.permit?.length > 0
-                            ? detail?.additionalDetails?.permit?.map((value) => <CardText key={value?.title}>{value?.title}</CardText>)
-                            : null}
-
-                          {/* to get Fee values */}
-                          {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (
-                            <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} paymentsList={[]} />
-                          )}
-                          {/*blocking reason*/}
-                          {detail?.additionalDetails?.inspectionReport &&
-                            detail?.isFeeDetails &&
-                            (workflowDetails?.data?.actionState?.nextActions?.[0]?.state == "POST_PAYMENT_CITIZEN_APPROVAL_PENDING" ||
-                              workflowDetails?.data?.actionState?.state == "POST_PAYMENT_CITIZEN_APPROVAL_PENDING" ||
-                              workflowDetails?.data?.actionState?.state == "POST_PAYMENT_INPROGRESS") && (
-                              <div
-                                style={{
-                                  marginTop: "19px",
-                                  background: "#FAFAFA",
-                                  border: "1px solid #D6D5D4",
-                                  borderRadius: "4px",
-                                  padding: "8px",
-                                  lineHeight: "19px",
-                                  maxWidth: "950px",
-                                  minWidth: "280px",
-                                }}
-                              >
-                                <Row
-                                  className="border-none"
-                                  label={t(`BLOCKING_REASON`)}
-                                  labelStyle={{ fontSize: "15px" }}
-                                  text={data?.applicationData.additionalDetails.blockingReason || "NA"}
-                                >
-                                  {" "}
-                                </Row>
+                                {data?.applicationData?.status != "INSPECTION_REPORT_PENDING" &&
+                                  data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0 && (
+                                    <Card>
+                                      <InspectionReportDisplay fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending} />
+                                    </Card>
+                                  )}
                               </div>
+                            ) : null}
+
+                            {/* to get NOC values */}
+                            {detail?.additionalDetails?.noc?.length > 0
+                              ? detail?.additionalDetails?.noc.map((nocob, ind) => (
+                                  <div key={ind} className="obps-pages-employee-bpa-application-details-index--style-17">
+                                    <StatusTable>
+                                      <Row
+                                        className="border-none"
+                                        label={t(`${`BPA_${detail?.additionalDetails?.data?.nocType}_HEADER`}`)}
+                                        labelStyle={{ fontSize: "20px" }}
+                                      ></Row>
+                                      <Row
+                                        className="border-none"
+                                        label={t(`${detail?.values?.[0]?.title}`)}
+                                        textStyle={{ marginLeft: "10px" }}
+                                        text={getTranslatedValues(detail?.values?.[0]?.value, detail?.values?.[0]?.isNotTranslated)}
+                                      />
+                                      <Row
+                                        className="border-none"
+                                        label={t(`${detail?.values?.[1]?.title}`)}
+                                        textStyle={
+                                          detail?.values?.[1]?.value == "APPROVED" || detail?.values?.[1]?.value == "AUTO_APPROVED"
+                                            ? { marginLeft: "10px", color: "#00703C" }
+                                            : { marginLeft: "10px", color: "#D4351C" }
+                                        }
+                                        text={getTranslatedValues(detail?.values?.[1]?.value, detail?.values?.[1]?.isNotTranslated)}
+                                      />
+                                      {detail?.values?.[2]?.value ? (
+                                        <Row
+                                          className="border-none"
+                                          label={t(`${detail?.values?.[2]?.title}`)}
+                                          textStyle={{ marginLeft: "10px" }}
+                                          text={getTranslatedValues(detail?.values?.[2]?.value, detail?.values?.[2]?.isNotTranslated)}
+                                        />
+                                      ) : null}
+                                      {detail?.values?.[3]?.value ? (
+                                        <Row
+                                          className="border-none"
+                                          label={t(`${detail?.values?.[3]?.title}`)}
+                                          textStyle={{ marginLeft: "10px" }}
+                                          text={getTranslatedValues(detail?.values?.[3]?.value, detail?.values?.[3]?.isNotTranslated)}
+                                        />
+                                      ) : null}
+                                      {detail?.values?.[3]?.value ? (
+                                        <Row
+                                          className="border-none"
+                                          label={t(`${detail?.values?.[4]?.title}`)}
+                                          textStyle={{ marginLeft: "10px" }}
+                                          text={getTranslatedValues(detail?.values?.[4]?.value, detail?.values?.[4]?.isNotTranslated)}
+                                        />
+                                      ) : null}
+                                      <Row className="border-none" label={t(`${nocob?.title}`)}></Row>
+                                    </StatusTable>
+                                    <StatusTable>
+                                      {nocob?.values ? (
+                                        <DocumentsPreview
+                                          documents={getOrderDocuments(nocob?.values, true)}
+                                          svgStyles={{}}
+                                          isSendBackFlow={false}
+                                          isHrLine={true}
+                                          titleStyles={{
+                                            fontSize: "18px",
+                                            lineHeight: "24px",
+                                            fontWeight: 700,
+                                            marginBottom: "10px",
+                                          }}
+                                        />
+                                      ) : (
+                                        <div>
+                                          <CardText>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</CardText>
+                                        </div>
+                                      )}
+                                    </StatusTable>
+                                  </div>
+                                ))
+                              : null}
+
+                            {/* to get permit values */}
+                            {!detail?.isTitleVisible && detail?.additionalDetails?.permit?.length > 0
+                              ? detail?.additionalDetails?.permit?.map((value) => <CardText key={value?.title}>{value?.title}</CardText>)
+                              : null}
+
+                            {/* to get Fee values */}
+                            {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (
+                              <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} paymentsList={[]} />
                             )}
-                        </StatusTable>
-                        {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && (
-                          <div style={{ marginTop: "5px" }}>
-                            {pdfLoading || isOwnerFileLoading ? (
-                              <Loader />
-                            ) : (
-                              <Table
-                                className="customTable table-border-style"
-                                t={t}
-                                data={ownerDocumentsData}
-                                columns={documentsColumnsOwner}
-                                getCellProps={() => ({ style: {} })}
-                                disableSort={false}
-                                autoSort={true}
-                                manualPagination={false}
-                                isPaginationRequired={false}
-                              />
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </Card>
+                            {/*blocking reason*/}
+                            {detail?.additionalDetails?.inspectionReport &&
+                              detail?.isFeeDetails &&
+                              (workflowDetails?.data?.actionState?.nextActions?.[0]?.state == "POST_PAYMENT_CITIZEN_APPROVAL_PENDING" ||
+                                workflowDetails?.data?.actionState?.state == "POST_PAYMENT_CITIZEN_APPROVAL_PENDING" ||
+                                workflowDetails?.data?.actionState?.state == "POST_PAYMENT_INPROGRESS") && (
+                                <div className="obps-pages-employee-bpa-application-details-index--style-18">
+                                  <Row
+                                    className="border-none"
+                                    label={t(`BLOCKING_REASON`)}
+                                    labelStyle={{ fontSize: "15px" }}
+                                    text={data?.applicationData.additionalDetails.blockingReason || "NA"}
+                                  >
+                                    {" "}
+                                  </Row>
+                                </div>
+                              )}
+                          </StatusTable>
+                          {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && (
+                            <div className="obps-pages-employee-bpa-application-details-index--style-19">
+                              {pdfLoading || isOwnerFileLoading ? (
+                                <Loader />
+                              ) : (
+                                <Table
+                                  className="customTable table-border-style"
+                                  t={t}
+                                  data={ownerDocumentsData}
+                                  columns={documentsColumnsOwner}
+                                  getCellProps={() => ({ style: {} })}
+                                  disableSort={false}
+                                  autoSort={true}
+                                  manualPagination={false}
+                                  isPaginationRequired={false}
+                                />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    )
                   ) : null}
 
                   {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" &&
@@ -2893,16 +2960,7 @@ const BpaApplicationDetail = () => {
             })}
         </div>
 
-        <Card
-          style={{
-            padding: "20px",
-            marginBottom: "30px",
-            borderRadius: "12px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            border: "1px solid #f0f0f0",
-            background: "#fff",
-          }}
-        >
+        <Card className="obps-pages-employee-bpa-application-details-index--style-20">
           {/* <CardSubHeader style={{fontSize:"20px", color:"#3f4351"}}>{t("BPA_P2_SUMMARY_FEE_EST_MANUAL")}</CardSubHeader>
            <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
           <CardLabel>{t("BPA_COMMON_DEVELOPMENT_AMT")}</CardLabel>
@@ -2997,7 +3055,7 @@ const BpaApplicationDetail = () => {
               {!workflowDetails?.isLoading && !isLoading && (
                 <Fragment>
                   <div id="timeline">
-                    <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
+                    <CardSectionHeader className="obps-pages-employee-bpa-application-details-index--style-21">
                       {t("ES_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
                     </CardSectionHeader>
                     {/* {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
@@ -3053,36 +3111,48 @@ const BpaApplicationDetail = () => {
           )}
         </Card>
 
-        {actions?.length > 0 && !(data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length === 0) && <Card>
-          <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
-            {t("Add Comments")}
-          </CardSectionHeader>
-          <RichTextBox
-            value={draftComment}
-            onChange={(e) => setDraftComment(e.target.value)}
-            placeholder={t("Add Comments")}
-            className="checklist-table-textarea"
-            style={{ overflow: "hidden", maxHeight: "1500px" }}
-            maxLength={5000}
-          />
-          <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
-        </Card>}
+        {actions?.length > 0 &&
+          !(
+            data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
+            (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length === 0
+          ) && (
+            <Card>
+              <CardSectionHeader className="obps-pages-employee-bpa-application-details-index--style-22">{t("Add Comments")}</CardSectionHeader>
+              <RichTextBox
+                value={draftComment}
+                onChange={(e) => setDraftComment(e.target.value)}
+                placeholder={t("Add Comments")}
+                className="checklist-table-textarea obps-pages-employee-bpa-application-details-index--style-23"
+                maxLength={5000}
+              />
+              <SubmitBar
+                ref={menuRef}
+                className="obps-pages-employee-bpa-application-details-index--style-24"
+                label={t("Save Draft")}
+                onSubmit={() => employeeDraftSave({ BPA: data?.applicationData }, false, {})}
+              />
+            </Card>
+          )}
 
         {showPdfModal && (
-        <PdfPreviewModal
-          open={showPdfModal}
-          url={pdfUrl}
-          onClose={() => {
-            setShowPdfModal(false);
-            setPdfUrl(null);
-          }}
-          title={t("NOC_SANCTION_LETTER")}
-        >
-          <ActionBar>
-            <SubmitBar label={t("ESIGN")} onSubmit={data?.applicationStatus === "DRAWING_ESIGN_PENDING" ? printDrawingWithESign :printCertificateWithESign} disabled={eSignLoading} />
-          </ActionBar>
-        </PdfPreviewModal>
-      )}
+          <PdfPreviewModal
+            open={showPdfModal}
+            url={pdfUrl}
+            onClose={() => {
+              setShowPdfModal(false);
+              setPdfUrl(null);
+            }}
+            title={t("NOC_SANCTION_LETTER")}
+          >
+            <ActionBar>
+              <SubmitBar
+                label={t("ESIGN")}
+                onSubmit={data?.applicationStatus === "DRAWING_ESIGN_PENDING" ? printDrawingWithESign : printCertificateWithESign}
+                disabled={eSignLoading}
+              />
+            </ActionBar>
+          </PdfPreviewModal>
+        )}
 
         {showModal && !isLoadingg ? (
           <BPAActionModal
@@ -3108,24 +3178,25 @@ const BpaApplicationDetail = () => {
           />
         ) : null}
 
-        {(!workflowDetails?.isLoading) && (workflowDetails?.data?.actionState?.nextActions?.length > 0 || workflowDetails?.data?.nextActions?.length > 0) && (
-          <ActionBar>
-            {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-              <Menu
-                localeKeyPrefix={`WF_EMPLOYEE_${(workflowDetails?.data?.applicationBusinessService
-                  ? workflowDetails?.data?.applicationBusinessService
-                  : data?.applicationData?.businessService
-                )?.toUpperCase()}`}
-                options={actions}
-                optionKey={"action"}
-                t={t}
-                onSelect={onActionSelect}
-                // style={MenuStyle}
-              />
-            ) : null}
-            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
-          </ActionBar>
-        )}
+        {!workflowDetails?.isLoading &&
+          (workflowDetails?.data?.actionState?.nextActions?.length > 0 || workflowDetails?.data?.nextActions?.length > 0) && (
+            <ActionBar>
+              {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
+                <Menu
+                  localeKeyPrefix={`WF_EMPLOYEE_${(workflowDetails?.data?.applicationBusinessService
+                    ? workflowDetails?.data?.applicationBusinessService
+                    : data?.applicationData?.businessService
+                  )?.toUpperCase()}`}
+                  options={actions}
+                  optionKey={"action"}
+                  t={t}
+                  onSelect={onActionSelect}
+                  // style={MenuStyle}
+                />
+              ) : null}
+              <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+            </ActionBar>
+          )}
 
         {/* {
           data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 &&
@@ -3162,11 +3233,11 @@ const BpaApplicationDetail = () => {
           <Modal headerBarEnd={<CloseBtn onClick={closeImageModal} />} hideSubmit={true}>
             {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
             {imageUrl?.toLowerCase().endsWith(".pdf") ? (
-              <a style={{ color: "blue" }} href={imageUrl} target="_blank" rel="noopener noreferrer">
+              <a className="obps-pages-employee-bpa-application-details-index--style-25" href={imageUrl} target="_blank" rel="noopener noreferrer">
                 {t("CS_VIEW_DOCUMENT")}
               </a>
             ) : (
-              <img src={imageUrl} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+              <img src={imageUrl} alt="Preview" className="obps-pages-employee-bpa-application-details-index--style-26" />
             )}
           </Modal>
         )}

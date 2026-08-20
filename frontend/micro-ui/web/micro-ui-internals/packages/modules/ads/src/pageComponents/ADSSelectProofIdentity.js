@@ -203,17 +203,17 @@ function ADSSelectDocument({
   };
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div className="ads-page-components-adsselect-proof-identity--style-1">
       {loading && <Loader />}
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller" style={{ width: "100%" }}>
+        <CardLabel className="card-label-smaller ads-page-components-adsselect-proof-identity--style-2" >
           {t(doc?.code.replaceAll(".", "_")) + (doc?.required ? "  *" : "")}
         </CardLabel>
       </LabelFieldPair>
 
       <LabelFieldPair>
-        <div className="field" style={{ width: "100%", maxWidth: !isCitizen && "500px" }}>
+        <div className={["field", "ads-select-proof-identity__upload", !isCitizen && "ads-select-proof-identity__upload--employee"].filter(Boolean).join(" ")}>
           <UploadFile
             onUpload={selectfile}
             onDelete={() => {

@@ -93,7 +93,7 @@ const LayoutEsignResponse = () => {
           info={t("ESIGN_SUCCESS_INFO")}
           successful={true}
         />
-        <div style={{ marginTop: "16px", fontSize: "16px" }}>
+        <div className="obps-pages-employee-layout-esign-response--style-1">
           {t("REDIRECTING_IN_SECONDS")} {countdown}
         </div>
       </Card>

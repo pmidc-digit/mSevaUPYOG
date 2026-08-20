@@ -8,29 +8,29 @@ const PTRSelectPincode = ({ t, config, onSelect, formData = {}, userType, regist
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify");
 
-  console.log("formData in oincode ",formData)
+  console.log("formData in oincode ", formData);
 
   const [pincode, setPincode] = useState(() => {
     if (presentInModifyApplication && userType === "employee") return formData?.originalData?.address?.pincode || "";
     return formData?.address?.pincode || "";
   });
 
-  
-  
+
+
   const inputs = [
-    {
-      label: "PTR_ADDRESS_PINCODE",
-      type: "text",
-      name: "pincode",
-      validation: {
-        minlength: 6,
-        maxlength: 7,
-        pattern: "[0-9]+",
-        max: "9999999",
-        title: t("PTR_ADDRESS_PINCODE_INVALID"),
-      },
-    },
-  ];
+  {
+    label: "PTR_ADDRESS_PINCODE",
+    type: "text",
+    name: "pincode",
+    validation: {
+      minlength: 6,
+      maxlength: 7,
+      pattern: "[0-9]+",
+      max: "9999999",
+      title: t("PTR_ADDRESS_PINCODE_INVALID")
+    }
+  }];
+
   const [pincodeServicability, setPincodeServicability] = useState(null);
   const [error, setLocalError] = useState("");
 
@@ -75,26 +75,26 @@ const PTRSelectPincode = ({ t, config, onSelect, formData = {}, userType, regist
               <TextInput key={input.name} value={pincode} onChange={onChange} {...input.validation} disable={presentInModifyApplication} autoFocus={presentInModifyApplication} />
             </div>
           </LabelFieldPair>
-          {error ? <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>{error}</CardLabelError> : null}
-        </React.Fragment>
-      );
+          {error ? <CardLabelError className="ptr-style-6328734805">{error}</CardLabelError> : null}
+        </React.Fragment>);
+
     });
   }
   const onSkip = () => onSelect();
   return (
     <React.Fragment>
-    {window.location.href.includes("/citizen") ? <Timeline currentStep={3}/> : null}
+    {window.location.href.includes("/citizen") ? <Timeline currentStep={3} /> : null}
     <FormStep
-      t={t}
-      config={{ ...config, inputs }}
-      onSelect={goNext}
-      _defaultValues={{ pincode }}
-      onChange={onChange}
-      onSkip={onSkip}
-      forcedError={t(pincodeServicability)}
-    ></FormStep>
-            </React.Fragment>
-  );
+        t={t}
+        config={{ ...config, inputs }}
+        onSelect={goNext}
+        _defaultValues={{ pincode }}
+        onChange={onChange}
+        onSkip={onSkip}
+        forcedError={t(pincodeServicability)}>
+      </FormStep>
+            </React.Fragment>);
+
 };
 
 export default PTRSelectPincode;

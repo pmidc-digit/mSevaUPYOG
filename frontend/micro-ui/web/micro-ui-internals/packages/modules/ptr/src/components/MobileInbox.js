@@ -16,7 +16,7 @@ const MobileInbox = ({
   sortParams,
   linkPrefix,
   tableConfig,
-  filterComponent,
+  filterComponent
 }) => {
   const { t } = useTranslation();
   const getData = () => {
@@ -31,7 +31,7 @@ const MobileInbox = ({
   };
 
   return (
-    <div style={{ padding: 0 }}>
+    <div className="ptr-style-41d7d7e25b">
       <div className="inbox-container">
         <div className="filters-container">
           {/* {!isSearch && <ApplicationLinks classNameForMobileView="linksWrapperForMobileInbox" linkPrefix={parentRoute} isMobile={true} />} */}
@@ -48,12 +48,12 @@ const MobileInbox = ({
             linkPrefix={linkPrefix}
             sortParams={sortParams}
             serviceRequestIdKey={tableConfig?.serviceRequestIdKey}
-            filterComponent={filterComponent}
-          />
+            filterComponent={filterComponent} />
+
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default MobileInbox;

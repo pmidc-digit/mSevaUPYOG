@@ -30,7 +30,7 @@ const ApplicationTimeline = ({ id, tenantId }) => {
     //     source: props.application?.tradeLicenseDetail?.channel || "",
     //   };
     //   return <BPACaption data={caption} />;
-    // }  
+    // }
     // else {
       const caption = {
         // date: checkpoint?.auditDetails?.lastModified,
@@ -119,7 +119,7 @@ const ApplicationTimeline = ({ id, tenantId }) => {
   //         )}
   //         {data?.timeline?.length > 2 && (
   //           <LinkButton label={showAllTimeline? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}>
-  //           </LinkButton>   
+  //           </LinkButton>
   //         )}
   //       </Fragment>
   //     )}

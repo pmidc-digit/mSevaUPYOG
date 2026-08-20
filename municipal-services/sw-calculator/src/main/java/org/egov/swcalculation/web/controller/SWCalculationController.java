@@ -177,8 +177,8 @@ public class SWCalculationController {
 	    } catch (CustomException e) {
 	        response.put("status", "Failed");
 	        response.put("message", e.getMessage());
-            if (e.getMessage()=="Cancel demand is not allowed for collectionamount > 0."){
-                return  new ResponseEntity<>(response,HttpStatus.OK);
+            if (e.getMessage().startsWith("Cancel demand")){
+                return  new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
             }
 	        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	    } catch (Exception e) {

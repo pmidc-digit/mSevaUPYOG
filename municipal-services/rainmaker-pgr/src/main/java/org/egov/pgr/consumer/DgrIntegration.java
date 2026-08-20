@@ -423,15 +423,19 @@ public class DgrIntegration {
                             ? catSubCat.get("Sub_Category_ID").toString()
                             : "0");
 
-            requestBody.put(
+            String applicationTitle = safeValue(
+            	    constants.DEFAULT_DESCRIPTION_NAME,
+            	    serviceReqRequest.getServices().get(0).getDescription()
+            	);
+
+            	requestBody.put(
             	    "Application_Title",
-            	    safeValue(constants.DEFAULT_CITIZEN_NAME,
-            	              serviceReqRequest.getServices().get(0).getDescription())
+            	    applicationTitle + " - " + serviceReqRequest.getServices().get(0).getServiceRequestId()
             	);
 
             	requestBody.put(
             	    "Application_Description",
-            	    safeValue(constants.DEFAULT_CITIZEN_NAME,
+            	    safeValue(constants.DEFAULT_DESCRIPTION_NAME,
             	              serviceReqRequest.getServices().get(0).getDescription())
             	);
             	requestBody.put("Application_Department_Name",   Optional.ofNullable(catSubCat.get("Department_Name"))

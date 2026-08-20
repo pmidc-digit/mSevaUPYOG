@@ -1,5 +1,5 @@
 
-Create table egf_chartofaccountdetail( 
+CREATE TABLE IF NOT EXISTS egf_chartofaccountdetail( 
 	id bigint,
 	glcodeid bigint  NOT NULL,
 	detailtypeid bigint  NOT NULL,
@@ -12,4 +12,4 @@ Create table egf_chartofaccountdetail(
 alter table egf_chartofaccountdetail add constraint pk_egf_chartofaccountdetail primary key (id);
 alter table egf_chartofaccountdetail add constraint fk_egf_chartofaccountdetail_glcodeid  FOREIGN KEY (glcodeid) REFERENCES egf_chartofaccount(id);
 alter table egf_chartofaccountdetail add constraint fk_egf_chartofaccountdetail_detailtypeid  FOREIGN KEY (detailtypeid) REFERENCES egf_accountdetailtype(id);
-create sequence seq_egf_chartofaccountdetail;
+CREATE SEQUENCE IF NOT EXISTS seq_egf_chartofaccountdetail;

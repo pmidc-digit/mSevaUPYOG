@@ -1,5 +1,5 @@
 
-Create table egf_accountdetailtype( 
+CREATE TABLE IF NOT EXISTS egf_accountdetailtype( 
 	id bigint,
 	name varchar(50) NOT NULL,
 	description varchar(50) NOT NULL,
@@ -15,4 +15,4 @@ Create table egf_accountdetailtype(
 		version bigint
 );
 alter table egf_accountdetailtype add constraint pk_egf_accountdetailtype primary key (id);
-create sequence seq_egf_accountdetailtype;
+CREATE SEQUENCE IF NOT EXISTS seq_egf_accountdetailtype;

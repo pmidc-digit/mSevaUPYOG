@@ -1,5 +1,5 @@
 
-Create table egf_bankbranch( 
+CREATE TABLE IF NOT EXISTS egf_bankbranch( 
 	id bigint,
 	bankid bigint  NOT NULL,
 	code varchar(50) NOT NULL,
@@ -23,4 +23,4 @@ Create table egf_bankbranch(
 );
 alter table egf_bankbranch add constraint pk_egf_bankbranch primary key (id);
 alter table egf_bankbranch add constraint fk_egf_bankbranch_bankid  FOREIGN KEY (bankid) REFERENCES egf_bank(id);
-create sequence seq_egf_bankbranch;
+CREATE SEQUENCE IF NOT EXISTS seq_egf_bankbranch;

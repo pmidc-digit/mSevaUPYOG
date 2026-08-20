@@ -63,7 +63,6 @@ import org.egov.inbox.model.vehicle.VehicleTripDetail;
 import org.egov.inbox.model.vehicle.VehicleTripDetailResponse;
 import org.egov.inbox.model.vehicle.VehicleTripSearchCriteria;
 import org.egov.inbox.repository.ElasticSearchRepository;
-import org.egov.inbox.repository.RetryTemplate;
 import org.egov.inbox.repository.ServiceRequestRepository;
 import org.egov.inbox.util.*;
 import org.egov.inbox.web.model.Inbox;
@@ -97,8 +96,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class InboxService {
-
-    private final RetryTemplate retryTemplate;
 
     private InboxConfiguration config;
 
@@ -188,7 +185,7 @@ public class InboxService {
 
     @Autowired
     public InboxService(InboxConfiguration config, ServiceRequestRepository serviceRequestRepository,
-                        ObjectMapper mapper, WorkflowService workflowService, CHBInboxFilterService chbInboxFilterService, RetryTemplate retryTemplate) {
+                        ObjectMapper mapper, WorkflowService workflowService, CHBInboxFilterService chbInboxFilterService) {
         this.config = config;
         this.serviceRequestRepository = serviceRequestRepository;
         this.mapper = mapper;
@@ -196,8 +193,6 @@ public class InboxService {
         this.mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
         this.workflowService = workflowService;
-
-        this.retryTemplate = retryTemplate;
     }
     public InboxResponse fetchInboxData(InboxSearchCriteria criteria, RequestInfo requestInfo) {
         InboxResponse response = new InboxResponse();
@@ -266,7 +261,11 @@ public class InboxService {
                     !inputStatuses.contains(entry.getKey()) && !inputStatuses.contains(entry.getValue()));
         }
         List<String> statusIds = new ArrayList<>(statusIdNameMap.keySet());
-        
+
+        boolean isPunjabCrossTenantLayoutClu = criteria.getTenantId() != null
+                && criteria.getTenantId().equalsIgnoreCase("pb.punjab")
+                && (moduleName.equalsIgnoreCase("layout-service") || moduleName.equalsIgnoreCase("clu-service"));
+
         // Fetch full status count map for the UI.
         // Citizen inbox uses a searcher-based path (multi-tenant, by applicationNo);
         // every other module goes directly through the workflow status-count API.
@@ -274,17 +273,37 @@ public class InboxService {
         if (isCitizenInboxCall) {
             fullStatusCountMap = getCitizenStatusCount(
                     criteria, allActionableStatuses, requestInfo, businessServiceName, moduleName);
-        } else {
+        }
+        else if (isPunjabCrossTenantLayoutClu) {
+            fullStatusCountMap = getCrossTenantEmployeeStatusCount(
+                    criteria, allActionableStatuses, businessSrvs, requestInfo, businessServiceName, moduleName);
+        }
+        else
+        {
             ProcessInstanceSearchCriteria statusCountCriteria = buildStatusCountCriteria(
                     criteria.getTenantId(), businessServiceName, moduleName, allActionableStatuses);
             fullStatusCountMap = workflowService.getProcessStatusCount(requestInfo, statusCountCriteria);
         }
-        
-        int searcherCount = resolveSearcherCount(moduleName, criteria, statusIdNameMap, requestInfo);
 
-        Map<String, Object> updatedMap =
-                handleModuleSearchCriteria(moduleName, criteria, statusIdNameMap, requestInfo,
-                        moduleSearchCriteria, businessKeys);
+        // For the pb.punjab cross-tenant path the status count map already holds per-status counts
+        // across all ULBs (computed in memory from the searcher rows), so totalCount is derived from
+        // it instead of an extra count-endpoint call. statusIdNameMap is already filtered by the user's
+        // status filter, so only the matching statuses are summed.
+        int searcherCount;
+        if (isPunjabCrossTenantLayoutClu && !isCitizenInboxCall) {
+            // statusIdNameMap is reassigned in the read-only fallback above, so capture a final snapshot
+            Map<String, String> filteredStatusIds = statusIdNameMap;
+            searcherCount = fullStatusCountMap.stream()
+                    .filter(map -> filteredStatusIds.containsKey(map.get(STATUS_ID)))
+                    .mapToInt(map -> (int) map.get(COUNT))
+                    .sum();
+        } else {
+            searcherCount = resolveSearcherCount(moduleName, criteria, statusIdNameMap, requestInfo);
+        }
+
+        List<Map<String, String>> crossTenantApplns = new ArrayList<>();
+        handleModuleSearchCriteria(moduleName, criteria, statusIdNameMap, requestInfo,
+                moduleSearchCriteria, businessKeys, crossTenantApplns);
 
         if (CollectionUtils.isEmpty(businessKeys)) {
         	response.setTotalCount(0);
@@ -299,7 +318,9 @@ public class InboxService {
         processCriteria.setIsProcessCountCall(Boolean.FALSE);
 
         ProcessInstanceResponse processInstanceResponse =
-                workflowService.getProcessInstance(processCriteria, requestInfo);
+                isPunjabCrossTenantLayoutClu
+                ? workflowCrossTenantFetching(processCriteria, requestInfo, crossTenantApplns)
+                : workflowService.getProcessInstance(processCriteria, requestInfo);
 
         List<ProcessInstance> processInstances = processInstanceResponse.getProcessInstances();
 
@@ -350,6 +371,7 @@ public class InboxService {
         } else {
             moduleSearchCriteria.put(srvMap.get("applNosParam"), new ArrayList<>(processInstanceMap.keySet()));
         }
+
         moduleSearchCriteria.put("tenantId", criteria.getTenantId());
 
         JSONArray businessObjects =
@@ -583,7 +605,8 @@ public class InboxService {
             Map<String, String> statusIdNameMap,
             RequestInfo requestInfo,
             Map<String, Object> moduleSearchCriteria,
-            List<String> businessKeys) {
+            List<String> businessKeys,
+            List<Map<String, String>> crossTenantApplns) {
 
         if (moduleName == null) return moduleSearchCriteria;
         List<String> roles = requestInfo.getUserInfo().getRoles().stream().map(Role::getCode).collect(Collectors.toList());
@@ -683,15 +706,39 @@ public class InboxService {
                 break;
 
             case "layout-service":
-                applicationNumbers = layoutInboxFilterService.fetchApplicationNumbersFromSearcher(
-                        criteria, statusIdNameStringMap, requestInfo);
+                if (criteria.getTenantId() != null && criteria.getTenantId().equalsIgnoreCase("pb.punjab")) {
+                    List<Map<String, String>> tenantWiseApplns = layoutInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(
+                            criteria, statusIdNameStringMap, requestInfo);
+                    if (!CollectionUtils.isEmpty(tenantWiseApplns)) {
+                        applicationNumbers = tenantWiseApplns.stream()
+                                .map(m -> m.get("applicationno"))
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList());
+                        crossTenantApplns.addAll(tenantWiseApplns);
+                    }
+                } else {
+                    applicationNumbers = layoutInboxFilterService.fetchApplicationNumbersFromSearcher(
+                            criteria, statusIdNameStringMap, requestInfo);
+                }
                 if (!CollectionUtils.isEmpty(applicationNumbers))
                     moduleSearchCriteria.put("applicationNumber", applicationNumbers);
                 break;
 
             case "clu-service":
-                applicationNumbers = cluInboxFilterService.fetchApplicationNumbersFromSearcher(
-                        criteria, statusIdNameStringMap, requestInfo);
+                if (criteria.getTenantId() != null && criteria.getTenantId().equalsIgnoreCase("pb.punjab")) {
+                    List<Map<String, String>> tenantWiseApplns = cluInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(
+                            criteria, statusIdNameStringMap, requestInfo);
+                    if (!CollectionUtils.isEmpty(tenantWiseApplns)) {
+                        applicationNumbers = tenantWiseApplns.stream()
+                                .map(m -> m.get("applicationno"))
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList());
+                        crossTenantApplns.addAll(tenantWiseApplns);
+                    }
+                } else {
+                    applicationNumbers = cluInboxFilterService.fetchApplicationNumbersFromSearcher(
+                            criteria, statusIdNameStringMap, requestInfo);
+                }
                 if (!CollectionUtils.isEmpty(applicationNumbers))
                     moduleSearchCriteria.put("applicationNumber", applicationNumbers);
                 break;
@@ -2417,4 +2464,156 @@ public class InboxService {
 
 		return results;
 	}
+
+    /**
+     * Dynamically fetches workflow process instances for cross-tenant searches by
+     * grouping the requested applications by their actual city-level tenant IDs.
+     * The tenant-wise rows come straight from the searcher page already filtered,
+     * so they are grouped directly without re-checking businessIds membership.
+     */
+    private ProcessInstanceResponse workflowCrossTenantFetching(
+            ProcessInstanceSearchCriteria processCriteria,
+            RequestInfo requestInfo,
+            List<Map<String, String>> tenantWiseApplns) {
+
+        ProcessInstanceResponse processInstanceRes = new ProcessInstanceResponse();
+        processInstanceRes.setProcessInstances(new ArrayList<>());
+
+        if (CollectionUtils.isEmpty(processCriteria.getBusinessIds())) {
+            return workflowService.getProcessInstance(processCriteria, requestInfo);
+        }
+
+        Map<String, List<String>> tenantToBusinessIds = new HashMap<>();
+        if (!CollectionUtils.isEmpty(tenantWiseApplns)) {
+            for (Map<String, String> row : tenantWiseApplns) {
+                String tenant = row.get("tenantid");
+                String appNo = row.get("applicationno");
+                if (tenant != null && appNo != null) {
+                    tenantToBusinessIds.computeIfAbsent(tenant, k -> new ArrayList<>()).add(appNo);
+                }
+            }
+        }
+
+        if (tenantToBusinessIds.isEmpty()) {
+            return workflowService.getProcessInstance(processCriteria, requestInfo);
+        }
+
+        String originalTenant = processCriteria.getTenantId();
+        List<String> originalBusinessIds = new ArrayList<>(processCriteria.getBusinessIds());
+
+        for (Map.Entry<String, List<String>> entry : tenantToBusinessIds.entrySet()) {
+            processCriteria.setTenantId(entry.getKey());
+            processCriteria.setBusinessIds(entry.getValue());
+            ProcessInstanceResponse piResponse = workflowService.getProcessInstance(processCriteria, requestInfo);
+            if (piResponse != null && !CollectionUtils.isEmpty(piResponse.getProcessInstances())) {
+                processInstanceRes.getProcessInstances().addAll(piResponse.getProcessInstances());
+            }
+        }
+
+        // Restore original criteria
+        processCriteria.setTenantId(originalTenant);
+        processCriteria.setBusinessIds(originalBusinessIds);
+
+        return processInstanceRes;
+    }
+
+    /**
+     * Aggregates workflow status counts in memory across all ULBs for state-level employees (pb.punjab)
+     * by utilizing the status_id returned directly in the searcher response rows.
+     * Zero external HTTP calls required!
+     */
+    private List<HashMap<String, Object>> getCrossTenantEmployeeStatusCount(
+            InboxSearchCriteria criteria,
+            Map<String, String> allActionableStatuses,
+            List<BusinessService> businessSrvs,
+            RequestInfo requestInfo,
+            List<String> businessService,
+            String moduleName) {
+
+        List<HashMap<String, Object>> statusCountMapList = new ArrayList<>();
+        Map<String, HashMap<String, Object>> statusToMap = new HashMap<>();
+
+        // Build status UUID -> business service lookup from the already-loaded workflow config,
+        // so each status carries its own business service (same as the citizen path / the
+        // workflow status-count response) without any extra HTTP calls.
+        Map<String, String> statusIdToBusinessService = new HashMap<>();
+        if (!CollectionUtils.isEmpty(businessSrvs)) {
+            for (BusinessService bs : businessSrvs) {
+                if (bs.getStates() != null) {
+                    for (State state : bs.getStates()) {
+                        if (state.getUuid() != null) {
+                            statusIdToBusinessService.put(state.getUuid().toLowerCase(), bs.getBusinessService());
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!CollectionUtils.isEmpty(allActionableStatuses)) {
+            for (Map.Entry<String, String> entry : allActionableStatuses.entrySet()) {
+                HashMap<String, Object> map = new HashMap<>();
+                map.put(STATUS_ID, entry.getKey());
+                map.put(APPLICATIONSTATUS, entry.getValue());
+                map.put("businessservice", statusIdToBusinessService.getOrDefault(entry.getKey().toLowerCase(), ""));
+                map.put(COUNT, 0);
+                statusToMap.put(entry.getKey(), map);
+                statusCountMapList.add(map);
+            }
+        }
+
+        ProcessInstanceSearchCriteria statusProcessCriteria = new ProcessInstanceSearchCriteria();
+        statusProcessCriteria.setModuleName(moduleName);
+        statusProcessCriteria.setBusinessService(businessService);
+        statusProcessCriteria.setTenantId(criteria.getTenantId());
+        if (!CollectionUtils.isEmpty(allActionableStatuses)) {
+            statusProcessCriteria.setStatus(new ArrayList<>(allActionableStatuses.keySet()));
+        }
+
+        InboxSearchCriteria unpaginatedCriteria = new InboxSearchCriteria();
+        unpaginatedCriteria.setTenantId(criteria.getTenantId());
+        unpaginatedCriteria.setProcessSearchCriteria(statusProcessCriteria);
+        unpaginatedCriteria.setModuleSearchCriteria(criteria.getModuleSearchCriteria() != null 
+                ? new HashMap<>(criteria.getModuleSearchCriteria()) : new HashMap<>());
+        unpaginatedCriteria.setOffset(0);
+        unpaginatedCriteria.setLimit(100000);
+
+        List<Map<String, String>> tenantWiseApplns = null;
+        if ("layout-service".equalsIgnoreCase(moduleName)) {
+            tenantWiseApplns = layoutInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(unpaginatedCriteria, new HashMap<>(allActionableStatuses), requestInfo);
+        } else if ("clu-service".equalsIgnoreCase(moduleName)) {
+            tenantWiseApplns = cluInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(unpaginatedCriteria, new HashMap<>(allActionableStatuses), requestInfo);
+        }
+
+        if (!CollectionUtils.isEmpty(tenantWiseApplns)) {
+            for (Map<String, String> row : tenantWiseApplns) {
+                String statusId = row.get("status_id");
+                if (statusId != null) {
+                    if (statusToMap.containsKey(statusId)) {
+                        HashMap<String, Object> map = statusToMap.get(statusId);
+                        int currentCount = (int) map.get(COUNT);
+                        map.put(COUNT, currentCount + 1);
+                    } else {
+                        for (Map.Entry<String, String> entry : allActionableStatuses.entrySet()) {
+                            if (statusId.equalsIgnoreCase(entry.getValue()) && statusToMap.containsKey(entry.getKey())) {
+                                HashMap<String, Object> map = statusToMap.get(entry.getKey());
+                                int currentCount = (int) map.get(COUNT);
+                                map.put(COUNT, currentCount + 1);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Drop statuses with zero applications so the UI gets a compact status map
+        // (each entry carries statusid, applicationstatus and count).
+        List<HashMap<String, Object>> result = new ArrayList<>();
+        for (HashMap<String, Object> map : statusCountMapList) {
+            if ((int) map.get(COUNT) > 0) {
+                result.add(map);
+            }
+        }
+        return result;
+    }
 }

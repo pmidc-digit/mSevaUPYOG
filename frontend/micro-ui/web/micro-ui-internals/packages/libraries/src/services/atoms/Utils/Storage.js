@@ -7,6 +7,32 @@ const localStoreSupport = () => {
 };
 
 const k = (key) => `Digit.${key}`;
+
+const cleanupExpiredEntries = (storageClass) => {
+  if (!localStoreSupport()) return;
+  try {
+    const now = Date.now();
+    const keys = [];
+    for (let i = 0; i < storageClass.length; i++) {
+      keys.push(storageClass.key(i));
+    }
+    keys.forEach((key) => {
+      if (key && key.startsWith("Digit.MDMS")) {
+        try {
+          const item = JSON.parse(storageClass.getItem(key));
+          if (item && item.expiry && now > item.expiry) {
+            storageClass.removeItem(key);
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+    });
+  } catch (e) {
+    // Ignore cleanup errors
+  }
+};
+
 const getStorage = (storageClass) => ({
   get: (key) => {
     if (localStoreSupport() && key) {
@@ -33,7 +59,20 @@ const getStorage = (storageClass) => ({
       expiry: Date.now() + ttl * 1000,
     };
     if (localStoreSupport()) {
-      storageClass.setItem(k(key), JSON.stringify(item));
+      try {
+        storageClass.setItem(k(key), JSON.stringify(item));
+      } catch (e) {
+        if (e.name === "QuotaExceededError") {
+          cleanupExpiredEntries(storageClass);
+          try {
+            storageClass.setItem(k(key), JSON.stringify(item));
+          } catch (retryError) {
+            console.warn("Storage quota exceeded even after cleanup", retryError);
+          }
+        } else {
+          throw e;
+        }
+      }
     } else if (typeof window !== "undefined") {
       window.eGov = window.eGov || {};
       window.eGov.Storage = window.eGov.Storage || {};
@@ -49,6 +88,7 @@ const getStorage = (storageClass) => ({
       delete window.eGov.Storage[k(key)];
     }
   },
+  cleanup: () => cleanupExpiredEntries(storageClass),
 });
 
 export const Storage = getStorage(window.sessionStorage);

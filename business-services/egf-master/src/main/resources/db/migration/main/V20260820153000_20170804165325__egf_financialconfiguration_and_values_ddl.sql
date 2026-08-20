@@ -3,7 +3,7 @@
  drop table if exists egeis_egfConfigurationValues ;
  drop sequence if exists seq_egeis_egfConfigurationValues ;
 
-CREATE TABLE egf_financialconfiguration (
+CREATE TABLE IF NOT EXISTS egf_financialconfiguration (
 	id CHARACTER VARYING(250) NOT NULL,
 	keyName CHARACTER VARYING(50) NOT NULL,
 	description CHARACTER VARYING(250),
@@ -18,14 +18,14 @@ CREATE TABLE egf_financialconfiguration (
 	CONSTRAINT pk_egf_financialconfiguration PRIMARY KEY (Id)
 );
 
-CREATE SEQUENCE seq_egf_financialconfiguration
+CREATE SEQUENCE IF NOT EXISTS seq_egf_financialconfiguration
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE egf_financialconfigurationvalues (
+CREATE TABLE IF NOT EXISTS egf_financialconfigurationvalues (
 	id CHARACTER VARYING(250) NOT NULL,
 	keyId CHARACTER VARYING(250) NOT NULL,
 	value CHARACTER VARYING(1000) NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE egf_financialconfigurationvalues (
 	CONSTRAINT pk_egf_financialconfigurationvalues PRIMARY KEY (Id)
 );
 
-CREATE SEQUENCE seq_egf_financialconfigurationvalues
+CREATE SEQUENCE IF NOT EXISTS seq_egf_financialconfigurationvalues
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE

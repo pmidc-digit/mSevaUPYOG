@@ -1,5 +1,5 @@
 
-Create table egf_fund( 
+CREATE TABLE IF NOT EXISTS egf_fund( 
 	id bigint,
 	name varchar(50) NOT NULL,
 	code varchar(50) NOT NULL,
@@ -16,4 +16,4 @@ Create table egf_fund(
 );
 alter table egf_fund add constraint pk_egf_fund primary key (id);
 alter table egf_fund add constraint fk_egf_fund_parentid  FOREIGN KEY (parentid) REFERENCES egf_fund(id);
-create sequence seq_egf_fund;
+CREATE SEQUENCE IF NOT EXISTS seq_egf_fund;

@@ -4,17 +4,17 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotNull;
 
 //import org.egov.rl.models.enums.Channel;
 //import org.egov.rl.models.enums.CreationReason;
 //import org.egov.rl.models.enums.Source;
 //import org.egov.rl.models.enums.Status;
 //import org.egov.rl.models.workflow.ProcessInstance;
-import org.hibernate.validator.constraints.SafeHtml;
+import jakarta.validation.constraints.Pattern;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 //import org.json.JSONObject;
 
@@ -44,7 +44,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class RLProperty {// extends PropertyInfo {
 
 	@JsonProperty("propertyId")
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$")
 	private String propertyId;
 
 	@JsonProperty("propertyName")
@@ -67,6 +67,12 @@ public class RLProperty {// extends PropertyInfo {
 	@JsonProperty("propertyImage")
 	private String propertyImage;
 	
+	@JsonProperty("propertyType")
+//	@Pattern(regexp = "^[^<>]*$")
+	private String propertyType;
+	
+	@JsonProperty("locationType")
+	private String locationType;
 	@JsonProperty("baseRent")
 	private String baseRent;
 	
@@ -97,7 +103,7 @@ public class RLProperty {// extends PropertyInfo {
 //	private String tradeLicenseNumber; // mandotroy for renewal 
 //	
 //	@JsonProperty("ownershipCategory")
-//	@SafeHtml
+//	@Pattern(regexp = "^[^<>]*$")
 //	private String ownershipCategory;
 //
 //	@JsonProperty("owners")

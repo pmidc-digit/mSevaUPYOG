@@ -1,5 +1,5 @@
 
-Create table egf_accountentitymaster( 
+CREATE TABLE IF NOT EXISTS egf_accountentitymaster( 
 	id bigint,
 	detailtypeid bigint  NOT NULL,
 	code varchar(25) NOT NULL,
@@ -14,4 +14,4 @@ Create table egf_accountentitymaster(
 );
 alter table egf_accountentitymaster add constraint pk_egf_accountentitymaster primary key (id);
 alter table egf_accountentitymaster add constraint fk_egf_accountentitymaster_detailtypeid  FOREIGN KEY (detailtypeid) REFERENCES egf_accountdetailtype(id);
-create sequence seq_egf_accountentitymaster;
+CREATE SEQUENCE IF NOT EXISTS seq_egf_accountentitymaster;

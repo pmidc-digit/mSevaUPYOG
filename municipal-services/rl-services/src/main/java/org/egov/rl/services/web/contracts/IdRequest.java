@@ -1,6 +1,6 @@
 package org.egov.rl.services.web.contracts;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

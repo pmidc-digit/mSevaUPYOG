@@ -1,10 +1,10 @@
 package org.egov.rl.calculator.web.models.workflow;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 import org.egov.rl.calculator.web.models.property.AuditDetails;
-import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,7 +24,7 @@ import java.util.List;
  * A Object holds the basic data for a Trade License
  */
 @Validated
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-12-04T11:26:25.532+05:30")
+@jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-12-04T11:26:25.532+05:30")
 
 @Getter
 @Setter
@@ -36,17 +36,17 @@ import java.util.List;
 public class State   {
 
         @Size(max=256)
-        @SafeHtml
+        @Pattern(regexp = "^[^<>]*$")
         @JsonProperty("uuid")
         private String uuid;
 
         @Size(max=256)
-        @SafeHtml
+        @Pattern(regexp = "^[^<>]*$")
         @JsonProperty("tenantId")
         private String tenantId;
 
         @Size(max=256)
-        @SafeHtml
+        @Pattern(regexp = "^[^<>]*$")
         @JsonProperty("businessServiceId")
         private String businessServiceId;
 
@@ -54,12 +54,12 @@ public class State   {
         private Long sla;
 
         @Size(max=256)
-        @SafeHtml
+        @Pattern(regexp = "^[^<>]*$")
         @JsonProperty("state")
         private String state;
 
         @Size(max=256)
-        @SafeHtml
+        @Pattern(regexp = "^[^<>]*$")
         @JsonProperty("applicationStatus")
         private String applicationStatus;
 

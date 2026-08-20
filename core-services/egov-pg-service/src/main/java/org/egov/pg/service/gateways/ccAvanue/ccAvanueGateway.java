@@ -245,7 +245,7 @@ public class ccAvanueGateway implements Gateway {
 	         AesUtil aesUtilenc=new AesUtil(MERCHANT_WORKING_KEY);
 
 	         String txnId = currentStatus.getTxnId(); 
-	         String[] parts = txnId.split("_"); // Split the transaction ID by "_"
+	         String[] parts = txnId.split("-"); // Split the transaction ID by "-"
 	         String datePart = parts[2] + "_" + parts[3] + "_" + parts[4]; 
 
 	         // Convert to DD-MM-YYYY format

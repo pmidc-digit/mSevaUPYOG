@@ -3,7 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import "./theme.css";
-import "@pmidc/upyog-css";
+// import "@pmidc/upyog-css";
 import App from "./App";
 
 import { TLCustomisations } from "./Customisations/tl/TLCustomisation";

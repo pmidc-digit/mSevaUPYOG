@@ -3053,9 +3053,9 @@ const BpaApplicationDetail = () => {
           )}
         </Card>
 
-        {actions?.length > 0 && !(data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length === 0) && <Card>
-          <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
-            {t("Add Comments")}
+  {actions?.length > 0 && <Card>
+          <CardSectionHeader>
+            {t("Saved Comments")}
           </CardSectionHeader>
           <RichTextBox
             value={draftComment}

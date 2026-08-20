@@ -137,6 +137,16 @@
     }
   }
 }
+
+/* Used when a dropdown must escape a scrollable or clipped form container. */
+.dropdown-options-portal {
+  position: fixed !important;
+  max-height: 250px !important;
+  overflow: auto;
+  margin: 0 !important;
+  background-color: #fff;
+  box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.2);
+}
 .fsm-registry-dropdown {
   .select {
     @apply flex;

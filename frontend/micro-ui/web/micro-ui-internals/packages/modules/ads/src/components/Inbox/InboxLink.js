@@ -52,23 +52,23 @@ const InboxLinks = ({ parentRoute, businessService }) => {
   }, []);
 
   const GetLogo = () => (
-    <div className="header">
-      <span className="logo">
+    <div className="ads-inbox-links__header">
+      <span className="ads-inbox-links__logo">
         <PropertyHouse />
       </span>{" "}
-      <span className="text">{t("ADS_SERVICE")}</span>
+      <span className="ads-inbox-links__title">{t("ADS_SERVICE")}</span>
     </div>
   );
 
   return (
-    <Card className="employeeCard filter inboxLinks">
-      <div className="complaint-links-container">
+    <Card className="employeeCard filter inboxLinks ads-inbox-links">
+      <div className="ads-inbox-links__container">
         {GetLogo()}
 
-        <div className="body">
+        <div className={`ads-inbox-links__body ${links.length ? "" : "ads-inbox-links__body--empty"}`}>
           {links.map(({ link, text, hyperlink = false, roles = [] }, index) => {
             return (
-              <span className="link" key={index}>
+              <span className="ads-inbox-links__link" key={index}>
                 {hyperlink ? <a href={link}>{text}</a> : <Link to={link}>{t(text)}</Link>}
               </span>
             );

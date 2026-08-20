@@ -642,7 +642,6 @@
   justify-content: flex-end;
 }
 
-
 /* ADS inline style extraction */
 .ads-components-adscancel-booking--style-1 {
   width: 80%;
@@ -734,7 +733,6 @@
 }
 
 .ads-components-adscart-and-cancellation-policy-details--style-14 {
-
 }
 
 .ads-components-adscart-and-cancellation-policy-details--style-15 {
@@ -748,7 +746,6 @@
 }
 
 .ads-components-adscart-and-cancellation-policy-details--style-17 {
-
 }
 
 .ads-components-adscart-and-cancellation-policy-details--style-18 {
@@ -797,7 +794,7 @@
   padding: 15px 20px;
   font-size: 18px;
   font-weight: bold;
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
   z-index: 10;
 }
 
@@ -1555,7 +1552,7 @@
 .ads-page-components-adsearch--style-6 {
   position: absolute;
   right: 83px;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   color: #008000;
   padding: 4px;
   border-radius: 30px;
@@ -1732,4 +1729,79 @@
 
 .ads-pages-employee-index--style-1 {
   margin-left: 10px;
+}
+/* ADS has no quick links below the inbox heading, so keep its service banner compact. */
+.employeeCard.filter.inboxLinks.ads-inbox-links {
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
+  padding: 12px 18px !important;
+}
+
+.ads-inbox-links__container {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+}
+
+.ads-inbox-links__header {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  align-items: center;
+}
+
+.ads-inbox-links__logo {
+  display: inline-flex;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+}
+
+.ads-inbox-links__logo svg {
+  width: 32px;
+  height: 32px;
+}
+
+.ads-inbox-links__logo svg path {
+  fill: #1359c8;
+}
+
+.ads-inbox-links__title {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-left: 16px;
+  overflow-wrap: anywhere;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  white-space: normal;
+}
+
+.ads-inbox-links__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.ads-inbox-links__body--empty {
+  display: none;
+}
+
+.ads-inbox-links__link {
+  padding: 8px;
+  color: #2947a3;
+}
+
+@media (max-width: 768px) {
+  .ads-inbox-links__title {
+    font-size: 18px;
+    line-height: 24px;
+  }
 }

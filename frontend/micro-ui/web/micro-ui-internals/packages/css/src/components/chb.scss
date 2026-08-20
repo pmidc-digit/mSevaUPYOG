@@ -58,6 +58,22 @@
   text-decoration: underline;
 }
 
+/* Keep Venue Code options below the select instead of covering the selected value. */
+.chb-venue-code-dropdown {
+  position: relative;
+  overflow: visible;
+}
+
+.chb-venue-details-form,
+.chb-venue-details-form .card,
+.chb-venue-code-field {
+  overflow: visible;
+}
+
+.chb-venue-code-field {
+  position: relative;
+}
+
 .chb-community-hall-modal {
   position: relative;
   width: 90%;

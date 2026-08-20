@@ -113,9 +113,11 @@ export const MediaRow = (props) => {
 
 export const StatusTable = (props) => {
   const employee = Digit.SessionStorage.get("user_type") === "employee" ? true : false;
+  const className = `${employee ? "employee-data-table" : "data-table"} ${props.className || ""}`.trim();
+
   if (props.dataObject) {
     return (
-      <div className={employee ? "employee-data-table" : "data-table"} style={props.style}>
+      <div className={className} style={props.style}>
         {Object.keys(props.dataObject).map((name, index) => {
           if (++index === Object.keys(props.dataObject).length) {
             return <LastRow key={index} label={name} text={props.dataObject[name]} />;
@@ -126,7 +128,7 @@ export const StatusTable = (props) => {
     );
   } else {
     return (
-      <div className={employee ? "employee-data-table" : "data-table"} style={props.style}>
+      <div className={className} style={props.style}>
         {props.children}
       </div>
     );

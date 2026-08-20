@@ -612,7 +612,7 @@ useEffect(() => {
     const licOwner = approvedLicense?.tradeLicenseDetail?.owners?.[0];
     const architectEmailId = licOwner?.emailId || userInfo?.info?.emailId || userDetails?.user?.[0]?.emailId || "";
     const professionalRegIdValidity = approvedLicense?.validTo || null;
-    const stakeholderAddress= userDetails?.user[0]?.correspondenceAddress || licOwner?.permanentAddress || licOwner?.correspondenceAddress || null;
+    const stakeholderAddress= userDetails?.user[0]?.correspondenceAddress || licOwner?.correspondenceAddress || licOwner?.permanentAddress || null;
 
     // const base64Signature = await getBase64Img(userDetails?.user[0]?.signature, state);
     // const result = await Digit.UploadServices.Filefetch([userDetails?.user[0]?.signature], state);

@@ -63,6 +63,11 @@ import { decryptId, formatDate } from "../../../utils/index";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
 import getBPAAcknowledgement from "../../../../getBPAAcknowledgement";
 
+const RenderRow = ({ label, text, ...rest }) => {
+  if (!text || text === "N/A" || text === "" || text === null || text === undefined || text === "0.00") return null;
+  return <Row label={label} text={text} {...rest} />;
+};
+
 const BpaApplicationDetail = () => {
   const { bpaid } = useParams();
   const id = decryptId(bpaid);
@@ -2445,36 +2450,35 @@ const BpaApplicationDetail = () => {
                       <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS") || "Professional Details"}</CardSubHeader>
                       <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                         <StatusTable>
-                          <Row
+                          <RenderRow
                             label={t("BPA_PROFESSIONAL_NAME_LABEL")}
                             text={
                               data?.applicationData?.additionalDetails?.stakeholderName ||
-                              data?.applicationData?.additionalDetails?.architectName ||
-                              "N/A"
+                              data?.applicationData?.additionalDetails?.architectName
                             }
                           />
-                          <Row label={t("BPA_PROFESSIONAL_EMAIL_LABEL")}
-                            text={data?.applicationData?.additionalDetails?.architectEmailId || "N/A"}
+                          <RenderRow
+                            label={t("BPA_PROFESSIONAL_EMAIL_LABEL")}
+                            text={data?.applicationData?.additionalDetails?.architectEmailId}
                           />
-                          <Row
+                          <RenderRow
                             label={t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}
                             text={
                               data?.applicationData?.additionalDetails?.architectid ||
-                              data?.applicationData?.additionalDetails?.stakeholderRegistrationNumber ||
-                              "N/A"
+                              data?.applicationData?.additionalDetails?.stakeholderRegistrationNumber
                             }
                           />
-                          <Row
+                          <RenderRow
                             label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}
-                            text={formatDate(data?.applicationData?.additionalDetails?.professionalRegIdValidity) || "N/A"}
+                            text={formatDate(data?.applicationData?.additionalDetails?.professionalRegIdValidity)}
                           />
-                          <Row
+                          <RenderRow
                             label={t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}
-                            text={data?.applicationData?.additionalDetails?.architectMobileNumber || "N/A"}
+                            text={data?.applicationData?.additionalDetails?.architectMobileNumber}
                           />
-                          <Row
+                          <RenderRow
                             label={t("BPA_PROFESSIONAL_ADDRESS_LABEL")}
-                            text={data?.applicationData?.additionalDetails?.stakeholderAddress || "N/A"}
+                            text={data?.applicationData?.additionalDetails?.stakeholderAddress}
                           />
                         </StatusTable>
                       </div>

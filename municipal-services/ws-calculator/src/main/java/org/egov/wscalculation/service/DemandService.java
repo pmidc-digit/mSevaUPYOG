@@ -1720,8 +1720,23 @@ public class DemandService {
 
 		        List<Canceldemandsearch> demandlists = waterCalculatorDao.getConnectionCancels(tenantId, demandid);
 
-		        if (demandlists.isEmpty()) {
-		            throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
+                // Block cancel operation for metered connections
+                if (!demandlists.isEmpty()) {
+                      String consumerCode = demandlists.get(0).getConsumercode();
+                      String collectionamount=demandlists.get(0).getCollectionamount();
+                      String taxamount=demandlists.get(0).getTaxamount();
+
+                      if (Double.parseDouble(collectionamount) > 0 && Double.parseDouble(taxamount) > 0) {
+                          throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for collectionamount > 0.");
+                      }
+
+                    String connectionType = calculatorUtils.getWaterConnectionType(cancelDemand.getRequestInfo(),tenantId, consumerCode);
+                      if (StringUtils.isNotBlank(connectionType)
+                              && WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(connectionType)) {
+                          throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for metered connections.");
+                      }
+                }else{
+		                throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
 		        }
 
 		        Boolean cancels = waterCalculatorDao.getUpdates(demandlists);

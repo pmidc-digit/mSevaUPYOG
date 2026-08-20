@@ -652,4 +652,20 @@ public class CalculatorUtil {
 		        .mdmsCriteria(mdmsCriteria)
 		        .build();
 	}
+
+    public String getWaterConnectionType(RequestInfo requestInfo, String tenantId, String connectionNo ) {
+        Object result = serviceRequestRepository.fetchResult(getWaterSearchURL(tenantId, connectionNo )
+                        .append("&searchType=CONNECTION"),
+                RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+
+        try {
+            WaterConnectionResponse response = mapper.convertValue(result, WaterConnectionResponse.class);
+            if (response == null || CollectionUtils.isEmpty(response.getWaterConnection()))
+                return null;
+            WaterConnection connection = response.getWaterConnection().get(0);
+            return connection == null ? null : connection.getConnectionType();
+        } catch (Exception e) {
+            throw new CustomException("PARSING_ERROR", "Error while parsing response of Water Connection Search");
+        }
+    }
 }

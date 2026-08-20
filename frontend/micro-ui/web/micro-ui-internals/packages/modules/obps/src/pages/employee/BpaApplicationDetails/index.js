@@ -2770,6 +2770,20 @@ const BpaApplicationDetail = () => {
           )}
         </Card>
 
+  {actions?.length > 0 && <Card>
+          <CardSectionHeader>
+            {t("Saved Comments")}
+          </CardSectionHeader>
+          <RichTextBox
+            value={draftComment}
+            onChange={(e) => setDraftComment(e.target.value)}
+            placeholder={t("Add Comments")}
+            className="checklist-table-textarea"
+            style={{ overflow: "hidden", maxHeight: "1500px" }}
+            maxLength={5000}
+          />
+        </Card>}
+
         {showPdfModal && (
         <PdfPreviewModal
           open={showPdfModal}

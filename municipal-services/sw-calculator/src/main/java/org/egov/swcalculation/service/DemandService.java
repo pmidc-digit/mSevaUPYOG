@@ -1738,9 +1738,16 @@ public class DemandService {
 
               if (!demandlists.isEmpty()) {
                   String consumerCode = demandlists.get(0).getConsumercode();
+                  String collectionamount=demandlists.get(0).getCollectionamount();
+                  String taxamount=demandlists.get(0).getTaxamount();
+
+                  if (Double.parseDouble(collectionamount) > 0 && Double.parseDouble(taxamount) > 0) {
+                      throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for collectionamount > 0.");
+                  }
+
                   String wsConnection= sewerageCalculatorDao.getRelatedConnection(tenantId, consumerCode);
                   if (StringUtils.isNotBlank(wsConnection)) {
-                      throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for water related sewerageConnection.");
+                      throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for water related sewerage connection.");
                   }
               }else {
                   throw new CustomException("Demand not found", "No matching demands found for the given criteria.");

@@ -36,7 +36,7 @@ public class SWCalculatorQueryBuilder {
 			+ " inner join eg_pt_property pt on conn.property_id= pt.propertyid ";
 	
 	
-	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode, d.ispaymentcompleted from egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
+	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode, d.ispaymentcompleted, dd.collectionamount, dd.taxamount from egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
 	private static final String connectionNoListQueryUpdate = "UPDATE egbs_demand_v1 set ";
 	
 	private static final String connectionNoListQuerybill = "UPDATE egbs_bill_v1 " +

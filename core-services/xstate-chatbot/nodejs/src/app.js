@@ -19,12 +19,23 @@ const app = express();
     // app.use(cookieParser());
     app.use(envVariables.contextPath, require('./channel/routes'));
     app.use(createProxyMiddleware('/', // replace with your endpoint
-        { 
+        {
             target: envVariables.egovServices.egovServicesHost} // replace with your target
     ));
+
+    app.use((err, req, res, next) => {
+      console.error('Unhandled error:', err);
+      res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    });
+
     module.exports = app;
     return app;
 }
 
 const app = createAppServer();
-app.listen(port, () => console.log(`XState-Chatbot-Server is running on port ${envVariables.port} with contextPath: ${envVariables.contextPath}`));
+try {
+  app.listen(port, () => console.log(`XState-Chatbot-Server is running on port ${envVariables.port} with contextPath: ${envVariables.contextPath}`));
+} catch (error) {
+  console.error('Failed to start server:', error);
+  process.exit(1);
+}

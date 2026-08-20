@@ -11,63 +11,76 @@ const config = require("../env-variables");
 
 class SessionManager {
   async fromUser(reformattedMessage) {
-    let mobileNumber = reformattedMessage.user.mobileNumber;
-    let user = await userService.getUserForMobileNumber(
-      mobileNumber,
-      reformattedMessage.extraInfo.tenantId
-    );
-    reformattedMessage.user = user;
-    let userId = user.userId;
-
-    await chatStateRepository.updateSessionId(userId, config.avgSessionTime);
-    let chatState = await chatStateRepository.getActiveStateForUserId(userId);
-    telemetry.log(userId, "from_user", reformattedMessage);
-
-    // handle reset case
-    let intention = dialog.get_intention(
-      grammer.reset,
-      reformattedMessage,
-      true
-    );
-    // if (intention == 'reset' && chatState) {
-    //     chatStateRepository.updateState(userId, false, JSON.stringify(chatState));
-    //     chatState = null; // so downstream code treats this like an inactive state and creates a new machine
-    // }
-
-    let service;
-    if (!chatState) {
-      // come here if virgin dialog, old dialog was inactive, or reset case
-      chatState = this.createChatStateFor(user);
-      let saveState = JSON.parse(JSON.stringify(chatState));
-      saveState = this.removeUserDataFromState(saveState);
-      let sessionId = uuid.v4();
-      await chatStateRepository.insertNewState(
-        userId,
-        true,
-        JSON.stringify(saveState),
-        sessionId,
-        new Date().getTime()
+    try {
+      let mobileNumber = reformattedMessage.user.mobileNumber;
+      let user = await userService.getUserForMobileNumber(
+        mobileNumber,
+        reformattedMessage.extraInfo.tenantId
       );
-    }
-    service = this.getChatServiceFor(chatState, reformattedMessage);
 
-    let event;
-    if (intention == "reset") {
-      event = "USER_RESET";
-    } else if (intention == "swachreset") {
-      event = "USER_SWACH_RESET";
-    } else {
-      event = "USER_MESSAGE";
+      if (!user) {
+        console.error(`Failed to get or create user for mobile number: ${mobileNumber}`);
+        return;
+      }
+
+      reformattedMessage.user = user;
+      let userId = user.userId;
+
+      await chatStateRepository.updateSessionId(userId, config.avgSessionTime);
+      let chatState = await chatStateRepository.getActiveStateForUserId(userId);
+      telemetry.log(userId, "from_user", reformattedMessage);
+
+      // handle reset case
+      let intention = dialog.get_intention(
+        grammer.reset,
+        reformattedMessage,
+        true
+      );
+
+      let service;
+      if (!chatState) {
+        // come here if virgin dialog, old dialog was inactive, or reset case
+        chatState = this.createChatStateFor(user);
+        let saveState = JSON.parse(JSON.stringify(chatState));
+        saveState = this.removeUserDataFromState(saveState);
+        let sessionId = uuid.v4();
+        await chatStateRepository.insertNewState(
+          userId,
+          true,
+          JSON.stringify(saveState),
+          sessionId,
+          new Date().getTime()
+        );
+      }
+      service = this.getChatServiceFor(chatState, reformattedMessage);
+
+      let event;
+      if (intention == "reset") {
+        event = "USER_RESET";
+      } else if (intention == "swachreset") {
+        event = "USER_SWACH_RESET";
+      } else {
+        event = "USER_MESSAGE";
+      }
+      service.send(event, reformattedMessage);
+    } catch (error) {
+      console.error('Error processing message from user:', error.message);
     }
-    // let event = intention == "reset" ? "USER_RESET" : "USER_MESSAGE";
-    service.send(event, reformattedMessage);
   }
   async toUser(user, outputMessages, extraInfo) {
-    channelProvider.sendMessageToUser(user, outputMessages, extraInfo);
-    for (let message of outputMessages) {
-      telemetry.log(user.userId, "to_user", {
-        message: { type: "text", output: message, locale: user.locale },
-      });
+    try {
+      await channelProvider.sendMessageToUser(user, outputMessages, extraInfo);
+      for (let message of outputMessages) {
+        try {
+          telemetry.log(user.userId, "to_user", {
+            message: { type: "text", output: message, locale: user.locale },
+          });
+        } catch (telemetryError) {
+          console.warn('Error logging telemetry:', telemetryError.message);
+        }
+      }
+    } catch (error) {
+      console.error('Error sending message to user:', error.message);
     }
   }
 

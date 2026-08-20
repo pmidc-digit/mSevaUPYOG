@@ -8,8 +8,11 @@ class UserService {
     console.log("getUserForMobileNumber " + mobileNumber);
     try {
       let user = await this.loginOrCreateUser(mobileNumber, tenantId);
-      if (!user || !user.userInfo) throw new Error('User info is incomplete');
-      
+      if (!user || !user.userInfo) {
+        console.error('User info is incomplete for mobile number:', mobileNumber);
+        return null;
+      }
+
       user.userId = user.userInfo.uuid;
       user.mobileNumber = mobileNumber;
       user.name = user.userInfo.name;
@@ -17,7 +20,7 @@ class UserService {
       return user;
     } catch (error) {
       console.error('Error in getUserForMobileNumber:', error.message);
-      throw error;
+      return null;
     }
   }
 
@@ -29,21 +32,23 @@ class UserService {
         console.log(`Initial login failed for ${mobileNumber}, attempting to create user`);
         let createResult = await this.createUser(mobileNumber, tenantId);
         if (!createResult) {
-          throw new Error(`Failed to create user for ${mobileNumber}`);
+          console.error(`Failed to create user for ${mobileNumber}`);
+          return null;
         }
         // Add a small delay before retry login to allow for database consistency
         await new Promise(resolve => setTimeout(resolve, 1000));
         user = await this.loginUser(mobileNumber, tenantId);
       }
       if (!user) {
-        throw new Error(`Unable to login after user creation for ${mobileNumber}`);
+        console.error(`Unable to login after user creation for ${mobileNumber}`);
+        return null;
       }
-      
+
       user = await this.enrichuserDetails(user);
       return user;
     } catch (error) {
       console.error('Error in loginOrCreateUser:', error.message);
-      throw error;
+      return null;
     }
   }
 

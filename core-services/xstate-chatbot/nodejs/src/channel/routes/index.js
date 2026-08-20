@@ -10,11 +10,18 @@ router.post("/message", async (req, res) => {
     console.log("Request URL: " + req.originalUrl);
     console.log('Request Body Object: ' + JSON.stringify(req.body));
     let reformattedMessage = await channelProvider.processMessageFromUser(req);
-    if (reformattedMessage != null) sessionManager.fromUser(reformattedMessage);
+    if (reformattedMessage != null) {
+      try {
+        await sessionManager.fromUser(reformattedMessage);
+      } catch (sessionError) {
+        console.error('Error processing message in session manager:', sessionError);
+      }
+    }
+    res.status(200).end();
   } catch (e) {
-    console.log(e);
+    console.error('Error processing message:', e.message);
+    res.status(500).json({ error: 'Failed to process message', message: e.message });
   }
-  res.end();
 });
 
 // Handle WhatsApp delivery status webhooks (both GET and POST)
@@ -47,9 +54,13 @@ router.all("/status", async (req, res) => {
     // Handle actual user status messages (if any)
     let reformattedMessage = await channelProvider.processMessageFromUser(req);
     if (reformattedMessage != null) {
-      sessionManager.fromUser(reformattedMessage);
+      try {
+        await sessionManager.fromUser(reformattedMessage);
+      } catch (sessionError) {
+        console.error('Error processing status message in session manager:', sessionError.message);
+      }
     }
-    
+
     res.status(200).send("OK");
   } catch (e) {
     console.error("Status endpoint error:", e);
@@ -59,8 +70,13 @@ router.all("/status", async (req, res) => {
 });
 
 router.post("/reminder", async (req, res) => {
-  await remindersService.triggerReminders();
-  res.end();
+  try {
+    await remindersService.triggerReminders();
+    res.status(200).json({ status: 'Reminders triggered successfully' });
+  } catch (error) {
+    console.error('Error triggering reminders:', error.message);
+    res.status(500).json({ error: 'Failed to trigger reminders', message: error.message });
+  }
 });
 
 router.get("/health", (req, res) => res.sendStatus(200));

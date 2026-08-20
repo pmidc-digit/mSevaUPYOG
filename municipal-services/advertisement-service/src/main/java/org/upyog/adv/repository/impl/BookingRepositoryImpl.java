@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -209,13 +210,15 @@ public class BookingRepositoryImpl implements BookingRepository {
 			while (!startDate.isAfter(endDate)) {
 				batchArgs.add(new Object[] { ownerId,requestInfo.getUserInfo().getUuid(), createdTime, status,
 					"", requestInfo.getUserInfo().getUuid(), createdTime, criteria.getAddType(), criteria.getLocation(),
-					criteria.getFaceArea(), criteria.getNightLight(), criteria.getAdvertisementId(),
+					criteria.getFaceArea(),
+					criteria.getNightLight() != null ? criteria.getNightLight() : Boolean.FALSE,
+					criteria.getAdvertisementId(),
 					criteria.getBookingStartDate(), criteria.getBookingEndDate(), startDate.toString() });
 				startDate = startDate.plusDays(1);
 			}
 		}
 
-		jdbcTemplate.batchUpdate(AdvertisementBookingQueryBuilder.PAYMENT_TIMER_QUERY, batchArgs);
+		insertTimerRowsWithConflictCheck(batchArgs, ownerId);
 
 
 		// Populate timer value to response (use provided availabilityDetailsResponse)
@@ -274,13 +277,37 @@ public class BookingRepositoryImpl implements BookingRepository {
 
 			while (!startDate.isAfter(endDate)) {
 				batchArgs.add(new Object[] { draftId, uuid, createdTime, status, "", uuid, createdTime,
-						criteria.getAddType(), criteria.getLocation(), criteria.getFaceArea(), criteria.getNightLight(),criteria.getAdvertisementId(),
+						criteria.getAddType(), criteria.getLocation(), criteria.getFaceArea(),
+						criteria.getNightLight() != null ? criteria.getNightLight() : Boolean.FALSE,
+						criteria.getAdvertisementId(),
 						criteria.getBookingStartDate(), criteria.getBookingEndDate(), startDate.toString() });
 				startDate = startDate.plusDays(1);
 			}
 		}
 
-		jdbcTemplate.batchUpdate(AdvertisementBookingQueryBuilder.PAYMENT_TIMER_QUERY, batchArgs);
+		insertTimerRowsWithConflictCheck(batchArgs, draftId);
+	}
+
+	/**
+	 * Inserts timer rows atomically using the unique partial index. If any row is
+	 * skipped (another user holds an ACTIVE timer on the same slot+date), throws
+	 * so the enclosing transaction rolls back cleanly.
+	 */
+	private void insertTimerRowsWithConflictCheck(List<Object[]> batchArgs, String ownerId) {
+		if (batchArgs == null || batchArgs.isEmpty()) {
+			return;
+		}
+		int expectedRows = batchArgs.size();
+		int insertedRows = 0;
+		for (Object[] args : batchArgs) {
+			insertedRows += jdbcTemplate.update(AdvertisementBookingQueryBuilder.PAYMENT_TIMER_QUERY_ON_CONFLICT, args);
+		}
+		if (insertedRows < expectedRows) {
+			log.warn("Slot conflict during timer insert for {}: {} of {} rows inserted",
+					ownerId, insertedRows, expectedRows);
+			throw new CustomException("SLOT_ALREADY_BOOKED",
+					"One or more selected slots are already held by another user. Please choose different slots/dates.");
+		}
 	}
 
 	private void setTimerValue(AdvertisementSlotAvailabilityDetail availabilityDetailsResponse) {
@@ -687,7 +714,7 @@ public class BookingRepositoryImpl implements BookingRepository {
 			if (!result.isEmpty()) {
 				status = (String) result.get(0).get("status");
 			} else {
-				System.out.println("No records found for bookingId: " + bookingId);
+				log.warn("No records found for bookingId: " + bookingId);
 			}
 		}
 		return status;

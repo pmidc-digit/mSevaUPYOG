@@ -114,7 +114,6 @@ public class MdmsCacheService {
 		try {
 			List<Map<String, Object>> rows = mdmsDataRepository.searchAll();
 			int recordCount = 0;
-			Set<String> clearedModules = new HashSet<>();
 
 			for (Map<String, Object> row : rows) {
 				try {
@@ -141,17 +140,6 @@ public class MdmsCacheService {
 					String masterName = parts[1];
 
 					String effectiveTenantId = getEffectiveTenantId(tenantId, moduleName, masterName);
-
-					Map<String, Map<String, Map<String, JSONArray>>> tenantMap = MDMSApplicationRunnerImpl.getTenantMap();
-					if (tenantMap != null && tenantMap.containsKey(effectiveTenantId)) {
-						Map<String, Map<String, JSONArray>> moduleMap = tenantMap.get(effectiveTenantId);
-						String moduleKey = effectiveTenantId + "." + moduleName;
-						if (clearedModules.add(moduleKey) && moduleMap != null && moduleMap.containsKey(moduleName)) {
-							moduleMap.get(moduleName).clear();
-							log.info("Cleared file-loaded master data for module {} under tenant {} to replace with DB data", moduleName, effectiveTenantId);
-						}
-					}
-
 					JSONArray masterData = getOrCreateMasterData(effectiveTenantId, moduleName, masterName);
 
 					if (dataObj instanceof List) {

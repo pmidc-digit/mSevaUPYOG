@@ -133,6 +133,96 @@ public class MdmsCacheServiceTest {
         assertEquals(0, masterData.size());
     }
 
+    @Test
+    public void testUpdateCache_UpdateExistingRecordByKafkaData() {
+        String tenantId = "pb";
+        String schemaCode = "ws-services-masters.billingPeriod";
+        String moduleName = "ws-services-masters";
+        String masterName = "billingPeriod";
+
+        // Initial record in cache
+        Map<String, Object> initialRecord = new LinkedHashMap<>();
+        initialRecord.put("code", "Metered");
+        initialRecord.put("connectionType", "Metered");
+        initialRecord.put("billingCycle", "quarterly");
+        initialRecord.put("active", true);
+
+        JSONArray masterData = getOrCreateMasterArray(tenantId, moduleName, masterName);
+        masterData.add(initialRecord);
+
+        assertEquals(1, masterData.size());
+
+        // Kafka update payload modifying billingCycle to monthly and adding taxPeriodFrom
+        Map<String, Object> updatedData = new LinkedHashMap<>();
+        updatedData.put("code", "Metered");
+        updatedData.put("connectionType", "Metered");
+        updatedData.put("billingCycle", "monthly");
+        updatedData.put("taxPeriodFrom", 1759276800000L);
+        updatedData.put("active", true);
+
+        Map<String, Object> mdmsObj = new HashMap<>();
+        mdmsObj.put("id", "billing-period-id-1");
+        mdmsObj.put("tenantId", tenantId);
+        mdmsObj.put("schemaCode", schemaCode);
+        mdmsObj.put("uniqueIdentifier", "Metered");
+        mdmsObj.put("isActive", true);
+        mdmsObj.put("data", updatedData);
+
+        Map<String, Object> kafkaMessage = new HashMap<>();
+        kafkaMessage.put("Mdms", mdmsObj);
+
+        // Process Kafka update
+        mdmsCacheService.updateCache(kafkaMessage);
+
+        // Verify record in cache was updated in place without duplicate
+        assertEquals(1, masterData.size());
+        Map<?, ?> cacheRecord = (Map<?, ?>) masterData.get(0);
+        assertEquals("monthly", cacheRecord.get("billingCycle"));
+        assertEquals(1759276800000L, cacheRecord.get("taxPeriodFrom"));
+        assertEquals("Metered", cacheRecord.get("connectionType"));
+    }
+
+    @Test
+    public void testUpdateCache_BulkListPayloadByKafkaData() {
+        String tenantId = "pb";
+        String schemaCode = "ws-services-masters.billingPeriod";
+        String moduleName = "ws-services-masters";
+        String masterName = "billingPeriod";
+
+        JSONArray masterData = getOrCreateMasterArray(tenantId, moduleName, masterName);
+
+        // Kafka update containing a List payload with 2 records
+        Map<String, Object> rec1 = new LinkedHashMap<>();
+        rec1.put("code", "Metered");
+        rec1.put("connectionType", "Metered");
+        rec1.put("billingCycle", "quarterly");
+
+        Map<String, Object> rec2 = new LinkedHashMap<>();
+        rec2.put("code", "Non Metered");
+        rec2.put("connectionType", "Non Metered");
+        rec2.put("billingCycle", "quarterly");
+
+        Map<String, Object> mdmsObj = new HashMap<>();
+        mdmsObj.put("tenantId", tenantId);
+        mdmsObj.put("schemaCode", schemaCode);
+        mdmsObj.put("isActive", true);
+        mdmsObj.put("data", Arrays.asList(rec1, rec2));
+
+        Map<String, Object> kafkaMessage = new HashMap<>();
+        kafkaMessage.put("Mdms", mdmsObj);
+
+        // Process Kafka message
+        mdmsCacheService.updateCache(kafkaMessage);
+
+        // Verify both records added to cache
+        assertEquals(2, masterData.size());
+        Map<?, ?> first = (Map<?, ?>) masterData.get(0);
+        Map<?, ?> second = (Map<?, ?>) masterData.get(1);
+
+        assertEquals("Metered", first.get("code"));
+        assertEquals("Non Metered", second.get("code"));
+    }
+
     /**
      * Simulates the SecurityPolicy / WnSConnection scenario:
      * - File-based record loaded first: has 'model' field but NO 'id'
@@ -350,13 +440,16 @@ public class MdmsCacheServiceTest {
         assertEquals(true, tenantMap.get(tenantId).containsKey("tenant"));
         assertEquals(1, tenantMap.get(tenantId).get("tenant").get("tenants").size());
 
-        // Assert that BusinessService master array is replaced by DB records for BusinessService
+        // Assert that BusinessService array still has BOTH TL (from file) and updated ADVT.Hoardings (from DB)
         JSONArray updatedBusinessServices = tenantMap.get(tenantId).get("BillingService").get("BusinessService");
-        assertEquals(1, updatedBusinessServices.size());
+        assertEquals(2, updatedBusinessServices.size());
 
         Map<?, ?> firstBs = (Map<?, ?>) updatedBusinessServices.get(0);
-        assertEquals("ADVT.Hoardings", firstBs.get("code"));
-        assertEquals(true, firstBs.get("isVoucherCreationEnabled"));
+        assertEquals("TL", firstBs.get("code"));
+
+        Map<?, ?> secondBs = (Map<?, ?>) updatedBusinessServices.get(1);
+        assertEquals("ADVT.Hoardings", secondBs.get("code"));
+        assertEquals(true, secondBs.get("isVoucherCreationEnabled"));
     }
 
     @Test

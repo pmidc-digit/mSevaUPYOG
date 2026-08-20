@@ -11,6 +11,7 @@ import org.egov.rl.calculator.util.Configurations;
 import org.egov.rl.calculator.util.RLConstants;
 import org.egov.rl.calculator.web.models.demand.BillingPeriod;
 import org.egov.rl.calculator.web.models.demand.Penalty;
+import org.egov.rl.calculator.penalty.PenaltyConfig;
 import org.egov.rl.calculator.web.models.demand.Interest;
 import org.egov.rl.calculator.web.models.demand.TaxPeriod;
 import org.egov.tracer.model.CustomException;
@@ -127,6 +128,26 @@ public class MasterDataService {
         } catch (Exception e) {
             log.error("Failed to get Penalty slabs from MDMS for tenanDueDatet " + tenantId, e);
             throw new CustomException("MDMS_ERROR", "Failed to get Penalty slabs from MDMS");
+        }
+    }
+
+    public List<PenaltyConfig> getPenaltyConfigs(RequestInfo requestInfo, String tenantId) {
+        try {
+            MdmsCriteriaReq mdmsCriteriaReq = getMasterRequest(requestInfo, tenantId,
+                    RLConstants.RL_SERVICES_MASTER_MODULE, RLConstants.PENALTY_MASTER, null);
+
+            Object result = repository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
+            MdmsResponse mdmsResponse = mapper.convertValue(result, MdmsResponse.class);
+            List<PenaltyConfig> penaltyConfigs = mapper.convertValue(
+                    mdmsResponse.getMdmsRes()
+                            .get(RLConstants.RL_SERVICES_MASTER_MODULE)
+                            .get(RLConstants.PENALTY_MASTER),
+                    new TypeReference<List<PenaltyConfig>>() {}
+            );
+            return penaltyConfigs;
+        } catch (Exception e) {
+            log.error("Failed to get Penalty Configs from MDMS for tenant " + tenantId, e);
+            throw new CustomException("MDMS_ERROR", "Failed to get Penalty Configs from MDMS");
         }
     }
 

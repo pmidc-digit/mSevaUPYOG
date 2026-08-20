@@ -79,6 +79,8 @@ import org.egov.common.entity.edcr.SetBack;
 import org.egov.common.entity.edcr.Yard;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
+import org.egov.commons.mdms.RuleContext;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.entity.blackbox.PlanDetail;
 import org.egov.edcr.service.LayerNames;
@@ -104,7 +106,6 @@ public class AdditionalFeature extends FeatureProcess {
     private static final String RULE_47 = "47";
     private static final String RULE_50 = "50";
     private static final String RULE_56 = "56";
-    private static final String HEIGHT_EXC_MUMTY = "4.4.4";
     private static final BigDecimal TWO = BigDecimal.valueOf(2);
     private static final BigDecimal ONE_POINTFIVE = BigDecimal.valueOf(1.5);
     private static final BigDecimal THREE = BigDecimal.valueOf(3);
@@ -206,8 +207,7 @@ public class AdditionalFeature extends FeatureProcess {
         validate(pl);
 
         String typeOfArea = pl.getPlanInformation().getTypeOfArea();
-        //BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
-        BigDecimal roadWidth =  pl.getRoadReserveFront().setScale(2, RoundingMode.HALF_UP);
+        BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
 
         if (StringUtils.isNotBlank(typeOfArea) && roadWidth != null) {
             validateNumberOfFloors(pl, errors, typeOfArea, roadWidth);
@@ -319,11 +319,15 @@ public class AdditionalFeature extends FeatureProcess {
     						|| A_AIF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
             	boolean hasStiltFloor = checkStiltFloor(block.getBuilding().getFloors());
             	if(hasStiltFloor) {
-            		isAccepted = floorAbvGround.compareTo(NO_OF_FLOORS_WITH_STILT.add(BigDecimal.valueOf(1))) <= 0;
-                    requiredFloorCount = "S + "+ NO_OF_FLOORS_WITH_STILT.toPlainString();
+            		BigDecimal withStilt = RuleUtil.getRule(
+                            pl.getMdmsRulesData().get("masterMdmsData"),"noOfFloorsAllowed.floors.stilt",null,BigDecimal.class).getValue();
+            		isAccepted = floorAbvGround.compareTo(withStilt.add(BigDecimal.valueOf(1))) <= 0;
+                    requiredFloorCount = "S + "+ withStilt.toPlainString();
             	}else {
-            		isAccepted = floorAbvGround.compareTo(NO_OF_FLOORS_WITHOUT_STILT.add(BigDecimal.valueOf(1))) <= 0;
-                    requiredFloorCount = "G +" + NO_OF_FLOORS_WITHOUT_STILT.toPlainString();
+            		BigDecimal withoutStilt = RuleUtil.getRule(
+                            pl.getMdmsRulesData().get("masterMdmsData"),"noOfFloorsAllowed.floors.withoutStilt",null,BigDecimal.class).getValue();
+            		isAccepted = floorAbvGround.compareTo(withoutStilt.add(BigDecimal.valueOf(1))) <= 0;
+                    requiredFloorCount = "G +" + withoutStilt.toPlainString();
                     if(A_AIF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
                     	errors.put("Mandatory stilt floor ", "Stilt floor is mandatory for Independent Floor");
 						pl.addErrors(errors);
@@ -476,9 +480,13 @@ public class AdditionalFeature extends FeatureProcess {
 					floorNumber = floor.getNumber() + "(Stilt)";
 				}else {
 					floorNumber = floor.getNumber().toString();
-				}
-				
-				BigDecimal minHeight = isStilt ? BigDecimal.valueOf(2.50) : BigDecimal.valueOf(2.75);
+				}				
+				 
+				//BigDecimal minHeight = isStilt ? BigDecimal.valueOf(2.50) : BigDecimal.valueOf(2.75);
+				BigDecimal minHeight = isStilt ? RuleUtil.getRule(
+                        pl.getMdmsRulesData().get("masterMdmsData"),"heightOfFloor.stilt.min",null,BigDecimal.class).getValue() 
+						: RuleUtil.getRule(
+		                         pl.getMdmsRulesData().get("masterMdmsData"),"heightOfFloor.normal.min",null,BigDecimal.class).getValue();
 
 				if (floorHeight != null && floorHeight.compareTo(minHeight) >= 0) {
 				    isAccepted = true;
@@ -563,7 +571,7 @@ public class AdditionalFeature extends FeatureProcess {
         for (Block block : pl.getBlocks()) {
 
             boolean isAccepted = false;
-            String ruleNo = HEIGHT_EXC_MUMTY;
+            String ruleNo = RULE_38;
             ScrutinyDetail scrutinyDetail = getNewScrutinyDetailRoadArea(
                     "Block_" + block.getNumber() + "_" + "Height of Building (excluding mumty)");
             String requiredBuildingHeight = StringUtils.EMPTY;
@@ -589,9 +597,12 @@ public class AdditionalFeature extends FeatureProcess {
             }
             // Validate mumty height > allowed 3m           
             BigDecimal mumtyHeight = totalBuildingHeight.subtract(buildingHeight);
-
-            if (mumtyHeight.compareTo(MUMTY_HEIGHT) > 0) {
-                errors.put("MUMTY_HEIGHT_ERROR", "Mumty height greater than 3m is not allowed");
+            
+            BigDecimal mumtyHeightMdms = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"),"height.mumty", 
+                    null,BigDecimal.class).getValue();
+	        
+            if (mumtyHeight.compareTo(mumtyHeightMdms) > 0) {
+                errors.put("MUMTY_HEIGHT_ERROR", "Mumty height greater than "+ mumtyHeightMdms +"m is not allowed");
                 pl.addErrors(errors);                
             }
             // Validate max allowed height (stilt vs non-stilt)            
@@ -600,28 +611,29 @@ public class AdditionalFeature extends FeatureProcess {
             BigDecimal maxHeight = BigDecimal.valueOf(0.0);
             
             OccupancyTypeHelper mostRestrictiveOccupancy = block.getBuilding().getMostRestrictiveFarHelper();
+           
+//            RuleContext context = RuleContext.builder()
+//            	    .numericInput(new BigDecimal("12.0")) 
+//            	    .build();
+            //BigDecimal heightByRoad = RuleUtil.getRule(mdms, "height.byRoadWidth", context, BigDecimal.class).getValue();
             
             if(mostRestrictiveOccupancy != null &&
     				(A_R.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()) 
     						|| A_AIF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {            	
             	if (hasStiltFloor) {
-            		if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {
-            			// for stilt floor
-    					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MAX_ALLOWED_HEIGHT_WITH_STILT, BigDecimal.class);
-    			        scOpt.ifPresent(sc -> LOG.info("max allowed Height Value: " + sc));
-    			        maxHeight = scOpt.get();
+            		 	RuleContext context = RuleContext.builder().withStilt(true).build();
+    			        BigDecimal buildingHeightStilt = RuleUtil.getRule(
+				                pl.getMdmsRulesData().get("masterMdmsData"),"height", context, BigDecimal.class).getValue();
+    			        maxHeight = buildingHeightStilt;
     			        isAccepted = buildingHeight.compareTo(maxHeight) <= 0;
-    			        requiredBuildingHeight = scOpt.get().toPlainString();
-    				}
-                } else {
-                	if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {
-            			// for without stilt floor
-    					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MAX_ALLOWED_HEIGHT, BigDecimal.class);
-    			        scOpt.ifPresent(sc -> LOG.info("max allowed Height with stilt Value: " + sc));
-    			        maxHeight = scOpt.get();
+    			        requiredBuildingHeight = buildingHeightStilt.toPlainString();
+                } else {   			        
+                	RuleContext context = RuleContext.builder().withStilt(false).build();
+    			        BigDecimal buildingHeightStilt = RuleUtil.getRule(
+				                pl.getMdmsRulesData().get("masterMdmsData"),"height", context, BigDecimal.class).getValue();
+    			        maxHeight = buildingHeightStilt;
     			        isAccepted = buildingHeight.compareTo(maxHeight) <= 0;
-    			        requiredBuildingHeight = scOpt.get().toPlainString();
-    				}
+    			        requiredBuildingHeight = buildingHeightStilt.toPlainString();
                 }
                 if (!isAccepted) {
                     errors.put("BUILDING_HEIGHT_ERROR",
@@ -634,22 +646,20 @@ public class AdditionalFeature extends FeatureProcess {
         						|| G_IT.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {            	
                 	if (hasStiltFloor) {
                 		if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {
-                			// for stilt floor
-        					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MAX_ALLOWED_HEIGHT_WITH_STILT, BigDecimal.class);
-        			        scOpt.ifPresent(sc -> LOG.info("max allowed Height Value with stilt : " + sc));
-        			        maxHeight = scOpt.get();
+                			RuleContext context = RuleContext.builder().withStilt(true).build();
+        			        BigDecimal buildingHeightStilt = RuleUtil.getRule(
+    				                pl.getMdmsRulesData().get("masterMdmsData"),"height", context, BigDecimal.class).getValue();
+        			        maxHeight = buildingHeightStilt;
         			        isAccepted = buildingHeight.compareTo(maxHeight) <= 0;
-        			        requiredBuildingHeight = scOpt.get().toPlainString();
+        			        requiredBuildingHeight = buildingHeightStilt.toPlainString();
         				}
                     } else {
-                    	if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {
-                			// for without stilt floor
-        					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MAX_ALLOWED_HEIGHT, BigDecimal.class);
-        			        scOpt.ifPresent(sc -> LOG.info("max allowed Height Value : " + sc));
-        			        maxHeight = scOpt.get();
-        			        isAccepted = buildingHeight.compareTo(maxHeight) <= 0;
-        			        requiredBuildingHeight = scOpt.get().toPlainString();
-        				}
+                    	RuleContext context = RuleContext.builder().withStilt(false).build();
+    			        BigDecimal buildingHeightStilt = RuleUtil.getRule(
+				                pl.getMdmsRulesData().get("masterMdmsData"),"height", context, BigDecimal.class).getValue();
+    			        maxHeight = buildingHeightStilt;
+    			        isAccepted = buildingHeight.compareTo(maxHeight) <= 0;
+    			        requiredBuildingHeight = buildingHeightStilt.toPlainString();
                     }
                     if (!isAccepted) {
                         errors.put("BUILDING_HEIGHT_ERROR",
@@ -798,9 +808,33 @@ public class AdditionalFeature extends FeatureProcess {
             ScrutinyDetail scrutinyDetail = getNewScrutinyDetail("Block_" + blkNo + "_" + "Plinth");
             List<BigDecimal> plinthHeights = block.getPlinthHeight();
 
+            BigDecimal plinthMinHeight = RuleUtil.getRule(
+	                pl.getMdmsRulesData().get("masterMdmsData"),"plinth.height.min",null,BigDecimal.class).getValue();
+            
+//            if (!plinthHeights.isEmpty()) {
+//                minPlinthHeight = plinthHeights.stream().reduce(BigDecimal::min).get().setScale(2, RoundingMode.HALF_UP);
+//                if (minPlinthHeight.compareTo(BigDecimal.valueOf(0.45)) >= 0) {
+//                    isAccepted = true;
+//                }
+//            } else {
+//                String plinthHeightLayer = String.format(DxfFileConstants.LAYER_PLINTH_HEIGHT, block.getNumber());
+//                errors.put(plinthHeightLayer, "Plinth height is not defined in layer " + plinthHeightLayer);
+//                pl.addErrors(errors);
+//            }
+//
+//            if (errors.isEmpty()) {
+//                Map<String, String> details = new HashMap<>();
+//                details.put(RULE_NO, RULE);
+//                details.put(DESCRIPTION, MIN_PLINTH_HEIGHT_DESC);
+//                details.put(PERMISSIBLE, MIN_PLINTH_HEIGHT);
+//                details.put(PROVIDED, String.valueOf(minPlinthHeight));
+//                details.put(STATUS, isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
+//                scrutinyDetail.getDetail().add(details);
+//                pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//            }
             if (!plinthHeights.isEmpty()) {
-                minPlinthHeight = plinthHeights.stream().reduce(BigDecimal::min).get().setScale(2, BigDecimal.ROUND_HALF_UP);
-                if (minPlinthHeight.compareTo(BigDecimal.valueOf(0.45)) >= 0) {
+                minPlinthHeight = plinthHeights.stream().reduce(BigDecimal::min).get().setScale(2, RoundingMode.HALF_UP);
+                if (minPlinthHeight.compareTo(plinthMinHeight) >= 0) {
                     isAccepted = true;
                 }
             } else {
@@ -813,7 +847,7 @@ public class AdditionalFeature extends FeatureProcess {
                 Map<String, String> details = new HashMap<>();
                 details.put(RULE_NO, RULE);
                 details.put(DESCRIPTION, MIN_PLINTH_HEIGHT_DESC);
-                details.put(PERMISSIBLE, MIN_PLINTH_HEIGHT);
+                details.put(PERMISSIBLE, ">="+plinthMinHeight.toPlainString());
                 details.put(PROVIDED, String.valueOf(minPlinthHeight));
                 details.put(STATUS, isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
                 scrutinyDetail.getDetail().add(details);

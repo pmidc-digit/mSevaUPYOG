@@ -128,7 +128,6 @@ import org.egov.edcr.feature.TerraceToilet;
 import org.egov.edcr.feature.TerraceUtilityService;
 import org.egov.edcr.feature.ToiletDetails;
 import org.egov.edcr.feature.TravelDistanceToExit;
-import org.egov.edcr.feature.UnitFA;
 import org.egov.edcr.feature.VehicleRamp;
 import org.egov.edcr.feature.Ventilation;
 import org.egov.edcr.feature.Verandah;
@@ -138,8 +137,6 @@ import org.egov.edcr.feature.WaterTankCapacity;
 import org.egov.edcr.feature.WaterTreatmentPlant;
 import org.egov.edcr.feature.Well;
 import org.springframework.stereotype.Service;
-import org.egov.edcr.feature.Cinema;
-import org.egov.edcr.feature.PlotFrontage;
 
 @Service
 public class PlanFeatureRepository {
@@ -390,24 +387,15 @@ public class PlanFeatureRepository {
         
         pf = new PlanFeature(InfoCommsTechService.class);
         features.add(pf);
-        //        
+//        
       pf = new PlanFeature(ToiletDetails.class);
       features.add(pf);
       
         
-//        pf = new PlanFeature(DxfToPdfConverter.class);
-//        features.add(pf);
+        pf = new PlanFeature(DxfToPdfConverter.class);
+        features.add(pf);
         
         pf = new PlanFeature(TerraceToilet.class);
-        features.add(pf);
-        
-        pf = new PlanFeature(Cinema.class);
-        features.add(pf);
-        
-        pf = new PlanFeature(PlotFrontage.class);
-        features.add(pf);
-        
-        pf = new PlanFeature(UnitFA.class);
         features.add(pf);
 
         

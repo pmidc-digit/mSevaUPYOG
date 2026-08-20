@@ -328,7 +328,7 @@ public class ExitWidth extends FeatureProcess {
                             listOfMaxOccupantsAllowedThrghExits.add(maxOccupantsAllowedThrghExits);
                         }
                         if (!listOfMaxOccupantsAllowedThrghExits.isEmpty()) {
-                            BigDecimal minimumOfMaxOccupantsAllowedThrghExits = listOfMaxOccupantsAllowedThrghExits.get(0);
+                            BigDecimal minimumOfMaxOccupantsAllowedThrghExits = listOfMaxOccupantsAllowedThrghExits.get(0).setScale(2, BigDecimal.ROUND_HALF_UP);;
                             for (BigDecimal occupantsAllowedThroughExits : listOfMaxOccupantsAllowedThrghExits) {
                                 if (occupantsAllowedThroughExits.compareTo(minimumOfMaxOccupantsAllowedThrghExits) < 0) {
                                     minimumOfMaxOccupantsAllowedThrghExits = occupantsAllowedThroughExits;
@@ -419,7 +419,9 @@ public class ExitWidth extends FeatureProcess {
         // calculate minimum of exit widths provided and validate for that.
         boolean isTypicalRepititiveFloor = false;
         if (!floor.getExitWidthDoor().isEmpty()) {
-            BigDecimal minimumExitWidth = floor.getExitWidthDoor().get(0);
+        	BigDecimal minimumExitWidth = floor.getExitWidthDoor()
+        	        .get(0);        	        
+        	        minimumExitWidth = minimumExitWidth.setScale(2, RoundingMode.HALF_UP);
             for (BigDecimal exitWidthDoor : floor.getExitWidthDoor()) {
                 if (exitWidthDoor.compareTo(minimumExitWidth) < 0) {
                     minimumExitWidth = exitWidthDoor;

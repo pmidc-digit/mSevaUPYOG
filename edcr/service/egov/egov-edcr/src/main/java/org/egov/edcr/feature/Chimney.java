@@ -59,6 +59,7 @@ import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -95,16 +96,34 @@ public class Chimney extends FeatureProcess {
 			if (b.getChimneys() != null && !b.getChimneys().isEmpty()) {
 				minHeight = b.getChimneys().stream().reduce(BigDecimal::min).get();
 
-				if (minHeight.compareTo(new BigDecimal(1)) <= 0) {
+				BigDecimal chimneyHeight = RuleUtil.getRule(
+                        pl.getMdmsRulesData().get("masterMdmsData"),"chimney.height.min",null,BigDecimal.class).getValue();
+				
+//				if (minHeight.compareTo(new BigDecimal(1)) <= 0) {
+//					details.put(DESCRIPTION, CHIMNEY_DESCRIPTION);
+//					details.put(VERIFIED, "Verified whether chimney height is <= 1 meters");
+//					details.put(ACTION, "Not included chimney height(" + minHeight + ") to building height");
+//					details.put(STATUS, Result.Accepted.getResultVal());
+//					scrutinyDetail.getDetail().add(details);
+//					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//				} else {
+//					details.put(DESCRIPTION, CHIMNEY_DESCRIPTION);
+//					details.put(VERIFIED, "Verified whether chimney height is <= 1 meters");
+//					details.put(ACTION, "Included chimney height(" + minHeight + ") to building height");
+//					details.put(STATUS, Result.Verify.getResultVal());
+//					scrutinyDetail.getDetail().add(details);
+//					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//				}
+				if (minHeight.compareTo(chimneyHeight) <= 0) {
 					details.put(DESCRIPTION, CHIMNEY_DESCRIPTION);
-					details.put(VERIFIED, "Verified whether chimney height is <= 1 meters");
+					details.put(VERIFIED, "Verified whether chimney height is <= "+chimneyHeight+" meters");
 					details.put(ACTION, "Not included chimney height(" + minHeight + ") to building height");
 					details.put(STATUS, Result.Accepted.getResultVal());
 					scrutinyDetail.getDetail().add(details);
 					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 				} else {
 					details.put(DESCRIPTION, CHIMNEY_DESCRIPTION);
-					details.put(VERIFIED, "Verified whether chimney height is <= 1 meters");
+					details.put(VERIFIED, "Verified whether chimney height is  <= "+chimneyHeight+" meters");
 					details.put(ACTION, "Included chimney height(" + minHeight + ") to building height");
 					details.put(STATUS, Result.Verify.getResultVal());
 					scrutinyDetail.getDetail().add(details);

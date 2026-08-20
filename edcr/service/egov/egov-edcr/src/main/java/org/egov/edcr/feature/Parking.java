@@ -70,19 +70,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Arrays;
-import java.util.Collections;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.egov.common.entity.edcr.Block;
-import org.egov.common.entity.edcr.Building;
 import org.egov.common.entity.edcr.Floor;
-import org.egov.common.entity.edcr.FloorUnit;
 import org.egov.common.entity.edcr.Measurement;
 import org.egov.common.entity.edcr.Occupancy;
 import org.egov.common.entity.edcr.OccupancyType;
@@ -92,10 +87,18 @@ import org.egov.common.entity.edcr.ParkingHelper;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.edcr.mdms.filter.MdmsFilter;
+import org.egov.commons.mdms.BuildingRuleService;
+import org.egov.commons.mdms.MdmsRuleEngine;
+import org.egov.commons.mdms.RuleContext;
+import org.egov.commons.mdms.RuleResult;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.edcr.utility.Util;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Service
 public class Parking extends FeatureProcess {
@@ -160,6 +163,10 @@ public class Parking extends FeatureProcess {
     private static final String TWO_WHEELER_SIZE_NOTE = "Note : Two Wheeler Size - 2.0 x 0.75 Meter";
     private static final String PARKING_AREA_DIM = "2.0 M x 0.75 M";
     
+    // Placeholder variables you'd need to define elsewhere
+    private static final double totalDwellingUnits = 50.0; // Total number of dwelling units in the block
+    private static final double averageUnitAreaSqM = 150.0; // Average unit area (total covered area / total DUs) in sq. m
+
     public static final double AREA_UPPER_100 = 100;
     public static final double AREA_UPPER_150 = 150;
     public static final double AREA_UPPER_200 = 200;
@@ -275,21 +282,16 @@ public class Parking extends FeatureProcess {
     }
 
     public void processParking(Plan pl) {
-    try {
-        if (pl == null) {
-            LOGGER.warn("Plan object is null in processParking. Aborting execution.");
-            return;
-        }
-
         ParkingHelper helper = new ParkingHelper();
         BigDecimal plotArea = (pl.getPlot() != null && pl.getPlot().getArea() != null)
                 ? pl.getPlot().getArea()
                 : BigDecimal.ZERO;
 
         BigDecimal coveredArea = (pl.getVirtualBuilding() != null && pl.getVirtualBuilding().getTotalCoverageArea() != null)
-                ? pl.getVirtualBuilding().getTotalCoverageArea().setScale(2, RoundingMode.HALF_UP)
+                ? pl.getVirtualBuilding().getTotalCoverageArea().setScale(2, BigDecimal.ROUND_HALF_UP)
                 : BigDecimal.ZERO;
 
+              
         ScrutinyDetail scrutinyDetail1 = new ScrutinyDetail();
         scrutinyDetail1.addColumnHeading(1, RULE_NO);
         scrutinyDetail1.addColumnHeading(2, DESCRIPTION);
@@ -299,550 +301,126 @@ public class Parking extends FeatureProcess {
         scrutinyDetail1.addColumnHeading(6, STATUS);
         
         if (pl.getParkingDetails() != null && pl.getParkingDetails().getTwoWheelers() != null && !pl.getParkingDetails().getTwoWheelers().isEmpty()) {
-            scrutinyDetail1.setSubHeading(TWO_WHEELER_SIZE_NOTE);
+            scrutinyDetail.setSubHeading(TWO_WHEELER_SIZE_NOTE);
         }
 
         OccupancyTypeHelper mostRestrictiveOccupancy = pl.getVirtualBuilding() != null
                 ? pl.getVirtualBuilding().getMostRestrictiveFarHelper()
                 : null;
-
-        BigDecimal totalBuiltupArea = Optional.ofNullable(pl.getOccupancies())
-                .orElse(Collections.emptyList())
-                .stream()
-                .filter(Objects::nonNull)
-                .map(Occupancy::getBuiltUpArea)
-                .filter(Objects::nonNull)
+        BigDecimal totalBuiltupArea = pl.getOccupancies().stream().map(Occupancy::getBuiltUpArea)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
         BigDecimal coverParkingArea = BigDecimal.ZERO;
         BigDecimal basementParkingArea = BigDecimal.ZERO;
         BigDecimal openParkingArea = BigDecimal.ZERO;
         BigDecimal stiltParkingArea = BigDecimal.ZERO;
 
-        // Collect floor parking details safely
-        if (pl.getBlocks() != null) {
-            for (Block block : pl.getBlocks()) {
-                if (block != null && block.getBuilding() != null && block.getBuilding().getFloors() != null) {
-                    for (Floor floor : block.getBuilding().getFloors()) {
-                        if (floor != null && floor.getParking() != null) {
-                            if (floor.getParking().getCoverCars() != null) {
-                                coverParkingArea = coverParkingArea.add(floor.getParking().getCoverCars().stream()
-                                        .filter(Objects::nonNull)
-                                        .map(Measurement::getArea)
-                                        .filter(Objects::nonNull)
-                                        .reduce(BigDecimal.ZERO, BigDecimal::add));
-                            }
-                            if (floor.getParking().getBasementCars() != null) {
-                                basementParkingArea = basementParkingArea.add(floor.getParking().getBasementCars().stream()
-                                        .filter(Objects::nonNull)
-                                        .map(Measurement::getArea)
-                                        .filter(Objects::nonNull)
-                                        .reduce(BigDecimal.ZERO, BigDecimal::add));
-                            }
-                        }
-                    }
-                }
+        for (Block block : pl.getBlocks()) {
+            for (Floor floor : block.getBuilding().getFloors()) {
+                coverParkingArea = coverParkingArea.add(floor.getParking().getCoverCars().stream().map(Measurement::getArea)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add)).setScale(2, RoundingMode.UP);
+                basementParkingArea = basementParkingArea
+                        .add(floor.getParking().getBasementCars().stream().map(Measurement::getArea)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add)).setScale(2, RoundingMode.UP);
             }
         }
-
-        coverParkingArea = coverParkingArea.setScale(2, RoundingMode.HALF_UP);
-        basementParkingArea = basementParkingArea.setScale(2, RoundingMode.HALF_UP);
-
-        if (pl.getParkingDetails() != null) {
-            if (pl.getParkingDetails().getOpenCars() != null) {
-                openParkingArea = pl.getParkingDetails().getOpenCars().stream()
-                        .filter(Objects::nonNull)
-                        .map(Measurement::getArea)
-                        .filter(Objects::nonNull)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
-            }
-            if (pl.getParkingDetails().getStilts() != null) {
-                stiltParkingArea = pl.getParkingDetails().getStilts().stream()
-                        .filter(Objects::nonNull)
-                        .map(Measurement::getArea)
-                        .filter(Objects::nonNull)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
-            }
-        }
+        openParkingArea = pl.getParkingDetails().getOpenCars().stream().map(Measurement::getArea)
+                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.UP);
+        stiltParkingArea = pl.getParkingDetails().getStilts().stream().map(Measurement::getArea)
+                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.UP);
 
         BigDecimal totalProvidedCarParkArea = openParkingArea.add(coverParkingArea).add(basementParkingArea).add(stiltParkingArea);
+        helper.totalRequiredCarParking += openParkingArea.doubleValue() / OPEN_ECS;
+        helper.totalRequiredCarParking += coverParkingArea.doubleValue() / COVER_ECS;
+        helper.totalRequiredCarParking += basementParkingArea.doubleValue() / BSMNT_ECS;
+        helper.totalRequiredCarParking += stiltParkingArea.doubleValue() / STILT_ECS;
         
-        // Prevent Division by Zero on ECS constant values
-        if (OPEN_ECS > 0) helper.totalRequiredCarParking += openParkingArea.doubleValue() / OPEN_ECS;
-        if (COVER_ECS > 0) helper.totalRequiredCarParking += coverParkingArea.doubleValue() / COVER_ECS;
-        if (BSMNT_ECS > 0) helper.totalRequiredCarParking += basementParkingArea.doubleValue() / BSMNT_ECS;
-        if (STILT_ECS > 0) helper.totalRequiredCarParking += stiltParkingArea.doubleValue() / STILT_ECS;
+        double totalRequiredOpenCarParking = openParkingArea.doubleValue() / OPEN_ECS;
+        String formattedValue = String.format("%.2f", totalRequiredOpenCarParking);
+        double roundedValueOpen = Double.parseDouble(formattedValue);
         
-        double roundedValueOpen = (OPEN_ECS > 0) ? BigDecimal.valueOf(openParkingArea.doubleValue() / OPEN_ECS).setScale(2, RoundingMode.HALF_UP).doubleValue() : 0.0;
-        double roundedValueCover = (COVER_ECS > 0) ? BigDecimal.valueOf(coverParkingArea.doubleValue() / COVER_ECS).setScale(2, RoundingMode.HALF_UP).doubleValue() : 0.0;
-        double roundedValueBsmnt = (BSMNT_ECS > 0) ? BigDecimal.valueOf(basementParkingArea.doubleValue() / BSMNT_ECS).setScale(2, RoundingMode.HALF_UP).doubleValue() : 0.0;
-        double roundedValueStilt = (STILT_ECS > 0) ? BigDecimal.valueOf(stiltParkingArea.doubleValue() / STILT_ECS).setScale(2, RoundingMode.HALF_UP).doubleValue() : 0.0;
+        double totalRequiredCoverCarParking = coverParkingArea.doubleValue() / COVER_ECS;
+        String formattedValue1 = String.format("%.2f", totalRequiredCoverCarParking);
+        double roundedValueCover = Double.parseDouble(formattedValue1);
+
+        
+        double totalRequiredBsmntCarParking = basementParkingArea.doubleValue() / BSMNT_ECS;
+        String formattedValue2 = String.format("%.2f", totalRequiredBsmntCarParking);
+        double roundedValueBsmnt = Double.parseDouble(formattedValue2);
+
+        
+        double totalRequiredStiltCarParking = stiltParkingArea.doubleValue() / STILT_ECS;
+        String formattedValue3 = String.format("%.2f", totalRequiredStiltCarParking);
+        double roundedValueStilt = Double.parseDouble(formattedValue3);
+
+     
 
         Double requiredCarParkArea = 0d;
         Double requiredVisitorParkArea = 0d;
+
         BigDecimal providedVisitorParkArea = BigDecimal.ZERO;
 
-        try {
-            validateSpecialParking(pl, helper, totalBuiltupArea);
-        } catch (Exception ex) {
-            LOGGER.error("Error during validateSpecialParking: ", ex);
-        }
+        validateSpecialParking(pl, helper, totalBuiltupArea);
         
-        // Process two-wheeler parking safely
-        if (pl.getPlot() != null && plotArea.doubleValue() <= 100 && pl.getOccupancies() != null) {
+        // Only process/calculate/report two-wheeler parking if plotArea <= 100
+        if (pl.getPlot() != null && plotArea.doubleValue() <= 100) {
             for (final Occupancy occupancy : pl.getOccupancies()) {
-                if (occupancy != null && occupancy.getTypeHelper() != null && occupancy.getTypeHelper().getSubtype() != null 
-                        && pl.getVirtualBuilding() != null && pl.getVirtualBuilding().getMostRestrictiveFarHelper() != null
-                        && pl.getVirtualBuilding().getMostRestrictiveFarHelper().getType() != null
-                        && DxfFileConstants.A.equalsIgnoreCase(pl.getVirtualBuilding().getMostRestrictiveFarHelper().getType().getCode())) {                   
+                OccupancyTypeHelper mostRestrictiveOccupancyType = pl.getVirtualBuilding().getMostRestrictiveFarHelper();
+                if (occupancy.getTypeHelper().getSubtype() != null && ((mostRestrictiveOccupancyType.getType() != null
+                                && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())))) {                    
                     processTwoWheelerParking(pl, helper);
                 }
             }
         }
-
-        double noOfrequiredParking = 0.0;
-        String requiredParkingText = null;
-
-        if (mostRestrictiveOccupancy != null && mostRestrictiveOccupancy.getType() != null && A.equals(mostRestrictiveOccupancy.getType().getCode())) {
-            if (mostRestrictiveOccupancy.getSubtype() != null && A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
-                ResidentialParkingStats parkingStats = getResidentialParkingStats(pl);
-                if (parkingStats != null) {
-                    double ecsPerDu = getApartmentFlatEcsPerDu(parkingStats.averageUnitAreaSqM);
-                    double totalDuEcs = ecsPerDu * parkingStats.totalDwellingUnits;
-                    double guestEcs = totalDuEcs * 0.10;
-                    
-                    noOfrequiredParking = BigDecimal.valueOf(totalDuEcs + guestEcs).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                    
-                    requiredParkingText = String.format("%.2f", totalDuEcs) + " ECS + 10% Guest Parking ("
-                            + String.format("%.2f", guestEcs) + " ECS) = " + String.format("%.2f", noOfrequiredParking) + " ECS";
-                }
-                
-                if (pl.getPlot() != null) {                  
-                    if (openParkingArea.doubleValue() > 0) {
-                        requiredCarParkArea += OPEN_ECS * noOfrequiredParking;
-                    } else if (stiltParkingArea.doubleValue() > 0) {
-                        requiredCarParkArea += STILT_ECS * noOfrequiredParking;
-                    } else if (basementParkingArea.doubleValue() > 0) {
-                        requiredCarParkArea += BSMNT_ECS * noOfrequiredParking;
-                    } else if (coverParkingArea.doubleValue() > 0) {
-                        requiredCarParkArea += COVER_ECS * noOfrequiredParking;
-                    } 
-                }
-            } else {
-                if (pl.getPlot() != null) {
-                    double area = plotArea.doubleValue();
-
-                    if (area <= AREA_UPPER_100) { 
-                        noOfrequiredParking = ECS_TWO_WHEELER;
-                    } else if (area > AREA_UPPER_100 && area <= AREA_UPPER_150) {
-                        noOfrequiredParking = ECS_1;
-                    } else if (area > AREA_UPPER_150 && area <= AREA_UPPER_200) {
-                        noOfrequiredParking = ECS_1;
-                    } else if (area > AREA_UPPER_200 && area <= AREA_UPPER_300) {
-                        noOfrequiredParking = ECS_2;
-                    } else if (area > AREA_UPPER_300 && area <= AREA_UPPER_500) {
-                        noOfrequiredParking = ECS_3;
-                    } else if (area > AREA_UPPER_500 && area <= AREA_UPPER_1000) {
-                        noOfrequiredParking = ECS_3;
-                    } else {
-                        noOfrequiredParking = ECS_3;
-                    }
-                }
-            }
-        } else if (mostRestrictiveOccupancy != null && mostRestrictiveOccupancy.getType() != null && F.equals(mostRestrictiveOccupancy.getType().getCode())) {
-            String subType = mostRestrictiveOccupancy.getSubtype() != null ? mostRestrictiveOccupancy.getSubtype().getCode() : "";
-            BigDecimal plotCoveredArea = (pl.getVirtualBuilding() != null) ? pl.getVirtualBuilding().getTotalCoverageArea() : null;
-
-            if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
-                addErrorMessage(pl, "Plot Area Error:", "Plot covered area must be greater than 0.");
-            } else if (F_MIP.equalsIgnoreCase(subType)) {
-                BigDecimal totalBuiltUpArea = getTotalBuiltUpArea(pl);
-                BigDecimal totalCinemaArea = getTotalCinemaArea(pl);
-
-                noOfrequiredParking = calculateMiniplexECS(totalBuiltUpArea, totalCinemaArea)
-                        .setScale(2, RoundingMode.HALF_UP)
-                        .doubleValue();
-                
-            } else if (F_MTP.equalsIgnoreCase(subType)) {
-                BigDecimal totalBuiltUpArea = getTotalBuiltUpArea(pl);
-                BigDecimal totalCinemaArea = getTotalCinemaArea(pl);
-
-                noOfrequiredParking = calculateMultiplexECS(totalBuiltUpArea, totalCinemaArea)
-                        .setScale(2, RoundingMode.HALF_UP)
-                        .doubleValue();
-            } else {             
-                Integer multiplier = getFTypeMultiplier(subType);
-                BigDecimal divisor = getFTypeDivisor(subType);
-                if (multiplier == null || divisor == null || divisor.compareTo(BigDecimal.ZERO) == 0) {
-                    addErrorMessage(pl, "Parking Calculation Error", "No valid ECS rule/divisor defined for subtype: " + subType);
-                } else {
-                    BigDecimal baseEcs = plotCoveredArea.divide(divisor, 2, RoundingMode.HALF_UP);
-                    noOfrequiredParking = baseEcs.multiply(BigDecimal.valueOf(multiplier)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                }
-            }
-        } else if (mostRestrictiveOccupancy != null && mostRestrictiveOccupancy.getType() != null && G.equals(mostRestrictiveOccupancy.getType().getCode())) {
-            BigDecimal plotCoveredArea = (pl.getVirtualBuilding() != null) ? pl.getVirtualBuilding().getTotalCoverageArea() : null;
-            if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
-                addErrorMessage(pl, "Plot Area Error:", "Plot covered area must be greater than 0.");
-            } else {             
-                String subType = mostRestrictiveOccupancy.getSubtype() != null ? mostRestrictiveOccupancy.getSubtype().getCode() : "";
-                Integer multiplier = getGTypeMultiplier(subType);
-                if (multiplier == null) {
-                    addErrorMessage(pl, "Parking Calculation Error", "No ECS rule defined for subtype: " + subType);
-                } else {
-                    BigDecimal baseEcs = plotCoveredArea.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-                    noOfrequiredParking = baseEcs.multiply(BigDecimal.valueOf(multiplier)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                }
-            }
-        } else if (mostRestrictiveOccupancy != null && mostRestrictiveOccupancy.getType() != null && L.equals(mostRestrictiveOccupancy.getType().getCode())) {
-            BigDecimal plotCoveredArea = (pl.getVirtualBuilding() != null) ? pl.getVirtualBuilding().getTotalCoverageArea() : null;
-
-            if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
-                addErrorMessage(pl, "Plot Area Error:", "Plot covered area must be greater than 0.");
-            } else {             
-                String subType = mostRestrictiveOccupancy.getSubtype() != null ? mostRestrictiveOccupancy.getSubtype().getCode() : "";
-                Integer multiplier = getLTypeMultiplier(subType);
-                if (multiplier == null) {
-                    addErrorMessage(pl, "Parking Calculation Error", "No ECS rule defined for subtype: " + subType);
-                } else {
-                    BigDecimal baseEcs = plotCoveredArea.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-                    noOfrequiredParking = baseEcs.multiply(BigDecimal.valueOf(multiplier)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                }
-            }
-        }
-
-        BigDecimal requiredCarParkingArea = Util.roundOffTwoDecimal(BigDecimal.valueOf(requiredCarParkArea));
-        BigDecimal totalProvidedCarParkingArea = Util.roundOffTwoDecimal(totalProvidedCarParkArea);
-        BigDecimal requiredVisitorParkingArea = Util.roundOffTwoDecimal(BigDecimal.valueOf(requiredVisitorParkArea));
-        BigDecimal providedVisitorParkingArea = Util.roundOffTwoDecimal(providedVisitorParkArea);
+  
+        Integer noOfrequiredParking = 0;
+        MdmsRuleEngine engine =
+		        new MdmsRuleEngine(pl.getMdmsRulesData().get("masterMdmsData"));
+		
+//        RuleContext context = RuleContext.builder()
+//	    	    .numericInput(plotArea) // The plot area	    	   
+//	    	    .build();
         
-        BigDecimal totalECS = BigDecimal.valueOf(roundedValueOpen + roundedValueCover + roundedValueBsmnt + roundedValueStilt)
-                .setScale(2, RoundingMode.HALF_UP);
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("plotArea", plotArea); // MUST match the default in findSlab ("plotArea")
 
-        if (requiredParkingText == null) {
-            requiredParkingText = String.format("%.2f", noOfrequiredParking) + " ECS";
-        }
+        RuleContext context = RuleContext.builder()
+            .numericInput(plotArea) 
+            .formulaVariables(vars) // Add the map here
+            .build();
+        
+//		JsonNode parkingSlab =
+//		        engine.getObject("parking", context);
 
-        if (pl.getPlot() != null) {
+        
+        if (mostRestrictiveOccupancy != null && A.equals(mostRestrictiveOccupancy.getType().getCode())) {
+//			noOfrequiredParking = RuleUtil.getRule(
+//			    pl.getMdmsRulesData().get("masterMdmsData"),"parking.ECS",context,Integer.class).getValue();
+//			LOGGER.info("Parking ECS " + noOfrequiredParking);
+			BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
+			noOfrequiredParking = calculateRequiredParking(pl, context, plotCoveredArea);
+			LOGGER.info("Parking ECS " + noOfrequiredParking);
+        }else if (mostRestrictiveOccupancy != null && F.equals(mostRestrictiveOccupancy.getType().getCode())) {
+            BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
+            if (plotCoveredArea != null && plotCoveredArea.compareTo(BigDecimal.ZERO) > 0) {
+                // 1 ECS per 50 sqm
+                //BigDecimal divisor = BigDecimal.valueOf(50);
 
-            if (totalProvidedCarParkArea.doubleValue() == 0) {
-                if (!Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_ECS)) {                
-                    pl.addError(RULE__DESCRIPTION, getLocaleMessage("msg.error.not.defined", RULE__DESCRIPTION));
-                }
-            } else if (requiredCarParkArea > 0 && totalProvidedCarParkingArea.compareTo(requiredCarParkingArea) < 0) {
-                setReportOutputDetails1(pl, "4.2.1", "Parking", requiredParkingText,
-                        totalECS + " ECS", Result.Not_Accepted.getResultVal());
-            } else if (BigDecimal.valueOf(noOfrequiredParking).setScale(2, RoundingMode.HALF_UP).compareTo(totalECS) > 0) {
-                String status = Result.Not_Accepted.getResultVal();
-                if (Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_ECS)) {
-                    status = Result.Accepted.getResultVal();
-                }
-                setReportOutputDetails1(pl, "4.2.1", "Parking", requiredParkingText,
-                        totalECS + " ECS", status);
-            } else {
-                setReportOutputDetails1(pl, "4.2.1", "Parking", requiredParkingText,
-                        totalECS + " ECS", Result.Accepted.getResultVal());
+                // Divide and always round UP since ECS must be whole
+//                BigDecimal requiredParking = plotCoveredArea.divide(divisor, 0, RoundingMode.HALF_UP);
+//
+//                noOfrequiredParking = requiredParking.intValue();
+                noOfrequiredParking = calculateRequiredParking(pl, context, plotCoveredArea);
             }
+        } else if (mostRestrictiveOccupancy != null && G.equals(mostRestrictiveOccupancy.getType().getCode())) {
+            BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
 
-            if (requiredVisitorParkArea > 0 && providedVisitorParkArea.compareTo(requiredVisitorParkingArea) < 0) {
-                setReportOutputDetails(pl, SUB_RULE_40_10, SUB_RULE_40_10_DESCRIPTION, requiredVisitorParkingArea + SQMTRS,
-                        providedVisitorParkingArea + SQMTRS, Result.Not_Accepted.getResultVal());
-            } else if (requiredVisitorParkArea > 0) {
-                setReportOutputDetails(pl, SUB_RULE_40_10, SUB_RULE_40_10_DESCRIPTION, requiredVisitorParkingArea + SQMTRS,
-                        providedVisitorParkingArea + SQMTRS, Result.Accepted.getResultVal());
-            }
-
-            // Output reporting details
-            if (openParkingArea.doubleValue() > 0) {
-                setReportOutputDetails(pl, "4.2.1", "Open Parking Area", "",
-                        roundedValueOpen + " ECS (" + openParkingArea + SQMTRS + ")", "");
-            }
-            if (coverParkingArea.doubleValue() > 0) {
-                setReportOutputDetails(pl, "4.2.1", "Cover Parking Area", " ",
-                        roundedValueCover + " ECS (" + coverParkingArea + SQMTRS + ")", "");
-            }
-            if (basementParkingArea.doubleValue() > 0) {
-                setReportOutputDetails(pl, "4.2.1", "Basement Parking Area", "",
-                        roundedValueBsmnt + " ECS (" + basementParkingArea + SQMTRS + ")", "");
-            }
-            if (stiltParkingArea.doubleValue() > 0) {
-                setReportOutputDetails(pl, "4.2.1", "Stilt Parking Area", "",
-                        roundedValueStilt + " ECS (" + stiltParkingArea + SQMTRS + ")", "");
-            }
-            LOGGER.info("******************Require no of Car Parking***************" + helper.totalRequiredCarParking);
-        }
-    } catch (Exception e) {
-        LOGGER.error("Error occurred while executing processParking: ", e);
-        addErrorMessage(pl, "Parking Validation Error", "An unexpected error occurred while calculating parking requirements: " + e.getMessage());
-    }
-}
-
-// Helper method to securely attach error messages without throwing NPEs
-private void addErrorMessage(Plan pl, String errorKey, String errorMessage) {
-    if (pl != null) {
-        HashMap<String, String> errors = new HashMap<>();
-        errors.put(errorKey, errorMessage);
-        pl.addErrors(errors);
-    }
-}
-    
-//    public void processParking(Plan pl) {
-//        ParkingHelper helper = new ParkingHelper();
-//        BigDecimal plotArea = (pl.getPlot() != null && pl.getPlot().getArea() != null)
-//                ? pl.getPlot().getArea()
-//                : BigDecimal.ZERO;
-//
-//        BigDecimal coveredArea = (pl.getVirtualBuilding() != null && pl.getVirtualBuilding().getTotalCoverageArea() != null)
-//                ? pl.getVirtualBuilding().getTotalCoverageArea().setScale(2, BigDecimal.ROUND_HALF_UP)
-//                : BigDecimal.ZERO;
-//
-//              
-//        ScrutinyDetail scrutinyDetail1 = new ScrutinyDetail();
-//        scrutinyDetail1.addColumnHeading(1, RULE_NO);
-//        scrutinyDetail1.addColumnHeading(2, DESCRIPTION);
-//        scrutinyDetail1.addColumnHeading(3, "");
-//        scrutinyDetail1.addColumnHeading(4, REQUIRED);
-//        scrutinyDetail1.addColumnHeading(5, PROVIDED);
-//        scrutinyDetail1.addColumnHeading(6, STATUS);
-//        
-//        if (pl.getParkingDetails() != null && pl.getParkingDetails().getTwoWheelers() != null && !pl.getParkingDetails().getTwoWheelers().isEmpty()) {
-//            scrutinyDetail.setSubHeading(TWO_WHEELER_SIZE_NOTE);
-//        }
-//
-//        OccupancyTypeHelper mostRestrictiveOccupancy = pl.getVirtualBuilding() != null
-//                ? pl.getVirtualBuilding().getMostRestrictiveFarHelper()
-//                : null;
-//        BigDecimal totalBuiltupArea = pl.getOccupancies().stream().map(Occupancy::getBuiltUpArea)
-//                .reduce(BigDecimal.ZERO, BigDecimal::add);
-//        BigDecimal coverParkingArea = BigDecimal.ZERO;
-//        BigDecimal basementParkingArea = BigDecimal.ZERO;
-//        BigDecimal openParkingArea = BigDecimal.ZERO;
-//        BigDecimal stiltParkingArea = BigDecimal.ZERO;
-//
-//        for (Block block : pl.getBlocks()) {
-//            for (Floor floor : block.getBuilding().getFloors()) {
-//                coverParkingArea = coverParkingArea.add(floor.getParking().getCoverCars().stream().map(Measurement::getArea)
-//                        .reduce(BigDecimal.ZERO, BigDecimal::add)).setScale(2, RoundingMode.UP);
-//                basementParkingArea = basementParkingArea
-//                        .add(floor.getParking().getBasementCars().stream().map(Measurement::getArea)
-//                                .reduce(BigDecimal.ZERO, BigDecimal::add)).setScale(2, RoundingMode.UP);
-//            }
-//        }
-//        openParkingArea = pl.getParkingDetails().getOpenCars().stream().map(Measurement::getArea)
-//                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.UP);
-//        stiltParkingArea = pl.getParkingDetails().getStilts().stream().map(Measurement::getArea)
-//                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.UP);
-//
-//        BigDecimal totalProvidedCarParkArea = openParkingArea.add(coverParkingArea).add(basementParkingArea).add(stiltParkingArea);
-//        helper.totalRequiredCarParking += openParkingArea.doubleValue() / OPEN_ECS;
-//        helper.totalRequiredCarParking += coverParkingArea.doubleValue() / COVER_ECS;
-//        helper.totalRequiredCarParking += basementParkingArea.doubleValue() / BSMNT_ECS;
-//        helper.totalRequiredCarParking += stiltParkingArea.doubleValue() / STILT_ECS;
-//        
-//        double totalRequiredOpenCarParking = openParkingArea.doubleValue() / OPEN_ECS;
-//        String formattedValue = String.format("%.2f", totalRequiredOpenCarParking);
-//        double roundedValueOpen = Double.parseDouble(formattedValue);
-//        
-//        double totalRequiredCoverCarParking = coverParkingArea.doubleValue() / COVER_ECS;
-//        String formattedValue1 = String.format("%.2f", totalRequiredCoverCarParking);
-//        double roundedValueCover = Double.parseDouble(formattedValue1);
-//
-//        
-//        double totalRequiredBsmntCarParking = basementParkingArea.doubleValue() / BSMNT_ECS;
-//        String formattedValue2 = String.format("%.2f", totalRequiredBsmntCarParking);
-//        double roundedValueBsmnt = Double.parseDouble(formattedValue2);
-//
-//        
-//        double totalRequiredStiltCarParking = stiltParkingArea.doubleValue() / STILT_ECS;
-//        String formattedValue3 = String.format("%.2f", totalRequiredStiltCarParking);
-//        double roundedValueStilt = Double.parseDouble(formattedValue3);
-//
-//     
-//
-//        Double requiredCarParkArea = 0d;
-//        Double requiredVisitorParkArea = 0d;
-//
-//        BigDecimal providedVisitorParkArea = BigDecimal.ZERO;
-//
-//        validateSpecialParking(pl, helper, totalBuiltupArea);
-//        
-//        // Only process/calculate/report two-wheeler parking if plotArea <= 100
-//        if (pl.getPlot() != null && plotArea.doubleValue() <= 100) {
-//            for (final Occupancy occupancy : pl.getOccupancies()) {
-//                OccupancyTypeHelper mostRestrictiveOccupancyType = pl.getVirtualBuilding().getMostRestrictiveFarHelper();
-//                if (occupancy.getTypeHelper().getSubtype() != null && ((mostRestrictiveOccupancyType.getType() != null
-//                                && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())))) {                    
-//                    processTwoWheelerParking(pl, helper);
-//                }
-//            }
-//        }
-//  
-//        Integer noOfrequiredParking = 0;
-//        String requiredParkingText = null;
-//        if (mostRestrictiveOccupancy != null && A.equals(mostRestrictiveOccupancy.getType().getCode())) {
-//        	if(mostRestrictiveOccupancy.getSubtype()!=null
-//							&& A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
-//        		// A-AF apartment/flat parking: ECS per dwelling unit plus 10% guest parking.
-//                ResidentialParkingStats parkingStats = getResidentialParkingStats(pl);
-//                double ecsPerDu = getApartmentFlatEcsPerDu(parkingStats.averageUnitAreaSqM);
-//                
-//                double totalDuEcs = ecsPerDu * parkingStats.totalDwellingUnits;
-//                
-//                // --- 2. Add Additional 10% Guest Parking ---
-//                // (As per the second image: "Additional 10% guest parking shall also be provided")
-//                double guestEcs = totalDuEcs * 0.10;
-//                
-//                // Total required ECS (noOfrequiredParking)
-//                noOfrequiredParking = (int) Math.ceil(totalDuEcs + guestEcs);
-//                requiredParkingText = formatEcs(totalDuEcs) + " ECS + 10% Guest Parking ("
-//                        + formatEcs(guestEcs) + " ECS) = " + noOfrequiredParking + " ECS";
-//                
-//                if (pl.getPlot() != null) {                 
-//                    if (openParkingArea != null && openParkingArea.doubleValue() > 0) {
-//                        requiredCarParkArea += OPEN_ECS * noOfrequiredParking;
-//                    } else if (stiltParkingArea != null && stiltParkingArea.doubleValue() > 0) {
-//                        requiredCarParkArea += STILT_ECS * noOfrequiredParking;
-//                    } else if (basementParkingArea != null && basementParkingArea.doubleValue() > 0) {
-//                        requiredCarParkArea += BSMNT_ECS * noOfrequiredParking;
-//                    } else if (coverParkingArea != null && coverParkingArea.doubleValue() > 0) {
-//                        requiredCarParkArea += COVER_ECS * noOfrequiredParking;
-//                    } 
-////                    else {
-////                         // Default to general ECS area if no specific area type is defined
-////                         requiredCarParkArea += GENERAL_ECS_AREA * noOfrequiredParking;
-////                    }
-//                }
-//        	}else {
-//        		if (pl.getPlot() != null) {
-//
-//        		    double area = plotArea.doubleValue();
-//
-//        		    if (area <= AREA_UPPER_100) { 
-//        		        noOfrequiredParking = ECS_TWO_WHEELER;
-//
-//        		    } else if (area > AREA_UPPER_100 && area <= AREA_UPPER_150) {
-//        		        noOfrequiredParking = ECS_1;
-//
-//        		    } else if (area > AREA_UPPER_150 && area <= AREA_UPPER_200) {
-//        		        noOfrequiredParking = ECS_1;
-//
-//        		    } else if (area > AREA_UPPER_200 && area <= AREA_UPPER_300) {
-//        		        noOfrequiredParking = ECS_2;
-//
-//        		    } else if (area > AREA_UPPER_300 && area <= AREA_UPPER_500) {
-//        		        noOfrequiredParking = ECS_3;
-//
-//        		    } else if (area > AREA_UPPER_500 && area <= AREA_UPPER_1000) {
-//        		        noOfrequiredParking = ECS_3;
-//
-//        		    } else {
-//        		        // Optional: for areas above 1000 sq.m (not in table)
-//        		        noOfrequiredParking = ECS_3;
-//        		    }
-//        		}
-//
-////        		if (pl.getPlot() != null) { // Check plot is not null before using plotArea
-////                    double area = plotArea.doubleValue();
-////                    if (area < 100) {
-////                        // requiredCarParkArea += 2.5; // Original logic, commented out in provided code
-////                         noOfrequiredParking = 0; // Explicitly setting based on image for plotArea 83.61
-////                    } else if (area >= 100 && area <= 150) {
-////                        noOfrequiredParking += 1;
-////                    } else if (area > 150 && area <= 200) { // Adjusted condition slightly to match common patterns (>=150 was in original)
-////                        noOfrequiredParking += 2;
-////                    } else if (area > 200) { // Adjusted condition slightly (>=200 was in original)
-////                        noOfrequiredParking += 3;
-////                    }
-////                 }
-//            	
-//    	//            if (openParkingArea.doubleValue() > 0) {
-//    	//                requiredCarParkArea += OPEN_ECS * noOfrequiredParking;
-//    	//            } else if (stiltParkingArea.doubleValue() > 0) {
-//    	//                requiredCarParkArea += STILT_ECS * noOfrequiredParking;
-//    	//            } else if (basementParkingArea.doubleValue() > 0) {
-//    	//                requiredCarParkArea += BSMNT_ECS * noOfrequiredParking;
-//    	//            } else if (coverParkingArea.doubleValue() > 0) {
-//    	//                requiredCarParkArea += COVER_ECS * noOfrequiredParking;
-//            	//            }
-//        	}
-//        }else if (mostRestrictiveOccupancy != null && F.equals(mostRestrictiveOccupancy.getType().getCode())) {
-//        	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
-//            BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
-////            if (plotCoveredArea != null && plotCoveredArea.compareTo(BigDecimal.ZERO) > 0) {
-////                BigDecimal divisor = BigDecimal.valueOf(50);
-////                BigDecimal requiredParking = plotCoveredArea.divide(divisor, 0, RoundingMode.HALF_UP);
-////                noOfrequiredParking = requiredParking.intValue();
-////            }
-//            if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
-//                HashMap<String, String> errors = new HashMap<>();
-//                errors.put("Plot Area Error:", "Plot covered area must be greater than 0.");
-//                pl.addErrors(errors);
-//            } else if (F_MIP.equalsIgnoreCase(subType)) {
-//            	BigDecimal totalBuiltUpArea = getTotalBuiltUpArea(pl);
-//            	BigDecimal totalCinemaArea = getTotalCinemaArea(pl);
-//
-//            	noOfrequiredParking = calculateMiniplexECS(
-//            	        totalBuiltUpArea,
-//            	        totalCinemaArea)
-//            	        .setScale(0, RoundingMode.HALF_UP)
-//            	        .intValue();
-//            	
-//            	
-//            }else if(F_MTP.equalsIgnoreCase(subType)){
-//            	BigDecimal totalBuiltUpArea = getTotalBuiltUpArea(pl);
-//            	BigDecimal totalCinemaArea = getTotalCinemaArea(pl);
-//
-//            	noOfrequiredParking = calculateMultiplexECS(
-//            	        totalBuiltUpArea,
-//            	        totalCinemaArea)
-//            	        .setScale(0, RoundingMode.HALF_UP)
-//            	        .intValue();
-//            }else {            	
-//            	Integer multiplier = getFTypeMultiplier(subType);
-//            	BigDecimal divisor = getFTypeDivisor(subType);
-//            	if (multiplier == null) {
-//            	    HashMap<String, String> errors = new HashMap<>();
-//            	    errors.put("Parking Calculation Error",
-//            	            "No ECS rule defined for subtype: " + subType);
-//            	    pl.addErrors(errors);
-//            	} else {
-//            	    int baseEcs = plotCoveredArea
-//            	            .divide(divisor, 0, RoundingMode.HALF_UP)
-//            	            .intValue();
-//            	    noOfrequiredParking = baseEcs * multiplier;
-//            	}
-//            }
-//        } else if (mostRestrictiveOccupancy != null && G.equals(mostRestrictiveOccupancy.getType().getCode())) {
-//            BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
-//            if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
-//                HashMap<String, String> errors = new HashMap<>();
-//                errors.put("Plot Area Error:", "Plot covered area must be greater than 0.");
-//                pl.addErrors(errors);
-//            } else {            	
+            if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
+                HashMap<String, String> errors = new HashMap<>();
+                errors.put("Plot Area Error:", "Plot covered area must be greater than 0.");
+                pl.addErrors(errors);
+            } else {            	
 //            	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
 //            	Integer multiplier = getGTypeMultiplier(subType);
-//            	if (multiplier == null) {
-//            	    HashMap<String, String> errors = new HashMap<>();
-//            	    errors.put("Parking Calculation Error",
-//            	            "No ECS rule defined for subtype: " + subType);
-//            	    pl.addErrors(errors);
-//            	} else {
-//            	    int baseEcs = plotCoveredArea
-//            	            .divide(BigDecimal.valueOf(100), 0, RoundingMode.CEILING)
-//            	            .intValue();
-//            	    noOfrequiredParking = baseEcs * multiplier;
-//            	}
-//            }
-//        }else if (mostRestrictiveOccupancy != null && L.equals(mostRestrictiveOccupancy.getType().getCode())) {
-//        	BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
-//
-//            if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
-//                HashMap<String, String> errors = new HashMap<>();
-//                errors.put("Plot Area Error:", "Plot covered area must be greater than 0.");
-//                pl.addErrors(errors);
-//            } else {            	
-//            	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
-//            	Integer multiplier = getLTypeMultiplier(subType);
 //            	if (multiplier == null) {
 //            	    HashMap<String, String> errors = new HashMap<>();
 //            	    errors.put("Parking Calculation Error",
@@ -856,96 +434,114 @@ private void addErrorMessage(Plan pl, String errorKey, String errorMessage) {
 //            	    // Multiply after rounding
 //            	    noOfrequiredParking = baseEcs * multiplier;
 //            	}
-//            }
-//        }
-//
-//        BigDecimal requiredCarParkingArea = Util.roundOffTwoDecimal(BigDecimal.valueOf(requiredCarParkArea));
-//        BigDecimal totalProvidedCarParkingArea = Util.roundOffTwoDecimal(totalProvidedCarParkArea);
-//        BigDecimal requiredVisitorParkingArea = Util.roundOffTwoDecimal(BigDecimal.valueOf(requiredVisitorParkArea));
-//        BigDecimal providedVisitorParkingArea = Util.roundOffTwoDecimal(providedVisitorParkArea);
-//        
-//        BigDecimal totalECS = new BigDecimal(roundedValueOpen + roundedValueCover + roundedValueBsmnt + roundedValueStilt)
-//                .setScale(2, BigDecimal.ROUND_HALF_UP);
-//        if (requiredParkingText == null) {
-//            requiredParkingText = noOfrequiredParking + " ECS";
-//        }
-//     
-//        
-//        // Conditionally report Car Parking details (Section 4.2.1) ONLY if plotArea > 100
-//        if (pl.getPlot() != null 
-//        		//&& plotArea.doubleValue() > 100
-//        		) {
-//
-//            if (totalProvidedCarParkArea.doubleValue() == 0) {
-//            	if (!Far.shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_ECS)) {				
-//            		pl.addError(RULE__DESCRIPTION,
-//                            getLocaleMessage("msg.error.not.defined", RULE__DESCRIPTION));
-//                }
-//                
-//            } else if (requiredCarParkArea > 0 && totalProvidedCarParkingArea.compareTo(requiredCarParkingArea) < 0) {
-////                setReportOutputDetails(pl, RULE_, RULE__DESCRIPTION, requiredCarParkingArea + SQMTRS,
-////                        totalProvidedCarParkingArea + SQMTRS, Result.Not_Accepted.getResultVal());
-////            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
-////            			totalECS + " ECS" ,
-////            			Result.Not_Accepted.getResultVal()
-////        				);
-//            	setReportOutputDetails1(pl,"4.2.1", "Parking", requiredParkingText ,
-//            			totalECS + " ECS" ,
-//            			Result.Not_Accepted.getResultVal()
-//        				);
-//            }else if (BigDecimal.valueOf(noOfrequiredParking).compareTo(totalECS) > 0) {
-//            	// Case 2: Required parking count more than provided ECS
-//            	String status=Result.Not_Accepted.getResultVal();
-//            	if(Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_ECS)) {
-//            		status=Result.Accepted.getResultVal();
-//            	}
-////                setReportOutputDetails1(pl,"4.2.1","Parking",noOfrequiredParking + " ECS ( Covered Area " + coveredArea + " )",
-////                    totalECS + " ECS",status);
-//            	setReportOutputDetails1(pl,"4.2.1","Parking",requiredParkingText,
-//                        totalECS + " ECS",status);
-//            }else {
-////                setReportOutputDetails(pl, RULE_, RULE__DESCRIPTION, requiredCarParkingArea + SQMTRS,
-////                        totalProvidedCarParkingArea + SQMTRS, Result.Accepted.getResultVal());
-////            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
-////            			totalECS + " ECS" ,
-////            			Result.Accepted.getResultVal()
-////        				);
-//            	setReportOutputDetails1(pl,"4.2.1", "Parking", requiredParkingText ,
-//            			totalECS + " ECS" ,
-//            			Result.Accepted.getResultVal()
-//        				);
-//            }
-//            if (requiredVisitorParkArea > 0 && providedVisitorParkArea.compareTo(requiredVisitorParkingArea) < 0) {
-//            	
-//                setReportOutputDetails(pl, SUB_RULE_40_10, SUB_RULE_40_10_DESCRIPTION, requiredVisitorParkingArea + SQMTRS,
-//                        providedVisitorParkingArea + SQMTRS, Result.Not_Accepted.getResultVal());
-//            } else if (requiredVisitorParkArea > 0) {
-//                setReportOutputDetails(pl, SUB_RULE_40_10, SUB_RULE_40_10_DESCRIPTION, requiredVisitorParkingArea + SQMTRS,
-//                        providedVisitorParkingArea + SQMTRS, Result.Accepted.getResultVal());
-//            }
-//
-//           
-//            // Including individual parking areas in the report
-//            if(openParkingArea.doubleValue() > 0) {
-//            setReportOutputDetails(pl, "4.2.1", "Open Parking Area", "",
-//            		roundedValueOpen +  " ECS " + "(" +  openParkingArea + SQMTRS + ")", "");
-//            }
-//            if(coverParkingArea.doubleValue() > 0) {
-//            setReportOutputDetails(pl, "4.2.1", "Cover Parking Area", " ",
-//            		roundedValueCover +  " ECS " + "(" +  coverParkingArea + SQMTRS + ")", "");
-//            }
-//            if(basementParkingArea.doubleValue() > 0) {
-//            setReportOutputDetails(pl, "4.2.1", "Basement Parking Area", "",
-//            		roundedValueBsmnt +  " ECS " + "(" +  basementParkingArea + SQMTRS + ")","");
-//            }
-//            
-//            if(stiltParkingArea.doubleValue() > 0) {
-//            setReportOutputDetails(pl, "4.2.1", "Stilt Parking Area", "",
-//            		roundedValueStilt +  " ECS " + "(" +  stiltParkingArea + SQMTRS + ")", "");
-//            }
-//            LOGGER.info("******************Require no of Car Parking***************" + helper.totalRequiredCarParking);
-//        }
-//     }
+            	
+            	noOfrequiredParking = calculateRequiredParking(pl, context, plotCoveredArea);
+            	
+
+            }
+        }else if (mostRestrictiveOccupancy != null && L.equals(mostRestrictiveOccupancy.getType().getCode())) {
+        	BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
+
+            if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
+                HashMap<String, String> errors = new HashMap<>();
+                errors.put("Plot Area Error:", "Plot covered area must be greater than 0.");
+                pl.addErrors(errors);
+            } else {            	
+            	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
+            	Integer multiplier = getLTypeMultiplier(subType);
+            	if (multiplier == null) {
+            	    HashMap<String, String> errors = new HashMap<>();
+            	    errors.put("Parking Calculation Error",
+            	            "No ECS rule defined for subtype: " + subType);
+            	    pl.addErrors(errors);
+            	} else {
+            	    // Divide first and round UP
+            	    int baseEcs = plotCoveredArea
+            	            .divide(BigDecimal.valueOf(100), 0, RoundingMode.CEILING)
+            	            .intValue();
+            	    // Multiply after rounding
+            	    noOfrequiredParking = baseEcs * multiplier;
+            	}
+            }
+        }
+
+        
+        
+
+        BigDecimal requiredCarParkingArea = Util.roundOffTwoDecimal(BigDecimal.valueOf(requiredCarParkArea));
+        BigDecimal totalProvidedCarParkingArea = Util.roundOffTwoDecimal(totalProvidedCarParkArea);
+        BigDecimal requiredVisitorParkingArea = Util.roundOffTwoDecimal(BigDecimal.valueOf(requiredVisitorParkArea));
+        BigDecimal providedVisitorParkingArea = Util.roundOffTwoDecimal(providedVisitorParkArea);
+        
+        BigDecimal totalECS = new BigDecimal(roundedValueOpen + roundedValueCover + roundedValueBsmnt + roundedValueStilt)
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
+     
+        
+        // Conditionally report Car Parking details (Section 4.2.1) ONLY if plotArea > 100
+        if (pl.getPlot() != null 
+        		//&& plotArea.doubleValue() > 100
+        		) {
+
+            if (totalProvidedCarParkArea.doubleValue() == 0) {
+            	if (!Far.shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_ECS)) {				
+            		pl.addError(RULE__DESCRIPTION,
+                            getLocaleMessage("msg.error.not.defined", RULE__DESCRIPTION));
+                }
+                
+            } else if (requiredCarParkArea > 0 && totalProvidedCarParkingArea.compareTo(requiredCarParkingArea) < 0) {
+//                setReportOutputDetails(pl, RULE_, RULE__DESCRIPTION, requiredCarParkingArea + SQMTRS,
+//                        totalProvidedCarParkingArea + SQMTRS, Result.Not_Accepted.getResultVal());
+            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
+            			totalECS + " ECS" ,
+            			Result.Not_Accepted.getResultVal()
+        				);
+            }else if (BigDecimal.valueOf(noOfrequiredParking).compareTo(totalECS) > 0) {
+            	// Case 2: Required parking count more than provided ECS
+            	String status=Result.Not_Accepted.getResultVal();
+            	if(Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_ECS)) {
+            		status=Result.Accepted.getResultVal();
+            	}
+                setReportOutputDetails1(pl,"4.2.1","Parking",noOfrequiredParking + " ECS ( Covered Area " + coveredArea + " )",
+                    totalECS + " ECS",status);
+            }else {
+//                setReportOutputDetails(pl, RULE_, RULE__DESCRIPTION, requiredCarParkingArea + SQMTRS,
+//                        totalProvidedCarParkingArea + SQMTRS, Result.Accepted.getResultVal());
+            	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( Covered Area " + coveredArea + " ) " ,
+            			totalECS + " ECS" ,
+            			Result.Accepted.getResultVal()
+        				);
+            }
+            if (requiredVisitorParkArea > 0 && providedVisitorParkArea.compareTo(requiredVisitorParkingArea) < 0) {
+            	
+                setReportOutputDetails(pl, SUB_RULE_40_10, SUB_RULE_40_10_DESCRIPTION, requiredVisitorParkingArea + SQMTRS,
+                        providedVisitorParkingArea + SQMTRS, Result.Not_Accepted.getResultVal());
+            } else if (requiredVisitorParkArea > 0) {
+                setReportOutputDetails(pl, SUB_RULE_40_10, SUB_RULE_40_10_DESCRIPTION, requiredVisitorParkingArea + SQMTRS,
+                        providedVisitorParkingArea + SQMTRS, Result.Accepted.getResultVal());
+            }
+
+           
+            // Including individual parking areas in the report
+            if(openParkingArea.doubleValue() > 0) {
+            setReportOutputDetails(pl, "4.2.1", "Open Parking Area", "",
+            		roundedValueOpen +  " ECS " + "(" +  openParkingArea + SQMTRS + ")", "");
+            }
+            if(coverParkingArea.doubleValue() > 0) {
+            setReportOutputDetails(pl, "4.2.1", "Cover Parking Area", " ",
+            		roundedValueCover +  " ECS " + "(" +  coverParkingArea + SQMTRS + ")", "");
+            }
+            if(basementParkingArea.doubleValue() > 0) {
+            setReportOutputDetails(pl, "4.2.1", "Basement Parking Area", "",
+            		roundedValueBsmnt +  " ECS " + "(" +  basementParkingArea + SQMTRS + ")","");
+            }
+            
+            if(stiltParkingArea.doubleValue() > 0) {
+            setReportOutputDetails(pl, "4.2.1", "Stilt Parking Area", "",
+            		roundedValueStilt +  " ECS " + "(" +  stiltParkingArea + SQMTRS + ")", "");
+            }
+            LOGGER.info("******************Require no of Car Parking***************" + helper.totalRequiredCarParking);
+        }
+     }
         
         
 
@@ -1337,85 +933,6 @@ private void addErrorMessage(Plan pl, String errorKey, String errorMessage) {
 		}
 	}
 
-    private ResidentialParkingStats getResidentialParkingStats(Plan pl) {
-        int totalDwellingUnits = 0;
-        BigDecimal totalCoveredArea = BigDecimal.ZERO;
-
-        if (pl != null && pl.getBlocks() != null) {
-            for (Block block : pl.getBlocks()) {
-                if (block.getBuilding() == null || block.getBuilding().getFloors() == null) {
-                    continue;
-                }
-                for (Floor floor : block.getBuilding().getFloors()) {
-                    if (floor.getUnits() == null || floor.getUnits().isEmpty()) {
-                        continue;
-                    }
-                    totalDwellingUnits += floor.getUnits().size();
-                    totalCoveredArea = totalCoveredArea.add(getFloorCoveredArea(floor));
-                }
-            }
-        }
-
-        double averageUnitAreaSqM = 0;
-        if (totalDwellingUnits > 0) {
-            averageUnitAreaSqM = totalCoveredArea
-                    .divide(BigDecimal.valueOf(totalDwellingUnits), 2, RoundingMode.HALF_UP)
-                    .doubleValue();
-        }
-
-        return new ResidentialParkingStats(totalDwellingUnits, averageUnitAreaSqM);
-    }
-
-    private BigDecimal getFloorCoveredArea(Floor floor) {
-        BigDecimal coveredArea = BigDecimal.ZERO;
-        if (floor.getOccupancies() != null) {
-            for (Occupancy occupancy : floor.getOccupancies()) {
-                if (occupancy.getBuiltUpArea() != null) {
-                    coveredArea = coveredArea.add(occupancy.getBuiltUpArea());
-                }
-            }
-        }
-
-        if (coveredArea.compareTo(BigDecimal.ZERO) > 0) {
-            return coveredArea;
-        }
-
-        for (FloorUnit unit : floor.getUnits()) {
-            if (unit.getArea() != null) {
-                coveredArea = coveredArea.add(unit.getArea());
-            }
-        }
-        return coveredArea;
-    }
-
-    private double getApartmentFlatEcsPerDu(double averageUnitAreaSqM) {
-        if (averageUnitAreaSqM <= 0) {
-            return 0;
-        }
-        if (averageUnitAreaSqM <= 120) {
-            return 1.5;
-        }
-        if (averageUnitAreaSqM <= 300) {
-            return 2.0;
-        }
-        return 3.0;
-    }
-
-    private String formatEcs(double ecs) {
-        BigDecimal ecsValue = BigDecimal.valueOf(ecs).setScale(2, RoundingMode.HALF_UP).stripTrailingZeros();
-        return ecsValue.toPlainString();
-    }
-
-    private static class ResidentialParkingStats {
-        private final int totalDwellingUnits;
-        private final double averageUnitAreaSqM;
-
-        private ResidentialParkingStats(int totalDwellingUnits, double averageUnitAreaSqM) {
-            this.totalDwellingUnits = totalDwellingUnits;
-            this.averageUnitAreaSqM = averageUnitAreaSqM;
-        }
-    }
-
     private BigDecimal getTotalCarpetAreaByOccupancy(Plan pl, OccupancyType type) {
         BigDecimal totalArea = BigDecimal.ZERO;
         for (Block b : pl.getBlocks())
@@ -1487,67 +1004,6 @@ private void addErrorMessage(Plan pl, String errorKey, String errorMessage) {
         }
     }
     
-    private Integer getFTypeMultiplier(String subType) {
-
-        if (subType == null) {
-            return null;
-        }
-
-        String type = subType.trim().toUpperCase();
-        switch (type) {
-            case "F":
-            case "F-RB":
-            case "F-SCC":
-            case "F-PO":
-            case "F-B":
-            case "F-VGP":
-            case "F-BU":
-                return 1;
-            case "F-HM":
-            case "F-LB":
-                return 2;
-            case "F-PFSF":
-            case "F-PFST":
-            case "F-PFSS":
-            case "F-PS":
-            case "F-CNGS":
-            	return 0;
-                
-            default:
-                return null;
-        }
-    }
-    
-    private BigDecimal getFTypeDivisor(String subType) {
-
-        if (subType == null) {
-            return null;
-        }
-
-        String type = subType.trim().toUpperCase();
-        switch (type) {
-            case "F":
-            case "F-RB":
-            case "F-SCC":
-            case "F-PO":
-            case "F-B":
-            case "F-VGP":
-            case "F-BU":
-                return BigDecimal.valueOf(50);
-            case "F-HM":
-            case "F-LB":
-            case "F-PFSF":
-            case "F-PFST":
-            case "F-PFSS":
-            case "F-PS":
-            case "F-CNGS":
-            	return BigDecimal.valueOf(100);
-                
-            default:
-                return null;
-        }
-    }
-    
     private Integer getLTypeMultiplier(String subType) {
 
         if (subType == null) {
@@ -1576,134 +1032,85 @@ private void addErrorMessage(Plan pl, String errorKey, String errorMessage) {
         }
     }
 
-    private BigDecimal calculateMiniplexECS(BigDecimal coveredArea) {
+//    public int calculateRequiredParking(Plan pl, RuleContext context, BigDecimal plotCoveredArea) {
+//        RuleResult<JsonNode> parkingRule = RuleUtil.getRule(
+//            pl.getMdmsRulesData().get("masterMdmsData"), 
+//            "parking", 
+//            context, 
+//            JsonNode.class
+//        );
+//
+//        JsonNode slab = parkingRule.getValue();
+//        if (slab == null || slab.isMissingNode()) return 0;
+//
+//        double ecsRate = slab.path("ECS").asDouble(0.0);
+//        double denominator = slab.path("denominator").asDouble(0.0);
+//        double totalParking = 0.0;
+//
+//        if (denominator > 0) {
+//            BigDecimal area = (plotCoveredArea != null) ? plotCoveredArea : BigDecimal.ZERO;
+//            int areaUnits = area.divide(BigDecimal.valueOf(denominator), 0, RoundingMode.CEILING).intValue();
+//            totalParking = areaUnits * ecsRate;            
+//            LOGGER.info("Area-based Parking (Generic): {} units of {}sqm * {} ECS", areaUnits, denominator, ecsRate);
+//        } else {
+//            // --- CASE: DU BASED (Residential) ---
+//            // Logic: Total DUs * ECS_Rate
+//            //double duCount = pl.getTotalDwellingUnits(); 
+//            //totalParking = duCount * ecsRate;
+//        	totalParking = ecsRate;
+//            LOGGER.info("DU-based Parking (Generic): {} ECS",ecsRate);
+//        }
+//
+//        // Add 10% Guest Parking
+//        //double guestParking = totalParking * 0.10;
+////        return (int) Math.ceil(totalParking + guestParking);
+//        return (int) Math.ceil(totalParking);
+//    }
+    public int calculateRequiredParking(Plan pl, RuleContext context, BigDecimal plotCoveredArea) {
+        BigDecimal totalCoveredArea = (plotCoveredArea != null) ? plotCoveredArea : BigDecimal.ZERO;
+        double totalDUs = 10.0; // Hardcoded as per your request
+        
+        double avgUnitArea = (totalDUs > 0) ? (totalCoveredArea.doubleValue() / totalDUs) : 0.0;
 
-        if (coveredArea == null || coveredArea.compareTo(BigDecimal.ZERO) <= 0) {
-            return BigDecimal.ZERO;
+        // --- FIX STARTS HERE ---
+        // 1. Create a NEW mutable HashMap and copy existing variables into it
+        Map<String, Object> updatedVars = new HashMap<>();
+        if (context.getFormulaVariables() != null) {
+            updatedVars.putAll(context.getFormulaVariables());
+        }
+        
+        // 2. Now you can safely put the new variable
+        updatedVars.put("averageUnitArea", BigDecimal.valueOf(avgUnitArea));
+
+        // 3. Create a NEW context with the updated variables to pass to RuleUtil
+        RuleContext updatedContext = RuleContext.builder()
+                .formulaVariables(updatedVars)
+                .numericInput(context.getNumericInput())
+                .withStilt(context.getWithStilt())
+                .build();
+        // --- FIX ENDS HERE ---
+
+        RuleResult<JsonNode> parkingRule = RuleUtil.getRule(
+            pl.getMdmsRulesData().get("masterMdmsData"), 
+            "parking", 
+            updatedContext, // Use the new context here
+            JsonNode.class
+        );
+
+        JsonNode slab = parkingRule.getValue();
+        if (slab == null || slab.isMissingNode()) {
+            LOGGER.error("Parking rule resolution failed for Average Unit Area: {}", avgUnitArea);
+            return 0;
         }
 
-        BigDecimal hundred = BigDecimal.valueOf(100);
+        double ecsRate = slab.path("ECS").asDouble(0.0);
+        double totalBaseParking = totalDUs * ecsRate;
+        double guestParking = totalBaseParking * 0.10;
+        double totalRequired = totalBaseParking + guestParking;
 
-        // First 100 sq.m
-        BigDecimal firstSlabArea = coveredArea.min(hundred);
+        LOGGER.info("Parking Calc: Avg Unit Area: {}sqm, ECS: {}, Total DUs: {}, Base: {}, Guest: {}", 
+                     Math.round(avgUnitArea), ecsRate, totalDUs, totalBaseParking, guestParking);
 
-        // Remaining area beyond 100 sq.m
-        BigDecimal remainingArea = coveredArea.subtract(firstSlabArea);
-
-        // 3 ECS per 100 sq.m for first 100 sq.m
-        BigDecimal firstSlabECS = firstSlabArea
-                .multiply(BigDecimal.valueOf(3))
-                .divide(hundred, 10, RoundingMode.HALF_UP);
-
-        // 2 ECS per 100 sq.m for remaining area
-        BigDecimal remainingSlabECS = BigDecimal.ZERO;
-        if (remainingArea.compareTo(BigDecimal.ZERO) > 0) {
-            remainingSlabECS = remainingArea
-                    .multiply(BigDecimal.valueOf(2))
-                    .divide(hundred, 10, RoundingMode.HALF_UP);
-        }
-
-        return firstSlabECS.add(remainingSlabECS);
+        return (int) Math.ceil(totalRequired);
     }
-    
-	private BigDecimal calculateMultiplexECS(BigDecimal totalBuiltUpArea, BigDecimal cinemaArea) {
-
-		BigDecimal commercialArea = BigDecimal.ZERO;
-
-		if (totalBuiltUpArea != null && cinemaArea != null) {
-			commercialArea = totalBuiltUpArea.subtract(cinemaArea);
-
-			if (commercialArea.compareTo(BigDecimal.ZERO) < 0) {
-				commercialArea = BigDecimal.ZERO;
-			}
-		}
-
-		BigDecimal totalECS = BigDecimal.ZERO;
-
-		// Cinema component
-		if (cinemaArea != null && cinemaArea.compareTo(BigDecimal.ZERO) > 0) {
-			totalECS = totalECS.add(cinemaArea.multiply(BigDecimal.valueOf(2)).divide(BigDecimal.valueOf(66.91), 10,
-					RoundingMode.HALF_UP));
-		}
-
-		// Commercial / Other component
-		if (commercialArea.compareTo(BigDecimal.ZERO) > 0) {
-			totalECS = totalECS.add(commercialArea.multiply(BigDecimal.valueOf(2)).divide(BigDecimal.valueOf(100), 10,
-					RoundingMode.HALF_UP));
-		}
-
-		return totalECS;
-	}
-	
-	private BigDecimal calculateMiniplexECS(BigDecimal totalBuiltUpArea, BigDecimal cinemaArea) {
-
-		BigDecimal commercialArea = BigDecimal.ZERO;
-
-		if (totalBuiltUpArea != null && cinemaArea != null) {
-			commercialArea = totalBuiltUpArea.subtract(cinemaArea);
-
-			if (commercialArea.compareTo(BigDecimal.ZERO) < 0) {
-				commercialArea = BigDecimal.ZERO;
-			}
-		}
-
-		BigDecimal totalECS = BigDecimal.ZERO;
-
-		// Cinema component
-		if (cinemaArea != null && cinemaArea.compareTo(BigDecimal.ZERO) > 0) {
-			totalECS = totalECS.add(cinemaArea.multiply(BigDecimal.valueOf(3)).divide(BigDecimal.valueOf(100), 10,
-					RoundingMode.HALF_UP));
-		}
-
-		// Commercial / Other component
-		if (commercialArea.compareTo(BigDecimal.ZERO) > 0) {
-			totalECS = totalECS.add(commercialArea.multiply(BigDecimal.valueOf(2)).divide(BigDecimal.valueOf(100), 10,
-					RoundingMode.HALF_UP));
-		}
-
-		return totalECS;
-	}
-	
-	private BigDecimal getTotalCinemaArea(Plan plan) {
-	    BigDecimal totalCinemaArea = BigDecimal.ZERO;
-	    if (plan == null || plan.getBlocks() == null) {
-	        return totalCinemaArea;
-	    }
-	    for (Block block : plan.getBlocks()) {
-	        if (block.getBuilding() == null || block.getBuilding().getFloors() == null) {
-	            continue;
-	        }
-	        for (Floor floor : block.getBuilding().getFloors()) {
-	            if (floor.getCinemas() == null) {
-	                continue;
-	            }
-
-	            for (org.egov.common.entity.edcr.Cinema cinema : floor.getCinemas()) {
-	                if (cinema.getCinemas() == null) {
-	                    continue;
-	                }
-	                for (Measurement measurement : cinema.getCinemas()) {
-	                    if (measurement != null && measurement.getArea() != null) {
-	                        totalCinemaArea = totalCinemaArea.add(measurement.getArea());
-	                    }
-	                }
-	            }
-	        }
-	    }
-
-	    return totalCinemaArea;
-	}
-	
-	private BigDecimal getTotalBuiltUpArea(Plan plan) {
-
-	    if (plan == null
-	            || plan.getVirtualBuilding() == null
-	            || plan.getVirtualBuilding().getTotalBuitUpArea() == null) {
-	        return BigDecimal.ZERO;
-	    }
-
-	    return plan.getVirtualBuilding().getTotalBuitUpArea().max(BigDecimal.ZERO);
-	}
-	
-    
 }

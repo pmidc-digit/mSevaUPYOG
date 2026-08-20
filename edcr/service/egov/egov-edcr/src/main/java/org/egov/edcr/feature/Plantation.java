@@ -122,6 +122,21 @@ public class Plantation extends FeatureProcess {
                  
             if ( A.equals(type) ||  A_AF.equals(subType)  ||  A_AIF.equals(subType) || A_SA.equals(subType) || 
             		B.equals(type) || D.equals(type) || G.equals(type)) {
+            	
+//                if (plantationPer.compareTo(new BigDecimal("0.10")) < 0) {
+//                    details.put(REQUIRED, ">= 10%");
+//                    details.put(PROVIDED, plantationPer.multiply(new BigDecimal(100)).toString() + "%");
+//                    details.put(STATUS, Result.Not_Accepted.getResultVal());
+//                    scrutinyDetail.getDetail().add(details);
+//                    pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//                } else {
+//                    details.put(REQUIRED, ">= 10%");
+//                    details.put(PROVIDED, plantationPer.multiply(new BigDecimal(100)).toString() + "%");
+//                    details.put(STATUS, Result.Accepted.getResultVal());
+//                    scrutinyDetail.getDetail().add(details);
+//                    pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//                }
+          //  } else {
                 if (plantationPer.compareTo(new BigDecimal("0.05")) >= 0) {
                     details.put(REQUIRED, ">= 5%");
                     details.put(PROVIDED, plantationPer.multiply(new BigDecimal(100)).toString() + "%");

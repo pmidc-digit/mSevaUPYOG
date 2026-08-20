@@ -48,7 +48,6 @@
 package org.egov.edcr.feature;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -64,6 +63,7 @@ import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.common.entity.edcr.SetBack;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.utility.DcrConstants;
 import org.springframework.stereotype.Service;
@@ -90,9 +90,7 @@ public class PlantationGreenStrip extends FeatureProcess {
 		
 		 if (mostRestrictiveFarHelper != null && mostRestrictiveFarHelper.getType() != null){			
 			 if(DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveFarHelper.getType().getCode()) ||
-					 DxfFileConstants.G.equalsIgnoreCase(mostRestrictiveFarHelper.getType().getCode()) ||
-					 DxfFileConstants.F_MTP.equalsIgnoreCase(mostRestrictiveFarHelper.getSubtype().getCode())
-					 ) {
+					 DxfFileConstants.G.equalsIgnoreCase(mostRestrictiveFarHelper.getType().getCode())) {
 				 for (Block block : pl.getBlocks()) {
 						ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
 						scrutinyDetail.addColumnHeading(1, RULE_NO);
@@ -100,7 +98,7 @@ public class PlantationGreenStrip extends FeatureProcess {
 						scrutinyDetail.addColumnHeading(3, REQUIRED);
 						scrutinyDetail.addColumnHeading(4, PROVIDED);
 						scrutinyDetail.addColumnHeading(5, STATUS);
-						//scrutinyDetail.setKey("Block_" + block.getNumber() + "_" + "Plantation Area");
+						scrutinyDetail.setKey("Block_" + block.getNumber() + "_" + "Plantation Area");
 
 						boolean isAreaAccepted = false;
 						BigDecimal plantationArea = BigDecimal.ZERO;
@@ -113,62 +111,24 @@ public class PlantationGreenStrip extends FeatureProcess {
 									.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
 						}
 
-						BigDecimal requiredPlantations =  BigDecimal.ZERO;
+						BigDecimal requiredPlantations =  requiredPlantationPlotAreaWise(pl,mostRestrictiveFarHelper.getType().getCode());
 						// Check plantation area ≥ 5% of plot area
-						String percentage = "";
-						String description = "";
-						BigDecimal requiredPlantationArea = BigDecimal.ZERO;
-						
-						if (DxfFileConstants.F_MTP.equalsIgnoreCase(mostRestrictiveFarHelper.getSubtype().getCode())) {
-							scrutinyDetail.setKey("Block_" + block.getNumber() + "_" + "Open Area");
-							description = "Open Area";
-						    BigDecimal buildingFootprintArea = BigDecimal.ZERO;
-						    BigDecimal openArea = BigDecimal.ZERO;
-						    if (pl.getPlot() != null
-						            && pl.getPlot().getBuildingFootPrint() != null
-						            && pl.getPlot().getBuildingFootPrint().getArea() != null) {
-						        buildingFootprintArea = pl.getPlot().getBuildingFootPrint().getArea().setScale(2,RoundingMode.HALF_UP);
-						    }
-						    openArea = plotArea.subtract(buildingFootprintArea);
-						    // Prevent negative open area
-						    if (openArea.compareTo(BigDecimal.ZERO) < 0) {
-						        openArea = BigDecimal.ZERO;
-						    }
-						    // Plantation area = 10% of Open Area
-						    
-						    requiredPlantationArea = openArea
-						            .multiply(BigDecimal.valueOf(0.10))
-						            .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
-						                    DcrConstants.ROUNDMODE_MEASUREMENTS);
-						    percentage = "10% of Open Area (" + requiredPlantationArea + ")";
-						}else {
-							if(DxfFileConstants.A_AF.equalsIgnoreCase(mostRestrictiveFarHelper.getSubtype().getCode())) {
-								requiredPlantations =  requiredPlantationPlotAreaWise(pl,mostRestrictiveFarHelper.getSubtype().getCode());
-								scrutinyDetail.setKey("Block_" + block.getNumber() + "_" + "Community Open Space/Parks");
-								description = "Community Open Space/Parks";
-							}else {
-								requiredPlantations =  requiredPlantationPlotAreaWise(pl,mostRestrictiveFarHelper.getType().getCode());
-								scrutinyDetail.setKey("Block_" + block.getNumber() + "_" + "Plantation Area");
-								description = "Plantation area";
-							}
-							// Check plantation area ≥ 5% of plot area
-							requiredPlantationArea = plotArea.multiply(requiredPlantations).
-									setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
-							percentage =
-							        requiredPlantations
-							                .multiply(BigDecimal.valueOf(100))
-							                .stripTrailingZeros()
-							                .toPlainString() + "% of plot area(" + requiredPlantationArea + ")";
-						}
+						String percentage =
+						        requiredPlantations
+						                .multiply(BigDecimal.valueOf(100))
+						                .stripTrailingZeros()
+						                .toPlainString() + "% of plot area";
 
+						BigDecimal requiredPlantationArea = plotArea.multiply(requiredPlantations).
+								setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
 						if (plantationArea.compareTo(requiredPlantationArea) >= 0) {
 							isAreaAccepted = true;
 						} else {
-							errorMsgs.put(description +"Error ", description + " cannot be less than "+ requiredPlantationArea);
+							errorMsgs.put("Plantation area Error ", "Plantation area cannot be less than "+ requiredPlantationArea);
 							pl.addErrors(errorMsgs);
 						}
 						// Plantation Area Validation
-						buildResult(pl, scrutinyDetail, isAreaAccepted, description, percentage,
+						buildResult(pl, scrutinyDetail, isAreaAccepted, "Plantation area", percentage,
 								plantationArea.toString()+" m²",RULE_4__4_4_xi);
 					}				 
 			 }	 			 
@@ -255,14 +215,18 @@ public class PlantationGreenStrip extends FeatureProcess {
 
 	    BigDecimal plotArea = pl.getPlot().getArea();
 	    if (occType.equalsIgnoreCase(DxfFileConstants.A)) {	        
-	        requiredPlantation = BigDecimal.valueOf(0.05); // 5%
-	    } else if(occType.equalsIgnoreCase(DxfFileConstants.A_AF)){
-	    	 requiredPlantation = BigDecimal.valueOf(0.15);  // 15%
-	    }else if (occType.equalsIgnoreCase(DxfFileConstants.G)) {
+	        //requiredPlantation = BigDecimal.valueOf(0.05); // 5%
+	        requiredPlantation = RuleUtil.getRule(
+                    pl.getMdmsRulesData().get("masterMdmsData"),"plantationArea",null,BigDecimal.class).getValue().divide(BigDecimal.valueOf(100));
+	    } else if (occType.equalsIgnoreCase(DxfFileConstants.G)) {
 	        if (plotArea != null && plotArea.compareTo(BigDecimal.valueOf(1000)) > 0) {	           
-	            requiredPlantation = BigDecimal.valueOf(0.10);  // 10%
+	            //requiredPlantation = BigDecimal.valueOf(0.10);  // 10%
+	            requiredPlantation = RuleUtil.getRule(
+	                    pl.getMdmsRulesData().get("masterMdmsData"),"plantationArea",null,BigDecimal.class).getValue().divide(BigDecimal.valueOf(100));
 	        } else {	           
-	            requiredPlantation = BigDecimal.valueOf(0.05);  // 5%
+	            //requiredPlantation = BigDecimal.valueOf(0.05);  // 5%
+	            requiredPlantation = RuleUtil.getRule(
+	                    pl.getMdmsRulesData().get("masterMdmsData"),"plantationArea",null,BigDecimal.class).getValue().divide(BigDecimal.valueOf(100));
 	        }
 	    }
 

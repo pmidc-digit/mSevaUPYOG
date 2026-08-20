@@ -82,7 +82,15 @@ import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.edcr.utility.DcrConstants;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.egov.commons.mdms.BpaMdmsUtil;
+import org.egov.commons.mdms.BuildingRuleService;
+import org.egov.commons.mdms.MdmsRuleEngine;
+import org.egov.commons.mdms.RuleContext;
+import org.egov.commons.mdms.RuleResult;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 
 
@@ -255,74 +263,29 @@ public class Coverage extends FeatureProcess {
 //			}
 //		
 //		}
+		
+		RuleContext context = RuleContext.builder()
+	    	    .numericInput(plotArea) // The plot area	    	   
+	    	    .build();
+		
 		if (plotArea.compareTo(BigDecimal.valueOf(0)) > 0 && mostRestrictiveOccupancy != null &&
 				(A.equals(mostRestrictiveOccupancy.getType().getCode())
 				|| A_AF.equals(mostRestrictiveOccupancy.getSubtype().getCode())
 				|| A_FH.equals(mostRestrictiveOccupancy.getSubtype().getCode())
 				|| A_AIF.equals(mostRestrictiveOccupancy.getSubtype().getCode())
 				|| A_R.equals(mostRestrictiveOccupancy.getSubtype().getCode()))
-		) {
-
-			if(A_AIF.equals(mostRestrictiveOccupancy.getSubtype().getCode())) {
-				permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);	
-				
-//				if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-//					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
-//			        scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
-//			        permissibleCoverageValue = scOpt.get();
-//				}
-			}else {
-				// getting permissible value from mdms
-//				Optional<BigDecimal> minPlotArea = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_PLOT_AREA, BigDecimal.class);
-//				minPlotArea.ifPresent(min -> LOG.info("Min plot are required : " + min));
-//		        
-//				if (plotArea == null || plotArea.compareTo(minPlotArea.get()) <= 0) {
-//					errorMsgs.put("Plot Area Error:", "Plot area must be greater than : " + minPlotArea.get());
-//			        pl.addErrors(errorMsgs);			        
-//			    }
-				
-				if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
-			        scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
-			        permissibleCoverageValue = scOpt.get();
-				}
-			}
-			
-				
-		
-		}else if (F.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
-			//permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, developmentZone, noOfFloors);
-			//permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, noOfFloors,coreArea);
-			//permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);
-			
-			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-				Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
-		        scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
-		        permissibleCoverageValue = scOpt.get();
-			}
-			
-		}else if (G.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
-			//permissibleCoverageValue = getPermissibleCoverageForIndustrial(plotArea,mostRestrictiveOccupancy, errorMsgs, pl);
-			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-				Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
-//				scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
-//				permissibleCoverageValue = scOpt.get();
-				if (scOpt.isPresent()) {
-			        permissibleCoverageValue = scOpt.get();
-			        LOG.info("Site Coverage Value: " + permissibleCoverageValue);
-			    } else {
-			        HashMap<String, String> errors = new HashMap<>();
-			        errors.put("MDMS Site Coverage Error", "Permissible Site Coverage is not configured in MDMS");
-			        pl.addErrors(errors);
-			    }
-			}
-		}else if (L.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
-			//permissibleCoverageValue = getPermissibleCoverageForIndustrial(plotArea,mostRestrictiveOccupancy, errorMsgs, pl);
-			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-				Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
-				scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
-				permissibleCoverageValue = scOpt.get();
-			}
+		) {			
+			permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
+				LOG.info("Coverage %: " + permissibleCoverageValue);
+		}else if (F.equals(mostRestrictiveOccupancy.getType().getCode())) {			
+			permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
+			LOG.info("Coverage %: " + permissibleCoverageValue);			
+		}else if (G.equals(mostRestrictiveOccupancy.getType().getCode())) {
+			permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
+			LOG.info("Coverage %: " + permissibleCoverageValue);
+		}else if (L.equals(mostRestrictiveOccupancy.getType().getCode())) {
+			permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
+			LOG.info("Coverage %: " + permissibleCoverageValue);
 		}
 		 
 		
@@ -600,14 +563,8 @@ public class Coverage extends FeatureProcess {
 
 			}
 
-			
-
 			Map<String, String> details = new HashMap<>();
-			if(A_AF.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode()))
-				details.put(RULE_NO,"4.6");
-			else
-				details.put(RULE_NO, RULE);
-			
+			details.put(RULE_NO, RULE);
 			details.put(OCCUPANCY, occupancy);
 			details.put(PERMISSIBLE, expectedResult);
 			details.put(PROVIDED, actualResult);

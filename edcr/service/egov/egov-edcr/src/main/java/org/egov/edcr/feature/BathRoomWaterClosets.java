@@ -63,6 +63,7 @@ import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.RoomHeight;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -131,11 +132,41 @@ public class BathRoomWaterClosets extends FeatureProcess {
                             totalArea = totalArea.setScale(2, RoundingMode.HALF_UP); // Restrict to 2 decimal places
 						}
 
-						if (minHeight.compareTo(new BigDecimal(2.4)) >= 0
-								&& totalArea.compareTo(new BigDecimal(1.1)) >= 0
-								&& minWidth.compareTo(new BigDecimal(0.9)) >= 0) {
+						BigDecimal minHeightMdms = RuleUtil.getRule(
+				                pl.getMdmsRulesData().get("masterMdmsData"),"bathRoomWaterCloset.height.min",null,BigDecimal.class).getValue();
+						
+						BigDecimal minWidthMdms = RuleUtil.getRule(
+				                pl.getMdmsRulesData().get("masterMdmsData"),"bathRoomWaterCloset.width.min",null,BigDecimal.class).getValue();
+						
+						BigDecimal minAreaMdms = RuleUtil.getRule(
+				                pl.getMdmsRulesData().get("masterMdmsData"),"bathRoomWaterCloset.area.min",null,BigDecimal.class).getValue();
+						
+						
+//						if (minHeight.compareTo(new BigDecimal(2.4)) >= 0
+//								&& totalArea.compareTo(new BigDecimal(1.1)) >= 0
+//								&& minWidth.compareTo(new BigDecimal(0.9)) >= 0) {
+//
+//							details.put(REQUIRED, "Height >= 2.4, Total Area >= 1.1, Width >= 0.9");
+//							details.put(PROVIDED, "Height >= " + minHeight + ", Total Area >= " + totalArea
+//									+ ", Width >= " + minWidth);
+//							details.put(STATUS, Result.Accepted.getResultVal());
+//							scrutinyDetail.getDetail().add(details);
+//							pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//
+//						} else {
+//							details.put(REQUIRED, "Height >= 2.4, Total Area >= 2.8, Width >= 1.2");
+//							details.put(PROVIDED, "Height >= " + minHeight + ", Total Area >= " + totalArea
+//									+ ", Width >= " + minWidth);
+//							details.put(STATUS, Result.Not_Accepted.getResultVal());
+//							scrutinyDetail.getDetail().add(details);
+//							pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//						}
+						
+						if (minHeight.compareTo(minHeightMdms) >= 0
+								&& totalArea.compareTo(minAreaMdms) >= 0
+								&& minWidth.compareTo(minWidthMdms) >= 0) {
 
-							details.put(REQUIRED, "Height >= 2.4, Total Area >= 1.1, Width >= 0.9");
+							details.put(REQUIRED, "Height >= "+minHeightMdms+", Total Area >= "+minAreaMdms+", Width >= "+minWidthMdms);
 							details.put(PROVIDED, "Height >= " + minHeight + ", Total Area >= " + totalArea
 									+ ", Width >= " + minWidth);
 							details.put(STATUS, Result.Accepted.getResultVal());
@@ -143,7 +174,7 @@ public class BathRoomWaterClosets extends FeatureProcess {
 							pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 
 						} else {
-							details.put(REQUIRED, "Height >= 2.4, Total Area >= 2.8, Width >= 1.2");
+							details.put(REQUIRED, "Height >= "+minHeightMdms+", Total Area >= "+minAreaMdms+", Width >= "+minWidthMdms);
 							details.put(PROVIDED, "Height >= " + minHeight + ", Total Area >= " + totalArea
 									+ ", Width >= " + minWidth);
 							details.put(STATUS, Result.Not_Accepted.getResultVal());

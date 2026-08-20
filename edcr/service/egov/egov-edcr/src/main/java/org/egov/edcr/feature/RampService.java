@@ -59,8 +59,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.DARamp;
 import org.egov.common.entity.edcr.Floor;
@@ -71,16 +69,20 @@ import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Ramp;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.edcr.utility.Util;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Service
 public class RampService extends FeatureProcess {
 	
-	private static final Logger LOG = LogManager.getLogger(RearYardService.class);
+	private static final Logger LOG = LogManager.getLogger(RampService.class);
+
 
     private static final String SUBRULE_50_C_4_B = " 50-c-4-b";
     private static final String SUBRULE_40 = "40";
@@ -99,13 +101,7 @@ public class RampService extends FeatureProcess {
     private static final String SUBRULE_50_C_4_B_SLOPE_DESCRIPTION = "Maximum Slope of DA Ramp %s";
     private static final String FLOOR = "Floor";
     // private static final String SUBRULE_40_A_3_WIDTH_DESCRIPTION = "Minimum Width of Ramp %s";
-//    private static final String SUBRULE_50_C_4_B_SLOPE_MAN_DESC = "Slope width of DA Ramp";
     private static final String SUBRULE_50_C_4_B_SLOPE_MAN_DESC = "Width of DA Ramp";
-    
-    
-    private static final String TO_BE_DEFINED = "To be Defined";
-    
-    private static final BigDecimal MIN_SLOPE_WIDTH= BigDecimal.valueOf(1.5);
 
     @Override
     public Plan validate(Plan pl) {
@@ -286,40 +282,45 @@ public class RampService extends FeatureProcess {
 //                            }
 //                            BigDecimal expectedSlope1 = BigDecimal.valueOf(1).divide(BigDecimal.valueOf(12), 2,
 //                                    RoundingMode.HALF_UP);
+                            
 //                            if (isSlopeDefined) {
-////                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, expectedSlope1.toPlainString(),
-////                                        DcrConstants.OBJECTDEFINED_DESC, Result.Accepted.getResultVal(), scrutinyDetail2);
-//                            	setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, TO_BE_DEFINED,
+//                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, expectedSlope1.toPlainString(),
 //                                        DcrConstants.OBJECTDEFINED_DESC, Result.Accepted.getResultVal(), scrutinyDetail2);
 //                            } else {
-////                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, expectedSlope1.toPlainString(),
-////                                        DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
-////                                        scrutinyDetail2);
-//
-//                            	 setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, TO_BE_DEFINED,
-//                                         DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
-//                                         scrutinyDetail2);
+//                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, expectedSlope1.toPlainString(),
+//                                        DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
+//                                        scrutinyDetail2);
+//                            }                            
+                            
+//                            if (isSlopeDefined) {
+//                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, rampWidthMdms.toPlainString(),
+//                                        DcrConstants.OBJECTDEFINED_DESC, Result.Accepted.getResultVal(), scrutinyDetail2);
+//                            } else {
+//                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, rampWidthMdms.toPlainString(),
+//                                        DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
+//                                        scrutinyDetail2);
 //                            }
                             
-                           
-                                // Validate minimum slope width
-                                if (slopeWidth.compareTo(MIN_SLOPE_WIDTH) >= 0) {
-                                    LOG.info("DA Ramp slope width is valid: " + slopeWidth);
-                                    setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, MIN_SLOPE_WIDTH.toPlainString(),
-                                          slopeWidth.toPlainString(), Result.Accepted.getResultVal(), scrutinyDetail2);
-                                } else {
-                                    LOG.error("DA Ramp slope width is less than minimum required (1.5 m): " + slopeWidth);
-                                    setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, MIN_SLOPE_WIDTH.toPlainString(),
-                                          slopeWidth.toPlainString(), Result.Not_Accepted.getResultVal(),
-                                          scrutinyDetail2);
-                                }
-                           
+                            BigDecimal rampWidthMdms = RuleUtil.getRule(
+                                    pl.getMdmsRulesData().get("masterMdmsData"),"ramp.width.min",null,BigDecimal.class).getValue();
+                            
+                         // Validate minimum slope width
+                            if (slopeWidth.compareTo(rampWidthMdms) >= 0) {
+                                LOG.info("DA Ramp slope width is valid: " + slopeWidth);
+                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, rampWidthMdms.toPlainString(),
+                                      slopeWidth.toPlainString(), Result.Accepted.getResultVal(), scrutinyDetail2);
+                            } else {
+                                LOG.error("DA Ramp slope width is less than minimum required (1.5 m): " + slopeWidth);
+                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, rampWidthMdms.toPlainString(),
+                                      slopeWidth.toPlainString(), Result.Not_Accepted.getResultVal(),
+                                      scrutinyDetail2);
+                            }
                             
                             valid = false;
                             if (isSlopeDefined) {
-//                                Map<String, String> mapOfRampNumberAndSlopeValues = new HashMap<>();
+                                Map<String, String> mapOfRampNumberAndSlopeValues = new HashMap<>();
 //                                BigDecimal expectedSlope = BigDecimal.valueOf(1).divide(BigDecimal.valueOf(12), 2,
-//                                        RoundingMode.HALF_UP);
+//                                        RoundingMode.HALF_UP);                               
 //                                for (DARamp daRamp : block.getDARamps()) {
 //                                    BigDecimal slope = daRamp.getSlope();
 //                                    if (slope != null && slope.compareTo(BigDecimal.valueOf(0)) > 0
@@ -345,74 +346,40 @@ public class RampService extends FeatureProcess {
 //                                            "Less than 0.08 for all da ramps", Result.Not_Accepted.getResultVal(),
 //                                            scrutinyDetail2);
 //                                }
-                            	Map<String, String> mapOfRampNumberAndSlopeValues = new HashMap<>();
-
-                            	String expectedRatio = "1:12";
-                            	BigDecimal expectedDenominator = extractDenominator(expectedRatio);
-
-                            	for (DARamp daRamp : block.getDARamps()) {
-
-                            	    String actualRatio = daRamp.getSlopeRatio();
-
-                            	    if (isValidSlopeFormat(actualRatio)) {
-
-                            	        BigDecimal actualDenominator = extractDenominator(actualRatio);
-
-                            	        if (actualDenominator != null
-                            	                && expectedDenominator != null
-                            	                && actualDenominator.compareTo(BigDecimal.ZERO) > 0
-                            	                && expectedDenominator.compareTo(BigDecimal.ZERO) > 0) {
-
-                            	            if (actualDenominator.compareTo(expectedDenominator) >= 0) {
-                            	                valid = true;
-
-                            	                mapOfRampNumberAndSlopeValues.put("daRampNumber",
-                            	                        daRamp.getNumber().toString());
-
-                            	                mapOfRampNumberAndSlopeValues.put("slope", actualRatio);
-
-                            	                break;
-                            	            }else {
-                            	            	valid = false;
-
-                            	                mapOfRampNumberAndSlopeValues.put("daRampNumber",
-                            	                        daRamp.getNumber().toString());
-
-                            	                mapOfRampNumberAndSlopeValues.put("slope", actualRatio);
-                            	            }
-                            	        }
-                            	    }
-                            	}
-
-                            	if (valid) {
-                            	    setReportOutputDetails(
-                            	            pl,
-                            	            SUBRULE_50_C_4_B,
-                            	            String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION,
-                            	                    mapOfRampNumberAndSlopeValues.get("daRampNumber")),
-                            	            expectedRatio,
-                            	            mapOfRampNumberAndSlopeValues.get("slope"),
-                            	            Result.Accepted.getResultVal(),
-                            	            scrutinyDetail2
-                            	    );
-                            	} else {
-                            	    setReportOutputDetails(
-                            	            pl,
-                            	            SUBRULE_50_C_4_B,
-                            	            String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION, ""),
-                            	            expectedRatio,
-                            	            mapOfRampNumberAndSlopeValues.get("slope"),
-                            	            Result.Not_Accepted.getResultVal(),
-                            	            scrutinyDetail2
-                            	    );
-                            	}
-
+                                BigDecimal rampSlopeMdms = RuleUtil.getRule(
+                                        pl.getMdmsRulesData().get("masterMdmsData"),"ramp.slope.min",null,BigDecimal.class).getValue();
+                                
+                                for (DARamp daRamp : block.getDARamps()) {
+                                    BigDecimal slope = daRamp.getSlope();
+                                    if (slope != null && slope.compareTo(BigDecimal.valueOf(0)) > 0
+                                            && rampSlopeMdms != null) {
+                                        if (slope.compareTo(rampSlopeMdms) <= 0) {
+                                            valid = true;
+                                            mapOfRampNumberAndSlopeValues.put("daRampNumber", daRamp.getNumber().toString());
+                                            mapOfRampNumberAndSlopeValues.put("slope", slope.toString());
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (valid) {
+                                    setReportOutputDetails(pl, SUBRULE_50_C_4_B,
+                                            String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION,
+                                                    mapOfRampNumberAndSlopeValues.get("daRampNumber")),
+                                            rampSlopeMdms.toString(),
+                                            mapOfRampNumberAndSlopeValues.get("slope"), Result.Accepted.getResultVal(),
+                                            scrutinyDetail2);
+                                } else {
+                                    setReportOutputDetails(pl, SUBRULE_50_C_4_B,
+                                            String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION, ""), rampSlopeMdms.toString(),
+                                            "Less than 0.08 for all da ramps", Result.Not_Accepted.getResultVal(),
+                                            scrutinyDetail2);
+                                }
                             }
 
                         }
                     }
 
-                    //if (block.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0) {
+                    if (block.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0) {
                         OccupancyTypeHelper mostRestrictiveFarHelper = pl.getVirtualBuilding() != null
                                 ? pl.getVirtualBuilding().getMostRestrictiveFarHelper()
                                 : null;
@@ -481,56 +448,23 @@ public class RampService extends FeatureProcess {
                                                     RoundingMode.HALF_UP);
                                             ramp.setSlope(rampSlope);
                                             BigDecimal expectedSlope = BigDecimal.ZERO;
-//                                            if (mostRestrictiveFarHelper != null && ((mostRestrictiveFarHelper.getType() != null
-//                                                    && mostRestrictiveFarHelper.getType()
-//                                                            .getCode().equalsIgnoreCase(DxfFileConstants.C))
-//                                                    || (mostRestrictiveFarHelper.getSubtype() != null &&
-//                                                            (mostRestrictiveFarHelper.getSubtype().getCode()
-//                                                                    .equalsIgnoreCase(DxfFileConstants.C_MA)
-//                                                                    || mostRestrictiveFarHelper.getSubtype().getCode()
-//                                                                            .equalsIgnoreCase(DxfFileConstants.C_MIP)
-//                                                                    || mostRestrictiveFarHelper.getSubtype().getCode()
-//                                                                            .equalsIgnoreCase(DxfFileConstants.C_MOP))))) {
-//                                                expectedSlope = BigDecimal.valueOf(0.05);
-//                                            } else {
-//                                                expectedSlope = ramp.getFloorHeight()
-//                                                        .compareTo(BigDecimal.valueOf(2.4)) > 0 ? BigDecimal.valueOf(0.05)
-//                                                                : BigDecimal.valueOf(0.08);
-//                                            }
-                                            
-                                            Map<String, String> mapOfRampNumberAndSlopeValues = new HashMap<>();
+                                            if (mostRestrictiveFarHelper != null && ((mostRestrictiveFarHelper.getType() != null
+                                                    && mostRestrictiveFarHelper.getType()
+                                                            .getCode().equalsIgnoreCase(DxfFileConstants.C))
+                                                    || (mostRestrictiveFarHelper.getSubtype() != null &&
+                                                            (mostRestrictiveFarHelper.getSubtype().getCode()
+                                                                    .equalsIgnoreCase(DxfFileConstants.C_MA)
+                                                                    || mostRestrictiveFarHelper.getSubtype().getCode()
+                                                                            .equalsIgnoreCase(DxfFileConstants.C_MIP)
+                                                                    || mostRestrictiveFarHelper.getSubtype().getCode()
+                                                                            .equalsIgnoreCase(DxfFileConstants.C_MOP))))) {
+                                                expectedSlope = BigDecimal.valueOf(0.05);
+                                            } else {
+                                                expectedSlope = ramp.getFloorHeight()
+                                                        .compareTo(BigDecimal.valueOf(2.4)) > 0 ? BigDecimal.valueOf(0.05)
+                                                                : BigDecimal.valueOf(0.08);
+                                            }
                                             valid = false;
-                                        	String expectedRatio = "1:12";
-                                        	BigDecimal expectedDenominator = extractDenominator(expectedRatio);
-
-                                        	for (Ramp ramp1 : floor.getRamps()) {
-
-                                        	    String actualRatio = ramp1.getSlopeRatio();
-
-                                        	    if (isValidSlopeFormat(actualRatio)) {
-
-                                        	        BigDecimal actualDenominator = extractDenominator(actualRatio);
-
-                                        	        if (actualDenominator != null
-                                        	                && expectedDenominator != null
-                                        	                && actualDenominator.compareTo(BigDecimal.ZERO) > 0
-                                        	                && expectedDenominator.compareTo(BigDecimal.ZERO) > 0) {
-
-                                        	            if (actualDenominator.compareTo(expectedDenominator) >= 0) {
-                                        	                valid = true;
-
-                                        	                mapOfRampNumberAndSlopeValues.put("rampNumber",
-                                        	                        ramp1.getNumber().toString());
-
-                                        	                mapOfRampNumberAndSlopeValues.put("slope", actualRatio);
-
-                                        	                break;
-                                        	            }
-                                        	        }
-                                        	    }
-                                        	}
-                                            
-                                            
                                             Map<String, Object> typicalFloorValues = Util.getTypicalFloorValues(block, floor,
                                                     isTypicalRepititiveFloor);
                                             if (!(Boolean) typicalFloorValues.get("isTypicalRepititiveFloor")) {
@@ -540,76 +474,32 @@ public class RampService extends FeatureProcess {
                                                 String value = typicalFloorValues.get("typicalFloors") != null
                                                         ? (String) typicalFloorValues.get("typicalFloors")
                                                         : " floor " + floor.getNumber();
-//                                                if (valid) {
-//                                                    setReportOutputDetailsFloorWiseWithDescription(pl, SUBRULE_40,
-//                                                            String.format(SUBRULE_50_C_4_B_DESCRIPTION,
-//                                                                    ramp.getNumber()),
-//                                                            value, expectedSlope.toString(), rampSlope.toString(),
-//                                                            Result.Accepted.getResultVal(), scrutinyDetail5);
-//                                                } else {
-//                                                    setReportOutputDetailsFloorWiseWithDescription(pl, SUBRULE_40,
-//                                                            String.format(SUBRULE_50_C_4_B_DESCRIPTION,
-//                                                                    ramp.getNumber()),
-//                                                            value, expectedSlope.toString(), rampSlope.toString(),
-//                                                            Result.Not_Accepted.getResultVal(), scrutinyDetail5);
-//                                                }
-                                                //(Plan pl, String ruleNo, String ruleDesc, String floor,
-                                                //String expected, String actual, String status, ScrutinyDetail scrutinyDetail)
                                                 if (valid) {
-                                                	setReportOutputDetailsFloorWiseWithDescription(
-                                            	            pl,
-                                            	            SUBRULE_50_C_4_B,
-                                            	            String.format(SUBRULE_50_C_4_B_DESCRIPTION,
-                                            	                    mapOfRampNumberAndSlopeValues.get("rampNumber")),
-                                            	            value,
-                                            	            expectedRatio,
-                                            	            mapOfRampNumberAndSlopeValues.get("slope"),
-                                            	            Result.Accepted.getResultVal(),
-                                            	            scrutinyDetail5
-                                            	    );
-                                            	} else {
-                                            		setReportOutputDetailsFloorWiseWithDescription(
-                                            	            pl,
-                                            	            SUBRULE_50_C_4_B,
-                                            	            String.format(SUBRULE_50_C_4_B_DESCRIPTION, ""),
-                                            	            value,
-                                            	            expectedRatio,
-                                            	            mapOfRampNumberAndSlopeValues.get("slope"),
-                                            	            Result.Not_Accepted.getResultVal(),
-                                            	            scrutinyDetail5
-                                            	    );
-                                            	}
+                                                    setReportOutputDetailsFloorWiseWithDescription(pl, SUBRULE_40,
+                                                            String.format(SUBRULE_50_C_4_B_DESCRIPTION,
+                                                                    ramp.getNumber()),
+                                                            value, expectedSlope.toString(), rampSlope.toString(),
+                                                            Result.Accepted.getResultVal(), scrutinyDetail5);
+                                                } else {
+                                                    setReportOutputDetailsFloorWiseWithDescription(pl, SUBRULE_40,
+                                                            String.format(SUBRULE_50_C_4_B_DESCRIPTION,
+                                                                    ramp.getNumber()),
+                                                            value, expectedSlope.toString(), rampSlope.toString(),
+                                                            Result.Not_Accepted.getResultVal(), scrutinyDetail5);
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                    //}
+                    }
                 }
             }
         }
         return pl;
     }
 
-    private BigDecimal extractDenominator(String ratio) {
-        if (ratio == null || !ratio.contains(":")) {
-            return null;
-        }
-
-        try {
-            String[] parts = ratio.split(":");
-            return new BigDecimal(parts[1].trim());
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private boolean isValidSlopeFormat(String ratio) {
-        return ratio != null && ratio.matches("1\\s*:\\s*\\d+(\\.\\d+)?");
-    }
-
-    
     private void setReportOutputDetails(Plan pl, String ruleNo, String ruleDesc, String expected, String actual, String status,
             ScrutinyDetail scrutinyDetail) {
         Map<String, String> details = new HashMap<>();

@@ -61,6 +61,7 @@ import org.egov.common.entity.edcr.Measurement;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.springframework.stereotype.Service;
 
@@ -104,9 +105,9 @@ public class LiftService extends FeatureProcess {
                 ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
                 scrutinyDetail.addColumnHeading(1, RULE_NO);
                 scrutinyDetail.addColumnHeading(2, DESCRIPTION);
-                //scrutinyDetail.addColumnHeading(3, REQUIRED);
-                scrutinyDetail.addColumnHeading(3, PROVIDED);
-                scrutinyDetail.addColumnHeading(4, STATUS);
+                scrutinyDetail.addColumnHeading(3, REQUIRED);
+                scrutinyDetail.addColumnHeading(4, PROVIDED);
+                scrutinyDetail.addColumnHeading(5, STATUS);
                 scrutinyDetail.setKey("Block_" + block.getNumber() + "_" + "Lift Requirements");
 
                 if (block.getBuilding() != null && !block.getBuilding().getOccupancies().isEmpty()
@@ -171,6 +172,12 @@ public class LiftService extends FeatureProcess {
                                     		.getSubtype().getCode()))) {
                             	DISPLAY_LIFT_DIMENSION = true;
                             }
+                            
+//                            BigDecimal liftHeightMdms = RuleUtil.getRule(
+//                                    plan.getMdmsRulesData().get("masterMdmsData"),"lift.height.min",null,BigDecimal.class).getValue();
+//                            BigDecimal liftWidthMdms = RuleUtil.getRule(
+//                                    plan.getMdmsRulesData().get("masterMdmsData"),"lift.width.min",null,BigDecimal.class).getValue();
+                            
 
                             if (liftHeight.compareTo(BigDecimal.ZERO) > 0
                                     && liftWidth.compareTo(BigDecimal.ZERO) > 0) {

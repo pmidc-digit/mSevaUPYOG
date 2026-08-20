@@ -60,6 +60,7 @@ import org.egov.common.entity.edcr.Floor;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -105,8 +106,12 @@ public class Basement extends FeatureProcess {
                                     && !f.getHeightFromTheFloorToCeiling().isEmpty()) {
 
                                 minLength = f.getHeightFromTheFloorToCeiling().stream().reduce(BigDecimal::min).get();
+                                
+                                BigDecimal basementFromCeilMdms = RuleUtil.getRule(
+                                        pl.getMdmsRulesData().get("masterMdmsData"),"basement.heightFromTheFloorToCeiling.min",null,BigDecimal.class).getValue();
 
-                                if (minLength.compareTo(BigDecimal.valueOf(2.4)) >= 0) {
+//                                if (minLength.compareTo(BigDecimal.valueOf(2.4)) >= 0) {
+                                if (minLength.compareTo(basementFromCeilMdms) >= 0) {
                                     details.put(RULE_NO, RULE_46_6A);
                                     details.put(DESCRIPTION, BASEMENT_DESCRIPTION_ONE);
                                     details.put(REQUIRED, ">= 2.4");
@@ -130,12 +135,19 @@ public class Basement extends FeatureProcess {
 
                                 minLength = f.getHeightOfTheCeilingOfUpperBasement().stream().reduce(BigDecimal::min).get();
 
-                                if (minLength.compareTo(BigDecimal.valueOf(1.2)) >= 0
-                                        && minLength.compareTo(BigDecimal.valueOf(1.5)) < 0) {
+                                BigDecimal basementUpperCeilMin = RuleUtil.getRule(
+                                        pl.getMdmsRulesData().get("masterMdmsData"),"basement.heightOfTheCeilingOfUpperBasement.min",null,BigDecimal.class).getValue();
+                                BigDecimal basementUpperCeilMax = RuleUtil.getRule(
+                                        pl.getMdmsRulesData().get("masterMdmsData"),"basement.heightOfTheCeilingOfUpperBasement.max",null,BigDecimal.class).getValue();
+                                
+//                                if (minLength.compareTo(BigDecimal.valueOf(1.2)) >= 0
+//                                        && minLength.compareTo(BigDecimal.valueOf(1.5)) < 0) {
+                                if (minLength.compareTo(basementUpperCeilMin) >= 0
+                                        && minLength.compareTo(basementUpperCeilMax) < 0) {
                                     details = new HashMap<>();
                                     details.put(RULE_NO, RULE_46_6C);
                                     details.put(DESCRIPTION, BASEMENT_DESCRIPTION_TWO);
-                                    details.put(REQUIRED, "Between 1.2 to 1.5");
+                                    details.put(REQUIRED, "Between " + basementUpperCeilMin +" to " +basementUpperCeilMax);
                                     details.put(PROVIDED, minLength.toString());
                                     details.put(STATUS, Result.Accepted.getResultVal());
                                     scrutinyDetail.getDetail().add(details);
@@ -144,7 +156,7 @@ public class Basement extends FeatureProcess {
                                     details = new HashMap<>();
                                     details.put(RULE_NO, RULE_46_6C);
                                     details.put(DESCRIPTION, BASEMENT_DESCRIPTION_TWO);
-                                    details.put(REQUIRED, "Between 1.2 to 1.5");
+                                    details.put(REQUIRED, "Between " + basementUpperCeilMin +" to " +basementUpperCeilMax);
                                     details.put(PROVIDED, minLength.toString());
                                     details.put(STATUS, Result.Not_Accepted.getResultVal());
                                     scrutinyDetail.getDetail().add(details);

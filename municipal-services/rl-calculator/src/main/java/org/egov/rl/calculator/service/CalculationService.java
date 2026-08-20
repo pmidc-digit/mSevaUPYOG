@@ -459,27 +459,118 @@ public class CalculationService {
                 .fixedbillexpirydate(calculatedExpiry).billExpiryTime(durationMillis)
                 .consumerType(RLConstants.APPLICATION_TYPE_LEGACY)
                 .businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
-        generatedDemands.add(monthlyDemand);
 
-		// Arrear demand without penalty
-		if (arrearAmount.compareTo(BigDecimal.ZERO) > 0) {
-            List<DemandDetail> arrearDetails = new ArrayList<>();
-            arrearDetails.add(DemandDetail.builder().taxAmount(arrearAmount).taxHeadMasterCode(RLConstants.RL_ARREAR_FEE).tenantId(tenantId).build());
+        // Check if lastPaidUpto / lastPaidOn is provided
+        Long lastPaidUpto = criteria.getLastPaidUpto();
+        if (lastPaidUpto == null && additionalDetails != null) {
+            if (additionalDetails.has("lastPaidUpto")) {
+                lastPaidUpto = additionalDetails.path("lastPaidUpto").asLong(0L);
+            } else if (additionalDetails.has("lastPaidOn")) {
+                lastPaidUpto = additionalDetails.path("lastPaidOn").asLong(0L);
+            } else if (additionalDetails.has("lastPaidDate")) {
+                lastPaidUpto = additionalDetails.path("lastPaidDate").asLong(0L);
+            }
+        }
 
-            addRoundOffTaxHead(tenantId, arrearDetails);
-            BigDecimal arrearAmountPayable = arrearDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-            
-            long arrearDemandTime = entryDateEpoch;
-            
-            long arrearCalculatedExpiry = System.currentTimeMillis() + durationMillis;
+        // If lastPaidUpto is provided, generate per-period demands for unpaid cycles (MONTHLY, QUATERLY, BIANNUAL, ANNUAL)
+        if (lastPaidUpto != null && lastPaidUpto > 0) {
+            log.info("Generating per-period legacy demands starting after lastPaidUpto: {} for cycle: {}", lastPaidUpto, cycle);
+            YearMonth lastPaidMonth = YearMonth.from(Instant.ofEpochMilli(lastPaidUpto).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toLocalDate());
+            YearMonth entryMonth = YearMonth.from(entryDate);
 
-            Demand arrearDemand = Demand.builder().consumerCode(consumerCode).demandDetails(arrearDetails).payer(payerUser)
-					.minimumAmountPayable(arrearAmountPayable).tenantId(tenantId).taxPeriodFrom(arrearDemandTime).taxPeriodTo(arrearDemandTime)
-					.fixedbillexpirydate(arrearCalculatedExpiry).billExpiryTime(durationMillis)
-					.consumerType(RLConstants.APPLICATION_TYPE_LEGACY)
-					.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
-            
-            generatedDemands.add(arrearDemand);
+            int stepMonths = 1;
+            if (RLConstants.RL_QUATERLY_CYCLE.equalsIgnoreCase(cycle)) {
+                stepMonths = 3;
+            } else if (RLConstants.RL_BIAANNUALY_CYCLE.equalsIgnoreCase(cycle) || "BIANNUAL".equalsIgnoreCase(cycle)) {
+                stepMonths = 6;
+            } else if (RLConstants.RL_YEARLY_CYCLE.equalsIgnoreCase(cycle) || "ANNUAL".equalsIgnoreCase(cycle)) {
+                stepMonths = 12;
+            }
+
+            // Generate demands stepping by cycle duration (1, 3, 6, or 12 months)
+            YearMonth currentIterMonth = lastPaidMonth.plusMonths(stepMonths);
+            while (!currentIterMonth.isAfter(entryMonth)) {
+                YearMonth endIterMonth = currentIterMonth.plusMonths(stepMonths - 1);
+                long periodFrom = currentIterMonth.atDay(1).atStartOfDay(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
+                long periodTo = endIterMonth.atEndOfMonth().atTime(23, 59, 59).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
+
+                BigDecimal monthlyBaseRent = BigDecimal.ZERO;
+                List<RLProperty> calculateAmount = mdmsUtil.getCalculateAmount(allotmentDetails.getPropertyId(),
+                        requestInfo, tenantId, RLConstants.RL_MASTER_MODULE_NAME);
+                if (!CollectionUtils.isEmpty(calculateAmount)) {
+                    BigDecimal fallbackRent = new BigDecimal(calculateAmount.get(0).getBaseRent());
+                    monthlyBaseRent = getActiveRent(allotmentDetails, periodFrom, fallbackRent);
+                }
+
+                // Scale rent amount for multi-month billing cycles
+                BigDecimal cycleRent = monthlyBaseRent.multiply(BigDecimal.valueOf(stepMonths));
+
+                List<DemandDetail> periodDetails = new ArrayList<>();
+                periodDetails.add(DemandDetail.builder().taxAmount(cycleRent).taxHeadMasterCode(RLConstants.RENT_LEASE_FEE_RL_APPLICATION).tenantId(tenantId).build());
+
+                if (cycleRent.compareTo(BigDecimal.ZERO) > 0) {
+                    List<TaxRate> taxRates = mdmsUtil.getHeadTaxAmount(requestInfo, tenantId, RLConstants.RL_MASTER_MODULE_NAME);
+                    List<String> taxList = Arrays.asList(RLConstants.SGST_FEE_RL_APPLICATION, RLConstants.CGST_FEE_RL_APPLICATION, RLConstants.COWCESS_FEE_RL_APPLICATION);
+                    for (TaxRate t : taxRates) {
+                        if (taxList.contains(t.getTaxType()) && t.isActive()) {
+                            BigDecimal taxAmt = t.getType().contains("%") ? cycleRent.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100)) : new BigDecimal(t.getAmount());
+                            if (taxAmt.compareTo(BigDecimal.ZERO) > 0) {
+                                periodDetails.add(DemandDetail.builder().taxAmount(taxAmt).taxHeadMasterCode(t.getTaxType()).tenantId(tenantId).build());
+                            }
+                        }
+                    }
+                }
+
+                addRoundOffTaxHead(tenantId, periodDetails);
+                BigDecimal periodAmountPayable = periodDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                DueDate iterDueDateConfig = masterDataService.getDueDateConfig(requestInfo, tenantId, cycle);
+                Integer iterDueDay = (iterDueDateConfig != null && iterDueDateConfig.getDueDay() != null) ? iterDueDateConfig.getDueDay() : 10;
+
+                LocalDateTime iterDueCutoff;
+                if (iterDueDay <= 31) {
+                    int iterDay = Math.min(iterDueDay, currentIterMonth.lengthOfMonth());
+                    iterDueCutoff = LocalDateTime.of(currentIterMonth.getYear(), currentIterMonth.getMonthValue(), iterDay, 23, 59, 59, 999000000);
+                } else {
+                    LocalDate cutoffDate = currentIterMonth.atDay(1).plusDays(iterDueDay);
+                    iterDueCutoff = LocalDateTime.of(cutoffDate.getYear(), cutoffDate.getMonthValue(), cutoffDate.getDayOfMonth(), 23, 59, 59, 999000000);
+                }
+
+                long periodExpiry = iterDueCutoff.atZone(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
+                long periodDuration = Math.max(0L, periodExpiry - System.currentTimeMillis());
+
+                Demand periodDemand = Demand.builder().consumerCode(consumerCode).demandDetails(periodDetails).payer(payerUser)
+                        .minimumAmountPayable(periodAmountPayable).tenantId(tenantId).taxPeriodFrom(periodFrom).taxPeriodTo(periodTo)
+                        .fixedbillexpirydate(periodExpiry).billExpiryTime(periodDuration)
+                        .consumerType(RLConstants.APPLICATION_TYPE_LEGACY)
+                        .businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
+
+                generatedDemands.add(periodDemand);
+                currentIterMonth = currentIterMonth.plusMonths(stepMonths);
+            }
+        } else {
+            // Default legacy demand generation: current period demand
+            generatedDemands.add(monthlyDemand);
+
+            // Arrear demand without penalty (lump-sum fallback if arrearAmount > 0)
+            if (arrearAmount.compareTo(BigDecimal.ZERO) > 0) {
+                List<DemandDetail> arrearDetails = new ArrayList<>();
+                arrearDetails.add(DemandDetail.builder().taxAmount(arrearAmount).taxHeadMasterCode(RLConstants.RL_ARREAR_FEE).tenantId(tenantId).build());
+
+                addRoundOffTaxHead(tenantId, arrearDetails);
+                BigDecimal arrearAmountPayable = arrearDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                long arrearDemandTime = entryDateEpoch;
+                long arrearCalculatedExpiry = System.currentTimeMillis() + durationMillis;
+
+                Demand arrearDemand = Demand.builder().consumerCode(consumerCode).demandDetails(arrearDetails).payer(payerUser)
+                        .minimumAmountPayable(arrearAmountPayable).tenantId(tenantId).taxPeriodFrom(arrearDemandTime).taxPeriodTo(arrearDemandTime)
+                        .fixedbillexpirydate(arrearCalculatedExpiry).billExpiryTime(durationMillis)
+                        .consumerType(RLConstants.APPLICATION_TYPE_LEGACY)
+                        .businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
+
+                generatedDemands.add(arrearDemand);
+            }
         }
 
 		return generatedDemands;

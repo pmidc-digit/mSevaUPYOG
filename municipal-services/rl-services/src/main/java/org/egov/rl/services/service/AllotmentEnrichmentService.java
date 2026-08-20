@@ -343,7 +343,7 @@ public class AllotmentEnrichmentService {
 			}
 		}
 
-		if (baseRentStr == null) {
+		if (org.apache.commons.lang3.StringUtils.isBlank(baseRentStr) || "null".equalsIgnoreCase(baseRentStr)) {
 			return;
 		}
 
@@ -357,30 +357,36 @@ public class AllotmentEnrichmentService {
 			JsonNode propDetails = additionalDetails.path("propertyDetails");
 			JsonNode targetNode = (propDetails.isArray() && propDetails.size() > 0) ? propDetails.get(0) : additionalDetails;
 
-			if (additionalDetails.has("lastrevisiondate")) {
+			if (additionalDetails.has("lastrevisiondate") && !additionalDetails.get("lastrevisiondate").isNull()) {
 				revisionDate = additionalDetails.get("lastrevisiondate").asLong();
-			} else if (additionalDetails.has("lastRevisionDate")) {
+			} else if (additionalDetails.has("lastRevisionDate") && !additionalDetails.get("lastRevisionDate").isNull()) {
 				revisionDate = additionalDetails.get("lastRevisionDate").asLong();
-			} else if (additionalDetails.has("lastRentRevisedDate")) {
+			} else if (additionalDetails.has("lastRentRevisedDate") && !additionalDetails.get("lastRentRevisedDate").isNull()) {
 				revisionDate = additionalDetails.get("lastRentRevisedDate").asLong();
-			} else if (targetNode.has("lastrevisiondate")) {
+			} else if (targetNode.has("lastrevisiondate") && !targetNode.get("lastrevisiondate").isNull()) {
 				revisionDate = targetNode.get("lastrevisiondate").asLong();
-			} else if (targetNode.has("lastRevisionDate")) {
+			} else if (targetNode.has("lastRevisionDate") && !targetNode.get("lastRevisionDate").isNull()) {
 				revisionDate = targetNode.get("lastRevisionDate").asLong();
-			} else if (targetNode.has("lastRentRevisedDate")) {
+			} else if (targetNode.has("lastRentRevisedDate") && !targetNode.get("lastRentRevisedDate").isNull()) {
 				revisionDate = targetNode.get("lastRentRevisedDate").asLong();
 			}
 
-			if (additionalDetails.has("incrementPeriodMonths")) {
+			if (additionalDetails.has("incrementPeriodMonths") && !additionalDetails.get("incrementPeriodMonths").isNull()) {
 				incrementPeriodMonths = additionalDetails.get("incrementPeriodMonths").asInt();
-			} else if (targetNode.has("incrementPeriodMonths")) {
+			} else if (targetNode.has("incrementPeriodMonths") && !targetNode.get("incrementPeriodMonths").isNull()) {
 				incrementPeriodMonths = targetNode.get("incrementPeriodMonths").asInt();
 			}
 
-			if (additionalDetails.has("incrementPercentage")) {
-				incrementPercentage = new java.math.BigDecimal(additionalDetails.get("incrementPercentage").asText());
-			} else if (targetNode.has("incrementPercentage")) {
-				incrementPercentage = new java.math.BigDecimal(targetNode.path("incrementPercentage").asText());
+			if (additionalDetails.has("incrementPercentage") && !additionalDetails.get("incrementPercentage").isNull()) {
+				String incStr = additionalDetails.get("incrementPercentage").asText();
+				if (org.apache.commons.lang3.StringUtils.isNotBlank(incStr) && !"null".equalsIgnoreCase(incStr)) {
+					incrementPercentage = new java.math.BigDecimal(incStr);
+				}
+			} else if (targetNode.has("incrementPercentage") && !targetNode.get("incrementPercentage").isNull()) {
+				String incStr = targetNode.get("incrementPercentage").asText();
+				if (org.apache.commons.lang3.StringUtils.isNotBlank(incStr) && !"null".equalsIgnoreCase(incStr)) {
+					incrementPercentage = new java.math.BigDecimal(incStr);
+				}
 			}
 		}
 

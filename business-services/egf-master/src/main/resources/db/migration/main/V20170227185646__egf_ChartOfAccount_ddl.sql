@@ -1,5 +1,5 @@
 
-CREATE TABLE IF NOT EXISTS egf_chartofaccount( 
+Create table egf_chartofaccount( 
 	id bigint,
 	glcode varchar(16) NOT NULL,
 	name varchar(128) NOT NULL,
@@ -21,4 +21,4 @@ CREATE TABLE IF NOT EXISTS egf_chartofaccount(
 );
 alter table egf_chartofaccount add constraint pk_egf_chartofaccount primary key (id);
 alter table egf_chartofaccount add constraint fk_egf_chartofaccount_purposeId  FOREIGN KEY (purposeId) REFERENCES egf_accountcodepurpose(id);
-CREATE SEQUENCE IF NOT EXISTS seq_egf_chartofaccount;
+create sequence seq_egf_chartofaccount;

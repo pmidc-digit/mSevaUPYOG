@@ -1,5 +1,5 @@
 
-CREATE TABLE IF NOT EXISTS egf_financialyear( 
+Create table egf_financialyear( 
 	id bigint,
 	FinancialYear varchar(25),
 	startingDate date NOT NULL,
@@ -15,4 +15,4 @@ CREATE TABLE IF NOT EXISTS egf_financialyear(
 		version bigint
 );
 alter table egf_financialyear add constraint pk_egf_financialyear primary key (id);
-CREATE SEQUENCE IF NOT EXISTS seq_egf_financialyear;
+create sequence seq_egf_financialyear;

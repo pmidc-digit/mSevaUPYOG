@@ -1,5 +1,5 @@
 
-CREATE TABLE IF NOT EXISTS egf_accountdetailkey( 
+Create table egf_accountdetailkey( 
 	id bigint,
 	groupId smallint,
 	name varchar(128),
@@ -13,4 +13,4 @@ CREATE TABLE IF NOT EXISTS egf_accountdetailkey(
 );
 alter table egf_accountdetailkey add constraint pk_egf_accountdetailkey primary key (id);
 alter table egf_accountdetailkey add constraint fk_egf_accountdetailkey_detailTypeId  FOREIGN KEY (detailTypeId) REFERENCES egf_accountdetailtype(id);
-CREATE SEQUENCE IF NOT EXISTS seq_egf_accountdetailkey;
+create sequence seq_egf_accountdetailkey;

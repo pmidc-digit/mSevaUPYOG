@@ -1,5 +1,5 @@
 
-CREATE TABLE IF NOT EXISTS egf_function( 
+Create table egf_function( 
 	id bigint,
 	name varchar(128) NOT NULL,
 	code varchar(16) NOT NULL,
@@ -15,4 +15,4 @@ CREATE TABLE IF NOT EXISTS egf_function(
 );
 alter table egf_function add constraint pk_egf_function primary key (id);
 alter table egf_function add constraint fk_egf_function_parentId  FOREIGN KEY (parentId) REFERENCES egf_function(id);
-CREATE SEQUENCE IF NOT EXISTS seq_egf_function;
+create sequence seq_egf_function;

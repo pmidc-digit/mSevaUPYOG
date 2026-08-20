@@ -1,7 +1,7 @@
   drop table if exists egeis_egfStatus ;
   drop sequence if exists seq_egeis_egfStatus ;
  
-  CREATE TABLE IF NOT EXISTS egf_financialstatus( 
+  create table egf_financialstatus( 
   id varchar(50) NOT NULL,
   moduleType varchar(50) NOT NULL,
   code varchar(20) NOT NULL,

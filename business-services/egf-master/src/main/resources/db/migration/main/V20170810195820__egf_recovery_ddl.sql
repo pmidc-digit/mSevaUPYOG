@@ -1,5 +1,5 @@
 
-CREATE TABLE IF NOT EXISTS egf_recovery(
+Create table egf_recovery(
 	id VARCHAR(256),
 	chartofaccountid varchar(256) NOT NULL,
 	type varchar(20),
@@ -21,4 +21,4 @@ CREATE TABLE IF NOT EXISTS egf_recovery(
   tenantid VARCHAR(256) not null
 );
 alter table egf_recovery add constraint pk_egf_recovery primary key (id,tenantid);
-CREATE SEQUENCE IF NOT EXISTS seq_egf_recovery;
+create sequence seq_egf_recovery;

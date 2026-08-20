@@ -1,5 +1,5 @@
 
-CREATE TABLE IF NOT EXISTS egf_subscheme( 
+Create table egf_subscheme( 
 	id bigint,
 	 scheme bigint NOT NULL,
 	code varchar(50) NOT NULL,
@@ -15,4 +15,4 @@ CREATE TABLE IF NOT EXISTS egf_subscheme(
 		version bigint
 );
 alter table egf_subscheme add constraint pk_egf_subscheme primary key (id);
-CREATE SEQUENCE IF NOT EXISTS seq_egf_subscheme;
+create sequence seq_egf_subscheme;

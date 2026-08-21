@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import ReactDOM from "react-dom";
 import { ArrowDown } from "./svgindex";
 
 const TextField = (props) => {
@@ -182,7 +182,7 @@ const Dropdown = (props) => {
 
   const DropdownMenu = ({ children }) => {
     if (props.menuPortal && portalPosition) {
-      return createPortal(children, document.body);
+      return ReactDOM.createPortal(children, document.body);
     }
 
     return children;

@@ -12,8 +12,8 @@ import {
   ActionBar,
   Menu,
   SubmitBar,
-  Toast,
-} from "@mseva/digit-ui-react-components";
+  Toast } from
+"@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import { Loader } from "../../components/Loader";
@@ -29,46 +29,46 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
     date: checkpoint?.auditDetails?.lastModified,
     name: checkpoint?.assigner?.name,
     // mobileNumber: checkpoint?.assigner?.mobileNumber,
-    source: checkpoint?.assigner?.source,
+    source: checkpoint?.assigner?.source
   };
 
   return (
     <div>
-      {comment?.length > 0 && (
-        <div className="TLComments">
+      {comment?.length > 0 &&
+      <div className="TLComments">
           <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
+          <p className="challan-generation-style-9c67b9a649">{comment}</p>
         </div>
-      )}
+      }
 
       {/* {thumbnailsToShow?.thumbs?.length > 0 && (
-        <DisplayPhotos
-          srcs={thumbnailsToShow.thumbs}
-          onClick={(src, idx) => {
-            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
-            Digit.Utils.zoomImage(fullImage);
-          }}
-        />
-      )} */}
+         <DisplayPhotos
+           srcs={thumbnailsToShow.thumbs}
+           onClick={(src, idx) => {
+             let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
+             Digit.Utils.zoomImage(fullImage);
+           }}
+         />
+        )} */}
 
-      {wfDocuments?.length > 0 && (
-        <div>
-          {wfDocuments?.map((doc, index) => (
-            <div key={index}>
+      {wfDocuments?.length > 0 &&
+      <div>
+          {wfDocuments?.map((doc, index) =>
+        <div key={index}>
               <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
             </div>
-          ))}
+        )}
         </div>
-      )}
+      }
 
-      <div style={{ marginTop: "8px" }}>
+      <div className="challan-generation-style-b1ecc496e0">
         {caption.date && <p>{caption.date}</p>}
         {caption.name && <p>{caption.name}</p>}
         {/* {caption.mobileNumber && <p>{caption.mobileNumber}</p>} */}
         {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption?.source?.toUpperCase())}</p>}
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 const ChallanApplicationDetails = () => {
@@ -137,11 +137,11 @@ const ChallanApplicationDetails = () => {
     tenantId: tenantId,
     id: acknowledgementIds,
     moduleCode: "challan-generation",
-    role: "EMPLOYEE",
+    role: "EMPLOYEE"
   });
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
-    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
+  workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
@@ -153,19 +153,19 @@ const ChallanApplicationDetails = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
   let actions =
-    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    }) ||
-    workflowDetails?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    });
+  workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+    return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  }) ||
+  workflowDetails?.data?.nextActions?.filter((e) => {
+    return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  });
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
       businessService: "Challan_Generation",
       consumerCodes: acknowledgementIds,
-      isEmployee: false,
+      isEmployee: false
     },
     { enabled: acknowledgementIds ? true : false }
   );
@@ -197,7 +197,7 @@ const ChallanApplicationDetails = () => {
       console.log("location", location);
       const challan = {
         ...applicationDetails,
-        ...challanEmpData,
+        ...challanEmpData
       };
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
@@ -219,7 +219,7 @@ const ChallanApplicationDetails = () => {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: acknowledgementIds } });
       const challan = {
         ...applicationDetails,
-        ...challanEmpData,
+        ...challanEmpData
       };
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
@@ -239,19 +239,19 @@ const ChallanApplicationDetails = () => {
   }
   dowloadOptions.push({
     label: t("Challan_Notice"),
-    onClick: () => printChallanNotice({ tenantId, payments: reciept_data?.Payments[0] }),
+    onClick: () => printChallanNotice({ tenantId, payments: reciept_data?.Payments[0] })
   });
 
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
-      onClick: () => printChallanReceipt({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      onClick: () => printChallanReceipt({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] })
     });
   }
 
   function onActionSelect(action) {
     const payload = {
-      Licenses: [action],
+      Licenses: [action]
     };
     console.log("action", action);
     if (action.action == "PAY") {
@@ -273,9 +273,9 @@ const ChallanApplicationDetails = () => {
       Challan: {
         ...getChallanData,
         workflow: {
-          action: "PAY_LATER",
-        },
-      },
+          action: "PAY_LATER"
+        }
+      }
     };
 
     try {
@@ -330,10 +330,10 @@ const ChallanApplicationDetails = () => {
           ...getChallanData,
           workflow: {
             action: "SETTLED",
-            documents: modalData?.wfDocuments,
+            documents: modalData?.wfDocuments
           },
-          feeWaiver: modalData?.amount,
-        },
+          feeWaiver: modalData?.amount
+        }
       };
 
       console.log("payload", payload);
@@ -365,14 +365,14 @@ const ChallanApplicationDetails = () => {
       <div className="challan-application-details">
         <div className="cardHeaderWithOptions">
           <Header className="challan-custom-header-font">{t("CHALLAN_DETAILS")}</Header>
-          {dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-            />
-          )}
+          {dowloadOptions && dowloadOptions.length > 0 &&
+          <MultiLink
+            className="multilinkWrapper"
+            onHeadClick={() => setShowOptions(!showOptions)}
+            displayOptions={showOptions}
+            options={dowloadOptions} />
+
+          }
         </div>
         <Card>
           <CardSubHeader className="challan-custom-subheader-font">{t("CHALLAN_OFFENDER_DETAILS")}</CardSubHeader>
@@ -392,64 +392,64 @@ const ChallanApplicationDetails = () => {
             <Row
               className="border-none"
               label={t("CHALLAN_AMOUNT")}
-              text={Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0)}
-            />
+              text={Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0)} />
+
             {getChallanData?.feeWaiver && <Row className="border-none" label={t("FEE_WAIVER_AMOUNT")} text={getChallanData?.feeWaiver} />}
           </StatusTable>
 
           <CardSubHeader className="challan-custom-header">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
             <Card className="challan-custom-card">
-              {getChallanData?.documents?.length > 0 ? (
-                getChallanData?.documents?.map((doc, index) => (
-                  <React.Fragment key={index}>
+              {getChallanData?.documents?.length > 0 ?
+              getChallanData?.documents?.map((doc, index) =>
+              <React.Fragment key={index}>
                     <div>
                       <CHBDocument value={getChallanData?.documents} Code={doc?.documentType} index={index} />
                       <CardSectionHeader>{t(doc?.documentType)}</CardSectionHeader>
                     </div>
                   </React.Fragment>
-                ))
-              ) : (
-                <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
-              )}
+              ) :
+
+              <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
+              }
             </Card>
           </StatusTable>
         </Card>
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
-        {actions && actions.length > 0 && !actions.some((a) => a.action === "SUBMIT") && (
-          <ActionBar>
-            {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-              <Menu localeKeyPrefix={`WF_CHALLAN`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
-            ) : null}
+        {actions && actions.length > 0 && !actions.some((a) => a.action === "SUBMIT") &&
+        <ActionBar>
+            {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ?
+          <Menu localeKeyPrefix={`WF_CHALLAN`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} /> :
+          null}
             <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
           </ActionBar>
-        )}
+        }
       </div>
 
-      {showModal ? (
-        <NDCModal
-          t={t}
-          action={selectedAction}
-          tenantId={tenantId}
-          id={acknowledgementIds}
-          closeModal={closeModal}
-          submitAction={submitAction}
-          actionData={workflowDetails?.data?.timeline}
-          workflowDetails={workflowDetails}
-          showToast={showToast}
-          closeToast={closeToast}
-          errors={error}
-          showErrorToast={showErrorToast}
-          errorOne={errorOne}
-          closeToastOne={closeToastOne}
-          getLable={getLable}
-          getChallanData={getChallanData}
-        />
-      ) : null}
+      {showModal ?
+      <NDCModal
+        t={t}
+        action={selectedAction}
+        tenantId={tenantId}
+        id={acknowledgementIds}
+        closeModal={closeModal}
+        submitAction={submitAction}
+        actionData={workflowDetails?.data?.timeline}
+        workflowDetails={workflowDetails}
+        showToast={showToast}
+        closeToast={closeToast}
+        errors={error}
+        showErrorToast={showErrorToast}
+        errorOne={errorOne}
+        closeToastOne={closeToastOne}
+        getLable={getLable}
+        getChallanData={getChallanData} /> :
+
+      null}
       {showToast && <Toast isDleteBtn={true} error={error} label={getLable} onClose={closeToast} />}
       {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
-    </React.Fragment>
-  );
+    </React.Fragment>);
+
 };
 
 export default ChallanApplicationDetails;

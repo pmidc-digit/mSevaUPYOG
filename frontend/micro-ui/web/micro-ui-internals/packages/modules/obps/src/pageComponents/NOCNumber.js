@@ -8,7 +8,7 @@ const NOCNumber = ({ t, config, onSelect, userType, formData, setError: setFormE
     let Webview = !Digit.Utils.browser.isMobile();
 
     function onChange(data) {
-        setValueNoc(data.target.value);        
+        setValueNoc(data.target.value);
       }
 
       function onClick(e){
@@ -27,7 +27,7 @@ const NOCNumber = ({ t, config, onSelect, userType, formData, setError: setFormE
                     config={config}
                     onSelect={handleSubmit}
                     isDisabled={ !nocNumber }
-                    > 
+                    >
                     <div className="field-container">
                     <TextInput
                       //style={{ background: "#FAFAFA", marginLeft:"25px"}}
@@ -40,10 +40,10 @@ const NOCNumber = ({ t, config, onSelect, userType, formData, setError: setFormE
                       value={nocNumber}
                       onChange={(e) => onChange( e)}
                       defaultValue={formData?.nocnumber?.nocNumber || formData?.additionalDetails?.nocNumber}
-                      />                       
+                      />
                     <div style={{ position: "relative", zIndex: "100", right: "20px", marginTop: "-24px", marginRight:Webview?"-20px":"-20px" }} onClick={(e) => onClick( e)}> <SearchIcon /> </div>
                     </div>
-                </FormStep> 
+                </FormStep>
         </div>
 
       );

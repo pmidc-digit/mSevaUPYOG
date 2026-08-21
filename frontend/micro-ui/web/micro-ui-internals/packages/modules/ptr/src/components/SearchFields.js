@@ -16,8 +16,8 @@ import {
   MobileNumber,
   Loader,
   CardText,
-  Header,
-} from "@mseva/digit-ui-react-components";
+  Header } from
+"@mseva/digit-ui-react-components";
 
 const SearchFields = ({ register, control, reset, tenantId, t, formState, setShowToast, previousPage }) => {
   return (
@@ -34,17 +34,17 @@ const SearchFields = ({ register, control, reset, tenantId, t, formState, setSho
           inputRef={register({
             minLength: {
               value: 10,
-              message: t("CORE_COMMON_MOBILE_ERROR"),
+              message: t("CORE_COMMON_MOBILE_ERROR")
             },
             maxLength: {
               value: 10,
-              message: t("CORE_COMMON_MOBILE_ERROR"),
+              message: t("CORE_COMMON_MOBILE_ERROR")
             },
             pattern: {
               value: /[6789][0-9]{9}/,
               //type: "tel",
-              message: t("CORE_COMMON_MOBILE_ERROR"),
-            },
+              message: t("CORE_COMMON_MOBILE_ERROR")
+            }
           })}
           type="number"
           componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
@@ -58,21 +58,21 @@ const SearchFields = ({ register, control, reset, tenantId, t, formState, setSho
         <Controller
           render={(props) => <DatePicker date={props.value} disabled={false} onChange={props.onChange} />}
           name="fromDate"
-          control={control}
-        />
+          control={control} />
+
       </SearchField>
       <SearchField>
         <label>{t("PTR_TO_DATE")}</label>
         <Controller
           render={(props) => <DatePicker date={props.value} disabled={false} onChange={props.onChange} />}
           name="toDate"
-          control={control}
-        />
+          control={control} />
+
       </SearchField>
       <SearchField className="submit">
         <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
         <p
-          style={{ marginTop: "10px" }}
+
           onClick={() => {
             reset({
               applicationNumber: "",
@@ -85,16 +85,16 @@ const SearchFields = ({ register, control, reset, tenantId, t, formState, setSho
               offset: 0,
               limit: 10,
               sortBy: "commencementDate",
-              sortOrder: "DESC",
+              sortOrder: "DESC"
             });
             setShowToast(null);
             previousPage();
-          }}
-        >
+          }} className="ptr-style-d2c171b18b">
+
           {t(`ES_COMMON_CLEAR_ALL`)}
         </p>
       </SearchField>
-    </>
-  );
+    </>);
+
 };
 export default SearchFields;

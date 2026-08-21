@@ -21,14 +21,14 @@ const SearchReceipt = () => {
       select: (data) => {
         const formattedData = data?.["BillingService"]?.["BusinessService"];
         return formattedData;
-      },
+      }
     }
   );
 
   const methods = useForm({
     defaultValues: {
-      categoryName: "",
-    },
+      categoryName: ""
+    }
   });
 
   const {
@@ -37,7 +37,7 @@ const SearchReceipt = () => {
     reset,
     control,
     getValues,
-    formState: { errors },
+    formState: { errors }
   } = methods;
 
   const onSubmit = async (data) => {
@@ -49,11 +49,11 @@ const SearchReceipt = () => {
     // Filter out empty strings, null, undefined, and empty arrays
     const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
       if (
-        value !== null &&
-        value !== undefined &&
-        !(typeof value === "string" && value.trim() === "") &&
-        !(Array.isArray(value) && value.length === 0)
-      ) {
+      value !== null &&
+      value !== undefined &&
+      !(typeof value === "string" && value.trim() === "") &&
+      !(Array.isArray(value) && value.length === 0))
+      {
         // Replace businessServices with its code
         acc[key] = key === "businessServices" ? businessService : value;
       }
@@ -117,62 +117,62 @@ const SearchReceipt = () => {
   const GetCell = (value) => <span className="cell-text">{value}</span>;
   const columns = useMemo(
     () => [
-      {
-        Header: "Receipt No",
-        disableSortBy: true,
-        accessor: (row) => {
-          const receiptNumber = row?.paymentDetails?.[0]?.receiptNumber;
-          return (
-            <span className="cell-text" style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }} onClick={() => downloadPDF(row)}>
+    {
+      Header: "Receipt No",
+      disableSortBy: true,
+      accessor: (row) => {
+        const receiptNumber = row?.paymentDetails?.[0]?.receiptNumber;
+        return (
+          <span className="cell-text challan-generation-style-011d038e3b" onClick={() => downloadPDF(row)}>
               {receiptNumber}
-            </span>
-          );
-          // return GetCell(row?.paymentDetails?.[0]?.receiptNumber);
-        },
-      },
-      {
-        Header: "Consumer Code/Application No/Challan No",
-        disableSortBy: true,
-        accessor: (row) => {
-          return GetCell(row?.paymentDetails?.[0]?.bill?.consumerCode);
-        },
-      },
-      {
-        Header: "Consumer Name",
-        disableSortBy: true,
-        accessor: (row) => {
-          return GetCell(row?.paidBy);
-        },
-      },
-      {
-        Header: "Service Type",
-        disableSortBy: true,
-        accessor: (row) => {
-          return GetCell(row?.paymentDetails?.[0]?.businessService);
-        },
-      },
-      {
-        Header: "Receipt Date",
-        disableSortBy: true,
-        accessor: (row) => {
-          return GetCell(row?.paymentDetails?.[0]?.receiptNumber);
-        },
-      },
-      {
-        Header: "Amount Paid[INR]",
-        disableSortBy: true,
-        accessor: (row) => {
-          return GetCell(row?.paymentDetails?.[0]?.bill?.totalAmount);
-        },
-      },
-    ],
+            </span>);
+
+        // return GetCell(row?.paymentDetails?.[0]?.receiptNumber);
+      }
+    },
+    {
+      Header: "Consumer Code/Application No/Challan No",
+      disableSortBy: true,
+      accessor: (row) => {
+        return GetCell(row?.paymentDetails?.[0]?.bill?.consumerCode);
+      }
+    },
+    {
+      Header: "Consumer Name",
+      disableSortBy: true,
+      accessor: (row) => {
+        return GetCell(row?.paidBy);
+      }
+    },
+    {
+      Header: "Service Type",
+      disableSortBy: true,
+      accessor: (row) => {
+        return GetCell(row?.paymentDetails?.[0]?.businessService);
+      }
+    },
+    {
+      Header: "Receipt Date",
+      disableSortBy: true,
+      accessor: (row) => {
+        return GetCell(row?.paymentDetails?.[0]?.receiptNumber);
+      }
+    },
+    {
+      Header: "Amount Paid[INR]",
+      disableSortBy: true,
+      accessor: (row) => {
+        return GetCell(row?.paymentDetails?.[0]?.bill?.totalAmount);
+      }
+    }],
+
     []
   );
 
   return (
     <React.Fragment>
 
-      <div className={"employee-application-details"} >
+      <div className={"employee-application-details"}>
         <Header>Search Receipts</Header>
       </div>
 
@@ -187,34 +187,34 @@ const SearchReceipt = () => {
                   type="text"
                   inputRef={register({
                     maxLength: {
-                      value: 200,
-                    },
-                  })}
-                />
-                {errors.receiptNumbers && <p  className="requiredField">{errors.receiptNumbers.message}</p>}
+                      value: 200
+                    }
+                  })} />
+
+                {errors.receiptNumbers && <p className="requiredField">{errors.receiptNumbers.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>
-                  Service Type <span  className="requiredField">*</span>
+                  Service Type <span className="requiredField">*</span>
                 </label>
                 <Controller
                   control={control}
                   rules={{ required: t("REQUIRED_FIELD") }}
                   name="businessServices"
-                  render={(props) => (
-                    <Dropdown
-                      option={EmployeeStatusData}
-                      select={(e) => {
-                        props.onChange(e);
-                      }}
-                      optionKey="code"
-                      onBlur={props.onBlur}
-                      t={t}
-                      selected={props.value}
-                    />
-                  )}
-                />
-                {errors.businessServices && <p  className="requiredField">{errors.businessServices.message}</p>}
+                  render={(props) =>
+                  <Dropdown
+                    option={EmployeeStatusData}
+                    select={(e) => {
+                      props.onChange(e);
+                    }}
+                    optionKey="code"
+                    onBlur={props.onBlur}
+                    t={t}
+                    selected={props.value} />
+
+                  } />
+
+                {errors.businessServices && <p className="requiredField">{errors.businessServices.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Consumer code</label>
@@ -223,16 +223,16 @@ const SearchReceipt = () => {
                   type="text"
                   inputRef={register({
                     maxLength: {
-                      value: 500,
-                    },
-                  })}
-                />
-                {errors.consumerCodes && <p  className="requiredField">{errors.consumerCodes.message}</p>}
+                      value: 500
+                    }
+                  })} />
+
+                {errors.consumerCodes && <p className="requiredField">{errors.consumerCodes.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Mobile No</label>
                 <div className="field-container">
-                  <span className="citizen-card-input citizen-card-input--front" style={{ flex: "none" }}>
+                  <span className="citizen-card-input citizen-card-input--front challan-generation-style-16b4c2d840">
                     +91
                   </span>
                   <TextInput
@@ -241,19 +241,19 @@ const SearchReceipt = () => {
                     inputRef={register({
                       pattern: {
                         value: /^[0-9]+$/,
-                        message: "Only numbers are allowed",
+                        message: "Only numbers are allowed"
                       },
                       minLength: {
                         value: 10,
-                        message: "Mobile number must be at least 10 digits",
+                        message: "Mobile number must be at least 10 digits"
                       },
                       maxLength: {
                         value: 15,
-                        message: "Mobile number cannot exceed 15 digits",
-                      },
-                    })}
-                  />
-                  {errors.mobileNumber && <p  className="requiredField">{errors.mobileNumber.message}</p>}
+                        message: "Mobile number cannot exceed 15 digits"
+                      }
+                    })} />
+
+                  {errors.mobileNumber && <p className="requiredField">{errors.mobileNumber.message}</p>}
                 </div>
               </div>
             </div>
@@ -261,42 +261,42 @@ const SearchReceipt = () => {
           </form>
         </FormProvider>
 
-        {tableData?.length > 0 ? (
-          <div style={{ backgroundColor: "white", marginRight: "200px", marginLeft: "2.5%", width: "100%" }}>
+        {tableData?.length > 0 ?
+        <div className="challan-generation-style-bbc75b303e">
             <Table
-              t={t}
-              data={tableData}
-              totalRecords={9}
-              columns={columns}
-              getCellProps={(cellInfo) => {
-                return {
-                  style: {
-                    minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-                    padding: "20px 18px",
-                    fontSize: "16px",
-                  },
-                };
-              }}
-              // onPageSizeChange={onPageSizeChange}
-              currentPage={getValues("offset") / getValues("limit")}
-              // onNextPage={nextPage}
-              // onPrevPage={previousPage}
-              pageSizeLimit={getValues("limit")}
-              // onSort={onSort}
-              disableSort={false}
-              sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
-            />
-          </div>
-        ) : (
-          hasSearched &&
-          !isLoading && <div style={{ margin: "2rem 0", textAlign: "center", fontSize: "18px", color: "#505050" }}>{t("No Records Found")}</div>
-        )}
+            t={t}
+            data={tableData}
+            totalRecords={9}
+            columns={columns}
+            getCellProps={(cellInfo) => {
+              return {
+                style: {
+                  minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
+                  padding: "20px 18px",
+                  fontSize: "16px"
+                }
+              };
+            }}
+            // onPageSizeChange={onPageSizeChange}
+            currentPage={getValues("offset") / getValues("limit")}
+            // onNextPage={nextPage}
+            // onPrevPage={previousPage}
+            pageSizeLimit={getValues("limit")}
+            // onSort={onSort}
+            disableSort={false}
+            sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]} />
+
+          </div> :
+
+        hasSearched &&
+        !isLoading && <div className="challan-generation-style-126891d584">{t("No Records Found")}</div>
+        }
 
         {isLoading && <Loader />}
         {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"true"} />}
       </div>
-    </React.Fragment>
-  );
+    </React.Fragment>);
+
 };
 
 export default SearchReceipt;

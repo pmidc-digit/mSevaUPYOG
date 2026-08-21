@@ -31,11 +31,11 @@ const StakeholderResponse = (props) => {
           applicationNumber={bparegData?.applicationNumber}
           info={t("BPA_NEW_STAKEHOLDER_REGISTRATION_APP_LABEL")}
           successful={bparegData?.status == "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
+          className="obps-pages-employee-stakeholder-response--style-1"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
-        <CardText style={{ paddingBottom: "10px", marginBottom: "10px" }}>{getSubHeaderMessage()}</CardText>
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+        <CardText className="obps-pages-employee-stakeholder-response--style-2">{getSubHeaderMessage()}</CardText>
+        <ActionBar className="obps-pages-employee-stakeholder-response--style-3">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
         </ActionBar>
       </Card>

@@ -1,8 +1,6 @@
-
-
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {Loader,Toast, ActionBar, SubmitBar, Dropdown, CardLabelError, LabelFieldPair, CardLabel } from "@mseva/digit-ui-react-components";
+import { Loader, Toast, ActionBar, SubmitBar, Dropdown, CardLabelError, LabelFieldPair, CardLabel } from "@mseva/digit-ui-react-components";
 import { UPDATE_LayoutNewApplication_FORM } from "../../../redux/actions/LayoutNewApplicationActions";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -36,37 +34,34 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     register,
   } = useForm();
 
-  const commonProps = { Controller, control, setValue, errors, trigger, errorStyle, getValues, setError, clearErrors, register};
-    useEffect(() => {
+  const commonProps = { Controller, control, setValue, errors, trigger, errorStyle, getValues, setError, clearErrors, register };
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   }, []);
 
-//   const validateApplicants = (applicants) => {
-//   let hasError = false;
+  //   const validateApplicants = (applicants) => {
+  //   let hasError = false;
 
-//   applicants.forEach((applicant, index) => {
-//     if (!applicant.mobileNumber) {
-//       setError(`applicants.${index}.mobileNumber`, {
-//         type: "manual",
-//         message: t("REQUIRED_FIELD"),
-//       });
-//       hasError = true;
-//     } else if (!/^[6-9]\d{9}$/.test(applicant.mobileNumber)) {
-//       setError(`applicants.${index}.mobileNumber`, {
-//         type: "manual",
-//         message: t("INVALID_MOBILE_NUMBER"),
-//       });
-//       hasError = true;
-//     }
-//   });
+  //   applicants.forEach((applicant, index) => {
+  //     if (!applicant.mobileNumber) {
+  //       setError(`applicants.${index}.mobileNumber`, {
+  //         type: "manual",
+  //         message: t("REQUIRED_FIELD"),
+  //       });
+  //       hasError = true;
+  //     } else if (!/^[6-9]\d{9}$/.test(applicant.mobileNumber)) {
+  //       setError(`applicants.${index}.mobileNumber`, {
+  //         type: "manual",
+  //         message: t("INVALID_MOBILE_NUMBER"),
+  //       });
+  //       hasError = true;
+  //     }
+  //   });
 
-
-
-//   return !hasError;
-// };
-
+  //   return !hasError;
+  // };
 
   const validateApplicants = (applicants, applicantType) => {
     let hasError = false;
@@ -90,7 +85,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     //   }
     // }
 
-      const activeApplicants = applicants?.filter((a) => a?.status !== false && a?.status !== "false") || [];
+    const activeApplicants = applicants?.filter((a) => a?.status !== false && a?.status !== "false") || [];
 
     activeApplicants.forEach((applicant) => {
       const originalIndex = applicant.actualIndex !== undefined ? applicant.actualIndex : applicants.indexOf(applicant);
@@ -105,7 +100,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
         `applicants.${originalIndex}.photo`,
         `applicants.${originalIndex}.document`,
         `applicants.${originalIndex}.panDocument`,
-        `applicants.${originalIndex}.panNumber`
+        `applicants.${originalIndex}.panNumber`,
       ]);
 
       /* ---------------- Mobile Number ---------------- */
@@ -143,7 +138,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
         });
         hasError = true;
         //console.log("errorFound: email id error for applicant index", originalIndex);
-      } 
+      }
 
       /* ---------------- Address ---------------- */
       if (!applicant.address || !applicant.address.trim()) {
@@ -257,8 +252,6 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     return !hasError;
   };
 
-
-
   const onSubmit = async (data) => {
     const applicants = currentStepData?.applicants || [];
     const activeApplicants = applicants.filter((a) => a?.status !== false && a?.status !== "false");
@@ -280,7 +273,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
       return;
     }
 
-    // 1. Validate applicants manually    
+    // 1. Validate applicants manually
     // const isApplicantsValid = validateApplicants(applicants, applicantType);
 
     // if (!isApplicantsValid) {
@@ -304,7 +297,6 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     validateApplicants(applicants, applicantType);
   };
 
-
   function goNext(data) {
     dispatch(UPDATE_LayoutNewApplication_FORM(config.key, data));
     onGoNext();
@@ -317,9 +309,8 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const closeToast = () => {
     setShowToast(null);
   };
-  
-  
-  const [isRegisteredStakeHolder, setIsRegisteredStakeHolder]=useState(currentStepData?.applicationDetails?.isRegisteredStakeHolder || false);
+
+  const [isRegisteredStakeHolder, setIsRegisteredStakeHolder] = useState(currentStepData?.applicationDetails?.isRegisteredStakeHolder || false);
   const stateCode = Digit.ULBService.getStateId();
   const [stakeHolderRoles, setStakeholderRoles] = useState(false);
   const userRoles = userInfo?.info?.roles?.map((roleData) => roleData.code);
@@ -330,30 +321,29 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     "TradeTypetoRoleMapping"
   );
 
-    useEffect(() => {
-      if (!stakeHolderDetailsLoading) {
-        let roles = [];
-        stakeHolderDetails?.StakeholderRegistraition?.TradeTypetoRoleMapping?.map((type) => {
-          type?.role?.map((role) => {
-            roles.push(role);
-          });
+  useEffect(() => {
+    if (!stakeHolderDetailsLoading) {
+      let roles = [];
+      stakeHolderDetails?.StakeholderRegistraition?.TradeTypetoRoleMapping?.map((type) => {
+        type?.role?.map((role) => {
+          roles.push(role);
         });
-        const uniqueRoles = roles?.filter((item, i, ar) => ar.indexOf(item) === i);
+      });
+      const uniqueRoles = roles?.filter((item, i, ar) => ar.indexOf(item) === i);
 
-        uniqueRoles?.map((unRole) => {
-          if (userRoles?.includes(unRole)) {
-            setIsRegisteredStakeHolder(true);
-          }
-        });
-      
-      }
-    }, [stakeHolderDetailsLoading]);
+      uniqueRoles?.map((unRole) => {
+        if (userRoles?.includes(unRole)) {
+          setIsRegisteredStakeHolder(true);
+        }
+      });
+    }
+  }, [stakeHolderDetailsLoading]);
 
-    console.log("CurrentStepDataInStepOne", currentStepData)
+  console.log("CurrentStepDataInStepOne", currentStepData);
 
   useEffect(() => {
     if (currentStepData?.applicationDetails?.isRegisteredStakeHolder) {
-     setValue("isRegisteredStakeHolder", "true");
+      setValue("isRegisteredStakeHolder", "true");
     }
   }, []);
 
@@ -365,19 +355,16 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
       {/* <form onSubmit={handleSubmit(onSubmit, onInvalid)}> */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="employeeCard">
-            
-        {isRegisteredStakeHolder ? (
+          {isRegisteredStakeHolder ? (
             <React.Fragment>
-            
               <LayoutProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
               <LayoutNewApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
-          ): (
+          ) : (
             <React.Fragment>
-             <LayoutNewApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+              <LayoutNewApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
-          )
-        }   
+          )}
         </div>
         <ActionBar>
           <SubmitBar label="Next" submit="submit" />
@@ -390,4 +377,3 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 };
 
 export default LayoutStepFormOne;
-

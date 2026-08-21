@@ -15,7 +15,7 @@ const ChallanDocuments = ({
   data,
   isLoading,
   error,
-  setError,
+  setError
 }) => {
   const [documents, setDocuments] = useState(formData?.documents?.documents || []);
   // const [error, setError] = useState(null);
@@ -55,37 +55,37 @@ const ChallanDocuments = ({
       });
       if (!isRequired && doc.required) count = count + 1;
     });
-    if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);
-    else setEnableSubmit(true);
+    if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);else
+    setEnableSubmit(true);
   }, [documents, checkRequiredFields]);
 
   return (
     <div>
       {/* <Timeline currentStep={4} /> */}
-      {!isLoading ? (
-        <div>
+      {!isLoading ?
+      <div>
           {data?.Challan?.Documents?.map((document, index) => {
-            return (
-              <PTRSelectDocument
-                key={index}
-                document={document}
-                t={t}
-                error={error}
-                setError={setError}
-                setDocuments={setDocuments}
-                documents={documents}
-                setCheckRequiredFields={setCheckRequiredFields}
-                handleSubmit={handleSubmit}
-              />
-            );
-          })}
+          return (
+            <PTRSelectDocument
+              key={index}
+              document={document}
+              t={t}
+              error={error}
+              setError={setError}
+              setDocuments={setDocuments}
+              documents={documents}
+              setCheckRequiredFields={setCheckRequiredFields}
+              handleSubmit={handleSubmit} />);
+
+
+        })}
           {error && <Toast isDleteBtn={true} label={error} onClose={() => setError(null)} error />}
-        </div>
-      ) : (
-        <Loader />
-      )}
-    </div>
-  );
+        </div> :
+
+      <Loader />
+      }
+    </div>);
+
 };
 
 function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id }) {
@@ -133,12 +133,12 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   // helper function to avoid repeating code
   function updateDocument(selectedDocument, extraFields = {}) {
     setDocuments(() => [
-      {
-        documentType: "arrearDoc", // fixed type as per backend
-        filestoreId: extraFields.filestoreId || null,
-        documentUid: extraFields.documentUid || null,
-      },
-    ]);
+    {
+      documentType: "arrearDoc", // fixed type as per backend
+      filestoreId: extraFields.filestoreId || null,
+      documentUid: extraFields.documentUid || null
+    }]
+    );
     // setDocuments((prev = []) => {
     //   const updated = prev.map((item) => (item?.documentType === selectedDocument?.code ? { ...item, ...extraFields } : item));
 
@@ -171,11 +171,11 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   useEffect(() => {
     if (action === "update") {
       const originalDoc = formData?.originalData?.documents?.filter((e) => e.documentType.includes(doc?.code))[0];
-      const docType = dropDownData
-        .filter((e) => e.code === originalDoc?.documentType)
-        .map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
-      if (!docType) setHidden(true);
-      else {
+      const docType = dropDownData.
+      filter((e) => e.code === originalDoc?.documentType).
+      map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
+      if (!docType) setHidden(true);else
+      {
         setSelectedDocument(docType);
         setUploadedFile(originalDoc?.fileStoreId);
       }
@@ -209,7 +209,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
               updateDocument(selectedDocument, {
                 filestoreId: fsId,
-                documentUid: fsId,
+                documentUid: fsId
               });
             } else {
               setError(t("CS_FILE_UPLOAD_ERROR"));
@@ -234,7 +234,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           Other Document
           {/* <span className="requiredField"> {doc?.required && " *"}</span> */}
         </CardLabel>
-        <div className="field" style={{ width: "100%" }}>
+        <div className="field ral-style-cad980f4b7">
           <UploadFile
             onUpload={selectfile}
             onDelete={() => {
@@ -246,13 +246,13 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             inputStyles={{ width: "280px" }}
             accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
             buttonType="button"
-            error={!uploadedFile}
-          />
+            error={!uploadedFile} />
+
         </div>
       </LabelFieldPair>
       {getLoading && <Loader page={true} />}
-    </div>
-  );
+    </div>);
+
 }
 
 export default ChallanDocuments;

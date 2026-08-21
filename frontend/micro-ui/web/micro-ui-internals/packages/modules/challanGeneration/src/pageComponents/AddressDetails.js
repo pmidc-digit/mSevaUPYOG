@@ -6,7 +6,7 @@ import { sortDropdownNames } from "../pages/employee/Utils/Sortbyname";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { useLocation } from "react-router-dom";
-import { stringReplaceAll,convertEpochToDate } from "../utils";
+import { stringReplaceAll, convertEpochToDate } from "../utils";
 
 const createConsumerDetails = (getCities) => ({
   doorNo: "",
@@ -14,14 +14,14 @@ const createConsumerDetails = (getCities) => ({
   streetName: "",
   pincode: "",
   mohalla: "",
-  city: getCities()[0] ? getCities()[0] : "",
+  city: getCities()[0] ? getCities()[0] : ""
   // key: Date.now(),
 });
 
 const AddressDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
-  if(window.location.href.includes("modify-challan") && sessionStorage.getItem("mcollectEditObject"))
+  if (window.location.href.includes("modify-challan") && sessionStorage.getItem("mcollectEditObject"))
   {
-    formData = JSON.parse(sessionStorage.getItem("mcollectEditObject"))
+    formData = JSON.parse(sessionStorage.getItem("mcollectEditObject"));
   }
   const { t } = useTranslation();
   const { pathname } = useLocation();
@@ -35,7 +35,7 @@ const AddressDetails = ({ config, onSelect, userType, formData, setError, formSt
   const [isErrors, setIsErrors] = useState(false);
   const stateCode = window?.globalConfigs?.getConfig("STATE_LEVEL_TENANT_ID");
   const data = Digit.Hooks.mcollect.useCommonMDMS(stateCode, "common-masters", ["HierarchyType"]);
-  const type = data &&  data.data &&  data.data[`common-masters`] && data.data[`common-masters`]["HierarchyType"] && data.data[`common-masters`]["HierarchyType"][0];
+  const type = data && data.data && data.data[`common-masters`] && data.data[`common-masters`]["HierarchyType"] && data.data[`common-masters`]["HierarchyType"][0];
   const [pincode, setPincode] = useState("");
   const [selectedLocality, setSelectedLocality] = useState("");
 
@@ -44,7 +44,7 @@ const AddressDetails = ({ config, onSelect, userType, formData, setError, formSt
     getCities()[0]?.code,
     type && type.code.toLowerCase(),
     {
-      enabled: !!getCities()[0],
+      enabled: !!getCities()[0]
     },
     t
   );
@@ -94,16 +94,16 @@ const AddressDetails = ({ config, onSelect, userType, formData, setError, formSt
     pincode,
     cities,
     fetchedLocalities,
-    consumerDetails,
+    consumerDetails
   };
 
   return (
     <React.Fragment>
-      {consumerDetails.map((consumerdetail, index) => (
-        <OwnerForm1 key={consumerdetail.key} index={index} consumerdetail={consumerdetail} {...commonProps} />
-      ))}
-    </React.Fragment>
-  );
+      {consumerDetails.map((consumerdetail, index) =>
+      <OwnerForm1 key={consumerdetail.key} index={index} consumerdetail={consumerdetail} {...commonProps} />
+      )}
+    </React.Fragment>);
+
 };
 
 const OwnerForm1 = (_props) => {
@@ -134,7 +134,7 @@ const OwnerForm1 = (_props) => {
     setLocalities,
     pincode,
     cities,
-    fetchedLocalities,
+    fetchedLocalities
   } = _props;
 
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm();
@@ -142,18 +142,18 @@ const OwnerForm1 = (_props) => {
   const { errors } = localFormState;
   const isMobile = window.Digit.Utils.browser.isMobile();
 
-  const selectedPincode = useWatch({control: control, name: "pincode", defaultValue:""});
+  const selectedPincode = useWatch({ control: control, name: "pincode", defaultValue: "" });
 
   useEffect(() => {
-    if(!isEdit){
-    setValue("mohalla","");
+    if (!isEdit) {
+      setValue("mohalla", "");
     }
-  },[selectedPincode])
+  }, [selectedPincode]);
 
   useEffect(() => {
-    if(isEdit)
-    setValue("city",selectedCity);
-  },[selectedCity]);
+    if (isEdit)
+    setValue("city", selectedCity);
+  }, [selectedCity]);
 
 
   useEffect(() => {
@@ -161,7 +161,7 @@ const OwnerForm1 = (_props) => {
     if (city?.code) {
       setPincodeNotValid(false);
       setSelectedCity(city);
-      consumerdetail["city"]=city;
+      consumerdetail["city"] = city;
       setSelectedLocality("");
       const __localityList = fetchedLocalities;
       const __filteredLocalities = __localityList.filter((city) => city["pincode"] == pincode);
@@ -179,23 +179,23 @@ const OwnerForm1 = (_props) => {
   }, []);
 
   useEffect(() => {
-    if(Object.entries(formValue).length>0){
-    const keys = Object.keys(formValue);
-    const part = {};
-    keys.forEach((key) => (part[key] = consumerdetail[key]));
-    if (!_.isEqual(formValue, part)) {
-      Object.keys(formValue).map(data => {
-        if (data != "key" && formValue[data] != undefined && formValue[data] != "" && formValue[data] != null && !isErrors) {
-          setIsErrors(true);
-        }
-      });
-      let ob =[{...formValue}];
-      let mcollectFormValue = JSON.parse(sessionStorage.getItem("mcollectFormData"));
-      mcollectFormValue = {...mcollectFormValue,...ob[0]}
-      sessionStorage.setItem("mcollectFormData",JSON.stringify(mcollectFormValue));
-      setconsumerDetails(ob);
-      trigger();
-    }
+    if (Object.entries(formValue).length > 0) {
+      const keys = Object.keys(formValue);
+      const part = {};
+      keys.forEach((key) => part[key] = consumerdetail[key]);
+      if (!_.isEqual(formValue, part)) {
+        Object.keys(formValue).map((data) => {
+          if (data != "key" && formValue[data] != undefined && formValue[data] != "" && formValue[data] != null && !isErrors) {
+            setIsErrors(true);
+          }
+        });
+        let ob = [{ ...formValue }];
+        let mcollectFormValue = JSON.parse(sessionStorage.getItem("mcollectFormData"));
+        mcollectFormValue = { ...mcollectFormValue, ...ob[0] };
+        sessionStorage.setItem("mcollectFormData", JSON.stringify(mcollectFormValue));
+        setconsumerDetails(ob);
+        trigger();
+      }
     }
   }, [formValue]);
 
@@ -203,18 +203,17 @@ const OwnerForm1 = (_props) => {
   useEffect(() => {
     if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
       setError(config.key, { type: errors });
-    }
-    else if (!Object.keys(errors).length && formState.errors[config.key] && isErrors) {
+    } else
+    if (!Object.keys(errors).length && formState.errors[config.key] && isErrors) {
       clearErrors(config.key);
     }
   }, [errors]);
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   return (
-    <div style={isMobile?{}:{marginTop:"-50px"}}>
+    <div className={isMobile ? "" : "challan-generation-form-section--desktop"}>
       <div>
         <div>
-          <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
+          <CardLabelError className="challan-generation-form-field-error">{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("UC_DOOR_NO_LABEL")} `}</CardLabel>
             <div className="field">
@@ -223,50 +222,50 @@ const OwnerForm1 = (_props) => {
                 name={"doorNo"}
                 defaultValue={consumerdetail?.doorNo}
                 //rules={{ required: t("REQUIRED_FIELD"), validate: { pattern: (val) => (/^[-@.\/#&+\w\s]*$/.test(val) ? true : t("INVALID_NAME")) } }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    //autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
-                    //errorStyle={(localFormState.touched.tradeName && errors?.tradeName?.message) ? true : false}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setFocusIndex({ index: consumerdetail.key, type: "doorNo" });
-                    }}
-                    onBlur={(e) => {
-                      setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                    disable={isEdit}
-                  />
-                )}
-              />
+                render={(props) =>
+                <TextInput
+                  value={props.value}
+                  //autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
+                  //errorStyle={(localFormState.touched.tradeName && errors?.tradeName?.message) ? true : false}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                    setFocusIndex({ index: consumerdetail.key, type: "doorNo" });
+                  }}
+                  onBlur={(e) => {
+                    setFocusIndex({ index: -1 });
+                    props.onBlur(e);
+                  }}
+                  disable={isEdit} />
+
+                } />
+
             </div>
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel className={isMobile?"card-label-APK":"card-label-smaller"}>{`${t("UC_BLDG_NAME_LABEL")} `}</CardLabel>
+            <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>{`${t("UC_BLDG_NAME_LABEL")} `}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name={"building"}
                 defaultValue={consumerdetail?.building}
                 //rules={{ required: t("REQUIRED_FIELD"), validate: { pattern: (val) => (/^[-@.\/#&+\w\s]*$/.test(val) ? true : t("INVALID_NAME")) } }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    //autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
-                    //errorStyle={(localFormState.touched.tradeName && errors?.tradeName?.message) ? true : false}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setFocusIndex({ index: consumerdetail.key, type: "building" });
-                    }}
-                    onBlur={(e) => {
-                      setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                    disable={isEdit}
-                  />
-                )}
-              />
+                render={(props) =>
+                <TextInput
+                  value={props.value}
+                  //autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
+                  //errorStyle={(localFormState.touched.tradeName && errors?.tradeName?.message) ? true : false}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                    setFocusIndex({ index: consumerdetail.key, type: "building" });
+                  }}
+                  onBlur={(e) => {
+                    setFocusIndex({ index: -1 });
+                    props.onBlur(e);
+                  }}
+                  disable={isEdit} />
+
+                } />
+
             </div>
           </LabelFieldPair>
           <LabelFieldPair>
@@ -277,23 +276,23 @@ const OwnerForm1 = (_props) => {
                 name={"streetName"}
                 defaultValue={consumerdetail?.streetName}
                 //rules={{ required: t("REQUIRED_FIELD"), validate: { pattern: (val) => (/^[-@.\/#&+\w\s]*$/.test(val) ? true : t("INVALID_NAME")) } }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    //autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
-                    //errorStyle={(localFormState.touched.tradeName && errors?.tradeName?.message) ? true : false}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setFocusIndex({ index: consumerdetail.key, type: "streetName" });
-                    }}
-                    onBlur={(e) => {
-                      setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                    disable={isEdit}
-                  />
-                )}
-              />
+                render={(props) =>
+                <TextInput
+                  value={props.value}
+                  //autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
+                  //errorStyle={(localFormState.touched.tradeName && errors?.tradeName?.message) ? true : false}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                    setFocusIndex({ index: consumerdetail.key, type: "streetName" });
+                  }}
+                  onBlur={(e) => {
+                    setFocusIndex({ index: -1 });
+                    props.onBlur(e);
+                  }}
+                  disable={isEdit} />
+
+                } />
+
             </div>
           </LabelFieldPair>
           <LabelFieldPair>
@@ -303,56 +302,56 @@ const OwnerForm1 = (_props) => {
                 control={control}
                 name={"pincode"}
                 defaultValue={consumerdetail?.pincode}
-                rules={{ validate: { pattern: (val) => (/^[1-9][0-9]{5}$|^$/.test(val) ? true : t("UC_PINCODE_INVALID")) } }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "pincode"}
-                    errorStyle={(localFormState.touched.pincode && errors?.pincode?.message) ? true : false}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setPincode(e.target.value);
-                      setFocusIndex({ index: consumerdetail.key, type: "pincode" });
-                    }}
-                    onBlur={(e) => {
-                      setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                    disable={isEdit}
-                  />
-                )}
-              />
+                rules={{ validate: { pattern: (val) => /^[1-9][0-9]{5}$|^$/.test(val) ? true : t("UC_PINCODE_INVALID") } }}
+                render={(props) =>
+                <TextInput
+                  value={props.value}
+                  autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "pincode"}
+                  errorStyle={localFormState.touched.pincode && errors?.pincode?.message ? true : false}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                    setPincode(e.target.value);
+                    setFocusIndex({ index: consumerdetail.key, type: "pincode" });
+                  }}
+                  onBlur={(e) => {
+                    setFocusIndex({ index: -1 });
+                    props.onBlur(e);
+                  }}
+                  disable={isEdit} />
+
+                } />
+
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.pincode ? errors?.pincode?.message : ""}</CardLabelError>
+          <CardLabelError className="challan-generation-form-field-error">{localFormState.touched.pincode ? errors?.pincode?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel  style={{paddingTop:"10px"}} className="card-label-smaller">{`${t("UC_MOHALLA_LABEL")}`}</CardLabel>
+            <CardLabel className="card-label-smaller challan-generation-style-f9f0ebc1c8">{`${t("UC_MOHALLA_LABEL")}`}</CardLabel>
             <Controller
               name="mohalla"
-            
+
               defaultValue={consumerdetail?.mohalla}
               control={control}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  selected={props.value}
-                  //isMandatory={true}
-                  //errorStyle={(localFormState.touched.financialYear && errors?.financialYear?.message) ? true : false}
-                  // disable={financialYearOptions?.length === 1}
-                  option={localities}
-                  select={props.onChange}
-                  optionKey="i18nkey"
-                  onBlur={props.onBlur}
-                  disable={isEdit}
-                  t={t}
-                />
-              )}
-            />
-          </LabelFieldPair>     
+              render={(props) =>
+              <Dropdown
+                className="form-field"
+                selected={props.value}
+                //isMandatory={true}
+                //errorStyle={(localFormState.touched.financialYear && errors?.financialYear?.message) ? true : false}
+                // disable={financialYearOptions?.length === 1}
+                option={localities}
+                select={props.onChange}
+                optionKey="i18nkey"
+                onBlur={props.onBlur}
+                disable={isEdit}
+                t={t} />
+
+              } />
+
+          </LabelFieldPair>
       </div>
       </div>
-       <hr className="challan-hr-linebreak"  />
-    </div>
-  );
+       <hr className="challan-hr-linebreak" />
+    </div>);
+
 };
 export default AddressDetails;

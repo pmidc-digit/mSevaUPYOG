@@ -118,15 +118,10 @@ function PTRSummary({ t }) {
 
   return (
     <div className="bpa-summary-page">
-      {/* <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>{t("Application Summary")}</h2> */}
-
-      <div className="summary-section" style={{ padding: "2px" }}>
+      <div className="summary-section ptr-style-efc48952b0">
         <div className="bpa-summary-section">
           <div className="ads-summary-row">
             <h3 className="bpa-summary-heading">{t("ES_TITILE_OWNER_DETAILS")}</h3>
-            {/* <span style={editLabelStyle} onClick={() => dispatch(SET_PTRNewApplication_STEP(1))}>
-              {t("EDIT")}
-            </span> */}
           </div>
 
           {renderRow(t("NOC_COMMON_TABLE_COL_OWN_NAME_LABEL"), owner?.name)}
@@ -142,9 +137,6 @@ function PTRSummary({ t }) {
         <div className="bpa-summary-section">
           <div className="ads-summary-row">
             <h3 className="bpa-summary-heading">{t("ES_TITILE_PET_DETAILS")}</h3>
-            {/* <span style={editLabelStyle} onClick={() => dispatch(SET_PTRNewApplication_STEP(2))}>
-              {t("EDIT")}
-            </span> */}
           </div>
 
           {renderRow(t("PTR_PET_NAME"), pet?.petName)}
@@ -165,9 +157,6 @@ function PTRSummary({ t }) {
         <div className="bpa-summary-section">
           <div className="ads-summary-row">
             <h3 className="bpa-summary-heading">{t("ES_TITLE_DOCS")}</h3>
-            {/* <span style={editLabelStyle} onClick={() => dispatch(SET_PTRNewApplication_STEP(3))}>
-              {t("EDIT")}
-            </span> */}
           </div>
 
           <div>
@@ -175,8 +164,6 @@ function PTRSummary({ t }) {
               <div className="ads-summary-docs">
                 {docs.map((doc, index) => (
                   <div key={index} className="ads-summary-doc-card">
-                    {/* <div style={{ marginBottom: "0.5rem", fontWeight: 600 }}>{t(doc?.documentType?.replaceAll?.(".", "_") || doc?.documentType)}</div> */}
-
                     <PTRDocument
                       petdetail={{
                         documents: [doc],

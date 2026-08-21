@@ -89,7 +89,7 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
                 </td>
 
                 )}
-                
+
               </tr>
             );
           })}

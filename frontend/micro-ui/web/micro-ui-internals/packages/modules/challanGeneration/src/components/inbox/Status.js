@@ -15,7 +15,7 @@ const Status = ({ onAssignmentChange, searchParams, businessServices, clearCheck
 
   return (
     <div className="status-container">
-      <div className="filter-label" style={{ fontWeight: "normal" }}>
+      <div className="filter-label challan-generation-style-25d0175a45">
         {t("UC_COMMON_TABLE_COL_STATUS")}
       </div>
       {statutes?.map((option, index) => {
@@ -27,12 +27,12 @@ const Status = ({ onAssignmentChange, searchParams, businessServices, clearCheck
             _searchParams={_searchParams}
             onAssignmentChange={onAssignmentChange}
             status={{ name: translateState(option), code: option.applicationstatus }}
-            searchParams={searchParams}
-          />
-        );
+            searchParams={searchParams} />);
+
+
       })}
-    </div>
-  );
+    </div>);
+
 };
 
 export default Status;

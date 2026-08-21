@@ -5,7 +5,7 @@ import { encryptId } from "../../../utils";
 
 const useSearchApplicationTableConfig = () => {
     const {t} = useTranslation();
-    
+
     const GetCell = (value) => <span className="cell-text">{value}</span>;
     return useMemo( () => ([
         {

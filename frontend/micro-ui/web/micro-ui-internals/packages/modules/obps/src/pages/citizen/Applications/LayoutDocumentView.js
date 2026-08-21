@@ -23,7 +23,7 @@ const LayoutDocumentView = ({documents}) => {
           accessor: "fileUrl",
           Cell: ({ value }) =>
             value ? (
-              <LinkButton style={{ float: "right", display: "inline" }}
+              <LinkButton className="obps-pages-citizen-applications-layout-document-view--style-1"
                 label={t("View")}
                 onClick={() => routeTo(value)}
               />
@@ -55,12 +55,12 @@ const LayoutDocumentView = ({documents}) => {
   );
 
   console.log("urlsList from hook:", urlsList)
-  
+
   const mappedDocuments = documents?.map(doc => {
    // Use uuid or documentUid as the key
    const docId = doc?.documentUid || doc?.uuid;
    const { documentType } = doc;
-   const url = urlsList?.pdfFiles?.[docId]; 
+   const url = urlsList?.pdfFiles?.[docId];
    return {
     documentUid: docId,
     documentType,
@@ -82,7 +82,7 @@ const LayoutDocumentView = ({documents}) => {
 
   return (
     <div>
-      {documentsData && documentsData.length > 0 && 
+      {documentsData && documentsData.length > 0 &&
         <Table
           className="customTable table-border-style"
           t={t}
@@ -96,7 +96,7 @@ const LayoutDocumentView = ({documents}) => {
         />
       }
       {(!documentsData || documentsData.length === 0) && (
-        <div style={{ padding: "16px", textAlign: "center", color: "#666" }}>
+        <div className="obps-pages-citizen-applications-layout-document-view--style-2">
           {t("NO_DOCUMENTS_UPLOADED") || "No documents uploaded"}
         </div>
       )}

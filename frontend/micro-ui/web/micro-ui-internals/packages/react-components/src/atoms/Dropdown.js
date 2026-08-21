@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowDown } from "./svgindex";
 
 const TextField = (props) => {
@@ -94,12 +95,35 @@ const Dropdown = (props) => {
   const [forceSet, setforceSet] = useState(0);
   const [optionIndex, setOptionIndex] = useState(-1);
   const optionRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const [portalPosition, setPortalPosition] = useState(null);
   const hasCustomSelector = props.customSelector ? true : false;
   const t = props.t || translateDummy;
 
   useEffect(() => {
     setSelectedOption(props.selected);
   }, [props.selected]);
+
+  useLayoutEffect(() => {
+    if (!dropdownStatus || !props.menuPortal || !dropdownRef.current) {
+      setPortalPosition(null);
+      return undefined;
+    }
+
+    const updatePortalPosition = () => {
+      const { bottom, left, width } = dropdownRef.current.getBoundingClientRect();
+      setPortalPosition({ position: "fixed", top: bottom + 4, left, width, zIndex: 10000 });
+    };
+
+    updatePortalPosition();
+    window.addEventListener("resize", updatePortalPosition);
+    window.addEventListener("scroll", updatePortalPosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updatePortalPosition);
+      window.removeEventListener("scroll", updatePortalPosition, true);
+    };
+  }, [dropdownStatus, props.menuPortal]);
 
   function dropdownSwitch() {
     if (!props.disable) {
@@ -113,7 +137,7 @@ const Dropdown = (props) => {
   }
 
   function handleClick(e) {
-    if (!optionRef.current || !optionRef.current.contains(e.target)) {
+    if ((!optionRef.current || !optionRef.current.contains(e.target)) && (!dropdownRef.current || !dropdownRef.current.contains(e.target))) {
       document.removeEventListener("mousedown", handleClick, false);
       setDropdownStatus(false);
     }
@@ -156,10 +180,19 @@ const Dropdown = (props) => {
     if(!isSelectedSameAsOptions) setSelectedOption(null)
   }
 
+  const DropdownMenu = ({ children }) => {
+    if (props.menuPortal && portalPosition) {
+      return createPortal(children, document.body);
+    }
+
+    return children;
+  };
+
   return (
     <div
       className={`${user_type === "employee" ? "employee-select-wrap" : "select-wrap"} ${props?.className ? props?.className : ""}`}
       style={{ ...props.style }}
+      ref={dropdownRef}
     >
       {hasCustomSelector && (
         <div className={props.showArrow ? "cp flex-right column-gap-5" : "cp"} onClick={dropdownSwitch}>
@@ -205,11 +238,12 @@ const Dropdown = (props) => {
         </div>
       )}
       {dropdownStatus ? (
-        props.optionKey ? (
+        <DropdownMenu>
+          {props.optionKey ? (
           <div
             id="jk-dropdown-unique"
-            className={`${hasCustomSelector ? "margin-top-10 display: table" : ""} options-card`}
-            style={{ ...props.optionCardStyles }}
+            className={`${hasCustomSelector ? "margin-top-10 display: table" : ""} options-card ${props.menuPortal ? "dropdown-options-portal" : ""}`}
+            style={{ ...props.optionCardStyles, ...(props.menuPortal && portalPosition ? portalPosition : {}) }}
             ref={optionRef}
           >
             {filteredOption &&
@@ -242,10 +276,10 @@ const Dropdown = (props) => {
               </div>
             )}
           </div>
-        ) : (
+          ) : (
           <div
-            className="options-card"
-            style={{ ...props.optionCardStyles, overflow: "scroll", maxHeight: "350px" }}
+            className={`options-card ${props.menuPortal ? "dropdown-options-portal" : ""}`}
+            style={{ ...props.optionCardStyles, ...(props.menuPortal && portalPosition ? portalPosition : {}), overflow: "scroll", maxHeight: "350px" }}
             id="jk-dropdown-unique"
             ref={optionRef}
           >
@@ -270,7 +304,8 @@ const Dropdown = (props) => {
                 );
               })}
           </div>
-        )
+          )}
+        </DropdownMenu>
       ) : null}
     </div>
   );

@@ -8,9 +8,9 @@ import { useLocation } from "react-router-dom";
 import { Loader } from "../components/Loader";
 
 const getAddress = (address, t) => {
-  return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${address?.landmark ? `${address?.landmark}, ` : ""
-    }${t(Digit.Utils.pt.getMohallaLocale(address?.locality.code, address?.tenantId))}, ${t(Digit.Utils.pt.getCityLocale(address?.tenantId))}${address?.pincode && t(address?.pincode) ? `, ${address.pincode}` : " "
-    }`;
+  return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${address?.landmark ? `${address?.landmark}, ` : ""}${
+  t(Digit.Utils.pt.getMohallaLocale(address?.locality.code, address?.tenantId))}, ${t(Digit.Utils.pt.getCityLocale(address?.tenantId))}${address?.pincode && t(address?.pincode) ? `, ${address.pincode}` : " "}`;
+
 };
 
 export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
@@ -40,7 +40,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       return { Properties: [{ ...formData?.cpt?.details }] };
     } else {
       return {
-        Properties: [],
+        Properties: []
       };
     }
   });
@@ -50,7 +50,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       return { dues: { ...formData?.cpt?.dues } };
     } else {
       return {
-        dues: {},
+        dues: {}
       };
     }
   });
@@ -66,7 +66,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       filters: { propertyIds: searchPropertyId },
       tenantId: tenantId,
       enabled: searchPropertyId ? true : false,
-      privacy: Digit.Utils.getPrivacyObject(),
+      privacy: Digit.Utils.getPrivacyObject()
     }
   );
 
@@ -102,7 +102,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
 
   useEffect(() => {
     if (propertyId && (window.location.href.includes("/renew-application-details/") || window.location.href.includes("/edit-application-details/")))
-      setSearchPropertyId(propertyId);
+    setSearchPropertyId(propertyId);
   }, [propertyId]);
 
   useEffect(() => {
@@ -139,7 +139,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
         sewerageConnection: [],
         firstName: "",
         mobileNumber: "",
-        address: "",
+        address: ""
       });
 
       dispatch(resetNDCForm());
@@ -165,11 +165,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
   if (propertyDetails && propertyDetails?.Properties?.length) {
     propertyAddress = getAddress(propertyDetails?.Properties?.[0]?.address, t);
   }
-  const getInputStyles = () => {
-    if (window.location.href.includes("/ws/")) {
-      return { fontWeight: "700" };
-    } else return {};
-  };
+  const isWaterService = window.location.href.includes("/ws/");
 
   let clns = "";
   if (window.location.href.includes("/ws/")) clns = ":";
@@ -177,7 +173,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
   const propertyIdInput = {
     label: "PROPERTY_ID",
     type: "text",
-    name: "id",
+    name: "id"
   };
 
   function setValue(value, input) {
@@ -193,7 +189,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
     try {
       const result = await Digit.PaymentService.fetchBill(tenantId, {
         businessService: "PT",
-        consumerCode: formData?.cpt?.id,
+        consumerCode: formData?.cpt?.id
       });
       if (result?.Bill?.length > 0) {
         if (result?.Bill[0]?.totalAmount > 0) {
@@ -221,97 +217,96 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       setLoader(false);
       setShowToast({ error: true, label: t("NDC_MESSAGE_FETCH_FAILED") });
     }
-  }
+  };
 
-function redirectToPayBill(billData, index, isEdit) {
-  const userType = window.location.href.includes("employee") ? "employee" : "citizen";
+  function redirectToPayBill(billData, index, isEdit) {
+    const userType = window.location.href.includes("employee") ? "employee" : "citizen";
 
-  const payUrl =
+    const payUrl =
     "https://sdc-uat.lgpunjab.gov.in" +
     `/${userType}/egov-common/pay?consumerCode=${formData?.cpt?.id}&tenantId=${formData?.cpt?.details?.tenantId}&businessService=PT`;
 
-  window.open(payUrl, "_blank");
-  setPropertyDues({});
-}
-
-useEffect(() => {
-  if (showToast) {
-    const timer = setTimeout(() => {
-      setShowToast(null);
-    }, 3000); // auto close after 3 sec
-
-    return () => clearTimeout(timer); // cleanup
+    window.open(payUrl, "_blank");
+    setPropertyDues({});
   }
-}, [showToast]);
 
-return (
-  <React.Fragment>
-    <div style={{ marginBottom: "16px" }}>
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(null);
+      }, 3000); // auto close after 3 sec
+
+      return () => clearTimeout(timer); // cleanup
+    }
+  }, [showToast]);
+
+  return (
+    <React.Fragment>
+    <div className="ndc-style-87c136dfd0">
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller ndc_card_labels" style={getInputStyles()}>
+        <CardLabel className={`card-label-smaller ndc_card_labels ${isWaterService ? "ndc-property-search__label--water" : ""}`}>
           {`${t(propertyIdInput.label)} *`}
         </CardLabel>
         <div className="field ndc_property_search" ref={myElementRef} id="search-property-field">
           <TextInput
-            key={propertyIdInput.name}
-            value={propertyId} //{propertyId}
-            onChange={handlePropertyChange}
-            disable={false}
-            // maxlength={16}
-            defaultValue={undefined}
-            {...propertyIdInput.validation}
-          />
+              key={propertyIdInput.name}
+              value={propertyId} //{propertyId}
+              onChange={handlePropertyChange}
+              disable={false}
+              // maxlength={16}
+              defaultValue={undefined}
+              {...propertyIdInput.validation} />
 
-          {!isSearchClicked && (
+
+          {!isSearchClicked &&
             <button className="submit-bar" type="button" onClick={searchProperty}>
               {`${t("PT_SEARCH")}`}
             </button>
-          )}
+            }
 
-          {!apiDataCheck?.[0]?.NdcDetails && getCheckStatus && !getPayDuesButton && (
+          {!apiDataCheck?.[0]?.NdcDetails && getCheckStatus && !getPayDuesButton &&
             <button
               className="submit-bar"
               type="button"
               onClick={() => {
                 fetchBill("PT", formData?.cpt?.id);
-              }}
-            >
+              }}>
+
               {`${t("CHECK_STATUS_PROPERTY")}`}
               {/* Check Status */}
             </button>
-          )}
+            }
           {getPayDuesButton && <div className="ndc-pay-due-button">Rs. {formData?.cpt?.dues?.totalAmount} </div>}
 
-          {getPayDuesButton && (
+          {getPayDuesButton &&
             <button
               className="submit-bar"
               type="button"
               onClick={() => {
                 redirectToPayBill(formData?.cpt?.dues?.totalAmount);
                 setPayDuesButton(false);
-              }}
-            >
+              }}>
+
               {`${t("PAY_DUES")} `}
             </button>
-          )}
+            }
           {getNoDue && <div className="ndc-no-due-button">{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>}
         </div>
       </LabelFieldPair>
 
-      {showToast && (
+      {showToast &&
         <Toast
           isDleteBtn={true}
-          labelstyle={{ width: "100%" }}
           error={showToast.error}
           warning={showToast.warning}
           label={t(showToast.label)}
           onClose={() => {
             setShowToast(null);
-          }}
-        />
-      )}
+          }} />
+
+        }
     </div>
     {(isLoading || getLoader) && <Loader page={true} />}
-  </React.Fragment>
-);
+  </React.Fragment>);
+
 };

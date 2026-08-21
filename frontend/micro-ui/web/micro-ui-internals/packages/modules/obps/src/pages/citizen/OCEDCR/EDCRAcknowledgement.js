@@ -8,13 +8,13 @@ const EDCRAcknowledgement = (props) => {
   const history = useHistory();
   const [showToast, setShowToast] = useState(false);
 
-  useEffect(() => { 
-    if (props?.data?.type == "ERROR" && !showToast) setShowToast(true); 
+  useEffect(() => {
+    if (props?.data?.type == "ERROR" && !showToast) setShowToast(true);
   }, [props?.data?.data]);
 
   if (props?.data?.type == "ERROR") {
     return (
-      <Card style={{ padding: "0px" }}>
+      <Card className="obps-pages-citizen-ocedcr-edcracknowledgement--style-1">
         <Banner
           message={t("CS_BPA_APPLICATION_FAILED")}
           applicationNumber={""}
@@ -22,9 +22,9 @@ const EDCRAcknowledgement = (props) => {
           successful={false}
           infoStyles={{ fontSize: "18px", lineHeight: "21px", fontWeight: "bold", textAlign: "center", padding: "0px 15px" }}
           applicationNumberStyles={{ fontSize: "24px", lineHeight: "28px", fontWeight: "bold", marginTop: "10px" }}
-          style={{ width: "100%", padding: "10px" }}
+          className="obps-pages-citizen-ocedcr-edcracknowledgement--style-2"
         />
-        <div style={{ padding: "10px", paddingBottom: "10px" }}>
+        <div className="obps-pages-citizen-ocedcr-edcracknowledgement--style-3">
           <Link to={`/digit-ui/citizen`} >
             <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
           </Link>
@@ -33,7 +33,7 @@ const EDCRAcknowledgement = (props) => {
       </Card>
     )
   }
-  
+
   sessionStorage.setItem("isEDCRDisable", JSON.stringify(true));
   sessionStorage.setItem("isPermitApplication", true);
   const edcrData = props?.data?.[0];
@@ -68,7 +68,7 @@ const EDCRAcknowledgement = (props) => {
   return (
     <div>
       {edcrData?.status == "Accepted" ?
-        <Card style={{ padding: "0px" }}>
+        <Card className="obps-pages-citizen-ocedcr-edcracknowledgement--style-4">
           <Banner
             message={t("BPA_OC_EDCR_ACKNOWLEDGEMENT_SUCCESS_MESSAGE_LABEL")}
             applicationNumber={edcrData?.edcrNumber}
@@ -76,26 +76,26 @@ const EDCRAcknowledgement = (props) => {
             successful={true}
             infoStyles={{ fontSize: "18px", lineHeight: "21px", fontWeight: "bold", textAlign: "center", padding: "0px 15px" }}
             applicationNumberStyles={{ fontSize: "24px", lineHeight: "28px", fontWeight: "bold", marginTop: "10px" }}
-            style={{width: "100%", padding: "10px"}}
+            className="obps-pages-citizen-ocedcr-edcracknowledgement--style-5"
           />
-          <CardText style={{ padding: "0px 8px", marginBottom: "10px" }}>{`${t("PDF_STATIC_LABEL_CONSOLIDATED_BILL_CONSUMER_ID_TL")} - ${edcrData?.applicationNumber}`}</CardText>
+          <CardText className="obps-pages-citizen-ocedcr-edcracknowledgement--style-6">{`${t("PDF_STATIC_LABEL_CONSOLIDATED_BILL_CONSUMER_ID_TL")} - ${edcrData?.applicationNumber}`}</CardText>
           {/* <CardText style={{ padding: "0px 8px" }}>{t("EDCR_ACKNOWLEDGEMENT_SUCCESS_MESSAGE_TEXT_LABEL")}</CardText> */}
-          <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginBottom: "10px", padding: "0px 8px" }} onClick={printReciept}>
+          <div className="primary-label-btn d-grid obps-pages-citizen-ocedcr-edcracknowledgement--style-7"  onClick={printReciept}>
             <svg width="20" height="23" viewBox="0 0 20 23" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M19.3334 8H14V0H6.00002V8H0.666687L10 17.3333L19.3334 8ZM0.666687 20V22.6667H19.3334V20H0.666687Z" fill="#a82227" />
             </svg>
             {t("EDCR_DOWNLOAD_SCRUTINY_REPORT_LABEL")}
           </div>
-          <div style={{padding: "10px 20px", display: "flex", gap: "10px"}}>
+          <div className="obps-pages-citizen-ocedcr-edcracknowledgement--style-8">
             <Link to={{pathname: `/digit-ui/citizen/obps/${bpaLinks?.linkData?.flow?.toLowerCase()}/${edcrData?.appliactionType?.toLowerCase()}/${edcrData?.applicationSubType?.toLowerCase()}/docs-required`, state: bpaLinks}} replace >
               <SubmitBar label={t("BPA_APPLY_OC_FOR_BPA_LABEL")} className={"oc-aknowledgement-screen"} onSubmit={() => (sessionStorage.setItem("clickOnBPAApplyAfterEDCR",true))}/>
-            </Link>          
+            </Link>
             <Link to={`/digit-ui/citizen`} >
               <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
             </Link>
           </div>
         </Card> :
-        <Card style={{ padding: "0px" }}>
+        <Card className="obps-pages-citizen-ocedcr-edcracknowledgement--style-9">
           <Banner
             message={t("BPA_OC_EDCR_ACKNOWLEDGEMENT_REJECTED_MESSAGE_LABEL")}
             applicationNumber={""}
@@ -103,17 +103,17 @@ const EDCRAcknowledgement = (props) => {
             successful={false}
             infoStyles={{ fontSize: "18px", lineHeight: "21px", fontWeight: "bold", textAlign: "center", padding: "0px 15px" }}
             applicationNumberStyles={{ fontSize: "24px", lineHeight: "28px", fontWeight: "bold", marginTop: "10px" }}
-            style={{width: "100%", padding: "10px"}}
+            className="obps-pages-citizen-ocedcr-edcracknowledgement--style-10"
           />
-          <CardText style={{ padding: "0px 8px", marginBottom: "10px" }}>{t("EDCR_ACKNOWLEDGEMENT_REJECTED_MESSAGE_TEXT_LABEL")}</CardText>
-          <CardText style={{ padding: "0px 8px", marginBottom: "10px" }}>{`${t("PDF_STATIC_LABEL_CONSOLIDATED_BILL_CONSUMER_ID_TL")} - ${edcrData?.applicationNumber}`}</CardText>
-          <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginBottom: "10px", padding: "0px 8px" }} onClick={printReciept}>
+          <CardText className="obps-pages-citizen-ocedcr-edcracknowledgement--style-11">{t("EDCR_ACKNOWLEDGEMENT_REJECTED_MESSAGE_TEXT_LABEL")}</CardText>
+          <CardText className="obps-pages-citizen-ocedcr-edcracknowledgement--style-12">{`${t("PDF_STATIC_LABEL_CONSOLIDATED_BILL_CONSUMER_ID_TL")} - ${edcrData?.applicationNumber}`}</CardText>
+          <div className="primary-label-btn d-grid obps-pages-citizen-ocedcr-edcracknowledgement--style-13"  onClick={printReciept}>
             <svg width="20" height="23" viewBox="0 0 20 23" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M19.3334 8H14V0H6.00002V8H0.666687L10 17.3333L19.3334 8ZM0.666687 20V22.6667H19.3334V20H0.666687Z" fill="#a82227" />
             </svg>
             {t("EDCR_DOWNLOAD_SCRUTINY_REPORT_LABEL")}
           </div>
-          <div style={{padding: "10px", paddingBottom: "10px", paddingLeft: "10px"}}>
+          <div className="obps-pages-citizen-ocedcr-edcracknowledgement--style-14">
             <Link to={`/digit-ui/citizen`} >
               <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
             </Link>

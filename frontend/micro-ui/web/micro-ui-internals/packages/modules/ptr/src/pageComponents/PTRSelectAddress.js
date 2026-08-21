@@ -10,15 +10,15 @@ const PTRSelectAddress = ({ t, config, onSelect, userType, formData, setError, c
   let tenantId = Digit.ULBService.getCurrentTenantId();
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify");
-  
-  
 
 
-  
+
+
+
 
   let isEditAddress = formData?.isEditAddress || false;
   if (presentInModifyApplication) isEditAddress = true;
-  
+
   const { pincode, city } = formData?.address || "";
   const cities =
     userType === "employee" ? allCities.filter((city) => city.code === tenantId) : pincode  ? allCities.filter((city) => city?.pincode?.some((pin) => pin == pincode)) : allCities;
@@ -80,7 +80,7 @@ const PTRSelectAddress = ({ t, config, onSelect, userType, formData, setError, c
     }
   }, [selectedCity, formData?.address?.pincode, fetchedLocalities]);
 
-  
+
 
   function selectCity(city) {
     setSelectedLocality(null);
@@ -105,8 +105,6 @@ const PTRSelectAddress = ({ t, config, onSelect, userType, formData, setError, c
   const { control, formState: localFormState, watch, /*setError: setLocalError, clearErrors: clearLocalErrors,*/ setValue } = useForm();
   const formValue = watch();
   const { errors } = localFormState;
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
-
   useEffect(() => {
     if (userType === "employee") {
       let keys = Object.keys(formValue);
@@ -154,7 +152,7 @@ const PTRSelectAddress = ({ t, config, onSelect, userType, formData, setError, c
             )}
           />
         </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{localFormState.touched.city ? errors?.city?.message : ""}</CardLabelError>
+        <CardLabelError className="ptr-form-field-error">{localFormState.touched.city ? errors?.city?.message : ""}</CardLabelError>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{t("PTR_LOCALITY") + " *"}</CardLabel>
           <Controller
@@ -175,7 +173,7 @@ const PTRSelectAddress = ({ t, config, onSelect, userType, formData, setError, c
             )}
           />
         </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{localFormState.touched.locality ? errors?.locality?.message : ""}</CardLabelError>
+        <CardLabelError className="ptr-form-field-error">{localFormState.touched.locality ? errors?.locality?.message : ""}</CardLabelError>
       </div>
     );
   }

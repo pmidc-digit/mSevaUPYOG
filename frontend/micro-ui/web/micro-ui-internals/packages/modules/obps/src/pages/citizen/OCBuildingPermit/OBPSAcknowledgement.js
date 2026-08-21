@@ -65,7 +65,7 @@ const OBPSAcknowledgement = ({ data, onSuccess }) => {
   const mutation = Digit.Hooks.obps.useObpsAPI(
     data?.tenantId ? data?.tenantId : tenantId,
     true
-  ); 
+  );
   const mutation1 = Digit.Hooks.obps.useObpsAPI(
     data?.tenantId ? data?.tenantId : tenantId,
     false
@@ -88,7 +88,7 @@ const OBPSAcknowledgement = ({ data, onSuccess }) => {
       mutation1.mutate(formdata, {
         onSuccess,
       });
-      
+
     } catch (err) {
     }
   }, []);

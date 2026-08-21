@@ -56,7 +56,7 @@ const CLULocalityInfo = (_props) => {
       <CardSectionHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSectionHeader>
 
       <div>
-        <LabelFieldPair style={{ marginBottom: "20px" }}>
+        <LabelFieldPair className="obps-page-components-clulocality-info--style-1">
           <CardLabel className="card-label-smaller">{`${t("BPA_AREA_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           {areaTypeOptions.length > 0 && (
             <div className="field">
@@ -82,9 +82,9 @@ const CLULocalityInfo = (_props) => {
             </div>
           )}
         </LabelFieldPair>
-        
-        {selectedAreaType?.code === "SCHEME_AREA" && 
-         <LabelFieldPair style={{ marginBottom: "20px" }}>
+
+        {selectedAreaType?.code === "SCHEME_AREA" &&
+         <LabelFieldPair className="obps-page-components-clulocality-info--style-2">
           <CardLabel className="card-label-smaller">{`${t("BPA_SCHEME_COLONY_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <div className="field">
           <Controller

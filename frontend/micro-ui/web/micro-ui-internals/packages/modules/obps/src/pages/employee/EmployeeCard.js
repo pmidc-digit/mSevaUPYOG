@@ -8,13 +8,13 @@ const OBPSEmployeeHomeCard = () => {
 
     const [totalCount, setTotalCount] = useState(0);
     const [totalCountEs, setTotalCountEs] = useState(0);
-    
+
     const { t } = useTranslation();
     const location = useLocation()
-  
+
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const stateCode = Digit.ULBService.getStateId();
-  
+
     const stakeholderEmployeeRoles = [ { code: "BPAREG_DOC_VERIFIER", tenantId: stateCode }, { code: "BPAREG_APPROVER", tenantId: stateCode }];
     const bpaEmployeeRoles = [ "BPA_FIELD_INSPECTOR", "BPA_NOC_VERIFIER", "BPA_APPROVER", "BPA_VERIFIER", "CEMP"];
 
@@ -22,7 +22,7 @@ const OBPSEmployeeHomeCard = () => {
     const checkingForBPARoles = showHidingLinksForBPA(bpaEmployeeRoles);
 
     const searchFormDefaultValues = {}
-  
+
     const filterFormDefaultValues = {
       moduleName: "bpa-services",
       applicationStatus: "",
@@ -36,7 +36,7 @@ const OBPSEmployeeHomeCard = () => {
       offset: 0,
       sortOrder: "DESC"
     }
-  
+
     const formInitValue = {
       filterForm: filterFormDefaultValues,
       searchForm: searchFormDefaultValues,
@@ -58,13 +58,13 @@ const OBPSEmployeeHomeCard = () => {
       offset: 0,
       sortOrder: "DESC"
     }
-  
+
     const formInitValueOfStakeholder = {
       filterForm: filterFormDefaultValuesOfStakeholder,
       searchForm: searchFormDefaultValuesOfStakeholder,
       tableForm: tableOrderFormDefaultValuesOfStakeholder
     }
-  
+
     const { isLoading: isInboxLoadingOfStakeholder, data: dataOfStakeholder } = Digit.Hooks.obps.useBPAInbox({
       tenantId,
       filters: { ...formInitValueOfStakeholder },
@@ -104,7 +104,7 @@ const OBPSEmployeeHomeCard = () => {
         {   count:!isInboxLoading && !isInboxLoadingOfStakeholder ? totalCountEs : "",
             label: t("TOTAL_NEARING_SLA"),
             link: `/digit-ui/employee/obps/inbox`
-        }  
+        }
       ],
       links: [
         {
@@ -137,7 +137,7 @@ const OBPSEmployeeHomeCard = () => {
         return obj.field !== 'BPA';
       });
     }
-  
+
     return checkingForBPARoles || checkingForStakeholderRoles ? <EmployeeModuleCard {...propsForModuleCard} /> : null
   }
 

@@ -32,7 +32,7 @@ const LayoutCLUDetails = (_props) => {
 
   // Fetch MDMS data for Application Applied Under and Non-Scheme Type
   const { data: mdmsData } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
-  
+
   const areaTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.areaType || [];
   const nonSchemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.nonSchemeType || [];
 
@@ -70,28 +70,28 @@ const LayoutCLUDetails = (_props) => {
       <CardSectionHeader className="card-section-header">{t("BPA_SITE_DETAILS")}</CardSectionHeader>
 
       <div>
-    
-        
+
+
         <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_IS_CLU_REQUIRED_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-          
+
         <Controller
           control={control}
           name={"cluIsApproved"}
           rules={{ required: t("REQUIRED_FIELD") }}
           render={(props) => (
-          <Dropdown 
+          <Dropdown
           t={t}
-            className="form-field" 
+            className="form-field"
             select={(e)=>{
               props.onChange(e);
               setSelectedIsCluApproved(e);
-            }} 
-            selected={props.value} 
+            }}
+            selected={props.value}
             option={cluOptions}
             optionKey="i18nKey" />
-            
-            
+
+
             )}
             />
         </LabelFieldPair>
@@ -130,7 +130,7 @@ const LayoutCLUDetails = (_props) => {
                 )}
               />
               {errors?.cluType && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.cluType.message}</p>
+                <p className="obps-page-components-layout-cludetails--style-1">{errors.cluType.message}</p>
               )}
             </LabelFieldPair>
 
@@ -141,8 +141,8 @@ const LayoutCLUDetails = (_props) => {
                   CLU Number <span className="requiredField">*</span>
                 </CardLabel>
                 <div className="field">
-                  <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
-                    <div style={{ flex: 1 }}>
+                  <div className="obps-page-components-layout-cludetails--style-2">
+                    <div className="obps-page-components-layout-cludetails--style-3">
                       <Controller
                         control={control}
                         name="cluNumber"
@@ -169,19 +169,9 @@ const LayoutCLUDetails = (_props) => {
                         )}
                       />
                     </div>
-                    <button 
-                      type="button" 
-                      style={{ 
-                        padding: "10px 16px", 
-                        background: "#1976d2", 
-                        color: "white", 
-                        cursor: "pointer", 
-                        marginTop: "4px",
-                        border: "none",
-                        borderRadius: "2px",
-                        fontWeight: "bold",
-                        minWidth: "120px"
-                      }}
+                    <button
+                      type="button"
+                      className="obps-page-components-layout-cludetails--style-4"
                       onClick={() => {
                         // Add validation logic here
                         Digit.UiKitComponents.Toast.showSuccess({ message: "CLU Number validated successfully" });
@@ -190,7 +180,7 @@ const LayoutCLUDetails = (_props) => {
                       Validate
                     </button>
                   </div>
-                  {errors?.cluNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.cluNumber.message}</p>}
+                  {errors?.cluNumber && <p className="obps-page-components-layout-cludetails--style-5">{errors.cluNumber.message}</p>}
                 </div>
               </LabelFieldPair>
             )}
@@ -202,18 +192,18 @@ const LayoutCLUDetails = (_props) => {
                   <CardLabel className="card-label-smaller">
                     CLU Document <span className="requiredField">*</span>
                   </CardLabel>
-                  <div className="field" style={{ width: "100%" }}>
+                  <div className="field obps-page-components-layout-cludetails--style-6" >
                     <CustomUploadFile
                       id="clu-document"
                       onUpload={async (e) => {
                         const file = e?.target?.files?.[0];
                         if (!file) return;
-                        
+
                         if (file.size > 5 * 1024 * 1024) {
                           setCluDocumentError("File size should not exceed 5MB");
                           return;
                         }
-                        
+
                         try {
                           setCluDocumentLoader(true);
                           setCluDocumentError(null);
@@ -276,7 +266,7 @@ const LayoutCLUDetails = (_props) => {
                         />
                       )}
                     />
-                    {errors?.cluNumberOffline && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.cluNumberOffline.message}</p>}
+                    {errors?.cluNumberOffline && <p className="obps-page-components-layout-cludetails--style-7">{errors.cluNumberOffline.message}</p>}
                   </div>
                 </LabelFieldPair>
 
@@ -317,7 +307,7 @@ const LayoutCLUDetails = (_props) => {
                         />
                       )}
                     />
-                    {errors?.cluApprovalDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.cluApprovalDate.message}</p>}
+                    {errors?.cluApprovalDate && <p className="obps-page-components-layout-cludetails--style-8">{errors.cluApprovalDate.message}</p>}
                   </div>
                 </LabelFieldPair>
               </React.Fragment>
@@ -340,7 +330,7 @@ const LayoutCLUDetails = (_props) => {
                   rules={{
                     required: t("REQUIRED_FIELD"),
                   }}
-                  render={(props) => ( 
+                  render={(props) => (
                     <Dropdown
                       className="form-field"
                       select={(e) => {
@@ -357,13 +347,13 @@ const LayoutCLUDetails = (_props) => {
               )}
             </LabelFieldPair>
             {errors?.applicationAppliedUnder && (
-              <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.applicationAppliedUnder.message}</p>
+              <p className="obps-page-components-layout-cludetails--style-9">{errors.applicationAppliedUnder.message}</p>
             )}
 
             {/* If Application Applied Under = SCHEME_AREA, show Scheme Name and Scheme Type */}
             {applicationAppliedUnder?.code === "SCHEME_AREA" && (
               <React.Fragment>
-               
+
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">
                     {`${t("BPA_SCHEME_TYPE_LABEL")}`}<span className="requiredField">*</span>
@@ -393,7 +383,7 @@ const LayoutCLUDetails = (_props) => {
                   />
                 </LabelFieldPair>
                 {errors?.schemeType && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.schemeType.message}</p>
+                  <p className="obps-page-components-layout-cludetails--style-10">{errors.schemeType.message}</p>
                 )}
               </React.Fragment>
             )}
@@ -423,10 +413,10 @@ const LayoutCLUDetails = (_props) => {
                     )}
                   />
                 ) : (
-                  <p style={{ color: "#999", marginTop: "4px", marginBottom: "0" }}>Loading options...</p>
+                  <p className="obps-page-components-layout-cludetails--style-11">Loading options...</p>
                 )}
                 {errors?.nonSchemeType && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.nonSchemeType.message}</p>
+                  <p className="obps-page-components-layout-cludetails--style-12">{errors.nonSchemeType.message}</p>
                 )}
               </LabelFieldPair>
             )}
@@ -463,7 +453,7 @@ const LayoutCLUDetails = (_props) => {
               </LabelFieldPair>
             )}
             {errors?.approvedColonyName && (
-              <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.approvedColonyName.message}</p>
+              <p className="obps-page-components-layout-cludetails--style-13">{errors.approvedColonyName.message}</p>
             )}
           </React.Fragment>
         )}

@@ -21,7 +21,7 @@ const ChallanGenerationCard = () => {
       // {
       //     label: t(""),
       //     link: `/digit-ui/employee/receipts/inbox`
-      // }  
+      // }
     ],
     links: [
       {

@@ -1,0 +1,233 @@
+.ndc-style-04dd2b26c2 {
+  color:red;
+  padding:1rem;
+}
+
+.ndc-style-0a43e56ae2 {
+  color:white;
+}
+
+.ndc-style-0ddf068bfb {
+  overflow-x:auto;
+}
+
+.ndc-style-2a1b75c911 {
+  display:block;
+}
+
+.ndc-style-30e741d98e {
+  width:auto;
+}
+
+.ndc-style-3f681624b1 {
+  color:white;
+  font-size:13px;
+}
+
+.ndc-style-49fcd855ce {
+  margin-top:24px;
+}
+
+.ndc-style-56838cf109 {
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  padding:16px;
+}
+
+.ndc-style-59bdf7cb33 {
+  padding:10px;
+}
+
+.ndc-style-706912a43b {
+  color:white;
+  font-size: 12px;
+}
+
+.ndc-style-7b6669c0c3 {
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+  margin-top:1rem;
+}
+
+.ndc-style-87c136dfd0 {
+  margin-bottom:16px;
+}
+
+.ndc-style-88705a2c59 {
+  width:100%;
+  padding-right:25px;
+  padding-left:25px;
+}
+
+.ndc-style-91a87015f4 {
+  text-align:center;
+}
+
+.ndc-style-95fd837ece {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.ndc-style-961753662d {
+  background-color:#f0f0f0;
+}
+
+.ndc-style-9619a2518f {
+  margin-top:40px;
+  margin-bottom:20px;
+}
+
+.ndc-style-9cdf81d40c {
+  color:green;
+}
+
+.ndc-style-a26bda7d11 {
+  margin-top:20px;
+}
+
+.ndc-style-a828909e66 {
+  max-width:200px;
+}
+
+.ndc-style-c2529bfa42 {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  width:100%;
+}
+
+.ndc-style-c86bca9ccc {
+  background-color:#efefef;
+  font-weight:bold;
+}
+
+.ndc-style-c8be6c92ec {
+  color: green;
+  font-size:14px;
+  padding-bottom:10px;
+}
+
+.ndc-style-cc1363702b {
+  color:white;
+  font-size:12px;
+}
+
+.ndc-style-d9f149756a {
+  margin-top:40px;
+}
+
+.ndc-style-ec82c42339 {
+  cursor:pointer;
+  margin-left:20px;
+}
+
+.ndc-style-f320e198cb {
+  display:flex;
+  flex-direction:row;
+  align-items:baseline;
+  gap:16px;
+}
+
+.ndc-style-f4acddf10b {
+  background-color:#f9f9f9;
+}
+
+.ndc-loader {
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100px;
+}
+
+.ndc-loader--page {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+}
+
+.ndc-loader__spinner {
+  width: 64px;
+  height: 64px;
+  border: 8px solid #1976d2;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: ndc-loader-spin 1.2s linear infinite;
+}
+
+@keyframes ndc-loader-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.ndc-property-search__label--water {
+  font-weight: 700;
+}
+
+.ndc-breadcrumb--offset {
+  margin-left: 10px;
+}
+
+.ndc-pagination__button {
+  cursor: pointer;
+}
+
+.ndc-pagination__button--disabled {
+  cursor: not-allowed;
+}
+
+.ndc-due-amount--overdue {
+  padding-top: 8px;
+  padding-left: 10px;
+  color: white;
+  background: red;
+}
+
+.ndc-due-amount__row--overdue {
+  background: red;
+  color: white;
+}
+
+.ndc-due-amount__row--overdue h2,
+.ndc-due-amount__row--overdue .value {
+  color: inherit;
+}
+
+.ndc-demand-table__cell {
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+}
+
+.ndc-demand-table__cell--left {
+  text-align: left;
+}
+
+.ndc-demand-table__cell--right {
+  text-align: right;
+}
+
+.ndc-demand-table__cell--center {
+  text-align: center;
+}
+
+.popup-module.ndc-pay-ws-bill-modal {
+  width: 90%;
+  margin-top: 5px;
+}
+
+.ndc-document-upload h2 {
+  width: 100%;
+}
+
+.ndc-response-banner header {
+  font-size: 32px;
+  word-break: break-word;
+}

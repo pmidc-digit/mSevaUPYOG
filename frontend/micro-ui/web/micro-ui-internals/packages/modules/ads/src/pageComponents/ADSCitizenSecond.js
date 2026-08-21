@@ -214,16 +214,14 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     }
   }, [currentStepData, locationOptions]);
 
-  const errorStyle = { color: "red" };
-
   const guidance = getScheduleMessage(getSceduleType, t);
 
   return (
     <React.Fragment>
       {cartSlots?.length > 0 && (
-        <div style={{ display: "flex", justifyContent: "end" }}>
+        <div className="ads-page-components-adscitizen-second--style-1">
           <button className="ads-view-cart" onClick={() => setShowCart(true)}>
-            <span style={{ marginRight: 6 }}>🛒</span>
+            <span className="ads-page-components-adscitizen-second--style-2">🛒</span>
             {t("ADS_VIEW_CART")} ({cartSlots?.length})
           </button>
         </div>
@@ -252,7 +250,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             />
           </div>
         </LabelFieldPair>
-        {errors.siteId && <CardLabelError style={errorStyle}>{errors.siteId.message}</CardLabelError>}
+        {errors.siteId && <CardLabelError className="ads-validation-error">{errors.siteId.message}</CardLabelError>}
 
         {/* <LabelFieldPair>
           <CardLabel>
@@ -284,34 +282,19 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
         {/* Cards grid with see more */}
         {adsForLocation?.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+          <div className="ads-page-components-adscitizen-second--style-3">
             {adsForLocation?.slice(0, visibleCount)?.map((ad, idx) => (
-              <AdCard
-                key={ad.id || idx}
-                ad={ad}
-                idx={idx}
-                control={control}
-                watch={watch}
-                cartSlots={cartSlots}
-                onViewAvailability={handleViewAvailability}
-                openCart={() => setShowCart(true)}
-                t={t}
-                scheduleType={getSceduleType}
-              />
+              <AdCard key={ad.id || idx} ad={ad} idx={idx} control={control} watch={watch} cartSlots={cartSlots} onViewAvailability={handleViewAvailability} openCart={() => setShowCart(true)} t={t} scheduleType={getSceduleType} />
             ))}
           </div>
         )}
 
         {adsForLocation?.length > 6 && (
-          <div style={{ textAlign: "center", marginTop: "1rem" }}>
+          <div className="ads-page-components-adscitizen-second--style-4">
             {visibleCount < adsForLocation.length ? (
-              <button type="button" className="ads-btn" onClick={() => setVisibleCount((v) => v + 6)}>
-                {t("ADS_SHOW_MORE")}
-              </button>
+              <button type="button" className="ads-btn" onClick={() => setVisibleCount((v) => v + 6)}>{t("ADS_SHOW_MORE")}</button>
             ) : (
-              <button type="button" className="ads-btn" onClick={() => setVisibleCount(6)}>
-                {t("SHOW_LESS")}
-              </button>
+              <button type="button" className="ads-btn" onClick={() => setVisibleCount(6)}>{t("SHOW_LESS")}</button>
             )}
           </div>
         )}

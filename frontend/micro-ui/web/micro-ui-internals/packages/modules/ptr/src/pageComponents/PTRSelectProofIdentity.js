@@ -11,7 +11,7 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
 
   const FILE_POLICY = {
     maxBytes: 5 * 1024 * 1024, // 5 MB
-    allowedExtensions: [".pdf", ".jpeg", ".jpg", ".png"],
+    allowedExtensions: [".pdf", ".jpeg", ".jpg", ".png"]
   };
 
   const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
@@ -92,7 +92,7 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
         return {
           documentType,
           filestoreId: fileId,
-          documentUid: fileId,
+          documentUid: fileId
         };
       });
       console.log("setting documents to", docs);
@@ -124,36 +124,36 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
 
   return (
     <div>
-      {!isLoading ? (
-        <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={Object.keys(formErrors).length > 0}>
+      {!isLoading ?
+      <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={Object.keys(formErrors).length > 0}>
           {Array.isArray(mdmsDocsData) &&
-            mdmsDocsData.map((mdmsDoc, index) => {
-              const existing = documents.find((d) => d.documentType === mdmsDoc.code);
-              console.log("existing for", mdmsDoc.code, existing);
-              console.log("document prop", { ...mdmsDoc, ...existing });
+        mdmsDocsData.map((mdmsDoc, index) => {
+          const existing = documents.find((d) => d.documentType === mdmsDoc.code);
+          console.log("existing for", mdmsDoc.code, existing);
+          console.log("document prop", { ...mdmsDoc, ...existing });
 
-              return (
-                <PTRSelectDocument
-                  key={index}
-                  document={{ ...mdmsDoc, ...existing }} // ✅ merge uploaded file info
-                  t={t}
-                  setDocuments={setDocuments}
-                  documents={documents}
-                  validateFile={validateFile}
-                  makeDocumentsValidator={makeDocumentsValidator}
-                  mdms={mdmsDocsData}
-                  setFormErrors={setFormErrors}
-                />
-              );
-            })}
+          return (
+            <PTRSelectDocument
+              key={index}
+              document={{ ...mdmsDoc, ...existing }} // ✅ merge uploaded file info
+              t={t}
+              setDocuments={setDocuments}
+              documents={documents}
+              validateFile={validateFile}
+              makeDocumentsValidator={makeDocumentsValidator}
+              mdms={mdmsDocsData}
+              setFormErrors={setFormErrors} />);
+
+
+        })}
 
           {toastError && <Toast label={toastError} onClose={() => setToastError(null)} error />}
-        </FormStep>
-      ) : (
-        <Loader />
-      )}
-    </div>
-  );
+        </FormStep> :
+
+      <Loader />
+      }
+    </div>);
+
 };
 
 function PTRSelectDocument({ t, document: doc, setDocuments, documents, validateFile, makeDocumentsValidator, mdms, setFormErrors }) {
@@ -214,9 +214,9 @@ function PTRSelectDocument({ t, document: doc, setDocuments, documents, validate
 
   const updateParentDocs = (fileId) => {
     const updatedDocs = [
-      ...documents.filter((d) => d.documentType !== doc?.code),
-      ...(fileId ? [{ documentType: doc?.code, filestoreId: fileId, documentUid: fileId }] : []),
-    ];
+    ...documents.filter((d) => d.documentType !== doc?.code),
+    ...(fileId ? [{ documentType: doc?.code, filestoreId: fileId, documentUid: fileId }] : [])];
+
 
     if (!_.isEqual(updatedDocs, documents)) {
       setDocuments(updatedDocs);
@@ -225,33 +225,11 @@ function PTRSelectDocument({ t, document: doc, setDocuments, documents, validate
     }
   };
 
-  const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "-16px", marginBottom: "10px" };
-
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div className="ptr-style-8677744d08">
       {loading && <Loader />}
 
-      {/* {doc?.hasDropdown ? (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))}</CardLabel>
-          <Dropdown
-            className="form-field"
-            selected={selectedDocument}
-            style={{ width: "100%" }}
-            option={doc?.dropdownData?.map((e) => ({
-              ...e,
-              i18nKey: e.code?.replaceAll(".", "_"),
-            }))}
-            select={handlePTRSelectDocument}
-            optionKey="i18nKey"
-            t={t}
-          />
-        </LabelFieldPair>
-      ) : (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + (doc?.required ? "  *" : "")}</CardLabel>
-        </LabelFieldPair>
-      )} */}
+
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + (doc?.required ? "  *" : "")}</CardLabel>
@@ -272,14 +250,14 @@ function PTRSelectDocument({ t, document: doc, setDocuments, documents, validate
             inputStyles={{ width: "43%" }}
             accept={doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "PET.PETPHOTO" ? ".jpeg, .jpg, .png" : ".pdf, .jpeg, .jpg, .png"}
             buttonType="button"
-            error={Boolean(fieldError)}
-          />
+            error={Boolean(fieldError)} />
 
-          {fieldError && <errorStyle style={errorStyle}>{fieldError}</errorStyle>}
+
+          {fieldError && <div className="ptr-document-field-error">{fieldError}</div>}
         </div>
       </LabelFieldPair>
-    </div>
-  );
+    </div>);
+
 }
 
 export default PTRSelectProofIdentity;

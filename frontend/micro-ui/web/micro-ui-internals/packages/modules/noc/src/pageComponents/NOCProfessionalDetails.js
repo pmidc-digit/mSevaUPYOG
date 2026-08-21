@@ -63,7 +63,7 @@ const NOCProfessionalDetails = (_props) => {
      setLicenseValidity( Digit.DateUtils.ConvertEpochToDate(profData?.validTo));
     }
   },[profData]);
-  
+
   useEffect(() => {
     if (regId) {
       setValue("professionalRegId", regId, { shouldValidate: true, shouldDirty: false });
@@ -110,7 +110,7 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
-          {errors?.professionalName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalName.message}</p>}
+          {errors?.professionalName && <p className="noc-page-components-nocprofessional-details--style-1">{errors.professionalName.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -142,7 +142,7 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
-          {errors?.professionalEmailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalEmailId.message}</p>}
+          {errors?.professionalEmailId && <p className="noc-page-components-nocprofessional-details--style-2">{errors.professionalEmailId.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -173,7 +173,7 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
-          {errors?.professionalRegId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalRegId.message}</p>}
+          {errors?.professionalRegId && <p className="noc-page-components-nocprofessional-details--style-3">{errors.professionalRegId.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -204,7 +204,7 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
-          {errors?.professionalRegIdValidity && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalRegIdValidity.message}</p>}
+          {errors?.professionalRegIdValidity && <p className="noc-page-components-nocprofessional-details--style-4">{errors.professionalRegIdValidity.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -224,7 +224,7 @@ const NOCProfessionalDetails = (_props) => {
             }}
             render={(props) => <MobileNumber value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} disable="true"/>}
           />
-          {errors?.professionalMobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalMobileNumber.message}</p>}
+          {errors?.professionalMobileNumber && <p className="noc-page-components-nocprofessional-details--style-5">{errors.professionalMobileNumber.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -260,7 +260,7 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
-          {errors?.professionalAddress && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalAddress.message}</p>}
+          {errors?.professionalAddress && <p className="noc-page-components-nocprofessional-details--style-6">{errors.professionalAddress.message}</p>}
         </div>
       </LabelFieldPair>
     </React.Fragment>

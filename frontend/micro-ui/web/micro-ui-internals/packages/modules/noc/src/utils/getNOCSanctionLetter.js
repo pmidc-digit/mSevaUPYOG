@@ -1,7 +1,7 @@
 import { getCode } from "./index";
 
 const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
-  
+
   const currentDate = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "long",
@@ -99,7 +99,7 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
   return {
     Noc: [
       {
-       ...application, 
+       ...application,
       nocDetails: {
         ...application.nocDetails,
         additionalDetails: {

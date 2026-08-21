@@ -9,7 +9,7 @@ const useSearchApplicationTableConfig = () => {
         return redirectBS;
     }
     const GetCell = (value) => <span className="cell-text">{value}</span>;
-    
+
     return useMemo( () => ([
         {
           Header: t("NOC_APP_NO_LABEL"),

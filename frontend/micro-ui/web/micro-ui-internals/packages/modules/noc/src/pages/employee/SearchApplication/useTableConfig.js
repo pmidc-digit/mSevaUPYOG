@@ -9,9 +9,9 @@ const useSearchApplicationTableConfig = () => {
         let redirectBS = bService === "BPAREG"?"search/application/stakeholder":"search/application/bpa";
         return redirectBS;
     }
-    
+
     const GetCell = (value) => <span className="cell-text">{value}</span>;
-    
+
     return useMemo( () => ([
         {
           Header: t("NOC_APPLICATION_NUMBER"),

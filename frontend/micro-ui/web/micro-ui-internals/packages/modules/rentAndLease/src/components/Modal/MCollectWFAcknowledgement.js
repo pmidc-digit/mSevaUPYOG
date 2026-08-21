@@ -9,7 +9,7 @@ const MCollectWFAcknowledgement = () => {
   const location = useLocation();
   const [params, setParams] = useState({});
   useEffect(() => {
- setParams(func.getQueryStringParams(location.search)); // result: '?query=abc'
+    setParams(func.getQueryStringParams(location.search)); // result: '?query=abc'
   }, [location]);
   const { t } = useTranslation();
   function proceedToPayment() {}
@@ -19,19 +19,19 @@ const MCollectWFAcknowledgement = () => {
       <Banner message={t("UC_BILL_GENERATED_SUCCESS_MESSAGE")} applicationNumber={params.billNumber} info={t("UC_BILL_NO_LABEL")} successful={true} />
       <CardText>{t("UC_BILL_GENERATION_MESSAGE_SUB")}</CardText>
 
-      <ActionBar
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "baseline",
-        }}
-      >
-        <Link to={`/digit-ui/employee`} style={{ marginRight: "1rem" }}>
+      <ActionBar className="ral-style-669a0ee4e0">
+
+
+
+
+
+
+        <Link to={`/digit-ui/employee`} className="ral-style-99871d5ffa">
           <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
         <SubmitBar label={t("UC_BUTTON_PAY")} onClick={proceedToPayment} />
       </ActionBar>
-    </Card>
-  );
+    </Card>);
+
 };
 export default MCollectWFAcknowledgement;

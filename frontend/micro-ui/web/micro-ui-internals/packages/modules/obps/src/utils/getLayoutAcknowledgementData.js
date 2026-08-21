@@ -195,7 +195,7 @@ const getSiteDetails = (appData, t) => {
     { title: t("BPA_VASIKA_DATE_LABEL"),     value: sd?.vasikaDate  },
     { title: t("BPA_ROAD_TYPE_LABEL"),       value: sd?.roadType?.name || sd?.roadType },
     { title: t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), value: sd?.isAreaUnderMasterPlan?.i18nKey || sd?.isAreaUnderMasterPlan },
-    
+
     // { title: t("BPA_PLOT_NO_LABEL"),         value: sd?.plotNo  },
 
     // Area distribution

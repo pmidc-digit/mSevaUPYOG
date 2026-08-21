@@ -63,7 +63,7 @@ const CLUResponse = (props) => {
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
     const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
     Digit.Utils.pdf.generateFormatted(acknowledgementData);
- 
+
     } catch(err){
       console.log('err', err)
     } finally{
@@ -79,17 +79,17 @@ const CLUResponse = (props) => {
           applicationNumber={cluCode}
           info={cluData?.applicationStatus == "REJECTED" ? "" : t(`${stringReplaceAll(cluData?.cluType, ".", "_")}_APPLICATION_NUMBER_LABEL`)}
           successful={cluData?.applicationStatus == "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
+          className="obps-page-components-cluresponse--style-1"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         {downloading && <Loader />}
         {cluData?.applicationStatus !== "REJECTED" ? (
-          <div style={{display:"flex", justifyContent:"space-evenly"}}>
-          <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
+          <div className="obps-page-components-cluresponse--style-2">
+          <SubmitBar className="obps-page-components-cluresponse--style-3" label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
           {(cluData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" || cluData?.applicationStatus === "PENDINGSANCTIONPAYMENT") && <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />}
           </div>
         ) : null}
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+        <ActionBar className="obps-page-components-cluresponse--style-4">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_OBPS")} onSubmit={onGoToHome} />
         </ActionBar>

@@ -23,7 +23,7 @@ const ADSRequiredDoc = ({ t, config, onSelect, userType, formData, value = formD
   return (
     <React.Fragment>
       <Card>
-        <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+        <div className="ads-page-components-adsrequired-doc--style-1">
           <CardHeader>{t("MODULE_ADS")}</CardHeader>
           <CardSubHeader>
             <TimerValues

@@ -39,13 +39,13 @@ const formatDateToYYYYMMDD = (date) => {
 const formatAndValidateTypedValue = (val, max) => {
   // Remove consecutive slashes
   val = val.replace(/\/+/g, "/");
-  
+
   let parts = val.split("/");
-  
+
   if (parts.length > 3) {
     parts = parts.slice(0, 3);
   }
-  
+
   // Format and validate Day (parts[0])
   if (parts[0] !== undefined) {
     let day = parts[0];
@@ -65,7 +65,7 @@ const formatAndValidateTypedValue = (val, max) => {
       }
     }
   }
-  
+
   // Format and validate Month (parts[1])
   if (parts[1] !== undefined) {
     let month = parts[1];
@@ -85,7 +85,7 @@ const formatAndValidateTypedValue = (val, max) => {
       }
     }
   }
-  
+
   // Format Year (parts[2])
   if (parts[2] !== undefined) {
     let year = parts[2].slice(0, 4);
@@ -104,7 +104,7 @@ const formatAndValidateTypedValue = (val, max) => {
     }
     parts[2] = year;
   }
-  
+
   return parts.join("/");
 };
 
@@ -159,10 +159,10 @@ const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", min, ma
 
   const handleTextChange = (e) => {
     let val = e.target.value;
-    
+
     // Remove non-digit characters except slash
     val = val.replace(/[^\d/]/g, "");
-    
+
     if (val.length > 10) return;
 
     // Detect backspace/deleting to avoid forcing slashes
@@ -180,7 +180,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", min, ma
       const day = parseInt(match[1], 10);
       const month = parseInt(match[2], 10);
       const year = parseInt(match[3], 10);
-      
+
       const date = new Date(year, month - 1, day);
       if (
         !isNaN(date.getTime()) &&

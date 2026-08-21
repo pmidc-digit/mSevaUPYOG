@@ -49,10 +49,10 @@ const LayoutResponseEmployee = (props) => {
           applicationNumber={applicationNo}
           info={layoutData?.applicationStatus === "REJECTED" ? "" : t("LAYOUT_APPLICATION_NUMBER")}
           successful={layoutData?.applicationStatus === "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
+          className="obps-pages-employee-application-overview-layout-response-employee--style-1"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+        <ActionBar className="obps-pages-employee-application-overview-layout-response-employee--style-2">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("Go To Inbox")} onSubmit={onGoToLayout} />
         </ActionBar>

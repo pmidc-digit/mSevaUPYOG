@@ -146,7 +146,7 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
           <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
         </SearchField>
       }
-      
+
       <SearchField>
         <label>{t("BPA_SEARCH_APPLICATION_TYPE_LABEL")}</label>
         <Controller
@@ -189,7 +189,7 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
       <SearchField className="submit">
         <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
         <p className="obps-search-application-container"
-         
+
           onClick={() => {
             reset({
               applicationNo: "",

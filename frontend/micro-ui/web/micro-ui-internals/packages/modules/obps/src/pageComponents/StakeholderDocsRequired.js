@@ -24,12 +24,12 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
   const { data: BPAREGData, isLoading: BPAREGLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(
     tenantId,
     {},
-    { 
+    {
       mobileNumber: requestor,
       onlyLatestApplication: true
     },
     // { cacheTime: 0 },
-  )  
+  )
   useEffect(() => {
     if (!formData?.result?.Licenses?.[0]?.applicationNumber && !BPAREGLoading && BPAREGData?.Licenses?.length > 0) {
       // First priority: Check for submitted states
@@ -149,7 +149,7 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
   //   if(tenantId)
   //   Digit.LocalizationService.getLocale({modules: [`rainmaker-bpareg`], locale: Digit.StoreData.getCurrentLanguage(), tenantId: `${tenantId}`});
   // },[tenantId])
-  
+
 
   if (isLoading || BPAREGLoading) {
     return (
@@ -183,7 +183,7 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
             {data?.StakeholderRegistraition?.TradeTypetoRoleMapping?.[0]?.docTypes?.map((doc, index) => (
               <div>
                 <div key={index}>
-                  <div className="document-required-options" style={{display:"flex"}} >
+                  <div className="document-required-options obps-page-components-stakeholder-docs-required--style-1"  >
                     <div className="document-index" >{`${index + 1}.`}&nbsp;</div>
                     <div className="document-description">{` ${t(`BPAREG_HEADER_${doc?.code.replace('.', '_')}`)}`}</div>
                   </div>
@@ -206,4 +206,4 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
   );
 };
 
-export default StakeholderDocsRequired; 
+export default StakeholderDocsRequired;

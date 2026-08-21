@@ -362,7 +362,7 @@ const BpaApplicationDetail = () => {
         <br />
         {/* {!isCitizenDeclared && <LinkButton label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />} */}
         {isCitizenDeclared !== "" && (
-          <div onClick={handleTermsLinkClick} style={{ color: "green" }}>
+          <div onClick={handleTermsLinkClick} className="obps-pages-citizen-bpa-application-detail-index--style-1">
             {t("VIEW_DECLARATION")}{" "}
           </div>
         )}
@@ -482,7 +482,7 @@ const BpaApplicationDetail = () => {
       Header: t(" "),
       accessor: "fileUrl",
       Cell: ({ value }) =>
-        value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
+        value ? <LinkButton className="obps-pages-citizen-bpa-application-detail-index--style-2" label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
     },
   ];
   const documentsColumns = [
@@ -490,7 +490,7 @@ const BpaApplicationDetail = () => {
       Header: t("SR_NO"),
       accessor: "index",
       width: "20px",
-      Cell: ({ value }) => <div style={{ width: "20px" }}>{value + 1}</div>,
+      Cell: ({ value }) => <div className="obps-pages-citizen-bpa-application-detail-index--style-3">{value + 1}</div>,
     },
     {
       Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
@@ -501,7 +501,7 @@ const BpaApplicationDetail = () => {
       Header: t(" "),
       accessor: "fileUrl",
       Cell: ({ value }) =>
-        value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
+        value ? <LinkButton className="obps-pages-citizen-bpa-application-detail-index--style-4" label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
     },
   ];
   const documentsColumnsECBC = [
@@ -514,7 +514,7 @@ const BpaApplicationDetail = () => {
       Header: t(" "),
       accessor: "fileUrl",
       Cell: ({ value }) =>
-        value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
+        value ? <LinkButton className="obps-pages-citizen-bpa-application-detail-index--style-5" label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
     },
   ];
 
@@ -530,7 +530,7 @@ const BpaApplicationDetail = () => {
       Cell: ({ value, row }) =>
         value ? (
           <LinkButton
-            style={{ float: "right", display: "inline" }}
+            className="obps-pages-citizen-bpa-application-detail-index--style-6"
             label={t("View")}
             onClick={() => (row?.original?.title === "BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL" ? window.open(value) : fetchUrl(value, tenantId))}
           />
@@ -550,7 +550,7 @@ const BpaApplicationDetail = () => {
       Header: t(""),
       accessor: "planReport",
       Cell: ({ value }) =>
-        value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA"),
+        value ? <LinkButton className="obps-pages-citizen-bpa-application-detail-index--style-7" label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA"),
     },
   ];
 
@@ -1946,7 +1946,7 @@ const BpaApplicationDetail = () => {
     return (
       <div>
         <span>{`${t("BPA_I_AGREE_THE_LABEL")} `}</span>
-        <span style={{ color: "#a82227", cursor: "pointer" }} onClick={() => setShowTermsModal(!showTermsModal)}>
+        <span className="obps-pages-citizen-bpa-application-detail-index--style-8" onClick={() => setShowTermsModal(!showTermsModal)}>
           {t(`BPA_TERMS_AND_CONDITIONS_LABEL`)}
         </span>
       </div>
@@ -2022,10 +2022,10 @@ const BpaApplicationDetail = () => {
 
   return (
     <Fragment>
-      <div style={{ paddingBottom: "50px" }}>
-        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+      <div className="obps-pages-citizen-bpa-application-detail-index--style-9">
+        <div className="cardHeaderWithOptions obps-pages-citizen-bpa-application-detail-index--style-10" >
           <Header styles={{ fontSize: "32px", marginLeft: "10px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
-          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "nowrap" }}>
+          <div className="obps-pages-citizen-bpa-application-detail-index--style-11">
             <div>
               {dowloadOptions && dowloadOptions?.length > 0 && (
                 <MultiLink
@@ -2036,7 +2036,7 @@ const BpaApplicationDetail = () => {
                 />
               )}
             </div>
-            <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
+            <LinkButton label={t("VIEW_TIMELINE")} className="obps-pages-citizen-bpa-application-detail-index--style-12" onClick={handleViewTimeline}></LinkButton>
           </div>
         </div>
 
@@ -2053,7 +2053,7 @@ const BpaApplicationDetail = () => {
                     // style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
                   >
                     {!detail?.isTitleVisible ? (
-                      <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(detail?.title)}</CardSubHeader>
+                      <CardSubHeader className="obps-pages-citizen-bpa-application-detail-index--style-13">{t(detail?.title)}</CardSubHeader>
                     ) : null}
 
                     <div
@@ -2076,7 +2076,7 @@ const BpaApplicationDetail = () => {
                         ? detail?.additionalDetails?.values?.map((value) => (
                             <div key={value?.title}>
                               {!detail?.isTitleRepeat && value?.isHeader ? (
-                                <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t(value?.title)}</CardSubHeader>
+                                <CardSubHeader className="obps-pages-citizen-bpa-application-detail-index--style-14">{t(value?.title)}</CardSubHeader>
                               ) : null}
                             </div>
                           ))
@@ -2103,7 +2103,7 @@ const BpaApplicationDetail = () => {
                                     text={
                                       <div>
                                         <Link to={value?.to}>
-                                          <span className="link" style={{ color: "#a82227" }}>
+                                          <span className="link obps-pages-citizen-bpa-application-detail-index--style-15" >
                                             {value?.value}
                                           </span>
                                         </Link>
@@ -2224,12 +2224,7 @@ const BpaApplicationDetail = () => {
                           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
                             <CardSubHeader className="bpa-section-header">{t("BPA_DOCUMENT_SITE_DETAILS_LABEL")}</CardSubHeader>
                             <StatusTable
-                              style={{
-                                display: "flex",
-                                gap: "20px",
-                                flexWrap: "wrap",
-                                justifyContent: "space-between",
-                              }}
+                              className="obps-pages-citizen-bpa-application-detail-index--style-16"
                             >
                               {sitePhotos?.length > 0 &&
                                 [...sitePhotos].map((doc, index) => (
@@ -2298,16 +2293,7 @@ const BpaApplicationDetail = () => {
                           ? detail?.additionalDetails?.noc.map((nocob, ind) => (
                               <div
                                 key={ind}
-                                style={{
-                                  marginTop: "19px",
-                                  background: "#FAFAFA",
-                                  border: "1px solid #D6D5D4",
-                                  borderRadius: "4px",
-                                  padding: "8px",
-                                  lineHeight: "19px",
-                                  maxWidth: "960px",
-                                  minWidth: "280px",
-                                }}
+                                className="obps-pages-citizen-bpa-application-detail-index--style-17"
                               >
                                 <StatusTable>
                                   <Row
@@ -2397,16 +2383,7 @@ const BpaApplicationDetail = () => {
                             workflowDetails?.data?.actionState?.state == "POST_PAYMENT_CITIZEN_APPROVAL_PENDING" ||
                             workflowDetails?.data?.actionState?.state == "POST_PAYMENT_INPROGRESS") && (
                             <div
-                              style={{
-                                marginTop: "19px",
-                                background: "#FAFAFA",
-                                border: "1px solid #D6D5D4",
-                                borderRadius: "4px",
-                                padding: "8px",
-                                lineHeight: "19px",
-                                maxWidth: "950px",
-                                minWidth: "280px",
-                              }}
+                              className="obps-pages-citizen-bpa-application-detail-index--style-18"
                             >
                               <Row
                                 className="border-none"
@@ -2420,7 +2397,7 @@ const BpaApplicationDetail = () => {
                           )}
                       </StatusTable>
                       {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && (
-                        <div style={{ marginTop: "5px" }}>
+                        <div className="obps-pages-citizen-bpa-application-detail-index--style-19">
                           {pdfLoading || isOwnerFileLoading ? (
                             <Loader />
                           ) : (
@@ -2490,14 +2467,7 @@ const BpaApplicationDetail = () => {
                   <div>
                     {
                       <Card
-                        style={{
-                          padding: "20px",
-                          marginBottom: "30px",
-                          borderRadius: "12px",
-                          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                          border: "1px solid #f0f0f0",
-                          background: "#fff",
-                        }}
+                        className="obps-pages-citizen-bpa-application-detail-index--style-20"
                       >
                         <FeeEstimation
                           currentStepData={{
@@ -2526,7 +2496,7 @@ const BpaApplicationDetail = () => {
                     {workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen && !isOCApplication && isBPA && (
                       <div>
                         <Card>
-                          <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OWNER_UNDERTAKING")}</CardSubHeader>
+                          <CardSubHeader className="obps-pages-citizen-bpa-application-detail-index--style-21">{t("BPA_OWNER_UNDERTAKING")}</CardSubHeader>
                           <React.Fragment>
                             <div>
                               <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
@@ -2578,14 +2548,7 @@ const BpaApplicationDetail = () => {
                       !isFromSendBack &&
                       checkBoxVisible && (
                         <Card
-                          style={{
-                            padding: "20px",
-                            marginBottom: "30px",
-                            borderRadius: "12px",
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                            border: "1px solid #f0f0f0",
-                            background: "#fff",
-                          }}
+                          className="obps-pages-citizen-bpa-application-detail-index--style-22"
                         >
                           <CheckBox
                             styles={{ margin: "20px 0 40px", paddingTop: "10px" }}
@@ -2610,10 +2573,10 @@ const BpaApplicationDetail = () => {
                                 //removed this styles to fix the action button in application details UM-5347
                                 <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
                                 >
-                                  <div style={{ width: "100%" }}>
+                                  <div className="obps-pages-citizen-bpa-application-detail-index--style-23">
                                     {displayMenu && workflowDetails?.data?.newNextAction ? (
                                       <Menu
-                                        style={{ minWidth: "310px" }}
+                                        className="obps-pages-citizen-bpa-application-detail-index--style-24"
                                         localeKeyPrefix={"WF_BPA_ACTION"}
                                         options={workflowDetails?.data?.newNextAction.map((action) => action.action)}
                                         t={t}
@@ -2639,7 +2602,7 @@ const BpaApplicationDetail = () => {
                                 //removed this style to fix the action button in application details UM-5347
                                 <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
                                 >
-                                  <div style={{ width: "100%" }}>
+                                  <div className="obps-pages-citizen-bpa-application-detail-index--style-25">
                                     <button
                                       style={{ color: "#FFFFFF", fontSize: isMobile ? "19px" : "initial" }}
                                       className="submit-bar"
@@ -2663,10 +2626,10 @@ const BpaApplicationDetail = () => {
                               //removed this styles to fix the action button in application details UM-5347
                               <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
                               >
-                                <div style={{ width: "100%" }}>
+                                <div className="obps-pages-citizen-bpa-application-detail-index--style-26">
                                   {displayMenu && workflowDetails?.data?.newNextAction ? (
                                     <Menu
-                                      style={{ minWidth: "310px" }}
+                                      className="obps-pages-citizen-bpa-application-detail-index--style-27"
                                       localeKeyPrefix={"WF_BPA_ACTION"}
                                       options={workflowDetails?.data?.newNextAction.map((action) => action.action)}
                                       t={t}
@@ -2692,7 +2655,7 @@ const BpaApplicationDetail = () => {
                               //removed this style to fix the action button in application details UM-5347
                               <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
                               >
-                                <div style={{ width: "100%" }}>
+                                <div className="obps-pages-citizen-bpa-application-detail-index--style-28">
                                   <button
                                     style={{ color: "#FFFFFF", fontSize: isMobile ? "19px" : "initial" }}
                                     className="submit-bar"
@@ -2785,7 +2748,7 @@ const BpaApplicationDetail = () => {
             error={showToast.key === "error" ? true : false}
             label={t(showToast.key === "success" ? `ES_OBPS_${showToast.action}_UPDATE_SUCCESS` : showToast.action)}
             onClose={closeToast}
-            style={{ zIndex: "1000" }}
+            className="obps-pages-citizen-bpa-application-detail-index--style-29"
             isDleteBtn={"true"}
           />
         )}

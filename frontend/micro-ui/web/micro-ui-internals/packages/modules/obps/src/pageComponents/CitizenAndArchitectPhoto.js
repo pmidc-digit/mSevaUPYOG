@@ -48,7 +48,7 @@ const CitizenAndArchitectPhoto = ({data}) => {
             if(ownerPhotoId){
                 const result = await Digit.UploadServices.Filefetch([ownerPhotoId], stateCode);
                 if (result?.data?.fileStoreIds) setImageCitizenZoom(result?.data?.fileStoreIds[0]?.url);
-            } 
+            }
         }
     }, [data]);
     useEffect(async () => {
@@ -97,7 +97,7 @@ const CitizenAndArchitectPhoto = ({data}) => {
             // }
         }
     },[data])
-    
+
 return(
     <Card>
         <CardSubHeader className="citizen-and-architect-photo-header">{t("BPA_CITIZEN_AND_ARCHITECT_PHOTO")}</CardSubHeader>

@@ -145,7 +145,7 @@ export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApi
           owners,
           address
         });
-        dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], zonalMapping: {zone: Zone} })); 
+        dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], zonalMapping: {zone: Zone} }));
       //   setCheckStats(true);
       }else if(!isLoading && propertyDetailsFetch?.status === "0"){
         setPropertyDetails({});
@@ -307,15 +307,15 @@ export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApi
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px", marginTop: "20px" }}>
+      <div className="obps-page-components-property-search-bathinda--style-1">
         <LabelFieldPair>
           <CardLabel className="card-label-smaller ndc_card_labels" style={getInputStyles()}>
             {`${t(propertyIdInput.label)}`}
             {propertyIdInput.isMandatory ? "*" : null}
           </CardLabel>
           <div
-            className="field ndc_property_search"
-            style={{ display: "flex", gap: "16px", alignItems: "baseline", width: "100%" }}
+            className="field ndc_property_search obps-page-components-property-search-bathinda--style-2"
+
             ref={myElementRef}
             id="search-property-field"
           >
@@ -331,7 +331,7 @@ export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApi
             />
 
             {!isSearchClicked && !isLoading && (
-              <button className="submit-bar" type="button" style={{ color: "white", width: "100%", maxWidth: "100px" }} onClick={searchProperty}>
+              <button className="submit-bar obps-page-components-property-search-bathinda--style-3" type="button"  onClick={searchProperty}>
                 {`${t("PT_SEARCH")}`}
               </button>
             )}

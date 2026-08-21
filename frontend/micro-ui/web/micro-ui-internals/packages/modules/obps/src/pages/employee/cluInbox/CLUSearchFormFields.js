@@ -13,7 +13,7 @@ const CLUSearchFormFields = ({ registerRef, searchFormState, searchFieldComponen
   if (!isMobile) {
     return (
       <React.Fragment>
-        <div className="search-container" style={{  marginLeft: "24px" }}>
+        <div className="search-container obps-pages-employee-clu-inbox-clusearch-form-fields--style-1" >
           <div className="search-complaint-container">
             <div
               className="complaint-input-container"
@@ -27,7 +27,7 @@ const CLUSearchFormFields = ({ registerRef, searchFormState, searchFieldComponen
                 <label>{t("BPA_APPLICANT_MOBILE_NO_LABEL")}</label>
                 <TextInput name="mobileNumber" inputRef={registerRef({})} />
               </SearchField>
-              <div className="search-action-wrapper" style={{ width: "100%" }}>
+              <div className="search-action-wrapper obps-pages-employee-clu-inbox-clusearch-form-fields--style-2" >
                 {searchFieldComponents}
               </div>
             </div>

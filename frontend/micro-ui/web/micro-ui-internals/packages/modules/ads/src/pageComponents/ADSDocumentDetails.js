@@ -115,8 +115,8 @@ const ADSDocumentDetails = ({
     <div>
       <Timeline currentStep={3} />
       <Card>
-        <div style={{ position: "relative" }}>
-          <CardSubHeader style={{ position: "absolute", right: 0 }}>
+        <div className="ads-page-components-adsdocument-details--style-1">
+          <CardSubHeader className="ads-page-components-adsdocument-details--style-2">
             <TimerValues
               timerValues={value?.existingDataSet?.timervalue?.timervalue}
               SlotSearchData={value?.cartDetails}
@@ -267,16 +267,15 @@ function ADSSelectDocument({
   }, [isHidden]);
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div className="ads-page-components-adsdocument-details--style-3">
       {doc?.hasDropdown ? (
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">
             {t("ADS_" + doc?.code.replaceAll(".", "_"))} <span className="check-page-link-button">*</span>
           </CardLabel>
           <Dropdown
-            className="form-field"
+            className={["form-field", user.type === "EMPLOYEE" ? "ads-document-details__dropdown--employee" : "ads-document-details__dropdown--citizen"].join(" ")}
             selected={selectedDocument}
-            style={{ width: user.type === "EMPLOYEE" ? "50%" : "100%" }}
             placeholder={"Select " + t("ADS_" + doc?.code.replaceAll(".", "_"))}
             option={dropDownData.map((e) => ({ ...e, i18nKey: "ADS_" + e.code?.replaceAll(".", "_") }))}
             select={handleADSSelectDocument}
@@ -296,7 +295,7 @@ function ADSSelectDocument({
             id={id}
             message={
               isUploading ? (
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div className="ads-page-components-adsdocument-details--style-4">
                   <LoadingSpinner />
                   <span>Uploading...</span>
                 </div>

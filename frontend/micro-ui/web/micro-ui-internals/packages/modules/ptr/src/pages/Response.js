@@ -32,9 +32,9 @@ const BannerPicker = (props) => {
       )}
       applicationNumber={props?.data?.PetRegistrationApplications?.[0]?.applicationNumber}
       info={GetLabel(props.data?.PetRegistrationApplications?.[0]?.applicationStatus || props.action, props.isSuccess, props.isEmployee, props.t)}
-      successful={props.isSuccess}
-    />
-  );
+      successful={props.isSuccess} />);
+
+
 };
 
 const Response = (props) => {
@@ -64,7 +64,7 @@ const Response = (props) => {
   const { isLoading: auditDataLoading, isError: isAuditError, data: auditData } = Digit.Hooks.ptr.usePTRSearch(
     {
       tenantId,
-      filters: { applicationNumber: state?.PetRegistrationApplications?.applicationNumber, audit: true },
+      filters: { applicationNumber: state?.PetRegistrationApplications?.applicationNumber, audit: true }
     },
     { enabled: enableAudit, select: (data) => data.PetRegistrationApplications?.filter((e) => e.status === "ACTIVE") }
   );
@@ -91,11 +91,11 @@ const Response = (props) => {
     if (!mutationHappened) {
       mutation.mutate(
         {
-          PetRegistrationApplications: state?.PetRegistrationApplications,
+          PetRegistrationApplications: state?.PetRegistrationApplications
         },
         {
           onError,
-          onSuccess,
+          onSuccess
         }
       );
     }
@@ -103,7 +103,7 @@ const Response = (props) => {
 
   const handleDownloadPdf = async () => {
     const { PetRegistrationApplications = [] } = mutation.data || successData;
-    const Pet = (PetRegistrationApplications && PetRegistrationApplications[0]) || {};
+    const Pet = PetRegistrationApplications && PetRegistrationApplications[0] || {};
     const tenantInfo = tenants.find((tenant) => tenant.code === Pet.tenantId);
 
     let tenantId = Pet.tenantId || tenantId;
@@ -112,7 +112,7 @@ const Response = (props) => {
     Digit.Utils.pdf.generate(data);
   };
 
-  if (mutation.isLoading || (mutation.isIdle && !mutationHappened)) {
+  if (mutation.isLoading || mutation.isIdle && !mutationHappened) {
     return <Loader />;
   }
 
@@ -124,15 +124,15 @@ const Response = (props) => {
           data={mutation?.data || successData}
           action={state?.action}
           isSuccess={!Object.keys(successData || {}).length ? mutation?.isSuccess : true}
-          isLoading={(mutation.isIdle && !mutationHappened) || mutation?.isLoading}
-          isEmployee={props.parentRoute.includes("employee")}
-        />
+          isLoading={mutation.isIdle && !mutationHappened || mutation?.isLoading}
+          isEmployee={props.parentRoute.includes("employee")} />
+
         <CardText>
           {DisplayText(state.action, (mutation.isSuccess || !!successData) && !mutation.isError, props.parentRoute.includes("employee"), t)}
         </CardText>
-        {(mutation.isSuccess || !!successData) && !mutation.isError && (
-          <SubmitBar style={{ overflow: "hidden" }} label={t("PTR_DOWNLOAD_ACK_FORM")} onSubmit={handleDownloadPdf} />
-        )}
+        {(mutation.isSuccess || !!successData) && !mutation.isError &&
+        <SubmitBar label={t("PTR_DOWNLOAD_ACK_FORM")} onSubmit={handleDownloadPdf} className="ptr-style-6982440012" />
+        }
       </Card>
       <ActionBar>
           <Link to={`${props.parentRoute.includes("employee") ? "/digit-ui/employee" : "/digit-ui/citizen"}`}>
@@ -140,8 +140,8 @@ const Response = (props) => {
           </Link>
         </ActionBar>
       {showToast && <Toast error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
-    </div>
-  );
+    </div>);
+
 };
 
 export default Response;

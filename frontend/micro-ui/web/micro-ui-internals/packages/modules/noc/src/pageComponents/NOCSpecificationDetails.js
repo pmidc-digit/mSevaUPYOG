@@ -362,7 +362,7 @@ const NOCSpecificationDetails = (_props) => {
                 />
               )}
             />
-            {errors?.specificationPlotArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.specificationPlotArea.message}</p>}
+            {errors?.specificationPlotArea && <p className="noc-page-components-nocspecification-details--style-1">{errors.specificationPlotArea.message}</p>}
           </div>
         </LabelFieldPair>
 
@@ -389,7 +389,7 @@ const NOCSpecificationDetails = (_props) => {
               )}
             />
           )}
-          {errors?.specificationBuildingCategory && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.specificationBuildingCategory.message}</p>}
+          {errors?.specificationBuildingCategory && <p className="noc-page-components-nocspecification-details--style-2">{errors.specificationBuildingCategory.message}</p>}
           </div>
         </LabelFieldPair>
 
@@ -408,7 +408,7 @@ const NOCSpecificationDetails = (_props) => {
               )}
               />
             )}
-            {errors?.specificationNocType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.specificationNocType.message}</p>}
+            {errors?.specificationNocType && <p className="noc-page-components-nocspecification-details--style-3">{errors.specificationNocType.message}</p>}
           </div>
         </LabelFieldPair>
 
@@ -442,7 +442,7 @@ const NOCSpecificationDetails = (_props) => {
                   )}
                 />
                 {errors?.existingNocType && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.existingNocType.message}</p>
+                  <p className="noc-page-components-nocspecification-details--style-4">{errors.existingNocType.message}</p>
                 )}
               </div>
             </LabelFieldPair>
@@ -473,7 +473,7 @@ const NOCSpecificationDetails = (_props) => {
                   )}
                 />
                 {errors?.existingNocNumber && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.existingNocNumber.message}</p>
+                  <p className="noc-page-components-nocspecification-details--style-5">{errors.existingNocNumber.message}</p>
                 )}
               </div>
             </LabelFieldPair>
@@ -512,7 +512,7 @@ const NOCSpecificationDetails = (_props) => {
                   )}
                 />
                 {errors?.existingNocDate && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.existingNocDate.message}</p>
+                  <p className="noc-page-components-nocspecification-details--style-6">{errors.existingNocDate.message}</p>
                 )}
               </div>
             </LabelFieldPair>
@@ -522,7 +522,7 @@ const NOCSpecificationDetails = (_props) => {
               <CardLabel className="card-label-smaller">
                 {`${t("NOC_UPLOAD_DOCUMENT_LABEL")}`} <span className="requiredField">*</span>
               </CardLabel>
-              <div className="field" style={{ width: "100%" }}>
+              <div className="field noc-page-components-nocspecification-details--style-7" >
                 <Controller
                   control={control}
                   name="existingNocDocument"
@@ -552,7 +552,7 @@ const NOCSpecificationDetails = (_props) => {
                           }
                         } catch (err) {
                           setOfflineDocError(t("NOC_FILE_UPLOAD_ERROR") || "File upload error");
-                        } 
+                        }
                       }}
                       onDelete={() => {
                         props.onChange(null);
@@ -581,8 +581,8 @@ const NOCSpecificationDetails = (_props) => {
                 {`${t("NOC_NUMBER_LABEL")}`} <span className="requiredField">*</span>
               </CardLabel>
               <div className="field">
-                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                  <div style={{ flex: 1 }}>
+                <div className="noc-page-components-nocspecification-details--style-8">
+                  <div className="noc-page-components-nocspecification-details--style-9">
                     <Controller
                       control={control}
                       name="existingNocNumber"
@@ -623,20 +623,11 @@ const NOCSpecificationDetails = (_props) => {
                     />
                   </div>
                   {isNocValidated && (
-                    <span style={{ color: "#00703c", fontWeight: 500 }}>✓ NOC Validated</span>
+                    <span className="noc-page-components-nocspecification-details--style-10">✓ NOC Validated</span>
                   )}
                   <button
                     type="button"
-                    style={{
-                      padding: "8px 16px",
-                      background: "#1976d2",
-                      color: "white",
-                      cursor: "pointer",
-                      border: "none",
-                      borderRadius: "4px",
-                      fontWeight: "bold",
-                      minWidth: "120px",
-                    }}
+                    className="noc-page-components-nocspecification-details--style-11"
                     disabled={isRetrieving}
                     onClick={handleRetrieveNoc}
                   >
@@ -644,10 +635,10 @@ const NOCSpecificationDetails = (_props) => {
                   </button>
                 </div>
                 {!isNocValidated && errors?.existingNocNumber && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.existingNocNumber.message}</p>
+                  <p className="noc-page-components-nocspecification-details--style-12">{errors.existingNocNumber.message}</p>
                 )}
                 {!errors?.existingNocNumber && retrievedNocError && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{retrievedNocError}</p>
+                  <p className="noc-page-components-nocspecification-details--style-13">{retrievedNocError}</p>
                 )}
               </div>
             </LabelFieldPair>
@@ -657,20 +648,11 @@ const NOCSpecificationDetails = (_props) => {
                 <CardLabel className="card-label-smaller">{t("NOC_RETRIEVED_DOCUMENTS")}</CardLabel>
                 <div className="field">
                   {retrievedNocDocs.map((doc, idx) => (
-                    <div key={idx} style={{ marginBottom: "12px", display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div key={idx} className="noc-page-components-nocspecification-details--style-14">
 
                       <button
                         type="button"
-                        style={{
-                          padding: "8px 16px",
-                          background: "#1976d2",
-                          color: "white",
-                          cursor: "pointer",
-                          border: "none",
-                          borderRadius: "4px",
-                          fontWeight: "bold",
-                          fontSize: "14px"
-                        }}
+                        className="noc-page-components-nocspecification-details--style-15"
                         onClick={() => doc.url && window.open(doc.url, "_blank")}
                       >
                         VIEW DOCUMENT
@@ -703,7 +685,7 @@ const NOCSpecificationDetails = (_props) => {
               />
             )}
           />
-          {errors?.specificationRestrictedArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.specificationRestrictedArea.message}</p>}
+          {errors?.specificationRestrictedArea && <p className="noc-page-components-nocspecification-details--style-16">{errors.specificationRestrictedArea.message}</p>}
           </div>
         </LabelFieldPair>
 
@@ -727,7 +709,7 @@ const NOCSpecificationDetails = (_props) => {
               />
             )}
           />
-          {errors?.specificationIsSiteUnderMasterPlan && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.specificationIsSiteUnderMasterPlan.message}</p>}
+          {errors?.specificationIsSiteUnderMasterPlan && <p className="noc-page-components-nocspecification-details--style-17">{errors.specificationIsSiteUnderMasterPlan.message}</p>}
           </div>
         </LabelFieldPair>
       </div>

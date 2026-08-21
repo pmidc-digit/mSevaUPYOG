@@ -79,7 +79,7 @@ t,
     { enabled: !action?.isTerminateState }
   );
   //console.log(approverData, "Ooooooooo");
-  
+
 
   const { isLoading: financialYearsLoading, data: financialYearsData } = Digit.Hooks.pt.useMDMS(
     tenantId,
@@ -280,7 +280,7 @@ setConfig(formConfig);
       {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={showToast?.message} onClose={closeToast} isDleteBtn={true}/>}
       {showErrorToast && <Toast error={true} label={errorOne} isDleteBtn={true} onClose={closeToastOne} />}
 
-             
+
     </Modal>
   ) : (
     <Loader />

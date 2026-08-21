@@ -98,7 +98,7 @@ const PlotDetailsOC = ({ formData, onSelect, config, currentStepData, onGoBack})
 console.log("sessionStorageData",currentStepData, userDetails);
 
   const renderField = (label, value, setValue, errorKey, placeholder, isDisabled=false) =>  (
-    
+
     <div>
       <CardLabel>{label}</CardLabel>
       <TextInput value={value} placeholder={t(placeholder)} onChange={(e) => setValue(e.target.value)} disable={isDisabled}/>
@@ -112,13 +112,13 @@ console.log("sessionStorageData",currentStepData, userDetails);
     window.scrollTo({
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
-    });    
+    });
   }, [])
 
   useEffect(() => {
     if(!currentStepData?.cpt && currentStepData?.createdResponse?.additionalDetails?.propertyuid && tenantId !== LUDHIANA_TENANT){
       fetchPropertyDetails(currentStepData?.createdResponse?.additionalDetails?.propertyuid);
-    }    
+    }
   }, [currentStepData]);
 
   useEffect(()=>{
@@ -149,7 +149,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
         }
   }
 
-  // 
+  //
 
   // async function addInPreviousEDCR(oldEdcrNumber){
   //   const isEDCRPresent = oldEDCR?.find((val) => val?.edcrNumber === oldEdcrNumber);
@@ -239,7 +239,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
     }
   }
 
-  
+
   useEffect(() => {
     if (isEditApplication) {
       const newConfig = {
@@ -274,7 +274,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
           }
         }
   }, [isPropertyAvailable, currentStepData?.createdResponse?.additionalDetails?.isPropertyAvailable]);
-  
+
   useEffect(() => {
         if (typeof isClubbedPlot === "boolean") {
           const plan = common.find((item) => item.value === isClubbedPlot);
@@ -285,7 +285,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
           }
         }
   }, [isClubbedPlot, currentStepData?.createdResponse?.additionalDetails?.isClubbedPlot]);
-  
+
   useEffect(() => {
     if (buildingHeightData?.BPA?.BuildingHeight?.[0]?.value) {
       if (isSelfCertificationCondition) {
@@ -441,7 +441,7 @@ useEffect(() => {
     // if(!isPropertyAvailable?.code){
     //   newErrors.isPropertyAvailable = t("BPA_IS_PROPERTY_AVAILABLE_REQUIRED");
     // }
-    
+
     if (!isClubbedPlot?.code) {
       newErrors.isClubbedPlot = t("BPA_IS_CLUBBED_PLOT_REQUIRED");
     }
@@ -537,7 +537,7 @@ useEffect(() => {
     const applicationType = data?.appliactionType || "";
     const serviceType = data?.applicationSubType || "";
     let architectName = sessionStorage.getItem("BPA_ARCHITECT_NAME")
-    const typeOfArchitect = isArchitect ? "ARCHITECT" : userInfo?.info?.roles?.find(role => (role?.code?.includes("BPA") && role?.tenantId === tenantId))?.code?.split("_")?.[1] || "" // 
+    const typeOfArchitect = isArchitect ? "ARCHITECT" : userInfo?.info?.roles?.find(role => (role?.code?.includes("BPA") && role?.tenantId === tenantId))?.code?.split("_")?.[1] || "" //
     if(architectName){
       architectName = JSON.parse(architectName)
     }
@@ -787,7 +787,7 @@ useEffect(() => {
       }
     }
     // onSelect(config.key, payload);
-  }; 
+  };
 
   const onSkip = () => onSelect();
 
@@ -798,7 +798,7 @@ useEffect(() => {
   function setClubbedPlot(option) {
     setIsClubbedPlot(option)
   }
-  
+
   function setSelfCertificationRequired(option) {
     setIsSelfCertification(option)
   }
@@ -835,7 +835,7 @@ useEffect(() => {
               label={t(`PROPERTY_ID`)}
               text={currentStepData?.BasicDetails?.bpaData?.bpaApprovalResponse?.[0]?.additionalDetails?.propertyuid || "NA"}
             />
-            
+
           </StatusTable>
 
           {/* <div style={{ marginTop: "1rem" }}>
@@ -854,20 +854,20 @@ useEffect(() => {
           )}
           {(isPropertyAvailable?.value === false) && <CardLabelError style={{ fontSize: "12px", color: "black" }}>{t("NO_PROPERTY_AVAILABLE_DISCLAIMER")}</CardLabelError>}
           {tenantId === LUDHIANA_TENANT && <div>
-            {isPropertyAvailable?.value && <PropertySearchLudhiana formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList} />}            
+            {isPropertyAvailable?.value && <PropertySearchLudhiana formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList} />}
             {errors["propertyuid"] && (
               <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["propertyuid"]}</CardLabelError>
             )}
           </div>}
           {tenantId === BATHINDA_TENANT && <div>
-            {isPropertyAvailable?.value && <PropertySearchBathinda formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList} />}            
+            {isPropertyAvailable?.value && <PropertySearchBathinda formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList} />}
             {errors["propertyuid"] && (
               <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["propertyuid"]}</CardLabelError>
             )}
           </div>}
           {(tenantId != LUDHIANA_TENANT) && (tenantId != BATHINDA_TENANT) && <div>
           {isPropertyAvailable?.value && <SubmitBar style={{marginBottom:"1rem"}} label={t("PT_SEARCH_PROPERTY")} onSubmit={() => {setShowModal(true)}} />}
-          {showModal &&           
+          {showModal &&
           <PropertySearchModal  closeModal={closeModal} formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList}/>}
 
           {errors["propertyuid"] && (
@@ -896,7 +896,7 @@ useEffect(() => {
           {errors["isClubbedPlot"] && (
             <CardLabelError>{errors["isClubbedPlot"]}</CardLabelError>
           )}
-          
+
           {/* {occupancyTypes.includes(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code) &&
             <React.Fragment>
               <CardLabel>{`${t("BPA_IS_SELF_CERTIFICATION_REQUIRED")} *`}</CardLabel>
@@ -914,7 +914,7 @@ useEffect(() => {
           {errors["isSelfCertification"] && (
             <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isSelfCertification"]}</CardLabelError>
           )} */}
-            
+
           {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Enter Proposed Site Address ...", true)}
           {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT")+"*", boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)", true)}
           {renderField(t("BPA_WARD_NUMBER_LABEL")+"*", wardnumber, setWardNumber, "wardnumber", "Ward Number", true)}
@@ -930,7 +930,7 @@ useEffect(() => {
             t={t}
           />
           {errors["zonenumber"] && (
-            <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["zonenumber"]}</CardLabelError>
+            <CardLabelError className="obps-page-components-plot-details-oc--style-1">{errors["zonenumber"]}</CardLabelError>
           )}
           {renderField(t("BPA_KHASRA_NUMBER_LABEL")+"*", khasraNumber, setKhasraNumber, "khasraNumber", "Khasra Number", true)}
           {renderField(t("BPA_ARCHITECT_ID")+"*", architectid, setArchitectId, "architectid", "Architect ID", true)}
@@ -946,11 +946,11 @@ useEffect(() => {
           {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_ROOFS")+"*", materialusedinroofs, setMaterialUsedInRoofs, "materialusedinroofs", "e.g. Cement, Bricks, etc", true)}
           {renderField(t("BPA_ESTIMATED_COST_LABEL")+"*", estimatedCost, setEstimatedCost, "estimatedCost", "Please Provide Estimated Cost", true)}
 
-          
+
           <ActionBar>
             <SubmitBar
                       label="Back"
-                     
+
                       onSubmit={onGoBack}
             />
             {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading || ptLoading || isLoading || isLoading2 || isUserLoading || isBuildingHeightLoading || edcrLoading} />}

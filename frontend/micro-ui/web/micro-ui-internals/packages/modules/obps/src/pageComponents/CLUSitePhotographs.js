@@ -97,7 +97,7 @@ const CLUSitePhotographs = ({ documents, coordinates={} }) => {
         </div>
       ))}
 
-      
+
     </div>
   );
 };

@@ -62,7 +62,7 @@ const BPASanctionEsignResponse = () => {
             // sanctionLetterFilestoreId: fileStoreId,
             drawingFilestoreId: drawing || null,
           },
-          workflow: { 
+          workflow: {
             action: "DRAWING_ESIGN",
             assignes: null
           },
@@ -108,7 +108,7 @@ const BPASanctionEsignResponse = () => {
             history.push(isCitizen? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}`);
           }, 10000);
 
-          return () => clearTimeout(timeout);          
+          return () => clearTimeout(timeout);
         }
       }catch(e){
         setShowToast({
@@ -124,8 +124,8 @@ const BPASanctionEsignResponse = () => {
           history.push(isCitizen? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}`);
         }, 10000);
 
-        return () => clearTimeout(timeout);    
-      }   
+        return () => clearTimeout(timeout);
+      }
     }
   }, [isLoading, data, applicationNo]);
 
@@ -142,10 +142,10 @@ const BPASanctionEsignResponse = () => {
           message={t("NOC_APPLICATION_ESIGN_SUCCESS_HEADER")}
           info={t(`${stringReplaceAll(data?.BPA?.[0]?.businessService, ".", "_")}_APPLICATION_NUMBER`)}
           successful={!!drawing}
-          style={{ padding: "10px" }}
+          className="obps-pages-employee-bpasanction-esign-response--style-1"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
-        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+        <div className="obps-pages-employee-bpasanction-esign-response--style-2">
           {loading ? (
             <p>{t("E-Sign in Progress. Kindly Wait...")}</p>
           ) : (

@@ -106,9 +106,8 @@ function NOCSummary({ currentStepData: formData, t }) {
 
   return (
     <div className="employee-main-application-details">
-      <style>{` .data-table .row {border: 2px solid lightgrey;}`}</style>
 
-      <StatusTable style={{ border: "none" }}>
+      <StatusTable className="noc-page-components-nocsummary--style-1">
         <Card>
           <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
           <NOCImageView
@@ -270,7 +269,7 @@ function NOCSummary({ currentStepData: formData, t }) {
                       }
                     />
                   )}
-                
+
                 </React.Fragment>
               )}
                 <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={formData?.siteDetails?.specificationRestrictedArea?.code || formData?.siteDetails?.specificationRestrictedArea || "N/A"} />
@@ -305,12 +304,7 @@ function NOCSummary({ currentStepData: formData, t }) {
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
         <StatusTable
-          style={{
-            display: "flex",
-            gap: "20px",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-          }}
+          className="noc-page-components-nocsummary--style-2"
         >
           {sitePhotos?.length > 0 &&
             [...sitePhotos].map((doc) => (

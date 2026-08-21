@@ -159,11 +159,11 @@ function SelectDocument({
               id: selectedDocument?.id
             },
           ];
-        } 
+        }
         else{
         let UniqueDocTypeTempArray =[];
         newArray.map((ob) => {
-          UniqueDocTypeTempArray.push( 
+          UniqueDocTypeTempArray.push(
             //...filteredDocumentsByFileStoreId,
             {
               documentType: selectedDocument?.documentType,
@@ -202,14 +202,14 @@ function SelectDocument({
     }
   }, [doc])
   return (
-    <div style={{ marginBottom: "24px" }}>
-      <LabelFieldPair style={{width :"100%"}}>
-        <CardLabel className="card-label-smaller" style={{width :"100%"}}>
+    <div className="obps-page-components-obpsdocuments-emp--style-1">
+      <LabelFieldPair className="obps-page-components-obpsdocuments-emp--style-2">
+        <CardLabel className="card-label-smaller obps-page-components-obpsdocuments-emp--style-3" >
           {doc?.documentType != "OLDLICENCENO" ?
             `${t(`${doc?.documentType.replaceAll(".", "_")}`)}` :
             `${t(`${doc?.documentType.replaceAll(".", "_")}`)}`}
         </CardLabel>
-        <div className="field" style={{ width: "100%" }}>
+        <div className="field obps-page-components-obpsdocuments-emp--style-4" >
           <MultiUploadWrapper
             module="BPA"
             tenantId={stateId}

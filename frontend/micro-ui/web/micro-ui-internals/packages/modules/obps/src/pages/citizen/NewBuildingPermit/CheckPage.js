@@ -348,8 +348,8 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
       <div>
         {t("I_AGREE_TO_BELOW_UNDERTAKING")}
         <br />
-        {!isArchitectDeclared && <LinkButton style={{ marginLeft:"-55px", background:"#fff" }} label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />}
-        {isArchitectDeclared && <div  onClick={handleTermsLinkClick} style={{color: "green"}} >{t("VIEW_DECLARATION")} </div>}
+        {!isArchitectDeclared && <LinkButton className="obps-pages-citizen-new-building-permit-check-page--style-1" label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />}
+        {isArchitectDeclared && <div  onClick={handleTermsLinkClick} className="obps-pages-citizen-new-building-permit-check-page--style-2" >{t("VIEW_DECLARATION")} </div>}
       </div>
     );
   };
@@ -447,7 +447,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
     return (
       <div>
         {t("OWNER_AGREES_TO_BELOW_UNDERTAKING")}
-        <LinkButton style={{ float:"right", display:"inline", marginTop:"-80px"}}
+        <LinkButton className="obps-pages-citizen-new-building-permit-check-page--style-3"
           label={t("OWNER_DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")}
           onClick={handleOwnerTermsLinkClick}
           disabled={!isOwnerOTPVerified}
@@ -828,7 +828,7 @@ const documentsColumns = [
     accessor: "fileUrl",
     Cell: ({ value }) =>
       value ? (
-        <LinkButton style={{ float:"right",display:"inline" }}
+        <LinkButton className="obps-pages-citizen-new-building-permit-check-page--style-4"
           label={t("View")}
           onClick={() => routeTo(value)}
         />
@@ -840,7 +840,7 @@ const documentsColumns = [
 
 
 
-  
+
     // ---------------- UI Styles ----------------
     const pageStyle = {
       padding: "2rem",
@@ -849,15 +849,15 @@ const documentsColumns = [
       color: "#333",
       paddingBottom: "5rem",
     };
-  
+
     const sectionStyle = {
       backgroundColor: "#ffffff",
-  
+
       borderRadius: "8px",
-   
+
       boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
     };
-  
+
     const headingStyle = {
       fontSize: "1.5rem",
       borderBottom: "2px solid #ccc",
@@ -866,7 +866,7 @@ const documentsColumns = [
       marginTop: "2rem",
       marginBottom: "1rem",
     };
-  
+
     const labelFieldPairStyle = {
       display: "flex",
       justifyContent: "space-between",
@@ -874,16 +874,16 @@ const documentsColumns = [
       padding: "0.5rem 0",
       color: "#333",
     };
-  
+
     const documentsContainerStyle = {
       display: "flex",
       flexWrap: "wrap",
       gap: "1rem",
-      
+
     };
-  
+
     const documentCardStyle = {
-  
+
       minWidth: "200px",
       maxWidth: "250px",
       backgroundColor: "#fdfdfd",
@@ -893,11 +893,11 @@ const documentsColumns = [
       boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
       justifyContent:"center",
       display:"flex",
-      
+
     };
-  
+
     const boldLabelStyle = { fontWeight: "bold", color: "#555" };
-  
+
     const renderLabel = (label, value) => (
       <div style={labelFieldPairStyle}>
         <CardLabel style={boldLabelStyle}>{label}</CardLabel>
@@ -911,9 +911,9 @@ const documentsColumns = [
     <React.Fragment>
       {isMobile && <Timeline currentStep={4} />}
       <Header>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
-      <div style={{ marginTop:"30px", paddingBottom:"30px"}}>
-       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-   
+      <div className="obps-pages-citizen-new-building-permit-check-page--style-5">
+       <Card className="obps-pages-citizen-new-building-permit-check-page--style-6" >
+
         <StatusTable>
           <Row className="border-none" label={t(`BPA_APPLICATION_NUMBER_LABEL`)} text={plotDataFromStorage?.applicationNumber} />
         </StatusTable>
@@ -931,11 +931,11 @@ const documentsColumns = [
       </Card> */}
 
 
-       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-        <CardHeader style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>
+       <Card className="obps-pages-citizen-new-building-permit-check-page--style-7" >
+        <CardHeader className="obps-pages-citizen-new-building-permit-check-page--style-8">
           {t(`BPA_BASIC_DETAILS_TITLE`)}
         </CardHeader>
-        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+        <hr className="obps-pages-citizen-new-building-permit-check-page--style-9" />
         <StatusTable>
           <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APP_DATE_LABEL`)} text={convertEpochToDateDMY(Number(data?.applicationDate))} />
           <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL`)} text={t(`WF_BPA_${data?.applicationType}`)} />
@@ -946,14 +946,14 @@ const documentsColumns = [
       </Card>
 
 
-       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+       <Card className="obps-pages-citizen-new-building-permit-check-page--style-10" >
         <StatusTable>
-          <CardHeader style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>{t("BPA_PLOT_DETAILS_TITLE")}</CardHeader>
-          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+          <CardHeader className="obps-pages-citizen-new-building-permit-check-page--style-11">{t("BPA_PLOT_DETAILS_TITLE")}</CardHeader>
+          <hr className="obps-pages-citizen-new-building-permit-check-page--style-12" />
 
-          <LinkButton style={{ float:"right",display:"inline", marginTop:"-80px" }}
-           label={<EditIcon color="white" style={{color:"white"}}  />}
-            
+          <LinkButton className="obps-pages-citizen-new-building-permit-check-page--style-13"
+           label={<EditIcon color="white" className="obps-pages-citizen-new-building-permit-check-page--style-14"  />}
+
             onClick={() => routeTo(`${routeLink}/plot-details`)}
           />
 
@@ -1014,30 +1014,30 @@ const documentsColumns = [
       </Card>
 
 
-       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
+       <Card className="obps-pages-citizen-new-building-permit-check-page--style-15">
 
 
 
 <Card>
   <CardHeader>{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardHeader>
-  <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-  <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
+  <hr className="obps-pages-citizen-new-building-permit-check-page--style-16" />
+  <CardSubHeader className="obps-pages-citizen-new-building-permit-check-page--style-17">{t("BPA_EDCR_DETAILS")}</CardSubHeader>
 
-  <div style={{ marginTop: "19px", background: "#FAFAFA", border: "1px solid #D6D5D4", borderRadius: "4px", padding: "12px", maxWidth: "960px", minWidth: "280px" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "15px" }}>
+  <div className="obps-pages-citizen-new-building-permit-check-page--style-18">
+    <table className="obps-pages-citizen-new-building-permit-check-page--style-19">
       <tbody>
         {/* EDCR Number */}
-        <tr style={{ borderBottom: "1px solid #eaeaea" }}>
-          <td style={{ padding: "8px", fontWeight: "600", color: "#333" }}>{t("BPA_EDCR_NO_LABEL")}</td>
-          <td style={{ padding: "8px", textAlign: "right", color: "#555" }}>
+        <tr className="obps-pages-citizen-new-building-permit-check-page--style-20">
+          <td className="obps-pages-citizen-new-building-permit-check-page--style-21">{t("BPA_EDCR_NO_LABEL")}</td>
+          <td className="obps-pages-citizen-new-building-permit-check-page--style-22">
             {data?.scrutinyNumber?.edcrNumber || t("CS_NA")}
           </td>
         </tr>
 
         {/* Uploaded Plan */}
         <tr>
-          <td style={{ padding: "12px 8px", fontWeight: "600", color: "#333" }}>{t("BPA_UPLOADED_PLAN_DIAGRAM")}</td>
-          <td style={{ padding: "12px 8px", textAlign: "right" }}>
+          <td className="obps-pages-citizen-new-building-permit-check-page--style-23">{t("BPA_UPLOADED_PLAN_DIAGRAM")}</td>
+          <td className="obps-pages-citizen-new-building-permit-check-page--style-24">
             {datafromAPI?.updatedDxfFile ? (
               <LinkButton
                 label={t("View")}
@@ -1051,8 +1051,8 @@ const documentsColumns = [
 
         {/* Scrutiny Report */}
         <tr>
-          <td style={{ padding: "12px 8px", fontWeight: "600", color: "#333" }}>{t("BPA_SCRUNTINY_REPORT_OUTPUT")}</td>
-          <td style={{ padding: "12px 8px", textAlign: "right" }}>
+          <td className="obps-pages-citizen-new-building-permit-check-page--style-25">{t("BPA_SCRUNTINY_REPORT_OUTPUT")}</td>
+          <td className="obps-pages-citizen-new-building-permit-check-page--style-26">
             {datafromAPI?.planReport ? (
               <LinkButton
                label={t("View")}
@@ -1078,11 +1078,11 @@ const documentsColumns = [
 
 
 
-        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-        <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader>
+        <hr className="obps-pages-citizen-new-building-permit-check-page--style-27" />
+        <CardSubHeader className="obps-pages-citizen-new-building-permit-check-page--style-28">{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader>
 
-         <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
-          <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_PLAN_INFORMATION_PROPERTIES")}</CardSubHeader>
+         <Card className="obps-pages-citizen-new-building-permit-check-page--style-29">
+          <CardSubHeader className="obps-pages-citizen-new-building-permit-check-page--style-30">{t("BPA_PLAN_INFORMATION_PROPERTIES")}</CardSubHeader>
           <StatusTable>
             <Row
               className="border-none"
@@ -1138,25 +1138,25 @@ const documentsColumns = [
               text={plotDataFromStorage?.planDetail?.planInfoProperties?.ULB_TYPE || t("CS_NA")}
             />
 
-            <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_PLOT_DIMENSIONS")}</CardSubHeader>
+            <CardSubHeader className="obps-pages-citizen-new-building-permit-check-page--style-31">{t("BPA_PLOT_DIMENSIONS")}</CardSubHeader>
             <Row className="border-none" label={t("BPA_AVG_PLOT_DEPTH")} text={plotDataFromStorage?.planDetail?.planInfoProperties?.AVG_PLOT_DEPTH} />
             <Row className="border-none" label={t("BPA_AVG_PLOT_WIDTH")} text={plotDataFromStorage?.planDetail?.planInfoProperties?.AVG_PLOT_WIDTH} />
 
-            <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_ROAD_DETAILS")}</CardSubHeader>
+            <CardSubHeader className="obps-pages-citizen-new-building-permit-check-page--style-32">{t("BPA_ROAD_DETAILS")}</CardSubHeader>
             <Row className="border-none" label={t("BPA_ROAD_TYPE")} text={planInfoProps?.planDetail?.planInfoProperties?.ROAD_TYPE || t("CS_NA")} />
             <Row className="border-none" label={t("BPA_ROAD_WIDTH")} text={plotDataFromStorage?.planDetail?.planInfoProperties?.ROAD_WIDTH} />
 
-            <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
+            <CardSubHeader className="obps-pages-citizen-new-building-permit-check-page--style-33">{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
             <Row
               className="border-none"
               label={t("BPA_GREEN_BUILDINGS_SUSTAINABILITY")}
               text={plotDataFromStorage?.planDetail?.planInfoProperties?.PROVISION_FOR_GREEN_BUILDINGS_AND_SUSTAINABILITY || t("CS_NA")}
             />
           </StatusTable>
-        </Card> 
+        </Card>
         {/*  */}
-        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }}  />
-        <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
+        <hr className="obps-pages-citizen-new-building-permit-check-page--style-34"  />
+        <CardSubHeader className="obps-pages-citizen-new-building-permit-check-page--style-35">{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
         {datafromAPI?.planDetail?.blocks.map((block, index) => (
           <div
             key={index}
@@ -1175,7 +1175,7 @@ const documentsColumns = [
                 : {}
             }
           >
-            <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
+            <CardSubHeader className="obps-pages-citizen-new-building-permit-check-page--style-36">
               {t("BPA_BLOCK_SUBHEADER")} {index + 1}
             </CardSubHeader>
             <StatusTable>
@@ -1186,7 +1186,7 @@ const documentsColumns = [
                 text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
               ></Row>
             </StatusTable>
-            <div style={{ overflow: "scroll" }}>
+            <div className="obps-pages-citizen-new-building-permit-check-page--style-37">
               <Table
                 className="customTable table-fixed-first-column table-border-style"
                 t={t}
@@ -1207,9 +1207,9 @@ const documentsColumns = [
           </div>
         ))}
         {/*  */}
-        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-        <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
-        <StatusTable style={{ border: "none" }}>
+        <hr className="obps-pages-citizen-new-building-permit-check-page--style-38" />
+        <CardSubHeader className="obps-pages-citizen-new-building-permit-check-page--style-39">{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
+        <StatusTable className="obps-pages-citizen-new-building-permit-check-page--style-40">
           <Row
             className="border-none"
             label={t("BPA_APPLICATION_DEMOLITION_AREA_LABEL")}
@@ -1224,13 +1224,13 @@ const documentsColumns = [
 
 
 
-       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+       <Card className="obps-pages-citizen-new-building-permit-check-page--style-41" >
         <StatusTable>
           <CardHeader>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardHeader>
-           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-          <LinkButton style={{ float:"right", display:"inline", marginTop:"-80px"}}
-            label={<EditIcon color="white" style={{color:"white"}}  />}
-           
+           <hr className="obps-pages-citizen-new-building-permit-check-page--style-42" />
+          <LinkButton className="obps-pages-citizen-new-building-permit-check-page--style-43"
+            label={<EditIcon color="white" className="obps-pages-citizen-new-building-permit-check-page--style-44"  />}
+
             onClick={() => routeTo(`${routeLink}/location`)}
           />
           <Row className="border-none" label={t(`BPA_DETAILS_PIN_LABEL`)} text={address?.pincode || t("CS_NA")} />
@@ -1240,13 +1240,13 @@ const documentsColumns = [
           {/* <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} /> */}
         </StatusTable>
       </Card>
-       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
+       <Card className="obps-pages-citizen-new-building-permit-check-page--style-45">
         <StatusTable>
           <CardHeader>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardHeader>
-           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-          <LinkButton style={{ float:"right",  display:"inline", marginTop:"-80px" }}
-            label={<EditIcon color="white" style={{color:"white"}}  />}
-           
+           <hr className="obps-pages-citizen-new-building-permit-check-page--style-46" />
+          <LinkButton className="obps-pages-citizen-new-building-permit-check-page--style-47"
+            label={<EditIcon color="white" className="obps-pages-citizen-new-building-permit-check-page--style-48"  />}
+
             onClick={() => routeTo(`${routeLink}/owner-details`)}
           />
           {ownersData &&
@@ -1294,10 +1294,10 @@ const documentsColumns = [
             ))}
         </StatusTable>
       </Card>
-       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+       <Card className="obps-pages-citizen-new-building-permit-check-page--style-49" >
         <StatusTable>
           <CardHeader>{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardHeader>
-           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+           <hr className="obps-pages-citizen-new-building-permit-check-page--style-50" />
           <Row
             className="border-none"
             label={t(`BPA_APPROVED_COLONY_LABEL`)}
@@ -1374,10 +1374,10 @@ const documentsColumns = [
 
 
 
-       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+       <Card className="obps-pages-citizen-new-building-permit-check-page--style-51" >
         <StatusTable>
           <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
-           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+           <hr className="obps-pages-citizen-new-building-permit-check-page--style-52" />
         <Table
           className="customTable table-border-style"
           t={t}
@@ -1394,12 +1394,12 @@ const documentsColumns = [
 
 
 
-       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+       <Card className="obps-pages-citizen-new-building-permit-check-page--style-53" >
         <CardSubHeader>{t("BPA_SUMMARY_FEE_EST")}</CardSubHeader>
-         <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+         <hr className="obps-pages-citizen-new-building-permit-check-page--style-54" />
         <StatusTable>
-          <CardSubHeader style={{fontSize:"20px", color:"#3f4351"}}>{t("BPA_P1_SUMMARY_FEE_EST")}</CardSubHeader>
-           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+          <CardSubHeader className="obps-pages-citizen-new-building-permit-check-page--style-55">{t("BPA_P1_SUMMARY_FEE_EST")}</CardSubHeader>
+           <hr className="obps-pages-citizen-new-building-permit-check-page--style-56" />
           <Row
             className="border-none"
             label={t(`BPA_APPL_FEES`)}
@@ -1411,8 +1411,8 @@ const documentsColumns = [
             text={`₹ ${Math.round(datafromAPI?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea * 10.7639 * 2.5)}`}
           />
           <Row className="border-none" label={t(`BOUNDARY_WALL_FEES`)} text={`₹ ${data?.boundaryWallLength * 2.5}`} />
-          <CardSubHeader style={{fontSize:"20px", color:"#3f4351"}}>{t("BPA_P2_SUMMARY_FEE_EST")}</CardSubHeader>
-           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+          <CardSubHeader className="obps-pages-citizen-new-building-permit-check-page--style-57">{t("BPA_P2_SUMMARY_FEE_EST")}</CardSubHeader>
+           <hr className="obps-pages-citizen-new-building-permit-check-page--style-58" />
           <Row className="border-none" label={t(`BPA_COMMON_MALBA_AMT`)} text={`₹ ${malbafees}`} />
           <Row className="border-none" label={t(`BPA_COMMON_LABOUR_AMT`)} text={`₹ ${labourCess}`} />
           <Row className="border-none" label={t(`BPA_COMMON_WATER_CHARGE`)} text={`₹ ${waterCharges}`} />
@@ -1421,8 +1421,8 @@ const documentsColumns = [
           <Row className="border-none" label={t(`BPA_COMMON_SUB_DIV_CHARGE`)} text={`N/A`} />
           <Row className="border-none" label={t(`BPA_COMMON_COM_AMT`)} text={`N/A`} />
           {/* <Row className="border-none" label={t(`BPA_COMMON_GAUSHALA_AMT`)} text={`₹ ${gaushalaFees}`} /> */}
-          <CardSubHeader style={{fontSize:"20px", color:"#3f4351"}}>{t("BPA_P2_SUMMARY_FEE_EST_MANUAL")}</CardSubHeader>
-           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+          <CardSubHeader className="obps-pages-citizen-new-building-permit-check-page--style-59">{t("BPA_P2_SUMMARY_FEE_EST_MANUAL")}</CardSubHeader>
+           <hr className="obps-pages-citizen-new-building-permit-check-page--style-60" />
           <CardLabel>{t("BPA_COMMON_DEVELOPMENT_AMT")}</CardLabel>
           <TextInput
             t={t}
@@ -1486,7 +1486,7 @@ const documentsColumns = [
               <CardLabel>{t("BPA_COMMON_LESS_AMT_FILE")}</CardLabel>
               <UploadFile
                 id={"noc-doc"}
-                style={{ marginBottom: "200px" }}
+                className="obps-pages-citizen-new-building-permit-check-page--style-61"
                 onUpload={selectfile}
                 onDelete={() => {
                   setUploadedFile(null);
@@ -1499,7 +1499,7 @@ const documentsColumns = [
             </div>
           ) : null}
           {docLessAdjustment?.fileStoreIds?.length && parseInt(value?.additionalDetails?.selfCertificationCharges?.BPA_LESS_ADJUSMENT_PLOT) > 0 && (
-            <CardLabel style={{ marginTop: "15px" }}>{t("BPA_COMMON_LESS_AMT_PREVIOUS_FILE")}</CardLabel>
+            <CardLabel className="obps-pages-citizen-new-building-permit-check-page--style-62">{t("BPA_COMMON_LESS_AMT_PREVIOUS_FILE")}</CardLabel>
           )}
           {docLessAdjustment?.fileStoreIds?.length && parseInt(value?.additionalDetails?.selfCertificationCharges?.BPA_LESS_ADJUSMENT_PLOT) > 0 && (
             <a target="_blank" href={docLessAdjustment?.fileStoreIds[0]?.url}>
@@ -1507,7 +1507,7 @@ const documentsColumns = [
             </a>
           )}
           <Row className="border-none"></Row>
-          <Row 
+          <Row
             className="border-none"
             label={t(`BPA_P2_TOTAL_FEE`)}
             text={`₹ ${
@@ -1534,13 +1534,13 @@ const documentsColumns = [
                     type="tel"
                     isMandatory={true}
                     optionKey="i18nKey"
-                    disable={true} 
+                    disable={true}
                     name="mobileNumber"
                     value={mobileNumber}
                     onChange={handleMobileNumberChange}
                     {...{ required: true, pattern: "[0-9]{10}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
                   />
-                  <LinkButton style={{ display:"inline" }} label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
+                  <LinkButton className="obps-pages-citizen-new-building-permit-check-page--style-63" label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
                 </React.Fragment>
               )}
               <br></br>
@@ -1550,8 +1550,8 @@ const documentsColumns = [
                   <CardLabel>{t("BPA_OTP")}</CardLabel>
                   <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
                   <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
-                  {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
-                  {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
+                  {otpError && <CardLabel className="obps-pages-citizen-new-building-permit-check-page--style-64">{t(otpError)}</CardLabel>}
+                  {otpSuccess && <CardLabel className="obps-pages-citizen-new-building-permit-check-page--style-65">{t(otpSuccess)}</CardLabel>}
                 </React.Fragment>
               )}
             </div>
@@ -1564,11 +1564,11 @@ const documentsColumns = [
           <CheckBox label={checkLabels()} onChange={setdeclarationhandler} styles={{ height: "auto" }} checked={agree} />
           {showTermsPopup && (
             <Architectconcent showTermsPopup={showTermsPopup} setShowTermsPopup={setShowTermsPopup} otpVerifiedTimestamp={otpVerifiedTimestamp} />
-            
+
           )}
         </div>
-        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }}  />
-        
+        <hr className="obps-pages-citizen-new-building-permit-check-page--style-66"  />
+
       </Card>
 
 
@@ -1578,12 +1578,7 @@ const documentsColumns = [
     <ActionBar>
     <SubmitBar
               label="Back"
-              style={{
-                border: "1px solid",
-                background: "transparent",
-                color: "#2947a3",
-                marginRight: "5px",
-              }}
+              className="obps-pages-citizen-new-building-permit-check-page--style-67"
               onSubmit={onGoBack}
             />
      <SubmitBar

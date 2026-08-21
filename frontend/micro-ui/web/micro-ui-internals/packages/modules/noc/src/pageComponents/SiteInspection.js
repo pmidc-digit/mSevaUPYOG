@@ -23,7 +23,7 @@ const CustomGeoLocationButton = ({geoLocation}) =>{
     }
 
     return (
-        <LinkButton style={{ float: "right", display: "inline" }}
+        <LinkButton className="noc-page-components-site-inspection--style-1"
             label={t("View")}
             onClick={() => routeTo()}
         />
@@ -57,9 +57,9 @@ export const SiteInspection = ({ siteImages, setSiteImages, customOpen }) => {
     return (
         <div>
             <React.Fragment>
-                <CardSubHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INPECTION_IMAGES")}</CardSubHeader>                               
+                <CardSubHeader className="noc-page-components-site-inspection--style-2">{t("SITE_INPECTION_IMAGES")}</CardSubHeader>
                 {/* <CustomImageUploadHandler tenantId={stateId} uploadedImages={siteImages || null} onPhotoChange={(ids) => {handleUpload(ids)}} geoLocations={geoLocations} setGeoLocations={setGeoLocations} />                 */}
-                <div style={{ marginTop: "20px" }}>
+                <div className="noc-page-components-site-inspection--style-3">
                     <SelectNDCDocuments
                         t={t}
                         config={{ key: "documents" }}
@@ -78,15 +78,15 @@ export const SiteInspection = ({ siteImages, setSiteImages, customOpen }) => {
 
                 {geoLocations?.length > 0 &&
                 <React.Fragment>
-                <CardSubHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSubHeader>
+                <CardSubHeader className="noc-page-components-site-inspection--style-4">{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSubHeader>
                 <CustomLocationSearch position={geoLocations}/>
                 </React.Fragment>
                 }
                 {/* {geoLocations?.length > 0 &&
-                <React.Fragment>                
+                <React.Fragment>
                 <StatusTable>
-                {geoLocations?.map((value, index) => 
-                    <Row 
+                {geoLocations?.map((value, index) =>
+                    <Row
                         className="border-none"
                         label={t("SITE_GEO_LOCATION_"+(index+1))}
                         actionButton={<CustomGeoLocationButton geoLocation={value}/>}
@@ -95,7 +95,7 @@ export const SiteInspection = ({ siteImages, setSiteImages, customOpen }) => {
                 </StatusTable>
                 </React.Fragment>
                 } */}
-            </React.Fragment>            
+            </React.Fragment>
         </div>
     );
 };

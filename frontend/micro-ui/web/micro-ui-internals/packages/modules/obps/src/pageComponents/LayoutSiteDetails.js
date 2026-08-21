@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState, useRef } from "react";
 import {
   LabelFieldPair,
@@ -28,8 +26,26 @@ const LayoutSiteDetails = (_props) => {
 
   const stateId = Digit.ULBService.getStateId();
 
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch, cluValidationRef, getValues, clearErrors } = _props;
-  const applicationNo = currentStepData?.applicationNo || currentStepData?.apiData?.applicationNo || currentStepData?.apiData?.Layout?.[0]?.applicationNo || watch("applicationNo");
+  const {
+    t,
+    goNext,
+    currentStepData,
+    Controller,
+    control,
+    setValue,
+    errors,
+    errorStyle,
+    useFieldArray,
+    watch,
+    cluValidationRef,
+    getValues,
+    clearErrors,
+  } = _props;
+  const applicationNo =
+    currentStepData?.applicationNo ||
+    currentStepData?.apiData?.applicationNo ||
+    currentStepData?.apiData?.Layout?.[0]?.applicationNo ||
+    watch("applicationNo");
   //console.log(applicationNo, getValues("vasikaDate"), "applicationNo in layout site details");
   const isEditMode = !!applicationNo || window.location.pathname.includes("edit");
   const [netArea, setNetArea] = useState("0.00");
@@ -112,7 +128,11 @@ const LayoutSiteDetails = (_props) => {
 
   // In EDIT mode, if existing CLU number is present, auto-validate and search on initial load
   useEffect(() => {
-    const isEditPage = window.location.pathname.includes("edit") || !!currentStepData?.applicationNo || !!currentStepData?.apiData?.applicationNo || !!currentStepData?.apiData?.Layout?.[0]?.applicationNo;
+    const isEditPage =
+      window.location.pathname.includes("edit") ||
+      !!currentStepData?.applicationNo ||
+      !!currentStepData?.apiData?.applicationNo ||
+      !!currentStepData?.apiData?.Layout?.[0]?.applicationNo;
     const existingClu = currentStepData?.siteDetails?.cluNumber || cluNumberVal;
     if (isEditPage && existingClu && !isInitialized.current) {
       isInitialized.current = true;
@@ -121,7 +141,7 @@ const LayoutSiteDetails = (_props) => {
   }, [currentStepData]);
 
   useEffect(() => {
-    const currentValStr = (typeof cluNumberVal === "string" ? cluNumberVal : (cluNumberVal?.code || cluNumberVal?.name || ""))?.trim()?.toLowerCase();
+    const currentValStr = (typeof cluNumberVal === "string" ? cluNumberVal : cluNumberVal?.code || cluNumberVal?.name || "")?.trim()?.toLowerCase();
     const validatedStr = (validatedCluNumberRef.current || "")?.trim()?.toLowerCase();
     if (isCluValidated && validatedStr && currentValStr && currentValStr !== validatedStr) {
       updateCluValidated(false);
@@ -134,7 +154,8 @@ const LayoutSiteDetails = (_props) => {
 
   const handleViewDocument = async (doc) => {
     let fileUrl = doc?.url;
-    const docId = doc?.fileStoreId || (typeof watch("cluDocumentUpload") === "string" ? watch("cluDocumentUpload") : watch("cluDocumentUpload")?.fileStoreId);
+    const docId =
+      doc?.fileStoreId || (typeof watch("cluDocumentUpload") === "string" ? watch("cluDocumentUpload") : watch("cluDocumentUpload")?.fileStoreId);
 
     if (!fileUrl && docId) {
       const fetchTenant = retrievedClu?.tenantId || stateId || Digit.ULBService.getStateId();
@@ -164,7 +185,12 @@ const LayoutSiteDetails = (_props) => {
   };
 
   const handleValidateClu = async (cluNum) => {
-    const rawNum = typeof cluNum === "string" ? cluNum : (typeof cluNumberVal === "string" ? cluNumberVal : (cluNumberVal?.code || cluNumberVal?.name || getValues("cluNumber")?.code || getValues("cluNumber") || ""));
+    const rawNum =
+      typeof cluNum === "string"
+        ? cluNum
+        : typeof cluNumberVal === "string"
+        ? cluNumberVal
+        : cluNumberVal?.code || cluNumberVal?.name || getValues("cluNumber")?.code || getValues("cluNumber") || "";
     const numToSearch = (typeof rawNum === "string" ? rawNum : "")?.trim();
     if (!numToSearch) {
       setCluValidationError("Please enter CLU Number");
@@ -197,15 +223,13 @@ const LayoutSiteDetails = (_props) => {
         tenantId: searchTenantId,
       });
 
-
       const cluApp = result?.Clu?.[0];
       if (cluApp) {
         setRetrievedClu(cluApp);
         const fileStoreIds = [];
 
         const sanctionLetterFilestoreId =
-          cluApp?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId ||
-          cluApp?.additionalDetails?.sanctionLetterFilestoreId;
+          cluApp?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId || cluApp?.additionalDetails?.sanctionLetterFilestoreId;
 
         if (sanctionLetterFilestoreId) {
           fileStoreIds.push(sanctionLetterFilestoreId);
@@ -220,7 +244,6 @@ const LayoutSiteDetails = (_props) => {
             }
           });
         }
-
 
         if (fileStoreIds.length > 0) {
           let mappedDocs = [];
@@ -302,16 +325,16 @@ const LayoutSiteDetails = (_props) => {
   useEffect(() => {
     const roadwidningArea = getValues("netPlotAreaAfterWidening");
     const tpArea = getValues("areaLeftForRoadWidening");
-    if (roadwidningArea) setAreaLeftforRoadWidning(roadwidningArea)
-    if (tpArea) setTotalPlotArea(tpArea)
-  }, [currentStepData])
+    if (roadwidningArea) setAreaLeftforRoadWidning(roadwidningArea);
+    if (tpArea) setTotalPlotArea(tpArea);
+  }, [currentStepData]);
 
   // Restore CLU document from edit data
   useEffect(() => {
     if (currentStepData?.siteDetails?.cluDocumentUpload && !cluDocumentUploadedFile) {
       setCluDocumentUploadedFile({
         fileStoreId: currentStepData.siteDetails.cluDocumentUpload,
-        fileName: currentStepData.siteDetails.cluDocumentUploadFileName || "CLU Document"
+        fileName: currentStepData.siteDetails.cluDocumentUploadFileName || "CLU Document",
       });
     }
   }, [currentStepData?.siteDetails?.cluDocumentUpload]);
@@ -381,7 +404,7 @@ const LayoutSiteDetails = (_props) => {
     setValue("totalFloorArea", finalSum);
 
     // Check if any floor exceeds balance area
-    const hasExceeding = floorAreaValues?.some(floor => {
+    const hasExceeding = floorAreaValues?.some((floor) => {
       const floorValue = parseFloat(floor?.value) || 0;
       return floorValue > balanceArea;
     });
@@ -419,7 +442,7 @@ const LayoutSiteDetails = (_props) => {
     const sum = ((isNaN(a) ? 0 : a) - (isNaN(b) ? 0 : b) - c).toFixed(2);
 
     setNetArea(sum);
-    setValue("netTotalArea", sum);//totalSiteArea //netTotalArea
+    setValue("netTotalArea", sum); //totalSiteArea //netTotalArea
     // setNetArea(sum-totalSiteArea)
   }, [NetPlotArea, AreaLeftForRoadWidening, totalSiteArea, EWSArea, setValue]);
 
@@ -532,7 +555,9 @@ const LayoutSiteDetails = (_props) => {
   ];
 
   // Zone mapping logic (same as CLU)
-  const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{ name: "zoneMaster", filter: `$.[?(@.tanentId == '${tenantId}')]` }]);
+  const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [
+    { name: "zoneMaster", filter: `$.[?(@.tanentId == '${tenantId}')]` },
+  ]);
   const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
 
   const [selectedBuildingCategory, setSelectedBuildingCategory] = useState(currentStepData?.siteDetails?.buildingCategory || null);
@@ -624,9 +649,7 @@ const LayoutSiteDetails = (_props) => {
     const tolerance = 0.01; // Allow small rounding differences
 
     if (Math.abs(balanceArea - totalSiteAreaNum) > tolerance) {
-      setAreaMismatchNotification(
-        `Area Mismatch: Total Site Area (${total} Sq M) does not match Net Site Area (${netArea} Sq M)`
-      );
+      setAreaMismatchNotification(`Area Mismatch: Total Site Area (${total} Sq M) does not match Net Site Area (${netArea} Sq M)`);
     } else {
       setAreaMismatchNotification(null);
     }
@@ -728,9 +751,8 @@ const LayoutSiteDetails = (_props) => {
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px" }}>
+      <div className="obps-page-components-layout-site-details--style-1">
         <div>
-
           {/* ===== SECTION: CLU (Comprehensive Layout Undertaking) ===== */}
           <CardSectionHeader>CLU Details</CardSectionHeader>
 
@@ -761,15 +783,15 @@ const LayoutSiteDetails = (_props) => {
                   />
                 )}
               />
-               {errors?.isCluRequired && (
-              <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isCluRequired.message}</p>
-            )}
+              {errors?.isCluRequired && <p className="obps-page-components-layout-site-details--style-2"> {errors.isCluRequired.message}</p>}
             </div>
           </LabelFieldPair>
 
-
           {/* ===== CLU Details Section (when isCluRequired = NO) ===== */}
-          {getValues("isCluRequired") === "NO" || getValues("isCluRequired")?.code === "NO" || isCluRequired?.code === "NO" || isCluRequired === "NO" ? (
+          {getValues("isCluRequired") === "NO" ||
+          getValues("isCluRequired")?.code === "NO" ||
+          isCluRequired?.code === "NO" ||
+          isCluRequired === "NO" ? (
             <React.Fragment>
               {/* CLU Type - Online/Offline */}
               <LabelFieldPair>
@@ -802,12 +824,10 @@ const LayoutSiteDetails = (_props) => {
                   />
                 </div>
               </LabelFieldPair>
-              {errors?.cluType && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.cluType.message}</p>
-              )}
+              {errors?.cluType && <p className="obps-page-components-layout-site-details--style-3"> {errors.cluType.message}</p>}
 
               {/* ===== Online CLU Section ===== */}
-              {(cluType?.code === "ONLINE" || cluType === "ONLINE" || getValues("cluType")?.code === "ONLINE" || getValues("cluType") === "ONLINE") ? (
+              {cluType?.code === "ONLINE" || cluType === "ONLINE" || getValues("cluType")?.code === "ONLINE" || getValues("cluType") === "ONLINE" ? (
                 <React.Fragment>
                   {/* CLU Number - Online */}
                   <LabelFieldPair>
@@ -846,73 +866,56 @@ const LayoutSiteDetails = (_props) => {
                         )}
                       />
                     </div>
-                    {errors?.cluNumber && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.cluNumber.message}</p>
-                    )}
+                    {errors?.cluNumber && <p className="obps-page-components-layout-site-details--style-4"> {errors.cluNumber.message}</p>}
                   </LabelFieldPair>
 
-
                   {/* Validate Button for Online CLU */}
-                  <LabelFieldPair style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px", marginBottom: "8px" }}>
-                    <CardLabel className="card-label-smaller" style={{ visibility: "hidden" }}>
-                      Placeholder
-                    </CardLabel>
+                  <LabelFieldPair className="obps-page-components-layout-site-details--style-5">
+                    <CardLabel className="card-label-smaller obps-page-components-layout-site-details--style-6">Placeholder</CardLabel>
                     <div className="field">
                       {isCluValidated ? (
                         <span style={{ color: "#00703c", fontWeight: 500 }}>✓ CLU Validated</span>
-                      ):(
-                      <button
-                        type="button"
-                        style={{
-                          padding: "8px 16px",
-                          background: "transparent",
-                          color: "#a82227",
-                          border: "1.5px solid #a82227",
-                          borderRadius: "4px",
-                          fontWeight: "600",
-                          fontSize: "14px",
-                          cursor: (cluValidationLoading || !watch("cluNumber")) ? "not-allowed" : "pointer",
-                          opacity: (cluValidationLoading || !watch("cluNumber")) ? 0.5 : 1,
-                          minWidth: "120px"
-                        }}
-                        disabled={cluValidationLoading || !watch("cluNumber")}
-                        onClick={() => handleValidateClu()}
-                      >
-                        {cluValidationLoading ? "Searching..." : "Validate CLU"}
-                      </button>
+                      ) : (
+                        <button
+                          type="button"
+                          style={{
+                            padding: "8px 16px",
+                            background: "transparent",
+                            color: "#a82227",
+                            border: "1.5px solid #a82227",
+                            borderRadius: "4px",
+                            fontWeight: "600",
+                            fontSize: "14px",
+                            cursor: cluValidationLoading || !watch("cluNumber") ? "not-allowed" : "pointer",
+                            opacity: cluValidationLoading || !watch("cluNumber") ? 0.5 : 1,
+                            minWidth: "120px",
+                          }}
+                          disabled={cluValidationLoading || !watch("cluNumber")}
+                          onClick={() => handleValidateClu()}
+                        >
+                          {cluValidationLoading ? "Searching..." : "Validate CLU"}
+                        </button>
                       )}
                     </div>
                   </LabelFieldPair>
 
-                  {cluValidationError && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "16px" }}>{cluValidationError}</p>
-                  )}
+                  {cluValidationError && <p className="obps-page-components-layout-site-details--style-9">{cluValidationError}</p>}
 
                   {(isCluValidated || (retrievedCluDocs && retrievedCluDocs.length > 0)) && (
                     <LabelFieldPair>
                       <CardLabel className="card-label-smaller">{t("BPA_CLU_DOCUMENT_LABEL") || "CLU Document"}</CardLabel>
                       <div className="field">
-                         {retrievedCluDocs.map((doc, idx) => (
-                    <div key={idx} style={{ marginBottom: "12px", display: "flex", alignItems: "center", gap: "12px" }}>
-
-                      <button
-                        type="button"
-                        style={{
-                          padding: "8px 16px",
-                          background: "#2947a3",
-                          color: "white",
-                          cursor: "pointer",
-                          border: "none",
-                          borderRadius: "4px",
-                          fontWeight: "bold",
-                          fontSize: "14px"
-                        }}
-                        onClick={() => handleViewDocument(doc)}
-                      >
-                        VIEW DOCUMENT
-                      </button>
-                    </div>
-                  ))}
+                        {retrievedCluDocs.map((doc, idx) => (
+                          <div key={idx} className="obps-page-components-layout-site-details--style-10">
+                            <button
+                              type="button"
+                              className="obps-page-components-layout-site-details--style-11"
+                              onClick={() => handleViewDocument(doc)}
+                            >
+                              VIEW DOCUMENT
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     </LabelFieldPair>
                   )}
@@ -920,7 +923,10 @@ const LayoutSiteDetails = (_props) => {
               ) : null}
 
               {/* ===== Offline CLU Section ===== */}
-              {getValues("cluType") === "OFFLINE" || getValues("cluType")?.code === "OFFLINE" || cluType?.code === "OFFLINE" || cluType === "OFFLINE" ? (
+              {getValues("cluType") === "OFFLINE" ||
+              getValues("cluType")?.code === "OFFLINE" ||
+              cluType?.code === "OFFLINE" ||
+              cluType === "OFFLINE" ? (
                 <React.Fragment>
                   {/* CLU Document Upload - Offline */}
                   <LabelFieldPair className="upload-label-field-pair">
@@ -942,7 +948,7 @@ const LayoutSiteDetails = (_props) => {
                             }
 
                             // Validate file type
-                            if ( !["application/pdf","image/jpeg","image/png","image/jpg"].includes(file.type)) {
+                            if (!["application/pdf", "image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
                               setCluDocumentError("Only .pdf, .png, .jpeg, .jpg files are allowed");
                               return;
                             }
@@ -958,7 +964,7 @@ const LayoutSiteDetails = (_props) => {
                               //console.log("✅ CLU Document uploaded successfully:", fileStoreId);
                               setCluDocumentUploadedFile({
                                 fileStoreId: fileStoreId,
-                                fileName: file.name
+                                fileName: file.name,
                               });
                               //console.log("✅ State updated - cluDocumentUploadedFile set to:", { fileStoreId, fileName: file.name });
                             } else {
@@ -983,7 +989,7 @@ const LayoutSiteDetails = (_props) => {
                         accept=".pdf, .png, .jpeg, .jpg"
                         maxFileSize={5} // MB
                       />
-                          <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+                      <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
                     </div>
                   </LabelFieldPair>
 
@@ -1017,7 +1023,7 @@ const LayoutSiteDetails = (_props) => {
                         )}
                       />
                       {errors?.cluNumberOffline && (
-                        <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.cluNumberOffline.message}</p>
+                        <p className="obps-page-components-layout-site-details--style-12"> {errors.cluNumberOffline.message}</p>
                       )}
                     </div>
                   </LabelFieldPair>
@@ -1059,7 +1065,7 @@ const LayoutSiteDetails = (_props) => {
                         )}
                       />
                       {errors?.cluApprovalDate && (
-                        <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.cluApprovalDate.message}</p>
+                        <p className="obps-page-components-layout-site-details--style-13"> {errors.cluApprovalDate.message}</p>
                       )}
                     </div>
                   </LabelFieldPair>
@@ -1076,7 +1082,7 @@ const LayoutSiteDetails = (_props) => {
                           return cluDocumentUploadedFile ? true : "CLU Document must be uploaded";
                         }
                         return true; // Not required for other cases
-                      }
+                      },
                     }}
                     render={(props) => (
                       <input
@@ -1093,41 +1099,40 @@ const LayoutSiteDetails = (_props) => {
 
           {/* ===== Application Applied Under Section (when isCluRequired = YES) ===== */}
           {/* {isCluRequired?.code === "YES" || isCluRequired === "YES" ? ( */}
-            <LabelFieldPair>
-              <CardLabel className="card-label-smaller">
-                {`Application Applied Under`} <span className="requiredField">*</span>
-              </CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name={"applicationAppliedUnder"}
-                  rules={{
-                    required: t("REQUIRED_FIELD"),
-                  }}
-                  render={(props) => (
-                    <Dropdown
-                      className="form-field"
-                      select={(e) => {
-                        props.onChange(e);
-                      }}
-                      selected={props.value}
-                      option={[
-                        { code: "PAPRA", name: "PAPRA", i18nKey: "PAPRA" },
-                        { code: "TOWN_PLANNING", name: "TOWN PLANNING", i18nKey: "Town Planning" },
-                        { code: "AFFORDABLE", name: "AFFORDABLE", i18nKey: "Affordable" },
-                        { code: "DEVELOPMENT", name: "DEVELOPMENT", i18nKey: "Development" },
-
-                      ]}
-                      optionKey="name"
-                      t={t}
-                    />
-                  )}
-                />
-                {errors?.applicationAppliedUnder && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.applicationAppliedUnder.message}</p>
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`Application Applied Under`} <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={"applicationAppliedUnder"}
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                }}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    select={(e) => {
+                      props.onChange(e);
+                    }}
+                    selected={props.value}
+                    option={[
+                      { code: "PAPRA", name: "PAPRA", i18nKey: "PAPRA" },
+                      { code: "TOWN_PLANNING", name: "TOWN PLANNING", i18nKey: "Town Planning" },
+                      { code: "AFFORDABLE", name: "AFFORDABLE", i18nKey: "Affordable" },
+                      { code: "DEVELOPMENT", name: "DEVELOPMENT", i18nKey: "Development" },
+                    ]}
+                    optionKey="name"
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.applicationAppliedUnder && (
+                <p className="obps-page-components-layout-site-details--style-14"> {errors.applicationAppliedUnder.message}</p>
               )}
-              </div>
-            </LabelFieldPair>
+            </div>
+          </LabelFieldPair>
           {/* ) : null} */}
           {/* ===== TYPE OF APPLICATION ===== */}
 
@@ -1157,7 +1162,7 @@ const LayoutSiteDetails = (_props) => {
                   />
                 )}
               />
-              {errors?.typeOfApplication && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.typeOfApplication.message}</p>}
+              {errors?.typeOfApplication && <p className="obps-page-components-layout-site-details--style-15">{errors.typeOfApplication.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -1223,7 +1228,7 @@ const LayoutSiteDetails = (_props) => {
                 )}
               />
               {errors?.proposedSiteAddress && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.proposedSiteAddress.message}</p>
+                <p className="obps-page-components-layout-site-details--style-16">{errors.proposedSiteAddress.message}</p>
               )}
             </div>
           </LabelFieldPair>
@@ -1259,7 +1264,7 @@ const LayoutSiteDetails = (_props) => {
                 />
               </div>
             )}
-            {errors?.ulbName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.ulbName.message}</p>}
+            {errors?.ulbName && <p className="obps-page-components-layout-site-details--style-17">{errors.ulbName.message}</p>}
           </LabelFieldPair>
 
           {/* ULB Type */}
@@ -1271,11 +1276,7 @@ const LayoutSiteDetails = (_props) => {
                 name="ulbType"
                 defaultValue={ulbType || ""}
                 render={(props) => (
-                  <TextInput
-                    value={ulbType || props.value || ""}
-                    disabled={true}
-                    onChange={(e) => props.onChange(e.target.value)}
-                  />
+                  <TextInput value={ulbType || props.value || ""} disabled={true} onChange={(e) => props.onChange(e.target.value)} />
                 )}
               />
             </div>
@@ -1295,11 +1296,11 @@ const LayoutSiteDetails = (_props) => {
                   required: t("REQUIRED_FIELD"),
                   validate: (value) => {
                     // Validate that district is an object or has required properties
-                    if (!value || (typeof value === 'string' && value.trim() === '')) {
+                    if (!value || (typeof value === "string" && value.trim() === "")) {
                       return t("REQUIRED_FIELD");
                     }
                     return true;
-                  }
+                  },
                 }}
                 render={(props) => (
                   <TextInput
@@ -1321,7 +1322,7 @@ const LayoutSiteDetails = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          {errors?.district && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.district.message}</p>}
+          {errors?.district && <p className="obps-page-components-layout-site-details--style-18"> {errors.district.message}</p>}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
@@ -1335,17 +1336,10 @@ const LayoutSiteDetails = (_props) => {
                   required: t("REQUIRED_FIELD"),
                 }}
                 render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    select={props.onChange}
-                    selected={props.value}
-                    option={zoneOptions}
-                    optionKey="code"
-                    t={t}
-                  />
+                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={zoneOptions} optionKey="code" t={t} />
                 )}
               />
-              {errors?.zone && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.zone.message}</p>}
+              {errors?.zone && <p className="obps-page-components-layout-site-details--style-19"> {errors.zone.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -1377,7 +1371,7 @@ const LayoutSiteDetails = (_props) => {
                   />
                 )}
               />
-              {errors?.villageName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.villageName.message}</p>}
+              {errors?.villageName && <p className="obps-page-components-layout-site-details--style-20"> {errors.villageName.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -1410,7 +1404,7 @@ const LayoutSiteDetails = (_props) => {
                   />
                 )}
               />
-              {errors?.wardNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.wardNo.message}</p>}
+              {errors?.wardNo && <p className="obps-page-components-layout-site-details--style-21"> {errors.wardNo.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -1449,7 +1443,7 @@ const LayoutSiteDetails = (_props) => {
                   />
                 )}
               />
-              {errors?.khanutiNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.khanutiNo.message}</p>}
+              {errors?.khanutiNo && <p className="obps-page-components-layout-site-details--style-22"> {errors.khanutiNo.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -1481,7 +1475,7 @@ const LayoutSiteDetails = (_props) => {
                   />
                 )}
               />
-              {errors?.khasraNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.khasraNo.message}</p>}
+              {errors?.khasraNo && <p className="obps-page-components-layout-site-details--style-23"> {errors.khasraNo.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -1517,7 +1511,7 @@ const LayoutSiteDetails = (_props) => {
                   />
                 )}
               />
-              {errors?.hadbastNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.hadbastNo.message}</p>}
+              {errors?.hadbastNo && <p className="obps-page-components-layout-site-details--style-24"> {errors.hadbastNo.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -1555,7 +1549,7 @@ const LayoutSiteDetails = (_props) => {
                   />
                 )}
               />
-              {errors?.vasikaNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.vasikaNumber.message}</p>}
+              {errors?.vasikaNumber && <p className="obps-page-components-layout-site-details--style-25"> {errors.vasikaNumber.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -1596,7 +1590,7 @@ const LayoutSiteDetails = (_props) => {
                   />
                 )}
               />
-              {errors?.vasikaDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.vasikaDate.message}</p>}
+              {errors?.vasikaDate && <p className="obps-page-components-layout-site-details--style-26"> {errors.vasikaDate.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -1623,7 +1617,7 @@ const LayoutSiteDetails = (_props) => {
                   )}
                 />
               )}
-              {errors?.roadType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.roadType.message}</p>}
+              {errors?.roadType && <p className="obps-page-components-layout-site-details--style-27"> {errors.roadType.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -1645,20 +1639,13 @@ const LayoutSiteDetails = (_props) => {
                 )}
               />
               {errors?.isAreaUnderMasterPlan && (
-              <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isAreaUnderMasterPlan.message}</p>
-            )}
+                <p className="obps-page-components-layout-site-details--style-28"> {errors.isAreaUnderMasterPlan.message}</p>
+              )}
             </div>
-            
           </LabelFieldPair>
-
-
-
-
 
           {/* SECTION: Area Calculation (A-B-C) */}
           <CardSectionHeader>{t("BPA_AREA_CALCULATION_LABEL")}</CardSectionHeader>
-
-          
 
           {/* Add Area Left For Road Widening field (A) */}
           <LabelFieldPair>
@@ -1686,7 +1673,7 @@ const LayoutSiteDetails = (_props) => {
                     value={props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
-                      setTotalPlotArea(e.target.value)
+                      setTotalPlotArea(e.target.value);
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
@@ -1697,7 +1684,7 @@ const LayoutSiteDetails = (_props) => {
               />
 
               {errors?.areaLeftForRoadWidening && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaLeftForRoadWidening.message}</p>
+                <p className="obps-page-components-layout-site-details--style-29"> {errors.areaLeftForRoadWidening.message}</p>
               )}
             </div>
           </LabelFieldPair>
@@ -1728,7 +1715,7 @@ const LayoutSiteDetails = (_props) => {
                     value={props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
-                      setAreaLeftforRoadWidning(e.target.value)
+                      setAreaLeftforRoadWidning(e.target.value);
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
@@ -1739,7 +1726,7 @@ const LayoutSiteDetails = (_props) => {
               />
 
               {errors?.netPlotAreaAfterWidening && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.netPlotAreaAfterWidening.message}</p>
+                <p className="obps-page-components-layout-site-details--style-30"> {errors.netPlotAreaAfterWidening.message}</p>
               )}
             </div>
           </LabelFieldPair>
@@ -1772,7 +1759,8 @@ const LayoutSiteDetails = (_props) => {
           {/* Add Area Under EWS field (C) - Input and Percentage */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL")}<span className="requiredField">*</span>
+              {t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL")}
+              <span className="requiredField">*</span>
             </CardLabel>
 
             {/* EWS Area Input */}
@@ -1813,7 +1801,7 @@ const LayoutSiteDetails = (_props) => {
                   />
                 )}
               />
-              {errors?.areaUnderEWS && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.areaUnderEWS.message}</p>}
+              {errors?.areaUnderEWS && <p className="obps-page-components-layout-site-details--style-31">{errors.areaUnderEWS.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -1821,8 +1809,6 @@ const LayoutSiteDetails = (_props) => {
             <CardLabel className="card-label-smaller">
               {`${t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL")}`} <span className="requiredField">*</span>
             </CardLabel>
-
-
 
             <div className="field">
               <Controller
@@ -1839,7 +1825,8 @@ const LayoutSiteDetails = (_props) => {
                     }
                     disabled={true}
                     placeholder="%"
-                  />)}
+                  />
+                )}
               />
             </div>
           </LabelFieldPair>
@@ -1877,12 +1864,12 @@ const LayoutSiteDetails = (_props) => {
                 )}
               />
 
-              {errors?.netTotalArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.netTotalArea.message}</p>}
+              {errors?.netTotalArea && <p className="obps-page-components-layout-site-details--style-32"> {errors.netTotalArea.message}</p>}
             </div>
           </LabelFieldPair>
 
           {errors?.areaLeftForRoadWidening && (
-            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaLeftForRoadWidening.message}</p>
+            <p className="obps-page-components-layout-site-details--style-33"> {errors.areaLeftForRoadWidening.message}</p>
           )}
 
           <LabelFieldPair>
@@ -1914,7 +1901,7 @@ const LayoutSiteDetails = (_props) => {
                 )}
               />
 
-              {errors?.roadWidthAtSite && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.roadWidthAtSite.message}</p>}
+              {errors?.roadWidthAtSite && <p className="obps-page-components-layout-site-details--style-34">{errors.roadWidthAtSite.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -2025,7 +2012,7 @@ const LayoutSiteDetails = (_props) => {
                   />
                 )}
               />
-              {errors?.buildingCategory && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.buildingCategory.message}</p>}
+              {errors?.buildingCategory && <p className="obps-page-components-layout-site-details--style-35"> {errors.buildingCategory.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -2055,7 +2042,7 @@ const LayoutSiteDetails = (_props) => {
                     />
                   )}
                 />
-                {errors?.residentialType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.residentialType.message}</p>}
+                {errors?.residentialType && <p className="obps-page-components-layout-site-details--style-36">{errors.residentialType.message}</p>}
               </div>
             </LabelFieldPair>
           )}
@@ -2125,7 +2112,7 @@ const LayoutSiteDetails = (_props) => {
                   />
 
                   {errors?.areaUnderResidentialUseInSqM && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderResidentialUseInSqM.message}</p>
+                    <p className="obps-page-components-layout-site-details--style-37"> {errors.areaUnderResidentialUseInSqM.message}</p>
                   )}
                 </div>
               </LabelFieldPair>
@@ -2168,7 +2155,7 @@ const LayoutSiteDetails = (_props) => {
                   />
 
                   {errors?.areaUnderResidentialUseInPct && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderResidentialUseInPct.message}</p>
+                    <p className="obps-page-components-layout-site-details--style-38"> {errors.areaUnderResidentialUseInPct.message}</p>
                   )}
                 </div>
               </LabelFieldPair>
@@ -2210,7 +2197,7 @@ const LayoutSiteDetails = (_props) => {
                   />
 
                   {errors?.areaUnderCommercialUseInSqM && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderCommercialUseInSqM.message}</p>
+                    <p className="obps-page-components-layout-site-details--style-39"> {errors.areaUnderCommercialUseInSqM.message}</p>
                   )}
                 </div>
               </LabelFieldPair>
@@ -2253,7 +2240,7 @@ const LayoutSiteDetails = (_props) => {
                   />
 
                   {errors?.areaUnderCommercialUseInPct && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderCommercialUseInPct.message}</p>
+                    <p className="obps-page-components-layout-site-details--style-40"> {errors.areaUnderCommercialUseInPct.message}</p>
                   )}
                 </div>
               </LabelFieldPair>
@@ -2261,176 +2248,176 @@ const LayoutSiteDetails = (_props) => {
           )}
 
           {isInstitutional && (
-              <React.Fragment>
-                <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">
-                    {t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL")}
-                    <span className="requiredField">*</span>
-                  </CardLabel>
-                  <div className="field">
-                    <Controller
-                      control={control}
-                      name="areaUnderInstutionalUseInSqM"
-                      defaultValue=""
-                      rules={{
-                        required: t("REQUIRED_FIELD"),
-                        validate: (value) => {
-                          if (!value) return t("REQUIRED_FIELD");
-                          const regex = /^\d+(\.\d{1,2})?$/;
-                          return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                        },
-                      }}
-                      render={(props) => (
-                        <TextInput
-                          className="form-field"
-                          value={props.value}
-                          onChange={(e) => {
-                            props.onChange(e.target.value);
-                          }}
-                          onBlur={(e) => {
-                            props.onBlur(e);
-                          }}
-                        />
-                      )}
-                    />
-
-                    {errors?.areaUnderInstutionalUseInSqM && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderInstutionalUseInSqM.message}</p>
+            <React.Fragment>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL")}
+                  <span className="requiredField">*</span>
+                </CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name="areaUnderInstutionalUseInSqM"
+                    defaultValue=""
+                    rules={{
+                      required: t("REQUIRED_FIELD"),
+                      validate: (value) => {
+                        if (!value) return t("REQUIRED_FIELD");
+                        const regex = /^\d+(\.\d{1,2})?$/;
+                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        className="form-field"
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e);
+                        }}
+                      />
                     )}
-                  </div>
-                </LabelFieldPair>
+                  />
 
-                <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">
-                    {t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL")}
-                    <span className="requiredField">*</span>
-                  </CardLabel>
+                  {errors?.areaUnderInstutionalUseInSqM && (
+                    <p className="obps-page-components-layout-site-details--style-41"> {errors.areaUnderInstutionalUseInSqM.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
 
-                  <div className="field">
-                    <Controller
-                      control={control}
-                      name="areaUnderInstutionalUseInPct"
-                      rules={{
-                        required: t("REQUIRED_FIELD"),
-                        validate: (value) => {
-                          if (!value) return t("REQUIRED_FIELD");
-                          const regex = /^\d+(\.\d{1,2})?$/;
-                          const isValidFormat = regex.test(value);
-                          const isWithinRange = Number.parseFloat(value) <= 100;
-                          if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                          if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
-                          return true;
-                        },
-                      }}
-                      render={(props) => (
-                        <TextInput
-                          className="form-field"
-                          value={watchedInstitutionalPct || ""}
-                          onChange={(e) => {
-                            props.onChange(e.target.value);
-                          }}
-                          onBlur={(e) => {
-                            props.onBlur(e);
-                          }}
-                          readOnly={true}
-                          disabled={true}
-                        />
-                      )}
-                    />
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL")}
+                  <span className="requiredField">*</span>
+                </CardLabel>
 
-                    {errors?.areaUnderInstutionalUseInPct && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderInstutionalUseInPct.message}</p>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name="areaUnderInstutionalUseInPct"
+                    rules={{
+                      required: t("REQUIRED_FIELD"),
+                      validate: (value) => {
+                        if (!value) return t("REQUIRED_FIELD");
+                        const regex = /^\d+(\.\d{1,2})?$/;
+                        const isValidFormat = regex.test(value);
+                        const isWithinRange = Number.parseFloat(value) <= 100;
+                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
+                        return true;
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        className="form-field"
+                        value={watchedInstitutionalPct || ""}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e);
+                        }}
+                        readOnly={true}
+                        disabled={true}
+                      />
                     )}
-                  </div>
-                </LabelFieldPair>
-              </React.Fragment>
-            )}
+                  />
+
+                  {errors?.areaUnderInstutionalUseInPct && (
+                    <p className="obps-page-components-layout-site-details--style-42"> {errors.areaUnderInstutionalUseInPct.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
+            </React.Fragment>
+          )}
 
           {selectedBuildingCategory?.name?.toLowerCase().includes("industrial") && (
-              <React.Fragment>
-                <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">
-                    {t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL")}
-                    <span className="requiredField">*</span>
-                  </CardLabel>
-                  <div className="field">
-                    <Controller
-                      control={control}
-                      name="areaUnderIndustrialUseInSqM"
-                      defaultValue=""
-                      rules={{
-                        required: t("REQUIRED_FIELD"),
-                        validate: (value) => {
-                          if (!value) return t("REQUIRED_FIELD");
-                          const regex = /^\d+(\.\d{1,2})?$/;
-                          return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                        },
-                      }}
-                      render={(props) => (
-                        <TextInput
-                          className="form-field"
-                          value={props.value}
-                          onChange={(e) => {
-                            props.onChange(e.target.value);
-                          }}
-                          onBlur={(e) => {
-                            props.onBlur(e);
-                          }}
-                        />
-                      )}
-                    />
-
-                    {errors?.areaUnderIndustrialUseInSqM && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderIndustrialUseInSqM.message}</p>
+            <React.Fragment>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL")}
+                  <span className="requiredField">*</span>
+                </CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name="areaUnderIndustrialUseInSqM"
+                    defaultValue=""
+                    rules={{
+                      required: t("REQUIRED_FIELD"),
+                      validate: (value) => {
+                        if (!value) return t("REQUIRED_FIELD");
+                        const regex = /^\d+(\.\d{1,2})?$/;
+                        return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        className="form-field"
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e);
+                        }}
+                      />
                     )}
-                  </div>
-                </LabelFieldPair>
+                  />
 
-                <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">
-                    {t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL")}
-                    <span className="requiredField">*</span>
-                  </CardLabel>
+                  {errors?.areaUnderIndustrialUseInSqM && (
+                    <p className="obps-page-components-layout-site-details--style-43"> {errors.areaUnderIndustrialUseInSqM.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
 
-                  <div className="field">
-                    <Controller
-                      control={control}
-                      name="areaUnderIndustrialUseInPct"
-                      rules={{
-                        required: t("REQUIRED_FIELD"),
-                        validate: (value) => {
-                          if (!value) return t("REQUIRED_FIELD");
-                          const regex = /^\d+(\.\d{1,2})?$/;
-                          const isValidFormat = regex.test(value);
-                          const isWithinRange = Number.parseFloat(value) <= 100;
-                          if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                          if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
-                          return true;
-                        },
-                      }}
-                      render={(props) => (
-                        <TextInput
-                          className="form-field"
-                          value={watchedIndustrialPct || ""}
-                          onChange={(e) => {
-                            props.onChange(e.target.value);
-                          }}
-                          onBlur={(e) => {
-                            props.onBlur(e);
-                          }}
-                          readOnly={true}
-                          disabled={true}
-                        />
-                      )}
-                    />
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL")}
+                  <span className="requiredField">*</span>
+                </CardLabel>
 
-                    {errors?.areaUnderIndustrialUseInPct && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderIndustrialUseInPct.message}</p>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name="areaUnderIndustrialUseInPct"
+                    rules={{
+                      required: t("REQUIRED_FIELD"),
+                      validate: (value) => {
+                        if (!value) return t("REQUIRED_FIELD");
+                        const regex = /^\d+(\.\d{1,2})?$/;
+                        const isValidFormat = regex.test(value);
+                        const isWithinRange = Number.parseFloat(value) <= 100;
+                        if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                        if (!isWithinRange) return t("VALUE_SHOULD_BE_LESS_THAN_OR_EQUAL_TO_100");
+                        return true;
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        className="form-field"
+                        value={watchedIndustrialPct || ""}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e);
+                        }}
+                        readOnly={true}
+                        disabled={true}
+                      />
                     )}
-                  </div>
-                </LabelFieldPair>
-              </React.Fragment>
-            )}
+                  />
+
+                  {errors?.areaUnderIndustrialUseInPct && (
+                    <p className="obps-page-components-layout-site-details--style-44"> {errors.areaUnderIndustrialUseInPct.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
+            </React.Fragment>
+          )}
 
           {/* {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
             <LabelFieldPair>
@@ -2589,7 +2576,7 @@ const LayoutSiteDetails = (_props) => {
                   />
 
                   {errors?.areaUnderCommunityCenterInSqM && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderCommunityCenterInSqM.message}</p>
+                    <p className="obps-page-components-layout-site-details--style-45"> {errors.areaUnderCommunityCenterInSqM.message}</p>
                   )}
                 </div>
               </LabelFieldPair>
@@ -2628,7 +2615,7 @@ const LayoutSiteDetails = (_props) => {
                   />
 
                   {errors?.areaUnderCommunityCenterInPct && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderCommunityCenterInPct.message}</p>
+                    <p className="obps-page-components-layout-site-details--style-46"> {errors.areaUnderCommunityCenterInPct.message}</p>
                   )}
                 </div>
               </LabelFieldPair>
@@ -2664,7 +2651,7 @@ const LayoutSiteDetails = (_props) => {
               />
 
               {errors?.areaUnderParkInSqM && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderParkInSqM.message}</p>
+                <p className="obps-page-components-layout-site-details--style-47"> {errors.areaUnderParkInSqM.message}</p>
               )}
             </div>
           </LabelFieldPair>
@@ -2703,7 +2690,7 @@ const LayoutSiteDetails = (_props) => {
               />
 
               {errors?.areaUnderParkInPct && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderParkInPct.message}</p>
+                <p className="obps-page-components-layout-site-details--style-48"> {errors.areaUnderParkInPct.message}</p>
               )}
             </div>
           </LabelFieldPair>
@@ -2737,7 +2724,7 @@ const LayoutSiteDetails = (_props) => {
               />
 
               {errors?.areaUnderRoadInSqM && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderRoadInSqM.message}</p>
+                <p className="obps-page-components-layout-site-details--style-49"> {errors.areaUnderRoadInSqM.message}</p>
               )}
             </div>
           </LabelFieldPair>
@@ -2776,7 +2763,7 @@ const LayoutSiteDetails = (_props) => {
               />
 
               {errors?.areaUnderRoadInPct && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderRoadInPct.message}</p>
+                <p className="obps-page-components-layout-site-details--style-50"> {errors.areaUnderRoadInPct.message}</p>
               )}
             </div>
           </LabelFieldPair>
@@ -2810,7 +2797,7 @@ const LayoutSiteDetails = (_props) => {
               />
 
               {errors?.areaUnderParkingInSqM && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderParkingInSqM.message}</p>
+                <p className="obps-page-components-layout-site-details--style-51"> {errors.areaUnderParkingInSqM.message}</p>
               )}
             </div>
           </LabelFieldPair>
@@ -2844,13 +2831,12 @@ const LayoutSiteDetails = (_props) => {
                     }}
                     readOnly={true}
                     disabled={true}
-
                   />
                 )}
               />
 
               {errors?.areaUnderParkingInPct && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderParkingInPct.message}</p>
+                <p className="obps-page-components-layout-site-details--style-52"> {errors.areaUnderParkingInPct.message}</p>
               )}
             </div>
           </LabelFieldPair>
@@ -2884,7 +2870,7 @@ const LayoutSiteDetails = (_props) => {
               />
 
               {errors?.areaUnderOtherAmenitiesInSqM && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderOtherAmenitiesInSqM.message}</p>
+                <p className="obps-page-components-layout-site-details--style-53"> {errors.areaUnderOtherAmenitiesInSqM.message}</p>
               )}
             </div>
           </LabelFieldPair>
@@ -2923,7 +2909,7 @@ const LayoutSiteDetails = (_props) => {
               />
 
               {errors?.areaUnderOtherAmenitiesInPct && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderOtherAmenitiesInPct.message}</p>
+                <p className="obps-page-components-layout-site-details--style-54"> {errors.areaUnderOtherAmenitiesInPct.message}</p>
               )}
             </div>
           </LabelFieldPair>
@@ -2938,8 +2924,8 @@ const LayoutSiteDetails = (_props) => {
 
           {/* Area Mismatch Notification */}
           {areaMismatchNotification && (
-            <div style={{ marginBottom: "12px", padding: "12px", backgroundColor: "#fff3cd", border: "1px solid #ffc107", borderRadius: "4px" }}>
-              <p style={{ color: "#856404", margin: "0", fontSize: "14px" }}>
+            <div className="obps-page-components-layout-site-details--style-55">
+              <p className="obps-page-components-layout-site-details--style-56">
                 <strong>⚠️ Warning:</strong> {areaMismatchNotification}
               </p>
             </div>
@@ -2953,7 +2939,7 @@ const LayoutSiteDetails = (_props) => {
           </LabelFieldPair> */}
         </div>
         <BreakLine />
-        { }
+        {}
       </div>
     </React.Fragment>
   );

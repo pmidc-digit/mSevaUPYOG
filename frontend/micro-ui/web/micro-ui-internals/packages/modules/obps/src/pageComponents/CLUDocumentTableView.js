@@ -14,7 +14,7 @@ const CLUDocumentTableView = ({ documents }) => {
       Header: t("SR_NO"),
       accessor: "srNo",
       width: "20px",
-      Cell: ({ row }) => <div style={{ width: "20px" }}>{row.index + 1}</div>,
+      Cell: ({ row }) => <div className="obps-page-components-cludocument-table-view--style-1">{row.index + 1}</div>,
     },
     {
       Header: t("BPA_DOCUMENT_NAME"),
@@ -25,7 +25,7 @@ const CLUDocumentTableView = ({ documents }) => {
       Header: t("BPA_DOCUMENT_FILE"),
       accessor: "fileUrl",
       Cell: ({ value }) =>
-        value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
+        value ? <LinkButton className="obps-page-components-cludocument-table-view--style-2" label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
     },
   ];
 
@@ -73,16 +73,16 @@ const CLUDocumentTableView = ({ documents }) => {
   if(urlsListLoading) return <Loader />
 
   return (
-    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", display: "block" }}>
+    <div className="obps-page-components-cludocument-table-view--style-3">
       {documentsData && (
         <Table
-          className="customTable table-border-style"
+          className="customTable table-border-style obps-page-components-cludocument-table-view--style-4"
           t={t}
           data={documentsData}
           columns={documentsColumns}
           getCellProps={(cellInfo) => (cellInfo.column.id === "srNo" ? { style: { width: "20px", textAlign: "center" } } : {})}
           getHeaderProps={(column) => (column.id === "srNo" ? { style: { width: "20px", textAlign: "center" } } : {})}
-          style={{ width: "100%", minWidth: "400px", tableLayout: "auto" }}
+
           disableSort={true}
           autoSort={false}
           manualPagination={false}

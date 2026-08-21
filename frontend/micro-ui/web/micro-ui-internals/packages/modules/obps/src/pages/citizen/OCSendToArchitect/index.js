@@ -32,7 +32,7 @@ const getBPAEditDetails = async (data, APIScrutinyDetails,mdmsData,nocdata,t,OCD
     });
 
     return subOcc;
-    
+
   }
 
   //data.BlockIds=getBlockIds(data?.landInfo?.unit);
@@ -42,7 +42,7 @@ const getBPAEditDetails = async (data, APIScrutinyDetails,mdmsData,nocdata,t,OCD
     holdingNo: data?.additionalDetails?.holdingNo,
     landId: data?.landInfo?.id,
     serviceType: data?.additionalDetails?.serviceType || APIScrutinyDetails?.applicationSubType,
-    }   
+    }
 
   data.data = {
     applicantName: APIScrutinyDetails?.planDetail?.planInformation?.applicantName,
@@ -147,7 +147,7 @@ const OCSendToArchitect = ({ parentRoute }) => {
         setParams({ ...params, ...bpaEditDetails });
       }
     }
-    
+
   }, [bpaData,data1,mdmsData,nocdata,OCData]);
 
 

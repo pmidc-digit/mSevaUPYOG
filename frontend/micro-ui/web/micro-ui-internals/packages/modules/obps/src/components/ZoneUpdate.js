@@ -33,13 +33,13 @@ const ZoneUpdate = ({ onSelect, onClose, defaultZoneCode, tenantId: propTenantId
 
   //console.log('zoneList', zoneList);
 
-  
+
 
   const handleZoneSelect = (zone) => {
     setSelectedZone(zone);
   };
 
-  
+
 const zoneOptions = useMemo(
    () => zoneList?.tenant?.zoneMaster?.[0]?.zones || [],
   [zoneList]
@@ -81,10 +81,10 @@ const zoneOptions = useMemo(
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px" }}>
+      <div className="obps-components-zone-update--style-1">
         <CardSectionHeader className="card-section-header">{"Update Zone"}</CardSectionHeader>
         <div>
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-components-zone-update--style-2">
             <CardLabel className="card-label-smaller">
               {"Zone"}
               <span className="requiredField">*</span>
@@ -103,7 +103,7 @@ const zoneOptions = useMemo(
           </LabelFieldPair>
         </div>
         <div>
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-components-zone-update--style-3">
             <CardLabel className="card-label-smaller">
               {"Comments"}
               <span className="requiredField">*</span>

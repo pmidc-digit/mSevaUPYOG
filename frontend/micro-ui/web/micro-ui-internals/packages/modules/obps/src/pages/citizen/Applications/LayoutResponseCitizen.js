@@ -14,7 +14,7 @@ const LayoutResponseCitizen = (props) => {
   const [pdfError, setPdfError] = useState(null)
   const [downloading, setDownloading] = useState(false)
   const [calculatedAmount, setCalculatedAmount] = useState(0)
-  
+
 
   const layoutData = state?.data?.Layout?.[0]
   //console.log("layoutData in response page", layoutData)
@@ -35,10 +35,10 @@ const LayoutResponseCitizen = (props) => {
     const fetchCalculatedAmount = async () => {
       try {
         if (!layoutData) return;
-        
+
         const siteDetails = layoutData?.layoutDetails?.additionalDetails?.siteDetails || {};
         const applicationDetails = layoutData?.layoutDetails?.additionalDetails?.applicationDetails || {};
-        
+
         // Format siteDetails fields for calculator
         const formattedSiteDetails = { ...siteDetails };
         if (siteDetails.zone && typeof siteDetails.zone === 'string') {
@@ -56,7 +56,7 @@ const LayoutResponseCitizen = (props) => {
         if (siteDetails.layoutAreaType && typeof siteDetails.layoutAreaType === 'string') {
           formattedSiteDetails.layoutAreaType = { code: siteDetails.layoutAreaType, name: siteDetails.layoutAreaType };
         }
-        
+
         const payload = {
           CalculationCriteria: [{
             applicationNumber: layoutData?.applicationNo,
@@ -75,7 +75,7 @@ const LayoutResponseCitizen = (props) => {
             }
           }]
         };
-        
+
         const response = await Digit.OBPSService.LayoutCalculator({ details: payload, filters: { getCalculationOnly: "true" } });
         if (response?.Calculation?.[0]?.taxHeadEstimates) {
           const total = response.Calculation[0].taxHeadEstimates.reduce((sum, tax) => sum + (parseFloat(tax.estimateAmount) || 0), 0);
@@ -85,7 +85,7 @@ const LayoutResponseCitizen = (props) => {
         console.error("Error calculating amount:", error);
       }
     };
-    
+
     fetchCalculatedAmount();
   }, [layoutData]);
 
@@ -110,7 +110,7 @@ const LayoutResponseCitizen = (props) => {
       { paymentAmount: calculatedAmount, tenantId }
     );
   };
-  
+
 
   const handleDownloadPdf = async (isView = false) => {
     try{
@@ -128,7 +128,7 @@ const LayoutResponseCitizen = (props) => {
     }finally{
       setDownloading(false);
     }
-    
+
   };
 
   return (
@@ -139,12 +139,12 @@ const LayoutResponseCitizen = (props) => {
           applicationNumber={applicationNo}
           info={layoutData?.applicationStatus === "REJECTED" ? "" : t("LAYOUT_APPLICATION_NUMBER")}
           successful={layoutData?.applicationStatus === "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
+          className="obps-pages-citizen-applications-layout-response-citizen--style-1"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         {downloading && <Loader />}
         {layoutData?.applicationStatus !== "REJECTED" ? (
-            <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+            <ActionBar className="obps-pages-citizen-applications-layout-response-citizen--style-2">
               {layoutData?.applicationStatus === "INITIATED" ? (
                           <SubmitBar label={t("View Application")} onSubmit={() => handleDownloadPdf(true)} />
                         ) : (
@@ -156,7 +156,7 @@ const LayoutResponseCitizen = (props) => {
         {/* <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("My Application")} onSubmit={onGoToLayout} />
-        
+
         </ActionBar> */}
           {/* <SubmitBar label={t(" New Application")} onSubmit={onGoToNewLayoutApplication} />
           <SubmitBar label={t(" Search Application")} onSubmit={onGoToSearchApplication} /> */}

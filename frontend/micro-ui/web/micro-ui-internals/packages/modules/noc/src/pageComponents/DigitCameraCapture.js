@@ -155,22 +155,18 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
   };
 
   return (
-    <div style={{ textAlign: "center" }}>
+    <div className="noc-page-components-digit-camera-capture--style-1">
       <video
         ref={videoRef}
         autoPlay
         playsInline
-        style={{
-          width: "100%",
-          borderRadius: "8px",
-          background: "#000"
-        }}
+        className="noc-page-components-digit-camera-capture--style-2"
       />
 
-      <canvas ref={canvasRef} style={{ display: "none" }} />
+      <canvas ref={canvasRef} className="noc-page-components-digit-camera-capture--style-3" />
 
       {error && (
-        <div style={{ color: "red", marginTop: "8px" }}>
+        <div className="noc-page-components-digit-camera-capture--style-4">
           {t(error)}
         </div>
       )}
@@ -190,12 +186,12 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
         Capture Photo
       </button> */}
           {location && location.accuracy > 100 && (
-              <div style={{ fontSize: "12px", color: "#B45309", marginTop: "4px" }}>
+              <div className="noc-page-components-digit-camera-capture--style-5">
                   Low GPS accuracy. Move outdoors for better accuracy.
               </div>
           )}
 
-      <div style={{display: "flex",justifyContent: "center",gap: "12px", marginTop: "16px"}}>
+      <div className="noc-page-components-digit-camera-capture--style-6">
         {!error && <SubmitBar label={gpsReady ? t("CAPTURE_IMAGE") : t("WAITING_FOR_GPS")} onSubmit={capturePhoto} />}
         <SubmitBar label={t("CANCEL")} onSubmit={handleCancel} />
       </div>

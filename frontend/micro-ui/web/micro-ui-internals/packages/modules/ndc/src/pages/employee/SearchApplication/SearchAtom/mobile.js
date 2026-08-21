@@ -9,116 +9,116 @@ import {
   PopUp,
   DetailsCard,
   Loader,
-  Toast,
-} from "@mseva/digit-ui-react-components";
+  Toast } from
+"@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 const SearchApplicationMobileView = ({ SearchFormFieldsComponent, propsMobileInboxCards, isLoading, data, getRedirectionLink, onSubmit }) => {
-    const { t } = useTranslation();
-    const { handleSubmit, setValue, getValues } = useFormContext();
+  const { t } = useTranslation();
+  const { handleSubmit, setValue, getValues } = useFormContext();
 
-    // const {} = useFormContext()
+  // const {} = useFormContext()
 
-    function activateModal(state, action) {
-        switch (action.type) {
-        case "set":
-            return action.payload;
-        case "remove":
-            return false;
-        default:
-            break;        
-        }
+  function activateModal(state, action) {
+    switch (action.type) {
+      case "set":
+        return action.payload;
+      case "remove":
+        return false;
+      default:
+        break;
     }
+  }
 
-    const [currentlyActiveMobileModal, setActiveMobileModal] = useReducer(activateModal, false);
+  const [currentlyActiveMobileModal, setActiveMobileModal] = useReducer(activateModal, false);
 
-    const closeMobilePopupModal = () => {
-        setActiveMobileModal({ type: "remove" });
-    };
+  const closeMobilePopupModal = () => {
+    setActiveMobileModal({ type: "remove" });
+  };
 
-    const MobilePopUpCloseButton = () => (
-        <div className="InboxMobilePopupCloseButtonWrapper" onClick={closeMobilePopupModal}>
+  const MobilePopUpCloseButton = () =>
+  <div className="InboxMobilePopupCloseButtonWrapper" onClick={closeMobilePopupModal}>
         <CloseSvg />
-        </div>
-    );
+        </div>;
 
-    const MobileComponentDirectory = ({ currentlyActiveMobileModal, ...props }) => {
-        const { closeMobilePopupModal } = props;
-        switch (currentlyActiveMobileModal) {
-        case "SearchFormComponent":
-            return (
-            <SearchForm {...props}>
+
+  const MobileComponentDirectory = ({ currentlyActiveMobileModal, ...props }) => {
+    const { closeMobilePopupModal } = props;
+    switch (currentlyActiveMobileModal) {
+      case "SearchFormComponent":
+        return (
+          <SearchForm {...props}>
                 <MobilePopUpCloseButton />
                 <div className="MobilePopupHeadingWrapper">
                 <h2>{t("ACTION_TEST_SEARCH_NOC_APPLICATION")}:</h2>
                 </div>
                 <SearchFormFieldsComponent onSubmit={onSubmit} handleSubmit={handleSubmit} isMobileView={true} {...{ closeMobilePopupModal }} />
                 {/* <SearchField className="submit">
-                        <SubmitBar label={t("ES_COMMON_SEARCH")} submit form="search-form"/>
-                        <p onClick={onResetSearchForm}>{t(`ES_COMMON_CLEAR_ALL`)}</p>
-                    </SearchField> */}
-            </SearchForm>
-            );
-        default:
-            return <span></span>;
-        }
-    };
+                     <SubmitBar label={t("ES_COMMON_SEARCH")} submit form="search-form"/>
+                     <p onClick={onResetSearchForm}>{t(`ES_COMMON_CLEAR_ALL`)}</p>
+                 </SearchField> */}
+            </SearchForm>);
 
-    const CurrentMobileModalComponent = useCallback(
-        ({ currentlyActiveMobileModal, ...props }) =>
-        MobileComponentDirectory({ currentlyActiveMobileModal, ...props }),
-        [currentlyActiveMobileModal]
-    );
-
-    if (isLoading) {
-        return <Loader />;
+      default:
+        return <span></span>;
     }
-    return (
-        <React.Fragment>
+  };
+
+  const CurrentMobileModalComponent = useCallback(
+    ({ currentlyActiveMobileModal, ...props }) =>
+    MobileComponentDirectory({ currentlyActiveMobileModal, ...props }),
+    [currentlyActiveMobileModal]
+  );
+
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
+    <React.Fragment>
         <div className="searchBox">
             <SearchAction
-            text={t("ES_COMMON_SEARCH")}
-            handleActionClick={() => setActiveMobileModal({ type: "set", payload: "SearchFormComponent" })}
-            />
+          text={t("ES_COMMON_SEARCH")}
+          handleActionClick={() => setActiveMobileModal({ type: "set", payload: "SearchFormComponent" })} />
+
             {/* {isInboxLoading ? <Loader /> : <FilterAction text={t("ES_COMMON_FILTER")} handleActionClick={() => setActiveMobileModal({type:"set", payload:"FilterFormComponent"})}/>} */}
             {/* <SortAction text={t("ES_COMMON_SORT")} handleActionClick={() => setActiveMobileModal({type:"set", payload:"SortComponent"})}/> */}
         </div>
-        {currentlyActiveMobileModal ? (
-            <PopUp>
+        {currentlyActiveMobileModal ?
+      <PopUp>
             <CurrentMobileModalComponent
-                onSubmit={(data) => {
-                setActiveMobileModal({ type: "remove" });
-                onSubmit(data);
-                }}
-                handleSubmit={handleSubmit}
-                id="search-form"
-                className="rm-mb form-field-flex-one inboxPopupMobileWrapper"
-                {...{ currentlyActiveMobileModal, closeMobilePopupModal }}
-            />
-            </PopUp>
-        ) : null}
-        {data?.[0]?.display ? (
-            <Card style={{ marginTop: 20 }}>
-            {t(data?.[0]?.display)
-                .split("\\n")
-                .map((text, index) => (
-                <p key={index} style={{ textAlign: "center" }}>
+          onSubmit={(data) => {
+            setActiveMobileModal({ type: "remove" });
+            onSubmit(data);
+          }}
+          handleSubmit={handleSubmit}
+          id="search-form"
+          className="rm-mb form-field-flex-one inboxPopupMobileWrapper"
+          {...{ currentlyActiveMobileModal, closeMobilePopupModal }} />
+
+            </PopUp> :
+      null}
+        {data?.[0]?.display ?
+      <Card className="ndc-style-a26bda7d11">
+            {t(data?.[0]?.display).
+        split("\\n").
+        map((text, index) =>
+        <p key={index} className="ndc-style-91a87015f4">
                     {text}
                 </p>
-                ))}
-            </Card>
-        ) : (
-            <DetailsCard
-            {...{
-                data: propsMobileInboxCards,
-                isTwoDynamicPrefix: false,
-                linkPrefix: `/digit-ui/employee/noc/search/application-overview/`,
-                serviceRequestIdKey: t("NOC_APP_NO_LABEL"),
-            }}
-            />
         )}
-        </React.Fragment>
-    );
-}
+            </Card> :
 
-export default SearchApplicationMobileView
+      <DetailsCard
+        {...{
+          data: propsMobileInboxCards,
+          isTwoDynamicPrefix: false,
+          linkPrefix: `/digit-ui/employee/noc/search/application-overview/`,
+          serviceRequestIdKey: t("NOC_APP_NO_LABEL")
+        }} />
+
+      }
+        </React.Fragment>);
+
+};
+
+export default SearchApplicationMobileView;

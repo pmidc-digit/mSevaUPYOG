@@ -50,11 +50,11 @@ const SearchApplicationDesktopView = ({ columns, SearchFormFieldsComponent, onSu
       return <Loader />;
     } else {
       return data?.[0]?.display ? (
-        <Card style={{ marginTop: 20 }}>
+        <Card className="obps-pages-citizen-clusearch-application-search-atom-desktop--style-1">
           {t(data?.[0]?.display)
             .split("\\n")
             .map((text, index) => (
-              <p key={index} style={{ textAlign: "center" }}>
+              <p key={index} className="obps-pages-citizen-clusearch-application-search-atom-desktop--style-2">
                 {text}
               </p>
             ))}

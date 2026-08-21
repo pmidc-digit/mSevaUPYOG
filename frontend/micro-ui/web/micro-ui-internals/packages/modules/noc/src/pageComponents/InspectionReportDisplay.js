@@ -48,21 +48,11 @@ const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
     }, [report, t]);
 
 
-  
+
     if (!fiReport || fiReport.length === 0) {
       return <div>{t("NO_INSPECTION_REPORTS_AVAILABLE")}</div>;
     }
 
-    const srNoStyle = `
-    .noc-inspection-report table tbody tr td:first-child,
-    .noc-inspection-report table thead tr th:first-child {
-      width: 100px !important;
-      max-width: 100px !important;
-      min-width: 100px !important;
-      flex: 0 0 100px !important;
-    }
-  `;
-  
     return (
       <div>
         {/* {fiReport.map((report, index) => ( */}
@@ -84,7 +74,7 @@ const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
                 {report?.InspectionTime || t("NA")}
               </div>
             </LabelFieldPair>} */}
-        <div style={{ marginTop: "16px" }}>
+        <div className="noc-page-components-inspection-report-display--style-1">
           {/* <CardLabel className="card-label-smaller">{t("BPA_FI_CHECKLIST_LABEL")}:</CardLabel> */}
           {report.questionList && report.questionList.length > 0 ? (
             // report.questionList.map((questionItem, qIndex) => (
@@ -103,15 +93,14 @@ const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
             //   </div>
             // ))
             <>
-             <style>{srNoStyle}</style>
             <div className="noc-inspection-report">
               <Table
               className="customTable table-border-style"
               t={t}
               data={tableData}
               columns={[
-                { Header: t("SR_NO"), 
-                  Cell: ({ row }) => row.index + 1 
+                { Header: t("SR_NO"),
+                  Cell: ({ row }) => row.index + 1
                 },
                 {
                   Header: t("BPA_CHECK_LIST_DETAILS"),
@@ -131,7 +120,7 @@ const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
             />
             </div>
             </>
-            
+
           ) : (
             <div>{t("NA")}</div>
           )}
@@ -141,5 +130,5 @@ const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
       </div>
     );
   };
-  
+
   export default InspectionReportDisplay;

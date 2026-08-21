@@ -54,7 +54,7 @@ const CLUModal = ({
   const [error, setError] = useState(null);
   const [financialYears, setFinancialYears] = useState([]);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
- 
+
   const checkRole = action?.state?.actions;
 
   const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles))];
@@ -67,7 +67,7 @@ const CLUModal = ({
        //roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
       roles: allRolesNew?.map((role) => ({ code: role })),
       isActive: true,
-      zones: applicationData?.[0]?.cluDetails?.additionalDetails?.siteDetails?.zone?.code 
+      zones: applicationData?.[0]?.cluDetails?.additionalDetails?.siteDetails?.zone?.code
     },
     { enabled: !action?.isTerminateState }
   );
@@ -139,14 +139,14 @@ const CLUModal = ({
      // console.log("uuid here", uuid);
       setSelectedApprover({uuid});
     }
-   
+
   },[action]);
 
  // console.log("selectedApprover", selectedApprover);
 
   function submit(data) {
    // console.log("data here in Modal", data);
-    
+
     const mandatoryActions = [ "APPROVE","REJECT","SENDBACKTOPROFESSIONAL", "SENDBACKTOATP/AME","SENDBACKTOJC","SENDBACKTOMTP/ME","SENDBACKTOJE/BI","SENDBACKTODM","FORWARD_L1","FORWARD_L2", "FORWARD_L3", "FORWARD_L4", "FORWARD_FOR_APPROVAL"];
 
     let checkCommentsMandatory = mandatoryActions.includes(action?.action) || true;

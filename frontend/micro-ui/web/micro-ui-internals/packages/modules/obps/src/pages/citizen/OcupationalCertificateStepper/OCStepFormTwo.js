@@ -17,14 +17,14 @@ const OCStepFormTwo = ({ config, onGoNext, onBackClick }) => {
   const scrutinyDetails = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"))?.value || {};
     const [applicationNo, setApplicationNo] = useState(scrutinyDetails?.data?.applicationNo || "")
     const tenantId = localStorage.getItem("CITIZEN.CITY")
-  
-  
+
+
     useEffect(()=>{
       if(scrutinyDetails?.data?.applicationNo){
         setApplicationNo(scrutinyDetails?.data?.applicationNo)
       }
     },[scrutinyDetails?.data?.applicationNo])
-  
+
     useEffect(async () => {
       if(applicationNo){
         try{
@@ -51,7 +51,7 @@ const OCStepFormTwo = ({ config, onGoNext, onBackClick }) => {
   });
 
   function goNext(key, data) {
-    if(key !== "") 
+    if(key !== "")
       dispatch(UPDATE_OBPS_FORM(config.key, data));
     onGoNext();
   }

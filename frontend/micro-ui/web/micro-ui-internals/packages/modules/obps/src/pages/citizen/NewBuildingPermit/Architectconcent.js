@@ -197,7 +197,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
       <li style="margin-top:-5px;margin-bottom:-5px;">8. That above stated facts are true and all the requisite documents uploaded with this OBPAS plan have been signed by the owner/owners in my presence.</li>
     </ol>
 
-   
+
 
     <!-- Signature / details table (dotted cells like your doc) -->
     ${
@@ -311,7 +311,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
       <li style="margin-top:-5px;margin-bottom:-5px;">8. That above stated facts are true and all the requisite documents uploaded with this OBPAS plan have been signed by the owner/owners in my presence.</li>
     </ol>
 
-   
+
 
     <!-- Signature / details table (dotted cells like your doc) -->
     ${
@@ -583,12 +583,12 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
           <h3 style={modalStyles.subheading}>(For proposed Construction)</h3>
           <h3 style={modalStyles.subheading}>(By Architect/ Civil Engineer/ Building Designer and Supervisor)</h3> */}
 
-          <div style={{ whiteSpace: "pre-wrap", wordWrap: "break-word", textAlign: "justify", fontFamily: "Roboto, serif" }}>
+          <div className="obps-pages-citizen-new-building-permit-architectconcent--style-1">
             {/* {selfdeclarationform.split("\n").map((line, index, arr) => (
               <React.Fragment key={index}>
                 <div style={isRightAlignedLine(line) ? modalStyles.rightAlignedText : {}} dangerouslySetInnerHTML={{ __html: line || "&nbsp;" }} />
 
-            
+
                 {shouldAddSpacing(line, arr[index + 1]) && <div style={{ marginBottom: "2rem" }} />}
               </React.Fragment>
             ))} */}
@@ -600,7 +600,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
           ) : (
             <div>
               {isArchitectDeclared === "" && (
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
+                <div className="obps-pages-citizen-new-building-permit-architectconcent--style-2">
                   <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
                   <SubmitBar label={t("BPA_UPLOAD")} onSubmit={handleGetOTPClick} disabled={getOtpLoading} />
                 </div>
@@ -608,7 +608,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
               {/* uploadSelfDeclaration  - isUploading || isFileUploaded */}
 
               {!(isArchitectDeclared === "") && (
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
+                <div className="obps-pages-citizen-new-building-permit-architectconcent--style-3">
                   <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
                 </div>
               )}
@@ -619,8 +619,8 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
                   <CardLabel>{t("BPA_OTP")}</CardLabel>
                   <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
                   {setOtpLoading ? <Loader /> : <SubmitBar label={t("VERIFY_OTP")} onSubmit={uploadSelfDeclaration} />}
-                  {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
-                  {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
+                  {otpError && <CardLabel className="obps-pages-citizen-new-building-permit-architectconcent--style-4">{t(otpError)}</CardLabel>}
+                  {otpSuccess && <CardLabel className="obps-pages-citizen-new-building-permit-architectconcent--style-5">{t(otpSuccess)}</CardLabel>}
                 </React.Fragment>
               )}
             </div>

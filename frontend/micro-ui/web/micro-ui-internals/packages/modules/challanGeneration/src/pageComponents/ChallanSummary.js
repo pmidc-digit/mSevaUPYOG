@@ -9,8 +9,8 @@ import {
   SubmitBar,
   Menu,
   CardSectionHeader,
-  Row,
-} from "@mseva/digit-ui-react-components";
+  Row } from
+"@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { SET_ChallanApplication_STEP } from "../../redux/action/ChallanApplicationActions";
@@ -28,20 +28,20 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
   let user = Digit.UserService.getUser();
 
   const columns = [
-    { Header: `${t("CHB_HALL_NUMBER")}`, accessor: "communityHallCode" },
-    { Header: `${t("CHB_COMMUNITY_HALL_NAME")}`, accessor: "hallName" },
-    { Header: `${t("CHB_HALL_CODE")}`, accessor: "hallCode" },
-    { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
-    { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
-  ];
+  { Header: `${t("CHB_HALL_NUMBER")}`, accessor: "communityHallCode" },
+  { Header: `${t("CHB_COMMUNITY_HALL_NAME")}`, accessor: "hallName" },
+  { Header: `${t("CHB_HALL_CODE")}`, accessor: "hallCode" },
+  { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
+  { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" }];
+
 
   let docs = formData?.documents?.documents?.documents;
 
   const appId = formData?.apiData?.Applications?.[0]?.uuid || formData?.venueDetails?.[0]?.bookingNo;
 
-  const tenantId = window.location.href.includes("citizen")
-    ? window.localStorage.getItem("CITIZEN.CITY")
-    : window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.location.href.includes("citizen") ?
+  window.localStorage.getItem("CITIZEN.CITY") :
+  window.localStorage.getItem("Employee.tenant-id");
 
   const isCitizen = window.location.href.includes("citizen");
 
@@ -57,17 +57,17 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: appId,
-    moduleCode: "chb-services",
+    moduleCode: "chb-services"
   });
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
-    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    }) ||
-    workflowDetails?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    });
+  workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+    return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  }) ||
+  workflowDetails?.data?.nextActions?.filter((e) => {
+    return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  });
 
   function onActionSelect(action) {
     goNext(action);
@@ -75,21 +75,21 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
     // setSelectedAction(action);
   }
 
-  const renderLabel = (label, value) => (
-    <div className="bpa-summary-label-field-pair">
-      <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
+  const renderLabel = (label, value) =>
+  <div className="bpa-summary-label-field-pair">
+      <CardLabel className="bpa-summary-bold-label challan-generation-style-2f8e8ab1f2">{label}</CardLabel>
       <div>{t(value) || "NA"}</div>
-    </div>
-  );
+    </div>;
+
 
   const slotlistRows =
-    formData?.venueDetails?.[0]?.bookingSlotDetails?.map((slot) => ({
-      communityHallCode: `${t(formData?.venueDetails?.[0]?.communityHallCode)}`,
-      hallName: formData?.venueDetails?.[0]?.communityHallName,
-      hallCode: slot.hallCode + " - " + slot.capacity,
-      bookingDate: slot.bookingDate,
-      bookingStatus: `${t(slot.status)}`,
-    })) || [];
+  formData?.venueDetails?.[0]?.bookingSlotDetails?.map((slot) => ({
+    communityHallCode: `${t(formData?.venueDetails?.[0]?.communityHallCode)}`,
+    hallName: formData?.venueDetails?.[0]?.communityHallName,
+    hallCode: slot.hallCode + " - " + slot.capacity,
+    bookingDate: slot.bookingDate,
+    bookingStatus: `${t(slot.status)}`
+  })) || [];
 
   return (
     <div className="bpa-summary-page">
@@ -105,13 +105,6 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
         {renderLabel(t("PT_COMMON_COL_ADDRESS"), formData?.venueDetails?.[0]?.address?.addressLine1)}
       </div>
 
-      {/* <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
-      <StatusTable>
-        <Row className="border-none" label={t("CHB_SPECIAL_CATEGORY")} text={formData?.venueDetails?.[0]?.specialCategory?.category || t("CS_NA")} />
-        <Row className="border-none" label={t("CHB_PURPOSE")} text={formData?.venueDetails?.[0]?.purpose?.purpose || t("CS_NA")} />
-        <Row className="border-none" label={t("CHB_PURPOSE_DESCRIPTION")} text={formData?.venueDetails?.[0]?.purposeDescription || t("CS_NA")} />
-      </StatusTable> */}
-
       <div className="bpa-summary-section">
         <CardSubHeader>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
 
@@ -120,57 +113,40 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
         {renderLabel(t("CHB_PURPOSE_DESCRIPTION"), formData?.venueDetails?.[0]?.purposeDescription)}
       </div>
 
-      {/* Documents Section */}
-      {/* Documents Section */}
-      {/* <h2 style={headingStyle}>{t("Documents Uploaded")}</h2>
-      <div style={sectionStyle}>
-        {docs?.length > 0 ? (
-          <div style={documentsContainerStyle}>
-            {docs?.map((doc, index) => (
-              <div key={index} style={documentCardStyle}>
-                <CHBDocument value={docs} Code={doc?.documentType} index={index} formData={formData} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
-        )}
-      </div> */}
-
       <ApplicationTable
         t={t}
         data={slotlistRows}
         columns={columns}
-       
+
         className="challan-application-table"
         isPaginationRequired={false}
-        totalRecords={slotlistRows.length}
-      />
+        totalRecords={slotlistRows.length} />
 
-      <CardSubHeader className="challan-custom-header" >{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+
+      <CardSubHeader className="challan-custom-header">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
       <StatusTable>
         <Card>
-          {docs?.map((doc, index) => (
-            <React.Fragment>
+          {docs?.map((doc, index) =>
+          <React.Fragment>
               <div>
                 <ChallanDocument value={docs} Code={doc?.documentType} index={index} />
-                <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                <CardSectionHeader className="challan-generation-style-a55b17636b">{t(doc?.documentType)}</CardSectionHeader>
               </div>
             </React.Fragment>
-          ))}
+          )}
         </Card>
       </StatusTable>
 
       {/* Action Section */}
       <ActionBar>
         <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />
-        {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-          <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
-        ) : null}
+        {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ?
+        <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} /> :
+        null}
         <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
       </ActionBar>
-    </div>
-  );
+    </div>);
+
 }
 
 export default ChallanSummary;

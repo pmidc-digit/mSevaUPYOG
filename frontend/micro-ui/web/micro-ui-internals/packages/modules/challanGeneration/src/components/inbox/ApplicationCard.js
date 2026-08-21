@@ -22,7 +22,7 @@ export const ApplicationCard = ({
   sortParams,
   linkPrefix,
   removeParam,
-  filterComponent,
+  filterComponent
 }) => {
   const [type, setType] = useState(isSearch ? "SEARCH" : "");
   const [popup, setPopup] = useState(isSearch ? true : false);
@@ -51,17 +51,17 @@ export const ApplicationCard = ({
 
   let result;
   if (!data || data?.length === 0) {
-    result = (
-      <Card style={{ marginTop: 20 }}>
-        {t("CS_MYAPPLICATIONS_NO_APPLICATION")
-          .split("\\n")
-          .map((text, index) => (
-            <p key={index} style={{ textAlign: "center" }}>
+    result =
+    <Card className="challan-generation-style-5c357d95f7">
+        {t("CS_MYAPPLICATIONS_NO_APPLICATION").
+      split("\\n").
+      map((text, index) =>
+      <p key={index} className="challan-generation-style-dac4fe6c9b">
               {text}
             </p>
-          ))}
-      </Card>
-    );
+      )}
+      </Card>;
+
   } else if (data && data?.length > 0) {
     result = <DetailsCard data={data} serviceRequestIdKey={serviceRequestIdKey} linkPrefix={"/digit-ui/employee/challangeneration/application/"} />;
   }
@@ -69,76 +69,76 @@ export const ApplicationCard = ({
   return (
     <React.Fragment>
       <div className="searchBox">
-        {onSearch && (
-          <SearchAction
-            text="SEARCH"
-            handleActionClick={() => {
-              setType("SEARCH");
-              setSearchFilterParams({
-                businessService: [],
-                status: [],
-              });
-              setPopup(true);
-            }}
-          />
-        )}
-        {!isSearch && onFilterChange && (
-          <FilterAction
-            text="FILTER"
-            handleActionClick={() => {
-              setType("FILTER");
-              setSearchFilterParams({
-                businessService: [],
-                status: [],
-              });
-              setPopup(true);
-            }}
-          />
-        )}
-        {/* <FilterAction
-          text="SORT"
+        {onSearch &&
+        <SearchAction
+          text="SEARCH"
           handleActionClick={() => {
-            setType("SORT");
+            setType("SEARCH");
+            setSearchFilterParams({
+              businessService: [],
+              status: []
+            });
             setPopup(true);
-          }}
-        /> */}
+          }} />
+
+        }
+        {!isSearch && onFilterChange &&
+        <FilterAction
+          text="FILTER"
+          handleActionClick={() => {
+            setType("FILTER");
+            setSearchFilterParams({
+              businessService: [],
+              status: []
+            });
+            setPopup(true);
+          }} />
+
+        }
+        {/* <FilterAction
+           text="SORT"
+           handleActionClick={() => {
+             setType("SORT");
+             setPopup(true);
+           }}
+          /> */}
       </div>
       {result}
-      {popup && (
-        <PopUp>
-          {type === "FILTER" && (
-            <div className="popup-module">
+      {popup &&
+      <PopUp>
+          {type === "FILTER" &&
+        <div className="popup-module">
               {
-                <FilterComp
-                  onFilterChange={onSearchFilter}
-                  onRefresh={onFilterChange}
-                  Close={handlePopupClose}
-                  type="mobile"
-                  searchParams={searchFilterParams}
-                  defaultSearchParams={defaultSearchParams}
-                />
-              }
+          <FilterComp
+            onFilterChange={onSearchFilter}
+            onRefresh={onFilterChange}
+            Close={handlePopupClose}
+            type="mobile"
+            searchParams={searchFilterParams}
+            defaultSearchParams={defaultSearchParams} />
+
+          }
             </div>
-          )}
+        }
           {/* {type === "SORT" && (
-            <div className="popup-module">
-              {<SortBy type="mobile" sortParams={sortParams} onClose={handlePopupClose} type="mobile" onSort={onSort} />}
-            </div>
+           <div className="popup-module">
+             {<SortBy type="mobile" sortParams={sortParams} onClose={handlePopupClose} type="mobile" onSort={onSort} />}
+           </div>
           )} */}
-          {type === "SEARCH" && (
-            <div className="popup-module">
+          {type === "SEARCH" &&
+        <div className="popup-module">
               <SearchApplication
-                type="mobile"
-                onClose={handlePopupClose}
-                onSearch={onSearch}
-                isFstpOperator={isFstpOperator}
-                searchParams={searchFilterParams}
-                searchFields={searchFields}
-              />
+            type="mobile"
+            onClose={handlePopupClose}
+            onSearch={onSearch}
+            isFstpOperator={isFstpOperator}
+            searchParams={searchFilterParams}
+            searchFields={searchFields} />
+
             </div>
-          )}
+        }
         </PopUp>
-      )}
-    </React.Fragment>
-  );
+      }
+    </React.Fragment>);
+
 };

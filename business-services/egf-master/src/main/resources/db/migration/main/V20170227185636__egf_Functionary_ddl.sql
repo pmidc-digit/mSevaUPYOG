@@ -1,5 +1,5 @@
 
-Create table egf_functionary( 
+CREATE TABLE IF NOT EXISTS egf_functionary( 
 	id bigint,
 	code varchar(16) NOT NULL,
 	name varchar(256) NOT NULL,
@@ -11,4 +11,4 @@ Create table egf_functionary(
 		version bigint
 );
 alter table egf_functionary add constraint pk_egf_functionary primary key (id);
-create sequence seq_egf_functionary;
+CREATE SEQUENCE IF NOT EXISTS seq_egf_functionary;

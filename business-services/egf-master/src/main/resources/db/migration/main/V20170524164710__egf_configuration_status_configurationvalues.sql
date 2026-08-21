@@ -1,4 +1,4 @@
-CREATE TABLE egeis_egfStatus (
+CREATE TABLE IF NOT EXISTS egeis_egfStatus (
 	id BIGINT NOT NULL,
 	objectName CHARACTER VARYING(50) NOT NULL,
 	code CHARACTER VARYING(20) NOT NULL,
@@ -13,14 +13,14 @@ CREATE TABLE egeis_egfStatus (
 	CONSTRAINT pk_egeis_egfStatus PRIMARY KEY (id)
 );
 
-CREATE SEQUENCE seq_egeis_egfStatus
+CREATE SEQUENCE IF NOT EXISTS seq_egeis_egfStatus
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE egeis_egfConfiguration (
+CREATE TABLE IF NOT EXISTS egeis_egfConfiguration (
 	id BIGINT NOT NULL,
 	keyName CHARACTER VARYING(50) NOT NULL,
 	description CHARACTER VARYING(250),
@@ -34,14 +34,14 @@ CREATE TABLE egeis_egfConfiguration (
 	CONSTRAINT pk_egeis_egfConfiguration PRIMARY KEY (Id)
 );
 
-CREATE SEQUENCE seq_egeis_egfConfiguration
+CREATE SEQUENCE IF NOT EXISTS seq_egeis_egfConfiguration
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE egeis_egfConfigurationValues (
+CREATE TABLE IF NOT EXISTS egeis_egfConfigurationValues (
 	id BIGINT NOT NULL,
 	keyId BIGINT NOT NULL,
 	value CHARACTER VARYING(1000) NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE egeis_egfConfigurationValues (
 	CONSTRAINT pk_egeis_egfConfigurationValues PRIMARY KEY (Id)
 );
 
-CREATE SEQUENCE seq_egeis_egfConfigurationValues
+CREATE SEQUENCE IF NOT EXISTS seq_egeis_egfConfigurationValues
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE

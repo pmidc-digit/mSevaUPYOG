@@ -1,5 +1,5 @@
 
-Create table egf_bank( 
+CREATE TABLE IF NOT EXISTS egf_bank( 
 	id bigint,
 	code varchar(50) NOT NULL,
 	name varchar(100) NOT NULL,
@@ -13,4 +13,4 @@ Create table egf_bank(
 		version bigint
 );
 alter table egf_bank add constraint pk_egf_bank primary key (id);
-create sequence seq_egf_bank;
+CREATE SEQUENCE IF NOT EXISTS seq_egf_bank;

@@ -123,6 +123,8 @@ public class PGRConstants {
 	    // =========================
 	    // Citizen defaults
 	    // =========================
+    	public static final String DEFAULT_DESCRIPTION_NAME = "No Description/Title(Subject) Is Provided By User in PMIDC";
+
 	    public static final String DEFAULT_CITIZEN_NAME = "No Name Is Provided By User in PMIDC";
 	    public static final String DEFAULT_CITIZEN_EMAIL = "temp@example.com";
 	    public static final String DEFAULT_CITIZEN_MOBILE = "0000000000";

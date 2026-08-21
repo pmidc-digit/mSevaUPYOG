@@ -1,5 +1,5 @@
 
-Create table EGF_BUDGETGROUP( 
+CREATE TABLE IF NOT EXISTS EGF_BUDGETGROUP( 
 	id bigint,
 	name varchar(250),
 	description varchar(250),
@@ -19,4 +19,4 @@ alter table EGF_BUDGETGROUP add constraint pk_EGF_BUDGETGROUP primary key (id);
 alter table EGF_BUDGETGROUP add constraint fk_EGF_BUDGETGROUP_majorcode  FOREIGN KEY (majorcode) REFERENCES egf_chartofaccount(id);
 alter table EGF_BUDGETGROUP add constraint fk_EGF_BUDGETGROUP_hgfdsa  FOREIGN KEY (hgfdsa) REFERENCES egf_chartofaccount(id);
 alter table EGF_BUDGETGROUP add constraint fk_EGF_BUDGETGROUP_mincode  FOREIGN KEY (mincode) REFERENCES egf_chartofaccount(id);
-create sequence seq_EGF_BUDGETGROUP;
+CREATE SEQUENCE IF NOT EXISTS seq_EGF_BUDGETGROUP;

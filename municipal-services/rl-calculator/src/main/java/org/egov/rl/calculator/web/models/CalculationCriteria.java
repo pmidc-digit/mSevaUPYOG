@@ -58,7 +58,11 @@ public class CalculationCriteria   {
         @JsonProperty("lastBillingPeriod")
         @JsonAlias({"toDate", "arrearEndDate"})
         private Long lastBillingPeriod;
-        
+
+        @JsonProperty("lastPaidUpto")
+        @JsonAlias({"lastPaidOn", "lastPaidDate"})
+        private Long lastPaidUpto;
+
         @JsonProperty("financialYear")
         private String financialYear;
 }

@@ -1,5 +1,5 @@
 
-Create table egf_accountcodepurpose( 
+CREATE TABLE IF NOT EXISTS egf_accountcodepurpose( 
 	id bigint,
 	name varchar(256) NOT NULL,
 		createdby bigint,
@@ -9,4 +9,4 @@ Create table egf_accountcodepurpose(
 		version bigint
 );
 alter table egf_accountcodepurpose add constraint pk_egf_accountcodepurpose primary key (id);
-create sequence seq_egf_accountcodepurpose;
+CREATE SEQUENCE IF NOT EXISTS seq_egf_accountcodepurpose;

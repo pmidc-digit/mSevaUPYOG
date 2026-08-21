@@ -15,7 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 
 @Getter
 @Setter
@@ -25,37 +25,37 @@ import org.hibernate.validator.constraints.SafeHtml;
 public class LayoutSearchCriteria {
 
     @NotNull
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("tenantId")
     private String tenantId;
 
     @JsonProperty("ids")
     private List<String> ids;
 
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("applicationNo")
     private String applicationNo;
 
     @JsonProperty("applicationStatus")
     private String applicationStatus;
 
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("mobileNumber")
     private String mobileNumber;
 
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("CluNo")
     private String cluNo;
 
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("source")
     private String source;
 
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("cluType")
     private String cluType;
 
-    @SafeHtml
+    @SanitizeHtml
     @JsonProperty("sourceRefId")
     private String sourceRefId;
 
@@ -77,7 +77,7 @@ public class LayoutSearchCriteria {
     @JsonProperty("status")
     private List<String> status;
 
-    @SafeHtml
+    @SanitizeHtml
 //    @Size(min = 1, max = 15)
     @JsonProperty("vasikaNumber")
     private String vasikaNumber = null;

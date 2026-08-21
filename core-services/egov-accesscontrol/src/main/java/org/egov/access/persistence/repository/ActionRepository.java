@@ -691,7 +691,6 @@ private List<Action> convertToAction(ActionRequest actionRequest,JSONArray actio
 				ri.setDid("did");
 				ri.setKey("key");
 				ri.setMsgId("msgId");
-				ri.setRequesterId("requestId");
 		return ri;
 	}
 	

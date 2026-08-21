@@ -139,14 +139,14 @@ const LayoutMyApplications = ({ view }) => {
           {`${t("BPA_MY_APPLICATIONS_LABEL")}`}({total})
         </Header>
 
-        {list.length === 0 ? <Card style={{ textAlign: "center" }}>{t("NO_APPLICATIONS_MSG")}</Card> : null}
+        {list.length === 0 ? <Card className="obps-pages-citizen-applications-layout-my-applications--style-1">{t("NO_APPLICATIONS_MSG")}</Card> : null}
 
         {window.Digit.Utils.browser.isMobile() ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div className="obps-pages-citizen-applications-layout-my-applications--style-2">
             {list.map((application, index) => (
-              <Card key={index} style={{ padding: "12px", borderRadius: "8px", boxShadow: "0px 2px 6px rgba(0,0,0,0.1)" }}>
-                <h3 style={{ fontSize: "16px", marginBottom: "8px" }}>{application?.Applications?.applicationNo}</h3>
-                <p style={{ margin: "4px 0" }}>
+              <Card key={index} className="obps-pages-citizen-applications-layout-my-applications--style-3">
+                <h3 className="obps-pages-citizen-applications-layout-my-applications--style-4">{application?.Applications?.applicationNo}</h3>
+                <p className="obps-pages-citizen-applications-layout-my-applications--style-5">
                   <b>{t("Owner Name")}:</b>{" "}
                   {(() => {
                     const owners = application?.Applications?.owners || [];
@@ -155,7 +155,7 @@ const LayoutMyApplications = ({ view }) => {
                     return (isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name) || t("CS_NA");
                   })()}
                 </p>
-                <p style={{ margin: "4px 0" }}>
+                <p className="obps-pages-citizen-applications-layout-my-applications--style-6">
                   <b>{t("Status")}:</b>{" "}
                   {t(`BPA_STATUS_${application?.Applications?.applicationStatus || application?.Applications?.status || "-"}`) ||
                     application?.Applications?.applicationStatus ||

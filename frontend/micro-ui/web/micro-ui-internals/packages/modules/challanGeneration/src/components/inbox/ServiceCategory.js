@@ -11,7 +11,7 @@ const ServiceCategory = ({
   setselectedCategories,
   businessServices,
   clearCheck,
-  setclearCheck,
+  setclearCheck
 }) => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -38,9 +38,9 @@ const ServiceCategory = ({
   };
 
   OffenceTypeData?.Challan?.OffenceType &&
-    OffenceTypeData?.Challan?.OffenceType?.map((ob) => {
-      newMenu.push({ ...ob, i18nKey: ob.name });
-    });
+  OffenceTypeData?.Challan?.OffenceType?.map((ob) => {
+    newMenu.push({ ...ob, i18nKey: ob.name });
+  });
 
   // const onRemove = (category) => {
   //   console.log("newbussinessService", newbussinessService);
@@ -71,14 +71,14 @@ const ServiceCategory = ({
   let menuFirst = [];
   let meuSecond = [];
   Menu?.map((option, index) => {
-    if (index < 5) menuFirst.push(option);
-    else meuSecond.push(option);
+    if (index < 5) menuFirst.push(option);else
+    meuSecond.push(option);
   });
 
   // translateState(option)
   return (
     <div className="status-container">
-      <div className="filter-label" style={{ fontWeight: "normal" }}>
+      <div className="filter-label challan-generation-style-25d0175a45">
         {t("CHALLAN_OFFENCE_TYPE")}
       </div>
       <MultiSelectDropdown
@@ -94,7 +94,7 @@ const ServiceCategory = ({
 
           const selectedCategory = selectedItems?.map((item) => ({
             code: item?.[1]?.id,
-            i18nKey: item?.[1]?.i18nKey,
+            i18nKey: item?.[1]?.i18nKey
           }));
 
           console.log("selectedCategory", selectedCategory);
@@ -106,47 +106,47 @@ const ServiceCategory = ({
         }}
         optionsKey="i18nKey"
         t={t}
-        ServerStyle={{ width: "100%", overflowY: "scroll", overflowX: "hidden" }}
-      />
+        ServerStyle={{ width: "100%", overflowY: "scroll", overflowX: "hidden" }} />
+
       <div className="tag-container">
-        {selectedCategory?.map((value, index) => (
-          <div>
+        {selectedCategory?.map((value, index) =>
+        <div>
             <RemoveableTag key={index} text={`${t(value["i18nKey"])}`} onClick={() => onRemove(value)} />
           </div>
-        ))}
+        )}
       </div>
 
       {/* {menuFirst?.map((option, index) => {
-        return (
-          <ServiceCategoryCount
-            clearCheck={clearCheck}
-            setclearCheck={setclearCheck}
-            key={index}
-            onAssignmentChange={onAssignmentChange}
-            status={{ name: translateState(option), code: option.code }}
-            searchParams={searchParams}
-          />
-        );
-      })}
-      {moreStatus &&
-        meuSecond?.map((option, index) => {
-          return (
-            <ServiceCategoryCount
-              clearCheck={clearCheck}
-              setclearCheck={setclearCheck}
-              key={index}
-              onAssignmentChange={onAssignmentChange}
-              status={{ name: translateState(option), code: option.code }}
-              searchParams={searchParams}
-            />
-          );
+         return (
+           <ServiceCategoryCount
+             clearCheck={clearCheck}
+             setclearCheck={setclearCheck}
+             key={index}
+             onAssignmentChange={onAssignmentChange}
+             status={{ name: translateState(option), code: option.code }}
+             searchParams={searchParams}
+           />
+         );
         })}
-      <div className="filter-button" onClick={() => showMoreStatus(!moreStatus)}>
-        {" "}
-        {moreStatus ? t("UC_LESS_LABEL") : t("UC_MORE_LABEL")}{" "}
-      </div>  */}
-    </div>
-  );
+        {moreStatus &&
+         meuSecond?.map((option, index) => {
+           return (
+             <ServiceCategoryCount
+               clearCheck={clearCheck}
+               setclearCheck={setclearCheck}
+               key={index}
+               onAssignmentChange={onAssignmentChange}
+               status={{ name: translateState(option), code: option.code }}
+               searchParams={searchParams}
+             />
+           );
+         })}
+        <div className="filter-button" onClick={() => showMoreStatus(!moreStatus)}>
+         {" "}
+         {moreStatus ? t("UC_LESS_LABEL") : t("UC_MORE_LABEL")}{" "}
+        </div>  */}
+    </div>);
+
 };
 
 export default ServiceCategory;

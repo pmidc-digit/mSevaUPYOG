@@ -181,11 +181,11 @@ console.log("currentStep", currentStep, currentStepOBJ)
 ];
 
   return (
-    <div style={{display: "flex", flexDirection: "row"}}>
+    <div className="obps-pages-citizen-new-building-permit-index--style-1">
     {/* {!(window.location.href.includes("docs-required") || window.location.href.includes("acknowledgement")) && !isMobile &&<div>
     <Stepper stepsList={stepperConfig} step={currentStep} />
     </div>} */}
-    <div style={{flexGrow: 1}}>
+    <div className="obps-pages-citizen-new-building-permit-index--style-2">
     <Switch>
       {newConfig1.map((routeObj, index) => {
         const { component, texts, inputs, key } = routeObj;

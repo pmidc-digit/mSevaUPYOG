@@ -48,7 +48,7 @@ const CLUEsignResponse = () => {
 
       mutation.mutateAsync({ Clu: updatedApplication })
         .then(() => {
-         
+
           setLoading(false);
 
           // 🔹 Show success toast
@@ -101,10 +101,10 @@ const CLUEsignResponse = () => {
           message={t("NOC_APPLICATION_ESIGN_SUCCESS_HEADER")}
           info={t(`${stringReplaceAll(data?.resData?.Clu?.[0]?.cluType, ".", "_")}_APPLICATION_NUMBER`)}
           // successful={!!fileStoreId}
-          style={{ padding: "10px" }}
+          className="obps-pages-employee-cluesign-response--style-1"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
-        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+        <div className="obps-pages-employee-cluesign-response--style-2">
           {loading ? (
             <p>{t("E-Sign in Progress. Kindly Wait...")}</p>
           ) : (

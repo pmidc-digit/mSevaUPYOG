@@ -46,7 +46,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   if(isLoading) return <Loader />
 
   return (
-    <div className="checklist-document-table-wrapper" style={{ fontWeight: "bold" }}>
+    <div className="checklist-document-table-wrapper noc-components-nocdocument-checklist--style-1" >
       <table className="customTable table-border-style checklist-document-table">
         <thead>
           <tr>

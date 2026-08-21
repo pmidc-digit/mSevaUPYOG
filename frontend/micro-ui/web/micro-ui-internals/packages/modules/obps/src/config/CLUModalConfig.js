@@ -50,10 +50,10 @@ export const CLUModalConfig = ({
             populators: {
               name: "comments",
             },
-            validation: { 
-              pattern: getPattern("Comments"), 
-              required: true, 
-              title: t("WF_COMMON_COMMENTS_ERROR") 
+            validation: {
+              pattern: getPattern("Comments"),
+              required: true,
+              title: t("WF_COMMON_COMMENTS_ERROR")
             },
           },
 
@@ -70,7 +70,7 @@ export const CLUModalConfig = ({
                   title: t("WF_COMMON_COMMENTS_ERROR"),
                 },
           },
-            
+
 
           {
             label: t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),

@@ -30,7 +30,7 @@ import { LoaderNew } from "../components/LoaderNew";
 
 
 const Close = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF" style={{ width: "24px", height: "24px" }}>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF" className="obps-page-components-owner-details--style-1">
     <path d="M0 0h24v24H0V0z" fill="none" />
     <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
   </svg>
@@ -38,7 +38,7 @@ const Close = () => (
 
 const CloseBtn = (props) => {
   return (
-    <div className="icon-bg-secondary" onClick={props.onClick} style={{ cursor: "pointer" }}>
+    <div className="icon-bg-secondary obps-page-components-owner-details--style-2" onClick={props.onClick} >
       <Close />
     </div>
   );
@@ -127,7 +127,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         setLoader(true);
         const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
         setLoader(false);
-        if (response?.data?.files?.length > 0) {          
+        if (response?.data?.files?.length > 0) {
           setOwnerPhoto(index, response?.data?.files[0]?.fileStoreId);
           setPhotoUploadedFiles((prev) => ({ ...prev, [index]: response?.data?.files[0]?.fileStoreId }))
           setErrors((prev) => ({ ...prev, [`ownerPhoto_${index}`]: "" }))
@@ -316,11 +316,11 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     }
   }, [genderList])
 
-  useEffect(() => {    
+  useEffect(() => {
     window.scrollTo({
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
-    });      
+    });
     if(fields?.length === 1){
       setFeilds((prev) => [{...prev[0], isPrimaryOwner: true}]);
     }
@@ -489,7 +489,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       authorizationLetter: units[i].authorizationLetter,
       isPrimaryOwner: units[i].isPrimaryOwner,
       ownerId: units[i]?.ownerId || null
-    } 
+    }
     setMobileNumber(val)
     setFeilds(units)
     if (units[i].gender && units[i].mobileNumber && units[i].name) {
@@ -695,7 +695,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     //     }
     //   })
 
-      
+
 
     // if (foundMobileNo?.length > 0)
     //   setShowToast({
@@ -835,7 +835,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     console.log("userresponse", userresponse);
 
     let newFields = [...fields];
-    if (userresponse?.length > 0) {      
+    if (userresponse?.length > 0) {
       newFields = newFields?.map((item, index) => {
           if (userresponse?.[index]?.responseInfo?.status === "200") {
             console.log("userIndexedValue", userresponse?.[index]?.user?.[0], item)
@@ -868,7 +868,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
               ...item
             }
           }
-        })      
+        })
     }
 
     // if (ismultiple === true && fields.length === 1) {
@@ -991,9 +991,9 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           }
         } catch (e) {
           setError(t("CS_FILE_FETCH_ERROR"));
-        } 
+        }
       }
-  
+
   if(apiLoading) return (<Loader />)
 
   return (
@@ -1008,7 +1008,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         // forcedError={t(error)}
       >
         {!isLoading ? (
-          <div style={{ marginBottom: "10px" }}>
+          <div className="obps-page-components-owner-details--style-3">
             <div>
               <CardLabel>{`${t("BPA_TYPE_OF_OWNER_LABEL")} `}<span className="requiredField">*</span></CardLabel>
               <RadioButtons
@@ -1040,18 +1040,18 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                     <CardLabel className="bpa-owner-cardlabel-negative-margin">{`${t("CORE_COMMON_MOBILE_NUMBER")} `}<span className="requiredField">*</span></CardLabel>
                     <div className="bpa-owner-mobile-row">
                       <div className="bpa-owner-field-container">
-                          <MobileNumber 
-                            t={t} 
-                            isMandatory={false} 
-                            name="mobileNumber" 
-                            value={field.mobileNumber} 
+                          <MobileNumber
+                            t={t}
+                            isMandatory={false}
+                            name="mobileNumber"
+                            value={field.mobileNumber}
                             onChange={(val) => setMobileNo(index, val)}
                             maxLength={10}
                             disable={currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.mobileNumber ? true : false}
                           />
                           {currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.mobileNumber ? null : (
                             field?.additionalDetails?.isMobileVerified ? (
-                              <div className="bpa-owner-verified-container" style={{ display: "flex", alignItems: "center", padding: "0 8px", color: "green", fontWeight: "bold", gap: "4px" }}>
+                              <div className="bpa-owner-verified-container obps-page-components-owner-details--style-4" >
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                   <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="green"/>
                                 </svg>
@@ -1125,12 +1125,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       error={errors[`documentFile_${index}`]}
                       uploadMessage=""
                       accept=".pdf"
-                    />                    
+                    />
                     {/* {fields?.[index]?.additionalDetails?.documentFile ? <div>
                       <SubmitBar onSubmit={() => {routeTo(fields?.[index]?.additionalDetails?.documentFile)}} label={t("CS_VIEW_DOCUMENT")} />
                     </div> : null } */}
                     </div>
-                    <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf files are accepted with maximum size of 5 MB")}</p>  
+                    <p className="obps-page-components-owner-details--style-5">{t("Only .pdf files are accepted with maximum size of 5 MB")}</p>
                     <ErrorMessage message={errors[`documentFile_${index}`]} />
 
                     <CardLabel className="bpa-owner-cardlabel-margin-top">{`${t("Upload Owner Photo")} `}<span className="requiredField">*</span></CardLabel>
@@ -1148,15 +1148,15 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       error={errors[`ownerPhoto_${index}`]}
                       uploadMessage=""
                       accept="image/*"
-                    />                    
+                    />
                     {/* {fields?.[index]?.additionalDetails?.ownerPhoto ? <div>
                       <SubmitBar onSubmit={() => {routeTo(fields?.[index]?.additionalDetails?.ownerPhoto)}} label={t("CS_VIEW_DOCUMENT")} />
                     </div> : null } */}
                     </div>
-                    <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>  
+                    <p className="obps-page-components-owner-details--style-6">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
                     <ErrorMessage message={errors[`ownerPhoto_${index}`]} />
 
-                    <CardLabel style={{ marginTop: "30px" }}>{`${t("Date of Birth")} `}<span className="requiredField">*</span></CardLabel>
+                    <CardLabel className="obps-page-components-owner-details--style-7">{`${t("Date of Birth")} `}<span className="requiredField">*</span></CardLabel>
                     <TextInput className="bpa-owner-input-bg-fa" t={t} type={"date"} isMandatory={false} name="dob" disabled={currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.dob ? true : false} value={field.dob} onChange={(e) => setDateOfBirth(index, e)} />
                     <ErrorMessage message={errors[`dob_${index}`]} />
 

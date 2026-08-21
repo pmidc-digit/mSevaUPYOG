@@ -42,12 +42,12 @@ const CHBCancelBooking = ({ t, closeModal, actionCancelLabel, actionCancelOnSubm
             isDisabled={!agree}
             formId="modal-action"
         >
-            <Card style={{ boxShadow: "none" }}>
+            <Card className="gc-style-791d011e41">
                 <form onSubmit={handleSubmit(onSubmit)}>
                 <CheckBox
                     label={t("CHB_CONFIRM_CANCEL_BOOKING")}
                     onChange={setdeclarationhandler}
-                    style={{ height: "auto" }}
+                    className="gc-style-b0d8f74123"
                     />
                 </form>
             </Card>

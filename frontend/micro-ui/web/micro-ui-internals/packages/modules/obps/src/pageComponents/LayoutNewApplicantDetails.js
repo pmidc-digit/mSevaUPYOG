@@ -403,7 +403,7 @@ const LayoutNewApplicantDetails = (_props) => {
     {
       Header: t("EMAIL ID"),
       accessor: "emailId",
-      Cell: ({ value }) => value ? <span style={{ wordBreak: "break-all" }}>{value}</span> : t("CS_NA"),
+      Cell: ({ value }) => value ? <span className="obps-page-components-layout-new-applicant-details--style-1">{value}</span> : t("CS_NA"),
     },
     {
       Header: t("DOB"),
@@ -429,17 +429,17 @@ const LayoutNewApplicantDetails = (_props) => {
       Header: t(""),
       accessor: "actions",
       Cell: ({ row }) => (
-        <div style={{ display: "flex", gap: "12px", alignItems: "center", justifyContent: "center" }}>
+        <div className="obps-page-components-layout-new-applicant-details--style-2">
           <span
             onClick={() => handleEditOwner(row.original)}
-            style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+            className="obps-page-components-layout-new-applicant-details--style-3"
             title={t("Edit Owner")}
           >
             <EditIcon />
           </span>
           <span
             onClick={() => handleRemoveOwner(row.original)}
-            style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+            className="obps-page-components-layout-new-applicant-details--style-4"
             title={t("Remove Owner")}
           >
             <DeleteIcon fill="#a82227" />
@@ -452,12 +452,12 @@ const LayoutNewApplicantDetails = (_props) => {
   return (
     <React.Fragment>
       <div>
-        <CardSectionHeader className="card-section-header" style={{ marginBottom: "15px" }}>
+        <CardSectionHeader className="card-section-header obps-page-components-layout-new-applicant-details--style-5" >
           {t("BPA_APPLICANT_DETAILS")}
         </CardSectionHeader>
 
         {/* Owner Type Dropdown */}
-        <LabelFieldPair style={{ marginBottom: "15px" }}>
+        <LabelFieldPair className="obps-page-components-layout-new-applicant-details--style-6">
           <CardLabel className="card-label-smaller">
             {`${t("CLU_OWNER_TYPE_LABEL")}`} <span className="requiredField">*</span>
           </CardLabel>
@@ -486,8 +486,8 @@ const LayoutNewApplicantDetails = (_props) => {
 
         {/* Selected Owners Table */}
         {activeOwners.length > 0 && (
-          <div style={{ marginTop: "20px", marginBottom: "20px" }}>
-            <CardSectionHeader className="card-section-header" style={{ marginBottom: "10px", fontSize: "16px" }}>
+          <div className="obps-page-components-layout-new-applicant-details--style-7">
+            <CardSectionHeader className="card-section-header obps-page-components-layout-new-applicant-details--style-8" >
               {t("SELECTED OWNERS DETAILS")}
             </CardSectionHeader>
               <StatusTable>
@@ -508,32 +508,26 @@ const LayoutNewApplicantDetails = (_props) => {
 
         {/* Validation Errors for Owners */}
         {activeOwners.length === 0 && (
-          <CardLabelError style={{ color: "red", fontSize: "12px", marginTop: "10px" }}>
+          <CardLabelError className="obps-page-components-layout-new-applicant-details--style-9">
             {t("AT LEAST ONE OWNER REQUIRED")}
           </CardLabelError>
         )}
 
         {isMultiple && activeOwners.length === 1 && (
-          <CardLabelError style={{ color: "red", fontSize: "12px", marginTop: "10px" }}>
+          <CardLabelError className="obps-page-components-layout-new-applicant-details--style-10">
             {t("MULTIPLE OWNER TYPE REQUIRES MORE THAN ONE OWNER")}
           </CardLabelError>
         )}
 
         {/* Add Owner Button */}
         {!hideAddOwnerButton && (
-          <div style={{ marginTop: "20px" }}>
+          <div className="obps-page-components-layout-new-applicant-details--style-11">
             <div
               onClick={() => {
                 setEditingOwner(null);
                 setShowModal(true);
               }}
-              style={{
-                color: "#a82227",
-                fontWeight: "600",
-                fontSize: "14px",
-                cursor: "pointer",
-                display: "inline-block",
-              }}
+              className="obps-page-components-layout-new-applicant-details--style-12"
             >
               + {t("Add Owner")}
             </div>

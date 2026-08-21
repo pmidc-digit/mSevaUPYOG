@@ -285,12 +285,12 @@ const getChecklistDetails = (appData, checklistData, t) => {
   const checkList = checklistData?.checkList || [];
   const documents = appData?.documents || [];
   const sortedDocs = documents?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
-  
+
   const orderMap = {};
     sortedDocs?.forEach((doc, idx) => {
       orderMap[doc.uuid] = doc.order || idx + 1; // fallback to index
     });
-  
+
   const sortedChecklist = [...checkList].sort(
       (a, b) => (orderMap[a.documentuid] || 0) - (orderMap[b.documentuid] || 0)
     );
@@ -305,7 +305,7 @@ const getChecklistDetails = (appData, checklistData, t) => {
       );
       const docName = matchedDoc
         ? t(matchedDoc?.documentType?.replace(/\./g, "_")) || matchedDoc?.documentType
-        : item?.documentuid; 
+        : item?.documentuid;
 
       return {
         title: `${index + 1}. ${docName}`,

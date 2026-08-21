@@ -12,8 +12,8 @@ import {
   TextInput,
   ActionBar,
   SubmitBar,
-  LabelFieldPair,
-} from "@mseva/digit-ui-react-components";
+  LabelFieldPair } from
+"@mseva/digit-ui-react-components";
 
 import { useTranslation } from "react-i18next";
 
@@ -32,11 +32,11 @@ export const FormComposer = forwardRef((props, ref) => {
   /*  {
     setValue("ADVT_HOARDINGS_CGST", `10`);
   }
-
-  useEffect(() => {
+   useEffect(() => {
     setValue("ADVT_HOARDINGS_CGST", `10`);
   }, ["ADVT_HOARDINGS_CGST"]);
- */
+  */
+
   useEffect(() => {
     //setFormData && setValue("ADVT_HOARDINGS_CGST", `${setFormData["ADVT_HOARDINGS_CGST"]}`);
     if (setFormData) {
@@ -70,8 +70,8 @@ export const FormComposer = forwardRef((props, ref) => {
           <div className="field-container">
             {populators.componentInFront ? populators.componentInFront : null}
             <TextInput className="field desktop-w-full" {...populators} inputRef={register(populators.validation)} />
-          </div>
-        );
+          </div>);
+
       case "textarea":
         return <TextArea className="field desktop-w-full" name={populators.name || ""} {...populators} inputRef={register(populators.validation)} />;
       case "custom":
@@ -83,37 +83,37 @@ export const FormComposer = forwardRef((props, ref) => {
 
   const formFields = useMemo(
     () =>
-      props.config?.map((section, index, array) => {
-        return (
-          <React.Fragment key={index}>
+    props.config?.map((section, index, array) => {
+      return (
+        <React.Fragment key={index}>
             <CardSectionHeader>{section.head}</CardSectionHeader>
             {section.body.map((field, index) => {
-              return (
-                <React.Fragment key={index}>
+            return (
+              <React.Fragment key={index}>
                   {/* {errors[field.populators.name] && (field.populators?.validate ? errors[field.populators.validate] : true) && (
-                    <CardLabelError>{field.populators.error}</CardLabelError>
+                   <CardLabelError>{field.populators.error}</CardLabelError>
                   )} */}
-                  {field.label ? (
-                    <LabelFieldPair>
+                  {field.label ?
+                <LabelFieldPair>
                       <CardLabel>
                         {field.label}
                         {field.isMandatory ? " * " : null}
                       </CardLabel>
                       <div className="field">{fieldSelector(field.type, field.populators)}</div>
-                    </LabelFieldPair>
-                  ) : (
-                    <div className="field">{fieldSelector(field.type, field.populators)}</div>
-                  )}
-                   {props.errors[field.populators.name] && (field.populators?.validate ? errors[field.populators.validate] : true) && (
-                    <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>{field.populators.error}</CardLabelError>
-                  )}
-                </React.Fragment>
-              );
-            })}
+                    </LabelFieldPair> :
+
+                <div className="field">{fieldSelector(field.type, field.populators)}</div>
+                }
+                   {props.errors[field.populators.name] && (field.populators?.validate ? errors[field.populators.validate] : true) &&
+                <CardLabelError className="ral-style-fcab9f05b8">{field.populators.error}</CardLabelError>
+                }
+                </React.Fragment>);
+
+          })}
             {array.length - 1 === index ? null : <BreakLine />}
-          </React.Fragment>
-        );
-      }),
+          </React.Fragment>);
+
+    }),
     [props.config, errors]
   );
 
@@ -129,6 +129,6 @@ export const FormComposer = forwardRef((props, ref) => {
           <SubmitBar disabled={isDisabled} label={t(props.label)} submit="submit" />
         </ActionBar>
       </Card>
-    </form>
-  );
+    </form>);
+
 });

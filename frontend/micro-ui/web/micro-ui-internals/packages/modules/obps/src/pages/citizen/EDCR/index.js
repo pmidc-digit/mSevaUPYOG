@@ -15,7 +15,7 @@ const Close = () => (
 
 const CloseBtn = (props) => {
     return (
-        <div className="icon-bg-secondary" onClick={props.onClick} style={{ backgroundColor: "#FFFFFF" }}>
+        <div className="icon-bg-secondary obps-pages-citizen-edcr-index--style-1" onClick={props.onClick} >
             <Close />
         </div>
     );
@@ -179,7 +179,7 @@ const CreateEDCR = ({ parentRoute }) => {
         setParams({ data: e?.response?.data?.errorCode ? e?.response?.data?.errorCode : "BPA_INTERNAL_SERVER_ERROR", type: "ERROR" });
         setIsSubmitBtnDisable(false);
         setIsShowToast({ key: true, label: e?.response?.data?.errorCode ? e?.response?.data?.errorCode : "BPA_INTERNAL_SERVER_ERROR" });
-        } 
+        }
       });
   }
 
@@ -231,7 +231,7 @@ const CreateEDCR = ({ parentRoute }) => {
                 actionCancelOnSubmit={closeModal}
                 formId="modal-action"
                 popupStyles={{ width: "750px", overflow: "auto" }}
-                style={{ minHeight: "45px", height: "auto", width: "160px" }}
+                className="obps-pages-citizen-edcr-index--style-2"
                 hideSubmit={true}
                 headerBarMainStyle={{ margin: "0px", height: "35px" }}
             >

@@ -22,15 +22,15 @@ const NOCImageView = ({ownerFileStoreId, ownerName}) => {
       }
     })();
   }, [ownerFileStoreId]);
-  
+
 return (
-  <div style={{ padding: "20px 0px" }}>
-    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px", padding: "0px 20px" }}>
-      <div style={{ textAlign: "center" }}>
+  <div className="noc-page-components-nocimage-view--style-1">
+    <div className="noc-page-components-nocimage-view--style-2">
+      <div className="noc-page-components-nocimage-view--style-3">
         <img
           src={imageCitizenZoom}
           alt="Primary Owner Photo"
-          style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "10%", cursor: imageCitizenZoom ? "pointer" : "default" }}
+          className={imageCitizenZoom ? "noc-image-view__image noc-image-view__image--clickable" : "noc-image-view__image"}
           onClick={() => imageCitizenZoom && setImageZoom(imageCitizenZoom)}
         />
         <div> <h2>{ownerName}</h2></div>

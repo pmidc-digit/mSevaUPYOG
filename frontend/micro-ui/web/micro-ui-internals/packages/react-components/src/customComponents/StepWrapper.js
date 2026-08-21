@@ -93,7 +93,9 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
     transform: "translateX(-50%)",
     borderRadius: "2px",
   };
-  const isMobile = window.Digit.Utils.browser.isMobile();
+  // The user agent can report a mobile device even when the app is rendered in
+  // a wide desktop viewport. The stepper layout must follow available width.
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
   const totalSteps = stepsList.length;
 
   // Mobile-only styles

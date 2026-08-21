@@ -24,9 +24,9 @@ const CLUImageView = ({ ownerFileStoreId, ownerName }) => {
   }, [ownerFileStoreId]);
 
   return (
-    <div style={{ padding: "20px 0px" }}>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px", padding: "0px 20px" }}>
-        <div style={{ textAlign: "center" }}>
+    <div className="obps-page-components-cluimge-view--style-1">
+      <div className="obps-page-components-cluimge-view--style-2">
+        <div className="obps-page-components-cluimge-view--style-3">
           <img
             src={imageCitizenZoom}
             alt="Primary Owner Photo"

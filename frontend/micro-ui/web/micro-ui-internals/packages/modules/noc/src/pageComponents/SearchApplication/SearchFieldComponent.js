@@ -19,15 +19,15 @@ const SearchFormFieldsComponent = (props) => {
     }, true);
     props?.isMobileView ? props.closeMobilePopupModal() : null;
   }
-  
-  
+
+
   return (
     <>
       <SearchField>
         <label>{t("NOC_APPLICATION_NUMBER")}</label>
         <TextInput name="applicationNo" inputRef={register({})} />
       </SearchField>
-      
+
       <SearchField>
         <label>{t("NOC_APPLICANT_MOBILE_NO_LABEL")}</label>
         <TextInput
@@ -49,18 +49,18 @@ const SearchFormFieldsComponent = (props) => {
           })}
           type="number"
           componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
-         
+
           //maxlength={10}
         />
-       
+
           <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
-     
+
       </SearchField>
 
       <SearchField className="submit">
         <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
         <p
-          style={{ marginTop: "24px" }}
+          className="noc-page-components-search-application-search-field-component--style-1"
           onClick={() => {
             reset({
               applicationNo: "",

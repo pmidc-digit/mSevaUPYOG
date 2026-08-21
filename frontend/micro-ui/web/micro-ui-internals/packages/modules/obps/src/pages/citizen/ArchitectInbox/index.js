@@ -167,4 +167,4 @@ const Inbox = ({ tenants, parentRoute }) => {
   );
 }
 
-export default Inbox; 
+export default Inbox;

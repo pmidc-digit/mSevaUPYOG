@@ -32,14 +32,14 @@ const PTRWFApplicationTimeline = (props) => {
     tenantId: props.application?.tenantId,
     id: props.application?.applicationNumber,
     moduleCode: "ptr",
-    role: "EMPLOYEE",
+    role: "EMPLOYEE"
     // config: { staleTime: 0, refetchOnMount: "always" },
   });
 
   console.log("workflowDetails", workflowDetails);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
-    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
+  workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
@@ -62,34 +62,34 @@ const PTRWFApplicationTimeline = (props) => {
     }
     switch (nextAction?.action) {
       case "PAY":
-        return props?.userType === "citizen" ? (
-          <div style={{ marginTop: "1em", bottom: "0px", width: "100%", marginBottom: "1.2em" }}>
+        return props?.userType === "citizen" ?
+        <div className="ptr-style-ad482725f4">
             <Link
-              to={{
-                // history.push(`/digit-ui/employee/payment/collect/PTR/${appNo}/${tenantId}?tenantId=${tenantId}`);
-                // pathname: `/digit-ui/employee/payment/collect/pet-services/${props?.application?.applicationNumber}/${tenantId}`,
-                // pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${props?.application?.applicationNumber}`,
+            to={{
+              // history.push(`/digit-ui/employee/payment/collect/PTR/${appNo}/${tenantId}?tenantId=${tenantId}`);
+              // pathname: `/digit-ui/employee/payment/collect/pet-services/${props?.application?.applicationNumber}/${tenantId}`,
+              // pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${props?.application?.applicationNumber}`,
 
-                pathname: isCitizen
-                  ? `/digit-ui/citizen/payment/collect/pet-services/${props?.application?.applicationNumber}/${tenantId}?tenantId=${tenantId}`
-                  : `/digit-ui/employee/payment/collect/pet-services/${props?.application?.applicationNumber}/${tenantId}?tenantId=${tenantId}`,
+              pathname: isCitizen ?
+              `/digit-ui/citizen/payment/collect/pet-services/${props?.application?.applicationNumber}/${tenantId}?tenantId=${tenantId}` :
+              `/digit-ui/employee/payment/collect/pet-services/${props?.application?.applicationNumber}/${tenantId}?tenantId=${tenantId}`,
 
-                state: { tenantId: props.application.tenantId, applicationNumber: props?.application?.applicationNumber },
-              }}
-            >
+              state: { tenantId: props.application.tenantId, applicationNumber: props?.application?.applicationNumber }
+            }}>
+
               <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} />
             </Link>
-          </div>
-        ) : null;
+          </div> :
+        null;
 
       case "SUBMIT_FEEDBACK":
         return (
-          <div style={{ marginTop: "24px" }}>
+          <div className="ptr-style-49fcd855ce">
             <Link to={`/digit-ui/citizen/fsm/rate/${props.id}`}>
               <SubmitBar label={t("CS_APPLICATION_DETAILS_RATE")} />
             </Link>
-          </div>
-        );
+          </div>);
+
       default:
         return null;
     }
@@ -99,12 +99,12 @@ const PTRWFApplicationTimeline = (props) => {
   const menuRef = useRef();
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
-    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    }) ||
-    workflowDetails?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    });
+  workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+    return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  }) ||
+  workflowDetails?.data?.nextActions?.filter((e) => {
+    return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  });
 
   console.log("check actions", actions);
 
@@ -130,7 +130,7 @@ const PTRWFApplicationTimeline = (props) => {
 
   function onActionSelect(action) {
     const payload = {
-      action: [action],
+      action: [action]
     };
 
     console.log("action", action);
@@ -159,7 +159,7 @@ const PTRWFApplicationTimeline = (props) => {
 
     const updatedApplicant = {
       ...payloadData,
-      workflow: {},
+      workflow: {}
     };
 
     const filtData = data?.Licenses?.[0];
@@ -168,7 +168,7 @@ const PTRWFApplicationTimeline = (props) => {
       action: filtData.action,
       assignes: filtData.action === "SENDBACKTOCITIZEN" ? [props.application?.auditDetails?.createdBy] : filtData?.assignee,
       comments: filtData?.comment,
-      documents: filtData?.wfDocuments ? filtData?.wfDocuments : null,
+      documents: filtData?.wfDocuments ? filtData?.wfDocuments : null
     };
     // if (!filtData?.assignee && filtData.action == "FORWARD") {
     //   // setShowToast(true);
@@ -177,12 +177,12 @@ const PTRWFApplicationTimeline = (props) => {
     //   return;
     // }
     const finalPayload = {
-      PetRegistrationApplications: [updatedApplicant],
+      PetRegistrationApplications: [updatedApplicant]
     };
     try {
       const response = await Digit.PTRService.update({
         // tenantId,
-        ...finalPayload,
+        ...finalPayload
       });
 
       if (response?.ResponseInfo?.status == "successful") {
@@ -265,11 +265,11 @@ const PTRWFApplicationTimeline = (props) => {
       return <PTRWFCaption data={caption} />;
     }
   };
-
-  const OpenImage = (imageSource, index, thumbnailsToShow) => {
+   const OpenImage = (imageSource, index, thumbnailsToShow) => {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   };
   =================================================================== */
+
 
   const { data } = Digit.Hooks.useCustomMDMS(tenantId, "PetService", [{ name: "ApplicationType" }]);
   const checkRenewTime = data?.PetService?.ApplicationType?.filter((item) => item.code == "RENEWAPPLICATION");
@@ -289,113 +289,112 @@ const PTRWFApplicationTimeline = (props) => {
     <React.Fragment>
       <Fragment>
         {/* ===== OLD TIMELINE IMPLEMENTATION (Commented out for reference) ===== */}
-        {/* 
-        {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
-          <CheckPoint
-            isCompleted={true}
-            label={t(`${workflowDetails?.data?.timeline[0]?.state}`)}
-            customChild={getTimelineCaptions(workflowDetails?.data?.timeline[0])}
-          />
-        ) : (
-          <ConnectingCheckPoints>
-            {workflowDetails?.data?.timeline &&
-              workflowDetails?.data?.timeline.map((checkpoint, index, arr) => {
-                return (
-                  <React.Fragment key={index}>
-                    <CheckPoint
-                      keyValue={index}
-                      isCompleted={index === 0}
-                      label={t(`${checkpoint.state}`)}
-                      customChild={getTimelineCaptions(checkpoint)}
-                    />
-                  </React.Fragment>
-                );
-              })}
-          </ConnectingCheckPoints>
-        )} 
-        */}
+        {/*
+          {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
+           <CheckPoint
+             isCompleted={true}
+             label={t(`${workflowDetails?.data?.timeline[0]?.state}`)}
+             customChild={getTimelineCaptions(workflowDetails?.data?.timeline[0])}
+           />
+          ) : (
+           <ConnectingCheckPoints>
+             {workflowDetails?.data?.timeline &&
+               workflowDetails?.data?.timeline.map((checkpoint, index, arr) => {
+                 return (
+                   <React.Fragment key={index}>
+                     <CheckPoint
+                       keyValue={index}
+                       isCompleted={index === 0}
+                       label={t(`${checkpoint.state}`)}
+                       customChild={getTimelineCaptions(checkpoint)}
+                     />
+                   </React.Fragment>
+                 );
+               })}
+           </ConnectingCheckPoints>
+          )}
+          */}
         {/* =================================================================== */}
 
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
         {(props.application?.status != "CITIZENACTIONREQUIRED" || props.application?.status != "INITIATED") &&
-          actions &&
-          actions.length > 0 &&
-          actions[0]?.action != "PAY" &&
-          !isCitizen && (
-            <ActionBar>
-              {displayMenu ? (
-                <Menu
-                  localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
-                  options={actions}
-                  optionKey={"action"}
-                  t={t}
-                  onSelect={onActionSelect}
-                  // style={MenuStyle}
-                />
-              ) : null}
+        actions &&
+        actions.length > 0 &&
+        actions[0]?.action != "PAY" &&
+        !isCitizen &&
+        <ActionBar>
+              {displayMenu ?
+          <Menu
+            localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
+            options={actions}
+            optionKey={"action"}
+            t={t}
+            onSelect={onActionSelect}
+          /> :
+          null}
               <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
             </ActionBar>
-          )}
+        }
 
-        {(props.application?.status == "CITIZENACTIONREQUIRED" || props.application?.status == "INITIATED") && !isCitizen && (
-          <ActionBar>
+        {(props.application?.status == "CITIZENACTIONREQUIRED" || props.application?.status == "INITIATED") && !isCitizen &&
+        <ActionBar>
             <SubmitBar
-              label={t("COMMON_EDIT")}
-              onSubmit={() => {
-                history.push({
-                  pathname: "/digit-ui/employee/ptr/petservice/new-application",
-                  state: {
-                    applicationNumber: props?.application?.applicationNumber,
-                  },
-                });
-              }}
-            />
-          </ActionBar>
-        )}
+            label={t("COMMON_EDIT")}
+            onSubmit={() => {
+              history.push({
+                pathname: "/digit-ui/employee/ptr/petservice/new-application",
+                state: {
+                  applicationNumber: props?.application?.applicationNumber
+                }
+              });
+            }} />
 
-        {checkRenewal && checkDuration && props.application?.status == "APPROVED" && !isCitizen && (
-          <ActionBar>
+          </ActionBar>
+        }
+
+        {checkRenewal && checkDuration && props.application?.status == "APPROVED" && !isCitizen &&
+        <ActionBar>
             <SubmitBar
-              label={t("PT_RENEW_HEADER")}
-              onSubmit={() => {
-                history.push({
-                  pathname: "/digit-ui/employee/ptr/petservice/new-application",
-                  state: {
-                    applicationNumber: props?.application?.applicationNumber,
-                    status: "renew-application",
-                  },
-                });
-              }}
-            />
-          </ActionBar>
-        )}
+            label={t("PT_RENEW_HEADER")}
+            onSubmit={() => {
+              history.push({
+                pathname: "/digit-ui/employee/ptr/petservice/new-application",
+                state: {
+                  applicationNumber: props?.application?.applicationNumber,
+                  status: "renew-application"
+                }
+              });
+            }} />
 
-        {showModal ? (
-          <PTRModal
-            t={t}
-            action={selectedAction}
-            tenantId={tenantId}
-            state={state}
-            id={props.application?.applicationNumber}
-            applicationDetails={props.application}
-            closeModal={closeModal}
-            submitAction={submitAction}
-            actionData={workflowDetails?.data?.timeline}
-            workflowDetails={workflowDetails?.data}
-            showToast={showToast}
-            closeToast={closeToast}
-            getEmployees={getEmployees}
-            errors={error}
-            setShowToast={setShowToast}
-          />
-        ) : null}
+          </ActionBar>
+        }
+
+        {showModal ?
+        <PTRModal
+          t={t}
+          action={selectedAction}
+          tenantId={tenantId}
+          state={state}
+          id={props.application?.applicationNumber}
+          applicationDetails={props.application}
+          closeModal={closeModal}
+          submitAction={submitAction}
+          actionData={workflowDetails?.data?.timeline}
+          workflowDetails={workflowDetails?.data}
+          showToast={showToast}
+          closeToast={closeToast}
+          getEmployees={getEmployees}
+          errors={error}
+          setShowToast={setShowToast} /> :
+
+        null}
       </Fragment>
       {workflowDetails?.data && showNextActions(workflowDetails?.data?.actionState?.nextActions)}
       {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
       {getLoader && <Loader page={true} />}
-    </React.Fragment>
-  );
+    </React.Fragment>);
+
 };
 
 export default PTRWFApplicationTimeline;

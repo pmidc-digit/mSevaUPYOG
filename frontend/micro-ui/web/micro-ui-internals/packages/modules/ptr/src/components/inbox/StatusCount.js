@@ -14,7 +14,7 @@ const StatusCount = ({ status, searchParams, onAssignmentChange, statusMap, busi
       checked={(() => {
         return searchParams?.applicationStatus?.some((e) => e.uuid === status.uuid);
       })()}
-      label={`${status.name} 
+      label={`${status.name}
       (${statusMap?.find((e) => e.statusid === status.uuid)?.count || "-"})`}
     />
   );

@@ -12,7 +12,7 @@ const ADSCard = () => {
      tenantId: Digit.ULBService.getCurrentTenantId(),
      ModuleCode: "ADS",
      filters: { limit: 10, offset: 0, services: ["ads"] }, //edited this
- 
+
      config: {
        select: (data) => {
          return {tSotalCount:data?.totalCount,nearingSlaCount:data?.nearingSlaCount} || "-";
@@ -20,7 +20,7 @@ const ADSCard = () => {
        enabled: Digit.Utils.ptAccess(),
      },
    });
- 
+
    useEffect(() => {
      if (!isFetching && isSuccess) setTotal(data);
    }, [isFetching]);

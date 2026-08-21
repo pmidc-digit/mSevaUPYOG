@@ -40,7 +40,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, currentStepD
   //const { isLoading, data: citymodules } = Digit.Hooks.obps.useMDMS(stateId, "tenant", ["citymodule"]);
   let [cities, setcitiesopetions] = useState(allCities);
   let validation = {};
-  let cityCode = formData?.data?.edcrDetails?.tenantId;  
+  let cityCode = formData?.data?.edcrDetails?.tenantId;
 // const [sitePhotoGraph, setSitePhotoGraph] = useState()
 const [uploadedFile, setUploadedFile] = useState(() => {
   return currentStepData?.createdResponse?.documents?.find((item) => item?.documentType === "SITEPHOTOGRAPH_ONE")?.fileStoreId || null;
@@ -120,7 +120,7 @@ const geoLocations = useMemo(() => {
 
       setcitiesopetions(filteredCities);
 
-      if (/^[1-9][0-9]{6}$/.test(pincode)) {        
+      if (/^[1-9][0-9]{6}$/.test(pincode)) {
         if (filteredCities?.length === 0) {
           setPinerror("BPA_PIN_NOT_VALID_ERROR");
         } else if (filteredCities.length === 1) {
@@ -271,7 +271,7 @@ useEffect(() => {
   //   })
 
   //   console.log("LocationAPI", address, documents);
-    
+
   //   // onSelect(config.key, address);
   // };
 
@@ -572,12 +572,12 @@ function extractGeoLocation(file) {
       setIsUploadingTwo(false)
     }
   }
-  
+
 
   if(apiLoading || isLoading || isUploading || isUploadingTwo || isFileLoading || isFileLoadingTwo) return <LoaderNew page={true} />
 
 return (
-  <div >    
+  <div >
 
     {!isOpen && (
       <FormStep
@@ -587,7 +587,7 @@ return (
         isDisabled={!selectedCity || Pinerror}
         isMultipleAllow={true}
         // forcedError={t(Pinerror)}
-      >       
+      >
 
         {/* Pincode Section */}
         <div>
@@ -603,9 +603,9 @@ return (
               value={pincode}
               disabled={currentStepData?.PlotDetails?.landInfo?.address?.pincode ? true : false}
             />
-          )}          
+          )}
         </div>
-       
+
 
         {/* City Section */}
         <div>
@@ -614,7 +614,7 @@ return (
             <TextInput
               value={selectedCity?.name || ""}
               disable={true}
-             
+
             />
           )}
         </div>
@@ -627,7 +627,7 @@ return (
             <span className={"form-pt-dropdown-only"}>
               {/* <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")}*`}</CardLabel> */}
               <RadioOrSelect
-               
+
                 isMandatory={false}
                 options={localities.sort((a, b) => a.name.localeCompare(b.name))}
                 selectedOption={selectedLocality}
@@ -643,7 +643,7 @@ return (
             <span className={"form-pt-dropdown-only"}>
               {/* <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")} `}<span className="requiredField">*</span></CardLabel> */}
               <TextInput
-               
+
                 isMandatory={false}
                 value={propertyData?.address?.locality?.name}
                 optionKey="i18nkey"
@@ -672,22 +672,22 @@ return (
             message={uploadedFile ? `1 ${t("CS_ACTION_FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
             accept=".jpg,.jpeg,.png"
           />
-          <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-          
+          <p className="obps-page-components-location-details--style-1">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+
 
           {/* {uploadedFile && viewSiteImageURL && !isFileLoading && !isUploading &&(
             <div>
-              <a 
-                href={viewSiteImageURL} 
-                target="_blank" 
+              <a
+                href={viewSiteImageURL}
+                target="_blank"
                 rel="noopener noreferrer"
-               
+
               >
                 {t("CS_COMMON_VIEW_SITE_PHOTOGRAPH")}
               </a>
             </div>
           )} */}
-          
+
         </div>
         <div>
           <h2 className="card-label" >{t("BPA_LOC_SITE_PHOTOGRAPH_2")} <span className="requiredField">*</span></h2>
@@ -704,12 +704,12 @@ return (
             message={uploadedFileTwo ? `1 ${t("CS_ACTION_FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
             accept=".jpg,.jpeg,.png"
           />
-          <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>  
+          <p className="obps-page-components-location-details--style-2">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
         </div>
-        <div style={{paddingTop: "10px"}}>
-        {((!isUploading && geoLocationFromImg?.latitude && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude && geoLocationFromImg?.longitude !==0)||(!isUploadingTwo && geoLocationFromImgTwo?.latitude && geoLocationFromImgTwo?.latitude !==0 && geoLocationFromImgTwo?.longitude && geoLocationFromImgTwo?.longitude !==0)) &&(            
+        <div className="obps-page-components-location-details--style-3">
+        {((!isUploading && geoLocationFromImg?.latitude && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude && geoLocationFromImg?.longitude !==0)||(!isUploadingTwo && geoLocationFromImgTwo?.latitude && geoLocationFromImgTwo?.latitude !==0 && geoLocationFromImgTwo?.longitude && geoLocationFromImgTwo?.longitude !==0)) &&(
             <CustomLocationSearch position={geoLocations}/>
-        )} 
+        )}
         </div>
       </FormStep>
     )}

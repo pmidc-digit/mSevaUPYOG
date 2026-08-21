@@ -13,8 +13,8 @@ import {
   MobileNumber,
   TextArea,
   ActionBar,
-  SubmitBar,
-} from "@mseva/digit-ui-react-components";
+  SubmitBar } from
+"@mseva/digit-ui-react-components";
 import { Loader } from "../../components/Loader";
 import { SET_ChallanApplication_STEP } from "../../../redux/action/ChallanApplicationActions";
 import SelectNDCDocuments from "../ChallanDocuments";
@@ -54,20 +54,20 @@ const ChallanStepperForm = () => {
     reset,
     formState: { errors },
     getValues,
-    clearErrors,
+    clearErrors
   } = useForm({
     defaultValues: {
-      shouldUnregister: false,
-    },
+      shouldUnregister: false
+    }
   });
-const getActs = (offenceType, offenceActData) =>
+  const getActs = (offenceType, offenceActData) =>
   offenceType?.acts?.map(
     (code) => offenceActData?.Challan?.Acts?.find((a) => a?.code === code)?.name
   )?.filter(Boolean)?.join(", ") || "";
 
   const onSubmit = async (data) => {
     let missingDocs = [];
-    const actString = getActs(data?.offenceType, OffenceActData); 
+    const actString = getActs(data?.offenceType, OffenceActData);
     console.log("Resolved Act(s):", actString);
     docData?.Challan?.Documents?.forEach((doc) => {
       if (doc.required) {
@@ -86,10 +86,10 @@ const getActs = (offenceType, offenceActData) =>
         name: data?.name,
         mobileNumber: data?.mobileNumber,
         tenantId: tenantId,
-        active: true,
+        active: true
       },
       address: {
-        addressLine1: data?.address,
+        addressLine1: data?.address
       },
       businessService: "Challan_Generation",
       offenceTypeName: data?.offenceType?.name,
@@ -98,21 +98,21 @@ const getActs = (offenceType, offenceActData) =>
       challanAmount: data?.challanAmount,
       // amount: data?.amount,
       amount: [
-        {
-          // "taxHeadCode": "CH.CHALLAN_FINE",
-          amount: data?.amount,
-        },
-      ],
+      {
+        // "taxHeadCode": "CH.CHALLAN_FINE",
+        amount: data?.amount
+      }],
+
       additionalDetail: {
         latitude: documentsData?.documents?.[1]?.latitude,
         longitude: documentsData?.documents?.[1]?.longitude,
-        offenceActs: actString,
+        offenceActs: actString
       },
       // address: {},
       documents: documentsData?.documents,
       workflow: {
-        action: "SUBMIT",
-      },
+        action: "SUBMIT"
+      }
     };
     try {
       const response = await Digit.ChallanGenerationService.create({ Challan: Challan });
@@ -158,7 +158,7 @@ const getActs = (offenceType, offenceActData) =>
         <CardHeader divider={true}>{t("CREATE_CHALLAN")}</CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardLabel>{t("CHALLAN_OFFENDER_DETAILS")}</CardLabel>
-          <div style={{ width: "100%" }}>
+          <div className="challan-generation-style-cad980f4b7">
             <div>
               <CardLabel>
                 {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span className="requiredField">*</span>
@@ -170,27 +170,27 @@ const getActs = (offenceType, offenceActData) =>
                   required: "Mobile number is required",
                   pattern: {
                     value: /^[6-9]\d{9}$/,
-                    message: "Enter a valid 10-digit mobile number",
-                  },
+                    message: "Enter a valid 10-digit mobile number"
+                  }
                 }}
-                render={(props) => (
-                  <MobileNumber
-                    value={props.value}
-                    maxlength={10}
-                    onChange={(e) => {
-                      props.onChange(e);
-                      setValue("name", "");
-                      setValue("address", "");
-                      // ✅ updates react-hook-form
-                      if (e.length == 10) {
-                        handleMobileChange(e); // 🔥 only then fire API
-                      }
-                    }}
-                    onBlur={props.onBlur}
-                    t={t}
-                  />
-                )}
-              />
+                render={(props) =>
+                <MobileNumber
+                  value={props.value}
+                  maxlength={10}
+                  onChange={(e) => {
+                    props.onChange(e);
+                    setValue("name", "");
+                    setValue("address", "");
+                    // ✅ updates react-hook-form
+                    if (e.length == 10) {
+                      handleMobileChange(e); // 🔥 only then fire API
+                    }
+                  }}
+                  onBlur={props.onBlur}
+                  t={t} />
+
+                } />
+
               {errors?.mobileNumber && <p className="requiredField">{errors.mobileNumber.message}</p>}
             </div>
 
@@ -203,22 +203,22 @@ const getActs = (offenceType, offenceActData) =>
                 name="name"
                 rules={{
                   required: "Name is required",
-                  minLength: { value: 2, message: "Name must be at least 2 characters" },
+                  minLength: { value: 2, message: "Name must be at least 2 characters" }
                 }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    error={errors?.name?.message}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    t={t}
-                  />
-                )}
-              />
+                render={(props) =>
+                <TextInput
+                  value={props.value}
+                  error={errors?.name?.message}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                  t={t} />
+
+                } />
+
               {errors?.name && <p className="requiredField">{errors.name.message}</p>}
             </div>
 
@@ -232,22 +232,22 @@ const getActs = (offenceType, offenceActData) =>
                 name="address"
                 rules={{
                   required: "Address is required",
-                  minLength: { value: 5, message: "Address must be at least 5 characters" },
+                  minLength: { value: 5, message: "Address must be at least 5 characters" }
                 }}
-                render={(props) => (
-                  <TextArea
-                    name="address"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    t={t}
-                  />
-                )}
-              />
+                render={(props) =>
+                <TextArea
+                  name="address"
+                  value={props.value}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                  t={t} />
+
+                } />
+
               {errors?.address && <p className="requiredField">{errors.address.message}</p>}
             </div>
 
@@ -261,17 +261,17 @@ const getActs = (offenceType, offenceActData) =>
                 name={"offenceCategory"}
                 defaultValue={null}
                 rules={{ required: t("CHALLAN_OFFENCE_CATEGORY_REQUIRED") }}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    select={props.onChange}
-                    selected={props.value}
-                    option={categoryData?.Challan?.Category}
-                    optionKey="name"
-                    t={t}
-                  />
-                )}
-              />
+                render={(props) =>
+                <Dropdown
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={categoryData?.Challan?.Category}
+                  optionKey="name"
+                  t={t} />
+
+                } />
+
               {errors.offenceCategory && <p className="requiredField">{errors.offenceCategory.message}</p>}
             </LabelFieldPair>
 
@@ -285,20 +285,20 @@ const getActs = (offenceType, offenceActData) =>
                 name={"offenceSubCategory"}
                 defaultValue={null}
                 rules={{ required: t("CHALLAN_OFFENCE_SUB_CATEGORY_REQUIRED") }}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    select={(e) => {
-                      handleViolation(e);
-                      props.onChange(e);
-                    }}
-                    selected={props.value}
-                    option={subCategoryData?.Challan?.SubCategory}
-                    optionKey="name"
-                    t={t}
-                  />
-                )}
-              />
+                render={(props) =>
+                <Dropdown
+                  className="form-field"
+                  select={(e) => {
+                    handleViolation(e);
+                    props.onChange(e);
+                  }}
+                  selected={props.value}
+                  option={subCategoryData?.Challan?.SubCategory}
+                  optionKey="name"
+                  t={t} />
+
+                } />
+
               {errors.offenceSubCategory && <p className="requiredField">{errors.offenceSubCategory.message}</p>}
             </LabelFieldPair>
 
@@ -312,21 +312,21 @@ const getActs = (offenceType, offenceActData) =>
                 name={"offenceType"}
                 defaultValue={null}
                 rules={{ required: t("CHALLAN_TYPE_OFFENCE_REQUIRED") }}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    // select={props.onChange}
-                    select={(e) => {
-                      props.onChange(e);
-                      handleRates(e);
-                    }}
-                    selected={props.value}
-                    option={getViolationData}
-                    optionKey="name"
-                    t={t}
-                  />
-                )}
-              />
+                render={(props) =>
+                <Dropdown
+                  className="form-field"
+                  // select={props.onChange}
+                  select={(e) => {
+                    props.onChange(e);
+                    handleRates(e);
+                  }}
+                  selected={props.value}
+                  option={getViolationData}
+                  optionKey="name"
+                  t={t} />
+
+                } />
+
               {errors.offenceType && <p className="requiredField">{errors.offenceType.message}</p>}
             </LabelFieldPair>
 
@@ -336,22 +336,22 @@ const getActs = (offenceType, offenceActData) =>
               <Controller
                 control={control}
                 name="amount"
-                render={(props) => (
-                  <TextInput
-                    type="number"
-                    value={props.value}
-                    error={errors?.name?.message}
-                    disable={true}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    t={t}
-                  />
-                )}
-              />
+                render={(props) =>
+                <TextInput
+                  type="number"
+                  value={props.value}
+                  error={errors?.name?.message}
+                  disable={true}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                  t={t} />
+
+                } />
+
             </LabelFieldPair>
           </div>
 
@@ -370,8 +370,8 @@ const getActs = (offenceType, offenceActData) =>
               clearErrors={() => {}}
               formState={{}}
               data={docData}
-              isLoading={isLoading}
-            />
+              isLoading={isLoading} />
+
           </div>
 
           <ActionBar>
@@ -380,19 +380,19 @@ const getActs = (offenceType, offenceActData) =>
         </form>
       </div>
       {/* <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} /> */}
-      {showToast && (
-        <Toast
-          error={showToast.key}
-          label={t(showToast.label)}
-          onClose={() => {
-            setShowToast(null);
-          }}
-          isDleteBtn={"true"}
-        />
-      )}
+      {showToast &&
+      <Toast
+        error={showToast.key}
+        label={t(showToast.label)}
+        onClose={() => {
+          setShowToast(null);
+        }}
+        isDleteBtn={"true"} />
+
+      }
       {(OffenceRatesLoading || loader || categoryLoading || subCategoryLoading || OffenceTypeLoading || OffenceActLoading) && <Loader page={true} />}
-    </div>
-  );
+    </div>);
+
 };
 
 export default ChallanStepperForm;

@@ -29,41 +29,41 @@ const PTRServiceDoc = ({ t, config, onSelect, userType, formData }) => {
           <CardText className={"primaryColor"}>{t("PTR_DOC_REQ_SCREEN_SUB_TEXT")}</CardText>
           <CardSubHeader>{t("PTR_DOC_REQ_SCREEN_LABEL")}</CardSubHeader>
           <CardText className={"primaryColor"}>{t("PTR_DOC_REQ_SCREEN_LABEL_TEXT")}</CardText>
-          <CardText style={{ color: "red" }}>{t("PTR_PDF_AND_JPG_BOTH_FORMAT_ACCEPTED_IN_DOCUMENT_UPLOAD")}</CardText>
+          <CardText className="ptr-style-90ad96210e">{t("PTR_PDF_AND_JPG_BOTH_FORMAT_ACCEPTED_IN_DOCUMENT_UPLOAD")}</CardText>
 
           <div>
             {isLoading && <Loader />}
-            {Array.isArray(docs)
-              ? config?.isMutation
-                ? docs.map(({ code, dropdownData }, index) => (
-                    <div key={index}>
+            {Array.isArray(docs) ?
+            config?.isMutation ?
+            docs.map(({ code, dropdownData }, index) =>
+            <div key={index}>
                       <CardSubHeader>
                         {index + 1}. {t(code)}
                       </CardSubHeader>
                       <CardText className={"primaryColor"}>{dropdownData.map((dropdownData) => t(dropdownData?.code)).join(", ")}</CardText>
                     </div>
-                  ))
-                : docs.map(({ code, dropdownData }, index) => (
-                    <div key={index}>
+            ) :
+            docs.map(({ code, dropdownData }, index) =>
+            <div key={index}>
                       <CardSubHeader>
                         {index + 1}. {t(stringReplaceAll(code, ".", "_"))}
                       </CardSubHeader>
-                      {dropdownData.map((dropdownData, dropdownIndex) => (
-                        <CardText className={"primaryColor"}>
+                      {dropdownData.map((dropdownData, dropdownIndex) =>
+              <CardText className={"primaryColor"}>
                           {`${dropdownIndex + 1}`}. {t(stringReplaceAll(dropdownData?.code, ".", "_"))}
                         </CardText>
-                      ))}
+              )}
                     </div>
-                  ))
-              : null}
+            ) :
+            null}
           </div>
         </div>
         <span>
           <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={onSelect} />
         </span>
       </Card>
-    </React.Fragment>
-  );
+    </React.Fragment>);
+
 };
 
 export default PTRServiceDoc;

@@ -11,7 +11,7 @@ const BPAApplicationTimeline = (props) => {
     id: props.id,
     moduleCode: businessService,
   });
-  
+
   const [showAllTimeline, setShowAllTimeline]=useState(false);
   function OpenImage(imageSource, index,thumbnailsToShow){
     window.open(thumbnailsToShow?.fullImage?.[0],"_blank");
@@ -23,7 +23,7 @@ const BPAApplicationTimeline = (props) => {
     //     source: props.application?.tradeLicenseDetail?.channel || "",
     //   };
     //   return <BPACaption data={caption} />;
-    // }  
+    // }
     //else {
       const caption = {
         date: checkpoint?.auditDetails?.lastModified + " " + checkpoint?.auditDetails?.timing,
@@ -51,7 +51,7 @@ const BPAApplicationTimeline = (props) => {
       {!isLoading && (
         <Fragment>
           {data?.timeline?.length > 0 && (
-            <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
+            <CardSectionHeader className="obps-pages-citizen-bpa-application-detail-bpaapplication-timeline--style-1">
               {t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
             </CardSectionHeader>
           )}
@@ -91,7 +91,7 @@ const BPAApplicationTimeline = (props) => {
           )}
           {data?.timeline?.length > 2 && (
             <LinkButton label={showAllTimeline? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}>
-            </LinkButton>   
+            </LinkButton>
           )}
         </Fragment>
       )}

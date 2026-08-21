@@ -574,9 +574,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       {/* Hidden field for selected property */}
       <Controller control={control} name="selectedProperty" render={() => null} />
       <div
-        style={{
-          display: watch("applicationType")?.code === "Legacy" ? "none" : "block",
-        }}
+        className={`ral-property-details__non-legacy${
+          watch("applicationType")?.code === "Legacy" ? " ral-property-details__non-legacy--hidden" : ""
+        }`}
       >
         <LabelFieldPair>
           <CardLabel>
@@ -682,9 +682,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         {errors.endDate && <CardLabelError className="ral-error-label">{getErrorMessage("endDate")}</CardLabelError>}
       </div>
       <div
-        style={{
-          display: watch("applicationType")?.code === "Legacy" ? "none" : "block",
-        }}
+        className={`ral-property-details__non-legacy${
+          watch("applicationType")?.code === "Legacy" ? " ral-property-details__non-legacy--hidden" : ""
+        }`}
       >
         <LabelFieldPair>
           <CardLabel>{t("DURATION")}</CardLabel>
@@ -728,9 +728,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       {errors.penaltyType && <CardLabelError>{getErrorMessage("penaltyType")}</CardLabelError>}
 
       <div
-        style={{
-          display: watch("applicationType")?.code === "Legacy" ? "none" : "block",
-        }}
+        className={`ral-property-details__non-legacy${
+          watch("applicationType")?.code === "Legacy" ? " ral-property-details__non-legacy--hidden" : ""
+        }`}
       >
         <LabelFieldPair>
           <CardLabel>
@@ -752,130 +752,21 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         {errors.securityDeposit && <CardLabelError className="ral-error-label">{getErrorMessage("securityDeposit")}</CardLabelError>}
       </div>
       {/* )} */}
-      {isLegacyApplication && (
-        <React.Fragment>
-          <div className={hasArrears ? "ral-arrear-details" : "ral-arrear-details ral-arrear-details-hidden"}>
-              <LabelFieldPair>
-                <CardLabel>
-                  {t("Arrears")} <span className="mandatory-asterisk">*</span>
-                </CardLabel>
+      <React.Fragment>
+        <div className={hasArrears ? "ral-arrear-details" : "ral-arrear-details ral-arrear-details-hidden"}>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("Arrears")} <span className="mandatory-asterisk">*</span>
+            </CardLabel>
 
-                <div className="form-field">
-                  <div style={{ fontSize: "13px", color: "green", paddingBottom: "10px" }}>
-                    Please add Arrears including penalty until last billing period.
-                  </div>
-                  <Controller
-                    control={control}
-                    name="arrear"
-                    rules={{ required: hasArrears ? t("RENT_LEASE_ARREAR_REQUIRED") : false }}
-                    render={({ value, onChange, onBlur }) => (
-                      <input
-                        className="employee-card-input undefined focus-visible undefined"
-                        type="number"
-                        value={value || ""}
-                        onChange={(e) => onChange(e.target.value)}
-                        onWheel={(e) => e.currentTarget.blur()}
-                        onBlur={(e) => {
-                          onBlur(e);
-                        }}
-                      />
-                    )}
-                  />
-                </div>
-              </LabelFieldPair>
-              {errors.arrear && <CardLabelError className="ral-error-label">{getErrorMessage("arrear")}</CardLabelError>}
-
-              {/* Last Billing Month */}
-              <LabelFieldPair>
-                <CardLabel>
-                  {t("Last Billing Month")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
-                </CardLabel>
-                <div className="form-field">
-                  <Controller
-                    control={control}
-                    name="lastBillingPeriod"
-                    rules={{
-                      validate: (value) => {
-                        const arrear = watch("arrear");
-                        if (hasArrears && arrear > 0 && !value) {
-                          return t("RENT_LEASE_RAL_END_DATE_REQUIRED");
-                        }
-                        return true;
-                      },
-                    }}
-                    render={({ value, onChange }) => {
-                      return <TextInput type="date" value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={true} />;
-                    }}
-                  />
-                </div>
-              </LabelFieldPair>
-              {errors.lastBillingPeriod && <CardLabelError className="ral-error-label">{getErrorMessage("lastBillingPeriod")}</CardLabelError>}
-          </div>
-
-          <div className={hasNoArrears ? "ral-last-paid-upto" : "ral-last-paid-upto ral-last-paid-upto-hidden"}>
-            <p className="ral-last-paid-upto-label">Select the last date upto which You have paid the rent</p>
-            <LabelFieldPair>
-              <CardLabel>
-                {t("Last Paid Upto")} <span className="mandatory-asterisk">*</span>
-              </CardLabel>
-              <div className="form-field">
-                <Controller
-                  control={control}
-                  name="lastPaidUpto"
-                  rules={{ required: hasNoArrears ? t("PTR_FIELD_REQUIRED") : false }}
-                  render={({ value, onChange }) => (
-                    <TextInput type="date" max={todayISO} value={value || ""} onChange={(e) => onChange(e.target.value)} />
-                  )}
-                />
+            <div className="form-field">
+              <div style={{ fontSize: "13px", color: "green", paddingBottom: "10px" }}>
+                Please add Arrears including penalty until last billing period.
               </div>
-            </LabelFieldPair>
-            {errors.lastPaidUpto && <CardLabelError className="ral-error-label">{getErrorMessage("lastPaidUpto")}</CardLabelError>}
-          </div>
-
-          {/* last Rent Revised Date */}
-          <LabelFieldPair>
-            <CardLabel>{t("Last Rent Revised Date")}</CardLabel>
-            <div className="form-field">
               <Controller
                 control={control}
-                name="lastRentRevisedDate"
-                render={({ value, onChange }) => {
-                  return <TextInput type="date" value={value || ""} onChange={(e) => onChange(e.target.value)} />;
-                }}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors.lastRentRevisedDate && <CardLabelError className="ral-error-label">{getErrorMessage("lastRentRevisedDate")}</CardLabelError>}
-
-          {/* Increment Period Months */}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("Increment Period Months")}</CardLabel>
-            <Controller
-              control={control}
-              name="incrementPeriodMonths"
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={props.onChange}
-                  selected={props.value}
-                  option={incrementPeriodMonthsValues}
-                  defaultValues
-                  optionKey="name"
-                  t={t}
-                />
-              )}
-            />
-          </LabelFieldPair>
-          {errors.incrementPeriodMonths && <CardLabelError className="ral-error-label">{getErrorMessage("incrementPeriodMonths")}</CardLabelError>}
-
-          {/* increment Percentage */}
-          <LabelFieldPair>
-            <CardLabel>{t("Increment Percentage")}</CardLabel>
-
-            <div className="form-field">
-              <Controller
-                control={control}
-                name="incrementPercentage"
+                name="arrear"
+                rules={{ required: hasArrears ? t("RENT_LEASE_ARREAR_REQUIRED") : false }}
                 render={({ value, onChange, onBlur }) => (
                   <input
                     className="employee-card-input undefined focus-visible undefined"
@@ -891,81 +782,189 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
               />
             </div>
           </LabelFieldPair>
-          {errors.incrementPercentage && <CardLabelError className="ral-error-label">{getErrorMessage("incrementPercentage")}</CardLabelError>}
+          {errors.arrear && <CardLabelError className="ral-error-label">{getErrorMessage("arrear")}</CardLabelError>}
 
-          {/* Areas reason */}
+          {/* Last Billing Month */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
-              {t("Reason")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
-            </CardLabel>
-            <Controller
-              control={control}
-              name="arrearReason"
-              rules={{
-                validate: (value) => {
-                  const arrear = watch("arrear");
-                  if (arrear > 0 && !value) {
-                    return t("RENT_LEASE_REASON_REQUIRED");
-                  }
-                  return true;
-                },
-              }}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={props.onChange}
-                  selected={props.value}
-                  option={arrearReasonOptions}
-                  defaultValues
-                  optionKey="name"
-                  t={t}
-                />
-              )}
-            />
-          </LabelFieldPair>
-          {errors.arrearReason && <CardLabelError className="ral-error-label">{getErrorMessage("arrearReason")}</CardLabelError>}
-
-          {/* Remarks */}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
-              {t("Remarks")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
+            <CardLabel>
+              {t("Last Billing Month")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
             </CardLabel>
             <div className="form-field">
               <Controller
                 control={control}
-                name="remarks"
+                name="lastBillingPeriod"
                 rules={{
                   validate: (value) => {
                     const arrear = watch("arrear");
-                    if (arrear > 0 && !value?.trim()) {
-                      return t("RENT_LEASE_REMARKS_REQUIRED");
+                    if (hasArrears && arrear > 0 && !value) {
+                      return t("RENT_LEASE_RAL_END_DATE_REQUIRED");
                     }
                     return true;
                   },
                 }}
-                render={({ value, onChange }) => <TextInput type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} t={t} />}
+                render={({ value, onChange }) => {
+                  return <TextInput type="date" value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={true} />;
+                }}
               />
             </div>
           </LabelFieldPair>
-          {errors.remarks && <CardLabelError className="ral-error-label">{getErrorMessage("remarks")}</CardLabelError>}
+          {errors.lastBillingPeriod && <CardLabelError className="ral-error-label">{getErrorMessage("lastBillingPeriod")}</CardLabelError>}
+        </div>
 
-          <div>
-            <RentANDLeaseDocuments
-              t={t}
-              config={{ key: "documents" }}
-              onSelect={handleDocumentsSelect}
-              userType="CITIZEN"
-              formData={{ documents: { documents: documentsData } }}
-              setError={setError}
-              error={error}
-              clearErrors={() => {}}
-              formState={{}}
-              data={docUploadData}
-              isLoading={isLoading}
+        <div className={hasNoArrears ? "ral-last-paid-upto" : "ral-last-paid-upto ral-last-paid-upto-hidden"}>
+          <p className="ral-last-paid-upto-label">Select the last date upto which You have paid the rent</p>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("Last Paid Upto")} <span className="mandatory-asterisk">*</span>
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="lastPaidUpto"
+                rules={{ required: hasNoArrears ? t("PTR_FIELD_REQUIRED") : false }}
+                render={({ value, onChange }) => (
+                  <TextInput type="date" max={todayISO} value={value || ""} onChange={(e) => onChange(e.target.value)} />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.lastPaidUpto && <CardLabelError className="ral-error-label">{getErrorMessage("lastPaidUpto")}</CardLabelError>}
+        </div>
+
+        {/* last Rent Revised Date */}
+        <LabelFieldPair>
+          <CardLabel>{t("Last Rent Revised Date")}</CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="lastRentRevisedDate"
+              render={({ value, onChange }) => {
+                return <TextInput type="date" value={value || ""} onChange={(e) => onChange(e.target.value)} />;
+              }}
             />
           </div>
-        </React.Fragment>
-      )}
+        </LabelFieldPair>
+        {errors.lastRentRevisedDate && <CardLabelError className="ral-error-label">{getErrorMessage("lastRentRevisedDate")}</CardLabelError>}
+
+        {/* Increment Period Months */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{t("Increment Period Months")}</CardLabel>
+          <Controller
+            control={control}
+            name="incrementPeriodMonths"
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                select={props.onChange}
+                selected={props.value}
+                option={incrementPeriodMonthsValues}
+                defaultValues
+                optionKey="name"
+                t={t}
+              />
+            )}
+          />
+        </LabelFieldPair>
+        {errors.incrementPeriodMonths && <CardLabelError className="ral-error-label">{getErrorMessage("incrementPeriodMonths")}</CardLabelError>}
+
+        {/* increment Percentage */}
+        <LabelFieldPair>
+          <CardLabel>{t("Increment Percentage")}</CardLabel>
+
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="incrementPercentage"
+              render={({ value, onChange, onBlur }) => (
+                <input
+                  className="employee-card-input undefined focus-visible undefined"
+                  type="number"
+                  value={value || ""}
+                  onChange={(e) => onChange(e.target.value)}
+                  onWheel={(e) => e.currentTarget.blur()}
+                  onBlur={(e) => {
+                    onBlur(e);
+                  }}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.incrementPercentage && <CardLabelError className="ral-error-label">{getErrorMessage("incrementPercentage")}</CardLabelError>}
+
+        {/* Areas reason */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">
+            {t("Reason")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
+          </CardLabel>
+          <Controller
+            control={control}
+            name="arrearReason"
+            rules={{
+              validate: (value) => {
+                const arrear = watch("arrear");
+                if (arrear > 0 && !value) {
+                  return t("RENT_LEASE_REASON_REQUIRED");
+                }
+                return true;
+              },
+            }}
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                select={props.onChange}
+                selected={props.value}
+                option={arrearReasonOptions}
+                defaultValues
+                optionKey="name"
+                t={t}
+              />
+            )}
+          />
+        </LabelFieldPair>
+        {errors.arrearReason && <CardLabelError className="ral-error-label">{getErrorMessage("arrearReason")}</CardLabelError>}
+
+        {/* Remarks */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">
+            {t("Remarks")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
+          </CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="remarks"
+              rules={{
+                validate: (value) => {
+                  const arrear = watch("arrear");
+                  if (arrear > 0 && !value?.trim()) {
+                    return t("RENT_LEASE_REMARKS_REQUIRED");
+                  }
+                  return true;
+                },
+              }}
+              render={({ value, onChange }) => <TextInput type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} t={t} />}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.remarks && <CardLabelError className="ral-error-label">{getErrorMessage("remarks")}</CardLabelError>}
+
+        <div>
+          <RentANDLeaseDocuments
+            t={t}
+            config={{ key: "documents" }}
+            onSelect={handleDocumentsSelect}
+            userType="CITIZEN"
+            formData={{ documents: { documents: documentsData } }}
+            setError={setError}
+            error={error}
+            clearErrors={() => {}}
+            formState={{}}
+            data={docUploadData}
+            isLoading={isLoading}
+          />
+        </div>
+      </React.Fragment>
+
       {/* Action Bar */}
       <ActionBar>
         <SubmitBar label={t("Back")} className="ral-back-btn" onSubmit={onGoBack} />

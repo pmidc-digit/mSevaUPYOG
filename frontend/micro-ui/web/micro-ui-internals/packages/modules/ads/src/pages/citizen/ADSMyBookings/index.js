@@ -69,15 +69,7 @@ export const ADSMyApplications = () => {
 
         {!applications?.length > 0 && <p className="ads-applications-empty">{t("ADS_NO_APPLICATION_FOUND_MSG")}</p>}
 
-        {/* {applications?.length !== 0 && data?.count > t1 && (
-          <div>
-            <p style={{ marginLeft: "16px", marginTop: "16px" }}>
-              <span className="link">
-                <Link to={`/digit-ui/citizen/ads/myBookings/${t1}`}>{t("ADS_LOAD_MORE_MSG")}</Link>
-              </span>
-            </p>
-          </div>
-        )} */}
+
 
         {/* Pagination controls */}
         {applications?.length > itemsPerPage && (
@@ -128,3 +120,15 @@ export const ADSMyApplications = () => {
 };
 
 export default ADSMyApplications;
+
+/*
+{applications?.length !== 0 && data?.count > t1 && (
+          <div>
+            <p style={{ marginLeft: "16px", marginTop: "16px" }}>
+              <span className="link">
+                <Link to={`/digit-ui/citizen/ads/myBookings/${t1}`}>{t("ADS_LOAD_MORE_MSG")}</Link>
+              </span>
+            </p>
+          </div>
+        )}
+*/

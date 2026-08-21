@@ -89,8 +89,8 @@ export const PropertySearchLudhiana = ({ key = "cpt", onSelect, formData, setApi
 //   }, [ptFromApi]);
 
 useEffect(() => {
-  
-  
+
+
   if (menuList && formData?.cpt?.details?.address?.locality
     //  && !formData?.createdResponse?.additionalDetails
     ) {
@@ -141,15 +141,15 @@ useEffect(() => {
   // }, [propertyDetailsFetch]);
 
   // // useEffect(() => {
-    
+
   //   if (propertyId && (window.location.href.includes("/renew-application-details/") || window.location.href.includes("/edit-application-details/")))
   //     console.log("useffect 3");
   //     setSearchPropertyId(propertyId);
   // }, [propertyId]);
 
-  // useEffect(() => 
+  // useEffect(() =>
   //   {
-      
+
   //   if (isLoading == false && error && error == true && propertyDetails?.Properties?.length == 0) {
   //      console.log("useffect 4");
   //     setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
@@ -157,7 +157,7 @@ useEffect(() => {
   // }, [error, propertyDetails]);
 
  useEffect(() => {
-   
+
   if (propertyDetails?.propertyId) {
     console.log("useffect 5");
     dispatch(
@@ -235,12 +235,6 @@ useEffect(() => {
     return <React.Fragment />;
   }
 
-  const getInputStyles = () => {
-    if (window.location.href.includes("/ws/")) {
-      return { fontWeight: "700" };
-    } else return {};
-  };
-
   let clns = "";
   if (window.location.href.includes("/ws/")) clns = ":";
 
@@ -261,7 +255,7 @@ useEffect(() => {
 
 
   useEffect(() => {
-     
+
     if (showToast) {
       console.log("useffect 6");
       const timer = setTimeout(() => {
@@ -279,15 +273,15 @@ useEffect(() => {
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px", marginTop: "20px" }}>
+      <div className="noc-components-property-search-ludhiana--style-1">
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller ndc_card_labels" style={getInputStyles()}>
+          <CardLabel className={["card-label-smaller", "ndc_card_labels", window.location.href.includes("/ws/") && "noc-property-search__label--ws"].filter(Boolean).join(" ")}>
             {`${t(propertyIdInput.label)}`}
             {propertyIdInput.isMandatory ? "*" : null}
           </CardLabel>
           <div
-            className="field ndc_property_search"
-            style={{ display: "flex", gap: "16px", alignItems: "baseline", width: "100%" }}
+            className="field ndc_property_search noc-components-property-search-ludhiana--style-2"
+
             ref={myElementRef}
             id="search-property-field"
           >
@@ -303,7 +297,7 @@ useEffect(() => {
             />
 
             {!isLoading && (
-              <button className="submit-bar" type="button" style={{ color: "white", width: "100%", maxWidth: "100px" }} onClick={searchProperty}>
+              <button className="submit-bar noc-components-property-search-ludhiana--style-3" type="button"  onClick={searchProperty}>
                 {t("PT_SEARCH")}
               </button>
             )}

@@ -441,9 +441,9 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       accessor: "uuid",
       Cell: ({ row }) => (
         <button
-          className="submit-bar"
+          className="submit-bar obps-page-components-layout-owner-search-modal--style-1"
           type="button"
-          style={{ color: "white", width: "100%", maxWidth: "120px", height: "40px", margin: 0 }}
+
           onClick={() => handleSelectUserFromTable(row.original)}
         >
           {t("Select")}
@@ -456,18 +456,10 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
     <React.Fragment>
       <div
         id="owner-search-form-container"
-        style={{
-          border: "1px solid #d6d6d6",
-          padding: "20px",
-          borderRadius: "4px",
-          background: "#fff",
-          marginTop: "20px",
-          marginBottom: "20px",
-          position: "relative"
-        }}
+        className="obps-page-components-layout-owner-search-modal--style-2"
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-          <h1 className="heading-m" style={{ margin: 0 }}>
+        <div className="obps-page-components-layout-owner-search-modal--style-3">
+          <h1 className="heading-m obps-page-components-layout-owner-search-modal--style-4" >
             {step === 2 ? t("OWNER ADDITIONAL DETAILS") : t("SEARCH OWNER DETAILS")}
           </h1>
           <CloseBtn onClick={closeModal} />
@@ -477,8 +469,8 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
         {step === 1 && !showManualForm && (
           <React.Fragment>
             {/* Search Input & Button */}
-            <div style={{ marginBottom: "20px" }}>
-              <CardLabel style={{ marginBottom: "8px", fontWeight: "600" }}>
+            <div className="obps-page-components-layout-owner-search-modal--style-5">
+              <CardLabel className="obps-page-components-layout-owner-search-modal--style-6">
                 {`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`} <span className="requiredField">*</span>
               </CardLabel>
               <div
@@ -490,7 +482,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                   ...(isMobile ? { flexDirection: "column", alignItems: "stretch" } : {}),
                 }}
               >
-                <div style={{ flex: 1 }}>
+                <div className="obps-page-components-layout-owner-search-modal--style-7">
                   <TextInput
                     t={t}
                     key="mobileNumber"
@@ -498,13 +490,13 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                     onChange={handleMobileNumberChange}
                     maxlength={10}
                     placeholder={t("BPA_OWNER_MOBILE_NO_PLACEHOLDER")}
-                    style={{ width: "100%", marginBottom: 0 }}
+                    className="obps-page-components-layout-owner-search-modal--style-8"
                   />
                 </div>
                 <button
-                  className="submit-bar"
+                  className="submit-bar obps-page-components-layout-owner-search-modal--style-9"
                   type="button"
-                  style={{ color: "white", width: "100%", maxWidth: "120px", height: "40px", margin: 0 }}
+
                   onClick={() => handleSearch()}
                 >
                   {t("PT_SEARCH")}
@@ -513,7 +505,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             </div>
 
             {/* Searched Results Table */}
-            <div style={{ marginTop: "20px", overflowX: "auto", width: "100%", display: "block" }}>
+            <div className="obps-page-components-layout-owner-search-modal--style-10">
               {isLoading ? (
                 <Loader />
               ) : searchedUsers && searchedUsers.length > 0 ? (
@@ -541,8 +533,8 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
 
             {/* Section to trigger manual add owner form - visible only after search */}
             {searchedUsers !== null && (
-              <div style={{ marginTop: "20px", borderTop: "1px solid #d1d5db", paddingTop: "15px" }}>
-                <div style={{ marginTop: "10px" }}>
+              <div className="obps-page-components-layout-owner-search-modal--style-11">
+                <div className="obps-page-components-layout-owner-search-modal--style-12">
                   <div
                     onClick={() => {
                       if (!mobileNumber || !/^[6-9]\d{9}$/.test(mobileNumber)) {
@@ -551,13 +543,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                       }
                       setShowManualForm(true);
                     }}
-                    style={{
-                      color: "#a82227",
-                      fontWeight: "600",
-                      fontSize: "14px",
-                      cursor: "pointer",
-                      display: "inline-block",
-                    }}
+                    className="obps-page-components-layout-owner-search-modal--style-13"
                   >
                     + {t("Add Owner")}
                   </div>
@@ -569,14 +555,14 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
 
         {step === 1 && showManualForm && (
           /* Manual Owner Creation Form Only */
-          <div style={{ background: "#f9fafb", padding: "20px", borderRadius: "8px", border: "1px solid #e5e7eb" }}>
-            <h2 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px", color: "#111827" }}>
+          <div className="obps-page-components-layout-owner-search-modal--style-14">
+            <h2 className="obps-page-components-layout-owner-search-modal--style-15">
               {t("CREATE NEW USER DETAILS")}
             </h2>
 
             {/* Name */}
-            <div style={{ marginBottom: "16px" }}>
-              <CardLabel style={{ marginBottom: "6px", fontWeight: "500" }}>
+            <div className="obps-page-components-layout-owner-search-modal--style-16">
+              <CardLabel className="obps-page-components-layout-owner-search-modal--style-17">
                 {t("APPLICANT_NAME")} <span className="requiredField">*</span>
               </CardLabel>
               <TextInput
@@ -586,27 +572,27 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                   setManualName(e.target.value);
                   setManualErrors((prev) => ({ ...prev, name: "" }));
                 }}
-                style={{ width: "100%" }}
+                className="obps-page-components-layout-owner-search-modal--style-18"
               />
-              {manualErrors.name && <CardLabelError style={{ marginTop: "4px" }}>{t(manualErrors.name)}</CardLabelError>}
+              {manualErrors.name && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-19">{t(manualErrors.name)}</CardLabelError>}
             </div>
 
             {/* Father/Husband Name */}
-            <div style={{ marginBottom: "16px" }}>
-              <CardLabel style={{ marginBottom: "6px", fontWeight: "500" }}>
+            <div className="obps-page-components-layout-owner-search-modal--style-20">
+              <CardLabel className="obps-page-components-layout-owner-search-modal--style-21">
                 {t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
               </CardLabel>
               <TextInput
                 t={t}
                 value={manualFatherOrHusband}
                 onChange={(e) => setManualFatherOrHusband(e.target.value)}
-                style={{ width: "100%" }}
+                className="obps-page-components-layout-owner-search-modal--style-22"
               />
             </div>
 
             {/* Email ID */}
-            <div style={{ marginBottom: "16px" }}>
-              <CardLabel style={{ marginBottom: "6px", fontWeight: "500" }}>
+            <div className="obps-page-components-layout-owner-search-modal--style-23">
+              <CardLabel className="obps-page-components-layout-owner-search-modal--style-24">
                 {t("NEW_LAYOUT_APPLICANT_EMAIL_LABEL")} <span className="requiredField">*</span>
               </CardLabel>
               <TextInput
@@ -616,14 +602,14 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                   setManualEmail(e.target.value);
                   setManualErrors((prev) => ({ ...prev, emailId: "" }));
                 }}
-                style={{ width: "100%" }}
+                className="obps-page-components-layout-owner-search-modal--style-25"
               />
-              {manualErrors.emailId && <CardLabelError style={{ marginTop: "4px" }}>{t(manualErrors.emailId)}</CardLabelError>}
+              {manualErrors.emailId && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-26">{t(manualErrors.emailId)}</CardLabelError>}
             </div>
 
             {/* Address */}
-            <div style={{ marginBottom: "16px" }}>
-              <CardLabel style={{ marginBottom: "6px", fontWeight: "500" }}>
+            <div className="obps-page-components-layout-owner-search-modal--style-27">
+              <CardLabel className="obps-page-components-layout-owner-search-modal--style-28">
                 {t("NEW_LAYOUT_APPLICANT_ADDRESS_LABEL")} <span className="requiredField">*</span>
               </CardLabel>
               <TextArea
@@ -633,14 +619,14 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                   setManualAddress(e.target.value);
                   setManualErrors((prev) => ({ ...prev, address: "" }));
                 }}
-                style={{ width: "100%" }}
+                className="obps-page-components-layout-owner-search-modal--style-29"
               />
-              {manualErrors.address && <CardLabelError style={{ marginTop: "4px" }}>{t(manualErrors.address)}</CardLabelError>}
+              {manualErrors.address && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-30">{t(manualErrors.address)}</CardLabelError>}
             </div>
 
             {/* DOB */}
-            <div style={{ marginBottom: "16px" }}>
-              <CardLabel style={{ marginBottom: "6px", fontWeight: "500" }}>
+            <div className="obps-page-components-layout-owner-search-modal--style-31">
+              <CardLabel className="obps-page-components-layout-owner-search-modal--style-32">
                 {t("BPA_APPLICANT_DOB_LABEL")} <span className="requiredField">*</span>
               </CardLabel>
               <DatePicker
@@ -652,12 +638,12 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 min="1900-01-01"
                 max={new Date().toISOString().split("T")[0]}
               />
-              {manualErrors.dob && <CardLabelError style={{ marginTop: "4px" }}>{t(manualErrors.dob)}</CardLabelError>}
+              {manualErrors.dob && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-33">{t(manualErrors.dob)}</CardLabelError>}
             </div>
 
             {/* Gender */}
-            <div style={{ marginBottom: "16px" }}>
-              <CardLabel style={{ marginBottom: "6px", fontWeight: "500" }}>
+            <div className="obps-page-components-layout-owner-search-modal--style-34">
+              <CardLabel className="obps-page-components-layout-owner-search-modal--style-35">
                 {t("BPA_APPLICANT_GENDER_LABEL")} <span className="requiredField">*</span>
               </CardLabel>
               <RadioButtons
@@ -672,23 +658,23 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 }}
                 isDependent={true}
               />
-              {manualErrors.gender && <CardLabelError style={{ marginTop: "4px" }}>{t(manualErrors.gender)}</CardLabelError>}
+              {manualErrors.gender && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-36">{t(manualErrors.gender)}</CardLabelError>}
             </div>
 
             {/* Action Buttons */}
-            <div style={{ marginTop: "24px", display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+            <div className="obps-page-components-layout-owner-search-modal--style-37">
               <button
                 type="button"
-                className="submit-bar"
-                style={{ color: "#0b0c0c", background: "#f4f5f5", border: "1px solid #0b0c0c", cursor: "pointer" }}
+                className="submit-bar obps-page-components-layout-owner-search-modal--style-38"
+
                 onClick={() => setShowManualForm(false)}
               >
                 {t("CS_COMMON_CANCEL")}
               </button>
               <button
                 type="button"
-                className="submit-bar"
-                style={{ color: "white", cursor: "pointer" }}
+                className="submit-bar obps-page-components-layout-owner-search-modal--style-39"
+
                 onClick={handleSaveManualUser}
               >
                 {t("CS_COMMON_NEXT")}
@@ -698,9 +684,9 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
         )}
 
         {step === 2 && selectedUser && (
-          <div style={{ background: "#f9fafb", padding: "20px", borderRadius: "8px", border: "1px solid #e5e7eb" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
-              <h2 style={{ fontSize: "16px", fontWeight: "600", color: "#111827", margin: 0 }}>
+          <div className="obps-page-components-layout-owner-search-modal--style-40">
+            <div className="obps-page-components-layout-owner-search-modal--style-41">
+              <h2 className="obps-page-components-layout-owner-search-modal--style-42">
                 {t("ADDITIONAL DETAILS DOCUMENTS")}
               </h2>
               <LinkButton
@@ -713,10 +699,10 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             </div>
 
             {/* Selected Owner Details Card */}
-            <div style={{ background: "#ffffff", padding: "12px 16px", borderRadius: "6px", border: "1px solid #e5e7eb", marginBottom: "20px" }}>
-              <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>{t("APPLICANT NAME")}:</strong> {selectedUser.name || "NA"}</p>
-              <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>{t("MOBILE NO")}:</strong> {selectedUser.mobileNumber || "NA"}</p>
-              {selectedUser.emailId && <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>{t("EMAIL ID")}:</strong> {selectedUser.emailId}</p>}
+            <div className="obps-page-components-layout-owner-search-modal--style-43">
+              <p className="obps-page-components-layout-owner-search-modal--style-44"><strong>{t("APPLICANT NAME")}:</strong> {selectedUser.name || "NA"}</p>
+              <p className="obps-page-components-layout-owner-search-modal--style-45"><strong>{t("MOBILE NO")}:</strong> {selectedUser.mobileNumber || "NA"}</p>
+              {selectedUser.emailId && <p className="obps-page-components-layout-owner-search-modal--style-46"><strong>{t("EMAIL ID")}:</strong> {selectedUser.emailId}</p>}
             </div>
 
             {/* Applicant Type */}
@@ -738,7 +724,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                     t={t}
                   />
                 </div>
-                {errors?.aplicantType && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.aplicantType}</CardLabelError>}
+                {errors?.aplicantType && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-47">{errors.aplicantType}</CardLabelError>}
               </React.Fragment>
             )}
 
@@ -759,7 +745,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                       t={t}
                     />
                   </div>
-                {errors?.authorisedPerson && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.authorisedPerson}</CardLabelError>}
+                {errors?.authorisedPerson && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-48">{errors.authorisedPerson}</CardLabelError>}
               </React.Fragment>
             )}
 
@@ -768,7 +754,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 {t("BPA_APPLICANT_PASSPORT_PHOTO")}
                 <span className="requiredField">*</span>
               </CardLabel>
-              <div className="field" style={{ width: "100%" }}>
+              <div className="field obps-page-components-layout-owner-search-modal--style-49" >
                 <CustomUploadFile
                   id="passport-photo-modal"
                   onUpload={selectPhotoFile}
@@ -783,14 +769,14 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 />
                 <p className="upload-file-message">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
               </div>
-            {errors?.photo && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.photo}</CardLabelError>}
+            {errors?.photo && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-50">{errors.photo}</CardLabelError>}
 
             {/* ID Proof */}
               <CardLabel className="card-label-smaller">
                 {t("BPA_APPLICANT_ID_PROOF")}
                 <span className="requiredField">*</span>
               </CardLabel>
-              <div className="field" style={{ width: "100%" }}>
+              <div className="field obps-page-components-layout-owner-search-modal--style-51" >
                 <CustomUploadFile
                   id="id-proof-modal"
                   onUpload={selectDocumentFile}
@@ -805,14 +791,14 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 />
                 <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
               </div>
-            {errors?.document && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.document}</CardLabelError>}
+            {errors?.document && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-52">{errors.document}</CardLabelError>}
 
             {/* PAN Document */}
               <CardLabel className="card-label-smaller">
                 {t("BPA_PAN_DOCUMENT")}
                 <span className="requiredField">*</span>
               </CardLabel>
-              <div className="field" style={{ width: "100%" }}>
+              <div className="field obps-page-components-layout-owner-search-modal--style-53" >
                 <CustomUploadFile
                   id="pan-document-modal"
                   onUpload={selectPanDocumentFile}
@@ -827,7 +813,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 />
                 <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
               </div>
-            {errors?.panDocument && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.panDocument}</CardLabelError>}
+            {errors?.panDocument && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-54">{errors.panDocument}</CardLabelError>}
 
             {/* PAN Number */}
               <CardLabel className="card-label-smaller">
@@ -847,22 +833,22 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                   t={t}
                 />
               </div>
-            {errors?.panNumber && <CardLabelError style={{ color: "red", fontSize: "12px", marginBottom: "15px" }}>{errors.panNumber}</CardLabelError>}
+            {errors?.panNumber && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-55">{errors.panNumber}</CardLabelError>}
 
             {/* Action Buttons */}
-            <div style={{ marginTop: "24px", display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+            <div className="obps-page-components-layout-owner-search-modal--style-56">
               <button
                 type="button"
-                className="submit-bar"
-                style={{ color: "#0b0c0c", background: "#f4f5f5", border: "1px solid #0b0c0c", cursor: "pointer" }}
+                className="submit-bar obps-page-components-layout-owner-search-modal--style-57"
+
                 onClick={closeModal}
               >
                 {t("CS_COMMON_CANCEL")}
               </button>
               <button
                 type="button"
-                className="submit-bar"
-                style={{ color: "white", cursor: "pointer" }}
+                className="submit-bar obps-page-components-layout-owner-search-modal--style-58"
+
                 onClick={handleSaveFinalOwner}
               >
                 {t("Save & Select Owner")}

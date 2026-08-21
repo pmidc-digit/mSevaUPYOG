@@ -1531,12 +1531,12 @@ export function getApproveRejectComments(workflowDetails) {
     const commentLine = actualComment?.trim()!== ""
       ? `16. The Approval is subjected to the following conditions:`
       : " ";
- 
+
     return {
       approverCommentLine: commentLine, // full sentence
       approverComment: actualComment, // only the extracted comment
     };
-    
+
   } catch (e) {
     console.error("comments error", e);
     return defaultReturn;
@@ -1648,7 +1648,7 @@ export const mergePDFsWithoutLibrary = async (urls) => {
 // Encrypt
 export const encryptId = (text) => {
   const SECRET_KEY = localStorage.getItem("token");
-  
+
   if (!SECRET_KEY) {
     console.error("SECRET_KEY (token) not found in localStorage");
     return null;
@@ -1667,7 +1667,7 @@ export const encryptId = (text) => {
 export const decryptId = (cipherText) => {
   try {
     const SECRET_KEY = localStorage.getItem("token");
-    
+
     if (!SECRET_KEY) {
       console.error("SECRET_KEY (token) not found in localStorage");
       return null;

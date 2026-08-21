@@ -100,7 +100,7 @@ const OCSendBackToCitizen = ({ parentRoute }) => {
   if (isNocLoading || isBpaSearchLoading || isLoading) {
     return <Loader />
   }
-  
+
   return (
     <Switch>
       {config.map((routeObj, index) => {

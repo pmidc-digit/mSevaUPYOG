@@ -105,7 +105,7 @@ const getAcknowledgement = async (application, t) => {
       </div>
 
       <div class="acknowledgement-text">
-        ${t("ADV_ACK_TEXT_2")}          
+        ${t("ADV_ACK_TEXT_2")}
       </div>
 
       <h3>${t("ADS_APPLICANT_DETAILS")}</h3>
@@ -181,7 +181,7 @@ const getAcknowledgement = async (application, t) => {
       <div class="acknowledgement-text">
         ${t("ADV_ACK_TEXT_1")}
       </div>
-      
+
       <div class="footer">
         <p>Generated on: ${currentDate}</p>
         <p>Municipal Corporation</p>

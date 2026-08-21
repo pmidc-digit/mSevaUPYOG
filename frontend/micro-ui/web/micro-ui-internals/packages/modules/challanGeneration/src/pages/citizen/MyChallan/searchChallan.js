@@ -26,7 +26,7 @@ const MyChallanResult = ({ template, header, actionButtonLabel, initialStates = 
     setPageSize(Number(e.target.value));
     setFilters((prev) => ({
       ...prev,
-      limit: Number(prev.limit) + pageSize, // Load next 5 items only
+      limit: Number(prev.limit) + pageSize // Load next 5 items only
     }));
   };
   const fetchNextPage = () => {
@@ -43,7 +43,7 @@ const MyChallanResult = ({ template, header, actionButtonLabel, initialStates = 
   const fetchFirstPage = () => setPageOffset(0);
 
   const { control, handleSubmit, setValue, formState, watch, register, reset } = useForm({
-    defaultValues: {},
+    defaultValues: {}
   });
 
   let filter = window.location.href.split("/").pop();
@@ -56,9 +56,9 @@ const MyChallanResult = ({ template, header, actionButtonLabel, initialStates = 
     t1 = 4;
   }
 
-  let initialFilters = !isNaN(parseInt(filter))
-    ? { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId }
-    : { limit: "10", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId };
+  let initialFilters = !isNaN(parseInt(filter)) ?
+  { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId } :
+  { limit: "10", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId };
 
   // useEffect(() => {
   //   setFilters(initialFilters);
@@ -81,39 +81,39 @@ const MyChallanResult = ({ template, header, actionButtonLabel, initialStates = 
 
   const onSubmit = (data) => {
     if (data?.applicationNo)
-      setFilters({ limit: "10", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId, challanNo: data?.applicationNo });
+    setFilters({ limit: "10", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId, challanNo: data?.applicationNo });
     if (data?.mobileNumber)
-      setFilters({ limit: "10", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId, mobileNumber: data?.mobileNumber });
+    setFilters({ limit: "10", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId, mobileNumber: data?.mobileNumber });
   };
 
   return (
     <div className="mychallan-custom">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ width: "100%", gap: "20px" }} className="search-form-wrapper">
+        <div className="search-form-wrapper challan-generation-style-cf34b98518">
           {/* <form onSubmit={handleSubmit(onSubmit)}> */}
           <SearchField>
             <label>{t("Challan Number")}</label>
             <TextInput name="applicationNo" inputRef={register({})} />
           </SearchField>
 
-          <SearchField style={{ display: "flex", flexDirection: "column" }}>
+          <SearchField className="challan-generation-style-6eab5e7808">
             <label>{t("BPA_APPLICANT_MOBILE_NO_LABEL")}</label>
             <TextInput
               name="mobileNumber"
               inputRef={register({
                 minLength: {
                   value: 10,
-                  message: t("CORE_COMMON_MOBILE_ERROR"),
+                  message: t("CORE_COMMON_MOBILE_ERROR")
                 },
                 maxLength: {
                   value: 10,
-                  message: t("CORE_COMMON_MOBILE_ERROR"),
+                  message: t("CORE_COMMON_MOBILE_ERROR")
                 },
                 pattern: {
                   value: /[6789][0-9]{9}/,
                   //type: "tel",
-                  message: t("CORE_COMMON_MOBILE_ERROR"),
-                },
+                  message: t("CORE_COMMON_MOBILE_ERROR")
+                }
               })}
               type="number"
               componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
@@ -125,15 +125,15 @@ const MyChallanResult = ({ template, header, actionButtonLabel, initialStates = 
           <SearchField className="submit">
             <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
             <p
-              style={{ marginTop: "24px" }}
+
               onClick={() => {
                 reset({
                   applicationNo: "",
-                  mobileNumber: "",
+                  mobileNumber: ""
                 });
                 // previousPage();
-              }}
-            >
+              }} className="challan-generation-style-3343fd6464">
+
               {t(`ES_COMMON_CLEAR_ALL`)}
             </p>
           </SearchField>
@@ -141,44 +141,44 @@ const MyChallanResult = ({ template, header, actionButtonLabel, initialStates = 
         </div>
       </form>
       <div>
-        {header && (
-          <Header>
+        {header &&
+        <Header>
             {t(header)} ({getChallanData?.challans?.length})
           </Header>
-        )}
+        }
 
-        {getChallanData?.challans?.length && (
-          <ChallanTable
-            // onFilterChange={handleFilterChange}
-            // searchFields={getSearchFields()}
-            // onSearch={handleFilterChange}
-            // onSort={handleSort}
-            onNextPage={fetchNextPage}
-            onPrevPage={fetchPrevPage}
-            onLastPage={fetchLastPage}
-            onFirstPage={fetchFirstPage}
-            // currentPage={Math.floor(pageOffset / pageSize)}
-            // pageSizeLimit={pageSize}
-            onPageSizeChange={handlePageSizeChange}
-            data={getChallanData?.challans}
-          />
-        )}
+        {getChallanData?.challans?.length &&
+        <ChallanTable
+        // onFilterChange={handleFilterChange}
+        // searchFields={getSearchFields()}
+        // onSearch={handleFilterChange}
+        // onSort={handleSort}
+        onNextPage={fetchNextPage}
+        onPrevPage={fetchPrevPage}
+        onLastPage={fetchLastPage}
+        onFirstPage={fetchFirstPage}
+        // currentPage={Math.floor(pageOffset / pageSize)}
+        // pageSizeLimit={pageSize}
+        onPageSizeChange={handlePageSizeChange}
+        data={getChallanData?.challans} />
+
+        }
       </div>
       {loader && <Loader page={true} />}
-    </div>
-  );
+    </div>);
+
 };
 
 MyChallanResult.propTypes = {
   template: PropTypes.any,
   header: PropTypes.string,
-  actionButtonLabel: PropTypes.string,
+  actionButtonLabel: PropTypes.string
 };
 
 MyChallanResult.defaultProps = {
   template: [],
   header: null,
-  actionButtonLabel: null,
+  actionButtonLabel: null
 };
 
 export default MyChallanResult;

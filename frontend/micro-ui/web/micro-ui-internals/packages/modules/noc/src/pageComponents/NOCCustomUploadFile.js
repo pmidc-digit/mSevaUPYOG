@@ -9,8 +9,8 @@ const getRandomId = () => {
 
 const CloseBtn = (props) => {
   return (
-    <div className="close-btn" onClick={props.onClick}>      
-      <Close style={{ fill: "red" }}  />
+    <div className="close-btn" onClick={props.onClick}>
+      <Close className="noc-page-components-noccustom-upload-file--style-1"  />
     </div>
   );
 };
@@ -302,7 +302,7 @@ const NOCCustomUploadFile = (props) => {
               )}
             </div>
           )}
-      {props.iserror && <p style={{ color: "red" }}>{props.iserror}</p>}
+      {props.iserror && <p className="noc-page-components-noccustom-upload-file--style-2">{props.iserror}</p>}
       {props?.showHintBelow && <p className="cell-text">{t(props?.hintText)}</p>}
       {loader && <Loader page={true} />}
     </Fragment>

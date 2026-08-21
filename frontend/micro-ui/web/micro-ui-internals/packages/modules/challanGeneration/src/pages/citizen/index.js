@@ -9,22 +9,22 @@ import SearchChallan from "./MyChallan/searchChallan";
 const ChallanBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
   const crumbs = [
-    {
-      path: "/digit-ui/citizen",
-      content: t("ES_COMMON_HOME"),
-      show: true,
-    },
-    {
-      path: "/digit-ui/citizen/challangeneration-home",
-      content: `${t("Challan Generation")} Home`,
-      show: location.pathname.includes("challangeneration/") ? true : false,
-    },
-    {
-      path: "/digit-ui/citizen/ptr-home",
-      content: t("PET_NDCSERVICE"),
-      show: location.pathname.includes("ptr/petservice/test") ? true : false,
-    },
-  ];
+  {
+    path: "/digit-ui/citizen",
+    content: t("ES_COMMON_HOME"),
+    show: true
+  },
+  {
+    path: "/digit-ui/citizen/challangeneration-home",
+    content: `${t("Challan Generation")} Home`,
+    show: location.pathname.includes("challangeneration/") ? true : false
+  },
+  {
+    path: "/digit-ui/citizen/ptr-home",
+    content: t("PET_NDCSERVICE"),
+    show: location.pathname.includes("ptr/petservice/test") ? true : false
+  }];
+
   return <BreadCrumb crumbs={crumbs} />;
 };
 
@@ -38,14 +38,14 @@ const App = () => {
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
   return (
-    <span className={"chb-citizen"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
+    <span className={"chb-citizen challan-generation-style-6fbc35255f"}>
       <Switch>
         <AppContainer>
-          {!isResponse ? (
-            <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px" } : {}}>
+          {!isResponse ?
+          <div className={window.location.href.includes("application-overview") || isMobile ? "challan-generation-citizen-breadcrumb--offset" : ""}>
               <ChallanBreadCrumbs location={location} />
-            </div>
-          ) : null}{" "}
+            </div> :
+          null}{" "}
           <PrivateRoute path={`${path}/search`} component={ChallanSearch} />
           <PrivateRoute path={`${path}/search-results`} component={SearchResultsComponent} />
           <PrivateRoute path={`${path}/My-Challans`} component={MyChallanResultsComponent} />
@@ -55,8 +55,8 @@ const App = () => {
           {/* <Redirect to={`/`}></Redirect> */}
         </AppContainer>
       </Switch>
-    </span>
-  );
+    </span>);
+
 };
 
 export default App;

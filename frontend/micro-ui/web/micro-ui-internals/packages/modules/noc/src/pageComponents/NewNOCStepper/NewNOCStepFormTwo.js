@@ -50,7 +50,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     window.scrollTo({
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
-    });    
+    });
   }, [])
 
   const handleBack = () => {

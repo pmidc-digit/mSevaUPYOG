@@ -108,7 +108,7 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
 
 
   // console.log("documents",documents);
-  
+
   // Extract primary owner data (owners[0] after sorting active owners by isPrimaryOwner) for applicant form fields
   const activeOwnersList = layoutObject?.owners ? layoutObject.owners.filter((o) => o?.status !== false && o?.status !== "false") : [];
   const sortedOwnersList = [...activeOwnersList].sort((a, b) => {
@@ -146,7 +146,7 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
     primaryOwnerPhoto: primaryOwner?.additionalDetails?.ownerPhoto || professionalDetails?.primaryOwnerPhoto || "",
     primaryOwnerDocument: primaryOwner?.additionalDetails?.documentFile || professionalDetails?.primaryOwnerDocument || "",
   };
-  
+
   //console.log(siteDetails, "SSSSS");
   //console.log("[EditLayoutApplication] Primary owner data:", primaryOwner);
   //console.log("[EditLayoutApplication] Extracted applicant details:", applicantDetails);
@@ -214,7 +214,7 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
       });
     });
 
-  
+
 
   const convertToISODate = (dateStr) => {
   if (!dateStr) return "";
@@ -240,15 +240,15 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
           dispatch(RESET_LayoutNewApplication_FORM());
           hasResetForm.current = true;
         }
-        
+
         // Wait for all required data to be loaded including gender data
         // Also prevent re-initialization
         // if (!isLoading && layoutObject?.layoutDetails && !isUlbListLoading && !isGenderLoading && menu.length > 0 && !isDataInitialized.current) {
         if (!isBuildingTypeLoading && !isBuildingCategoryLoading && !isRoadTypeLoading && !isLayoutTypeLoading && !isMdmsLoading && !isLoading && layoutObject?.layoutDetails && !isUlbListLoading && !isGenderLoading && menu.length > 0 && !isDataInitialized.current) {
           isDataInitialized.current = true;
           //console.log("[EditLayoutApplication] Initializing form data with menu:", menu);
-          
-          
+
+
           const formattedDocuments = {
             documents: {
               documents: documents?.map((doc) => ({
@@ -261,38 +261,38 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
               })),
             },
           };
-    
+
           // Also prepare photo and document file uploads from primary owner
           // These will be used to prefill the upload components
           const photoUploadedFiles = {};
           const documentUploadedFiles = {};
           const panDocumentUploadedFiles = {};
-          
+
           if (primaryOwner?.additionalDetails?.ownerPhoto) {
             photoUploadedFiles[0] = {
               fileStoreId: primaryOwner.additionalDetails.ownerPhoto,
               fileName: "Owner Photo",
             };
           }
-          
+
           if (primaryOwner?.additionalDetails?.documentFile) {
             documentUploadedFiles[0] = {
               fileStoreId: primaryOwner.additionalDetails.documentFile,
               fileName: "Primary Owner Document",
             };
           }
-          
+
           if (applicantDetails?.panNumber && primaryOwner?.additionalDetails?.panDocument) {
             panDocumentUploadedFiles[0] = {
               fileStoreId: primaryOwner.additionalDetails.panDocument,
               fileName: "PAN Document",
             };
           }
-    
+
           Object.entries(coordinates).forEach(([key, value]) => {
             dispatch(UPDATE_LayoutNewApplication_CoOrdinates(key, value));
           });
-    
+
           const updatedApplicantDetails = {
             // Primary owner/applicant fields - map to form field names
             applicantOwnerOrFirmName: applicantDetails?.applicantName || "",
@@ -330,12 +330,12 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
               {name: 'Multiple', code: 'MULTIPLE'}
             ) : ({name: 'Individual', code: 'INDIVIDUAL'}),
             authorisedPerson: applicantDetails?.authorisedPerson || "",
-            
+
           };
-    
+
           const districtObj = cities?.find((obj) => obj?.name === siteDetails?.district?.name || obj?.name === siteDetails?.district);
           setSelectedDistrict(districtObj);
-    
+
           const buildingCategoryOptions = [
             { code: "RESIDENTIAL", name: "Residential" },
             { code: "COMMERCIAL", name: "Commercial" },
@@ -391,7 +391,7 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
             // specificationIsSiteUnderMasterPlan: options.find((obj) => (obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan || {})),
           };
           //console.log("Mapped site details for form:",siteDetails, updatedSiteDetails, buildingCategoryData);
-    
+
           dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedApplicantDetails));
           dispatch(UPDATE_LayoutNewApplication_FORM("siteDetails", updatedSiteDetails));
           dispatch(UPDATE_LayoutNewApplication_FORM("documents", formattedDocuments));
@@ -400,7 +400,7 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
               Layout: [layoutObject],
             })
           );
-    
+
           // Map ALL owners array to applicants format for the form
           const rawOwners = layoutObject?.owners || [];
           const activeOwners = rawOwners.filter((o) => o?.status !== false && o?.status !== "false");
@@ -416,7 +416,7 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
 
           const ownersFromApi = [...sortedActive, ...inactiveOwners];
           //console.log("[EditLayoutApplication] ownersFromApi:", ownersFromApi);
-          
+
           // Helper function to format DOB
           const formatDobToDate = (dob) => {
             if (!dob) return "";
@@ -432,13 +432,13 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
               return "";
             }
           };
-    
+
           // Map all owners including primary (index 0)
           // console.log("Ownsers in this field", ownersFromApi)
           const allApplicants = ownersFromApi?.map((owner, index) => {
             const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender || null;
             const formattedDob = formatDobToDate(owner?.dob);
-    
+
             return {
               ...owner,
               actualIndex: index,
@@ -459,12 +459,12 @@ const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ app
               status: owner?.status
             };
           });
-    
+
           const applicantsForForm = allApplicants.length > 0 ? allApplicants : [];
-    
+
           //console.log("[EditLayoutApplication] applicantsForForm mapped:", applicantsForForm);
           dispatch(UPDATE_LayoutNewApplication_FORM("applicants", applicantsForForm));
-    
+
           // dispatch(UPDATE_LayoutNewApplication_FORM("apiData", {...applicationDetails, apiData: editApi?.Layout?.[0] || editApi})); // Store full response like CLU
         }
       }, [isLoading, isUlbListLoading, isGenderLoading, layoutObject, menu.length, isBuildingTypeLoading, isBuildingCategoryLoading, isRoadTypeLoading, isLayoutTypeLoading, isMdmsLoading]); // Wait for all data to load

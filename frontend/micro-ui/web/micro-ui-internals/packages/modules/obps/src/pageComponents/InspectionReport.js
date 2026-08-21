@@ -35,7 +35,7 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
     // if (window.location.href.includes("tl/renew-application-details")) isRenewal = true;
     const { data: tradeMdmsData, isLoading } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "TradeLicense", "TradeUnits", "[?(@.type=='TL')]");
     const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["CheckList"]);
-    let type = "LOW"    
+    let type = "LOW"
 
     const addNewFieldReport = () => {
         const newUnit = createUnitDetails();
@@ -120,8 +120,8 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         <InspectionReportForm  index={0} unit={FieldReports[0]} {...commonProps} />
         // <div>
         //     <React.Fragment>
-                //  {FieldReports && FieldReports.map((unit, index) => ( 
-                    
+                //  {FieldReports && FieldReports.map((unit, index) => (
+
                 // ))}
             // </React.Fragment>
             // <LinkButton label={t("BPA_ADD_FIELD_INSPECTION")} onClick={addNewFieldReport} style={{ color: "#a82227", width: "fit-content" }} />
@@ -180,7 +180,7 @@ const InspectionReportForm = (_props) => {
     const documentData = siteImages?.map((value, index) => ({
         title: `SITE_IMAGE_${index+1}`,
         imageFileStoreId: value,
-        // geoLocation: geoLocations[index] 
+        // geoLocation: geoLocations[index]
     }))
     const today = new Date().toISOString().split("T")[0];
 
@@ -235,9 +235,9 @@ const InspectionReportForm = (_props) => {
           Header: t(" "),
           accessor: "imageFileStoreId",
           Cell: ({ value }) =>
-            {          
+            {
               return value ? (
-              <LinkButton style={{ float: "right", display: "inline" }}
+              <LinkButton className="obps-page-components-inspection-report--style-1"
                 label={t("View Image")}
                 onClick={() => routeTo(value)}
               />
@@ -249,7 +249,7 @@ const InspectionReportForm = (_props) => {
         //   Header: t(" "),
         //   accessor: "geoLocation",
         //   Cell: ({ value }) =>
-        //     {          
+        //     {
         //       return value ? (
         //       <LinkButton style={{ float: "right", display: "inline" }}
         //         label={t("View Location")}
@@ -306,17 +306,17 @@ const InspectionReportForm = (_props) => {
         return fieldoptions;
     }
 
-    
+
 
     const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
     return (
         <React.Fragment>
-            
+
             {/* <div>          */}
                     {allFieldReport?.length > 1 ? (
                         <LinkButton
-                            label={<DeleteIcon style={{ float: "right", position: "relative", bottom: "-6px" }} fill={!(allFieldReport.length == 1) ? "#494848" : "#FAFAFA"} />}
-                            style={{ width: "100px", display: "inline", background: "black" }}
+                            label={<DeleteIcon className="obps-page-components-inspection-report--style-3" fill={!(allFieldReport.length == 1) ? "#494848" : "#FAFAFA"} />}
+                            className="obps-page-components-inspection-report--style-2"
                             onClick={(e) => removeUnit(unit)}
                         />
                     ) : null}
@@ -422,12 +422,12 @@ const InspectionReportForm = (_props) => {
                                 )}
                             />
                         </div>
-                    ))} */}                
+                    ))} */}
                     <div className="bpa-table-container">
                         <table className="customTable table-border-style inspection-report-table">
                             <thead>
                                 <tr>
-                                    <th style={{width:"100px"}}>{t("SR_NO")}</th>
+                                    <th className="obps-page-components-inspection-report--style-4">{t("SR_NO")}</th>
                                     <th>{t("BPA_CHECK_LIST_DETAILS")}</th>
                                     <th>{t("BPA_REMARKS")}</th>
                                 </tr>
@@ -439,7 +439,7 @@ const InspectionReportForm = (_props) => {
                                     const cleanedQuestion = questionText.replace(/^[\d\s.:]+/, '').trim();
                                     return (
                                     <tr key={ind}>
-                                        <td style={{width:"100px"}}>{ind + 1}</td>
+                                        <td className="obps-page-components-inspection-report--style-5">{ind + 1}</td>
                                         <td>{cleanedQuestion}</td>
                                         <td>
                                             <Controller
@@ -461,7 +461,7 @@ const InspectionReportForm = (_props) => {
                                         </td>
                                     </tr>
                                     );
-                                })}                              
+                                })}
                                 <tr>
                                     <td>{questionList?.length + 1 || 1}</td>
                                     <td>{t("BPA_RECOMMENDATIONS_MIN_MESSAGE")}</td>
@@ -477,8 +477,8 @@ const InspectionReportForm = (_props) => {
                                                   message: t("MIN_20_CHARACTERS_REQUIRED"),
                                                 },
                                               }}
-                                            render={(props) => (                                                
-                                                <TextArea 
+                                            render={(props) => (
+                                                <TextArea
                                                     value={props.value}
                                                     onChange={(e) => {
                                                         props.onChange(e.target.value);

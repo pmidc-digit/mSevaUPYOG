@@ -23,14 +23,14 @@ const SearchChallan = (props) => {
       select: (data) => {
         const formattedData = data?.["BillingService"]?.["BusinessService"];
         return formattedData;
-      },
+      }
     }
   );
 
   const methods = useForm({
     defaultValues: {
-      categoryName: "",
-    },
+      categoryName: ""
+    }
   });
 
   const {
@@ -39,7 +39,7 @@ const SearchChallan = (props) => {
     reset,
     control,
     getValues,
-    formState: { errors },
+    formState: { errors }
   } = methods;
 
   const onSubmit = async (data) => {
@@ -58,11 +58,11 @@ const SearchChallan = (props) => {
     // Filter out empty strings, null, undefined, and empty arrays
     const filters = Object.entries(data).reduce((acc, [key, value]) => {
       if (
-        value !== null &&
-        value !== undefined &&
-        !(typeof value === "string" && value.trim() === "") &&
-        !(Array.isArray(value) && value.length === 0)
-      ) {
+      value !== null &&
+      value !== undefined &&
+      !(typeof value === "string" && value.trim() === "") &&
+      !(Array.isArray(value) && value.length === 0))
+      {
         // Replace businessService with its code
         acc[key] = key === "businessService" ? businessServiceData : value;
       }
@@ -91,56 +91,53 @@ const SearchChallan = (props) => {
   const GetCell = (value) => <span className="cell-text">{value}</span>;
   const columns = useMemo(
     () => [
-      {
-        Header: "Challan No",
-        disableSortBy: true,
-        accessor: (row) => {
-          const challanNumber = row?.challanNo;
-          return (
-            <span className="link">
+    {
+      Header: "Challan No",
+      disableSortBy: true,
+      accessor: (row) => {
+        const challanNumber = row?.challanNo;
+        return (
+          <span className="link">
               <Link to={`${props.parentRoute}/challansearch/` + challanNumber}>{challanNumber}</Link>
             </span>
-            // <span className="cell-text" style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }} onClick={() => downloadPDF(row)}>
-            //   {challanNumber}
-            // </span>
-          );
-        },
-      },
-      {
-        Header: "Consumer Name",
-        disableSortBy: true,
-        accessor: (row) => {
-          return GetCell(row?.citizen?.name);
-        },
-      },
-      {
-        Header: "Service Type",
-        disableSortBy: true,
-        accessor: (row) => {
-          return GetCell(row?.businessService);
-        },
-      },
-      {
-        Header: "Status",
-        disableSortBy: true,
-        accessor: (row) => {
-          const formattedStatus = row?.applicationStatus.toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
-          return (
-            <span className="cell-text" style={{ color: "green" }}>
+        );
+      }
+    },
+    {
+      Header: "Consumer Name",
+      disableSortBy: true,
+      accessor: (row) => {
+        return GetCell(row?.citizen?.name);
+      }
+    },
+    {
+      Header: "Service Type",
+      disableSortBy: true,
+      accessor: (row) => {
+        return GetCell(row?.businessService);
+      }
+    },
+    {
+      Header: "Status",
+      disableSortBy: true,
+      accessor: (row) => {
+        const formattedStatus = row?.applicationStatus.toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
+        return (
+          <span className="cell-text challan-generation-style-5bac8467c0">
               {formattedStatus}
-            </span>
-          );
-          // return GetCell(row?.applicationStatus);
-        },
-      },
-    ],
+            </span>);
+
+        // return GetCell(row?.applicationStatus);
+      }
+    }],
+
     []
   );
 
   return (
     <React.Fragment>
 
-      <div className={"employee-application-details"} >
+      <div className={"employee-application-details"}>
         <Header>Search Challan</Header>
       </div>
 
@@ -155,10 +152,10 @@ const SearchChallan = (props) => {
                   type="text"
                   inputRef={register({
                     maxLength: {
-                      value: 200,
-                    },
-                  })}
-                />
+                      value: 200
+                    }
+                  })} />
+
                 {errors.challanNo && <p className="requiredField">{errors.challanNo.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
@@ -166,26 +163,26 @@ const SearchChallan = (props) => {
                 <Controller
                   control={control}
                   name="businessService"
-                  render={(props) => (
-                    <Dropdown
-                      option={EmployeeStatusData}
-                      select={(e) => {
-                        props.onChange(e);
-                      }}
-                      optionKey="code"
-                      onBlur={props.onBlur}
-                      t={t}
-                      selected={props.value}
-                    />
-                  )}
-                />
+                  render={(props) =>
+                  <Dropdown
+                    option={EmployeeStatusData}
+                    select={(e) => {
+                      props.onChange(e);
+                    }}
+                    optionKey="code"
+                    onBlur={props.onBlur}
+                    t={t}
+                    selected={props.value} />
+
+                  } />
+
 
                 {errors.businessService && <p className="requiredField">{errors.businessService.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Mobile No</label>
                 <div className="field-container">
-                  <span className="citizen-card-input citizen-card-input--front" style={{ flex: "none" }}>
+                  <span className="citizen-card-input citizen-card-input--front challan-generation-style-16b4c2d840">
                     +91
                   </span>
                   <TextInput
@@ -194,18 +191,18 @@ const SearchChallan = (props) => {
                     inputRef={register({
                       pattern: {
                         value: /^[0-9]+$/,
-                        message: "Only numbers are allowed",
+                        message: "Only numbers are allowed"
                       },
                       minLength: {
                         value: 10,
-                        message: "Mobile number must be at least 10 digits",
+                        message: "Mobile number must be at least 10 digits"
                       },
                       maxLength: {
                         value: 15,
-                        message: "Mobile number cannot exceed 15 digits",
-                      },
-                    })}
-                  />
+                        message: "Mobile number cannot exceed 15 digits"
+                      }
+                    })} />
+
                   {errors.mobileNumber && <p className="requiredField">{errors.mobileNumber.message}</p>}
                 </div>
               </div>
@@ -214,38 +211,38 @@ const SearchChallan = (props) => {
           </form>
         </FormProvider>
 
-        {tableData?.length > 0 && (
-          <div className="challan-search-table" >
+        {tableData?.length > 0 &&
+        <div className="challan-search-table">
             <Table
-              t={t}
-              data={tableData}
-              totalRecords={9}
-              columns={columns}
-              getCellProps={(cellInfo) => {
-                return {
-                  style: {
-                    minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-                    padding: "20px 18px",
-                    fontSize: "16px",
-                  },
-                };
-              }}
-              // onPageSizeChange={onPageSizeChange}
-              currentPage={getValues("offset") / getValues("limit")}
-              // onNextPage={nextPage}
-              // onPrevPage={previousPage}
-              pageSizeLimit={getValues("limit")}
-              // onSort={onSort}
-              disableSort={false}
-              sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
-            />
+            t={t}
+            data={tableData}
+            totalRecords={9}
+            columns={columns}
+            getCellProps={(cellInfo) => {
+              return {
+                style: {
+                  minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
+                  padding: "20px 18px",
+                  fontSize: "16px"
+                }
+              };
+            }}
+            // onPageSizeChange={onPageSizeChange}
+            currentPage={getValues("offset") / getValues("limit")}
+            // onNextPage={nextPage}
+            // onPrevPage={previousPage}
+            pageSizeLimit={getValues("limit")}
+            // onSort={onSort}
+            disableSort={false}
+            sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]} />
+
           </div>
-        )}
+        }
         {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"true"} />}
         {isLoading && <Loader />}
       </div>
-    </React.Fragment>
-  );
+    </React.Fragment>);
+
 };
 
 export default SearchChallan;

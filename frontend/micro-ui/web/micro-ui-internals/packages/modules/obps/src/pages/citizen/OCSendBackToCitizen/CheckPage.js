@@ -242,12 +242,12 @@ console.log("object");
     <React.Fragment>
       <Timeline currentStep={4} flow={value?.uiFlow?.flow === "OCBPA" ? "OCBPA" : ""} />
       <Header styles={{ marginLeft: "10px" }}>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
-      <Card style={{ paddingRight: "16px" }}>
+      <Card className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-1">
         <StatusTable>
           <Row className="border-none" label={t(`BPA_APPLICATION_NUMBER_LABEL`)} text={applicationNo ? applicationNo : ""} />
         </StatusTable>
       </Card>
-      <Card style={{ paddingRight: "16px" }}>
+      <Card className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-2">
         <CardHeader>{t(`BPA_BASIC_DETAILS_TITLE`)}</CardHeader>
         <StatusTable>
           <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APP_DATE_LABEL`)} text={convertEpochToDateDMY(Number(data?.applicationDate))} />
@@ -258,7 +258,7 @@ console.log("object");
           <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL`)} text={data?.applicantName} />
         </StatusTable>
       </Card>
-      <Card style={{ paddingRight: "16px" }}>
+      <Card className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-3">
         <CardHeader>{t("BPA_PLOT_DETAILS_TITLE")}</CardHeader>
         <StatusTable>
           <Row
@@ -276,43 +276,27 @@ console.log("object");
           <Row className="border-none" label={t(`BPA_BOUNDARY_LAND_REG_DETAIL_LABEL`)} text={data?.registrationDetails || t("CS_NA")} />
         </StatusTable>
       </Card>
-      <Card style={{ paddingRight: "16px" }}>
+      <Card className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-4">
         <CardHeader>{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardHeader>
         <CardSubHeader>{t(value?.uiFlow?.flow === "OCBPA" ? "BPA_OC_EDCR_NO_LABEL" : "BPA_EDCR_DETAILS")}</CardSubHeader>
-        <StatusTable style={{ border: "none" }}>
+        <StatusTable className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-5">
           <Row className="border-none" label={t("BPA_EDCR_NO_LABEL")} text={data?.scrutinyNumber?.edcrNumber || t("CS_NA")}></Row>
           <CardSubHeader>{t("BPA_UPLOADED_PLAN_DIAGRAM")}</CardSubHeader>
           <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.updatedDxfFile)} />
           <p
-            style={{
-              marginTop: "8px",
-              marginBottom: "20px",
-              textAlign: "Left",
-              fontSize: "16px",
-              lineHeight: "19px",
-              color: "#505A5F",
-              fontWeight: "400",
-            }}
+            className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-6"
           >
             {t(`BPA_UPLOADED_PLAN_DXF`)}
           </p>
           <CardSubHeader>{t("BPA_SCRUNTINY_REPORT_OUTPUT")}</CardSubHeader>
           <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.planReport)} />
           <p
-            style={{
-              marginTop: "8px",
-              marginBottom: "20px",
-              textAlign: "Left",
-              fontSize: "16px",
-              lineHeight: "19px",
-              color: "#505A5F",
-              fontWeight: "400",
-            }}
+            className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-7"
           >
             {t(`BPA_SCRUTINY_REPORT_PDF`)}
           </p>
         </StatusTable>
-        <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+        <hr className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-8" />
         <CardSubHeader>{value?.uiFlow?.flow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_EXTRACT_HEADER") : t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader>
         <StatusTable>
           <Row
@@ -335,11 +319,11 @@ console.log("object");
             text={`${datafromAPI?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight} ${t("BPA_MTRS_LABEL")}`}
           ></Row>
         </StatusTable>
-        <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+        <hr className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-9" />
         <CardSubHeader>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
         {datafromAPI?.planDetail?.blocks.map((block, index) => (
           <div key={index}>
-            <CardSubHeader style={{ marginTop: "15px" }}>
+            <CardSubHeader className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-10">
               {t("BPA_BLOCK_SUBHEADER")} {index + 1}
             </CardSubHeader>
             <StatusTable>
@@ -350,7 +334,7 @@ console.log("object");
                 text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
               ></Row>
             </StatusTable>
-            <div style={{ overflow: "scroll" }}>
+            <div className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-11">
               <Table
                 className="customTable table-fixed-first-column table-border-style"
                 t={t}
@@ -370,9 +354,9 @@ console.log("object");
             </div>
           </div>
         ))}
-        <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+        <hr className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-12" />
         <CardSubHeader>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
-        <StatusTable style={{ border: "none" }}>
+        <StatusTable className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-13">
           <Row
             className="border-none"
             label={t("BPA_APPLICATION_DEMOLITION_AREA_LABEL")}
@@ -386,7 +370,7 @@ console.log("object");
       </Card>
       {value?.uiFlow?.flow !== "OCBPA" ? (
         <div>
-          <Card style={{ paddingRight: "16px" }}>
+          <Card className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-14">
             <CardHeader>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardHeader>
             <StatusTable>
               <Row className="border-none" label={t(`BPA_DETAILS_PIN_LABEL`)} text={address?.pincode || t("CS_NA")} />
@@ -396,7 +380,7 @@ console.log("object");
               {/* <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} /> */}
             </StatusTable>
           </Card>
-          <Card style={{ paddingRight: "16px" }}>
+          <Card className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-15">
             <CardHeader>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardHeader>
             {owners?.owners &&
               owners?.owners.map((ob, index) => (
@@ -417,12 +401,12 @@ console.log("object");
           </Card>
         </div>
       ) : null}
-      <Card style={{ paddingRight: "16px" }}>
+      <Card className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-16">
         <StatusTable>
           <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
           <LinkButton
-            label={<EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />}
-            style={{ width: "100px", display: "inline" }}
+            label={<EditIcon className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-18" />}
+            className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-17"
             onClick={() => routeTo(`${routeLink}/document-details`)}
           />
           {
@@ -436,7 +420,7 @@ console.log("object");
           }
         </StatusTable>
       </Card>
-      <Card style={{ paddingRight: "16px" }}>
+      <Card className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-19">
         <CardHeader>{t("BPA_NOC_DETAILS_SUMMARY")}</CardHeader>
         {nocDocuments &&
           nocDocuments?.NocDetails.map((noc, index) => (
@@ -457,7 +441,7 @@ console.log("object");
                   : {}
               }
             >
-              <CardSectionHeader style={{ marginBottom: "24px" }}>{`${t(`BPA_${noc?.nocType}_HEADER`)}`}</CardSectionHeader>
+              <CardSectionHeader className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-20">{`${t(`BPA_${noc?.nocType}_HEADER`)}`}</CardSectionHeader>
               <StatusTable>
                 <Row className="border-none" label={t(`BPA_${noc?.nocType}_LABEL`)} text={noc?.applicationNo} />
                 <Row
@@ -485,7 +469,7 @@ console.log("object");
             </div>
           ))}
       </Card>
-      <Card style={{ paddingRight: "16px" }}>
+      <Card className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-21">
         <CardSubHeader>{t("BPA_SUMMARY_FEE_EST")}</CardSubHeader>
         <StatusTable>
           {reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.billAccountDetails.map((bill, index) => (
@@ -499,7 +483,7 @@ console.log("object");
             text={`₹ ${reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.amount || "0"}`}
           />
         </StatusTable>
-        <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+        <hr className="obps-pages-citizen-ocsend-back-to-citizen-check-page--style-22" />
         <CardHeader>{t("BPA_COMMON_TOTAL_AMT")}</CardHeader>
         <CardHeader>₹ {reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.amount || "0"}</CardHeader>
         <SubmitBar label={t("BPA_COMMON_BUTTON_SUBMIT")} onSubmit={onActionSelect} />

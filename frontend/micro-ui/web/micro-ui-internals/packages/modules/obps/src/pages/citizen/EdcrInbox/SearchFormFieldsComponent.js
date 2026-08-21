@@ -8,9 +8,9 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
 
   if (!isMobile) {
     return <React.Fragment>
-      <div className="search-container" style={{  marginLeft: "24px" }}>
+      <div className="search-container obps-pages-citizen-edcr-inbox-search-form-fields-component--style-1" >
         <div className="search-complaint-container">
-          <div className="complaint-input-container" style={{ textAlign: "start" }}>
+          <div className="complaint-input-container obps-pages-citizen-edcr-inbox-search-form-fields-component--style-2" >
             <SearchField>
               <label>{t("BPA_APPLICATION_NUMBER_LABEL")}</label>
               <TextInput name="applicationNumber" inputRef={registerRef({})} />
@@ -19,7 +19,7 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
               <label>{t("BPA_EDCR_NO_LABEL")}</label>
               <TextInput name="edcrNumber" inputRef={registerRef({})} />
             </SearchField>
-            <div className="search-action-wrapper" style={{ width: "100%" }}>
+            <div className="search-action-wrapper obps-pages-citizen-edcr-inbox-search-form-fields-component--style-3" >
               {searchFieldComponents}
             </div>
           </div>

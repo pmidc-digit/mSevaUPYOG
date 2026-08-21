@@ -33,21 +33,21 @@ const PTRResponseCitizen = (props) => {
     <div>
       <Card>
         <Banner
-          // message={t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
-          message={t("PTR_HEADER")}
-          applicationNumber={ptrCode}
-          info={nocData?.applicationStatus == "REJECTED" ? "" : t(`PTR__APPROVAL_NUMBER`)}
-          successful={nocData?.applicationStatus == "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
-          headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
-        />
+        // message={t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
+        message={t("PTR_HEADER")}
+        applicationNumber={ptrCode}
+        info={nocData?.applicationStatus == "REJECTED" ? "" : t(`PTR__APPROVAL_NUMBER`)}
+        successful={nocData?.applicationStatus == "REJECTED" ? false : true}
 
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+        headerStyles={{ fontSize: "32px", wordBreak: "break-word" }} className="ptr-style-59bdf7cb33" />
+
+
+        <ActionBar className="ptr-style-2b41b4f0a3">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_PTR")} onSubmit={onGoToPTR} />
         </ActionBar>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 export default PTRResponseCitizen;

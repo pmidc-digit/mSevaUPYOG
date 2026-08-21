@@ -77,7 +77,7 @@ console.log('data for ownerconsent', data)
   };
   const d = TimeStamp === "" ? "" : parseFormattedTimestamp(TimeStamp);
   const DateOnly = TimeStamp === "" ? "" : `${String(d?.getDate()).padStart(2, "0")}/${String(d?.getMonth() + 1).padStart(2, "0")}/${d?.getFullYear()}`;
-  // const DateOnly = TimeStamp 
+  // const DateOnly = TimeStamp
   // ? (() => {
   //     const date = new Date(TimeStamp);
   //     const day = String(date.getDate()).padStart(2, "0");
@@ -98,7 +98,7 @@ console.log('data for ownerconsent', data)
       setSetOtpLoading(true);
       // const response = await Digit.UserService.authenticate(requestData)
       const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData)
-      if (ResponseInfo.status === "Access Token generated successfully") {        
+      if (ResponseInfo.status === "Access Token generated successfully") {
         setOTPSuccess(t("VERIFIED"))
         const currentTimestamp = new Date()
         const opts = {
@@ -157,24 +157,24 @@ console.log('data for ownerconsent', data)
 
   console.log("TimeStamp", params?.additionalDetails?.TimeStamp, TimeStamp);
 
-  
+
   // const selfdeclarationform = `
   //   To,
   //   <b>${ulbselection}</b>
-  //   <b>${data?.applicationData?.tenantId}</b> 
-    
+  //   <b>${data?.applicationData?.tenantId}</b>
+
   //   Dear Sir or Madam,
 
   //   I/We, Shri/Smt/Kum. <b>${data?.applicationData?.landInfo?.owners.map(
   //     (item) => item?.name
-  //   )}</b> under signed owner of land bearing Kh. No. <b>${khasranumber}</b> of ULB 
+  //   )}</b> under signed owner of land bearing Kh. No. <b>${khasranumber}</b> of ULB
   //   <b>${data?.applicationData?.tenantId}</b> Area <b>${area}</b> (Sq.mts.), ward number <b>${ward}</b>, City <b>${data?.applicationData?.landInfo?.address?.city}</b>
-    
-  //   I/We hereby declare that the Architect name <b>${ownername}</b> (<b>${architecttype}</b>) Architect ID 
-  //   <b>${architectid}</b> is appointed by me/us and is authorized to make representation/application 
+
+  //   I/We hereby declare that the Architect name <b>${ownername}</b> (<b>${architecttype}</b>) Architect ID
+  //   <b>${architectid}</b> is appointed by me/us and is authorized to make representation/application
   //   with regard to aforesaid construction to any of the authorities.
 
-  //   I/We further declare that I am/We are aware of all the action taken or representation made 
+  //   I/We further declare that I am/We are aware of all the action taken or representation made
   //   by the <b>${architecttype}</b> authorized by me/us.
 
   //   i) That I am/We are sole owner of the site.
@@ -182,7 +182,7 @@ console.log('data for ownerconsent', data)
   //   ii) There is no dispute regarding the site and if any dispute arises then I shall be solely resp
   //   -onsible for the same.
 
-  //   iii) That construction of the building will be undertaken as per the approved building plans 
+  //   iii) That construction of the building will be undertaken as per the approved building plans
   //   and strutural design given by the Structural Engineer.
 
   //   That above stated facts are true and the requisite documents have been uploaded with this E-
@@ -195,8 +195,8 @@ console.log('data for ownerconsent', data)
   //   Name of Owner - <b>${ownername}</b>
   //   Mobile Number - <b>${ownermobileNumber}</b>
   //   Email Id  - <b>${ownerEmail}</b>
-    
-                                                                  
+
+
   //   `;
 
 
@@ -389,7 +389,7 @@ console.log('data for ownerconsent', data)
         return;
       }
       setIsUploading(true); // Set isUploading to true before starting the upload
-      
+
       const opts = {
         timeZone: "Asia/Kolkata",
         weekday: "long",
@@ -533,11 +533,11 @@ console.log(result, "RESULT");
           {/* <h2 style={modalStyles.heading}>DECLARATION UNDER SELF-CERTIFICATION SCHEME</h2>
           <h3 style={modalStyles.subheading}>(By OWNER)</h3> */}
           {/* <div style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', textAlign: 'justify', fontFamily: 'Roboto, serif' }}>{selfdeclarationform}</div>             */}
-          <div style={{ whiteSpace: "pre-wrap", wordWrap: "break-word", textAlign: "justify", fontFamily: "Roboto, serif" }}>
+          <div className="obps-pages-citizen-bpa-application-detail-citizen-consent--style-1">
             {/* {selfdeclarationform.split("\n").map((line, index) => (
               <React.Fragment key={index}>
                 <div style={isRightAlignedLine(line) ? modalStyles.rightAlignedText : {}} dangerouslySetInnerHTML={{ __html: line }} />
-   
+
                 {shouldAddSpacing(line, selfdeclarationform.split("\n")[index + 1]) && <div style={{ marginBottom: "2rem" }} />}
               </React.Fragment>
             ))} */}
@@ -545,11 +545,11 @@ console.log(result, "RESULT");
           </div>
 
           {(isUploading || setOtpLoading) ? <Loader />: <div>
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <div className="obps-pages-citizen-bpa-application-detail-citizen-consent--style-2">
             <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
           </div>
           <br></br>
-          {!isCitizenDeclared && <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          {!isCitizenDeclared && <div className="obps-pages-citizen-bpa-application-detail-citizen-consent--style-3">
             <br></br>
             <SubmitBar label={t("BPA_UPLOAD")} onSubmit={handleGetOTPClick} disabled={!isValidMobileNumber} />
           </div>}
@@ -561,8 +561,8 @@ console.log(result, "RESULT");
               <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
 
               <SubmitBar label={t("VERIFY_OTP")} onSubmit={uploadSelfDeclaration} />
-              {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
-              {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
+              {otpError && <CardLabel className="obps-pages-citizen-bpa-application-detail-citizen-consent--style-4">{t(otpError)}</CardLabel>}
+              {otpSuccess && <CardLabel className="obps-pages-citizen-bpa-application-detail-citizen-consent--style-5">{t(otpSuccess)}</CardLabel>}
             </React.Fragment>
           )}</div>}
         </div>

@@ -17,7 +17,7 @@ const ADSWFCaption = ({ data, OpenImage }) => {
           {data?.wfComment?.map((e) => (
             <div className="TLComments">
               <h3>{t("WF_COMMON_COMMENTS")}</h3>
-              <p style={{ overflowX: "scroll" }}>{e}</p>
+              <p className="ads-page-components-adswfcaption--style-1">{e}</p>
             </div>
           ))}
         </div>

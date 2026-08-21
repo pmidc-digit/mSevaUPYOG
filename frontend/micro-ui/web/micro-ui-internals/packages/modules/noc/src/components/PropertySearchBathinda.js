@@ -190,12 +190,12 @@ export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApi
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px", marginTop: "20px" }}>
+      <div className="noc-components-property-search-bathinda--style-1">
         <LabelFieldPair>
           <CardLabel className="card-label-smaller ndc_card_labels">{t("PROPERTY_ID")}</CardLabel>
           <div
-            className="field ndc_property_search"
-            style={{ display: "flex", gap: "16px", alignItems: "baseline", width: "100%" }}
+            className="field ndc_property_search noc-components-property-search-bathinda--style-2"
+
             ref={myElementRef}
             id="search-property-field"
           >
@@ -210,9 +210,9 @@ export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApi
 
             {!isLoading && (
               <button
-                className="submit-bar"
+                className="submit-bar noc-components-property-search-bathinda--style-3"
                 type="button"
-                style={{ color: "white", width: "100%", maxWidth: "100px" }}
+
                 onClick={searchProperty}
               >
                 {t("PT_SEARCH")}

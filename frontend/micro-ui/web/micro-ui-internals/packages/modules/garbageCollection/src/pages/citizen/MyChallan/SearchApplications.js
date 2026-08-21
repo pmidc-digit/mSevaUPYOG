@@ -87,16 +87,16 @@ const SearchApplications = ({ template, header, actionButtonLabel, initialStates
   };
 
   return (
-    <div style={{ marginTop: "16px" }}>
+    <div className="gc-style-d265a6b9b9 gc-citizen-search-applications">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ width: "100%", gap: "20px" }} className="search-form-wrapper">
+        <div className="search-form-wrapper gc-style-833eb1014a gc-citizen-search-applications__filters">
           {/* <form onSubmit={handleSubmit(onSubmit)}> */}
-          <SearchField>
+          <SearchField className="gc-citizen-search-applications__field">
             <label>{t("Application Number")}</label>
             <TextInput name="applicationNo" inputRef={register({})} />
           </SearchField>
 
-          <SearchField style={{ display: "flex", flexDirection: "column" }}>
+          <SearchField className="gc-style-ba30f188c7 gc-citizen-search-applications__field">
             <label>{t("BPA_APPLICANT_MOBILE_NO_LABEL")}</label>
             <TextInput
               name="mobileNumber"
@@ -122,10 +122,10 @@ const SearchApplications = ({ template, header, actionButtonLabel, initialStates
             <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
           </SearchField>
 
-          <SearchField className="submit">
+          <SearchField className="submit gc-citizen-search-applications__submit">
             <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
             <p
-              style={{ marginTop: "24px" }}
+              className="gc-style-ef7a9dfbd9"
               onClick={() => {
                 reset({
                   applicationNo: "",
@@ -140,9 +140,9 @@ const SearchApplications = ({ template, header, actionButtonLabel, initialStates
           {/* </form> */}
         </div>
       </form>
-      <div>
+      <div className="gc-citizen-search-applications__results">
         {header && (
-          <Header style={{ marginLeft: "8px" }}>
+          <Header className="gc-style-c937f3b834">
             {t(header)} ({getChallanData?.length})
           </Header>
         )}

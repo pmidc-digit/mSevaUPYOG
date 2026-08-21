@@ -14,7 +14,7 @@ const NOCResponseCitizen = (props) => {
   console.log("nocData here", nocData);
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const [loading, setLoading] = useState(false);
-  
+
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -63,7 +63,7 @@ const NOCResponseCitizen = (props) => {
    if (loading) {
       return <Loader />;
     }
-  
+
 
 
   return (
@@ -76,7 +76,7 @@ const NOCResponseCitizen = (props) => {
           applicationNumber={nocCode}
           info={nocData?.applicationStatus == "REJECTED" ? "" : t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_APPLICATION_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
+          className="noc-pages-citizen-nocresponse-citizen--style-1"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         {/* {nocData?.applicationStatus !== "REJECTED" ? (
@@ -87,7 +87,7 @@ const NOCResponseCitizen = (props) => {
         {/* <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
           </div>
         ) : null} */}
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+        <ActionBar className="noc-pages-citizen-nocresponse-citizen--style-2">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_NOC")} onSubmit={onGoToNOC} />
           {nocData?.applicationStatus === "INITIATED" ? (

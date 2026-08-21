@@ -31,48 +31,48 @@ const MyApplications = ({ view }) => {
 
       {currentApplications.map((application, index) => {
         const ownerForName = application?.Applications?.owners || [];
-        const ownerNames = ownerForName
-          ?.map((owner) => owner?.name)
-          ?.filter(Boolean)
-          ?.join(", ");
+        const ownerNames = ownerForName?.
+        map((owner) => owner?.name)?.
+        filter(Boolean)?.
+        join(", ");
         return (
           <div key={`card-${index}`}>
-           
+
             <Card>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={t(application?.Applications?.applicationNo)} />
               <KeyNote keyValue={t("TL_LOCALIZATION_OWNER_NAME")} note={t(ownerNames)} />
               <KeyNote keyValue={t("TL_HOME_SEARCH_RESULTS_APP_STATUS_LABEL")} note={t(application?.TL_HOME_SEARCH_RESULTS_APP_STATUS_LABEL)} />
 
-              <div className="action-button-myapplication" >
+              <div className="action-button-myapplication">
                 {/* {application?.Applications?.applicationStatus !== "PENDINGPAYMENT" && ( */}
                 <Link to={`/digit-ui/citizen/ndc/search/application-overview/${application?.Applications?.applicationNo}`}>
                   <SubmitBar label={t("CS_VIEW_DETAILS")} />
                 </Link>
                 {/* )} */}
 
-                {application?.Applications?.applicationStatus === "PENDINGPAYMENT" && (
-                  <Link to={`/digit-ui/citizen/payment/collect/NDC/${application?.Applications?.applicationNo}/${tenantId}?tenantId=${tenantId}`}>
-                
+                {application?.Applications?.applicationStatus === "PENDINGPAYMENT" &&
+                <Link to={`/digit-ui/citizen/payment/collect/NDC/${application?.Applications?.applicationNo}/${tenantId}?tenantId=${tenantId}`}>
+
                       <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} />
-                   
+
                   </Link>
-                )}
+                }
               </div>
             </Card>
-          </div>
-        );
+          </div>);
+
       })}
 
-      {!applicationsList.length && <p className="ndc-application-list" >{t("PTR_NO_APPLICATION_FOUND_MSG")}</p>}
+      {!applicationsList.length && <p className="ndc-application-list">{t("PTR_NO_APPLICATION_FOUND_MSG")}</p>}
 
       {/* Pagination Controls */}
-      {applicationsList.length > itemsPerPage && (
-        <div className="ndc-application-overview-custom" >
+      {applicationsList.length > itemsPerPage &&
+      <div className="ndc-application-overview-custom">
           <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((prev) => prev - 1)}
-            style={{ cursor: currentPage === 1 ? "not-allowed" : "pointer" }}
-          >
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((prev) => prev - 1)}
+          className={`ndc-pagination__button ${currentPage === 1 ? "ndc-pagination__button--disabled" : ""}`}>
+
             &#8592; Prev
           </button>
 
@@ -81,23 +81,23 @@ const MyApplications = ({ view }) => {
           </span>
 
           <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((prev) => prev + 1)}
-            style={{ cursor: currentPage === totalPages ? "not-allowed" : "pointer" }}
-          >
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage((prev) => prev + 1)}
+          className={`ndc-pagination__button ${currentPage === totalPages ? "ndc-pagination__button--disabled" : ""}`}>
+
             Next &#8594;
           </button>
         </div>
-      )}
+      }
 
       <p className="ndc-application-list">
         {t("PTR_TEXT_NOT_ABLE_TO_FIND_THE_APPLICATION")}{" "}
-        <span className="link" style={{ display: "block" }}>
+        <span className="link ndc-style-2a1b75c911">
           <Link to="/digit-ui/citizen/ndc/new-application">{t("NDC_COMMON_CLICK_HERE_TO_REGISTER_NEW_APPLICATION")}</Link>
         </span>
       </p>
-    </React.Fragment>
-  );
+    </React.Fragment>);
+
 };
 
 export default MyApplications;

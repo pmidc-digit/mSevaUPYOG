@@ -90,25 +90,18 @@ const GenerateBill = () => {
 
   return (
     <React.Fragment>
-      <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 40px" }}>{t("ACTION_TEST_GENERATE_BILL")}</CardSubHeader>
+      <div className="gc-generate-bill">
+      <CardSubHeader className="gc-style-3852417c9d gc-generate-bill__heading">{t("ACTION_TEST_GENERATE_BILL")}</CardSubHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "24px",
-            width: "100%",
-          }}
+          className="gc-style-287885dae7 gc-generate-bill__filters"
         >
           {/* boundaryType */}
           <div
-            style={{
-              flex: "0 0 20%", // 2 items per row
-              maxWidth: "20%",
-            }}
+            className="gc-style-af0f5324e8 gc-generate-bill__field"
           >
             <CardLabel>
-              {`${t("Select Batch or Locality")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("Select Batch or Locality")}`} <span className="gc-style-31981a7d51">*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -116,8 +109,8 @@ const GenerateBill = () => {
               rules={{ required: t("This field is required") }}
               render={(props) => (
                 <Dropdown
-                  style={{ marginBottom: 0, width: "100%" }}
-                  className="form-field"
+
+                  className="form-field gc-style-6b38c97cb9"
                   select={(e) => {
                     props.onChange(e);
                     handleApiData(e);
@@ -129,16 +122,13 @@ const GenerateBill = () => {
                 />
               )}
             />
-            {errors?.batchOrLocality && <p style={{ color: "red" }}>{errors.batchOrLocality.message}</p>}
+            {errors?.batchOrLocality && <p className="gc-style-31981a7d51">{errors.batchOrLocality.message}</p>}
           </div>
 
           {/* locality */}
           {boundaryType?.code == "Locality" && (
             <div
-              style={{
-                flex: "0 0 20%", // 2 items per row
-                maxWidth: "20%",
-              }}
+              className="gc-style-af0f5324e8 gc-generate-bill__field"
             >
               <CardLabel>
                 {`${t("CS_SWACH_LOCALITY")}`}
@@ -149,8 +139,8 @@ const GenerateBill = () => {
                 name={"locality"}
                 render={(props) => (
                   <Dropdown
-                    style={{ marginBottom: 0, width: "100%" }}
-                    className="form-field"
+
+                    className="form-field gc-style-6b38c97cb9"
                     select={(e) => {
                       props.onChange(e);
                     }}
@@ -161,17 +151,14 @@ const GenerateBill = () => {
                   />
                 )}
               />
-              {errors?.locality && <p style={{ color: "red" }}>{errors.locality.message}</p>}
+              {errors?.locality && <p className="gc-style-31981a7d51">{errors.locality.message}</p>}
             </div>
           )}
 
           {/* batch */}
           {boundaryType?.code == "Block" && (
             <div
-              style={{
-                flex: "0 0 20%", // 2 items per row
-                maxWidth: "20%",
-              }}
+              className="gc-style-af0f5324e8 gc-generate-bill__field"
             >
               <CardLabel>
                 {`${t("Batch")}`}
@@ -182,8 +169,8 @@ const GenerateBill = () => {
                 name={"batch"}
                 render={(props) => (
                   <Dropdown
-                    style={{ marginBottom: 0, width: "100%" }}
-                    className="form-field"
+
+                    className="form-field gc-style-6b38c97cb9"
                     select={(e) => {
                       props.onChange(e);
                     }}
@@ -194,16 +181,13 @@ const GenerateBill = () => {
                   />
                 )}
               />
-              {errors?.batch && <p style={{ color: "red" }}>{errors.batch.message}</p>}
+              {errors?.batch && <p className="gc-style-31981a7d51">{errors.batch.message}</p>}
             </div>
           )}
 
           {/* frequency type  */}
           <div
-            style={{
-              flex: "0 0 20%", // 2 items per row
-              maxWidth: "20%",
-            }}
+            className="gc-style-af0f5324e8 gc-generate-bill__field"
           >
             <CardLabel>{`${t("GC_FREQUENCY")}`}*</CardLabel>
             <Controller
@@ -212,8 +196,8 @@ const GenerateBill = () => {
               rules={{ required: t("GC_FREQUENCY_REQUIRED") }}
               render={(props) => (
                 <Dropdown
-                  style={{ marginBottom: 0, width: "100%" }}
-                  className="form-field"
+
+                  className="form-field gc-style-6b38c97cb9"
                   select={(e) => {
                     props.onChange(e);
                   }}
@@ -224,7 +208,7 @@ const GenerateBill = () => {
                 />
               )}
             />
-            {errors?.frequency && <p style={{ color: "red" }}>{errors.frequency.message}</p>}
+            {errors?.frequency && <p className="gc-style-31981a7d51">{errors.frequency.message}</p>}
           </div>
 
           {/* group */}
@@ -257,11 +241,12 @@ const GenerateBill = () => {
             {errors?.group && <p style={{ color: "red" }}>{errors.group.message}</p>}
           </div> */}
         </div>
-        <ActionBar>
-          <SubmitBar style={{ background: "#eee", color: "black", border: "1px solid" }} label="Search" submit="submit" />
+        <ActionBar className="gc-generate-bill__actions">
+          <SubmitBar className="gc-style-65b1b5e6ec" label="Search" submit="submit" />
           <SubmitBar label="Generate Bill" submit="submit" />
         </ActionBar>
       </form>
+      </div>
       {showToast && <Toast isDleteBtn={true} error={error} label={getLable} onClose={closeToast} />}
 
       {(loader || FreqTypeLoading) && <Loader page={true} />}

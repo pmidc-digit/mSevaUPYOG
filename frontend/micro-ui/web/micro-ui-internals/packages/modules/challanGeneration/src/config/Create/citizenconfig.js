@@ -69,10 +69,10 @@
                         },
                     ],
                     },
-                    
+
                     {
                     "head": "CHB_BANK_DETAILS",
-                    "body": 
+                    "body":
                     [
                         {
                         "type": "component",
@@ -86,11 +86,11 @@
                         "nextStep": "documents",
                         },
 
-                        
+
                     ],
                     },
-                        
-                
+
+
                     {
                     "head": "ES_TITILE_DOCUMENT_DETAILS",
                     "body": [
@@ -104,7 +104,7 @@
                             "texts": {
                                 "submitBarLabel": "CHB_COMMON_NEXT",
                             },
-                            
+
                         }
                     ],
                     },

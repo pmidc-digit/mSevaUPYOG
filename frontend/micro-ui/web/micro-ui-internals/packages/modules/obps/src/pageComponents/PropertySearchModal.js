@@ -121,7 +121,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
                         Properties: [{ ...selectedProperty }]
                     })
                 }}
-                    style={{ width: "100px" }} />
+                    className="obps-page-components-property-search-modal--style-1" />
         },
     ];
 
@@ -160,7 +160,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
         }
     }, [menuList, propertyDetails?.Properties?.[0]?.address?.locality]);
 
-    
+
     useEffect(() => {
         if (menuList && (propertyDetails?.Properties?.length > 0)) {
             if (propertyDetails?.Properties?.[0]?.address?.locality) {
@@ -190,7 +190,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
     }, [menuList, propertyDetails]);
 
 
-    const searchProperty = async () => {        
+    const searchProperty = async () => {
         if (mobileNumber && !Digit.Utils.getPattern("MobileNo").test(mobileNumber)) {
             setShowToast({ error: true, label: "CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID" });
             return;
@@ -216,7 +216,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
             console.log("fetchedData", fetchedData, propertyId, mobileNumber);
             if (fetchedData?.Properties?.length > 0) {
                 setIsLoading(false)
-                setPropertyData(fetchedData?.Properties)                
+                setPropertyData(fetchedData?.Properties)
             }else{
                 setIsLoading(false)
                 setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
@@ -282,8 +282,8 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
         return formData && formData[key] ? formData[key][input] : undefined;
     }
 
-    function selectLocality(locality) {        
-        setSelectedLocality(locality);        
+    function selectLocality(locality) {
+        setSelectedLocality(locality);
     }
 
 
@@ -306,7 +306,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
     return (
         <React.Fragment>
             <Modal
-                headerBarEnd={<CloseBtn onClick={closeModal} />}            
+                headerBarEnd={<CloseBtn onClick={closeModal} />}
                 formId="modal-action"
                 popupStyles={{
                     width: "unset",
@@ -315,7 +315,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
                 }}
                 hideSubmit={true}
             >
-                {/* <div style={{ marginBottom: "16px", marginTop: "20px" }}> */}                
+                {/* <div style={{ marginBottom: "16px", marginTop: "20px" }}> */}
                     <LabelFieldPair>
                         <div
                             className="field ndc_property_search"
@@ -388,7 +388,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
                                       optionCardStyles={optionCardStyles}
                                     /> */}
                             {!isSearchClicked && (
-                                <button className="submit-bar" type="button" style={{ color: "white", width: "100%", maxWidth: "100px" }} onClick={searchProperty}>
+                                <button className="submit-bar obps-page-components-property-search-modal--style-2" type="button"  onClick={searchProperty}>
                                     {`${t("PT_SEARCH")}`}
                                 </button>
                             )}

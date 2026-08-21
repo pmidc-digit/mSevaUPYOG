@@ -28,23 +28,7 @@ export const PTRList = () => {
 
   return (
     <React.Fragment>
-      {/* <Card>
-        <CardHeader>{`${t("TL_RENEW_TRADE_HEADER")}`}</CardHeader>
-        <CardText>{`${t("TL_RENEW_TRADE_TEXT")}`}</CardText>
-      </Card> */}
-      <div>
-        {newApplicationsList?.length > 0 &&
-          newApplicationsList.map((application, index) => (
-            <div key={index}>{application?.licenseNumber && <TradeLicenseList application={application} />}</div>
-          ))}
-        {!newApplicationsList?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PT_NO_APPLICATION_FOUND_MSG")}</p>}
-      </div>
-      {/* <p style={{ marginLeft: "16px", marginTop: "16px" }}>
-        {t("TL_NOT_ABLE_TO_FIND_TRADE_LICENSE")}{" "}
-        <span className="link" style={{ display: "block" }}>
-          <Link to="/digit-ui/citizen/tl/tradelicence/trade-search">{t("TL_SEARCH_TRADE_LICENSE")}</Link>
-        </span>
-      </p> */}
-    </React.Fragment>
-  );
+
+    </React.Fragment>);
+
 };

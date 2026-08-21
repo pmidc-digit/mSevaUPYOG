@@ -70,7 +70,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   return (
     <React.Fragment>
       <div className="ground-container">
-        {!isRes ? <div style={{ marginLeft: "10px" }}><ADSBreadCrumbs location={location} t={t} /></div> : null}
+        {!isRes ? <div className="ads-pages-employee-index--style-1"><ADSBreadCrumbs location={location} t={t} /></div> : null}
 
             <PrivateRoute path={`${path}/bookad`} component={(props) => <ADSCreate {...props} userType={userType} />} />
             <PrivateRoute path={`${path}/my-applications`} component={(props) => <SearchApp {...props} userType="employee" parentRoute={path} />} />

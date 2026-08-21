@@ -1,9 +1,9 @@
-import React, {useState, useEffect, useMemo} from 'react'
-import { Table, StatusTable, LinkButton } from '@mseva/digit-ui-react-components'
+import React, { useState, useEffect, useMemo } from "react";
+import { Table, StatusTable, LinkButton } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { getDocumentLabel } from "../utils";
 
-const LayoutDocumentTableView = ({documents}) => {
+const LayoutDocumentTableView = ({ documents }) => {
   const { t } = useTranslation();
 
   function routeTo(jumpTo) {
@@ -27,56 +27,48 @@ const LayoutDocumentTableView = ({documents}) => {
     {
       Header: t("BPA_DOCUMENT_FILE"),
       accessor: "fileUrl",
-      Cell: ({ value }) =>
-        value ? (
-          <LinkButton 
-            label={t("View")}
-            onClick={() => routeTo(value)}
-          />
-        ) : (
-          t("CS_NA")
-        ),
+      Cell: ({ value }) => (value ? <LinkButton label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA")),
     },
   ];
 
- const documentObj = {
-  value: {
-    workflowDocs: documents?.map(doc => ({
-      documentType: doc?.documentType || "",
-      filestoreId: doc?.filestoreId || "",
-      documentUid: doc?.documentUid || "",
-      documentAttachment: doc?.documentAttachment || ""
-    }))
-   }
+  const documentObj = {
+    value: {
+      workflowDocs: documents?.map((doc) => ({
+        documentType: doc?.documentType || "",
+        filestoreId: doc?.filestoreId || "",
+        documentUid: doc?.documentUid || "",
+        documentAttachment: doc?.documentAttachment || "",
+      })),
+    },
   };
 
- const { data: urlsList, isLoading: urlsListLoading } = Digit.Hooks.obps.useLayoutDocumentSearch(
-    documentObj,
-    {
-      enabled: documents?.length > 0 ? true : false
-    }
-  );
-  
-  const mappedDocuments = documents?.filter(doc => !!(doc?.filestoreId || doc?.documentAttachment))?.sort((a,b) => a?.order - b?.order)?.map((doc, index) => {
-   const { documentUid, documentType } = doc;
-   const url = urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
-   return {
-    id: index,
-    documentUid,
-    documentType,
-    url
-  };
+  const { data: urlsList, isLoading: urlsListLoading } = Digit.Hooks.obps.useLayoutDocumentSearch(documentObj, {
+    enabled: documents?.length > 0 ? true : false,
   });
 
+  const mappedDocuments = documents
+    ?.filter((doc) => !!(doc?.filestoreId || doc?.documentAttachment))
+    ?.sort((a, b) => a?.order - b?.order)
+    ?.map((doc, index) => {
+      const { documentUid, documentType } = doc;
+      const url = urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
+      return {
+        id: index,
+        documentUid,
+        documentType,
+        url,
+      };
+    });
+
   const documentsData = useMemo(() => {
-     return (mappedDocuments)?.map((doc, index) => ({
+    return mappedDocuments?.map((doc, index) => ({
       id: index,
       srNo: index + 1,
       documentType: doc?.documentType,
       title: doc?.documentType,
       fileUrl: doc.url,
-     }));
-    }, [mappedDocuments]);
+    }));
+  }, [mappedDocuments]);
 
   return (
     <div className="checklist-document-table-wrapper">
@@ -101,7 +93,7 @@ const LayoutDocumentTableView = ({documents}) => {
         </tbody>
       </table>
     </div>
-  )
-}
+  );
+};
 
-export default LayoutDocumentTableView
+export default LayoutDocumentTableView;

@@ -27,7 +27,7 @@ const Status = ({ onAssignmentChange, searchParams, businessServices, statusMap,
 
   return userRoleStates?.filter((e) => !e.isTerminateState).length ? (
     <div className="status-container">
-      <div className="filter-label" style={{ fontWeight: "normal" }}>
+      <div className="filter-label ads-components-inbox-status--style-1" >
         {t("ES_INBOX_STATUS")}
       </div>
       {userRoleStates

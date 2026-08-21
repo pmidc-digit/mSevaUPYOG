@@ -59,7 +59,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
       {comment?.length > 0 && (
         <div className="TLComments">
           <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
+          <p className="obps-pages-employee-application-overview-cluapplication-overview--style-1">{comment}</p>
         </div>
       )}
 
@@ -81,7 +81,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         </div>
       )}
 
-      <div style={{ marginTop: "8px" }}>
+      <div className="obps-pages-employee-application-overview-cluapplication-overview--style-2">
         {caption.time && <p>{caption.time}</p>}
         {caption.date && <p>{caption.date}</p>}
         {caption.name && <p>{caption.name}</p>}
@@ -429,7 +429,7 @@ const CLUEmployeeApplicationDetails = () => {
       accessor: "fileStoreId",
       Cell: ({ value }) => {
         return value ? (
-          <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeToImage(value)} />
+          <LinkButton className="obps-pages-employee-application-overview-cluapplication-overview--style-3" label={t("View")} onClick={() => routeToImage(value)} />
         ) : (
           t("CS_NA")
         );
@@ -960,7 +960,7 @@ const CLUEmployeeApplicationDetails = () => {
       window.scrollTo({
         top: 0,
         behavior: "smooth" // use "auto" for instant scroll
-      });    
+      });
   }, [])
 
   useEffect(() => {
@@ -1075,7 +1075,7 @@ const CLUEmployeeApplicationDetails = () => {
         <React.Fragment>
           <Card>
             <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <div key={index} className="obps-pages-employee-application-overview-cluapplication-overview--style-4">
               <StatusTable>
                 {detail?.firmName && <Row label={t("CLU_FIRM_NAME_LABEL")} text={detail?.firmName} />}
                 <Row label={t("CLU_APPLICANT_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
@@ -1097,7 +1097,7 @@ const CLUEmployeeApplicationDetails = () => {
           <React.Fragment>
             <Card>
               <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS")}</CardSubHeader>
-              <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <div key={index} className="obps-pages-employee-application-overview-cluapplication-overview--style-5">
                 <StatusTable>
                   <Row label={t("BPA_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
                   <Row label={t("BPA_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
@@ -1114,7 +1114,7 @@ const CLUEmployeeApplicationDetails = () => {
       <Card>
         <CardSubHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          <div key={index} className="obps-pages-employee-application-overview-cluapplication-overview--style-6">
             <StatusTable>
               <Row label={t("BPA_AREA_TYPE_LABEL")} text={detail?.localityAreaType?.name || "N/A"} />
 
@@ -1133,7 +1133,7 @@ const CLUEmployeeApplicationDetails = () => {
       <Card>
         <CardSubHeader>{t("BPA_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          <div key={index} className="obps-pages-employee-application-overview-cluapplication-overview--style-7">
             <StatusTable>
               <Row label={t("BPA_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
               <Row label={t("BPA_KHEWAT_KHATUNI_NO_LABEL")} text={detail?.khewatOrKhatuniNo || "N/A"} />
@@ -1180,7 +1180,7 @@ const CLUEmployeeApplicationDetails = () => {
       <Card>
         <CardSubHeader>{t("BPA_SPECIFICATION_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          <div key={index} className="obps-pages-employee-application-overview-cluapplication-overview--style-8">
             <StatusTable>
               <Row label={t("BPA_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
             </StatusTable>
@@ -1201,7 +1201,7 @@ const CLUEmployeeApplicationDetails = () => {
           </StatusTable>
           {geoLocations?.length > 0 && (
             <React.Fragment>
-              <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+              <CardSectionHeader className="obps-pages-employee-application-overview-cluapplication-overview--style-9">{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
               <CustomLocationSearch position={geoLocations} />
             </React.Fragment>
           )}
@@ -1285,7 +1285,7 @@ const CLUEmployeeApplicationDetails = () => {
           />
         )}
         {hasPayments && (
-          <div style={{ marginTop: "16px" }}>
+          <div className="obps-pages-employee-application-overview-cluapplication-overview--style-10">
             <OBPSPaymentHistory payments={combinedPayments} />
           </div>
         )}
@@ -1294,7 +1294,7 @@ const CLUEmployeeApplicationDetails = () => {
       {/* will not be shown on first step(FIELDINSPECTION_INPROGRESS) */}
       {applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && (
         <div className="employeeCard">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div className="obps-pages-employee-application-overview-cluapplication-overview--style-11">
             <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
             {feeData?.CLU?.FeeNotificationChargesRule?.[0]?.fileStoreId && (
               <LinkButton
@@ -1386,11 +1386,11 @@ const CLUEmployeeApplicationDetails = () => {
         <Modal headerBarEnd={<CloseBtn onClick={closeImageModal} />}>
           {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
           {imageUrl?.toLowerCase().endsWith(".pdf") ? (
-            <a style={{ color: "blue" }} href={imageUrl} target="_blank" rel="noopener noreferrer">
+            <a className="obps-pages-employee-application-overview-cluapplication-overview--style-12" href={imageUrl} target="_blank" rel="noopener noreferrer">
               {t("CS_VIEW_DOCUMENT")}
             </a>
           ) : (
-            <img src={imageUrl} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            <img src={imageUrl} alt="Preview" className="obps-pages-employee-application-overview-cluapplication-overview--style-13" />
           )}
         </Modal>
       )}

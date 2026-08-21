@@ -154,6 +154,7 @@ function SelectDocument({ t, document: doc, setDocuments, setError, documents, s
           {t(doc?.code)} {doc?.required && " *"}
         </CardLabel>
         <div className="form-field">
+          {/* <div className="ndc-document-upload"> */}
           <UploadFile
             id={"tl-doc"}
             onUpload={selectfile}
@@ -161,10 +162,10 @@ function SelectDocument({ t, document: doc, setDocuments, setError, documents, s
               setUploadedFile(null);
             }}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-            textStyles={{ width: "100%" }}
             accept="image/*,.pdf"
             // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
           />
+          {/* </div> */}
         </div>
       </LabelFieldPair>
       {getLoader && <Loader page={true} />}

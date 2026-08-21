@@ -178,7 +178,7 @@ const LayoutApplicantDetails = (_props) => {
       //console.log("[v0] Restoring documentUploadedFiles from Redux:", currentStepData.documentUploadedFiles);
       setDocumentUploadedFiles(currentStepData.documentUploadedFiles);
     }
-    
+
     // Restore photo uploaded files from Redux state
     if (currentStepData?.photoUploadedFiles && Object.keys(currentStepData.photoUploadedFiles).length > 0) {
       //console.log("[v0] Restoring photoUploadedFiles from Redux:", currentStepData.photoUploadedFiles);
@@ -193,7 +193,7 @@ const LayoutApplicantDetails = (_props) => {
 
     // Map documents from additionalDetails in API response during edit mode (only if Redux data is empty)
     if (
-      isEditMode && 
+      isEditMode &&
       currentStepData?.apiData?.Layout?.[0]?.owners &&
       (!currentStepData?.documentUploadedFiles || Object.keys(currentStepData.documentUploadedFiles).length === 0)
     ) {
@@ -504,7 +504,7 @@ const LayoutApplicantDetails = (_props) => {
             if(!updated[index-1]) updated[index-1] = {};
             updated[index-1].documentUploadedFiles = fileId;
             return updated;
-          })          
+          })
         }
         // Immediately dispatch to Redux for persistence
         dispatch(UPDATE_LayoutNewApplication_FORM("documentUploadedFiles", updatedDocFiles));
@@ -542,7 +542,7 @@ const LayoutApplicantDetails = (_props) => {
             if(!updated[index-1]) updated[index-1] = {};
             updated[index-1].photoUploadedFiles = fileId;
             return updated;
-          })          
+          })
         }
         // Immediately dispatch to Redux for persistence
         dispatch(UPDATE_LayoutNewApplication_FORM("photoUploadedFiles", updatedPhotoFiles));
@@ -597,7 +597,7 @@ const LayoutApplicantDetails = (_props) => {
             if(!updated[index-1]) updated[index-1] = {};
             updated[index-1].panDocumentUploadedFiles = fileId;
             return updated;
-          })          
+          })
         }
         // Immediately dispatch to Redux for persistence
         dispatch(UPDATE_LayoutNewApplication_FORM("panDocumentUploadedFiles", updatedPanDocFiles));
@@ -623,7 +623,7 @@ const LayoutApplicantDetails = (_props) => {
 
   const ErrorMessage = ({ message }) => {
     if (!message) return null;
-    return <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>{message}</div>;
+    return <div className="obps-page-components-layout-applicant-details--style-1">{message}</div>;
   };
 
   const activeApplicants = applicants?.filter(a => a?.status);
@@ -634,21 +634,21 @@ const LayoutApplicantDetails = (_props) => {
   return (
     <React.Fragment>
       {loader && <Loader />}
-      <div>        
-        <CardSectionHeader className="card-section-header" style={{ marginBottom: "15px" }}>
+      <div>
+        <CardSectionHeader className="card-section-header obps-page-components-layout-applicant-details--style-2" >
           {t("BPA_APPLICANT_DETAILS")}
         </CardSectionHeader>
 
         {isEdit && (
-          <CardSectionSubText style={{ color: "red", margin: "10px 0px 20px 0px" }}>
+          <CardSectionSubText className="obps-page-components-layout-applicant-details--style-3">
             {t(
               "To update Applicant Details -  Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section"
             )}
           </CardSectionSubText>
         )}
 
-        <div style={{ marginTop: "20px" }}>
-          <CardSectionHeader className="card-section-header" style={{ marginTop: "20px", marginBottom: "20px" }}>
+        <div className="obps-page-components-layout-applicant-details--style-4">
+          <CardSectionHeader className="card-section-header obps-page-components-layout-applicant-details--style-5" >
             Primary Owner
           </CardSectionHeader>
 
@@ -659,7 +659,7 @@ const LayoutApplicantDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             {isLoading ? <Loader /> : null}
-            <div style={{ display: "flex" }} className="field">
+            <div  className="field obps-page-components-layout-applicant-details--style-6">
               <Controller
                 control={control}
                 name="applicantMobileNumber"
@@ -685,18 +685,18 @@ const LayoutApplicantDetails = (_props) => {
                 )}
               />
               {/* <div style={{ marginTop: "25px" }} className="search-icon" onClick={isEdit ? null : getOwnerDetails}> */}
-              <div style={{ marginTop: "25px" }} className="search-icon" onClick={getOwnerDetails}>
+              <div  className="search-icon obps-page-components-layout-applicant-details--style-7" onClick={getOwnerDetails}>
                 <SearchIcon />
               </div>
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
 
-          
 
-      
 
-          <LabelFieldPair style={{ marginBottom: "15px" }}>
+
+
+          <LabelFieldPair className="obps-page-components-layout-applicant-details--style-8">
             <CardLabel className="card-label-smaller">
               {`${t("CLU_OWNER_TYPE_LABEL")}`} <span className="requiredField">*</span>
             </CardLabel>
@@ -708,7 +708,7 @@ const LayoutApplicantDetails = (_props) => {
                   render={(props) => (
                     <Dropdown
                       className="form-field"
-                      select={(e) => {                        
+                      select={(e) => {
                         props.onChange(e);
                         setPrimaryApplicantType(e)
                         clearErrors("aplicantType");
@@ -720,15 +720,15 @@ const LayoutApplicantDetails = (_props) => {
                       t={t}
                     />
                   )}
-                />              
-            
+                />
+
             </div>
           </LabelFieldPair>
             <CardLabelError style={errorStyle}>{errors?.aplicantType?.message || ""}</CardLabelError>
 
-        
 
-          {isFirm && <React.Fragment> <LabelFieldPair style={{ marginBottom: "15px" }}>
+
+          {isFirm && <React.Fragment> <LabelFieldPair className="obps-page-components-layout-applicant-details--style-9">
             <CardLabel className="card-label-smaller">
               {t("NEW_LAYOUT_FIRM_NAME_LABEL")}
               <span className="requiredField">*</span>
@@ -760,7 +760,7 @@ const LayoutApplicantDetails = (_props) => {
           </React.Fragment>}
 
                 {/* Applicant Name */}
-          <LabelFieldPair style={{ marginBottom: "15px" }}>
+          <LabelFieldPair className="obps-page-components-layout-applicant-details--style-10">
             <CardLabel className="card-label-smaller">
               {`${isFirm ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")}`}
               <span className="requiredField">*</span>
@@ -954,12 +954,12 @@ const LayoutApplicantDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.applicantGender?.message || ""}</CardLabelError>
 
-          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+          <LabelFieldPair className="obps-page-components-layout-applicant-details--style-11">
             <CardLabel className="card-label-smaller">
               {t("BPA_APPLICANT_PASSPORT_PHOTO")}
               <span className="requiredField">*</span>
             </CardLabel>
-            <div className="field" style={{ width: "100%" }}>
+            <div className="field obps-page-components-layout-applicant-details--style-12" >
                   <CustomUploadFile
                     id="passport-photo-primary"
                     onUpload={selectPhotoFile(0)}
@@ -979,13 +979,13 @@ const LayoutApplicantDetails = (_props) => {
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerPhoto?.message || ""}</CardLabelError>
-          
-          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+
+          <LabelFieldPair className="obps-page-components-layout-applicant-details--style-13">
             <CardLabel className="card-label-smaller">
               {t("BPA_APPLICANT_ID_PROOF")}
               <span className="requiredField">*</span>
             </CardLabel>
-            <div className="field" style={{ width: "100%" }}>
+            <div className="field obps-page-components-layout-applicant-details--style-14" >
                   <CustomUploadFile
                     id="id-proof-primary"
                     onUpload={selectDocumentFile(0)}
@@ -1006,12 +1006,12 @@ const LayoutApplicantDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerDocument?.message || ""}</CardLabelError>
           {/* PAN Document */}
-          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+          <LabelFieldPair className="obps-page-components-layout-applicant-details--style-15">
             <CardLabel className="card-label-smaller">
               {t("BPA_PAN_DOCUMENT")}
               <span className="requiredField">*</span>
             </CardLabel>
-            <div className="field" style={{ width: "100%" }}>
+            <div className="field obps-page-components-layout-applicant-details--style-16" >
                 <CustomUploadFile
                   id="pan-document-primary"
                   onUpload={selectPanDocumentFile(0)}
@@ -1076,7 +1076,7 @@ const LayoutApplicantDetails = (_props) => {
           {/* Additional Applicants Section */}
           {applicants.length > 0 && (
             <React.Fragment>
-              <CardSectionHeader className="card-section-header" style={{ marginTop: "30px", marginBottom: "20px" }}>
+              <CardSectionHeader className="card-section-header obps-page-components-layout-applicant-details--style-17" >
                 {t("Additional Owners")}
               </CardSectionHeader>
 
@@ -1086,29 +1086,18 @@ const LayoutApplicantDetails = (_props) => {
                   const visibleIndex = activeApplicants.findIndex(a => a === applicant); // index of visible Applicant is not same to the index of total applicants
 
                   return (
-                    <div key={index}>                    
+                    <div key={index}>
                       <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginBottom: "10px",
-                          paddingBottom: "10px",
-                          borderBottom: "1px solid #d1d5db",
-                        }}
+                        className="obps-page-components-layout-applicant-details--style-18"
                       >
-                        <CardLabel className="card-label-smaller" style={{ fontSize: "16px", fontWeight: "600" }}>
+                        <CardLabel className="card-label-smaller obps-page-components-layout-applicant-details--style-19" >
                           {`${t("Owner")} ${visibleIndex + 2}`}
                         </CardLabel>
                         {/* {!isEditMode && ( */}
                         {(
                           <span
                             onClick={() => handleRemoveApplicant(index)}
-                            style={{
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                            }}
+                            className="obps-page-components-layout-applicant-details--style-20"
                             title={t("Remove Applicant")}
                           >
                             <DeleteIcon fill="#a82227" />
@@ -1123,11 +1112,11 @@ const LayoutApplicantDetails = (_props) => {
                           <span className="requiredField">*</span>
                         </CardLabel>
                        {additionalOwnerSearchLoading[index] ? <Loader /> : null}
-                        <div style={{ display: "flex" }} className="field">
+                        <div  className="field obps-page-components-layout-applicant-details--style-21">
                           <TextInput value={applicant.mobileNumber} onChange={(e) => updateApplicant(index, "mobileNumber", e.target.value)} t={t} />
                           <div
-                            style={{ marginTop: "23px", cursor: "pointer" }}
-                            className="search-icon"
+
+                            className="search-icon obps-page-components-layout-applicant-details--style-22"
                             onClick={() => !additionalOwnerSearchLoading[index] && getAdditionalOwnerDetails(index)}
                           >
                              <SearchIcon />
@@ -1135,10 +1124,10 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                       {/* {applicantErrors[index]?.mobileNumber && <ErrorMessage>{applicantErrors[index].mobileNumber}</ErrorMessage>} */}
-                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.mobileNumber?.message || ""}</CardLabelError>                    
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.mobileNumber?.message || ""}</CardLabelError>
 
                       {/* Name */}
-                      <LabelFieldPair style={{ marginBottom: "15px" }}>
+                      <LabelFieldPair className="obps-page-components-layout-applicant-details--style-23">
                         <CardLabel className="card-label-smaller">
                           {`${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}
                           <span className="requiredField">*</span>
@@ -1230,12 +1219,12 @@ const LayoutApplicantDetails = (_props) => {
                       {/* {applicantErrors[index]?.gender && <ErrorMessage>{applicantErrors[index].gender}</ErrorMessage>} */}
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.gender?.message || ""}</CardLabelError>
 
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
+                      <LabelFieldPair className="obps-page-components-layout-applicant-details--style-24">
                         <CardLabel className="card-label-smaller">
                           {t("BPA_APPLICANT_PASSPORT_PHOTO")}
                           <span className="requiredField">*</span>
                         </CardLabel>
-                        <div className="field" style={{ width: "100%" }}>
+                        <div className="field obps-page-components-layout-applicant-details--style-25" >
                           <CustomUploadFile
                             id={`passport-photo-${index}`}
                             onUpload={selectPhotoFile(index+1)}
@@ -1262,12 +1251,12 @@ const LayoutApplicantDetails = (_props) => {
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.photo?.message || ""}</CardLabelError>
 
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
+                      <LabelFieldPair className="obps-page-components-layout-applicant-details--style-26">
                         <CardLabel className="card-label-smaller">
                           {t("BPA_APPLICANT_ID_PROOF")}
                           <span className="requiredField">*</span>
                         </CardLabel>
-                        <div className="field" style={{ width: "100%" }}>
+                        <div className="field obps-page-components-layout-applicant-details--style-27" >
                           <CustomUploadFile
                             id={`id-proof-${index}`}
                             onUpload={selectDocumentFile(index+1)}
@@ -1297,12 +1286,12 @@ const LayoutApplicantDetails = (_props) => {
                       {/* PAN Number */}
 
                       {/* PAN Document */}
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+                      <LabelFieldPair className="obps-page-components-layout-applicant-details--style-28">
                         <CardLabel className="card-label-smaller">
                           {t("BPA_PAN_DOCUMENT")}
                           <span className="requiredField">*</span>
                         </CardLabel>
-                        <div className="field" style={{ width: "100%" }}>
+                        <div className="field obps-page-components-layout-applicant-details--style-29" >
                           <CustomUploadFile
                             id={`pan-document-${index}`}
                             onUpload={selectPanDocumentFile(index+1)}
@@ -1344,7 +1333,7 @@ const LayoutApplicantDetails = (_props) => {
                           />
                         </div>
                       </LabelFieldPair>
-                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.panNumber?.message || ""}</CardLabelError>                    
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.panNumber?.message || ""}</CardLabelError>
                     </div>
                   )}
               )}
@@ -1372,16 +1361,10 @@ const LayoutApplicantDetails = (_props) => {
           {/* Add First Additional Applicant Button */}
           {/* {applicants.length === 0 && !isEditMode && ( */}
           {(
-            <div style={{ marginTop: "20px" }}>
+            <div className="obps-page-components-layout-applicant-details--style-30">
               <div
                 onClick={handleAddApplicant}
-                style={{
-                  color: "#a82227",
-                  fontWeight: "600",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  display: "inline-block",
-                }}
+                className="obps-page-components-layout-applicant-details--style-31"
               >
                 + Add Owner
               </div>

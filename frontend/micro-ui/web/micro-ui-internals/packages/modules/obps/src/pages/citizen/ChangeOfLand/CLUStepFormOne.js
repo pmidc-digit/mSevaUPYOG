@@ -32,7 +32,7 @@ const CLUStepFormOne = ({ config, onGoNext, onBackClick }) => {
     window.scrollTo({
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
-    });    
+    });
   }, [])
 
   useEffect(() => {

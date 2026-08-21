@@ -25,7 +25,7 @@ export const PayTwoTable = ({
 }) => {
     return (
         <div className="bpa-table-container">
-            <CardSubHeader className="bpa-block-header" style={{ marginTop: "24px" }}>
+            <CardSubHeader className="bpa-block-header obps-page-components-pay-two-table--style-1" >
                 {t("BPA_SANCTION_FEE")}
             </CardSubHeader>
 
@@ -92,7 +92,7 @@ export const PayTwoTable = ({
                                     row?.grandTotal !== null && row?.grandTotal !== undefined
                                         ? <div>
                                             <strong>{`₹ ${row.grandTotal.toLocaleString("en-IN")}`}</strong>
-                                            <div style={{ fontSize: "0.9em", color: "#555", marginTop: "4px" }}>{amountToWords(row.grandTotal)}</div>
+                                            <div className="obps-page-components-pay-two-table--style-2">{amountToWords(row.grandTotal)}</div>
                                         </div>
                                         : t("CS_NA")
                                 ) : <TextInput
@@ -106,13 +106,8 @@ export const PayTwoTable = ({
                                     }
                                     // onBlur={onAdjustedAmountBlur}
                                     disable={isEmployee ? !enabledEmployee : disable}
-                                    // step={1}                                                
-                                    style={{
-                                        width: "100%",
-                                        padding: "4px",
-                                        border: "1px solid #ccc",
-                                        borderRadius: "4px",
-                                    }}
+                                    // step={1}
+                                    className="obps-page-components-pay-two-table--style-3"
                                 />}
                             </td>
                         </tr>

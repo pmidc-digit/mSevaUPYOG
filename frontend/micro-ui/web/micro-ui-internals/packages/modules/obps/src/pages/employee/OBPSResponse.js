@@ -28,7 +28,7 @@ const OBPSResponse = (props) => {
       top: 0,
       behavior: "smooth"
     });
-    setTimeout(async () => {    
+    setTimeout(async () => {
     const bpaResponse = await Digit.OBPSService.BPASearch(tenantId, { applicationNo: bpaData?.applicationNo });
     console.log(bpaResponse, "UYTRTYU");
     // let businessService = "BPA.LOW_RISK_PERMIT_FEE";
@@ -121,15 +121,15 @@ const OBPSResponse = (props) => {
             applicationNumber={applicationData?.applicationNo}
             info={getApplicationNoLabel()}
             successful={applicationData?.status == "PERMIT REVOCATION" || applicationData?.status == "REJECTED" ? false : true}
-            style={{ padding: "10px" }}
+            className="obps-pages-employee-obpsresponse--style-1"
             headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
           />
 
-          <CardText style={{ paddingBottom: "10px", marginBottom: "10px" }}></CardText>
+          <CardText className="obps-pages-employee-obpsresponse--style-2"></CardText>
           {applicationData?.status == "PERMIT REVOCATION" ? (
             <div
-              className="primary-label-btn d-grid"
-              style={{ marginLeft: "unset", marginBottom: "10px", padding: "0px 8px" }}
+              className="primary-label-btn d-grid obps-pages-employee-obpsresponse--style-3"
+
               onClick={printReciept}
             >
               <svg width="20" height="23" viewBox="0 0 20 23" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -145,9 +145,9 @@ const OBPSResponse = (props) => {
                 applicationData?.status == "PENDING_SANC_FEE_PAYMENT") &&
               billData?.length > 0 &&
               isPayButtonEnable ? (
-                <div style={{gap: "5px"}}>
+                <div className="obps-pages-employee-obpsresponse--style-4">
                   <Link to={{ pathname: getPaymentURL(true) }}>
-                    <SubmitBar label={t("WF_BPA_PAY")} style={{ marginRight: "10px" }} />
+                    <SubmitBar label={t("WF_BPA_PAY")} className="obps-pages-employee-obpsresponse--style-5" />
                   </Link>
                   <Link to={`/digit-ui/citizen`}>
                     <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
@@ -155,12 +155,12 @@ const OBPSResponse = (props) => {
                 </div>
               ) : (
                 <Link to={{ pathname: `/digit-ui/citizen` }}>
-                  <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ margin: "10px 10px 0px 0px" }} />
+                  <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} className="obps-pages-employee-obpsresponse--style-6" />
                 </Link>
               )}
             </div>
           ) : (
-            <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+            <ActionBar className="obps-pages-employee-obpsresponse--style-7">
               <div>
                 {(applicationData?.status == "PENDING_APPL_FEE" ||
                   applicationData?.status == "PENDING_FEE" ||
@@ -168,15 +168,15 @@ const OBPSResponse = (props) => {
                 billData?.length > 0 &&
                 isPayButtonEnable ? (
                   <div>
-                    <SubmitBar label={t("WF_BPA_PAY")} onSubmit={getPaymentURLEmployee} style={{ margin: "10px 0px 0px 0px" }} />
+                    <SubmitBar label={t("WF_BPA_PAY")} onSubmit={getPaymentURLEmployee} className="obps-pages-employee-obpsresponse--style-8" />
                     <Link to={`/digit-ui/employee`}>
                       {/* <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} /> */}
-                      <span style={{ color: "#a82227", margin: "0px 10px" }}>{t("CORE_COMMON_GO_TO_HOME")}</span>
+                      <span className="obps-pages-employee-obpsresponse--style-9">{t("CORE_COMMON_GO_TO_HOME")}</span>
                     </Link>
                   </div>
                 ) : (
                   <div className="action-bar-wrap">
-                  <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} style={{ margin: "10px 10px 0px 0px" }} />
+                  <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} className="obps-pages-employee-obpsresponse--style-10" />
                   <SubmitBar label={t("CORE_COMMON_GO_TO_INBOX")} onSubmit={onInbox} />
                   </div>
                 )}

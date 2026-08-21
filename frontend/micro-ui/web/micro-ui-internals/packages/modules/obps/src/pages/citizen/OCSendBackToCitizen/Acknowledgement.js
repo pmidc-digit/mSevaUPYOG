@@ -27,7 +27,7 @@ const Acknowledgement = (props) => {
           applicationNumber={BPAData?.applicationNo}
           info={bpaBusinessService == "BPA" ? t("BPA_PERMIT_APPLICATION_NUMBER_LABEL") : t("BPA_OCCUPANCY_CERTIFICATE_APPLICATION_NUMBER_LABEL")}
           successful={true}
-          style={{ padding: "10px" }}
+          className="obps-pages-citizen-ocsend-back-to-citizen-acknowledgement--style-1"
           headerStyles={{ fontSize: "32px" }}
         />
         <CardText>
@@ -47,7 +47,7 @@ const Acknowledgement = (props) => {
                 ).toUpperCase()}`
               )}
         </CardText>
-        <div style={{ marginTop: "12px", padding: "10px" }}>
+        <div className="obps-pages-citizen-ocsend-back-to-citizen-acknowledgement--style-2">
           <Link to={`/digit-ui/citizen`}>
             <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
           </Link>

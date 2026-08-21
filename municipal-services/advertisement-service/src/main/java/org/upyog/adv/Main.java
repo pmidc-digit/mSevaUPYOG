@@ -42,9 +42,16 @@ public class Main {
 	}
 
 	@Bean
-	public MappingJackson2HttpMessageConverter jacksonConverter() {
+	public static org.springframework.context.support.PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+		org.springframework.context.support.PropertySourcesPlaceholderConfigurer configurer = new org.springframework.context.support.PropertySourcesPlaceholderConfigurer();
+		configurer.setIgnoreUnresolvablePlaceholders(true);
+		return configurer;
+	}
+
+	@Bean
+	public MappingJackson2HttpMessageConverter jacksonConverter(ObjectMapper objectMapper) {
 		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-		converter.setObjectMapper(objectMapper());
+		converter.setObjectMapper(objectMapper);
 		return converter;
 	}
 }

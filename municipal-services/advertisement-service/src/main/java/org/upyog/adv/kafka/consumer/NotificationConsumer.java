@@ -26,7 +26,7 @@ public class NotificationConsumer {
 	private ObjectMapper mapper;
 
 	@KafkaListener(topics = { "${persister.save.advertisement.booking.topic}",
-			"${persister.update.advertisement.booking.topic}" })
+			"${persister.update.advertisement.booking.topic}" }, concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		BookingRequest bookingRequest = new BookingRequest();

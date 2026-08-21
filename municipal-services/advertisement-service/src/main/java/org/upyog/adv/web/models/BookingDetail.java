@@ -1,5 +1,6 @@
 package org.upyog.adv.web.models;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,10 @@ import org.upyog.adv.validator.CreateApplicationGroup;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.upyog.adv.util.BookingUtil;
+
+import io.swagger.annotations.ApiModel;
 import org.upyog.adv.web.models.workflow.Workflow;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +29,7 @@ import lombok.ToString;
 /**
  * Details for new booking of advertisement
  */
+@ApiModel(description = "Details for new booking of advertisement")
 @Validated
 @jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-04-19T11:17:29.419+05:30")
 @Getter
@@ -60,6 +66,12 @@ public class BookingDetail {
 
 	private String paymentReceiptFilestoreId;
 	private String advertisementId;
+
+	@JsonFormat(pattern = BookingUtil.DATE_FORMAT)
+	private LocalDate bookingStartDate;
+
+	@JsonFormat(pattern = BookingUtil.DATE_FORMAT)
+	private LocalDate bookingEndDate;
 
 
 

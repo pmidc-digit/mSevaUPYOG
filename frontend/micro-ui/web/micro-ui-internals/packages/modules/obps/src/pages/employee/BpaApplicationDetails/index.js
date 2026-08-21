@@ -46,7 +46,8 @@ import {
   decryptId,
   amountToWords,
   fetchOnlyUrl,
-  fetchOnlyFileStore
+  fetchOnlyFileStore,
+  formatDate
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
@@ -86,6 +87,11 @@ const CloseBtn = (props) => {
       <Close />
     </div>
   );
+};
+
+const RenderRow = ({ label, text, ...rest }) => {
+  if (!text || text === "N/A" || text === "" || text === null || text === undefined || text === "0.00") return null;
+  return <Row label={label} text={text} {...rest} />;
 };
 
 const BpaApplicationDetail = () => {
@@ -2800,6 +2806,49 @@ const BpaApplicationDetail = () => {
                       </div>
                     </Card>
                   ) : null}
+
+                  {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" &&
+                    (data?.applicationData?.additionalDetails?.stakeholderName ||
+                      data?.applicationData?.additionalDetails?.architectid ||
+                      data?.applicationData?.additionalDetails?.architectMobileNumber) && (
+                      <Card>
+                        <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS") || "Professional Details"}</CardSubHeader>
+                        <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+                          <StatusTable>
+                            <RenderRow
+                              label={t("BPA_PROFESSIONAL_NAME_LABEL")}
+                              text={
+                                data?.applicationData?.additionalDetails?.stakeholderName ||
+                                data?.applicationData?.additionalDetails?.architectName
+                              }
+                            />
+                            <RenderRow
+                              label={t("BPA_PROFESSIONAL_EMAIL_LABEL")}
+                              text={data?.applicationData?.additionalDetails?.architectEmailId}
+                            />
+                            <RenderRow
+                              label={t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}
+                              text={
+                                data?.applicationData?.additionalDetails?.architectid ||
+                                data?.applicationData?.additionalDetails?.stakeholderRegistrationNumber
+                              }
+                            />
+                            <RenderRow
+                              label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}
+                              text={formatDate(data?.applicationData?.additionalDetails?.professionalRegIdValidity)}
+                            />
+                            <RenderRow
+                              label={t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}
+                              text={data?.applicationData?.additionalDetails?.architectMobileNumber}
+                            />
+                            <RenderRow
+                              label={t("BPA_PROFESSIONAL_ADDRESS_LABEL")}
+                              text={data?.applicationData?.additionalDetails?.stakeholderAddress}
+                            />
+                          </StatusTable>
+                        </div>
+                      </Card>
+                    )}
                 </div>
               );
             })}
@@ -2966,9 +3015,9 @@ const BpaApplicationDetail = () => {
         </Card>
 
   {actions?.length > 0 && <Card>
-          {/* <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
-            {t("Add Comments")}
-          </CardSectionHeader> */}
+          <CardSectionHeader>
+            {t("Saved Comments")}
+          </CardSectionHeader>
           <RichTextBox
             value={draftComment}
             onChange={(e) => setDraftComment(e.target.value)}

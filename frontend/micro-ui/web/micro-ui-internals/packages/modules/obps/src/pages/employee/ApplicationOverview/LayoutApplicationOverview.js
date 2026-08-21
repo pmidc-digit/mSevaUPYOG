@@ -19,7 +19,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState, useRef, Fragment, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, useLocation } from "react-router-dom";
 import LayoutModal from "../../../pageComponents/LayoutModal";
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
 import LayoutFeeEstimationDetailsTable from "../../../pageComponents/LayoutFeeEstimationDetailsTable";
@@ -154,7 +154,10 @@ const LayoutEmployeeApplicationOverview = () => {
   const { layid } = useParams();
   const id = decryptId(layid)
   const { t } = useTranslation();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const location = useLocation();
+  const queryTenantId = new URLSearchParams(location?.search).get("tenantId");
+  const fallbackTenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = queryTenantId || fallbackTenantId;
   const history = useHistory();
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
@@ -634,7 +637,7 @@ const LayoutEmployeeApplicationOverview = () => {
         returnFileStoreId: true,
       });
       if (!fileStoreId) throw new Error("No filestoreId found for LOI eSign");
-      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/layout/esign/complete/${encodeURIComponent(id)}`;      
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/layout/esign/complete/${encodeURIComponent(id)}?tenantId=${tenantId}`;      
       const authToken = localStorage.getItem("token");
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl, authToken },
@@ -923,7 +926,7 @@ const LayoutEmployeeApplicationOverview = () => {
               })),
             };
             //console.log("DEBUG: DM ROLE - Sending checklist CREATE payload:", checklistPayload);
-            const checklistResponse = await Digit.OBPSService.LayoutCheckListCreate({ details: checklistPayload, filters: {} });
+            const checklistResponse = await Digit.OBPSService.LayoutCheckListCreate({ details: checklistPayload, filters: { tenantId } });
             //console.log("DEBUG: Checklist create response:", checklistResponse);
             // Refetch checklist after creation
             refetchChecklist();
@@ -1058,7 +1061,7 @@ const LayoutEmployeeApplicationOverview = () => {
     };
 
     if (action?.action == "EDIT") {
-      history.push(`/digit-ui/employee/obps/layout/edit-application/${appNo}`);
+      history.push(`/digit-ui/employee/obps/layout/edit-application/${appNo}?tenantId=${tenantId}`);
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
@@ -1731,7 +1734,7 @@ const LayoutEmployeeApplicationOverview = () => {
         <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
       )}
 
-      {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} />}
+      {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} tenantId={tenantId} />}
 
       {showPdfModal && (
         <PdfPreviewModal

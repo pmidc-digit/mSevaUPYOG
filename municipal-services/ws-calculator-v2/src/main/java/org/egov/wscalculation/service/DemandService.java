@@ -2094,6 +2094,7 @@ public class DemandService {
 					BatchDemandLog startLog = BatchDemandLog.builder()
 							.id(UUID.randomUUID().toString())
 							.tenantId(tenantId)
+                            .locality(locality)
 							.taxPeriodFrom(taxPeriodFrom)
 							.taxPeriodTo(taxPeriodTo)
 							.insertionTime(System.currentTimeMillis())

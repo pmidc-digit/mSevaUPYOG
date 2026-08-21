@@ -33,7 +33,7 @@ EmailRequest emailRequest = objectMapper.convertValue(record, EmailRequest.class
         emailService.sendEmail(emailRequest.getEmail());
         log.info("Received email notification record: {}", record);
 
-        EmailRequest emailRequest;
+        
         log.info("Received email notification record: {}", record);
         // If already wrapped as EmailRequest
         if (record.containsKey("email") && record.get("email") instanceof Map) {

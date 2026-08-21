@@ -1,6 +1,5 @@
 package org.egov.domain.service;
-
-import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.UUID;
 
@@ -11,9 +10,9 @@ import org.egov.domain.model.TokenSearchCriteria;
 import org.egov.domain.model.Tokens;
 import org.egov.domain.model.ValidateRequest;
 import org.egov.persistence.repository.TokenRepository;
+import org.springframework.security.crypto.bcrypt.*;
 import org.egov.web.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.*;
 import org.springframework.security.crypto.password.*;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +38,8 @@ public class TokenService {
     public Token create(TokenRequest tokenRequest) {
         tokenRequest.validate();
 
-        String originalOtp = randomNumeric(otpConfiguration.getOtpLength());
+
+        String originalOtp = RandomStringUtils.secure().nextNumeric(otpConfiguration.getOtpLength());         
         String encryptedOtp = originalOtp;
         log.info ("OTP "+encryptedOtp);
         if (otpConfiguration.isEncryptOTP()){

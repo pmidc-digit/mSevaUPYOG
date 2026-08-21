@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import org.springframework.validation.annotation.Validated;
 import org.upyog.adv.validator.CreateApplicationGroup;
 
+import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +18,7 @@ import lombok.ToString;
 /**
  * Details of the advertisement booking
  */
+@ApiModel(description = "Details of the advertisement booking")
 @Validated
 @jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-04-19T11:17:29.419+05:30")
 

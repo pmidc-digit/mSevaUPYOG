@@ -117,6 +117,8 @@ export const SelectPaymentType = (props) => {
     const baseURL = document.location.origin;
     console.log("BASEURLINPAYMENT", baseURL);
     const isFireNoc = window.location.href.includes("firenoc");
+    const isCHB = window.location.href.includes("chb");
+    const toChange = isFireNoc || isCHB;
     const filterData = {
       Transaction: {
         tenantId: billDetails?.tenantId,
@@ -154,7 +156,7 @@ export const SelectPaymentType = (props) => {
         //   : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
         callbackUrl:
           paymentAmount === 0 || billDetails.totalAmount === 0
-            ? isFireNoc
+            ? toChange
               ? `${baseURL}/digit-ui/citizen/payment/success/${businessService}/${consumerCode}/${tenantId}`
               : window.location.href.includes("mcollect") || wrkflow === "WNS"
               ? `${baseURL}/digit-ui/citizen/payment/zero/${businessService}/${
@@ -163,7 +165,7 @@ export const SelectPaymentType = (props) => {
               : `${baseURL}/digit-ui/citizen/payment/zero/${businessService}/${
                   wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
                 }/${tenantId}?propertyId=${consumerCode}`
-            : isFireNoc
+            : toChange
             ? `${baseURL}/digit-ui/citizen/payment/success/${businessService}/${consumerCode}/${tenantId}`
             : window.location.href.includes("mcollect") || wrkflow === "WNS"
             ? `${baseURL}/digit-ui/citizen/payment/success/${businessService}/${

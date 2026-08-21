@@ -249,6 +249,12 @@ public class PTRConstants {
 
 	public static final String STATUS_REJECTED = "Rejected";
 
+	public static final String STATUS_INITIATED = "INITIATED";
+
+	public static final String STATUS_INACTIVE = "INACTIVE";
+
+	public static final String JOB_NAME_INACTIVE = "inactive";
+
 	public static final String ACTION_APPROVE = "APPROVE";
 
 	public static final String ACTION_APPLY = "APPLY";

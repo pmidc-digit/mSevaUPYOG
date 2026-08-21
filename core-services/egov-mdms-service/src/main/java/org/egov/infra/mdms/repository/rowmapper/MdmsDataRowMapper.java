@@ -32,11 +32,11 @@ public class MdmsDataRowMapper implements RowMapper<Map<String, Object>> {
         Object dataObj = rs.getObject("data");
         try {
             if (dataObj instanceof PGobject) {
-                map.put("data", objectMapper.readValue(((PGobject) dataObj).getValue(), LinkedHashMap.class));
+                map.put("data", objectMapper.readValue(((PGobject) dataObj).getValue(), Object.class));
             } else if (dataObj instanceof String) {
-                map.put("data", objectMapper.readValue((String) dataObj, LinkedHashMap.class));
+                map.put("data", objectMapper.readValue((String) dataObj, Object.class));
             } else {
-                map.put("data", objectMapper.convertValue(dataObj, LinkedHashMap.class));
+                map.put("data", objectMapper.convertValue(dataObj, Object.class));
             }
         } catch (Exception e) {
             log.error("Error parsing JSON data in row mapper", e);

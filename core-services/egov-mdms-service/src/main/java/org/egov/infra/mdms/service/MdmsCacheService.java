@@ -114,6 +114,7 @@ public class MdmsCacheService {
 		try {
 			List<Map<String, Object>> rows = mdmsDataRepository.searchAll();
 			int recordCount = 0;
+			Set<String> clearedMasters = new HashSet<>();
 
 			for (Map<String, Object> row : rows) {
 				try {
@@ -140,15 +141,23 @@ public class MdmsCacheService {
 					String masterName = parts[1];
 
 					String effectiveTenantId = getEffectiveTenantId(tenantId, moduleName, masterName);
+
 					JSONArray masterData = getOrCreateMasterData(effectiveTenantId, moduleName, masterName);
+
+					// Clear file-loaded data for this specific master on first DB record encounter
+					String masterKey = effectiveTenantId + "." + moduleName + "." + masterName;
+					if (clearedMasters.add(masterKey)) {
+						masterData.clear();
+						log.info("Cleared file-loaded master data for {}.{} under tenant {} to replace with DB data", moduleName, masterName, effectiveTenantId);
+					}
 
 					if (dataObj instanceof List) {
 						for (Object rec : (List<?>) dataObj) {
-							upsertRecordFromKafka(masterData, rec, moduleName, masterName, dbId, dbUniqueIdentifier);
+							upsertDbRecord(masterData, rec, moduleName, masterName, dbId, dbUniqueIdentifier);
 							recordCount++;
 						}
 					} else {
-						upsertRecordFromKafka(masterData, dataObj, moduleName, masterName, dbId, dbUniqueIdentifier);
+						upsertDbRecord(masterData, dataObj, moduleName, masterName, dbId, dbUniqueIdentifier);
 						recordCount++;
 					}
 
@@ -191,14 +200,13 @@ public class MdmsCacheService {
 		Object data = mdms.get("data");
 
 		if (tenantId == null || schemaCode == null) {
-			log.warn("Invalid MDMS cache message: {}", message);
+			log.warn("Invalid Kafka message missing tenantId/schemaCode");
 			return;
 		}
 
 		String[] parts = schemaCode.split("\\.", 2);
-
 		if (parts.length != 2) {
-			log.warn("Invalid schemaCode: {}", schemaCode);
+			log.warn("Invalid schemaCode in Kafka message: {}", schemaCode);
 			return;
 		}
 
@@ -208,25 +216,19 @@ public class MdmsCacheService {
 		String effectiveTenantId = getEffectiveTenantId(tenantId, moduleName, masterName);
 		JSONArray masterData = getOrCreateMasterData(effectiveTenantId, moduleName, masterName);
 
-		/*
-		 * If record is inactive, remove it
-		 */
-		if (Boolean.FALSE.equals(isActive)) {
-			removeMasterRecord(masterData, id, uniqueIdentifier, moduleName, masterName);
+		if (!isActive) {
+			removeKafkaRecord(masterData, id, uniqueIdentifier, moduleName, masterName);
 			MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(effectiveTenantId, moduleName, masterName,
 					masterData);
 			return;
 		}
 
-		/*
-		 * Convert Kafka data into individual records and upsert each
-		 */
 		if (data instanceof List) {
 			for (Object record : (List<?>) data) {
-				upsertRecordFromKafka(masterData, record, moduleName, masterName, id, uniqueIdentifier);
+				upsertKafkaRecord(masterData, record, moduleName, masterName, id, uniqueIdentifier);
 			}
-		} else if (data != null) {
-			upsertRecordFromKafka(masterData, data, moduleName, masterName, id, uniqueIdentifier);
+		} else {
+			upsertKafkaRecord(masterData, data, moduleName, masterName, id, uniqueIdentifier);
 		}
 
 		MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(effectiveTenantId, moduleName, masterName, masterData);
@@ -248,25 +250,46 @@ public class MdmsCacheService {
 	}
 
 	/**
-	 * Upserts a single record into the master data array. If a record with matching
-	 * id, uniqueIdentifier, code, model, businessService, or dynamic field schema
-	 * exists,
-	 * it is replaced in place; otherwise the new record is added.
-	 * Used by both DB startup loading and Kafka runtime updates.
+	 * Direct addition of database records to in-memory cache without code matching or merging.
+	 * Replaces master array content directly.
 	 */
 	@SuppressWarnings("unchecked")
-	private void upsertRecordFromKafka(JSONArray masterData, Object newRecord, String moduleName, String masterName,
-			String topLevelId, String topLevelUniqueIdentifier) {
-		if (newRecord == null || !(newRecord instanceof Map)) {
+	private void upsertDbRecord(JSONArray masterData, Object dbRecord, String moduleName, String masterName,
+			String dbId, String dbUniqueIdentifier) {
+		if (dbRecord == null || !(dbRecord instanceof Map)) {
 			return;
 		}
 
 		Map<String, Object> newRecordMap = new LinkedHashMap<>();
-		for (Map.Entry<?, ?> entry : ((Map<?, ?>) newRecord).entrySet()) {
+		for (Map.Entry<?, ?> entry : ((Map<?, ?>) dbRecord).entrySet()) {
 			newRecordMap.put(String.valueOf(entry.getKey()), entry.getValue());
 		}
-		if (topLevelId != null && !topLevelId.trim().isEmpty() && !newRecordMap.containsKey("id")) {
-			newRecordMap.put("id", topLevelId);
+		if (dbId != null && !dbId.trim().isEmpty() && !newRecordMap.containsKey("id")) {
+			newRecordMap.put("id", dbId);
+		}
+
+		log.info("Added DB record to cache for {}.{}", moduleName, masterName);
+		masterData.add(newRecordMap);
+	}
+
+	/**
+	 * Generic Kafka update message merge strategy (used during real-time Kafka events).
+	 * Searches masterData array using configured uniqueKeys or generic identity matching.
+	 * Updates existing record in-place via deep-merge or appends new record.
+	 */
+	@SuppressWarnings("unchecked")
+	private void upsertKafkaRecord(JSONArray masterData, Object kafkaRecord, String moduleName, String masterName,
+			String kafkaId, String kafkaUniqueIdentifier) {
+		if (kafkaRecord == null || !(kafkaRecord instanceof Map)) {
+			return;
+		}
+
+		Map<String, Object> newRecordMap = new LinkedHashMap<>();
+		for (Map.Entry<?, ?> entry : ((Map<?, ?>) kafkaRecord).entrySet()) {
+			newRecordMap.put(String.valueOf(entry.getKey()), entry.getValue());
+		}
+		if (kafkaId != null && !kafkaId.trim().isEmpty() && !newRecordMap.containsKey("id")) {
+			newRecordMap.put("id", kafkaId);
 		}
 
 		for (int i = 0; i < masterData.size(); i++) {
@@ -276,16 +299,15 @@ public class MdmsCacheService {
 
 			Map<?, ?> existingMap = (Map<?, ?>) existing;
 
-			if (isRecordMatching(existingMap, newRecordMap, moduleName, masterName, topLevelId,
-					topLevelUniqueIdentifier)) {
+			if (isRecordMatching(existingMap, newRecordMap, moduleName, masterName, kafkaId, kafkaUniqueIdentifier)) {
 				Map<String, Object> mergedRecord = deepMergeMaps(existingMap, newRecordMap);
 				masterData.set(i, mergedRecord);
-				log.info("Merged MDMS cache record for {}.{}", moduleName, masterName);
+				log.info("Merged Kafka message update into cache for {}.{}", moduleName, masterName);
 				return;
 			}
 		}
 
-		log.info("Added new MDMS cache record for {}.{}", moduleName, masterName);
+		log.info("Added new Kafka record to cache for {}.{}", moduleName, masterName);
 		masterData.add(newRecordMap);
 	}
 
@@ -316,125 +338,53 @@ public class MdmsCacheService {
 	}
 
 	private boolean isRecordMatching(Map<?, ?> existingMap, Map<?, ?> newRecordMap, String moduleName,
-			String masterName,
-			String topLevelId, String topLevelUniqueIdentifier) {
+			String masterName, String topLevelId, String topLevelUniqueIdentifier) {
 
-		// 1. Strict match by 'id' if present in both and not random UUID
+		// 1. Match by 'id' if present in both and not a random UUID
 		Object existingId = existingMap.get("id");
 		Object newId = newRecordMap.get("id") != null ? newRecordMap.get("id") : topLevelId;
 		if (newId != null && existingId != null && !isRandomUuid(newId) && !isRandomUuid(existingId)) {
 			return isDeepEqual(newId, existingId);
 		}
 
-		// 2. Strict mismatch check on top-level 'code': if both records have a 'code'
-		// and they differ, they CANNOT match
+		// 2. Match by top-level 'code' field
 		Object existingCode = existingMap.get("code");
 		Object newCode = newRecordMap.get("code");
 		if (existingCode != null && newCode != null) {
 			String exCodeStr = String.valueOf(existingCode).trim();
 			String newCodeStr = String.valueOf(newCode).trim();
 			if (!exCodeStr.isEmpty() && !newCodeStr.isEmpty()) {
-				if (!exCodeStr.equalsIgnoreCase(newCodeStr)) {
-					return false;
-				}
-			}
-		}
-
-		// 2b. Strict mismatch check on nested 'city.code': if both records have
-		// 'city.code' and they differ, they CANNOT match
-		String existingCityCode = getNestedCityCode(existingMap);
-		String newCityCode = getNestedCityCode(newRecordMap);
-		if (existingCityCode != null && newCityCode != null) {
-			if (!existingCityCode.equalsIgnoreCase(newCityCode)) {
-				return false;
-			}
-		}
-
-		// 3. Extract candidate identifier codes for both records and check for
-		// intersection
-		Set<String> existingCodes = extractCandidateCodes(existingMap, null, null);
-		Set<String> newCodes = extractCandidateCodes(newRecordMap, topLevelId, topLevelUniqueIdentifier);
-
-		if (!existingCodes.isEmpty() && !newCodes.isEmpty()) {
-			for (String code : newCodes) {
-				if (existingCodes.contains(code)) {
+				if (exCodeStr.equalsIgnoreCase(newCodeStr)) {
 					return true;
 				}
 			}
-			return false;
 		}
 
-		// 4. Match by configured uniqueKeys in masterConfigMap
+		// 3. Match by uniqueIdentifier
+		Object existingUnique = existingMap.get("uniqueIdentifier");
+		Object newUnique = newRecordMap.get("uniqueIdentifier") != null ? newRecordMap.get("uniqueIdentifier") : topLevelUniqueIdentifier;
+		if (existingUnique != null && newUnique != null) {
+			if (isDeepEqual(existingUnique, newUnique)) {
+				return true;
+			}
+		}
+
+		// 4. Match by configured uniqueKeys from mdms-masters-config.json
 		List<String> configuredKeys = getUniqueKeysFromConfig(moduleName, masterName);
 		if (configuredKeys != null && !configuredKeys.isEmpty()) {
-			boolean allMatch = true;
 			for (String k : configuredKeys) {
 				Object exVal = getNestedValue(existingMap, k);
 				Object newVal = getNestedValue(newRecordMap, k);
-				if (exVal == null || newVal == null || !isDeepEqual(exVal, newVal)) {
-					allMatch = false;
-					break;
+				if (exVal != null && newVal != null && isDeepEqual(exVal, newVal)) {
+					return true;
 				}
 			}
-			if (allMatch)
-				return true;
 		}
 
 		return false;
-	}
+	}	
 
-	private Set<String> extractCandidateCodes(Map<?, ?> map, String topLevelId, String topLevelUniqueIdentifier) {
-		Set<String> codes = new HashSet<>();
-		if (map == null)
-			return codes;
 
-		if (map.get("code") != null) {
-			codes.add(String.valueOf(map.get("code")).trim());
-		}
-		if (map.get("uniqueIdentifier") != null) {
-			codes.add(String.valueOf(map.get("uniqueIdentifier")).trim());
-		}
-		if (map.get("id") != null && !isRandomUuid(map.get("id"))) {
-			codes.add(String.valueOf(map.get("id")).trim());
-		}
-		if (map.get("model") != null) {
-			codes.add(String.valueOf(map.get("model")).trim());
-		}
-		if (map.get("businessService") != null) {
-			codes.add(String.valueOf(map.get("businessService")).trim());
-		}
-		if (map.get("service") != null) {
-			codes.add(String.valueOf(map.get("service")).trim());
-		}
-		if (map.get("city") instanceof Map) {
-			Map<?, ?> cityMap = (Map<?, ?>) map.get("city");
-			if (cityMap.get("code") != null) {
-				codes.add(String.valueOf(cityMap.get("code")).trim());
-			}
-		}
-
-		if (topLevelId != null && !isRandomUuid(topLevelId)) {
-			codes.add(topLevelId.trim());
-		}
-		if (topLevelUniqueIdentifier != null) {
-			codes.add(topLevelUniqueIdentifier.trim());
-		}
-
-		return codes;
-	}
-
-	private String getNestedCityCode(Map<?, ?> map) {
-		if (map == null)
-			return null;
-		if (map.get("city") instanceof Map) {
-			Map<?, ?> cityMap = (Map<?, ?>) map.get("city");
-			if (cityMap.get("code") != null) {
-				String str = String.valueOf(cityMap.get("code")).trim();
-				return str.isEmpty() ? null : str;
-			}
-		}
-		return null;
-	}
 
 	private boolean isRandomUuid(Object idObj) {
 		if (idObj == null)
@@ -443,7 +393,7 @@ public class MdmsCacheService {
 		return UUID_PATTERN.matcher(str).matches();
 	}
 
-	private void removeMasterRecord(JSONArray masterData, String id, String uniqueIdentifier, String moduleName,
+	public void removeKafkaRecord(JSONArray masterData, String id, String uniqueIdentifier, String moduleName,
 			String masterName) {
 		if (id == null && uniqueIdentifier == null) {
 			return;

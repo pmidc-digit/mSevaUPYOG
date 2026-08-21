@@ -2,6 +2,7 @@ package org.egov.infra.mdms.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -378,6 +379,7 @@ public class MdmsCacheServiceTest {
         dbRecord.put("name", "DB Name");
 
         Map<String, Object> dbRow = new HashMap<>();
+        dbRow.put("id", "db-uuid-abc123");
         dbRow.put("tenantid", tenantId);
         dbRow.put("schemacode", moduleName + "." + masterName);
         dbRow.put("data", dbRecord);
@@ -388,10 +390,13 @@ public class MdmsCacheServiceTest {
         mdmsCacheService.loadAndMergeDbData();
 
         JSONArray currentMasterData = MDMSApplicationRunnerImpl.getTenantMap().get(tenantId).get(moduleName).get(masterName);
+        // File record is cleared; only DB record is present
         assertEquals(1, currentMasterData.size());
         Map<?, ?> replacedRecord = (Map<?, ?>) currentMasterData.get(0);
         assertEquals("DB Name", replacedRecord.get("name"));
+        // id is injected from the DB row
         assertEquals(true, replacedRecord.containsKey("id"));
+        assertEquals("db-uuid-abc123", replacedRecord.get("id"));
     }
 
     @Test
@@ -440,20 +445,17 @@ public class MdmsCacheServiceTest {
         assertEquals(true, tenantMap.get(tenantId).containsKey("tenant"));
         assertEquals(1, tenantMap.get(tenantId).get("tenant").get("tenants").size());
 
-        // Assert that BusinessService array still has BOTH TL (from file) and updated ADVT.Hoardings (from DB)
+        // Assert that BusinessService master array is replaced by authoritative DB records for BusinessService
         JSONArray updatedBusinessServices = tenantMap.get(tenantId).get("BillingService").get("BusinessService");
-        assertEquals(2, updatedBusinessServices.size());
+        assertEquals(1, updatedBusinessServices.size());
 
         Map<?, ?> firstBs = (Map<?, ?>) updatedBusinessServices.get(0);
-        assertEquals("TL", firstBs.get("code"));
-
-        Map<?, ?> secondBs = (Map<?, ?>) updatedBusinessServices.get(1);
-        assertEquals("ADVT.Hoardings", secondBs.get("code"));
-        assertEquals(true, secondBs.get("isVoucherCreationEnabled"));
+        assertEquals("ADVT.Hoardings", firstBs.get("code"));
+        assertEquals(true, firstBs.get("isVoucherCreationEnabled"));
     }
 
     @Test
-    public void testLoadAndMergeDbData_DeepMergeNestedCityAndTenantFields() {
+    public void testLoadAndMergeDbData_DbRecordReplacesFileMasterOnLoad() {
         String tenantId = "pb";
 
         // Existing file record with top-level fields and nested city fields
@@ -471,7 +473,7 @@ public class MdmsCacheServiceTest {
         JSONArray tenantMaster = getOrCreateMasterArray(tenantId, "tenant", "tenants");
         tenantMaster.add(existingTenant);
 
-        // DB record updating address and city.municipalityName
+        // DB record with address and partial city
         Map<String, Object> dbCity = new LinkedHashMap<>();
         dbCity.put("code", "2011");
         dbCity.put("municipalityName", "Improvement Trust Barnala");
@@ -492,32 +494,31 @@ public class MdmsCacheServiceTest {
         mdmsCacheService.loadAndMergeDbData();
 
         JSONArray resultMaster = MDMSApplicationRunnerImpl.getTenantMap().get(tenantId).get("tenant").get("tenants");
+        // File master was cleared; only the DB record is present
         assertEquals(1, resultMaster.size());
 
-        Map<?, ?> mergedTenant = (Map<?, ?>) resultMaster.get(0);
-        // Preserved from file
-        assertEquals("Improvement Trust Barnala", mergedTenant.get("name"));
-        assertEquals("info@barnala.gov", mergedTenant.get("emailId"));
+        Map<?, ?> dbOnlyRecord = (Map<?, ?>) resultMaster.get(0);
+        // Only DB fields are present — file-only fields are gone since master was replaced
+        assertEquals("pb.itbarnala", dbOnlyRecord.get("code"));
+        assertEquals("22 Acre Scheme, Barnala", dbOnlyRecord.get("address"));
+        assertNull("File-only 'name' field must not survive master replacement", dbOnlyRecord.get("name"));
+        assertNull("File-only 'emailId' field must not survive master replacement", dbOnlyRecord.get("emailId"));
 
-        // Updated/Added from DB
-        assertEquals("22 Acre Scheme, Barnala", mergedTenant.get("address"));
-
-        // Nested city deep-merged
-        Map<?, ?> mergedCity = (Map<?, ?>) mergedTenant.get("city");
-        assertEquals("Itbarnala", mergedCity.get("name"));
-        assertEquals("Barnala", mergedCity.get("districtName"));
+        // Nested city comes fully from DB
+        Map<?, ?> mergedCity = (Map<?, ?>) dbOnlyRecord.get("city");
+        assertEquals("2011", mergedCity.get("code"));
         assertEquals("Improvement Trust Barnala", mergedCity.get("municipalityName"));
+        assertNull("districtName was file-only, must not be present", mergedCity.get("districtName"));
     }
 
     @Test
-    public void testLoadAndMergeDbData_DifferentCityCodes201And2011DoNotOverlap() {
+    public void testLoadAndMergeDbData_DbMasterReplacesFileMaster_OnlyDbRecordRetained() {
         String tenantId = "pb";
 
-        // File record for 201 (pb.barnala)
+        // File record for 201 (pb.barnala) - this will be CLEARED when DB data loads
         Map<String, Object> city201 = new LinkedHashMap<>();
         city201.put("code", "201");
         city201.put("name", "Barnala");
-        city201.put("districtTenantCode", "pb.barnala");
 
         Map<String, Object> tenant201 = new LinkedHashMap<>();
         tenant201.put("code", "pb.barnala");
@@ -527,11 +528,10 @@ public class MdmsCacheServiceTest {
         JSONArray tenantMaster = getOrCreateMasterArray(tenantId, "tenant", "tenants");
         tenantMaster.add(tenant201);
 
-        // DB record for 2011 (pb.itbarnala) sharing the same districtTenantCode "pb.barnala"
+        // DB record for 2011 (pb.itbarnala) — different tenant code
         Map<String, Object> city2011 = new LinkedHashMap<>();
         city2011.put("code", "2011");
         city2011.put("name", "Itbarnala");
-        city2011.put("districtTenantCode", "pb.barnala");
 
         Map<String, Object> tenant2011 = new LinkedHashMap<>();
         tenant2011.put("code", "pb.itbarnala");
@@ -549,24 +549,20 @@ public class MdmsCacheServiceTest {
         mdmsCacheService.loadAndMergeDbData();
 
         JSONArray resultMaster = MDMSApplicationRunnerImpl.getTenantMap().get(tenantId).get("tenant").get("tenants");
-        
-        // Should contain BOTH records (size 2), 201 should NOT be replaced by 2011 even though both have districtTenantCode="pb.barnala"!
-        assertEquals(2, resultMaster.size());
 
-        Map<?, ?> first = (Map<?, ?>) resultMaster.get(0);
-        Map<?, ?> second = (Map<?, ?>) resultMaster.get(1);
+        // File master was cleared on first DB record; only pb.itbarnala (DB) survives
+        assertEquals(1, resultMaster.size());
 
-        assertEquals("pb.barnala", first.get("code"));
-        assertEquals("Barnala MC", first.get("name"));
-        assertEquals("pb.itbarnala", second.get("code"));
-        assertEquals("Improvement Trust Barnala", second.get("name"));
+        Map<?, ?> only = (Map<?, ?>) resultMaster.get(0);
+        assertEquals("pb.itbarnala", only.get("code"));
+        assertEquals("Improvement Trust Barnala", only.get("name"));
     }
 
     @Test
-    public void testLoadAndMergeDbData_MismatchedTopLevelCodeDoesNotOverwrite() {
+    public void testLoadAndMergeDbData_DbMasterClearsFileMaster_EvenIfCityCodeDiffers() {
         String tenantId = "pb";
 
-        // File record for pb.barnala with city code 201
+        // File record for pb.barnala
         Map<String, Object> city201 = new LinkedHashMap<>();
         city201.put("code", "201");
         city201.put("name", "Barnala");
@@ -579,9 +575,9 @@ public class MdmsCacheServiceTest {
         JSONArray tenantMaster = getOrCreateMasterArray(tenantId, "tenant", "tenants");
         tenantMaster.add(tenant201);
 
-        // Corrupted DB record for pb.itbarnala having city code 201
+        // DB record for a DIFFERENT tenant pb.itbarnala
         Map<String, Object> cityCorrupted = new LinkedHashMap<>();
-        cityCorrupted.put("code", "201"); // Mismatched nested city code
+        cityCorrupted.put("code", "201");
         cityCorrupted.put("name", "Itbarnala");
 
         Map<String, Object> tenant2011 = new LinkedHashMap<>();
@@ -601,16 +597,12 @@ public class MdmsCacheServiceTest {
 
         JSONArray resultMaster = MDMSApplicationRunnerImpl.getTenantMap().get(tenantId).get("tenant").get("tenants");
 
-        // Top-level code mismatch ("pb.barnala" vs "pb.itbarnala") MUST prevent pb.barnala from being overwritten!
-        assertEquals(2, resultMaster.size());
+        // File master (pb.barnala) is cleared when DB loads tenant.tenants; only DB record survives
+        assertEquals(1, resultMaster.size());
 
-        Map<?, ?> first = (Map<?, ?>) resultMaster.get(0);
-        Map<?, ?> second = (Map<?, ?>) resultMaster.get(1);
-
-        assertEquals("pb.barnala", first.get("code"));
-        assertEquals("Barnala MC", first.get("name"));
-        assertEquals("pb.itbarnala", second.get("code"));
-        assertEquals("Improvement Trust Barnala", second.get("name"));
+        Map<?, ?> only = (Map<?, ?>) resultMaster.get(0);
+        assertEquals("pb.itbarnala", only.get("code"));
+        assertEquals("Improvement Trust Barnala", only.get("name"));
     }
 
     private JSONArray getOrCreateMasterArray(String tenantId, String moduleName, String masterName) {

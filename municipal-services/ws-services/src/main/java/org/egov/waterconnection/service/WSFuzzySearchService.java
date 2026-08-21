@@ -154,20 +154,21 @@ public class WSFuzzySearchService {
             throw new CustomException("EG_WS_SEARCH_TENANTID_MANDATORY", "TenantId is mandatory for all search operations.");
         }
 
-        // 2. Dependency: If searching by Name, Locality is also mandatory
-        if (criteria.getOwnerName() != null && criteria.getLocality() == null) {
-            throw new CustomException("EG_WS_SEARCH_LOCALITY_MANDATORY", "Locality is mandatory when searching by Owner Name.");
+        // 2. Dependency: If searching by Name or Guardian Name, Locality is also mandatory
+        if ((criteria.getOwnerName() != null || criteria.getGuardianName() != null) && criteria.getLocality() == null) {
+            throw new CustomException("EG_WS_SEARCH_LOCALITY_MANDATORY", "Locality is mandatory when searching by Owner Name or Guardian Name.");
         }
 
         // 3. Minimum Criteria: At least one fuzzy parameter must exist
         if (criteria.getConnectionNumber() == null && 
             criteria.getOldConnectionNumber() == null && 
             criteria.getOwnerName() == null && 
+            criteria.getGuardianName() == null && 
             criteria.getDoorNo() == null &&
             criteria.getLocality()==null
             ) {
             
-            throw new CustomException("INVALID_SEARCH_CRITERIA", "Please provide at least one search parameter (Connection No, Name, or Door No).");
+            throw new CustomException("INVALID_SEARCH_CRITERIA", "Please provide at least one search parameter (Connection No, Name, Guardian Name, or Door No).");
         }
     }
 }

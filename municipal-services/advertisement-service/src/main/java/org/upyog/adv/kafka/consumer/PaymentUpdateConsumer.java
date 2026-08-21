@@ -11,9 +11,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
-import org.upyog.adv.enums.BookingStatusEnum;
 import org.upyog.adv.service.PaymentService;
-import org.upyog.adv.util.BookingUtil;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.DocumentContext;
@@ -28,6 +26,9 @@ public class PaymentUpdateConsumer {
 	@Autowired
 	private PaymentService paymentService;
 
+	@Autowired
+	private ObjectMapper mapper;
+
 
 	@KafkaListener(topics = {"${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}", concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listenPayments(final String rawRecord,@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
@@ -35,7 +36,7 @@ public class PaymentUpdateConsumer {
 		log.info("ADV Appplication Received to update workflow after PAY for topic : " + topic);
 
 		try {
-			PaymentRequest record = new ObjectMapper().readValue(rawRecord, PaymentRequest.class);
+			PaymentRequest record = mapper.readValue(rawRecord, PaymentRequest.class);
 			paymentService.process(record, topic);
 		} catch (JsonProcessingException e) {
 			log.error("Exception occurred while processing payment reciept : ", e.getMessage());
@@ -47,22 +48,8 @@ public class PaymentUpdateConsumer {
 	public void paymentUpdate(final HashMap<String, Object> record,
 			@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
-		log.info("ADV Appplication payment status update for  : " + topic + " and record : " + record);
-		//TODO: need to remove after testing
-		log.info("Strigifed json : " + BookingUtil.beuatifyJson(record));
+		log.info("ADV Application payment status update for topic: {}", topic);
 		paymentService.processTransaction(record, topic, null);
-
-	}
-	
-	
-	@KafkaListener(topics = { "${kafka.topics.save.pg.txns}" }, concurrency = "${kafka.consumer.config.concurrency.count}")
-	public void paymentStarted(final HashMap<String, Object> record,
-			@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
-
-		log.info("ADV Appplication payment started for topic  : " + topic + " and record : " + record);
-		//TODO: need to remove after testing
-		log.info("Strigifed json : " + BookingUtil.beuatifyJson(record));
-		paymentService.processTransaction(record, topic, BookingStatusEnum.PENDING_FOR_PAYMENT);
 
 	}
 	

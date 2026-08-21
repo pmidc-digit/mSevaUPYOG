@@ -26,7 +26,7 @@ public class NotificationConsumer {
 	private ObjectMapper mapper;
 
 	@KafkaListener(topics = { "${persister.save.advertisement.booking.topic}",
-			"${persister.update.advertisement.booking.topic}" })
+			"${persister.update.advertisement.booking.topic}" }, concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		BookingRequest bookingRequest = new BookingRequest();
@@ -35,7 +35,8 @@ public class NotificationConsumer {
 			log.info("Consuming record in ADV for notification: " + record.toString() + " from topic: " + topic);
 			bookingRequest = mapper.convertValue(record, BookingRequest.class);
 		} catch (final Exception e) {
-			log.error("Error while processing CHB notification to value: " + record + " on topic: " + topic + ": " + e);
+			log.error("Error while processing ADV notification to value: " + record + " on topic: " + topic + ": " + e);
+			return;
 		}
 
 		String bookingStatus = bookingRequest.getBookingApplication().getBookingStatus();

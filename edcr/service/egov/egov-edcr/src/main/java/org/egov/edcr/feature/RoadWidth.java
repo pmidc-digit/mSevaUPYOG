@@ -70,6 +70,7 @@ import static org.egov.edcr.constants.DxfFileConstants.G;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -119,8 +120,7 @@ public class RoadWidth extends FeatureProcess {
     	
         if (pl.getPlanInformation() != null && pl.getPlanInformation().getRoadWidth() != null) {
 //            BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
-        	BigDecimal roadWidth = pl.getRoadReserveFront();
-            
+        	BigDecimal roadWidth = pl.getRoadReserveFront().setScale(2, RoundingMode.HALF_UP);            
             if (roadWidth == null || roadWidth.compareTo(BigDecimal.ZERO) == 0) {
                 boolean skipValidation = false;
 

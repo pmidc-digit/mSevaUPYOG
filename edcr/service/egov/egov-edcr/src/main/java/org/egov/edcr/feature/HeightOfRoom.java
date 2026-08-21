@@ -202,7 +202,7 @@ public class HeightOfRoom extends FeatureProcess {
 						scrutinyDetail6.addColumnHeading(2, DESCRIPTION);
 						scrutinyDetail6.addColumnHeading(3, FLOOR);
 						scrutinyDetail6.addColumnHeading(4, Room);
-						scrutinyDetail6.addColumnHeading(5, REQUIRED);
+						//scrutinyDetail6.addColumnHeading(5, REQUIRED);
 						scrutinyDetail6.addColumnHeading(6, PROVIDED);
 						scrutinyDetail6.addColumnHeading(7, STATUS);
 						scrutinyDetail6.setKey("Block_" + block.getNumber() + "_" + "Room wise Window Area");
@@ -654,11 +654,16 @@ public class HeightOfRoom extends FeatureProcess {
 								if (room.getWindows() != null && !room.getWindows().isEmpty()) {
 									for (Window window : room.getWindows()) {
 										BigDecimal windowHeight = window.getWindowHeight().setScale(2, BigDecimal.ROUND_HALF_UP);
-										BigDecimal windowWidth = window.getWindowWidth();
+										BigDecimal windowWidth = window.getWindowWidth().setScale(2, BigDecimal.ROUND_HALF_UP);
 
 										// Check each window's dimensions
-										setReportOutputDetails(pl, subRule, subRuleDesc2, floor.getNumber().toString(), room.getNumber(),
-												"" + "", "Height = " + windowHeight + ", Width = " + windowWidth,
+//										setReportOutputDetails(pl, subRule, subRuleDesc2, floor.getNumber().toString(), room.getNumber(),
+//												"" + "", "Height = " + windowHeight + ", Width = " + windowWidth,
+//												Result.Accepted.getResultVal(), scrutinyDetail6);
+										//(Plan pl, String ruleNo, String ruleDesc, String floor,  String room, 
+										//String actual, String status, ScrutinyDetail scrutinyDetail)
+										setReportOutputRoomWiseWindowArea(pl, subRule, subRuleDesc2, floor.getNumber().toString(), room.getNumber(),
+												"Height = " + windowHeight + ", Width = " + windowWidth,
 												Result.Accepted.getResultVal(), scrutinyDetail6);
 									}
 								}
@@ -799,6 +804,20 @@ public class HeightOfRoom extends FeatureProcess {
 		scrutinyDetail.getDetail().add(details);
 		pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 	}
+	
+	private void setReportOutputRoomWiseWindowArea(Plan pl, String ruleNo, String ruleDesc, String floor,  String room, 
+			String actual, String status, ScrutinyDetail scrutinyDetail) {
+		Map<String, String> details = new HashMap<>();
+		details.put(RULE_NO, ruleNo);
+		details.put(DESCRIPTION, ruleDesc);
+		details.put(FLOOR, floor);
+		details.put(Room, room);
+		details.put(PROVIDED, actual);
+		details.put(STATUS, status);
+		scrutinyDetail.getDetail().add(details);
+		pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+	}
+	
 	
 	private void setReportOutputDetailsNonHabDoor(Plan pl, String ruleNo, String ruleDesc, String floor,  String room, String expected,
 			String actual, String status, ScrutinyDetail scrutinyDetail) {

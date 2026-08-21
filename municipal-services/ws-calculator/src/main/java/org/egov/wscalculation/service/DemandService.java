@@ -575,6 +575,21 @@ public class DemandService {
         	
 	        if (matchingUsages && relatedSwConn != null && !relatedSwConn.isEmpty()) {
 	        	// For the metered connections demand has to create one by one
+
+                List<Demand> existingSwDemands = searchDemandBasedOnConsumerCode(tenantId, relatedSwConn, requestInfo, "SW");
+                if (!CollectionUtils.isEmpty(existingSwDemands)) {
+                    for (Demand existingSwDemand : existingSwDemands) {
+                        if (StatusEnum.ACTIVE.equals(existingSwDemand.getStatus())) {
+                            CancelDemandReq cancelDemandReq = new CancelDemandReq();
+                            cancelDemandReq.setId(existingSwDemand.getId());
+                            cancelDemandReq.setTenantId(tenantId);
+                            cancelDemandReq.setConsumerCode(relatedSwConn);
+                            cancelDemandReq.setBusinessService("SW");
+                            dao.cancelPreviousMeterReading(cancelDemandReq);
+                        }
+                    }
+                }
+
 	 			if (WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(connection.getConnectionType())) {
 	 				demandReq.addAll(demands);
 	 					businessServices = "SW";
@@ -2276,8 +2291,9 @@ public class DemandService {
 		for (Demand demand : demandResponse) {
 			try {
 				Object result = serviceRequestRepository.fetchResult(
-						calculatorUtils.getFetchBillURL(demand.getTenantId(), demand.getConsumerCode()),
-						RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+                        calculatorUtils.getFetchBillURLWithBusinessService(demand.getTenantId(), demand.getConsumerCode(),demand.getBusinessService()),
+                        RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+
 				HashMap<String, Object> billResponse = new HashMap<>();
 				billResponse.put("requestInfo", requestInfo);
 				billResponse.put("billResponse", result);

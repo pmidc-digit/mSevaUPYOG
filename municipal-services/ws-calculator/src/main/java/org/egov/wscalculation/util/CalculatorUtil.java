@@ -668,4 +668,15 @@ public class CalculatorUtil {
             throw new CustomException("PARSING_ERROR", "Error while parsing response of Water Connection Search");
         }
     }
+
+    public StringBuilder getFetchBillURLWithBusinessService(String tenantId, String consumerCode, String businessService) {
+
+        return new StringBuilder().append(calculationConfig.getBillingServiceHost())
+                .append(calculationConfig.getFetchBillEndPoint()).append(WSCalculationConstant.URL_PARAMS_SEPARATER)
+                .append(WSCalculationConstant.TENANT_ID_FIELD_FOR_SEARCH_URL).append(tenantId)
+                .append(WSCalculationConstant.SEPARATER).append(WSCalculationConstant.CONSUMER_CODE_SEARCH_FIELD_NAME)
+                .append(consumerCode).append(WSCalculationConstant.SEPARATER)
+                .append(WSCalculationConstant.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
+                .append(businessService);
+    }
 }

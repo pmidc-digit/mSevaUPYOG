@@ -116,6 +116,23 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 	
 	@Override
 	public void cancelPreviousMeterReading(CancelDemandReq demandId) {
+		if (demandId == null || demandId.getId() == null || demandId.getId().isEmpty()) {
+			return;
+		}
+
+		int updatedRows = jdbcTemplate.update(
+				"UPDATE egbs_demand_v1 SET status = 'CANCELLED' WHERE id = ? AND status = 'ACTIVE'",
+				demandId.getId()
+		);
+
+		if (updatedRows > 0) {
+			log.info("Cancelled active demand synchronously. demandId={}, tenantId={}, consumerCode={}",
+					demandId.getId(), demandId.getTenantId(), demandId.getConsumerCode());
+			return;
+		}
+
+		log.warn("No active demand was cancelled synchronously. falling back to async cancel topic. demandId={}, tenantId={}, consumerCode={}",
+				demandId.getId(), demandId.getTenantId(), demandId.getConsumerCode());
 		wSCalculationProducer.push(cancelMeterConnection, demandId);
 	}
 	/**

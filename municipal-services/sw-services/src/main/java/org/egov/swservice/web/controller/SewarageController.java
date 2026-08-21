@@ -76,7 +76,7 @@ public class SewarageController {
 	    
 	    List<SewerageConnection> sewerageConnectionList = null;
 	    
-	    if (criteria.getOwnerName() != null || criteria.getDoorNo() != null || criteria.getLocality() != null) {
+	    if (criteria.getOwnerName() != null || criteria.getGuardianName() != null || criteria.getDoorNo() != null || criteria.getLocality() != null) {
 	        // 2. FIX: Assign to the list instead of returning directly
 	        sewerageConnectionList = swFuzzySearchService.getConnections(requestInfo, criteria);
 	    } 

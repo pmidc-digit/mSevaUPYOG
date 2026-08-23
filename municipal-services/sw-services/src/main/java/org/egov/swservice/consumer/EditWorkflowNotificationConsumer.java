@@ -39,9 +39,6 @@ public class EditWorkflowNotificationConsumer {
 	private ObjectMapper mapper;
 
 	@Autowired
-	private SewerageServiceImpl sewarageServiceImpl;
-
-	@Autowired
 	private DiffService diffService;
 
 	@Autowired

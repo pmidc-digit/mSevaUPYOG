@@ -238,4 +238,20 @@ public class SWConfiguration {
     @Value("${egov.billing.service.host}")
 	private String businesserviceHost;
 
+    // Elasticsearch configurations
+    @Value("${egov.es.host:http://elasticsearch-data.es-cluster:9200/}")
+    private String elasticsearchHost;
+
+    @Value("${egov.es.search.endpoint:/_search}")
+    private String elasticsearchSearchEndpoint;
+
+    @Value("${egov.sw.enriched.index:sewerage-services}")
+    private String swIndex;
+
+    @Value("${elasticsearch.username:}")
+    private String elasticsearchUsername;
+
+    @Value("${elasticsearch.password:}")
+    private String elasticsearchPassword;
+
 }

@@ -40,6 +40,26 @@ import {
 } from "../../../constants/razorpayConstants";
 import { gatewayType } from "../../../constants/gatewayTypeConstants";
 
+const createGatewayCallbackUrl = (originalCallbackUrl, gateway) => {
+  const callbackUrl = new URL(
+    `/customization/open/punjab-pt/${gateway.toLowerCase()}/confirm`,
+    window.location.origin
+  );
+
+  callbackUrl.searchParams.set("original_callback", originalCallbackUrl);
+
+  return callbackUrl.toString();
+};
+
+const getPaymentGatewayConfig = (mdmsData, businessService) => {
+  const gateways = mdmsData?.PAYMENT?.PaymentGateway || [];
+
+  return gateways.find(
+    ({ active, businessService: services }) =>
+      active === true && services?.includes(businessService)
+  );
+};
+
 export const SelectPaymentType = (props) => {
   const { state = {} } = useLocation();
   const userInfo = Digit.UserService.getUser();
@@ -56,11 +76,10 @@ export const SelectPaymentType = (props) => {
   const propertyId = state?.propertyId;
   const stateTenant = Digit.ULBService.getStateId();
   const { control, handleSubmit, setValue } = useForm();
-  // const moduleName = tenantId?.split(".")?.[1];
-  const moduleName = "testing"; //need to change this back to testing -> tenantId?.split(".")?.[1];
   // const { data: menu2, isLoading } = Digit.Hooks.useCommonMDMS("pb", "testing", "PaymentGateway");
-  // const { data: menuList } = Digit.Hooks.useCustomMDMS(tenantId, moduleName, [{ name: "PaymentGateway" }]);
-  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PAYMENT", [{ name: "PaymentGateway" }]); // will change back to pb.testing -> tenantId
+  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PAYMENT", [
+    { name: "PaymentGateway", filter: `$.*.[?(@.businessService contains '${businessService}')]` },
+  ]);
 
   const [isPaymentLoading, setPaymentLoading] = useState(false);
   const { data: paymentdetails, isLoading: paymentLoading } = Digit.Hooks.useFetchPayment(
@@ -105,6 +124,30 @@ export const SelectPaymentType = (props) => {
     const baseURL = document.location.origin;
     console.log("BASEURLINPAYMENT", baseURL);
 
+    const originalCallbackUrl = `${baseURL}/digit-ui/employee/payment/challan/success/${businessService}/${consumerCode}`;
+    const paymentGatewayConfig = getPaymentGatewayConfig(menuList, businessService);
+
+    if (!paymentGatewayConfig) {
+      setPaymentLoading(false);
+      setShowToast({
+        key: true,
+        label: "CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER",
+      });
+      return;
+    }
+
+    const paymentConfig = {
+      gateway: paymentGatewayConfig.gateway,
+      callbackUrl: createGatewayCallbackUrl(originalCallbackUrl, paymentGatewayConfig.gateway),
+    };
+
+    console.log("EMPLOYEE FRONTEND PAYMENT CONFIG", {
+      tenantId: billDetails?.tenantId,
+      businessService,
+      originalCallbackUrl,
+      paymentConfig,
+    });
+
     const filterData = {
       Transaction: {
         tenantId: billDetails?.tenantId,
@@ -114,7 +157,7 @@ export const SelectPaymentType = (props) => {
         billId: billDetails.id,
         consumerCode: consumerCode,
         productInfo: "Common Payment",
-        gateway: d?.paymentType,
+        gateway: paymentConfig.gateway,
         taxAndPayments: [
           {
             taxAmount: paymentAmount || billDetails.totalAmount,
@@ -140,7 +183,7 @@ export const SelectPaymentType = (props) => {
         // window.location.href.includes("mcollect") || wrkflow === "WNS"
         //   ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
         //   : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
-        callbackUrl: `${baseURL}/digit-ui/employee/payment/challan/success/${businessService}/${consumerCode}`,
+        callbackUrl: paymentConfig.callbackUrl,
 
         // `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${
         //       resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
@@ -179,10 +222,12 @@ export const SelectPaymentType = (props) => {
         return;
       }
 
+      const selectedGateway = data?.Transaction?.gateway || paymentConfig.gateway;
+
       if (
-        d?.paymentType === gatewayType.RAZORPAY ||
-        d?.paymentType === gatewayType.OBPASRAZORPAY ||
-        d?.paymentType?.toUpperCase()?.includes("RAZORPAY")
+        selectedGateway === gatewayType.RAZORPAY ||
+        selectedGateway === gatewayType.OBPASRAZORPAY ||
+        selectedGateway?.toUpperCase()?.includes("RAZORPAY")
       ) {
         displayRazorpay(data);
       }else if (redirectUrl?.includes("ccavenue") || redirectUrl?.includes("ccavanue")) {
@@ -195,9 +240,11 @@ export const SelectPaymentType = (props) => {
         document.body.appendChild(link);
         link.click();
         link.remove();
+      } else if (redirectUrl) {
+        window.location.href = redirectUrl;
       } else {
-        //Do Nothing
         setPaymentLoading(false);
+        setShowToast({ key: true, label: t("CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER") });
       }
     } catch (error) {
       console.log("error", error);

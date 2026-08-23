@@ -19,9 +19,9 @@ const ChallanResponseCitizen = (props) => {
   const [showToast, setShowToast] = useState(null);
 
   // const tenantId = window.localStorage.getItem("CITIZEN.CITY");
-  const tenantId = window.location.href.includes("citizen") ?
-  window.localStorage.getItem("CITIZEN.CITY") :
-  window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
 
   const pathname = history?.location?.pathname || "";
   const ndcCode = pathname.split("/").pop(); // ✅ Extracts the last segment
@@ -55,8 +55,8 @@ const ChallanResponseCitizen = (props) => {
   }, []);
 
   const onSubmit = () => {
-    if (isCitizen) history.push(`/digit-ui/citizen`);else
-    history.push(`/digit-ui/employee`);
+    if (isCitizen) history.push(`/digit-ui/citizen`);
+    else history.push(`/digit-ui/employee`);
   };
 
   const payLater = async () => {
@@ -67,9 +67,9 @@ const ChallanResponseCitizen = (props) => {
       Challan: {
         ...getChallanData,
         workflow: {
-          action: "PAY_LATER"
-        }
-      }
+          action: "PAY_LATER",
+        },
+      },
     };
 
     try {
@@ -107,7 +107,6 @@ const ChallanResponseCitizen = (props) => {
     if (chbPermissionLoading) return;
     setChbPermissionLoading(true);
     try {
-
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: ndcCode } });
 
       const challanDetails = applicationDetails?.challans?.[0];
@@ -128,10 +127,10 @@ const ChallanResponseCitizen = (props) => {
           console.warn("Reverse geocoding failed, using address fallback", err);
         }
       }
-      console.log('location', location);
+      console.log("location", location);
       const challan = {
         ...applicationDetails,
-        ...challanEmpData
+        ...challanEmpData,
       };
       console.log("applicationDetails", applicationDetails);
       let application = challan;
@@ -159,14 +158,15 @@ const ChallanResponseCitizen = (props) => {
     <div>
       <Card>
         <Banner
-        // message={t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
-        // message={"Community Hall Booking Application Submitted Successfully"}
-        message={t("CHALLAN_APPLICATION_CREATED")}
-        applicationNumber={ndcCode}
-        info={nocData?.applicationStatus == "REJECTED" ? "" : t(`CHALLAN_NUMBER`)}
-        successful={nocData?.applicationStatus == "REJECTED" ? false : true}
-
-        headerStyles={{ fontSize: "32px", wordBreak: "break-word" }} className="challan-generation-style-481ed7e754" />
+          // message={t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
+          // message={"Community Hall Booking Application Submitted Successfully"}
+          message={t("CHALLAN_APPLICATION_CREATED")}
+          applicationNumber={ndcCode}
+          info={nocData?.applicationStatus == "REJECTED" ? "" : t(`CHALLAN_NUMBER`)}
+          successful={nocData?.applicationStatus == "REJECTED" ? false : true}
+          headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
+          className="challan-generation-style-481ed7e754"
+        />
 
         {/* {nocData?.applicationStatus !== "REJECTED" ? (
            <CardText>
@@ -174,26 +174,26 @@ const ChallanResponseCitizen = (props) => {
            </CardText>
           ) : null} */}
         <div className="primary-label-btn d-grid" onClick={chbPermissionLoading ? undefined : printChallanNotice}>
-          {chbPermissionLoading ?
-          <Loader /> :
-
-          <>
+          {chbPermissionLoading ? (
+            <Loader />
+          ) : (
+            <>
               <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
                 <path d="M0 0h24v24H0z" fill="none" />
                 <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
               </svg>
               {t("Challan_Notice")}
             </>
-          }
+          )}
         </div>
         <ActionBar className="challan-response-action-bar">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
-          <SubmitBar label={t("CHALLAN_PAY_LATER")} onSubmit={payLater} />
+          <SubmitBar label={t("Pay Later ")} onSubmit={payLater} />
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} />
         </ActionBar>
       </Card>
       {showToast && <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />}
-    </div>);
-
+    </div>
+  );
 };
 export default ChallanResponseCitizen;

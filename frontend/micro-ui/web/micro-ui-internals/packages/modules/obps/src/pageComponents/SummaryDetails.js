@@ -34,6 +34,16 @@ import FeeEstimation from "./FeeEstimation"
 import NocSitePhotographsBPA from "../components/NocSitePhotographsNew";
 import CitizenAndArchitectPhoto from "./CitizenAndArchitectPhoto";
 
+const RenderRow = ({ label, text, ...rest }) => {
+    if (!text || text === "N/A" || text === "" || text === null || text === undefined || text === "0.00") return null;
+    return (
+        <div className="row border-none" {...rest}>
+            <h2>{label}</h2>
+            <div className="value">{text}</div>
+        </div>
+    );
+};
+
 const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const { t } = useTranslation();
     const history = useHistory();
@@ -938,46 +948,36 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     <div className="bpa-stepper-form-section">
                         <CardSubHeader className="bpa-section-header">{t("BPA_PROFESSIONAL_DETAILS") || "Professional Details"}</CardSubHeader>
                         <div className="data-table">
-                            <div className="row border-none">
-                                <h2>{t("BPA_PROFESSIONAL_NAME_LABEL")}</h2>
-                                <div className="value">
-                                    {currentStepData?.createdResponse?.additionalDetails?.stakeholderName ||
-                                        currentStepData?.createdResponse?.additionalDetails?.architectName ||
-                                        "N/A"}
-                                </div>
-                            </div>
-                            <div className="row border-none">
-                                <h2>{t("BPA_PROFESSIONAL_EMAIL_LABEL")}</h2>
-                                <div className="value">
-                                    {currentStepData?.createdResponse?.additionalDetails?.architectEmailId || "N/A"}
-                                </div>
-                            </div>
-                            <div className="row border-none">
-                                <h2>{t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}</h2>
-                                <div className="value">
-                                    {currentStepData?.createdResponse?.additionalDetails?.architectid ||
-                                        currentStepData?.createdResponse?.additionalDetails?.stakeholderRegistrationNumber ||
-                                        "N/A"}
-                                </div>
-                            </div>
-                            <div className="row border-none">
-                                <h2>{t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}</h2>
-                                <div className="value">
-                                    {formatDate(currentStepData?.createdResponse?.additionalDetails?.professionalRegIdValidity) || "N/A"}
-                                </div>
-                            </div>
-                            <div className="row border-none">
-                                <h2>{t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}</h2>
-                                <div className="value">
-                                    {currentStepData?.createdResponse?.additionalDetails?.architectMobileNumber || "N/A"}
-                                </div>
-                            </div>
-                            <div className="row border-none">
-                                <h2>{t("BPA_PROFESSIONAL_ADDRESS_LABEL")}</h2>
-                                <div className="value">
-                                    {currentStepData?.createdResponse?.additionalDetails?.stakeholderAddress || "N/A"}
-                                </div>
-                            </div>
+                            <RenderRow
+                                label={t("BPA_PROFESSIONAL_NAME_LABEL")}
+                                text={
+                                    currentStepData?.createdResponse?.additionalDetails?.stakeholderName ||
+                                    currentStepData?.createdResponse?.additionalDetails?.architectName
+                                }
+                            />
+                            <RenderRow
+                                label={t("BPA_PROFESSIONAL_EMAIL_LABEL")}
+                                text={currentStepData?.createdResponse?.additionalDetails?.architectEmailId}
+                            />
+                            <RenderRow
+                                label={t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}
+                                text={
+                                    currentStepData?.createdResponse?.additionalDetails?.architectid ||
+                                    currentStepData?.createdResponse?.additionalDetails?.stakeholderRegistrationNumber
+                                }
+                            />
+                            <RenderRow
+                                label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}
+                                text={formatDate(currentStepData?.createdResponse?.additionalDetails?.professionalRegIdValidity)}
+                            />
+                            <RenderRow
+                                label={t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}
+                                text={currentStepData?.createdResponse?.additionalDetails?.architectMobileNumber}
+                            />
+                            <RenderRow
+                                label={t("BPA_PROFESSIONAL_ADDRESS_LABEL")}
+                                text={currentStepData?.createdResponse?.additionalDetails?.stakeholderAddress}
+                            />
                         </div>
                     </div>
                 )}

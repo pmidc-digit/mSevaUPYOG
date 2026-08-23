@@ -141,12 +141,7 @@ export const SelectPaymentType = (props) => {
       callbackUrl: createGatewayCallbackUrl(originalCallbackUrl, paymentGatewayConfig.gateway),
     };
 
-    console.log("EMPLOYEE FRONTEND PAYMENT CONFIG", {
-      tenantId: billDetails?.tenantId,
-      businessService,
-      originalCallbackUrl,
-      paymentConfig,
-    });
+
 
     const filterData = {
       Transaction: {

@@ -562,10 +562,10 @@ const getFormattedULBName = (ulbCode = "") => {
       "BPA_ARCHITECT_NAME",
       JSON.stringify(response?.BPA?.[0]?.additionalDetails?.typeOfArchitect ? response?.BPA?.[0]?.additionalDetails?.typeOfArchitect : "ARCHITECT")
     );
-    const [BPA] = response?.BPA;
+    const [BPA] = Array.isArray(response?.BPA) ? response.BPA : [];
     console.log(BPA, "KHA");
     const edcrResponse = await OBPSService.scrutinyDetails(BPA?.tenantId, { edcrNumber: BPA?.edcrNumber });
-    const [edcr] = edcrResponse?.edcrDetail;
+    const [edcr] = Array.isArray(edcrResponse?.edcrDetail) ? edcrResponse.edcrDetail : [];
     let height = edcr?.planDetail?.blocks?.[0]?.building?.buildingHeight;
 
     // if (typeof height === "number") {
@@ -581,7 +581,7 @@ const getFormattedULBName = (ulbCode = "") => {
     console.log(edcr, "KHATA");
     const mdmsRes = await MdmsService.getMultipleTypes(tenantId, "BPA", ["RiskTypeComputation", "CheckList"]);
     const riskType = Digit.Utils.obps.calculateRiskType(mdmsRes?.BPA?.RiskTypeComputation, edcr?.planDetail?.plot?.area, edcr?.planDetail?.blocks);
-    BPA.riskType = riskType;
+    if (BPA) BPA.riskType = riskType;
     // const nocResponse = await OBPSService.NOCSearch(BPA?.tenantId, { sourceRefId: BPA?.applicationNo });
     // const noc = nocResponse?.Noc;
     const noc = [];
@@ -589,8 +589,8 @@ const getFormattedULBName = (ulbCode = "") => {
     const filter = { approvalNo: response?.BPA?.[0]?.approvalNo };
     const bpaResponse = await OBPSService.BPASearch(tenantId, { ...filter });
     const comparisionRep = {
-      ocdcrNumber: BPA?.edcrNumber.includes("OCDCR") ? BPA?.edcrNumber : bpaResponse?.BPA?.[0]?.edcrNumber,
-      edcrNumber: bpaResponse?.BPA?.[0]?.edcrNumber.includes("OCDCR") ? BPA?.edcrNumber : bpaResponse?.BPA?.[0]?.edcrNumber,
+      ocdcrNumber: BPA?.edcrNumber?.includes?.("OCDCR") ? BPA?.edcrNumber : bpaResponse?.BPA?.[0]?.edcrNumber,
+      edcrNumber: bpaResponse?.BPA?.[0]?.edcrNumber?.includes?.("OCDCR") ? BPA?.edcrNumber : bpaResponse?.BPA?.[0]?.edcrNumber,
     };
     // const comparisionReport = await OBPSService.comparisionReport(BPA?.tenantId, { ...comparisionRep });
     const comparisionReport = [];

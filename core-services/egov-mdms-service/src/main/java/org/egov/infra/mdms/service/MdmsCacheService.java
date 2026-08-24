@@ -165,6 +165,7 @@ public class MdmsCacheService {
 				} catch (Exception e) {
 					log.error("Error processing DB row: {}", row, e);
 				}
+				
 			}
 
 			log.info("Merged {} DB records into in-memory MDMS cache.", recordCount);
@@ -266,8 +267,6 @@ public class MdmsCacheService {
 		if (dbId != null && !dbId.trim().isEmpty() && !newRecordMap.containsKey("id")) {
 			newRecordMap.put("id", dbId);
 		}
-
-		log.info("Added DB record to cache for {}.{}", moduleName, masterName);
 		masterData.add(newRecordMap);
 	}
 
@@ -347,30 +346,7 @@ public class MdmsCacheService {
 			return isDeepEqual(newId, existingId);
 		}
 
-		// 2. Cross-check: topLevelUniqueIdentifier from Kafka wrapper matches existing record's data 'id'.
-		//    This handles the case where a record is being updated with a new 'code' (rename),
-		//    but the DB row's uniqueIdentifier ties the two records together.
-		if (topLevelUniqueIdentifier != null && existingId != null) {
-			String existingIdStr = String.valueOf(existingId).trim();
-			if (!existingIdStr.isEmpty() && existingIdStr.equalsIgnoreCase(topLevelUniqueIdentifier.trim())) {
-				return true;
-			}
-		}
-
-		// 3. Cross-check: new record's 'id' matches topLevelUniqueIdentifier AND existing record has no id
-		//    (e.g. file-loaded record being matched to its DB counterpart for the first time).
-		if (existingId == null && newId != null && topLevelUniqueIdentifier != null
-				&& String.valueOf(newId).trim().equalsIgnoreCase(topLevelUniqueIdentifier.trim())) {
-			// The new record's id IS the uniqueIdentifier — verify by checking other correlating fields.
-			// Use service field or other fields for additional confirmation if available.
-			Object existingService = existingMap.get("service");
-			Object newService = newRecordMap.get("service");
-			if (existingService != null && newService != null && isDeepEqual(existingService, newService)) {
-				return true;
-			}
-		}
-
-		// 4. Match by top-level 'code' field
+		// 2. Match by top-level 'code' field
 		Object existingCode = existingMap.get("code");
 		Object newCode = newRecordMap.get("code");
 		if (existingCode != null && newCode != null) {
@@ -383,7 +359,7 @@ public class MdmsCacheService {
 			}
 		}
 
-		// 5. Match by uniqueIdentifier field within the data records
+		// 3. Match by uniqueIdentifier
 		Object existingUnique = existingMap.get("uniqueIdentifier");
 		Object newUnique = newRecordMap.get("uniqueIdentifier") != null ? newRecordMap.get("uniqueIdentifier")
 				: topLevelUniqueIdentifier;
@@ -393,7 +369,7 @@ public class MdmsCacheService {
 			}
 		}
 
-		// 6. Match by configured uniqueKeys from mdms-masters-config.json
+		// 4. Match by configured uniqueKeys from mdms-masters-config.json
 		List<String> configuredKeys = getUniqueKeysFromConfig(moduleName, masterName);
 		if (configuredKeys != null && !configuredKeys.isEmpty()) {
 			for (String k : configuredKeys) {

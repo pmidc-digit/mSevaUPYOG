@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.egov.MDMSApplicationRunnerImpl;
 import org.egov.infra.mdms.utils.MDMSConstants;
@@ -91,7 +92,8 @@ public class MDMSService {
     }
 
     private JSONArray getMasterData(Map<String, Map<String, JSONArray>> stateLevel,
-                                    Map<String, Map<String, JSONArray>> ulbLevel, String moduleName, String masterName, String tenantId) throws Exception {
+            Map<String, Map<String, JSONArray>> ulbLevel, String moduleName, String masterName, String tenantId)
+            throws Exception {
 
         Map<String, Map<String, Object>> masterConfigMap = MDMSApplicationRunnerImpl.getMasterConfigMap();
 
@@ -131,10 +133,11 @@ public class MDMSService {
         return filteredMasters;
     }
 
-    private static final java.util.regex.Pattern UUID_PATTERN = java.util.regex.Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+    private static final Pattern UUID_PATTERN = Pattern
+            .compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
     private JSONArray sanitizeMasterDataForResponse(JSONArray masterData, String tenantId, String moduleName,
-                                                    String masterName) {
+            String masterName) {
         boolean preserveTopLevelId = MDMSApplicationRunnerImpl.hasTopLevelIdInCache(tenantId, moduleName,
                 masterName);
         JSONArray sanitizedMasterData = new JSONArray();

@@ -62,14 +62,16 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.Table;
+import com.lowagie.text.alignment.HorizontalAlignment;
+import com.lowagie.text.alignment.VerticalAlignment;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.displaytag.Messages;
 import org.displaytag.exception.BaseNestableJspTagException;
 import org.displaytag.exception.SeverityEnum;
@@ -84,7 +86,7 @@ import org.displaytag.model.TableModel;
 import org.displaytag.util.TagConstants;
 import org.egov.infra.exception.ApplicationRuntimeException;
 
-import javax.servlet.jsp.JspException;
+import jakarta.servlet.jsp.JspException;
 import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -192,7 +194,7 @@ public class EGovPdfView implements BinaryExportView {
 				final Object value = column.getValue(this.decorated);
 				final Cell cell = getCell(ObjectUtils.toString(value));
 				if (value instanceof BigDecimal) {
-					cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    cell.setHorizontalAlignment(HorizontalAlignment.RIGHT);
 				}
 				this.tablePDF.addCell(cell);
 			}
@@ -281,7 +283,7 @@ public class EGovPdfView implements BinaryExportView {
 
 		value = removeHtmlTagsAndSpaces(value);
 		final Cell cell = new Cell(new Chunk(StringUtils.trimToEmpty(value), this.smallFont));
-		cell.setVerticalAlignment(Element.ALIGN_TOP);
+        cell.setVerticalAlignment(VerticalAlignment.TOP);
 		cell.setLeading(8);
 		return cell;
 	}

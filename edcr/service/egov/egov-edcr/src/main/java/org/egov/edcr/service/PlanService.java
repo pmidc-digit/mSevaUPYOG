@@ -28,6 +28,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
@@ -833,7 +835,7 @@ public class PlanService {
             Path path = fileStoreService.fetchAsPath(fileStoreMapper.getFileStoreId(),
                     "Digit DCR");
 
-            PDDocument doc = PDDocument.load(new File(path.toString()));
+            PDDocument doc = Loader.loadPDF(new File(path.toString()));
             for (int i = 0; i < doc.getNumberOfPages(); i++) {
                 PDPage page = doc.getPage(i);
                 PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND,
@@ -855,7 +857,7 @@ public class PlanService {
 
                 contentStream.newLineAtOffset(248, 23);
 
-                contentStream.setFont(PDType1Font.TIMES_ROMAN, 10);
+                contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 10);
                 String text = (i + 1) + " of " + doc.getNumberOfPages();
                 contentStream.showText(text);
                 contentStream.endText();

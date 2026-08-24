@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -43,7 +43,7 @@ import org.egov.infra.admin.master.service.AppConfigValueService;
 import org.egov.infra.admin.master.service.CityService;
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.microservice.models.RequestInfo;
-import org.json.simple.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kabeja.batik.tools.SAXPDFSerializer;
 import org.kabeja.dxf.DXFBlock;
 import org.kabeja.dxf.DXFConstants;
@@ -73,13 +73,27 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Rectangle;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.geom.Rectangle;
 
 
 
 @Service
 public class DxfToPdfConverterExtract extends FeatureExtract {
+
+    private static Rectangle resolvePageSize(String size) {
+        if (size == null)
+            return PageSize.A4;
+        return switch (size.trim().toUpperCase(java.util.Locale.ROOT)) {
+        case "A0" -> PageSize.A0;
+        case "A1" -> PageSize.A1;
+        case "A2" -> PageSize.A2;
+        case "A3" -> PageSize.A3;
+        case "A5" -> PageSize.A5;
+        case "A6" -> PageSize.A6;
+        default -> PageSize.A4;
+        };
+    }
 
     private static final Logger LOG = LogManager.getLogger(DxfToPdfConverterExtract.class);
 
@@ -132,7 +146,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
                 try {
                     List<Object> dxfToPdfMdmsEnabled = edcrMdmsConfig.get("DxfToPdfConfig");
 
-                    String jsonStr = new JSONObject((LinkedHashMap<?, ?>) dxfToPdfMdmsEnabled.get(0)).toString();
+                    String jsonStr = new ObjectMapper().writeValueAsString(dxfToPdfMdmsEnabled.get(0));
                     ObjectMapper mapper = new ObjectMapper();
                     mdmsEdcrResponse = mapper.readValue(jsonStr, MdmsEdcrResponse.class);
                 } catch (IOException e) {
@@ -143,7 +157,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
                     List<Object> dxfToPdfConfig = edcrMdmsConfig.get("DxfToPdfLayerConfig");
                     for (Object obj : dxfToPdfConfig) {
                         try {
-                            String jsonString = new JSONObject((LinkedHashMap<?, ?>) obj).toString();
+                            String jsonString = new ObjectMapper().writeValueAsString(obj);
                             ObjectMapper mapper1 = new ObjectMapper();
                             DxfToPdfLayerConfig config = mapper1.readValue(jsonString, DxfToPdfLayerConfig.class);
                             List<EdcrPdfDetail> layerNameList = getPdfLayerNames(planDetail, config);
@@ -834,7 +848,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
             // 3) Build Kabeja property map (VERY IMPORTANT)
             // --------------------------------------------------------------
             HashMap<String, Object> map = new HashMap<>();
-            Rectangle rect = PageSize.getRectangle(edcrPdfDetail.getPageSize().getSize());
+            Rectangle rect = resolvePageSize(edcrPdfDetail.getPageSize().getSize());
             double enlarge = edcrPdfDetail.getPageSize().getEnlarge();
 
             double w, h;

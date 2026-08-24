@@ -42,7 +42,7 @@ import org.egov.infra.microservice.models.RequestInfo;
 import org.egov.infra.microservice.models.Role;
 import org.egov.infra.validation.exception.ValidationError;
 import org.egov.infra.validation.exception.ValidationException;
-import org.json.simple.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kabeja.dxf.DXFDocument;
 import org.kabeja.dxf.DXFLWPolyline;
 import org.kabeja.parser.DXFParser;
@@ -147,7 +147,7 @@ public class ExtractService {
 				LinkedHashMap<String, String> configs = new LinkedHashMap<>();
 				for (Object obj : dimensionConfig) {
 					try {
-						String jsonString = new JSONObject((LinkedHashMap<?, ?>) obj).toString();
+						String jsonString = new ObjectMapper().writeValueAsString(obj);
 						ObjectMapper mapper = new ObjectMapper();
 						MdmsEdcrResponse res = mapper.readValue(jsonString, MdmsEdcrResponse.class);
 						configs.put(res.getCode(), res.getEnabled());

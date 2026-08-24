@@ -84,7 +84,8 @@ public class Ventilation extends FeatureProcess {
 
 	    for (Block b : pl.getBlocks()) {
 	        ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
-	        scrutinyDetail.setKey("Common_Ventilation");
+	        scrutinyDetail.setKey("Block_" + b.getNumber() + "_" + "Light_Ventilation");
+	        //scrutinyDetail.setKey("Light_Ventilation");
 	        scrutinyDetail.addColumnHeading(1, RULE_NO);
 	        scrutinyDetail.addColumnHeading(2, DESCRIPTION);
 	        scrutinyDetail.addColumnHeading(3, REQUIRED);
@@ -92,7 +93,8 @@ public class Ventilation extends FeatureProcess {
 	        scrutinyDetail.addColumnHeading(5, STATUS);
 
 	        ScrutinyDetail scrutinyDetail1 = new ScrutinyDetail();
-	        scrutinyDetail1.setKey("Bath_Ventilation");
+	        scrutinyDetail.setKey("Block_" + b.getNumber() + "_" + "Bath_Ventilation");
+	        //scrutinyDetail1.setKey("Bath_Ventilation");
 	        scrutinyDetail1.addColumnHeading(1, RULE_NO);
 	        scrutinyDetail1.addColumnHeading(2, DESCRIPTION);
 	        scrutinyDetail1.addColumnHeading(3, REQUIRED);
@@ -256,7 +258,7 @@ public class Ventilation extends FeatureProcess {
 	                                Map<String, String> details = new HashMap<>();
 	                                details.put(RULE_NO, RULE_LIGHT_VENTILATION);
 	                                details.put(DESCRIPTION, REGULAR_ROOM_LIGHT_VENTILATION_DESCRIPTION);
-	                                details.put(REQUIRED, "≥ 10% of Floor Area (" + requiredVentilationArea + ")");
+	                                details.put(REQUIRED, "10% of Floor Area (" + requiredVentilationArea + ")");
 
 	                                // Validation check
 	                                if (totalRegularRoomVentilationArea.compareTo(requiredVentilationArea) >= 0) {
@@ -288,7 +290,7 @@ public class Ventilation extends FeatureProcess {
 	            }
 	        }
 
-	        // ✅ Add scrutiny details only if filled
+	        //Add scrutiny details only if filled
 	        if (!scrutinyDetail.getDetail().isEmpty()) {
 	            pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 	        }

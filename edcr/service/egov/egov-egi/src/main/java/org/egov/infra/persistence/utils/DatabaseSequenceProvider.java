@@ -54,8 +54,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.io.Serializable;
 
 @Service
@@ -66,10 +66,10 @@ public class DatabaseSequenceProvider {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW, noRollbackFor = SQLGrammarException.class)
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
     public Serializable getNextSequence(String sequenceName) throws SQLGrammarException {
         return (Serializable) entityManager.unwrap(Session.class)
-                .createSQLQuery(NEXT_SEQ_QUERY)
+                .createNativeQuery(NEXT_SEQ_QUERY)
                 .setParameter("sequenceName", sequenceName)
                 .uniqueResult();
     }

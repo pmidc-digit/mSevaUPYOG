@@ -124,23 +124,24 @@ public class DBMigrationConfiguration {
 
         }
 
-        return new Flyway();
+        return Flyway.configure().dataSource(dataSource).load();
     }
 
     private void migrateDatabase(DataSource dataSource, String schema, String... locations) {
-        Flyway flyway = new Flyway();
-        flyway.setBaselineOnMigrate(true);
-        flyway.setValidateOnMigrate(validateOnMigrate);
-        flyway.setOutOfOrder(true);
-        flyway.setLocations(locations);
-        flyway.setDataSource(dataSource);
-        flyway.setSchemas(schema);
+        Flyway flyway = Flyway.configure()
+                .baselineOnMigrate(true)
+                .validateOnMigrate(validateOnMigrate)
+                .outOfOrder(true)
+                .locations(locations)
+                .dataSource(dataSource)
+                .schemas(schema)
+                .load();
         if (repairMigration)
             flyway.repair();
         flyway.migrate();
     }
 
-    @Bean(name = "tenants", autowire = Autowire.BY_NAME)
+    @Bean(name = "tenants")
 	public List<String> tenants() {
 		List<String> tenants = new ArrayList<>();
 		environment.getPropertySources().iterator().forEachRemaining(propertySource -> {

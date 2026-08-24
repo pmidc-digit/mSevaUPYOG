@@ -1,16 +1,19 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
-    <!-- Make sub deployments isolated by default, so they cannot see each others classes without a Class-Path entry -->
-    <ear-subdeployments-isolated>true</ear-subdeployments-isolated>
+    <!-- Both WARs share the eGov core classes and Spring parent context from EAR/lib. -->
+    <ear-subdeployments-isolated>false</ear-subdeployments-isolated>
     <deployment>
         <dependencies>
+            <!-- Java 9+ moved the W3C CSS/HTML DOM APIs out of java.se into
+                 jdk.xml.dom. Batik needs these APIs while linking its DOM
+                 implementation classes. -->
+            <module name="jdk.xml.dom" export="true"/>
             <module name="org.apache.log4j" export="true"/>
             <module name="org.slf4j" export="true"/>
             <module name="org.javassist" export="true"/>
             <!--<module name="javax.jcr" export="true"/>-->
-            <module name="javax.servlet.jstl.api" export="true"/>
+            <module name="jakarta.servlet.jstl.api" export="true"/>
             <module name="org.hibernate" export="true"/>
-            <module name="org.infinispan" export="true"/>
             <module name="org.apache.xerces" export="true"/>
             <module name="org.jaxen" export="true"/>
             <module name="org.jdom" export="true"/>

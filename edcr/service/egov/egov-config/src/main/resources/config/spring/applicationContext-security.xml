@@ -54,9 +54,6 @@
 	   http://www.springframework.org/schema/security
 	   http://www.springframework.org/schema/security/spring-security.xsd" default-lazy-init="true">
 
-    <security:global-method-security secured-annotations="disabled"
-                                     access-decision-manager-ref="accessDecisionManager"/>
-
     <bean id="concurrentSessionFilter" class="org.springframework.security.web.session.ConcurrentSessionFilter">
         <constructor-arg name="sessionRegistry" ref="springSessionBackedSessionRegistry"/>
     </bean>
@@ -151,7 +148,7 @@
         <constructor-arg name="authorities">
             <list value-type="org.springframework.security.core.GrantedAuthority">
                 <bean class="org.springframework.security.core.authority.SimpleGrantedAuthority">
-                    <constructor-arg name="role" value="PUBLIC"/>
+                    <constructor-arg index="0" value="PUBLIC"/>
                 </bean>
             </list>
         </constructor-arg>
@@ -173,22 +170,8 @@
     </bean>
 
     <bean id="filterSecurityInterceptor"
-          class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
-        <property name="authenticationManager" ref="authenticationManager"/>
-        <property name="accessDecisionManager" ref="accessDecisionManager"/>
-        <property name="securityMetadataSource" ref="applicationAuthorizationMetadataSource"/>
-        <property name="rejectPublicInvocations" value="true"/>
-    </bean>
-
-    <bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">
-        <constructor-arg index="0">
-            <list>
-                <bean class="org.springframework.security.access.vote.RoleVoter">
-                    <property name="rolePrefix" value=""/>
-                </bean>
-            </list>
-        </constructor-arg>
-        <property name="allowIfAllAbstainDecisions" value="false"/>
+          class="org.springframework.security.web.access.intercept.AuthorizationFilter">
+        <constructor-arg ref="applicationAuthorizationMetadataSource"/>
     </bean>
 
     <bean id="rememberMeServices"
@@ -211,7 +194,7 @@
 
     <bean id="applicationAuthenticationProvider"
           class="org.egov.infra.config.security.authentication.provider.ApplicationAuthenticationProvider">
-        <property name="userDetailsService" ref="userDetailsService"/>
+        <constructor-arg ref="userDetailsService"/>
         <property name="preAuthenticationChecks" ref="userActivationChecker"></property>
     </bean>
 
@@ -231,5 +214,7 @@
     </bean>
 
     <bean id="applicationAuthorizationMetadataSource"
-          class="org.egov.infra.config.security.authorization.ApplicationAuthorizationMetadataSource"/>
+          class="org.egov.infra.config.security.authorization.ApplicationAuthorizationMetadataSource">
+        <property name="actionService" ref="actionService"/>
+    </bean>
 </beans>

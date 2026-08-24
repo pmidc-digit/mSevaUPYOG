@@ -48,8 +48,8 @@
 
 package org.egov.infstr.utils;
 
-import static org.apache.commons.lang.StringUtils.EMPTY;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -60,19 +60,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PreDestroy;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.annotation.PreDestroy;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.exception.ApplicationRuntimeException;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Session;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,19 +83,10 @@ public class EgovMasterDataCaching {
     private static final String PATH_DELIM = "/";
     private static final String SQL_TAG_PREFIX = "sql.";
     private static final String CONFIG_FILE_SUFFIX = "_sqlconfig.xml";
-    private static EmbeddedCacheManager CACHE_MANAGER;
+    private static final Map<String, Object> CACHE_MANAGER = new java.util.concurrent.ConcurrentHashMap<>();
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    static {
-        try {
-            final Context context = new InitialContext();
-            CACHE_MANAGER = (EmbeddedCacheManager) context.lookup("java:jboss/infinispan/container/master-data");
-        } catch (final NamingException e) {
-            throw new ApplicationRuntimeException("Error occurred while getting Cache Manager", e);
-        }
-    }
 
     /**
      * This method load the data for given sqlTagName and puts it in Cache.
@@ -116,7 +103,7 @@ public class EgovMasterDataCaching {
         HashMap<String, Object> cacheValuesHashMap = new HashMap<String, Object>();
 
         try {
-            cacheValuesHashMap = (HashMap<String, Object>) CACHE_MANAGER.getCache()
+            cacheValuesHashMap = (HashMap<String, Object>) CACHE_MANAGER
                     .get(applName + PATH_DELIM + domainName + PATH_DELIM + sqlTagName);
             if (cacheValuesHashMap != null)
                 dataList = (List<Object>) cacheValuesHashMap.get(sqlTagName);
@@ -151,7 +138,7 @@ public class EgovMasterDataCaching {
                     throw new ApplicationRuntimeException("This type (" + type + ") is not supported for " + sqlTagName);
                 final HashMap<String, Object> hm = new HashMap<String, Object>();
                 hm.put(sqlTagName, dataList);
-                CACHE_MANAGER.getCache().put(applName + PATH_DELIM + domainName + PATH_DELIM + sqlTagName, hm);
+                CACHE_MANAGER.put(applName + PATH_DELIM + domainName + PATH_DELIM + sqlTagName, hm);
             } else
                 LOGGER.info("EgovMasterDataCaching: Got directly from cache, not from db");
 
@@ -206,7 +193,7 @@ public class EgovMasterDataCaching {
                             "ClassName and MethodName should be mentioned for " + type + " in " + applName + CONFIG_FILE_SUFFIX);
                 final HashMap<String, Object> hm = new HashMap<String, Object>();
                 hm.put(sqlTagName, dataMap);
-                CACHE_MANAGER.getCache().put(applName + PATH_DELIM + domainName + PATH_DELIM + sqlTagName, hm);
+                CACHE_MANAGER.put(applName + PATH_DELIM + domainName + PATH_DELIM + sqlTagName, hm);
             } else
                 throw new ApplicationRuntimeException("This type (" + type + ") is not supported for " + sqlTagName);
         } catch (final IllegalArgumentException | ClassCastException e) {
@@ -215,7 +202,7 @@ public class EgovMasterDataCaching {
         return dataMap;
     }
 
-    public static EmbeddedCacheManager getCACHE_MANAGER() {
+    public static Map<String, Object> getCACHE_MANAGER() {
         return CACHE_MANAGER;
     }
 
@@ -231,7 +218,7 @@ public class EgovMasterDataCaching {
             final String temp[] = sqlTagName.split("-");
             final String domainName = ApplicationThreadLocals.getDomainName();
             final String applName = temp[0];
-            CACHE_MANAGER.getCache().remove(applName + PATH_DELIM + domainName + PATH_DELIM + sqlTagName);
+            CACHE_MANAGER.remove(applName + PATH_DELIM + domainName + PATH_DELIM + sqlTagName);
         } catch (final NullPointerException | ApplicationRuntimeException e) {
             LOGGER.error("Error occurred in EgovMasterDataCaching removeFromCache", e);
         }
@@ -397,7 +384,7 @@ public class EgovMasterDataCaching {
         List resultlist = null;
         List returnList = null;
         try {
-            resultlist = getCurrentSession().createSQLQuery(query).list();
+            resultlist = getCurrentSession().createNativeQuery(query).list();
             if (resultlist != null)
                 returnList = resultSetToArrayList(resultlist);
         } catch (final HibernateException e) {
@@ -434,7 +421,6 @@ public class EgovMasterDataCaching {
 
     @PreDestroy
     public void destroy() {
-        if (CACHE_MANAGER != null && CACHE_MANAGER.isDefaultRunning())
-            CACHE_MANAGER.stop();
+        CACHE_MANAGER.clear();
     }
 }

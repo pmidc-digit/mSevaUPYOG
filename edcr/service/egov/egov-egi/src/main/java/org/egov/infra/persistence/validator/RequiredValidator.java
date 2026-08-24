@@ -50,8 +50,8 @@ package org.egov.infra.persistence.validator;
 
 import org.egov.infra.persistence.validator.annotation.Required;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 public class RequiredValidator implements ConstraintValidator<Required, Object> {
 
@@ -65,7 +65,7 @@ public class RequiredValidator implements ConstraintValidator<Required, Object> 
         if (value == null)
             return false;
         else if (value instanceof String)
-            return org.apache.commons.lang.StringUtils.isNotBlank((String) value);
+            return org.apache.commons.lang3.StringUtils.isNotBlank((String) value);
         else
             return true;
     }

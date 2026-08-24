@@ -47,21 +47,20 @@
  */
 package org.egov.egi.web.controller;
 
-import org.apache.tiles.request.render.StringRenderer;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
-import org.springframework.web.servlet.view.tiles3.TilesViewResolver;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @Transactional
 @ContextConfiguration(locations={"classpath:config/spring/test-applicationContext-hibernate.xml"})
 @ActiveProfiles("test")
@@ -71,15 +70,14 @@ public abstract class AbstractContextControllerTest<T> {
 
     @Autowired
     private LocalValidatorFactoryBean validator;
-    @Before
+    @BeforeEach
     public void setUpBase() throws Exception {
         this.controller = initController();
 
-        TilesViewResolver tilesViewResolver = new TilesViewResolver();
-        tilesViewResolver.setRenderer(new StringRenderer());
+        InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
 
         mvcBuilder = standaloneSetup(controller).setValidator(validator)
-                .setViewResolvers(tilesViewResolver);
+                .setViewResolvers(viewResolver);
 
     }
 

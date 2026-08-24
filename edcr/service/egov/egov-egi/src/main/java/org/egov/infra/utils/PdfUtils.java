@@ -48,7 +48,8 @@
 
 package org.egov.infra.utils;
 
-import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.io.IOUtils;
+import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.egov.infra.exception.ApplicationRuntimeException;
 
@@ -67,8 +68,10 @@ public final class PdfUtils {
         try (ByteArrayOutputStream destination = new ByteArrayOutputStream()) {
             PDFMergerUtility pdfMerger = new PDFMergerUtility();
             pdfMerger.setDestinationStream(destination);
-            pdfStreams.forEach(pdfMerger::addSource);
-            pdfMerger.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+            for (InputStream pdfStream : pdfStreams) {
+                pdfMerger.addSource(new RandomAccessReadBuffer(pdfStream));
+            }
+            pdfMerger.mergeDocuments(IOUtils.createMemoryOnlyStreamCache());
             return destination.toByteArray();
         } catch (IOException e) {
             throw new ApplicationRuntimeException("Error occurred while merging pdf files", e);

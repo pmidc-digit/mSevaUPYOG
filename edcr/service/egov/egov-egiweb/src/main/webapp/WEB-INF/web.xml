@@ -47,9 +47,9 @@
   ~   In case of any queries, you can reach eGovernments Foundation at contact@egovernments.org.
   ~
   -->
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.1"
-         xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="5.0"
+         xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd">
 
     <display-name>eGov Infrastructure</display-name>
 
@@ -90,11 +90,6 @@
     </filter>
 
     <filter>
-        <filter-name>gzipFilter</filter-name>
-        <filter-class>net.sf.ehcache.constructs.web.filter.GzipFilter</filter-class>
-    </filter>
-
-    <filter>
         <filter-name>applicationCoreFilter</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
     </filter>
@@ -107,13 +102,6 @@
     <filter>
         <filter-name>applicationTenantResolverFilter</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-    </filter>
-
-    <filter>
-        <filter-name>openEntityManagerInViewFilter</filter-name>
-        <filter-class>
-            org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter
-        </filter-class>
     </filter>
 
     <filter>
@@ -159,17 +147,7 @@
     </filter-mapping>
 
     <filter-mapping>
-        <filter-name>gzipFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <filter-mapping>
         <filter-name>applicationTenantResolverFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <filter-mapping>
-        <filter-name>openEntityManagerInViewFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
@@ -198,7 +176,7 @@
     <!-- Listeners Starts -->
 
     <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+        <listener-class>org.egov.infra.web.context.SharedParentContextLoaderListener</listener-class>
     </listener>
 
     <listener>
@@ -217,6 +195,11 @@
         </init-param>
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>
+        <multipart-config>
+            <max-file-size>20971520</max-file-size>
+            <max-request-size>20971520</max-request-size>
+            <file-size-threshold>1048576</file-size-threshold>
+        </multipart-config>
     </servlet>
 
     <servlet-mapping>
@@ -246,8 +229,4 @@
         <tracking-mode>COOKIE</tracking-mode>
     </session-config> -->
 
-    <resource-ref>
-        <res-ref-name>infinispan/container/master-data</res-ref-name>
-        <lookup-name>java:jboss/infinispan/container/master-data</lookup-name>
-    </resource-ref>
 </web-app>

@@ -55,10 +55,10 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
-import org.codehaus.jackson.map.DeserializationContext;
-import org.codehaus.jackson.map.JsonDeserializer;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 
 public class ApplicationRestExceptionJackson1Deserializer extends JsonDeserializer<ApplicationRestException> {
 
@@ -70,14 +70,14 @@ public class ApplicationRestExceptionJackson1Deserializer extends JsonDeserializ
     public ApplicationRestException deserialize(JsonParser jp, DeserializationContext ctxt) {
 
         try {
-            JsonToken t = jp.getCurrentToken();
+            JsonToken t = jp.currentToken();
             if (t == JsonToken.START_OBJECT) {
                 t = jp.nextToken();
             }
             Map<String, Object> errorParams = new HashMap<>();
             for (; t == JsonToken.FIELD_NAME; t = jp.nextToken()) {
                 // Must point to field name
-                String fieldName = jp.getCurrentName();
+                String fieldName = jp.currentName();
                 // And then the value...
                 t = jp.nextToken();
                 // Note: must handle null explicitly here; value deserializers won't

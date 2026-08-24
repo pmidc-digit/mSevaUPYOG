@@ -50,12 +50,14 @@ package org.egov.infra.admin.master.repository.es;
 
 import org.egov.infra.admin.master.entity.es.CityIndex;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface CityIndexRepository extends ElasticsearchRepository<CityIndex, String>,CityIndexCustomRepository {
+public interface CityIndexRepository extends ElasticsearchRepository<CityIndex, String>,
+        CrudRepository<CityIndex, String>, CityIndexCustomRepository {
 
 	CityIndex findByCitycode(String code);
 	

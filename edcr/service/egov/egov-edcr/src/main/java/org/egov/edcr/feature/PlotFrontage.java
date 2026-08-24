@@ -165,11 +165,13 @@ public class PlotFrontage extends FeatureProcess {
             		mostRestrictiveOccupancy.getSubtype()!=null &&
             		mostRestrictiveOccupancy.getSubtype().getCode()!=null) {            	
             	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
-            	if(F_MTP.equals(subType) || F_MIP.equals(subType)) {
+            	if(F_MTP.equals(subType) || F_MIP.equals(subType) || A_AF.equals(subType)) {
             		if (F_MTP.equalsIgnoreCase(subType)) {
                 		permissableFrontage = BigDecimal.valueOf(24.00);
     				} else if (F_MIP.equalsIgnoreCase(subType)) {				    
     					permissableFrontage = BigDecimal.valueOf(21.33);
+    				}else if (A_AF.equals(subType)) {
+    					permissableFrontage = BigDecimal.valueOf(18.00);
     				}
                 	
                 	if (pl.getPlotFrontageList() != null) {

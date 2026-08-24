@@ -158,7 +158,21 @@ public class Measurement implements Cloneable, Serializable {
 
     @Override
     public String toString() {
-        return "Measurement : presentInDxf=" + presentInDxf + "]";
+        return "Measurement{" +
+                "name='" + name + '\'' +
+                ", presentInDxf=" + presentInDxf +
+                ", minimumDistance=" + minimumDistance +
+                ", minimumSide=" + minimumSide +
+                ", length=" + length +
+                ", width=" + width +
+                ", height=" + height +
+                ", mean=" + mean +
+                ", area=" + area +
+                ", isValid=" + isValid +
+                ", roomNumber='" + roomNumber + '\'' +
+                ", invalidReason=" + invalidReason +
+                ", colorCode=" + colorCode +
+                '}';
     }
 
     @Override

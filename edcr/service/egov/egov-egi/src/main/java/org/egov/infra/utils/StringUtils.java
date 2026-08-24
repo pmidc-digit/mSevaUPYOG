@@ -65,10 +65,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.RandomStringGenerator;
 
-public class StringUtils extends org.apache.commons.lang.StringUtils {
+public class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     public static final RandomStringGenerator UNIQUE_STRING_GENERATOR = new RandomStringGenerator.Builder()
             .withinRange('a', 'z').build();
@@ -78,7 +78,7 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
     }
 
     public static String escapeJavaScript(final String str) {
-        return StringEscapeUtils.escapeJavaScript(str);
+        return StringEscapeUtils.escapeEcmaScript(str);
     }
 
     public static String emptyIfNull(final String value) {

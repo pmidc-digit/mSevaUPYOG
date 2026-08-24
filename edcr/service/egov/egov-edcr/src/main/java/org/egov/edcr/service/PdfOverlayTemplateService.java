@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.pdfbox.multipdf.LayerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -103,9 +104,9 @@ public class PdfOverlayTemplateService {
 				fos.write(panelBytes);
 			}
 
-			try (PDDocument baseDoc = PDDocument.load(inputPdf);
+			try (PDDocument baseDoc = Loader.loadPDF(inputPdf);
 
-					PDDocument panelDoc = PDDocument.load(panelPdf);
+					PDDocument panelDoc = Loader.loadPDF(panelPdf);
 
 					PDDocument outputDoc = new PDDocument()) {
 
@@ -972,7 +973,7 @@ public class PdfOverlayTemplateService {
 
 		File output = File.createTempFile("expanded_", ".pdf");
 
-		try (PDDocument inputDoc = PDDocument.load(inputPdf);
+		try (PDDocument inputDoc = Loader.loadPDF(inputPdf);
 
 				PDDocument outputDoc = new PDDocument()) {
 

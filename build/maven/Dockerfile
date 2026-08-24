@@ -22,7 +22,7 @@ RUN mvn -B -f /app/pom.xml clean package \
     -Dmaven.test.skip=true \
     -DskipTests
 
-
+RUN ls /app
 # =========================
 # Runtime Stage
 # =========================

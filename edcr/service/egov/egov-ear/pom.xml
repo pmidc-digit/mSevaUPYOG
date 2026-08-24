@@ -60,28 +60,9 @@
 		<!-- EAR Java Dependencies Ends -->
 
 		<!-- MISC START -->
-		<dependency>
-			<groupId>opensymphony</groupId>
-			<artifactId>sitemesh</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache-web</artifactId>
-		</dependency>
 		<!-- MISC END -->
 
 
-		<!-- VIEWS RELATED END -->
-		<dependency>
-			<groupId>org.apache.tiles</groupId>
-			<artifactId>tiles-core</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.tiles</groupId>
-			<artifactId>tiles-jsp</artifactId>
-		</dependency>
-		<!-- VIEWS RELATED END -->
 
 	</dependencies>
 

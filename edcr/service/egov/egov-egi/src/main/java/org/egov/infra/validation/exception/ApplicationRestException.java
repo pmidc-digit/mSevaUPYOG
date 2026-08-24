@@ -52,8 +52,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 @SuppressWarnings("serial")
-@org.codehaus.jackson.map.annotate.JsonSerialize(using = ApplicationRestExceptionJackson1Serializer.class)
-@org.codehaus.jackson.map.annotate.JsonDeserialize(using = ApplicationRestExceptionJackson1Deserializer.class)
 @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = ApplicationRestExceptionJackson2Serializer.class)
 @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = ApplicationRestExceptionJackson2Deserializer.class)
 public class ApplicationRestException extends RuntimeException {

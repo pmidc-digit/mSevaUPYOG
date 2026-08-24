@@ -52,7 +52,7 @@ import org.apache.commons.io.IOUtils;
 import org.egov.infra.admin.master.service.CityService;
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.utils.FileStoreUtils;
-import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.infra.persistence.validator.annotation.SafeHtml;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -62,7 +62,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -80,8 +80,9 @@ public class FileDownloadController {
 
     @GetMapping
     @ResponseBody
-    public ResponseEntity download(@SafeHtml @RequestParam String fileStoreId, @SafeHtml @RequestParam String moduleName,
-                                   @RequestParam(defaultValue = "false") boolean toSave) {
+    public ResponseEntity download(@SafeHtml @RequestParam("fileStoreId") String fileStoreId,
+                                   @SafeHtml @RequestParam("moduleName") String moduleName,
+                                   @RequestParam(name = "toSave", defaultValue = "false") boolean toSave) {
         return fileStoreUtils.fileAsResponseEntity(fileStoreId, moduleName, toSave);
     }
 

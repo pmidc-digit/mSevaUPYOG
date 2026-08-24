@@ -90,7 +90,7 @@
         </property>
     </bean>
 
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"
           destroy-method="close">
         <property name="driverClassName" value="${db.driver}"/>
         <property name="url" value="${db.url}"/>
@@ -105,10 +105,7 @@
 
     <bean id="entityValidator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"></bean>
 
-    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-        <property name="maxUploadSize" value="100000"/>
-        <property name="maxInMemorySize" value="10000"/>
-    </bean>
+    <bean id="multipartResolver" class="org.springframework.web.multipart.support.StandardServletMultipartResolver"/>
 
     <bean id="messageSource"
           class="org.springframework.context.support.ResourceBundleMessageSource">

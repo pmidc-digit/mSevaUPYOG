@@ -74,8 +74,14 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -108,12 +114,8 @@ import org.egov.infra.microservice.models.Role;
 import org.egov.infra.microservice.models.UserInfo;
 import org.egov.infra.security.utils.SecurityUtils;
 import org.egov.infra.utils.TenantUtils;
-import org.hibernate.Criteria;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Session;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -737,7 +739,7 @@ public class EdcrRestService {
 //
 //            LOG.info("[fetchEdcr] Generated SQL query :\n{}", queryString);
 //
-//            final Query query = getCurrentSession().createSQLQuery(queryString)
+//            final Query query = getCurrentSession().createNativeQuery(queryString)
 //                    .setFirstResult(offset)
 //                    .setMaxResults(limit);
 //
@@ -914,7 +916,7 @@ public class EdcrRestService {
 
             LOG.info("[fetchEdcr] Generated SQL query              :\n{}", queryString);
 
-            final Query query = getCurrentSession().createSQLQuery(queryString)
+            final Query query = getCurrentSession().createNativeQuery(queryString)
                     .setFirstResult(offset)
                     .setMaxResults(limit);
 
@@ -960,13 +962,13 @@ public class EdcrRestService {
             // -------------------------------------------------------------------
             LOG.info("[fetchEdcr] Taking SINGLE-TENANT path for tenantId: '{}'", edcrRequest.getTenantId());
 
-            final Criteria criteria = getCriteriaofSingleTenant(
+            final TypedQuery<EdcrApplicationDetail> criteria = getCriteriaofSingleTenant(
                     edcrRequest, userInfo, userId, onlyTenantId, isStakeholder);
 
             LOG.info("[fetchEdcr] Criteria query : {}", criteria.toString());
             criteria.setFirstResult(offset);
             criteria.setMaxResults(limit);
-            edcrApplications = criteria.list();
+            edcrApplications = criteria.getResultList();
 
             LOG.info("[fetchEdcr] Records returned from single-tenant query: {}", edcrApplications.size());
         }
@@ -1051,7 +1053,7 @@ public class EdcrRestService {
 
             LOG.info("[fetchCount] Generated SQL query for count   :\n{}", queryString);
 
-            final Query query = getCurrentSession().createSQLQuery(queryString);
+            final Query query = getCurrentSession().createNativeQuery(queryString);
             for (final Map.Entry<String, String> param : params.entrySet()) {
                 LOG.info("[fetchCount] SQL param — key: '{}', value: '{}'", param.getKey(), param.getValue());
                 query.setParameter(param.getKey(), param.getValue());
@@ -1065,10 +1067,10 @@ public class EdcrRestService {
         } else {
             LOG.info("[fetchCount] Taking SINGLE-TENANT path for count, tenantId: '{}'", edcrRequest.getTenantId());
 
-            final Criteria criteria = getCriteriaofSingleTenant(
+            final TypedQuery<EdcrApplicationDetail> criteria = getCriteriaofSingleTenant(
                     edcrRequest, userInfo, userId, onlyTenantId, isStakeholder);
 
-            int count = criteria.list().size();
+            int count = criteria.getResultList().size();
             LOG.info("[fetchCount] Count result (single-tenant)    : {}", count);
             LOG.info("[fetchCount] ========== END fetchCount ==========");
             return count;
@@ -1701,7 +1703,7 @@ public class EdcrRestService {
 //    }
 
     
-    private Criteria getCriteriaofSingleTenant(final EdcrRequest edcrRequest,
+    private TypedQuery<EdcrApplicationDetail> getCriteriaofSingleTenant(final EdcrRequest edcrRequest,
             UserInfo userInfo,
             String userId,
             boolean onlyTenantId,
@@ -1709,18 +1711,17 @@ public class EdcrRestService {
 
     	LOG.info("============== SINGLE TENANT CRITERIA START ==============");
 
-        final Criteria criteria = getCurrentSession()
-                .createCriteria(EdcrApplicationDetail.class, "edcrApplicationDetail");
-
-        criteria.createAlias("edcrApplicationDetail.application", "application");
+        final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        final CriteriaQuery<EdcrApplicationDetail> criteria = builder.createQuery(EdcrApplicationDetail.class);
+        final Root<EdcrApplicationDetail> detail = criteria.from(EdcrApplicationDetail.class);
+        final Join<EdcrApplicationDetail, EdcrApplication> application = detail.join("application");
+        final List<Predicate> predicates = new ArrayList<>();
 
         if (edcrRequest != null && isNotBlank(edcrRequest.getEdcrNumber())) {
 
         	LOG.info("Adding filter -> dcrNumber : {}", edcrRequest.getEdcrNumber());
 
-            criteria.add(Restrictions.eq(
-                    "edcrApplicationDetail.dcrNumber",
-                    edcrRequest.getEdcrNumber()));
+            predicates.add(builder.equal(detail.get("dcrNumber"), edcrRequest.getEdcrNumber()));
         }
 
         if (edcrRequest != null && isNotBlank(edcrRequest.getTransactionNumber())) {
@@ -1728,9 +1729,7 @@ public class EdcrRestService {
         	LOG.info("Adding filter -> transactionNumber : {}",
                     edcrRequest.getTransactionNumber());
 
-            criteria.add(Restrictions.eq(
-                    "application.transactionNumber",
-                    edcrRequest.getTransactionNumber()));
+            predicates.add(builder.equal(application.get("transactionNumber"), edcrRequest.getTransactionNumber()));
         }
 
         if (edcrRequest != null && isNotBlank(edcrRequest.getApplicationNumber())) {
@@ -1738,9 +1737,7 @@ public class EdcrRestService {
         	LOG.info("Adding filter -> applicationNumber : {}",
                     edcrRequest.getApplicationNumber());
 
-            criteria.add(Restrictions.eq(
-                    "application.applicationNumber",
-                    edcrRequest.getApplicationNumber()));
+            predicates.add(builder.equal(application.get("applicationNumber"), edcrRequest.getApplicationNumber()));
         }
 
         String appliactionType = edcrRequest.getAppliactionType();
@@ -1765,9 +1762,7 @@ public class EdcrRestService {
 
             LOG.info("Resolved ApplicationType : {}", applicationType);
 
-            criteria.add(Restrictions.eq(
-                    "application.applicationType",
-                    applicationType));
+            predicates.add(builder.equal(application.get("applicationType"), applicationType));
         }
 
         if (edcrRequest != null
@@ -1776,9 +1771,7 @@ public class EdcrRestService {
         	LOG.info("Adding filter -> serviceType : {}",
                     edcrRequest.getApplicationSubType());
 
-            criteria.add(Restrictions.eq(
-                    "application.serviceType",
-                    edcrRequest.getApplicationSubType()));
+            predicates.add(builder.equal(application.get("serviceType"), edcrRequest.getApplicationSubType()));
         }
 
         LOG.info("onlyTenantId : {}", onlyTenantId);
@@ -1791,12 +1784,9 @@ public class EdcrRestService {
 
         	LOG.info("Adding filter -> thirdPartyUserCode : {}", userId);
 
-        	criteria.add(
-        		    Restrictions.or(
-        		        Restrictions.eq("application.thirdPartyUserCode", userId),
-        		        Restrictions.eq("application.applicantName", userInfo.getName())
-        		    )
-        		);
+		predicates.add(builder.or(
+		        builder.equal(application.get("thirdPartyUserCode"), userId),
+		        builder.equal(application.get("applicantName"), userInfo.getName())));
         }
 
         if (isNotBlank(edcrRequest.getStatus())) {
@@ -1804,9 +1794,7 @@ public class EdcrRestService {
         	LOG.info("Adding filter -> status : {}",
                     edcrRequest.getStatus());
 
-            criteria.add(Restrictions.eq(
-                    "edcrApplicationDetail.status",
-                    edcrRequest.getStatus()));
+            predicates.add(builder.equal(detail.get("status"), edcrRequest.getStatus()));
         }
 
         if (edcrRequest.getFromDate() != null) {
@@ -1814,9 +1802,8 @@ public class EdcrRestService {
         	LOG.info("Adding filter -> fromDate : {}",
                     edcrRequest.getFromDate());
 
-            criteria.add(Restrictions.ge(
-                    "application.applicationDate",
-                    edcrRequest.getFromDate()));
+            predicates.add(builder.greaterThanOrEqualTo(
+                    application.get("applicationDate"), edcrRequest.getFromDate()));
         }
 
         if (edcrRequest.getToDate() != null) {
@@ -1824,9 +1811,8 @@ public class EdcrRestService {
         	LOG.info("Adding filter -> toDate : {}",
                     edcrRequest.getToDate());
 
-            criteria.add(Restrictions.le(
-                    "application.applicationDate",
-                    edcrRequest.getToDate()));
+            predicates.add(builder.lessThanOrEqualTo(
+                    application.get("applicationDate"), edcrRequest.getToDate()));
         }
 
         String orderBy = "desc";
@@ -1838,18 +1824,18 @@ public class EdcrRestService {
         LOG.info("Order By : {}", orderBy);
 
         if (orderBy.equalsIgnoreCase("asc")) {
-            criteria.addOrder(Order.asc("edcrApplicationDetail.createdDate"));
+            criteria.orderBy(builder.asc(detail.get("createdDate")));
         } else {
-            criteria.addOrder(Order.desc("edcrApplicationDetail.createdDate"));
+            criteria.orderBy(builder.desc(detail.get("createdDate")));
         }
 
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+        criteria.select(detail).where(predicates.toArray(new Predicate[0])).distinct(true);
 
         LOG.info("Final Hibernate Criteria Query : {}", criteria);
 
         LOG.info("============== SINGLE TENANT CRITERIA END ==============");
 
-        return criteria;
+        return entityManager.createQuery(criteria);
     }
     
     public ErrorDetail validatePlanFile(final MultipartFile file) {

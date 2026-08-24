@@ -14,6 +14,7 @@ import org.egov.infra.elasticsearch.entity.enums.ApprovalStatus;
 import org.egov.infra.elasticsearch.entity.enums.ClosureStatus;
 import org.egov.infra.elasticsearch.service.ApplicationIndexService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,7 @@ public class EdcrIndexService {
 	private CityService cityService;
 
 	@Autowired
+	@Lazy
 	private EdcrIndexRepository edcrIndexRepository;
 	
 	   @Value("${elasticsearch.enable}")

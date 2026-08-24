@@ -50,7 +50,6 @@ package org.egov.infra.config.redis;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisSentinelConfiguration;
@@ -80,12 +79,6 @@ public class RedisServerConfiguration {
 
     @Value("#{'${redis.sentinel.hosts}'.split(',')}")
     private List<String> sentinelHosts;
-
-    @Bean
-    @Conditional(RedisServerConfigCondition.class)
-    public static EmbeddedRedisServer redisServer() {
-        return new EmbeddedRedisServer();
-    }
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {

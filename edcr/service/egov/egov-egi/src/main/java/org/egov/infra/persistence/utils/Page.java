@@ -48,10 +48,9 @@
 
 package org.egov.infra.persistence.utils;
 
-import org.hibernate.Criteria;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 
-import javax.persistence.TypedQuery;
+import jakarta.persistence.TypedQuery;
 import java.util.List;
 
 public class Page<T> {
@@ -81,24 +80,6 @@ public class Page<T> {
             this.pageSize = -1;
         }
         this.results = query.list();
-    }
-
-    public Page(Criteria criteria, int pageNumber, int pageSize) {
-        int currentPageNo = pageNumber;
-        if (pageNumber < 1) {
-            currentPageNo = 1;
-        }
-
-        this.pageNumber = currentPageNo;
-
-        if (pageSize > 0) {
-            criteria.setFirstResult((currentPageNo - 1) * pageSize);
-            criteria.setMaxResults(pageSize + 1);
-            this.pageSize = pageSize;
-        } else {
-            this.pageSize = -1;
-        }
-        this.results = criteria.list();
     }
 
     public Page(TypedQuery<T> query, int pageNumber, int pageSize, int recordTotal) {

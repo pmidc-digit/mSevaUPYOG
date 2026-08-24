@@ -1840,7 +1840,7 @@ public class PlanReportService {
             drb.addColumn("Provided as per drawings", "actualResult", String.class.getName(), 120, columnStyle,
                     columnHeaderStyle);
             drb.addColumn("Accepted / Not Accepted ", "status", String.class.getName(), 50, columnStyle, columnHeaderStyle);
-        } catch (ColumnBuilderException | ClassNotFoundException e) {
+        } catch (ColumnBuilderException e) {
             LOG.error(e.getMessage(), e);
         }
         drb.setUseFullPageWidth(true);

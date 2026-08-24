@@ -59,10 +59,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
+import java.time.Duration;
 
 @Configuration
 @EnableCaching(proxyTargetClass = true)
@@ -96,12 +98,13 @@ public class CacheConfiguration extends CachingConfigurerSupport {
     @Bean
     @Override
     public CacheManager cacheManager() {
-        RedisCacheManager redisCacheManager = new RedisCacheManager(redisTemplate);
-        redisCacheManager.setTransactionAware(true);
-        redisCacheManager.setCacheNames(cities);
-        redisCacheManager.setUsePrefix(true);
-        redisCacheManager.setDefaultExpiration(60 * 60L);
-        return redisCacheManager;
+        RedisCacheConfiguration defaults = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofHours(1));
+        return RedisCacheManager.builder(redisTemplate.getConnectionFactory())
+                .cacheDefaults(defaults)
+                .initialCacheNames(new java.util.HashSet<>(cities))
+                .transactionAware()
+                .build();
     }
 
     @Resource(name = "cities")

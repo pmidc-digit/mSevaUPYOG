@@ -64,7 +64,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.commons.lang.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.egov.infra.utils.StringUtils.listToStringArray;
 
 @Configuration

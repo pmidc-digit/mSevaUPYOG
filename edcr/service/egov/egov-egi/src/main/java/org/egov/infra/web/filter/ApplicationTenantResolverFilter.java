@@ -61,15 +61,15 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Resource;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.annotation.Resource;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -179,9 +179,7 @@ public class ApplicationTenantResolverFilter implements Filter {
         String requestURL = new StringBuilder().append(ApplicationThreadLocals.getDomainURL())
                 .append(customRequest.getRequestURI()).toString();
         LOG.info("Request URL after append domainUrl and requestURI : " + requestURL);
-        if (requestURL.contains(tenants.get("state"))
-                && (requestURL.contains("/edcr/") && (requestURL.contains("/rest/")
-                        || requestURL.contains("/oauth/")))) {
+        if (isEdcrApiRequest(customRequest)) {
         	LOG.info("Request URL contains state, edcr and rest or oauth check passed");
 
         LOG.debug("Tenant map (from config): {}", tenants);
@@ -195,6 +193,9 @@ public class ApplicationTenantResolverFilter implements Filter {
             if (StringUtils.isBlank(fullTenant)) {
                 fullTenant = tenantFromBody;
             }
+		if (StringUtils.isBlank(fullTenant)) {
+			throw new ApplicationRestException("incorrect_request", "REST request does not contain tenantId");
+		}
 	    if(ApplicationThreadLocals.getFilestoreTenantID() == null)
         	ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
 		if ((isEnvironmentCentralInstance || !isSubTenantSchemaBased) && WebUtils
@@ -219,17 +220,17 @@ public class ApplicationTenantResolverFilter implements Filter {
         LOG.info("Mapped tenant domain URL for stateName '{}': {}", stateName, tenants.get(stateName));
         ApplicationThreadLocals.setFullTenantID(fullTenant);
        // restricted only the state URL to access the rest API
-        if (requestURL.contains(tenants.get(stateName))
-                && (requestURL.contains("/edcr/") && (requestURL.contains("/rest/")
-                        || requestURL.contains("/oauth/")))) {
-            if (StringUtils.isBlank(fullTenant)) {
-                throw new ApplicationRestException("incorrect_request", "RestUrl does not contain tenantId: " + fullTenant);
-            }
+        if (isEdcrApiRequest(customRequest)) {
             String tenant;
             if(isEnvironmentCentralInstance || !isSubTenantSchemaBased) {
             	LOG.info("Tenant array length: {}", tenantArr.length);
-            	tenant = getStateLevelTenant(fullTenant);
-            	LOG.info("Resolved state-level tenant: {}", tenant);
+                tenant = resolveConfiguredCityTenant(tenantArr);
+                if (tenant == null) {
+                    tenant = getStateLevelTenant(fullTenant);
+                    LOG.info("No configured city schema found; resolved state-level tenant: {}", tenant);
+                } else {
+                    LOG.info("Resolved configured city tenant: {}", tenant);
+                }
                 if (tenantArr.length == 3) {
                     ApplicationThreadLocals.setStateName(stateName);
                     ApplicationThreadLocals.setCityName(tenantArr[2]);
@@ -245,7 +246,7 @@ public class ApplicationTenantResolverFilter implements Filter {
                     ApplicationThreadLocals.setCityCode(tenant);
                     ApplicationThreadLocals.setDistrictName(tenantArr[1]);
                     ApplicationThreadLocals.setGrade(tenantArr[1]);
-                    ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
+                    ApplicationThreadLocals.setFilestoreTenantID(tenant);
                 } else {
                     ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
                 }
@@ -323,6 +324,12 @@ public class ApplicationTenantResolverFilter implements Filter {
         
     }
 
+    private boolean isEdcrApiRequest(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri != null && uri.contains("/edcr/")
+                && (uri.contains("/rest/") || uri.contains("/oauth/"));
+    }
+
     /*
      * public Map<String, String> tenantsMap() { URL url; LOG.info("cities" + applicationConfiguration.cities()); try { url = new
      * URL(ApplicationThreadLocals.getDomainURL()); // first get from override properties
@@ -347,6 +354,12 @@ public class ApplicationTenantResolverFilter implements Filter {
 
         if (requestURL.contains("/rest/")) {
             LOG.info("***********Inside method to fetch auth token and tenant from reqbody**************");
+            String contentType = multiReadRequestWrapper.getContentType();
+            if (contentType != null && contentType.toLowerCase(java.util.Locale.ROOT)
+                    .startsWith("multipart/form-data")) {
+                LOG.debug("Skipping raw body inspection for multipart request so servlet parts remain available");
+                return tenantAtBody;
+            }
             try {
                 StringWriter writer = new StringWriter();
                 IOUtils.copy(multiReadRequestWrapper.getInputStream(), writer, StandardCharsets.UTF_8);
@@ -407,6 +420,20 @@ public class ApplicationTenantResolverFilter implements Filter {
 		}
 	
 		return stateTenant;
+	}
+
+	private String resolveConfiguredCityTenant(String[] tenantArray) {
+		if (tenantArray.length != 2) {
+			return null;
+		}
+
+		String requestedCity = tenantArray[1];
+		for (String configuredTenant : tenants.keySet()) {
+			if (configuredTenant.equalsIgnoreCase(requestedCity)) {
+				return configuredTenant;
+			}
+		}
+		return null;
 	}
 
 }

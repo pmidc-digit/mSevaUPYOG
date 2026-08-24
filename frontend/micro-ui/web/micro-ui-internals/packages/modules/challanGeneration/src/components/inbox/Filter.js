@@ -9,8 +9,8 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
   const { t } = useTranslation();
 
   const onStatusChange = (e, type) => {
-    if (e.target.checked) onFilterChange({ status: [...searchParams?.status, type] });
-    else onFilterChange({ status: searchParams?.status.filter((option) => type.name !== option.name) });
+    if (e.target.checked) onFilterChange({ status: [...searchParams?.status, type] });else
+    onFilterChange({ status: searchParams?.status.filter((option) => type.name !== option.name) });
   };
 
   const clearAll = () => {
@@ -27,52 +27,52 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
             <div className="clearAll" onClick={clearAll}>
               {t("ES_COMMON_CLEAR_ALL")}
             </div>
-            {props.type === "desktop" && (
-              <span className="clear-search" onClick={clearAll}>
+            {props.type === "desktop" &&
+            <span className="clear-search" onClick={clearAll}>
                 {t("ES_COMMON_CLEAR_ALL")}
               </span>
-            )}
-            {props.type === "mobile" && (
-              <span onClick={props.onClose}>
+            }
+            {props.type === "mobile" &&
+            <span onClick={props.onClose}>
                 <CloseSvg />
               </span>
-            )}
+            }
           </div>
           <div>
             <Status
               translatePrefix={props.translatePrefix}
               businessService={props.businessService}
               onAssignmentChange={onStatusChange}
-              fsmfilters={searchParams}
-            />
+              fsmfilters={searchParams} />
+
           </div>
           <div>
             <ServiceCategory
               translatePrefix={props.translatePrefix}
               businessService={props.businessService}
               onAssignmentChange={onStatusChange}
-              fsmfilters={searchParams}
-            />
+              fsmfilters={searchParams} />
+
           </div>
         </div>
       </div>
-      {props.type === "mobile" && (
-        <ActionBar>
+      {props.type === "mobile" &&
+      <ActionBar>
           <ApplyFilterBar
-            submit={false}
-            labelLink={t("ES_COMMON_CLEAR_ALL")}
-            buttonLink={t("ES_COMMON_FILTER")}
-            onClear={clearAll}
-            onSubmit={() => {
-              if (props.type === "mobile") onSearch({ delete: ["applicationNos"] });
-              else onSearch();
-            }}
-            style={{ flex: 1 }}
-          />
+          submit={false}
+          labelLink={t("ES_COMMON_CLEAR_ALL")}
+          buttonLink={t("ES_COMMON_FILTER")}
+          onClear={clearAll}
+          onSubmit={() => {
+            if (props.type === "mobile") onSearch({ delete: ["applicationNos"] });else
+            onSearch();
+          }} className="challan-generation-style-7623f05545" />
+
+
         </ActionBar>
-      )}
-    </React.Fragment>
-  );
+      }
+    </React.Fragment>);
+
 };
 
 export default Filter;

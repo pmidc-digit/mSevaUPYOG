@@ -52,10 +52,10 @@ const ADSCartAndCancellationPolicyDetails = () => {
   };
   const columns = [
     {
-      Header: () => <div style={{ paddingLeft: "50px" }}>{t("S_NO")}</div>, // Use a function to render header with padding
+      Header: () => <div className="ads-components-adscart-and-cancellation-policy-details--style-1">{t("S_NO")}</div>, // Use a function to render header with padding
       accessor: "sNo",
       Cell: ({ row }) => (
-        <div style={{ paddingLeft: "50px" }}>
+        <div className="ads-components-adscart-and-cancellation-policy-details--style-2">
           {row.index + 1} {/* Display the row index + 1 for S.No */}
         </div>
       ),
@@ -73,7 +73,7 @@ const ADSCartAndCancellationPolicyDetails = () => {
       accessor: "delete",
       Cell: ({ row }) => (
         <button onClick={() => handleDelete(row.index)}>
-          <DeleteIcon className="delete" fill="#a82227" style={{ cursor: "pointer", marginLeft: "20px" }} />
+          <DeleteIcon className="delete ads-components-adscart-and-cancellation-policy-details--style-3" fill="#a82227"  />
         </button>
       ),
     },
@@ -116,12 +116,12 @@ const ADSCartAndCancellationPolicyDetails = () => {
 
   const renderCancellationPolicy = (policy) => {
     return (
-      <ol style={{ paddingLeft: "20px" }}>
+      <ol className="ads-components-adscart-and-cancellation-policy-details--style-4">
         {policy
           .split("\n")
           .filter((line) => line.trim() !== "")
           .map((line, index) => (
-            <li key={index} style={{ marginBottom: "10px" }}>
+            <li key={index} className="ads-components-adscart-and-cancellation-policy-details--style-5">
               <CardLabelDesc>{line.trim()}</CardLabelDesc>
             </li>
           ))}
@@ -137,46 +137,24 @@ const ADSCartAndCancellationPolicyDetails = () => {
 
   return (
     <div>
-      <CardSubHeader style={{ color: "#a82227" }}>Cart Details</CardSubHeader>
+      <CardSubHeader className="ads-components-adscart-and-cancellation-policy-details--style-6">Cart Details</CardSubHeader>
 
-      <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+      <div className="ads-components-adscart-and-cancellation-policy-details--style-7">
         <div>
           <div
             onClick={handleCartClick}
-            style={{
-              cursor: "pointer",
-              color: "#a82227",
-              fontSize: "20px",
-              textDecoration: "none",
-              marginBottom: "10px", // Space below "View Cart"
-            }}
+            className="ads-components-adscart-and-cancellation-policy-details--style-8"
           >
             <div
               class="container"
-              style={{
-                width: "1px",
-              }}
+              className="ads-components-adscart-and-cancellation-policy-details--style-9"
             >
               {" "}
               <div
-                style={{
-                  width: "20px",
-                  position: "relative",
-                }}
+                className="ads-components-adscart-and-cancellation-policy-details--style-10"
               >
                 <div
-                  style={{
-                    position: "absolute",
-                    top: "-4px",
-                    right: "-93px",
-                    // backgroundColor: "#FFFFFF",
-                    color: "#008000",
-                    padding: "5px",
-                    borderRadius: "30px",
-                    width: "30px",
-                    height: "30px",
-                    textAlign: "center",
-                  }}
+                  className="ads-components-adscart-and-cancellation-policy-details--style-11"
                 >
                   <div> {params?.adslist?.cartDetails.length}</div>
                 </div>
@@ -187,24 +165,18 @@ const ADSCartAndCancellationPolicyDetails = () => {
 
           <div
             onClick={handleCancellationPolicyClick}
-            style={{
-              cursor: "pointer",
-              color: "#a82227",
-              fontSize: "20px",
-              textDecoration: "none",
-              marginBottom: "10px", // Space below "Terms and Conditions"
-            }}
+            className="ads-components-adscart-and-cancellation-policy-details--style-12"
           >
             Terms and Conditions
           </div>
         </div>
-        <div onClick={handlePriceBreakupClick} style={{ cursor: "pointer", fontSize: "20px", color: "#a82227" }}>
+        <div onClick={handlePriceBreakupClick} className="ads-components-adscart-and-cancellation-policy-details--style-13">
           Total Booking Amount: <strong>{totalBookingAmount} INR</strong>
         </div>
       </div>
       {showCancellationPolicy && (
         <Modal
-          headerBarMain={<CardSubHeader style={{ color: "#a82227", margin: "25px" }}>Terms and Conditions</CardSubHeader>}
+          headerBarMain={<CardSubHeader className="ads-components-adscart-and-cancellation-policy-details--style-15">Terms and Conditions</CardSubHeader>}
           headerBarEnd={<CloseBtn onClick={handleCancellationPolicyClick} />}
           popupStyles={{
             backgroundColor: "#fff",
@@ -218,7 +190,6 @@ const ADSCartAndCancellationPolicyDetails = () => {
           //     {cancelpolicyData.length > 0 ? (
           //       renderCancellationPolicy(cancelpolicyData[0].termsAndCondition)
           //     ) : (
-          //       <CardLabel style={{ fontSize: "20px" }}>Loading...</CardLabel>
           //     )}
           //   </div>
           // }
@@ -233,7 +204,7 @@ const ADSCartAndCancellationPolicyDetails = () => {
           formId="modalForm"
           isDisabled={false}
           hideSubmit={true}
-          style={{}}
+          className="ads-components-adscart-and-cancellation-policy-details--style-14"
           popupModuleMianStyles={{ padding: "10px" }}
           headerBarMainStyle={{ position: "sticky", top: 0, backgroundColor: "#f5f5f5" }}
           isOBPSFlow={false}
@@ -244,7 +215,7 @@ const ADSCartAndCancellationPolicyDetails = () => {
       )}
       {showViewCart && (
         <Modal
-          headerBarMain={<CardSubHeader style={{ color: "#a82227", margin: "25px" }}>My Cart</CardSubHeader>}
+          headerBarMain={<CardSubHeader className="ads-components-adscart-and-cancellation-policy-details--style-16">My Cart</CardSubHeader>}
           headerBarEnd={<CloseBtn onClick={handleCartClick} />}
           popupStyles={{ backgroundColor: "#fff", position: "relative", maxHeight: "80vh", width: "80%", overflowY: "auto" }}
           popupModuleMianStyles={{ padding: "10px" }}
@@ -270,23 +241,23 @@ const ADSCartAndCancellationPolicyDetails = () => {
       )}
       {showPriceBreakup && (
         <Modal
-          headerBarMain={<CardSubHeader style={{ color: "#a82227", margin: "25px" }}>Price Breakup</CardSubHeader>}
+          headerBarMain={<CardSubHeader className="ads-components-adscart-and-cancellation-policy-details--style-18">Price Breakup</CardSubHeader>}
           headerBarEnd={<CloseBtn onClick={handlePriceBreakupClick} />}
           popupStyles={{ backgroundColor: "#fff", position: "relative", maxHeight: "90vh", width: "60%", overflowY: "auto" }}
           children={
             <div>
-              <CardLabelDesc style={{ marginBottom: "15px" }}>Estimate Price Details</CardLabelDesc>
+              <CardLabelDesc className="ads-components-adscart-and-cancellation-policy-details--style-19">Estimate Price Details</CardLabelDesc>
               <ul>
                 {mutation.data?.demands[0]?.demandDetails &&
                   mutation.data?.demands[0]?.demandDetails.map((demands, index) => (
-                    <li key={index} style={{ display: "flex", justifyContent: "space-between" }}>
+                    <li key={index} className="ads-components-adscart-and-cancellation-policy-details--style-20">
                       <CardText>{t(`${demands.taxHeadMasterCode}`)}</CardText>
                       <CardText>Rs {demands.taxAmount}</CardText>
                     </li>
                   ))}
               </ul>
               <hr />
-              <div style={{ fontWeight: "bold", marginTop: "10px", display: "flex", justifyContent: "space-between" }}>
+              <div className="ads-components-adscart-and-cancellation-policy-details--style-21">
                 <CardLabelDesc>Total</CardLabelDesc>
                 <CardLabelDesc>
                   Rs {mutation.data?.demands[0]?.demandDetails && calculateTotalAmount(mutation.data?.demands[0]?.demandDetails)}
@@ -305,7 +276,7 @@ const ADSCartAndCancellationPolicyDetails = () => {
           formId="modalForm"
           isDisabled={false}
           hideSubmit={true} // Ensure submit is hidden
-          style={{}}
+          className="ads-components-adscart-and-cancellation-policy-details--style-17"
           // popupModuleMianStyles={{ padding: "10px" }}
           headerBarMainStyle={{ position: "sticky", top: 0, backgroundColor: "#f5f5f5" }}
           isOBPSFlow={false}
@@ -319,3 +290,19 @@ const ADSCartAndCancellationPolicyDetails = () => {
 };
 
 export default ADSCartAndCancellationPolicyDetails;
+
+/*
+Space below "View Cart"
+*/
+
+/*
+backgroundColor: "#FFFFFF",
+*/
+
+/*
+Space below "Terms and Conditions"
+*/
+
+/*
+<CardLabel style={{ fontSize: "20px" }}>Loading...</CardLabel>
+*/

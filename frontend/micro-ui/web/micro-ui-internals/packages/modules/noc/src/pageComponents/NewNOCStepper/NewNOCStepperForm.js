@@ -97,7 +97,7 @@ const NewNOCStepperForm = () => {
   useEffect(() => {
       window.scrollTo(0, 0);
     }, [step]);
-    
+
   const handleSubmit = (dataGet) => {
     console.log("dataGet===", dataGet);
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };

@@ -3,19 +3,6 @@ import { TextInput } from "@mseva/digit-ui-react-components";
 import { format } from "date-fns";
 import { CalendarIcon } from "../../../../react-components/src/atoms/svgindex";
 
-const hiddenDateInputStyle = {
-  position: "absolute",
-  top: 0,
-  right: 0,
-  width: "32px",
-  height: "100%",
-  opacity: 0,
-  cursor: "pointer",
-  border: "none",
-  padding: 0,
-  margin: 0,
-};
-
 const CustomDatePicker = ({ value, onChange, placeholder = "DD/MM/YYYY", min, max, ...props }) => {
   const [selectedDate, setSelectedDate] = useState(value ? new Date(value) : null);
   const [inputValue, setInputValue] = useState(value ? format(new Date(value), "dd/MM/yyyy") : "");
@@ -37,7 +24,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "DD/MM/YYYY", min, ma
       setSelectedDate(newDate);
       setInputValue(format(newDate, "dd/MM/yyyy"));
       onChange({
-        target: { value: format(newDate, "yyyy-MM-dd") },
+        target: { value: format(newDate, "yyyy-MM-dd") }
       });
     }
   };
@@ -55,32 +42,32 @@ const CustomDatePicker = ({ value, onChange, placeholder = "DD/MM/YYYY", min, ma
 
   return (
     <div
-      style={{ position: "relative", width: "100%", cursor: "pointer" }}
-      onMouseDown={openCalendar}
-    >
+
+      onMouseDown={openCalendar} className="ral-style-8556ab25bb">
+
       <TextInput
         value={inputValue}
         placeholder={placeholder}
         readOnly
-        style={{
-          cursor: "pointer",
-          caretColor: "transparent",
-        }}
-        tabIndex={-1}
-        {...props}
-      />
 
-      <CalendarIcon
-        style={{
-          position: "absolute",
-          right: 12,
-          top: "45%",
-          transform: "translateY(-50%)",
-          pointerEvents: "none",
-          width: "16px",
-          height: "16px",
-        }}
-      />
+
+
+
+        tabIndex={-1}
+        {...props} className="ral-style-13e42518aa" />
+
+
+      <CalendarIcon className="ral-style-9be68d3ddc" />
+
+
+
+
+
+
+
+
+
+
 
       <input
         ref={dateRef}
@@ -90,11 +77,10 @@ const CustomDatePicker = ({ value, onChange, placeholder = "DD/MM/YYYY", min, ma
         onChange={(e) => handleDateChange(e.target.value)}
         min={min}
         max={max}
-        style={hiddenDateInputStyle}
-      />
-    </div>
-  );
+        className="ral-hidden-date-input" />
+
+    </div>);
+
 };
 
 export default CustomDatePicker;
-

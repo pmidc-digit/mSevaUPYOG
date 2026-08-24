@@ -141,7 +141,7 @@ function SelectDocument({ t, document: doc, setDocuments, setError, documents, s
   }, [file]);
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div className="gc-style-8d703344e0">
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
           {t(doc?.code)} {doc?.required && " *"}

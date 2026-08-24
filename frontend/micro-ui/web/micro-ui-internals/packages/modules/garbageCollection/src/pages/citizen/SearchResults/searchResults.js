@@ -56,10 +56,10 @@ const ChallanSearchResults = ({ template, header, actionButtonLabel }) => {
   });
 
   return (
-    <div style={{ marginTop: "16px" }}>
+    <div className="gc-style-d265a6b9b9">
       <div >
         {header && (
-          <Header style={{ marginLeft: "8px" }}>
+          <Header className="gc-style-c937f3b834">
             {t(header)} ({searchResults?.length})
           </Header>
         )}

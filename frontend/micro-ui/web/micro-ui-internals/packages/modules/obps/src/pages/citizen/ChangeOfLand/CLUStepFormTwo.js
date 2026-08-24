@@ -44,7 +44,7 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     window.scrollTo({
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
-    });    
+    });
   }, [])
 
   // console.log("ownerIds(redux)", ownerIds);

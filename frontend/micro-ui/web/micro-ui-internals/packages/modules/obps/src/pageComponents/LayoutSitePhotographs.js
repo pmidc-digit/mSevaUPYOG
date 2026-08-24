@@ -46,16 +46,16 @@ const LayoutSitePhotographs = ({ documents, coordinates={} }) => {
   }, [mappedDocuments]);
 
   return (
-    <div style={{ padding: "50px 0px", display: "flex", justifyContent: "space-evenly" }}>
+    <div className="obps-page-components-layout-site-photographs--style-1">
       {documentsData?.map((item, index) => (
-        <div key={index} style={{ display: "flex", flexDirection: "column", width: "200px", height: "200px", alignItems: "center" }}>
+        <div key={index} className="obps-page-components-layout-site-photographs--style-2">
           <CardSectionHeader>{item?.title}</CardSectionHeader>
 
-          <div style={{ margin: "5px" }}>
+          <div className="obps-page-components-layout-site-photographs--style-3">
             <img
               src={item.fileUrl}
               alt={item.title}
-              style={{ width: "120px", height: "120px", objectFit: "fill", borderRadius: "10%", cursor: "pointer" }}
+              className="obps-page-components-layout-site-photographs--style-4"
               onClick={() => window.open(item.fileUrl, "_blank")}
             />
           </div>

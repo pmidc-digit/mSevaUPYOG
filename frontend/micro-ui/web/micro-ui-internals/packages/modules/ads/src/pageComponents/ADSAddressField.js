@@ -40,9 +40,27 @@ const ADSAddressField = ({ value, onChange, onBlur, t }) => {
 
   return (
     <>
-      <div style={{ width: "100%", marginTop: "8px" }}>
+      <div className="ads-page-components-adsaddress-field--style-1">
         <TextInput value={placeName} onChange={() => {}} onBlur={onBlur} disabled={true} placeholder={t("ADS_LOCATION")} />
-        {/* <div>
+
+      </div>
+
+      {isOpen && (
+        <GIS
+          t={t}
+          formData={{ address: { pincode: value?.pincode || "", geoLocation: value || {} } }}
+          handleRemove={() => setIsOpen(false)}
+          onSave={(geoLocation, pincode, place) => handleSave(geoLocation, pincode, place)}
+        />
+      )}
+    </>
+  );
+};
+
+export default ADSAddressField;
+
+/*
+<div>
           <button
             type="button"
             onClick={() => setIsOpen(true)}
@@ -61,19 +79,5 @@ const ADSAddressField = ({ value, onChange, onBlur, t }) => {
               {(t && (t("VIEW_LOCATION_ON_MAP") || "View location on map")) || "View location on map"}
             </span>
           </button>
-        </div> */}
-      </div>
-
-      {isOpen && (
-        <GIS
-          t={t}
-          formData={{ address: { pincode: value?.pincode || "", geoLocation: value || {} } }}
-          handleRemove={() => setIsOpen(false)}
-          onSave={(geoLocation, pincode, place) => handleSave(geoLocation, pincode, place)}
-        />
-      )}
-    </>
-  );
-};
-
-export default ADSAddressField;
+        </div>
+*/

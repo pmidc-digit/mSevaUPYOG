@@ -45,14 +45,11 @@ export const NOCFeeTable = ({
         if (row.taxHeadCode === "NOC_TOTAL") {
           return (
             <div>
-              <strong style={{ fontSize: "14px" }}>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
+              <strong className="noc-page-components-nocfee-table--style-1">
+                ₹ {row.grandTotal.toLocaleString("en-IN")}
+              </strong>
               <div
-                style={{
-                  fontSize: "0.85em",
-                  color: "#555",
-                  marginTop: "4px",
-                  lineHeight: "1.3",
-                }}
+                className="noc-page-components-nocfee-table--style-2"
               >
                 {amountToWords(row.grandTotal)} only
               </div>

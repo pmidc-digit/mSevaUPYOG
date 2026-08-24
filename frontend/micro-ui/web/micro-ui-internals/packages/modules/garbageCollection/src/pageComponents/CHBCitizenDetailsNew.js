@@ -106,12 +106,12 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
 
   return (
     <React.Fragment>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ maxWidth: !isCitizen ? "100%" : "100%" }}>
+      <form className="employeeCard" onSubmit={handleSubmit(onSubmit)}>
+        <div className="card gc-citizen-details-form">
           {/* Mobile Number */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span className="gc-style-31981a7d51">*</span>
             </CardLabel>
             <div className="form-field">
               <Controller
@@ -139,14 +139,14 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
-              {errors?.mobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.mobileNumber.message}</p>}
+              {errors?.mobileNumber && <p className="gc-style-ed9ef6a95c">{errors.mobileNumber.message}</p>}
             </div>
           </LabelFieldPair>
 
           {/* Name */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span className="gc-style-31981a7d51">*</span>
             </CardLabel>
             <div className="form-field">
               <Controller
@@ -170,7 +170,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
-              {errors?.name && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.name.message}</p>}
+              {errors?.name && <p className="gc-style-ed9ef6a95c">{errors.name.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -204,14 +204,14 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
-              {errors?.emailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.emailId.message}</p>}
+              {errors?.emailId && <p className="gc-style-ed9ef6a95c">{errors.emailId.message}</p>}
             </div>
           </LabelFieldPair>
 
           {/* Address */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("PT_COMMON_COL_ADDRESS")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("PT_COMMON_COL_ADDRESS")}`} <span className="gc-style-31981a7d51">*</span>
             </CardLabel>
             <div className="form-field">
               <Controller
@@ -235,7 +235,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
-              {errors?.address && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.address.message}</p>}
+              {errors?.address && <p className="gc-style-ed9ef6a95c">{errors.address.message}</p>}
             </div>
           </LabelFieldPair>
         </div>

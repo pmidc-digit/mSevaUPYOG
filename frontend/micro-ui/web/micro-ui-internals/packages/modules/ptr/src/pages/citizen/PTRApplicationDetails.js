@@ -10,8 +10,8 @@ import {
   PopUp,
   Toast,
   SubmitBar,
-  ActionBar,
-} from "@mseva/digit-ui-react-components";
+  ActionBar } from
+"@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
@@ -57,7 +57,7 @@ const PTRApplicationDetails = () => {
   console.log("tenantInfo", tenantInfo);
   const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch({
     tenantId,
-    filters: { applicationNumber },
+    filters: { applicationNumber }
   });
 
   console.log("data====", data);
@@ -68,13 +68,13 @@ const PTRApplicationDetails = () => {
   const ulbType = tenantInfo?.city?.ulbType;
   const PetRegistrationApplications = get(data, "PetRegistrationApplications", []);
 
-  const pet_details = (PetRegistrationApplications && PetRegistrationApplications.length > 0 && PetRegistrationApplications[0]) || {};
+  const pet_details = PetRegistrationApplications && PetRegistrationApplications.length > 0 && PetRegistrationApplications[0] || {};
   const application = pet_details;
 
   const { data: approverData, isLoading: approverDataLoading } = Digit.Hooks.useWorkflowDetails({
     tenantId,
     id: applicationNumber,
-    moduleCode: "ptr",
+    moduleCode: "ptr"
   });
 
   useEffect(() => {
@@ -92,7 +92,7 @@ const PTRApplicationDetails = () => {
     setLoading(true);
     const result = await Digit.PaymentService.fetchBill(tenantId, {
       businessService: "pet-services",
-      consumerCode: applicationNumber,
+      consumerCode: applicationNumber
     });
 
     setBillData(result);
@@ -107,7 +107,7 @@ const PTRApplicationDetails = () => {
       tenantId: tenantId,
       businessService: "pet-services",
       consumerCodes: applicationNumber,
-      isEmployee: false,
+      isEmployee: false
     },
     { enabled: applicationNumber ? true : false }
   );
@@ -123,7 +123,7 @@ const PTRApplicationDetails = () => {
       state: null,
       comment: null,
       documents: null,
-      assignes: null,
+      assignes: null
     };
     pet_details.workflow = workflow;
   }
@@ -154,11 +154,10 @@ const PTRApplicationDetails = () => {
   //         <html>
   //           <head>
   //             <title>Pet Registration Certificate</title>
-  //             <style>
   //               @page { margin: 0.5in; }
-  //               body { 
-  //                 font-family: 'Times New Roman', serif; 
-  //                 margin: 0; 
+  //               body {
+  //                 font-family: 'Times New Roman', serif;
+  //                 margin: 0;
   //                 font-size: 11px;
   //               }
   //               .certificate-container {
@@ -250,10 +249,10 @@ const PTRApplicationDetails = () => {
   //             }
   //               .detail-label {
   //               font-weight: bold;
-  //               white-space: normal;    
-  //               word-break: break-word; 
+  //               white-space: normal;
+  //               word-break: break-word;
   //               margin-left: 10px;
-  //               flex-shrink: 1;         
+  //               flex-shrink: 1;
   //               }
   //               .detail-value {
   //                 padding-bottom: 2px;
@@ -306,12 +305,12 @@ const PTRApplicationDetails = () => {
   //               @media print {
   //                 body { background: white !important; }
   //               }
-  //               @media (max-width: 700px) {   
+  //               @media (max-width: 700px) {
   //               .main-content {
   //                 flex-wrap: wrap;
   //               }
   //               .pet-image {
-  //                 width: 100px;           
+  //                 width: 100px;
   //                 max-width: 100%;
   //                 height: auto;
   //                 aspect-ratio: 1/1;
@@ -321,14 +320,12 @@ const PTRApplicationDetails = () => {
   //                 margin: 0px 10px;
   //               }
   //             }
-  //             </style>
   //           </head>
   //           <body>
   //             <div class="certificate-container">
   //             <div class="header">
   //             <div>
-  //               <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${petData?.tenantId}/logo.png" 
-  //                   style="width: 80px; height: 80px; padding-left: 20px; padding-top: 5px;" />
+  //               <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${petData?.tenantId}/logo.png"
   //             </div>
   //             <div class="header-center">
   //               <div class="title">${t(ulbType)} ${t(ulb)}</div>
@@ -348,7 +345,7 @@ const PTRApplicationDetails = () => {
   //                 <div class="details-section">
   //                   <span class="detail-label">Pet Information</span> <br>
   //                   <span class="detail-label">Registration No:</span> <span class="detail-label">${petData?.petRegistrationNumber || ""}</span>
-  //                   <div class="details-grid">                      
+  //                   <div class="details-grid">
   //                     <div class="detail-row">
   //                       <span class="detail-label">Category</span>
   //                       <span class="detail-value">${petData?.petDetails?.petType || "Dog"}</span>
@@ -396,7 +393,7 @@ const PTRApplicationDetails = () => {
   //                       <span class="detail-label">License Valid Upto</span>
   //                     <span class="detail-value">
   //                      ${petData?.validityDate ? new Date(petData.validityDate * 1000).toLocaleDateString("en-GB") : "N/A"}
-                        
+
   //                     </span>
   //                     </div>
   //                     <div class="detail-row">
@@ -409,14 +406,14 @@ const PTRApplicationDetails = () => {
   //                     </div>
   //                   </div>
   //                 </div>
-                  
+
   //                 <div class="pet-image-section">
-  //                   <img 
-  //                     src="${petImageUrl}" 
-  //                     alt="Pet Photo" 
-  //                     class="pet-image" 
-  //                     onload="console.log('Pet image loaded successfully:', this.src);" 
-  //                     onerror="console.log('Pet image failed to load:', this.src); console.log('Trying fallback image...'); this.src='/adorable-golden-retriever.png';" 
+  //                   <img
+  //                     src="${petImageUrl}"
+  //                     alt="Pet Photo"
+  //                     class="pet-image"
+  //                     onload="console.log('Pet image loaded successfully:', this.src);"
+  //                     onerror="console.log('Pet image failed to load:', this.src); console.log('Trying fallback image...'); this.src='/adorable-golden-retriever.png';"
   //                   />
   //                   <div class="image-label">Pet Photo</div>
   //                   <script>
@@ -462,7 +459,7 @@ const PTRApplicationDetails = () => {
   //                   <div class="signature-line"></div>
   //                   <div>Licensing Authority</div>
   //                   <div>${t(ulbType)}</div>
-                 
+
   //                 </div>
   //               </div>
 
@@ -490,8 +487,6 @@ const PTRApplicationDetails = () => {
   //                   <li>${t("PET_NEW_TERM_16")}</li>
   //                 </ol>
 
-  //                 <div style="text-align: center;">
-  //                   <img src="${qrDataURL}" style="width: 100px; height: 100px;" />
   //               </div>
   //               </div>
   //             </div>
@@ -545,11 +540,10 @@ const PTRApplicationDetails = () => {
   //         <html>
   //           <head>
   //             <title>Pet Registration Acknowledgement</title>
-  //             <style>
   //               @page { margin: 0.5in; }
-  //               body { 
-  //                 font-family: 'Arial', sans-serif; 
-  //                 margin: 0; 
+  //               body {
+  //                 font-family: 'Arial', sans-serif;
+  //                 margin: 0;
   //                 padding: 20px;
   //                 font-size: 14px;
   //                 line-height: 1.6;
@@ -621,14 +615,12 @@ const PTRApplicationDetails = () => {
   //               @media print {
   //                 body { background: white !important; }
   //               }
-  //             </style>
   //           </head>
   //           <body>
   //             <div class="acknowledgement-container">
   //               <div class="header">
   //             <div>
-  //               <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${petData?.tenantId}/logo.png" 
-  //                   style="width: 110px; height: 110px; padding-left: 20px; padding-bottom: 20px;" />
+  //               <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/${petData?.tenantId}/logo.png"
   //             </div>
   //             <div class="header-center">
   //               <div class="title">${t(ulbType)} ${t(ulb)}</div>
@@ -639,7 +631,7 @@ const PTRApplicationDetails = () => {
   //             <div class="header-right">
   //             </div>
   //           </div>
-                
+
   //               <div class="acknowledgement-text">
   //               ${t("PTR_ACKN_TERM_1")}
   //             </div>
@@ -679,15 +671,14 @@ const PTRApplicationDetails = () => {
   //                 </tr>
   //                 <tr>
   //                   <th>Application Status</th>
-  //                   <td style="color: #28a745; font-weight: bold;">${t(petData?.status) || "SUBMITTED"}</td>
   //                 </tr>
   //               </table>
-                
+
   //               <div class="acknowledgement-text">
   //                 ${t("PTR_ACKN_TERM_2")}
   //               </div>
 
-                
+
   //               <div class="footer">
   //                 <p>Generated on: ${currentDate}</p>
   //                 <p>${t(ulbType)}</p>
@@ -734,9 +725,9 @@ const PTRApplicationDetails = () => {
   }
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
-    const petAge= formatPetAge(application?.petDetails?.petAge, t)
+    const petAge = formatPetAge(application?.petDetails?.petAge, t);
     let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, application , approver, petAge }] }, pdfkey);
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, application, approver, petAge }] }, pdfkey);
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
@@ -745,14 +736,14 @@ const PTRApplicationDetails = () => {
 
   dowloadOptions.push({
     label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
-    onClick: () => getRecieptSearch({ tenantId: tenantId, payments: reciept_data?.Payments[0],pdfkey: "petacknowledgement" }),
+    onClick: () => getRecieptSearch({ tenantId: tenantId, payments: reciept_data?.Payments[0], pdfkey: "petacknowledgement" })
 
   });
 
   if (reciept_data?.Payments[0]?.paymentStatus === "NEW" || reciept_data?.Payments[0]?.paymentStatus === "DEPOSITED") {
     dowloadOptions.push({
       label: t("PTR_CERTIFICATE"),
-            onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0],pdfkey: "petcertificatenew" }),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "petcertificatenew" })
 
     });
   } else {
@@ -762,7 +753,7 @@ const PTRApplicationDetails = () => {
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] , pdfkey: "petservice-receipt" }),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "petservice-receipt" })
     });
   }
 
@@ -851,46 +842,46 @@ const PTRApplicationDetails = () => {
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+        <div className="cardHeaderWithOptions ptr-style-06a8677398">
           <Header styles={{ fontSize: "32px" }}>{t("CS_APPLICATION_DETAILS")}</Header>
-          {dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-            />
-          )}
+          {dowloadOptions && dowloadOptions.length > 0 &&
+          <MultiLink
+            className="multilinkWrapper"
+            onHeadClick={() => setShowOptions(!showOptions)}
+            displayOptions={showOptions}
+            options={dowloadOptions} />
+
+          }
         </div>
         <Card>
           {/* <StatusTable>
-          </StatusTable> */}
+            </StatusTable> */}
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_APPLICANT_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ptr-style-81351bd1ac">{t("ES_TITLE_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
-            {pet_details?.petRegistrationNumber && (
-              <Row className="border-none" label={t("PTR_REGISTRATION_NUMBER")} text={pet_details?.petRegistrationNumber} />
-            )}
+            {pet_details?.petRegistrationNumber &&
+            <Row className="border-none" label={t("PTR_REGISTRATION_NUMBER")} text={pet_details?.petRegistrationNumber} />
+            }
             <Row className="border-none" label={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} text={pet_details?.applicationNumber} />
             <Row className="border-none" label={t("REPORT_FSM_RESULT_APPLICANTNAME")} text={pet_details?.owner?.name || t("CS_NA")} />
-            {pet_details?.owner?.fatherOrHusbandName && (
-              <Row
-                className="border-none"
-                label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
-                text={pet_details?.owner?.fatherOrHusbandName || t("CS_NA")}
-              />
-            )}
+            {pet_details?.owner?.fatherOrHusbandName &&
+            <Row
+              className="border-none"
+              label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
+              text={pet_details?.owner?.fatherOrHusbandName || t("CS_NA")} />
+
+            }
             <Row className="border-none" label={t("MOBILE")} text={pet_details?.owner?.mobileNumber || t("CS_NA")} />
             <Row className="border-none" label={t("CORE_COMMON_PROFILE_EMAIL")} text={pet_details?.owner?.emailId || t("CS_NA")} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("WS_COMMON_TABLE_COL_ADDRESS")}</CardSubHeader>
+          <CardSubHeader className="ptr-style-81351bd1ac">{t("WS_COMMON_TABLE_COL_ADDRESS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("PTR_ADDRESS")} text={pet_details?.address?.addressLine1 || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_PINCODE")} text={pet_details?.address?.pincode || t("CS_NA")} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITILE_PET_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ptr-style-81351bd1ac">{t("ES_TITILE_PET_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("PTR_PET_NAME")} text={pet_details?.petDetails?.petName || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_SEARCH_PET_TYPE")} text={pet_details?.petDetails?.petType || t("CS_NA")} />
@@ -937,49 +928,49 @@ const PTRApplicationDetails = () => {
                 return dateObj.toLocaleDateString("en-IN", {
                   day: "2-digit",
                   month: "2-digit",
-                  year: "numeric",
+                  year: "numeric"
                 });
-              })()}
-            />
+              })()} />
+
             <Row className="border-none" label={t("PTR_VACCINATION_NUMBER")} text={pet_details?.petDetails?.vaccinationNumber || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_DOCTOR_NAME")} text={pet_details?.petDetails?.doctorName || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_CLINIC_NAME")} text={pet_details?.petDetails?.clinicName || t("CS_NA")} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_DOCS")}</CardSubHeader>
+          <CardSubHeader className="ptr-style-81351bd1ac">{t("ES_TITLE_DOCS")}</CardSubHeader>
           <div>
-            {Array.isArray(application?.documents) && application.documents.length > 0 ? (
-              <PTRDocument
-                petdetail={{
-                  documents: application.documents, // ✅ pass all docs
-                  applicationNumber: application.applicationNumber,
-                }}
-              />
-            ) : (
-              <StatusTable>
+            {Array.isArray(application?.documents) && application.documents.length > 0 ?
+            <PTRDocument
+              petdetail={{
+                documents: application.documents, // ✅ pass all docs
+                applicationNumber: application.applicationNumber
+              }} /> :
+
+
+            <StatusTable>
                 <Row className="border-none" text={t("PTR_NO_DOCUMENTS_MSG")} />
               </StatusTable>
-            )}
+            }
           </div>
 
           <PTRWFApplicationTimeline application={application} id={application?.applicationNumber} userType={"citizen"} />
-          {showToast && (
-            <Toast
-              error={showToast.key}
-              label={t(showToast.label)}
-              style={{ bottom: "0px" }}
-              isDleteBtn={true}
-              onClose={() => {
-                setShowToast(null);
-              }}
-            />
-          )}
+          {showToast &&
+          <Toast
+            error={showToast.key}
+            label={t(showToast.label)}
+
+            isDleteBtn={true}
+            onClose={() => {
+              setShowToast(null);
+            }} className="ptr-style-e38f6b9d9d" />
+
+          }
         </Card>
 
         {popup && <PTCitizenFeedbackPopUp setpopup={setpopup} setShowToast={setShowToast} data={data} />}
       </div>
-    </React.Fragment>
-  );
+    </React.Fragment>);
+
 };
 
 export default PTRApplicationDetails;

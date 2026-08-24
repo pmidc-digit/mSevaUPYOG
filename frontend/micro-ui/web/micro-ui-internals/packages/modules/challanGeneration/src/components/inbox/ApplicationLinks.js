@@ -8,24 +8,24 @@ const InboxLinks = ({ parentRoute, businessService, allLinks, headerText }) => {
   const [links, setLinks] = useState([]);
   const { roles: userRoles } = Digit.UserService.getUser().info;
   useEffect(() => {
-    
-    let linksToShow = allLinks ? allLinks
-      .filter((e) => e.businessService === businessService)
-      .filter(({ roles }) => roles.some((e) => userRoles.map(({ code }) => code).includes(e)) || !roles.length):[];
+
+    let linksToShow = allLinks ? allLinks.
+    filter((e) => e.businessService === businessService).
+    filter(({ roles }) => roles.some((e) => userRoles.map(({ code }) => code).includes(e)) || !roles.length) : [];
     setLinks(linksToShow);
   }, []);
 
-  const GetLogo = () => (
-    <div className="header" style={{ justifyContent: "flex-start" }}>
+  const GetLogo = () =>
+  <div className="header challan-generation-style-07e09bd50b">
       <span className="logo">
         <ShippingTruck />
       </span>{" "}
       <span className="text">{t(headerText)}</span>
-    </div>
-  );
+    </div>;
+
 
   return (
-    <Card style={{ paddingRight: 0, marginTop: 0 }} className="employeeCard filter">
+    <Card className="employeeCard filter challan-generation-style-aa35c0473f">
       <div className="complaint-links-container">
         {GetLogo()}
         <div className="body">
@@ -33,13 +33,13 @@ const InboxLinks = ({ parentRoute, businessService, allLinks, headerText }) => {
             return (
               <span className="link" key={index}>
                 {hyperlink ? <a href={link}>{t(text)}</a> : <Link to={link}>{t(text)}</Link>}
-              </span>
-            );
+              </span>);
+
           })}
         </div>
       </div>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default InboxLinks;

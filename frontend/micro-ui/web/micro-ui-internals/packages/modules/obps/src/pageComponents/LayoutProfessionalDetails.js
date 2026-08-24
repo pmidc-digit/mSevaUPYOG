@@ -52,10 +52,10 @@ const LayoutProfessionalDetails = (_props) => {
     if (data && data.Licenses && data.Licenses.length > 0) {
       // First check for APPROVED license
       const approvedLicense = data.Licenses.find((license) => license.status === "APPROVED");
-      
+
       // If no approved license, check for EXPIRED
       const expiredLicense = data.Licenses.find((license) => license.status === "EXPIRED");
-      
+
       if (approvedLicense) {
         setLicenseStatus("APPROVED");
         const bpaData = approvedLicense;
@@ -179,7 +179,7 @@ const LayoutProfessionalDetails = (_props) => {
       <CardSectionHeader className="card-section-header">{t("BPA_PROFESSIONAL_DETAILS")}</CardSectionHeader>
       {/* <div>
 
-  
+
       {userPhoto && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "30px", marginTop: "20px" }}>
           <div style={{ position: "relative", width: "120px" }}>
@@ -252,7 +252,7 @@ const LayoutProfessionalDetails = (_props) => {
           />
         </div>
       </LabelFieldPair>
-      {errors?.professionalName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalName.message}</p>}
+      {errors?.professionalName && <p className="obps-page-components-layout-professional-details--style-1">{errors.professionalName.message}</p>}
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_EMAIL_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -284,7 +284,7 @@ const LayoutProfessionalDetails = (_props) => {
           />
         </div>
       </LabelFieldPair>
-      {errors?.professionalEmailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalEmailId.message}</p>}
+      {errors?.professionalEmailId && <p className="obps-page-components-layout-professional-details--style-2">{errors.professionalEmailId.message}</p>}
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -305,7 +305,7 @@ const LayoutProfessionalDetails = (_props) => {
           />
         </div>
       </LabelFieldPair>
-      {errors?.professionalRegId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalRegId.message}</p>}
+      {errors?.professionalRegId && <p className="obps-page-components-layout-professional-details--style-3">{errors.professionalRegId.message}</p>}
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -325,7 +325,7 @@ const LayoutProfessionalDetails = (_props) => {
           />
         </div>
       </LabelFieldPair>
-      {errors?.professionalMobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalMobileNumber.message}</p>}
+      {errors?.professionalMobileNumber && <p className="obps-page-components-layout-professional-details--style-4">{errors.professionalMobileNumber.message}</p>}
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_ADDRESS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -359,7 +359,7 @@ const LayoutProfessionalDetails = (_props) => {
               />
             )}
           />
-          {errors?.professionalAddress && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalAddress.message}</p>}
+          {errors?.professionalAddress && <p className="obps-page-components-layout-professional-details--style-5">{errors.professionalAddress.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -390,7 +390,7 @@ const LayoutProfessionalDetails = (_props) => {
           />
         </div>
       </LabelFieldPair>
-      {errors?.professionalRegistrationValidity && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalRegistrationValidity.message}</p>}
+      {errors?.professionalRegistrationValidity && <p className="obps-page-components-layout-professional-details--style-6">{errors.professionalRegistrationValidity.message}</p>}
       {/* TODO: Uncomment when expired license feature is needed
       {licenseStatus === "EXPIRED" && expiredDate && (
         <span style={{ color: "red", fontSize: "14px", fontWeight: "bold", marginTop: "8px", display: "block" }}>

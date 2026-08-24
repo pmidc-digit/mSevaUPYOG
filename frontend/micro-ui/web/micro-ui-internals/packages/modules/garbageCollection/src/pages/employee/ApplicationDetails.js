@@ -390,7 +390,7 @@ const ChallanApplicationDetails = () => {
             )}
         </div>
         <Card>
-          <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_OWNER_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="gc-style-594a8aeda5">{t("GC_OWNER_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CORE_COMMON_NAME")} text={getChallanData?.connectionHolders?.[0]?.name || t("CS_NA")} />
             <Row
@@ -404,7 +404,7 @@ const ChallanApplicationDetails = () => {
             )}
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="gc-style-594a8aeda5">{t("GC_CONNECTION_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("APPLICATION_NUMBER")} text={t(getChallanData?.applicationNo) || t("CS_NA")} />
             <Row className="border-none" label={t("Connection Number")} text={t(getChallanData?.connectionNo) || t("CS_NA")} />
@@ -414,7 +414,7 @@ const ChallanApplicationDetails = () => {
             <Row className="border-none" label={t("GC_WASTE_TYPE")} text={getChallanData?.typeOfWaste || t("CS_NA")} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("PT_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="gc-style-594a8aeda5">{t("PT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("NDC_MSG_PROPERTY_LABEL")} text={getChallanData?.propertyId || t("CS_NA")} />
             <Row className="border-none" label={t("NDC_MSG_PROPERTY_TYPE_LABEL")} text={getChallanData?.propertyType || t("CS_NA")} />
@@ -428,15 +428,15 @@ const ChallanApplicationDetails = () => {
             <Row className="border-none" label={t("Amount")} text={getChallanData?.additionalDetails?.defAmount || t("CS_NA")} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+          <CardSubHeader className="gc-style-10e0b3f06d">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
-            <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+            <Card className="gc-style-79bc56d8a7">
               {getChallanData?.documents?.length > 0 ? (
                 getChallanData?.documents?.map((doc, index) => (
                   <React.Fragment key={index}>
                     <div>
                       <CHBDocument value={getChallanData?.documents} Code={doc?.documentType} index={index} />
-                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                      <CardSectionHeader className="gc-style-131b576839">{t(doc?.documentType)}</CardSectionHeader>
                     </div>
                   </React.Fragment>
                 ))
@@ -491,7 +491,7 @@ const ChallanApplicationDetails = () => {
         {getChallanData?.applicationStatus == "CONNECTION_ACTIVATED" && getChallanData?.status == "Active" && (
           <ActionBar>
             <SubmitBar
-              style={{ width: "200px" }}
+              className="gc-style-ec060bac5e"
               label={t("GC_DISCONTINUE_SERVICE")}
               onSubmit={() => handleDiscontinue(getChallanData)}
               disabled={loader}

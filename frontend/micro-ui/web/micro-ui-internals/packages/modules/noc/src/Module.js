@@ -55,7 +55,7 @@ export const NOCLinks = ({ matchPath, userType }) => {
       link: `${matchPath}/noc/search-application`,
       i18nKey: t("NOC_SEARCH_APPLICATION"),
     },
-    
+
   ];
 
   return <CitizenHomeCard header={t("ACTION_TEST_NOC")} links={links} Icon={() => <CaseIcon className="fill-path-primary-main" />} />;
@@ -67,7 +67,7 @@ export const NOCModule = ({ stateCode, userType, tenants }) => {
   const { path, url } = useRouteMatch();
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
-  
+
   Digit.SessionStorage.set("NOC_TENANTS", tenants);
 
   if (isLoading) {
@@ -77,7 +77,7 @@ export const NOCModule = ({ stateCode, userType, tenants }) => {
   if (userType === "citizen") {
     return <CitizenApp/>;
   }
-   
+
   return <EmployeeApp path={path} stateCode={stateCode} />;
 };
 

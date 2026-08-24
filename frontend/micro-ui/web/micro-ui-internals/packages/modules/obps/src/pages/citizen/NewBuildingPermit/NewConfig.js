@@ -156,7 +156,7 @@ export const newConfig1 = [
       {
         label: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL",
         type: "text",
-        placeholder: "Give Land Registration Detail...", 
+        placeholder: "Give Land Registration Detail...",
         validation: {
           required: true,
           title: "Enter registration details",
@@ -167,7 +167,7 @@ export const newConfig1 = [
       {
         label: "BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT",
         type: "text",
-        placeholder: "Enter boundary wall length (in meters)", 
+        placeholder: "Enter boundary wall length (in meters)",
         validation: {
           required: true,
           pattern: "^[0-9]*$",
@@ -213,7 +213,7 @@ export const newConfig1 = [
       {
         label: "BPA_ARCHITECT_ID",
         type: "text",
-        
+
         validation: {
           required: true,
           title: "Enter architect ID",

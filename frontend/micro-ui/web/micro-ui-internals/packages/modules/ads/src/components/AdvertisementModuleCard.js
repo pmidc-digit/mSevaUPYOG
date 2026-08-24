@@ -20,7 +20,7 @@ const AdvertisementModuleCard = ({ imageSrc, title, location, poleNo, price, pat
   };
   useEffect(() => {
     clearParams();
-  }, []); 
+  }, []);
   const handleBookNow = () => {
     setParams({
       faceArea:{code:faceArea,value:faceArea,i18nKey:faceArea},
@@ -36,56 +36,41 @@ const AdvertisementModuleCard = ({ imageSrc, title, location, poleNo, price, pat
   };
   return (
     <div
-      style={{
-        border: "1px solid #ccc",
-        backgroundColor: "white",
-        borderRadius: "8px",
-        overflow: "hidden",
-        maxWidth: "30%",
-        margin: "10px auto",
-        minWidth: "24%",
-      }}
+      className="ads-components-advertisement-module-card--style-1"
     >
-      <div style={{ width: "100%", height: "200px", position: "relative",padding: "10px"}}>
+      <div className="ads-components-advertisement-module-card--style-2">
         <img
           src={imageSrc}
           alt="Advertisement"
-          style={{
-            width: "100%",
-            height: "100%",
-            backgroundSize: "cover",
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "center",
-            minWidth: "0",
-          }}
+          className="ads-components-advertisement-module-card--style-3"
         />
       </div>
-      <div style={{ padding: "10px" }}>
-        <p style={{ margin: "0", color: "#a82227" }}>{light}</p>
-        <h3 style={{ margin: "5px 0", fontWeight: "bold" }}>{title}</h3>
+      <div className="ads-components-advertisement-module-card--style-4">
+        <p className="ads-components-advertisement-module-card--style-5">{light}</p>
+        <h3 className="ads-components-advertisement-module-card--style-6">{title}</h3>
         <p>
           {location} (
-          <button type="button" style={{ marginLeft: "5px", color: "#a82227" }}>
+          <button type="button" className="ads-components-advertisement-module-card--style-7">
             View Map
           </button>
           )
         </p>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <div className="ads-components-advertisement-module-card--style-8">
           <p>Pole No: {poleNo}</p>
           <p>₹ {price}</p>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <div className="ads-components-advertisement-module-card--style-9">
           <button
             type="button"
             onClick={handleViewAvailability}
-            style={{ backgroundColor: "green", color: "white", border: "1px solid #ccc", padding: "5px 10px", borderRadius: "4px" }}
+            className="ads-components-advertisement-module-card--style-10"
           >
             View Availability
           </button>
           <button
             type="button"
             onClick={handleBookNow}
-            style={{ backgroundColor: "#a82227", color: "white", border: "1px solid #ccc", padding: "5px 10px", borderRadius: "4px" }}
+            className="ads-components-advertisement-module-card--style-11"
           >
             Book Now
           </button>

@@ -19,16 +19,16 @@ const SearchFormFieldsComponent = (props) => {
     }, true);
     props?.isMobileView ? props.closeMobilePopupModal() : null;
   }
-  
-  
+
+
   return (
-    <div style={{width: "100%", gap:"20px"}} className="search-form-wrapper">
+    <div  className="search-form-wrapper obps-pages-citizen-layout-search-application-search-field-component--style-1">
       <SearchField>
         <label>{t("BPA_APPLICATION_NUMBER_LABEL")}</label>
         <TextInput name="applicationNo" inputRef={register({})} />
       </SearchField>
-      
-      <SearchField style={{display: "flex", flexDirection: "column"}}>
+
+      <SearchField className="obps-pages-citizen-layout-search-application-search-field-component--style-2">
         <label>{t("BPA_APPLICANT_MOBILE_NO_LABEL")}</label>
         <TextInput
           name="mobileNumber"
@@ -57,7 +57,7 @@ const SearchFormFieldsComponent = (props) => {
       <SearchField className="submit">
         <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
         <p
-          style={{ marginTop: "24px" }}
+          className="obps-pages-citizen-layout-search-application-search-field-component--style-3"
           onClick={() => {
             reset({
               applicationNo: "",

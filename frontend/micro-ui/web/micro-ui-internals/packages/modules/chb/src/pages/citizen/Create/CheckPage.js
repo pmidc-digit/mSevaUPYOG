@@ -106,7 +106,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
       <CardHeader>{t("CHB_CHECK_YOUR_DETAILS")}</CardHeader>
       <div>
       <CardText>{t("CHB_CHECK_CHECK_YOUR_ANSWERS_TEXT")}</CardText>
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
+        <CardSubHeader className="chb-check-page__section-title">{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
         <StatusTable>
         <Row
             label={t("CHB_APPLICANT_NAME")}
@@ -155,7 +155,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
           actionButton={<ActionButton jumpTo={`/digit-ui/citizen/chb/${typeOfApplication}/searchHall`} />} // Action button component
         />
         </StatusTable> */}
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
+        <CardSubHeader className="chb-check-page__section-title">{t("CHB_EVENT_DETAILS")}</CardSubHeader>
         <StatusTable>
         <Row
             label={t("CHB_SPECIAL_CATEGORY")}
@@ -178,7 +178,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
         />
 
         </StatusTable>
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_BANK_DETAILS")}</CardSubHeader>
+        <CardSubHeader className="chb-check-page__section-title">{t("CHB_BANK_DETAILS")}</CardSubHeader>
         <StatusTable>
         <Row
             label={t("CHB_ACCOUNT_NUMBER")}
@@ -216,7 +216,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
         />
 
         </StatusTable>
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_ADDRESS_DETAILS")}</CardSubHeader>
+        <CardSubHeader className="chb-check-page__section-title">{t("CHB_ADDRESS_DETAILS")}</CardSubHeader>
         <StatusTable>
         <Row
             label={t("CHB_PINCODE")}
@@ -253,27 +253,20 @@ const CheckPage = ({ onSubmit, value = {} }) => {
             actionButton={<ActionButton jumpTo={`/digit-ui/citizen/chb/${typeOfApplication}/address-details`} />}
         />
         </StatusTable>
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("SLOT_DETAILS")}</CardSubHeader>
+        <CardSubHeader className="chb-check-page__section-title">{t("SLOT_DETAILS")}</CardSubHeader>
         <ApplicationTable
               t={t}
               data={slotlistRows}
               columns={columns}
-              getCellProps={(cellInfo) => ({
-                style: {
-                  minWidth: "150px",
-                  padding: "10px",
-                  fontSize: "16px",
-                  paddingLeft: "20px",
-                },
-              })}
+              getCellProps={() => ({ className: "chb-check-page__table-cell" })}
               isPaginationRequired={false}
               totalRecords={slotlistRows.length}
             />
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_DOCUMENTS_DETAILS")}</CardSubHeader>
+        <CardSubHeader className="chb-check-page__section-title">{t("CHB_DOCUMENTS_DETAILS")}</CardSubHeader>
         <StatusTable>
-        <Card style={{display: "flex", flexDirection: "row" }}>
+        <Card className="chb-check-page__documents">
           {documents && documents?.documents.map((doc, index) => (
-            <div key={`doc-${index}`} style={{ marginRight: "25px"}}>
+            <div key={`doc-${index}`} className="chb-check-page__document">
               <div>
                 <CardSectionHeader>{t("CHB_" + (doc?.documentType?.split('.').slice(0,2).join('_')))}</CardSectionHeader>
                 <CHBDocument value={value} Code={doc?.documentType} index={index} />

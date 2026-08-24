@@ -129,7 +129,7 @@ const OBPSAcknowledgement = ({ data, onSuccess }) => {
         <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>
       {mutation1.isSuccess && (
-        <div style={{ marginTop: "10px" }}>
+        <div className="obps-pages-citizen-new-building-permit-obpsacknowledgement--style-1">
           <SubmitBar label={t("CS_COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
         </div>
       )}

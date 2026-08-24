@@ -38,10 +38,10 @@ const ADSCartDetails = ({ onClose, cartDetails, setCartDetails }) => {
 
   const columns = [
     {
-      Header: () => <div style={{ paddingLeft: "50px" }}>{t("S_NO")}</div>, // Use a function to render header with padding
+      Header: () => <div className="ads-components-adscart-details--style-1">{t("S_NO")}</div>, // Use a function to render header with padding
       accessor: "sNo",
       Cell: ({ row }) => (
-        <div style={{ paddingLeft: "50px" }}>
+        <div className="ads-components-adscart-details--style-2">
           {row.index + 1} {/* Display the row index + 1 for S.No */}
         </div>
       ),
@@ -61,7 +61,7 @@ const ADSCartDetails = ({ onClose, cartDetails, setCartDetails }) => {
       accessor: "delete",
       Cell: ({ row }) => (
         <button onClick={() => handleDelete(row.index)}>
-          <DeleteIcon className="delete" fill="#a82227" style={{ cursor: "pointer", marginLeft: "20px" }} />
+          <DeleteIcon className="delete ads-components-adscart-details--style-3" fill="#a82227"  />
         </button>
       ),
     },
@@ -69,7 +69,7 @@ const ADSCartDetails = ({ onClose, cartDetails, setCartDetails }) => {
 
   return (
     <Modal
-      headerBarMain={<CardSubHeader style={{ color: "#a82227", margin: "25px" }}>My Cart</CardSubHeader>}
+      headerBarMain={<CardSubHeader className="ads-components-adscart-details--style-4">My Cart</CardSubHeader>}
       headerBarEnd={<CloseBtn onClick={onClose} />}
       popupStyles={{ backgroundColor: "#fff", position: "relative", maxHeight: "80vh", width: "80%", overflowY: "auto" }}
       popupModuleMianStyles={{ padding: "10px" }}
@@ -92,16 +92,7 @@ const ADSCartDetails = ({ onClose, cartDetails, setCartDetails }) => {
         totalRecords={cartDetails.length}
       />
       <div
-        style={{
-          position: "sticky", // Keeps it fixed relative to the modal
-          bottom: 0,
-          backgroundColor: "#fff",
-          padding: "15px 20px",
-          fontSize: "18px",
-          fontWeight: "bold",
-          boxShadow: "0 -2px 5px rgba(0,0,0,0.1)", // Optional for a better UI
-          zIndex: 10, // Ensures it stays on top of other content
-        }}
+        className="ads-components-adscart-details--style-5"
       >
         Total Price: {calculateTotalPrice()}
       </div>
@@ -110,3 +101,15 @@ const ADSCartDetails = ({ onClose, cartDetails, setCartDetails }) => {
 };
 
 export default ADSCartDetails;
+
+/*
+Keeps it fixed relative to the modal
+*/
+
+/*
+Optional for a better UI
+*/
+
+/*
+Ensures it stays on top of other content
+*/

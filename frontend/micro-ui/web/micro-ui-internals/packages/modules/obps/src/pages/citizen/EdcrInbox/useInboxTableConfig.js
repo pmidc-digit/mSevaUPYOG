@@ -12,7 +12,7 @@ const Download = ({ dowloadOptions }) => {
 
 const useInboxTableConfig = ({ onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId }) => {
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
-  const GetStatusCell = (value) =>  value === "Accepted" ? <span className="sla-cell-success " style={{background:"none",padding:"unset"}}>{value}</span> : <span className="sla-cell-error" style={{background:"none",padding:"unset"}}>{value}</span>;
+  const GetStatusCell = (value) =>  value === "Accepted" ? <span className="sla-cell-success  obps-pages-citizen-edcr-inbox-use-inbox-table-config--style-1" >{value}</span> : <span className="sla-cell-error obps-pages-citizen-edcr-inbox-use-inbox-table-config--style-2" >{value}</span>;
   const { t } = useTranslation();
 
   const tableColumnConfig = useMemo(() => {
@@ -50,7 +50,7 @@ const useInboxTableConfig = ({ onPageSizeChange, formState, totalCount, table, d
         Header: t("EDCR_COMMON_TABLE_APPL_NAME"),
         accessor: (row) => row?.owner,
         disableSortBy: true,
-      },      
+      },
       {
         Header: t("EDCR_COMMON_TABLE_COL_STATUS"),
         accessor: (row) => GetStatusCell(row?.status),

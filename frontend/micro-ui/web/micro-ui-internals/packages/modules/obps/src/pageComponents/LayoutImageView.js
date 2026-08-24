@@ -16,7 +16,7 @@ const LayoutImageView = ({ ownerFileStoreId, ownerName, documents }) => {
     (async () => {
       // First try to use ownerFileStoreId directly
       let fileStoreId = ownerFileStoreId;
-      
+
       // If not available, try to find from documents array
       if (!fileStoreId && documents) {
         fileStoreId = documents?.find((doc) => doc.documentType === "OWNER.OWNERPHOTO")?.documentUid || "";
@@ -33,8 +33,8 @@ const LayoutImageView = ({ ownerFileStoreId, ownerName, documents }) => {
 
   return (
     <Card>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px", padding: "0px 20px" }}>
-        <div style={{ textAlign: "center" }}>
+      <div className="obps-page-components-layout-image-view--style-1">
+        <div className="obps-page-components-layout-image-view--style-2">
           <img
             src={imageCitizenZoom}
             alt="Owner Photo"

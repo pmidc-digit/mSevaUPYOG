@@ -107,9 +107,8 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   }
 
   const clearAll = (mobileView) => {
-    const mobileViewStyles = mobileView ? { margin: 0 } : {};
     return (
-      <LinkLabel style={{ display: "inline", ...mobileViewStyles }} onClick={clearSearch}>
+      <LinkLabel className={`ptr-search-clear-link${mobileView ? " ptr-search-clear-link--mobile" : ""}`} onClick={clearSearch}>
         {t("ES_COMMON_CLEAR_SEARCH")}
       </LinkLabel>
     );
@@ -128,7 +127,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 </span>
               </div>
             )}
-            <div className="complaint-input-container" style={{ textAlign: "start" }}>
+            <div className="complaint-input-container ptr-style-0afc60c4eb">
               {searchFields
                 ?.filter((e) => true)
                 ?.map((input, index) => (
@@ -170,7 +169,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 ))}
 
               {isInboxPage && (
-                <div className="search-action-wrapper" style={{ width: "100%" }}>
+                <div className="search-action-wrapper ptr-style-0466783d98">
                   {type === "desktop" && !mobileView && (
                     <SubmitBar
                       className="submit-bar-search"
@@ -179,7 +178,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                     />
                   )}
                   {type === "desktop" && !mobileView && (
-                    <span style={{ paddingTop: "9px" }} className="clear-search">
+                    <span className="clear-search ptr-style-92d33bde50">
                       {clearAll()}
                     </span>
                   )}
@@ -194,8 +193,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                     disabled={!!Object.keys(formState.errors).length || formValueEmpty()}
                     submit
                   />
-                  {/* style={{ paddingTop: "16px", textAlign: "center" }} className="clear-search" */}
-                  <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
+                  <div className="ptr-style-98208f557f">
                     {clearAll()}
                   </div>
                 </div>
@@ -205,10 +203,10 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
         </div>
         {(type === "mobile" || mobileView) && (
           <ActionBar className="clear-search-container">
-            <button className="clear-search" style={{ flex: 1 }}>
+            <button className="clear-search ptr-style-97445a8d93">
               {clearAll(mobileView)}
             </button>
-            <SubmitBar disabled={!!Object.keys(formState.errors).length} label={t("ES_COMMON_SEARCH")} style={{ flex: 1 }} submit={true} />
+            <SubmitBar disabled={!!Object.keys(formState.errors).length} label={t("ES_COMMON_SEARCH")} submit={true} className="ptr-style-97445a8d93" />
           </ActionBar>
         )}
       </React.Fragment>

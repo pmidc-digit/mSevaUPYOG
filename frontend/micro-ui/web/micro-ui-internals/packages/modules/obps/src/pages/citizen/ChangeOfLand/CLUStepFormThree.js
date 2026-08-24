@@ -29,9 +29,9 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     window.scrollTo({
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
-    });    
+    });
   }, [])
-  
+
 
   function goNext(finaldata) {
     const missingFields = validation(finaldata);

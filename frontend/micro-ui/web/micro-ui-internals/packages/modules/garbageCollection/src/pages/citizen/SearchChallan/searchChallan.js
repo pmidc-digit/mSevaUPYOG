@@ -75,7 +75,7 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
   }
 
   return (
-    <div style={{ marginTop: "16px" }}>
+    <div className="gc-style-d265a6b9b9">
       {/* <FormComposer
         onSubmit={onChallanSearch}
         noBoxShadow
@@ -137,14 +137,14 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
         )}
         <CardLabel>{`${t("UC_SEARCH_MOBILE_NO_LABEL")}`}</CardLabel>
         <div className="field-container">
-          <span className="employee-card-input employee-card-input--front" style={{ marginTop: "-1px" }}>
+          <span className="employee-card-input employee-card-input--front gc-style-ca9524c49a" >
             +91
           </span>
           <TextInput
             type={"mobileNumber"}
             t={t}
             isMandatory={false}
-            style={{maxWidth:"500px"}}
+            className="gc-style-72fca94264"
             optionKey="i18nKey"
             name="mobileNumber"
             value={mobileNumber}

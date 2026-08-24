@@ -56,7 +56,7 @@ function BPADocuments({
   if (tableSafe) {
     if (!documents || documents.length === 0) {
       // Single element (text) to keep table alignment
-      return <span style={{ color: "#505A5F" }}>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</span>;
+      return <span className="obps-page-components-bpadocuments--style-1">{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</span>;
     }
 
     // Use single inline span (no nested block-level elements)
@@ -64,7 +64,7 @@ function BPADocuments({
       ? t(`BPAREG_HEADER_${stringReplaceAll(Code?.toUpperCase(), ".", "_")}`)
       : t(Code);
 
-    return <span style={{ color: "#333" }}>{label}</span>;
+    return <span className="obps-page-components-bpadocuments--style-2">{label}</span>;
   }
 
   // Non-table (detailed) mode: render clickable icons / links (original behaviour)
@@ -74,7 +74,7 @@ function BPADocuments({
 
   return (
     <React.Fragment>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
+      <div className="obps-page-components-bpadocuments--style-3">
         {documents.map((document, idx) => {
           const documentLink = pdfDownloadLink(data?.pdfFiles, document?.fileStoreId) || "#";
           const displayName = document?.fileName
@@ -89,27 +89,13 @@ function BPADocuments({
               href={documentLink}
               target="_blank"
               rel="noreferrer"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                textDecoration: "none",
-               
-                marginRight: "10px",
-                color: "#505A5F",
-              }}
+              className="obps-page-components-bpadocuments--style-4"
             >
-         
+
 
               {/* File name / label */}
               <span
-                style={{
-                  marginTop: "8px",
-                  textAlign: "center",
-                  fontSize: "12px",
-                  color: "#505A5F",
-                  wordBreak: "break-word",
-                }}
+                className="obps-page-components-bpadocuments--style-5"
                 title={displayName}
               >
                 {displayName}

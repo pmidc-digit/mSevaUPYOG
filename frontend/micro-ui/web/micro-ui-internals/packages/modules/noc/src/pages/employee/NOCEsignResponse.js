@@ -48,7 +48,7 @@ const NOCEsignResponse = () => {
 
       mutation.mutateAsync({ Noc: updatedApplication })
         .then(() => {
-         
+
           setLoading(false);
 
           // 🔹 Show success toast
@@ -101,10 +101,10 @@ const NOCEsignResponse = () => {
           message={t("NOC_APPLICATION_ESIGN_SUCCESS_HEADER")}
           info={t(`${stringReplaceAll(data?.resData?.Noc?.[0]?.nocType, ".", "_")}_APPLICATION_NUMBER`)}
           // successful={!!fileStoreId}
-          style={{ padding: "10px" }}
+          className="noc-pages-employee-nocesign-response--style-1"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
-        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+        <div className="noc-pages-employee-nocesign-response--style-2">
           <p>{applicationNo}</p>
           {loading ? (
             <p>{t("E-Sign in Progress. Kindly Wait...")}</p>

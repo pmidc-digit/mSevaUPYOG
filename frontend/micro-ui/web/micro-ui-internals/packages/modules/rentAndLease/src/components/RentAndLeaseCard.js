@@ -21,7 +21,7 @@ const RentAndLeaseCard = () => {
       // {
       //     label: t(""),
       //     link: `/digit-ui/employee/receipts/inbox`
-      // }  
+      // }
     ],
     links: [
       {

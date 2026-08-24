@@ -41,7 +41,7 @@ const NOCDetails = ({ t, config, onSelect, userType, formData, setError: setForm
         if (pdfDetails?.pdfFiles?.length > 0) {
             pdfDetails?.pdfFiles?.forEach(resDoc => resDoc.title = resDoc?.documentType);
             setBeforeUploadNocDocuments(pdfDetails?.pdfFiles);
-        } 
+        }
     }, [pdfDetails?.pdfFiles]);
 
     useEffect(() => {
@@ -114,7 +114,7 @@ const NOCDetails = ({ t, config, onSelect, userType, formData, setError: setForm
         nocDocumentStep = { ...nocDocument, nocDocuments: nocDocuments, NocDetails: nocDatils, nocTaxDocuments: nocTaxDocuments };
         onSelect(config.key, nocDocumentStep);
     };
-    const onSkip = () =>{ 
+    const onSkip = () =>{
         let nocDocument = formData.nocDocuments;
         let nocDocumentStep;
         nocDocumentStep = { ...nocDocument, nocDocuments: nocDocuments, NocDetails: nocDatils, nocTaxDocuments: nocTaxDocuments };
@@ -249,11 +249,11 @@ function SelectDocument({
 
 
     return (
-        <div style={{ border: "1px solid #D6D5D4", padding: "16px 8px 16px 8px", background: "#FAFAFA", borderRadius: "5px", marginBottom: "24px", marginTop:"5px" }}>
+        <div className="obps-page-components-nocdetails--style-1">
             <div>
-                <h1 style={{ color: "#0B0C0C", lineHeight: "37px", fontWeight: "700", fontSize: "32px", fontFamily: "Roboto Condensed", paddingBottom: "24px" }}>{t(`BPA_${doc?.nocType}_HEADER`)}</h1>
-                <div style={{ display: "flex", paddingBottom: "24px" }}>
-                    <h1 style={{ color: "#0B0C0C", lineHeight: "19px", fontWeight: "700", fontSize: "16px", fontFamily: "Roboto", marginRight: "10px" }}>{t(`BPA_${doc?.nocType}_LABEL`)}</h1>
+                <h1 className="obps-page-components-nocdetails--style-2">{t(`BPA_${doc?.nocType}_HEADER`)}</h1>
+                <div className="obps-page-components-nocdetails--style-3">
+                    <h1 className="obps-page-components-nocdetails--style-4">{t(`BPA_${doc?.nocType}_LABEL`)}</h1>
                     <h1>{doc?.additionalDetails?.appNumberLink}</h1>
                 </div>
             </div>

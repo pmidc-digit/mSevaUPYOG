@@ -98,16 +98,6 @@ export const ExistingBookingDetails = ({ onSubmit, setExistingDataSet, Searchdat
   }
 
   const filteredApplications = data?.bookingApplication || [];
-  const applicationContainerStyle = {
-    padding: "10px",
-    margin: "10px 0",
-    border: "1px solid #ccc",
-    transition: "background-color 0.3s ease, box-shadow 0.3s ease",
-  };
-
-  const applicationContainerHoverStyle = {
-    boxShadow: "1px 4px 4px 7px rgba(0, 0, 0, 0.5)", // Black shadow with 50% opacity
-  };
   return (
     <React.Fragment>
       <div>
@@ -115,15 +105,7 @@ export const ExistingBookingDetails = ({ onSubmit, setExistingDataSet, Searchdat
           filteredApplications.map((application, index) => (
             <div key={index}>
               <Card
-                style={{ ...applicationContainerStyle, cursor: "pointer" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = applicationContainerHoverStyle.backgroundColor;
-                  e.currentTarget.style.boxShadow = applicationContainerHoverStyle.boxShadow;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "";
-                  e.currentTarget.style.boxShadow = "";
-                }}
+                className="ads-existing-booking__application"
                 onClick={() => {
                   // Trigger the setchbData function with the clicked application data
                   setchbData(application);
@@ -136,9 +118,13 @@ export const ExistingBookingDetails = ({ onSubmit, setExistingDataSet, Searchdat
             </div>
           ))}
         {filteredApplications.length === 0 && !isLoading && (
-          <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("ADS_NO_APPLICATION_FOUND_MSG")}</p>
+          <p className="ads-components-existing-booking-details--style-1">{t("ADS_NO_APPLICATION_FOUND_MSG")}</p>
         )}
       </div>
     </React.Fragment>
   );
 };
+
+/*
+Black shadow with 50% opacity
+*/

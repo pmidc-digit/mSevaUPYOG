@@ -214,7 +214,6 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
       //           />
       //           {isMenuOpen && (
       //             <div
-      //               style={{
       //                 position: "absolute",
       //                 backgroundColor: "white",
       //                 border: "1px solid #ccc",
@@ -223,27 +222,10 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
       //                 zIndex: 1000,
       //               }}
       //             >
-      //               {/* Action for Cancel */}
-      //               {application?.bookingStatus === "BOOKED" && (
-      //                 <div
-      //                   onClick={handleCancel}
-      //                   style={{
-      //                     display: "block",
-      //                     padding: "8px",
-      //                     textDecoration: "none",
-      //                     color: "black",
-      //                     cursor: "pointer",
-      //                   }}
-      //                 >
-      //                   {t("ADS_CANCEL")}
-      //                 </div>
-      //               )}
-
-      //               {/* Action for Collect Payment */}
+      //
       //               {application?.bookingStatus !== "BOOKED" && (
       //                 <div
       //                   onClick={() => handleMakePayment()}
-      //                   style={{
       //                     display: "block",
       //                     padding: "8px",
       //                     textDecoration: "none",
@@ -297,9 +279,7 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
     <React.Fragment>
       <div>
         <Header>{t("ADS_SEARCH_BOOKINGS")}</Header>
-        {/* <Card className={"card-search-heading"}>
-          <span style={{ color: "#505A5F" }}>{t("Provide at least one parameter to search for an application")}</span>
-        </Card> */}
+
         <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit}>
           <SearchField>
             <label>{t("ADS_BOOKING_NO")}</label>
@@ -392,7 +372,7 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
             {/** to do */}
             <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
             <p
-              style={{ marginTop: "10px" }}
+              className="ads-components-search-application--style-1"
               onClick={() => {
                 reset({
                   bookingNo: "",
@@ -416,11 +396,11 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
           </SearchField>
         </SearchForm>
         {!isLoading && data?.display ? (
-          <Card style={{ marginTop: 20 }}>
+          <Card className="ads-components-search-application--style-2">
             {t(data.display)
               .split("\\n")
               .map((text, index) => (
-                <p key={index} style={{ textAlign: "center" }}>
+                <p key={index} className="ads-components-search-application--style-3">
                   {text}
                 </p>
               ))}
@@ -466,3 +446,15 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
 };
 
 export default ADSSearchApplication;
+
+// style={{
+// {/* Action for Cancel */}
+// {application?.bookingStatus === "BOOKED" && (
+// onClick={handleCancel}
+// style={{
+// {t("ADS_CANCEL")}
+// {/* Action for Collect Payment */}
+// style={{
+// <Card className={"card-search-heading"}>
+//   <span style={{ color: "#505A5F" }}>{t("Provide at least one parameter to search for an application")}</span>
+// </Card>

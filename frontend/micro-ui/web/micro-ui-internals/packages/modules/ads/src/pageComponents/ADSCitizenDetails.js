@@ -105,8 +105,8 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData, value = fo
     <React.Fragment>
       {window.location.href.includes("/citizen") ? <Timeline currentStep={1} /> : null}
       <Card>
-        <div style={{ position: "relative" }}>
-          <CardSubHeader style={{ position: "absolute", right: 0 }}>
+        <div className="ads-page-components-adscitizen-details--style-1">
+          <CardSubHeader className="ads-page-components-adscitizen-details--style-2">
             <TimerValues
               timerValues={value?.existingDataSet?.timervalue?.timervalue}
               SlotSearchData={value?.cartDetails}
@@ -117,13 +117,13 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData, value = fo
         </div>
       </Card>
       <form className="employeeCard" onSubmit={handleSubmit(onSubmit)}>
-        <div className="card" style={{width: "100%"}}>
+        <div className="card ads-page-components-adscitizen-details--style-3" >
           {/* Applicant Name */}
 
-          
+
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("ADS_APPLICANT_NAME")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("ADS_APPLICANT_NAME")}`} <span className="ads-page-components-adscitizen-details--style-4">*</span>
             </CardLabel>
             <div className="form-field">
               <Controller
@@ -147,14 +147,14 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData, value = fo
                   />
                 )}
               />
-              {errors?.applicantName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.applicantName.message}</p>}
+              {errors?.applicantName && <p className="ads-page-components-adscitizen-details--style-5">{errors.applicantName.message}</p>}
             </div>
           </LabelFieldPair>
 
           {/* Mobile Number */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("ADS_MOBILE_NUMBER")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("ADS_MOBILE_NUMBER")}`} <span className="ads-page-components-adscitizen-details--style-6">*</span>
             </CardLabel>
             <div className="form-field">
               <Controller
@@ -180,7 +180,7 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData, value = fo
                   />
                 )}
               />
-              {errors?.mobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.mobileNumber.message}</p>}
+              {errors?.mobileNumber && <p className="ads-page-components-adscitizen-details--style-7">{errors.mobileNumber.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -212,14 +212,14 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData, value = fo
                   />
                 )}
               />
-              {errors?.alternateNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.alternateNumber.message}</p>}
+              {errors?.alternateNumber && <p className="ads-page-components-adscitizen-details--style-8">{errors.alternateNumber.message}</p>}
             </div>
           </LabelFieldPair>
 
           {/* Email ID */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("ADS_EMAIL_ID")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("ADS_EMAIL_ID")}`} <span className="ads-page-components-adscitizen-details--style-9">*</span>
             </CardLabel>
             <div className="form-field">
               <Controller
@@ -245,7 +245,7 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData, value = fo
                   />
                 )}
               />
-              {errors?.emailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.emailId.message}</p>}
+              {errors?.emailId && <p className="ads-page-components-adscitizen-details--style-10">{errors.emailId.message}</p>}
             </div>
           </LabelFieldPair>
         </div>

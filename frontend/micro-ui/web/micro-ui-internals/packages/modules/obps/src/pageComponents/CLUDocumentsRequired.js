@@ -64,7 +64,7 @@ const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
 
   const mdmsDocuments = useMemo(() => {
     let docs = data?.CLU?.Documents;
-    
+
     if (!Array.isArray(docs) || docs.length === 0) return [];
 
     return docs.map((item) => {
@@ -401,7 +401,7 @@ function CLUSelectDocument({
       {getLoading && <Loader />}
         <LabelFieldPair>
           <CardLabel className="bpa-doc-required-label">
-            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && <span className="requiredField">*</span>} 
+            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && <span className="requiredField">*</span>}
           </CardLabel>
 
       <div className="bpa-doc-required-field">
@@ -432,7 +432,7 @@ function CLUSelectDocument({
             isRemovable={!doc?.required}
           />
         )}
-            {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO"  ? (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>) : (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>)}
+            {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO"  ? (<p className="obps-page-components-cludocuments-required--style-1">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>) : (<p className="obps-page-components-cludocuments-required--style-2">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>)}
             {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&  <p className="bpa-doc-required-coordinates">Latitude: {geocoordinates.Latitude1} & Longitude: {geocoordinates.Longitude1} </p>}
             {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  (geocoordinates?.Latitude2 && geocoordinates?.Longitude2) &&  <p className="bpa-doc-required-coordinates">Latitude: {geocoordinates.Latitude2} & Longitude: {geocoordinates.Longitude2}</p>}
           </div>

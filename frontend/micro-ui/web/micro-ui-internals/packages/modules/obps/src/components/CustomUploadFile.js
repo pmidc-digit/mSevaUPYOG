@@ -9,8 +9,8 @@ const getRandomId = () => {
 
 const CloseBtn = (props) => {
   return (
-    <div className="close-btn" onClick={props.onClick}>      
-      <Close style={{ fill: "red" }}  />
+    <div className="close-btn" onClick={props.onClick}>
+      <Close className="obps-components-custom-upload-file--style-1"  />
     </div>
   );
 };
@@ -350,7 +350,7 @@ const CustomUploadFile = (props) => {
               <SubmitBar
                 onSubmit={() => routeTo(props.uploadedFile)}
                 label={t("CS_VIEW_DOCUMENT")}
-              />              
+              />
             </div>
           )}
           {(props.uploadedFile && props?.isRemovable) ? (
@@ -424,7 +424,7 @@ const CustomUploadFile = (props) => {
   //             </div>
   //           );
   //         })}
-          
+
   //         {!props.uploadedFile || props.error ? (
   //           <h2 className="file-upload-status">{t("ES_NO_FILE_SELECTED_LABEL")}</h2>
   //         ) : (
@@ -466,14 +466,14 @@ const CustomUploadFile = (props) => {
   //         }}
   //       />
   //     </div>}
-  //     {props?.disabled && (props.uploadedFile ? 
+  //     {props?.disabled && (props.uploadedFile ?
   //     <div className={`upload-file ${user_type === "employee" ? "" : "upload-file-max-width"}`} style={extraStyles?.uploadFile ? extraStyles?.uploadFile : {}}>
   //       <SubmitBar
   //       onSubmit={() => {
   //         routeTo(props.uploadedFile);
   //       }}
   //       label={t("CS_VIEW_DOCUMENT")}
-  //     /> 
+  //     />
   //     </div>
   //     : <div className={`upload-file ${user_type === "employee" ? "" : "upload-file-max-width"} ${props.disabled ? " disabled" : ""}`} style={extraStyles?.uploadFile ? extraStyles?.uploadFile : {}}>
   //       <h2 className="file-upload-status">{t("ES_NO_FILE_SELECTED_LABEL")}</h2>

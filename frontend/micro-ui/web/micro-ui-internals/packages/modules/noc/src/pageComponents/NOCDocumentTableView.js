@@ -5,16 +5,6 @@ import { useTranslation } from "react-i18next";
 const NOCDocumentTableView = ({documents}) => {
   const { t } = useTranslation();
 
-  const srNoStyle = `
-    .noc-document-table-view table tbody tr td:first-child,
-    .noc-document-table-view table thead tr th:first-child {
-      width: 100px !important;
-      max-width: 100px !important;
-      min-width: 100px !important;
-      flex: 0 0 100px !important;
-    }
-  `;
-
   function routeTo(jumpTo) {
     window.open(jumpTo, "_blank");
   }
@@ -23,7 +13,7 @@ const NOCDocumentTableView = ({documents}) => {
         {
           Header: t("SR_NO"),
           accessor: "srNo",
-          Cell: ({ row }) => <div style={{textAlign: "center"}}>{row.index + 1}</div>,
+          Cell: ({ row }) => <div className="noc-page-components-nocdocument-table-view--style-1">{row.index + 1}</div>,
         },
         {
           Header: t("BPA_DOCUMENT_NAME"),
@@ -35,7 +25,7 @@ const NOCDocumentTableView = ({documents}) => {
           accessor: "fileUrl",
           Cell: ({ value }) =>
             value ? (
-              <LinkButton style={{ float: "right", display: "inline" }}
+              <LinkButton className="noc-page-components-nocdocument-table-view--style-2"
                 label={t("View")}
                 onClick={() => routeTo(value)}
               />
@@ -63,7 +53,7 @@ const NOCDocumentTableView = ({documents}) => {
       enabled: documents?.length > 0 ? true : false
     }
   );
-  
+
   const mappedDocuments = documents?.map(doc => {
    const { documentUid, documentType, order } = doc;
    const url = urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
@@ -94,17 +84,16 @@ const NOCDocumentTableView = ({documents}) => {
 
   return (
     <div className='checklist-document-table-wrapper'>
-      <style>{srNoStyle}</style>
       <div className="noc-document-table-view checklist-document-table">
         {documentsData && (
           <Table
-            className="customTable table-border-style"
+            className="customTable table-border-style noc-page-components-nocdocument-table-view--style-3"
             t={t}
             data={documentsData}
             columns={documentsColumns}
             getCellProps={() => ({})}
             getHeaderProps={() => ({})}
-            style={{ width: "100%", tableLayout: "fixed" }}
+
             disableSort={true}
             autoSort={false}
             manualPagination={false}

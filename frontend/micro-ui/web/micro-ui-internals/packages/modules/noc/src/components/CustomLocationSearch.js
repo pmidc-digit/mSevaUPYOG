@@ -218,9 +218,9 @@ const initAutocomplete = (position) => {
         zoom: 15,
         mapTypeId: "roadmap",
         // styles: mapStyles,
-    }); 
+    });
 
-    
+
     let markers = []
     let singlePosition = [position[0]];
 
@@ -259,7 +259,7 @@ const initAutocomplete = (position) => {
     });
 
 
-    
+
 
 };
 
@@ -268,10 +268,10 @@ const CustomLocationSearch = (props) => {
     async function mapScriptCall() {
       const getLatLng = (position) => {
         initAutocomplete(position);
-      };      
+      };
 
-      const initMaps = () => {        
-          getLatLng(props.position);        
+      const initMaps = () => {
+          getLatLng(props.position);
       };
 
       loadGoogleMaps(initMaps);

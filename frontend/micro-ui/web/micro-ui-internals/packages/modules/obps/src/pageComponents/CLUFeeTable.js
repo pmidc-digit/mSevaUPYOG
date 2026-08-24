@@ -43,14 +43,9 @@ export const CLUFeeTable = ({
         if (row.taxHeadCode === "CLU_TOTAL") {
           return (
             <div>
-              <strong style={{ fontSize: "14px" }}>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
+              <strong className="obps-page-components-clufee-table--style-1">₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
               <div
-                style={{
-                  fontSize: "0.85em",
-                  color: "#555",
-                  marginTop: "4px",
-                  lineHeight: "1.3",
-                }}
+                className="obps-page-components-clufee-table--style-2"
               >
                 Rupees {amountToWords(row.grandTotal).replace(" Rupees", "")} only
               </div>
@@ -102,9 +97,9 @@ export const CLUFeeTable = ({
               handleRemarkChange(row.index, e.target.value, row.amount);
             }}
             disabled={false}
-            className="custom-fee-table-textarea"
+            className="custom-fee-table-textarea obps-page-components-clufee-table--style-3"
             placeholder="Enter remarks..."
-            style={{ height: "50px", overflow: "hidden" }}
+
           />
         );
       },
@@ -261,9 +256,9 @@ export const CLUFeeTable = ({
                           handleRemarkChange(row.index, e.target.value, row.amount);
                         }}
                         disabled={readOnly}
-                        className="custom-fee-table-textarea"
+                        className="custom-fee-table-textarea obps-page-components-clufee-table--style-4"
                         placeholder="Enter remarks..."
-                        style={{ overflow: "hidden" }}
+
                       />
                     </div>
                   </div>

@@ -163,26 +163,13 @@ const CHBSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
                 />
                 {isMenuOpen && (
                   <div
-                    style={{
-                      position: "absolute",
-                      backgroundColor: "white",
-                      border: "1px solid #ccc",
-                      borderRadius: "4px",
-                      padding: "8px",
-                      zIndex: 1000,
-                    }}
+                    className="gc-style-c49402ea99"
                   >
                     {/* Action for Cancel */}
                     {application?.bookingStatus === "BOOKED" && (
                       <div
                         onClick={handleCancel}
-                        style={{
-                          display: "block",
-                          padding: "8px",
-                          textDecoration: "none",
-                          color: "black",
-                          cursor: "pointer",
-                        }}
+                        className="gc-style-84ff04ff7a"
                       >
                         {t("CHB_CANCEL")}
                       </div>
@@ -192,13 +179,7 @@ const CHBSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
                     {application?.bookingStatus !== "BOOKED" && (
                       <div
                         onClick={() => handleNavigate(`/digit-ui/employee/payment/collect/chb-services/${row?.original?.bookingNo}`)}
-                        style={{
-                          display: "block",
-                          padding: "8px",
-                          textDecoration: "none",
-                          color: "black",
-                          cursor: "pointer",
-                        }}
+                        className="gc-style-84ff04ff7a"
                       >
                         {t("CHB_COLLECT_PAYMENT")}
                       </div>
@@ -244,7 +225,7 @@ const CHBSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
       <div>
         <Header>{t("CHB_SEARCH_BOOKINGS")}</Header>
         <Card className={"card-search-heading"}>
-          <span style={{ color: "#505A5F" }}>{t("Provide at least one parameter to search for an application")}</span>
+          <span className="gc-style-abca0ca559">{t("Provide at least one parameter to search for an application")}</span>
         </Card>
         <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit}>
           <SearchField>
@@ -334,7 +315,7 @@ const CHBSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
           <SearchField className="submit">
             <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
             <p
-              style={{ marginTop: "10px" }}
+              className="gc-style-54d32d80db"
               onClick={() => {
                 reset({
                   bookingNo: "",
@@ -357,11 +338,11 @@ const CHBSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
           </SearchField>
         </SearchForm>
         {!isLoading && data?.display ? (
-          <Card style={{ marginTop: 20 }}>
+          <Card className="gc-style-5fa693f3d4">
             {t(data.display)
               .split("\\n")
               .map((text, index) => (
-                <p key={index} style={{ textAlign: "center" }}>
+                <p key={index} className="gc-style-72a68ac344">
                   {text}
                 </p>
               ))}

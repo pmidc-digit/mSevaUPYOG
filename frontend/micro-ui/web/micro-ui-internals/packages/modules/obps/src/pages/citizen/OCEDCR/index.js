@@ -66,10 +66,10 @@ const CreateOCEDCR = ({ parentRoute }) => {
     const purchasableFar = data?.ScrutinyDetails?.planDetail?.edcrRequest?.purchasableFar;
     const schemeArea = data?.ScrutinyDetails?.planDetail?.edcrRequest?.schemeArea;
     const coreArea = data?.ScrutinyDetails?.planDetail?.edcrRequest?.coreArea;
-    const additionalDetails = {  
-      roadType: uploadData?.roadType?.name || null,    
+    const additionalDetails = {
+      roadType: uploadData?.roadType?.name || null,
       source: "OBPAS"
-    };  
+    };
 
     edcrRequest = { ...edcrRequest, transactionNumber };
     edcrRequest = { ...edcrRequest, edcrNumber };

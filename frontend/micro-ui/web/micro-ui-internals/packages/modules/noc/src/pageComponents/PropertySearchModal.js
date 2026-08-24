@@ -136,7 +136,7 @@ export const PropertySearchModal = ({
             onPropertySelect(selectedProperty);
             closeModal();
           }}
-          style={{ width: "100px" }}
+          className="noc-page-components-property-search-modal--style-1"
         />
       ),
     },
@@ -233,17 +233,7 @@ export const PropertySearchModal = ({
       >
         <LabelFieldPair>
           <div
-            className="field ndc_property_search"
-            style={{
-              display: "flex",
-              gap: "16px",
-              width: "100%",
-              ...(isMobile
-                ? {
-                    flexDirection: "column",
-                  }
-                : {}),
-            }}
+            className={["field", "ndc_property_search", "noc-property-search-modal__field", isMobile && "noc-property-search-modal__field--mobile"].filter(Boolean).join(" ")}
             ref={myElementRef}
             id="search-property-field"
           >
@@ -283,7 +273,7 @@ export const PropertySearchModal = ({
               placeholder={t("BPA_LOC_MOHALLA_LABEL")}
             />
             {!isSearchClicked && (
-              <button className="submit-bar" type="button" style={{ color: "white", width: "100%", maxWidth: "100px" }} onClick={searchProperty}>
+              <button className="submit-bar noc-page-components-property-search-modal--style-2" type="button"  onClick={searchProperty}>
                 {`${t("PT_SEARCH")}`}
               </button>
             )}

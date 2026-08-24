@@ -35,27 +35,27 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
     } else if (!city.code)
     {
       return alert("Please Provide City");
-    }
-     else {
+    } else
+    {
       history.push(
         `/digit-ui/citizen/mcollect/search-results?mobileNumber=${mobileNumber}&challanNo=${challanNo}&Servicecategory=${
-          Servicecateogry ? Servicecateogry.code.replace("BILLINGSERVICE_BUSINESSSERVICE_","") : ""
-        }&tenantId=${city.code}`
+        Servicecateogry ? Servicecateogry.code.replace("BILLINGSERVICE_BUSINESSSERVICE_", "") : ""}&tenantId=${
+        city.code}`
       );
     }
   };
   let SCMenu = [];
   Menu &&
-    Menu.map((searchcat) => {
-      if (searchcat.billGineiURL) {
-        SCMenu.push({ i18nKey: `${searchcat.i18nKey.toUpperCase().replaceAll(".", "_")}`, code: searchcat.i18nKey });
-      }
-    });
+  Menu.map((searchcat) => {
+    if (searchcat.billGineiURL) {
+      SCMenu.push({ i18nKey: `${searchcat.i18nKey.toUpperCase().replaceAll(".", "_")}`, code: searchcat.i18nKey });
+    }
+  });
 
   function setMobileNo(e) {
-    setmobileNumberError(null)
+    setmobileNumberError(null);
     let validation = "^\\d{10}$";
-    if(!e.target.value.match(validation))
+    if (!e.target.value.match(validation))
     {
       setmobileNumberError("CORE_COMMON_PHONENO_INVALIDMSG");
     }
@@ -75,87 +75,87 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
   }
 
   return (
-    <div style={{ marginTop: "16px" }}>
+    <div className="challan-generation-style-8a359a76eb">
       {/* <FormComposer
-        onSubmit={onChallanSearch}
-        noBoxShadow
-        inline
-        submitInForm
-        config={config}
-        label={propsConfig.texts.submitButtonLabel}
-        heading={propsConfig.texts.header}
-        text={propsConfig.texts.text}
-        cardStyle={{ margin: "auto" }}
-        headingStyle={{ fontSize: "32px", marginBottom: "16px" }}
-      > */}
+         onSubmit={onChallanSearch}
+         noBoxShadow
+         inline
+         submitInForm
+         config={config}
+         label={propsConfig.texts.submitButtonLabel}
+         heading={propsConfig.texts.header}
+         text={propsConfig.texts.text}
+         cardStyle={{ margin: "auto" }}
+         headingStyle={{ fontSize: "32px", marginBottom: "16px" }}
+        > */}
       <FormStep
         config={propsConfig}
         label={propsConfig.texts.submitButtonLabel}
         heading={propsConfig.texts.header}
         text={propsConfig.texts.text}
-        cardStyle={{ margin: "auto",maxWidth:"960px" }}
+        cardStyle={{ margin: "auto", maxWidth: "960px" }}
         headingStyle={{ fontSize: "32px", marginBottom: "16px" }}
         onSelect={onChallanSearch}
         componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
         isDisabled={!Servicecateogry || !city.code}
         forcedError={t(mobileNumberError)}
         //onSkip={onSkip}
-        t={t}
-      >
+        t={t}>
+
         <CardLabel>{`${t("UC_CITY_LABEL")}*`}</CardLabel>
         <RadioOrSelect
-             className="form-field"
-             isMandatory={true}
-              t={t}
-              optionKey="code"
-              name="City"
-              options={allCities}
-              value={city}
-              selectedOption={city}
-              onSelect={selectCity}
-              {...(validation = {
-                isRequired: true,
-                title: t("UC_CITY_MANDATORY"),
-              })}
-          />
+          className="form-field"
+          isMandatory={true}
+          t={t}
+          optionKey="code"
+          name="City"
+          options={allCities}
+          value={city}
+          selectedOption={city}
+          onSelect={selectCity}
+          {...validation = {
+            isRequired: true,
+            title: t("UC_CITY_MANDATORY")
+          }} />
+
         <CardLabel>{`${t("UC_SERVICE_CATEGORY_LABEL")}*`}</CardLabel>
-        {Menu && (
-          <RadioOrSelect
-            t={t}
-            optionKey="i18nKey"
-            name="Servicecategory"
-            options={SCMenu}
-            value={Servicecateogry}
-            selectedOption={Servicecateogry}
-            onSelect={setServicecateogryvalue}
-            //labelKey="PT_RELATION"
-            {...(validation = {
-              isRequired: true,
-              title: t("please enter service category"),
-            })}
-          />
-        )}
+        {Menu &&
+        <RadioOrSelect
+          t={t}
+          optionKey="i18nKey"
+          name="Servicecategory"
+          options={SCMenu}
+          value={Servicecateogry}
+          selectedOption={Servicecateogry}
+          onSelect={setServicecateogryvalue}
+          //labelKey="PT_RELATION"
+          {...validation = {
+            isRequired: true,
+            title: t("please enter service category")
+          }} />
+
+        }
         <CardLabel>{`${t("UC_SEARCH_MOBILE_NO_LABEL")}`}</CardLabel>
         <div className="field-container">
-          <span className="employee-card-input employee-card-input--front" style={{ marginTop: "-1px" }}>
+          <span className="employee-card-input employee-card-input--front challan-generation-style-ce105fd28a">
             +91
           </span>
           <TextInput
             type={"mobileNumber"}
             t={t}
             isMandatory={false}
-            style={{maxWidth:"500px"}}
+
             optionKey="i18nKey"
             name="mobileNumber"
             value={mobileNumber}
             onChange={setMobileNo}
-            {...(validation = {
+            {...validation = {
               isRequired: false,
               pattern: "[6-9]{1}[0-9]{9}",
               type: "tel",
-              title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
-            })}
-          />
+              title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID")
+            }} className="challan-generation-style-5c0843b73b" />
+
         </div>
         <CardLabel>{`${t("UC_CHALLAN_NO")}`}</CardLabel>
         <TextInput
@@ -171,19 +171,19 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
             //pattern: "^[a-zA-Z-.`' ]*$",
             type: "any",
             title: t("wrong Challan No."),
-          })} */
-        />
+          })} */ />
+
       </FormStep>
-    </div>
-  );
+    </div>);
+
 };
 
 SearchChallan.propTypes = {
-  loginParams: PropTypes.any,
+  loginParams: PropTypes.any
 };
 
 SearchChallan.defaultProps = {
-  loginParams: null,
+  loginParams: null
 };
 
 export default SearchChallan;

@@ -181,7 +181,7 @@ useEffect(()=>{
     if (approvedColony?.code === "NO" && !NocNumber) {
       newErrors.NocNumber = t("NOC Number is required")
     }
-    
+
     if(approvedColony?.code === "NO" && !uploadedFile){
       newErrors.NocDocument = t("NOC Document is required")
     }
@@ -200,7 +200,7 @@ useEffect(()=>{
     }else if(approvedColony?.code === "NO" && NocNumber && nocULBType && !nameRegex.test(nocULBType.trim())){
       newErrors.nocULBType = t("ULB Type is Invalid")
     }
-    
+
     if(approvedColony?.code === "NO" && NocNumber && nocApprovedOn.trim() === ""){
       newErrors.nocApprovedOn = t("Issue Date is Required")
     }
@@ -220,9 +220,9 @@ useEffect(()=>{
     if (masterPlan?.code === "YES" && !use) {
       newErrors.use = t("Use is required")
     }
-const anyYes = 
-  ecbcElectricalLoad?.code === "YES" || 
-  ecbcDemandLoad?.code === "YES" || 
+const anyYes =
+  ecbcElectricalLoad?.code === "YES" ||
+  ecbcDemandLoad?.code === "YES" ||
   ecbcAirConditioned?.code === "YES";
 
 if (anyYes && !ecbcCertificateFile) {
@@ -274,7 +274,7 @@ if (anyYes && !ecbcCertificateFile) {
     },
   )
 
- 
+
   useEffect(() => {
     ;(async () => {
       if (file && file?.type) {
@@ -309,7 +309,7 @@ if (anyYes && !ecbcCertificateFile) {
           setErrors((prev) => ({ ...prev, greenuploadedFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           setLoader(true);
-          try {            
+          try {
             const response = await Digit.UploadServices.Filestorage(
               "property-upload",
               files,
@@ -506,7 +506,7 @@ if (anyYes && !ecbcCertificateFile) {
     }, [use, currentStepData?.createdResponse?.additionalDetails?.use, commonmasterFieldsLoading, commonmasterFields]);
 
     // ✅ rating
-    
+
 
     // ✅ ECBC fields
     useEffect(() => {
@@ -889,7 +889,7 @@ console.log("appDate", nocApprovedOn);
       setLoader(false);
       console.error("Sanction Letter download error:", error);
     }
-    
+
   }
 
   async function onClick(e) {
@@ -922,7 +922,7 @@ console.log("appDate", nocApprovedOn);
           console.log("FetchedDate",nocObject?.nocDetails?.additionalDetails?.approvedOn, jsDate1);
           if (jsDate1 <= today) {
             setNocApprovedOn(`${y1}-${m1}-${d1}`)
-          }          
+          }
         }
         setIsNOCFetched({ 
           status: true,
@@ -955,7 +955,7 @@ console.log("appDate", nocApprovedOn);
       setLoader(false);
       alert(t("NOC NOT FOUND"));
       return;
-    }    
+    }
   }
 
   function selectfiles(e) {
@@ -995,8 +995,8 @@ console.log("appDate", nocApprovedOn);
         } else {
           alert(t("CS_FILE_FETCH_ERROR"));
         }
-      } else {        
-        alert(t("CS_FILE_FETCH_ERROR"));        
+      } else {
+        alert(t("CS_FILE_FETCH_ERROR"));
       }
     } catch (e) {
       setLoader(false);
@@ -1063,7 +1063,7 @@ console.log("appDate", nocApprovedOn);
         ulbType: nocULBType,
         ulbName: nocULBName,
         approvedOn: nocApprovedOn,
-      },      
+      },
       uploadedFile, // file object
       greenuploadedFile, // file object
       ecbcElectricalLoad: ecbcElectricalLoad?.code,
@@ -1118,7 +1118,7 @@ console.log("appDate", nocApprovedOn);
   }
 
 
-  
+
     // ---------------- UI Classes are defined in BPANewBuildingdetails.css ----------------
 
     const renderLabel = (label, value) => (
@@ -1261,7 +1261,7 @@ console.log("appDate", nocApprovedOn);
                 })}
                 disabled={!isNOCFetched?.status || isNOCFetched?.applicantOwnerOrFirmName}
             />
-            {errors.applicantOwnerOrFirmName && <ErrorMessage error={errors.applicantOwnerOrFirmName} />}              
+            {errors.applicantOwnerOrFirmName && <ErrorMessage error={errors.applicantOwnerOrFirmName} />}
             <CardLabel>{`${t("BPA_NOC_ULB_NAME")} `}<span className="requiredField">*</span></CardLabel>
             <TextInput
                 t={t}
@@ -1278,7 +1278,7 @@ console.log("appDate", nocApprovedOn);
                 })}
                 disabled={!isNOCFetched?.status || isNOCFetched?.nocULBName}
             />
-            {errors.nocULBName && <ErrorMessage error={errors.nocULBName} />}              
+            {errors.nocULBName && <ErrorMessage error={errors.nocULBName} />}
             <CardLabel>{`${t("BPA_NOC_ULB_TYPE")} `}<span className="requiredField">*</span></CardLabel>
             <TextInput
                 t={t}
@@ -1298,7 +1298,7 @@ console.log("appDate", nocApprovedOn);
             {errors.nocULBType && <ErrorMessage error={errors.nocULBType} />}
 
               <div>
-                <CardLabel>{t("BPA_NOC_APPROVED_ON")}<span className="requiredField">*</span></CardLabel> 
+                <CardLabel>{t("BPA_NOC_APPROVED_ON")}<span className="requiredField">*</span></CardLabel>
                 <DatePicker
                   date={nocApprovedOn}
                   onChange={handleApproveDateChange}
@@ -1308,9 +1308,9 @@ console.log("appDate", nocApprovedOn);
                   disabled={!isNOCFetched?.status || isNOCFetched?.nocApprovedOn}
                 />
                 {errors.nocApprovedOn && <ErrorMessage error={errors.nocApprovedOn} />}
-              </div>         
-            
-            <div style={{marginBottom: "15px"}}>
+              </div>
+
+            <div className="obps-page-components-bpanew-buildingdetails--style-1">
             <CustomUploadFile
               id={"noc-doc"}
               onUpload={selectfile}
@@ -1325,7 +1325,7 @@ console.log("appDate", nocApprovedOn);
               customOpen = {getUrlForDocumentView}
               disabled={true}
             />
-            <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+            <p className="obps-page-components-bpanew-buildingdetails--style-2">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             {errors.NocDocument && <ErrorMessage error={errors.NocDocument} />}
             </div>
           </React.Fragment>
@@ -1466,7 +1466,7 @@ console.log("appDate", nocApprovedOn);
               error={errors.files}
               accept="image/*,.pdf"
             />
-            <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+            <p className="obps-page-components-bpanew-buildingdetails--style-3">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             {errors.greenuploadedFile && <ErrorMessage error={errors.greenuploadedFile} />}
             <br />
 
@@ -1603,14 +1603,14 @@ console.log("appDate", nocApprovedOn);
               // message={ecbcCertificateFileObj?.name || "Choose a file"}
               message={ecbcCertificateFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
             />
-            <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+            <p className="obps-page-components-bpanew-buildingdetails--style-4">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             {errors.ecbcCertificateFile && (
               <ErrorMessage error={errors.ecbcCertificateFile} />
             )}
           </div>
         )}
       </div>
-    </FormStep>    
+    </FormStep>
 
     <ActionBar>
         <SubmitBar label="Back" className="submit-back" onSubmit={onGoBack} />

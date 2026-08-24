@@ -76,7 +76,7 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     roadType,
     selectRoadType
   } = useEDCRForm({ formData });
-  let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId(); 
+  let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
   const { data: cities } = Digit.Hooks.useTenants();
 
   const stateId = Digit.ULBService.getStateId();
@@ -198,7 +198,7 @@ useEffect(() => {
     return <Loader />;
   }
   // if(isSubmitBtnDisable){
-  //   return <div>      
+  //   return <div>
   //       <div className="loader-message">{t("EDCR_SCRUTINY_LOADING_MESSAGE")}</div>
   //     </div>
   // }
@@ -217,7 +217,7 @@ useEffect(() => {
 
 
 
-      <div  
+      <div
       onKeyDown={(e) => {
       if (e.key === "Enter") {
         e.preventDefault();
@@ -226,7 +226,7 @@ useEffect(() => {
     ref={containerRef}
     >
 
-      
+
       <FormStep  config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={handleSubmit} isDisabled={!isFormValid() || nameError} t={t}>
          <CardLabelError>{nameError}</CardLabelError>
         <CardLabel>{t("EDCR_APPLICANT_NAME")}</CardLabel>
@@ -234,8 +234,8 @@ useEffect(() => {
         t={t}
         isMandatory={true}
         type="text"
-        name="applicantName" 
-        value={name} 
+        name="applicantName"
+        value={name}
         // onChange={(e) => setName(e.target.value)}
         onChange={(e) => {
           const value = e.target.value;
@@ -249,8 +249,8 @@ useEffect(() => {
         }}
         />
         {/* <CardLabelError style={{...errorStyle, color:"black"}}>{"*"+t("EDCR_APPLICANT_NAME_DISCLAIMER")}</CardLabelError> */}
-  
-        
+
+
 
         <CardLabel>{t("EDCR_ULB_NAME")}</CardLabel>
         <Dropdown
@@ -300,7 +300,7 @@ useEffect(() => {
                 <CardLabel>{t("EDCR_SCRUTINY_SCHEME_UPLOAD_LAYOUT")}</CardLabel>
                 <UploadFile
                   id={"edcr-layout"}
-                 
+
                   onUpload={handleLayoutUpload}
                   onDelete={() => {
                     setLayoutFile(null);
@@ -320,12 +320,12 @@ useEffect(() => {
             <CardLabel>{t("EDCR_SCRUTINY_CLU_APPROVED")}</CardLabel>
             <Dropdown t={t} isMandatory={true} option={cluApproveOptions} selected={cluApprove} optionKey="value" select={setCluApproved} />
 
-          
+
               <React.Fragment>
                 <CardLabel>{t("EDCR_IS_CORE_AREA")}</CardLabel>
                 <Dropdown t={t} isMandatory={true} option={coreAreaOptions} selected={coreArea} optionKey="value" select={setcoreArea} />
               </React.Fragment>
-          
+
           </React.Fragment>
         )}
 
@@ -335,7 +335,7 @@ useEffect(() => {
                 <Dropdown t={t} isMandatory={true} option={purchasableFarOptions} selected={purchasableFar} optionKey="value" select={setPurchasableFar} />
               </React.Fragment>
 
-        
+
           <React.Fragment>
             <CardLabel>{t("BPA_ROAD_TYPE")}</CardLabel>
             <Dropdown t={t} isMandatory={true} option={roadTypeOptions} selected={roadType} optionKey="name" select={selectRoadType} />
@@ -346,7 +346,7 @@ useEffect(() => {
             <CardLabel>{t("EDCR_UPLOAD_DXF_FILE")}</CardLabel>
             <UploadFile
               id={"edcr-doc"}
-             
+
               onUpload={handleDXFUpload}
               accept=".dxf"
               onDelete={() => {
@@ -361,7 +361,7 @@ useEffect(() => {
             <p>{t("EDCR_ONLY_DXF_FILE")}</p>
           </React.Fragment>
         )}
-        
+
       </FormStep>
       </div>
     </React.Fragment>

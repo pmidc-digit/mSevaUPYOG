@@ -12,7 +12,7 @@ const createOwnerDetails = () => ({
   fatherName: "",
   emailId: "",
   alternateNumber: "",
-  key: Date.now(),
+  key: Date.now()
 });
 
 const PTROwnerDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
@@ -39,16 +39,16 @@ const PTROwnerDetails = ({ config, onSelect, userType, formData, setError, formS
     t,
     setError,
     clearErrors,
-    config,
+    config
   };
 
   return (
     <React.Fragment>
-      {owners.map((owner, index) => (
-        <OwnerForm key={owner.key} index={index} owner={owner} {...commonProps} />
-      ))}
-    </React.Fragment>
-  );
+      {owners.map((owner, index) =>
+      <OwnerForm key={owner.key} index={index} owner={owner} {...commonProps} />
+      )}
+    </React.Fragment>);
+
 };
 
 const OwnerForm = (_props) => {
@@ -70,23 +70,21 @@ const OwnerForm = (_props) => {
     if (!_.isEqual(part, formValue)) {
       setPart({ ...formValue });
 
-      setOwners((prev) => prev.map((o) => (o.key && o.key === owner.key ? { ...o, ...formValue } : { ...o })));
+      setOwners((prev) => prev.map((o) => o.key && o.key === owner.key ? { ...o, ...formValue } : { ...o }));
       trigger();
     }
   }, [formValue]);
 
   useEffect(() => {
-    if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) setError(config.key, { type: errors });
-    else if (!Object.keys(errors).length && formState.errors[config.key]) clearErrors(config.key);
+    if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) setError(config.key, { type: errors });else
+    if (!Object.keys(errors).length && formState.errors[config.key]) clearErrors(config.key);
   }, [errors]);
-
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: "16px" }}>
-        <div style={{ border: "1px solid #E3E3E3", padding: "16px", marginTop: "8px" }}>
-          {allOwners?.length > 2 ? <div style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}>X</div> : null}
+      <div className="ptr-style-87c136dfd0">
+        <div className="ptr-style-cbc09ef471">
+          {allOwners?.length > 2 ? <div className="ptr-style-82c24e8737">X</div> : null}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("REPORT_FSM_RESULT_APPLICANTNAME") + " *"}</CardLabel>
@@ -97,27 +95,27 @@ const OwnerForm = (_props) => {
                 defaultValue={owner?.applicantName}
                 rules={{
                   required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                  validate: { pattern: (val) => (/^[a-zA-Z\s]*$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) },
+                  validate: { pattern: (val) => /^[a-zA-Z\s]*$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG") }
                 }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    // disable={isEditScreen}
-                    autoFocus={focusIndex.index === owner?.key && focusIndex.type === "applicantName"}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setFocusIndex({ index: owner.key, type: "applicantName" });
-                    }}
-                    onBlur={(e) => {
-                      setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
+                render={(props) =>
+                <TextInput
+                  value={props.value}
+                  // disable={isEditScreen}
+                  autoFocus={focusIndex.index === owner?.key && focusIndex.type === "applicantName"}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                    setFocusIndex({ index: owner.key, type: "applicantName" });
+                  }}
+                  onBlur={(e) => {
+                    setFocusIndex({ index: -1 });
+                    props.onBlur(e);
+                  }} />
+
+                } />
+
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.applicantName ? errors?.applicantName?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-form-field-error">{localFormState.touched.applicantName ? errors?.applicantName?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_FATHER_HUSBAND_NAME") + " *"}</CardLabel>
@@ -128,27 +126,27 @@ const OwnerForm = (_props) => {
                 defaultValue={owner?.fatherName}
                 rules={{
                   required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                  validate: { pattern: (val) => (/^[a-zA-Z\s]*$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) },
+                  validate: { pattern: (val) => /^[a-zA-Z\s]*$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG") }
                 }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    // disable={isEditScreen}
-                    autoFocus={focusIndex.index === owner?.key && focusIndex.type === "fatherName"}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setFocusIndex({ index: owner.key, type: "fatherName" });
-                    }}
-                    onBlur={(e) => {
-                      setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
+                render={(props) =>
+                <TextInput
+                  value={props.value}
+                  // disable={isEditScreen}
+                  autoFocus={focusIndex.index === owner?.key && focusIndex.type === "fatherName"}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                    setFocusIndex({ index: owner.key, type: "fatherName" });
+                  }}
+                  onBlur={(e) => {
+                    setFocusIndex({ index: -1 });
+                    props.onBlur(e);
+                  }} />
+
+                } />
+
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.fatherName ? errors?.fatherName?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-form-field-error">{localFormState.touched.fatherName ? errors?.fatherName?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PT_FORM3_MOBILE_NUMBER") + " *"}</CardLabel>
@@ -159,25 +157,25 @@ const OwnerForm = (_props) => {
                 defaultValue={owner?.mobileNumber}
                 rules={{
                   required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                  validate: (v) => (/^[6789]\d{9}$/.test(v) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
+                  validate: (v) => /^[6789]\d{9}$/.test(v) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")
                 }}
-                render={(props) => (
-                  <MobileNumber
-                    value={props.value}
-                    // disable={isEditScreen}
-                    autoFocus={focusIndex.index === owner?.key && focusIndex.type === "mobileNumber"}
-                    onChange={(e) => {
-                      props.onChange(e);
-                      setFocusIndex({ index: owner.key, type: "mobileNumber" });
-                    }}
-                    labelStyle={{ marginTop: "unset" }}
-                    onBlur={props.onBlur}
-                  />
-                )}
-              />
+                render={(props) =>
+                <MobileNumber
+                  value={props.value}
+                  // disable={isEditScreen}
+                  autoFocus={focusIndex.index === owner?.key && focusIndex.type === "mobileNumber"}
+                  onChange={(e) => {
+                    props.onChange(e);
+                    setFocusIndex({ index: owner.key, type: "mobileNumber" });
+                  }}
+                  labelStyle={{ marginTop: "unset" }}
+                  onBlur={props.onBlur} />
+
+                } />
+
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-form-field-error">{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_ALT_MOBILE_NUMBER") + " *"}</CardLabel>
@@ -188,25 +186,25 @@ const OwnerForm = (_props) => {
                 defaultValue={owner?.alternateNumber}
                 rules={{
                   required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                  validate: (v) => /^[6789]\d{9}$/.test(v),
+                  validate: (v) => /^[6789]\d{9}$/.test(v)
                 }}
-                render={(props) => (
-                  <MobileNumber
-                    value={props.value}
-                    // disable={isEditScreen}
-                    autoFocus={focusIndex.index === owner?.key && focusIndex.type === "alternateNumber"}
-                    onChange={(e) => {
-                      props.onChange(e);
-                      setFocusIndex({ index: owner.key, type: "alternateNumber" });
-                    }}
-                    labelStyle={{ marginTop: "unset" }}
-                    onBlur={props.onBlur}
-                  />
-                )}
-              />
+                render={(props) =>
+                <MobileNumber
+                  value={props.value}
+                  // disable={isEditScreen}
+                  autoFocus={focusIndex.index === owner?.key && focusIndex.type === "alternateNumber"}
+                  onChange={(e) => {
+                    props.onChange(e);
+                    setFocusIndex({ index: owner.key, type: "alternateNumber" });
+                  }}
+                  labelStyle={{ marginTop: "unset" }}
+                  onBlur={props.onBlur} />
+
+                } />
+
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.alternateNumber ? errors?.alternateNumber?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-form-field-error">{localFormState.touched.alternateNumber ? errors?.alternateNumber?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_EMAIL_ID")}</CardLabel>
@@ -221,37 +219,37 @@ const OwnerForm = (_props) => {
                     const emailRegex = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
                     return emailRegex.test(normalized) || "TL_EMAIL_ID_ERROR_MESSAGE";
-                  },
+                  }
                 }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    // disable={isEditScreen}
-                    autoFocus={focusIndex.index === owner?.key && focusIndex.type === "emailId"}
-                    onChange={(e) => {
-                      props.onChange(e);
-                      setFocusIndex({ index: owner.key, type: "emailId" });
-                    }}
-                    labelStyle={{ marginTop: "unset" }}
-                    onBlur={props.onBlur}
-                  />
-                )}
-              />
+                render={(props) =>
+                <TextInput
+                  value={props.value}
+                  // disable={isEditScreen}
+                  autoFocus={focusIndex.index === owner?.key && focusIndex.type === "emailId"}
+                  onChange={(e) => {
+                    props.onChange(e);
+                    setFocusIndex({ index: owner.key, type: "emailId" });
+                  }}
+                  labelStyle={{ marginTop: "unset" }}
+                  onBlur={props.onBlur} />
+
+                } />
+
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
+          <CardLabelError className="ptr-form-field-error">{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
         </div>
       </div>
-      {showToast?.label && (
-        <Toast
-          label={showToast?.label}
-          onClose={(w) => {
-            setShowToast((x) => null);
-          }}
-        />
-      )}
-    </React.Fragment>
-  );
+      {showToast?.label &&
+      <Toast
+        label={showToast?.label}
+        onClose={(w) => {
+          setShowToast((x) => null);
+        }} />
+
+      }
+    </React.Fragment>);
+
 };
 
 export default PTROwnerDetails;

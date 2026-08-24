@@ -32,13 +32,9 @@ const NewADSStepFormOne = ({ config, onGoNext, onBackClick }) => {
     setError("");
   };
 
-  const isCitizen = typeof window !== "undefined" && window.location?.href?.includes("citizen");
-
   return (
     <React.Fragment>
-      <div className={!isCitizen ? "employeeCard" : ""}>
-        <CHBCitizenOne onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
-      </div>
+      <CHBCitizenOne onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );

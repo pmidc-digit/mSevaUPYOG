@@ -16,7 +16,7 @@ import { formatDate, formatDateForInput } from "../utils";
 
 const CLUSiteDetails = (_props) => {
   let tenantId;
-  
+
   if(window.location.pathname.includes("employee")){
    tenantId = window.localStorage.getItem("Employee.tenant-id");
   }else{
@@ -120,7 +120,7 @@ const CLUSiteDetails = (_props) => {
     if (tenantId && allCities?.length > 0) {
       const defaultCity = allCities.find((city) => city.code === tenantId)?.city?.districtName;
       //console.log("defaultCity==>", defaultCity);
-      
+
       const defaultULB = allCities.find((city) => city.code === tenantId);
      // console.log("defaultULB==>", defaultULB);
 
@@ -202,7 +202,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-1">
             <CardLabel className="card-label-smaller">{t("BPA_PROPOSED_SITE_ADDRESS")}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -235,7 +235,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-2">
             <CardLabel className="card-label-smaller">{`${t("BPA_SITE_WARD_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -268,7 +268,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-3">
             <CardLabel className="card-label-smaller">{`${t("BPA_KHASRA_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -301,7 +301,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-4">
             <CardLabel className="card-label-smaller">{`${t("BPA_KHEWAT_KHATUNI_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -335,7 +335,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-5">
             <CardLabel className="card-label-smaller">{`${t("BPA_HADBAST_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -344,7 +344,7 @@ const CLUSiteDetails = (_props) => {
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   pattern: {
-                  value: /^[0-9]+$/, 
+                  value: /^[0-9]+$/,
                   message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
                   },
                   // minLength: {
@@ -372,7 +372,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-6">
             <CardLabel className="card-label-smaller">{`${t("BPA_SITE_VILLAGE_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -409,7 +409,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-7">
             <CardLabel className="card-label-smaller">{`${t("BPA_SITE_VASIKA_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -442,7 +442,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-8">
             <CardLabel className="card-label-smaller">
               {`${t("BPA_SITE_VASIKA_DATE_LABEL")}`}
               <span className="requiredField">*</span>
@@ -457,7 +457,7 @@ const CLUSiteDetails = (_props) => {
                 render={(props) => (
                   <TextInput
                     type="date"
-                    value={formatDateForInput(props.value)} 
+                    value={formatDateForInput(props.value)}
                     onChange={(e) => {
                       props.onChange(e.target.value);
                     }}
@@ -509,7 +509,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair> */}
 
-           <LabelFieldPair style={{ marginBottom: "20px" }}>
+           <LabelFieldPair className="obps-page-components-clusite-details--style-9">
             <CardLabel className="card-label-smaller">{`${t("BPA_IS_ORIGINAL_CATEGORY_AGRICULTURE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
              <Controller
@@ -533,7 +533,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-10">
             <CardLabel className="card-label-smaller">{`${t("BPA_ROAD_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
             {!isRoadTypeLoading && (
@@ -552,7 +552,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-         {!isZoneListLoading &&  (<LabelFieldPair style={{ marginBottom: "20px" }}>
+         {!isZoneListLoading &&  (<LabelFieldPair className="obps-page-components-clusite-details--style-11">
             <CardLabel className="card-label-smaller">{`${t("BPA_ZONE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
             <Controller
@@ -570,7 +570,7 @@ const CLUSiteDetails = (_props) => {
           </LabelFieldPair>
            )}
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-12">
             <CardLabel className="card-label-smaller">{`${t("BPA_ULB_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             {!isUlbListLoading && (
               <div className="field">
@@ -592,7 +592,7 @@ const CLUSiteDetails = (_props) => {
                     optionKey="name"
                     t={t}
                     disable="true"
-                  />                
+                  />
                 )}
               />
               <p style={errorStyle}>{errors?.ulbName?.message}</p>
@@ -600,7 +600,7 @@ const CLUSiteDetails = (_props) => {
             )}
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-13">
             <CardLabel className="card-label-smaller">{`${t("BPA_ULB_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -623,10 +623,10 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-14">
             <CardLabel className="card-label-smaller">{`${t("BPA_DISTRICT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
-            <Controller 
+            <Controller
               control={control}
               name={"district"}
               rules={{
@@ -650,7 +650,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-15">
             <CardLabel className="card-label-smaller">{`${t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             {!isMdmsLoading && (
               <div className="field">
@@ -677,7 +677,7 @@ const CLUSiteDetails = (_props) => {
             )}
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-16">
             <CardLabel className="card-label-smaller">{`${t("BPA_CORE_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -699,7 +699,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-17">
             <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_STATUS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             {!isBuildingTypeLoading && (
             <div className="field">
@@ -722,10 +722,10 @@ const CLUSiteDetails = (_props) => {
               />
               <p style={errorStyle}>{errors?.buildingStatus?.message}</p>
               </div>
-            )}  
+            )}
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-18">
             <CardLabel className="card-label-smaller">{`${t("BPA_RESTRICTED_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
              <Controller
@@ -749,7 +749,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-19">
             <CardLabel className="card-label-smaller">{`${t("BPA_PROPERTY_UID_LABEL")}`}</CardLabel>
             <div className="field">
               <Controller
@@ -783,7 +783,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-20">
             <CardLabel className="card-label-smaller">{`${t("BPA_IS_SITE_UNDER_MASTER_PLAN_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
              <Controller
@@ -807,7 +807,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-21">
             <CardLabel className="card-label-smaller">{`${t("BPA_NET_TOTAL_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -841,7 +841,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-22">
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -876,7 +876,7 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-23">
             <CardLabel className="card-label-smaller">{`${t("BPA_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -913,7 +913,7 @@ const CLUSiteDetails = (_props) => {
           </LabelFieldPair>
 
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          <LabelFieldPair className="obps-page-components-clusite-details--style-24">
             <CardLabel className="card-label-smaller">{`${t("BPA_ROAD_WIDTH_AT_SITE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller

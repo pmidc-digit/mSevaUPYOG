@@ -39,17 +39,17 @@ const InboxLinks = ({ parentRoute, businessService }) => {
     setLinks(linksToShow);
   }, []);
 
-  const GetLogo = () => (
-    <div className="header" style={{ justifyContent: "flex-start" }}>
+  const GetLogo = () =>
+  <div className="header ral-style-07e09bd50b">
       <span className="logo">
         <PTIcon />
       </span>{" "}
       <span className="text">{t("RAL_TITLE")}</span>
-    </div>
-  );
+    </div>;
+
 
   return (
-    <Card style={{ paddingRight: 0, marginTop: 0 }} className="employeeCard filter inboxLinks">
+    <Card className="employeeCard filter inboxLinks ral-style-aa35c0473f">
       <div className="complaint-links-container">
         {GetLogo()}
         <div className="body">
@@ -57,13 +57,13 @@ const InboxLinks = ({ parentRoute, businessService }) => {
             return (
               <span className="link" key={index}>
                 {hyperlink ? <a href={link}>{t(text)}</a> : <Link to={link}>{t(text)}</Link>}
-              </span>
-            );
+              </span>);
+
           })}
         </div>
       </div>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default InboxLinks;

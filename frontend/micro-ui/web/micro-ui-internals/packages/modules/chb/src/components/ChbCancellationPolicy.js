@@ -72,9 +72,9 @@ const ChbCancellationPolicy = ({ slotDetail }) => {
       .map((line, index) => `${line.trim()}`);
 
     return (
-      <ol style={{ paddingLeft: '20px' }}>
+      <ol className="chb-cancellation-policy__list">
         {policyLines.map((line, index) => (
-          <li key={index} style={{ marginBottom: '10px' }}><CardLabelDesc>{line}</CardLabelDesc></li>
+          <li key={index} className="chb-cancellation-policy__list-item"><CardLabelDesc>{line}</CardLabelDesc></li>
         ))}
       </ol>
     );
@@ -85,22 +85,22 @@ const ChbCancellationPolicy = ({ slotDetail }) => {
   };
   return (
     <div>
-      <CardSubHeader style={{ color: '#a82227', fontSize: '18px'}}>
+      <CardSubHeader className="chb-cancellation-policy__amount-title">
         Total Booking Amount
       </CardSubHeader>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <div style={{ marginLeft: '30px', marginRight: '60px', fontSize: '16px', fontWeight: 'bold' }}>
+      <div className="chb-cancellation-policy__summary">
+        <div className="chb-cancellation-policy__amount">
           Rs {mutation.data?.demands[0]?.demandDetails ? calculateTotalAmount(mutation.data?.demands[0]?.demandDetails) : 'Loading...'} /-
         </div>
         <div 
           onClick={handlePriceBreakupClick} 
-          style={{ cursor: 'pointer', margin: '0 18px', color: '#a82227', fontSize: '20px', textDecoration: 'none' }}
+          className="chb-cancellation-policy__link chb-cancellation-policy__link--price-breakup"
         >
           Estimate Price Breakup
         </div>
         <div 
           onClick={handleCancellationPolicyClick} 
-          style={{ cursor: 'pointer', color: '#a82227', fontSize: '20px', textDecoration: 'none' }}
+          className="chb-cancellation-policy__link"
         >
           Terms and Conditions
         </div>
@@ -108,9 +108,11 @@ const ChbCancellationPolicy = ({ slotDetail }) => {
 
       {showCancellationPolicy && (
         <Modal
-          headerBarMain={<CardSubHeader style={{ color: '#a82227', margin: '25px' }}>Terms and Conditions</CardSubHeader>}
+          headerBarMain={<CardSubHeader className="chb-cancellation-policy__modal-title">Terms and Conditions</CardSubHeader>}
           headerBarEnd={<CloseBtn onClick={handleCancellationPolicyClick} />}
-          popupStyles={{ backgroundColor: "#fff", position: 'relative', maxHeight: '90vh', width: '80%', overflowY: 'auto' }}
+          popupClassName="chb-cancellation-policy__modal chb-cancellation-policy__modal--terms"
+          headerBarClassName="chb-cancellation-policy__modal-header"
+          popupModuleActionBarClassName="chb-cancellation-policy__modal-actions"
           children={
             <div>
               {cancelpolicyData ? (
@@ -118,7 +120,7 @@ const ChbCancellationPolicy = ({ slotDetail }) => {
                   {renderCancellationPolicy(cancelpolicyData[0].termsAndCondition)}
                 </div>
               ) : (
-                <CardLabel style={{ fontSize: '20px' }}>Loading...</CardLabel>
+                <CardLabel className="chb-cancellation-policy__loading-label">Loading...</CardLabel>
               )}
             </div>
           }
@@ -133,33 +135,31 @@ const ChbCancellationPolicy = ({ slotDetail }) => {
           formId="modalForm"
           isDisabled={false}
           hideSubmit={true}  // Ensure submit is hidden
-          style={{}}
-          popupModuleMianStyles={{ padding: "10px" }}
-          headerBarMainStyle={{position: "sticky",top: 0, backgroundColor: "#f5f5f5" }}
           isOBPSFlow={false}
-          popupModuleActionBarStyles={{ display: 'none' }}  // Hide Action Bar
           isOpen={showCancellationPolicy}  // Pass isOpen prop
           onClose={handleCancellationPolicyClick}  // Pass onClose prop
         />
       )}
       {showPriceBreakup && (
         <Modal
-          headerBarMain={<CardSubHeader style={{ color: '#a82227', margin: '25px' }}>Price Breakup</CardSubHeader>}
+          headerBarMain={<CardSubHeader className="chb-cancellation-policy__modal-title">Price Breakup</CardSubHeader>}
           headerBarEnd={<CloseBtn onClick={handlePriceBreakupClick} />}
-          popupStyles={{ backgroundColor: "#fff", position: 'relative', maxHeight: '60vh', width: '60%', overflowY: 'auto' }}
+          popupClassName="chb-cancellation-policy__modal chb-cancellation-policy__modal--price-breakup"
+          headerBarClassName="chb-cancellation-policy__modal-header"
+          popupModuleActionBarClassName="chb-cancellation-policy__modal-actions"
           children={
             <div>
-              <CardLabelDesc style={{ marginBottom: '15px' }}>Estimate Price Details</CardLabelDesc>
+              <CardLabelDesc className="chb-cancellation-policy__estimate-label">Estimate Price Details</CardLabelDesc>
               <ul>
                 {mutation.data?.demands[0]?.demandDetails && mutation.data?.demands[0]?.demandDetails.map((demands, index) => (
-                  <li key={index} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <li key={index} className="chb-cancellation-policy__price-row">
                     <CardText>{t(`${demands.taxHeadMasterCode}`)}</CardText>
                     <CardText>Rs {demands.taxAmount}</CardText>
                   </li>
                 ))}
               </ul>
               <hr />
-              <div style={{ fontWeight: 'bold', marginTop: '10px', display: 'flex', justifyContent: 'space-between' }}>
+              <div className="chb-cancellation-policy__total">
                 <CardLabelDesc>Total</CardLabelDesc>
                 <CardLabelDesc>Rs {mutation.data?.demands[0]?.demandDetails && calculateTotalAmount(mutation.data?.demands[0]?.demandDetails)}</CardLabelDesc>
               </div>
@@ -176,11 +176,8 @@ const ChbCancellationPolicy = ({ slotDetail }) => {
           formId="modalForm"
           isDisabled={false}
           hideSubmit={true}  // Ensure submit is hidden
-          style={{}}
           // popupModuleMianStyles={{ padding: "10px" }}
-          headerBarMainStyle={{position: "sticky",top: 0, backgroundColor: "#f5f5f5" }}
           isOBPSFlow={false}
-          popupModuleActionBarStyles={{ display: 'none' }}  // Hide Action Bar
           isOpen={showPriceBreakup}  // Pass isOpen prop
           onClose={handlePriceBreakupClick}  // Pass onClose prop
         />

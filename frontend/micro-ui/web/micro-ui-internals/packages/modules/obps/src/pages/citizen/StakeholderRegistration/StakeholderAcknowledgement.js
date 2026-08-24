@@ -37,7 +37,7 @@ const BannerPicker = (props) => {
       applicationNumber={props?.data?.applicationNumber}
       info={props.isSuccess ? `${props.t(`TRADELICENSE_TRADETYPE_${LicenseType}`)} ${props.t("BPA_NEW_STAKEHOLDER_REGISTRATION_APP_LABEL")}` : ""}
       successful={props.isSuccess}
-      style={{ padding: "10px" }}
+      className="obps-pages-citizen-stakeholder-registration-stakeholder-acknowledgement--style-1"
       headerStyles={{ fontSize: "32px" }}
     />
   );
@@ -122,13 +122,7 @@ const AcknowledgementContent = ({ mutation, applicationNumber, isOpenLinkFlow, m
       {/* {!isSuccess && <CardText>{t("CS_FILE_PROPERTY_FAILED_RESPONSE")}</CardText>} */}
 
       <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          gap: "10px",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
+        className="obps-pages-citizen-stakeholder-registration-stakeholder-acknowledgement--style-2"
       >
         {finalDataBind?.action == "APPLY" && !(finalDataBind?.applicationType === "UPGRADE") && (
           <Link
@@ -271,7 +265,7 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   return (
     <div>
       <div className={isOpenLinkFlow ? "OpenlinkContainer" : ""}>
-        {isOpenLinkFlow && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
+        {isOpenLinkFlow && <BackButton className="obps-pages-citizen-stakeholder-registration-stakeholder-acknowledgement--style-3">{t("CS_COMMON_BACK")}</BackButton>}
 
         <AcknowledgementContent
           mutation={mutation}

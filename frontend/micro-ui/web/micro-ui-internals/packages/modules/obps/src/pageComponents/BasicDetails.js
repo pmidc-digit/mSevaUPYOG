@@ -147,9 +147,9 @@ const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
         <TextInput
           className="searchInput"
           onKeyPress={handleKeyPress}
-          onChange={event => setScrutinyNumber({ edcrNumber: event.target.value })} 
-          value={scrutinyNumber?.edcrNumber} 
-          signature={true} 
+          onChange={event => setScrutinyNumber({ edcrNumber: event.target.value })}
+          value={scrutinyNumber?.edcrNumber}
+          signature={true}
           // signatureImg={!disableVlaue && <SearchIconSvg className="signature-img" onClick={!disableVlaue && scrutinyNumber?.edcrNumber ? () => handleSearch() : null} />}
           disable={disableVlaue}
         />

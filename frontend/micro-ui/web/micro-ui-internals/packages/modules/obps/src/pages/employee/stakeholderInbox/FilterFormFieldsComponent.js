@@ -40,7 +40,7 @@ const FilterFormFieldsComponent = ({ statuses, isInboxLoading, registerRef, cont
     if (stakeholderServiceTypesLoading) return [];
     return stakeholderServiceTypes?.filter((type) => updatedQualificationTypes?.includes(type.identifier))
   },[updatedQualificationTypes, stakeholderServiceTypesLoading]);
-  
+
   console.log("updatedStakeholderServiceTypes", updatedStakeholderServiceTypes, stakeholderServiceTypes, updatedQualificationTypes, qualificationTypes);
 
 
@@ -72,7 +72,7 @@ const FilterFormFieldsComponent = ({ statuses, isInboxLoading, registerRef, cont
           control={controlFilterForm}
           render={(props) => {
             return stakeholderServiceTypesLoading ? <Loader/> : <>
-              <div className="filter-label sub-filter-label" style={{fontSize: "18px", fontWeight: "600"}}>{t("BPA_LICENSE_TYPE")}</div>
+              <div className="filter-label sub-filter-label obps-pages-employee-stakeholder-inbox-filter-form-fields-component--style-1" >{t("BPA_LICENSE_TYPE")}</div>
                 <RadioButtons
                   onSelect={(e) => {
                     setFilterFormValue("applicationStatus",[]);
@@ -81,13 +81,13 @@ const FilterFormFieldsComponent = ({ statuses, isInboxLoading, registerRef, cont
                   selectedOption={props.value}
                   optionsKey="i18nKey"
                   options={updatedStakeholderServiceTypes}
-                />  
+                />
               </>
           }}
       />
     </FilterFormField>
     {selectedBusinessService ? <FilterFormField>
-      <div className="filter-label" style={{fontSize: "18px", fontWeight: "600"}}>{t("ACTION_TEST_APPLICATION_STATUS")}</div>
+      <div className="filter-label obps-pages-employee-stakeholder-inbox-filter-form-fields-component--style-2" >{t("ACTION_TEST_APPLICATION_STATUS")}</div>
       <Controller
         name="applicationStatus"
         control={controlFilterForm}

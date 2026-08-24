@@ -32,11 +32,11 @@ const ADSDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
     result =
       (EmptyInboxComp && <EmptyInboxComp data={data} />) ||
       (data?.length === 0 || (useNewInboxAPI && data?.[0].dataEmpty) ? (
-        <Card style={{ marginTop: 20 }}>
+        <Card className="ads-components-adsdesktop-inbox--style-1">
           {t("CS_MYAPPLICATIONS_NO_APPLICATION")
             .split("\\n")
             .map((text, index) => (
-              <p key={index} style={{ textAlign: "center" }}>
+              <p key={index} className="ads-components-adsdesktop-inbox--style-2">
                 {text}
               </p>
             ))}
@@ -92,7 +92,7 @@ const ADSDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           </div>
         </div>
       )}
-      <div style={{ flex: 1 }}>
+      <div className="ads-components-adsdesktop-inbox--style-3">
         <SearchApplication
           defaultSearchParams={props.defaultSearchParams}
           onSearch={(d) => {
@@ -106,7 +106,7 @@ const ADSDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           clearSearch={() => setClearSearchCalled(true)}
         />
 
-        <div className="result" style={{ marginLeft: !props?.isSearch ? "24px" : "", flex: 1 }}>
+        <div className={["result", "ads-desktop-inbox__result", !props?.isSearch && "ads-desktop-inbox__result--inbox"].filter(Boolean).join(" ")}>
           {result}
         </div>
       </div>

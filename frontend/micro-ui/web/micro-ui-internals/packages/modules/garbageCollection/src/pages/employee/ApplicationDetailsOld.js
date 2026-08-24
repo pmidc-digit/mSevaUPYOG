@@ -156,9 +156,9 @@ const ApplicationDetails = () => {
 
   return (
     <div>
-      <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
+      <div className={["employee-application-details", "gc-style-4a3180e2eb"].filter(Boolean).join(" ")} >
         <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("CHB_BOOKING_DETAILS")}</Header>
-        <div style={{ zIndex: "10", display: "flex", flexDirection: "row-reverse", alignItems: "center", marginTop: "-25px" }}>
+        <div className="gc-style-b052598bc0">
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper employee-mulitlink-main-div"

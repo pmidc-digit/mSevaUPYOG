@@ -70,13 +70,14 @@ const BillGenerate = () => {
 
   return (
     <React.Fragment>
-      <div style={{ margin: "16px" }}>
+      <div className="ral-bill-generate">
+      <div className="ral-bill-generate__header">
         <Header>{t("Bill Generate")}</Header>
       </div>
-      <Card>
+      <Card className="ral-bill-generate__card">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="search-complaint-container" style={{ padding: "0", margin: "0" }}>
-            <div className="complaint-input-container for-pt">
+          <div className="search-complaint-container ral-bill-generate__form">
+            <div className="complaint-input-container for-pt ral-bill-generate__fields">
               <div className="input-fields">
                 <span className="complaint-input">
                   <Label>{t("APPLICATION_NUMBER")}</Label>
@@ -84,7 +85,7 @@ const BillGenerate = () => {
                 </span>
               </div>
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "24px" }}>
+            <div className="ral-bill-generate__actions">
               <SubmitBar
                 onSubmit={() => {
                   reset(defaultValues);
@@ -97,6 +98,7 @@ const BillGenerate = () => {
           </div>
         </form>
       </Card>
+      </div>
 
       {showToast && <Toast error={showToast.error} label={showToast.label} isDleteBtn={true} onClose={closeToast} />}
 

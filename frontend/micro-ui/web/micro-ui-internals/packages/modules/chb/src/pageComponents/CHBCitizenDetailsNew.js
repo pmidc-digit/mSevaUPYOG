@@ -221,13 +221,13 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   return (
     <React.Fragment>
       <form className="employeeCard" onSubmit={handleSubmit(onSubmit)}>
-        <div className="card" style={{ width: "100%" }}>
+        <div className="card chb-citizen-details">
           {/* mobile number */}
-          <div className="label-field-pair" style={{ marginBottom: "20px" }}>
+          <div className="label-field-pair chb-citizen-details__field">
             <CardLabel>
-              {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span className="chb-citizen-details__required">*</span>
             </CardLabel>
-            <div className="form-field" style={{ width: "100%" }}>
+            <div className="form-field chb-citizen-details__input">
               <Controller
                 control={control}
                 name="mobileNumber"
@@ -259,16 +259,16 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
-              {errors?.mobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.mobileNumber.message}</p>}
+              {errors?.mobileNumber && <p className="chb-citizen-details__error chb-citizen-details__error--field">{errors.mobileNumber.message}</p>}
             </div>
           </div>
 
           {/* name */}
-          <div className="label-field-pair" style={{ marginBottom: "20px" }}>
+          <div className="label-field-pair chb-citizen-details__field">
             <CardLabel>
-              {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span className="chb-citizen-details__required">*</span>
             </CardLabel>
-            <div className="form-field" style={{ width: "100%" }}>
+            <div className="form-field chb-citizen-details__input">
               <Controller
                 control={control}
                 name="name"
@@ -291,17 +291,17 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
-              {errors?.name && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.name.message}</p>}
+              {errors?.name && <p className="chb-citizen-details__error chb-citizen-details__error--field">{errors.name.message}</p>}
             </div>
           </div>
 
 
           {/* email */}
-          <div className="label-field-pair" style={{ marginBottom: "20px" }}>
+          <div className="label-field-pair chb-citizen-details__field">
             <CardLabel>
-              {`${t("NOC_APPLICANT_EMAIL_LABEL")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("NOC_APPLICANT_EMAIL_LABEL")}`} <span className="chb-citizen-details__required">*</span>
             </CardLabel>
-            <div className="form-field" style={{ width: "100%" }}>
+            <div className="form-field chb-citizen-details__input">
               <Controller
                 control={control}
                 name="emailId"
@@ -326,15 +326,15 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
-              {errors?.emailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.emailId.message}</p>}
+              {errors?.emailId && <p className="chb-citizen-details__error chb-citizen-details__error--field">{errors.emailId.message}</p>}
             </div>
           </div>
 
-          <div className="label-field-pair" style={{ marginBottom: "20px" }}>
+          <div className="label-field-pair chb-citizen-details__field">
             <CardLabel>
-              {`${t("PT_COMMON_COL_ADDRESS")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("PT_COMMON_COL_ADDRESS")}`} <span className="chb-citizen-details__required">*</span>
             </CardLabel>
-            <div className="form-field" style={{ width: "100%" }}>
+            <div className="form-field chb-citizen-details__input">
               <Controller
                 control={control}
                 name="address"
@@ -357,12 +357,12 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
-              {errors?.address && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.address.message}</p>}
+              {errors?.address && <p className="chb-citizen-details__error chb-citizen-details__error--field">{errors.address.message}</p>}
             </div>
           </div>
 
           {/* checkbox self declaration */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+          <div className="chb-citizen-details__terms">
             <Controller
               control={control}
               name="termsAccepted"
@@ -376,15 +376,15 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                     props.onChange(e.target.checked);
                     handleModalData(e);
                   }}
-                  style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                  className="chb-citizen-details__terms-input"
                 />
               )}
             />
-            <label htmlFor="termsAccepted" style={{ cursor: "pointer", color: "#007bff", textDecoration: "underline", margin: 0 }}>
+            <label htmlFor="termsAccepted" className="chb-citizen-details__terms-label">
               {t("CHB_SELF_LABEL")}
             </label>
           </div>
-          {errors.termsAccepted && <p style={{ color: "red" }}>{errors.termsAccepted.message}</p>}
+          {errors.termsAccepted && <p className="chb-citizen-details__error">{errors.termsAccepted.message}</p>}
         </div>
 
         <ActionBar>

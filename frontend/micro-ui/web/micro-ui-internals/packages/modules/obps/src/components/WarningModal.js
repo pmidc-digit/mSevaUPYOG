@@ -13,7 +13,7 @@ export const WarningModal = ({ actionHeading, actionLabel, actionCancelLabel, ac
     return (
         <React.Fragment>
             <Modal
-                headerBarMain={<h1 className="heading-m" >{t(actionHeading)}</h1>}                  
+                headerBarMain={<h1 className="heading-m" >{t(actionHeading)}</h1>}
                 formId="modal-action"
                 // popupStyles={{
                 //     width: "unset",
@@ -23,7 +23,7 @@ export const WarningModal = ({ actionHeading, actionLabel, actionCancelLabel, ac
                 actionCancelLabel={t(actionCancelLabel)}
                 actionCancelOnSubmit={actionCancelOnSubmit}
                 actionSaveLabel={t(actionSaveLabel)}
-                actionSaveOnSubmit={() => actionSaveOnSubmit(option)}             
+                actionSaveOnSubmit={() => actionSaveOnSubmit(option)}
             >
                 <LabelFieldPair>
                     <CardLabel>{t(actionLabel)}</CardLabel>

@@ -297,16 +297,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   return (
     <React.Fragment>
-      <form style={{ paddingBottom: "150px" }} onSubmit={handleSubmit(onSubmit)}>
-        <div>
+      <form className="employeeCard gc-style-ca65dc4865" onSubmit={handleSubmit(onSubmit)}>
+        <div className="card">
           {/* property id */}
-          <LabelFieldPair style={{ marginBottom: "16px" }}>
+          <LabelFieldPair className="gc-style-045aac899d">
             <CardLabel className="card-label-smaller">
-              {`${t("NDC_MSG_PROPERTY_LABEL")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("NDC_MSG_PROPERTY_LABEL")}`} <span className="gc-style-31981a7d51">*</span>
             </CardLabel>
             <div className="form-field">
-              <div style={{ display: "block", gap: "8px", alignItems: "flex-start" }}>
-                <div style={{ flex: 1 }}>
+              <div className="gc-style-86988696ea">
+                <div className="gc-style-ee3d55bf99">
                   <Controller
                     control={control}
                     name="propertyId"
@@ -315,7 +315,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     }}
                     render={(props) => (
                       <TextInput
-                        style={{ marginBottom: 0 }}
+                        className="gc-style-648149cea2"
                         value={props.value}
                         onChange={(e) => {
                           props.onChange(e.target.value);
@@ -330,13 +330,13 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   {`${t("PT_SEARCH")}`}
                 </button>
               </div>
-              {errors?.propertyId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.propertyId.message}</p>}
+              {errors?.propertyId && <p className="gc-style-ed9ef6a95c">{errors.propertyId.message}</p>}
             </div>
           </LabelFieldPair>
           {(propertyDetailsFetch?.Properties || currentStepData?.venueDetails || currentStepData?.apiResponseData) && (
             <div>
               {/* is rented */}
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", margin: "30px 0" }}>
+              <div className="gc-style-b76bfae924">
                 <Controller
                   control={control}
                   name="termsAccepted"
@@ -350,20 +350,20 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         props.onChange(e.target.checked);
                         handleModalData(e);
                       }}
-                      style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                      className="gc-style-d8af4c59ac"
                     />
                   )}
                 />
-                <label htmlFor="termsAccepted" style={{ cursor: "pointer", margin: 0, fontWeight: "bolder" }}>
+                <label htmlFor="termsAccepted" className="gc-style-f67fbbeae7">
                   {t("Rental Status")}
                 </label>
               </div>
               {/* {errors.termsAccepted && <p style={{ color: "red" }}>{errors.termsAccepted.message}</p>} */}
 
               {/* property type  */}
-              <LabelFieldPair style={{ marginBottom: "16px" }}>
+              <LabelFieldPair className="gc-style-045aac899d">
                 <CardLabel className="card-label-smaller">
-                  {`${t("NDC_MSG_PROPERTY_TYPE_LABEL")}`} <span style={{ color: "red" }}>*</span>
+                  {`${t("NDC_MSG_PROPERTY_TYPE_LABEL")}`} <span className="gc-style-31981a7d51">*</span>
                 </CardLabel>
                 <div className="form-field">
                   <Controller
@@ -372,8 +372,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     rules={{ required: t("GC_PROPERTY_TYPE_REQUIRED") }}
                     render={(props) => (
                       <Dropdown
-                        style={{ marginBottom: 0 }}
-                        className="form-field"
+
+                        className="form-field gc-style-648149cea2"
                         select={(e) => {
                           props.onChange(e);
                         }}
@@ -383,14 +383,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                       />
                     )}
                   />
-                  {errors?.propertyType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.propertyType.message}</p>}
+                  {errors?.propertyType && <p className="gc-style-ed9ef6a95c">{errors.propertyType.message}</p>}
                 </div>
               </LabelFieldPair>
 
               {/* plot size */}
-              <LabelFieldPair style={{ marginBottom: "16px" }}>
+              <LabelFieldPair className="gc-style-045aac899d">
                 <CardLabel className="card-label-smaller">
-                  {`${t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE")}`} <span style={{ color: "red" }}>*</span>
+                  {`${t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE")}`} <span className="gc-style-31981a7d51">*</span>
                 </CardLabel>
                 <div className="form-field">
                   <Controller
@@ -401,7 +401,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     }}
                     render={(props) => (
                       <TextInput
-                        style={{ marginBottom: 0 }}
+                        className="gc-style-648149cea2"
                         value={props.value}
                         onChange={(e) => {
                           props.onChange(e.target.value);
@@ -410,14 +410,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                       />
                     )}
                   />
-                  {errors?.plotSize && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.plotSize.message}</p>}
+                  {errors?.plotSize && <p className="gc-style-ed9ef6a95c">{errors.plotSize.message}</p>}
                 </div>
               </LabelFieldPair>
 
               {/* location */}
-              <LabelFieldPair style={{ marginBottom: "16px" }}>
+              <LabelFieldPair className="gc-style-045aac899d">
                 <CardLabel className="card-label-smaller">
-                  {`${t("GC_LOCATION")}`} <span style={{ color: "red" }}>*</span>
+                  {`${t("GC_LOCATION")}`} <span className="gc-style-31981a7d51">*</span>
                 </CardLabel>
                 <div className="form-field">
                   <Controller
@@ -428,7 +428,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     }}
                     render={(props) => (
                       <TextInput
-                        style={{ marginBottom: 0 }}
+                        className="gc-style-648149cea2"
                         value={props.value}
                         onChange={(e) => {
                           props.onChange(e.target.value);
@@ -437,14 +437,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                       />
                     )}
                   />
-                  {errors?.location && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.location.message}</p>}
+                  {errors?.location && <p className="gc-style-ed9ef6a95c">{errors.location.message}</p>}
                 </div>
               </LabelFieldPair>
 
               {/* frequency type  */}
-              <LabelFieldPair style={{ marginBottom: "16px" }}>
+              <LabelFieldPair className="gc-style-045aac899d">
                 <CardLabel className="card-label-smaller">
-                  {`${t("GC_FREQUENCY")}`} <span style={{ color: "red" }}>*</span>
+                  {`${t("GC_FREQUENCY")}`} <span className="gc-style-31981a7d51">*</span>
                 </CardLabel>
                 <div className="form-field">
                   <Controller
@@ -453,8 +453,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     rules={{ required: t("GC_FREQUENCY_REQUIRED") }}
                     render={(props) => (
                       <Dropdown
-                        style={{ marginBottom: 0 }}
-                        className="form-field"
+
+                        className="form-field gc-style-648149cea2"
                         select={(e) => {
                           props.onChange(e);
                         }}
@@ -464,14 +464,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                       />
                     )}
                   />
-                  {errors?.frequency && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.frequency.message}</p>}
+                  {errors?.frequency && <p className="gc-style-ed9ef6a95c">{errors.frequency.message}</p>}
                 </div>
               </LabelFieldPair>
 
               {/* waste type  */}
-              <LabelFieldPair style={{ marginBottom: "16px" }}>
+              <LabelFieldPair className="gc-style-045aac899d">
                 <CardLabel className="card-label-smaller">
-                  {`${t("GC_WASTE_TYPE")}`} <span style={{ color: "red" }}>*</span>
+                  {`${t("GC_WASTE_TYPE")}`} <span className="gc-style-31981a7d51">*</span>
                 </CardLabel>
                 <div className="form-field">
                   <Controller
@@ -480,8 +480,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     rules={{ required: t("GC_WASTE_TYPE_REQUIRED") }}
                     render={(props) => (
                       <Dropdown
-                        style={{ marginBottom: 0 }}
-                        className="form-field"
+
+                        className="form-field gc-style-648149cea2"
                         select={(e) => {
                           props.onChange(e);
                         }}
@@ -491,7 +491,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                       />
                     )}
                   />
-                  {errors?.typeOfWaste && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.typeOfWaste.message}</p>}
+                  {errors?.typeOfWaste && <p className="gc-style-ed9ef6a95c">{errors.typeOfWaste.message}</p>}
                 </div>
               </LabelFieldPair>
 
@@ -525,9 +525,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               </LabelFieldPair> */}
 
               {/* floorNo   */}
-              <LabelFieldPair style={{ marginBottom: "16px" }}>
+              <LabelFieldPair className="gc-style-045aac899d">
                 <CardLabel className="card-label-smaller">
-                  {`${t("BPA_SCRUTINY_DETAILS_NUMBER_OF_FLOORS_LABEL")}`} <span style={{ color: "red" }}>*</span>
+                  {`${t("BPA_SCRUTINY_DETAILS_NUMBER_OF_FLOORS_LABEL")}`} <span className="gc-style-31981a7d51">*</span>
                 </CardLabel>
                 <div className="form-field">
                   <Controller
@@ -536,8 +536,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     rules={{ required: t("Floor is required") }}
                     render={(props) => (
                       <Dropdown
-                        style={{ marginBottom: 0 }}
-                        className="form-field"
+
+                        className="form-field gc-style-648149cea2"
                         select={(e) => {
                           props.onChange(e);
                         }}
@@ -548,14 +548,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                       />
                     )}
                   />
-                  {errors?.floorNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.floorNo.message}</p>}
+                  {errors?.floorNo && <p className="gc-style-ed9ef6a95c">{errors.floorNo.message}</p>}
                 </div>
               </LabelFieldPair>
 
               {/* Select unit */}
-              <LabelFieldPair style={{ marginBottom: "16px" }}>
+              <LabelFieldPair className="gc-style-045aac899d">
                 <CardLabel className="card-label-smaller">
-                  {`${t("Select Unit")}`} <span style={{ color: "red" }}>*</span>
+                  {`${t("Select Unit")}`} <span className="gc-style-31981a7d51">*</span>
                 </CardLabel>
                 <div className="form-field">
                   <Controller
@@ -564,8 +564,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     rules={{ required: t("Usage category is required") }}
                     render={(props) => (
                       <Dropdown
-                        style={{ marginBottom: 0 }}
-                        className="form-field"
+
+                        className="form-field gc-style-648149cea2"
                         select={(e) => {
                           props.onChange(e);
                           const pID = propertyDetailsFetch?.Properties[0]?.propertyId;
@@ -579,12 +579,12 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                       />
                     )}
                   />
-                  {errors?.unitId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitId.message}</p>}
+                  {errors?.unitId && <p className="gc-style-ed9ef6a95c">{errors.unitId.message}</p>}
                 </div>
               </LabelFieldPair>
 
               {/* amount */}
-              <LabelFieldPair style={{ marginBottom: "16px" }}>
+              <LabelFieldPair className="gc-style-045aac899d">
                 <CardLabel className="card-label-smaller">{`${t("Amount")}`}</CardLabel>
                 <div className="form-field">
                   <Controller
@@ -592,7 +592,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     name="defAmount"
                     render={(props) => (
                       <TextInput
-                        style={{ marginBottom: 0 }}
+                        className="gc-style-648149cea2"
                         value={props.value}
                         onChange={(e) => {
                           props.onChange(e.target.value);
@@ -602,14 +602,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                       />
                     )}
                   />
-                  {errors?.location && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.location.message}</p>}
+                  {errors?.location && <p className="gc-style-ed9ef6a95c">{errors.location.message}</p>}
                 </div>
               </LabelFieldPair>
             </div>
           )}
         </div>
         <ActionBar>
-          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+          <SubmitBar className="gc-style-84b5441470" label="Back" onSubmit={onGoBack} />
           <SubmitBar label="Next" submit="submit" disabled={getActiveStatus} />
         </ActionBar>
       </form>

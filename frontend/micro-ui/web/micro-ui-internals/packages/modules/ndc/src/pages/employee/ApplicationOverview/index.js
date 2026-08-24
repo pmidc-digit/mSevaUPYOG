@@ -12,8 +12,8 @@ import {
   CardLabel,
   TextInput,
   LinkButton,
-  MultiLink,
-} from "@mseva/digit-ui-react-components";
+  MultiLink } from
+"@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,9 +25,9 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import getAcknowledgementData from "../../../getAcknowlegment";
 import { EmployeeData } from "../../../utils";
 const availableOptions = [
-  { code: "yes", name: "Yes" },
-  { code: "no", name: "No" },
-];
+{ code: "yes", name: "Yes" },
+{ code: "no", name: "No" }];
+
 
 const ApplicationOverview = () => {
   const { id } = useParams();
@@ -68,7 +68,7 @@ const ApplicationOverview = () => {
       } else {
         setAmounts((prevAmounts) => ({
           ...prevAmounts,
-          [consumerCode]: 0, // ✅ Reset dues to zero when "No" is selected
+          [consumerCode]: 0 // ✅ Reset dues to zero when "No" is selected
         }));
         setValue(`amount[${index}]`, 0);
         // TODO: Call API to undo marking
@@ -84,11 +84,11 @@ const ApplicationOverview = () => {
     tenantId: tenantId,
     id: id,
     moduleCode: "ndc-services",
-    role: "EMPLOYEE",
+    role: "EMPLOYEE"
   });
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
-    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
+  workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
@@ -99,30 +99,30 @@ const ApplicationOverview = () => {
     data: {
       actionState: {
         nextActions: [
-          {
-            action: "APPROVE",
-            roles: ["NDC_ADMIN"],
-            tenantId: "pb",
-            assigneeRoles: [],
-            isTerminateState: false,
-          },
-          {
-            action: "ASSIGN",
-            roles: ["NDC_ADMIN"],
-            tenantId: "pb",
-            assigneeRoles: ["NDC_ADMIN"],
-            isTerminateState: false,
-          },
-          {
-            action: "REJECT",
-            roles: ["NDC_ADMIN"],
-            tenantId: "pb",
-            assigneeRoles: [],
-            isTerminateState: true,
-          },
-        ],
-      },
-    },
+        {
+          action: "APPROVE",
+          roles: ["NDC_ADMIN"],
+          tenantId: "pb",
+          assigneeRoles: [],
+          isTerminateState: false
+        },
+        {
+          action: "ASSIGN",
+          roles: ["NDC_ADMIN"],
+          tenantId: "pb",
+          assigneeRoles: ["NDC_ADMIN"],
+          isTerminateState: false
+        },
+        {
+          action: "REJECT",
+          roles: ["NDC_ADMIN"],
+          tenantId: "pb",
+          assigneeRoles: [],
+          isTerminateState: true
+        }]
+
+      }
+    }
   };
 
   useEffect(() => {
@@ -145,7 +145,7 @@ const ApplicationOverview = () => {
       tenantId: tenantId,
       businessService: "NDC",
       consumerCodes: id,
-      isEmployee: false,
+      isEmployee: false
     },
     { enabled: id ? true : false }
   );
@@ -162,17 +162,17 @@ const ApplicationOverview = () => {
           tenantId,
           {
             Payments: [
-              {
-                ...(payments || {}),
-                ...application,
-              },
-            ],
+            {
+              ...(payments || {}),
+              ...application
+            }]
+
           },
           "ndc-receipt"
         );
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-        fileStoreIds: response.filestoreIds[0],
+        fileStoreIds: response.filestoreIds[0]
       });
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
       setLoader(false);
@@ -184,17 +184,17 @@ const ApplicationOverview = () => {
   const dowloadOptions = [];
 
   if (
-    applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" ||
-    applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED"
-  ) {
+  applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" ||
+  applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED")
+  {
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
-      onClick: () => handleDownloadPdf(),
+      onClick: () => handleDownloadPdf()
     });
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("PTR_FEE_RECIEPT"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] })
       });
     }
   }
@@ -217,17 +217,17 @@ const ApplicationOverview = () => {
   //   });
 
   let actions =
-    workflowDetails?.data?.actionState?.nextActions
-      ?.filter((e) => userRoles?.some((role) => e.roles?.includes(role)) || !e.roles)
-      ?.filter((e) => e.action !== "EDIT") ||
-    workflowDetailsTemp?.data?.nextActions
-      ?.filter((e) => userRoles?.some((role) => e.roles?.includes(role)) || !e.roles)
-      ?.filter((e) => e.action !== "EDIT");
+  workflowDetails?.data?.actionState?.nextActions?.
+  filter((e) => userRoles?.some((role) => e.roles?.includes(role)) || !e.roles)?.
+  filter((e) => e.action !== "EDIT") ||
+  workflowDetailsTemp?.data?.nextActions?.
+  filter((e) => userRoles?.some((role) => e.roles?.includes(role)) || !e.roles)?.
+  filter((e) => e.action !== "EDIT");
 
   if (applicationDetails?.Applications?.[0]?.applicationStatus == "CITIZENACTIONREQUIRED" && isCemp) {
     actions?.push({
       action: "EDIT",
-      state: actions?.[0]?.state,
+      state: actions?.[0]?.state
     });
   }
 
@@ -267,25 +267,25 @@ const ApplicationOverview = () => {
         fatherName: ndcObject?.owners?.[0]?.fatherOrHusbandName,
         address: ndcObject?.NdcDetails?.[0]?.additionalDetails?.propertyAddress,
         // createdDate: ndcObject?.owners?.[0]?.createdtime ? format(new Date(ndcObject?.owners?.[0]?.createdtime), "dd/MM/yyyy") : "",
-        applicationNo: ndcObject?.applicationNo,
+        applicationNo: ndcObject?.applicationNo
       };
       const Documents = removeDuplicatesByUUID(ndcObject?.Documents || []);
       const NdcDetails = removeDuplicatesByUUID(ndcObject?.NdcDetails || [])?.map((item) => ({
         businessService:
-          item?.businessService === "WS"
-            ? "NDC_WATER_SERVICE_CONNECTION"
-            : item?.businessService === "SW"
-            ? "NDC_SEWERAGE_SERVICE_CONNECTION"
-            : item?.businessService === "PT"
-            ? "NDC_PROPERTY_TAX"
-            : item?.businessService,
+        item?.businessService === "WS" ?
+        "NDC_WATER_SERVICE_CONNECTION" :
+        item?.businessService === "SW" ?
+        "NDC_SEWERAGE_SERVICE_CONNECTION" :
+        item?.businessService === "PT" ?
+        "NDC_PROPERTY_TAX" :
+        item?.businessService,
         consumerCode: item?.consumerCode || "",
         status: item?.status || "",
         dueAmount: item?.dueAmount || 0,
         propertyType: item?.additionalDetails?.propertyType || "",
         isDuePending: item?.isDuePending,
         remarks: item?.additionalDetails?.remarks,
-        vashikaNumber: item?.additionalDetails?.vashikaNumber,
+        vashikaNumber: item?.additionalDetails?.vashikaNumber
       }));
 
       setDisplayData({ applicantData, Documents, NdcDetails });
@@ -314,8 +314,8 @@ const ApplicationOverview = () => {
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
       const vasikaNo =
-        displayData?.NdcDetails?.find((item) => item?.businessService === "NDC_PROPERTY_TAX")?.vashikaNumber ||
-        propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.vasikaNo;
+      displayData?.NdcDetails?.find((item) => item?.businessService === "NDC_PROPERTY_TAX")?.vashikaNumber ||
+      propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.vasikaNo;
       let acknowledgementData;
 
       if (empData) {
@@ -363,7 +363,7 @@ const ApplicationOverview = () => {
     setEmployees(filterRoles?.[0]?.actions);
 
     const payload = {
-      Licenses: [action],
+      Licenses: [action]
     };
     const appNo = displayData?.applicantData?.applicationNo;
     if (action?.action == "APPLY") {
@@ -393,14 +393,14 @@ const ApplicationOverview = () => {
           ...detail,
           isDuePending: isPending || detail.isDuePending || false,
           dueAmount:
-            isPending === false
-              ? 0 // ✅ Force 0 when "No"
-              : amounts?.[detail.consumerCode] !== undefined
-              ? Number(amounts[detail.consumerCode]) // from input box
-              : detail?.dueAmount || 0, // fallback to API value
+          isPending === false ?
+          0 // ✅ Force 0 when "No"
+          : amounts?.[detail.consumerCode] !== undefined ?
+          Number(amounts[detail.consumerCode]) // from input box
+          : detail?.dueAmount || 0 // fallback to API value
         };
       }),
-      workflow: {},
+      workflow: {}
     };
 
     const filtData = data?.Licenses?.[0];
@@ -414,16 +414,16 @@ const ApplicationOverview = () => {
       action: filtData.action,
       assignes: filtData?.assignee || checkAssigne,
       comment: filtData?.comment,
-      documents: filtData?.wfDocuments,
+      documents: filtData?.wfDocuments
     };
 
     if (
-      !filtData?.assignee &&
-      filtData.action !== "SENDBACKTOCITIZEN" &&
-      filtData.action !== "APPROVE" &&
-      filtData.action !== "REJECT" &&
-      filtData.action !== "SENDBACK"
-    ) {
+    !filtData?.assignee &&
+    filtData.action !== "SENDBACKTOCITIZEN" &&
+    filtData.action !== "APPROVE" &&
+    filtData.action !== "REJECT" &&
+    filtData.action !== "SENDBACK")
+    {
       setErrorOne("Assignee is Mandatory");
       setShowErrorToastt(true);
 
@@ -436,7 +436,7 @@ const ApplicationOverview = () => {
     }
 
     const finalPayload = {
-      Applications: [updatedApplicant],
+      Applications: [updatedApplicant]
     };
 
     // return;
@@ -499,7 +499,7 @@ const ApplicationOverview = () => {
       filters: { propertyIds: getPropertyId },
       tenantId: tenantId,
       enabled: getPropertyId ? true : false,
-      privacy: Digit.Utils.getPrivacyObject(),
+      privacy: Digit.Utils.getPrivacyObject()
     }
   );
 
@@ -523,14 +523,14 @@ const ApplicationOverview = () => {
   if (!checkLoading && propertyDetailsFetch?.Properties?.length > 0) {
     address = propertyDetailsFetch.Properties[0].address;
     formattedAddress = [
-      address?.doorNo,
-      address?.buildingName, // colony/building
-      address?.street,
-      address?.locality?.name, // locality name
-      address?.city,
-    ]
-      .filter(Boolean)
-      .join(", ");
+    address?.doorNo,
+    address?.buildingName, // colony/building
+    address?.street,
+    address?.locality?.name, // locality name
+    address?.city].
+
+    filter(Boolean).
+    join(", ");
   }
 
   if (isLoading || isDetailsLoading || recieptDataLoading) {
@@ -539,42 +539,39 @@ const ApplicationOverview = () => {
 
   return (
     <div className={"employee-main-application-details"}>
-      {/* <div>
-        <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
-      </div> */}
-      <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
-        {isCemp && (
-          <div className="cardHeaderWithOptions ral-app-details-header">
+      <div className="ndc-style-56838cf109">
+        {isCemp &&
+        <div className="cardHeaderWithOptions ral-app-details-header">
             {getLoader && <Loader />}
-            {dowloadOptions && dowloadOptions.length > 0 && (
-              <MultiLink
-                className="multilinkWrapper"
-                onHeadClick={() => setShowOptions(!showOptions)}
-                displayOptions={showOptions}
-                options={dowloadOptions}
-              />
-            )}
+            {dowloadOptions && dowloadOptions.length > 0 &&
+          <MultiLink
+            className="multilinkWrapper"
+            onHeadClick={() => setShowOptions(!showOptions)}
+            displayOptions={showOptions}
+            options={dowloadOptions} />
+
+          }
           </div>
-        )}
+        }
       </div>
       <Card>
         <CardSubHeader>{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
           {displayData?.applicantData &&
-            Object.entries(displayData?.applicantData)?.map(([key, value]) => (
-              <Row
-                key={key}
-                label={key === "fatherName" ? "Father Name" : t(`${key?.toUpperCase()}`)}
-                // label={t(`${key?.toUpperCase()}`)}
-                text={
-                  Array.isArray(value)
-                    ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
-                    : typeof value === "object"
-                    ? t(value?.code || "N/A")
-                    : t(value || "N/A")
-                }
-              />
-            ))}
+          Object.entries(displayData?.applicantData)?.map(([key, value]) =>
+          <Row
+            key={key}
+            label={key === "fatherName" ? "Father Name" : t(`${key?.toUpperCase()}`)}
+            // label={t(`${key?.toUpperCase()}`)}
+            text={
+            Array.isArray(value) ?
+            value.map((item) => typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A")).join(", ") :
+            typeof value === "object" ?
+            t(value?.code || "N/A") :
+            t(value || "N/A")
+            } />
+
+          )}
         </StatusTable>
       </Card>
       <Card>
@@ -583,7 +580,7 @@ const ApplicationOverview = () => {
           const isPT = detail?.businessService === "NDC_PROPERTY_TAX";
           const isSW = detail?.businessService === "NDC_SEWERAGE_SERVICE_CONNECTION";
           const isWS = detail?.businessService === "NDC_WATER_SERVICE_CONNECTION";
-          const canRaiseFlag = (isPT && userRoles?.includes("NDC_PT_VERIFIER")) || ((isSW || isWS) && userRoles?.includes("NDC_WS_SW_VERIFIER"));
+          const canRaiseFlag = isPT && userRoles?.includes("NDC_PT_VERIFIER") || (isSW || isWS) && userRoles?.includes("NDC_WS_SW_VERIFIER");
 
           const isMarked = markedPending[detail.consumerCode] || detail?.isDuePending;
           const dueAmount = amounts?.[detail.consumerCode] || detail?.dueAmount || 0;
@@ -596,76 +593,68 @@ const ApplicationOverview = () => {
                 <Row label={t("Property Id")} text={detail.consumerCode || "N/A"} />
                 {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
 
-                {(!canRaiseFlag || !isMarked) && (
-                  <div
-                    style={{
-                      background: isRed ? "red" : "none",
-                      color: isRed ? "white" : "black",
-                      paddingTop: isRed ? "8px" : "0",
-                      paddingLeft: isRed ? "10px" : "0",
-                    }}
-                  >
-                    <Row
-                      rowContainerStyle={{
-                        backgroundColor: isRed ? "red" : "none",
-                      }}
-                      label={t("NDC_DUE_AMOUNT")}
-                      // text={detail.dueAmount?.toString() || "0"}
-                      text={(markedPending[detail.consumerCode] === false
-                        ? "0"
-                        : amounts?.[detail.consumerCode] || detail?.dueAmount || 0
-                      ).toString()}
-                    />
-                  </div>
-                )}
+                {(!canRaiseFlag || !isMarked) &&
+                <div className={`ndc-due-amount ${isRed ? "ndc-due-amount--overdue" : ""}`}>
 
-                {canRaiseFlag && isMarked && (
-                  <div>
                     <Row
-                      label="Due Amount"
-                      text={
-                        <Controller
-                          key={index}
-                          control={control}
-                          name={`amount[${index}]`}
-                          defaultValue={markedPending[detail.consumerCode] === false ? 0 : amounts?.[detail.consumerCode] || detail?.dueAmount || 0}
-                          render={(props) => (
-                            <TextInput
-                              type="number"
-                              value={props.value}
-                              onChange={(e) => {
-                                props.onChange(e.target.value);
-                                const newValue = e.target.value;
-                                setAmounts((prev) => ({
-                                  ...prev,
-                                  [detail.consumerCode]: newValue,
-                                }));
-                              }}
-                              style={{ maxWidth: "200px" }}
-                              onBlur={props.onBlur}
-                              disabled={markedPending[detail.consumerCode] === false}
-                            />
-                          )}
-                        />
-                      }
-                    />
+                    className={isRed ? "ndc-due-amount__row--overdue" : ""}
+                    label={t("NDC_DUE_AMOUNT")}
+                    // text={detail.dueAmount?.toString() || "0"}
+                    text={(markedPending[detail.consumerCode] === false ?
+                    "0" :
+                    amounts?.[detail.consumerCode] || detail?.dueAmount || 0).
+                    toString()} />
+
                   </div>
-                )}
+                }
+
+                {canRaiseFlag && isMarked &&
+                <div>
+                    <Row
+                    label="Due Amount"
+                    text={
+                    <Controller
+                      key={index}
+                      control={control}
+                      name={`amount[${index}]`}
+                      defaultValue={markedPending[detail.consumerCode] === false ? 0 : amounts?.[detail.consumerCode] || detail?.dueAmount || 0}
+                      render={(props) =>
+                      <TextInput
+                        type="number"
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                          const newValue = e.target.value;
+                          setAmounts((prev) => ({
+                            ...prev,
+                            [detail.consumerCode]: newValue
+                          }));
+                        }}
+
+                        onBlur={props.onBlur}
+                        disabled={markedPending[detail.consumerCode] === false} className="ndc-style-a828909e66" />
+
+                      } />
+
+                    } />
+
+                  </div>
+                }
 
                 <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
-                {isPT && propertyDetailsFetch?.Properties && (
-                  <>
+                {isPT && propertyDetailsFetch?.Properties &&
+                <>
                     <Row
-                      label={t("CHB_DISCOUNT_REASON")}
-                      text={t(
-                        `${
-                          applicationDetails?.Applications?.[0]?.reason == "OTHERS"
-                            ? applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
-                                ?.reason
-                            : applicationDetails?.Applications?.[0]?.reason
-                        }`
-                      )}
-                    />
+                    label={t("CHB_DISCOUNT_REASON")}
+                    text={t(
+                      `${
+                      applicationDetails?.Applications?.[0]?.reason == "OTHERS" ?
+                      applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails?.
+                      reason :
+                      applicationDetails?.Applications?.[0]?.reason}`
+
+                    )} />
+
                     <Row label={t("Area")} text={`${propertyDetailsFetch?.Properties?.[0]?.landArea} sq. yd.` || "N/A"} />
                     <Row label={t("Vasika Number")} text={detail?.vashikaNumber || "N/A"} />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
@@ -677,114 +666,113 @@ const ApplicationOverview = () => {
                     {/* <Row label={t("Existing Pid")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
                     <Row label={t("Survey Id/UID")} text={propertyDetailsFetch?.Properties?.[0]?.surveyId} />
                     <Row
-                      label={t("Year of creation of Property")}
-                      text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
-                    />
+                    label={t("Year of creation of Property")}
+                    text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction} />
+
                     {detail?.remarks && <Row label={t("Remarks")} text={detail?.remarks ? detail?.remarks : "N/A"} />}
                   </>
-                )}
+                }
               </StatusTable>
-              {canRaiseFlag && (
-                <div className="mychallan-custom">
+              {canRaiseFlag &&
+              <div className="mychallan-custom">
                   <CardLabel className="card-label-smaller ndc_card_labels">
                     <b> Pending Dues</b>
                   </CardLabel>
                   <FilterFormField className="radioButtonSection">
                     <Controller
-                      name={`assignee${index}`}
-                      control={control}
-                      defaultValue={detail?.isDuePending ? "yes" : "no"}
-                      render={(props) => (
-                        <RadioButtons
-                          onSelect={(e) => {
-                            props.onChange(e.code);
-                            handleMarkPending(detail.consumerCode, e.code, index);
-                          }}
-                          selectedOption={availableOptions.filter((option) => option.code === props.value)[0]}
-                          optionsKey="name"
-                          options={availableOptions}
-                        />
-                      )}
-                    />
+                    name={`assignee${index}`}
+                    control={control}
+                    defaultValue={detail?.isDuePending ? "yes" : "no"}
+                    render={(props) =>
+                    <RadioButtons
+                      onSelect={(e) => {
+                        props.onChange(e.code);
+                        handleMarkPending(detail.consumerCode, e.code, index);
+                      }}
+                      selectedOption={availableOptions.filter((option) => option.code === props.value)[0]}
+                      optionsKey="name"
+                      options={availableOptions} />
+
+                    } />
+
                   </FilterFormField>
                 </div>
-              )}
-            </div>
-          );
+              }
+            </div>);
+
         })}
       </Card>
 
       <Card>
         <CardSubHeader>{t("NDC_APPLICATION_DOCUMENTS_OVERVIEW")}</CardSubHeader>
         <div>
-          {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ? (
-            <NDCDocument value={{ workflowDocs: displayData?.Documents }}></NDCDocument>
-          ) : (
-            <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
-          )}
+          {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ?
+          <NDCDocument value={{ workflowDocs: displayData?.Documents }}></NDCDocument> :
+
+          <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
+          }
         </div>
       </Card>
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
-      {applicationDetails?.Applications?.[0]?.applicationStatus !== "INITIATED" && actions?.length > 0 && (
-        <ActionBar>
-          {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-            <Menu
-              localeKeyPrefix={`WF_EDITRENEWAL`}
-              options={actions}
-              optionKey={"action"}
-              t={t}
-              onSelect={onActionSelect}
-              // style={MenuStyle}
-            />
-          ) : null}
+      {applicationDetails?.Applications?.[0]?.applicationStatus !== "INITIATED" && actions?.length > 0 &&
+      <ActionBar>
+          {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ?
+        <Menu
+          localeKeyPrefix={`WF_EDITRENEWAL`}
+          options={actions}
+          optionKey={"action"}
+          t={t}
+          onSelect={onActionSelect}
+        /> :
+        null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>
-      )}
+      }
 
-      {applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" && isCemp && (
-        // <ActionBar>
-        <SubmitBar
-          label={t("COMMON_EDIT")}
-          onSubmit={() => {
-            const id = applicationDetails?.Applications?.[0]?.applicationNo;
-            history.push(`/digit-ui/employee/ndc/create/${id}`);
-          }}
-        />
-        // </ActionBar>
-      )}
+      {applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" && isCemp &&
+      // <ActionBar>
+      <SubmitBar
+        label={t("COMMON_EDIT")}
+        onSubmit={() => {
+          const id = applicationDetails?.Applications?.[0]?.applicationNo;
+          history.push(`/digit-ui/employee/ndc/create/${id}`);
+        }} />
 
-      {showModal ? (
-        <NDCModal
-          t={t}
-          action={selectedAction}
-          tenantId={tenantId}
-          state={state}
-          getEmployees={getEmployees}
-          id={id}
-          applicationDetails={applicationDetails}
-          applicationData={applicationDetails?.applicationData}
-          closeModal={closeModal}
-          submitAction={submitAction}
-          actionData={workflowDetails?.data?.timeline}
-          workflowDetails={workflowDetails}
-          showToast={showToast}
-          closeToast={closeToast}
-          errors={error}
-          showErrorToast={showErrorToast}
-          errorOne={errorOne}
-          closeToastOne={closeToastOne}
-        />
-      ) : null}
-      {showToast && (
-        <div ref={toastRef}>
+      // </ActionBar>
+      }
+
+      {showModal ?
+      <NDCModal
+        t={t}
+        action={selectedAction}
+        tenantId={tenantId}
+        state={state}
+        getEmployees={getEmployees}
+        id={id}
+        applicationDetails={applicationDetails}
+        applicationData={applicationDetails?.applicationData}
+        closeModal={closeModal}
+        submitAction={submitAction}
+        actionData={workflowDetails?.data?.timeline}
+        workflowDetails={workflowDetails}
+        showToast={showToast}
+        closeToast={closeToast}
+        errors={error}
+        showErrorToast={showErrorToast}
+        errorOne={errorOne}
+        closeToastOne={closeToastOne} /> :
+
+      null}
+      {showToast &&
+      <div ref={toastRef}>
           <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />
         </div>
-      )}
+      }
       {/* {showToast && <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />} */}
       {(isLoading || isDetailsLoading || checkLoading || getLoader) && <Loader page={true} />}
-    </div>
-  );
+    </div>);
+
 };
 
 export default ApplicationOverview;

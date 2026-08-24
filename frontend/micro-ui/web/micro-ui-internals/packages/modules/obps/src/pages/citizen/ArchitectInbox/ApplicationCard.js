@@ -43,11 +43,11 @@ const ApplicationCard = ({
   }
   if (data?.length === 0) {
     result = (
-      <Card style={{ marginTop: 20 }}>
+      <Card className="obps-pages-citizen-architect-inbox-application-card--style-1">
         {t("BPA_NO_APPLICATION_PRESENT")
           .split("\\n")
           .map((text, index) => (
-            <p key={index} style={{ textAlign: "center" }}>
+            <p key={index} className="obps-pages-citizen-architect-inbox-application-card--style-2">
               {text}
             </p>
           ))}

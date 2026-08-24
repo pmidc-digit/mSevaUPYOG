@@ -78,9 +78,9 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                         handleRemarkChange(doc.documentUid, e.target.value);
                       }}
                       disabled={false}
-                      className="checklist-table-textarea"
+                      className="checklist-table-textarea obps-page-components-cludocument-check-list--style-1"
                       placeholder="Enter remarks"
-                      style={{ overflow: "hidden" }}
+
                     />
                   )}
                 </div>
@@ -133,9 +133,9 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                             handleRemarkChange(doc.documentUid, e.target.value);
                           }}
                           disabled={false}
-                          className="checklist-table-textarea"
+                          className="checklist-table-textarea obps-page-components-cludocument-check-list--style-2"
                           placeholder="Enter remarks"
-                          style={{ overflow: "hidden" }}
+
                         />
                       )}
                     </td>

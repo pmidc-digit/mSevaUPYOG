@@ -243,9 +243,6 @@ const NewChallan = ({ ChallanData }) => {
 
   return (
     <div>
-      {/* <div style={isMobile?{}:{ marginLeft: "15px" }}>
-        <Header>{isEdit ? t("UC_UPDATE_CHALLAN"):t("UC_COMMON_HEADER")}</Header>
-      </div> */}
       {isEdit && !JSON.parse(sessionStorage.getItem("mcollectEditObject")) && !defaultUpdatedValue ? (
         <Loader />
       ) : (

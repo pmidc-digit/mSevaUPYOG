@@ -20,7 +20,7 @@ const MobileInbox = ({
   sortParams,
   linkPrefix,
   tableConfig,
-  filterComponent,
+  filterComponent
 }) => {
   const { t } = useTranslation();
   const GetMobCell = (value) => <span className="sla-cell">{value}</span>;
@@ -44,49 +44,49 @@ const MobileInbox = ({
     return str;
   };
   const inboxColumns = (props) => [
-    {
-      Header: t("UC_CHALLAN_NO"),
-      mobileCell: (original) => GetMobCell(original?.["challanNo"]),
+  {
+    Header: t("UC_CHALLAN_NO"),
+    mobileCell: (original) => GetMobCell(original?.["challanNo"])
+  },
+  {
+    Header: t("UC_COMMON_TABLE_COL_PAYEE_NAME"),
+    Cell: ({ row }) => {
+      return GetCell(`${row.original?.["name"]}`);
     },
-    {
-      Header: t("UC_COMMON_TABLE_COL_PAYEE_NAME"),
-      Cell: ({ row }) => {
-        return GetCell(`${row.original?.["name"]}`);
-      },
-      mobileCell: (original) => GetMobCell(original?.["name"]),
+    mobileCell: (original) => GetMobCell(original?.["name"])
+  },
+  {
+    Header: t("CHALLAN_OFFENCE_TYPE"),
+    Cell: ({ row }) => {
+      return GetCell(`${row.original?.["offenceName"]}`);
     },
-    {
-      Header: t("CHALLAN_OFFENCE_TYPE"),
-      Cell: ({ row }) => {
-        return GetCell(`${row.original?.["offenceName"]}`);
-      },
-      mobileCell: (original) => GetMobCell(original?.["offenceName"]),
-    },
-    {
-      Header: t("UC_COMMON_TOTAL_AMT"),
-      Cell: ({ row }) => {
-        const total = row.original?.totalAmount || 0;
-        const waiver = row.original?.feeWaiver || 0;
-        const finalAmount = total - waiver;
+    mobileCell: (original) => GetMobCell(original?.["offenceName"])
+  },
+  {
+    Header: t("UC_COMMON_TOTAL_AMT"),
+    Cell: ({ row }) => {
+      const total = row.original?.totalAmount || 0;
+      const waiver = row.original?.feeWaiver || 0;
+      const finalAmount = total - waiver;
 
-        return GetCell(finalAmount);
-      },
-      mobileCell: (original) => GetMobCell(original?.["totalAmount"]),
+      return GetCell(finalAmount);
     },
-    {
-      Header: t("UC_COMMON_TABLE_COL_STATUS"),
-      Cell: ({ row }) => {
-        const wf = row.original?.challanStatus;
-        return GetCell(t(`${row.original?.challanStatus}`));
-      },
-      mobileCell: (original) => GetMobCell(t(`${original?.challanStatus}`)),
+    mobileCell: (original) => GetMobCell(original?.["totalAmount"])
+  },
+  {
+    Header: t("UC_COMMON_TABLE_COL_STATUS"),
+    Cell: ({ row }) => {
+      const wf = row.original?.challanStatus;
+      return GetCell(t(`${row.original?.challanStatus}`));
     },
-    {
-      Header: t("WF_INBOX_HEADER_CREATED_DATE"),
-      Cell: ({ row }) => (row.original?.date ? GetCell(format(new Date(row.original?.date), "dd/MM/yyyy")) : ""),
-      mobileCell: (original) => (original?.date ? format(new Date(original?.date), "dd/MM/yyyy") : ""),
-    },
-  ];
+    mobileCell: (original) => GetMobCell(t(`${original?.challanStatus}`))
+  },
+  {
+    Header: t("WF_INBOX_HEADER_CREATED_DATE"),
+    Cell: ({ row }) => row.original?.date ? GetCell(format(new Date(row.original?.date), "dd/MM/yyyy")) : "",
+    mobileCell: (original) => original?.date ? format(new Date(original?.date), "dd/MM/yyyy") : ""
+  }];
+
 
   const serviceRequestIdKey = (original) => original?.[t("UC_CHALLAN_NUMBER")]?.props?.children;
 
@@ -102,23 +102,23 @@ const MobileInbox = ({
   };
 
   return (
-    <div style={{ padding: 0 }}>
+    <div className="challan-generation-style-a2e94d72eb">
       <div className="inbox-container">
         <div className="filters-container">
           {/* {!isSearch && (
-            <ApplicationLinks
-              linkPrefix={parentRoute}
-              allLinks={[
-                {
-                  text: t("UC_GENERATE_NEW_CHALLAN"),
-                  link: "/digit-ui/employee/mcollect/new-application",
-                  roles: [],
-                },
-              ]}
-              headerText={t("ACTION_TEST_MCOLLECT")}
-              isMobile={true}
-            />
-          )} */}
+             <ApplicationLinks
+               linkPrefix={parentRoute}
+               allLinks={[
+                 {
+                   text: t("UC_GENERATE_NEW_CHALLAN"),
+                   link: "/digit-ui/employee/mcollect/new-application",
+                   roles: [],
+                 },
+               ]}
+               headerText={t("ACTION_TEST_MCOLLECT")}
+               isMobile={true}
+             />
+            )} */}
           <ApplicationCard
             t={t}
             data={getData()}
@@ -133,12 +133,12 @@ const MobileInbox = ({
             linkPrefix={linkPrefix}
             sortParams={sortParams}
             serviceRequestIdKey={serviceRequestIdKey}
-            filterComponent={filterComponent}
-          />
+            filterComponent={filterComponent} />
+
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default MobileInbox;

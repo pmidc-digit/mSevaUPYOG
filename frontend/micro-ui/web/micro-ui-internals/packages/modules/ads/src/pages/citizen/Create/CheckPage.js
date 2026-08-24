@@ -58,7 +58,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
       accessor: "delete",
       Cell: ({ row }) => (
         <button onClick={() => handleDelete(row.index)}>
-          <DeleteIcon className="delete" fill="#a82227" style={{ cursor: "pointer", marginLeft: "20px" }} />
+          <DeleteIcon className="delete ads-pages-citizen-create-check-page--style-1" fill="#a82227"  />
         </button>
       ),
     },
@@ -92,7 +92,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
     <React.Fragment>
       {window.location.href.includes("/citizen") ? <Timeline currentStep={4} /> : null}
       <Card>
-        <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+        <div className="ads-pages-citizen-create-check-page--style-2">
           <CardHeader>{t("ADS_SUMMARY")}</CardHeader>
           <CardSubHeader>
             <TimerValues
@@ -104,7 +104,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
         </div>
         <div>
           <CardText>{t("ADS_CHECK_CHECK_YOUR_ANSWERS_TEXT")}</CardText>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_APPLICANT_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ads-pages-citizen-create-check-page--style-3">{t("ADS_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row
               label={t("ADS_APPLICANT_NAME")}
@@ -130,7 +130,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
             />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_ADDRESS_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ads-pages-citizen-create-check-page--style-4">{t("ADS_ADDRESS_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row
               label={t("ADS_HOUSE_NO")}
@@ -178,7 +178,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
               actionButton={<ActionButton jumpTo={`/digit-ui/citizen/ads/${typeOfApplication}/address-details`} />}
             />
           </StatusTable>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_CART_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ads-pages-citizen-create-check-page--style-5">{t("ADS_CART_DETAILS")}</CardSubHeader>
           <ApplicationTable
             t={t}
             data={adslistRows}
@@ -194,7 +194,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
             isPaginationRequired={false}
             totalRecords={params?.adslist?.cartDetails.length}
           />
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_DOCUMENTS_DETAILS")}</CardSubHeader>
+          <CardSubHeader className="ads-pages-citizen-create-check-page--style-6">{t("ADS_DOCUMENTS_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Card>{documents && documents?.documents.map((doc, index) => <ADSDocument value={value} Code={doc?.documentType} index={index} />)}</Card>
           </StatusTable>

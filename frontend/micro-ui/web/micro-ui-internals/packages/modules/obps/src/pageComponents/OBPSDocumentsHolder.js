@@ -6,11 +6,11 @@ function Document({ docs = [] }) {
   const { t } = useTranslation();
 
   return (
-    <div style={{ marginTop: "19px" }}>
+    <div className="obps-page-components-obpsdocuments-holder--style-1">
       <React.Fragment>
-        <div style={{ display: "flex", flexWrap: "wrap" }}>
+        <div className="obps-page-components-obpsdocuments-holder--style-2">
           {docs.length > 0 ? (
-            <div style={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
+            <div className="obps-page-components-obpsdocuments-holder--style-3">
               {docs?.map((document, index) => {
                 let documentLink = document?.fileURL;
                 return (
@@ -18,13 +18,13 @@ function Document({ docs = [] }) {
                     target="_blank"
                     rel="noreferrer"
                     href={documentLink}
-                    style={{ minWidth: "80px", marginRight: "10px", maxWidth: "100px", height: "auto" }}
+                    className="obps-page-components-obpsdocuments-holder--style-4"
                     key={index}
                   >
-                    <div style={{ display: "flex", justifyContent: "center" }}>
+                    <div className="obps-page-components-obpsdocuments-holder--style-5">
                       <PDFSvg />
                     </div>
-                    <p style={{ marginTop: "8px", textAlign: "center", color: "#505A5F" }}>{`${t(document?.documentType)}`}</p>
+                    <p className="obps-page-components-obpsdocuments-holder--style-6">{`${t(document?.documentType)}`}</p>
                   </a>
                 );
               })}
@@ -65,7 +65,7 @@ const OBPSDocumentsHolder = ({ documents = [] }) => {
             <CardSectionHeader>{`${t(category)}`}</CardSectionHeader>
             <StatusTable>
               <Document key={index} docs={consolidatedDocObject[category]} />
-              <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+              <hr className="obps-page-components-obpsdocuments-holder--style-7" />
             </StatusTable>
           </div>
         </div>

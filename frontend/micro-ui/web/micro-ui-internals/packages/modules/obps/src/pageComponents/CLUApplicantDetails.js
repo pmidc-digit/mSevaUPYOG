@@ -295,24 +295,24 @@ const CLUApplicantDetails = (_props) => {
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_APPLICANT_DETAILS")}</CardSectionHeader>
-      <div style={{ marginTop: "20px" }}>
+      <div className="obps-page-components-cluapplicant-details--style-1">
         {isEdit && (
-          <CardSectionSubText style={{ color: "red", margin: "10px 0px" }}>
+          <CardSectionSubText className="obps-page-components-cluapplicant-details--style-2">
             {" "}
             To update your Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section
           </CardSectionSubText>
         )}
 
         {fields.map((field, index) => (
-          <div key={field.id} style={{ border: "1px solid #ddd", padding: "16px", marginBottom: "12px" }}>
+          <div key={field.id} className="obps-page-components-cluapplicant-details--style-3">
             <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `${t("Owner")} ${index + 1}`}</CardSubHeader>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, cursor: "pointer" }} onClick={() => removeOwner(index)}>
+            <div className="obps-page-components-cluapplicant-details--style-4" onClick={() => removeOwner(index)}>
               {!isEdit && fields.length > 1 && `❌`}
             </div>
 
             {index === 0 && (
-              <LabelFieldPair style={{ marginBottom: "20px" }}>
+              <LabelFieldPair className="obps-page-components-cluapplicant-details--style-5">
                 <CardLabel className="card-label-smaller">
                   {`${t("CLU_OWNER_TYPE_LABEL")}`}
                   <span className="requiredField">*</span>
@@ -336,19 +336,19 @@ const CLUApplicantDetails = (_props) => {
                   />
 
                   {errors?.owners?.[index]?.ownerType && (
-                    <p style={{ color: "red", marginBottom: "0" }}>{errors?.owners?.[index]?.ownerType?.message}</p>
+                    <p className="obps-page-components-cluapplicant-details--style-6">{errors?.owners?.[index]?.ownerType?.message}</p>
                   )}
                 </div>
               </LabelFieldPair>
             )}
 
-            <LabelFieldPair style={{ marginBottom: "20px" }}>
+            <LabelFieldPair className="obps-page-components-cluapplicant-details--style-7">
               <CardLabel className="card-label-smaller">
                 {`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}`}
                 <span className="requiredField">*</span>
               </CardLabel>
               <div className="field">
-                <div style={{ display: "flex", position: "relative", alignItems: "center", width: "100%" }}>
+                <div className="obps-page-components-cluapplicant-details--style-8">
                   <Controller
                     control={control}
                     name={`owners[${index}].mobileNumber`}
@@ -370,7 +370,7 @@ const CLUApplicantDetails = (_props) => {
                         }}
                         t={t}
                         disabled={isEdit}
-                        style={{ width: "100%", paddingRight: "40px" }}
+                        className="obps-page-components-cluapplicant-details--style-9"
                       />
                     )}
                   />
@@ -384,7 +384,7 @@ const CLUApplicantDetails = (_props) => {
             </LabelFieldPair>
 
             {watch(`owners[${index}].ownerType`)?.code === "Firm" && (
-              <LabelFieldPair style={{ marginBottom: "20px" }}>
+              <LabelFieldPair className="obps-page-components-cluapplicant-details--style-10">
                 <CardLabel className="card-label-smaller">
                   {`${t("CLU_FIRM_NAME_LABEL")}`}
                   <span className="requiredField">*</span>
@@ -419,7 +419,7 @@ const CLUApplicantDetails = (_props) => {
               </LabelFieldPair>
             )}
 
-            <LabelFieldPair style={{ marginBottom: "20px" }}>
+            <LabelFieldPair className="obps-page-components-cluapplicant-details--style-11">
               <CardLabel className="card-label-smaller">
                 {`${t("CLU_APPLICANT_NAME_LABEL")}`}
                 <span className="requiredField">*</span>
@@ -453,7 +453,7 @@ const CLUApplicantDetails = (_props) => {
               </div>
             </LabelFieldPair>
 
-            <LabelFieldPair style={{ marginBottom: "20px" }}>
+            <LabelFieldPair className="obps-page-components-cluapplicant-details--style-12">
               <CardLabel className="card-label-smaller">
                 {`${t("BPA_APPLICANT_EMAIL_LABEL")}`}
                 <span className="requiredField">*</span>
@@ -487,7 +487,7 @@ const CLUApplicantDetails = (_props) => {
               </div>
             </LabelFieldPair>
 
-            <LabelFieldPair style={{ marginBottom: "20px" }}>
+            <LabelFieldPair className="obps-page-components-cluapplicant-details--style-13">
               <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}`}</CardLabel>
               <div className="field">
                 <Controller
@@ -521,7 +521,7 @@ const CLUApplicantDetails = (_props) => {
               </div>
             </LabelFieldPair>
 
-            <LabelFieldPair style={{ marginBottom: "20px" }}>
+            <LabelFieldPair className="obps-page-components-cluapplicant-details--style-14">
               <CardLabel className="card-label-smaller">
                 {`${t("BPA_APPLICANT_ADDRESS_LABEL")}`}
                 <span className="requiredField">*</span>
@@ -558,7 +558,7 @@ const CLUApplicantDetails = (_props) => {
               </div>
             </LabelFieldPair>
 
-            <LabelFieldPair style={{ marginBottom: "20px" }}>
+            <LabelFieldPair className="obps-page-components-cluapplicant-details--style-15">
               <CardLabel className="card-label-smaller">
                 {`${t("BPA_APPLICANT_DOB_LABEL")}`}
                 <span className="requiredField">*</span>
@@ -600,7 +600,7 @@ const CLUApplicantDetails = (_props) => {
               </div>
             </LabelFieldPair>
 
-            <LabelFieldPair style={{ marginBottom: "20px" }}>
+            <LabelFieldPair className="obps-page-components-cluapplicant-details--style-16">
               <CardLabel className="card-label-smaller">
                 {`${t("BPA_APPLICANT_GENDER_LABEL")}`}
                 <span className="requiredField">*</span>
@@ -629,7 +629,7 @@ const CLUApplicantDetails = (_props) => {
               </div>
             </LabelFieldPair>
 
-            <LabelFieldPair style={{ marginBottom: "20px" }}>
+            <LabelFieldPair className="obps-page-components-cluapplicant-details--style-17">
               <CardLabel className="card-label-smaller">
                 {`${t("BPA_OWNERSHIP_IN_PCT_LABEL")}`}
                 <span className="requiredField">*</span>
@@ -668,12 +668,12 @@ const CLUApplicantDetails = (_props) => {
               </div>
             </LabelFieldPair>
 
-            <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+            <LabelFieldPair className="obps-page-components-cluapplicant-details--style-18">
               <CardLabel className="card-label-smaller">
                 {t("BPA_APPLICANT_PASSPORT_PHOTO")}
                 <span className="requiredField">*</span>
               </CardLabel>
-              <div className="field" style={{ width: "100%" }}>
+              <div className="field obps-page-components-cluapplicant-details--style-19" >
                 <CustomUploadFile
                   id={`passport-photo-${index}`}
                   onUpload={selectOwnerPhotoFile(index)}
@@ -689,12 +689,12 @@ const CLUApplicantDetails = (_props) => {
               </div>
             </LabelFieldPair>
 
-            <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+            <LabelFieldPair className="obps-page-components-cluapplicant-details--style-20">
               <CardLabel className="card-label-smaller">
                 {t("BPA_APPLICANT_ID_PROOF")}
                 <span className="requiredField">*</span>
               </CardLabel>
-              <div className="field" style={{ width: "100%" }}>
+              <div className="field obps-page-components-cluapplicant-details--style-21" >
                 <CustomUploadFile
                   id={`id-proof-${index}`}
                   onUpload={selectOwnerIdFile(index)}
@@ -714,7 +714,7 @@ const CLUApplicantDetails = (_props) => {
       </div>
 
       <div>
-        <button type="button" onClick={() => append(defaultOwner())} style={{ cursor: "pointer" }}>
+        <button type="button" onClick={() => append(defaultOwner())} className="obps-page-components-cluapplicant-details--style-22">
           {!isEdit && `➕ Add Owner`}
         </button>
       </div>

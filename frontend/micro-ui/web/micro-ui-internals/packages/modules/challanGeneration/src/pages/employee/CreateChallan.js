@@ -59,7 +59,7 @@ const CreateChallen = ({ ChallanData }) => {
       case "pincode":
           return /^[1-9][0-9]{5}$/i;
       default:
-        return /^(0|[1-9][0-9]*)$/i; 
+        return /^(0|[1-9][0-9]*)$/i;
     }
   }
 
@@ -592,7 +592,7 @@ const CreateChallen = ({ ChallanData }) => {
           },
           // {
           //   label: t("UC_COMMENT_LABEL"),
-         
+
           //   isMandatory: false,
           //   type: "textarea",
           //   populators: {

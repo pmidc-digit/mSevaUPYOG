@@ -88,7 +88,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     window.scrollTo({
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
-    });    
+    });
   }, [])
 
   useEffect(() => {

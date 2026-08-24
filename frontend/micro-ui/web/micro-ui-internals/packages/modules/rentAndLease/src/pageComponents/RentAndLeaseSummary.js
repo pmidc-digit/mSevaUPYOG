@@ -91,7 +91,7 @@ function RentAndLeaseSummary({ t }) {
           </div>
 
           {Object.entries(propertyLabels)
-            .filter(([key]) => property?.applicationType?.code !== "Legacy" || key !== "securityDeposit")
+            ?.filter(([key]) => property?.applicationType?.code !== "Legacy" || key !== "securityDeposit")
             .map(([key, label]) => {
               let value = property?.selectedProperty?.[key] || property?.[key];
 
@@ -108,6 +108,10 @@ function RentAndLeaseSummary({ t }) {
 
               if (key === "address") {
                 value = property?.area?.name;
+              }
+
+              if (key === "propertySpecific") {
+                value = property?.propertySpecific?.name;
               }
 
               if (typeof value === "number" && (key === "startDate" || key === "endDate")) {

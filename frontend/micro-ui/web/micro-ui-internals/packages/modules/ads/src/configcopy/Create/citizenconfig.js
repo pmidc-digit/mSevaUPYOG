@@ -60,7 +60,7 @@ export const citizenConfig = [
             "submitBarLabel": "ADS_COMMON_NEXT",
         },
     }
-      
+
     ],
   },
 ];

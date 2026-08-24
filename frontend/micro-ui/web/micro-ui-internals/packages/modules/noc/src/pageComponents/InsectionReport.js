@@ -35,7 +35,7 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
     // if (window.location.href.includes("tl/renew-application-details")) isRenewal = true;
     const { data: tradeMdmsData, isLoading } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "TradeLicense", "TradeUnits", "[?(@.type=='TL')]");
     const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["CheckList"]);
-    let type = "LOW"    
+    let type = "LOW"
 
     const addNewFieldReport = () => {
         const newUnit = createUnitDetails();
@@ -124,8 +124,8 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         <InspectionReportForm  index={0} unit={FieldReports[0]} {...commonProps} />
         // <div>
         //     <React.Fragment>
-                //  {FieldReports && FieldReports.map((unit, index) => ( 
-                    
+                //  {FieldReports && FieldReports.map((unit, index) => (
+
                 // ))}
             // </React.Fragment>
             // <LinkButton label={t("BPA_ADD_FIELD_INSPECTION")} onClick={addNewFieldReport} style={{ color: "#a82227", width: "fit-content" }} />
@@ -186,7 +186,7 @@ const InspectionReportForm = (_props) => {
     const documentData = siteImages?.map((value, index) => ({
         title: `SITE_IMAGE_${index+1}`,
         imageFileStoreId: value,
-        // geoLocation: geoLocations[index] 
+        // geoLocation: geoLocations[index]
     }))
     const today = new Date().toISOString().split("T")[0];
 
@@ -241,9 +241,9 @@ const InspectionReportForm = (_props) => {
           Header: t(" "),
           accessor: "imageFileStoreId",
           Cell: ({ value }) =>
-            {          
+            {
               return value ? (
-              <LinkButton style={{ float: "right", display: "inline" }}
+              <LinkButton className="noc-page-components-insection-report--style-1"
                 label={t("View Image")}
                 onClick={() => routeTo(value)}
               />
@@ -255,7 +255,7 @@ const InspectionReportForm = (_props) => {
         //   Header: t(" "),
         //   accessor: "geoLocation",
         //   Cell: ({ value }) =>
-        //     {          
+        //     {
         //       return value ? (
         //       <LinkButton style={{ float: "right", display: "inline" }}
         //         label={t("View Location")}
@@ -316,9 +316,9 @@ const InspectionReportForm = (_props) => {
     }
 
     const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
-    
+
     const extendedQuestions = [ ...(questionList || []), { question: t("BPA_ADDITIONAL_REMARKS"), isAdditional: true } ];
-    
+
     return (
       <React.Fragment>
         {/* <div>          */}
@@ -326,11 +326,11 @@ const InspectionReportForm = (_props) => {
           <LinkButton
             label={
               <DeleteIcon
-                style={{ float: "right", position: "relative", bottom: "-6px" }}
+                className="noc-page-components-insection-report--style-3"
                 fill={!(allFieldReport.length == 1) ? "#494848" : "#FAFAFA"}
               />
             }
-            style={{ width: "100px", display: "inline", background: "black" }}
+            className="noc-page-components-insection-report--style-2"
             onClick={(e) => removeUnit(unit)}
           />
         ) : null}

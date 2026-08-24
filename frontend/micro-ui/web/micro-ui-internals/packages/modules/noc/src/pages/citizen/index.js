@@ -26,17 +26,17 @@ const NOCBreadCrumbs = ({ location }) => {
 
     breadcrumbs.push(
       <span key="home">
-        <Link to="/digit-ui/citizen" style={{ textDecoration: "none", marginRight: "5px" }}>
+        <Link to="/digit-ui/citizen" className="noc-pages-citizen-index--style-1">
           {t("ES_COMMON_HOME")}
         </Link>
-        {hasSecondBreadcrumb && <span style={{ marginRight: "5px" }}>/</span>}
+        {hasSecondBreadcrumb && <span className="noc-pages-citizen-index--style-2">/</span>}
       </span>
     );
 
     if (hasSecondBreadcrumb) {
       breadcrumbs.push(
         <span key="noc">
-          <Link to={isUserRegistered ? "/digit-ui/citizen/obps/home" : "/digit-ui/citizen/noc-home"} style={{ textDecoration: "none" }}>
+          <Link to={isUserRegistered ? "/digit-ui/citizen/obps/home" : "/digit-ui/citizen/noc-home"} className="noc-pages-citizen-index--style-3">
             NOC Home
           </Link>
         </span>
@@ -46,7 +46,7 @@ const NOCBreadCrumbs = ({ location }) => {
     return breadcrumbs;
   };
 
-  return <div style={{ marginBottom: "16px", display: "flex", alignItems: "center" }}>{getBreadcrumbs()}</div>;
+  return <div className="noc-pages-citizen-index--style-4">{getBreadcrumbs()}</div>;
 };
 
 const App = () => {
@@ -65,11 +65,11 @@ const App = () => {
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   return (
-    <span className={"pgr-citizen-wrapper"} style={{ width: "100%" }}>
+    <span className={["pgr-citizen-wrapper", "noc-pages-citizen-index--style-5"].filter(Boolean).join(" ")} >
       <Switch>
         <AppContainer>
           {!isResponse ? (
-            <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop: "20px" } : {}}>
+            <div className={window.location.href.includes("application-overview") || isMobile ? "noc-citizen__breadcrumbs--offset" : "noc-citizen__breadcrumbs"}>
               <NOCBreadCrumbs location={location} />
             </div>
           ) : null}

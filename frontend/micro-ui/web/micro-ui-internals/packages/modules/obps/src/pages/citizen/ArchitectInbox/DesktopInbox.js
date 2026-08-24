@@ -16,7 +16,7 @@ const DesktopInbox = (props) => {
     if (isNaN(value)) return <span className="sla-cell-success">0</span>;
     return value < 0 ? <span className="sla-cell-error">{value}</span> : <span className="sla-cell-success">{value}</span>;
   };
-  const GetStatusCell = (value) => value === "Active" || value>0 ? <span className="sla-cell-success">{value}</span> : <span className="sla-cell-error">{value}</span> 
+  const GetStatusCell = (value) => value === "Active" || value>0 ? <span className="sla-cell-success">{value}</span> : <span className="sla-cell-error">{value}</span>
 
   const columns = React.useMemo(() => {
     return [
@@ -52,12 +52,12 @@ const DesktopInbox = (props) => {
     result = <Loader />;
   } else if (props?.data?.table?.length === 0) {
     result = (
-      <Card style={{ marginTop: 20 }}>
+      <Card className="obps-pages-citizen-architect-inbox-desktop-inbox--style-1">
         {
           t("CS_MYAPPLICATIONS_NO_APPLICATION")
             .split("\\n")
             .map((text, index) => (
-              <p key={index} style={{ textAlign: "center" }}>
+              <p key={index} className="obps-pages-citizen-architect-inbox-desktop-inbox--style-2">
                 {text}
               </p>
             ))
@@ -94,7 +94,7 @@ const DesktopInbox = (props) => {
     );
   }
   return (
-    
+
     <div className="inbox-container">
         {!props.isSearch && (
         <div className="filters-container">
@@ -103,7 +103,7 @@ const DesktopInbox = (props) => {
             allLinks={[
               {
                 text: "OBPS_HOME",
-                link: "/digit-ui/citizen/obps/home",   
+                link: "/digit-ui/citizen/obps/home",
               },
               {
                 text: "ES_COMMON_SEARCH_APPLICATION",
@@ -120,7 +120,7 @@ const DesktopInbox = (props) => {
           </div>
         </div>
       )}
-      <div style={{ flex: 1 }}>
+      <div className="obps-pages-citizen-architect-inbox-desktop-inbox--style-3">
         <SearchApplication
           t={t}
           onSearch={props.onSearch}
@@ -129,7 +129,7 @@ const DesktopInbox = (props) => {
           isInboxPage={!props?.isSearch}
           searchParams={props.searchParams}
         />
-        <div className="result" style={{ marginLeft: "24px", flex: 1 }}>
+        <div className="result obps-pages-citizen-architect-inbox-desktop-inbox--style-4" >
           {result}
         </div>
       </div>

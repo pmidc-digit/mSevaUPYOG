@@ -33,7 +33,7 @@ const Search = () => {
 
     const hasApplicationNo = !! details.applicationNo;
     const hasMobileNumber = !! details.mobileNumber;
-    
+
      // If only applicationNo is present, remove mobileNumber
     if (hasApplicationNo && !hasMobileNumber) {
       console.log("we are deleteing mobileNumber here");
@@ -43,14 +43,14 @@ const Search = () => {
     // for (const [key, value] of Object.entries(__data)) {
     //   if(value != undefined && value != null && value != ""){
 
-    //     __filters = {...__filters, [key]:value}        
+    //     __filters = {...__filters, [key]:value}
     //   }
     // }
     //setfilters(isFromClear == true ? details : __filters)
      setfilters(details);
   }
-  
-  
+
+
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   const [tableData, setTableData] = useState([{ display: "ES_COMMON_NO_DATA" }]);

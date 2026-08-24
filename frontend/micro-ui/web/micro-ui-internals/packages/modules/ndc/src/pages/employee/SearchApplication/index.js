@@ -36,7 +36,7 @@ const Search = ({ path }) => {
     let __filters = defaultFilters;
     for (const [key, value] of Object.entries(__data)) {
       if(value != undefined && value != null && value != ""){
-        __filters = {...__filters, [key]:value}        
+        __filters = {...__filters, [key]:value}
       }
     }
     setfilters(isFromClear == true ? details : __filters)

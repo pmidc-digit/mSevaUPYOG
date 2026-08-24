@@ -12,8 +12,8 @@ import {
   Toast,
   DeleteIcon,
   Table,
-  RadioOrSelect,
-} from "@mseva/digit-ui-react-components";
+  RadioOrSelect } from
+"@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -25,9 +25,9 @@ import { useQuery } from "react-query";
 export const PropertyDetailsForm = ({ config, onSelect, userType, formData, formState, clearErrors }) => {
   const { control, formState: localFormState, watch, setValue, trigger, getValues } = useForm();
   const { t } = useTranslation();
-  const tenantId = window.location.href.includes("citizen")
-    ? window.localStorage.getItem("CITIZEN.CITY")
-    : window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.location.href.includes("citizen") ?
+  window.localStorage.getItem("CITIZEN.CITY") :
+  window.localStorage.getItem("Employee.tenant-id");
   const apiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.responseData);
   const checkApiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.apiData);
   const [showToast, setShowToast] = useState(null);
@@ -42,62 +42,62 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     tenantId,
     filters: {
       searchType: "CONNECTION",
-      propertyId: propertyId,
+      propertyId: propertyId
     },
     config: {
-      enabled: !!propertyId, // ✅ Only run if propertyId is defined
+      enabled: !!propertyId // ✅ Only run if propertyId is defined
     },
     bussinessService: "WS",
-    t,
+    t
   });
 
   const { isLoading: sewerageConnectionLoading, data: sewerageConnectionData, error: sewerageConnectionError } = Digit.Hooks.ws.useSearchWS({
     tenantId,
     filters: {
       searchType: "CONNECTION",
-      propertyId: propertyId,
+      propertyId: propertyId
     },
     config: {
-      enabled: !!propertyId, // ✅ Only run if propertyId is defined
+      enabled: !!propertyId // ✅ Only run if propertyId is defined
     },
     bussinessService: "SW",
-    t,
+    t
   });
 
   const applicationFeeColumns = [
-    {
-      Header: t("TL_COMMON_TABLE_COL_OWN_NAME"),
-      accessor: "name",
-      Cell: ({ row }) => {
-        return <div>{row?.original?.name}</div>;
-      },
-    },
-    {
-      Header: "",
-      accessor: "amount",
-      Cell: ({ row }) => {
-        const rowId = row?.index;
-        return (
-          <input
-            type="radio"
-            name="applicationFee"
-            checked={selectedRow?.uuid === row?.original?.uuid}
-            onChange={() => {
-              setSelectedRow(row?.original);
-            }}
-          />
-        );
-      },
-    },
-  ];
+  {
+    Header: t("TL_COMMON_TABLE_COL_OWN_NAME"),
+    accessor: "name",
+    Cell: ({ row }) => {
+      return <div>{row?.original?.name}</div>;
+    }
+  },
+  {
+    Header: "",
+    accessor: "amount",
+    Cell: ({ row }) => {
+      const rowId = row?.index;
+      return (
+        <input
+          type="radio"
+          name="applicationFee"
+          checked={selectedRow?.uuid === row?.original?.uuid}
+          onChange={() => {
+            setSelectedRow(row?.original);
+          }} />);
+
+
+    }
+  }];
+
 
   useEffect(() => {
     const owner = formData?.cpt?.details?.owners?.[0];
     const ownerForName = formData?.cpt?.details?.owners || [];
-    const ownerNames = ownerForName
-      ?.map((owner) => owner?.name)
-      ?.filter(Boolean)
-      ?.join(", ");
+    const ownerNames = ownerForName?.
+    map((owner) => owner?.name)?.
+    filter(Boolean)?.
+    join(", ");
 
     const ownerObj = selectedRow;
 
@@ -120,7 +120,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     if (fatherOrHusbandName) combinedObject.fatherOrHusbandName = fatherOrHusbandName;
     combinedObject.propertyBillData = {
       isLoading: false,
-      billData: formData?.PropertyDetails?.propertyBillData?.billData || {},
+      billData: formData?.PropertyDetails?.propertyBillData?.billData || {}
     };
 
     // Extract remarks from PT NdcDetails
@@ -138,7 +138,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     setPropertyDetails((prev) => {
       return {
         ...prev,
-        ...combinedObject,
+        ...combinedObject
       };
     });
   }, [formData?.cpt?.details, apiDataCheck, selectedRow]);
@@ -151,21 +151,21 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       });
 
       waterConnection =
-        // item?.billData?.totalAmount
-        resData?.map((item) => ({
-          connectionNo: item?.consumerCode,
-          isEdit: false,
-          billData: { totalAmount: 0 },
-          isLoading: false,
-        })) || [];
+      // item?.billData?.totalAmount
+      resData?.map((item) => ({
+        connectionNo: item?.consumerCode,
+        isEdit: false,
+        billData: { totalAmount: 0 },
+        isLoading: false
+      })) || [];
     } else {
       waterConnection =
-        waterConnectionData?.map((item) => ({
-          connectionNo: item?.connectionNo,
-          isEdit: false,
-          billData: {},
-          isLoading: false,
-        })) || [];
+      waterConnectionData?.map((item) => ({
+        connectionNo: item?.connectionNo,
+        isEdit: false,
+        billData: {},
+        isLoading: false
+      })) || [];
     }
 
     setPropertyDetails((prev) => ({ ...prev, waterConnection }));
@@ -178,20 +178,20 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         return item.businessService == "SW";
       });
       sewerageConnection =
-        resData?.map((item) => ({
-          connectionNo: item?.consumerCode,
-          isEdit: false,
-          billData: { totalAmount: 0 },
-          isLoading: false,
-        })) || [];
+      resData?.map((item) => ({
+        connectionNo: item?.consumerCode,
+        isEdit: false,
+        billData: { totalAmount: 0 },
+        isLoading: false
+      })) || [];
     } else {
       sewerageConnection =
-        sewerageConnectionData?.map((item) => ({
-          connectionNo: item?.connectionNo,
-          isEdit: false,
-          billData: {},
-          isLoading: false,
-        })) || [];
+      sewerageConnectionData?.map((item) => ({
+        connectionNo: item?.connectionNo,
+        isEdit: false,
+        billData: {},
+        isLoading: false
+      })) || [];
     }
 
     setPropertyDetails((prev) => ({ ...prev, sewerageConnection }));
@@ -204,14 +204,14 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   function addWaterConnection() {
     setPropertyDetails((prev) => ({
       ...prev,
-      waterConnection: [...(prev.waterConnection || []), { connectionNo: "", isEdit: true }],
+      waterConnection: [...(prev.waterConnection || []), { connectionNo: "", isEdit: true }]
     }));
   }
 
   function addSewerageConnection() {
     setPropertyDetails((prev) => ({
       ...prev,
-      sewerageConnection: [...(prev.sewerageConnection || []), { connectionNo: "", isEdit: true }],
+      sewerageConnection: [...(prev.sewerageConnection || []), { connectionNo: "", isEdit: true }]
     }));
   }
 
@@ -221,14 +221,14 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       updated[index].isLoading = true;
       setPropertyDetails((prev) => ({
         ...prev,
-        waterConnection: updated,
+        waterConnection: updated
       }));
     } else if (bussinessService === "SW") {
       const updated = [...propertyDetails.sewerageConnection];
       updated[index].isLoading = true;
       setPropertyDetails((prev) => ({
         ...prev,
-        sewerageConnection: updated,
+        sewerageConnection: updated
       }));
     } else if (bussinessService === "PT") {
       setPropertyLoader(true);
@@ -236,14 +236,14 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       updated.isLoading = true;
       setPropertyDetails((prev) => ({
         ...prev,
-        propertyBillData: updated,
+        propertyBillData: updated
       }));
     }
 
     try {
       const result = await Digit.PaymentService.fetchBill(tenantId, {
         businessService: bussinessService,
-        consumerCode: consumercodes,
+        consumerCode: consumercodes
       });
       setPropertyLoader(false);
       const bill = Array.isArray(result?.Bill) && result.Bill.length > 0 ? result.Bill[0] : null;
@@ -262,7 +262,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           updated[index].isLoading = false;
           setPropertyDetails((prev) => ({
             ...prev,
-            waterConnection: updated,
+            waterConnection: updated
           }));
         } else if (bussinessService === "SW") {
           const updated = [...propertyDetails.sewerageConnection];
@@ -270,7 +270,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           updated[index].isLoading = false;
           setPropertyDetails((prev) => ({
             ...prev,
-            sewerageConnection: updated,
+            sewerageConnection: updated
           }));
         } else if (bussinessService === "PT") {
           let updated = { ...propertyDetails.propertyBillData };
@@ -278,30 +278,30 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           updated.isLoading = false;
           setPropertyDetails((prev) => ({
             ...prev,
-            propertyBillData: updated,
+            propertyBillData: updated
           }));
         }
       } else if (result?.Bill) {
         if (bussinessService === "WS") {
           const updated = [...propertyDetails.waterConnection];
           updated[index].billData = {
-            totalAmount: 0,
+            totalAmount: 0
           };
           updated[index].isLoading = false;
           setPropertyDetails((prev) => ({
             ...prev,
-            waterConnection: updated,
+            waterConnection: updated
           }));
           setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_WS") });
         } else if (bussinessService === "SW") {
           const updated = [...propertyDetails.sewerageConnection];
           updated[index].billData = {
-            totalAmount: 0,
+            totalAmount: 0
           };
           updated[index].isLoading = false;
           setPropertyDetails((prev) => ({
             ...prev,
-            sewerageConnection: updated,
+            sewerageConnection: updated
           }));
           setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_SW") });
         } else if (bussinessService === "PT") {
@@ -309,7 +309,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           updated.isLoading = false;
           setPropertyDetails((prev) => ({
             ...prev,
-            propertyBillData: updated,
+            propertyBillData: updated
           }));
           setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_PROPERTY") });
         }
@@ -319,22 +319,22 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           const updated = [...propertyDetails.waterConnection];
           updated[index].isLoading = false;
           updated[index].billData = {
-            totalAmount: 0,
+            totalAmount: 0
           };
           setPropertyDetails((prev) => ({
             ...prev,
-            waterConnection: updated,
+            waterConnection: updated
           }));
           setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_WS") });
         } else if (bussinessService === "SW") {
           const updated = [...propertyDetails.sewerageConnection];
           updated[index].isLoading = false;
           updated[index].billData = {
-            totalAmount: 0,
+            totalAmount: 0
           };
           setPropertyDetails((prev) => ({
             ...prev,
-            sewerageConnection: updated,
+            sewerageConnection: updated
           }));
           setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_SW") });
         } else if (bussinessService === "PT") {
@@ -342,7 +342,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           updated.isLoading = false;
           setPropertyDetails((prev) => ({
             ...prev,
-            propertyBillData: updated,
+            propertyBillData: updated
           }));
           setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_PROPERTY") });
         }
@@ -356,22 +356,22 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           const updated = [...propertyDetails.waterConnection];
           updated[index].isLoading = false;
           updated[index].billData = {
-            totalAmount: 0,
+            totalAmount: 0
           };
           setPropertyDetails((prev) => ({
             ...prev,
-            waterConnection: updated,
+            waterConnection: updated
           }));
           setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_WS") });
         } else if (bussinessService === "SW") {
           const updated = [...propertyDetails.sewerageConnection];
           updated[index].isLoading = false;
           updated[index].billData = {
-            totalAmount: 0,
+            totalAmount: 0
           };
           setPropertyDetails((prev) => ({
             ...prev,
-            sewerageConnection: updated,
+            sewerageConnection: updated
           }));
           setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_SW") });
         }
@@ -386,7 +386,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
         setPropertyDetails((prev) => ({
           ...prev,
-          waterConnection: updated,
+          waterConnection: updated
         }));
       } else if (bussinessService === "SW") {
         const updated = [...propertyDetails.sewerageConnection];
@@ -396,7 +396,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
         setPropertyDetails((prev) => ({
           ...prev,
-          sewerageConnection: updated,
+          sewerageConnection: updated
         }));
       }
 
@@ -424,12 +424,12 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     let payUrl;
     if (billData?.businessService === "PT") {
       payUrl =
-        "https://sdc-uat.lgpunjab.gov.in" +
-        `/${userType}/egov-common/pay?consumerCode=${billData?.consumerCode}&tenantId=${billData?.tenantId}&businessService=${service}`;
+      "https://sdc-uat.lgpunjab.gov.in" +
+      `/${userType}/egov-common/pay?consumerCode=${billData?.consumerCode}&tenantId=${billData?.tenantId}&businessService=${service}`;
     } else {
       payUrl =
-        "https://sdc-uat.lgpunjab.gov.in" +
-        `/${userType}/wns/viewBill?connectionNumber=${billData?.consumerCode}&tenantId=${billData?.tenantId}&service=${service}`;
+      "https://sdc-uat.lgpunjab.gov.in" +
+      `/${userType}/wns/viewBill?connectionNumber=${billData?.consumerCode}&tenantId=${billData?.tenantId}&service=${service}`;
       // const payUrl =`/${userType}/egov-common/pay?consumerCode=${billData?.consumerCode}&tenantId=${billData?.tenantId}&businessService=${billData?.businessService}`
     }
     window.open(payUrl, "_blank");
@@ -439,21 +439,21 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       updated[index] = { connectionNo: billData?.consumerCode, isEdit: isEdit, billData: {}, isLoading: false };
       setPropertyDetails((prev) => ({
         ...prev,
-        waterConnection: updated,
+        waterConnection: updated
       }));
     } else if (billData?.businessService === "SW") {
       const updated = [...propertyDetails.sewerageConnection];
       updated[index] = { connectionNo: billData?.consumerCode, isEdit: isEdit, billData: {}, isLoading: false };
       setPropertyDetails((prev) => ({
         ...prev,
-        sewerageConnection: updated,
+        sewerageConnection: updated
       }));
     } else if (billData?.businessService === "PT") {
       let updated = { ...propertyDetails.propertyBillData };
       updated = { connectionNo: billData?.consumerCode, billData: {}, isLoading: false };
       setPropertyDetails((prev) => ({
         ...prev,
-        propertyBillData: updated,
+        propertyBillData: updated
       }));
     }
   }
@@ -482,7 +482,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   }, [checkApiDataCheck, apiDataCheck]);
 
   return (
-    <div style={{ marginBottom: "16px" }}>
+    <div className="ndc-style-87c136dfd0">
       {/* land area */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Land Area")} * `}</CardLabel>
@@ -491,21 +491,21 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             control={control}
             name={"landArea"}
             defaultValue={propertyDetails?.landArea || ""}
-            render={(props) => (
-              <TextInput
-                value={propertyDetails?.landArea}
-                onChange={(e) => {
-                  setPropertyDetails((prev) => ({ ...prev, landArea: e.target.value }));
-                  props.onChange(e.target.value);
-                }}
-                onBlur={(e) => {
-                  // setFocusIndex({ index: -1 });
-                  props.onBlur(e);
-                }}
-                disabled={formData?.cpt?.details?.landArea}
-              />
-            )}
-          />
+            render={(props) =>
+            <TextInput
+              value={propertyDetails?.landArea}
+              onChange={(e) => {
+                setPropertyDetails((prev) => ({ ...prev, landArea: e.target.value }));
+                props.onChange(e.target.value);
+              }}
+              onBlur={(e) => {
+                // setFocusIndex({ index: -1 });
+                props.onBlur(e);
+              }}
+              disabled={formData?.cpt?.details?.landArea} />
+
+            } />
+
         </div>
       </LabelFieldPair>
 
@@ -517,292 +517,292 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             control={control}
             name={"vashikaNumber"}
             defaultValue={propertyDetails?.vashikaNumber || ""}
-            render={(props) => (
-              <TextInput
-                value={propertyDetails?.vashikaNumber}
-                onChange={(e) => {
-                  setPropertyDetails((prev) => ({ ...prev, vashikaNumber: e.target.value }));
-                  props.onChange(e.target.value);
-                }}
-                onBlur={(e) => {
-                  // setFocusIndex({ index: -1 });
-                  props.onBlur(e);
-                }}
-                disabled={formData?.cpt?.details?.vashikaNumber}
-              />
-            )}
-          />
+            render={(props) =>
+            <TextInput
+              value={propertyDetails?.vashikaNumber}
+              onChange={(e) => {
+                setPropertyDetails((prev) => ({ ...prev, vashikaNumber: e.target.value }));
+                props.onChange(e.target.value);
+              }}
+              onBlur={(e) => {
+                // setFocusIndex({ index: -1 });
+                props.onBlur(e);
+              }}
+              disabled={formData?.cpt?.details?.vashikaNumber} />
+
+            } />
+
         </div>
       </LabelFieldPair>
 
-      {(formData?.cpt?.details || apiDataCheck?.[0]?.NdcDetails) && (
-        <div>
-          <LabelFieldPair style={{ marginTop: "40px" }}>
+      {(formData?.cpt?.details || apiDataCheck?.[0]?.NdcDetails) &&
+      <div>
+          <LabelFieldPair className="ndc-style-d9f149756a">
             <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_WATER_CONNECTION")}`}</CardLabel>
-            {waterConnectionLoading ? (
-              <Loader />
-            ) : (
-              <div className="form-field" style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
-                {propertyDetails?.waterConnection?.map((item, index) => (
-                  <div
-                    className="ndc_property_search"
-                    key={index}
-                    style={{ display: "flex", flexDirection: "row", alignItems: "baseline", gap: "16px" }}
-                  >
-                    <Controller
-                      key={index}
-                      control={control}
-                      name={`waterConnection[${index}]`}
-                      defaultValue={item.connectionNo}
-                      render={(props) => (
-                        <TextInput
-                          value={item.connectionNo}
-                          onChange={(e) => {
-                            // Update local state
-                            const updated = [...propertyDetails.waterConnection];
-                            updated[index] = { connectionNo: "", isEdit: true, billData: {}, isLoading: false };
-                            updated[index].connectionNo = e.target.value;
-                            setPropertyDetails((prev) => ({
-                              ...prev,
-                              waterConnection: updated,
-                            }));
-                            // Update react-hook-form
-                            props.onChange(e.target.value);
-                          }}
-                          disabled={!item.isEdit}
-                          onBlur={props.onBlur}
-                        />
-                      )}
-                    />
+            {waterConnectionLoading ?
+          <Loader /> :
 
-                    {item.isLoading ? (
-                      <Loader />
-                    ) : (
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        {!apiDataCheck?.[0]?.NdcDetails && item?.connectionNo && !item?.billData?.id && item?.billData?.totalAmount != 0 && (
-                          <button
-                            className="submit-bar"
-                            type="button"
-                            style={{ color: "white", fontSize: "13px" }}
-                            onClick={() => {
-                              // alert("clicking")
-                              fetchBill("WS", item.connectionNo, index);
-                            }}
-                          >
+          <div className="form-field ndc-style-c2529bfa42">
+                {propertyDetails?.waterConnection?.map((item, index) =>
+            <div
+              className="ndc_property_search ndc-style-f320e198cb"
+              key={index}>
+
+
+                    <Controller
+                key={index}
+                control={control}
+                name={`waterConnection[${index}]`}
+                defaultValue={item.connectionNo}
+                render={(props) =>
+                <TextInput
+                  value={item.connectionNo}
+                  onChange={(e) => {
+                    // Update local state
+                    const updated = [...propertyDetails.waterConnection];
+                    updated[index] = { connectionNo: "", isEdit: true, billData: {}, isLoading: false };
+                    updated[index].connectionNo = e.target.value;
+                    setPropertyDetails((prev) => ({
+                      ...prev,
+                      waterConnection: updated
+                    }));
+                    // Update react-hook-form
+                    props.onChange(e.target.value);
+                  }}
+                  disabled={!item.isEdit}
+                  onBlur={props.onBlur} />
+
+                } />
+
+
+                    {item.isLoading ?
+              <Loader /> :
+
+              <div className="ndc-style-95fd837ece">
+                        {!apiDataCheck?.[0]?.NdcDetails && item?.connectionNo && !item?.billData?.id && item?.billData?.totalAmount != 0 &&
+                <button
+                  className="submit-bar ndc-style-3f681624b1"
+                  type="button"
+
+                  onClick={() => {
+                    // alert("clicking")
+                    fetchBill("WS", item.connectionNo, index);
+                  }}>
+
                             {`${t("CHECK_STATUS_WATER")}`}
                             {/* Check Status for Water */}
                           </button>
-                        )}
+                }
 
-                        {item?.connectionNo && item?.billData?.totalAmount > 0 && (
-                          <button
-                            className="submit-bar"
-                            type="button"
-                            style={{ color: "white" }}
-                            onClick={() => {
-                              redirectToPayBill(item?.billData, index, item.isEdit);
-                            }}
-                          >
+                        {item?.connectionNo && item?.billData?.totalAmount > 0 &&
+                <button
+                  className="submit-bar ndc-style-0a43e56ae2"
+                  type="button"
+
+                  onClick={() => {
+                    redirectToPayBill(item?.billData, index, item.isEdit);
+                  }}>
+
                             {`${t("PAY_DUES")}`}
                           </button>
-                        )}
+                }
 
-                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div style={{ color: "green" }}>{t("NO_DUES")}</div>}
+                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div className="ndc-style-9cdf81d40c">{t("NO_DUES")}</div>}
 
-                        {item?.isEdit && (
-                          <button
-                            onClick={() => {
-                              let updated = [...propertyDetails.waterConnection];
-                              updated.splice(index, 1);
-                              setPropertyDetails((prev) => {
-                                return {
-                                  ...prev,
-                                  waterConnection: updated,
-                                };
-                              });
-                            }}
-                          >
-                            <DeleteIcon className="delete" fill="#a82227" style={{ cursor: "pointer", marginLeft: "20px" }} />
+                        {item?.isEdit &&
+                <button
+                  onClick={() => {
+                    let updated = [...propertyDetails.waterConnection];
+                    updated.splice(index, 1);
+                    setPropertyDetails((prev) => {
+                      return {
+                        ...prev,
+                        waterConnection: updated
+                      };
+                    });
+                  }}>
+
+                            <DeleteIcon className="delete ndc-style-ec82c42339" fill="#a82227" />
                           </button>
-                        )}
+                }
                       </div>
-                    )}
+              }
                   </div>
-                ))}
-              </div>
             )}
+              </div>
+          }
           </LabelFieldPair>
 
           <button
-            className="submit-bar"
-            type="button"
-            style={{ color: "white", fontSize: "12px" }}
-            onClick={() => {
-              addWaterConnection();
-            }}
-          >
+          className="submit-bar ndc-style-cc1363702b"
+          type="button"
+
+          onClick={() => {
+            addWaterConnection();
+          }}>
+
             {`${t("ADD_WATER")}`}
           </button>
 
-          <LabelFieldPair style={{ marginTop: "40px" }}>
+          <LabelFieldPair className="ndc-style-d9f149756a">
             <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_SEWERAGE_CONNECTION")} `}</CardLabel>
-            {sewerageConnectionLoading ? (
-              <Loader />
-            ) : (
-              <div className="form-field" style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
-                {propertyDetails?.sewerageConnection?.map((item, index) => (
-                  <div
-                    className="ndc_property_search"
-                    key={index}
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "baseline",
-                      gap: "16px",
-                    }}
-                  >
+            {sewerageConnectionLoading ?
+          <Loader /> :
+
+          <div className="form-field ndc-style-c2529bfa42">
+                {propertyDetails?.sewerageConnection?.map((item, index) =>
+            <div
+              className="ndc_property_search ndc-style-f320e198cb"
+              key={index}>
+
+
+
+
+
+
+
                     <Controller
-                      key={index}
-                      control={control}
-                      name={`sewerageConnection[${index}]`}
-                      defaultValue={item.connectionNo}
-                      render={(field) => (
-                        <TextInput
-                          value={item.connectionNo}
-                          onChange={(e) => {
-                            // Update local state
-                            const updated = [...propertyDetails.sewerageConnection];
-                            updated[index] = { connectionNo: "", isEdit: true, billData: {}, isLoading: false };
-                            updated[index].connectionNo = e.target.value;
-                            setPropertyDetails((prev) => ({
-                              ...prev,
-                              sewerageConnection: updated,
-                            }));
+                key={index}
+                control={control}
+                name={`sewerageConnection[${index}]`}
+                defaultValue={item.connectionNo}
+                render={(field) =>
+                <TextInput
+                  value={item.connectionNo}
+                  onChange={(e) => {
+                    // Update local state
+                    const updated = [...propertyDetails.sewerageConnection];
+                    updated[index] = { connectionNo: "", isEdit: true, billData: {}, isLoading: false };
+                    updated[index].connectionNo = e.target.value;
+                    setPropertyDetails((prev) => ({
+                      ...prev,
+                      sewerageConnection: updated
+                    }));
 
-                            // Update react-hook-form
-                            field.onChange(e.target.value);
-                          }}
-                          disabled={!item.isEdit}
-                          onBlur={field.onBlur}
-                        />
-                      )}
-                    />
+                    // Update react-hook-form
+                    field.onChange(e.target.value);
+                  }}
+                  disabled={!item.isEdit}
+                  onBlur={field.onBlur} />
 
-                    {item.isLoading ? (
-                      <Loader />
-                    ) : (
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        {!apiDataCheck?.[0]?.NdcDetails && item?.connectionNo && !item?.billData?.id && item?.billData?.totalAmount != 0 && (
-                          <button
-                            className="submit-bar"
-                            type="button"
-                            style={{ color: "white", fontSize: "13px" }}
-                            onClick={() => {
-                              fetchBill("SW", item.connectionNo, index, item.isEdit);
-                            }}
-                          >
+                } />
+
+
+                    {item.isLoading ?
+              <Loader /> :
+
+              <div className="ndc-style-95fd837ece">
+                        {!apiDataCheck?.[0]?.NdcDetails && item?.connectionNo && !item?.billData?.id && item?.billData?.totalAmount != 0 &&
+                <button
+                  className="submit-bar ndc-style-3f681624b1"
+                  type="button"
+
+                  onClick={() => {
+                    fetchBill("SW", item.connectionNo, index, item.isEdit);
+                  }}>
+
                             {`${t("CHECK_STATUS_SEWERAGE")}`}
                             {/* Check Status for Sewerage */}
                           </button>
-                        )}
+                }
 
-                        {item?.connectionNo && item?.billData?.totalAmount > 0 && (
-                          <button
-                            className="submit-bar"
-                            type="button"
-                            style={{ color: "white" }}
-                            onClick={() => {
-                              // setSelectedBillData(item?.billData);
-                              // setShowPayModal(true);
-                              redirectToPayBill(item?.billData, index);
-                            }}
-                          >
+                        {item?.connectionNo && item?.billData?.totalAmount > 0 &&
+                <button
+                  className="submit-bar ndc-style-0a43e56ae2"
+                  type="button"
+
+                  onClick={() => {
+                    // setSelectedBillData(item?.billData);
+                    // setShowPayModal(true);
+                    redirectToPayBill(item?.billData, index);
+                  }}>
+
                             {`${t("PAY_DUES")}`}
                           </button>
-                        )}
+                }
 
-                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div style={{ color: "green" }}>{t("NO_DUES")}</div>}
+                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div className="ndc-style-9cdf81d40c">{t("NO_DUES")}</div>}
 
-                        {item?.isEdit && (
-                          <button
-                            onClick={() => {
-                              let updated = [...propertyDetails.sewerageConnection];
-                              updated.splice(index, 1);
-                              setPropertyDetails((prev) => {
-                                return {
-                                  ...prev,
-                                  sewerageConnection: updated,
-                                };
-                              });
-                            }}
-                          >
-                            <DeleteIcon className="delete" fill="#a82227" style={{ cursor: "pointer", marginLeft: "20px" }} />
+                        {item?.isEdit &&
+                <button
+                  onClick={() => {
+                    let updated = [...propertyDetails.sewerageConnection];
+                    updated.splice(index, 1);
+                    setPropertyDetails((prev) => {
+                      return {
+                        ...prev,
+                        sewerageConnection: updated
+                      };
+                    });
+                  }}>
+
+                            <DeleteIcon className="delete ndc-style-ec82c42339" fill="#a82227" />
                           </button>
-                        )}
+                }
                       </div>
-                    )}
+              }
                   </div>
-                ))}
-              </div>
             )}
+              </div>
+          }
           </LabelFieldPair>
 
           <button
-            className="submit-bar"
-            type="button"
-            style={{ color: "white", fontSize: " 12px" }}
-            onClick={() => {
-              addSewerageConnection();
-            }}
-          >
+          className="submit-bar ndc-style-706912a43b"
+          type="button"
+
+          onClick={() => {
+            addSewerageConnection();
+          }}>
+
             {`${t("ADD_SEWERAGE")}`}
           </button>
 
-          <div style={{ marginTop: "40px", marginBottom: "20px" }}>
-            <p style={{ color: " green", fontSize: "14px", paddingBottom: "10px" }}>
+          <div className="ndc-style-9619a2518f">
+            <p className="ndc-style-c8be6c92ec">
               Please Select One Owner Name Who will have the access of No Due Certificate
             </p>
             <Table
-              className="customTable table-border-style"
-              t={t}
-              data={formData?.cpt?.details?.owners || []}
-              columns={applicationFeeColumns}
-              getCellProps={() => ({ style: {} })}
-              disableSort={true}
-              manualPagination={false}
-              isPaginationRequired={false}
-            />
+            className="customTable table-border-style"
+            t={t}
+            data={formData?.cpt?.details?.owners || []}
+            columns={applicationFeeColumns}
+            getCellProps={() => ({ style: {} })}
+            disableSort={true}
+            manualPagination={false}
+            isPaginationRequired={false} />
+
           </div>
 
-          {selectedRow && (
-            <div>
+          {selectedRow &&
+        <div>
               {/* name */}
-              <LabelFieldPair style={{ marginTop: "40px" }}>
+              <LabelFieldPair className="ndc-style-d9f149756a">
                 <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_FULL_NAME")} * `}</CardLabel>
                 <div className="form-field">
                   <Controller
-                    control={control}
-                    name={"firstName"}
-                    defaultValue={propertyDetails?.firstName || ""}
-                    rules={{
-                      required: t("REQUIRED_FIELD"),
-                      validate: { pattern: (val) => (/^[-@.\/#&+\w\s]*$/.test(val) ? true : t("INVALID_NAME")) },
-                    }}
-                    render={(props) => (
-                      <TextInput
-                        value={propertyDetails?.firstName || ""}
-                        onChange={(e) => {
-                          setPropertyDetails((prev) => ({ ...prev, firstName: e.target.value }));
-                          props.onChange(e.target.value);
-                        }}
-                        onBlur={(e) => {
-                          // setFocusIndex({ index: -1 });
-                          props.onBlur(e);
-                        }}
-                        disabled={formData?.cpt?.details?.owners?.[0]?.name?.split(" ")?.[0]?.length > 0}
-                      />
-                    )}
-                  />
+                control={control}
+                name={"firstName"}
+                defaultValue={propertyDetails?.firstName || ""}
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  validate: { pattern: (val) => /^[-@.\/#&+\w\s]*$/.test(val) ? true : t("INVALID_NAME") }
+                }}
+                render={(props) =>
+                <TextInput
+                  value={propertyDetails?.firstName || ""}
+                  onChange={(e) => {
+                    setPropertyDetails((prev) => ({ ...prev, firstName: e.target.value }));
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    // setFocusIndex({ index: -1 });
+                    props.onBlur(e);
+                  }}
+                  disabled={formData?.cpt?.details?.owners?.[0]?.name?.split(" ")?.[0]?.length > 0} />
+
+                } />
+
                 </div>
               </LabelFieldPair>
 
@@ -811,24 +811,24 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                 <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_EMAIL")} * `}</CardLabel>
                 <div className="form-field">
                   <Controller
-                    control={control}
-                    name={"email"}
-                    defaultValue={propertyDetails?.email || ""}
-                    render={(props) => (
-                      <TextInput
-                        value={propertyDetails?.email}
-                        onChange={(e) => {
-                          setPropertyDetails((prev) => ({ ...prev, email: e.target.value }));
-                          props.onChange(e.target.value);
-                        }}
-                        onBlur={(e) => {
-                          // setFocusIndex({ index: -1 });
-                          props.onBlur(e);
-                        }}
-                        // disabled={formData?.cpt?.details?.owners?.[0]?.emailId}
-                      />
-                    )}
-                  />
+                control={control}
+                name={"email"}
+                defaultValue={propertyDetails?.email || ""}
+                render={(props) =>
+                <TextInput
+                  value={propertyDetails?.email}
+                  onChange={(e) => {
+                    setPropertyDetails((prev) => ({ ...prev, email: e.target.value }));
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    // setFocusIndex({ index: -1 });
+                    props.onBlur(e);
+                  }}
+                  // disabled={formData?.cpt?.details?.owners?.[0]?.emailId}
+                />
+                } />
+
                 </div>
               </LabelFieldPair>
 
@@ -837,24 +837,24 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                 <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Father Name")} * `}</CardLabel>
                 <div className="form-field">
                   <Controller
-                    control={control}
-                    name={"fatherOrHusbandName"}
-                    defaultValue={propertyDetails?.fatherOrHusbandName || ""}
-                    render={(props) => (
-                      <TextInput
-                        value={propertyDetails?.fatherOrHusbandName}
-                        onChange={(e) => {
-                          setPropertyDetails((prev) => ({ ...prev, fatherOrHusbandName: e.target.value }));
-                          props.onChange(e.target.value);
-                        }}
-                        onBlur={(e) => {
-                          // setFocusIndex({ index: -1 });
-                          props.onBlur(e);
-                        }}
-                        disabled={formData?.cpt?.details?.owners?.[0]?.fatherOrHusbandName}
-                      />
-                    )}
-                  />
+                control={control}
+                name={"fatherOrHusbandName"}
+                defaultValue={propertyDetails?.fatherOrHusbandName || ""}
+                render={(props) =>
+                <TextInput
+                  value={propertyDetails?.fatherOrHusbandName}
+                  onChange={(e) => {
+                    setPropertyDetails((prev) => ({ ...prev, fatherOrHusbandName: e.target.value }));
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    // setFocusIndex({ index: -1 });
+                    props.onBlur(e);
+                  }}
+                  disabled={formData?.cpt?.details?.owners?.[0]?.fatherOrHusbandName} />
+
+                } />
+
                 </div>
               </LabelFieldPair>
 
@@ -863,24 +863,24 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                 <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_MOBILE_NUMBER")} * `}</CardLabel>
                 <div className="form-field">
                   <Controller
-                    control={control}
-                    name={"mobileNumber"}
-                    defaultValue={propertyDetails?.mobileNumber || ""}
-                    render={(props) => (
-                      <TextInput
-                        value={propertyDetails?.mobileNumber}
-                        onChange={(e) => {
-                          setPropertyDetails((prev) => ({ ...prev, mobileNumber: e.target.value }));
-                          props.onChange(e.target.value);
-                        }}
-                        onBlur={(e) => {
-                          // setFocusIndex({ index: -1 });
-                          props.onBlur(e);
-                        }}
-                        disabled={formData?.cpt?.details?.owners?.[0]?.mobileNumber}
-                      />
-                    )}
-                  />
+                control={control}
+                name={"mobileNumber"}
+                defaultValue={propertyDetails?.mobileNumber || ""}
+                render={(props) =>
+                <TextInput
+                  value={propertyDetails?.mobileNumber}
+                  onChange={(e) => {
+                    setPropertyDetails((prev) => ({ ...prev, mobileNumber: e.target.value }));
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    // setFocusIndex({ index: -1 });
+                    props.onBlur(e);
+                  }}
+                  disabled={formData?.cpt?.details?.owners?.[0]?.mobileNumber} />
+
+                } />
+
                 </div>
               </LabelFieldPair>
 
@@ -889,30 +889,30 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                 <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_ADDRESS")} * `}</CardLabel>
                 <div className="form-field">
                   <Controller
-                    control={control}
-                    name={"address"}
-                    defaultValue={propertyDetails?.address || ""}
-                    render={(props) => (
-                      <TextInput
-                        value={propertyDetails?.address}
-                        onChange={(e) => {
-                          setPropertyDetails((prev) => ({ ...prev, address: e.target.value }));
-                          props.onChange(e.target.value);
-                        }}
-                        onBlur={(e) => {
-                          // setFocusIndex({ index: -1 });
-                          props.onBlur(e);
-                        }}
-                        disabled={formData?.cpt?.details?.owners?.[0]?.permanentAddress?.length > 0}
-                      />
-                    )}
-                  />
+                control={control}
+                name={"address"}
+                defaultValue={propertyDetails?.address || ""}
+                render={(props) =>
+                <TextInput
+                  value={propertyDetails?.address}
+                  onChange={(e) => {
+                    setPropertyDetails((prev) => ({ ...prev, address: e.target.value }));
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    // setFocusIndex({ index: -1 });
+                    props.onBlur(e);
+                  }}
+                  disabled={formData?.cpt?.details?.owners?.[0]?.permanentAddress?.length > 0} />
+
+                } />
+
                 </div>
               </LabelFieldPair>
             </div>
-          )}
+        }
         </div>
-      )}
+      }
 
       {/* remarks */}
       <LabelFieldPair>
@@ -923,22 +923,22 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             name={"remarks"}
             defaultValue={propertyDetails?.remarks || ""}
             rules={{
-              required: t("REQUIRED_FIELD"),
+              required: t("REQUIRED_FIELD")
             }}
-            render={(props) => (
-              <TextInput
-                value={propertyDetails?.remarks || ""}
-                onChange={(e) => {
-                  setPropertyDetails((prev) => ({ ...prev, remarks: e.target.value }));
-                  props.onChange(e.target.value);
-                }}
-                onBlur={(e) => {
-                  // setFocusIndex({ index: -1 });
-                  props.onBlur(e);
-                }}
-              />
-            )}
-          />
+            render={(props) =>
+            <TextInput
+              value={propertyDetails?.remarks || ""}
+              onChange={(e) => {
+                setPropertyDetails((prev) => ({ ...prev, remarks: e.target.value }));
+                props.onChange(e.target.value);
+              }}
+              onBlur={(e) => {
+                // setFocusIndex({ index: -1 });
+                props.onBlur(e);
+              }} />
+
+            } />
+
         </div>
       </LabelFieldPair>
 
@@ -950,33 +950,33 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             control={control}
             name={"tlNumber"}
             defaultValue={propertyDetails?.tlNumber || ""}
-            render={(props) => (
-              <TextInput
-                value={propertyDetails?.tlNumber}
-                onChange={(e) => {
-                  setPropertyDetails((prev) => ({ ...prev, tlNumber: e.target.value }));
-                  props.onChange(e.target.value);
-                }}
-                onBlur={(e) => {
-                  // setFocusIndex({ index: -1 });
-                  props.onBlur(e);
-                }}
-              />
-            )}
-          />
+            render={(props) =>
+            <TextInput
+              value={propertyDetails?.tlNumber}
+              onChange={(e) => {
+                setPropertyDetails((prev) => ({ ...prev, tlNumber: e.target.value }));
+                props.onChange(e.target.value);
+              }}
+              onBlur={(e) => {
+                // setFocusIndex({ index: -1 });
+                props.onBlur(e);
+              }} />
+
+            } />
+
         </div>
       </LabelFieldPair>
 
       {showToast && <Toast isDleteBtn={true} error={showToast?.error} label={showToast?.label} onClose={closeToast} />}
-      {showPayModal && (
-        <PayWSBillModal
-          setShowToast={() => {
-            setShowPayModal(false);
-            setSelectedBillData({});
-          }}
-          billData={selectedBillData}
-        />
-      )}
-    </div>
-  );
+      {showPayModal &&
+      <PayWSBillModal
+        setShowToast={() => {
+          setShowPayModal(false);
+          setSelectedBillData({});
+        }}
+        billData={selectedBillData} />
+
+      }
+    </div>);
+
 };

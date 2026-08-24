@@ -24,7 +24,7 @@ const CLUProfessionalDetails = (_props) => {
 
   const userInfo = Digit.UserService.getUser();
  // console.log("userInfo here", userInfo);
-  
+
   const isUserArchitect = userInfo?.info?.roles?.find((item) => item?.code === "BPA_ARCHITECT");
   const { data: professionalData, isLoading: professionalDataLoading } = Digit.Hooks.obps.useBPAREGSearch(isUserArchitect? "pb.punjab" : tenantId, {}, {mobileNumber: userInfo?.info?.mobileNumber}, {cacheTime : 0});
 
@@ -65,7 +65,7 @@ const CLUProfessionalDetails = (_props) => {
      setLicenseValidity( Digit.DateUtils.ConvertEpochToDate(profData?.validTo));
     }
   },[profData]);
-  
+
   useEffect(() => {
     if (regId) {
       setValue("professionalRegId", regId, { shouldValidate: true, shouldDirty: false });
@@ -82,7 +82,7 @@ const CLUProfessionalDetails = (_props) => {
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_PROFESSIONAL_DETAILS")}</CardSectionHeader>
 
-      <LabelFieldPair style={{ marginBottom: "20px" }}>
+      <LabelFieldPair className="obps-page-components-cluprofessional-details--style-1">
         <CardLabel>{`${t("BPA_PROFESSIONAL_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
@@ -118,7 +118,7 @@ const CLUProfessionalDetails = (_props) => {
         </div>
       </LabelFieldPair>
 
-      <LabelFieldPair style={{ marginBottom: "20px" }}>
+      <LabelFieldPair className="obps-page-components-cluprofessional-details--style-2">
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_EMAIL_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
@@ -150,7 +150,7 @@ const CLUProfessionalDetails = (_props) => {
         </div>
       </LabelFieldPair>
 
-      <LabelFieldPair style={{ marginBottom: "20px" }}>
+      <LabelFieldPair className="obps-page-components-cluprofessional-details--style-3">
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
@@ -181,7 +181,7 @@ const CLUProfessionalDetails = (_props) => {
         </div>
       </LabelFieldPair>
 
-      <LabelFieldPair style={{ marginBottom: "20px" }}>
+      <LabelFieldPair className="obps-page-components-cluprofessional-details--style-4">
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
@@ -212,7 +212,7 @@ const CLUProfessionalDetails = (_props) => {
         </div>
       </LabelFieldPair>
 
-      <LabelFieldPair style={{ marginBottom: "20px" }}>
+      <LabelFieldPair className="obps-page-components-cluprofessional-details--style-5">
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller

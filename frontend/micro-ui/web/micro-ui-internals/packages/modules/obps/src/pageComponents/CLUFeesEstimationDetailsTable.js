@@ -242,11 +242,11 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
   }
 
   return (
-    <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+    <div className="obps-page-components-clufees-estimation-details-table--style-1">
       {cluCalculatorLoading ? (
         <Loader />
       ) : (
-        <div style={{ width: "100%" }}>
+        <div className="obps-page-components-clufees-estimation-details-table--style-2">
           <CLUFeeTable
             feeDataWithTotal={applicationFeeDataWithTotal}
             feeData={feeAdjustments}

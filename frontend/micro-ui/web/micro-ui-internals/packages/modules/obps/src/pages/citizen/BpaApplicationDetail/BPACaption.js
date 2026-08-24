@@ -14,18 +14,18 @@ const BPACaption = ({ data,OpenImage }) => {
       {data.source && <p>{t("ES_APPLICATION_DETAILS_APPLICATION_CHANNEL_" + data.source.toUpperCase())}</p>}
       {/* //TODO: please find a better way to display in checkpoints */}
       {data.comment && <BPAReason otherComment={data?.otherComment} headComment={data?.comment}></BPAReason>}
-      {data?.wfComment ? <div>{data?.wfComment?.map( e => 
+      {data?.wfComment ? <div>{data?.wfComment?.map( e =>
       <div className="TLComments">
         <h3>{t("WF_COMMON_COMMENTS")}</h3>
         {!viewMore && (
         <div>
-         <p style={{overflow:"hidden", textOverflow:"ellipsis",display:"-webkit-box", WebkitLineClamp:1, WebkitBoxOrient:"vertical"}}>{e}</p>
+         <p className="obps-pages-citizen-bpa-application-detail-bpacaption--style-1">{e}</p>
           {e.length>36?(<button
             type="button"
             onClick={() => {
               setviewMore(true);
             }}
-            style={{color:"#800000"}}
+            className="obps-pages-citizen-bpa-application-detail-bpacaption--style-2"
           >
             {t("View More")}
           </button>):null}
@@ -33,13 +33,13 @@ const BPACaption = ({ data,OpenImage }) => {
       )}
       {viewMore && (
         <div >
-          <p style={{overflow:"visible"}}>{e}</p>
+          <p className="obps-pages-citizen-bpa-application-detail-bpacaption--style-3">{e}</p>
           <button
             type="button"
             onClick={() => {
               setviewMore(false);
             }}
-            style={{color:"#800000"}}
+            className="obps-pages-citizen-bpa-application-detail-bpacaption--style-4"
           >
             {t("View Less")}
           </button>

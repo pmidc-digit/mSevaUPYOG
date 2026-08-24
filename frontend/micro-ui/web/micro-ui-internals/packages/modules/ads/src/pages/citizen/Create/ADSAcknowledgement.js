@@ -9,7 +9,7 @@ const ADSAcknowledgment = (props) => {
   const history = useHistory();
   const applicationData = state?.applicationData;
   const tenantId = window.localStorage.getItem("Citizen.tenant-id");
-  
+
   const pathname = history?.location?.pathname || "";
   const adsCode = pathname.split("/").pop(); // Extracts the last segment (application number)
 
@@ -34,7 +34,7 @@ const ADSAcknowledgment = (props) => {
           applicationNumber={adsCode}
           info={applicationData?.applicationStatus === "REJECTED" ? "" : t(`ADS_BOOKING_NUMBER`)}
           successful={applicationData?.applicationStatus === "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
+          className="ads-pages-citizen-create-adsacknowledgement--style-1"
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         {applicationData?.applicationStatus !== "REJECTED" ? (
@@ -42,7 +42,7 @@ const ADSAcknowledgment = (props) => {
             {t(`ADS_${applicationData?.applicationStatus}_SUB_HEADER`)}
           </CardText>
         ) : null}
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+        <ActionBar className="ads-pages-citizen-create-adsacknowledgement--style-2">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_ADS")} onSubmit={onGoToADS} />
           {applicationData?.applicationStatus === "PENDINGPAYMENT" && (

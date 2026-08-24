@@ -24,53 +24,53 @@ const Status = ({ onAssignmentChange, searchParams, businessServices, statusMap,
 
   console.log("userRoleStates", userRoleStates);
 
-  return userRoleStates?.filter((e) => !e.isTerminateState).length || true ? (
-    <div className="status-container">
-      <div className="filter-label" style={{ fontWeight: "normal" }}>
+  return userRoleStates?.filter((e) => !e.isTerminateState).length || true ?
+  <div className="status-container">
+      <div className="filter-label ptr-style-1f3c50d02a">
         {t("ES_INBOX_STATUS")}
       </div>
-      {userRoleStates
-        ?.filter((e) => !e.isTerminateState)
-        ?.slice(0, 4)
-        ?.map((option, index) => {
-          return (
-            <StatusCount
-              businessServices={businessServices}
-              key={index}
-              onAssignmentChange={onAssignmentChange}
-              status={{ name: translateState(option, t), code: option.applicationStatus, ...option }}
-              searchParams={searchParams}
-              statusMap={statusMap}
-            />
-          );
-        })}
-      {userRoleStates?.filter((e) => !e.isTerminateState)?.slice(4).length > 0 ? (
-        <React.Fragment>
+      {userRoleStates?.
+    filter((e) => !e.isTerminateState)?.
+    slice(0, 4)?.
+    map((option, index) => {
+      return (
+        <StatusCount
+          businessServices={businessServices}
+          key={index}
+          onAssignmentChange={onAssignmentChange}
+          status={{ name: translateState(option, t), code: option.applicationStatus, ...option }}
+          searchParams={searchParams}
+          statusMap={statusMap} />);
+
+
+    })}
+      {userRoleStates?.filter((e) => !e.isTerminateState)?.slice(4).length > 0 ?
+    <React.Fragment>
           {moreStatus &&
-            userRoleStates
-              ?.filter((e) => !e.isTerminateState)
-              ?.slice(4)
-              ?.map((option, index) => {
-                return (
-                  <StatusCount
-                    businessServices={businessServices}
-                    key={option.uuid}
-                    onAssignmentChange={onAssignmentChange}
-                    status={{ name: translateState(option, t), code: option.applicationStatus, ...option }}
-                    searchParams={searchParams}
-                    statusMap={statusMap}
-                  />
-                );
-              })}
+      userRoleStates?.
+      filter((e) => !e.isTerminateState)?.
+      slice(4)?.
+      map((option, index) => {
+        return (
+          <StatusCount
+            businessServices={businessServices}
+            key={option.uuid}
+            onAssignmentChange={onAssignmentChange}
+            status={{ name: translateState(option, t), code: option.applicationStatus, ...option }}
+            searchParams={searchParams}
+            statusMap={statusMap} />);
+
+
+      })}
 
           <div className="filter-button" onClick={() => showMoreStatus(!moreStatus)}>
             {" "}
             {moreStatus ? t("ES_COMMON_LESS") : t("ES_COMMON_MORE")}{" "}
           </div>
-        </React.Fragment>
-      ) : null}
-    </div>
-  ) : null;
+        </React.Fragment> :
+    null}
+    </div> :
+  null;
 };
 
 export default Status;

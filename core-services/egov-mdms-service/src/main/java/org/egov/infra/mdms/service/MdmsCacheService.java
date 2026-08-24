@@ -25,9 +25,8 @@ import net.minidev.json.JSONArray;
  * Unified service for managing the MDMS in-memory cache (tenantMap).
  *
  * Responsibilities: 1. Load all active MDMS data from the database at
- * application startup and replace the in-memory cache with a DB snapshot.
- * 2. Process Kafka messages
- * (create/update) to keep the cache in sync at runtime.
+ * application startup and replace the in-memory cache with a DB snapshot. 2.
+ * Process Kafka messages (create/update) to keep the cache in sync at runtime.
  *
  * Merge strategy (both DB load and Kafka updates): - Records with matching
  * "code" are updated in place. - New records are added. - Inactive records are
@@ -100,8 +99,7 @@ public class MdmsCacheService {
 	 */
 	/**
 	 * Loads all active MDMS data from the database and merges individual records
-	 * into
-	 * the in-memory tenantMap cache (which was initialized from files).
+	 * into the in-memory tenantMap cache (which was initialized from files).
 	 */
 	public void loadAndMergeDbData() {
 		if (!dbLoadEnabled) {
@@ -148,7 +146,8 @@ public class MdmsCacheService {
 					String masterKey = effectiveTenantId + "." + moduleName + "." + masterName;
 					if (clearedMasters.add(masterKey)) {
 						masterData.clear();
-						log.info("Cleared file-loaded master data for {}.{} under tenant {} to replace with DB data", moduleName, masterName, effectiveTenantId);
+						log.info("Cleared file-loaded master data for {}.{} under tenant {} to replace with DB data",
+								moduleName, masterName, effectiveTenantId);
 					}
 
 					if (dataObj instanceof List) {
@@ -250,8 +249,8 @@ public class MdmsCacheService {
 	}
 
 	/**
-	 * Direct addition of database records to in-memory cache without code matching or merging.
-	 * Replaces master array content directly.
+	 * Direct addition of database records to in-memory cache without code matching
+	 * or merging. Replaces master array content directly.
 	 */
 	@SuppressWarnings("unchecked")
 	private void upsertDbRecord(JSONArray masterData, Object dbRecord, String moduleName, String masterName,
@@ -273,9 +272,10 @@ public class MdmsCacheService {
 	}
 
 	/**
-	 * Generic Kafka update message merge strategy (used during real-time Kafka events).
-	 * Searches masterData array using configured uniqueKeys or generic identity matching.
-	 * Updates existing record in-place via deep-merge or appends new record.
+	 * Generic Kafka update message merge strategy (used during real-time Kafka
+	 * events). Searches masterData array using configured uniqueKeys or generic
+	 * identity matching. Updates existing record in-place via deep-merge or appends
+	 * new record.
 	 */
 	@SuppressWarnings("unchecked")
 	private void upsertKafkaRecord(JSONArray masterData, Object kafkaRecord, String moduleName, String masterName,
@@ -362,7 +362,8 @@ public class MdmsCacheService {
 
 		// 3. Match by uniqueIdentifier
 		Object existingUnique = existingMap.get("uniqueIdentifier");
-		Object newUnique = newRecordMap.get("uniqueIdentifier") != null ? newRecordMap.get("uniqueIdentifier") : topLevelUniqueIdentifier;
+		Object newUnique = newRecordMap.get("uniqueIdentifier") != null ? newRecordMap.get("uniqueIdentifier")
+				: topLevelUniqueIdentifier;
 		if (existingUnique != null && newUnique != null) {
 			if (isDeepEqual(existingUnique, newUnique)) {
 				return true;
@@ -382,9 +383,7 @@ public class MdmsCacheService {
 		}
 
 		return false;
-	}	
-
-
+	}
 
 	private boolean isRandomUuid(Object idObj) {
 		if (idObj == null)

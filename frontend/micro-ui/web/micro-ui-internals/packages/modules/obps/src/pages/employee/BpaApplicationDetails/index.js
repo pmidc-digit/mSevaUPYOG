@@ -1738,6 +1738,7 @@ const BpaApplicationDetail = () => {
             // geoLocations: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? geoLocations : data?.BPA?.additionalDetails?.geoLocations,
             // FieldReports: appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 ? canSubmit : null,
             fieldinspection_pending: fieldInspectionPending,
+            draftComment: ""
           },
         },
       };
@@ -1763,6 +1764,7 @@ const BpaApplicationDetail = () => {
             setTimeout(closeToast, 5000);
           },
           onSuccess: (data, variables) => {
+            setDraftComment("");
             sessionStorage.removeItem("WS_SESSION_APPLICATION_DETAILS");
             setIsEnableLoader(false);
             if (isOBPS?.bpa) {

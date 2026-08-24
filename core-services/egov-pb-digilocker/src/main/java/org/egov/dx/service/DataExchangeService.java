@@ -530,12 +530,14 @@ private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriR
     }
 
     private RequestInfoWrapper prepareRequestInfo() {
-        UserResponse user = userService.getUser();
+        UserResponse userResponse = userService.getUser();
         RequestInfo info = new RequestInfo();
         info.setApiId(API_ID);
         info.setMsgId(String.format(MSG_ID_PATTERN, System.currentTimeMillis()));
-        info.setAuthToken(user.getAuthToken());
-        info.setUserInfo(user.getUser());
+        info.setAuthToken(configurations.getAuthTokenVariable());
+        if (userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()) {
+            info.setUserInfo(userResponse.getUser().get(0));
+        }
         
         RequestInfoWrapper wrapper = new RequestInfoWrapper();
         wrapper.setRequestInfo(info);

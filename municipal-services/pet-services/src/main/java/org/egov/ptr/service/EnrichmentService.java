@@ -1,5 +1,7 @@
 package org.egov.ptr.service;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -9,6 +11,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.ptr.config.PetConfiguration;
@@ -83,11 +87,13 @@ public class EnrichmentService {
 			if (isRenewPetApplication(application)) {
 				// Try to copy petRegistrationNumber and petToken from previous application if available
 				copyPetRegistrationNumberFromPreviousApplication(application, requestInfo);
+				// Calculate and update pet age based on previous application age and time elapsed
+				calculateUpdatedPetAge(application, requestInfo);
 				enrichRenewalDetails(application, validityDateUnix);
-				
+
 				// Final verification: Log the petRegistrationNumber and petToken values after enrichment
-				log.info("FINAL CHECK - Renewal application enriched - ApplicationNumber: {}, petRegistrationNumber: {}, petToken: {}", 
-						application.getApplicationNumber(), 
+				log.info("FINAL CHECK - Renewal application enriched - ApplicationNumber: {}, petRegistrationNumber: {}, petToken: {}",
+						application.getApplicationNumber(),
 						application.getPetRegistrationNumber() != null ? application.getPetRegistrationNumber() : "NULL - WILL NOT BE SAVED TO DB",
 						application.getPetToken() != null ? application.getPetToken() : "NULL - WILL NOT BE SAVED TO DB");
 			}
@@ -263,10 +269,154 @@ public class EnrichmentService {
 			// Re-throw CustomException as-is
 			throw e;
 		} catch (Exception e) {
-			log.error("Error copying petRegistrationNumber and petToken from previous application for renewal: {}. Error: {}", 
+			log.error("Error copying petRegistrationNumber and petToken from previous application for renewal: {}. Error: {}",
 					application.getApplicationNumber(), e.getMessage(), e);
-			throw new CustomException("ERROR_COPYING_PREVIOUS_APPLICATION_DATA", 
+			throw new CustomException("ERROR_COPYING_PREVIOUS_APPLICATION_DATA",
 					"Failed to copy petToken and petRegistrationNumber from previous application: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Calculates the updated pet age for renewal applications based on the previous application's
+	 * age and the time elapsed since the previous application was created.
+	 * Formula: newAge = oldAge + (currentDate - previousAppCreatedTime)
+	 */
+	private void calculateUpdatedPetAge(PetRegistrationApplication application, RequestInfo requestInfo) {
+		try {
+			// Check if previousApplicationNumber is provided
+			if (application.getPreviousApplicationNumber() == null || application.getPreviousApplicationNumber().isEmpty()) {
+				log.warn("previousApplicationNumber is null or empty for renewal application: {}. Cannot calculate updated pet age.",
+						application.getApplicationNumber());
+				return;
+			}
+
+			log.info("Calculating updated pet age for renewal application: {} from previous: {}",
+					application.getApplicationNumber(), application.getPreviousApplicationNumber());
+
+			// Search for previous application
+			PetApplicationSearchCriteria criteria = PetApplicationSearchCriteria.builder()
+					.applicationNumber(Collections.singletonList(application.getPreviousApplicationNumber()))
+					.tenantId(application.getTenantId())
+					.build();
+			List<PetRegistrationApplication> previousApps = petRegistrationRepository.getApplications(criteria);
+
+			if (previousApps == null || previousApps.isEmpty()) {
+				log.warn("Previous application not found: {} for renewal: {}. Cannot calculate updated pet age.",
+						application.getPreviousApplicationNumber(), application.getApplicationNumber());
+				return;
+			}
+
+			PetRegistrationApplication previousApp = previousApps.get(0);
+
+			// Get previous application's pet age and created time
+			PetDetails previousPetDetails = previousApp.getPetDetails();
+			AuditDetails previousAuditDetails = previousApp.getAuditDetails();
+
+			if (previousPetDetails == null || previousPetDetails.getPetAge() == null || previousPetDetails.getPetAge().isEmpty()) {
+				log.warn("Previous application: {} has no pet age. Cannot calculate updated pet age.",
+						previousApp.getApplicationNumber());
+				return;
+			}
+
+			if (previousAuditDetails == null || previousAuditDetails.getCreatedTime() == null) {
+				log.warn("Previous application: {} has no createdTime. Cannot calculate updated pet age.",
+						previousApp.getApplicationNumber());
+				return;
+			}
+
+			String oldPetAge = previousPetDetails.getPetAge();
+			long previousCreatedTime = previousAuditDetails.getCreatedTime();
+			long currentTime = System.currentTimeMillis();
+
+			// Parse old age to get years and months
+			AgeComponents oldAgeComponents = parsePetAge(oldPetAge);
+			if (oldAgeComponents == null) {
+				log.warn("Could not parse pet age: {} from previous application: {}",
+						oldPetAge, previousApp.getApplicationNumber());
+				return;
+			}
+
+			// Calculate time elapsed in months
+			long elapsedMillis = currentTime - previousCreatedTime;
+			long elapsedMonths = elapsedMillis / (1000L * 60 * 60 * 24 * 30);
+
+			// Calculate new age
+			int totalOldMonths = oldAgeComponents.years * 12 + oldAgeComponents.months;
+			int totalNewMonths = (int) (totalOldMonths + elapsedMonths);
+
+			int newYears = totalNewMonths / 12;
+			int newMonths = totalNewMonths % 12;
+
+			String newPetAge = formatPetAge(newYears, newMonths);
+
+			// Update the current application's pet age
+			application.getPetDetails().setPetAge(newPetAge);
+
+			log.info("Updated pet age for renewal application: {} - Old age: {} ({}), Elapsed: {} months, New age: {}",
+					application.getApplicationNumber(), oldPetAge, oldAgeComponents,
+					elapsedMonths, newPetAge);
+
+		} catch (Exception e) {
+			log.error("Error calculating updated pet age for renewal application: {}. Error: {}",
+					application.getApplicationNumber(), e.getMessage(), e);
+			// Don't throw - just log the error and let the application proceed with existing age
+		}
+	}
+
+	/**
+	 * Parses pet age string where decimal format means years.months
+	 * e.g., "2.5" = 2 years 5 months, "4.9" = 4 years 9 months
+	 */
+	private AgeComponents parsePetAge(String petAge) {
+		if (petAge == null || petAge.isEmpty()) {
+			return null;
+		}
+
+		String trimmedAge = petAge.trim();
+
+		try {
+			// Handle format like "2.5" = 2 years 5 months, "4.9" = 4 years 9 months
+			double age = Double.parseDouble(trimmedAge);
+			int years = (int) Math.floor(age);
+			int months = (int) Math.round((age - years) * 10);
+			// Handle case like "2.10" should be 2 years 10 months, not 2 years 1 month
+			// Actually if someone enters 2.10, it would be parsed as 2.1 = 2 years 1 month
+			// So we keep it as is - 2.5 means 2 years 5 months
+			return new AgeComponents(years, months);
+		} catch (NumberFormatException e) {
+			log.warn("Could not parse pet age: {}", petAge);
+			return null;
+		}
+	}
+
+	/**
+	 * Formats years and months into pet age string
+	 */
+	private String formatPetAge(int years, int months) {
+		if (years == 0) {
+			return months + (months == 1 ? " month" : " months");
+		} else if (months == 0) {
+			return years + (years == 1 ? " year" : " years");
+		} else {
+			return years + (years == 1 ? " year" : " years") + " " + months + (months == 1 ? " month" : " months");
+		}
+	}
+
+	/**
+	 * Helper class to store age components
+	 */
+	private static class AgeComponents {
+		int years;
+		int months;
+
+		AgeComponents(int years, int months) {
+			this.years = years;
+			this.months = months;
+		}
+
+		@Override
+		public String toString() {
+			return "AgeComponents{years=" + years + ", months=" + months + "}";
 		}
 	}
 

@@ -1722,7 +1722,7 @@ public class DemandService {
 		}
 
 		if (waterCalculatorDao.isBatchDemandExecuted(tenantId, taxPeriodFrom, taxPeriodTo)) {
-			log.info("Demand generation already successfully executed for tenant: " + tenantId + " period: " + taxPeriodFrom + " - " + taxPeriodTo + ". Skipping.");
+			log.info("Demand generation already successfully executed for tenant: " + tenantId +" locality: "+ locality + " period: " + taxPeriodFrom + " - " + taxPeriodTo + ". Skipping.");
 			return;
 		}
 
@@ -2101,7 +2101,7 @@ public class DemandService {
 							.isDemandExecuted(true)
 							.build();
 					wsCalculationProducer.push(configs.getSaveBatchDemandLogTopic(), startLog);
-					demandSchedulerNotificationService.sendStartEmail(tenantId, taxPeriodFrom, taxPeriodTo, connectionNos.size(), requestInfo);
+//					demandSchedulerNotificationService.sendStartEmail(tenantId, taxPeriodFrom, taxPeriodTo, connectionNos.size(), requestInfo);
 				} catch (Exception e) {
 					log.error("⚠️ Non-fatal: failed to push start BatchDemandLog or send start email for tenant: {} | {}",
 							tenantId, e.getMessage(), e);
@@ -2183,7 +2183,7 @@ public class DemandService {
 				// Send Completion Email & Poll
 				try {
 					List<String> allConnNos = connectionNos.stream().map(WaterDetails::getConnectionNo).collect(Collectors.toList());
-					demandSchedulerNotificationService.sendCompletionEmail(tenantId, taxPeriodFrom, taxPeriodTo, allConnNos, System.currentTimeMillis(), requestInfo);
+//					demandSchedulerNotificationService.sendCompletionEmail(tenantId, taxPeriodFrom, taxPeriodTo, allConnNos, System.currentTimeMillis(), requestInfo);
 				} catch (Exception e) {
 					log.error("❌ Failed to send completion email for tenant: {} | {}", tenantId, e.getMessage(), e);
 				}

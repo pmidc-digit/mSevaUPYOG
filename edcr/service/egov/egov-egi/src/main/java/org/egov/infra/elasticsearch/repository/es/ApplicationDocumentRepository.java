@@ -50,6 +50,8 @@ package org.egov.infra.elasticsearch.repository.es;
 
 import org.egov.infra.elasticsearch.entity.es.ApplicationDocument;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
+import org.springframework.data.repository.CrudRepository;
 
-public interface ApplicationDocumentRepository extends ElasticsearchRepository<ApplicationDocument, String> {
+public interface ApplicationDocumentRepository extends ElasticsearchRepository<ApplicationDocument, String>,
+        CrudRepository<ApplicationDocument, String> {
 }

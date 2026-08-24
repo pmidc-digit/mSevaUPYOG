@@ -120,7 +120,7 @@
             </list>
         </property>
         <!-- Disabling caching since on development-->
-        <property name="cacheSeconds" value="#{environment['dev.mode'] ? 0 : -1}"/>
+        <property name="cacheSeconds" value="-1"/>
     </bean>
 
     <!-- Imports user-defined @Controller beans that process client requests -->

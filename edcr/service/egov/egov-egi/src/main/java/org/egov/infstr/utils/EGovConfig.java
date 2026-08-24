@@ -54,8 +54,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.egov.infra.exception.ApplicationRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +89,7 @@ public final class EGovConfig {
 			XMLConfiguration configuration = null;
 			try {
 				if (configurationMap.get(xmlFileName) == null) {
-					configuration = new XMLConfiguration(toURL(xmlFileName));
+					configuration = new Configurations().xml(toURL(xmlFileName));
 					configurationMap.put(xmlFileName, configuration);
 				} else {
 					configuration = configurationMap.get(xmlFileName);

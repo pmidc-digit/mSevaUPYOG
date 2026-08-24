@@ -3,7 +3,7 @@
   "Errors": [
     {
       "code": "",
-      "message": "Required String parameter 'tenantId' is not present",
+      "message": "Required request parameter 'tenantId' for method parameter type String is not present",
       "description": null,
       "params": [
         "tenantId"

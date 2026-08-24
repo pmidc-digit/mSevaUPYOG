@@ -66,7 +66,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.egov.infra.config.core.LocalizationSettings.datePattern;
 import static org.egov.infra.config.core.LocalizationSettings.dateTimePattern;
 import static org.egov.infra.config.core.LocalizationSettings.jodaTimeZone;

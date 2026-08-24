@@ -52,6 +52,8 @@ import org.egov.infra.admin.master.entity.Action;
 import org.egov.infra.admin.master.entity.Feature;
 import org.egov.infra.admin.master.entity.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.history.RevisionRepository;
 import org.springframework.stereotype.Repository;
 
@@ -60,7 +62,9 @@ import java.util.List;
 @Repository
 public interface FeatureRepository extends JpaRepository<Feature, Long>, RevisionRepository<Feature, Long, Integer> {
 
-    Long countByRolesInAndActionsIn(Role role, Action action);
+    @Query("select count(distinct feature) from Feature feature join feature.roles role join feature.actions action "
+            + "where role = :role and action = :action")
+    Long countByRoleAndAction(@Param("role") Role role, @Param("action") Action action);
 
     List<Feature> findByModuleId(Long moduleId);
 }

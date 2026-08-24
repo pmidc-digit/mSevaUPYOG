@@ -62,7 +62,8 @@
 				<security:filter-chain pattern="/help*" filters="none" />
 				<security:filter-chain pattern="/guide/**" filters="none" />
 				<security:filter-chain pattern="/login/secure**" filters="none" />
-				<security:filter-chain pattern="/downloadfile/logo**" filters="none" />
+				<!-- File URLs returned by public APIs must be downloadable without a UI session. -->
+				<security:filter-chain pattern="/downloadfile/**" filters="none" />
 				<security:filter-chain pattern="/error/**" filters="none" />
 				<security:filter-chain pattern="/city/details" filters="none" />
 				<security:filter-chain pattern="/public/**" filters="anonymousAuthenticationFilter"/>

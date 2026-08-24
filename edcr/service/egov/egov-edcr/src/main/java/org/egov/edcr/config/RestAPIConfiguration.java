@@ -64,7 +64,7 @@ public class RestAPIConfiguration {
         return new DefaultAPIRequestEnricher();
     }
 
-    @Bean(autowire = Autowire.BY_TYPE)
+    @Bean
     public APIRequestEnricherFilter apiFilter() {
         return new APIRequestEnricherFilter();
     }

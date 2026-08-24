@@ -50,8 +50,8 @@ package org.egov.infra.persistence.validator;
 
 import org.egov.infra.persistence.validator.annotation.OptionalPattern;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.regex.Pattern;
 
 public class OptionalPatternValidator implements ConstraintValidator<OptionalPattern, Object> {
@@ -65,7 +65,7 @@ public class OptionalPatternValidator implements ConstraintValidator<OptionalPat
 
     @Override
     public boolean isValid(final Object value, final ConstraintValidatorContext arg1) {
-        if (value == null || org.apache.commons.lang.StringUtils.isBlank(String.valueOf(value)))
+        if (value == null || org.apache.commons.lang3.StringUtils.isBlank(String.valueOf(value)))
             return true;
         return Pattern.compile(optionalPattern.regex(), optionalPattern.flags()).matcher(String.valueOf(value))
                 .matches();

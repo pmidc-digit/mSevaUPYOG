@@ -56,9 +56,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.infra.gis.model.GeoKmlInfo;
 import org.egov.infra.gis.model.GeoLocation;
 import org.egov.infra.validation.exception.ValidationError;

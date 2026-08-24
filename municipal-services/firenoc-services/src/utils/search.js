@@ -89,36 +89,41 @@ const fireNOCRowMapper = async (row, mapper = {}) => {
 };
 
 const fireNocOwnersRowMapper = async (row, mapper = []) => {
-  let ownerIndex = findIndex(mapper, { useruuid: row.useruuid });
-  let ownerObject = {
-    id: row.ownerid,
-    userName: row.username,
-    useruuid: row.useruuid,
-    active: row.active,
-    ownerType: row.applicantcategory,
-    relationship: row.relationship,
-    tenantId: row.tenantId,
-    fatherOrHusbandName: ""
-  };
+  try {
+    let ownerIndex = findIndex(mapper, { useruuid: row.useruuid });
+    let ownerObject = {
+      id: row.ownerid,
+      userName: row.username,
+      useruuid: row.useruuid,
+      active: row.active,
+      ownerType: row.applicantcategory,
+      relationship: row.relationship,
+      tenantId: row.tenantId,
+      fatherOrHusbandName: ""
+    };
 
-  if (ownerIndex != -1) {
-    mapper[ownerIndex] = {
-      ...ownerObject,
-      ...mapper[ownerIndex]
-    };
-    mapper[ownerIndex].ownerType = row.applicantcategory;
-  } else {
-    let user = {};
-    if (row.useruuid) {
-      user = await searchUser(requestInfo, row.useruuid);
+    if (ownerIndex != -1) {
+      mapper[ownerIndex] = {
+        ...ownerObject,
+        ...mapper[ownerIndex]
+      };
+      mapper[ownerIndex].ownerType = row.applicantcategory;
+    } else {
+      let user = {};
+      if (row.useruuid) {
+        user = await searchUser(requestInfo, row.useruuid);
+      }
+      user = {
+        ...ownerObject,
+        ...user
+      };
+      mapper.push(user);
     }
-    user = {
-      ...ownerObject,
-      ...user
-    };
-    mapper.push(user);
+    return mapper;
+  } catch (error) {
+    console.error("Error in fireNocOwnersRowMapper:", error);
+    throw error;
   }
-  return mapper;
 };
 
 const fireNocBuildingsRowMapper = (row, mapper = []) => {
@@ -217,37 +222,53 @@ const removeEmpty = obj => {
 };
 
 const searchUser = async (requestInfo, uuid) => {
-  let userSearchReqCriteria = {};
-  let userSearchResponse = {};
-  userSearchReqCriteria.uuid = [uuid];
-  userSearchResponse = await userService.searchUser(
-    requestInfo,
-    userSearchReqCriteria
-  );
-  let users = get(userSearchResponse, "user", []);
-  return users.length ? users[0] : {};
+  try {
+    let userSearchReqCriteria = {};
+    let userSearchResponse = {};
+    userSearchReqCriteria.uuid = [uuid];
+    userSearchResponse = await userService.searchUser(
+      requestInfo,
+      userSearchReqCriteria
+    );
+    let users = get(userSearchResponse, "user", []);
+    return users.length ? users[0] : {};
+  } catch (error) {
+    console.error("Error in searchUser:", error);
+    throw error;
+  }
 };
 
 export const searchByMobileNumber = async (mobileNumber, tenantId) => {
-  var userSearchReqCriteria = {};
-  userSearchReqCriteria.userType = "CITIZEN";
-  userSearchReqCriteria.tenantId = tenantId;
-  userSearchReqCriteria.mobileNumber = mobileNumber;
-  var userSearchResponse = await userService.searchUser(
-    requestInfo,
-    userSearchReqCriteria
-  );
-  return userSearchResponse;
+  try {
+    var userSearchReqCriteria = {};
+    userSearchReqCriteria.userType = "CITIZEN";
+    userSearchReqCriteria.tenantId = tenantId;
+    userSearchReqCriteria.mobileNumber = mobileNumber;
+    var userSearchResponse = await userService.searchUser(
+      requestInfo,
+      userSearchReqCriteria
+    );
+    return userSearchResponse;
+  } catch (error) {
+    console.error("Error in searchByMobileNumber:", error);
+    throw error;
+  }
 };
 export const searchByUserName = async (mobileNumber, tenantId) => {
-  var userSearchReqCriteria = {};
-  userSearchReqCriteria.userType = "CITIZEN";
-  userSearchReqCriteria.tenantId = tenantId;
-  userSearchReqCriteria.userName = mobileNumber;
-  var userSearchResponse = await userService.searchUser(
-    requestInfo,
-    userSearchReqCriteria
-  );
+  try {
+    var userSearchReqCriteria = {};
+    userSearchReqCriteria.userType = "CITIZEN";
+    userSearchReqCriteria.tenantId = tenantId;
+    userSearchReqCriteria.userName = mobileNumber;
+    var userSearchResponse = await userService.searchUser(
+      requestInfo,
+      userSearchReqCriteria
+    );
+    return userSearchResponse;
+  } catch (error) {
+    console.error("Error in searchByUserName:", error);
+    throw error;
+  }
   return userSearchResponse;
 };
 

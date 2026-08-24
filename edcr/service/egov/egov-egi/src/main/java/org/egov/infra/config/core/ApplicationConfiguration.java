@@ -65,8 +65,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -114,7 +114,7 @@ public class ApplicationConfiguration {
         return new SessionLocaleResolver();
     }
 
-    @Bean(name = "cities", autowire = Autowire.BY_NAME)
+    @Bean(name = "cities")
     @DependsOn(value = "tenants")
     public List<String> cities() {
         final List<String> cities = new ArrayList<>(tenants);

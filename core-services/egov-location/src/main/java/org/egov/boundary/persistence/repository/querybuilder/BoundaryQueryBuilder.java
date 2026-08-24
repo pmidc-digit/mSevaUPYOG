@@ -59,7 +59,7 @@ public class BoundaryQueryBuilder {
 				+ "ishistory=:ishistory,lastmodifiedby=:lastmodifiedby,lastmodifieddate=:lastmodifieddate where tenantid=:tenantid and code=:code";
 	}
 
-	private static final String QUERY = "(WITH RECURSIVE nodes(bId,bBoundaryNum,bParent,bCode,bName,bBoundaryType,bLocalName,bFromdate,bToDate,bBndryid,bLongitude,bLatitude,bMaterialiedPath,bHistory,bCreatedDate,bLastModifiedDate,bCreatedBy,bLastModifiedBy,"
+	private static final String QUERY = "WITH RECURSIVE nodes(bId,bBoundaryNum,bParent,bCode,bName,bBoundaryType,bLocalName,bFromdate,bToDate,bBndryid,bLongitude,bLatitude,bMaterialiedPath,bHistory,bCreatedDate,bLastModifiedDate,bCreatedBy,bLastModifiedBy,"
 			+ " bTenantId,btId,btHierarchy,btParent,btName,btHierarchyType,btCreatedDate,btLastModifiedDate,btCreatedBy,btLastModifiedBy,btLocalName,btCode,btTenantId) AS"
 			+ " (SELECT b.id,b.boundarynum,b.parent,b.code,b.name,b.boundarytype,b.localname,b.fromdate,b.todate,b.bndryid,b.longitude,b.latitude,b.materializedpath,b.ishistory,b.createddate,b.lastmodifieddate,b.createdby,"
 			+ " b.lastmodifiedby,b.tenantid,bt.id,bt.hierarchy,bt.parent,bt.name,bt.hierarchytype,bt.createddate,bt.lastmodifieddate,bt.createdby,bt.lastmodifiedby,bt.localname,bt.code,bt.tenantid"
@@ -67,7 +67,7 @@ public class BoundaryQueryBuilder {
 
 	private static final String SUBQUERY = " UNION ALL  SELECT b.id,b.boundarynum,b.parent,b.code,b.name,b.boundarytype,b.localname,b.fromdate,b.todate,b.bndryid,b.longitude,b.latitude,b.materializedpath,b.ishistory,b.createddate,b.lastmodifieddate,b.createdby,b.lastmodifiedby,b.tenantid,"
 			+ " bt.id,bt.hierarchy,bt.parent,bt.name,bt.hierarchytype,bt.createddate,bt.lastmodifieddate,bt.createdby,bt.lastmodifiedby,bt.localname,bt.code,bt.tenantid"
-			+ " FROM nodes s2, eg_boundary b,eg_boundary_type bt WHERE b.id = s2.bparent and b.tenantid =:tenantId and bt.tenantid =:tenantId and b.boundarytype = bt.id) SELECT DISTINCT * FROM nodes)";
+			+ " FROM nodes s2, eg_boundary b,eg_boundary_type bt WHERE b.id = s2.bparent and b.tenantid =:tenantId and bt.tenantid =:tenantId and b.boundarytype = bt.id) SELECT DISTINCT * FROM nodes";
 
 	public static String getBoundaryByIdAndTenant() {
 		return QUERY + " and b.id =:id" + SUBQUERY;

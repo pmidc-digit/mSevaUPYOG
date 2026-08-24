@@ -9,11 +9,11 @@ import org.egov.tracer.model.ServiceCallException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -21,7 +21,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -38,10 +38,10 @@ public class GeographicalControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private MdmsService mdmsService;
 
-    private MediaType contentType = new MediaType("application", "json", Charset.forName("UTF-8"));
+    private MediaType contentType = MediaType.APPLICATION_JSON;
 
     @Test
     public void geographySearch() throws Exception {
@@ -50,7 +50,7 @@ public class GeographicalControllerTest {
                 (Optional.of
                         (Collections.emptyList()));
         mockMvc.perform(post("/location/v11/geography/_search").param("tenantId", "ap").contentType(MediaType
-                .APPLICATION_JSON_UTF8)
+                .APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestInfo))).andExpect(status().isOk());
     }
 

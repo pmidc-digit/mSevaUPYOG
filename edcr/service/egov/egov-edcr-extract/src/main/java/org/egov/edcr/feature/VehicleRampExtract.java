@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Flight;
 import org.egov.common.entity.edcr.Floor;

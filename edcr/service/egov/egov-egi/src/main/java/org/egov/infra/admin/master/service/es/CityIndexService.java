@@ -51,16 +51,18 @@ package org.egov.infra.admin.master.service.es;
 import org.egov.infra.admin.master.entity.es.CityIndex;
 import org.egov.infra.admin.master.repository.es.CityIndexRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CityIndexService {
 
 	@Autowired
+	@Lazy
 	private CityIndexRepository cityIndexRepository;
 	
 	public CityIndex findOne(String id){
-		return cityIndexRepository.findOne(id);
+		return cityIndexRepository.findById(id).orElse(null);
 	}
 	
 	public Iterable<CityIndex> findAll(){		

@@ -64,7 +64,6 @@
         <dependency>
             <groupId>org.egov.edcr</groupId>
             <artifactId>egov-egi</artifactId>
- 			<version>2.1.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -85,24 +84,7 @@
         </dependency>
 
         <!-- MISC START -->
-        <dependency>
-            <groupId>opensymphony</groupId>
-            <artifactId>sitemesh</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache-web</artifactId>
-        </dependency>
         <!-- MISC END -->
-        <!-- VIEWS RELATED END -->
-        <dependency>
-            <groupId>org.apache.tiles</groupId>
-            <artifactId>tiles-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tiles</groupId>
-            <artifactId>tiles-jsp</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
@@ -111,16 +93,16 @@
 
         <!-- HIBERNATE START -->
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
+			<groupId>jakarta.validation</groupId>
+			<artifactId>jakarta.validation-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
         </dependency>
         <!-- HIBERNATE END -->
     </dependencies>

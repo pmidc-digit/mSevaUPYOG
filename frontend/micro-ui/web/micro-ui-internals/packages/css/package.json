@@ -1,6 +1,6 @@
 {
   "name": "@pmidc/upyog-css",
-  "version": "1.2.51",
+  "version": "1.2.52",
   "license": "MIT",
   "main": "dist/index.css",
   "engines": {

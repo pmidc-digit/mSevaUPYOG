@@ -151,7 +151,9 @@ export const useBPACheckListSearch = (params, tenantId, config = {}) => {
     ["BPA_CHECKLIST_SEARCH", params],
     useBPACheckListSearchFn(params, tenantId),
     {
-      staleTime: Infinity,
+      staleTime: 0,
+      cacheTime: 0,
+      refetchOnMount: "always",
       ...config,
     }
   );
@@ -159,6 +161,6 @@ export const useBPACheckListSearch = (params, tenantId, config = {}) => {
   // Add a helper to revalidate if you want
   return {
     ...result,
-    revalidate: () => client.invalidateQueries(["LAYOUT_CHECKLIST_SEARCH", params]),
+    revalidate: () => client.invalidateQueries(["BPA_CHECKLIST_SEARCH", params]),
   };
 };

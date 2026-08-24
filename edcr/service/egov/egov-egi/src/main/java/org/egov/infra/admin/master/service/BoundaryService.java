@@ -53,7 +53,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -68,12 +67,13 @@ import org.egov.infra.admin.master.entity.HierarchyType;
 import org.egov.infra.admin.master.repository.BoundaryRepository;
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.utils.StringUtils;
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.api.data.DataStore;
+import org.geotools.api.data.DataStoreFinder;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.JTSFactoryFinder;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,9 +83,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 
 @Service
 @Transactional(readOnly = true)
@@ -265,9 +265,9 @@ public class BoundaryService {
                 map.put("url", Thread.currentThread().getContextClassLoader()
                         .getResource(String.format(GIS_SHAPE_FILE_LOCATION, ApplicationThreadLocals.getTenantID())));
                 final DataStore dataStore = DataStoreFinder.getDataStore(map);
-                final FeatureCollection<SimpleFeatureType, SimpleFeature> collection = dataStore
+                final SimpleFeatureCollection collection = dataStore
                         .getFeatureSource(dataStore.getTypeNames()[0]).getFeatures();
-                final Iterator<SimpleFeature> iterator = collection.iterator();
+                final SimpleFeatureIterator iterator = collection.features();
                 final Point point = JTSFactoryFinder.getGeometryFactory(null)
                         .createPoint(new Coordinate(longitude, latitude));
                 try {
@@ -279,7 +279,7 @@ public class BoundaryService {
                         }
                     }
                 } finally {
-                    collection.close(iterator);
+                    iterator.close();
                 }
             }
 

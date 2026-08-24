@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { TextInput, LinkButton, TextArea } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+import _ from "lodash";
 
 const BPADocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, readOnly = false }) => {
   const { t } = useTranslation();
@@ -28,12 +29,15 @@ const BPADocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   }, []);
 
   useEffect(() => {
-    if (searchChecklistData?.checkList?.length > 0 && Object.keys(localRemarks).length === 0) {
+    if (searchChecklistData?.checkList?.length > 0) {
       const initial = {};
       searchChecklistData.checkList.forEach((c) => {
         initial[c.documentuid] = c.remarks || "";
       });
-      setLocalRemarks(initial);
+      setLocalRemarks((prev) => {
+        if (_.isEqual(prev, initial)) return prev;
+        return initial;
+      });
       onRemarksChange(initial);
     }
   }, [searchChecklistData]);

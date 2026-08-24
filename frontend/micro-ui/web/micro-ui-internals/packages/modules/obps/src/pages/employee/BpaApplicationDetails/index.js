@@ -255,7 +255,7 @@ const BpaApplicationDetail = () => {
     businessService = ["BPA.NC_OC_APP_FEE", "BPA.NC_OC_SAN_FEE"];
   }
 
-  const { data: searchChecklistData } = Digit.Hooks.obps.useBPACheckListSearch({ applicationNo: id }, tenantId);
+  const { data: searchChecklistData, refetch: refetchChecklist } = Digit.Hooks.obps.useBPACheckListSearch({ applicationNo: id }, tenantId);
 
   React.useEffect(() => {
       window.scrollTo({
@@ -1897,6 +1897,18 @@ const BpaApplicationDetail = () => {
     workflowDetails?.data?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
+  if (actions && actions.length > 0) {
+    if (!actions.some((a) => a.action === "EMPLOYEE_SAVE_AS_DRAFT")) {
+      actions = [
+        ...actions,
+        {
+          action: "EMPLOYEE_SAVE_AS_DRAFT",
+          forcedName: "Save Draft",
+        },
+      ];
+    }
+  }
+
   if (
     ((window.location.href.includes("/obps") || window.location.href.includes("/noc")) && actions?.length == 1) ||
     (actions?.[0]?.redirectionUrl?.pathname.includes("/pt/property-details/") && actions?.length == 1)
@@ -2131,7 +2143,8 @@ const BpaApplicationDetail = () => {
               return;
             }
             setShowToast({ key: "success", label: "Application Saved" });
-            // clearDataDetails && setTimeout(clearDataDetails, 3000);
+            refetch();
+            refetchChecklist && refetchChecklist();
             setTimeout(closeToast, 5000);
             // queryClient.clear();
             // queryClient.refetchQueries("APPLICATION_SEARCH");
@@ -2649,7 +2662,7 @@ const BpaApplicationDetail = () => {
                                       fiReport={fieldInspectionPending?.length > 0 ? fieldInspectionPending : data?.applicationData?.additionalDetails?.fieldinspection_pending}
                                       onSelect={onChangeReport}
                                     />
-                                    <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
+                                    {/* <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} /> */}
                                   </Card>
                                 )}
                               {data?.applicationData?.status != "INSPECTION_REPORT_PENDING" &&
@@ -3017,7 +3030,7 @@ const BpaApplicationDetail = () => {
           )}
         </Card>
 
-  {actions?.length > 0 && <Card>
+  {(actions?.length > 0 && data?.applicationData?.status !== "FIELDINSPECTION_INPROGRESS") &&  <Card>
           <CardSectionHeader>
             {t("Saved Comments")}
           </CardSectionHeader>
@@ -3029,7 +3042,7 @@ const BpaApplicationDetail = () => {
             style={{ overflow: "hidden", maxHeight: "1500px" }}
             maxLength={5000}
           />
-          <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} />
+          {/* <SubmitBar ref={menuRef} style={{marginTop: "10px"}} label={t("Save Draft")} onSubmit={() => employeeDraftSave({BPA: data?.applicationData}, false, {})} /> */}
         </Card>}
 
         {showPdfModal && (

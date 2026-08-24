@@ -116,25 +116,6 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 	
 	@Override
 	public void cancelPreviousMeterReading(CancelDemandReq demandId) {
-        List<Canceldemandsearch> demandLists = getConnectionCancels(demandId.getTenantId(), demandId.getId());
-        if (demandLists == null || demandLists.isEmpty()) {
-            log.warn("No active demand found to cancel for tenantId={} and demandId={}", demandId.getTenantId(), demandId.getId());
-            return;
-        }
-
-        Boolean demandCancelled = getUpdatesRelatedSW(demandLists);
-        if (!Boolean.TRUE.equals(demandCancelled)) {
-            throw new IllegalStateException("Failed to cancel previous active demand for demandId=" + demandId.getId());
-        }
-
-        List<BillSearchs> billSearchsss = getBillss(demandId.getTenantId(), demandId.getId());
-        if (billSearchsss != null && !billSearchsss.isEmpty()) {
-            Boolean billsCancelled = getexpiryBillsRelatedSW(billSearchsss);
-            if (!Boolean.TRUE.equals(billsCancelled)) {
-                throw new IllegalStateException("Failed to cancel bills for previous active demandId=" + demandId.getId());
-            }
-        }
-        log.info("Cancelled previous demand synchronously for tenantId={} demandId={}", demandId.getTenantId(), demandId.getId());
 		wSCalculationProducer.push(cancelMeterConnection, demandId);
 	}
 	/**
@@ -562,25 +543,6 @@ public List<BillSearchs> getBillss(String tenantId, String demandid) {
 		log.debug("Prepared Statement" + preparedStatement.toString());
 		return jdbcTemplate.query(query, preparedStatement.toArray(), bulkMeterReadingRowMapper);
 	}
-
-    public Boolean getUpdatesRelatedSW(List demandlists) {
-        List<Object> preparedStatement = new ArrayList<>();
-        String query = queryBuilder.getUpdateDemands(demandlists,preparedStatement);
-        log.info("preparedStatement: " + preparedStatement + " connection type: " +
-                " connection list : " + query);
-        int updatedRows = jdbcTemplate.update(query, preparedStatement.toArray());
-        return updatedRows > 0;
-    }
-
-    public Boolean getexpiryBillsRelatedSW(List billSearchsss) {
-
-        List<Object> preparedStatement = new ArrayList<>();
-        String query = queryBuilder.getBillDemands(billSearchsss,preparedStatement);
-        log.info("preparedStatement: " + preparedStatement + " connection type: " +
-                " connection list : " + query);
-        int updatedRows = jdbcTemplate.update(query, preparedStatement.toArray());
-        return updatedRows > 0;
-    }
 
 	
 	

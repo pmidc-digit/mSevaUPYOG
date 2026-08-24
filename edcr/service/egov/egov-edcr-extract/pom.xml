@@ -57,14 +57,14 @@ contact@egovernments.org.
 		<repository>
 			<id>repo.egovernments.org</id>
 			<name>eGov ERP Releases Repository</name>
-			<url>
-				http://repo.egovernments.org/nexus/content/repositories/releases/</url>
+			<!--<url>http://repo.egovernments.org/nexus/content/repositories/releases/</url>-->
+			<url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/</url>
 		</repository>
 		<snapshotRepository>
 			<id>repo.egovernments.org</id>
 			<name>eGov ERP Snapshots Repository</name>
-			<url>
-				http://repo.egovernments.org/nexus/content/repositories/snapshots/</url>
+			<!--<url>http://repo.egovernments.org/nexus/content/repositories/snapshots/</url>-->
+			<url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
 	<repositories>
@@ -82,24 +82,12 @@ contact@egovernments.org.
 			</snapshots>
 		</repository>
 
-		<!-- Digit Nexus -->
 		<repository>
-			<id>repo.egovernments.org</id>
-			<name>eGov Public Repository Group</name>
-			<url>https://nexus-repo.digit.org/nexus/content/groups/public/</url>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</repository>
-
-		<!-- JBoss -->
-		<repository>
-			<id>JBoss Repository</id>
-			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
+			<id>mseva-maven-public</id>
+			<name>mSeva Maven Public Group</name>
+			<url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-public/</url>
+			<releases><enabled>true</enabled></releases>
+			<snapshots><enabled>true</enabled></snapshots>
 		</repository>
 
 		<!-- Jaspersoft -->
@@ -112,17 +100,14 @@ contact@egovernments.org.
 
 	<pluginRepositories>
 		<pluginRepository>
-			<id>repo.egovernments.org</id>
-			<name>eGov Public Repository Group</name>
-			<url>https://nexus-repo.digit.org/nexus/content/groups/public/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
+			<id>mseva-maven-public</id>
+			<name>mSeva Maven Public Group</name>
+			<url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-public/</url>
+			<releases><enabled>true</enabled></releases>
+			<snapshots><enabled>true</enabled></snapshots>
 		</pluginRepository>
 	</pluginRepositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.kabeja</groupId>
@@ -254,6 +239,7 @@ contact@egovernments.org.
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-to-slf4j</artifactId>
+			<version>${log4j-version}</version>
 		</dependency>
 
 		<dependency>

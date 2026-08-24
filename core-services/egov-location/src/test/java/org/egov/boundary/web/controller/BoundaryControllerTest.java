@@ -16,10 +16,10 @@ import org.egov.common.contract.response.ResponseInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.*;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -41,22 +41,22 @@ public class BoundaryControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
-	@MockBean
+	@MockitoBean
 	private BoundaryService boundaryService;
 
-	@MockBean
+	@MockitoBean
 	private BoundaryTypeService boundaryTypeService;
 
-	@MockBean
+	@MockitoBean
 	private CrossHierarchyService crossHierarchyService;
 
-	@MockBean
+	@MockitoBean
 	private ResponseInfoFactory responseInfoFactory;
 
-	@MockBean
+	@MockitoBean
 	private HierarchyTypeService hierarchyTypeService;
 
-	private MediaType contentType = new MediaType("application", "json", Charset.forName("UTF-8"));
+	private MediaType contentType = MediaType.APPLICATION_JSON;
 
 	@Test
 	public void testShouldCreateBoundary() throws Exception {
@@ -66,9 +66,9 @@ public class BoundaryControllerTest {
 				.thenReturn(responseInfo);
 		when(boundaryService.createBoundary(any(Boundary.class))).thenReturn(getBoundaries().get(0));
 		when(boundaryTypeService.findByTenantIdAndCode(any(String.class), any(String.class))).thenReturn(boundaryType);
-		mockMvc.perform(post("/boundarys").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/boundarys").contentType(MediaType.APPLICATION_JSON)
 				.content(getFileContents("boundaryCreateRequest.json"))).andExpect(status().isCreated())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundaryCreateResponse.json")));
 	}
 
@@ -77,9 +77,9 @@ public class BoundaryControllerTest {
 		BoundaryType boundaryType = BoundaryType.builder().build();
 		when(boundaryService.createBoundary(any(Boundary.class))).thenReturn(getBoundaries().get(0));
 		when(boundaryTypeService.findByTenantIdAndCode(any(String.class), any(String.class))).thenReturn(boundaryType);
-		mockMvc.perform(post("/boundarys").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/boundarys").contentType(MediaType.APPLICATION_JSON)
 				.content(getFileContents("boundaryCreateRequestWithoutCode.json"))).andExpect(status().isBadRequest())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundaryCreateResponseWithoutCode.json")));
 	}
 
@@ -99,9 +99,9 @@ public class BoundaryControllerTest {
 		BoundaryType boundaryType = BoundaryType.builder().build();
 		when(boundaryService.createBoundary(any(Boundary.class))).thenReturn(getBoundaries().get(0));
 		when(boundaryTypeService.findByTenantIdAndCode(any(String.class), any(String.class))).thenReturn(boundaryType);
-		mockMvc.perform(post("/boundarys").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/boundarys").contentType(MediaType.APPLICATION_JSON)
 				.content(getFileContents("boundaryRequestWithoutBoundaryTypeCode.json")))
-				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundaryResponseWithoutBoundaryTypeCode.json")));
 	}
 
@@ -112,9 +112,9 @@ public class BoundaryControllerTest {
 		boundary.setBoundaryType(boundaryType);
 		when(boundaryService.createBoundary(boundary)).thenReturn(getBoundaries().get(0));
 		when(boundaryTypeService.findByTenantIdAndCode(any(String.class), any(String.class))).thenReturn(boundaryType);
-		mockMvc.perform(post("/boundarys").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/boundarys").contentType(MediaType.APPLICATION_JSON)
 				.content(getFileContents("boundaryRequestWithoutBoundaryName.json"))).andExpect(status().isBadRequest())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundaryResponseWithoutBoundaryName.json")));
 	}
 
@@ -125,45 +125,45 @@ public class BoundaryControllerTest {
 		boundary.setBoundaryType(boundaryType);
 		when(boundaryService.updateBoundary(any(Boundary.class))).thenReturn(getBoundaries().get(0));
 		when(boundaryTypeService.findByTenantIdAndCode(any(String.class), any(String.class))).thenReturn(boundaryType);
-		mockMvc.perform(put("/boundarys/TEST").param("tenantId", "default").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(put("/boundarys/TEST").param("tenantId", "default").contentType(MediaType.APPLICATION_JSON)
 				.content(getFileContents("boundaryCreateRequest.json"))).andExpect(status().isCreated())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundaryCreateResponse.json")));
 	}
 
 	@Test
 	public void testShouldGetBoundaries() throws Exception {
 		when(boundaryService.getAllBoundary(any(BoundaryRequest.class))).thenReturn(getSearchBoundaries());
-		mockMvc.perform(get("/boundarys").param("Boundary.tenantId", "default").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(get("/boundarys").param("Boundary.tenantId", "default").contentType(MediaType.APPLICATION_JSON)
 				.content(getFileContents("boundarySearchResponse.json"))).andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundarySearchResponse.json")));
 	}
 	
 	@Test
 	public void testShouldNotGetBoundariesWhenTenantIdIsNotThere() throws Exception {
 		when(boundaryService.getAllBoundary(any(BoundaryRequest.class))).thenReturn(getSearchBoundaries());
-		mockMvc.perform(get("/boundarys").contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().isBadRequest());
+		mockMvc.perform(get("/boundarys").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
 				
 	}
 	
 	@Test
 	public void testShouldGetLocationByLocationName() throws Exception {
 		when(boundaryService.getBoundaryDataByTenantIdAndNameLike(any(String.class),any(String.class))).thenReturn(getBoundariesByLocationByLocationName());
-		mockMvc.perform(get("/boundarys/getLocationByLocationName").param("locationName", "Appikonda Veedhi").param("tenantId", "default").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(get("/boundarys/getLocationByLocationName").param("locationName", "Appikonda Veedhi").param("tenantId", "default").contentType(MediaType.APPLICATION_JSON)
 				.content(getFileContents("boundaryResponseByLocationByLocationName.json"))).andExpect(content().json(getFileContents("boundaryResponseByLocationByLocationName.json")));
 	}
 	
 	@Test
 	public void testShouldNotGetLocationByLocationNameWhenLocationNameIsNotThere() throws Exception {
 		when(boundaryService.getBoundaryDataByTenantIdAndNameLike(any(String.class),any(String.class))).thenReturn(getBoundariesByLocationByLocationName());
-		mockMvc.perform(get("/boundarys/getLocationByLocationName").param("tenantId", "default").contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().isBadRequest());
+		mockMvc.perform(get("/boundarys/getLocationByLocationName").param("tenantId", "default").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
 	}
 	
 	@Test
 	public void testShouldNotGetLocationByLocationNameWhenTenantIsNotThere() throws Exception {
 		when(boundaryService.getBoundaryDataByTenantIdAndNameLike(any(String.class),any(String.class))).thenReturn(getBoundariesByLocationByLocationName());
-		mockMvc.perform(get("/boundarys/getLocationByLocationName").param("locationName", "Appikonda Veedhi").contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().isBadRequest());
+		mockMvc.perform(get("/boundarys/getLocationByLocationName").param("locationName", "Appikonda Veedhi").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
 	}
 
 	@Test
@@ -173,7 +173,7 @@ public class BoundaryControllerTest {
 				.thenReturn(Collections.singletonList(expectedBoundary));
 		mockMvc.perform(
 				post("/boundarys/childLocationsByBoundaryId").param("boundaryId", "1").param("tenantId", "ap.public"))
-				.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundaryResponse.json")));
 	}
 
@@ -183,7 +183,7 @@ public class BoundaryControllerTest {
 				.thenReturn(null);
 		mockMvc.perform(
 				post("/boundarys/childLocationsByBoundaryId").param("boundaryId", "").param("tenantId", "ap.public")
-						.header("X-CORRELATION-ID", "someId").contentType(MediaType.APPLICATION_JSON_UTF8))
+						.header("X-CORRELATION-ID", "someId").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
 
@@ -195,7 +195,7 @@ public class BoundaryControllerTest {
 		mockMvc.perform(post("/boundarys/boundariesByBndryTypeNameAndHierarchyTypeName").param("tenantId", "ap.public")
 				.param("boundaryTypeName", "Ward").param("hierarchyTypeName", "Admin")
 				.header("X-CORRELATION-ID", "someId")).andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundaryResponse.json")));
 	}
 
@@ -205,7 +205,7 @@ public class BoundaryControllerTest {
 				any(String.class), any(String.class))).thenReturn(null);
 		mockMvc.perform(post("/boundarys/boundariesByBndryTypeNameAndHierarchyTypeName").param("tenantId", "ap.public")
 				.param("boundaryTypeName", "").param("hierarchyTypeName", "").header("X-CORRELATION-ID", "someId")
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().isBadRequest());
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
 	}
 
 	@Test
@@ -214,7 +214,7 @@ public class BoundaryControllerTest {
 		when(boundaryService.getAllBoundariesByBoundaryTypeIdAndTenantId(any(Long.class), any(String.class)))
 				.thenReturn(Collections.singletonList(expectedBoundary));
 		mockMvc.perform(post("/boundarys/getByBoundaryType").param("boundaryTypeId", "7").param("tenantId", "tenantId"))
-				.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundaryResponse.json")));
 	}
 
@@ -223,7 +223,7 @@ public class BoundaryControllerTest {
 		when(boundaryService.getAllBoundariesByBoundaryTypeIdAndTenantId(any(Long.class), any(String.class)))
 				.thenReturn(null);
 		mockMvc.perform(post("/boundarys/getByBoundaryType").param("boundaryTypeId", "").param("tenantId", "")
-				.header("X-CORRELATION-ID", "someId").contentType(MediaType.APPLICATION_JSON_UTF8))
+				.header("X-CORRELATION-ID", "someId").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
 	
@@ -235,28 +235,28 @@ public class BoundaryControllerTest {
 		when(responseInfoFactory.createResponseInfoFromRequestInfo(any(RequestInfo.class), any(Boolean.class)))
 				.thenReturn(responseInfo);
 		mockMvc.perform(post("/boundarys/isshapefileexist").param("tenantId", "default")
-				.contentType(MediaType.APPLICATION_JSON_UTF8).content(getFileContents("requestInfoWrapper.json")))
+				.contentType(MediaType.APPLICATION_JSON).content(getFileContents("requestInfoWrapper.json")))
 				.andExpect(status().isOk()).andExpect(content().json(getFileContents("tenantShapeFileExistOrNotResponse.json")));
 	}
 
 	@Test
 	public void testShouldReturnBadRequestWhenTenantIsNotThere() throws Exception {
 		mockMvc.perform(post("/boundarys/_search").header("X-CORRELATION-ID", "someId")
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().isBadRequest());
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
 	}
 	
 	@Test
 	public void testShouldReturnBoundaries() throws Exception {
 		when(boundaryService.getAllBoundariesByIdsAndTypeAndNumberAndCodeAndTenant(any(BoundarySearchRequest.class))).thenReturn(getSearchBoundaries());
 		mockMvc.perform(post("/boundarys/_search").param("tenantId", "default")
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().isOk())
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 			    .andExpect(content().json(getFileContents("boundarySearchResponse.json")));	
 	}
 
 	@Test
 	public void testShouldReturnBadRequestWhenTenantIsEmpty() throws Exception {
 		mockMvc.perform(post("/boundarys/_search").param("tenantId", "").header("X-CORRELATION-ID", "someId")
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().isBadRequest());
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
 	}
 
 	private List<Boundary> getBoundaries() {

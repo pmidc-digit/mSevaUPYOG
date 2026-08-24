@@ -13,9 +13,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.TimeZone;
 
 @SpringBootApplication
@@ -43,12 +43,12 @@ public class BoundaryApplication extends SpringBootServletInitializer {
 
 
 	@Bean
-	public WebMvcConfigurerAdapter webMvcConfigurerAdapter() {
-		return new WebMvcConfigurerAdapter() {
+	public WebMvcConfigurer webMvcConfigurer() {
+		return new WebMvcConfigurer() {
 
 			@Override
 			public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-				configurer.defaultContentType(MediaType.APPLICATION_JSON_UTF8);
+				configurer.defaultContentType(MediaType.APPLICATION_JSON);
 			}
 
 		};
@@ -60,12 +60,17 @@ public class BoundaryApplication extends SpringBootServletInitializer {
 	}
 
 	@Bean
-	public MappingJackson2HttpMessageConverter jacksonConverter() {
-		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+	public ObjectMapper objectMapper() {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		mapper.setTimeZone(TimeZone.getTimeZone(timeZone));
-		converter.setObjectMapper(mapper);
+		mapper.setTimeZone(TimeZone.getTimeZone(timeZone == null ? "UTC" : timeZone));
+		return mapper;
+	}
+
+	@Bean
+	public MappingJackson2HttpMessageConverter jacksonConverter(ObjectMapper objectMapper) {
+		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+		converter.setObjectMapper(objectMapper);
 		return converter;
 	}
 

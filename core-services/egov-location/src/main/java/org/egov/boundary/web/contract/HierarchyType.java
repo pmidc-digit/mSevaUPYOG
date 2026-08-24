@@ -1,11 +1,9 @@
 package org.egov.boundary.web.contract;
 
-import org.hibernate.validator.constraints.Length;
-
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 
 @Getter
 @Setter
@@ -14,11 +12,11 @@ public class HierarchyType {
 	private static final long serialVersionUID = -7131667806935923935L;
 
 	private Long id;
-	@Length(max = 128)
+	@Size(max = 128)
 	private String name;
-	@Length(max = 50)
+	@Size(max = 50)
 	private String code;
-	@Length(max = 256)
+	@Size(max = 256)
 	private String localName;
 	@Size(max = 256)
 	private String tenantId;

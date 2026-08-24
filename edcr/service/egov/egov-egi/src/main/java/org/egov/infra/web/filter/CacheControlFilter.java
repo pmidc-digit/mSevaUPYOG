@@ -50,15 +50,14 @@ package org.egov.infra.web.filter;
 
 import java.io.IOException;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.owasp.esapi.ESAPI;
 
 /**
  * This Filter is used to improve ui performance by setting Cache-Control header to static resources like js,css,jpg,gif,etc.
@@ -84,10 +83,10 @@ public class CacheControlFilter implements Filter {
     @Override
     public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException {
         final HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-        ESAPI.httpUtilities().addHeader(httpServletResponse, CACHE_CONTROL_HEADER, "public,max-age=" + expireInSeconds);
+        httpServletResponse.setHeader(CACHE_CONTROL_HEADER, "public,max-age=" + expireInSeconds);
         httpServletResponse.setDateHeader(EXPIRE_HEADER, System.currentTimeMillis() + expireInSeconds * 1000L);
-        ESAPI.httpUtilities().addHeader(httpServletResponse, PRAGMA_HEADER, " ");
-        ESAPI.httpUtilities().addHeader(httpServletResponse, ETAG_HEADER, " ");
+        httpServletResponse.setHeader(PRAGMA_HEADER, " ");
+        httpServletResponse.setHeader(ETAG_HEADER, " ");
         chain.doFilter(request, httpServletResponse);
     }
 

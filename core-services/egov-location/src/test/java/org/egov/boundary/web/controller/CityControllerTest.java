@@ -8,16 +8,16 @@ import org.egov.boundary.web.contract.CityRequest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -31,7 +31,7 @@ public class CityControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
-	@MockBean
+	@MockitoBean
 	private CityService cityService;
 
 	@Test
@@ -43,8 +43,8 @@ public class CityControllerTest {
 
 		when(cityService.getCityByCityReq(any(CityRequest.class))).thenReturn(expectedCity);
 		mockMvc.perform(post("/city/getCitybyCityRequest?city.id=1&city.tenantId=ap.public").header("X-CORRELATION-ID", "someId")
-				.content(getFileContents("cityRequest.json")).contentType(MediaType.APPLICATION_JSON_UTF8))
-				.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.content(getFileContents("cityRequest.json")).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("cityResponse.json")));
 	}
 
@@ -52,7 +52,7 @@ public class CityControllerTest {
 	public void test_should_return_bad_request_when_city_request_is_empty() throws Exception {
 		when(cityService.getCityByCityReq(any(CityRequest.class))).thenReturn(null);
 		mockMvc.perform(post("/city/getCitybyCityRequest").header("X-CORRELATION-ID", "someId")
-				.contentType(MediaType.APPLICATION_JSON_UTF8)).andExpect(status().isBadRequest());
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
 	}
 
 	private String getFileContents(String fileName) {

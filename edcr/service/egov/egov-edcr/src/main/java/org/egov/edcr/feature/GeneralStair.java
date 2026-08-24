@@ -769,16 +769,29 @@ public class GeneralStair extends FeatureProcess {
         }
     }
     
-    private BigDecimal getRequiredLandingWidth(Block block, OccupancyTypeHelper mostRestrictiveOccupancyType) {
-      
-        if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getType() != null
-                && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
+	private BigDecimal getRequiredLandingWidth(Block block, OccupancyTypeHelper mostRestrictiveOccupancyType) {
+//		if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getType() != null
+//				&& DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
+//			return BigDecimal.valueOf(0.76);
+//		} else {
+//			return BigDecimal.valueOf(1.5);
+//		}
+		if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getSubtype() != null
+                && DxfFileConstants.A_R.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())) {
             return BigDecimal.valueOf(0.76);
-        }
-     else {
+        }else if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getType() != null
+                && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
+            return BigDecimal.valueOf(1.0);
+        } else if (mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getSubtype() != null
+                 && (DxfFileConstants.F_MTP.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
+                 || DxfFileConstants.F_MIP.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
+                 || DxfFileConstants.L_NH.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
+                 )) {
+            return BigDecimal.valueOf(2.0);
+        } else {
             return BigDecimal.valueOf(1.5);
         }
-    }
+	}
 
     private BigDecimal validateTread(Plan plan, HashMap<String, String> errors, Block block,
             ScrutinyDetail scrutinyDetail3, Floor floor, Map<String, Object> typicalFloorValues,
@@ -936,7 +949,9 @@ public class GeneralStair extends FeatureProcess {
         details.put(PROVIDED, actual);
         details.put(STATUS, status);
         scrutinyDetail.getDetail().add(details);
-        pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+        if (!pl.getReportOutput().getScrutinyDetails().contains(scrutinyDetail)) {
+            pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+        }
     }
 
     

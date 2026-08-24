@@ -53,10 +53,6 @@ public class SewerageServiceImpl implements SewerageService {
 	private EODBredirect eodbRedirect;
 	
 	@Autowired
-	private SewerageService sewarageService;
-
-
-	@Autowired
 	MDMSValidator mDMSValidator;
 
 	@Autowired
@@ -142,7 +138,7 @@ public class SewerageServiceImpl implements SewerageService {
 			    criteria.setConnectionNumber(Collections.singleton(connectionNo));
 			    criteria.setTenantId(sewerageConnectionRequest.getSewerageConnection().getTenantId());
 
-			    List<SewerageConnection> existingConnections = sewarageService.search(
+			    List<SewerageConnection> existingConnections = search(
 			        criteria, sewerageConnectionRequest.getRequestInfo());
 
 			    if (!existingConnections.isEmpty()) {

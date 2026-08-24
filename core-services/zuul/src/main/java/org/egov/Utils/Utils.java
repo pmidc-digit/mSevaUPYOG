@@ -2,7 +2,6 @@ package org.egov.Utils;
 
 import com.netflix.zuul.context.RequestContext;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.entity.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;

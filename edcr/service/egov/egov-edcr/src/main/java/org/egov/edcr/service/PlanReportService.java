@@ -1840,7 +1840,7 @@ public class PlanReportService {
             drb.addColumn("Provided as per drawings", "actualResult", String.class.getName(), 120, columnStyle,
                     columnHeaderStyle);
             drb.addColumn("Accepted / Not Accepted ", "status", String.class.getName(), 50, columnStyle, columnHeaderStyle);
-        } catch (ColumnBuilderException | ClassNotFoundException e) {
+        } catch (ColumnBuilderException e) {
             LOG.error(e.getMessage(), e);
         }
         drb.setUseFullPageWidth(true);
@@ -1988,7 +1988,8 @@ public class PlanReportService {
 
                         }
                         dcrReportFloorDetails = dcrReportFloorDetails.stream()
-                                .sorted(Comparator.comparing(DcrReportFloorDetail::getFloorNo))
+                                .sorted(Comparator.comparingInt(PlanReportService::getFloorSortOrder)
+                                        .thenComparing(DcrReportFloorDetail::getFloorNo, Comparator.nullsLast(String::compareTo)))
                                 .collect(Collectors.toList());
 
                         dcrReportBlockDetail.setDcrReportFloorDetails(dcrReportFloorDetails);
@@ -2052,7 +2053,8 @@ public class PlanReportService {
 
                         }
                         dcrReportFloorDetails = dcrReportFloorDetails.stream()
-                                .sorted(Comparator.comparing(DcrReportFloorDetail::getFloorNo))
+                                .sorted(Comparator.comparingInt(PlanReportService::getFloorSortOrder)
+                                        .thenComparing(DcrReportFloorDetail::getFloorNo, Comparator.nullsLast(String::compareTo)))
                                 .collect(Collectors.toList());
 
                         dcrReportBlockDetail.setDcrReportFloorDetails(dcrReportFloorDetails);
@@ -2064,6 +2066,37 @@ public class PlanReportService {
 
         }
         return dcrReportBlockDetails;
+    }
+
+    private static int getFloorSortOrder(DcrReportFloorDetail floorDetail) {
+        if (floorDetail == null || StringUtils.isBlank(floorDetail.getFloorNo())) {
+            return Integer.MAX_VALUE;
+        }
+
+        String floorNo = floorDetail.getFloorNo().trim();
+        if ("Terrace".equalsIgnoreCase(floorNo)) {
+            return Integer.MAX_VALUE;
+        }
+
+        StringBuilder numericPrefix = new StringBuilder();
+        for (int i = 0; i < floorNo.length(); i++) {
+            char ch = floorNo.charAt(i);
+            if (Character.isDigit(ch) || (i == 0 && ch == '-')) {
+                numericPrefix.append(ch);
+            } else {
+                break;
+            }
+        }
+
+        if (numericPrefix.length() == 0 || "-".contentEquals(numericPrefix)) {
+            return Integer.MAX_VALUE - 1;
+        }
+
+        try {
+            return Integer.parseInt(numericPrefix.toString());
+        } catch (NumberFormatException e) {
+            return Integer.MAX_VALUE - 1;
+        }
     }
 
     private VirtualBuildingReport buildVirtualBuilding(VirtualBuilding virtualBuilding) {

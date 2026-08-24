@@ -57,7 +57,7 @@ import org.owasp.validator.html.ScanException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * VirtualSanitizer.java This class used to sanitise user input from possible XSS attacks.

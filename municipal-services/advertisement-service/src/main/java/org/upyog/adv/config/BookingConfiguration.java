@@ -4,7 +4,9 @@ import java.util.TimeZone;
 
 import jakarta.annotation.PostConstruct;
 
+import org.egov.tracer.config.TracerConfiguration;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 
 import lombok.AllArgsConstructor;
@@ -19,6 +21,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@Import({ TracerConfiguration.class })
 public class BookingConfiguration {
 
 	@Value("${app.timezone}")
@@ -117,13 +120,13 @@ public class BookingConfiguration {
 	@Value("${adv.business.service.name}")
 	private String businessServiceName;
 
-	@Value("${adv.calculation.tax.applicable}")
+	@Value("${adv.calculation.tax.applicable:false}")
 	private String applicableTaxes;
 
-	@Value("${egbs.host}")
+	@Value("${egbs.host:}")
 	private String egbsHost;
 
-	@Value("${egbs.fetchbill.endpoint}")
+	@Value("${egbs.fetchbill.endpoint:}")
 	private String egbsFetchBill;
 
 	@Value("${egov.billingservice.host}")

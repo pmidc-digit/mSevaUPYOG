@@ -65,7 +65,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.math.RandomUtils;
+import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.filestore.entity.FileStoreMapper;
@@ -464,7 +464,7 @@ public class EgovMicroServiceStore implements FileStoreService {
         if (LOG.isDebugEnabled())
             LOG.debug(String.format("fetch file fron url   %s   ", urls));
         LOG.info(String.format("fetch file fron url   %s   ", urls));
-        Path path = Paths.get("/tmp/" + RandomUtils.nextLong());
+        Path path = Paths.get("/tmp/" + ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
         try {
             RequestCallback requestCallback = request -> request.getHeaders()
                     .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
@@ -517,7 +517,7 @@ public class EgovMicroServiceStore implements FileStoreService {
         String tenant = StringUtils.isEmpty(tenantId) ? ApplicationThreadLocals.getFullTenantID() : tenantId;
         String urls = url + "/id?tenantId=" + tenant + "&fileStoreId=" + fileStoreId;
         LOG.info(String.format("fetch file from url   %s   ", urls));
-        Path path = Paths.get("/tmp/" + RandomUtils.nextLong());
+        Path path = Paths.get("/tmp/" + ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
         try {
             RequestCallback requestCallback = request -> request.getHeaders()
                     .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));

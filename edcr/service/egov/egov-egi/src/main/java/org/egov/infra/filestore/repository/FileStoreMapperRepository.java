@@ -57,7 +57,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.QueryHint;
+import jakarta.persistence.QueryHint;
 
 @Repository
 public interface FileStoreMapperRepository extends JpaRepository<FileStoreMapper,Long>{

@@ -13,10 +13,10 @@ import org.egov.common.contract.response.ResponseInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -40,16 +40,16 @@ public class BoundaryTypeControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
-	@MockBean
+	@MockitoBean
 	private BoundaryTypeService boundaryTypeService;
 
-	@MockBean
+	@MockitoBean
 	private ResponseInfoFactory responseInfoFactory;
 
-	@MockBean
+	@MockitoBean
 	private HierarchyTypeService hierarchyTypeService;
 
-	private MediaType contentType = new MediaType("application", "json", Charset.forName("UTF-8"));
+	private MediaType contentType = MediaType.APPLICATION_JSON;
 
 	@Test
 	public void testShouldFetchAllBoundarieTypesForHierarchyTypeidAndtenantId() throws Exception {
@@ -59,7 +59,7 @@ public class BoundaryTypeControllerTest {
 				.thenReturn(Collections.singletonList(expectedBoundaryType));
 		mockMvc.perform(post("/boundarytypes/getByHierarchyType").param("hierarchyTypeName", "ADMINISTRATION")
 				.param("tenantId", "tenantId").header("X-CORRELATION-ID", "someId")).andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundaryTypeResponse.json")));
 	}
 
@@ -73,9 +73,9 @@ public class BoundaryTypeControllerTest {
 		when(boundaryTypeService.createBoundaryType(any(BoundaryType.class))).thenReturn(getBoundaryType());
 		when(hierarchyTypeService.findByCodeAndTenantId(any(String.class), any(String.class)))
 				.thenReturn(hierarchyType);
-		mockMvc.perform(post("/boundarytypes").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/boundarytypes").contentType(MediaType.APPLICATION_JSON)
 				.content(getFileContents("boundaryTypeCreateRequest.json"))).andExpect(status().isCreated())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundaryTypeCreateResponse.json")));
 	}
 	
@@ -88,21 +88,21 @@ public class BoundaryTypeControllerTest {
 		when(boundaryTypeService.updateBoundaryType(any(BoundaryType.class))).thenReturn(getBoundaryType());
 		when(hierarchyTypeService.findByCodeAndTenantId(any(String.class), any(String.class)))
 				.thenReturn(hierarchyType);
-		mockMvc.perform(put("/boundarytypes/TEST").contentType(MediaType.APPLICATION_JSON_UTF8).param("tenantId", "default")
+		mockMvc.perform(put("/boundarytypes/TEST").contentType(MediaType.APPLICATION_JSON).param("tenantId", "default")
 				.content(getFileContents("boundaryTypeCreateRequest.json"))).andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundaryTypeUpdateResponse.json")));
 	}
 	
 	@Test
 	public void testShouldGetBadRequestwhenTenantIsNotThere() throws Exception {
-		mockMvc.perform(put("/boundarytypes/TEST").contentType(MediaType.APPLICATION_JSON_UTF8))
+		mockMvc.perform(put("/boundarytypes/TEST").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
 	
 	@Test
 	public void testShouldGetBadRequestWithoutTenant() throws Exception {
-		mockMvc.perform(get("/boundarytypes").contentType(MediaType.APPLICATION_JSON_UTF8))
+		mockMvc.perform(get("/boundarytypes").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest());
 	}
 	
@@ -111,9 +111,9 @@ public class BoundaryTypeControllerTest {
 		List<BoundaryType> list = new ArrayList<BoundaryType>();
 		list.add(getBoundaryType());
 		when(boundaryTypeService.getAllBoundaryTypes(any(BoundaryTypeRequest.class))).thenReturn(list);
-		mockMvc.perform(get("/boundarytypes").param("BoundaryType.tenantId", "default").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(get("/boundarytypes").param("BoundaryType.tenantId", "default").contentType(MediaType.APPLICATION_JSON)
 				.content(getFileContents("boundaryTypeSearchResponse.json"))).andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundaryTypeSearchResponse.json")));
 	}
 	
@@ -130,9 +130,9 @@ public class BoundaryTypeControllerTest {
 	
 	@Test
 	public void testShouldNotCreateBoundaryTypeWithoutName() throws Exception {
-		mockMvc.perform(post("/boundarytypes").contentType(MediaType.APPLICATION_JSON_UTF8)
+		mockMvc.perform(post("/boundarytypes").contentType(MediaType.APPLICATION_JSON)
 				.content(getFileContents("boundaryTypeCreateRequestWithoutNameAndCode.json"))).andExpect(status().isBadRequest())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(content().json(getFileContents("boundaryTypeCreateResponseWithoutNameAndCode.json")));
 	}
 

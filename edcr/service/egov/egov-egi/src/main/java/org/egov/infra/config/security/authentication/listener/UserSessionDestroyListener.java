@@ -55,11 +55,11 @@ import org.egov.infra.security.audit.service.LoginAuditService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationListener;
+import org.springframework.session.Session;
+import org.springframework.session.events.SessionDestroyedEvent;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
 import java.util.Date;
 
 import static org.egov.infra.security.utils.SecurityConstants.LOGIN_IP;
@@ -68,7 +68,7 @@ import static org.egov.infra.security.utils.SecurityConstants.LOGIN_USER_AGENT;
 import static org.egov.infra.utils.ApplicationConstant.TENANTID_KEY;
 import static org.egov.infra.utils.ApplicationConstant.USERID_KEY;
 
-public class UserSessionDestroyListener implements HttpSessionListener {
+public class UserSessionDestroyListener implements ApplicationListener<SessionDestroyedEvent> {
 
     @Autowired
     private LoginAuditService loginAuditService;
@@ -84,17 +84,12 @@ public class UserSessionDestroyListener implements HttpSessionListener {
     private boolean masterServer;
 
     @Override
-    public void sessionCreated(HttpSessionEvent se) {
-        //do nothing
-    }
-
-    @Override
-    public void sessionDestroyed(HttpSessionEvent event) {
+    public void onApplicationEvent(SessionDestroyedEvent event) {
         if (masterServer)
             auditUserLogin(event.getSession());
     }
 
-    private void auditUserLogin(final HttpSession session) {
+    private void auditUserLogin(final Session session) {
         if (session.getAttribute(LOGIN_IP) != null) {
             try {
                 ApplicationThreadLocals.setTenantID((String) session.getAttribute(TENANTID_KEY));

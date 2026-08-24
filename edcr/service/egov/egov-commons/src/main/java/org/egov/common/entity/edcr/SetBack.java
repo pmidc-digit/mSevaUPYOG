@@ -136,9 +136,14 @@ public class SetBack implements Serializable {
 
     @Override
     public String toString() {
-        return "SetBack [frontYard=" + frontYard + ", rearYard=" + rearYard + ", sideYard1=" + sideYard1
-                + ", sideYard2=" + sideYard2 + ", level=" + level + ",  buildingFootPrint="
-                + buildingFootPrint + "]";
+        return "SetBack{" +
+                "\n  level=" + level +
+                ",\n  frontYard=" + frontYard +
+                ",\n  rearYard=" + rearYard +
+                ",\n  sideYard1=" + sideYard1 +
+                ",\n  sideYard2=" + sideYard2 +
+                ",\n  buildingFootPrint=" + buildingFootPrint +
+                "\n}";
     }
 
 }

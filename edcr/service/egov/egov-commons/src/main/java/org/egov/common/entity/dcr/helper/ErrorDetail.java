@@ -48,7 +48,7 @@
 
 package org.egov.common.entity.dcr.helper;
 
-import static org.apache.commons.lang.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 public class ErrorDetail {
     private String errorCode;

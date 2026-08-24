@@ -411,4 +411,7 @@ public class SWConstants {
 
 	public static final String SUCCESS_DISCONNECT_MSG = "Successfully disconnected sewerage connection";
 
+	// Fuzzy Search
+	public static final String ES_DATA_PATH = "$..Data";
+
 }

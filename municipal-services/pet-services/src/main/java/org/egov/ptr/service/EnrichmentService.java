@@ -390,15 +390,15 @@ public class EnrichmentService {
 	}
 
 	/**
-	 * Formats years and months into pet age string
+	 * Formats years and months into pet age string (decimal format: years.months)
+	 * e.g., 2 years 5 months -> "2.5", 4 years 9 months -> "4.9"
 	 */
 	private String formatPetAge(int years, int months) {
-		if (years == 0) {
-			return months + (months == 1 ? " month" : " months");
-		} else if (months == 0) {
-			return years + (years == 1 ? " year" : " years");
+		// Convert to decimal format: years.months (e.g., "2.5" = 2 years 5 months)
+		if (months == 0) {
+			return String.valueOf(years);
 		} else {
-			return years + (years == 1 ? " year" : " years") + " " + months + (months == 1 ? " month" : " months");
+			return years + "." + months;
 		}
 	}
 

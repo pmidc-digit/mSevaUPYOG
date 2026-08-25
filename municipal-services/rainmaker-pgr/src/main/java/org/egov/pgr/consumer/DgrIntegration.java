@@ -123,6 +123,15 @@ public class DgrIntegration {
         try {
             serviceReqRequest = mapper.convertValue(record, ServiceRequest.class);
 
+            // Safeguard: If complaint already has a DGR ID, skip to avoid duplicate creation in DGR
+            if (serviceReqRequest.getServices() != null && !serviceReqRequest.getServices().isEmpty()) {
+                String existingDgrId = serviceReqRequest.getServices().get(0).getDgrPgrId();
+                if (existingDgrId != null && !existingDgrId.trim().isEmpty()) {
+                    log.info("DGR Grievance ID already exists: {}. Skipping CreateGrievance to avoid duplicate.", existingDgrId);
+                    return;
+                }
+            }
+
             Map<String, Object> reqInfoMap = (Map<String, Object>) record.get("RequestInfo");
             RequestInfo requestInfo = mapper.convertValue(reqInfoMap, RequestInfo.class);
 

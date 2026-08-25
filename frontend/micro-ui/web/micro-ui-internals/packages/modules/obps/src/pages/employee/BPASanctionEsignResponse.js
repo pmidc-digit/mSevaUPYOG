@@ -10,8 +10,12 @@ const BPASanctionEsignResponse = () => {
   const { pathname } = location;
   const { t } = useTranslation();
   const history = useHistory();
-  const isCitizen = window.location.href.includes("citizen")
-  const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : window.localStorage.getItem("Employee.tenant-id");
+  const isCitizen = window.location.href.includes("citizen");
+  const queryTenantId = new URLSearchParams(location?.search).get("tenantId");
+  const fallbackTenantId = isCitizen
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = queryTenantId || fallbackTenantId;
   const userInfo = Digit.UserService.getUser();
   const userUUID = userInfo?.info?.uuid;
 
@@ -87,7 +91,8 @@ const BPASanctionEsignResponse = () => {
 
           const timeout = setTimeout(() => {
             const encryptedID = encryptId(applicationNo);
-            history.push(isCitizen? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}`);
+            const appTenant = data?.BPA?.[0]?.tenantId || tenantId;
+            history.push(isCitizen ? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}?tenantId=${appTenant}`);
           }, 10000);
 
           return () => {
@@ -105,7 +110,8 @@ const BPASanctionEsignResponse = () => {
           // redirect after showing toast
           const timeout = setTimeout(() => {
             const encryptedID = encryptId(applicationNo);
-            history.push(isCitizen? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}`);
+            const appTenant = data?.BPA?.[0]?.tenantId || tenantId;
+            history.push(isCitizen ? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}?tenantId=${appTenant}`);
           }, 10000);
 
           return () => clearTimeout(timeout);
@@ -121,7 +127,8 @@ const BPASanctionEsignResponse = () => {
         // redirect after showing toast
         const timeout = setTimeout(() => {
           const encryptedID = encryptId(applicationNo);
-          history.push(isCitizen? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}`);
+          const appTenant = data?.BPA?.[0]?.tenantId || tenantId;
+          history.push(isCitizen ? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}?tenantId=${appTenant}`);
         }, 10000);
 
         return () => clearTimeout(timeout);

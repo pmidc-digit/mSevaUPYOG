@@ -25,7 +25,7 @@ import {
   Modal,
 } from "@mseva/digit-ui-react-components";
 import React, { useState, Fragment, useEffect, useMemo, useRef } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 // import { FormComposer, Header, Card, CardSectionHeader, PDFSvg, Loader, StatusTable, Row, ActionBar, SubmitBar, MultiLink, LinkButton, CardSubHeader, CardLabel, TextInput, TextArea, BreakLine } from "@mseva/digit-ui-react-components";
 import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDetails";
@@ -100,15 +100,17 @@ const RenderRow = ({ label, text, ...rest }) => {
 };
 
 const BpaApplicationDetail = () => {
-  const { bpaid, tenant, filestore } = useParams();
+  const { bpaid, filestore } = useParams();
   const id = decryptId(bpaid);
   const { t } = useTranslation();
-  // const tenantId = Digit.ULBService.getCurrentTenantId();
-  const tenantId = localStorage.getItem("tenant-id") === "pb.punjab" ? tenant : localStorage.getItem("tenant-id");
+  const history = useHistory();
+  const location = useLocation();
+  const queryTenantId = new URLSearchParams(location?.search).get("tenantId");
+  const fallbackTenantId = localStorage.getItem("Employee.tenant-id") || localStorage.getItem("tenant-id");
+  const tenantId = queryTenantId || fallbackTenantId;
   const [showToast, setShowToast] = useState(null);
   const [canSubmit, setSubmitValve] = useState({});
   const defaultValues = {};
-  const history = useHistory();
   const stateCode = Digit.ULBService.getStateId();
   // delete
   const [_formData, setFormData, _clear] = Digit.Hooks.useSessionStorage("store-data", null);

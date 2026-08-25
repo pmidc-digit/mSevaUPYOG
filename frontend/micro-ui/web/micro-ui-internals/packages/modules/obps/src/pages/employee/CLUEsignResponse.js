@@ -9,7 +9,9 @@ const CLUEsignResponse = () => {
   const { pathname } = location;
   const { t } = useTranslation();
   const history = useHistory();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const queryTenantId = new URLSearchParams(location?.search).get("tenantId");
+  const fallbackTenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = queryTenantId || fallbackTenantId;
 
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(10);
@@ -62,7 +64,8 @@ const CLUEsignResponse = () => {
 
           const timeout = setTimeout(() => {
             const encryptedID = encryptId(applicationNo);
-            history.push(`/digit-ui/employee/obps/clu/application-overview/${encryptedID}`);
+            const appTenant = application?.tenantId || tenantId;
+            history.push(`/digit-ui/employee/obps/clu/application-overview/${encryptedID}?tenantId=${appTenant}`);
           }, 10000);
 
           return () => {
@@ -80,7 +83,8 @@ const CLUEsignResponse = () => {
           // redirect after showing toast
           const timeout = setTimeout(() => {
             const encryptedID = encryptId(applicationNo);
-            history.push(`/digit-ui/employee/obps/clu/inbox/application-overview/${encryptedID}`);
+            const appTenant = application?.tenantId || tenantId;
+            history.push(`/digit-ui/employee/obps/clu/application-overview/${encryptedID}?tenantId=${appTenant}`);
           }, 10000);
 
           return () => clearTimeout(timeout);

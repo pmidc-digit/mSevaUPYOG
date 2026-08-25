@@ -42,18 +42,18 @@ export const useCLUCitizenSearchApplication = (params, tenantId, config = {}, t)
 
 export const useCLUSearchApplication = (params, tenantId, config = {}, t) => {
   const client = useQueryClient();
-  const result = useQuery(["CLU_SEARCH_APPLICATION", params], useCLUSearch(params, tenantId, config), {
+  const result = useQuery(["CLU_SEARCH_APPLICATION", params, tenantId], useCLUSearch(params, tenantId, config), {
     staleTime: Infinity,
     ...config,
     select: (data) => {
       return{
         resData: data?.data,
-        revalidate: () => client.invalidateQueries(["CLU_SEARCH_APPLICATION", params])
+        revalidate: () => client.invalidateQueries(["CLU_SEARCH_APPLICATION", params, tenantId])
       }
     },
   });
 
-  return { ...result, revalidate: () => client.invalidateQueries(["CLU_SEARCH_APPLICATION", params]) };
+  return { ...result, revalidate: () => client.invalidateQueries(["CLU_SEARCH_APPLICATION", params, tenantId]) };
 };
 
 export const useCLUSearchApplicationByIdOrMobile = (params, tenantId, config = {}, t) => {

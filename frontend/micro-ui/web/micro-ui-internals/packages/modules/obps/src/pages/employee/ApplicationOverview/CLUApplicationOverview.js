@@ -25,7 +25,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { composeInitialProps, useTranslation } from "react-i18next";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, useLocation } from "react-router-dom";
 import CLUDocumentTableView from "../../../pageComponents/CLUDocumentTableView";
 import CLUFeeEstimationDetails from "../../../pageComponents/CLUFeeEstimationDetails";
 import CLUDocumentView from "../../../pageComponents/CLUDocumentView";
@@ -108,11 +108,14 @@ const CloseBtn = (props) => {
 };
 
 const CLUEmployeeApplicationDetails = () => {
-  const { cluid, tenant } = useParams();
+  const { cluid } = useParams();
   const id = decryptId(cluid);
   const { t } = useTranslation();
   const history = useHistory();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id") === "pb.punjab"? tenant : window.localStorage.getItem("Employee.tenant-id");
+  const location = useLocation();
+  const queryTenantId = new URLSearchParams(location?.search).get("tenantId");
+  const fallbackTenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = queryTenantId || fallbackTenantId;
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
@@ -383,7 +386,7 @@ const CLUEmployeeApplicationDetails = () => {
       // await mutation.mutateAsync({ Noc: updatedApplication });
       // refetch();
 
-      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/clu/esign/complete/${id}`;
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/clu/esign/complete/${encodeURIComponent(id)}`;
       const authToken = localStorage.getItem('token');
       // Trigger eSign
       eSignCertificate(
@@ -880,7 +883,7 @@ const CLUEmployeeApplicationDetails = () => {
         } else {
           await Digit.OBPSService.CLUCheckListCreate({
             details: checklistPayload,
-            filters: {},
+            filters: { tenantId },
           });
         }
       }
@@ -1400,7 +1403,7 @@ const CLUEmployeeApplicationDetails = () => {
         </Modal>
       )}
 
-      {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} />}
+      {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} tenantId={tenantId} />}
 
       {showPdfModal && (
         <PdfPreviewModal

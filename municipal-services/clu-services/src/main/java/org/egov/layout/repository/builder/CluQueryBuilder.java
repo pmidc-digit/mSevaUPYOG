@@ -127,7 +127,7 @@ public class CluQueryBuilder {
 
 		StringBuilder builder = new StringBuilder(QUERY);
 
-		if (criteria.getTenantId() != null) {
+		if (criteria.getTenantId() != null && !criteria.getTenantId().equalsIgnoreCase("pb.punjab")) {
 	        addClauseIfRequired(builder);
 	        builder.append(" clu.tenantid=? ");
 	        preparedStmtList.add(criteria.getTenantId());

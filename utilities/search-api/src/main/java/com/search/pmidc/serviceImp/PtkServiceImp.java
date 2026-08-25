@@ -22,12 +22,12 @@ public class PtkServiceImp implements PtkService {
 
 	@Override
 	public List<PtkBean> findByPhone(String phone) {
-			return (List<PtkBean>) ptkRepository.findByPhone(phone, new PageRequest(0, 50));
+			return (List<PtkBean>) ptkRepository.findByPhone(phone, PageRequest.of(0, 50));
 		}
 	
 	@Override
 	public List<PtkBean> findAll(String owner) {
-			return (List<PtkBean>) ptkRepository.findAllReco(owner, new PageRequest(0, 50));
+			return (List<PtkBean>) ptkRepository.findAllReco(owner, PageRequest.of(0, 50));
 		}
 	
 	@Override public List<PtkBean> findAllByReturnId(String returnId) {
@@ -42,7 +42,7 @@ public class PtkServiceImp implements PtkService {
 	
 	@Override
 	public List<PtkBean> findAllByAssYearOwner(String owner, String assYear) {
-		return  (List<PtkBean>) ptkRepository.findAllByOwnerAssYear(owner, assYear, new PageRequest(0, 50));
+		return  (List<PtkBean>) ptkRepository.findAllByOwnerAssYear(owner, assYear, PageRequest.of(0, 50));
 	}
 	
 	@Override

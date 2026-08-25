@@ -20,7 +20,7 @@ public class LudServiceImp implements LudService {
 
 	@Override
 	public List<LudBean> findAll(String owner) {
-			return (List<LudBean>) ludRepository.findAllReco(owner, new PageRequest(0, 50));
+			return (List<LudBean>) ludRepository.findAllReco(owner, PageRequest.of(0, 50));
 		}
 	
 	@Override public List<LudBean> findAllByReturnId(String returnId) {
@@ -35,7 +35,7 @@ public class LudServiceImp implements LudService {
 
 	@Override
 	public List<LudBean> findAllByAssYearOwner(String owner, String assYear) {
-		return  (List<LudBean>) ludRepository.findAllByAssYearOwner(owner, assYear, new PageRequest(0, 50));
+		return  (List<LudBean>) ludRepository.findAllByAssYearOwner(owner, assYear, PageRequest.of(0, 50));
 	}
 	
 	@Override

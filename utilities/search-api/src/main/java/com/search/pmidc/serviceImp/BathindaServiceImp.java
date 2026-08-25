@@ -37,7 +37,7 @@ public class BathindaServiceImp implements BathindaService{
 	  }
 	  
 	  @Override public List<BathindaBean> findAll(String owner) { return
-	  (List<BathindaBean>) bathindaRepository.findAllReco(owner, new PageRequest(0,50)); 
+	  (List<BathindaBean>) bathindaRepository.findAllReco(owner, PageRequest.of(0, 50)); 
 	  }
 	  
 	  @Override public List<BathindaBean> findAllByReturnId(String returnId) {
@@ -49,11 +49,11 @@ public class BathindaServiceImp implements BathindaService{
 	  }
 	  
 	  @Override public List<BathindaBean> findByPhone(String phone) { 
-	  return(List<BathindaBean>) bathindaRepository.findByPhone(phone, new PageRequest(0,50)); 
+	  return(List<BathindaBean>) bathindaRepository.findByPhone(phone, PageRequest.of(0, 50)); 
 	  }
 	  
 	  @Override public List<BathindaBean> findAllByAssYearOwner(String assYear,String owner) { 
-	  return (List<BathindaBean>)bathindaRepository.findAllByAssYearOwner(owner, assYear, new PageRequest(0,50)); 
+	  return (List<BathindaBean>)bathindaRepository.findAllByAssYearOwner(owner, assYear, PageRequest.of(0, 50)); 
 	  }
 	  
 	  @Override public List<BathindaBean> findHistory(Set<String> sessionReturnId) {

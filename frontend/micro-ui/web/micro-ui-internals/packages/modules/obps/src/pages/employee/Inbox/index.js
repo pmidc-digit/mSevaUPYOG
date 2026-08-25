@@ -179,8 +179,10 @@ const Inbox = ({ parentRoute }) => {
     ];
   }, []);
 
-  const effectiveTenantId =
-    isEmployee && tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+  // const effectiveTenantId =
+  //   isEmployee && tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+
+  const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
 
   useEffect(() => {
     if (!(isEmployee && tenantId === "pb.punjab")) return;
@@ -578,9 +580,7 @@ const Inbox = ({ parentRoute }) => {
           tenantSelector={
             isEmployee && tenantId === "pb.punjab" && cities?.length ? (
               <div className="new-inbox-tenant-selector">
-                <div className="filter-label sub-filter-label obps-pages-employee-inbox-index--style-1" >
-                  {t("BPA_CITIES_DROPDOWN_LABEL")}
-                </div>
+                <div className="filter-label sub-filter-label obps-pages-employee-inbox-index--style-1">{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
                 <div className="new-inbox-tenant-dropdown">
                   <Dropdown
                     option={cities}

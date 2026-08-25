@@ -36,8 +36,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             link = `/digit-ui/citizen/obps/stakeholder/${row.original.applicationId}`;
           } else if (currentUrl.includes("/citizen")) {
             link = `${parentRoute}/bpa-app/${encryptedId}`;
-          } else if (tenantId === "pb.punjab") {
-            link = `${parentRoute}/inbox/bpa/${encryptedId}/${row.original["tenantId"]}`;
+          } else if (row.original?.tenantId) {
+            link = `${parentRoute}/inbox/bpa/${encryptedId}?tenantId=${row.original.tenantId}`;
           } else {
             link = `${parentRoute}/inbox/bpa/${encryptedId}`;
           }

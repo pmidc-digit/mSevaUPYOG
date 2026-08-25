@@ -161,7 +161,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           category: application.businessObject?.additionalDetails?.categoriesName,
           zone: application.businessObject?.additionalDetails?.zonenumber,
           selfCertification: application.businessObject?.additionalDetails?.isSelfCertification ? "Yes" : "No",
-          tenantId: application.businessObject?.tenantId,
+          tenantId: application.businessObject?.tenantId || application?.ProcessInstance?.tenantId,
           applicationType: application?.businessObject?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0],
           architectID: application?.businessObject?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
           licenseNumber: application?.businessObject?.licenseNumber,

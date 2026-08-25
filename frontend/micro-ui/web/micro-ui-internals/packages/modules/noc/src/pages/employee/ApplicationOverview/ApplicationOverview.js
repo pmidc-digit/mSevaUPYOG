@@ -1402,10 +1402,18 @@ const NOCEmployeeApplicationOverview = () => {
       </Card>
 
       {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && (
-        <Card>
-          <div id="fieldInspection"></div>
-          <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
-        </Card>
+        <div>
+          {isMobile ? (
+            <Card>
+              <div id="fieldInspection"></div>
+              <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
+            </Card>
+          ) : (
+            <Card>
+              <div id="fieldInspection">{t("Please Use Mobile Device for Field Inspection.")}</div>
+            </Card>
+          )}
+        </div>
       )}
       {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
         <Card>

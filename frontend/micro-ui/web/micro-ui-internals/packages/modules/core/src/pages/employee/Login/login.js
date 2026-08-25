@@ -289,7 +289,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
           </div>
 
           <div className="employee-login-branding">
-            <h1 className="employee-upyog-title">UPYOG</h1>
+            <h1 className="employee-upyog-title">mSeva</h1>
             <p className="employee-upyog-subtitle">Urban Governance Platform</p>
           </div>
 

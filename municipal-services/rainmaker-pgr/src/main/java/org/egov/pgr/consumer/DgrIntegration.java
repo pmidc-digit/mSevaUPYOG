@@ -20,8 +20,14 @@ import org.springframework.web.client.RestTemplate;
 import org.egov.pgr.contract.Address;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Base64;
 
 /**
  * DgrIntegration - integrates with DGR & grievance APIs.
@@ -69,7 +75,18 @@ public class DgrIntegration {
 
     @Value("${dgr.token.public.key}")
     public String TOKEN_PUBLIC_KEY;
-    
+
+    // FileStore config
+    @Value("${egov.filestore.host}")
+    public String FILESTORE_HOST;
+
+    @Value("${egov.filestore.url.endpoint}")
+    public String FILESTORE_URL_ENDPOINT;
+
+    // DGR Document upload URL
+    @Value("${dgr.upload.document.url}")
+    public String DGR_UPLOAD_DOCUMENT_URL;
+
     
     @Autowired
     private GrievanceService grievanceService;
@@ -449,7 +466,19 @@ public class DgrIntegration {
             requestBody.put("System_type", constants.SYSTEM_TYPE);
             requestBody.put("Service_Code", constants.SERVICE_CODE_DEFAULT);
             requestBody.put("Selected_Locale", constants.SELECTED_LOCALE);
-            requestBody.put("doc", new ArrayList<>());
+            // Collect media UUIDs from ActionInfo and upload documents to DGR
+            List<String> mediaIds = Collections.emptyList();
+            if (serviceReqRequest.getActionInfo() != null
+                    && !serviceReqRequest.getActionInfo().isEmpty()
+                    && serviceReqRequest.getActionInfo().get(0).getMedia() != null) {
+                mediaIds = serviceReqRequest.getActionInfo().get(0).getMedia();
+            }
+            List<Map<String, Object>> uploadedDocs = uploadDocumentsToDgr(
+                    mediaIds,
+                    bearerToken,
+                    serviceReqRequest.getServices().get(0).getTenantId()
+            );
+            requestBody.put("doc", uploadedDocs);
             requestBody.put("Town_ID", 0);
             requestBody.put("Previous_Grievance", 0);
             requestBody.put("Town_Name",tehsilSearchName);
@@ -631,5 +660,217 @@ public class DgrIntegration {
     }
     private String safeString(Object obj, String defaultValue) {
         return obj != null ? obj.toString().trim() : defaultValue;
+    }
+
+    /* =========================
+       Document Upload to DGR
+       ========================= */
+    /**
+     * Fetches file URLs from the FileStore for the given media UUIDs,
+     * downloads each file, base64-encodes it, and uploads to the DGR
+     * Uploaddocument API.
+     *
+     * @param mediaIds    list of FileStore UUIDs from ActionInfo.media
+     * @param bearerToken DGR bearer token from generateLoginToken()
+     * @param tenantId    tenantId for FileStore API call
+     * @return list of uploaded doc objects to include in the CreateGrievance payload
+     */
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> uploadDocumentsToDgr(
+            List<String> mediaIds, String bearerToken, String tenantId) {
+
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        if (mediaIds == null || mediaIds.isEmpty()) {
+            log.info("No media IDs found — skipping document upload.");
+            return result;
+        }
+
+        try {
+            // 1. Build FileStore URL API call
+            String fileStoreIds = String.join(",", mediaIds);
+            String fileStoreApiUrl = FILESTORE_HOST + FILESTORE_URL_ENDPOINT
+                    + "?tenantId=pb&fileStoreIds=" + fileStoreIds;
+
+            log.info("Calling FileStore URL API: {}", fileStoreApiUrl);
+
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders fsHeaders = new HttpHeaders();
+            fsHeaders.set("Accept", "application/json, text/plain, */*");
+            HttpEntity<String> fsEntity = new HttpEntity<>(fsHeaders);
+
+            ResponseEntity<Map> fsResponse = restTemplate.exchange(
+                    fileStoreApiUrl, HttpMethod.GET, fsEntity, Map.class);
+
+            Map<String, Object> fsBody = fsResponse.getBody();
+            if (fsBody == null) {
+                log.warn("FileStore API returned null body.");
+                return result;
+            }
+
+            // 2. Extract fileStoreIds array from response: [{ "id": "...", "url": "..." }]
+            List<Map<String, Object>> fileStoreList =
+                    (List<Map<String, Object>>) fsBody.get("fileStoreIds");
+
+            if (fileStoreList == null || fileStoreList.isEmpty()) {
+                log.warn("No fileStoreIds entries in FileStore response.");
+                return result;
+            }
+
+            // 3. Build list of doc maps: download + base64-encode each file
+            List<Map<String, Object>> docFiles = new ArrayList<>();
+            for (Map<String, Object> entry : fileStoreList) {
+                String publicUrl = String.valueOf(entry.get("url"));
+                log.info("FileStore public URL: {}", publicUrl);
+
+                // Replace public domain with the configured internal FileStore host
+                // so the download happens via the internal network
+                String downloadUrl = publicUrl;
+                try {
+                    URI uri = new URI(publicUrl);
+                    String publicOrigin = uri.getScheme() + "://" + uri.getHost()
+                            + (uri.getPort() != -1 ? ":" + uri.getPort() : "");
+                    downloadUrl = publicUrl.replace(publicOrigin, FILESTORE_HOST);
+                } catch (Exception e) {
+                    log.warn("Could not parse URL for domain replacement [{}]: {}", publicUrl, e.getMessage());
+                }
+
+                log.info("Downloading file from: {}", downloadUrl);
+
+                try {
+                    byte[] fileBytes = downloadFileBytes(downloadUrl);
+                    if (fileBytes == null || fileBytes.length == 0) {
+                        log.warn("Empty file bytes for URL: {}", downloadUrl);
+                        continue;
+                    }
+
+                    String base64Content = Base64.getEncoder().encodeToString(fileBytes);
+
+                    // Derive filename: prefer query param 'name', fallback to path segment
+                    String filename = "attachment";
+                    try {
+                        URI parsedUri = new URI(publicUrl);
+                        String query = parsedUri.getQuery(); // e.g. "name=pb/undefined/August/25/xyz.pdf"
+                        if (query != null && query.contains("name=")) {
+                            String nameParam = query.substring(query.indexOf("name=") + 5);
+                            if (nameParam.contains("&")) {
+                                nameParam = nameParam.substring(0, nameParam.indexOf("&"));
+                            }
+                            // Take only the last segment of the path inside the name param
+                            filename = nameParam.contains("/")
+                                    ? nameParam.substring(nameParam.lastIndexOf('/') + 1)
+                                    : nameParam;
+                        } else {
+                            String urlPath = parsedUri.getPath();
+                            String seg = urlPath.contains("/")
+                                    ? urlPath.substring(urlPath.lastIndexOf('/') + 1) : urlPath;
+                            if (!seg.isEmpty()) filename = seg;
+                        }
+                        // URL-decode
+                        filename = java.net.URLDecoder.decode(filename, "UTF-8");
+                    } catch (Exception e) {
+                        log.warn("Could not derive filename from URL [{}]: {}", publicUrl, e.getMessage());
+                    }
+
+                    // Detect content-type from filename extension
+                    String contentType = "application/octet-stream";
+                    String lowerFilename = filename.toLowerCase();
+                    if (lowerFilename.endsWith(".pdf")) {
+                        contentType = "application/pdf";
+                    } else if (lowerFilename.endsWith(".jpg") || lowerFilename.endsWith(".jpeg")) {
+                        contentType = "image/jpeg";
+                    } else if (lowerFilename.endsWith(".png")) {
+                        contentType = "image/png";
+                    }
+
+                    Map<String, Object> docEntry = new HashMap<>();
+                    docEntry.put("filename", filename);
+                    docEntry.put("filesize", String.valueOf(fileBytes.length));
+                    docEntry.put("filetype", contentType);
+                    docEntry.put("base64", base64Content);
+                    docFiles.add(docEntry);
+
+                    log.info("File prepared for DGR upload: name={}, size={}, type={}",
+                            filename, fileBytes.length, contentType);
+
+                } catch (Exception e) {
+                    log.error("Failed to download/encode file from [{}]: {}", downloadUrl, e.getMessage(), e);
+                }
+            }
+
+            if (docFiles.isEmpty()) {
+                log.info("No files downloaded successfully — sending empty doc list.");
+                return result;
+            }
+
+            // 4. POST to DGR Uploaddocument API
+            Map<String, Object> uploadPayload = new HashMap<>();
+            uploadPayload.put("files", docFiles);
+
+            HttpHeaders uploadHeaders = new HttpHeaders();
+            uploadHeaders.setContentType(MediaType.APPLICATION_JSON);
+            uploadHeaders.set("Authorization", "Bearer " + bearerToken);
+            uploadHeaders.set("Accept", "application/json, text/plain, */*");
+
+            HttpEntity<Map<String, Object>> uploadEntity = new HttpEntity<>(uploadPayload, uploadHeaders);
+
+            log.info("Calling DGR Uploaddocument API: {}", DGR_UPLOAD_DOCUMENT_URL);
+            ResponseEntity<String> uploadResponse = restTemplate.exchange(
+                    DGR_UPLOAD_DOCUMENT_URL, HttpMethod.POST, uploadEntity, String.class);
+
+            log.info("DGR Uploaddocument response status: {}", uploadResponse.getStatusCode());
+            log.info("DGR Uploaddocument response body: {}", uploadResponse.getBody());
+
+            // 5. Return docFiles list as the "doc" field in the grievance payload
+            result = docFiles;
+
+        } catch (Exception e) {
+            log.error("Error in uploadDocumentsToDgr: {}", e.getMessage(), e);
+        }
+
+        return result;
+    }
+
+    /**
+     * Downloads file bytes using standard HttpURLConnection to avoid URL template
+     * double-encoding issues with Spring RestTemplate on pre-encoded query strings.
+     */
+    private byte[] downloadFileBytes(String fileUrl) throws Exception {
+        URL url = new URL(fileUrl);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+        conn.setRequestProperty("Accept", "*/*");
+        conn.setInstanceFollowRedirects(true);
+        conn.setConnectTimeout(15000);
+        conn.setReadTimeout(30000);
+
+        int responseCode = conn.getResponseCode();
+        // Handle redirect
+        if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM) {
+            String newUrl = conn.getHeaderField("Location");
+            if (newUrl != null && !newUrl.isEmpty()) {
+                conn.disconnect();
+                return downloadFileBytes(newUrl);
+            }
+        }
+
+        if (responseCode >= 200 && responseCode < 300) {
+            try (InputStream in = conn.getInputStream();
+                 ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+                return out.toByteArray();
+            } finally {
+                conn.disconnect();
+            }
+        } else {
+            conn.disconnect();
+            throw new RuntimeException("HTTP " + responseCode + " while downloading file from: " + fileUrl);
+        }
     }
 }

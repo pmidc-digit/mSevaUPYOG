@@ -2,7 +2,7 @@ import { Banner, Card, Loader, Toast } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
-import { stringReplaceAll } from "../../utils";
+import { encryptId, stringReplaceAll } from "../../utils";
 
 const CLUEsignResponse = () => {
   const location = useLocation();
@@ -57,7 +57,7 @@ const CLUEsignResponse = () => {
 
           // countdown + redirect
           const interval = setInterval(() => {
-            setCountdown((prev) => prev - 1);
+            setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
           }, 1000);
 
           const timeout = setTimeout(() => {

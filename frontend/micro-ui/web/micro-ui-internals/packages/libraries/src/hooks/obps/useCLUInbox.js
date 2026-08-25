@@ -70,7 +70,7 @@ const useCLUInbox = ({ tenantId, filters, config = {} }) => {
             owner: application?.businessObject?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-",
             professionalName: application?.businessObject?.cluDetails?.additionalDetails?.applicationDetails?.professionalName || "-",
             documents: application?.businessObject?.documents || application?.documents || [],
-            tenantId: application?.businessObject?.tenantId,
+            tenantId: application?.businessObject?.tenantId || application?.ProcessInstance?.tenantId,
             category: application.businessObject?.cluDetails?.additionalDetails?.siteDetails?.appliedCluCategory?.name,
             zone: application.businessObject?.cluDetails?.additionalDetails?.siteDetails?.zone?.name,
             applicationType: application?.businessObject?.applicationType,

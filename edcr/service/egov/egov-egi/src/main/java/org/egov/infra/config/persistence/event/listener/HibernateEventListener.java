@@ -55,11 +55,12 @@ import org.egov.infra.persistence.entity.Auditable;
 import org.egov.infstr.models.BaseModel;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.event.spi.PreInsertEvent;
+import org.hibernate.event.spi.PreInsertEventListener;
 import org.hibernate.event.spi.PreUpdateEvent;
 import org.hibernate.event.spi.PreUpdateEventListener;
-import org.hibernate.event.spi.SaveOrUpdateEvent;
-import org.hibernate.event.spi.SaveOrUpdateEventListener;
 
 import java.util.Date;
 
@@ -73,7 +74,7 @@ import java.util.Date;
  *
  * @author sahinab
  */
-public class HibernateEventListener implements SaveOrUpdateEventListener, PreUpdateEventListener {
+public class HibernateEventListener implements PreInsertEventListener, PreUpdateEventListener {
 
     private static final long serialVersionUID = 1L;
 
@@ -98,25 +99,22 @@ public class HibernateEventListener implements SaveOrUpdateEventListener, PreUpd
      * pre-insert event because Hibernate checks for not-null constraints before the pre-update and pre-insert are fired.
      */
     @Override
-    public void onSaveOrUpdate(final SaveOrUpdateEvent event) {
-        final EventSource session = event.getSession();
-        final Object object = event.getObject();
-        if (object instanceof BaseModel && !session.getPersistenceContext().reassociateIfUninitializedProxy(object)) {
-            // only update the entity if it has been changed
+    public boolean onPreInsert(final PreInsertEvent event) {
+        final SharedSessionContractImplementor session = event.getSession();
+        final Object object = event.getEntity();
+        if (object instanceof BaseModel) {
             final Date currentDate = new Date();
-            final User usr = session.load(User.class, ApplicationThreadLocals.getUserId());
-
-            final BaseModel entity = (BaseModel) session.getPersistenceContext().unproxyAndReassociate(object);
+            final User usr = ((EventSource) session).getReference(User.class, ApplicationThreadLocals.getUserId());
+            final BaseModel entity = (BaseModel) object;
             if (entity.getCreatedBy() == null) {
                 entity.setCreatedDate(currentDate);
                 entity.setCreatedBy(usr);
                 entity.setModifiedBy(usr);
                 entity.setModifiedDate(currentDate);
             }
-
-        } else if (object instanceof Auditable && !session.getPersistenceContext().reassociateIfUninitializedProxy(object)) {
-            final User usr = session.load(User.class, ApplicationThreadLocals.getUserId());
-            final AbstractAuditable entity = (AbstractAuditable) session.getPersistenceContext().unproxyAndReassociate(object);
+        } else if (object instanceof Auditable) {
+            final User usr = ((EventSource) session).getReference(User.class, ApplicationThreadLocals.getUserId());
+            final AbstractAuditable entity = (AbstractAuditable) object;
             if (entity.getCreatedBy() == null) {
                 final Date currentDate = new Date();
                 entity.setCreatedDate(currentDate);
@@ -125,7 +123,48 @@ public class HibernateEventListener implements SaveOrUpdateEventListener, PreUpd
                 entity.setLastModifiedDate(currentDate);
             }
         }
+        copyAuditState(event.getPersister().getPropertyNames(), event.getState(), object);
+        return false;
+    }
 
+    private void copyAuditState(final String[] propertyNames, final Object[] state, final Object entity) {
+        if (!(entity instanceof BaseModel) && !(entity instanceof AbstractAuditable)) {
+            return;
+        }
+        for (int i = 0; i < propertyNames.length; i++) {
+            switch (propertyNames[i]) {
+            case "createdBy":
+                if (entity instanceof BaseModel)
+                    state[i] = ((BaseModel) entity).getCreatedBy();
+                else if (entity instanceof AbstractAuditable)
+                    state[i] = ((AbstractAuditable) entity).getCreatedBy();
+                break;
+            case "createdDate":
+                if (entity instanceof BaseModel)
+                    state[i] = ((BaseModel) entity).getCreatedDate();
+                else if (entity instanceof AbstractAuditable)
+                    state[i] = ((AbstractAuditable) entity).getCreatedDate();
+                break;
+            case "modifiedBy":
+                if (entity instanceof BaseModel)
+                    state[i] = ((BaseModel) entity).getModifiedBy();
+                break;
+            case "modifiedDate":
+                if (entity instanceof BaseModel)
+                    state[i] = ((BaseModel) entity).getModifiedDate();
+                break;
+            case "lastModifiedBy":
+                if (entity instanceof AbstractAuditable)
+                    state[i] = ((AbstractAuditable) entity).getLastModifiedBy();
+                break;
+            case "lastModifiedDate":
+                if (entity instanceof AbstractAuditable)
+                    state[i] = ((AbstractAuditable) entity).getLastModifiedDate();
+                break;
+            default:
+                break;
+            }
+        }
     }
 
     /**
@@ -136,13 +175,12 @@ public class HibernateEventListener implements SaveOrUpdateEventListener, PreUpd
      * @param session
      * @return
      */
-    private User getUserObjectFromWithinEventListener(final EventSource session) {
+    private User getUserObjectFromWithinEventListener(final SharedSessionContractImplementor session) {
         // Since we are already in the flush logic of our current session,
         // get the user object from a different session
         final SessionFactory factory = session.getFactory();
         final Session session2 = factory.openSession();
-        final User usr = session2.load(User.class, ApplicationThreadLocals.getUserId());
-        session2.flush();
+        final User usr = session2.getReference(User.class, ApplicationThreadLocals.getUserId());
         session2.close();
         return usr;
     }

@@ -50,12 +50,13 @@ package org.egov.infra.config.persistence.event.integrator;
 
 import org.egov.infra.config.persistence.event.listener.HibernateEventListener;
 import org.hibernate.boot.Metadata;
+import org.hibernate.boot.spi.BootstrapContext;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.event.internal.DefaultSaveOrUpdateEventListener;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
 import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 public class HibernateEventListenerIntegrator implements Integrator {
 
@@ -65,20 +66,17 @@ public class HibernateEventListenerIntegrator implements Integrator {
         // Disintegration code have to be added.
     }
 
-    private void registerCustomFilters(final SessionFactoryServiceRegistry serviceRegistry) {
+    private void registerCustomFilters(final ServiceRegistryImplementor serviceRegistry) {
         final EventListenerRegistry eventListenerRegistry = serviceRegistry.getService(EventListenerRegistry.class);
-        final DefaultSaveOrUpdateEventListener dfltSaveorUpdateListner = new DefaultSaveOrUpdateEventListener();
         final HibernateEventListener hibernateEventListener = new HibernateEventListener();
-        eventListenerRegistry.setListeners(EventType.SAVE, hibernateEventListener, dfltSaveorUpdateListner);
-        eventListenerRegistry.setListeners(EventType.UPDATE, hibernateEventListener, dfltSaveorUpdateListner);
-        eventListenerRegistry.setListeners(EventType.SAVE_UPDATE, hibernateEventListener, dfltSaveorUpdateListner);
+        eventListenerRegistry.prependListeners(EventType.PRE_INSERT, hibernateEventListener);
         eventListenerRegistry.prependListeners(EventType.PRE_UPDATE, hibernateEventListener);
     }
 
     @Override
-    public void integrate(final Metadata metadata, final SessionFactoryImplementor sessionFactory,
-                          final SessionFactoryServiceRegistry serviceRegistry) {
-        registerCustomFilters(serviceRegistry);
+    public void integrate(final Metadata metadata, final BootstrapContext bootstrapContext,
+                          final SessionFactoryImplementor sessionFactory) {
+        registerCustomFilters(sessionFactory.getServiceRegistry());
 
     }
 

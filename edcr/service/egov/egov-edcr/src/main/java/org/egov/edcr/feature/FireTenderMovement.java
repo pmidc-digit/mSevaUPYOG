@@ -61,6 +61,7 @@ import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleResult;
 import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.utility.DcrConstants;
 import org.springframework.stereotype.Service;
@@ -105,16 +106,23 @@ public class FireTenderMovement extends FeatureProcess {
                     BigDecimal providedWidth = minWidth.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
                             DcrConstants.ROUNDMODE_MEASUREMENTS);
                     
-                    BigDecimal fireTenderWidth = RuleUtil.getRule(
-                            plan.getMdmsRulesData().get("masterMdmsData"),"fireTenderMovement.width.min",null,BigDecimal.class).getValue();
+                    BigDecimal fireTenderWidth = null;
+                    if (plan.getMdmsRulesData() != null && plan.getMdmsRulesData().get("masterMdmsData") != null) {
+                        RuleResult<BigDecimal> rule = RuleUtil.getRule(
+                                plan.getMdmsRulesData().get("masterMdmsData"), "fireTenderMovement.width.min", null, BigDecimal.class);
+                        if (rule != null && rule.getValue() != null) {
+                            fireTenderWidth = rule.getValue();
+                        }
+                    }
+                    if (fireTenderWidth == null) {
+                        fireTenderWidth = THREE_POINTSIXSIX;
+                    }
                     
-//                    Boolean isAccepted = providedWidth.compareTo(THREE_POINTSIXSIX) >= 0;
                     Boolean isAccepted = providedWidth.compareTo(fireTenderWidth) >= 0;
 
                     Map<String, String> details = new HashMap<>();
                     details.put(RULE_NO, RULE_36_3);
                     details.put(DESCRIPTION, "Width of fire tender movement");
-//                    details.put(PERMISSIBLE, ">= " + THREE_POINTSIXSIX.toString());
                     details.put(PERMISSIBLE, ">= " + fireTenderWidth.toString());
                     details.put(PROVIDED, providedWidth.toString());
                     details.put(STATUS, isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());

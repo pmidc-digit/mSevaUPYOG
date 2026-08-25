@@ -51,20 +51,25 @@ package org.egov.infra.config.security.authorization;
 import org.egov.infra.admin.master.entity.Action;
 import org.egov.infra.admin.master.service.ActionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.ConfigAttribute;
-import org.springframework.security.access.SecurityConfig;
-import org.springframework.security.web.FilterInvocation;
-import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.authorization.AuthorizationResult;
+import org.springframework.security.core.Authentication;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.egov.infra.security.utils.SecurityConstants.LOGIN_URI;
 import static org.egov.infra.security.utils.SecurityConstants.PUBLIC_URI;
 
-public class ApplicationAuthorizationMetadataSource implements FilterInvocationSecurityMetadataSource {
+/**
+ * Resolves application actions to the current user's authorities using Spring
+ * Security's AuthorizationManager API. This replaces the removed
+ * FilterInvocationSecurityMetadataSource/AccessDecisionManager stack.
+ */
+public class ApplicationAuthorizationMetadataSource implements AuthorizationManager<HttpServletRequest> {
 
     private List<String> excludePatterns = new ArrayList<>();
 
@@ -76,36 +81,19 @@ public class ApplicationAuthorizationMetadataSource implements FilterInvocationS
     }
 
     @Override
-    public Collection<ConfigAttribute> getAttributes(Object object) {
-        FilterInvocation invocation = (FilterInvocation) object;
-        String contextRoot = invocation.getHttpRequest().getContextPath().replace("/", "");
-        return lookupAttributes(contextRoot, invocation.getRequestUrl());
-    }
-
-    @Override
-    public Collection<ConfigAttribute> getAllConfigAttributes() {
-        return Collections.unmodifiableCollection(new ArrayList<ConfigAttribute>());
-    }
-
-    @Override
-    public boolean supports(Class<?> clazz) {
-        return FilterInvocation.class.isAssignableFrom(clazz);
-    }
-
-    private Collection<ConfigAttribute> lookupAttributes(String contextRoot, String url) {
+    public AuthorizationResult authorize(Supplier<? extends Authentication> authentication,
+                                         HttpServletRequest request) {
+        String contextRoot = request.getContextPath().replace("/", "");
+        String url = request.getRequestURI().substring(request.getContextPath().length());
         if (url.startsWith(LOGIN_URI) || url.startsWith(PUBLIC_URI) || isPatternExcluded(url))
-            return Collections.emptyList();
-        else {
-            Action action = actionService.getActionByUrlAndContextRoot(url, contextRoot);
-            if (action != null) {
-                List<ConfigAttribute> configAttributes = new ArrayList<>();
-                action.getRoles().forEach(role ->
-                        configAttributes.add(new SecurityConfig(role.getName()))
-                );
-                return configAttributes;
-            }
-        }
-        return Collections.emptyList();
+            return new AuthorizationDecision(true);
+
+        Action action = actionService.getActionByUrlAndContextRoot(url, contextRoot);
+        Authentication current = authentication.get();
+        boolean granted = action != null && current != null && current.isAuthenticated()
+                && action.getRoles().stream().anyMatch(role -> current.getAuthorities().stream()
+                        .anyMatch(authority -> authority.getAuthority().equals(role.getName())));
+        return new AuthorizationDecision(granted);
     }
 
     private Boolean isPatternExcluded(String pattern) {

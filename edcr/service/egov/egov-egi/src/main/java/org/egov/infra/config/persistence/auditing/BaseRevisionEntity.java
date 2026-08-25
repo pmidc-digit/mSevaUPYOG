@@ -49,23 +49,43 @@
 package org.egov.infra.config.persistence.auditing;
 
 import org.egov.infra.config.persistence.auditing.listener.AuditableEntityListener;
-import org.hibernate.envers.DefaultRevisionEntity;
 import org.hibernate.envers.RevisionEntity;
+import org.hibernate.envers.RevisionNumber;
+import org.hibernate.envers.RevisionTimestamp;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "REVINFO")
 @RevisionEntity(AuditableEntityListener.class)
-public class BaseRevisionEntity extends DefaultRevisionEntity {
+public class BaseRevisionEntity {
     private static final long serialVersionUID = -1956016149274910543L;
+
+    @Id
+    @GeneratedValue
+    @RevisionNumber
+    private int id;
+
+    @RevisionTimestamp
+    private long timestamp;
+
     @NotNull
     private Long userId;
 
     @NotNull
     private String ipAddress;
+
+    public int getId() {
+        return id;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
 
     public Long getUserId() {
         return userId;

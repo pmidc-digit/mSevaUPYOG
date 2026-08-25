@@ -68,10 +68,11 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.alignment.HorizontalAlignment;
+import com.lowagie.text.alignment.VerticalAlignment;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.displaytag.Messages;
-import org.displaytag.exception.BaseNestableJspTagException;
 import org.displaytag.exception.SeverityEnum;
 import org.displaytag.export.BinaryExportView;
 import org.displaytag.export.PdfView;
@@ -84,7 +85,7 @@ import org.displaytag.model.TableModel;
 import org.displaytag.util.TagConstants;
 import org.egov.infra.exception.ApplicationRuntimeException;
 
-import javax.servlet.jsp.JspException;
+import jakarta.servlet.jsp.JspException;
 import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -192,7 +193,7 @@ public class EGovPdfView implements BinaryExportView {
 				final Object value = column.getValue(this.decorated);
 				final Cell cell = getCell(ObjectUtils.toString(value));
 				if (value instanceof BigDecimal) {
-					cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+					cell.setHorizontalAlignment(HorizontalAlignment.RIGHT);
 				}
 				this.tablePDF.addCell(cell);
 			}
@@ -281,7 +282,7 @@ public class EGovPdfView implements BinaryExportView {
 
 		value = removeHtmlTagsAndSpaces(value);
 		final Cell cell = new Cell(new Chunk(StringUtils.trimToEmpty(value), this.smallFont));
-		cell.setVerticalAlignment(Element.ALIGN_TOP);
+		cell.setVerticalAlignment(VerticalAlignment.TOP);
 		cell.setLeading(8);
 		return cell;
 	}
@@ -312,7 +313,7 @@ public class EGovPdfView implements BinaryExportView {
 	 * @author Fabrizio Giustina
 	 * @version $Revision: 1.7 $ ($Author: fgiust $)
 	 */
-	static class PdfGenerationException extends BaseNestableJspTagException {
+	static class PdfGenerationException extends RuntimeException {
 
 		/**
 		 * D1597A17A6.
@@ -324,15 +325,7 @@ public class EGovPdfView implements BinaryExportView {
 		 * @param cause Previous exception
 		 */
 		public PdfGenerationException(final Throwable cause) {
-			super(PdfView.class, Messages.getString("PdfView.errorexporting"), cause); //$NON-NLS-1$
-		}
-
-		/**
-		 * @see org.displaytag.exception.BaseNestableJspTagException#getSeverity()
-		 */
-		@Override
-		public SeverityEnum getSeverity() {
-			return SeverityEnum.ERROR;
+			super(Messages.getString("PdfView.errorexporting"), cause); //$NON-NLS-1$
 		}
 	}
 

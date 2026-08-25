@@ -81,7 +81,18 @@ public class TerraceUtilityServiceExtract extends FeatureExtract {
     @Override
     public PlanDetail extract(PlanDetail pl) {
         LOG.info("****Start - Extract terrace***");
-        Map<String, Integer> subFeaturesColor = pl.getSubFeatureColorCodesMaster().get(TERRACEUTILITIESDISTANCE);
+        if (pl == null) {
+            LOG.warn("Skipping terrace utility extraction because plan detail is null");
+            return null;
+        }
+        Map<String, Integer> subFeaturesColor = pl.getSubFeatureColorCodesMaster() == null
+                ? null
+                : pl.getSubFeatureColorCodesMaster().get(TERRACEUTILITIESDISTANCE);
+        if (subFeaturesColor == null || subFeaturesColor.isEmpty()) {
+            LOG.warn("Skipping terrace utility extraction because {} color-code configuration is missing",
+                    TERRACEUTILITIESDISTANCE);
+            return pl;
+        }
 
         if (pl.getBlocks() != null)
             for (Block block : pl.getBlocks()) {

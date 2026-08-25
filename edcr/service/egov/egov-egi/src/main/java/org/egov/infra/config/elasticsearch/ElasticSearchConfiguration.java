@@ -48,26 +48,17 @@
 
 package org.egov.infra.config.elasticsearch;
 
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.client.ClientConfiguration;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
-import java.net.InetSocketAddress;
 import java.util.List;
 
 @Configuration
 @EnableElasticsearchRepositories(basePackages = { "org.egov.**.repository.es", "org.egov.**.elasticsearch.repository" })
-public class ElasticSearchConfiguration {
-
-	@Value("${elasticsearch.cluster.name}")
-	private String clusterName;
+public class ElasticSearchConfiguration extends ElasticsearchConfiguration {
 
 	@Value("#{'${elasticsearch.hosts}'.split(',')}")
 	private List<String> searchHosts;
@@ -75,22 +66,11 @@ public class ElasticSearchConfiguration {
 	@Value("${elasticsearch.port}")
 	private Integer searchPort;
 
-	@Value("${elasticsearch.enable}")
-	private Boolean enable;
-
-	private Client transportClient() {
-		if (enable) {
-			Settings settings = Settings.settingsBuilder().put("cluster.name", clusterName).build();
-			Client client = TransportClient.builder().settings(settings).build();
-			searchHosts.forEach(host -> ((TransportClient) client)
-					.addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress(host, searchPort))));
-			return client;
-		} else
-			return TransportClient.builder().build();
-	}
-
-	@Bean
-	public ElasticsearchOperations elasticsearchTemplate() {
-		return new ElasticsearchTemplate(transportClient());
+	@Override
+	public ClientConfiguration clientConfiguration() {
+		String[] endpoints = searchHosts.stream()
+				.map(host -> host + ":" + searchPort)
+				.toArray(String[]::new);
+		return ClientConfiguration.builder().connectedTo(endpoints).build();
 	}
 }

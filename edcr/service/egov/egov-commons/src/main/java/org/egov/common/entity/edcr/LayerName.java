@@ -46,17 +46,17 @@
  */
 package org.egov.common.entity.edcr;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 import org.egov.infra.persistence.entity.AbstractAuditable;
-import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.hibernate.validator.constraints.SafeHtml;
 
 @Entity
 @Table(name = "EGDCR_LAYERNAME", schema = "state")
@@ -70,13 +70,13 @@ public class LayerName extends AbstractAuditable {
 	@Id
 	@GeneratedValue(generator = SEQ_LAYERNAME, strategy = GenerationType.SEQUENCE)
 	private Long id;
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$", message = "must not contain HTML markup")
 	@NotEmpty
-	@Length(min = 1, max = 250)
+	@Size(min = 1, max = 250)
 	private String key;
-	@SafeHtml
+	@Pattern(regexp = "^[^<>]*$", message = "must not contain HTML markup")
 	@NotEmpty
-	@Length(min = 1, max = 250)
+	@Size(min = 1, max = 250)
 	private String value;
 
 	@Override

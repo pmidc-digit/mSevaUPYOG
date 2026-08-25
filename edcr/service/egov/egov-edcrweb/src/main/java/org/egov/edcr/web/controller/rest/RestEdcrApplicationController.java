@@ -57,8 +57,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 import org.egov.common.entity.dcr.helper.ErrorDetail;
 import org.egov.common.entity.edcr.Plan;
@@ -161,7 +161,7 @@ public class RestEdcrApplicationController {
     @PostMapping(value = "/scrutinizeplan", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> scrutinizePlan(@RequestBody MultipartFile planFile,
-            @RequestParam String edcrRequest) throws Exception {
+            @RequestParam("edcrRequest") String edcrRequest) throws Exception {
         EdcrDetail edcrDetail = new EdcrDetail();
         EdcrRequest edcr = new EdcrRequest();
         boolean isValid = isValidJson(edcrRequest);
@@ -193,7 +193,7 @@ public class RestEdcrApplicationController {
     @PostMapping(value = "/scrutinizeocplan", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> scrutinizeOccupancyPlan(@RequestBody MultipartFile planFile,
-            @RequestParam String edcrRequest) throws Exception {
+            @RequestParam("edcrRequest") String edcrRequest) throws Exception {
         EdcrDetail edcrDetail = new EdcrDetail();
         EdcrRequest edcr = new EdcrRequest();
         boolean isValid = isValidJson(edcrRequest);
@@ -225,7 +225,7 @@ public class RestEdcrApplicationController {
         return getSuccessResponse(Arrays.asList(edcrDetail), edcr.getRequestInfo());
     }
 
-    @PostMapping(value = "/scrutinize", consumes = { MediaType.APPLICATION_JSON_UTF8_VALUE,
+    @PostMapping(value = "/scrutinize", consumes = { MediaType.APPLICATION_JSON_VALUE,
             MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> scrutinize(@RequestPart("planFile") MultipartFile planFile,
@@ -315,7 +315,7 @@ public class RestEdcrApplicationController {
         return getSuccessResponse(Arrays.asList(edcrDetail), edcr.getRequestInfo());
     }
 
-     @PostMapping(value = "/anonymousScrutinize", consumes = { MediaType.APPLICATION_JSON_UTF8_VALUE,
+     @PostMapping(value = "/anonymousScrutinize", consumes = { MediaType.APPLICATION_JSON_VALUE,
             MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> anonymousScrutinize(@RequestPart("planFile") MultipartFile planFile,
@@ -424,7 +424,7 @@ public class RestEdcrApplicationController {
     @PostMapping(value = "/extractplan", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> planDetails(@RequestBody MultipartFile planFile,
-            @RequestParam String edcrRequest) {
+            @RequestParam("edcrRequest") String edcrRequest) {
         Plan plan = new Plan();
         EdcrRequest edcr = new EdcrRequest();
         boolean isValid = isValidJson(edcrRequest);
@@ -461,7 +461,7 @@ public class RestEdcrApplicationController {
     }
 
     @GetMapping("/downloadfile")
-    public ResponseEntity<InputStreamResource> download(@RequestParam final String fileStoreId) {
+    public ResponseEntity<InputStreamResource> download(@RequestParam("fileStoreId") final String fileStoreId) {
         return fileStoreUtils.fileAsResponseEntity(fileStoreId, DIGIT_DCR, true);
     }
 

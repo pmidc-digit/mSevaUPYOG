@@ -48,17 +48,17 @@
 
 package org.egov.infra.persistence.validator;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.egov.infra.persistence.validator.annotation.Unique;
-import org.hibernate.Criteria;
-import org.hibernate.Session;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,16 +99,19 @@ public class UniqueCheckValidator implements ConstraintValidator<Unique, Object>
     }
 
     private boolean checkUnique(final Object arg0, final Number id, final String fieldName) throws IllegalAccessException {
-        final Criteria criteria = entityManager.unwrap(Session.class)
-                .createCriteria(unique.isSuperclass() ? arg0.getClass().getSuperclass() : arg0.getClass()).setReadOnly(true);
+        final Class<?> entityType = unique.isSuperclass() ? arg0.getClass().getSuperclass() : arg0.getClass();
+        final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        final CriteriaQuery<Integer> query = builder.createQuery(Integer.class);
+        final Root<?> root = query.from(entityType);
         final Object fieldValue = FieldUtils.readField(arg0, fieldName, true);
-        if (fieldValue instanceof String)
-            criteria.add(Restrictions.eq(fieldName, fieldValue).ignoreCase());
-        else
-            criteria.add(Restrictions.eq(fieldName, fieldValue));
-        if (id != null)
-            criteria.add(Restrictions.ne(unique.id(), id));
-        return criteria.setProjection(Projections.id()).setMaxResults(1).uniqueResult() == null;
+        Predicate predicate = fieldValue instanceof String
+                ? builder.equal(builder.lower(root.<String>get(fieldName)), ((String) fieldValue).toLowerCase())
+                : builder.equal(root.get(fieldName), fieldValue);
+        if (id != null) {
+            predicate = builder.and(predicate, builder.notEqual(root.get(unique.id()), id));
+        }
+        query.select(builder.literal(1)).where(predicate);
+        return entityManager.createQuery(query).setMaxResults(1).getResultStream().findAny().isEmpty();
     }
 
 }

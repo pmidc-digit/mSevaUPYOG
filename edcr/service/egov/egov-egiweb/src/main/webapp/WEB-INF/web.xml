@@ -47,26 +47,20 @@
   ~   In case of any queries, you can reach eGovernments Foundation at contact@egovernments.org.
   ~
   -->
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.1"
-         xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="6.0"
+         xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
 
     <display-name>eGov Infrastructure</display-name>
 
     <!-- Context Params Starts -->
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>classpath*:config/spring/applicationContext-egiweb.xml</param-value>
-    </context-param>
-
-    <context-param>
-        <param-name>locatorFactorySelector</param-name>
-        <param-value>classpath*:config/spring/applicationContext-erp.xml</param-value>
-    </context-param>
-
-    <context-param>
-        <param-name>parentContextKey</param-name>
-        <param-value>erpApplicationContext</param-value>
+        <param-value>
+            classpath*:config/spring/applicationContext-security.xml
+            classpath*:config/spring/applicationContext-*-services.xml
+            classpath*:config/spring/applicationContext-egiweb.xml
+        </param-value>
     </context-param>
     <!-- Context Params Ends -->
 
@@ -87,11 +81,6 @@
             <param-name>forceEncoding</param-name>
             <param-value>true</param-value>
         </init-param>
-    </filter>
-
-    <filter>
-        <filter-name>gzipFilter</filter-name>
-        <filter-class>net.sf.ehcache.constructs.web.filter.GzipFilter</filter-class>
     </filter>
 
     <filter>
@@ -159,11 +148,6 @@
     </filter-mapping>
 
     <filter-mapping>
-        <filter-name>gzipFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <filter-mapping>
         <filter-name>applicationTenantResolverFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
@@ -217,6 +201,11 @@
         </init-param>
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>
+        <multipart-config>
+            <max-file-size>104857600</max-file-size>
+            <max-request-size>104857600</max-request-size>
+            <file-size-threshold>1048576</file-size-threshold>
+        </multipart-config>
     </servlet>
 
     <servlet-mapping>
@@ -246,8 +235,4 @@
         <tracking-mode>COOKIE</tracking-mode>
     </session-config> -->
 
-    <resource-ref>
-        <res-ref-name>infinispan/container/master-data</res-ref-name>
-        <lookup-name>java:jboss/infinispan/container/master-data</lookup-name>
-    </resource-ref>
 </web-app>

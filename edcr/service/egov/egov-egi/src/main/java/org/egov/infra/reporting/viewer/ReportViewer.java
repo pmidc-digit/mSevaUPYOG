@@ -54,8 +54,8 @@ import static org.egov.infra.utils.ApplicationConstant.CONTENT_TYPE;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.egov.infra.reporting.engine.ReportConstants;
 import org.egov.infra.reporting.engine.ReportFormat;
@@ -113,10 +113,9 @@ public class ReportViewer implements HttpRequestHandler {
 
     private void renderReport(HttpServletResponse resp, byte[] reportData, ReportFormat reportFormat) {
         try (BufferedOutputStream outputStream = new BufferedOutputStream(resp.getOutputStream())) {
-            ESAPI.httpUtilities().addHeader(resp, CONTENT_DISPOSITION, StringUtils.sanitize(ReportViewerUtil.getContentDisposition(reportFormat)));
-            ESAPI.httpUtilities().addHeader(resp, CONTENT_TYPE, StringUtils.sanitize(ReportViewerUtil.getContentType(reportFormat)));
+            resp.setHeader(CONTENT_DISPOSITION, StringUtils.sanitize(ReportViewerUtil.getContentDisposition(reportFormat)));
+            resp.setContentType(StringUtils.sanitize(ReportViewerUtil.getContentType(reportFormat)));
             resp.setContentLength(reportData.length);
-            ESAPI.httpUtilities().setContentType(resp);
             outputStream.write(reportData);
         } catch (IOException e) {
             LOGGER.error("Exception in rendering report with format [{}]!", e);

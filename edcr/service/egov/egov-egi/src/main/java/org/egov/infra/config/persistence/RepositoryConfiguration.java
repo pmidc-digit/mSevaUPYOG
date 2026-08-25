@@ -57,6 +57,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.domain.AuditorAware;
+import java.util.Optional;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.data.envers.repository.support.EnversRevisionRepositoryFactoryBean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -74,6 +75,6 @@ public class RepositoryConfiguration {
 
     @Bean
     public AuditorAware<User> springSecurityAwareAuditor() {
-        return userService::getCurrentUser;
+        return () -> Optional.ofNullable(userService.getCurrentUser());
     }
 }

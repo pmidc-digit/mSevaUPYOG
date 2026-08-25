@@ -121,8 +121,14 @@ public class RoadWidth extends FeatureProcess {
     @Override
     public Plan process(Plan pl) {
     	
-        if (pl.getPlanInformation() != null && pl.getPlanInformation().getRoadWidth() != null) {
-            BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
+        if (pl.getPlanInformation() != null) {
+            // Keep the working drawing behavior: the provided road width is
+            // extracted from the front road-reserve layer. PlanInfo roadWidth
+            // can be absent/zero even when that layer contains a valid width.
+            BigDecimal roadWidth = pl.getRoadReserveFront() != null
+                    ? pl.getRoadReserveFront().setScale(2, RoundingMode.HALF_UP)
+                    : (pl.getPlanInformation().getRoadWidth() != null
+                            ? pl.getPlanInformation().getRoadWidth() : BigDecimal.ZERO);
             if (roadWidth == null || roadWidth.compareTo(BigDecimal.ZERO) == 0) {
                 boolean skipValidation = false;
 
@@ -141,7 +147,7 @@ public class RoadWidth extends FeatureProcess {
             String roadType = pl.getPlanInformation().getRoadType() != null ? pl.getPlanInformation().getRoadType() : "Mention Road type in PlanInfo" ;
             String typeOfArea = pl.getPlanInformation().getTypeOfArea();
             if (typeOfArea != null
-//            		&& NEW.equalsIgnoreCase(typeOfArea)
+            		//            		&& NEW.equalsIgnoreCase(typeOfArea)
             		) {
                 ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
                 scrutinyDetail.setKey("Common_Road Width And Type");

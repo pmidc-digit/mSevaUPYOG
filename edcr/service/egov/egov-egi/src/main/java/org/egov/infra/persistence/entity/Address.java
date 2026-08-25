@@ -52,9 +52,9 @@ import com.google.gson.annotations.Expose;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.infra.admin.master.entity.User;
 import org.egov.infra.persistence.entity.enums.AddressType;
-import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.infra.validation.SafeHtml;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import static org.egov.infra.persistence.entity.Address.SEQ_ADDRESS;
 

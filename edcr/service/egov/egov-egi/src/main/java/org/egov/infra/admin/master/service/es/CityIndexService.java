@@ -60,7 +60,7 @@ public class CityIndexService {
 	private CityIndexRepository cityIndexRepository;
 	
 	public CityIndex findOne(String id){
-		return cityIndexRepository.findOne(id);
+		return cityIndexRepository.findById(id).orElse(null);
 	}
 	
 	public Iterable<CityIndex> findAll(){		

@@ -54,9 +54,9 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisSentinelConfiguration;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.List;
 
@@ -88,7 +88,7 @@ public class RedisServerConfiguration {
     }
 
     @Bean
-    public JedisConnectionFactory redisConnectionFactory() {
+    public LettuceConnectionFactory redisConnectionFactory() {
 
         if (!usingEmbeddedRedis && sentinelEnabled) {
             RedisSentinelConfiguration sentinelConfig = new RedisSentinelConfiguration();
@@ -97,26 +97,10 @@ public class RedisServerConfiguration {
                 String[] hostConfig = host.split(":");
                 sentinelConfig.sentinel(hostConfig[0].trim(), Integer.valueOf(hostConfig[1].trim()));
             }
-            return new JedisConnectionFactory(sentinelConfig, redisPoolConfig());
+            return new LettuceConnectionFactory(sentinelConfig);
         } else {
-            final JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(redisPoolConfig());
-            jedisConnectionFactory.setHostName(redisHost);
-            jedisConnectionFactory.setPort(redisPort);
-            return jedisConnectionFactory;
+            return new LettuceConnectionFactory(new RedisStandaloneConfiguration(redisHost, redisPort));
         }
-    }
-
-    @Bean
-    public JedisPoolConfig redisPoolConfig() {
-        final JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-        jedisPoolConfig.setTestOnBorrow(true);
-        jedisPoolConfig.setMinEvictableIdleTimeMillis(60000);
-        jedisPoolConfig.setSoftMinEvictableIdleTimeMillis(1800000);
-        jedisPoolConfig.setNumTestsPerEvictionRun(-1);
-        jedisPoolConfig.setTestOnReturn(false);
-        jedisPoolConfig.setTestWhileIdle(true);
-        jedisPoolConfig.setTimeBetweenEvictionRunsMillis(30000);
-        return jedisPoolConfig;
     }
 
     @Bean(name = "redisTemplate")

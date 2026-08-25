@@ -56,7 +56,7 @@ import static org.egov.infra.security.utils.SecurityConstants.MAX_LOGIN_ATTEMPT_
 import java.util.HashMap;
 import java.util.Optional;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.egov.infra.security.audit.entity.LoginAttempt;
 import org.egov.infra.security.audit.service.LoginAttemptService;
@@ -67,6 +67,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -87,6 +88,10 @@ public class ApplicationAuthenticationProvider extends DaoAuthenticationProvider
 
     @Autowired
     private LoginAttemptService loginAttemptService;
+
+    public ApplicationAuthenticationProvider(UserDetailsService userDetailsService) {
+        super(userDetailsService);
+    }
 
     @Override
     public Authentication authenticate(Authentication authentication) {

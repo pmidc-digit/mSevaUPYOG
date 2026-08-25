@@ -348,8 +348,15 @@ public class HeightOfRoom extends FeatureProcess {
 							        }
 							    }
 
+							    Integer configuredRoomColor = heightOfRoomFeaturesColor != null
+							            ? heightOfRoomFeaturesColor.get(color) : null;
 							    for (RoomHeight roomHeight : heights) {
-							        if (heightOfRoomFeaturesColor.get(color) == roomHeight.getColorCode()) {
+							        boolean matchesConfiguredColor = configuredRoomColor != null
+							                && configuredRoomColor.intValue() == roomHeight.getColorCode();
+							        boolean matchesLegacyResidentialColor = A.equalsIgnoreCase(
+							                mostRestrictiveOccupancy.getType().getCode())
+							                && DxfFileConstants.RESIDENTIAL_ROOM_COLOR == roomHeight.getColorCode();
+							        if (matchesConfiguredColor || matchesLegacyResidentialColor) {
 							            residentialRoomHeights.add(roomHeight.getHeight());
 							        }
 							    }

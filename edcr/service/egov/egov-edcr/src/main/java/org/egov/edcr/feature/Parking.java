@@ -392,13 +392,21 @@ public class Parking extends FeatureProcess {
 //		        engine.getObject("parking", context);
 
         
-        if (mostRestrictiveOccupancy != null && A.equals(mostRestrictiveOccupancy.getType().getCode())) {
-//			noOfrequiredParking = RuleUtil.getRule(
-//			    pl.getMdmsRulesData().get("masterMdmsData"),"parking.ECS",context,Integer.class).getValue();
-//			LOGGER.info("Parking ECS " + noOfrequiredParking);
-			BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
-			noOfrequiredParking = calculateRequiredParking(pl, context, plotCoveredArea);
-			LOGGER.info("Parking ECS " + noOfrequiredParking);
+        if (mostRestrictiveOccupancy != null && mostRestrictiveOccupancy.getType() != null
+                && A.equals(mostRestrictiveOccupancy.getType().getCode())) {
+            // Residential plotted parking is based on plot-area slabs. Using the
+            // covered-area MDMS formula here inflated a 222.97 m2 plot to 22 ECS.
+            double area = plotArea.doubleValue();
+            if (area <= AREA_UPPER_100) {
+                noOfrequiredParking = (int) ECS_TWO_WHEELER;
+            } else if (area <= AREA_UPPER_200) {
+                noOfrequiredParking = (int) ECS_1;
+            } else if (area <= AREA_UPPER_300) {
+                noOfrequiredParking = (int) ECS_2;
+            } else {
+                noOfrequiredParking = (int) ECS_3;
+            }
+			LOGGER.info("Residential parking ECS from plot-area slab: " + noOfrequiredParking);
         }else if (mostRestrictiveOccupancy != null && F.equals(mostRestrictiveOccupancy.getType().getCode())) {
             BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
             if (plotCoveredArea != null && plotCoveredArea.compareTo(BigDecimal.ZERO) > 0) {

@@ -48,20 +48,20 @@
 
 package org.egov.common.entity.bpa;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import org.egov.infra.persistence.entity.AbstractAuditable;
-import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -83,15 +83,15 @@ public class Usage extends AbstractAuditable {
     @JoinColumn(name = "subOccupancy")
     private SubOccupancy subOccupancy;
 
-    @Length(min = 1, max = 128)
+    @Size(min = 1, max = 128)
     @Column(name = "code", unique = true)
     private String code;
 
     @NotNull
-    @Length(min = 1, max = 256)
+    @Size(min = 1, max = 256)
     private String name;
 
-    @Length(min = 1, max = 512)
+    @Size(min = 1, max = 512)
     private String description;
 
     private Boolean isActive;

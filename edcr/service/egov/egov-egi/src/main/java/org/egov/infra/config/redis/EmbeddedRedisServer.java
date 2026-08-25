@@ -45,37 +45,55 @@
  *   In case of any queries, you can reach eGovernments Foundation at contact@egovernments.org.
  *
  */
-package org.egov.edcr.security.oauth2.entity;
 
-import java.io.Serializable;
+package org.egov.infra.config.redis;
 
-/**
- *
- * @author subhash
- *
- */
-public class ResourceDetail implements Serializable {
+import java.io.IOException;
+import java.net.URISyntaxException;
 
-    private static final long serialVersionUID = -654694684864694100L;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 
-    private String url;
+import redis.embedded.RedisServer;
 
-    private String roles;
+public class EmbeddedRedisServer implements InitializingBean, DisposableBean, BeanDefinitionRegistryPostProcessor {
+    
+    private static final Logger LOG = LogManager.getLogger(EmbeddedRedisServer.class);
 
-    public String getUrl() {
-        return url;
+    private RedisServer redisServer;
+
+    @Override
+    public void afterPropertiesSet() {
+        try {
+            redisServer = new RedisServer(6379);
+            redisServer.start();
+        } catch (IOException | URISyntaxException e) {
+            LOG.error("Error occurred when starting redis server", e);
+        }
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    @Override
+    public void destroy() {
+            try {
+                if (redisServer != null)
+                    redisServer.stop();
+            } catch (InterruptedException e) {
+                LOG.error("Error occurred when stoping redis server", e);
+            }
     }
 
-    public String getRoles() {
-        return roles;
+    @Override
+    public void postProcessBeanDefinitionRegistry(final BeanDefinitionRegistry registry) {
+        //Do nothing
     }
 
-    public void setRoles(String roles) {
-        this.roles = roles;
+    @Override
+    public void postProcessBeanFactory(final ConfigurableListableBeanFactory beanFactory) {
+        //Do nothing
     }
-
 }

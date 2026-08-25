@@ -49,45 +49,40 @@
 package org.egov.infra.admin.master.repository.es;
 
 import org.egov.infra.admin.master.entity.es.CityIndex;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
-import org.springframework.data.elasticsearch.core.query.SearchQuery;
-
-import java.util.List;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 
 public class CityIndexRepositoryImpl implements CityIndexCustomRepository {
 	
 	@Autowired
-	private ElasticsearchTemplate elasticSearchTemplate;
+	private ElasticsearchOperations elasticsearchOperations;
 
 	//Can be used preferably for fetching only one record where  
 	//district code id fetched during aggregation
 	@Override
 	public CityIndex findOneByDistrictCode(String districtCode) {
 		
-		SearchQuery query = new NativeSearchQueryBuilder().withIndices("city")
-				            .withQuery(QueryBuilders.matchQuery("districtcode", districtCode))
-				            .build();
-		
-		List<CityIndex> cityList = elasticSearchTemplate.queryForList(query, CityIndex.class);
-		
-		//Used for returning one record based on aggregated result district code
-		return cityList.get(0);
+		NativeQuery query = NativeQuery.builder()
+				.withQuery(q -> q.term(t -> t.field("districtcode").value(districtCode)))
+				.withMaxResults(1)
+				.build();
+
+		return elasticsearchOperations.search(query, CityIndex.class, IndexCoordinates.of("city"))
+				.stream().findFirst().map(hit -> hit.getContent()).orElse(null);
 	}
 
 	//Can be used preferably for fetching only one record where  
 	//city code id fetched during aggregation
 	public CityIndex findOneByCityCode(String cityCode){
-		SearchQuery query = new NativeSearchQueryBuilder().withIndices("city")
-	            .withQuery(QueryBuilders.matchQuery("citycode", cityCode))
-	            .build();
-		
-		List<CityIndex> cityList = elasticSearchTemplate.queryForList(query, CityIndex.class);
-		
-		//Used for returning one record based on aggregated result city code
-		return cityList.get(0);
+		NativeQuery query = NativeQuery.builder()
+				.withQuery(q -> q.term(t -> t.field("citycode").value(cityCode)))
+				.withMaxResults(1)
+				.build();
+
+		return elasticsearchOperations.search(query, CityIndex.class, IndexCoordinates.of("city"))
+				.stream().findFirst().map(hit -> hit.getContent()).orElse(null);
 	}
 	
 }

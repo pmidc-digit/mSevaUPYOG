@@ -38,8 +38,18 @@ public class HeightOfRoomExtract extends FeatureExtract {
 
     @Override
     public PlanDetail extract(PlanDetail pl) {
+        if (pl == null) {
+            LOG.warn("Skipping Height Of Room extraction because plan detail is null");
+            return null;
+        }
 
-        Map<String, Integer> roomOccupancyFeature = pl.getSubFeatureColorCodesMaster().get("HeightOfRoom");
+        Map<String, Integer> roomOccupancyFeature = pl.getSubFeatureColorCodesMaster() == null
+                ? null
+                : pl.getSubFeatureColorCodesMaster().get("HeightOfRoom");
+        if (roomOccupancyFeature == null || roomOccupancyFeature.isEmpty()) {
+            LOG.warn("Skipping Height Of Room extraction because HeightOfRoom color-code configuration is missing");
+            return pl;
+        }
         Set<String> roomOccupancyTypes = new HashSet<>();
         roomOccupancyTypes.addAll(roomOccupancyFeature.keySet());
         if (LOG.isDebugEnabled())

@@ -99,38 +99,42 @@ export const createWorkFlow = async body => {
           : null;
       }
 
-    processInstances.push({
-      tenantId: fireNOC.tenantId,
-      businessService: envVariables.BUSINESS_SERVICE,
-      businessId: fireNOC.fireNOCDetails.applicationNumber,
-      action: fireNOC.fireNOCDetails.action,
-      comment: get(fireNOC.fireNOCDetails, "comment", null),
-      assignes: assignesValue,
-      documents: get(fireNOC.fireNOCDetails, "wfDocuments", null),
-      sla: 0,
-      previousStatus: null,
-      moduleName: envVariables.BUSINESS_SERVICE
+      processInstances.push({
+        tenantId: fireNOC.tenantId,
+        businessService: envVariables.BUSINESS_SERVICE,
+        businessId: fireNOC.fireNOCDetails.applicationNumber,
+        action: fireNOC.fireNOCDetails.action,
+        comment: get(fireNOC.fireNOCDetails, "comment", null),
+        assignes: assignesValue,
+        documents: get(fireNOC.fireNOCDetails, "wfDocuments", null),
+        sla: 0,
+        previousStatus: null,
+        moduleName: envVariables.BUSINESS_SERVICE
+      });
+    }
+
+    var systemPaymentRole = {
+      code: "SYSTEM",
+      tenantId: body.FireNOCs[0].tenantId
+    };
+    body.RequestInfo.userInfo.roles.push(systemPaymentRole);
+
+    let requestBody = {
+      RequestInfo: body.RequestInfo,
+      ProcessInstances: processInstances
+    };
+    console.log("Workflow requestBody", JSON.stringify(requestBody));
+    let workflowResponse = await httpRequest({
+      hostURL: envVariables.EGOV_WORKFLOW_HOST,
+      endPoint: envVariables.EGOV_WORKFLOW_TRANSITION_ENDPOINT,
+      requestBody
     });
+    console.log("workflowResponse", JSON.stringify(workflowResponse));
+    return workflowResponse;
+  } catch (error) {
+    console.error("Error in createWorkFlow:", error);
+    throw error;
   }
-  
-  var systemPaymentRole = {
-    code: "SYSTEM",
-    tenantId: body.FireNOCs[0].tenantId
-  };
-  body.RequestInfo.userInfo.roles.push(systemPaymentRole);
-  
-  let requestBody = {
-    RequestInfo: body.RequestInfo,
-    ProcessInstances: processInstances
-  };
-  console.log("Workflow requestBody", JSON.stringify(requestBody));
-  let workflowResponse = await httpRequest({
-    hostURL: envVariables.EGOV_WORKFLOW_HOST,
-    endPoint: envVariables.EGOV_WORKFLOW_TRANSITION_ENDPOINT,
-    requestBody
-  });
-  console.log("workflowResponse", JSON.stringify(workflowResponse));
-  return workflowResponse;
 };
 
 export const addQueryArg = (url, queries = []) => {

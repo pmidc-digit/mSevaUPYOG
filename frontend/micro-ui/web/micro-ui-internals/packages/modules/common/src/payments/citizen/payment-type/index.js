@@ -325,7 +325,9 @@ export const SelectPaymentType = (props) => {
       //   }
       // }
       // window.location = redirectUrl;
-      if (d?.paymentType === gatewayType.RAZORPAY && redirectUrl?.includes("razorpay")) {
+      const selectedGateway = data?.Transaction?.gateway || paymentConfig.gateway;
+      
+       if (selectedGateway === gatewayType.RAZORPAY || selectedGateway === gatewayType.OBPASRAZORPAY ||selectedGateway?.toUpperCase()?.includes("RAZORPAY")) {
         displayRazorpay(data);
       }else if (redirectUrl?.includes("ccavenue") || redirectUrl?.includes("ccavanue")) {
         //redirection to non razorpay payment gateway url provided by transaction api response

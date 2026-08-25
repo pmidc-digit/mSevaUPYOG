@@ -634,7 +634,7 @@ const LayoutEmployeeApplicationOverview = () => {
         returnFileStoreId: true,
       });
       if (!fileStoreId) throw new Error("No filestoreId found for LOI eSign");
-      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/layout/esign/complete/${encodeURIComponent(id)}?tenantId=${tenantId}`;
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/layout/esign/complete/${encodeURIComponent(id)}`;
       const authToken = localStorage.getItem("token");
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl, authToken },

@@ -183,7 +183,8 @@ const CLUInbox = ({ parentRoute }) => {
     selectedTenantIdDefaultValues,
   ]);
 
-  const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+  // const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+  const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
 
   useEffect(() => {
     if (tenantId !== "pb.punjab") return;
@@ -527,9 +528,7 @@ const CLUInbox = ({ parentRoute }) => {
           tenantSelector={
             tenantId === "pb.punjab" && cities?.length ? (
               <div className="new-inbox-tenant-selector">
-                <div className="filter-label sub-filter-label obps-pages-employee-clu-inbox-cluinbox--style-1" >
-                  {t("BPA_CITIES_DROPDOWN_LABEL")}
-                </div>
+                <div className="filter-label sub-filter-label obps-pages-employee-clu-inbox-cluinbox--style-1">{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
                 <div className="new-inbox-tenant-dropdown">
                   <Dropdown
                     option={cities}

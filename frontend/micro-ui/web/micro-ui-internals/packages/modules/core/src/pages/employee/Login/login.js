@@ -291,7 +291,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
           </div>
 
           <div className="employee-login-branding">
-            <h1 className="employee-upyog-title">Sign In to UPYOG</h1>
+            <h1 className="employee-upyog-title">Sign In to mSeva</h1>
             <p className="employee-upyog-subtitle">Enter your credentials below to access your account.</p>
           </div>
 

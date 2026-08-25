@@ -386,7 +386,7 @@ const CLUEmployeeApplicationDetails = () => {
       // await mutation.mutateAsync({ Noc: updatedApplication });
       // refetch();
 
-      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/clu/esign/complete/${id}?tenantId=${tenantId}`;
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/clu/esign/complete/${encodeURIComponent(id)}`;
       const authToken = localStorage.getItem('token');
       // Trigger eSign
       eSignCertificate(

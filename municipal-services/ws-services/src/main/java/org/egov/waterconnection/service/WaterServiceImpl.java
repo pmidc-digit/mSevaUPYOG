@@ -818,7 +818,7 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 		actionValidator.validateUpdateRequest(waterConnectionRequest, businessService, previousApplicationStatus);
 		userService.updateUser(waterConnectionRequest, searchResult);
 		waterConnectionValidator.validateUpdate(waterConnectionRequest, searchResult, WCConstants.MODIFY_CONNECTION);
-		wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+//		wfIntegrator.callWorkFlow(waterConnectionRequest, property);
 		boolean isStateUpdatable = waterServiceUtil.getStatusForUpdate(businessService, previousApplicationStatus);
 
 		// check for edit and send edit notification

@@ -201,7 +201,7 @@ public class DemandQueryBuilder {
 			preparedStatementValues.add(demandCriteria.getIsPaymentCompleted());
 		}
 
-        if (demandCriteria.getIsPaymentDone() == false) {
+        if (demandCriteria.getIsPaymentDone() != null && demandCriteria.getIsPaymentDone() == false) {
             addAndClause(demandQuery);
             demandQuery.append("dmdl.collectionamount < dmdl.taxamount");
         }

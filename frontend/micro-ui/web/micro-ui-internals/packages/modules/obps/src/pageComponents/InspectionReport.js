@@ -48,6 +48,15 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
     };
 
     useEffect(() => {
+        if (fiReport && fiReport?.length > 0) {
+            setFieldReports((prev) => {
+                if (_.isEqual(prev, fiReport)) return prev;
+                return fiReport;
+            });
+        }
+    }, [fiReport]);
+
+    useEffect(() => {
         const data = FieldReports.map((e) => {
             return e;
         });
@@ -170,9 +179,20 @@ const InspectionReportForm = (_props) => {
         fiReport
     } = _props;
 
-    const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm();
+    const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues, reset } = useForm();
     const formValue = watch();
     const { errors } = localFormState;
+
+    useEffect(() => {
+        if (unit) {
+            const currentVals = getValues();
+            const relevantKeys = Object.keys(unit);
+            const hasDifference = relevantKeys.some((k) => k !== "key" && unit[k] !== undefined && unit[k] !== currentVals[k]);
+            if (hasDifference) {
+                reset(unit);
+            }
+        }
+    }, [unit]);
 
     const isIndividualTypeOwner = useMemo(() => formData?.ownershipCategory?.code.includes("INDIVIDUAL"), [formData?.ownershipCategory?.code]);
     const siteImages = JSON.parse(sessionStorage.getItem("Field_Inspection_siteImages"))
@@ -267,8 +287,9 @@ const InspectionReportForm = (_props) => {
 
     useEffect(() => {
         const keys = Object.keys(formValue);
+        if (keys.length === 0) return;
         const part = {};
-        keys.forEach((key) => (part[key] = unit[key]));
+        keys.forEach((key) => (part[key] = unit?.[key]));
 
         let _ownerType = isIndividualTypeOwner ? {} : { ownerType: { code: "NONE" } };
         let questionLength = questionList ? { questionLength: questionList.length } : { questionLength: 0 };
@@ -280,8 +301,7 @@ const InspectionReportForm = (_props) => {
                     setIsErrors(true);
                 }
             });
-            setFieldReports((prev) => prev.map((o) => (o.key && o.key === unit.key ? { ...o, ...formValue, ..._ownerType, ...questionLength, ...Ques } : { ...o })));
-            trigger();
+            setFieldReports((prev) => prev.map((o, i) => ((o.key && unit?.key && o.key === unit?.key) || i === index ? { ...o, ...formValue, ..._ownerType, ...questionLength, ...Ques } : { ...o })));
         }
     }, [formValue]);
 

@@ -1346,10 +1346,18 @@ const CLUEmployeeApplicationDetails = () => {
 
       {applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
         (user?.info?.roles.filter((role) => role.code === "OBPAS_CLU_JE" || role.code === "OBPAS_CLU_BI")).length > 0 && (
-          <Card>
-            <div id="fieldInspection"></div>
-            <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
-          </Card>
+          <div>
+            {isMobile ? (
+              <Card>
+                <div id="fieldInspection"></div>
+                <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
+              </Card>
+            ) : (
+              <Card>
+                <div id="fieldInspection">{t("Please Use Mobile Device for Field Inspection.")}</div>
+              </Card>
+            )}
+          </div>
         )}
 
       <div id="timeline">

@@ -30,8 +30,8 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
                 to={
                   window.location.href.includes("/citizen")
                     ? `${parentRoute}/clu/application-overview/${encryptID}`
-                    : tenantId === "pb.punjab"
-                    ? `${parentRoute}/clu/application-overview/${encryptID}/${row?.original?.tenantId}`
+                    : row?.original?.tenantId
+                    ? `${parentRoute}/clu/application-overview/${encryptID}?tenantId=${row?.original?.tenantId}`
                     : `${parentRoute}/clu/application-overview/${encryptID}`
                 }
               >

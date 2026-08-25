@@ -58,8 +58,10 @@ public class Yard extends Measurement {
 
     @Override
     public String toString() {
-        return "Yard : presentInDxf=" + presentInDxf + ", minimumDistance=" + minimumDistance + ", mean=" + mean
-                + ", area=" + area + "";
+        return "Yard{" +
+                "level=" + level +
+                ", measurement=" + super.toString() +
+                '}';
     }
 
     public Integer getLevel() {

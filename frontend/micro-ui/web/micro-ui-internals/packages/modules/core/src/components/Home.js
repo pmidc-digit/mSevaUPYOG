@@ -14,6 +14,7 @@ import {
   PTRIcon,
   Table,
   ArrowRightInbox,
+  SubmitBar,
 } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { Link } from "react-router-dom";
@@ -199,6 +200,8 @@ const EmployeeHome = ({ modules }) => {
   if (window.Digit.SessionStorage.get("PT_CREATE_EMP_TRADE_NEW_FORM")) window.Digit.SessionStorage.set("PT_CREATE_EMP_TRADE_NEW_FORM", {});
 
   const userName = Digit.UserService.getUser();
+  const obpsModuleCodes = ["OBPS", "BPAStakeholder", "Layout", "CLU", "NOC"];
+  const hasOBPSModule = modules?.some((moduleData) => obpsModuleCodes.includes(moduleData?.code));
 
   const welcomeCardStyle = {
     background: "linear-gradient(135deg, #4F65D8 0%, #00157A 100%)",
@@ -241,6 +244,17 @@ const EmployeeHome = ({ modules }) => {
         <div className="employee-dashboard-quick-services-container">
           <div className="employee-dashboard-quick-services-header">
             <div className="employee-dashboard-quick-services-title">Quick Services</div>
+            {hasOBPSModule && (
+              <SubmitBar
+                label={t("User Manual")}
+                onSubmit={() =>
+                  window.open(
+                    "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FCLU%2FAugust%2F24%2F1787583703919JNROWeZZwT.pdf",
+                    "_blank"
+                  )
+                }
+              />
+            )}
           </div>
           <div className="employee-dashboard-module-card-wrapper">
             {modules.map((moduleData, index) => {

@@ -1487,10 +1487,18 @@ const LayoutEmployeeApplicationOverview = () => {
 
       {/* FIELD INSPECTION UPLOAD SECTION - Allow JE/BI to upload site photographs (mobile-only capture enforced in ChallanDocuments) */}
       {applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && (
-        <Card>
-          <div id="fieldInspection"></div>
-          <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
-        </Card>
+        <div>
+          {isMobile ? (
+            <Card>
+              <div id="fieldInspection"></div>
+              <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
+            </Card>
+          ) : (
+            <Card>
+              <div id="fieldInspection">{t("Please Use Mobile Device for Field Inspection.")}</div>
+            </Card>
+          )}
+        </div>
       )}
 
       {/* FIELD INSPECTION UPLOADED DOCUMENTS - Display when not in progress */}

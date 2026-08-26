@@ -3,7 +3,12 @@ package org.egov.swservice.repository;
 import java.util.List;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.swservice.web.models.*;
+import org.egov.swservice.web.models.EncryptionCount;
+import org.egov.swservice.web.models.SearchCriteria;
+import org.egov.swservice.web.models.SewerageConnection;
+import org.egov.swservice.web.models.SewerageConnectionRequest;
+import org.egov.swservice.web.models.UpdateBillStatusReq;
+import org.egov.swservice.web.models.UpdateDemandPayerRequest;
 
 public interface SewerageDao {
 	void saveSewerageConnection(SewerageConnectionRequest sewerageConnectionRequest);

@@ -618,29 +618,6 @@ table tbody tr:nth-child(even) {
   max-width: 400px;
 }
 
-.custom-fee-table td,
-.inspection-report-table td {
-  padding-top: 2px !important;
-  padding-bottom: 2px !important;
-}
-
-.checklist-document-table td {
-  padding-top: 8px !important;
-  padding-bottom: 8px !important;
-}
-
-.custom-fee-table textarea,
-.checklist-document-table textarea,
-.inspection-report-table textarea {
-  min-height: 40px !important;
-  padding: 6px 10px !important;
-  overflow: hidden;
-  max-height: 1500px;
-  resize: vertical;
-}
-
-
-
 .customTable tr {
   transition: all 0.2s ease;
 }
@@ -660,21 +637,6 @@ table tbody tr:nth-child(even) {
 
 .customTable thead tr:first-child {
   background-color: unset;
-}
-
-.obps-documents-table th:nth-child(1),
-.obps-documents-table td:nth-child(1) {
-  width: 8% !important;
-}
-
-.obps-documents-table th:nth-child(2),
-.obps-documents-table td:nth-child(2) {
-  width: 65% !important;
-}
-
-.obps-documents-table th:nth-child(3),
-.obps-documents-table td:nth-child(3) {
-  width: 27% !important;
 }
 
 /* ============================================

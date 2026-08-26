@@ -14,6 +14,7 @@ const NewLogin = ({ stateCode }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const history = useHistory();
+  const isLanguageEntryPage = location.pathname.endsWith("/select-language");
   const [mobileNumber, setMobileNumber] = useState(() => location.state?.mobileNumber || "");
   const [lastSubmittedMobile, setLastSubmittedMobile] = useState("");
   const [otp, setOtp] = useState("");
@@ -26,6 +27,12 @@ const NewLogin = ({ stateCode }) => {
   const [selectedLanguage, setSelectedLanguage] = useState(() => location.state?.selectedLanguage || Digit.StoreData.getCurrentLanguage());
   // const [selectedCity, setSelectedCity] = useState(() => ({ code: Digit.ULBService.getCitizenCurrentTenant(true) }));
   const [selectedCity, setSelectedCity] = useState(() => location.state?.selectedCity || null);
+
+  useEffect(() => {
+    const englishLocale = "en_IN";
+    setSelectedLanguage(englishLocale);
+    Digit.LocalizationService.changeLanguage(englishLocale, stateCode);
+  }, [stateCode]);
 
   useEffect(() => {
     let to;
@@ -201,7 +208,7 @@ const NewLogin = ({ stateCode }) => {
   // setShowToast(true);
 
   return (
-    <div className="login-page-cover">
+    <div className={`login-page-cover ${isLanguageEntryPage ? "login-page-cover--select-language" : ""}`}>
       
       <div className="login-container">
         {/* Left Panel - Hero Section */}

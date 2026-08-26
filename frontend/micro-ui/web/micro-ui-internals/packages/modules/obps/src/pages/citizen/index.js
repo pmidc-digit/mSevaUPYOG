@@ -166,7 +166,7 @@ const App = ({ path }) => {
           : {}),
       }}
     >
-      <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop: "20px" } : {}}>
+      <div className="citizen-breadcrumb-wrapper">
         <OBPSBreadCrumbs location={location} />
       </div>
       <Switch>

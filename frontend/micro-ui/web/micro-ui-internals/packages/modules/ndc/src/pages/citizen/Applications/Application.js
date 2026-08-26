@@ -26,7 +26,7 @@ const MyApplications = ({ view }) => {
   console.log("currentApplications", currentApplications);
 
   return (
-    <React.Fragment>
+    <section className="citizen-my-applications citizen-my-applications--ndc">
       <Header>{t("TL_MY_APPLICATIONS_HEADER")}</Header>
 
       {currentApplications.map((application, index) => {
@@ -96,7 +96,7 @@ const MyApplications = ({ view }) => {
           <Link to="/digit-ui/citizen/ndc/new-application">{t("NDC_COMMON_CLICK_HERE_TO_REGISTER_NEW_APPLICATION")}</Link>
         </span>
       </p>
-    </React.Fragment>);
+    </section>);
 
 };
 

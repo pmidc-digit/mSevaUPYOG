@@ -149,6 +149,8 @@
 @import "./components/newInbox.scss";
 @import "./components/ptr.scss";
 @import "./components/challanGeneration.scss";
+@import "./components/mseva-icons.css";
+@import "./gigw3-mseva.scss";
 
 .display-none {
   display: none;
@@ -2411,7 +2413,6 @@ input[type="date"] {
 .hrms-text-transform {
   text-transform: none !important;
 }
-
 .noc-popupStyles {
   width: unset;
   min-width: 360px;

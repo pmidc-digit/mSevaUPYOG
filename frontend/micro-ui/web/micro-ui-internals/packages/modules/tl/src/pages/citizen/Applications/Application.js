@@ -24,7 +24,7 @@ const MyApplications = ({ view }) => {
         );
 
   return (
-    <React.Fragment>
+    <section className="citizen-my-applications citizen-my-applications--tl">
       <Header>{`${t("TL_MY_APPLICATIONS_HEADER")}`}</Header>
       {data?.map((application) => {
         return (
@@ -64,7 +64,7 @@ const MyApplications = ({ view }) => {
         );
       })}
       {isLoading && <Loader />}
-    </React.Fragment>
+    </section>
   );
 };
 export default MyApplications;

@@ -11,7 +11,6 @@ const TextToImg = (props) => (
   </span>
 );
 
-
 const TopBar = ({
   t,
   stateInfo,
@@ -28,38 +27,40 @@ const TopBar = ({
   showLanguageChange = true,
   setSideBarScrollTop,
 }) => {
-  const [profilePic, setProfilePic] = React.useState(null)
-  const [selectedTenant, setSelectedTenant] = React.useState(typeof window !== 'undefined' ? t(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY")) : "")
+  const [profilePic, setProfilePic] = React.useState(null);
+  const [selectedTenant, setSelectedTenant] = React.useState(
+    typeof window !== "undefined" ? t(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY")) : ""
+  );
 
-  const { data: cities, isLoading } = Digit.Hooks.useTenants()
-  const cityOptions = cities?.map((city) => ({ ...city, displayName: t(city.i18nKey) }))?.filter((city) => city.code != "pb.punjab") || []
+  const { data: cities, isLoading } = Digit.Hooks.useTenants();
+  const cityOptions = cities?.map((city) => ({ ...city, displayName: t(city.i18nKey) }))?.filter((city) => city.code != "pb.punjab") || [];
 
   React.useEffect(async () => {
-    const tenant = Digit.ULBService.getCurrentTenantId()
-    const uuid = userDetails?.info?.uuid
+    const tenant = Digit.ULBService.getCurrentTenantId();
+    const uuid = userDetails?.info?.uuid;
     if (uuid) {
-      const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {})
+      const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
       if (usersResponse && usersResponse.user && usersResponse.user.length) {
-        const userDetails = usersResponse.user[0]
-         sessionStorage.setItem("userInfoData", JSON.stringify(userDetails));
-        const thumbs = userDetails?.photo?.split(",")
-        setProfilePic(thumbs?.at(0))
+        const userDetails = usersResponse.user[0];
+        sessionStorage.setItem("userInfoData", JSON.stringify(userDetails));
+        const thumbs = userDetails?.photo?.split(",");
+        setProfilePic(thumbs?.at(0));
       }
     }
-  }, [profilePic !== null, userDetails?.info?.uuid])
-  const selectedCity = t(selectedTenant.i18nKey)
+  }, [profilePic !== null, userDetails?.info?.uuid]);
+  const selectedCity = t(selectedTenant.i18nKey);
   const handleTenantChange = (tenant) => {
     if (tenant?.code) {
-      setSelectedTenant(tenant.code)
-      localStorage.setItem("CITIZEN.CITY", tenant.code)
-      window.location.reload()
+      setSelectedTenant(tenant.code);
+      localStorage.setItem("CITIZEN.CITY", tenant.code);
+      window.location.reload();
     }
-  }
+  };
 
-  const CitizenHomePageTenantId = Digit.ULBService.getCitizenCurrentTenant(true)
+  const CitizenHomePageTenantId = Digit.ULBService.getCitizenCurrentTenant(true);
 
-  const history = useHistory()
-  const { pathname } = useLocation()
+  const history = useHistory();
+  const { pathname } = useLocation();
 
   const topbarStyle = mobileView
     ? {
@@ -81,84 +82,98 @@ const TopBar = ({
         boxShadow: "0 8px 26px rgba(15, 23, 42, 0.06)",
         borderBottom: "1px solid rgba(15, 23, 42, 0.06)",
         backdropFilter: "blur(6px)",
-
-      }
+      };
 
   const conditionsToDisableNotificationCountTrigger = () => {
-    if (Digit.UserService?.getUser()?.info?.type === "EMPLOYEE") return false
+    if (Digit.UserService?.getUser()?.info?.type === "EMPLOYEE") return false;
     if (Digit.UserService?.getUser()?.info?.type === "CITIZEN") {
-      if (!CitizenHomePageTenantId) return false
-      else return true
+      if (!CitizenHomePageTenantId) return false;
+      else return true;
     }
-    return false
-  }
+    return false;
+  };
 
-  const {
-    data: { unreadCount: unreadNotificationCount } = {},
-    isSuccess: notificationCountLoaded,
-  } = Digit.Hooks.useNotificationCount({
+  const { data: { unreadCount: unreadNotificationCount } = {}, isSuccess: notificationCountLoaded } = Digit.Hooks.useNotificationCount({
     tenantId: CitizenHomePageTenantId,
     config: {
       enabled: conditionsToDisableNotificationCountTrigger(),
     },
-  })
+  });
 
   const updateSidebar = () => {
     if (!Digit.clikOusideFired) {
-      toggleSidebar(true)
-      setSideBarScrollTop(true)
+      toggleSidebar(true);
+      setSideBarScrollTop(true);
     } else {
-      Digit.clikOusideFired = false
+      Digit.clikOusideFired = false;
     }
-  }
+  };
 
   function onNotificationIconClick() {
-    history.push("/digit-ui/citizen/engagement/notifications")
+    history.push("/digit-ui/citizen/engagement/notifications");
   }
 
   const urlsToDisableNotificationIcon = (pathname) =>
     !!Digit.UserService?.getUser()?.access_token
       ? false
-      : ["/digit-ui/citizen/select-language", "/digit-ui/citizen/select-location"].includes(pathname)
+      : ["/digit-ui/citizen/select-language", "/digit-ui/citizen/select-location"].includes(pathname);
 
   // Get ULB details for citizen navbar
-  const ulbDetails = typeof window !== 'undefined' && sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY")
-    ? JSON.parse(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY"))
-    : "";
+  const ulbDetails =
+    typeof window !== "undefined" && sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY")
+      ? JSON.parse(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY"))
+      : "";
   const ulbName = ulbDetails ? ulbDetails?.value?.displayName + " " + ulbDetails?.value?.city?.ulbType : "";
-  const ulbLogo = ulbDetails
-    ? ulbDetails?.value?.logoId
-    : "https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/download.png";
+  const ulbLogo = ulbDetails ? ulbDetails?.value?.logoId : "https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/download.png";
 
   // Get tenant ID from localStorage CITIZEN.CITY
-  const tenantId = typeof window !== 'undefined' && localStorage.getItem("CITIZEN.CITY")
-    ? localStorage.getItem("CITIZEN.CITY")
-    : "";
-  
+  const tenantId = typeof window !== "undefined" && localStorage.getItem("CITIZEN.CITY") ? localStorage.getItem("CITIZEN.CITY") : "";
+
   // Check if user is logged in using userDetails prop (more reliable than sessionStorage)
   const isLoggedIn = !!userDetails?.access_token;
   const userInfo = Digit.UserService.getUser()?.info;
-  const isUserProfessional = window.location.href.includes("/citizen") && userInfo?.roles?.some(role => role?.code?.startsWith("BPA"))
+  const isUserProfessional = window.location.href.includes("/citizen") && userInfo?.roles?.some((role) => role?.code?.startsWith("BPA"));
   const isCitizen = window.location.href.includes("/citizen");
   const userName = userInfo?.name || userInfo?.userInfo?.name || "User";
-  const loggedin = userDetails?.access_token ? true : false
+  const loggedin = userDetails?.access_token ? true : false;
 
   if (CITIZEN) {
     return (
-      <div className="navbar" style={{padding : "1rem 1.5rem"}}>
+      <div className="navbar" style={{ padding: "1rem 1.5rem" }}>
         <div className="center-container_navbar" style={{}}>
           <div className="left-wrapper_navbar" style={{}}>
             {isLoggedIn && <Hamburger handleClick={updateSidebar} />}
-            <div className="ulb-info" style={{display:"flex", gap:"10px",marginLeft : "1rem"}}>
-              <img src={ulbLogo} alt="ULB Logo" className="ulb-logo" style={{minWidth : "25px", height : "25px"}} />
-              <span className="ulb-name" style={mobileView ? {display:"flex", justifyContent:"center", alignItems:"center", fontSize: "12px", whiteSpace: "nowrap", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis"} : {}}>{ulbName}</span>
+            <div className="ulb-info" style={{ display: "flex", gap: "10px", marginLeft: "1rem" }}>
+              <div className="mseva-brand-mark">
+                <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
+              </div>
+              {/* <img src={ulbLogo} alt="ULB Logo" className="ulb-logo" style={{minWidth : "25px", height : "25px"}} /> */}
+              {/* <span
+                className="ulb-name"
+                style={
+                  mobileView
+                    ? {
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        fontSize: "12px",
+                        whiteSpace: "nowrap",
+                        maxWidth: "200px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }
+                    : {}
+                }
+              >
+                {ulbName}
+              </span> */}
             </div>
           </div>
 
           <div className="right-wrapper_navbar" style={{}}>
-            {!urlsToDisableNotificationIcon(pathname) && !mobileView && <div style={{marginTop: "20px"}}>
-              {/* <ChangeLanguage dropdown={true} /> */}
-            </div>}
+            {!urlsToDisableNotificationIcon(pathname) && !mobileView && (
+              <div style={{ marginTop: "20px" }}>{/* <ChangeLanguage dropdown={true} /> */}</div>
+            )}
             {/* {(isUserProfessional && loggedin) && (
               <div className="left">
                 {!window.location.href.includes("employee/user/login") &&
@@ -167,8 +182,8 @@ const TopBar = ({
                   )}
               </div>
             )} */}
-            {(!mobileView && loggedin && !isUserProfessional) && (
-              <div className="ulb-name" style={{paddingRight: "20px", textOverflow: "ellipsis", fontSize: "15px", whiteSpace: "nowrap"}}>
+            {!mobileView && loggedin && !isUserProfessional && (
+              <div className="ulb-name" style={{ paddingRight: "20px", textOverflow: "ellipsis", fontSize: "15px", whiteSpace: "nowrap" }}>
                 {`Hello, ${userName}`}
               </div>
             )}
@@ -216,9 +231,11 @@ const TopBar = ({
                 />
               </div>
             )} */}
-           {tenantId && !mobileView && isCitizen  &&
-            <div className="left"><ProfessionalChangeCity dropdown={true} t={t} selectedCity={ulbDetails} userInfo={userInfo} obps={false}/></div>
-            } 
+            {tenantId && !mobileView && isCitizen && (
+              <div className="left">
+                <ProfessionalChangeCity dropdown={true} t={t} selectedCity={ulbDetails} userInfo={userInfo} obps={false} />
+              </div>
+            )}
             {!urlsToDisableNotificationIcon(pathname) && (
               <div className="notification-wrapper" onClick={onNotificationIconClick}>
                 {notificationCountLoaded && unreadNotificationCount ? (
@@ -235,7 +252,7 @@ const TopBar = ({
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -247,9 +264,7 @@ const TopBar = ({
           (cityDetails?.city?.ulbGrade ? (
             <p className="ulb" style={mobileView ? { fontSize: "14px", display: "inline-block" } : {}}>
               {t(cityDetails?.i18nKey).toUpperCase()}{" "}
-              {t(
-                `ULBGRADE_${cityDetails?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`,
-              ).toUpperCase()}
+              {t(`ULBGRADE_${cityDetails?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`).toUpperCase()}
             </p>
           ) : (
             <img className="state" src={logoUrl || "/placeholder.svg"} />
@@ -260,19 +275,13 @@ const TopBar = ({
           </p>
         )}
         {!mobileView && (
-          <div
-            className={mobileView ? "right" : "flex-right right w-80 column-gap-15 margin-right-50"}
-            style={!loggedin ? { width: "80%" } : {}}
-          >
+          <div className={mobileView ? "right" : "flex-right right w-80 column-gap-15 margin-right-50"} style={!loggedin ? { width: "80%" } : {}}>
             <div className="left">
-              {!window.location.href.includes("employee/user/login") &&
-                !window.location.href.includes("employee/user/language-selection") && (
-                  <ChangeCity dropdown={true} t={t} />
-                )}
+              {!window.location.href.includes("employee/user/login") && !window.location.href.includes("employee/user/language-selection") && (
+                <ChangeCity dropdown={true} t={t} />
+              )}
             </div>
             {/* <div className="left">{showLanguageChange && <ChangeLanguage dropdown={true} />}</div> */}
-
-           
 
             {userDetails?.access_token && (
               <div className="left">
@@ -282,16 +291,13 @@ const TopBar = ({
                   select={handleUserDropdownSelection}
                   showArrow={true}
                   freeze={true}
-                  style={mobileView ? { right: 0} : {}}
-                  optionCardStyles={{ overflow: "revert", left:"-56px"   }}
+                  style={mobileView ? { right: 0 } : {}}
+                  optionCardStyles={{ overflow: "revert", left: "-56px" }}
                   customSelector={
                     profilePic == null ? (
                       <TextToImg name={userDetails?.info?.name || userDetails?.info?.userInfo?.name || "Employee"} />
                     ) : (
-                      <img
-                        src={profilePic || "/placeholder.svg"}
-                        style={{ height: "48px", width: "48px", borderRadius: "50%" }}
-                      />
+                      <img src={profilePic || "/placeholder.svg"} style={{ height: "48px", width: "48px", borderRadius: "50%" }} />
                     )
                   }
                 />
@@ -302,7 +308,7 @@ const TopBar = ({
         )}
       </span>
     </div>
-  )
-}
+  );
+};
 
 export default TopBar;

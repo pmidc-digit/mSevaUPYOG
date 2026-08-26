@@ -309,7 +309,6 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
             overflowY: isMobile ? "auto" : "hidden",
           }}
         >
-          {profileItem}
           <div
             className="drawer-desktop"
             style={{
@@ -321,6 +320,7 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
             }}
           >
             <div style={{ flex: 1 }}>
+              {profileItem}
               {menuItems?.map((item, index) => (
                 <div
                   className={`sidebar-list ${pathname === item?.link || pathname === item?.sidebarURL ? "active" : ""}`}

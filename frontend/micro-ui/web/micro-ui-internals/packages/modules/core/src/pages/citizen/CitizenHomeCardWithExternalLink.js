@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import CustomMenu from "../../components/CustomMenu";
 
-const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
+const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info, isInfo = false, styles, className = "" }) => {
   // User authentication and role checks
   const { t } = useTranslation();
   const user = Digit.UserService?.getUser();
@@ -223,7 +223,7 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
   console.log("remainingUserManualLinks", remainingUserManualLinks)
 
   return (
-    <div className="chcwe-root" style={styles ? styles : undefined}>
+    <div className={`chcwe-root ${className}`.trim()} style={styles ? styles : undefined}>
       {header && <h2 className="chcwe-header">{header}</h2>}
 
       <div className="chcwe-card-container">

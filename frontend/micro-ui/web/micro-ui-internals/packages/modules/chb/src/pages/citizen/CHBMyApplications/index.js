@@ -45,7 +45,7 @@ export const CHBMyApplications = () => {
   const filteredApplications = data?.hallsBookingApplication || [];
 
   return (
-    <React.Fragment>
+    <section className="citizen-my-applications citizen-my-applications--chb">
       <Header>{`${t("CHB_MY_APPLICATION_HEADER")} (${filteredApplications.length})`}</Header>
       <div>
         {filteredApplications?.length > 0 &&
@@ -67,6 +67,6 @@ export const CHBMyApplications = () => {
         )}
         {isLoading && <Loader page={true} />}
       </div>
-    </React.Fragment>
+    </section>
   );
 };

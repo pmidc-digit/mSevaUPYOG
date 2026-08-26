@@ -64,7 +64,7 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   });
 
   return (
-    <div style={{ marginTop: "16px" }}>
+    <div className="citizen-my-applications citizen-my-applications--mcollect" style={{ marginTop: "16px" }}>
       <div >
         {header && (
           <Header style={{ marginLeft: "8px" }}>

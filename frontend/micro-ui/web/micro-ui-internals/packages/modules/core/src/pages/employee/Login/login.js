@@ -6,6 +6,7 @@ import { useHistory } from "react-router-dom";
 import Background from "../../../components/Background";
 import Header from "../../../components/Header";
 import OtpInput from "../NewSelectOtp";
+import { formatEmployeeAuthUsername } from "../EmployeeAuth";
 
 /* set employee details to enable backward compatiable */
 const setEmployeeDetail = (userObject, token) => {
@@ -80,6 +81,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     };
     requestData.tenantId = data.city.code;
     delete requestData.city;
+    requestData.username = formatEmployeeAuthUsername(requestData.username);
     try {
       const { user: users, ...tokens } = await Digit.UserService.authenticateV1(requestData);
       const info = users[0];

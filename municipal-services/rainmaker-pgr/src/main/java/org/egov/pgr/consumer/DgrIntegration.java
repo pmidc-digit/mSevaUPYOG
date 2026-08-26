@@ -12,6 +12,7 @@ import org.egov.pgr.utils.PGRConstants;
 import org.egov.pgr.utils.ReportUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -133,20 +134,28 @@ public class DgrIntegration {
             }
 
             Map<String, Object> reqInfoMap = (Map<String, Object>) record.get("RequestInfo");
-            RequestInfo requestInfo = mapper.convertValue(reqInfoMap, RequestInfo.class);
+            RequestInfo requestInfo = reqInfoMap != null ? mapper.convertValue(reqInfoMap, RequestInfo.class) : null;
 
             List<Map<String, Object>> services = (List<Map<String, Object>>) record.get("services");
-            String tenantId = (String) services.get(0).get("tenantId");
-            
-            Map<String, Object> userInfo = (Map<String, Object>) reqInfoMap.get("userInfo");
-            Long userId = Long.valueOf(userInfo.get("id").toString());
-            List<Long> userIds = Collections.singletonList(userId);
+            String tenantId = (services != null && !services.isEmpty() && services.get(0) != null)
+                    ? String.valueOf(services.get(0).get("tenantId")) : "pb";
 
-            UserResponse userResponse = grievanceService.getUsers(requestInfo, tenantId, userIds);
+            UserResponse userResponse = null;
+            try {
+                if (reqInfoMap != null && reqInfoMap.get("userInfo") != null) {
+                    Map<String, Object> userInfo = (Map<String, Object>) reqInfoMap.get("userInfo");
+                    if (userInfo.get("id") != null) {
+                        Long userId = Long.valueOf(userInfo.get("id").toString());
+                        List<Long> userIds = Collections.singletonList(userId);
+                        userResponse = grievanceService.getUsers(requestInfo, tenantId, userIds);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Could not fetch user info for tenant [{}]: {}", tenantId, e.getMessage());
+            }
 
             String grievanceResponse = createGrievance(serviceReqRequest, tokenResponse, userResponse);
 
-            log.info("UserResponse = {}", userResponse);
             log.info("CreateGrievance Response = {}", grievanceResponse);
 
         } catch (Exception ex) {
@@ -177,7 +186,7 @@ public class DgrIntegration {
 
             HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
 
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = createRestTemplate(10000, 15000);
             log.info("Calling token API");
 
             ResponseEntity<String> response =
@@ -195,7 +204,7 @@ public class DgrIntegration {
             return token;
 
         } catch (Exception ex) {
-            log.error("Error while generating login token", ex);
+            log.error("Error while generating login token: {}", ex.getMessage());
             return null;
         }
     }
@@ -206,7 +215,7 @@ public class DgrIntegration {
        ========================= */
     public String createGrievance(ServiceRequest serviceReqRequest, String bearerToken, UserResponse userResponse) {
         try {
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = createRestTemplate(10000, 25000);
             String url = CREATE_GRIEVANCE_URL;
 
             // 1. Get district list from DGR API
@@ -603,10 +612,17 @@ public class DgrIntegration {
     /* =========================
        Helper APIs
        ========================= */
+    private RestTemplate createRestTemplate(int connectTimeoutMs, int readTimeoutMs) {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(connectTimeoutMs);
+        factory.setReadTimeout(readTimeoutMs);
+        return new RestTemplate(factory);
+    }
+
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> fetchDataFromApi(String url) {
         try {
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = createRestTemplate(10000, 15000);
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Accept", "application/json, text/plain, */*");
@@ -617,14 +633,18 @@ public class DgrIntegration {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, Map.class);
 
             Map<String, Object> responseBody = response.getBody();
-            if (responseBody == null) return null;
+            if (responseBody == null) return new ArrayList<>();
 
             // Most of your APIs return { "data": [ ... ] }
-            return (List<Map<String, Object>>) responseBody.get("data");
+            Object dataObj = responseBody.get("data");
+            if (dataObj instanceof List) {
+                return (List<Map<String, Object>>) dataObj;
+            }
+            return new ArrayList<>();
 
         } catch (Exception e) {
-            log.info("Error fetching data from API [{}]: {}", url, e.getMessage());
-            return null;
+            log.warn("Error fetching data from API [{}]: {}", url, e.getMessage());
+            return new ArrayList<>();
         }
     }
 
@@ -710,7 +730,7 @@ public class DgrIntegration {
 
             log.info("Calling FileStore URL API: {}", fileStoreApiUrl);
 
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = createRestTemplate(10000, 30000);
             HttpHeaders fsHeaders = new HttpHeaders();
             fsHeaders.set("Accept", "application/json, text/plain, */*");
             HttpEntity<String> fsEntity = new HttpEntity<>(fsHeaders);

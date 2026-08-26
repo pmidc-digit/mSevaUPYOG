@@ -41,6 +41,8 @@ const RegistrationForm = ({ onRegisterSubmit, onAgeError, selectedLanguage, sele
       onRegisterSubmit && onRegisterSubmit(formData);
     }
   };
+  const EMAIL_REGEX = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/;
+
 
   return (
     <div className="input-wrapper">
@@ -91,7 +93,7 @@ const RegistrationForm = ({ onRegisterSubmit, onAgeError, selectedLanguage, sele
               validation: {
                 required: true,
                 minLength: 1,
-                pattern: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/i,
+                validate: (value) => EMAIL_REGEX.test(value),
                 maxLength: 100,
               },
             },

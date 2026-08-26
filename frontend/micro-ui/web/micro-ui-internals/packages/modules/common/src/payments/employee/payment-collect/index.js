@@ -11,7 +11,6 @@ import { useNEFTDetails } from "./neft";
 import { useRTGSDetails } from "./rtgs";
 import { usePostalDetails } from "./postalOrder";
 import { useQRDetails } from "./qrCode";
-import { useAdvanceDetails } from "./advance";
 import isEqual from "lodash/isEqual";
 import { BillDetailsFormConfig } from "./Bill-details/billDetails";
 
@@ -73,13 +72,17 @@ export const CollectPayment = (props) => {
   const { rtgsConfig } = useRTGSDetails(props, t);
   const { postalOrderConfig } = usePostalDetails(props, t);
   const { qrConfig } = useQRDetails(props, t);
-  const { advanceConfig } = useAdvanceDetails(props, t);
 
   const [toast, setToast] = useState(null);
 
   const isChallanGeneration = location.pathname.includes("Challan_Generation");
   const isPetService = location.pathname.includes("pet-services");
   const isRentLease = location.pathname.includes("rl-services");
+  const paymentAmountOptions = [
+    { code: "FULL_AMOUNT", label: t("CS_PAYMENT_FULL_AMOUNT") },
+    { code: "CUSTOM_AMOUNT", label: t("CS_PAYMENT_CUSTOM_AMOUNT") },
+  ];
+  const [selectedPaymentAmountType, setSelectedPaymentAmountType] = useState(paymentAmountOptions[0]);
 
   console.log("isPetService", isPetService);
 
@@ -99,7 +102,7 @@ export const CollectPayment = (props) => {
     ...(!(isChallanGeneration || isPetService) ? [{ code: "OFFLINE_RTGS", label: "RTGS" }] : []),
     ...(!(isChallanGeneration || isPetService) ? [{ code: "POSTAL_ORDER", label: "Postal Order" }] : []),
     ...(!(isChallanGeneration || isPetService) ? [{ code: "QR_CODE", label: "QR Code" }] : []),
-    ...(isRentLease ? [{ code: "Advance", label: "Advance" }] : []),
+    // ...(isRentLease ? [{ code: "Advance", label: "Advance" }] : []),
   ];
 
   const formConfigMap = {
@@ -110,7 +113,6 @@ export const CollectPayment = (props) => {
     OFFLINE_RTGS: rtgsConfig,
     POSTAL_ORDER: postalOrderConfig,
     QR_CODE: qrConfig,
-    Advance: advanceConfig,
   };
 
   useEffect(() => {
@@ -138,15 +140,20 @@ export const CollectPayment = (props) => {
     bill.totalAmount = Math.round(bill.totalAmount);
     data.paidBy = data.paidBy.code;
 
+    const isCustomPaymentAmount = data?.paymentAmountType?.code === "CUSTOM_AMOUNT";
+    const customPaymentAmount = Number(data?.customPaymentAmount);
+    const totalAmountPaid = isCustomPaymentAmount ? customPaymentAmount : data?.amount?.amount || bill.totalAmount;
     const isAdvancePayment = data?.paymentMode?.code === "Advance";
-    const advanceAmount = Number(data?.advanceAmount);
 
-    if (isAdvancePayment && (!Number.isFinite(advanceAmount) || advanceAmount <= bill.totalAmount)) {
-      alert(`Advance amount must be greater than ₹${bill.totalAmount}`);
+    if (isCustomPaymentAmount && (!Number.isFinite(customPaymentAmount) || customPaymentAmount <= 0)) {
+      alert("Please enter a valid custom amount");
       return;
     }
 
-    const totalAmountPaid = data?.advanceAmount || data?.amount?.amount || bill.totalAmount;
+    if (isAdvancePayment && totalAmountPaid <= bill.totalAmount) {
+      alert(`Advance amount must be greater than ₹${bill.totalAmount}`);
+      return;
+    }
 
     if (
       BillDetailsFormConfig({ consumerCode, businessService }, t)[
@@ -353,6 +360,61 @@ export const CollectPayment = (props) => {
         },
       ],
     },
+    ...(isRentLease
+      ? [
+          {
+            head: "Amount to be paid",
+            body: [
+              {
+                label: "Amount to be paid",
+                type: "custom",
+                populators: {
+                  name: "paymentAmountType",
+                  customProps: {
+                    options: paymentAmountOptions,
+                    optionsKey: "label",
+                    style: { display: "flex", flexWrap: "wrap", gap: "40px" },
+                    innerStyles: { display: "flex", justifyContent: "center", alignItems: "center" },
+                  },
+                  defaultValue: paymentAmountOptions[0],
+                  component: (props, customProps) => (
+                    <RadioButtons
+                      style={{ display: "flex" }}
+                      selectedOption={props.value || selectedPaymentAmountType}
+                      onSelect={(option) => {
+                        props.onChange(option);
+                        setSelectedPaymentAmountType(option);
+                      }}
+                      {...customProps}
+                    />
+                  ),
+                },
+              },
+              ...(selectedPaymentAmountType?.code === "CUSTOM_AMOUNT"
+                ? [
+                    {
+                      label: t("CS_COMMON_PAYMENT_AMOUNT"),
+                      isMandatory: true,
+                      type: "number",
+                      populators: {
+                        name: "customPaymentAmount",
+                        componentInFront: "₹",
+                        placeholder: t("CS_COMMON_PAYMENT_AMOUNT"),
+                        min: "1",
+                        step: "1",
+                        validation: {
+                          required: true,
+                          min: 1,
+                        },
+                        error: "ES_ERROR_REQUIRED",
+                      },
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ]
+      : []),
     {
       head: t("PAYMENT_MODE_HEAD"),
       body: [
@@ -364,8 +426,8 @@ export const CollectPayment = (props) => {
             customProps: {
               options: getPaymentModes(),
               optionsKey: "label",
-              style: { display: "flex", flexWrap: "wrap" },
-              innerStyles: { minWidth: "33%" },
+              style: { display: "flex", flexWrap: "wrap", gap: "15px" },
+              innerStyles: { display: "flex", justifyContent: "center", alignItems: "center" },
             },
             defaultValue: formState?.paymentMode || getPaymentModes()[0],
             component: (props, customProps) => (

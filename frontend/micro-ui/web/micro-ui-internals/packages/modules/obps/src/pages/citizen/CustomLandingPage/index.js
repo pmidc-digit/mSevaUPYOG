@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardText, Toast } from "@mseva/digit-ui-react-components";
 import { Link, useHistory } from "react-router-dom";
+import { MSEVA_APP_LINK } from "../../../../../../constants/constants";
 
 const CustomLandingPage = () => {
   const history = useHistory()
@@ -90,6 +91,7 @@ const CustomLandingPage = () => {
       showForNonArchitect: true, 
     },
     { title: "User Manual", url: "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2Fproperty-upload%2FOctober%2F8%2F1759931687672rlOgUaoaId.pdf", external: true },
+    { title: "mSeva App", url: MSEVA_APP_LINK, external: true },
     { title: "Assistance", external: true },
     { title: "Feedback", url: "https://docs.google.com/forms/d/e/1FAIpQLScfZlGldfyIs_3KZAX9lRpx43OjCrKnw33SbzvN6I3Gi2Uj_A/viewform?usp=header", external: true },
     { title: "View applications by Citizen", url: "/digit-ui/citizen/obps/my-applications", external: false },

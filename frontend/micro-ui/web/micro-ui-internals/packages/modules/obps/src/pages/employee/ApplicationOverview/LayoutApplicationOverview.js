@@ -502,7 +502,7 @@ const LayoutEmployeeApplicationOverview = () => {
         const proposedSiteAddress = site?.proposedSiteAddress || site?.district?.proposedSiteAddress;
         const hadbastNo = site?.hadbastNo || site?.district?.hadbastNo;
         const villageName = site?.villageName || site?.district?.villageName;
-        const areaSqm = site?.netTotalArea || site?.district?.netTotalArea;
+        const areaSqm = site?.areaLeftForRoadWidening;
 
         const primaryOwner = applicationDetails?.Layout?.[0]?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") || displayData?.owners?.[0] || owner;
         const applicantType = (

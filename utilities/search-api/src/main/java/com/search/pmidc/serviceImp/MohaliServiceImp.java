@@ -35,7 +35,7 @@ public class MohaliServiceImp implements MohaliService {
 
 	@Override
 	public List<MohaliBean> findAll(String owner) {
-			return (List<MohaliBean>) mohaliRepository.findAllReco(owner, new PageRequest(0, 50));
+			return (List<MohaliBean>) mohaliRepository.findAllReco(owner, PageRequest.of(0, 50));
 		}
 	
 	@Override public List<MohaliBean> findAllByReturnId(String returnId) {
@@ -45,7 +45,7 @@ public class MohaliServiceImp implements MohaliService {
 	
 	@Override
 	public List<MohaliBean> findByPhone(String phone) {
-			return (List<MohaliBean>) mohaliRepository.findByPhone(phone, new PageRequest(0, 50));
+			return (List<MohaliBean>) mohaliRepository.findByPhone(phone, PageRequest.of(0, 50));
 		}
 
 	@Override
@@ -55,7 +55,7 @@ public class MohaliServiceImp implements MohaliService {
 
 	@Override
 	public List<MohaliBean> findAllByAssYearOwner(String owner, String assYear) {
-		return  (List<MohaliBean>) mohaliRepository.findAllByAssYearOwner(owner, assYear, new PageRequest(0, 50));
+		return  (List<MohaliBean>) mohaliRepository.findAllByAssYearOwner(owner, assYear, PageRequest.of(0, 50));
 	}
 	
 	@Override

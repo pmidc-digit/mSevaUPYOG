@@ -29,12 +29,12 @@ public class JldServiceImp implements JldService {
 
 	@Override
 	public List<JldBean> findByPhone(String phone) {
-			return (List<JldBean>) jldRepository.findByPhone(phone, new PageRequest(0, 50));
+			return (List<JldBean>) jldRepository.findByPhone(phone, PageRequest.of(0, 50));
 		}
 	
 	@Override
 	public List<JldBean> findAll(String owner) {
-			return (List<JldBean>) jldRepository.findAllReco(owner, new PageRequest(0, 50));
+			return (List<JldBean>) jldRepository.findAllReco(owner, PageRequest.of(0, 50));
 		}
 	
 	@Override public List<JldBean> findAllByReturnId(String returnId) {
@@ -49,7 +49,7 @@ public class JldServiceImp implements JldService {
 	
 	@Override
 	public List<JldBean> findAllByAssYearOwner(String owner, String assYear) {
-		return  (List<JldBean>) jldRepository.findAllByOwnerAssYear(owner, assYear, new PageRequest(0, 50));
+		return  (List<JldBean>) jldRepository.findAllByOwnerAssYear(owner, assYear, PageRequest.of(0, 50));
 	}
 	
 	@Override

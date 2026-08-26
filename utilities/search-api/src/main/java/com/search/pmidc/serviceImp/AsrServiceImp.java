@@ -35,7 +35,7 @@ public class AsrServiceImp implements AsrService {
 
 	@Override
 	public List<AsrBean> findAll(String owner) {
-			return (List<AsrBean>) asrRepository.findAllReco(owner, new PageRequest(0, 50));
+			return (List<AsrBean>) asrRepository.findAllReco(owner, PageRequest.of(0, 50));
 		}
 	
 	@Override public List<AsrBean> findAllByReturnId(String returnId) {
@@ -45,7 +45,7 @@ public class AsrServiceImp implements AsrService {
 	
 	@Override
 	public List<AsrBean> findByPhone(String phone) {
-			return (List<AsrBean>) asrRepository.findByPhone(phone, new PageRequest(0, 50));
+			return (List<AsrBean>) asrRepository.findByPhone(phone, PageRequest.of(0, 50));
 		}
 
 	@Override
@@ -55,7 +55,7 @@ public class AsrServiceImp implements AsrService {
 
 	@Override
 	public List<AsrBean> findAllByAssYearOwner(String owner, String assYear) {
-		return  (List<AsrBean>) asrRepository.findAllByAssYearOwner(owner, assYear, new PageRequest(0, 50));
+		return  (List<AsrBean>) asrRepository.findAllByAssYearOwner(owner, assYear, PageRequest.of(0, 50));
 	}
 	
 	@Override

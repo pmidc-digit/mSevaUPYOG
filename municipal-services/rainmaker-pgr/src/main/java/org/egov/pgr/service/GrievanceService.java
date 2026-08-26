@@ -119,7 +119,17 @@ public class GrievanceService {
 		log.info("Service layer for createss");
 		enrichserviceRequestForcreate(request);
 		pGRProducer.push(saveTopic, producerKey(request), request);
-		pGRProducer.push(saveForDgrTopic, producerKey(request), request);
+
+		// Only push to DGR if this complaint did NOT originate from DGR (dgr_grievance_id is absent)
+		boolean hasDgrId = request.getServices().stream()
+				.anyMatch(service -> service.getDgrPgrId() != null && !service.getDgrPgrId().trim().isEmpty());
+
+		if (!hasDgrId) {
+			pGRProducer.push(saveForDgrTopic, producerKey(request), request);
+		} else {
+			log.info("Complaint already contains DGR ID [{}]. Skipping push to DGR topic to prevent duplicate creation.",
+					request.getServices().get(0).getDgrPgrId());
+		}
 
 		pGRProducer.push(saveIndexTopic, producerKey(request), dataTranformationForIndexer(request, true));
 		return getServiceResponse(request);

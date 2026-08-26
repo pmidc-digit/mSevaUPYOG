@@ -74,6 +74,7 @@
 		<dependency>
 			<groupId>org.egov.edcr</groupId>
 			<artifactId>egov-commons</artifactId>
+			<version>2.1.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- <dependency>

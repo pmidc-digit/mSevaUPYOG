@@ -449,18 +449,22 @@ public class DemandRepository {
             demandIds.add(demand.getId());
         }
 
-        String demandIdsSql = demandIds.stream()
-                .map(id -> "'" + id + "'")
+        String placeholders = demandIds.stream()
+                .map(id -> "?")
                 .collect(Collectors.joining(", "));
 
-        jdbcTemplate.update(DemandQueryBuilder.DEMAND_PAYER_UPDATE_QUERY, new PreparedStatementSetter() {
+        String query = String.format(
+                DemandQueryBuilder.DEMAND_PAYER_UPDATE_QUERY,
+                placeholders
+        );
 
-            @Override
-            public void setValues(PreparedStatement ps) throws SQLException {
-                ps.setString(1, updateDemandPayerRequest.getPropertyId());
-                ps.setString(2, demandIdsSql);
-            }
-        });
+        List<Object> preparedStmtList = new ArrayList<>();
+
+        preparedStmtList.add(updateDemandPayerRequest.getPayer());
+        preparedStmtList.addAll(demandIds);
+
+        jdbcTemplate.update(query, preparedStmtList.toArray());
+
     }
 
     public List<Demand> getUnpaidDemandsForConsumer(UpdateDemandPayerRequest request) {

@@ -108,7 +108,7 @@ public class DemandQueryBuilder {
 			+ "lastModifiedby=?,lastModifiedtime=?, additionaldetails=? WHERE id=? AND demandid=? AND tenantid=?;";
 
     public static final String DEMAND_PAYER_UPDATE_QUERY =
-            "UPDATE egbs_demand_v1 SET payer=? WHERE id IN (?);";
+            "UPDATE egbs_demand_v1 SET payer=? WHERE id IN (%s);";
 
 	public static final String DEMAND_AUDIT_INSERT_QUERY = "INSERT INTO egbs_demand_v1_audit "
 			+ "(demandid,consumerCode,consumerType,businessService,payer,taxPeriodFrom,taxPeriodTo,"

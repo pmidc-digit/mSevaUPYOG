@@ -518,11 +518,16 @@ public class DgrIntegration {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Bearer " + bearerToken);
-            headers.set("Accept", "application/json, text/plain, */*");
-            headers.set("Accept-Language", "en-US,en;q=0.9");
-
             HttpEntity<Map<String, Object>> entity =
                     new HttpEntity<>(requestBody, headers);
+
+            ObjectMapper mapper = new ObjectMapper();
+            String reqId = serviceReqRequest.getServices().get(0).getServiceRequestId();
+            try {
+                log.info("DGR CreateGrievance request payload for serviceRequestId [{}]: {}", reqId, mapper.writeValueAsString(requestBody));
+            } catch (Exception e) {
+                log.info("DGR CreateGrievance request payload for serviceRequestId [{}]: {}", reqId, requestBody);
+            }
 
             String responseBody;
 
@@ -533,7 +538,7 @@ public class DgrIntegration {
 
             } catch (Exception ex) {
 
-                log.error("Error calling CreateGrievance API", ex);
+                log.error("Error calling CreateGrievance API for serviceRequestId [{}]: {}", reqId, ex.getMessage(), ex);
 
                 Map<String, Object> failedPayload = new HashMap<>();
                 failedPayload.put("serviceRequest", serviceReqRequest);
@@ -541,7 +546,8 @@ public class DgrIntegration {
                 failedPayload.put("error", ex.getMessage());
                 failedPayload.put("status", "FAILED");
 
-                pGRProducer.push(failedDgrTopic,serviceReqRequest.getServices().get(0).getServiceRequestId(), failedPayload);
+                pGRProducer.push(failedDgrTopic, reqId, failedPayload);
+                log.warn("Pushed failed DGR record to topic [{}] for serviceRequestId: {}, error: {}", failedDgrTopic, reqId, ex.getMessage());
 
                 return "Error calling CreateGrievance API: " + ex.getMessage();
             }
@@ -555,16 +561,16 @@ public class DgrIntegration {
 
             if (grievanceId != null && !grievanceId.trim().isEmpty()) {
 
-                log.info("DGR Grievance ID: {}", grievanceId);
+                log.info("DGR Grievance ID: {} created successfully for serviceRequestId: {}", grievanceId, reqId);
 
                 serviceReqRequest.getServices().get(0).setDgrPgrId(grievanceId);
 
-
-                pGRProducer.push(drgPgrId, grievanceId,serviceReqRequest);
+                pGRProducer.push(drgPgrId, grievanceId, serviceReqRequest);
+                log.info("Pushed DGR ID [{}] mapping to topic [{}] for serviceRequestId: {}", grievanceId, drgPgrId, reqId);
 
             } else {
 
-                log.error("DGR Grievance ID missing. Response: {}", responseBody);
+                log.error("DGR Grievance ID missing for serviceRequestId [{}]. Response: {}", reqId, responseBody);
 
                 Map<String, Object> failedPayload = new HashMap<>();
                 failedPayload.put("serviceRequest", serviceReqRequest);
@@ -573,7 +579,8 @@ public class DgrIntegration {
                 failedPayload.put("error", "DGR_GRIEVANCE_ID_MISSING");
                 failedPayload.put("status", "FAILED");
 
-                pGRProducer.push(failedDgrTopic,serviceReqRequest.getServices().get(0).getServiceRequestId(), failedPayload);
+                pGRProducer.push(failedDgrTopic, reqId, failedPayload);
+                log.warn("Pushed failed DGR record to topic [{}] for serviceRequestId: {}. DGR response: {}", failedDgrTopic, reqId, responseBody);
             }
 		
             return responseBody;
@@ -830,8 +837,16 @@ public class DgrIntegration {
             log.info("DGR Uploaddocument response status: {}", uploadResponse.getStatusCode());
             log.info("DGR Uploaddocument response body: {}", uploadResponse.getBody());
 
-            // 5. Return docFiles list as the "doc" field in the grievance payload
-            result = docFiles;
+            // 5. Extract document IDs/messages from Uploaddocument response (NO base64)
+            try {
+                List<Map<String, Object>> responseData = JsonPath.read(uploadResponse.getBody(), "$.data");
+                if (responseData != null && !responseData.isEmpty()) {
+                    result = responseData;
+                    log.info("DGR Uploaddocument returned doc info (msg id): {}", result);
+                }
+            } catch (Exception e) {
+                log.error("Failed to parse Uploaddocument response: {}", e.getMessage());
+            }
 
         } catch (Exception e) {
             log.error("Error in uploadDocumentsToDgr: {}", e.getMessage(), e);
@@ -893,13 +908,18 @@ public class DgrIntegration {
         Map<String, Object> sanitized = new HashMap<>(original);
         Object docObj = sanitized.get("doc");
         if (docObj instanceof List) {
-            List<Map<String, Object>> docList = (List<Map<String, Object>>) docObj;
-            List<Map<String, Object>> sanitizedDocs = new ArrayList<>();
-            for (Map<String, Object> doc : docList) {
-                Map<String, Object> cleanDoc = new HashMap<>(doc);
-                // Remove the large base64 string
-                cleanDoc.put("base64", "[OMITTED_FOR_KAFKA_PAYLOAD]");
-                sanitizedDocs.add(cleanDoc);
+            List<?> docList = (List<?>) docObj;
+            List<Object> sanitizedDocs = new ArrayList<>();
+            for (Object doc : docList) {
+                if (doc instanceof Map) {
+                    Map<String, Object> cleanDoc = new HashMap<>((Map<String, Object>) doc);
+                    if (cleanDoc.containsKey("base64")) {
+                        cleanDoc.put("base64", "[OMITTED_FOR_KAFKA_PAYLOAD]");
+                    }
+                    sanitizedDocs.add(cleanDoc);
+                } else {
+                    sanitizedDocs.add(doc);
+                }
             }
             sanitized.put("doc", sanitizedDocs);
         }

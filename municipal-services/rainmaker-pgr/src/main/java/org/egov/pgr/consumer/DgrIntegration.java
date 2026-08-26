@@ -537,7 +537,7 @@ public class DgrIntegration {
 
                 Map<String, Object> failedPayload = new HashMap<>();
                 failedPayload.put("serviceRequest", serviceReqRequest);
-                failedPayload.put("DgrCreate", requestBody);
+                failedPayload.put("DgrCreate", sanitizeRequestBodyForFailure(requestBody));
                 failedPayload.put("error", ex.getMessage());
                 failedPayload.put("status", "FAILED");
 
@@ -569,7 +569,7 @@ public class DgrIntegration {
                 Map<String, Object> failedPayload = new HashMap<>();
                 failedPayload.put("serviceRequest", serviceReqRequest);
                 failedPayload.put("dgrResponse", responseBody);
-                failedPayload.put("DgrCreate", requestBody);
+                failedPayload.put("DgrCreate", sanitizeRequestBodyForFailure(requestBody));
                 failedPayload.put("error", "DGR_GRIEVANCE_ID_MISSING");
                 failedPayload.put("status", "FAILED");
 
@@ -881,5 +881,28 @@ public class DgrIntegration {
             conn.disconnect();
             throw new RuntimeException("HTTP " + responseCode + " while downloading file from: " + fileUrl);
         }
+    }
+
+    /**
+     * Creates a lightweight copy of the requestBody without large base64 strings
+     * to prevent OutOfMemoryError when pushing to Kafka failed topic.
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> sanitizeRequestBodyForFailure(Map<String, Object> original) {
+        if (original == null) return null;
+        Map<String, Object> sanitized = new HashMap<>(original);
+        Object docObj = sanitized.get("doc");
+        if (docObj instanceof List) {
+            List<Map<String, Object>> docList = (List<Map<String, Object>>) docObj;
+            List<Map<String, Object>> sanitizedDocs = new ArrayList<>();
+            for (Map<String, Object> doc : docList) {
+                Map<String, Object> cleanDoc = new HashMap<>(doc);
+                // Remove the large base64 string
+                cleanDoc.put("base64", "[OMITTED_FOR_KAFKA_PAYLOAD]");
+                sanitizedDocs.add(cleanDoc);
+            }
+            sanitized.put("doc", sanitizedDocs);
+        }
+        return sanitized;
     }
 }

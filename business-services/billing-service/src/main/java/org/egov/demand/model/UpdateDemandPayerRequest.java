@@ -14,8 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 public class UpdateDemandPayerRequest {
     @JsonProperty("consumer")
     private String consumer;
-    @JsonProperty("propertyId")
-    private String propertyId;
+    @JsonProperty("payer")
+    private String payer;
     @JsonProperty("business")
     private String business;
     @JsonProperty("tenant")

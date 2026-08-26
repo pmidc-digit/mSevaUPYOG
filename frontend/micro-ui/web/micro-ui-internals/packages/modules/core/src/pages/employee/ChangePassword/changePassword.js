@@ -7,6 +7,7 @@ import { useHistory } from "react-router-dom";
 import Background from "../../../components/Background";
 import Header from "../../../components/Header";
 import SelectOtp from "../../citizen/Login/SelectOtp";
+import { formatEmployeeAuthUsername } from "../EmployeeAuth";
 
 const ChangePasswordComponent = ({ config: propsConfig, t }) => {
   const [user, setUser] = useState(null);
@@ -63,6 +64,7 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
         tenantId,
         type: getUserType().toUpperCase(),
       };
+      requestData.userName = formatEmployeeAuthUsername(requestData.userName);
 
       const response = await Digit.UserService.changePassword(requestData, tenantId);
       navigateToLogin();

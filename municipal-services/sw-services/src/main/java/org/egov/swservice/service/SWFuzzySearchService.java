@@ -157,18 +157,20 @@ public class SWFuzzySearchService {
             throw new CustomException("EG_SW_SEARCH_TENANTID_MANDATORY", "TenantId is mandatory for all search operations.");
         }
 
-        if (criteria.getOwnerName() != null && criteria.getLocality() == null) {
-            throw new CustomException("EG_SW_SEARCH_LOCALITY_MANDATORY", "Locality is mandatory when searching by Owner Name.");
+        if ((criteria.getOwnerName() != null || criteria.getGuardianName() != null) && criteria.getLocality() == null) {
+            throw new CustomException("EG_SW_SEARCH_LOCALITY_MANDATORY", "Locality is mandatory when searching by Owner Name or Guardian Name.");
+
         }
 
         if (CollectionUtils.isEmpty(criteria.getConnectionNumber()) && 
             criteria.getOldConnectionNumber() == null && 
             criteria.getOwnerName() == null && 
+            criteria.getGuardianName() == null && 
             criteria.getDoorNo() == null &&
             criteria.getLocality() == null
             ) {
             
-            throw new CustomException("INVALID_SEARCH_CRITERIA", "Please provide at least one search parameter for Sewerage connection search.");
+        	throw new CustomException("INVALID_SEARCH_CRITERIA", "Please provide at least one search parameter (Connection No, Name, Guardian Name, or Door No) for Sewerage connection search.");
         }
     }
 }

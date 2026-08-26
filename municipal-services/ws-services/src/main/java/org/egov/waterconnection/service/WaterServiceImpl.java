@@ -843,7 +843,7 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 		waterConnectionRequest.setWaterConnection(decryptConnectionDetails(waterConnectionRequest.getWaterConnection(),
 				waterConnectionRequest.getRequestInfo()));
 
-        UpdateDemandPayerRequest updateDemandPayerRequest= UpdateDemandPayerRequest.builder().consumer(waterConnectionRequest.getWaterConnection().getConnectionNo()).propertyId(property.getId()).business(WATER_SERVICE_BUSINESS_ID).tenant(waterConnectionRequest.getWaterConnection().getTenantId()).build();
+        UpdateDemandPayerRequest updateDemandPayerRequest= UpdateDemandPayerRequest.builder().consumer(waterConnectionRequest.getWaterConnection().getConnectionNo()).payer(property.getOwners().get(0).getUuid()).business(WATER_SERVICE_BUSINESS_ID).tenant(waterConnectionRequest.getWaterConnection().getTenantId()).build();
 
         UpdateBillStatusReq updateBillStatusReq = UpdateBillStatusReq.builder().consumer(waterConnectionRequest.getWaterConnection().getConnectionNo()).business(WATER_SERVICE_BUSINESS_ID).status(EXPIRED).tenant(waterConnectionRequest.getWaterConnection().getTenantId()).build();
 

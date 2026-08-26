@@ -27,9 +27,19 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const [breakupLoading, setBreakupLoading] = useState(false);
   const [resolvedPaymentSnapshot, setResolvedPaymentSnapshot] = useState(null);
 
-  const owners = tradeLicenseDetail?.owners || [];
-  const tradeUnits = tradeLicenseDetail?.tradeUnits || [];
-  const accessories = tradeLicenseDetail?.accessories || [];
+  const owners = (tradeLicenseDetail?.owners || []).filter((owner) => owner?.active !== false);
+  const tradeUnits = (tradeLicenseDetail?.tradeUnits || []).filter((unit) => unit?.active !== false);
+  const reduxAccessories = formData?.TraidDetails?.accessories || formData?.TraidDetailsRenew?.accessories;
+  const accessories = Array.isArray(reduxAccessories)
+    ? reduxAccessories
+        .filter((acc) => acc?.accessoryCategory?.code || (typeof acc?.accessoryCategory === "string" && acc?.accessoryCategory))
+        .map((acc) => ({
+          accessoryCategory: acc?.accessoryCategory?.code || acc?.accessoryCategory,
+          uom: acc?.accessoryCategory?.uom || acc?.uom || null,
+          uomValue: acc?.uomValue || null,
+          count: acc?.count || null,
+        }))
+    : (tradeLicenseDetail?.accessories || []).filter((acc) => acc?.active === true || (acc?.active !== false && acc?.active !== "false" && acc?.status !== "INACTIVE"));
   const address = tradeLicenseDetail?.address || {};
   const taxHeads = calculation?.taxHeadEstimates || [];
 

@@ -55,7 +55,7 @@ const RenewTLSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
 
     if (res) {
       const appNumber = formData?.CreatedResponse?.applicationNumber || formData?.EditPayload?.applicationNumber;
-      history.replace(`/digit-ui/employee/tl/application-details/${appNumber}`);
+      window.location.replace(`/digit-ui/employee/tl/application-details/${appNumber}`);
     }
   };
 

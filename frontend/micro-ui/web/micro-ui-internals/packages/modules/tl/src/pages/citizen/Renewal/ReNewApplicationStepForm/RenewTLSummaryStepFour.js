@@ -53,7 +53,7 @@ export const RenewTLSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => 
 
 
     if (res) {
-      history.replace(`/digit-ui/citizen/tl/tradelicence/application/${formData?.CreatedResponse?.applicationNumber}/${tenantId}`);
+      window.location.replace(`/digit-ui/citizen/tl/tradelicence/application/${formData?.CreatedResponse?.applicationNumber}/${tenantId}`);
     } else {
       setError("Submission failed. Please try again.");
       setShowToast(true);

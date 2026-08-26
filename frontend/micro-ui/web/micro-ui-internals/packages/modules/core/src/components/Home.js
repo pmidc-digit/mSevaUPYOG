@@ -249,7 +249,7 @@ const EmployeeHome = ({ modules }) => {
                 label={t("User Manual")}
                 onSubmit={() =>
                   window.open(
-                    "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FCLU%2FAugust%2F24%2F1787583703919JNROWeZZwT.pdf",
+                    "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FCLU%2FAugust%2F26%2F1787725881375NxuybOpbkN.pdf",
                     "_blank"
                   )
                 }

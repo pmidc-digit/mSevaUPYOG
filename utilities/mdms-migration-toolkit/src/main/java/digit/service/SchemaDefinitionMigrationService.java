@@ -13,6 +13,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.egov.common.contract.request.RequestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ import com.saasquatch.jsonschemainferrer.JsonSchemaInferrer;
 
 import digit.config.Configuration;
 import digit.repository.ServiceRequestRepository;
+import digit.util.DataSanitizerUtil;
 import digit.util.FileReader;
 import digit.util.FileWriter;
 import digit.web.models.SchemaDefinition;
@@ -135,6 +137,9 @@ public class SchemaDefinitionMigrationService {
                         	
                         	// Fix array fields missing items definition
                         	fixArrayFieldsInSchema(schemaNode);
+                        	
+                        	// Fix numeric fields schema definitions (enforce number type)
+                        	DataSanitizerUtil.fixNumericFieldsInSchema(schemaNode);
                         	
                         	// Populate schemaCodeToSchemaJsonMap
                             schemaCodeToSchemaJsonMap.put(module + DOT_SEPARATOR + master, schemaNode);

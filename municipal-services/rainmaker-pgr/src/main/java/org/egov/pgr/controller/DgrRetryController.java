@@ -125,4 +125,56 @@ public class DgrRetryController {
         Map<String, Object> status = dgrRetryService.getFailedTopicStatus();
         return new ResponseEntity<>(status, HttpStatus.OK);
     }
+
+    /**
+     * API 4: Retry pending records from DB where dgr_grievance_id is NULL or empty.
+     *
+     * Queries eg_pgr_service table for complaints that don't have a DGR grievance ID
+     * and pushes them to DGR's CreateGrievance API.
+     *
+     * Examples:
+     *   POST /v1/dgr/retry-pending
+     *   Body: { "RequestInfo": { ... } }
+     *
+     *   POST /v1/dgr/retry-pending?tenantId=pb.jalandhar&limit=100&offset=0
+     *   Body: { "RequestInfo": { ... } }
+     *
+     *   POST /v1/dgr/retry-pending
+     *   Body: {
+     *     "RequestInfo": { ... },
+     *     "tenantId": "pb.jalandhar",
+     *     "fromDate": 1724630400000,
+     *     "limit": 100,
+     *     "offset": 0
+     *   }
+     */
+    @PostMapping("retry-pending")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> retryPendingFromDb(
+            @RequestBody(required = false) DgrRetryRequest retryRequest,
+            @RequestParam(value = "tenantId", required = false) String tenantIdParam,
+            @RequestParam(value = "fromDate", required = false) Long fromDateParam,
+            @RequestParam(value = "limit", required = false, defaultValue = "50") Integer limitParam,
+            @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offsetParam) {
+
+        log.info("DGR retry-pending endpoint triggered (tenantId={}, fromDate={}, limit={}, offset={})",
+                tenantIdParam, fromDateParam, limitParam, offsetParam);
+
+        RequestInfo requestInfo = (retryRequest != null) ? retryRequest.getRequestInfo() : null;
+
+        // Priority: body params > query params
+        String tenantId = (retryRequest != null && retryRequest.getTenantId() != null)
+                ? retryRequest.getTenantId() : tenantIdParam;
+        Long fromDate = (retryRequest != null && retryRequest.getFromDate() != null)
+                ? retryRequest.getFromDate() : fromDateParam;
+        Integer limit = (retryRequest != null && retryRequest.getLimit() != null)
+                ? retryRequest.getLimit() : limitParam;
+        Integer offset = (retryRequest != null && retryRequest.getOffset() != null)
+                ? retryRequest.getOffset() : offsetParam;
+
+        Map<String, Object> result = dgrRetryService.retryPendingFromDb(
+                requestInfo, tenantId, fromDate, limit, offset);
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 }

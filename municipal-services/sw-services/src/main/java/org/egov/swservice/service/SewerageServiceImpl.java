@@ -419,14 +419,6 @@ public class SewerageServiceImpl implements SewerageService {
 		/* decrypt here */
 		sewerageConnectionRequest.setSewerageConnection(decryptConnectionDetails(sewerageConnectionRequest.getSewerageConnection(), sewerageConnectionRequest.getRequestInfo()));
 
-        UpdateDemandPayerRequest updateDemandPayerRequest= UpdateDemandPayerRequest.builder().consumer(sewerageConnectionRequest.getSewerageConnection().getConnectionNo()).payer(property.getOwners().get(0).getUuid()).business(SEWERAGE_SERVICE_BUSINESS_ID).tenant(sewerageConnectionRequest.getSewerageConnection().getTenantId()).build();
-
-        UpdateBillStatusReq updateBillStatusReq = UpdateBillStatusReq.builder().consumer(sewerageConnectionRequest.getSewerageConnection().getConnectionNo()).business(SEWERAGE_SERVICE_BUSINESS_ID).status(EXPIRED).tenant(sewerageConnectionRequest.getSewerageConnection().getTenantId()).build();
-
-        sewerageDao.updatePayerIDForDemand(updateDemandPayerRequest);
-
-        sewerageDao.updateOldBillStatus(updateBillStatusReq);
-
 		try {
 		    String channel = sewerageConnectionRequest.getSewerageConnection().getChannel();
 		    String thirdPartyCode = null;

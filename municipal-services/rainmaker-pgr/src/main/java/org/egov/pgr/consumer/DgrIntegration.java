@@ -88,7 +88,11 @@ public class DgrIntegration {
     @Value("${dgr.upload.document.url}")
     public String DGR_UPLOAD_DOCUMENT_URL;
 
-    
+    // DGR Search grievance by ReferenceId + Mobile
+    @Value("${dgr.search.grievance.url}")
+    public String DGR_SEARCH_GRIEVANCE_URL;
+
+
     @Autowired
     private GrievanceService grievanceService;
 
@@ -152,6 +156,27 @@ public class DgrIntegration {
                 }
             } catch (Exception e) {
                 log.warn("Could not fetch user info for tenant [{}]: {}", tenantId, e.getMessage());
+            }
+
+            // Step: Check if grievance already exists in DGR using ReferenceId + Mobile
+            String serviceRequestId = (serviceReqRequest.getServices() != null && !serviceReqRequest.getServices().isEmpty())
+                    ? serviceReqRequest.getServices().get(0).getServiceRequestId() : null;
+            String phone = (serviceReqRequest.getServices() != null && !serviceReqRequest.getServices().isEmpty())
+                    ? serviceReqRequest.getServices().get(0).getPhone() : null;
+
+            if ((phone == null || phone.trim().isEmpty()) && userResponse != null
+                    && userResponse.getUser() != null && !userResponse.getUser().isEmpty()) {
+                phone = userResponse.getUser().get(0).getMobileNumber();
+            }
+
+            if (serviceRequestId != null && phone != null && !phone.trim().isEmpty()) {
+                String existingGrievanceId = searchGrievanceByReferenceId(serviceRequestId, phone, tokenResponse);
+                if (existingGrievanceId != null && !existingGrievanceId.trim().isEmpty()) {
+                    log.info("DGR Grievance already exists on DGR for serviceRequestId={}, Grievance_ID={}. Updating DB only.",
+                            serviceRequestId, existingGrievanceId);
+                    pushDgrIdUpdate(existingGrievanceId, serviceReqRequest);
+                    return;
+                }
             }
 
             String grievanceResponse = createGrievance(serviceReqRequest, tokenResponse, userResponse);
@@ -598,6 +623,20 @@ public class DgrIntegration {
             log.info("CreateGrievance API call completed");
         }
     }
+
+    /**
+     * Helper to push updated DGR ID mapping to Kafka topic (update-dgr-pgrid)
+     * so that eg_pgr_service is updated in PostgreSQL.
+     */
+    public void pushDgrIdUpdate(String grievanceId, ServiceRequest serviceReqRequest) {
+        if (grievanceId != null && !grievanceId.trim().isEmpty() && serviceReqRequest != null) {
+            String reqId = (serviceReqRequest.getServices() != null && !serviceReqRequest.getServices().isEmpty())
+                    ? serviceReqRequest.getServices().get(0).getServiceRequestId() : "UNKNOWN";
+            serviceReqRequest.getServices().get(0).setDgrPgrId(grievanceId);
+            pGRProducer.push(drgPgrId, grievanceId, serviceReqRequest);
+            log.info("Pushed DGR ID [{}] mapping to topic [{}] for serviceRequestId: {}", grievanceId, drgPgrId, reqId);
+        }
+    }
     // Helper method for safe value
     private String safeValue(String defaultVal, String... values) {
         if (values != null) {
@@ -609,6 +648,81 @@ public class DgrIntegration {
         }
         return defaultVal;
     }
+
+    /* =========================
+       DGR Search Grievance by ReferenceId + Mobile
+       ========================= */
+    /**
+     * Calls DGR's GetGrievanceIdByMobileAndReferenceId API to check if a grievance
+     * already exists in DGR for the given serviceRequestId + mobile number.
+     *
+     * @param referenceId     Our serviceRequestId (e.g. "25/08/2026/356974")
+     * @param citizenMobileNo Citizen's mobile number from phone column
+     * @param bearerToken     DGR bearer token
+     * @return The DGR Grievance_ID if found, or null if not found / error
+     */
+    @SuppressWarnings("unchecked")
+    public String searchGrievanceByReferenceId(String referenceId, String citizenMobileNo, String bearerToken) {
+        if (referenceId == null || referenceId.trim().isEmpty()) {
+            log.warn("searchGrievanceByReferenceId: referenceId is null/empty");
+            return null;
+        }
+        if (citizenMobileNo == null || citizenMobileNo.trim().isEmpty()) {
+            log.warn("searchGrievanceByReferenceId: citizenMobileNo is null/empty for referenceId={}", referenceId);
+            return null;
+        }
+
+        try {
+            RestTemplate restTemplate = createRestTemplate(10000, 15000);
+
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("ReferenceId", referenceId.trim());
+            requestBody.put("CitizenMobileNo", citizenMobileNo.trim());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "Bearer " + bearerToken);
+            headers.set("Accept", "application/json, text/plain, */*");
+
+            HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
+
+            log.info("Calling DGR SearchGrievance API: {} with ReferenceId={}, Mobile={}",
+                    DGR_SEARCH_GRIEVANCE_URL, referenceId, citizenMobileNo);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    DGR_SEARCH_GRIEVANCE_URL, HttpMethod.POST, entity, String.class);
+
+            String responseBody = response.getBody();
+            log.info("DGR SearchGrievance response for ReferenceId={}: {}", referenceId, responseBody);
+
+            if (responseBody == null) return null;
+
+            // Parse response: { "response": 1, "data": [{ "Grievance_ID": "20260105809" }], ... }
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> json = mapper.readValue(responseBody, Map.class);
+
+            Object responseFlag = json.get("response");
+            if (responseFlag != null && "1".equals(String.valueOf(responseFlag))) {
+                List<Map<String, Object>> data = (List<Map<String, Object>>) json.get("data");
+                if (data != null && !data.isEmpty()) {
+                    Object grievanceId = data.get(0).get("Grievance_ID");
+                    if (grievanceId != null && !String.valueOf(grievanceId).trim().isEmpty()) {
+                        String gId = String.valueOf(grievanceId).trim();
+                        log.info("DGR Grievance found! ReferenceId={} -> Grievance_ID={}", referenceId, gId);
+                        return gId;
+                    }
+                }
+            }
+
+            log.info("No existing DGR Grievance found for ReferenceId={}", referenceId);
+            return null;
+
+        } catch (Exception e) {
+            log.warn("Error searching DGR grievance for ReferenceId={}: {}", referenceId, e.getMessage());
+            return null;
+        }
+    }
+
     /* =========================
        Helper APIs
        ========================= */

@@ -12,6 +12,7 @@ import org.egov.pgr.utils.PGRConstants;
 import org.egov.pgr.utils.ReportUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -87,7 +88,11 @@ public class DgrIntegration {
     @Value("${dgr.upload.document.url}")
     public String DGR_UPLOAD_DOCUMENT_URL;
 
-    
+    // DGR Search grievance by ReferenceId + Mobile
+    @Value("${dgr.search.grievance.url}")
+    public String DGR_SEARCH_GRIEVANCE_URL;
+
+
     @Autowired
     private GrievanceService grievanceService;
 
@@ -133,20 +138,49 @@ public class DgrIntegration {
             }
 
             Map<String, Object> reqInfoMap = (Map<String, Object>) record.get("RequestInfo");
-            RequestInfo requestInfo = mapper.convertValue(reqInfoMap, RequestInfo.class);
+            RequestInfo requestInfo = reqInfoMap != null ? mapper.convertValue(reqInfoMap, RequestInfo.class) : null;
 
             List<Map<String, Object>> services = (List<Map<String, Object>>) record.get("services");
-            String tenantId = (String) services.get(0).get("tenantId");
-            
-            Map<String, Object> userInfo = (Map<String, Object>) reqInfoMap.get("userInfo");
-            Long userId = Long.valueOf(userInfo.get("id").toString());
-            List<Long> userIds = Collections.singletonList(userId);
+            String tenantId = (services != null && !services.isEmpty() && services.get(0) != null)
+                    ? String.valueOf(services.get(0).get("tenantId")) : "pb";
 
-            UserResponse userResponse = grievanceService.getUsers(requestInfo, tenantId, userIds);
+            UserResponse userResponse = null;
+            try {
+                if (reqInfoMap != null && reqInfoMap.get("userInfo") != null) {
+                    Map<String, Object> userInfo = (Map<String, Object>) reqInfoMap.get("userInfo");
+                    if (userInfo.get("id") != null) {
+                        Long userId = Long.valueOf(userInfo.get("id").toString());
+                        List<Long> userIds = Collections.singletonList(userId);
+                        userResponse = grievanceService.getUsers(requestInfo, tenantId, userIds);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Could not fetch user info for tenant [{}]: {}", tenantId, e.getMessage());
+            }
+
+            // Step: Check if grievance already exists in DGR using ReferenceId + Mobile
+            String serviceRequestId = (serviceReqRequest.getServices() != null && !serviceReqRequest.getServices().isEmpty())
+                    ? serviceReqRequest.getServices().get(0).getServiceRequestId() : null;
+            String phone = (serviceReqRequest.getServices() != null && !serviceReqRequest.getServices().isEmpty())
+                    ? serviceReqRequest.getServices().get(0).getPhone() : null;
+
+            if ((phone == null || phone.trim().isEmpty()) && userResponse != null
+                    && userResponse.getUser() != null && !userResponse.getUser().isEmpty()) {
+                phone = userResponse.getUser().get(0).getMobileNumber();
+            }
+
+            if (serviceRequestId != null && phone != null && !phone.trim().isEmpty()) {
+                String existingGrievanceId = searchGrievanceByReferenceId(serviceRequestId, phone, tokenResponse);
+                if (existingGrievanceId != null && !existingGrievanceId.trim().isEmpty()) {
+                    log.info("DGR Grievance already exists on DGR for serviceRequestId={}, Grievance_ID={}. Updating DB only.",
+                            serviceRequestId, existingGrievanceId);
+                    pushDgrIdUpdate(existingGrievanceId, serviceReqRequest);
+                    return;
+                }
+            }
 
             String grievanceResponse = createGrievance(serviceReqRequest, tokenResponse, userResponse);
 
-            log.info("UserResponse = {}", userResponse);
             log.info("CreateGrievance Response = {}", grievanceResponse);
 
         } catch (Exception ex) {
@@ -177,7 +211,7 @@ public class DgrIntegration {
 
             HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
 
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = createRestTemplate(10000, 15000);
             log.info("Calling token API");
 
             ResponseEntity<String> response =
@@ -195,7 +229,7 @@ public class DgrIntegration {
             return token;
 
         } catch (Exception ex) {
-            log.error("Error while generating login token", ex);
+            log.error("Error while generating login token: {}", ex.getMessage());
             return null;
         }
     }
@@ -206,7 +240,7 @@ public class DgrIntegration {
        ========================= */
     public String createGrievance(ServiceRequest serviceReqRequest, String bearerToken, UserResponse userResponse) {
         try {
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = createRestTemplate(10000, 25000);
             String url = CREATE_GRIEVANCE_URL;
 
             // 1. Get district list from DGR API
@@ -589,6 +623,20 @@ public class DgrIntegration {
             log.info("CreateGrievance API call completed");
         }
     }
+
+    /**
+     * Helper to push updated DGR ID mapping to Kafka topic (update-dgr-pgrid)
+     * so that eg_pgr_service is updated in PostgreSQL.
+     */
+    public void pushDgrIdUpdate(String grievanceId, ServiceRequest serviceReqRequest) {
+        if (grievanceId != null && !grievanceId.trim().isEmpty() && serviceReqRequest != null) {
+            String reqId = (serviceReqRequest.getServices() != null && !serviceReqRequest.getServices().isEmpty())
+                    ? serviceReqRequest.getServices().get(0).getServiceRequestId() : "UNKNOWN";
+            serviceReqRequest.getServices().get(0).setDgrPgrId(grievanceId);
+            pGRProducer.push(drgPgrId, grievanceId, serviceReqRequest);
+            log.info("Pushed DGR ID [{}] mapping to topic [{}] for serviceRequestId: {}", grievanceId, drgPgrId, reqId);
+        }
+    }
     // Helper method for safe value
     private String safeValue(String defaultVal, String... values) {
         if (values != null) {
@@ -600,13 +648,95 @@ public class DgrIntegration {
         }
         return defaultVal;
     }
+
+    /* =========================
+       DGR Search Grievance by ReferenceId + Mobile
+       ========================= */
+    /**
+     * Calls DGR's GetGrievanceIdByMobileAndReferenceId API to check if a grievance
+     * already exists in DGR for the given serviceRequestId + mobile number.
+     *
+     * @param referenceId     Our serviceRequestId (e.g. "25/08/2026/356974")
+     * @param citizenMobileNo Citizen's mobile number from phone column
+     * @param bearerToken     DGR bearer token
+     * @return The DGR Grievance_ID if found, or null if not found / error
+     */
+    @SuppressWarnings("unchecked")
+    public String searchGrievanceByReferenceId(String referenceId, String citizenMobileNo, String bearerToken) {
+        if (referenceId == null || referenceId.trim().isEmpty()) {
+            log.warn("searchGrievanceByReferenceId: referenceId is null/empty");
+            return null;
+        }
+        if (citizenMobileNo == null || citizenMobileNo.trim().isEmpty()) {
+            log.warn("searchGrievanceByReferenceId: citizenMobileNo is null/empty for referenceId={}", referenceId);
+            return null;
+        }
+
+        try {
+            RestTemplate restTemplate = createRestTemplate(10000, 15000);
+
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("ReferenceId", referenceId.trim());
+            requestBody.put("CitizenMobileNo", citizenMobileNo.trim());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "Bearer " + bearerToken);
+            headers.set("Accept", "application/json, text/plain, */*");
+
+            HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
+
+            log.info("Calling DGR SearchGrievance API: {} with ReferenceId={}, Mobile={}",
+                    DGR_SEARCH_GRIEVANCE_URL, referenceId, citizenMobileNo);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    DGR_SEARCH_GRIEVANCE_URL, HttpMethod.POST, entity, String.class);
+
+            String responseBody = response.getBody();
+            log.info("DGR SearchGrievance response for ReferenceId={}: {}", referenceId, responseBody);
+
+            if (responseBody == null) return null;
+
+            // Parse response: { "response": 1, "data": [{ "Grievance_ID": "20260105809" }], ... }
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> json = mapper.readValue(responseBody, Map.class);
+
+            Object responseFlag = json.get("response");
+            if (responseFlag != null && "1".equals(String.valueOf(responseFlag))) {
+                List<Map<String, Object>> data = (List<Map<String, Object>>) json.get("data");
+                if (data != null && !data.isEmpty()) {
+                    Object grievanceId = data.get(0).get("Grievance_ID");
+                    if (grievanceId != null && !String.valueOf(grievanceId).trim().isEmpty()) {
+                        String gId = String.valueOf(grievanceId).trim();
+                        log.info("DGR Grievance found! ReferenceId={} -> Grievance_ID={}", referenceId, gId);
+                        return gId;
+                    }
+                }
+            }
+
+            log.info("No existing DGR Grievance found for ReferenceId={}", referenceId);
+            return null;
+
+        } catch (Exception e) {
+            log.warn("Error searching DGR grievance for ReferenceId={}: {}", referenceId, e.getMessage());
+            return null;
+        }
+    }
+
     /* =========================
        Helper APIs
        ========================= */
+    private RestTemplate createRestTemplate(int connectTimeoutMs, int readTimeoutMs) {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(connectTimeoutMs);
+        factory.setReadTimeout(readTimeoutMs);
+        return new RestTemplate(factory);
+    }
+
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> fetchDataFromApi(String url) {
         try {
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = createRestTemplate(10000, 15000);
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Accept", "application/json, text/plain, */*");
@@ -617,14 +747,18 @@ public class DgrIntegration {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, Map.class);
 
             Map<String, Object> responseBody = response.getBody();
-            if (responseBody == null) return null;
+            if (responseBody == null) return new ArrayList<>();
 
             // Most of your APIs return { "data": [ ... ] }
-            return (List<Map<String, Object>>) responseBody.get("data");
+            Object dataObj = responseBody.get("data");
+            if (dataObj instanceof List) {
+                return (List<Map<String, Object>>) dataObj;
+            }
+            return new ArrayList<>();
 
         } catch (Exception e) {
-            log.info("Error fetching data from API [{}]: {}", url, e.getMessage());
-            return null;
+            log.warn("Error fetching data from API [{}]: {}", url, e.getMessage());
+            return new ArrayList<>();
         }
     }
 
@@ -710,7 +844,7 @@ public class DgrIntegration {
 
             log.info("Calling FileStore URL API: {}", fileStoreApiUrl);
 
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = createRestTemplate(10000, 30000);
             HttpHeaders fsHeaders = new HttpHeaders();
             fsHeaders.set("Accept", "application/json, text/plain, */*");
             HttpEntity<String> fsEntity = new HttpEntity<>(fsHeaders);

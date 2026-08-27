@@ -25,4 +25,13 @@ public class DgrRetryRequest {
 
     @JsonProperty("fromBeginning")
     private Boolean fromBeginning;
+
+    @JsonProperty("tenantId")
+    private String tenantId;
+
+    @JsonProperty("fromDate")
+    private Long fromDate;
+
+    @JsonProperty("offset")
+    private Integer offset;
 }

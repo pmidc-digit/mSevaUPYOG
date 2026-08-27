@@ -102,7 +102,7 @@ const BillDetails = ({ paymentRules, businessService }) => {
   if (authorization === "true" && !userInfo?.access_token) {
     localStorage.clear();
     sessionStorage.clear();
-    window.location.href = `/digit-ui/citizen/login?from=${encodeURIComponent(pathname + search)}`;
+    window.location.href = `/digit-ui/citizen/select-language?from=${encodeURIComponent(pathname + search)}`;
   }
   useEffect(() => {
     window.scroll({ top: 0, behavior: "smooth" });

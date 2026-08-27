@@ -56,7 +56,7 @@ export const processLinkData = (newData, code, t) => {
         });
       else
         newObj?.links?.push({
-          link: `/digit-ui/citizen/login`,
+          link: `/digit-ui/citizen/select-language`,
           state: { role: "FSM_DSO", from },
           i18nKey: t(loginLink),
         });

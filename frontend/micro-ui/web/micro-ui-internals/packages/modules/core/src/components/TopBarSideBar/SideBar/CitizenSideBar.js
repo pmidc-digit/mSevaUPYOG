@@ -102,7 +102,7 @@ export const CitizenSideBar = ({
   const redirectToLoginPage = () => {
     // localStorage.clear();
     // sessionStorage.clear();
-    history.push("/digit-ui/citizen/login");
+    history.push("/digit-ui/citizen/select-language");
     closeSidebar();
   };
 

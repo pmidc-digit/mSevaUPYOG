@@ -21,7 +21,7 @@ export const MyBills = ({ stateCode }) => {
   const { tenantId } = Digit.UserService.getUser()?.info || location?.state || { tenantId: _tenantId } || {};
 
   if (!tenantId && !location?.state?.fromSearchResults) {
-    history.replace(`/digit-ui/citizen/login`, { from: url });
+    history.replace(`/digit-ui/citizen/select-language`, { from: url });
   }
 
   const { isLoading, data } = Digit.Hooks.useFetchCitizenBillsForBuissnessService(
@@ -34,13 +34,17 @@ export const MyBills = ({ stateCode }) => {
 
   const getPaymentRestrictionDetails = () => {
     const payRestrictiondetails = mdmsBillingData?.MdmsRes?.BillingService?.BusinessService;
-    let updatedBussinessService = ((businessService === "WS" || businessService === "SW") && isDisoconnectFlow === "true") ? "DISCONNECT" : businessService;
-    if (payRestrictiondetails?.length) return payRestrictiondetails.filter((e) => e.code == updatedBussinessService)?.[0]||{
-      isAdvanceAllowed: false,
-      isVoucherCreationEnabled: true,
-      minAmountPayable: 100,
-      partPaymentAllowed: false,
-    };
+    let updatedBussinessService =
+      (businessService === "WS" || businessService === "SW") && isDisoconnectFlow === "true" ? "DISCONNECT" : businessService;
+    if (payRestrictiondetails?.length)
+      return (
+        payRestrictiondetails.filter((e) => e.code == updatedBussinessService)?.[0] || {
+          isAdvanceAllowed: false,
+          isVoucherCreationEnabled: true,
+          minAmountPayable: 100,
+          partPaymentAllowed: false,
+        }
+      );
     else
       return {
         // isAdvanceAllowed: false,

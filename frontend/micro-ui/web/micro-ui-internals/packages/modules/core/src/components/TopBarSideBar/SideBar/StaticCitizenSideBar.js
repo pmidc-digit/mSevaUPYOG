@@ -28,8 +28,7 @@ import LogoutDialog from "../../Dialog/LogoutDialog";
 import ChangeCity from "../../ChangeCity";
 import SidebarProfile from "./SidebarProfile";
 
-const defaultImage =
-  "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+const defaultImage = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 /* 
 Feature :: Citizen Webview sidebar
 */
@@ -127,67 +126,64 @@ const IconsObject = {
   LoginIcon: <LoginIcon className="icon" />,
 };
 const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
-  const { t } = useTranslation()
-  const history = useHistory()
-  const location = useLocation()
-  const { pathname } = location
-  const { data: storeData, isFetched } = Digit.Hooks.useStore.getInitData()
-  const { stateInfo } = storeData || {}
-  const user = Digit.UserService.getUser()
-  const isMobile = window.Digit.Utils.browser.isMobile()
-  const [isEmployee, setisEmployee] = useState(false)
-  const [isSidebarOpen, toggleSidebar] = useState(false)
-  const [showDialog, setShowDialog] = useState(false)
+  const { t } = useTranslation();
+  const history = useHistory();
+  const location = useLocation();
+  const { pathname } = location;
+  const { data: storeData, isFetched } = Digit.Hooks.useStore.getInitData();
+  const { stateInfo } = storeData || {};
+  const user = Digit.UserService.getUser();
+  const isMobile = window.Digit.Utils.browser.isMobile();
+  const [isEmployee, setisEmployee] = useState(false);
+  const [isSidebarOpen, toggleSidebar] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
 
   const handleLogout = () => {
-    toggleSidebar(false)
-    setShowDialog(true)
-  }
+    toggleSidebar(false);
+    setShowDialog(true);
+  };
 
   const handleOnSubmit = () => {
-    Digit.UserService.logout()
-    setShowDialog(false)
-  }
+    Digit.UserService.logout();
+    setShowDialog(false);
+  };
 
   const handleOnCancel = () => {
-    setShowDialog(false)
-  }
+    setShowDialog(false);
+  };
 
   if (islinkDataLoading || !isFetched) {
-    return <Loader />
+    return <Loader />;
   }
 
   const redirectToLoginPage = () => {
-    history.push("/digit-ui/citizen/login")
-  }
+    history.push("/digit-ui/citizen/select-language");
+  };
 
   const redirectToScrutinyPage = () => {
-    history.push("/digit-ui/citizen/core/edcr/scrutiny")
-  }
+    history.push("/digit-ui/citizen/core/edcr/scrutiny");
+  };
 
   const showProfilePage = () => {
-    history.push("/digit-ui/citizen/user/profile")
-  }
+    history.push("/digit-ui/citizen/user/profile");
+  };
 
-  const tenantId = Digit.ULBService.getCitizenCurrentTenant()
-  const filteredTenantContact =
-    storeData?.tenants.filter((e) => e.code === tenantId)[0]?.contactNumber || storeData?.tenants[0]?.contactNumber
+  const tenantId = Digit.ULBService.getCitizenCurrentTenant();
+  const filteredTenantContact = storeData?.tenants.filter((e) => e.code === tenantId)[0]?.contactNumber || storeData?.tenants[0]?.contactNumber;
 
-  let menuItems = [
-    ...SideBarMenu(t, showProfilePage, redirectToLoginPage, redirectToScrutinyPage, isEmployee, storeData, tenantId),
-  ]
-  menuItems = menuItems.filter((item) => item.element !== "LANGUAGE")
+  let menuItems = [...SideBarMenu(t, showProfilePage, redirectToLoginPage, redirectToScrutinyPage, isEmployee, storeData, tenantId)];
+  menuItems = menuItems.filter((item) => item.element !== "LANGUAGE");
 
   const MenuItem = ({ item }) => {
-    const leftIconArray = item?.icon || item.icon?.type?.name
-    const leftIcon = leftIconArray ? IconsObject[leftIconArray] : IconsObject.BillsIcon
-    const isActive = pathname === item?.link || pathname === item?.sidebarURL
+    const leftIconArray = item?.icon || item.icon?.type?.name;
+    const leftIcon = leftIconArray ? IconsObject[leftIconArray] : IconsObject.BillsIcon;
+    const isActive = pathname === item?.link || pathname === item?.sidebarURL;
 
-    let itemComponent
+    let itemComponent;
     if (item.type === "component") {
-      itemComponent = item.action
+      itemComponent = item.action;
     } else {
-      itemComponent = item.text
+      itemComponent = item.text;
     }
 
     const Item = () => (
@@ -210,14 +206,14 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
         <span style={{ display: "flex", alignItems: "center", minWidth: "20px" }}>{leftIcon}</span>
         <div className="menu-label">{itemComponent}</div>
       </span>
-    )
+    );
 
     if (item.type === "external-link") {
       return (
         <a href={item.link} style={{ textDecoration: "none" }}>
           <Item />
         </a>
-      )
+      );
     }
 
     if (item.type === "link") {
@@ -225,16 +221,16 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
         <Link to={item?.link} style={{ textDecoration: "none" }}>
           <Item />
         </Link>
-      )
+      );
     }
 
-    return <Item />
-  }
+    return <Item />;
+  };
 
-  let profileItem
+  let profileItem;
   if (isFetched && user && user.access_token) {
-    profileItem = <SidebarProfile info={user?.info} stateName={stateInfo?.name} t={t} />
-    menuItems = menuItems.filter((item) => item?.id !== "login-btn" && item?.id !== "help-line")
+    profileItem = <SidebarProfile info={user?.info} stateName={stateInfo?.name} t={t} />;
+    menuItems = menuItems.filter((item) => item?.id !== "login-btn" && item?.id !== "help-line");
     menuItems = [
       ...menuItems,
       {
@@ -265,7 +261,7 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
       //   element: "Helpline",
       //   icon: "Phone",
       // },
-    ]
+    ];
   }
 
   Object.keys(linkData)
@@ -278,9 +274,9 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
           links: linkData[key],
           icon: linkData[key][0]?.leftIcon,
           link: linkData[key][0]?.sidebarURL,
-        })
+        });
       }
-    })
+    });
 
   return (
     <React.Fragment>
@@ -326,22 +322,18 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
                   className={`sidebar-list ${pathname === item?.link || pathname === item?.sidebarURL ? "active" : ""}`}
                   key={index}
                   style={{
-                    backgroundColor:
-                      pathname === item?.link || pathname === item?.sidebarURL ? "#eef2ff" : "transparent",
-                    borderLeft:
-                      pathname === item?.link || pathname === item?.sidebarURL
-                        ? "3px solid #4f46e5"
-                        : "3px solid transparent",
+                    backgroundColor: pathname === item?.link || pathname === item?.sidebarURL ? "#eef2ff" : "transparent",
+                    borderLeft: pathname === item?.link || pathname === item?.sidebarURL ? "3px solid #4f46e5" : "3px solid transparent",
                     transition: "all 0.2s ease",
                   }}
                   onMouseEnter={(e) => {
                     if (pathname !== item?.link && pathname !== item?.sidebarURL) {
-                      e.currentTarget.style.backgroundColor = "#f9fafb"
+                      e.currentTarget.style.backgroundColor = "#f9fafb";
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (pathname !== item?.link && pathname !== item?.sidebarURL) {
-                      e.currentTarget.style.backgroundColor = "transparent"
+                      e.currentTarget.style.backgroundColor = "transparent";
                     }
                   }}
                 >
@@ -363,14 +355,10 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
             </div>
           </div>
         </div>
-        <div>
-          {showDialog && (
-            <LogoutDialog onSelect={handleOnSubmit} onCancel={handleOnCancel} onDismiss={handleOnCancel}></LogoutDialog>
-          )}
-        </div>
+        <div>{showDialog && <LogoutDialog onSelect={handleOnSubmit} onCancel={handleOnCancel} onDismiss={handleOnCancel}></LogoutDialog>}</div>
       </div>
     </React.Fragment>
-  )
-}
+  );
+};
 
 export default StaticCitizenSideBar;

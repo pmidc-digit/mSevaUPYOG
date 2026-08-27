@@ -41,10 +41,7 @@ import {
 import { gatewayType } from "../../../constants/gatewayTypeConstants";
 
 const createGatewayCallbackUrl = (originalCallbackUrl, gateway) => {
-  const callbackUrl = new URL(
-    `/customization/open/punjab-pt/${gateway.toLowerCase()}/confirm`,
-    window.location.origin
-  );
+  const callbackUrl = new URL(`/customization/open/punjab-pt/${gateway.toLowerCase()}/confirm`, window.location.origin);
 
   callbackUrl.searchParams.set("original_callback", originalCallbackUrl);
 
@@ -54,10 +51,7 @@ const createGatewayCallbackUrl = (originalCallbackUrl, gateway) => {
 const getPaymentGatewayConfig = (mdmsData, businessService) => {
   const gateways = mdmsData?.PAYMENT?.PaymentGateway || [];
 
-  return gateways.find(
-    ({ active, businessService: services }) =>
-      active === true && services?.includes(businessService)
-  );
+  return gateways.find(({ active, businessService: services }) => active === true && services?.includes(businessService));
 };
 
 export const SelectPaymentType = (props) => {
@@ -141,8 +135,6 @@ export const SelectPaymentType = (props) => {
       callbackUrl: createGatewayCallbackUrl(originalCallbackUrl, paymentGatewayConfig.gateway),
     };
 
-
-
     const filterData = {
       Transaction: {
         tenantId: billDetails?.tenantId,
@@ -225,7 +217,7 @@ export const SelectPaymentType = (props) => {
         selectedGateway?.toUpperCase()?.includes("RAZORPAY")
       ) {
         displayRazorpay(data);
-      }else if (redirectUrl?.includes("ccavenue") || redirectUrl?.includes("ccavanue")) {
+      } else if (redirectUrl?.includes("ccavenue") || redirectUrl?.includes("ccavanue")) {
         //redirection to non razorpay payment gateway url provided by transaction api response
         const link = document.createElement("a");
         link.href = redirectUrl;
@@ -328,7 +320,7 @@ export const SelectPaymentType = (props) => {
   if (authorization === "true" && !userInfo.access_token) {
     localStorage.clear();
     sessionStorage.clear();
-    window.location.href = `/digit-ui/citizen/login?from=${encodeURIComponent(pathname + search)}`;
+    window.location.href = `/digit-ui/citizen/select-language?from=${encodeURIComponent(pathname + search)}`;
   }
 
   if (paymentLoading || isPaymentLoading || isLoading) {

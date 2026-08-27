@@ -142,13 +142,7 @@ const Inbox = ({ parentRoute }) => {
   const PropsForInboxLinks = {
     logoIcon: <ComplaintIcon />,
     headerText: `${t("COMMON_PROPUSGTYPE_NONRESIDENTIAL_INSTITUTIONAL_PUBLICFACILITY_COMMUNITYHALL")}`,
-    links: [
-      {
-        text: "",
-        link: "",
-        accessTo: [""],
-      },
-    ],
+    links: [],
   };
 
   const SearchFormFields = useCallback(

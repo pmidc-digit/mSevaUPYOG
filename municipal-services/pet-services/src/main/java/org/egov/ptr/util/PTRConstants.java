@@ -257,6 +257,8 @@ public class PTRConstants {
 
 	public static final String ACTION_APPROVE = "APPROVE";
 
+	public static final String ACTION_INACTIVE = "INACTIVE";
+
 	public static final String ACTION_APPLY = "APPLY";
 
 	public static final String ACTION_VERIFY = "VERIFY";

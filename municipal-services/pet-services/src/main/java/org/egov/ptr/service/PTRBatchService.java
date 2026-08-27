@@ -13,6 +13,7 @@ import org.egov.ptr.config.PetConfiguration;
 import org.egov.ptr.models.PetApplicationSearchCriteria;
 import org.egov.ptr.models.PetRegistrationApplication;
 import org.egov.ptr.models.PetRegistrationRequest;
+import org.egov.ptr.models.Workflow;
 import org.egov.ptr.producer.Producer;
 import org.egov.ptr.repository.PetRegistrationRepository;
 import static org.egov.ptr.util.PTRConstants.*;
@@ -129,8 +130,16 @@ public class PTRBatchService {
 				break;
 			}
 
-			// Directly update status to INACTIVE without workflow transition
+			// Set workflow action and audit details, then trigger WF transition
 			petApplications.forEach(petApplication -> {
+				// Attach INACTIVE workflow action
+				Workflow wf = Workflow.builder()
+						.action(ACTION_INACTIVE)
+						.comments("System auto-inactivated: application was in INITIATED state for more than 30 days")
+						.build();
+				petApplication.setWorkflow(wf);
+
+				// Fallback: set status directly (in case workflow is disabled)
 				petApplication.setStatus(STATUS_INACTIVE);
 				if (petApplication.getAuditDetails() != null) {
 					petApplication.getAuditDetails().setLastModifiedTime(System.currentTimeMillis());
@@ -139,6 +148,15 @@ public class PTRBatchService {
 					}
 				}
 			});
+
+			// Trigger workflow transition for this batch
+			try {
+				PetRegistrationRequest wfRequest = new PetRegistrationRequest(requestInfo, petApplications);
+				workflowIntegrator.updateWorkflowStatus(wfRequest);
+				log.info("Successfully triggered INACTIVE workflow transition for {} applications in tenant: {}", petApplications.size(), tenantId);
+			} catch (Exception e) {
+				log.error("Workflow INACTIVE transition failed for tenant: {}. Proceeding with direct status update.", tenantId, e);
+			}
 
 			try {
 				PetRegistrationRequest petRegistrationRequest = new PetRegistrationRequest(requestInfo, petApplications);

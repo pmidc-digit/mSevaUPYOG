@@ -15,6 +15,7 @@ import org.egov.pgr.contract.ServiceReqSearchCriteria;
 import org.egov.pgr.contract.ServiceRequest;
 import org.egov.pgr.contract.ServiceResponse;
 import org.egov.pgr.model.user.UserResponse;
+import org.egov.pgr.repository.DgrRetryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import java.util.*;
  * 1. Polling & reprocessing failed records directly from the Kafka topic "dgr-failed-records".
  * 2. Retrying specific serviceRequestIds provided as a comma-separated list or JSON array.
  * 3. Checking topic lag / message count on "dgr-failed-records".
+ * 4. Retrying all pending records from DB where dgr_grievance_id is NULL.
  */
 @Service
 @Slf4j
@@ -37,6 +39,9 @@ public class DgrRetryService {
 
     @Autowired
     private GrievanceService grievanceService;
+
+    @Autowired
+    private DgrRetryRepository dgrRetryRepository;
 
     @Value("${kafka.config.bootstrap_server_config:localhost:9092}")
     private String bootstrapServers;
@@ -189,6 +194,30 @@ public class DgrRetryService {
                             log.warn("Could not fetch user for serviceRequestId={}: {}", serviceRequestId, e.getMessage());
                         }
 
+                        // Check if already exists in DGR before creating
+                        String phone = serviceReqRequest.getServices().get(0).getPhone();
+                        if ((phone == null || phone.trim().isEmpty()) && userResponse != null
+                                && userResponse.getUser() != null && !userResponse.getUser().isEmpty()) {
+                            phone = userResponse.getUser().get(0).getMobileNumber();
+                        }
+
+                        if (phone != null && !phone.trim().isEmpty()) {
+                            String existingGrievanceId = dgrIntegration.searchGrievanceByReferenceId(
+                                    serviceRequestId, phone, bearerToken);
+                            if (existingGrievanceId != null && !existingGrievanceId.trim().isEmpty()) {
+                                log.info("DGR Grievance already exists for serviceRequestId={}, Grievance_ID={}. Updating DB only.",
+                                        serviceRequestId, existingGrievanceId);
+                                dgrIntegration.pushDgrIdUpdate(existingGrievanceId, serviceReqRequest);
+                                entryResult.put("status", "FOUND_IN_DGR");
+                                entryResult.put("dgrGrievanceId", existingGrievanceId);
+                                entryResult.put("action", "DB_UPDATED_ONLY");
+                                successCount++;
+                                results.add(entryResult);
+                                processed++;
+                                continue;
+                            }
+                        }
+
                         // Call CreateGrievance (this automatically uploads docs and pushes to update-dgr-pgrid on success)
                         String grievanceApiResponse = dgrIntegration.createGrievance(
                                 serviceReqRequest, bearerToken, userResponse);
@@ -319,6 +348,16 @@ public class DgrRetryService {
                     serviceReqRequest.setActionInfo(serviceResponse.getActionHistory().get(0).getActions());
                 }
 
+                // Check if already has DGR ID
+                String existingDgrId = serviceResponse.getServices().get(0).getDgrPgrId();
+                if (existingDgrId != null && !existingDgrId.trim().isEmpty()) {
+                    log.info("Service request [{}] already has dgr_grievance_id={}. Skipping.", serviceRequestId, existingDgrId);
+                    entryResult.put("status", "SKIPPED_ALREADY_HAS_DGR_ID");
+                    entryResult.put("dgrGrievanceId", existingDgrId);
+                    results.add(entryResult);
+                    continue;
+                }
+
                 // Fetch user
                 UserResponse userResponse = null;
                 try {
@@ -330,6 +369,29 @@ public class DgrRetryService {
                     }
                 } catch (Exception e) {
                     log.warn("Could not fetch user for serviceRequestId={}: {}", serviceRequestId, e.getMessage());
+                }
+
+                // Check if already exists in DGR before creating
+                String phone = serviceResponse.getServices().get(0).getPhone();
+                if ((phone == null || phone.trim().isEmpty()) && userResponse != null
+                        && userResponse.getUser() != null && !userResponse.getUser().isEmpty()) {
+                    phone = userResponse.getUser().get(0).getMobileNumber();
+                }
+
+                if (phone != null && !phone.trim().isEmpty()) {
+                    String foundDgrId = dgrIntegration.searchGrievanceByReferenceId(
+                            serviceRequestId, phone, bearerToken);
+                    if (foundDgrId != null && !foundDgrId.trim().isEmpty()) {
+                        log.info("DGR Grievance already exists for serviceRequestId={}, Grievance_ID={}. Updating DB only.",
+                                serviceRequestId, foundDgrId);
+                        dgrIntegration.pushDgrIdUpdate(foundDgrId, serviceReqRequest);
+                        entryResult.put("status", "FOUND_IN_DGR");
+                        entryResult.put("dgrGrievanceId", foundDgrId);
+                        entryResult.put("action", "DB_UPDATED_ONLY");
+                        successCount++;
+                        results.add(entryResult);
+                        continue;
+                    }
                 }
 
                 // Call CreateGrievance
@@ -409,4 +471,224 @@ public class DgrRetryService {
 
         return status;
     }
+
+    /**
+     * API 4: Retry all pending records from the DB where dgr_grievance_id is NULL or empty.
+     * Uses DgrRetryRepository to find these records, then calls createGrievance for each.
+     *
+     * @param requestInfo  RequestInfo from the caller
+     * @param tenantId     Optional tenant filter (e.g. "pb.jalandhar")
+     * @param fromDate     Optional epoch millis filter (only complaints created after this date)
+     * @param limit        Max records to process (default 50, max 500)
+     * @param offset       Pagination offset (default 0)
+     * @return Summary with totalFound, successCount, failedCount, and per-record results
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> retryPendingFromDb(
+            RequestInfo requestInfo, String tenantId, Long fromDate, Integer limit, Integer offset) {
+
+        List<Map<String, Object>> results = new ArrayList<>();
+        int successCount = 0;
+        int failedCount = 0;
+        int skippedCount = 0;
+        int foundInDgrCount = 0;
+
+        // 1. Fetch pending records from DB (includes phone column)
+        List<Map<String, Object>> pendingRecords;
+        try {
+            pendingRecords = dgrRetryRepository.fetchPendingDgrServiceRequests(
+                    null, tenantId, fromDate, limit, offset);
+        } catch (Exception e) {
+            log.error("Error fetching pending DGR records from DB: {}", e.getMessage(), e);
+            Map<String, Object> errSummary = new LinkedHashMap<>();
+            errSummary.put("error", "DB query failed: " + e.getMessage());
+            return errSummary;
+        }
+
+        if (pendingRecords == null || pendingRecords.isEmpty()) {
+            Map<String, Object> summary = new LinkedHashMap<>();
+            summary.put("totalFound", 0);
+            summary.put("message", "No pending records found in DB with missing dgr_grievance_id");
+            summary.put("filters", buildFilterInfo(tenantId, fromDate, limit, offset));
+            summary.put("results", results);
+            return summary;
+        }
+
+        log.info("Found {} pending DGR records from DB (tenantId={}, fromDate={}, limit={}, offset={})",
+                pendingRecords.size(), tenantId, fromDate, limit, offset);
+
+        // 2. Generate DGR token once for the batch
+        String bearerToken = dgrIntegration.generateLoginToken();
+        if (bearerToken == null || bearerToken.trim().isEmpty()
+                || "Invalid credentials!".equalsIgnoreCase(bearerToken.trim())) {
+            log.error("Failed to generate DGR token for retry-pending.");
+            Map<String, Object> errSummary = new LinkedHashMap<>();
+            errSummary.put("totalFound", pendingRecords.size());
+            errSummary.put("error", "Failed to generate DGR token");
+            return errSummary;
+        }
+
+        // 3. Process each pending record
+        for (Map<String, Object> row : pendingRecords) {
+            String serviceRequestId = String.valueOf(row.get("servicerequestid"));
+            String recordTenantId = String.valueOf(row.get("tenantid"));
+            String accountId = row.get("accountid") != null ? String.valueOf(row.get("accountid")) : null;
+            String phone = row.get("phone") != null ? String.valueOf(row.get("phone")).trim() : null;
+
+            Map<String, Object> entryResult = new LinkedHashMap<>();
+            entryResult.put("serviceRequestId", serviceRequestId);
+            entryResult.put("tenantId", recordTenantId);
+
+            try {
+                // ============================================================
+                // STEP A: Search DGR first using ReferenceId + Mobile
+                // If grievance already exists in DGR, just update our DB
+                // ============================================================
+                String existingGrievanceId = dgrIntegration.searchGrievanceByReferenceId(
+                        serviceRequestId, phone, bearerToken);
+
+                if (existingGrievanceId != null && !existingGrievanceId.trim().isEmpty()) {
+                    log.info("DGR Grievance already exists for serviceRequestId={}, Grievance_ID={}. Updating DB only.",
+                            serviceRequestId, existingGrievanceId);
+
+                    // Fetch full service request to build the update payload
+                    ServiceReqSearchCriteria criteria = ServiceReqSearchCriteria.builder()
+                            .serviceRequestId(Collections.singletonList(serviceRequestId))
+                            .active(true)
+                            .build();
+
+                    Object searchResponse = grievanceService.getServiceRequestDetailsForPlainSearch(
+                            requestInfo, criteria);
+                    ServiceResponse serviceResponse = mapper.convertValue(searchResponse, ServiceResponse.class);
+
+                    if (serviceResponse != null
+                            && serviceResponse.getServices() != null
+                            && !serviceResponse.getServices().isEmpty()) {
+
+                        // Set DGR ID and push to update-dgr-pgrid topic for DB update
+                        ServiceRequest serviceReqRequest = new ServiceRequest();
+                        serviceReqRequest.setRequestInfo(requestInfo);
+                        serviceReqRequest.setServices(serviceResponse.getServices());
+                        serviceReqRequest.getServices().get(0).setDgrPgrId(existingGrievanceId);
+
+                        dgrIntegration.pushDgrIdUpdate(existingGrievanceId, serviceReqRequest);
+                    }
+
+                    entryResult.put("status", "FOUND_IN_DGR");
+                    entryResult.put("dgrGrievanceId", existingGrievanceId);
+                    entryResult.put("action", "DB_UPDATED_ONLY");
+                    foundInDgrCount++;
+                    results.add(entryResult);
+                    continue;
+                }
+
+                // ============================================================
+                // STEP B: Not found in DGR → Create new grievance
+                // ============================================================
+
+                // B1. Fetch full service request from DB via search
+                ServiceReqSearchCriteria criteria = ServiceReqSearchCriteria.builder()
+                        .serviceRequestId(Collections.singletonList(serviceRequestId))
+                        .active(true)
+                        .build();
+
+                Object searchResponse = grievanceService.getServiceRequestDetailsForPlainSearch(
+                        requestInfo, criteria);
+
+                ServiceResponse serviceResponse = mapper.convertValue(searchResponse, ServiceResponse.class);
+
+                if (serviceResponse == null
+                        || serviceResponse.getServices() == null
+                        || serviceResponse.getServices().isEmpty()) {
+                    log.warn("Service request [{}] not found via search.", serviceRequestId);
+                    entryResult.put("status", "SKIPPED_NOT_FOUND");
+                    skippedCount++;
+                    results.add(entryResult);
+                    continue;
+                }
+
+                // B2. Check if dgr_grievance_id was already set (race condition check)
+                String existingDgrId = serviceResponse.getServices().get(0).getDgrPgrId();
+                if (existingDgrId != null && !existingDgrId.trim().isEmpty()) {
+                    log.info("Service request [{}] already has dgr_grievance_id={}. Skipping.",
+                            serviceRequestId, existingDgrId);
+                    entryResult.put("status", "SKIPPED_ALREADY_HAS_DGR_ID");
+                    entryResult.put("dgrGrievanceId", existingDgrId);
+                    skippedCount++;
+                    results.add(entryResult);
+                    continue;
+                }
+
+                // B3. Build ServiceRequest
+                ServiceRequest serviceReqRequest = new ServiceRequest();
+                serviceReqRequest.setRequestInfo(requestInfo);
+                serviceReqRequest.setServices(serviceResponse.getServices());
+
+                if (serviceResponse.getActionHistory() != null
+                        && !serviceResponse.getActionHistory().isEmpty()
+                        && serviceResponse.getActionHistory().get(0).getActions() != null
+                        && !serviceResponse.getActionHistory().get(0).getActions().isEmpty()) {
+                    serviceReqRequest.setActionInfo(serviceResponse.getActionHistory().get(0).getActions());
+                }
+
+                // B4. Fetch user
+                UserResponse userResponse = null;
+                try {
+                    if (accountId != null && !accountId.trim().isEmpty()) {
+                        Long userId = Long.valueOf(accountId.trim());
+                        String userTenantId = recordTenantId.contains(".")
+                                ? recordTenantId.split("\\.")[0] : recordTenantId;
+                        userResponse = grievanceService.getUsers(
+                                requestInfo, userTenantId, Collections.singletonList(userId));
+                    }
+                } catch (Exception e) {
+                    log.warn("Could not fetch user for serviceRequestId={}: {}",
+                            serviceRequestId, e.getMessage());
+                }
+
+                // B5. Call CreateGrievance
+                String grievanceApiResponse = dgrIntegration.createGrievance(
+                        serviceReqRequest, bearerToken, userResponse);
+
+                if (grievanceApiResponse != null && grievanceApiResponse.contains("Grievance_id")) {
+                    entryResult.put("status", "CREATED_IN_DGR");
+                    entryResult.put("dgrResponse", grievanceApiResponse);
+                    successCount++;
+                } else {
+                    entryResult.put("status", "FAILED");
+                    entryResult.put("dgrResponse", grievanceApiResponse);
+                    failedCount++;
+                }
+
+            } catch (Exception e) {
+                log.error("Exception retrying pending serviceRequestId={}: {}",
+                        serviceRequestId, e.getMessage(), e);
+                entryResult.put("status", "ERROR");
+                entryResult.put("error", e.getMessage());
+                failedCount++;
+            }
+
+            results.add(entryResult);
+        }
+
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("totalFound", pendingRecords.size());
+        summary.put("foundInDgrCount", foundInDgrCount);
+        summary.put("createdInDgrCount", successCount);
+        summary.put("failedCount", failedCount);
+        summary.put("skippedCount", skippedCount);
+        summary.put("filters", buildFilterInfo(tenantId, fromDate, limit, offset));
+        summary.put("results", results);
+        return summary;
+    }
+
+    private Map<String, Object> buildFilterInfo(String tenantId, Long fromDate, Integer limit, Integer offset) {
+        Map<String, Object> filters = new LinkedHashMap<>();
+        filters.put("tenantId", tenantId != null ? tenantId : "ALL");
+        filters.put("fromDate", fromDate != null ? fromDate : "ALL");
+        filters.put("limit", limit != null ? limit : 50);
+        filters.put("offset", offset != null ? offset : 0);
+        return filters;
+    }
 }
+

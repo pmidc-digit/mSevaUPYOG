@@ -763,11 +763,13 @@ public class EnrichmentService {
 	private void enrichGuardianAndMobileDetails(WaterConnectionRequest request, Map<String, Object> additionalDetail, List<OwnerInfo> propertyOwners) {
 		String guardianName = null;
 		String mobileNumber = null;
+		String ownerName = null;
 		if (!CollectionUtils.isEmpty(propertyOwners) && propertyOwners.get(0) != null) {
 			guardianName = propertyOwners.get(0).getFatherOrHusbandName();
 			mobileNumber = propertyOwners.get(0).getMobileNumber();
+			ownerName = propertyOwners.get(0).getName();
 		}
-		if ((guardianName == null || mobileNumber == null) && request != null) {
+		if ((guardianName == null || mobileNumber == null || ownerName == null) && request != null) {
 			try {
 				List<Property> properties = waterServicesUtil.propertySearch(request);
 				if (!CollectionUtils.isEmpty(properties) && properties.get(0) != null 
@@ -779,9 +781,12 @@ public class EnrichmentService {
 					if (mobileNumber == null) {
 						mobileNumber = properties.get(0).getOwners().get(0).getMobileNumber();
 					}
+					if (ownerName == null) {
+						ownerName = properties.get(0).getOwners().get(0).getName();
+					}
 				}
 			} catch (Exception e) {
-				log.error("Error fetching property for guardian and mobile enrichment", e);
+				log.error("Error fetching property for owner, guardian and mobile enrichment", e);
 			}
 		}
 		if (guardianName != null) {
@@ -789,6 +794,9 @@ public class EnrichmentService {
 		}
 		if (mobileNumber != null) {
 			additionalDetail.put("mobileNumber", mobileNumber);
+		}
+		if (ownerName != null) {
+			additionalDetail.put("ownerName", ownerName);
 		}
 	}
 

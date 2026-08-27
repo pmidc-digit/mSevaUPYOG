@@ -207,5 +207,11 @@ public class ApplicationProperties {
 
     @Value("${egov.shortener.host}")
    	private String shortenerHost;
+
+    @Value("${egov.waterservice.updatebillstatus.topic}")
+    private String updateBillStatusTopic;
+
+    @Value("${egov.waterservice.updatedemandpayer.topic}")
+    private String updateDemandPayerTopic;
     
 }

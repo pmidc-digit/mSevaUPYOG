@@ -1,10 +1,8 @@
 package org.egov.demand.consumer;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.logging.Logger;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
@@ -12,7 +10,10 @@ import org.egov.demand.helper.CollectionReceiptRequest;
 import org.egov.demand.model.BillDetail.StatusEnum;
 import org.egov.demand.model.BillV2;
 import org.egov.demand.model.PaymentBackUpdateAudit;
+import org.egov.demand.model.UpdateBillStatusReq;
+import org.egov.demand.model.UpdateDemandPayerRequest;
 import org.egov.demand.repository.BillRepository;
+import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.repository.DemandRepository;
 import org.egov.demand.service.DemandService;
 import org.egov.demand.service.ReceiptService;
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -56,6 +58,9 @@ public class BillingServiceConsumer {
 
 	@Autowired
 	private BillRepository billRepository;
+
+    @Autowired
+    private BillRepositoryV2 billRepositoryV2;
 
 	@Autowired
 	private ReceiptService receiptService;
@@ -252,4 +257,45 @@ public class BillingServiceConsumer {
 
 		demandRepository.insertBackUpdateForPayment(paymentBackUpdateAudit);
 	}
+
+    public void UpdateBillStatus(UpdateBillStatusReq request){
+        List<String> consumers = new ArrayList<>();
+        consumers.add(request.getConsumer());
+        billRepositoryV2.updateBillStatus(consumers,request.getBusiness(), BillV2.BillStatus.EXPIRED);
+    }
+
+    public void UpdateDemandPayer(UpdateDemandPayerRequest request){
+        demandRepository.updateDemandsPayer(request);
+    }
+
+
+
+    @KafkaListener( topics = "${egov.waterservice.updatedemandpayer.topic}")
+    public void UpdateDemandpayer(@Payload Map<String, Object> consumerRecord, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+        log.info("Received Water Service event on topic: {}, payload: {}", topic, consumerRecord);
+        try {
+            UpdateDemandPayerRequest request = objectMapper.convertValue(consumerRecord, UpdateDemandPayerRequest.class);
+            UpdateDemandPayer(request);
+        }catch (Exception ex) {
+            StringBuilder builder = new StringBuilder("Error while listening to value: ").append(consumerRecord)
+                    .append("on topic: ").append(topic).append(". Exception :").append(ex.getMessage());
+            log.error(builder.toString(), ex);
+        }
+    }
+
+    @KafkaListener( topics = "${egov.waterservice.updatebillstatus.topic}")
+    public void UpdateBillstatus(
+            @Payload Map<String, Object> consumerRecord,
+            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic
+    ) {
+        log.info("Received Water Service event on topic: {}, payload: {}", topic, consumerRecord);
+        try {
+            UpdateBillStatusReq request = objectMapper.convertValue(consumerRecord, UpdateBillStatusReq.class);
+            UpdateBillStatus(request);
+        } catch (Exception ex) {
+            StringBuilder builder = new StringBuilder("Error while listening to value: ").append(consumerRecord)
+                    .append("on topic: ").append(topic).append(". Exception :").append(ex.getMessage());
+            log.error(builder.toString(), ex);
+        }
+    }
 }

@@ -38,7 +38,7 @@ import com.search.pmidc.service.PatialaService;
   }
   
   @Override public List<PatialaBean> findAll(String owner) { return
-  (List<PatialaBean>) patialaRepository.findAllReco(owner, new PageRequest(0,50)); 
+  (List<PatialaBean>) patialaRepository.findAllReco(owner, PageRequest.of(0, 50)); 
   }
   
   @Override public List<PatialaBean> findAllByReturnId(String returnId) {
@@ -50,11 +50,11 @@ import com.search.pmidc.service.PatialaService;
   }
   
   @Override public List<PatialaBean> findByPhone(String phone) { 
-  return(List<PatialaBean>) patialaRepository.findByPhone(phone, new PageRequest(0,50)); 
+  return(List<PatialaBean>) patialaRepository.findByPhone(phone, PageRequest.of(0, 50)); 
   }
   
   @Override public List<PatialaBean> findAllByAssYearOwner(String assYear,String owner) { 
-  return (List<PatialaBean>)patialaRepository.findAllByAssYearOwner(owner, assYear, new PageRequest(0,50)); 
+  return (List<PatialaBean>)patialaRepository.findAllByAssYearOwner(owner, assYear, PageRequest.of(0, 50)); 
   }
   
   @Override public List<PatialaBean> findHistory(Set<String> sessionReturnId) {

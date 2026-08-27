@@ -33,18 +33,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.pdfbox.io.IOUtils;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
+import org.apache.pdfbox.io.RandomAccessRead;
 import org.apache.pdfbox.multipdf.LayerUtility;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -104,6 +104,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -308,11 +309,11 @@ public class EdcrApplicationService {
     }
 
     public List<EdcrApplication> findAll() {
-        return edcrApplicationRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
+        return edcrApplicationRepository.findAll(new Sort(Sort.Direction.ASC, "name"));
     }
 
     public EdcrApplication findOne(Long id) {
-        return edcrApplicationRepository.findById(id).orElse(null);
+        return edcrApplicationRepository.findOne(id);
     }
 
     public EdcrApplication findByApplicationNo(String appNo) {
@@ -344,14 +345,14 @@ public class EdcrApplicationService {
     }
 
     public List<EdcrApplication> getEdcrApplications() {
-        Pageable pageable = PageRequest.of(0, 25, Sort.Direction.DESC, "id");
+        Pageable pageable = new PageRequest(0, 25, Sort.Direction.DESC, "id");
         Page<EdcrApplication> edcrApplications = edcrApplicationRepository.findAll(pageable);
         return edcrApplications.getContent();
     }
 
     @ReadOnly
     public Page<SearchBuildingPlanScrutinyForm> planScrutinyPagedSearch(SearchBuildingPlanScrutinyForm searchRequest) {
-        final Pageable pageable = PageRequest.of(searchRequest.pageNumber(), searchRequest.pageSize(),
+        final Pageable pageable = new PageRequest(searchRequest.pageNumber(), searchRequest.pageSize(),
                 searchRequest.orderDir(), searchRequest.orderBy());
         List<SearchBuildingPlanScrutinyForm> searchResults = new ArrayList<>();
         Page<EdcrApplicationDetail> dcrApplications = edcrApplicationDetailRepository
@@ -451,7 +452,7 @@ public class EdcrApplicationService {
         merger.setDestinationFileName(mergedFile.getAbsolutePath());
 
         //Use temp file strategy (best for large PDFs)
-        merger.mergeDocuments(IOUtils.createTempFileOnlyStreamCache());
+        merger.mergeDocuments(MemoryUsageSetting.setupTempFileOnly());
 
         LOG.info("✅ PDF merge completed: {}", mergedFile.getAbsolutePath());
 
@@ -1710,15 +1711,15 @@ public class EdcrApplicationService {
         overlayedDiagram = overlayPlotDetails( uploadedDiagramFile, overlayedDiagram.getAbsolutePath(), additionalDetails );
 
         
-        PDDocument dxfDoc = Loader.loadPDF(overlayedDiagram);
+        PDDocument dxfDoc = PDDocument.load(overlayedDiagram);
         PDRectangle dxfSize = dxfDoc.getPage(0).getMediaBox();
         dxfDoc.close();
 
-        PDDocument d1 = Loader.loadPDF(sanctionLetterFile);
+        PDDocument d1 = PDDocument.load(sanctionLetterFile);
         System.out.println("Scaled sanction pages: " + d1.getNumberOfPages());
         d1.close();
 
-        PDDocument d2 = Loader.loadPDF(overlayedDiagram);
+        PDDocument d2 = PDDocument.load(overlayedDiagram);
         System.out.println("DXF pages: " + d2.getNumberOfPages());
         d2.close();
 
@@ -1751,7 +1752,7 @@ public class EdcrApplicationService {
 
         LOG.info("========== REPLACING ASPOSE WATERMARK ==========");
 
-        PDDocument document = Loader.loadPDF(inputPdf);
+        PDDocument document = PDDocument.load(inputPdf);
         int totalPages = document.getNumberOfPages();
         LOG.info("Total pages in PDF: {}", totalPages);
 
@@ -1816,7 +1817,7 @@ public class EdcrApplicationService {
             float fontSize = Math.max(10f, targetPage.getMediaBox().getWidth() * 0.008f);
             contentStream.beginText();
             contentStream.setNonStrokingColor(0, 0, 0);
-            contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), fontSize);
+            contentStream.setFont(PDType1Font.HELVETICA_BOLD, fontSize);
             contentStream.newLineAtOffset(wmX + 10, wmY + (wmHeight / 2f) - (fontSize / 2f));
             contentStream.showText(newText);
             contentStream.endText();
@@ -1838,7 +1839,7 @@ public class EdcrApplicationService {
 
         File outputFile = File.createTempFile("scaled_", ".pdf");
 
-        try (PDDocument inputDoc  = Loader.loadPDF(inputPdf);
+        try (PDDocument inputDoc  = PDDocument.load(inputPdf);
              PDDocument outputDoc = new PDDocument()) {
 
             org.apache.pdfbox.multipdf.LayerUtility layerUtility =
@@ -1897,7 +1898,7 @@ public class EdcrApplicationService {
         if (pdf == null || !pdf.isFile() || pdf.length() == 0L) {
             throw new IOException("Generated scrutinized PDF is missing or empty.");
         }
-        try (PDDocument document = Loader.loadPDF(pdf)) {
+        try (PDDocument document = PDDocument.load(pdf)) {
             if (document.getNumberOfPages() == 0) {
                 throw new IOException("Generated scrutinized PDF contains no pages.");
             }

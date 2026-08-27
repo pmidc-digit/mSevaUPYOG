@@ -20,6 +20,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import UploadDrawer from "./ImageUpload/UploadDrawer";
 import CustomBackButton from "../../../../../templates/ApplicationDetails/components/CustomBackButton";
 import { subYears, format, differenceInYears } from "date-fns";
+import { formatEmployeeAuthUsername } from "../../employee/EmployeeAuth";
 
 const defaultImage = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
@@ -252,6 +253,9 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     try {
       const requestData = {
         ...userDetails,
+        userName: userType === "employee"
+          ? formatEmployeeAuthUsername(userDetails?.userName)
+          : userDetails?.userName,
         name,
         dob: dob !== undefined ? dob.split("-").reverse().join("/") : "",
         gender: gender?.value,

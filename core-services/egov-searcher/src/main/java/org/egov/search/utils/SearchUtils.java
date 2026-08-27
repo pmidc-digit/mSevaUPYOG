@@ -517,14 +517,30 @@ public class SearchUtils {
 			log.info("MDMS URI: " + uri);
 			MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 			headers.add("Content-Type", "application/json");
-			HttpEntity<?> request = new HttpEntity<>(finalJson, headers);
+
+			ObjectMapper jsonMapper = (this.mapper != null) ? this.mapper : new ObjectMapper();
+			Object requestPayload = finalJson;
+			if (StringUtils.isNotEmpty(finalJson)) {
+				try {
+					requestPayload = jsonMapper.readTree(finalJson);
+				} catch (Exception e) {
+					log.error("Exception while parsing finalJson to JsonNode: ", e);
+					requestPayload = finalJson;
+				}
+			}
+
+			HttpEntity<?> request = new HttpEntity<>(requestPayload, headers);
 
 			String res = "";
 			try {
+				Object responseObj = null;
 				if (es.getPostObject() != null) {
-					res = restTemplate.postForObject(uri, request, String.class);
+					responseObj = restTemplate.postForObject(uri, request, Object.class);
 				} else {
-					res = restTemplate.postForObject(uri, getRInfo(authToken), String.class);
+					responseObj = restTemplate.postForObject(uri, getRInfo(authToken), Object.class);
+				}
+				if (responseObj != null) {
+					res = jsonMapper.writeValueAsString(responseObj);
 				}
 				log.info("MDMS Response received, length: " + (res != null ? res.length() : 0));
 			} catch (Exception e) {

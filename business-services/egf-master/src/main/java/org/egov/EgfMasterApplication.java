@@ -81,17 +81,13 @@ public class EgfMasterApplication {
 		return new org.springframework.kafka.core.KafkaTemplate<>(new org.springframework.kafka.core.DefaultKafkaProducerFactory<>(props));
 	}
 
-	@Bean
-	public org.flywaydb.core.Flyway flyway(javax.sql.DataSource dataSource) {
-		org.flywaydb.core.Flyway flyway = org.flywaydb.core.Flyway.configure()
-				.dataSource(dataSource)
-				.baselineOnMigrate(true)
-				.outOfOrder(true)
-				.ignoreMigrationPatterns("*:missing", "*:ignored", "*:future")
-				.table("egf_masters_schema_version")
-				.locations("classpath:db/migration/main", "classpath:db/migration/seed", "classpath:db/migration/dev")
-				.load();
-		flyway.migrate();
-		return flyway;
-	}
+	/*
+	 * @Bean public org.flywaydb.core.Flyway flyway(javax.sql.DataSource dataSource)
+	 * { org.flywaydb.core.Flyway flyway = org.flywaydb.core.Flyway.configure()
+	 * .dataSource(dataSource) .baselineOnMigrate(true) .outOfOrder(true)
+	 * .ignoreMigrationPatterns("*:missing", "*:ignored", "*:future")
+	 * .table("egf_masters_schema_version")
+	 * .locations("classpath:db/migration/main", "classpath:db/migration/seed",
+	 * "classpath:db/migration/dev") .load(); flyway.migrate(); return flyway; }
+	 */
 }

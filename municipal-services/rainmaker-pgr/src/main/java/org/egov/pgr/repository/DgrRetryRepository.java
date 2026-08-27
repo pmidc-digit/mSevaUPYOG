@@ -28,7 +28,7 @@ public class DgrRetryRepository {
             String serviceRequestId, String tenantId, Long fromDate, Integer limit, Integer offset) {
 
         StringBuilder query = new StringBuilder(
-                "SELECT servicerequestid, tenantid, accountid " +
+                "SELECT servicerequestid, tenantid, accountid, phone " +
                 "FROM eg_pgr_service " +
                 "WHERE (dgr_grievance_id IS NULL OR dgr_grievance_id = '') " +
                 "  AND active = true "

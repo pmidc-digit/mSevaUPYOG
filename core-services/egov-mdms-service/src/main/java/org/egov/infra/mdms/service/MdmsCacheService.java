@@ -77,17 +77,6 @@ public class MdmsCacheService {
 			}
 		}
 
-		Map<String, Map<String, Map<String, JSONArray>>> tenantMap = MDMSApplicationRunnerImpl.getTenantMap();
-		if (tenantMap != null && tenantMap.containsKey(stateTenantId)) {
-			Map<String, Map<String, JSONArray>> stateModules = tenantMap.get(stateTenantId);
-			if (stateModules != null && stateModules.containsKey(moduleName)) {
-				Map<String, JSONArray> stateMasters = stateModules.get(moduleName);
-				if (stateMasters != null && stateMasters.containsKey(masterName)) {
-					return stateTenantId;
-				}
-			}
-		}
-
 		return tenantId;
 	}
 

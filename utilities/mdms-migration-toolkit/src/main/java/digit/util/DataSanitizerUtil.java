@@ -69,18 +69,21 @@ public class DataSanitizerUtil {
             if (strVal.isEmpty()) {
                 return isDouble ? 0.0 : 0;
             }
+            // Strip locale-specific thousands separators (e.g. "1,469.00" → "1469.00")
+            // before attempting numeric parsing so comma-formatted values are accepted.
+            String normalized = strVal.replace(",", "");
             try {
-                if (strVal.contains(".")) {
-                    return Double.parseDouble(strVal);
+                if (normalized.contains(".")) {
+                    return Double.parseDouble(normalized);
                 } else {
-                    long l = Long.parseLong(strVal);
+                    long l = Long.parseLong(normalized);
                     if (l >= Integer.MIN_VALUE && l <= Integer.MAX_VALUE) {
                         return (int) l;
                     }
                     return l;
                 }
             } catch (NumberFormatException e) {
-                return val;
+                return val; // leave non-parseable strings untouched
             }
         }
 
@@ -133,6 +136,7 @@ public class DataSanitizerUtil {
         for (String key : fieldNames) {
             JsonNode valueNode = objectNode.get(key);
             boolean isNumericField = NUMERIC_FIELDS.contains(key);
+            boolean isBooleanField = BOOLEAN_FIELDS.contains(key);
 
             if (valueNode.isObject()) {
                 sanitizeObjectNode((ObjectNode) valueNode, masterName);
@@ -157,15 +161,24 @@ public class DataSanitizerUtil {
                         if (isDouble) objectNode.put(key, 0.0);
                         else objectNode.put(key, 0);
                     } else {
+                        // Strip locale-specific thousands separators (e.g. "1,469.00" → "1469.00")
+                        // before attempting numeric parsing so comma-formatted values are accepted.
+                        String normalized = strVal.replace(",", "");
                         try {
-                            if (strVal.contains(".")) {
-                                objectNode.put(key, Double.parseDouble(strVal));
+                            if (normalized.contains(".")) {
+                                objectNode.put(key, Double.parseDouble(normalized));
                             } else {
-                                objectNode.put(key, Long.parseLong(strVal));
+                                objectNode.put(key, Long.parseLong(normalized));
                             }
                         } catch (NumberFormatException ignored) {}
                     }
                 }
+            } else if (!isBooleanField && valueNode.isNull()) {
+                // For non-numeric, non-boolean leaf fields, coerce null → empty string.
+                // JSON schema type:"string" does not accept null; using "" satisfies the
+                // type constraint while preserving the absence of a meaningful value.
+                // This handles fields like locationCode, imageSrc, etc. across all masters.
+                objectNode.put(key, "");
             }
         }
     }

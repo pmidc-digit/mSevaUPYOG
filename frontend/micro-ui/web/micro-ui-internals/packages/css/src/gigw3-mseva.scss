@@ -1238,10 +1238,6 @@ canvas {
   background: #f5f9ff !important;
 }
 
-.moduleLinkHomePage .moduleLinkHomePageContent {
-  max-width: 1200px;
-}
-
 .moduleLinkHomePage .moduleLinkHomePageBreadcrumb {
   margin: 0 0 14px !important;
   color: var(--mseva-blue-900) !important;
@@ -1290,7 +1286,7 @@ canvas {
 
 .module-home-cards .chc-card-container,
 .module-home-cards .chcwe-card-container {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   gap: 18px !important;
   margin: 0 !important;
 }
@@ -1574,9 +1570,7 @@ canvas {
 
 /* Employee portal: use the same mSeva visual language without affecting inbox flows. */
 .employee .loginContainer {
-  background:
-    radial-gradient(circle at 10% 15%, rgba(66, 169, 40, 0.14), transparent 29rem),
-    linear-gradient(145deg, #f7fbff 0%, #eef7f0 100%);
+  background: radial-gradient(circle at 10% 15%, rgba(66, 169, 40, 0.14), transparent 29rem), linear-gradient(145deg, #f7fbff 0%, #eef7f0 100%);
 }
 
 .employee .employee-login-page {
@@ -2133,18 +2127,26 @@ canvas {
   box-shadow: 0 3px 10px rgba(7, 75, 152, 0.05);
 }
 
-.employee .ndc-new-filter-option-card:not(.primary):not(.success):not(.warning):not(.danger):not(.info):not(.indigo):not(.teal):not(.pink):not(.amber):not(.slate),
-.employee .ndc-new-filter-status-card:not(.primary):not(.success):not(.warning):not(.danger):not(.info):not(.indigo):not(.teal):not(.pink):not(.amber):not(.slate) {
+.employee
+  .ndc-new-filter-option-card:not(.primary):not(.success):not(.warning):not(.danger):not(.info):not(.indigo):not(.teal):not(.pink):not(.amber):not(.slate),
+.employee
+  .ndc-new-filter-status-card:not(.primary):not(.success):not(.warning):not(.danger):not(.info):not(.indigo):not(.teal):not(.pink):not(.amber):not(.slate) {
   background: #ffffff;
 }
 
-.employee .ndc-new-filter-option-card:not(.primary):not(.success):not(.warning):not(.danger):not(.info):not(.indigo):not(.teal):not(.pink):not(.amber):not(.slate) .ndc-new-filter-option-title,
-.employee .ndc-new-filter-status-card:not(.primary):not(.success):not(.warning):not(.danger):not(.info):not(.indigo):not(.teal):not(.pink):not(.amber):not(.slate) .ndc-new-filter-status-title {
+.employee
+  .ndc-new-filter-option-card:not(.primary):not(.success):not(.warning):not(.danger):not(.info):not(.indigo):not(.teal):not(.pink):not(.amber):not(.slate)
+  .ndc-new-filter-option-title,
+.employee
+  .ndc-new-filter-status-card:not(.primary):not(.success):not(.warning):not(.danger):not(.info):not(.indigo):not(.teal):not(.pink):not(.amber):not(.slate)
+  .ndc-new-filter-status-title {
   color: var(--mseva-blue-900);
 }
 
-.employee .ndc-new-filter-option-card.active:not(.primary):not(.success):not(.warning):not(.danger):not(.info):not(.indigo):not(.teal):not(.pink):not(.amber):not(.slate),
-.employee .ndc-new-filter-status-card.active:not(.primary):not(.success):not(.warning):not(.danger):not(.info):not(.indigo):not(.teal):not(.pink):not(.amber):not(.slate) {
+.employee
+  .ndc-new-filter-option-card.active:not(.primary):not(.success):not(.warning):not(.danger):not(.info):not(.indigo):not(.teal):not(.pink):not(.amber):not(.slate),
+.employee
+  .ndc-new-filter-status-card.active:not(.primary):not(.success):not(.warning):not(.danger):not(.info):not(.indigo):not(.teal):not(.pink):not(.amber):not(.slate) {
   border-color: var(--mseva-green-700);
   background: var(--mseva-green-100);
   box-shadow: 0 5px 14px rgba(33, 111, 23, 0.16);
@@ -2198,8 +2200,7 @@ canvas {
   border: 1px solid rgba(7, 75, 152, 0.2);
   border-radius: var(--mseva-radius-lg) !important;
   text-align: left !important;
-  background:
-    radial-gradient(circle at 88% 20%, rgba(255, 255, 255, 0.24), transparent 22rem),
+  background: radial-gradient(circle at 88% 20%, rgba(255, 255, 255, 0.24), transparent 22rem),
     linear-gradient(115deg, var(--mseva-blue-900) 0%, var(--mseva-blue-700) 53%, var(--mseva-green-700) 100%) !important;
   box-shadow: 0 14px 28px rgba(7, 75, 152, 0.18) !important;
 }

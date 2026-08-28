@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
  * Only the prepareOrderBys utility method is retained.
  * Re-implement with the new Elasticsearch Java API Client when ES support is needed.
  */
-@Service
+@Service("masterElasticSearchQueryFactory")
 public class ElasticSearchQueryFactory {
 
 	public List<String> prepareOrderBys(String sortBy) {

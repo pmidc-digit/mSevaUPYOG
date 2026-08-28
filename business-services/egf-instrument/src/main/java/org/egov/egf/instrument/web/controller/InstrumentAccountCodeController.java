@@ -175,7 +175,7 @@ public class InstrumentAccountCodeController {
 
     private ResponseInfo getResponseInfo(RequestInfo requestInfo) {
         return ResponseInfo.builder().apiId(requestInfo.getApiId()).ver(requestInfo.getVer())
-                .ts(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date())).resMsgId(requestInfo.getMsgId())
+                .ts(Long.valueOf(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()))).resMsgId(requestInfo.getMsgId())
                 .resMsgId(PLACEHOLDER).status(PLACEHOLDER).build();
     }
 

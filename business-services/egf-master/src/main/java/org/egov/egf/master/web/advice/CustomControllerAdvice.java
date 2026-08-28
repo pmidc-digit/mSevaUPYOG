@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @ControllerAdvice
+@org.springframework.stereotype.Component("masterCustomControllerAdvice")
 @RestController
 public class CustomControllerAdvice {
 

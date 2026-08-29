@@ -882,6 +882,9 @@ const pgr =  {
 
                // dialog.sendMessage(context, templateContent, true);
               })
+            },
+            onError: {
+              target: '#system_error'
             }
           }
         },

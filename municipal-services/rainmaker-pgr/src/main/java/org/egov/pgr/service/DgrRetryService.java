@@ -310,9 +310,28 @@ public class DgrRetryService {
             try {
                 log.info("Retrying serviceRequestId={}", serviceRequestId);
 
-                // Fetch the service request details using plain search
+                // 1. Lookup DB summary to get tenantId, phone, and check if already has DGR ID
+                Map<String, Object> dbSummary = dgrRetryRepository.findServiceRequestSummary(serviceRequestId);
+                String dbTenantId = (dbSummary != null && dbSummary.get("tenantid") != null)
+                        ? String.valueOf(dbSummary.get("tenantid")).trim() : "pb";
+                String dbPhone = (dbSummary != null && dbSummary.get("phone") != null)
+                        ? String.valueOf(dbSummary.get("phone")).trim() : null;
+                String dbDgrId = (dbSummary != null && dbSummary.get("dgr_grievance_id") != null)
+                        ? String.valueOf(dbSummary.get("dgr_grievance_id")).trim() : null;
+
+                if (dbDgrId != null && !dbDgrId.isEmpty()) {
+                    log.info("Service request [{}] already has dgr_grievance_id={}. Skipping.", serviceRequestId, dbDgrId);
+                    entryResult.put("tenantId", dbTenantId);
+                    entryResult.put("status", "SKIPPED_ALREADY_HAS_DGR_ID");
+                    entryResult.put("dgrGrievanceId", dbDgrId);
+                    results.add(entryResult);
+                    continue;
+                }
+
+                // 2. Fetch the full service request details using plain search with mandatory tenantId
                 ServiceReqSearchCriteria criteria = ServiceReqSearchCriteria.builder()
                         .serviceRequestId(Collections.singletonList(serviceRequestId))
+                        .tenantId(dbTenantId)
                         .active(true)
                         .build();
 
@@ -324,7 +343,7 @@ public class DgrRetryService {
                 if (serviceResponse == null
                         || serviceResponse.getServices() == null
                         || serviceResponse.getServices().isEmpty()) {
-                    log.warn("Service request [{}] not found in DB.", serviceRequestId);
+                    log.warn("Service request [{}] not found in DB via search.", serviceRequestId);
                     entryResult.put("status", "FAILED");
                     entryResult.put("error", "Service request not found in DB");
                     failedCount++;
@@ -348,7 +367,7 @@ public class DgrRetryService {
                     serviceReqRequest.setActionInfo(serviceResponse.getActionHistory().get(0).getActions());
                 }
 
-                // Check if already has DGR ID
+                // Check if already has DGR ID in full service object
                 String existingDgrId = serviceResponse.getServices().get(0).getDgrPgrId();
                 if (existingDgrId != null && !existingDgrId.trim().isEmpty()) {
                     log.info("Service request [{}] already has dgr_grievance_id={}. Skipping.", serviceRequestId, existingDgrId);
@@ -372,7 +391,11 @@ public class DgrRetryService {
                 }
 
                 // Check if already exists in DGR before creating
-                String phone = serviceResponse.getServices().get(0).getPhone();
+                String phone = (dbPhone != null && !dbPhone.isEmpty()) ? dbPhone : serviceResponse.getServices().get(0).getPhone();
+                if ((phone == null || phone.trim().isEmpty()) && userResponse != null
+                        && userResponse.getUser() != null && !userResponse.getUser().isEmpty()) {
+                    phone = userResponse.getUser().get(0).getMobileNumber();
+                }
                 if ((phone == null || phone.trim().isEmpty()) && userResponse != null
                         && userResponse.getUser() != null && !userResponse.getUser().isEmpty()) {
                     phone = userResponse.getUser().get(0).getMobileNumber();
@@ -554,6 +577,7 @@ public class DgrRetryService {
                     // Fetch full service request to build the update payload
                     ServiceReqSearchCriteria criteria = ServiceReqSearchCriteria.builder()
                             .serviceRequestId(Collections.singletonList(serviceRequestId))
+                            .tenantId(recordTenantId != null && !recordTenantId.trim().isEmpty() ? recordTenantId : "pb")
                             .active(true)
                             .build();
 
@@ -589,6 +613,7 @@ public class DgrRetryService {
                 // B1. Fetch full service request from DB via search
                 ServiceReqSearchCriteria criteria = ServiceReqSearchCriteria.builder()
                         .serviceRequestId(Collections.singletonList(serviceRequestId))
+                        .tenantId(recordTenantId != null && !recordTenantId.trim().isEmpty() ? recordTenantId : "pb")
                         .active(true)
                         .build();
 

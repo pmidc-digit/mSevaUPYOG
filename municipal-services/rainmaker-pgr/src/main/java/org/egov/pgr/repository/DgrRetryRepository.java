@@ -70,4 +70,21 @@ public class DgrRetryRepository {
             throw e;
         }
     }
+
+    /**
+     * Looks up basic info (tenantid, accountid, phone, dgr_grievance_id) for a single serviceRequestId.
+     */
+    public Map<String, Object> findServiceRequestSummary(String serviceRequestId) {
+        if (serviceRequestId == null || serviceRequestId.trim().isEmpty()) {
+            return null;
+        }
+        String sql = "SELECT servicerequestid, tenantid, accountid, phone, dgr_grievance_id FROM eg_pgr_service WHERE servicerequestid = ? LIMIT 1";
+        try {
+            List<Map<String, Object>> list = jdbcTemplate.queryForList(sql, serviceRequestId.trim());
+            return (list != null && !list.isEmpty()) ? list.get(0) : null;
+        } catch (Exception e) {
+            log.error("Error querying eg_pgr_service for serviceRequestId={}: {}", serviceRequestId, e.getMessage());
+            return null;
+        }
+    }
 }

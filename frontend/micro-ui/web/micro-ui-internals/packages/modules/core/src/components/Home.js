@@ -246,7 +246,7 @@ const EmployeeHome = ({ modules }) => {
           <div className="employee-dashboard-quick-services-header">
             <div className="employee-dashboard-quick-services-title">Quick Services</div>
             {hasOBPSModule && (
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div className="display-flex-gap-2 items-center">
                 <SubmitBar
                   label={t("mSeva Mobile App")}
                   onSubmit={() => window.open(MSEVA_APP_LINK, "_blank")}

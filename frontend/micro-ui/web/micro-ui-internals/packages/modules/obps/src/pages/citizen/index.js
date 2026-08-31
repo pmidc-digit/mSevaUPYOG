@@ -44,6 +44,17 @@ const OBPSBreadCrumbs = ({ location }) => {
 
   const getBreadcrumbs = () => {
     const breadcrumbs = [];
+    const isMyApplications = location.pathname?.includes("obps/my-applications");
+    const subCardLabelMap = {
+      "citizen-bpa": "Building Plan Approval",
+      "citizen-stakeholder-inbox": "Professional (Architect)",
+      "citizen-others": "Professional (Others)",
+      "citizen-layout": "Layout",
+      "citizen-clu": "Change of Land Use",
+    };
+    const subCardKey = Object.keys(subCardLabelMap)?.find((key) =>
+      location.pathname?.includes(key)
+    );
     const hasSecondBreadcrumb =
       location.pathname.includes("obps/bpa") ||
       location.pathname.includes("obps/ocbpa") ||
@@ -78,16 +89,50 @@ const OBPSBreadCrumbs = ({ location }) => {
       </span>
     );
 
-    if (hasSecondBreadcrumb) {
+    breadcrumbs.push(
+      <span key="obps-home">
+        <Link
+          to="/digit-ui/citizen/obps-home"
+          style={{ textDecoration: "none", marginRight: "5px" }}
+        >
+          {t("MODULE_OBPS")}
+        </Link>
+        {(hasSecondBreadcrumb || isMyApplications) && <span style={{ marginRight: "5px" }}>/</span>}
+      </span>
+      );
+
+    if (hasSecondBreadcrumb && isUserRegistered) {
       breadcrumbs.push(
         <span key="obps">
           <Link
-            to={isUserRegistered ? "/digit-ui/citizen/obps/home" : "/digit-ui/citizen/obps-home"}
-            className="obps-pages-citizen-index--style-3"
+            to="/digit-ui/citizen/obps/home"
+            style={{ textDecoration: "none", marginRight: "5px" }}
           >
             {t("OBAPS Home")}
           </Link>
-          {(bpainbox || layoutinbox) && isUserRegistered && <span className="obps-pages-citizen-index--style-4">/</span>}
+          {((bpainbox && isUserRegistered) || isMyApplications) && <span style={{ marginRight: "5px" }}>/</span>}
+        </span>
+      );
+    }
+
+    if (isMyApplications) {
+      breadcrumbs.push(
+        <span key="my-applications">
+          <Link
+            to="/digit-ui/citizen/obps/my-applications"
+            style={{ textDecoration: "none", marginRight: "5px" }}
+          >
+            {t("ES_COMMON_OBPS_INBOX_LABEL")}
+          </Link>
+          {subCardKey && <span style={{ marginRight: "5px" }}>/</span>}
+        </span>
+      );
+    }
+
+    if (subCardKey) {
+      breadcrumbs.push(
+        <span key="sub-card">
+          {subCardLabelMap[subCardKey]}
         </span>
       );
     }

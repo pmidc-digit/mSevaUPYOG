@@ -23,9 +23,7 @@ const NOCBreadCrumbs = ({ location, cameFromOBPS }) => {
       location.pathname.includes("noc/my-application") ||
       location.pathname.includes("noc/search/application-overview/") ||
       location.pathname.includes("noc/search-application");
-    const isNocMyApp = location.pathname.includes("noc-my-application");
 
-    // Always push Home
     breadcrumbs.push(
       <span key="home">
         <Link to="/digit-ui/citizen" className="noc-pages-citizen-index--style-1">

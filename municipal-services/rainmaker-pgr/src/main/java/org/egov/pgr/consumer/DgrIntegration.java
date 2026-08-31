@@ -115,19 +115,19 @@ public class DgrIntegration {
     /* =========================================================
        Kafka Listeners — Dual Topic Strategy
        ---------------------------------------------------------
-       NO-MEDIA  → save-pgr-dgr-no-media  → 5 threads → instant CreateGrievance
-       WITH-MEDIA → save-pgr-dgr-with-media → 2 threads → upload docs then CreateGrievance
-
-       Both fall back to old topic (save-pgr-dgr-service) for backward compatibility.
+       NO-MEDIA   → save-pgr-dgr-no-media    → 5 threads → instant CreateGrievance (no upload)
+       WITH-MEDIA → save-pgr-dgr-with-media  → 2 threads → upload docs then CreateGrievance
+                  + save-pgr-dgr-service     → 2 threads → old topic (may have media, safer here)
        ========================================================= */
 
     /**
      * FAST PATH — complaints WITHOUT documents.
      * 5 dedicated threads ensure no-media complaints are NEVER blocked
      * behind slow DGR upload API calls from with-media complaints.
+     * Only listens to the new no-media topic — guaranteed no uploads here.
      */
     @KafkaListener(
-        topics = {"${kafka.topic.dgr.no.media}", "${kafka.topics.save.dgr.service}"},
+        topics = {"${kafka.topic.dgr.no.media}"},
         groupId = "dgr-no-media-consumer-group",
         concurrency = "5")
     public void listenNoMedia(final HashMap<String, Object> record,
@@ -139,15 +139,16 @@ public class DgrIntegration {
     /**
      * SLOW PATH — complaints WITH documents.
      * 2 threads controlled separately — waits up to 90s for DGR upload API.
+     * Also handles old topic (save-pgr-dgr-service) since old messages may contain media.
      * Slow uploads here NEVER affect no-media complaint throughput.
      */
     @KafkaListener(
-        topics = {"${kafka.topic.dgr.with.media}"},
+        topics = {"${kafka.topic.dgr.with.media}", "${kafka.topics.save.dgr.service}"},
         groupId = "dgr-with-media-consumer-group",
         concurrency = "2")
     public void listenWithMedia(final HashMap<String, Object> record,
                                 @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
-        log.info("[WITH-MEDIA] Processing complaint with documents from topic [{}]", topic);
+        log.info("[WITH-MEDIA] Processing complaint from topic [{}]", topic);
         processGrievanceRecord(record, true);
     }
 
@@ -650,15 +651,26 @@ public class DgrIntegration {
 
                 log.error("DGR Grievance ID missing for serviceRequestId [{}]. Response: {}", reqId, responseBody);
 
-                Map<String, Object> failedPayload = new HashMap<>();
-                failedPayload.put("serviceRequest", serviceReqRequest);
-                failedPayload.put("dgrResponse", responseBody);
-                failedPayload.put("DgrCreate", sanitizeRequestBodyForFailure(requestBody));
-                failedPayload.put("error", "DGR_GRIEVANCE_ID_MISSING");
-                failedPayload.put("status", "FAILED");
+                // Special case: "Already submitted" — DGR has this grievance but search returned 404.
+                // Retrying will NEVER succeed — skip failed topic to avoid infinite retry loop.
+                boolean isAlreadySubmitted = responseBody != null
+                        && responseBody.toLowerCase().contains("already submited");
 
-                pGRProducer.push(failedDgrTopic, reqId, failedPayload);
-                log.warn("Pushed failed DGR record to topic [{}] for serviceRequestId: {}. DGR response: {}", failedDgrTopic, reqId, responseBody);
+                if (isAlreadySubmitted) {
+                    log.warn("DGR says grievance already exists for serviceRequestId [{}] but search returned no ID. " +
+                            "Skipping failed topic — manual lookup required. DGR response: {}", reqId, responseBody);
+                } else {
+                    // Genuinely failed — push to failed topic for retry
+                    Map<String, Object> failedPayload = new HashMap<>();
+                    failedPayload.put("serviceRequest", serviceReqRequest);
+                    failedPayload.put("dgrResponse", responseBody);
+                    failedPayload.put("DgrCreate", sanitizeRequestBodyForFailure(requestBody));
+                    failedPayload.put("error", "DGR_GRIEVANCE_ID_MISSING");
+                    failedPayload.put("status", "FAILED");
+
+                    pGRProducer.push(failedDgrTopic, reqId, failedPayload);
+                    log.warn("Pushed failed DGR record to topic [{}] for serviceRequestId: {}. DGR response: {}", failedDgrTopic, reqId, responseBody);
+                }
             }
 		
             return responseBody;

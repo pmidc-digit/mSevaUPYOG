@@ -199,6 +199,7 @@ public class EnrichmentService {
 					.convertValue(waterConnectionRequest.getWaterConnection().getAdditionalDetails(), HashMap.class);
 		}
 		additionalDetail.put(WCConstants.APP_CREATED_DATE, BigDecimal.valueOf(System.currentTimeMillis()));
+		enrichGuardianAndMobileDetails(waterConnectionRequest, additionalDetail, null);
 		waterConnectionRequest.getWaterConnection().setAdditionalDetails(additionalDetail);
 	    //Setting ApplicationType
 		String applicationType=null;
@@ -276,6 +277,7 @@ public class EnrichmentService {
 				}
 			}
 		}
+		enrichGuardianAndMobileDetails(waterConnectionRequest, additionalDetail, null);
 		waterConnectionRequest.getWaterConnection().setAdditionalDetails(additionalDetail);
 	}
 	
@@ -637,6 +639,7 @@ public class EnrichmentService {
 				if (!CollectionUtils.isEmpty(ownerInfoList)) {
 					additionalDetail.put("ownerName", ownerInfoList.get(0).getName());
 				}
+				enrichGuardianAndMobileDetails(null, additionalDetail, ownerInfoList);
 				waterConnection.setAdditionalDetails(additionalDetail);
 				finalConnectionList.add(waterConnection);
 			}
@@ -754,6 +757,47 @@ public class EnrichmentService {
 		userDetailResponse.setUser(waterConnection.getConnectionHolders());
 		enrichConnectionHolderInfo(userDetailResponse, waterConnectionList, requestInfo);
 		return userDetailResponse.getUser().get(0);
+	}
+	
+	
+	private void enrichGuardianAndMobileDetails(WaterConnectionRequest request, Map<String, Object> additionalDetail, List<OwnerInfo> propertyOwners) {
+		String guardianName = null;
+		String mobileNumber = null;
+		String ownerName = null;
+		if (!CollectionUtils.isEmpty(propertyOwners) && propertyOwners.get(0) != null) {
+			guardianName = propertyOwners.get(0).getFatherOrHusbandName();
+			mobileNumber = propertyOwners.get(0).getMobileNumber();
+			ownerName = propertyOwners.get(0).getName();
+		}
+		if ((guardianName == null || mobileNumber == null || ownerName == null) && request != null) {
+			try {
+				List<Property> properties = waterServicesUtil.propertySearch(request);
+				if (!CollectionUtils.isEmpty(properties) && properties.get(0) != null 
+						&& !CollectionUtils.isEmpty(properties.get(0).getOwners()) 
+						&& properties.get(0).getOwners().get(0) != null) {
+					if (guardianName == null) {
+						guardianName = properties.get(0).getOwners().get(0).getFatherOrHusbandName();
+					}
+					if (mobileNumber == null) {
+						mobileNumber = properties.get(0).getOwners().get(0).getMobileNumber();
+					}
+					if (ownerName == null) {
+						ownerName = properties.get(0).getOwners().get(0).getName();
+					}
+				}
+			} catch (Exception e) {
+				log.error("Error fetching property for owner, guardian and mobile enrichment", e);
+			}
+		}
+		if (guardianName != null) {
+			additionalDetail.put("guardianName", guardianName);
+		}
+		if (mobileNumber != null) {
+			additionalDetail.put("mobileNumber", mobileNumber);
+		}
+		if (ownerName != null) {
+			additionalDetail.put("ownerName", ownerName);
+		}
 	}
 
 }

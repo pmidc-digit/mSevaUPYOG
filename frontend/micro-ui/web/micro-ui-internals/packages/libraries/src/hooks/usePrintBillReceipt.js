@@ -5,14 +5,14 @@ import { useCallback } from "react";
    ========================= */
 
 const cleanBillAccountDetails = (billAccountDetails = []) => {
-  const hasArrears = billAccountDetails?.some((item) => item?.taxHeadCode === "RL_ARREAR_FEE" && Number(item?.amount) > 0);
+  const hasArrears = billAccountDetails?.some((item) => item?.taxHeadCode === "RL_ARREAR_FEE" && Number(item?.adjustedAmount) > 0);
 
  return billAccountDetails
     ?.map((item) => ({
       ...item,
       amount:
         item?.taxHeadCode?.toUpperCase().includes("ADVANCE")
-          ? Math.abs(Number(item?.amount))
+          ? Math.abs(Number(item?.adjustedAmount))
           : item?.amount,
     }))
     ?.filter((item) => {
@@ -199,8 +199,12 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
 
       const identifier = consumerCode || applicationNumber;
       const searchData = searchDataMap[identifier] || null;
+      const filteredBillDetails =
+      businessService === "rl-services"
+        ? billDetails?.filter(({ amountPaid }) => amountPaid != null && amountPaid > 0)
+        : billDetails;
 
-      billDetails?.forEach((detail) => {
+      filteredBillDetails?.forEach((detail) => {
         const cleanedAccountDetails = cleanBillAccountDetails(detail?.billAccountDetails);
         const hasArrears = detail?.billAccountDetails?.some((item) => item?.taxHeadCode?.includes("ARREAR") && Number(item?.amount) > 0);
         extractedBillDetails?.push({

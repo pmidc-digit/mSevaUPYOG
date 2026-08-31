@@ -22,7 +22,7 @@ import { useTranslation } from "react-i18next";
 import EmployeeQuickServicesCard from "../EmployeeQuickServicesCard";
 import CitizenHomeCardWithExternalLink from "../pages/citizen/CitizenHomeCardWithExternalLink";
 import CitizenHomeCardAccordian from "../pages/citizen/CitizenHomeCardAccordian";
-import { MSEVA_APP_LINK } from "../../../../constants/constants";
+import { MSEVA_APP_LINK, MSEVA_YOUTUBE_LINK, OBPS_EMPLOYEE_USER_MANUAL } from "../../../../constants/constants";
 /* 
 Feature :: Citizen All service screen cards
 */
@@ -247,45 +247,19 @@ const EmployeeHome = ({ modules }) => {
             <div className="employee-dashboard-quick-services-title">Quick Services</div>
             {hasOBPSModule && (
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" style={{ cursor: "pointer" }} onClick={() => window.open(MSEVA_APP_LINK, "_blank")}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    shape-rendering="geometricPrecision"
-                    text-rendering="geometricPrecision"
-                    image-rendering="optimizeQuality"
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
-                    viewBox="0 0 466 511.98"
-                  >
-                    <g id="Layer_x0020_1">
-                      <path
-                        fill="#EA4335"
-                        fill-rule="nonzero"
-                        d="M199.9 237.8l-198.5 232.37c7.22,24.57 30.16,41.81 55.8,41.81 11.16,0 20.93,-2.79 29.3,-8.37l0 0 244.16 -139.46 -130.76 -126.35z"
-                      />
-                      <path
-                        fill="#FBBC04"
-                        fill-rule="nonzero"
-                        d="M433.91 205.1l0 0 -104.65 -60 -111.61 110.22 113.01 108.83 104.64 -58.6c18.14,-9.77 30.7,-29.3 30.7,-50.23 -1.4,-20.93 -13.95,-40.46 -32.09,-50.22z"
-                      />
-                      <path
-                        fill="#34A853"
-                        fill-rule="nonzero"
-                        d="M199.42 273.45l129.85 -128.35 -241.37 -136.73c-8.37,-5.58 -19.54,-8.37 -30.7,-8.37 -26.5,0 -50.22,18.14 -55.8,41.86 0,0 0,0 0,0l198.02 231.59z"
-                      />
-                      <path
-                        fill="#4285F4"
-                        fill-rule="nonzero"
-                        d="M1.39 41.86c-1.39,4.18 -1.39,9.77 -1.39,15.34l0 397.64c0,5.57 0,9.76 1.4,15.34l216.27 -214.86 -216.28 -213.46z"
-                      />
-                    </g>
-                  </svg>
-                </svg>
+                <SubmitBar
+                  label={t("mSeva Mobile App")}
+                  onSubmit={() => window.open(MSEVA_APP_LINK, "_blank")}
+                />
+                <SubmitBar
+                  label={t("mSeva YouTube Channel")}
+                  onSubmit={() => window.open(MSEVA_YOUTUBE_LINK, "_blank")}
+                />
                 <SubmitBar
                   label={t("User Manual")}
                   onSubmit={() =>
                     window.open(
-                      "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FCLU%2FAugust%2F26%2F1787725881375NxuybOpbkN.pdf",
+                      OBPS_EMPLOYEE_USER_MANUAL,
                       "_blank"
                     )
                   }

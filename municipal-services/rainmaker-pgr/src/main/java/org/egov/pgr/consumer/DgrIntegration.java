@@ -1029,12 +1029,21 @@ public class DgrIntegration {
 
                 log.info("DGR Uploaddocument response status: {}", uploadResponse.getStatusCode());
 
-                // 5. Extract document IDs/messages from Uploaddocument response (NO base64)
+                // 5. Extract File_ID from Uploaddocument response and map to DGR CreateGrievance doc format
+                // Uploaddocument returns: { "data": [{"response": "1", "message": "1336058"}] }
+                // CreateGrievance expects: [{"File_ID": "1336058"}]
                 try {
                     List<Map<String, Object>> responseData = JsonPath.read(uploadResponse.getBody(), "$.data");
                     if (responseData != null && !responseData.isEmpty()) {
-                        result = responseData;
-                        log.info("DGR Uploaddocument returned doc info (msg id): {}", result);
+                        for (Map<String, Object> item : responseData) {
+                            Object fileId = item.get("message");
+                            if (fileId != null && !fileId.toString().trim().isEmpty()) {
+                                Map<String, Object> docEntry = new HashMap<>();
+                                docEntry.put("File_ID", fileId.toString());
+                                result.add(docEntry);
+                                log.info("Mapped DGR uploaded doc: File_ID={}", fileId);
+                            }
+                        }
                     }
                 } catch (Exception e) {
                     log.error("Failed to parse Uploaddocument response: {}", e.getMessage());

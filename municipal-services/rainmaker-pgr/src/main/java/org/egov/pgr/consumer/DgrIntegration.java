@@ -1030,18 +1030,26 @@ public class DgrIntegration {
                 log.info("DGR Uploaddocument response status: {}", uploadResponse.getStatusCode());
 
                 // 5. Extract File_ID from Uploaddocument response and map to DGR CreateGrievance doc format
-                // Uploaddocument returns: { "data": [{"response": "1", "message": "1336058"}] }
-                // CreateGrievance expects: [{"File_ID": "1336058"}]
+                // Uploaddocument returns: { "data": [{"response": "1", "message": "1337549, 1337550"}] }
+                // CreateGrievance expects: [{"File_ID": "1337549"}, {"File_ID": "1337550"}]
                 try {
                     List<Map<String, Object>> responseData = JsonPath.read(uploadResponse.getBody(), "$.data");
                     if (responseData != null && !responseData.isEmpty()) {
                         for (Map<String, Object> item : responseData) {
-                            Object fileId = item.get("message");
-                            if (fileId != null && !fileId.toString().trim().isEmpty()) {
-                                Map<String, Object> docEntry = new HashMap<>();
-                                docEntry.put("File_ID", fileId.toString());
-                                result.add(docEntry);
-                                log.info("Mapped DGR uploaded doc: File_ID={}", fileId);
+                            Object fileIdObj = item.get("message");
+                            if (fileIdObj != null && !fileIdObj.toString().trim().isEmpty()) {
+                                // DGR may return multiple IDs as comma-separated: "1337549, 1337550"
+                                // Split each into its own File_ID entry
+                                String[] fileIds = fileIdObj.toString().split(",");
+                                for (String id : fileIds) {
+                                    String trimmedId = id.trim();
+                                    if (!trimmedId.isEmpty()) {
+                                        Map<String, Object> docEntry = new HashMap<>();
+                                        docEntry.put("File_ID", trimmedId);
+                                        result.add(docEntry);
+                                        log.info("Mapped DGR uploaded doc: File_ID={}", trimmedId);
+                                    }
+                                }
                             }
                         }
                     }

@@ -5,10 +5,12 @@ import static digit.constants.MDMSMigrationToolkitConstants.DOT_SEPARATOR;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -107,54 +109,56 @@ public class SchemaDefinitionMigrationService {
 
     public void generateSchemaDefinition() {
         Map<String, Map<String, Map<String, JSONArray>>> tenantMap = MDMSApplicationRunnerImpl.getTenantMap();
-        
-        Map<String, Map<String, Object>> masterConfigMap = MDMSApplicationRunnerImpl.getMasterConfigMap();
-
         schemaCodeToSchemaJsonMap = new HashMap<>();
 
-        // Traverse tenantMap across the tenants, modules and masters to generate schema for each master
+        // Aggregate master data across all tenants
+        Map<String, JSONArray> aggregatedMasterMap = new HashMap<>();
+
         tenantMap.keySet().forEach(tenantId -> {
-            tenantMap.get(tenantId).keySet().forEach(module -> {
-                tenantMap.get(tenantId).get(module).keySet().forEach(master -> {
-                    JSONArray masterDataJsonArray = MDMSApplicationRunnerImpl
-                            .getTenantMap()
-                            .get(tenantId)
-                            .get(module)
-                            .get(master);
-
-                    if (!masterDataJsonArray.isEmpty()) {
-                        // Convert master data to JsonNode
-//                        JsonNode jsonNode = objectMapper.convertValue(masterDataJsonArray.get(0), JsonNode.class);
-
-                        // Feed the converted master data to jsonSchemaInferrer for generating schema
-//                        JsonNode schemaNode = inferrer.inferForSample(jsonNode);
-                        
-                        try {	
-                        	ObjectNode schemaNode = getSchemaNode(masterDataJsonArray);
-                        	if(!schemaNode.get("properties").has("id")) {
-                        		addIdFieldInSchema(schemaNode);
+            Map<String, Map<String, JSONArray>> moduleMap = tenantMap.get(tenantId);
+            if (moduleMap != null) {
+                moduleMap.keySet().forEach(module -> {
+                    Map<String, JSONArray> masterMap = moduleMap.get(module);
+                    if (masterMap != null) {
+                        masterMap.keySet().forEach(master -> {
+                            JSONArray masterDataJsonArray = masterMap.get(master);
+                            if (masterDataJsonArray != null && !masterDataJsonArray.isEmpty()) {
+                                String key = module + DOT_SEPARATOR + master;
+                                JSONArray aggregatedArray = aggregatedMasterMap.computeIfAbsent(key, k -> new JSONArray());
+                                aggregatedArray.addAll(masterDataJsonArray);
                             }
-                        	
-                        	// Fix array fields missing items definition
-                        	fixArrayFieldsInSchema(schemaNode);
-                        	
-                        	// Fix numeric fields schema definitions (enforce number type)
-                        	DataSanitizerUtil.fixNumericFieldsInSchema(schemaNode);
-                        	
-                        	// Populate schemaCodeToSchemaJsonMap
-                            schemaCodeToSchemaJsonMap.put(module + DOT_SEPARATOR + master, schemaNode);
-                            log.info("Schema generated for : " + module + DOT_SEPARATOR + master);
-                            // Write generated schema definition to files with the name in module.master format
-                            fileWriter.writeJsonToFile(schemaNode, module + DOT_SEPARATOR + master);
-                        	
-						} catch (Exception e) {
-							log.error("Error in : " + module + DOT_SEPARATOR + master + " - " + e.getMessage());
-						}
-                        
+                        });
+                    }
+                });
+            }
+        });
+
+        // Generate schema for each master using aggregated data
+        aggregatedMasterMap.keySet().forEach(schemaCode -> {
+            JSONArray masterDataJsonArray = aggregatedMasterMap.get(schemaCode);
+            if (masterDataJsonArray != null && !masterDataJsonArray.isEmpty()) {
+                try {
+                    ObjectNode schemaNode = getSchemaNode(masterDataJsonArray);
+                    if (!schemaNode.get("properties").has("id")) {
+                        addIdFieldInSchema(schemaNode);
                     }
 
-                });
-            });
+                    // Fix array fields missing items definition
+                    fixArrayFieldsInSchema(schemaNode);
+
+                    // Fix numeric fields schema definitions (enforce number type)
+                    DataSanitizerUtil.fixNumericFieldsInSchema(schemaNode);
+
+                    // Populate schemaCodeToSchemaJsonMap
+                    schemaCodeToSchemaJsonMap.put(schemaCode, schemaNode);
+                    log.info("Schema generated for: " + schemaCode);
+                    // Write generated schema definition to files with the name in module.master format
+                    fileWriter.writeJsonToFile(schemaNode, schemaCode);
+
+                } catch (Exception e) {
+                    log.error("Error in: " + schemaCode + " - " + e.getMessage());
+                }
+            }
         });
     }
     
@@ -220,12 +224,28 @@ public class SchemaDefinitionMigrationService {
 		List<Entry<String, Object>> entryList = (List<Map.Entry<String, Object>>) masterDataJsonArray.stream()
 				.map(data -> objectMapper.convertValue(data, HashMap.class))
 				.flatMap(dataMap -> dataMap.entrySet().stream()).collect(Collectors.toList());
-		
-		// A field is required only if it is present in 100% of master data records
-		List<String> requiredList = entryList.stream().map(Entry::getKey)
-				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream()
-				.filter(entry -> entry.getValue().equals(dataSize)).map(Entry::getKey).collect(Collectors.toList());
-		
+
+		// Gate 1: collect all field names that have a null value in ANY record.
+		// Such fields are inherently optional and must never appear in 'required'.
+		Set<String> fieldsWithAnyNullValue = entryList.stream()
+				.filter(entry -> entry.getValue() == null)
+				.map(Entry::getKey)
+				.collect(Collectors.toCollection(HashSet::new));
+
+		// Gate 2: a field is required only if:
+		//   a) its key is present in EVERY record across ALL tenants (count == dataSize), AND
+		//   b) it has a non-null value in every one of those records (not in fieldsWithAnyNullValue).
+		// This ensures that fields absent from some tenants' data or carrying null values
+		// in any record are never marked required
+		List<String> requiredList = entryList.stream()
+				.map(Entry::getKey)
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+				.entrySet().stream()
+				.filter(entry -> entry.getValue().equals(dataSize))
+				.map(Entry::getKey)
+				.filter(field -> !fieldsWithAnyNullValue.contains(field))
+				.collect(Collectors.toList());
+
 		// 4. Infer schema across ALL sample records (merges all fields automatically)
 		JsonNode schemaNode = inferrer.inferForSamples(sampleNodes);
 		Map<String, Object> schemaNodeMap = objectMapper.convertValue(schemaNode, Map.class);

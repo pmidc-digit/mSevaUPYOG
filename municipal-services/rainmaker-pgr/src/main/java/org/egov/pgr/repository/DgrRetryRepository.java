@@ -53,7 +53,7 @@ public class DgrRetryRepository {
 
         query.append(" ORDER BY createdtime DESC ");
 
-        int queryLimit = (limit != null && limit > 0 && limit <= 500) ? limit : 50;
+        int queryLimit = (limit != null && limit > 0 && limit <= 1000) ? limit : 500;  // max cap: 1000, default: 500
         int queryOffset = (offset != null && offset >= 0) ? offset : 0;
 
         query.append(" LIMIT ? OFFSET ? ");

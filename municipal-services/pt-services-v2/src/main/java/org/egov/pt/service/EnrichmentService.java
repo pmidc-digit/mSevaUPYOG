@@ -337,7 +337,7 @@ public class EnrichmentService {
      */
     public void enrichPropertyCriteriaForDefaultSearch(RequestInfo requestInfo, PropertyCriteria criteria){
 
-        criteria.setMobileNumber(requestInfo.getUserInfo().getUserName());
+        criteria.setMobileNumber(requestInfo.getUserInfo().getMobileNumber();
         criteria.setAccountId(requestInfo.getUserInfo().getUuid());
         criteria.setTenantId(requestInfo.getUserInfo().getTenantId());
     }

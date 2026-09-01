@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import EmployeeQuickServicesCard from "../EmployeeQuickServicesCard";
 import CitizenHomeCardWithExternalLink from "../pages/citizen/CitizenHomeCardWithExternalLink";
 import CitizenHomeCardAccordian from "../pages/citizen/CitizenHomeCardAccordian";
+import { MSEVA_APP_LINK, MSEVA_YOUTUBE_LINK, OBPS_EMPLOYEE_USER_MANUAL } from "../../../../constants/constants";
 /* 
 Feature :: Citizen All service screen cards
 */
@@ -245,15 +246,25 @@ const EmployeeHome = ({ modules }) => {
           <div className="employee-dashboard-quick-services-header">
             <div className="employee-dashboard-quick-services-title">Quick Services</div>
             {hasOBPSModule && (
-              <SubmitBar
-                label={t("User Manual")}
-                onSubmit={() =>
-                  window.open(
-                    "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FCLU%2FAugust%2F24%2F1787583703919JNROWeZZwT.pdf",
-                    "_blank"
-                  )
-                }
-              />
+              <div className="display-flex-gap-2 items-center">
+                <SubmitBar
+                  label={t("mSeva Mobile App")}
+                  onSubmit={() => window.open(MSEVA_APP_LINK, "_blank")}
+                />
+                <SubmitBar
+                  label={t("mSeva YouTube Channel")}
+                  onSubmit={() => window.open(MSEVA_YOUTUBE_LINK, "_blank")}
+                />
+                <SubmitBar
+                  label={t("User Manual")}
+                  onSubmit={() =>
+                    window.open(
+                      OBPS_EMPLOYEE_USER_MANUAL,
+                      "_blank"
+                    )
+                  }
+                />
+              </div>
             )}
           </div>
           <div className="employee-dashboard-module-card-wrapper">

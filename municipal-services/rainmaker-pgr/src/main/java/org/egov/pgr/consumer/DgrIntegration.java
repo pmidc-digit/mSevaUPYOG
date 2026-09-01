@@ -256,7 +256,7 @@ public class DgrIntegration {
 
             HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
 
-            RestTemplate restTemplate = createRestTemplate(10000, 15000);
+            RestTemplate restTemplate = createRestTemplate(10000, 30000);  // token API: 30s
             log.info("Calling token API");
 
             ResponseEntity<String> response =
@@ -285,7 +285,7 @@ public class DgrIntegration {
        ========================= */
     public String createGrievance(ServiceRequest serviceReqRequest, String bearerToken, UserResponse userResponse) {
         try {
-            RestTemplate restTemplate = createRestTemplate(10000, 25000);
+            RestTemplate restTemplate = createRestTemplate(10000, 60000);  // CreateGrievance API: 60s
             String url = CREATE_GRIEVANCE_URL;
 
             // 1. Get district list from DGR API
@@ -729,7 +729,7 @@ public class DgrIntegration {
         }
 
         try {
-            RestTemplate restTemplate = createRestTemplate(10000, 15000);
+            RestTemplate restTemplate = createRestTemplate(10000, 25000);  // SearchGrievance API: 25s
 
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("ReferenceId", referenceId.trim());
@@ -792,7 +792,7 @@ public class DgrIntegration {
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> fetchDataFromApi(String url) {
         try {
-            RestTemplate restTemplate = createRestTemplate(10000, 15000);
+            RestTemplate restTemplate = createRestTemplate(10000, 30000);  // District/Tehsil/Village APIs: 30s
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Accept", "application/json, text/plain, */*");
@@ -1022,8 +1022,8 @@ public class DgrIntegration {
             log.info("Calling DGR Uploaddocument API: {}", DGR_UPLOAD_DOCUMENT_URL);
 
             try {
-                // Dedicated RestTemplate for DGR upload: 90s read timeout (2x DGR's stated 30-40s max)
-                RestTemplate uploadRestTemplate = createRestTemplate(10000, 90000);
+                // Dedicated RestTemplate for DGR upload: 180s read timeout (DGR upload can be very slow)
+                RestTemplate uploadRestTemplate = createRestTemplate(10000, 180000);
                 ResponseEntity<String> uploadResponse = uploadRestTemplate.exchange(
                         DGR_UPLOAD_DOCUMENT_URL, HttpMethod.POST, uploadEntity, String.class);
 

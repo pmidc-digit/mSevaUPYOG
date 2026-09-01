@@ -6,14 +6,16 @@ import { useCallback } from "react";
 
 const cleanBillAccountDetails = (billAccountDetails = []) => {
   const hasArrears = billAccountDetails?.some((item) => item?.taxHeadCode === "RL_ARREAR_FEE" && Number(item?.adjustedAmount) > 0);
-
- return billAccountDetails
+  const roundoff = Number(billAccountDetails?.find((item) => item?.taxHeadCode?.replace(/[^a-zA-Z0-9]/g, "")?.toUpperCase().includes("ROUNDOFF"))?.amount || 0);
+  console.log("roundoff found", roundoff)
+  return billAccountDetails
     ?.map((item) => ({
       ...item,
       amount:
         item?.taxHeadCode?.toUpperCase().includes("ADVANCE")
           ? Math.abs(Number(item?.adjustedAmount))
           : item?.amount,
+      adjustedAmount: roundoff ? Math.round(Number(item?.adjustedAmount || 0) + roundoff) : item?.adjustedAmount,
     }))
     ?.filter((item) => {
       // remove roundoff always

@@ -30,6 +30,10 @@ class PGRStatusUpdateEventFormatter{
                 });
             }
         });
+        consumerGroup.on('error', (error) => {
+            console.error('Kafka consumer group error:', error.message);
+            console.error(error.stack || error);
+        });
     }
 
     async templateMessgae(serviceWrapper){

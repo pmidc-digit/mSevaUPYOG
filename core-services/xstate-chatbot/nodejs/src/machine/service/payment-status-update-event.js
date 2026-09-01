@@ -51,9 +51,13 @@ class PaymentStatusUpdateEventFormatter{
                 console.error('error while sending event message');
                 console.error(error.stack || error);
             });
-          } 
+          }
         }
 
+    });
+    consumerGroup.on('error', (error) => {
+        console.error('Kafka consumer group error:', error.message);
+        console.error(error.stack || error);
     });
 }
 

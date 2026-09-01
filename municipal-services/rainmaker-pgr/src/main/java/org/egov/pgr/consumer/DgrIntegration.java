@@ -256,7 +256,7 @@ public class DgrIntegration {
 
             HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
 
-            RestTemplate restTemplate = createRestTemplate(10000, 15000);
+            RestTemplate restTemplate = createRestTemplate(10000, 30000);  // token API: 30s
             log.info("Calling token API");
 
             ResponseEntity<String> response =
@@ -285,7 +285,7 @@ public class DgrIntegration {
        ========================= */
     public String createGrievance(ServiceRequest serviceReqRequest, String bearerToken, UserResponse userResponse) {
         try {
-            RestTemplate restTemplate = createRestTemplate(10000, 25000);
+            RestTemplate restTemplate = createRestTemplate(10000, 60000);  // CreateGrievance API: 60s
             String url = CREATE_GRIEVANCE_URL;
 
             // 1. Get district list from DGR API
@@ -729,7 +729,7 @@ public class DgrIntegration {
         }
 
         try {
-            RestTemplate restTemplate = createRestTemplate(10000, 15000);
+            RestTemplate restTemplate = createRestTemplate(10000, 25000);  // SearchGrievance API: 25s
 
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("ReferenceId", referenceId.trim());
@@ -792,7 +792,7 @@ public class DgrIntegration {
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> fetchDataFromApi(String url) {
         try {
-            RestTemplate restTemplate = createRestTemplate(10000, 15000);
+            RestTemplate restTemplate = createRestTemplate(10000, 30000);  // District/Tehsil/Village APIs: 30s
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Accept", "application/json, text/plain, */*");
@@ -1022,26 +1022,34 @@ public class DgrIntegration {
             log.info("Calling DGR Uploaddocument API: {}", DGR_UPLOAD_DOCUMENT_URL);
 
             try {
-                // Dedicated RestTemplate for DGR upload: 90s read timeout (2x DGR's stated 30-40s max)
-                RestTemplate uploadRestTemplate = createRestTemplate(10000, 90000);
+                // Dedicated RestTemplate for DGR upload: 180s read timeout (DGR upload can be very slow)
+                RestTemplate uploadRestTemplate = createRestTemplate(10000, 180000);
                 ResponseEntity<String> uploadResponse = uploadRestTemplate.exchange(
                         DGR_UPLOAD_DOCUMENT_URL, HttpMethod.POST, uploadEntity, String.class);
 
                 log.info("DGR Uploaddocument response status: {}", uploadResponse.getStatusCode());
 
                 // 5. Extract File_ID from Uploaddocument response and map to DGR CreateGrievance doc format
-                // Uploaddocument returns: { "data": [{"response": "1", "message": "1336058"}] }
-                // CreateGrievance expects: [{"File_ID": "1336058"}]
+                // Uploaddocument returns: { "data": [{"response": "1", "message": "1337549, 1337550"}] }
+                // CreateGrievance expects: [{"File_ID": "1337549"}, {"File_ID": "1337550"}]
                 try {
                     List<Map<String, Object>> responseData = JsonPath.read(uploadResponse.getBody(), "$.data");
                     if (responseData != null && !responseData.isEmpty()) {
                         for (Map<String, Object> item : responseData) {
-                            Object fileId = item.get("message");
-                            if (fileId != null && !fileId.toString().trim().isEmpty()) {
-                                Map<String, Object> docEntry = new HashMap<>();
-                                docEntry.put("File_ID", fileId.toString());
-                                result.add(docEntry);
-                                log.info("Mapped DGR uploaded doc: File_ID={}", fileId);
+                            Object fileIdObj = item.get("message");
+                            if (fileIdObj != null && !fileIdObj.toString().trim().isEmpty()) {
+                                // DGR may return multiple IDs as comma-separated: "1337549, 1337550"
+                                // Split each into its own File_ID entry
+                                String[] fileIds = fileIdObj.toString().split(",");
+                                for (String id : fileIds) {
+                                    String trimmedId = id.trim();
+                                    if (!trimmedId.isEmpty()) {
+                                        Map<String, Object> docEntry = new HashMap<>();
+                                        docEntry.put("File_ID", trimmedId);
+                                        result.add(docEntry);
+                                        log.info("Mapped DGR uploaded doc: File_ID={}", trimmedId);
+                                    }
+                                }
                             }
                         }
                     }

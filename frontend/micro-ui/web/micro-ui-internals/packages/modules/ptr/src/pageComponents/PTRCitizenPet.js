@@ -7,8 +7,8 @@ import {
   SubmitBar,
   CardLabelError,
   LabelFieldPair,
-  CardSectionHeader } from
-"@mseva/digit-ui-react-components";
+  CardSectionHeader,
+} from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,9 +27,9 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
 
   const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
 
-  const tenantId = window.location.href.includes("citizen") ?
-  window.localStorage.getItem("CITIZEN.CITY") :
-  window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
   const { data: mdmsPetData, isLoading } = Digit.Hooks.ptr.usePTRPetMDMS(tenantId);
 
   const petTypeObj = mdmsPetData?.petTypes?.find((pt) => pt.name === apiDataCheck?.[0]?.petDetails?.petType) || null;
@@ -73,7 +73,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
     const now = new Date();
     let years = now.getFullYear() - d.getFullYear();
     const monthDiff = now.getMonth() - d.getMonth();
-    if (monthDiff < 0 || monthDiff === 0 && now.getDate() < d.getDate()) years--;
+    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < d.getDate())) years--;
     return years >= 0 ? years : 0;
   }
 
@@ -83,7 +83,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
     setValue,
     watch,
     formState: { errors },
-    trigger
+    trigger,
   } = useForm({ defaultValues: { petAge: "", lastVaccineDate: "" } });
 
   const selectedPetType = watch("petType");
@@ -102,16 +102,19 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       goNext(data);
       return;
     }
+    const ptrId = sessionStorage.getItem("CitizenConsentdocFilestoreidPTR");
+
     const { address, name, pincode, ...filteredOwnerDetails } = currentStepData.ownerDetails;
     const formData = {
       tenantId,
+      consentDocument: ptrId,
       owner: {
         ...filteredOwnerDetails,
         name: name,
         // userName: `${firstName} ${lastName}`,
         userName: filteredOwnerDetails?.mobileNumber,
         tenantId,
-        type: "CITIZEN"
+        type: "CITIZEN",
       },
       petDetails: {
         petName: data.petName,
@@ -123,11 +126,11 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
         petAge: data.petAge,
         vaccinationNumber: data.vaccinationNumber,
         doctorName: data.doctorName,
-        clinicName: data.clinicName
+        clinicName: data.clinicName,
       },
       address: {
         pincode,
-        addressLine1: currentStepData?.ownerDetails?.address
+        addressLine1: currentStepData?.ownerDetails?.address,
       },
       previousApplicationNumber: id ? id : null,
       applicationType: checkForRenew ? "RENEWAPPLICATION" : "NEWAPPLICATION",
@@ -137,18 +140,18 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       workflow: {
         action: "INITIATE",
         comments: "",
-        status: "INITIATED"
-      }
+        status: "INITIATED",
+      },
     };
 
-    const pick = (newV, oldV) => newV !== undefined && newV !== null && newV !== "" ? newV : oldV;
+    const pick = (newV, oldV) => (newV !== undefined && newV !== null && newV !== "" ? newV : oldV);
     const existing = apiDataCheck?.[0] || currentStepData?.responseData?.[0] || {};
 
     if (existing?.applicationNumber && !checkForRenew) {
       const existingDocuments =
-      existing?.documents && Array.isArray(existing.documents) && existing.documents.length ?
-      existing.documents :
-      currentStepData?.documents?.documents?.documents || currentStepData?.documents || [];
+        existing?.documents && Array.isArray(existing.documents) && existing.documents.length
+          ? existing.documents
+          : currentStepData?.documents?.documents?.documents || currentStepData?.documents || [];
 
       const updateFormData = {
         ...existing, // preserve id, applicationNumber, auditDetails, etc.
@@ -160,14 +163,14 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             filteredOwnerDetails.lastName,
             (existing.owner?.name || "").split(" ")[1] || ""
           )}`.trim(),
-          userName: pick(filteredOwnerDetails.mobileNumber, existing.owner?.userName)
+          userName: pick(filteredOwnerDetails.mobileNumber, existing.owner?.userName),
         },
 
         address: {
           ...existing.address,
           pincode: pick(pincode, existing.address?.pincode),
           addressLine1: pick(currentStepData.ownerDetails.address, existing.address?.addressLine1),
-          tenantId
+          tenantId,
         },
 
         petDetails: {
@@ -182,7 +185,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           petAge: pick(data.petAge, existing.petDetails?.petAge),
           vaccinationNumber: pick(data.vaccinationNumber, existing.petDetails?.vaccinationNumber),
           doctorName: pick(data.doctorName, existing.petDetails?.doctorName),
-          clinicName: pick(data.clinicName, existing.petDetails?.clinicName)
+          clinicName: pick(data.clinicName, existing.petDetails?.clinicName),
         },
 
         // preserve documents unless other steps changed them
@@ -192,12 +195,12 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           ...existing.workflow,
           action: "SAVEASDRAFT",
           status: "SAVEASDRAFT",
-          comments: "SAVEASDRAFT"
+          comments: "SAVEASDRAFT",
         },
 
         ownerName:
-        `${pick(filteredOwnerDetails.firstName, existing.ownerName || "")} ${pick(filteredOwnerDetails.lastName, "")}`.trim() || existing.ownerName,
-        mobileNumber: pick(filteredOwnerDetails.mobileNumber, existing.mobileNumber)
+          `${pick(filteredOwnerDetails.firstName, existing.ownerName || "")} ${pick(filteredOwnerDetails.lastName, "")}`.trim() || existing.ownerName,
+        mobileNumber: pick(filteredOwnerDetails.mobileNumber, existing.mobileNumber),
       };
       setLoader(true);
 
@@ -243,7 +246,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
 
       Object.entries(apiDataCheck[0].petDetails).forEach(([key, value]) => {
         if (key === "lastVaccineDate") {
-          const epoch = value !== null && value !== undefined && value !== "" ? !Number.isNaN(Number(value)) ? Number(value) : value : value;
+          const epoch = value !== null && value !== undefined && value !== "" ? (!Number.isNaN(Number(value)) ? Number(value) : value) : value;
 
           const v = convertEpochToDateInput(epoch);
           setValue(key, v);
@@ -375,17 +378,18 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               required: t("PTR_PET_NAME_REQUIRED"),
               pattern: { value: onlyAlphabetsTest, message: t("PTR_PET_NAME_INVALID") },
               maxLength: { value: 100, message: "Maximum 100 characters" },
-              minLength: { value: 2, message: "Minimum 2 characters" }
+              minLength: { value: 2, message: "Minimum 2 characters" },
             }}
-            render={(props) =>
-            <TextInput
-              value={props.value}
-              onChange={(e) => props.onChange(e.target.value)}
-              onBlur={() => trigger("petName")}
-              t={t}
-              disabled={checkForRenew} />
-
-            } />
+            render={(props) => (
+              <TextInput
+                value={props.value}
+                onChange={(e) => props.onChange(e.target.value)}
+                onBlur={() => trigger("petName")}
+                t={t}
+                disabled={checkForRenew}
+              />
+            )}
+          />
 
           {errors.petName && <p className="chb-error-text">{getErrorMessage("petName")}</p>}
         </div>
@@ -399,9 +403,10 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             control={control}
             name="petType"
             rules={{ required: t("PTR_PET_TYPE_REQUIRED") }}
-            render={(props) =>
-            <Dropdown select={props.onChange} selected={props.value} option={mdmsPetData?.petTypes} optionKey="name" disable={checkForRenew} />
-            } />
+            render={(props) => (
+              <Dropdown select={props.onChange} selected={props.value} option={mdmsPetData?.petTypes} optionKey="name" disable={checkForRenew} />
+            )}
+          />
 
           {errors.petType && <p className="chb-error-text">{getErrorMessage("petType")}</p>}
         </div>
@@ -418,7 +423,8 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             render={(props) => {
               const filteredBreeds = selectedPetType ? mdmsPetData?.breedTypes?.filter((b) => b.petType == selectedPetType.code) : [];
               return <Dropdown select={props.onChange} selected={props.value} option={filteredBreeds} optionKey="name" disable={checkForRenew} />;
-            }} />
+            }}
+          />
 
           {errors.breedType && <p className="chb-error-text">{getErrorMessage("breedType")}</p>}
         </div>
@@ -432,9 +438,10 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             control={control}
             name="petGender"
             rules={{ required: t("PTR_PET_GENDER_REQUIRED") }}
-            render={(props) =>
-            <Dropdown select={props.onChange} selected={props.value} option={mdmsPetData?.genderTypes} optionKey="name" disable={checkForRenew} />
-            } />
+            render={(props) => (
+              <Dropdown select={props.onChange} selected={props.value} option={mdmsPetData?.genderTypes} optionKey="name" disable={checkForRenew} />
+            )}
+          />
 
           {errors.petGender && <p className="chb-error-text">{getErrorMessage("petGender")}</p>}
         </div>
@@ -451,17 +458,18 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               required: t("PTR_PET_COLOR_REQUIRED"),
               pattern: { value: /^[A-Za-z\s]+$/, message: t("PTR_PET_COLOR_INVALID") },
               maxLength: { value: 50, message: "Maximum 50 characters" },
-              minLength: { value: 2, message: "Minimum 2 characters" }
+              minLength: { value: 2, message: "Minimum 2 characters" },
             }}
-            render={(props) =>
-            <TextInput
-              value={props.value}
-              onChange={(e) => props.onChange(e.target.value)}
-              onBlur={(e) => props.onBlur(e)}
-              t={t}
-              // disabled={checkForRenew}
-            />
-            } />
+            render={(props) => (
+              <TextInput
+                value={props.value}
+                onChange={(e) => props.onChange(e.target.value)}
+                onBlur={(e) => props.onBlur(e)}
+                t={t}
+                // disabled={checkForRenew}
+              />
+            )}
+          />
 
           {errors.petColor && <p className="chb-error-text">{getErrorMessage("petColor")}</p>}
         </div>
@@ -513,26 +521,27 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
                 if (months < 0 || months > 11) return t("PTR_PET_AGE_INVALID_MONTHS");
 
                 // ⛔️ Age cannot exceed 40 years
-                if (years > 40 || years === 40 && months > 0) return t("PTR_PET_AGE_MAX");
+                if (years > 40 || (years === 40 && months > 0)) return t("PTR_PET_AGE_MAX");
 
                 return true;
-              }
+              },
             }}
-            render={(props) =>
-            <TextInput
-              value={props.value}
-              onChange={(e) => {
-                // allow digits and one decimal point; strip other chars
-                let v = e.target.value.replace(/[^0-9.]/g, "");
-                // remove any additional dots (keep only the first)
-                v = v.replace(/(\..*)\./g, "$1");
-                props.onChange(v);
-              }}
-              maxlength={5} // allow for values like "23.99"
-              t={t}
-              disabled={checkForRenew} />
-
-            } />
+            render={(props) => (
+              <TextInput
+                value={props.value}
+                onChange={(e) => {
+                  // allow digits and one decimal point; strip other chars
+                  let v = e.target.value.replace(/[^0-9.]/g, "");
+                  // remove any additional dots (keep only the first)
+                  v = v.replace(/(\..*)\./g, "$1");
+                  props.onChange(v);
+                }}
+                maxlength={5} // allow for values like "23.99"
+                t={t}
+                disabled={checkForRenew}
+              />
+            )}
+          />
 
           {errors.petAge && <p className="chb-error-text">{getErrorMessage("petAge")}</p>}
 
@@ -550,23 +559,24 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             control={control}
             name="lastVaccineDate"
             rules={{
-              required: t("PTR_VACCINATION_DATE_REQUIRED")
+              required: t("PTR_VACCINATION_DATE_REQUIRED"),
             }}
-            render={(props) =>
-            <TextInput
-
-              type={"date"}
-              value={props.value}
-              min={minDate}
-              max={maxDate || todayStr}
-              onChange={(e) => props.onChange(e.target.value)}
-              onBlur={() => {
-                trigger("lastVaccineDate");
-                // trigger("petAge");
-              }}
-              t={t} className="ptr-style-ef0b7a1148" />
-
-            } />
+            render={(props) => (
+              <TextInput
+                type={"date"}
+                value={props.value}
+                min={minDate}
+                max={maxDate || todayStr}
+                onChange={(e) => props.onChange(e.target.value)}
+                onBlur={() => {
+                  trigger("lastVaccineDate");
+                  // trigger("petAge");
+                }}
+                t={t}
+                className="ptr-style-ef0b7a1148"
+              />
+            )}
+          />
 
           {errors.lastVaccineDate && <p className="chb-error-text">{getErrorMessage("lastVaccineDate")}</p>}
         </div>
@@ -582,17 +592,18 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             rules={{
               required: t("PTR_VACCINATION_NUMBER_REQUIRED"),
               pattern: { value: alphaNum, message: t("PTR_VACCINATION_NUMBER_INVALID") },
-              maxLength: { value: 50, message: "Maximum 50 numbers" }
+              maxLength: { value: 50, message: "Maximum 50 numbers" },
             }}
-            render={(props) =>
-            <TextInput
-              value={props.value}
-              onChange={(e) => props.onChange(e.target.value)}
-              maxLength={20}
-              onBlur={() => trigger("vaccinationNumber")}
-              t={t} />
-
-            } />
+            render={(props) => (
+              <TextInput
+                value={props.value}
+                onChange={(e) => props.onChange(e.target.value)}
+                maxLength={20}
+                onBlur={() => trigger("vaccinationNumber")}
+                t={t}
+              />
+            )}
+          />
 
           {errors.vaccinationNumber && <p className="chb-error-text">{getErrorMessage("vaccinationNumber")}</p>}
         </div>
@@ -609,11 +620,12 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               required: t("PTR_DOCTOR_NAME_REQUIRED"),
               pattern: { value: onlyAlphabets, message: t("PTR_DOCTOR_NAME_INVALID") },
               maxLength: { value: 100, message: "Maximum 100 characters" },
-              minLength: { value: 2, message: "Minimum 2 characters" }
+              minLength: { value: 2, message: "Minimum 2 characters" },
             }}
-            render={(props) =>
-            <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("doctorName")} t={t} />
-            } />
+            render={(props) => (
+              <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("doctorName")} t={t} />
+            )}
+          />
 
           {errors.doctorName && <p className="chb-error-text">{getErrorMessage("doctorName")}</p>}
         </div>
@@ -627,25 +639,23 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             control={control}
             name="clinicName"
             rules={{ required: t("PTR_CLINIC_NAME_REQUIRED"), pattern: { value: onlyAlphabetsTest, message: t("PTR_CLINIC_NAME_INVALID") } }}
-            render={(props) =>
-            <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("clinicName")} t={t} />
-            } />
+            render={(props) => (
+              <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("clinicName")} t={t} />
+            )}
+          />
 
           {errors.clinicName && <p className="chb-error-text">{getErrorMessage("clinicName")}</p>}
         </div>
       </LabelFieldPair>
 
       <ActionBar>
-        <SubmitBar
-          label="Back"
-
-          onSubmit={onGoBack} className="ptr-style-6b720fc8a3" />
+        <SubmitBar label="Back" onSubmit={onGoBack} className="ptr-style-6b720fc8a3" />
 
         <SubmitBar label={t("Next")} submit="submit" />
       </ActionBar>
       {isLoading && <Loader page={true} />}
-    </form>);
-
+    </form>
+  );
 };
 
 export default PTRCitizenPet;

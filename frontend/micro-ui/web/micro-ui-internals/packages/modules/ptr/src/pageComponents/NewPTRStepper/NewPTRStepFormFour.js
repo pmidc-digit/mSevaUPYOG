@@ -109,10 +109,11 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       workflow: existingWorkflow,
       ...otherDetails
     } = CreatedResponse;
+    const ptrId = sessionStorage.getItem("CitizenConsentdocFilestoreidPTR");
 
     const formData = {
       ...CreatedResponse, // keep untouched fields like applicationNumber, tenantId, etc.
-
+      consentDocument: ptrId,
       // Merge updated owner details
       owner: {
         ...CreatedResponse?.owner,
@@ -129,6 +130,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       petDetails: {
         ...CreatedResponse?.petDetails,
         ...updatedPetDetails,
+
         petType: updatedPetDetails?.petType?.name || CreatedResponse?.petDetails?.petType || "",
         breedType: updatedPetDetails?.breedType?.name || CreatedResponse?.petDetails?.breedType || "",
         petGender: updatedPetDetails?.petGender?.name || CreatedResponse?.petDetails?.petGender || "",
@@ -231,11 +233,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       />
       <ActionBar>
         {/* Back button */}
-        <SubmitBar
-          label={t("CS_COMMON_BACK")}
-          onSubmit={() => onGoBack(currentStepData)}
-
-        />
+        <SubmitBar label={t("CS_COMMON_BACK")} onSubmit={() => onGoBack(currentStepData)} />
 
         {/* Take Action menu */}
         {displayMenu && actions ? (

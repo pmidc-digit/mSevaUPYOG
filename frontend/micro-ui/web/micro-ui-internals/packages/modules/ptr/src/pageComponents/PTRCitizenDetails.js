@@ -13,6 +13,7 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { Loader } from "../components/Loader";
+import CitizenConsent from "../components/CitizenConsent";
 
 const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -22,6 +23,10 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   const { mobileNumber, emailId, name } = userInfo?.info;
   const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
   const [loader, setLoader] = useState(false);
+  const [showTermsPopup, setShowTermsPopup] = useState(false);
+  const [getModalData, setModalData] = useState();
+  const [getUser, setUser] = useState(null);
+  const [getShowOtp, setShowOtp] = useState(false);
 
   // Split full name into firstName (all but last word) and lastName (last word)
   // const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
@@ -32,6 +37,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
     handleSubmit,
     setValue,
     formState: { errors },
+    getValues,
     trigger,
     clearErrors,
   } = useForm({
@@ -52,6 +58,12 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
         return;
       }
     }
+
+    if (!sessionStorage.getItem("CitizenConsentdocFilestoreidPTR")) {
+      alert("Please upload Self Certificate");
+      return;
+    }
+
     goNext(data);
   };
 
@@ -61,7 +73,12 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
       Object.entries(formattedData).forEach(([key, value]) => {
         setValue(key, value);
       });
-      setValue("address", (apiDataCheck?.[0]?.address?.addressLine1 ? apiDataCheck?.[0]?.address?.addressLine1 : apiDataCheck?.[0]?.address?.addressId) || currentStepData?.ownerDetails?.address || "");
+      setValue(
+        "address",
+        (apiDataCheck?.[0]?.address?.addressLine1 ? apiDataCheck?.[0]?.address?.addressLine1 : apiDataCheck?.[0]?.address?.addressId) ||
+          currentStepData?.ownerDetails?.address ||
+          ""
+      );
       setValue("pincode", apiDataCheck?.[0]?.address?.pincode || currentStepData?.ownerDetails?.pincode || "");
     }
   }, [apiDataCheck, currentStepData, setValue]);
@@ -85,13 +102,14 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
     return fallbackMessages[fieldName] || t("PTR_FIELD_REQUIRED");
   };
 
-
-
   const handleMobileChange = async (value) => {
     setLoader(true);
     try {
       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
       console.log("userData", userData);
+      sessionStorage.removeItem("CitizenConsentdocFilestoreidPTR");
+      setValue("termsAccepted", false);
+      setUser(userData?.user?.[0] || null);
       if (userData?.user?.[0]) {
         setValue("name", userData.user[0].name);
         setValue("emailId", userData.user[0].emailId);
@@ -101,6 +119,24 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
       setLoader(false);
     } catch (error) {
       setLoader(false);
+    }
+  };
+
+  const handleModalData = (event) => {
+    const petDetails = currentStepData?.petDetails || apiDataCheck?.[0]?.petDetails || {};
+
+    setModalData({
+      address: getValues("address"),
+      emailId: getValues("emailId"),
+      mobileNumber: getValues("mobileNumber"),
+      name: getValues("name"),
+      ulbName: tenantId,
+      petName: petDetails?.petName,
+      petType: petDetails?.petType?.name || petDetails?.petType,
+    });
+
+    if (event.target.checked) {
+      setShowTermsPopup(true);
     }
   };
 
@@ -175,7 +211,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
             />
           </div>
         </LabelFieldPair>
-        {errors.name && <CardLabelError >{getErrorMessage("name")}</CardLabelError>}
+        {errors.name && <CardLabelError>{getErrorMessage("name")}</CardLabelError>}
 
         {/* Email */}
         <LabelFieldPair>
@@ -238,7 +274,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
             />
           </div>
         </LabelFieldPair>
-        {errors.fatherOrHusbandName && <CardLabelError >{getErrorMessage("fatherOrHusbandName")}</CardLabelError>}
+        {errors.fatherOrHusbandName && <CardLabelError>{getErrorMessage("fatherOrHusbandName")}</CardLabelError>}
 
         {/* Address */}
         <LabelFieldPair>
@@ -303,10 +339,44 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
         </LabelFieldPair>
         {errors.pincode && <CardLabelError>{getErrorMessage("pincode")}</CardLabelError>}
 
+        <div className="chb-citizen-details__terms">
+          <Controller
+            control={control}
+            name="termsAccepted"
+            rules={{ required: t("PLEASE_ACCEPT_TERMS_CONDITIONS") }}
+            render={(props) => (
+              <input
+                id="ptrTermsAccepted"
+                type="checkbox"
+                checked={props.value || false}
+                onChange={(event) => {
+                  props.onChange(event.target.checked);
+                  handleModalData(event);
+                }}
+                className="chb-citizen-details__terms-input"
+              />
+            )}
+          />
+          <label htmlFor="ptrTermsAccepted" className="chb-citizen-details__terms-label">
+            {t("Self Declaration")}
+          </label>
+        </div>
+        {errors.termsAccepted && <CardLabelError>{errors.termsAccepted.message}</CardLabelError>}
+
         <ActionBar>
           <SubmitBar label={t("Next")} submit="submit" />
         </ActionBar>
       </form>
+      {showTermsPopup && (
+        <CitizenConsent
+          showTermsPopupOwner={showTermsPopup}
+          setShowTermsPopupOwner={setShowTermsPopup}
+          getModalData={getModalData}
+          getUser={getUser}
+          getShowOtp={getShowOtp}
+          tenantId={tenantId}
+        />
+      )}
       {loader && <Loader page={true} />}
     </React.Fragment>
   );

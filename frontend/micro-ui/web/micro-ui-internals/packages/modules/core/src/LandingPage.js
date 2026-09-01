@@ -24,6 +24,19 @@ const LandingPage = () => {
   }, []);
   return (
     <div className="landing-page">
+      <header className="landing-site-header">
+        <div className="landing-site-header__brand">
+          <img src="/digit-ui/mseva-punjab-logo-cropped.jpeg" alt="mSeva Punjab" className="landing-site-header__logo" />
+          <div className="landing-site-header__identity">
+            <span>Punjab Local Government</span>
+            <strong>Municipal services, made simpler</strong>
+          </div>
+        </div>
+        <div className="landing-site-header__actions">
+          <button type="button" onClick={navigateToCitizenApp}>Citizen Portal</button>
+          <button type="button" onClick={navigateToEmployeeApp}>Employee Portal</button>
+        </div>
+      </header>
       {/* Hero Section with Login Cards */}
       <div className='language-plugin-landing'>
         <div className="bhashini-plugin-container"></div>

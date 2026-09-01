@@ -272,18 +272,14 @@ const Home = () => {
         <div className="HomePageWrapper">
           <section className="hero-banner-styles" aria-labelledby="mseva-dashboard-welcome">
             <div className="mseva-dashboard__hero-content">
-              <p className="mseva-dashboard__eyebrow">mSeva Punjab</p>
               <h1 id="mseva-dashboard-welcome" className="hero-title-styles">
                 Welcome, <span>{citizenName}</span>
               </h1>
-              <p className="heroSubtitleStyles">Access citizen services digitally with ease and transparency</p>
+              <p className="heroSubtitleStyles">Access all municipal services in one place</p>
               <label className="mseva-dashboard__search-label" htmlFor="mseva-service-search">
                 Search municipal services
               </label>
               <div className="searchBarStyles">
-                <span className="searchIconStyles">
-                  <SearchIconSvg />
-                </span>
                 <input
                   id="mseva-service-search"
                   type="text"
@@ -292,6 +288,14 @@ const Home = () => {
                   onChange={handleSearchChange}
                   className="searchInputStyles"
                 />
+                <button
+                  type="button"
+                  className="mseva-dashboard__search-action"
+                  aria-label="Search municipal services"
+                  onClick={() => document.getElementById("mseva-service-search")?.focus()}
+                >
+                  <SearchIconSvg />
+                </button>
               </div>
             </div>
 

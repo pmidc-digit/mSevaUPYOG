@@ -48,7 +48,11 @@ public class LayoutQueryBuilder {
 					"'documentAttachment', layoutdoc.documentAttachment, 'order', layoutdoc.doc_order)) AS documents, " +
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'additionalDetails', layoutowner.additionalDetails, " +
-					"'uuid', layoutowner.uuid " +
+					"'uuid', layoutowner.uuid, " +
+					"'isPrimaryOwner', layoutowner.isprimaryowner, " +
+					"'ownerType', layoutowner.ownertype, " +
+					"'ownerShipPercentage', layoutowner.ownershippercentage, " +
+					"'relationship', layoutowner.relationship " +
 					")) AS owners " +
 
 					"FROM eg_layout layout " +
@@ -127,7 +131,7 @@ public class LayoutQueryBuilder {
 
 		StringBuilder builder = new StringBuilder(QUERY);
 
-		if (criteria.getTenantId() != null) {
+		if (criteria.getTenantId() != null && !criteria.getTenantId().equalsIgnoreCase("pb.punjab")) {
 	        addClauseIfRequired(builder);
 	        builder.append(" layout.tenantid=? ");
 	        preparedStmtList.add(criteria.getTenantId());

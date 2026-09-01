@@ -53,7 +53,7 @@ public class DgrRetryRepository {
 
         query.append(" ORDER BY createdtime DESC ");
 
-        int queryLimit = (limit != null && limit > 0 && limit <= 500) ? limit : 50;
+        int queryLimit = (limit != null && limit > 0 && limit <= 1000) ? limit : 500;  // max cap: 1000, default: 500
         int queryOffset = (offset != null && offset >= 0) ? offset : 0;
 
         query.append(" LIMIT ? OFFSET ? ");
@@ -68,6 +68,23 @@ public class DgrRetryRepository {
         } catch (Exception e) {
             log.error("Error fetching pending DGR service requests: {}", e.getMessage(), e);
             throw e;
+        }
+    }
+
+    /**
+     * Looks up basic info (tenantid, accountid, phone, dgr_grievance_id) for a single serviceRequestId.
+     */
+    public Map<String, Object> findServiceRequestSummary(String serviceRequestId) {
+        if (serviceRequestId == null || serviceRequestId.trim().isEmpty()) {
+            return null;
+        }
+        String sql = "SELECT servicerequestid, tenantid, accountid, phone, dgr_grievance_id FROM eg_pgr_service WHERE servicerequestid = ? LIMIT 1";
+        try {
+            List<Map<String, Object>> list = jdbcTemplate.queryForList(sql, serviceRequestId.trim());
+            return (list != null && !list.isEmpty()) ? list.get(0) : null;
+        } catch (Exception e) {
+            log.error("Error querying eg_pgr_service for serviceRequestId={}: {}", serviceRequestId, e.getMessage());
+            return null;
         }
     }
 }

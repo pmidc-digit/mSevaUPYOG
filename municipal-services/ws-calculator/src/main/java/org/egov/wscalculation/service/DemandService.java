@@ -508,6 +508,20 @@ public class DemandService {
 
 			addRoundOffTaxHead(calculation.getTenantId(), demandDetails);
 
+			List<Demand> existingWsDemands = searchDemandBasedOnConsumerCode(tenantId, consumerCode, requestInfo, businessService);
+			if (!CollectionUtils.isEmpty(existingWsDemands)) {
+				for (Demand existingWsDemand : existingWsDemands) {
+					if (StatusEnum.ACTIVE.equals(existingWsDemand.getStatus())) {
+						CancelDemandReq cancelDemandReq = new CancelDemandReq();
+						cancelDemandReq.setId(existingWsDemand.getId());
+						cancelDemandReq.setTenantId(tenantId);
+						cancelDemandReq.setConsumerCode(consumerCode);
+						cancelDemandReq.setBusinessService(businessService);
+						dao.cancelPreviousMeterReading(cancelDemandReq);
+					}
+				}
+			}
+
 			Map<String, String> additionalDetailsMap = new HashMap<>();
 			additionalDetailsMap.put("propertyId", property.getPropertyId());
 			demands.add(Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(owner)

@@ -41,6 +41,8 @@ const RegistrationForm = ({ onRegisterSubmit, onAgeError, selectedLanguage, sele
       onRegisterSubmit && onRegisterSubmit(formData);
     }
   };
+  const MOBILE_REGEX = /^[6-9][0-9]{9}$/;
+  const NAME_REGEX = /^(?!.*  )(?=.*[a-zA-Z])[a-zA-Z0-9. ]{3,100}$/;
   const EMAIL_REGEX = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/;
 
 
@@ -60,13 +62,15 @@ const RegistrationForm = ({ onRegisterSubmit, onAgeError, selectedLanguage, sele
               label: "CORE_COMMON_MOBILE_NUMBER",
               type: "text",
               name: "mobileNumber",
-                error: "CORE_COMMON_MOBILE_NUMBER_VALIDMSG",
+              error: "CORE_COMMON_MOBILE_NUMBER_VALIDMSG",
               labelChildren: <span style={{ color: "red" }}> *</span>,
               validation: {
                 required: true,
                 minLength: 10,
                 maxLength: 10,
-                // pattern: /^[0-9]{10}$/,
+                minlength: 10,
+                maxlength: 10,
+                validate: (value) => MOBILE_REGEX.test(value),
               },
 
               defaultValue: mobileNumber || "",
@@ -80,8 +84,7 @@ const RegistrationForm = ({ onRegisterSubmit, onAgeError, selectedLanguage, sele
               labelChildren: <span style={{ color: "red" }}> *</span>,
               validation: {
                 required: true,
-                minLength: 1,
-                pattern: /^[^{0-9}^\$\"<>?\\\\~!@#$%^()+={}\[\]*,/_:;""'']{1,50}$/i,
+                validate: (value) => NAME_REGEX.test(value),
               },
             },
             {

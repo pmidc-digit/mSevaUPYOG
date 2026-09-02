@@ -26,7 +26,7 @@ const cleanBillAccountDetails = (billAccountDetails = []) => {
   const totalAdjustedAmount = Math.round(cleaned?.reduce((sum, item) => sum + Number(item?.adjustedAmount || 0), 0));
     return {
       billAccountDetails: cleaned,
-      advanceLabel: advanceItem ? "advance present" : " ",
+      advanceLabel: advanceItem ? "Advance Amount Paid" : " ",
       advanceAmount: advanceItem ? Math.abs(advanceRawAmount) : " ",
       totalAdjustedAmount,
     };

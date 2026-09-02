@@ -22,11 +22,15 @@ public class BPAConsumer {
 	@Autowired
 	private BPANotificationService notificationService;
 	
-	@KafkaListener(topics = { "${persister.update.buildingplan.topic}", "${persister.save.buildingplan.topic}",
-			"${persister.update.buildingplan.workflow.topic}" },
-			concurrency = "${kafka.consumer.config.concurrency.count}"
+	@KafkaListener(
+			topics = {
+					"${persister.update.buildingplan.topic}",
+					"${persister.save.buildingplan.topic}",
+					"${kafka.consumer.config.concurrency.count}"
+			},
+			concurrency = "${kafka.consumer.config.concurrency.count}",
+			groupId = "${spring.kafka.consumer.group-id}"
 	)
-
 
 	public void listen(final String rawRecord, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 		ObjectMapper mapper = new ObjectMapper();

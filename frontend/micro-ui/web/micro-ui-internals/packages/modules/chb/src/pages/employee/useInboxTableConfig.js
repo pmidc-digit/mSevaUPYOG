@@ -81,10 +81,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   return {
     getCellProps: (cellInfo) => {
       return {
-        style: {
-          padding: "20px 18px",
-          fontSize: "16px",
-        },
+        className: "chb-new-inbox-cell",
       };
     },
     disableSort: false,
@@ -118,6 +115,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     // searchQueryForTable,
     data: table,
     columns: tableColumnConfig,
+    customTableWrapperClassName: "chb-inbox-table-wrapper",
   };
 };
 

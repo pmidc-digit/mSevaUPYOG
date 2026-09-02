@@ -1,205 +1,154 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Header } from "@mseva/digit-ui-react-components";
+import { InboxPagination, InboxWrapper } from "../../../../templates/Inbox/components";
+import RALInboxFilters from "./RALInboxFilters";
+import RALInboxSearch from "./RALInboxSearch";
+import useRALInboxTableConfig from "./useRALInboxTableConfig";
 
-import DesktopInbox from "../../components/DesktopInbox";
-import MobileInbox from "../../components/MobileInbox";
+const DEFAULT_FILTERS = {
+  uuid: { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
+  services: ["RENT_N_LEASE_NEW", "RENT_AND_LEASE_LG"],
+  applicationStatus: [],
+  locality: [],
+  applicationNumber: "",
+  mobileNumber: "",
+};
 
-const Inbox = ({
-  useNewInboxAPI,
-  parentRoute,
-  moduleCode = "RAL",
-  businessService = "RENT_N_LEASE_NEW",
-  initialStates = {},
-  filterComponent,
-  isInbox,
-  rawWfHandler,
-  rawSearchHandler,
-  combineResponse,
-  wfConfig,
-  searchConfig,
-  middlewaresWf,
-  middlewareSearch,
-}) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+const Inbox = ({ parentRoute, initialStates = {}, moduleCode = "RAL" }) => {
   const { t } = useTranslation();
-  const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
-  const [pageSize, setPageSize] = useState(initialStates.pageSize || 10);
-  const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: true }]);
-  const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
-  const [businessIdToOwnerMappings, setBusinessIdToOwnerMappings] = useState({});
-  const [isLoader, setIsLoader] = useState(false);
-  const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const isMobile = Digit.Utils.browser.isMobile();
+  const [filters, setFilters] = useState(() => ({
+    ...DEFAULT_FILTERS,
+    ...(initialStates?.searchParams || {}),
+    applicationStatus: Array.isArray(initialStates?.searchParams?.applicationStatus) ? initialStates.searchParams.applicationStatus : [],
+  }));
+  const [pageSize, setPageSize] = useState(initialStates?.pageSize || (isMobile ? 50 : 10));
+  const [pageOffset, setPageOffset] = useState(initialStates?.pageOffset || 0);
 
-  let isMobile = window.Digit.Utils.browser.isMobile();
-  let paginationParams = isMobile
-    ? { limit: 100, offset: 0, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
-    : { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+  const inboxFilters = useMemo(
+    () => ({
+      ...filters,
+      limit: pageSize,
+      offset: pageOffset,
+      sortBy: "createdTime",
+      sortOrder: "DESC",
+    }),
+    [filters, pageOffset, pageSize]
+  );
 
-  // const isMobile = window.Digit.Utils.browser.isMobile();
-  // const paginationParams = isMobile
-  //   ? { limit: 100, offset: 0, sortOrder: sortParams?.[0]?.desc ? "ASC" : "DESC" }
-  //   : { limit: pageSize, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+  const { isFetching, isLoading, data } = Digit.Hooks.useNewInboxGeneral({
+    tenantId,
+    ModuleCode: moduleCode,
+    filters: inboxFilters,
+    config: { enabled: Boolean(tenantId) },
+  });
 
-  const { isFetching, isLoading: hookLoading, searchResponseKey, data, searchFields, ...rest } = useNewInboxAPI
-    ? Digit.Hooks.useNewInboxGeneral({
-        tenantId,
-        ModuleCode: moduleCode,
-        // filters: { ...searchParams, ...paginationParams, sortParams },
-        filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
-        config: { staleTime: 0, refetchOnMount: "always" },
-      })
-    : Digit.Hooks.useInboxGeneral({
-        tenantId,
-        businessService: businessService,
-        isInbox,
-        // filters: { ...searchParams, ...paginationParams, sortParams },
-        filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
-        rawWfHandler,
-        rawSearchHandler,
-        combineResponse,
-        wfConfig,
-        searchConfig: { ...enableSarch, ...searchConfig },
-        middlewaresWf,
-        middlewareSearch,
-        config: { staleTime: 0, refetchOnMount: "always" },
-      });
+  const rawStatuses = data?.[0]?.statusMap || [];
+  const statuses = useMemo(() => {
+    return rawStatuses.reduce((accumulator, status) => {
+      const statusCode = status?.applicationstatus || status?.applicationStatus || status?.state;
+      const count = status?.count ?? status?.totalCount ?? status?.noOfRecords ?? 0;
 
-  useEffect(() => {
-    async function fetchBills() {
-      let businessServiceMap = {};
+      if (!statusCode) return accumulator;
 
-      data?.challans?.forEach((item) => {
-        if (item.businessService !== "ADVT.Canopy_Fee") {
-          if (!businessServiceMap[item.businessService]) businessServiceMap[item.businessService] = [];
-          businessServiceMap[item.businessService].push(item.challanNo);
-        }
-      });
-
-      let processInstanceArray = [];
-      for (let key in businessServiceMap) {
-        const consumerCodes = businessServiceMap[key].join(",");
-        const res = await Digit.PaymentService.fetchBill(tenantId, { consumerCode: consumerCodes, businessService: key });
-        processInstanceArray = [...processInstanceArray, ...(res?.Bill || [])];
+      const existingStatus = accumulator.find((item) => item.applicationstatus === statusCode);
+      if (existingStatus) {
+        existingStatus.count += count;
+        existingStatus.totalCount = existingStatus.count;
+      } else {
+        accumulator.push({
+          ...status,
+          applicationstatus: statusCode,
+          count,
+          totalCount: count,
+          selectionValue: statusCode,
+          selectionValues: [statusCode],
+        });
       }
 
-      const mapping = {};
-      processInstanceArray.forEach((item) => {
-        mapping[item?.consumerCode] = {
-          businessService: item?.businessService,
-          totalAmount: item?.billDetails?.[0]?.totalAmount || 0,
-          dueDate: item?.billDetails?.[0]?.expiryDate,
+      return accumulator;
+    }, []);
+  }, [rawStatuses]);
+
+  const table = useMemo(() => (data || []).filter((row) => !row?.dataEmpty), [data]);
+  const totalCount = Number(data?.[0]?.totalCount || 0);
+  const selectedStatuses = useMemo(
+    () =>
+      (filters.applicationStatus || [])
+        .map((status) => status?.applicationStatus || status?.applicationstatus || status?.state || status?.code || status)
+        .filter(Boolean),
+    [filters.applicationStatus]
+  );
+
+  const updateFilters = useCallback((nextValues) => {
+    setPageOffset(0);
+    setFilters((current) => ({ ...current, ...nextValues }));
+  }, []);
+
+  const handleSearch = useCallback(
+    ({ applicationNumber, mobileNumber }) => {
+      updateFilters({
+        applicationNumber: String(applicationNumber || "").trim(),
+        mobileNumber: String(mobileNumber || "").trim(),
+      });
+    },
+    [updateFilters]
+  );
+
+  const handleStatusChange = useCallback(
+    (selectedStatusCodes) => {
+      const applicationStatus = selectedStatusCodes.map((statusCode) => {
+        const matchingStatus = rawStatuses.find(
+          (status) => (status?.applicationstatus || status?.applicationStatus || status?.state) === statusCode
+        );
+
+        return {
+          ...matchingStatus,
+          applicationStatus: matchingStatus?.applicationStatus || matchingStatus?.applicationstatus || matchingStatus?.state || statusCode,
+          state: matchingStatus?.state || matchingStatus?.applicationStatus || matchingStatus?.applicationstatus || statusCode,
         };
       });
 
-      setBusinessIdToOwnerMappings(mapping);
-      setIsLoader(false);
-    }
+      updateFilters({ applicationStatus });
+    },
+    [rawStatuses, updateFilters]
+  );
 
-    if (data?.challans?.length > 0) {
-      fetchBills();
-    }
-  }, [data]);
+  const tableProps = useRALInboxTableConfig({ parentRoute, table, totalCount });
 
-  const formedData = (data?.challans || []).map((item) => ({
-    challanNo: item?.challanNo,
-    name: item?.citizen?.name,
-    applicationStatus: item?.applicationStatus,
-    businessService: item?.businessService,
-    totalAmount: businessIdToOwnerMappings[item.challanNo]?.totalAmount || 0,
-    dueDate: businessIdToOwnerMappings[item.challanNo]?.dueDate || "NA",
-    tenantId: item?.tenantId,
-    receiptNumber: item?.receiptNumber,
-  }));
-
-  useEffect(() => {
-    setPageOffset(0);
-  }, [searchParams]);
-
-  const fetchNextPage = () => setPageOffset((prev) => prev + pageSize);
-  const fetchPrevPage = () => setPageOffset((prev) => prev - pageSize);
-  const fetchLastPage = () => setPageOffset(data?.totalCount ? Math.ceil(data.totalCount / 10) * 10 - pageSize : 0);
-  const fetchFirstPage = () => setPageOffset(0);
-
-  const handleFilterChange = (filterParam) => {
-    let keys_to_delete = filterParam.delete;
-    let _new = { ...searchParams, ...filterParam };
-    if (keys_to_delete) keys_to_delete.forEach((key) => delete _new[key]);
-    delete _new.delete;
-    setSearchParams(_new);
-  };
-
-  const handleSort = useCallback((args) => {
-    if (args.length === 0) return;
-    setSortParams(args);
-  }, []);
-
-  const handlePageSizeChange = (e) => setPageSize(Number(e.target.value));
-
-  const totalCount = data?.[0]?.totalCount;
-
-  if (rest?.data?.length !== null) {
-    if (isMobile) {
-      return (
-        <MobileInbox
-          data={data}
-          defaultSearchParams={initialStates.searchParams}
-          isLoading={hookLoading}
-          isSearch={!isInbox}
-          onFilterChange={handleFilterChange}
-          onSearch={handleFilterChange}
-          onSort={handleSort}
-          parentRoute={parentRoute}
-          searchParams={searchParams}
-          sortParams={sortParams}
-          tableConfig={rest?.tableConfig}
-          filterComponent={filterComponent}
+  return (
+    <InboxWrapper
+      title={t("ES_COMMON_INBOX")}
+      totalCount={totalCount}
+      isLoading={isLoading || isFetching}
+      tableData={table}
+      tableProps={tableProps}
+      tableHeader="RENT_AND_LEASE_APPLICATION"
+      filterSection={
+        <RALInboxFilters
+          statuses={statuses}
+          isInboxLoading={isLoading || isFetching}
+          selectedStatuses={selectedStatuses}
+          onStatusChange={handleStatusChange}
         />
-      );
-    } else {
-      return (
-        <div>
-          {isInbox && (
-            <Header>
-              {t("ES_COMMON_INBOX")}
-              {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
-            </Header>
-          )}
-          <DesktopInbox
-            moduleCode={moduleCode}
-            businessService={businessService}
-            data={data}
-            tableConfig={rest?.tableConfig}
-            isLoading={hookLoading}
-            defaultSearchParams={initialStates.searchParams}
-            isSearch={!isInbox}
-            onFilterChange={handleFilterChange}
-            // searchFields={getSearchFields()}
-            onSearch={handleFilterChange}
-            onSort={handleSort}
-            onNextPage={fetchNextPage}
-            onPrevPage={fetchPrevPage}
-            onLastPage={fetchLastPage}
-            onFirstPage={fetchFirstPage}
-            currentPage={Math.floor(pageOffset / pageSize)}
-            pageSizeLimit={pageSize}
-            disableSort={false}
-            onPageSizeChange={handlePageSizeChange}
-            parentRoute={parentRoute}
-            searchParams={searchParams}
-            sortParams={sortParams}
-            totalRecords={data?.totalCount}
-            filterComponent={filterComponent}
-            isLoader={isLoader}
-            useNewInboxAPI={useNewInboxAPI}
-            EmptyResultInboxComp={"RALEmptyResultInbox"}
-          />
-        </div>
-      );
-    }
-  }
-
-  return null;
+      }
+      topBar={<RALInboxSearch values={filters} onSearch={handleSearch} />}
+      pagination={
+        <InboxPagination
+          offset={pageOffset}
+          limit={pageSize}
+          totalCount={totalCount}
+          onPageSizeChange={(event) => {
+            setPageSize(Number(event.target.value));
+            setPageOffset(0);
+          }}
+          onNextPage={() => setPageOffset((current) => current + pageSize)}
+          onPrevPage={() => setPageOffset((current) => Math.max(0, current - pageSize))}
+        />
+      }
+    />
+  );
 };
 
 export default Inbox;

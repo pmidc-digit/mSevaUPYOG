@@ -63,11 +63,25 @@ const NOCBreadCrumbs = ({ location, cameFromOBPS }) => {
           <span className="noc-pages-citizen-index--style-2">/</span>
         </span>
       );
+     const isDetail = location.pathname.includes("noc/search/application-overview");
       breadcrumbs.push(
         <span key="noc-label" className="noc-pages-citizen-index--style-3">
-          {t("MODULE_NOC")}
+          {isDetail ? (
+            <Link
+              to={{
+                pathname: "/digit-ui/citizen/noc/noc-my-application",
+                state: { fromOBPS: cameFromOBPS },
+              }}
+              className="noc-pages-citizen-index--style-3"
+            >
+              {t("MODULE_NOC")}
+            </Link>
+          ) : (
+            t("MODULE_NOC")
+          )}
         </span>
       );
+
     } else {
       // Default NOC breadcrumb — user arrived directly
       if (hasSecondBreadcrumb) {

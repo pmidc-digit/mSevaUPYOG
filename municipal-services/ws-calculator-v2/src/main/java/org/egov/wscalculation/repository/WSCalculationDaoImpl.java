@@ -562,7 +562,7 @@ public List<BillSearchs> getBillss(String tenantId, String demandid) {
                 String query_locality = sb.toString();
                 return jdbcTemplate.queryForObject(query_locality, new Object[]{tenantId, taxPeriodFrom, taxPeriodTo, locality}, Boolean.class);
             }
-            sb.append(")");
+            sb.append(" AND locality IS null)");
             String query_tenant = sb.toString();
             return jdbcTemplate.queryForObject(query_tenant, new Object[]{tenantId, taxPeriodFrom, taxPeriodTo}, Boolean.class);		} catch (Exception e) {
 			log.error("Error checking batch demand execution status for tenantId: " + tenantId, e);

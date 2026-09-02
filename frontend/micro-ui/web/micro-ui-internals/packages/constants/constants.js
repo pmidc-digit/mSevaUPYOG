@@ -17,4 +17,4 @@ export const MSEVA_APP_LINK = "https://play.google.com/store/apps/details?id=com
 
 export const MSEVA_YOUTUBE_LINK = "https://www.youtube.com/@esewapunjabdolgpunjab";
 
-export const OBPS_EMPLOYEE_USER_MANUAL = "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FCLU%2FAugust%2F26%2F1787725881375NxuybOpbkN.pdf";
+export const OBPS_EMPLOYEE_USER_MANUAL = "https://mseva.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FCLU%2FSeptember%2F2%2F1788355215615CwTppIbDjT.pdf";

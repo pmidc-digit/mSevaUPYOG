@@ -32,14 +32,14 @@ public class BPAConsumer {
 			groupId = "${spring.kafka.consumer.group-id}"
 	)
 
-	public void listen(final String rawRecord, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+	public void listen(final String rawRecord) {
 		ObjectMapper mapper = new ObjectMapper();
 		BPARequest bpaRequest = new BPARequest();
 		try {
 			log.debug("Consuming record: " + rawRecord);
 			bpaRequest = mapper.convertValue(rawRecord, BPARequest.class);
 		} catch (final Exception e) {
-			log.error("Error while listening to value: " + rawRecord + " on topic: " + topic + ": " + e);
+			log.error("Error while listening to value: " + rawRecord  + ": " + e);
 		}
 		log.info("BPA Received: " + bpaRequest.getBPA().getApplicationNo());
 		if(!bpaRequest.getBPA().getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_PAY))

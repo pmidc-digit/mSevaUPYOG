@@ -202,6 +202,21 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
       const bill = pd?.bill;
       if (!bill) return;
 
+      const rlAmountPaid = Number(payment?.totalAmountPaid || 0);
+      const rlAmountLeft = Math.max(
+        Number(payment?.totalDue || 0) - rlAmountPaid,
+        0
+      );
+
+      const hasRlAmountPaid =
+        businessService === "rl-services" && rlAmountPaid > 0;
+
+      const rlReceiptFields = {
+        rlAmountPaidLabel: hasRlAmountPaid ? t("PDF_STATIC_LABEL_CONSOLIDATED_RECEIPT_PAID_AMOUNT") : " ",
+        rlAmountPaid: hasRlAmountPaid ? rlAmountPaid : " ",
+        rlAmountLeftLabel: hasRlAmountPaid ? t("NDC_DUE_AMOUNT") : " ",
+        rlAmountLeft: hasRlAmountPaid ? rlAmountLeft : " ",
+      };
       // IMMUTABLE split
       const { billDetails = [], consumerCode, applicationNumber, billNumber, ...billLevelData } = bill;
 
@@ -224,6 +239,7 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
           billRootData: {
             // CLEAN bill (no billDetails)
             ...billLevelData,
+            ...rlReceiptFields,
             consumerCode,
             applicationNumber,
             billNumber,

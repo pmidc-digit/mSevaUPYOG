@@ -205,21 +205,16 @@ public class PaymentController {
     
     @RequestMapping(value = "/_update", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<PaymentResponse> update(@RequestBody @Valid final RequestInfoUpdateWrapper requestInfoUpdateWrapper) {
+    public ResponseEntity<String> update(@RequestBody @Valid final RequestInfoUpdateWrapper requestInfoUpdateWrapper) {
     	
     	String tenantId = requestInfoUpdateWrapper.getTenantId();
     	String consumerNo = requestInfoUpdateWrapper.getConsumerNo();
     	String recieptNo = requestInfoUpdateWrapper.getRecieptNo();
-    	RequestInfo requestInfo = requestInfoUpdateWrapper.getRequestInfo();
     	
     	String paymentId = paymentService.paymentSearchForUpdate(tenantId, consumerNo, recieptNo);
         String paymentUpdated = paymentService.updatePaymentForFilestore(paymentId);
 
-        List<Payment> updatedPayments=new ArrayList<Payment>();
-        Payment updatedPayment = new Payment();
-        updatedPayment.setId(paymentUpdated);
-        updatedPayments.add(updatedPayment);
-        return getSuccessResponse(updatedPayments, requestInfo);
+        return new ResponseEntity<>("Successfully updated file Store Id to null with payment id "+ paymentUpdated, HttpStatus.OK);
 
     }
     

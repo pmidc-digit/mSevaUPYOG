@@ -39,6 +39,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -289,15 +290,17 @@ public class PaymentRepository {
 
     }
 
-    public void updateFileStoreIdToNull(Payment payment){
+    public void updateFileStoreIdToNull(String paymentId){
 
-     
       List<MapSqlParameterSource> fileStoreIdSource = new ArrayList<>();
 	  
       MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();
-      sqlParameterSource.addValue("id",payment.getId());
+      sqlParameterSource.addValue("id",paymentId);
       fileStoreIdSource.add(sqlParameterSource);
-
+      
+      //Keep a copy of the payment in the history table before updating the fileStoreId to null
+      namedParameterJdbcTemplate.batchUpdate(COPY_PAYMENT_SQL,fileStoreIdSource.toArray(new MapSqlParameterSource[0]));
+      
       namedParameterJdbcTemplate.batchUpdate(FILESTOREID_UPDATE_NULL_PAYMENT_SQL,fileStoreIdSource.toArray(new MapSqlParameterSource[0]));
 
     }
@@ -350,6 +353,7 @@ public class PaymentRepository {
         query.append(" ORDER BY createdtime offset " + ":offset " + "limit :limit"); 
         
         log.info("fetchPaymentIds query: " + query.toString() );
+        log.info("preparedStatementValues: " + preparedStatementValues.toString());
         return namedParameterJdbcTemplate.query(query.toString(), preparedStatementValues, new SingleColumnRowMapper<>(String.class));
 
     }
@@ -1253,7 +1257,20 @@ public List<String> fetchConsumerCodeByReceiptNumber(String receiptnumber) {
 	    }
 		return PTConnections;
 	}
-
-}
 	
+	public String fetchPaymentByReceiptNumberTenantAndConsumercode(String receiptNumber, String tenantId,
+			String consumerCode) {
 
+		String query = "SELECT ep.paymentid FROM egcl_paymentdetail ep "
+				+ "JOIN egcl_bill eb ON ep.billid = eb.id WHERE ep.receiptnumber = :receiptNumber "
+				+ "AND ep.tenantid = :tenantId AND eb.consumercode = :consumerCode";
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("receiptNumber", receiptNumber);
+		params.put("tenantId", tenantId);
+		params.put("consumerCode", consumerCode);
+
+		return namedParameterJdbcTemplate.queryForObject(query, params, String.class);
+	}
+	
+}

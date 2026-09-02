@@ -954,6 +954,14 @@ public class DemandService {
 	     ----------------------------------------------------------- */
 
 	    for (Demand demand : demands) {
+	    	
+	    	/* Skip Payment Completed demand */
+
+	        if (demand.getIsPaymentCompleted()) {
+
+	            log.info("Skipping Payment Completed demand {}", demand.getId());
+	            continue;
+	        }
 
 	        BigDecimal totalTax = demand.getDemandDetails()
 	                .stream()
@@ -1739,10 +1747,23 @@ public class DemandService {
 		        String tenantId = cancelList.gettenantId();
 		        String demandid = cancelList.getdemandid();
 		        List<Canceldemandsearch> demandlists = sewerageCalculatorDao.getConnectionCancels(tenantId, demandid);
-		        
-		        if (demandlists.isEmpty()) {
-		            throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
-		        }
+
+              if (!demandlists.isEmpty()) {
+                  String consumerCode = demandlists.get(0).getConsumercode();
+                  String collectionamount=demandlists.get(0).getCollectionamount();
+                  String taxamount=demandlists.get(0).getTaxamount();
+
+                  if (Double.parseDouble(collectionamount) > 0 && Double.parseDouble(taxamount) > 0) {
+                      throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for collectionamount > 0.");
+                  }
+
+                  String wsConnection= sewerageCalculatorDao.getRelatedConnection(tenantId, consumerCode);
+                  if (StringUtils.isNotBlank(wsConnection)) {
+                      throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for water related sewerage connection.");
+                  }
+              }else {
+                  throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
+              }
 
 		        Boolean cancels = sewerageCalculatorDao.getUpdates(demandlists);
 
@@ -1751,6 +1772,10 @@ public class DemandService {
 		        }
 
 		        List<BillSearchs> billSearchsss = sewerageCalculatorDao.getBillss(tenantId, demandid);
+		        
+		        if(CollectionUtils.isEmpty(billSearchsss) && demandlists.stream().anyMatch(demand -> demand.getIsPaymentCompleted() == true))
+		        	continue; // Skip bill cancellation if there are no bills and payment is completed
+		        
 		        boolean billCancelled = sewerageCalculatorDao.getexpiryBills(billSearchsss);
 
 		        if (!billCancelled) {

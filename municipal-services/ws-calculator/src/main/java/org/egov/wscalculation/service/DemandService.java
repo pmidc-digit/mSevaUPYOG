@@ -575,6 +575,21 @@ public class DemandService {
         	
 	        if (matchingUsages && relatedSwConn != null && !relatedSwConn.isEmpty()) {
 	        	// For the metered connections demand has to create one by one
+
+                List<Demand> existingSwDemands = searchDemandBasedOnConsumerCode(tenantId, relatedSwConn, requestInfo, "SW");
+                if (!CollectionUtils.isEmpty(existingSwDemands)) {
+                    for (Demand existingSwDemand : existingSwDemands) {
+                        if (StatusEnum.ACTIVE.equals(existingSwDemand.getStatus())) {
+                            CancelDemandReq cancelDemandReq = new CancelDemandReq();
+                            cancelDemandReq.setId(existingSwDemand.getId());
+                            cancelDemandReq.setTenantId(tenantId);
+                            cancelDemandReq.setConsumerCode(relatedSwConn);
+                            cancelDemandReq.setBusinessService("SW");
+                            dao.cancelPreviousMeterReading(cancelDemandReq);
+                        }
+                    }
+                }
+
 	 			if (WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(connection.getConnectionType())) {
 	 				demandReq.addAll(demands);
 	 					businessServices = "SW";
@@ -1204,6 +1219,14 @@ public class DemandService {
 	     ----------------------------------------------------------- */
 
 	    for (Demand demand : demands) {
+	    	
+	    	/* Skip Payment Completed demand */
+
+	        if (demand.getIsPaymentCompleted()) {
+
+	            log.info("Skipping Payment Completed demand {}", demand.getId());
+	            continue;
+	        }
 
 	        BigDecimal totalTax = demand.getDemandDetails()
 	                .stream()
@@ -1712,8 +1735,23 @@ public class DemandService {
 
 		        List<Canceldemandsearch> demandlists = waterCalculatorDao.getConnectionCancels(tenantId, demandid);
 
-		        if (demandlists.isEmpty()) {
-		            throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
+                // Block cancel operation for metered connections
+                if (!demandlists.isEmpty()) {
+                      String consumerCode = demandlists.get(0).getConsumercode();
+                      String collectionamount=demandlists.get(0).getCollectionamount();
+                      String taxamount=demandlists.get(0).getTaxamount();
+
+                      if (Double.parseDouble(collectionamount) > 0 && Double.parseDouble(taxamount) > 0) {
+                          throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for collectionamount > 0.");
+                      }
+
+                    String connectionType = calculatorUtils.getWaterConnectionType(cancelDemand.getRequestInfo(),tenantId, consumerCode);
+                      if (StringUtils.isNotBlank(connectionType)
+                              && WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(connectionType)) {
+                          throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for metered connections.");
+                      }
+                }else{
+		                throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
 		        }
 
 		        Boolean cancels = waterCalculatorDao.getUpdates(demandlists);
@@ -1723,6 +1761,10 @@ public class DemandService {
 		        }
 
 		        List<BillSearchs> billSearchsss = waterCalculatorDao.getBillss(tenantId, demandid);
+		        
+		        if(CollectionUtils.isEmpty(billSearchsss) && demandlists.stream().anyMatch(demand -> demand.getIsPaymentCompleted() == true))
+		        	continue; // Skip bill cancellation if there are no bills and payment is completed
+		        
 		        boolean billCancelled = waterCalculatorDao.getexpiryBills(billSearchsss);
 
 		        if (!billCancelled) {
@@ -2249,8 +2291,9 @@ public class DemandService {
 		for (Demand demand : demandResponse) {
 			try {
 				Object result = serviceRequestRepository.fetchResult(
-						calculatorUtils.getFetchBillURL(demand.getTenantId(), demand.getConsumerCode()),
-						RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+                        calculatorUtils.getFetchBillURLWithBusinessService(demand.getTenantId(), demand.getConsumerCode(),demand.getBusinessService()),
+                        RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+
 				HashMap<String, Object> billResponse = new HashMap<>();
 				billResponse.put("requestInfo", requestInfo);
 				billResponse.put("billResponse", result);

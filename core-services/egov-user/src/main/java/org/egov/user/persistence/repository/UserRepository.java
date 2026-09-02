@@ -723,12 +723,14 @@ public class UserRepository {
     private void updateRoles(User user) {
         Map<String, Object> roleInputs = new HashMap<String, Object>();
 		List<String> roleCodes = user.getRoles().stream().map(Role::getCode).collect(Collectors.toList());
+		List<String> tenantIds = user.getRoles().stream().map(Role::getTenantId).distinct().collect(Collectors.toList());
         roleInputs.put("user_id", user.getId());
         roleInputs.put("user_tenantid", user.getTenantId());
 
-		// Add roles filter as well, other wise during concurrent update call there is a
+		// Add roles and tenantIds filter as well, other wise during concurrent update call there is a
 		// null pointer exception due to delete of roles
 		roleInputs.put("roles", roleCodes);
+		roleInputs.put("tenantIds", tenantIds);
         namedParameterJdbcTemplate.update(RoleQueryBuilder.DELETE_USER_ROLES, roleInputs);
         saveUserRoles(user);
     }

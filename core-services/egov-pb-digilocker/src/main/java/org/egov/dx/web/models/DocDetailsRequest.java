@@ -36,7 +36,12 @@ public class DocDetailsRequest {
     private String connType;
     
     
+    @XStreamAlias("level1")
+    private String level1;
 
+    @XStreamAlias("level2")
+    private String level2;
+    
     @XStreamAlias("City")
     private String city;
 
@@ -118,5 +123,21 @@ public class DocDetailsRequest {
 
     public void setCity(String city) {
         this.city = city;
+    }
+
+    public String getLevel1() {
+        return level1;
+    }
+
+    public void setLevel1(String level1) {
+        this.level1 = level1;
+    }
+
+    public String getLevel2() {
+        return level2;
+    }
+
+    public void setLevel2(String level2) {
+        this.level2 = level2;
     }
 }

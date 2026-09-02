@@ -89,17 +89,24 @@ public class LAYOUTService {
 		String acres=null;
 // Access values
 		String ulbType = (String) siteDetails.get("ulbType");
-		Map<String, Object> buildingCategory = (Map<String, Object>) siteDetails.get("buildingCategory");
-		String buildingCategoryType = (String) buildingCategory.get("code");
-		if(buildingCategoryType.equals("RESIDENTIAL")){
-			acres = (String) siteDetails.get("areaUnderResidentialUseInSqM");
-		}else if(buildingCategoryType.equals("INDUSTRIAL_WAREHOUSE")){
-			acres = (String) siteDetails.get("areaUnderInstutionalUseInSqM");
-		}
-		else{
-			acres = (String) siteDetails.get("areaUnderCommercialUseInSqM");
+		Map<String, Object> applicationAppliedUnder = (Map<String, Object>) siteDetails.get("applicationAppliedUnder");
+		String appAppliedUnderCode = null;
+		if (applicationAppliedUnder != null) {
+			appAppliedUnderCode = (String) applicationAppliedUnder.get("code");
 		}
 
+		if ("TOWN_PLANNING".equalsIgnoreCase(appAppliedUnderCode) || "TOWN PLANNING".equalsIgnoreCase(appAppliedUnderCode)) {
+			if ("Nagar Panchayat".equalsIgnoreCase(ulbType) || "Municipal Council".equalsIgnoreCase(ulbType)) {
+				return "Layout_mcl_abv";
+			} else if ("Municipal Corporation".equalsIgnoreCase(ulbType)) {
+				return "Layout_mco_abv";
+			}
+		}
+
+		Map<String, Object> buildingCategory = (Map<String, Object>) siteDetails.get("buildingCategory");
+		String buildingCategoryType = (String) buildingCategory.get("code");
+		
+		acres = (String) siteDetails.get("specificationPlotArea");
 
 		BigDecimal acresBD = BigDecimal.ZERO;
 		if ( acres!= null && !acres.isEmpty()) {
@@ -414,38 +421,26 @@ public class LAYOUTService {
 				List<String> accountid = nocRepository.getOwnerUserIdsByLayoutId(noc.getId());
 //				accountid.add(noc.getAccountId());
 				
-				List<OwnerInfo> owner = new ArrayList<>();
-				
 				if(!CollectionUtils.isEmpty(accountid)) {
 					criteria.setAccountId(accountid);
 					UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-					owner = userDetailResponse.getUser();
-				}
-				Map<String, Object>adByUuid = Optional.ofNullable(noc.getOwners())
-						.orElse(Collections.emptyList())
-						.stream()
-						.filter(oi -> oi.getUuid() != null && oi.getAdditionalDetails() != null)
-						.collect(Collectors.toMap(
-								OwnerInfo::getUuid,
-								OwnerInfo::getAdditionalDetails,
-								(a, b) -> a // keep first on duplicate uuid
-						));
+					List<OwnerInfo> users = userDetailResponse.getUser();
+					if(!CollectionUtils.isEmpty(users)) {
+						Map<String, OwnerInfo> usersByUuid = users.stream()
+								.filter(u -> u.getUuid() != null)
+								.collect(Collectors.toMap(OwnerInfo::getUuid, u -> u, (a, b) -> a));
 
-
-// Merge by uuid
-				for (OwnerInfo oi : owner) {
-					String uuid = oi.getUuid(); // ensure this getter exists
-					oi.setStatus(true);
-					if (uuid != null) {
-						Object ad = adByUuid.get(uuid);
-						if (ad != null) {
-							oi.setAdditionalDetails(ad);
+						if(!CollectionUtils.isEmpty(noc.getOwners())) {
+							for (OwnerInfo dbOwner : noc.getOwners()) {
+								OwnerInfo userProfile = usersByUuid.get(dbOwner.getUuid());
+								if (userProfile != null) {
+									dbOwner.addUserWithoutAuditDetail(userProfile);
+								}
+								dbOwner.setStatus(true);
+							}
 						}
 					}
 				}
-
-
-				noc.setOwners(owner);
 
 				// BPA CALL
 //				StringBuilder uri = new StringBuilder(config.getBpaHost()).append(config.getBpaContextPath())
@@ -464,6 +459,7 @@ public class LAYOUTService {
 //						uri.append("&applicationNo=").append(sourceRefId);
 //					}
 //				}
+//
 //
 ////					uri.append("&applicationNo=").append(layout.getSourceRefId());
 //

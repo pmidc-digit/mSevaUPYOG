@@ -12,8 +12,8 @@ import cors from "cors";
 import morgan from "morgan";
 import bodyParser from "body-parser";
 import asyncHandler from "express-async-handler";
-import * as pdfmake from "pdfmake/build/pdfmake";
-import * as pdfFonts from "pdfmake/build/vfs_fonts";
+const pdfmake = require("pdfmake/build/pdfmake");
+const pdfFonts = require("pdfmake/build/vfs_fonts");
 import get from "lodash/get";
 import set from "lodash/set";
 import {
@@ -69,7 +69,13 @@ console.log(`*******************************************`);
 
 var jp = require("jsonpath");
 //create binary
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+if (pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
+  pdfmake.vfs = pdfFonts.pdfMake.vfs;
+} else if (pdfFonts.vfs) {
+  pdfmake.vfs = pdfFonts.vfs;
+} else {
+  pdfmake.vfs = pdfFonts;
+}
 var pdfMakePrinter = require("pdfmake/src/printer");
 
 let app = express();
@@ -847,6 +853,33 @@ formatConfigUrls &&
       })();
     }
   });
+
+// ═══════════════════════════════════════════════════════════════════
+// HEALTH CHECK ENDPOINT - For Kubernetes monitoring
+// Responds to liveness and readiness probes
+// ═══════════════════════════════════════════════════════════════════
+app.get('/health', asyncHandler(async (req, res) => {
+  try {
+    res.status(200).json({
+      status: 'UP',
+      timestamp: new Date().toISOString(),
+      service: 'pdf-service',
+      version: '1.0.0',
+      pods: 1,
+      concurrency: 1,
+      uptime: process.uptime(),
+      mode: '1 Pod - 1 Concurrency (Stable)'
+    });
+  } catch (error) {
+    logger.error("Health check error: " + error.message);
+    res.status(500).json({
+      status: 'DOWN',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+}));
+// ═══════════════════════════════════════════════════════════════════
 
 app.listen(serverport, () => {
   logger.info(`Server running at http:${serverport}/`);

@@ -12,6 +12,7 @@ import org.egov.pgr.utils.PGRConstants;
 import org.egov.pgr.utils.ReportUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -20,8 +21,14 @@ import org.springframework.web.client.RestTemplate;
 import org.egov.pgr.contract.Address;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Base64;
 
 /**
  * DgrIntegration - integrates with DGR & grievance APIs.
@@ -42,6 +49,12 @@ public class DgrIntegration {
 
     @Value("${kafka.topic.store.failed.topic}")
     public String failedDgrTopic;
+
+    @Value("${kafka.topic.dgr.no.media}")
+    public String dgrNoMediaTopic;
+
+    @Value("${kafka.topic.dgr.with.media}")
+    public String dgrWithMediaTopic;
 
 
     // URLs
@@ -69,8 +82,23 @@ public class DgrIntegration {
 
     @Value("${dgr.token.public.key}")
     public String TOKEN_PUBLIC_KEY;
-    
-    
+
+    // FileStore config
+    @Value("${egov.filestore.host}")
+    public String FILESTORE_HOST;
+
+    @Value("${egov.filestore.url.endpoint}")
+    public String FILESTORE_URL_ENDPOINT;
+
+    // DGR Document upload URL
+    @Value("${dgr.upload.document.url}")
+    public String DGR_UPLOAD_DOCUMENT_URL;
+
+    // DGR Search grievance by ReferenceId + Mobile
+    @Value("${dgr.search.grievance.url}")
+    public String DGR_SEARCH_GRIEVANCE_URL;
+
+
     @Autowired
     private GrievanceService grievanceService;
 
@@ -84,21 +112,60 @@ public class DgrIntegration {
 	private PGRProducer pGRProducer;
 
 
-    /* =========================
-       Kafka Listener
-       ========================= */
-    @KafkaListener(topics = {"${kafka.topics.save.dgr.service}"},
-    		concurrency = "${kafka.config.consumer.concurrency.count}")
-    public void listen(final HashMap<String, Object> record,
-                       @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+    /* =========================================================
+       Kafka Listeners — Dual Topic Strategy
+       ---------------------------------------------------------
+       NO-MEDIA   → save-pgr-dgr-no-media    → 5 threads → instant CreateGrievance (no upload)
+       WITH-MEDIA → save-pgr-dgr-with-media  → 2 threads → upload docs then CreateGrievance
+                  + save-pgr-dgr-service     → 2 threads → old topic (may have media, safer here)
+       ========================================================= */
+
+    /**
+     * FAST PATH — complaints WITHOUT documents.
+     * 5 dedicated threads ensure no-media complaints are NEVER blocked
+     * behind slow DGR upload API calls from with-media complaints.
+     * Only listens to the new no-media topic — guaranteed no uploads here.
+     */
+    @KafkaListener(
+        topics = {"${kafka.topic.dgr.no.media}"},
+        groupId = "dgr-no-media-consumer-group",
+        concurrency = "5")
+    public void listenNoMedia(final HashMap<String, Object> record,
+                              @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+        log.info("[NO-MEDIA] Processing complaint from topic [{}]", topic);
+        processGrievanceRecord(record, false);
+    }
+
+    /**
+     * SLOW PATH — complaints WITH documents.
+     * 2 threads controlled separately — waits up to 90s for DGR upload API.
+     * Also handles old topic (save-pgr-dgr-service) since old messages may contain media.
+     * Slow uploads here NEVER affect no-media complaint throughput.
+     */
+    @KafkaListener(
+        topics = {"${kafka.topic.dgr.with.media}", "${kafka.topics.save.dgr.service}"},
+        groupId = "dgr-with-media-consumer-group",
+        concurrency = "2")
+    public void listenWithMedia(final HashMap<String, Object> record,
+                                @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+        log.info("[WITH-MEDIA] Processing complaint from topic [{}]", topic);
+        processGrievanceRecord(record, true);
+    }
+
+    /**
+     * Shared processing logic for both listeners.
+     * @param record     Kafka message payload
+     * @param hasMedia   true = with-media path (upload docs), false = no-media path (skip upload)
+     */
+    @SuppressWarnings("unchecked")
+    private void processGrievanceRecord(final HashMap<String, Object> record, boolean hasMedia) {
 
         String tokenResponse = generateLoginToken();
-        log.info("Generated Token: {}", tokenResponse);
-        if (tokenResponse == null || tokenResponse.trim().isEmpty() 
-                || "Invalid credentials!".equalsIgnoreCase(tokenResponse.trim())) {            log.error("Failed to generate token. Aborting DGR grievance creation.");
+        if (tokenResponse == null || tokenResponse.trim().isEmpty()
+                || "Invalid credentials!".equalsIgnoreCase(tokenResponse.trim())) {
+            log.error("Failed to generate DGR token. Aborting grievance creation.");
             return;
         }
-        log.info("Token API Response: {}", tokenResponse);
 
         ObjectMapper mapper = new ObjectMapper();
         ServiceRequest serviceReqRequest = new ServiceRequest();
@@ -106,26 +173,64 @@ public class DgrIntegration {
         try {
             serviceReqRequest = mapper.convertValue(record, ServiceRequest.class);
 
+            // Safeguard: skip if DGR ID already exists
+            if (serviceReqRequest.getServices() != null && !serviceReqRequest.getServices().isEmpty()) {
+                String existingDgrId = serviceReqRequest.getServices().get(0).getDgrPgrId();
+                if (existingDgrId != null && !existingDgrId.trim().isEmpty()) {
+                    log.info("DGR ID already exists: {}. Skipping to avoid duplicate.", existingDgrId);
+                    return;
+                }
+            }
+
             Map<String, Object> reqInfoMap = (Map<String, Object>) record.get("RequestInfo");
-            RequestInfo requestInfo = mapper.convertValue(reqInfoMap, RequestInfo.class);
+            RequestInfo requestInfo = reqInfoMap != null ? mapper.convertValue(reqInfoMap, RequestInfo.class) : null;
 
             List<Map<String, Object>> services = (List<Map<String, Object>>) record.get("services");
-            String tenantId = (String) services.get(0).get("tenantId");
-            
-            Map<String, Object> userInfo = (Map<String, Object>) reqInfoMap.get("userInfo");
-            Long userId = Long.valueOf(userInfo.get("id").toString());
-            List<Long> userIds = Collections.singletonList(userId);
+            String tenantId = (services != null && !services.isEmpty() && services.get(0) != null)
+                    ? String.valueOf(services.get(0).get("tenantId")) : "pb";
 
-            UserResponse userResponse = grievanceService.getUsers(requestInfo, tenantId, userIds);
+            // Fetch user info
+            UserResponse userResponse = null;
+            try {
+                if (reqInfoMap != null && reqInfoMap.get("userInfo") != null) {
+                    Map<String, Object> userInfo = (Map<String, Object>) reqInfoMap.get("userInfo");
+                    if (userInfo.get("id") != null) {
+                        Long userId = Long.valueOf(userInfo.get("id").toString());
+                        userResponse = grievanceService.getUsers(requestInfo, tenantId, Collections.singletonList(userId));
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Could not fetch user info for tenant [{}]: {}", tenantId, e.getMessage());
+            }
 
+            // Resolve phone number
+            String serviceRequestId = (serviceReqRequest.getServices() != null && !serviceReqRequest.getServices().isEmpty())
+                    ? serviceReqRequest.getServices().get(0).getServiceRequestId() : null;
+            String phone = (serviceReqRequest.getServices() != null && !serviceReqRequest.getServices().isEmpty())
+                    ? serviceReqRequest.getServices().get(0).getPhone() : null;
+            if ((phone == null || phone.trim().isEmpty()) && userResponse != null
+                    && userResponse.getUser() != null && !userResponse.getUser().isEmpty()) {
+                phone = userResponse.getUser().get(0).getMobileNumber();
+            }
+
+            // Search-first: check if grievance already exists in DGR before creating
+            if (serviceRequestId != null && phone != null && !phone.trim().isEmpty()) {
+                String existingGrievanceId = searchGrievanceByReferenceId(serviceRequestId, phone, tokenResponse);
+                if (existingGrievanceId != null && !existingGrievanceId.trim().isEmpty()) {
+                    log.info("Grievance already in DGR for serviceRequestId={}, Grievance_ID={}. Updating DB only.",
+                            serviceRequestId, existingGrievanceId);
+                    pushDgrIdUpdate(existingGrievanceId, serviceReqRequest);
+                    return;
+                }
+            }
+
+            // Create grievance in DGR (upload docs only for with-media path)
             String grievanceResponse = createGrievance(serviceReqRequest, tokenResponse, userResponse);
-
-            log.info("UserResponse = {}", userResponse);
-            log.info("CreateGrievance Response = {}", grievanceResponse);
+            log.info("[{}] CreateGrievance completed for serviceRequestId={}",
+                    hasMedia ? "WITH-MEDIA" : "NO-MEDIA", serviceRequestId);
 
         } catch (Exception ex) {
-            ex.printStackTrace();
-            log.error("Error converting record: {}", ex.getMessage());
+            log.error("Error processing grievance record: {}", ex.getMessage(), ex);
         }
     }
 
@@ -151,7 +256,7 @@ public class DgrIntegration {
 
             HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
 
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = createRestTemplate(10000, 30000);  // token API: 30s
             log.info("Calling token API");
 
             ResponseEntity<String> response =
@@ -169,7 +274,7 @@ public class DgrIntegration {
             return token;
 
         } catch (Exception ex) {
-            log.error("Error while generating login token", ex);
+            log.error("Error while generating login token: {}", ex.getMessage());
             return null;
         }
     }
@@ -180,7 +285,7 @@ public class DgrIntegration {
        ========================= */
     public String createGrievance(ServiceRequest serviceReqRequest, String bearerToken, UserResponse userResponse) {
         try {
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = createRestTemplate(10000, 60000);  // CreateGrievance API: 60s
             String url = CREATE_GRIEVANCE_URL;
 
             // 1. Get district list from DGR API
@@ -423,17 +528,18 @@ public class DgrIntegration {
                             ? catSubCat.get("Sub_Category_ID").toString()
                             : "0");
 
-            requestBody.put(
-            	    "Application_Title",
-            	    safeValue(constants.DEFAULT_CITIZEN_NAME,
-            	              serviceReqRequest.getServices().get(0).getDescription())
-            	);
+            String serviceRequestId = serviceReqRequest.getServices().get(0).getServiceRequestId();
+            String descriptionText = safeValue(
+                    constants.DEFAULT_DESCRIPTION_NAME,
+                    serviceReqRequest.getServices().get(0).getDescription()
+            );
 
-            	requestBody.put(
-            	    "Application_Description",
-            	    safeValue(constants.DEFAULT_CITIZEN_NAME,
-            	              serviceReqRequest.getServices().get(0).getDescription())
-            	);
+            String formattedTitleAndDesc = (serviceRequestId != null && !serviceRequestId.trim().isEmpty())
+                    ? serviceRequestId + " - " + descriptionText
+                    : descriptionText;
+
+            requestBody.put("Application_Title", formattedTitleAndDesc);
+            requestBody.put("Application_Description", formattedTitleAndDesc);
             	requestBody.put("Application_Department_Name",   Optional.ofNullable(catSubCat.get("Department_Name"))
                         .filter(s -> !s.trim().isEmpty())
                         .orElse("Department of Local Government"));
@@ -445,7 +551,19 @@ public class DgrIntegration {
             requestBody.put("System_type", constants.SYSTEM_TYPE);
             requestBody.put("Service_Code", constants.SERVICE_CODE_DEFAULT);
             requestBody.put("Selected_Locale", constants.SELECTED_LOCALE);
-            requestBody.put("doc", new ArrayList<>());
+            // Collect media UUIDs from ActionInfo and upload documents to DGR
+            List<String> mediaIds = Collections.emptyList();
+            if (serviceReqRequest.getActionInfo() != null
+                    && !serviceReqRequest.getActionInfo().isEmpty()
+                    && serviceReqRequest.getActionInfo().get(0).getMedia() != null) {
+                mediaIds = serviceReqRequest.getActionInfo().get(0).getMedia();
+            }
+            List<Map<String, Object>> uploadedDocs = uploadDocumentsToDgr(
+                    mediaIds,
+                    bearerToken,
+                    serviceReqRequest.getServices().get(0).getTenantId()
+            );
+            requestBody.put("doc", uploadedDocs);
             requestBody.put("Town_ID", 0);
             requestBody.put("Previous_Grievance", 0);
             requestBody.put("Town_Name",tehsilSearchName);
@@ -476,11 +594,16 @@ public class DgrIntegration {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Bearer " + bearerToken);
-            headers.set("Accept", "application/json, text/plain, */*");
-            headers.set("Accept-Language", "en-US,en;q=0.9");
-
             HttpEntity<Map<String, Object>> entity =
                     new HttpEntity<>(requestBody, headers);
+
+            ObjectMapper mapper = new ObjectMapper();
+            String reqId = serviceReqRequest.getServices().get(0).getServiceRequestId();
+            try {
+                log.info("DGR CreateGrievance request payload for serviceRequestId [{}]: {}", reqId, mapper.writeValueAsString(requestBody));
+            } catch (Exception e) {
+                log.info("DGR CreateGrievance request payload for serviceRequestId [{}]: {}", reqId, requestBody);
+            }
 
             String responseBody;
 
@@ -491,15 +614,16 @@ public class DgrIntegration {
 
             } catch (Exception ex) {
 
-                log.error("Error calling CreateGrievance API", ex);
+                log.error("Error calling CreateGrievance API for serviceRequestId [{}]: {}", reqId, ex.getMessage(), ex);
 
                 Map<String, Object> failedPayload = new HashMap<>();
                 failedPayload.put("serviceRequest", serviceReqRequest);
-                failedPayload.put("DgrCreate", requestBody);
+                failedPayload.put("DgrCreate", sanitizeRequestBodyForFailure(requestBody));
                 failedPayload.put("error", ex.getMessage());
                 failedPayload.put("status", "FAILED");
 
-                pGRProducer.push(failedDgrTopic,serviceReqRequest.getServices().get(0).getServiceRequestId(), failedPayload);
+                pGRProducer.push(failedDgrTopic, reqId, failedPayload);
+                log.warn("Pushed failed DGR record to topic [{}] for serviceRequestId: {}, error: {}", failedDgrTopic, reqId, ex.getMessage());
 
                 return "Error calling CreateGrievance API: " + ex.getMessage();
             }
@@ -513,31 +637,57 @@ public class DgrIntegration {
 
             if (grievanceId != null && !grievanceId.trim().isEmpty()) {
 
-                log.info("DGR Grievance ID: {}", grievanceId);
+                log.info("DGR Grievance ID: {} created successfully for serviceRequestId: {}", grievanceId, reqId);
 
                 serviceReqRequest.getServices().get(0).setDgrPgrId(grievanceId);
 
-
-                pGRProducer.push(drgPgrId, grievanceId,serviceReqRequest);
+                pGRProducer.push(drgPgrId, grievanceId, serviceReqRequest);
+                log.info("Pushed DGR ID [{}] mapping to topic [{}] for serviceRequestId: {}", grievanceId, drgPgrId, reqId);
 
             } else {
 
-                log.error("DGR Grievance ID missing. Response: {}", responseBody);
+                log.error("DGR Grievance ID missing for serviceRequestId [{}]. Response: {}", reqId, responseBody);
 
-                Map<String, Object> failedPayload = new HashMap<>();
-                failedPayload.put("serviceRequest", serviceReqRequest);
-                failedPayload.put("dgrResponse", responseBody);
-                failedPayload.put("DgrCreate", requestBody);
-                failedPayload.put("error", "DGR_GRIEVANCE_ID_MISSING");
-                failedPayload.put("status", "FAILED");
+                // Special case: "Already submitted" — DGR has this grievance but search returned 404.
+                // Retrying will NEVER succeed — skip failed topic to avoid infinite retry loop.
+                boolean isAlreadySubmitted = responseBody != null
+                        && responseBody.toLowerCase().contains("already submited");
 
-                pGRProducer.push(failedDgrTopic,serviceReqRequest.getServices().get(0).getServiceRequestId(), failedPayload);
+                if (isAlreadySubmitted) {
+                    log.warn("DGR says grievance already exists for serviceRequestId [{}] but search returned no ID. " +
+                            "Skipping failed topic — manual lookup required. DGR response: {}", reqId, responseBody);
+                } else {
+                    // Genuinely failed — push to failed topic for retry
+                    Map<String, Object> failedPayload = new HashMap<>();
+                    failedPayload.put("serviceRequest", serviceReqRequest);
+                    failedPayload.put("dgrResponse", responseBody);
+                    failedPayload.put("DgrCreate", sanitizeRequestBodyForFailure(requestBody));
+                    failedPayload.put("error", "DGR_GRIEVANCE_ID_MISSING");
+                    failedPayload.put("status", "FAILED");
+
+                    pGRProducer.push(failedDgrTopic, reqId, failedPayload);
+                    log.warn("Pushed failed DGR record to topic [{}] for serviceRequestId: {}. DGR response: {}", failedDgrTopic, reqId, responseBody);
+                }
             }
 		
             return responseBody;
         }
         finally {
             log.info("CreateGrievance API call completed");
+        }
+    }
+
+    /**
+     * Helper to push updated DGR ID mapping to Kafka topic (update-dgr-pgrid)
+     * so that eg_pgr_service is updated in PostgreSQL.
+     */
+    public void pushDgrIdUpdate(String grievanceId, ServiceRequest serviceReqRequest) {
+        if (grievanceId != null && !grievanceId.trim().isEmpty() && serviceReqRequest != null) {
+            String reqId = (serviceReqRequest.getServices() != null && !serviceReqRequest.getServices().isEmpty())
+                    ? serviceReqRequest.getServices().get(0).getServiceRequestId() : "UNKNOWN";
+            serviceReqRequest.getServices().get(0).setDgrPgrId(grievanceId);
+            pGRProducer.push(drgPgrId, grievanceId, serviceReqRequest);
+            log.info("Pushed DGR ID [{}] mapping to topic [{}] for serviceRequestId: {}", grievanceId, drgPgrId, reqId);
         }
     }
     // Helper method for safe value
@@ -551,13 +701,95 @@ public class DgrIntegration {
         }
         return defaultVal;
     }
+
+    /* =========================
+       DGR Search Grievance by ReferenceId + Mobile
+       ========================= */
+    /**
+     * Calls DGR's GetGrievanceIdByMobileAndReferenceId API to check if a grievance
+     * already exists in DGR for the given serviceRequestId + mobile number.
+     *
+     * @param referenceId     Our serviceRequestId (e.g. "25/08/2026/356974")
+     * @param citizenMobileNo Citizen's mobile number from phone column
+     * @param bearerToken     DGR bearer token
+     * @return The DGR Grievance_ID if found, or null if not found / error
+     */
+    @SuppressWarnings("unchecked")
+    public String searchGrievanceByReferenceId(String referenceId, String citizenMobileNo, String bearerToken) {
+        if (referenceId == null || referenceId.trim().isEmpty()) {
+            log.warn("searchGrievanceByReferenceId: referenceId is null/empty");
+            return null;
+        }
+        if (citizenMobileNo == null || citizenMobileNo.trim().isEmpty()) {
+            log.warn("searchGrievanceByReferenceId: citizenMobileNo is null/empty for referenceId={}", referenceId);
+            return null;
+        }
+
+        try {
+            RestTemplate restTemplate = createRestTemplate(10000, 25000);  // SearchGrievance API: 25s
+
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("ReferenceId", referenceId.trim());
+            requestBody.put("CitizenMobileNo", citizenMobileNo.trim());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "Bearer " + bearerToken);
+            headers.set("Accept", "application/json, text/plain, */*");
+
+            HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
+
+            log.info("Calling DGR SearchGrievance API: {} with ReferenceId={}, Mobile={}",
+                    DGR_SEARCH_GRIEVANCE_URL, referenceId, citizenMobileNo);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    DGR_SEARCH_GRIEVANCE_URL, HttpMethod.POST, entity, String.class);
+
+            String responseBody = response.getBody();
+            log.info("DGR SearchGrievance response for ReferenceId={}: {}", referenceId, responseBody);
+
+            if (responseBody == null) return null;
+
+            // Parse response: { "response": 1, "data": [{ "Grievance_ID": "20260105809" }], ... }
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> json = mapper.readValue(responseBody, Map.class);
+
+            Object responseFlag = json.get("response");
+            if (responseFlag != null && "1".equals(String.valueOf(responseFlag))) {
+                List<Map<String, Object>> data = (List<Map<String, Object>>) json.get("data");
+                if (data != null && !data.isEmpty()) {
+                    Object grievanceId = data.get(0).get("Grievance_ID");
+                    if (grievanceId != null && !String.valueOf(grievanceId).trim().isEmpty()) {
+                        String gId = String.valueOf(grievanceId).trim();
+                        log.info("DGR Grievance found! ReferenceId={} -> Grievance_ID={}", referenceId, gId);
+                        return gId;
+                    }
+                }
+            }
+
+            log.info("No existing DGR Grievance found for ReferenceId={}", referenceId);
+            return null;
+
+        } catch (Exception e) {
+            log.warn("Error searching DGR grievance for ReferenceId={}: {}", referenceId, e.getMessage());
+            return null;
+        }
+    }
+
     /* =========================
        Helper APIs
        ========================= */
+    private RestTemplate createRestTemplate(int connectTimeoutMs, int readTimeoutMs) {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(connectTimeoutMs);
+        factory.setReadTimeout(readTimeoutMs);
+        return new RestTemplate(factory);
+    }
+
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> fetchDataFromApi(String url) {
         try {
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = createRestTemplate(10000, 30000);  // District/Tehsil/Village APIs: 30s
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Accept", "application/json, text/plain, */*");
@@ -568,14 +800,18 @@ public class DgrIntegration {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, Map.class);
 
             Map<String, Object> responseBody = response.getBody();
-            if (responseBody == null) return null;
+            if (responseBody == null) return new ArrayList<>();
 
             // Most of your APIs return { "data": [ ... ] }
-            return (List<Map<String, Object>>) responseBody.get("data");
+            Object dataObj = responseBody.get("data");
+            if (dataObj instanceof List) {
+                return (List<Map<String, Object>>) dataObj;
+            }
+            return new ArrayList<>();
 
         } catch (Exception e) {
-            log.info("Error fetching data from API [{}]: {}", url, e.getMessage());
-            return null;
+            log.warn("Error fetching data from API [{}]: {}", url, e.getMessage());
+            return new ArrayList<>();
         }
     }
 
@@ -627,5 +863,279 @@ public class DgrIntegration {
     }
     private String safeString(Object obj, String defaultValue) {
         return obj != null ? obj.toString().trim() : defaultValue;
+    }
+
+    /* =========================
+       Document Upload to DGR
+       ========================= */
+    /**
+     * Fetches file URLs from the FileStore for the given media UUIDs,
+     * downloads each file, base64-encodes it, and uploads to the DGR
+     * Uploaddocument API.
+     *
+     * @param mediaIds    list of FileStore UUIDs from ActionInfo.media
+     * @param bearerToken DGR bearer token from generateLoginToken()
+     * @param tenantId    tenantId for FileStore API call
+     * @return list of uploaded doc objects to include in the CreateGrievance payload
+     */
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> uploadDocumentsToDgr(
+            List<String> mediaIds, String bearerToken, String tenantId) {
+
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        if (mediaIds == null || mediaIds.isEmpty()) {
+            log.info("No media IDs found — skipping document upload.");
+            return result;
+        }
+
+        try {
+            // 1. Build FileStore URL API call
+            String fileStoreIds = String.join(",", mediaIds);
+            String fileStoreApiUrl = FILESTORE_HOST + FILESTORE_URL_ENDPOINT
+                    + "?tenantId=pb&fileStoreIds=" + fileStoreIds;
+
+            log.info("Calling FileStore URL API: {}", fileStoreApiUrl);
+
+            RestTemplate restTemplate = createRestTemplate(10000, 60000);  // DGR upload API can take 30-40 sec
+            HttpHeaders fsHeaders = new HttpHeaders();
+            fsHeaders.set("Accept", "application/json, text/plain, */*");
+            HttpEntity<String> fsEntity = new HttpEntity<>(fsHeaders);
+
+            ResponseEntity<Map> fsResponse = restTemplate.exchange(
+                    fileStoreApiUrl, HttpMethod.GET, fsEntity, Map.class);
+
+            Map<String, Object> fsBody = fsResponse.getBody();
+            if (fsBody == null) {
+                log.warn("FileStore API returned null body.");
+                return result;
+            }
+
+            // 2. Extract fileStoreIds array from response: [{ "id": "...", "url": "..." }]
+            List<Map<String, Object>> fileStoreList =
+                    (List<Map<String, Object>>) fsBody.get("fileStoreIds");
+
+            if (fileStoreList == null || fileStoreList.isEmpty()) {
+                log.warn("No fileStoreIds entries in FileStore response.");
+                return result;
+            }
+
+            // 3. Build list of doc maps: download + base64-encode each file
+            List<Map<String, Object>> docFiles = new ArrayList<>();
+            for (Map<String, Object> entry : fileStoreList) {
+                String publicUrl = String.valueOf(entry.get("url"));
+                log.info("FileStore public URL: {}", publicUrl);
+
+                // Replace public domain with the configured internal FileStore host
+                // so the download happens via the internal network
+                String downloadUrl = publicUrl;
+                try {
+                    URI uri = new URI(publicUrl);
+                    String publicOrigin = uri.getScheme() + "://" + uri.getHost()
+                            + (uri.getPort() != -1 ? ":" + uri.getPort() : "");
+                    downloadUrl = publicUrl.replace(publicOrigin, FILESTORE_HOST);
+                } catch (Exception e) {
+                    log.warn("Could not parse URL for domain replacement [{}]: {}", publicUrl, e.getMessage());
+                }
+
+                log.info("Downloading file from: {}", downloadUrl);
+
+                try {
+                    byte[] fileBytes = downloadFileBytes(downloadUrl);
+                    if (fileBytes == null || fileBytes.length == 0) {
+                        log.warn("Empty file bytes for URL: {}", downloadUrl);
+                        continue;
+                    }
+
+                    String base64Content = Base64.getEncoder().encodeToString(fileBytes);
+                    int fileSizeBytes = fileBytes.length;
+                    fileBytes = null; // ← GC: free the raw byte[] immediately (3-5MB freed before 90s upload wait)
+
+                    // Derive filename: prefer query param 'name', fallback to path segment
+                    String filename = "attachment";
+                    try {
+                        URI parsedUri = new URI(publicUrl);
+                        String query = parsedUri.getQuery();
+                        if (query != null && query.contains("name=")) {
+                            String nameParam = query.substring(query.indexOf("name=") + 5);
+                            if (nameParam.contains("&")) {
+                                nameParam = nameParam.substring(0, nameParam.indexOf("&"));
+                            }
+                            filename = nameParam.contains("/")
+                                    ? nameParam.substring(nameParam.lastIndexOf('/') + 1)
+                                    : nameParam;
+                        } else {
+                            String urlPath = parsedUri.getPath();
+                            String seg = urlPath.contains("/")
+                                    ? urlPath.substring(urlPath.lastIndexOf('/') + 1) : urlPath;
+                            if (!seg.isEmpty()) filename = seg;
+                        }
+                        filename = java.net.URLDecoder.decode(filename, "UTF-8");
+                    } catch (Exception e) {
+                        log.warn("Could not derive filename from URL [{}]: {}", publicUrl, e.getMessage());
+                    }
+
+                    // Detect content-type from filename extension
+                    String contentType = "application/octet-stream";
+                    String lowerFilename = filename.toLowerCase();
+                    if (lowerFilename.endsWith(".pdf")) {
+                        contentType = "application/pdf";
+                    } else if (lowerFilename.endsWith(".jpg") || lowerFilename.endsWith(".jpeg")) {
+                        contentType = "image/jpeg";
+                    } else if (lowerFilename.endsWith(".png")) {
+                        contentType = "image/png";
+                    }
+
+                    Map<String, Object> docEntry = new HashMap<>();
+                    docEntry.put("filename", filename);
+                    docEntry.put("filesize", String.valueOf(fileSizeBytes));
+                    docEntry.put("filetype", contentType);
+                    docEntry.put("base64", base64Content);
+                    docFiles.add(docEntry);
+
+                    log.info("File prepared for DGR upload: name={}, size={} bytes, type={}", filename, fileSizeBytes, contentType);
+
+                } catch (Exception e) {
+                    log.error("Failed to download/encode file from [{}]: {}", downloadUrl, e.getMessage(), e);
+                }
+            }
+
+            if (docFiles.isEmpty()) {
+                log.info("No files downloaded successfully — sending empty doc list.");
+                return result;
+            }
+
+            // 4. POST to DGR Uploaddocument API
+            Map<String, Object> uploadPayload = new HashMap<>();
+            uploadPayload.put("files", docFiles);
+
+            HttpHeaders uploadHeaders = new HttpHeaders();
+            uploadHeaders.setContentType(MediaType.APPLICATION_JSON);
+            uploadHeaders.set("Authorization", "Bearer " + bearerToken);
+            uploadHeaders.set("Accept", "application/json, text/plain, */*");
+
+            HttpEntity<Map<String, Object>> uploadEntity = new HttpEntity<>(uploadPayload, uploadHeaders);
+
+            log.info("Calling DGR Uploaddocument API: {}", DGR_UPLOAD_DOCUMENT_URL);
+
+            try {
+                // Dedicated RestTemplate for DGR upload: 180s read timeout (DGR upload can be very slow)
+                RestTemplate uploadRestTemplate = createRestTemplate(10000, 180000);
+                ResponseEntity<String> uploadResponse = uploadRestTemplate.exchange(
+                        DGR_UPLOAD_DOCUMENT_URL, HttpMethod.POST, uploadEntity, String.class);
+
+                log.info("DGR Uploaddocument response status: {}", uploadResponse.getStatusCode());
+
+                // 5. Extract File_ID from Uploaddocument response and map to DGR CreateGrievance doc format
+                // Uploaddocument returns: { "data": [{"response": "1", "message": "1337549, 1337550"}] }
+                // CreateGrievance expects: [{"File_ID": "1337549"}, {"File_ID": "1337550"}]
+                try {
+                    List<Map<String, Object>> responseData = JsonPath.read(uploadResponse.getBody(), "$.data");
+                    if (responseData != null && !responseData.isEmpty()) {
+                        for (Map<String, Object> item : responseData) {
+                            Object fileIdObj = item.get("message");
+                            if (fileIdObj != null && !fileIdObj.toString().trim().isEmpty()) {
+                                // DGR may return multiple IDs as comma-separated: "1337549, 1337550"
+                                // Split each into its own File_ID entry
+                                String[] fileIds = fileIdObj.toString().split(",");
+                                for (String id : fileIds) {
+                                    String trimmedId = id.trim();
+                                    if (!trimmedId.isEmpty()) {
+                                        Map<String, Object> docEntry = new HashMap<>();
+                                        docEntry.put("File_ID", trimmedId);
+                                        result.add(docEntry);
+                                        log.info("Mapped DGR uploaded doc: File_ID={}", trimmedId);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to parse Uploaddocument response: {}", e.getMessage());
+                }
+
+            } catch (org.springframework.web.client.ResourceAccessException e) {
+                // Upload timed out after 90s — push to failed topic, complaint still created without docs
+                log.warn("DGR Uploaddocument API timed out after 90s. serviceRequestId will be pushed to failed topic for retry. Error: {}", e.getMessage());
+            } catch (Exception e) {
+                log.error("Error calling DGR Uploaddocument API: {}. Continuing without documents.", e.getMessage());
+            }
+
+        } catch (Exception e) {
+            log.error("Error in uploadDocumentsToDgr: {}", e.getMessage(), e);
+        }
+
+        return result;
+    }
+
+    /**
+     * Downloads file bytes using standard HttpURLConnection to avoid URL template
+     * double-encoding issues with Spring RestTemplate on pre-encoded query strings.
+     */
+    private byte[] downloadFileBytes(String fileUrl) throws Exception {
+        URL url = new URL(fileUrl);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+        conn.setRequestProperty("Accept", "*/*");
+        conn.setInstanceFollowRedirects(true);
+        conn.setConnectTimeout(15000);
+        conn.setReadTimeout(30000);
+
+        int responseCode = conn.getResponseCode();
+        // Handle redirect
+        if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM) {
+            String newUrl = conn.getHeaderField("Location");
+            if (newUrl != null && !newUrl.isEmpty()) {
+                conn.disconnect();
+                return downloadFileBytes(newUrl);
+            }
+        }
+
+        if (responseCode >= 200 && responseCode < 300) {
+            try (InputStream in = conn.getInputStream();
+                 ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+                return out.toByteArray();
+            } finally {
+                conn.disconnect();
+            }
+        } else {
+            conn.disconnect();
+            throw new RuntimeException("HTTP " + responseCode + " while downloading file from: " + fileUrl);
+        }
+    }
+
+    /**
+     * Creates a lightweight copy of the requestBody without large base64 strings
+     * to prevent OutOfMemoryError when pushing to Kafka failed topic.
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> sanitizeRequestBodyForFailure(Map<String, Object> original) {
+        if (original == null) return null;
+        Map<String, Object> sanitized = new HashMap<>(original);
+        Object docObj = sanitized.get("doc");
+        if (docObj instanceof List) {
+            List<?> docList = (List<?>) docObj;
+            List<Object> sanitizedDocs = new ArrayList<>();
+            for (Object doc : docList) {
+                if (doc instanceof Map) {
+                    Map<String, Object> cleanDoc = new HashMap<>((Map<String, Object>) doc);
+                    if (cleanDoc.containsKey("base64")) {
+                        cleanDoc.put("base64", "[OMITTED_FOR_KAFKA_PAYLOAD]");
+                    }
+                    sanitizedDocs.add(cleanDoc);
+                } else {
+                    sanitizedDocs.add(doc);
+                }
+            }
+            sanitized.put("doc", sanitizedDocs);
+        }
+        return sanitized;
     }
 }

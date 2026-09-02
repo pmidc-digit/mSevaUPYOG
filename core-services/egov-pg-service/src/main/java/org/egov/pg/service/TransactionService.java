@@ -87,13 +87,19 @@ public class TransactionService {
         else{
             URI uri = gatewayService.initiateTxn(transaction);
             transaction.setRedirectUrl(uri.toString());
-	if (uri.getRawQuery() != null && transaction.getGateway().equals("RAZORPAY")) {
-				String param = uri.getRawQuery();
-				String[] orderId = param.split("orderId=");
-				if (orderId!=null && orderId.length > 1)
-					transaction.setGatewayTxnId(orderId[1]);
-			}
-            dump.setTxnRequest(transaction.getGatewayRequest().toString());
+	if (uri.getRawQuery() != null && (transaction.getGateway().equals("RAZORPAY") || transaction.getGateway().equals("OBPASRAZORPAY"))) {
+        String param = uri.getRawQuery();
+        String[] orderId = param.split("orderId=");
+        if (orderId!=null && orderId.length > 1)
+            transaction.setGatewayTxnId(orderId[1]);
+    }
+    if (transaction.getGateway().equals("PAYU") ||
+            (uri.getRawQuery() != null && transaction.getGateway().equals("CCAVANUE"))) {
+        dump.setTxnRequest(transaction.getRedirectUrl());
+    }
+    else{
+        dump.setTxnRequest(transaction.getGatewayRequest().toString());
+    }
         }
 
         // Persist transaction and transaction dump objects

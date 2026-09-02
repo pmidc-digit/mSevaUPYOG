@@ -87,6 +87,9 @@ public class SewerageServiceImpl implements SewerageService {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private SWFuzzySearchService swFuzzySearchService;
+
 	//@Autowired
 	//EncryptionDecryptionUtil encryptionDecryptionUtil;
 
@@ -283,7 +286,12 @@ public class SewerageServiceImpl implements SewerageService {
 	 * @return List of matching sewerage connection
 	 */
 	public List<SewerageConnection> search(SearchCriteria criteria, RequestInfo requestInfo) {
-		List<SewerageConnection> sewerageConnectionList = getSewerageConnectionsList(criteria, requestInfo);
+		List<SewerageConnection> sewerageConnectionList;
+		if (criteria.getOwnerName() != null || criteria.getGuardianName() != null || criteria.getDoorNo() != null || criteria.getLocality() != null) {
+			sewerageConnectionList = swFuzzySearchService.getConnections(requestInfo, criteria);
+		} else {
+			sewerageConnectionList = getSewerageConnectionsList(criteria, requestInfo);
+		}
 		if(!StringUtils.isEmpty(criteria.getSearchType()) &&
 				criteria.getSearchType().equals(SWConstants.SEARCH_TYPE_CONNECTION)){
 			sewerageConnectionList = enrichmentService.filterConnections(sewerageConnectionList);
@@ -410,7 +418,7 @@ public class SewerageServiceImpl implements SewerageService {
 
 		/* decrypt here */
 		sewerageConnectionRequest.setSewerageConnection(decryptConnectionDetails(sewerageConnectionRequest.getSewerageConnection(), sewerageConnectionRequest.getRequestInfo()));
-	
+
 		try {
 		    String channel = sewerageConnectionRequest.getSewerageConnection().getChannel();
 		    String thirdPartyCode = null;
@@ -741,6 +749,14 @@ public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnectio
 
 		/* decrypt here */
 		sewerageConnectionRequest.setSewerageConnection(decryptConnectionDetails(sewerageConnectionRequest.getSewerageConnection(), sewerageConnectionRequest.getRequestInfo()));
+
+        UpdateDemandPayerRequest updateDemandPayerRequest= UpdateDemandPayerRequest.builder().consumer(sewerageConnectionRequest.getSewerageConnection().getConnectionNo()).payer(property.getOwners().get(0).getUuid()).business(SEWERAGE_SERVICE_BUSINESS_ID).tenant(sewerageConnectionRequest.getSewerageConnection().getTenantId()).build();
+
+        UpdateBillStatusReq updateBillStatusReq = UpdateBillStatusReq.builder().consumer(sewerageConnectionRequest.getSewerageConnection().getConnectionNo()).business(SEWERAGE_SERVICE_BUSINESS_ID).status(EXPIRED).tenant(sewerageConnectionRequest.getSewerageConnection().getTenantId()).build();
+
+        sewerageDao.updatePayerIDForDemand(updateDemandPayerRequest);
+
+        sewerageDao.updateOldBillStatus(updateBillStatusReq);
 
 		return Arrays.asList(sewerageConnectionRequest.getSewerageConnection());
 	}

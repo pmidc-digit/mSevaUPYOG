@@ -107,6 +107,9 @@ public class DemandQueryBuilder {
 	public static final String DEMAND_DETAIL_UPDATE_QUERY = "UPDATE egbs_demanddetail_v1 SET taxamount=?,collectionamount=?,"
 			+ "lastModifiedby=?,lastModifiedtime=?, additionaldetails=? WHERE id=? AND demandid=? AND tenantid=?;";
 
+    public static final String DEMAND_PAYER_UPDATE_QUERY =
+            "UPDATE egbs_demand_v1 SET payer=? WHERE id IN (%s);";
+
 	public static final String DEMAND_AUDIT_INSERT_QUERY = "INSERT INTO egbs_demand_v1_audit "
 			+ "(demandid,consumerCode,consumerType,businessService,payer,taxPeriodFrom,taxPeriodTo,"
 			+ "minimumAmountPayable,createdby,createdtime,tenantid, status, additionaldetails,id,billexpirytime, ispaymentcompleted) "
@@ -197,6 +200,12 @@ public class DemandQueryBuilder {
 			demandQuery.append("dmd.ispaymentcompleted = ?");
 			preparedStatementValues.add(demandCriteria.getIsPaymentCompleted());
 		}
+
+        if (demandCriteria.getIsPaymentDone() != null && demandCriteria.getIsPaymentDone() == false) {
+            addAndClause(demandQuery);
+            demandQuery.append("dmdl.collectionamount < dmdl.taxamount");
+        }
+
 		//REVERTING BACK 
 		// else {
 		// 	addAndClause(demandQuery);

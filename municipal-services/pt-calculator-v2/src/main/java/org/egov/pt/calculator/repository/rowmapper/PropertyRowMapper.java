@@ -9,6 +9,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 import org.egov.pt.calculator.web.models.property.AuditDetails;
 import org.egov.pt.calculator.web.models.property.Property;
 import org.egov.pt.calculator.web.models.property.PropertyInfo.StatusEnum;
@@ -17,7 +18,6 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 
 @Component
 public class PropertyRowMapper implements ResultSetExtractor<List<Property>> {
@@ -42,6 +42,7 @@ public class PropertyRowMapper implements ResultSetExtractor<List<Property>> {
 						.propertyId(rs.getString("propertyid")).auditDetails(auditDetails)
 						.tenantId(rs.getString("tenantid")).build();
 				;
+				
 				String additionalDetails = rs.getString("additionaldetails");
 
 				if (additionalDetails != null) {

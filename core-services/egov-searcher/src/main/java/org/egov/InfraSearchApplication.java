@@ -38,7 +38,7 @@ public class InfraSearchApplication
 	
 	@Bean
 	@Primary
-	private static ObjectMapper getObjectMapper() {
+	public ObjectMapper objectMapper() {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);

@@ -314,10 +314,10 @@ public class PaymentService {
 	}
 
 	@Transactional
-	public Payment updatePaymentForFilestore(Payment payment) {
+	public String updatePaymentForFilestore(String paymentId) {
 
-		paymentRepository.updateFileStoreIdToNull(payment);
-		return payment;
+		paymentRepository.updateFileStoreIdToNull(paymentId);
+		return paymentId;
 	}
 
 	/**
@@ -552,6 +552,24 @@ public class PaymentService {
 		// paymentRequest);
 
 		return payment;
+	}
+
+	public String paymentSearchForUpdate(String tenantId, String consumerNo, String recieptNo) {
+
+		if (tenantId == null || consumerNo == null || recieptNo == null) {
+			throw new CustomException("EGCL_PAYMENT_UPDATE_ERROR",
+					"tenantId, consumerNo and recieptNo are mandatory for update");
+		}
+		log.info("PaymentSearchCriteria: {}, {} and {}", tenantId, consumerNo, recieptNo);
+
+		String paymentId = paymentRepository.fetchPaymentByReceiptNumberTenantAndConsumercode(recieptNo, tenantId,
+				consumerNo);
+
+		if (paymentId == null) {
+			throw new CustomException("EGCL_PAYMENT_UPDATE_ERROR",
+					"No payment found for the given tenantId, consumerNo and recieptNo");
+		}
+		return paymentId;
 	}
 	
 }

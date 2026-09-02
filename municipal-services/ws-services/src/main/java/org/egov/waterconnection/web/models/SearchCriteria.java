@@ -99,6 +99,9 @@ public class SearchCriteria {
 	@JsonProperty("ownerName")
 	private String ownerName;
 
+	@JsonProperty("guardianName")
+	private String guardianName;
+
 	@JsonProperty("assignee")
 	private String assignee;
 
@@ -132,6 +135,7 @@ public class SearchCriteria {
 				&& StringUtils.isEmpty(this.applicationStatus) && StringUtils.isEmpty(this.fromDate)
 				&& StringUtils.isEmpty(this.toDate) && StringUtils.isEmpty(this.applicationType)
 				&& StringUtils.isEmpty(this.doorNo) && StringUtils.isEmpty(this.ownerName)
+				&& StringUtils.isEmpty(this.guardianName)
 				&& StringUtils.isEmpty(this.assignee) && StringUtils.isEmpty(this.connectionType));
 	}
 
@@ -140,6 +144,7 @@ public class SearchCriteria {
 				&& this.connectionNumber == null && this.oldConnectionNumber == null && this.mobileNumber == null
 				&& this.fromDate == null && this.toDate == null && this.ownerIds == null && this.propertyId == null
 				&& this.applicationType == null && this.doorNo == null && this.ownerName == null
+				&& this.guardianName == null
 				&& this.assignee == null && this.connectionType == null);
 	}
 

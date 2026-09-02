@@ -517,10 +517,14 @@ public class UserService{
 				? tradeLicense.getApplicationType().toString()
 				: "";
 
+		if(TLConstants.STATUS_CITIZEN_ACTION_REQUIRED.equalsIgnoreCase(applicationStatus) && !TLConstants.ACTION_CORRECTION.equalsIgnoreCase(action))
+				return;
+		
 		switch (applicationStatus) {
 		case TLConstants.STATUS_BLACKLISTED:
 		case TLConstants.STATUS_INACTIVE:
 		case TLConstants.STATUS_EXPIRED:
+		case TLConstants.STATUS_CITIZEN_ACTION_REQUIRED:
 			List<Role> userRoles = user.getRoles();
 			if (licenseeTyperRole.contains(BPA_ARCHITECT)) {
 				userRoles = userRoles.stream().filter(userRole -> !userRole.getCode().equalsIgnoreCase(BPA_ARCHITECT))

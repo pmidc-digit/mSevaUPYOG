@@ -352,6 +352,8 @@ public class WCConstants {
 	public static final String CHANNEL = "Channel";
 	
 	public static final String ACTIVE = "ACTIVE";
+
+    public static final String EXPIRED = "EXPIRED";
 	
 	public static final String BILL_NO_DEMAND_ERROR_CODE = "EG_BS_BILL_NO_DEMANDS_FOUND";
 	

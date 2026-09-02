@@ -34,6 +34,10 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 
+import org.egov.collection.model.PaymentSearchCriteria;
+import org.egov.collection.service.MDMSService;
+import org.egov.collection.service.PaymentService;
+
 import static org.egov.collection.config.CollectionServiceConstants.*;
 
 @Slf4j
@@ -51,6 +55,13 @@ public class CollectionNotificationConsumer {
 
 	@Autowired
 	private RestTemplate restTemplate;
+
+	@Autowired
+	private MDMSService mdmsService;
+
+	@Autowired
+	private PaymentService paymentService;
+
 
 	@KafkaListener(topics = { "${kafka.topics.payment.create.name}", "${kafka.topics.payment.receiptlink.name}" },
 			concurrency =  "${kafka.topics.bankaccountservicemapping.concurreny.count}" )
@@ -170,15 +181,50 @@ public class CollectionNotificationConsumer {
 	    String stateId = validatedPayments.get(0).getTenantId().split("\\.")[0];
 	    String fileStoreId = null;
 
+	    String businessService = null;
+	    if (!CollectionUtils.isEmpty(validatedPayments.get(0).getPaymentDetails())) {
+	        businessService = validatedPayments.get(0).getPaymentDetails().get(0).getBusinessService();
+	    }
+
+	    // Call paymentService.getPayments() to get the fully enriched payment from DB
+	    // (includes paymentDetail.additionalDetails with tax head breakdown, bill details, owner info etc.)
+	    // Fall back to original Kafka payment if search fails.
+	    List<Payment> paymentsForPdf = validatedPayments;
 	    try {
-	        // --- STEP 1: Generate the PDF and get FileStoreId ---
-	        String pdfUri = applicationProperties.getEgovServiceHost() 
-	                      + applicationProperties.getEgovPdfCreate() 
-	                      + "?key=consolidatedreceipt&tenantId=" + stateId;
+	        String receiptNumber = null;
+	        if (!CollectionUtils.isEmpty(validatedPayments.get(0).getPaymentDetails())) {
+	            receiptNumber = validatedPayments.get(0).getPaymentDetails().get(0).getReceiptNumber();
+	        }
+	        if (!StringUtils.isEmpty(receiptNumber)) {
+	            PaymentSearchCriteria criteria = PaymentSearchCriteria.builder()
+	                    .tenantId(validatedPayments.get(0).getTenantId())
+	                    .receiptNumbers(Collections.singleton(receiptNumber))
+	                    .businessService(businessService)
+	                    .build();
+	            List<Payment> enrichedPayments = paymentService.getPayments(requestInfo, criteria, businessService);
+                log.info("Payment search response for PDF: {}", enrichedPayments);
+	            if (!CollectionUtils.isEmpty(enrichedPayments)) {
+	                paymentsForPdf = enrichedPayments;
+	                log.info("Using enriched payment from DB search for PDF creation, receipt: " + receiptNumber);
+	            } else {
+	                log.warn("Payment search returned empty, falling back to Kafka payment for receipt: " + receiptNumber);
+	            }
+	        }
+	    } catch (Exception e) {
+	        log.error("Failed to fetch enriched payment, falling back to Kafka payment: ", e);
+	    }
+
+	    String receiptKey = mdmsService.getReceiptKey(requestInfo, stateId, businessService);
+
+	    try {
+	        // --- STEP 1: Generate PDF using enriched payment data ---
+	        String pdfUri = applicationProperties.getEgovServiceHost()
+	                      + applicationProperties.getEgovPdfCreate()
+	                      + "?key=" + receiptKey + "&tenantId=" + stateId;
 
 	        Map<String, Object> pdfRequest = new HashMap<>();
 	        pdfRequest.put("RequestInfo", requestInfo);
-	        pdfRequest.put("Payments", validatedPayments);
+	        pdfRequest.put("Payments", paymentsForPdf);
 
 	        Map<String, Object> pdfResponse = restTemplate.postForObject(pdfUri, pdfRequest, Map.class);
 	        

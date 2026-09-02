@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -44,6 +45,9 @@ public class PaymentWorkflowService {
     private PaymentWorkflowValidator paymentWorkflowValidator;
     private CollectionProducer collectionProducer;
     private ApplicationProperties applicationProperties;
+
+    @Autowired
+    private MDMSService mdmsService;
 
     @Autowired
     RestTemplate restTemplate;
@@ -324,12 +328,19 @@ public class PaymentWorkflowService {
     // This method generates a new receipt when payment status is changed and updates fileStoreId of payment receipt
     List<Map<String, String>> generateNewReceiptUponStatusChange(List<Payment> validatedPayments, RequestInfo request){
         List<String> fileStoreIds;
+        String tenantId = validatedPayments.get(0).getTenantId().split("\\.")[0];
+        String businessService = null;
+        if (!CollectionUtils.isEmpty(validatedPayments.get(0).getPaymentDetails())) {
+            businessService = validatedPayments.get(0).getPaymentDetails().get(0).getBusinessService();
+        }
+        String receiptKey = mdmsService.getReceiptKey(request, tenantId, businessService);
+
         StringBuilder uri = new StringBuilder();
         uri.append(applicationProperties.getEgovServiceHost())
                 .append(applicationProperties.getEgovPdfCreate()).append("?key=")
-                .append("consolidatedreceipt")
+                .append(receiptKey)
                 .append("&tenantId=")
-                .append(validatedPayments.get(0).getTenantId().split("\\.")[0]);
+                .append(tenantId);
 
         log.info("GENERATED LINK TO PDF-SERVICE " + uri);
         Object result = null;

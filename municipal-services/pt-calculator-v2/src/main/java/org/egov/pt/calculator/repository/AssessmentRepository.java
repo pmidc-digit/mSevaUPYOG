@@ -147,12 +147,12 @@ public class AssessmentRepository {
 		return assessments;
 	}
 
-	public Integer getActivePropertyCount(CreateAssessmentRequest request) {
+	public Long getActivePropertyCount(CreateAssessmentRequest request) {
 		StringBuilder query = new StringBuilder(PROPERTY_COUNT_ACTIVE);
 		query.append(" and prop.tenantid=?");
 		List<Object> preparedStmtList = new ArrayList<>();
 		preparedStmtList.add(request.getTenantId());
-		Integer count = jdbcTemplate.queryForObject(query.toString(), preparedStmtList.toArray(), Integer.class);
+		Long count = jdbcTemplate.queryForObject(query.toString(), preparedStmtList.toArray(), Long.class);
 		return count;
 
 	}

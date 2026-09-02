@@ -142,7 +142,6 @@ public class ProcessHelper {
     public static Map<String, Object> getTypicalFloorValues(Block block, Floor floor,
             Boolean isTypicalRepititiveFloor) {
         Map<String, Object> mapOfTypicalFloorValues = new HashMap<>();
-        List<Integer> typicalFlrs = new ArrayList<>();
         String typicalFloors = null;
         Integer maxTypicalFloors;
         Integer minTypicalFloors;
@@ -151,13 +150,12 @@ public class ProcessHelper {
                 if (typicalFloor.getRepetitiveFloorNos().contains(floor.getNumber())) {
                     isTypicalRepititiveFloor = true;
                 }
-                if (typicalFloor.getModelFloorNo() == floor.getNumber()) {
-                    typicalFlrs.add(floor.getNumber());
-                    typicalFlrs.addAll(typicalFloor.getRepetitiveFloorNos());
-                    if (!typicalFlrs.isEmpty()) {
-                        maxTypicalFloors = typicalFlrs.get(0);
-                        minTypicalFloors = typicalFlrs.get(0);
-                        for (Integer typical : typicalFlrs) {
+                if (typicalFloor.getModelFloorNo() != null && typicalFloor.getModelFloorNo().equals(floor.getNumber())) {
+                    List<Integer> repetitiveFloors = typicalFloor.getRepetitiveFloorNos();
+                    if (repetitiveFloors != null && !repetitiveFloors.isEmpty()) {
+                        maxTypicalFloors = repetitiveFloors.get(0);
+                        minTypicalFloors = repetitiveFloors.get(0);
+                        for (Integer typical : repetitiveFloors) {
                             if (typical > maxTypicalFloors) {
                                 maxTypicalFloors = typical;
                             }
@@ -165,7 +163,10 @@ public class ProcessHelper {
                                 minTypicalFloors = typical;
                             }
                         }
-                        typicalFloors = "Typical Floor " + minTypicalFloors + " to " + maxTypicalFloors;
+                        String typicalFloorLabel = minTypicalFloors.equals(maxTypicalFloors)
+                                ? minTypicalFloors.toString()
+                                : minTypicalFloors + " to " + maxTypicalFloors;
+                        typicalFloors = "Typical Floor " + typicalFloorLabel;
 
                     }
                 }

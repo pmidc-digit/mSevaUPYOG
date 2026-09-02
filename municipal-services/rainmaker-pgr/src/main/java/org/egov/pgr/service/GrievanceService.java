@@ -62,7 +62,13 @@ public class GrievanceService {
 	private String saveTopic;
 	
 	@Value("${kafka.topics.save.dgr.service}")
-	private String saveForDgrTopic;	
+	private String saveForDgrTopic;
+
+	@Value("${kafka.topic.dgr.no.media}")
+	private String saveForDgrNoMediaTopic;
+
+	@Value("${kafka.topic.dgr.with.media}")
+	private String saveForDgrWithMediaTopic;
 
 	@Value("${kafka.topics.update.service}")
 	private String updateTopic;
@@ -119,7 +125,29 @@ public class GrievanceService {
 		log.info("Service layer for createss");
 		enrichserviceRequestForcreate(request);
 		pGRProducer.push(saveTopic, producerKey(request), request);
-		pGRProducer.push(saveForDgrTopic, producerKey(request), request);
+
+		// Only push to DGR if this complaint did NOT originate from DGR (dgr_grievance_id is absent)
+		boolean hasDgrId = request.getServices().stream()
+				.anyMatch(service -> service.getDgrPgrId() != null && !service.getDgrPgrId().trim().isEmpty());
+
+		if (!hasDgrId) {
+			// Dual-topic routing: complaints with media → with-media queue (waits for DGR upload)
+			//                     complaints without media → no-media queue (instant CreateGrievance)
+			boolean hasMedia = request.getActionInfo() != null
+					&& request.getActionInfo().stream()
+					   .anyMatch(a -> a.getMedia() != null && !a.getMedia().isEmpty());
+
+			if (hasMedia) {
+				log.info("Complaint has media. Routing to with-media DGR topic [{}].", saveForDgrWithMediaTopic);
+				pGRProducer.push(saveForDgrWithMediaTopic, producerKey(request), request);
+			} else {
+				log.info("Complaint has no media. Routing to no-media DGR topic [{}].", saveForDgrNoMediaTopic);
+				pGRProducer.push(saveForDgrNoMediaTopic, producerKey(request), request);
+			}
+		} else {
+			log.info("Complaint already contains DGR ID [{}]. Skipping push to DGR topic to prevent duplicate creation.",
+					request.getServices().get(0).getDgrPgrId());
+		}
 
 		pGRProducer.push(saveIndexTopic, producerKey(request), dataTranformationForIndexer(request, true));
 		return getServiceResponse(request);

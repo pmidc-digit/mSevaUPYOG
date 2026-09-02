@@ -98,7 +98,6 @@ public class WaterServiceImpl implements WaterService {
 	
 	@Autowired
 	private WaterService waterService;
-
 	/**
 	 *
 	 * @param waterConnectionRequest WaterConnectionRequest contains water
@@ -301,7 +300,7 @@ public class WaterServiceImpl implements WaterService {
 	public List<WaterConnection> search(SearchCriteria criteria, RequestInfo requestInfo) {
 		List<WaterConnection> waterConnectionList;
 		
-		if(criteria.getOwnerName() != null || criteria.getDoorNo() != null ||criteria.getLocality() != null)
+		if(criteria.getOwnerName() != null || criteria.getGuardianName() != null || criteria.getDoorNo() != null || criteria.getLocality() != null)
             waterConnectionList = WSFuzzySearchService.getConnections(requestInfo,criteria);
         else
             waterConnectionList = getWaterConnectionsList(criteria, requestInfo);
@@ -843,6 +842,14 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 		/* decrypt here */
 		waterConnectionRequest.setWaterConnection(decryptConnectionDetails(waterConnectionRequest.getWaterConnection(),
 				waterConnectionRequest.getRequestInfo()));
+
+        UpdateDemandPayerRequest updateDemandPayerRequest= UpdateDemandPayerRequest.builder().consumer(waterConnectionRequest.getWaterConnection().getConnectionNo()).payer(property.getOwners().get(0).getUuid()).business(WATER_SERVICE_BUSINESS_ID).tenant(waterConnectionRequest.getWaterConnection().getTenantId()).build();
+
+        UpdateBillStatusReq updateBillStatusReq = UpdateBillStatusReq.builder().consumer(waterConnectionRequest.getWaterConnection().getConnectionNo()).business(WATER_SERVICE_BUSINESS_ID).status(EXPIRED).tenant(waterConnectionRequest.getWaterConnection().getTenantId()).build();
+
+        waterDao.updatePayerIDForDemand(updateDemandPayerRequest);
+
+        waterDao.updateOldBillStatus(updateBillStatusReq);
 
 		return Arrays.asList(waterConnectionRequest.getWaterConnection());
 	}

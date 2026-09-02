@@ -19,7 +19,7 @@ public interface SWCalculationService {
 	
 	String generateSingleDemand(SingleDemand singledemand);
 	
-	void generateBillBasedLocalityOrTenant(RequestInfo requestInfo, SchedulerLevel schedulerLevel);
+	void generateBillBasedLocalityOrTenant(RequestInfo requestInfo, SchedulerLevel schedulerLevel, String tenantId);
 	
 	void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkDemandCriteria bulkDemandCriteria);
 	

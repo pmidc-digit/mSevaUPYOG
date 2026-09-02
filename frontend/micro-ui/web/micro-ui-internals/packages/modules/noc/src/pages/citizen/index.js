@@ -9,6 +9,7 @@ import NOCInbox from "../employee/Inbox/index";
 const hideBackButtonConfig = [];
 
 const NOCBreadCrumbs = ({ location, cameFromOBPS }) => {
+  console.log(cameFromOBPS, "cameFromOBPS")
   const { t } = useTranslation();
 
   const getBreadcrumbs = () => {
@@ -22,8 +23,8 @@ const NOCBreadCrumbs = ({ location, cameFromOBPS }) => {
       location.pathname.includes("/noc/new-application") ||
       location.pathname.includes("noc/my-application") ||
       location.pathname.includes("noc/search/application-overview/") ||
-      location.pathname.includes("noc/search-application");
-    const isNocMyApp = location.pathname.includes("noc-my-application");
+      location.pathname.includes("noc/search-application")||
+      location.pathname.includes("noc/noc-my-application");
 
     // Always push Home
     breadcrumbs.push(

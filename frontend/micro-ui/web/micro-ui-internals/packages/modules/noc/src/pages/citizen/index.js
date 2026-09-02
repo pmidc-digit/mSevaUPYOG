@@ -22,7 +22,8 @@ const NOCBreadCrumbs = ({ location, cameFromOBPS }) => {
       location.pathname.includes("/noc/new-application") ||
       location.pathname.includes("noc/my-application") ||
       location.pathname.includes("noc/search/application-overview/") ||
-      location.pathname.includes("noc/search-application");
+      location.pathname.includes("noc/search-application")||
+      location.pathname.includes("noc/noc-my-application");
 
     breadcrumbs.push(
       <span key="home">

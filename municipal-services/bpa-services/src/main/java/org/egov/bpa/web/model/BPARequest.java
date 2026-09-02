@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
@@ -23,6 +24,7 @@ import lombok.NoArgsConstructor;
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:52:32.717Z[GMT]")
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 @Builder
 public class BPARequest   {
   @JsonProperty("RequestInfo")

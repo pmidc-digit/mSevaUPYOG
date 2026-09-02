@@ -5,6 +5,7 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.pgr.contract.ServiceRequest;
+import org.egov.pgr.model.AuditDetails;
 import org.egov.pgr.model.user.UserResponse;
 import org.egov.pgr.producer.PGRProducer;
 import org.egov.pgr.service.GrievanceService;
@@ -173,11 +174,20 @@ public class DgrIntegration {
         try {
             serviceReqRequest = mapper.convertValue(record, ServiceRequest.class);
 
-            // Safeguard: skip if DGR ID already exists
+            // Safeguard 1: skip if DGR ID already exists
             if (serviceReqRequest.getServices() != null && !serviceReqRequest.getServices().isEmpty()) {
                 String existingDgrId = serviceReqRequest.getServices().get(0).getDgrPgrId();
                 if (existingDgrId != null && !existingDgrId.trim().isEmpty()) {
                     log.info("DGR ID already exists: {}. Skipping to avoid duplicate.", existingDgrId);
+                    return;
+                }
+
+                // Safeguard 2: Hard-code rule: Never push complaints created before 7th Jan 2026 (1767724200000L)
+                AuditDetails auditDetails = serviceReqRequest.getServices().get(0).getAuditDetails();
+                if (auditDetails != null && auditDetails.getCreatedTime() != null
+                        && auditDetails.getCreatedTime() < org.egov.pgr.utils.PGRConstants.DGR_CUTOFF_DATE_EPOCH) {
+                    log.info("Complaint createdTime [{}] is before DGR cutoff date (7th Jan 2026). Skipping push to DGR.",
+                            auditDetails.getCreatedTime());
                     return;
                 }
             }
@@ -388,52 +398,62 @@ public class DgrIntegration {
             String mohallaCode = mohallaCodes.stream()
                     .collect(Collectors.joining(", "));
 
-            String dgrName = districts.stream()
-                    .filter(dist -> districtName.trim().equalsIgnoreCase(String.valueOf(dist.get("msevaname")).trim()))
-                    .map(dist -> String.valueOf(dist.get("thirdpartyname")))
-                    .findFirst()
-                    .orElseGet(() -> {
+            String dgrName = "";
+            if (districts != null && !districts.isEmpty()) {
+                dgrName = districts.stream()
+                        .filter(dist -> districtName != null && districtName.trim().equalsIgnoreCase(String.valueOf(dist.get("msevaname")).trim()))
+                        .map(dist -> String.valueOf(dist.get("thirdpartyname")))
+                        .findFirst()
+                        .orElse("");
+            }
+            if (dgrName.isEmpty() && districtList != null && !districtList.isEmpty()) {
+                Object fallback = districtList.get(0).get("District_Name");
+                dgrName = fallback != null ? fallback.toString().trim() : "";
+            }
 
-                        if (districtList == null || districtList.isEmpty()) {
-                            return ""; 
-                        }
+            final String matchDgrName = dgrName;
+            Map<String, Object> finalDistrict = Collections.emptyMap();
+            if (districtList != null && !districtList.isEmpty()) {
+                finalDistrict = districtList.stream()
+                        .filter(d -> String.valueOf(d.get("District_Name")).trim().equalsIgnoreCase(matchDgrName.trim()))
+                        .findFirst()
+                        .orElse(districtList.get(0));
+            }
 
-                        Object fallback = districtList.get(0).get("District_Name");
-
-                        return fallback != null ? fallback.toString().trim() : "";
-                    });
-
-            Map<String, Object> finalDistrict = districtList.stream()
-                    .filter(d -> String.valueOf(d.get("District_Name")).trim().equalsIgnoreCase(dgrName.trim()))
-                    .findFirst()
-                    .orElse(districtList.get(0)); // fallback to 0th district
-
-            String districtId = String.valueOf(finalDistrict.get("District_ID"));
-            String districtNameGgr = String.valueOf(finalDistrict.get("District_Name"));
-            String stateId = String.valueOf(finalDistrict.get("State_ID"));
+            String districtId = finalDistrict.get("District_ID") != null ? String.valueOf(finalDistrict.get("District_ID")) : "0";
+            String districtNameGgr = finalDistrict.get("District_Name") != null ? String.valueOf(finalDistrict.get("District_Name")) : (districtName != null ? districtName : "");
+            String stateId = finalDistrict.get("State_ID") != null ? String.valueOf(finalDistrict.get("State_ID")) : "3";
 
             // 13. Get tehsils by district id
-            List<Map<String, Object>> tehsilList = fetchDataFromApi(TEHSIL_BY_DISTRICT_URL + districtId);
+            List<Map<String, Object>> tehsilList = (!"0".equals(districtId) && !districtId.isEmpty())
+                    ? fetchDataFromApi(TEHSIL_BY_DISTRICT_URL + districtId)
+                    : Collections.emptyList();
 
-            Map<String, Object> matchedTehsil = tehsilList.stream()
-                    .filter(t -> String.valueOf(t.get("Tehsil_Name")).toLowerCase().contains(tehsilSearchName.toLowerCase()))
-                    .findFirst()
-                    .orElse(tehsilList.get(0)); // fallback to 0th tehsil
+            Map<String, Object> matchedTehsil = Collections.emptyMap();
+            if (tehsilList != null && !tehsilList.isEmpty()) {
+                matchedTehsil = tehsilList.stream()
+                        .filter(t -> String.valueOf(t.get("Tehsil_Name")).toLowerCase().contains(tehsilSearchName.toLowerCase()))
+                        .findFirst()
+                        .orElse(tehsilList.get(0));
+            }
 
-            String tehsilId = String.valueOf(matchedTehsil.get("Respective_GOI_LGD_Code"));
-            String tehsilName = String.valueOf(matchedTehsil.get("Tehsil_Name"));
-            String tehsilNameLocal = String.valueOf(matchedTehsil.get("Tehsil_Name_Local_language"));
+            String tehsilId = matchedTehsil.get("Respective_GOI_LGD_Code") != null ? String.valueOf(matchedTehsil.get("Respective_GOI_LGD_Code")) : "0";
+            String tehsilName = matchedTehsil.get("Tehsil_Name") != null ? String.valueOf(matchedTehsil.get("Tehsil_Name")) : tehsilSearchName;
+            String tehsilNameLocal = matchedTehsil.get("Tehsil_Name_Local_language") != null ? String.valueOf(matchedTehsil.get("Tehsil_Name_Local_language")) : "";
 
             // 14. Get first village by tehsil
-            List<Map<String, Object>> villageList = fetchDataFromApi(VILLAGE_BY_TEHSIL_URL + tehsilId);
+            List<Map<String, Object>> villageList = (!"0".equals(tehsilId) && !tehsilId.isEmpty())
+                    ? fetchDataFromApi(VILLAGE_BY_TEHSIL_URL + tehsilId)
+                    : Collections.emptyList();
             Map<String, Object> firstVillage = (villageList != null && !villageList.isEmpty()) ? villageList.get(0) : Collections.emptyMap();
             String villageId = firstVillage.get("Respective_GOI_LGD_Code") != null ? String.valueOf(firstVillage.get("Village_ID")) : "0";
             String villageName = firstVillage.get("Village_Name") != null ? String.valueOf(firstVillage.get("Village_Name")) : "";
             String villageNameLocal = firstVillage.get("Village_Name_Local_Lang") != null ? String.valueOf(firstVillage.get("Village_Name_Local_Lang")) : "";
 
             // 15. Get first municipality by tehsil
-            List<Map<String, Object>> municipalityList =
-                    fetchDataFromApi(MUNICIPALITY_BY_TEHSIL_URL + tehsilId);
+            List<Map<String, Object>> municipalityList = (!"0".equals(tehsilId) && !tehsilId.isEmpty())
+                    ? fetchDataFromApi(MUNICIPALITY_BY_TEHSIL_URL + tehsilId)
+                    : Collections.emptyList();
 
             Map<String, Object> selectedMunicipality = Collections.emptyMap();
 

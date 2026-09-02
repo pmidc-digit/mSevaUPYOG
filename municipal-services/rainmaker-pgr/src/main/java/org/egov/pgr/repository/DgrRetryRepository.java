@@ -28,7 +28,7 @@ public class DgrRetryRepository {
             String serviceRequestId, String tenantId, Long fromDate, Integer limit, Integer offset) {
 
         StringBuilder query = new StringBuilder(
-                "SELECT servicerequestid, tenantid, accountid, phone " +
+                "SELECT servicerequestid, tenantid, accountid, phone, createdtime " +
                 "FROM eg_pgr_service " +
                 "WHERE (dgr_grievance_id IS NULL OR dgr_grievance_id = '') " +
                 "  AND active = true "
@@ -46,10 +46,11 @@ public class DgrRetryRepository {
             params.add(tenantId.trim());
         }
 
-        if (fromDate != null && fromDate > 0) {
-            query.append(" AND createdtime >= ? ");
-            params.add(fromDate);
-        }
+        // Hard-code rule: Never fetch/process complaints created before 7th Jan 2026 00:00:00 IST (1767724200000L)
+        long cutoffEpoch = org.egov.pgr.utils.PGRConstants.DGR_CUTOFF_DATE_EPOCH;
+        long effectiveFromDate = (fromDate != null && fromDate > cutoffEpoch) ? fromDate : cutoffEpoch;
+        query.append(" AND createdtime >= ? ");
+        params.add(effectiveFromDate);
 
         query.append(" ORDER BY createdtime DESC ");
 
@@ -72,13 +73,13 @@ public class DgrRetryRepository {
     }
 
     /**
-     * Looks up basic info (tenantid, accountid, phone, dgr_grievance_id) for a single serviceRequestId.
+     * Looks up basic info (tenantid, accountid, phone, dgr_grievance_id, createdtime) for a single serviceRequestId.
      */
     public Map<String, Object> findServiceRequestSummary(String serviceRequestId) {
         if (serviceRequestId == null || serviceRequestId.trim().isEmpty()) {
             return null;
         }
-        String sql = "SELECT servicerequestid, tenantid, accountid, phone, dgr_grievance_id FROM eg_pgr_service WHERE servicerequestid = ? LIMIT 1";
+        String sql = "SELECT servicerequestid, tenantid, accountid, phone, dgr_grievance_id, createdtime FROM eg_pgr_service WHERE servicerequestid = ? LIMIT 1";
         try {
             List<Map<String, Object>> list = jdbcTemplate.queryForList(sql, serviceRequestId.trim());
             return (list != null && !list.isEmpty()) ? list.get(0) : null;

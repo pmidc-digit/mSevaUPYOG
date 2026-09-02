@@ -74,6 +74,14 @@ let License = LicenseData?.Licenses?.[0];
     {}
   );
 
+  const { data: paymentDetails, isLoading: paymentDetailsLoading } = Digit.Hooks.obps.useBPAREGgetbill(
+    { businessService: "BPAREG", consumerCode: id, tenantId: License?.tenantId || tenantId },
+    {
+      enabled: !isLoadingDynamic && !isLoadingPunjab && Boolean(id),
+      retry: false,
+    }
+  );
+
   console.log('reciept_data', reciept_data)
   const handleDownloadPdf = async () => {
     try {
@@ -716,21 +724,30 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
         {!(License?.applicationType === "UPGRADE") && <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h2>
 
-          {recieptDataLoading ? (
+          {recieptDataLoading || paymentDetailsLoading ? (
             <Loader />
           ) : (
             <div>
+              {/* Fee Breakdown */}
+              {(
+                paymentDetails?.billResponse?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails ||
+                reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.billAccountDetails
+              )?.map((bill, index) =>
+                renderLabel(t(bill.taxHeadCode), `₹ ${bill?.amount}`)
+              )}
+
               {/* Total Amount (Architect → 0, else actual) */}
               {renderLabel(
                 t("Total Amount"),
                 isArchitect
                   ? `₹ 0`
-                  : reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue
+                  : `₹ ${paymentDetails?.billResponse?.Bill?.[0]?.totalAmount ?? reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue ?? 0}`
               )}
 
               {/* Status */}
               {renderLabel(
                 t("Status"),
+                reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalAmountPaid &&
                 reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalAmountPaid ===
                   reciept_data?.Payments?.[0]?.paymentDetails?.[0]?.totalDue
                   ? t("PAID")

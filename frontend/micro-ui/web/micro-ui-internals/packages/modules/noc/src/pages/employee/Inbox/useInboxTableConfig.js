@@ -1,11 +1,14 @@
 import React, { Fragment, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation  } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encodeURIComponentCustom } from "../../../utils";
 
 const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId }) => {
   const { t } = useTranslation();
+  const location = useLocation();
+  const cameFromOBPS = location.state?.fromOBPS;
+
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
   const GetStatusCell = (value) =>
@@ -31,7 +34,10 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
                 // http://localhost:3000/digit-ui/citizen/firenoc/search/application-overview/PB-NOC-SAS-LALRU-001969
                 to={
                   window.location.href.includes("/citizen")
-                    ? `/digit-ui/citizen/noc/search/application-overview/${encodeURIComponentCustom(row.original.applicationId)}`
+                    ? {
+                        pathname: `/digit-ui/citizen/noc/search/application-overview/${encodeURIComponentCustom(row.original.applicationId)}`,
+                        state: { fromOBPS: cameFromOBPS },
+                      }
                     : tenantId === "pb.punjab"
                     ? `${parentRoute}/inbox/application-overview/${encodeURIComponentCustom(row.original["applicationId"])}/${
                         row?.original?.tenantId

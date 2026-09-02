@@ -44,7 +44,13 @@ const OBPSBreadCrumbs = ({ location }) => {
 
   const getBreadcrumbs = () => {
     const breadcrumbs = [];
-    const isMyApplications = location.pathname?.includes("obps/my-applications");
+    const isMyApplications =
+      location.pathname?.includes("obps/my-applications") ||
+      location.pathname?.includes("obps/bpa-app") ||
+      location.pathname?.includes("obps/layout/application-overview") ||
+      location.pathname?.includes("obps/clu/application-overview") ||
+      (location.pathname?.includes("obps/stakeholder") && !location.pathname?.includes("obps/stakeholder/apply"));
+
     const subCardLabelMap = {
       "citizen-bpa": "Building Plan Approval",
       "citizen-stakeholder-inbox": "Professional (Architect)",
@@ -65,7 +71,8 @@ const OBPSBreadCrumbs = ({ location }) => {
       location.pathname.includes("obps/clu") ||
       location.pathname.includes("obps/edcr") ||
       location.pathname.includes("/response") ||
-      location.pathname.includes("obps/search");
+      location.pathname.includes("obps/search")||
+      location.pathname.includes("obps/home")
 
     const bpainbox =
       location.pathname.includes("obps/bpa-app") ||
@@ -73,6 +80,19 @@ const OBPSBreadCrumbs = ({ location }) => {
       location.pathname.includes("obps/self-certification/response") ||
       location.pathname.includes("obps/ocbpa/PB") ||
       location.pathname.includes("/obps/search/application");
+
+    const layoutinbox =
+      location.pathname.includes("obps/layout/application-overview") ||
+      location.pathname.includes("obps/layout/my-applications") ||
+      location.pathname.includes("obps/layout/response") ||
+      location.pathname.includes("/obps/my-applications/citizen-layout");
+      
+      const cluinbox =
+        location.pathname.includes("obps/clu/application-overview") ||
+        location.pathname.includes("obps/clu/my-applications") ||
+        location.pathname.includes("obps/clu/response") ||
+        location.pathname.includes("/obps/my-applications/citizen-clu");
+
 
     breadcrumbs.push(
       <span key="home">
@@ -118,7 +138,7 @@ const OBPSBreadCrumbs = ({ location }) => {
           >
             {t("ES_COMMON_OBPS_INBOX_LABEL")}
           </Link>
-          {subCardKey && <span style={{ marginRight: "5px" }}>/</span>}
+          {(subCardKey || bpainbox || layoutinbox || cluinbox) && <span style={{ marginRight: "5px" }}>/</span>}
         </span>
       );
     }
@@ -141,6 +161,25 @@ const OBPSBreadCrumbs = ({ location }) => {
         </span>
       );
     }
+
+    if (layoutinbox && isUserRegistered) {
+      breadcrumbs.push(
+        <span key="layout-inbox">
+          <Link to="/digit-ui/citizen/obps/layout/my-applications" className="obps-pages-citizen-index--style-6">
+             {t("CS_COMMON_INBOX")}
+          </Link>
+        </span>
+      );
+    }
+    if (cluinbox && isUserRegistered) {
+    breadcrumbs.push(
+      <span key="clu-inbox">
+        <Link to="/digit-ui/citizen/obps/clu/my-applications" className="obps-pages-citizen-index--style-6">
+          {t("CS_COMMON_INBOX")}
+        </Link>
+      </span>
+    );
+  }
 
     return breadcrumbs;
   };

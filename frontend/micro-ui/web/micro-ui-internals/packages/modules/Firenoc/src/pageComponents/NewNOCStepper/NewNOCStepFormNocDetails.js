@@ -18,6 +18,8 @@ const NewNOCStepFormNocDetails = ({ config, onGoNext }) => {
   const [provisionalSearchNo, setProvisionalSearchNo] = useState("");
   const [oldNocSearchNo, setOldNocSearchNo] = useState("");
   const [isNocValid, setisNocValid] = useState(true);
+  const [provisionalSearched, setProvisionalSearched] = useState(false);
+  const [oldNocSearched, setOldNocSearched] = useState(false);
   const currentStepData = useSelector(function (state) {
     return state.noc.NOCNewApplicationFormReducer.formData?.nocDetails || {};
   }); 
@@ -74,24 +76,29 @@ const handleSearchResponse = (searchData, isProvisional) => {
     if (searchData?.FireNOCs?.length > 0) {
       const nocObj = searchData.FireNOCs[0];
       const buildings = nocObj?.fireNOCDetails?.buildings || [];
-      
+      debugger
       const isUsageValid = !buildings?.some((building) => {
         const matchedType = usageType?.find((t) => t?.code === building?.usageType);
         const matchedSubType = matchedType?.BuildingSubType?.find((s) => s?.code === building?.usageSubType);
-        return matchedType?.active === false || matchedSubType?.active === false;
+        return !matchedType || matchedType?.active === false || !matchedSubType || matchedSubType?.active === false;
       });
-      
+
       if (!isUsageValid) {
         alert(t("NOC_NOT_VALID"));
         setisNocValid(false);
         return;
       }
       setisNocValid(true);
-      setShowToast({ 
-        success: true, 
-        message: isProvisional ? "NOC_PROVISIONAL_NUMBER_FOUND" : "NOC_OLD_NOC_NUMBER_FOUND" 
+      if (isProvisional) {
+        setProvisionalSearched(true);
+      } else {
+        setOldNocSearched(true);
+      }
+      setShowToast({
+        success: true,
+        message: isProvisional ? "NOC_PROVISIONAL_NUMBER_FOUND" : "NOC_OLD_NOC_NUMBER_FOUND"
       });
-      
+
       dispatch(UPDATE_NOCNewApplication_FORM(config.key, {
         ...watch(),
         [isProvisional ? "provisionalNocData" : "oldNocData"]: nocObj,
@@ -99,12 +106,12 @@ const handleSearchResponse = (searchData, isProvisional) => {
       autofillNocData(nocObj);
     } else {
       setisNocValid(false);
-      setShowToast({ 
-        error: true, 
-        message: isProvisional ? "NOC_PROVISIONAL_NUMBER_NOT_FOUND" : "NOC_OLD_NOC_NUMBER_NOT_FOUND" 
+      setShowToast({
+        error: true,
+        message: isProvisional ? "NOC_PROVISIONAL_NUMBER_NOT_FOUND" : "NOC_OLD_NOC_NUMBER_NOT_FOUND"
       });
     }
-    
+
     setTimeout(() => setShowToast(null), 3000);
   };
   const fireStationOptions = useMemo(() => {
@@ -384,13 +391,15 @@ const handleSearchResponse = (searchData, isProvisional) => {
                         props.onChange(val);
                         setValue("provisionalNocNumber", "");
                         setValue("oldFireNocNumber", "");
+                        setProvisionalSearched(false);
+                        setOldNocSearched(false);
                       }}
                       selected={props.value}
                       option={nocTypeOptions}
                       optionKey="name"
                       t={t}
                       placeholder={t("NOC_SELECT_NOC_TYPE_PLACEHOLDER")}
-                      disable={isSentBack || (hasProvisionalResult && isNocValid) || (hasOldNocResult && isNocValid)}
+                      disable={isSentBack || (provisionalSearched && isNocValid) || (oldNocSearched && isNocValid)}
                     />
                   )}
                 />
@@ -445,21 +454,21 @@ const handleSearchResponse = (searchData, isProvisional) => {
                         onChange={(e) => props.onChange(e.target.value)}
                         placeholder={t("Enter Provisional fire NoC number")}
                         style={{ flex: 1 }}
-                        disable={hasProvisionalResult && isNocValid}
+                        disable={provisionalSearched && isNocValid}
                       />
                     )}
                   />
                   <button
                     type="button"
                     onClick={handleProvisionalSearch}
-                    disabled={hasProvisionalResult && isNocValid}
+                    disabled={provisionalSearched && isNocValid}
                     style={{
-                      background: hasProvisionalResult && isNocValid ? "#ccc" : "linear-gradient(135deg, #2563eb, #1e40af)",
+                      background: provisionalSearched && isNocValid ? "#ccc" : "linear-gradient(135deg, #2563eb, #1e40af)",
                       color: "#fff",
                       border: "none",
                       borderRadius: "4px",
                       padding: "8px 20px",
-                      cursor: hasProvisionalResult && isNocValid ? "not-allowed" : "pointer",
+                      cursor: provisionalSearched && isNocValid ? "not-allowed" : "pointer",
                       fontWeight: "bold",
                       fontSize: "14px",
                       whiteSpace: "nowrap",
@@ -489,21 +498,21 @@ const handleSearchResponse = (searchData, isProvisional) => {
                         onChange={(e) => props.onChange(e.target.value)}
                         placeholder={t("Enter old fire NoC number")}
                         style={{ flex: 1 }}
-                        disable={hasOldNocResult && isNocValid}
+                        disable={oldNocSearched && isNocValid}
                       />
                     )}
                   />
                   <button
                     type="button"
                     onClick={handleOldNocSearch}
-                    disabled={hasOldNocResult && isNocValid}
+                    disabled={oldNocSearched && isNocValid}
                     style={{
-                      background: hasOldNocResult && isNocValid ? "#ccc" : "linear-gradient(135deg, #2563eb, #1e40af)",
+                      background: oldNocSearched && isNocValid ? "#ccc" : "linear-gradient(135deg, #2563eb, #1e40af)",
                       color: "#fff",
                       border: "none",
                       borderRadius: "4px",
                       padding: "8px 20px",
-                      cursor: hasOldNocResult && isNocValid ? "not-allowed" : "pointer",
+                      cursor: oldNocSearched && isNocValid ? "not-allowed" : "pointer",
                       fontWeight: "bold",
                       fontSize: "14px",
                       whiteSpace: "nowrap",

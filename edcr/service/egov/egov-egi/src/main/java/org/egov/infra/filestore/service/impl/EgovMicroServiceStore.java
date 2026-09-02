@@ -58,7 +58,7 @@ public class EgovMicroServiceStore implements FileStoreService {
 	/**
 	 * Maximum time allowed to establish connection with FileStore.
 	 */
-	private static final int CONNECT_TIMEOUT_MS = 30 * 1000; // 30 seconds
+	private static final int CONNECT_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes
 
 	/**
 	 * Maximum time application will wait for FileStore response.
@@ -98,10 +98,9 @@ public class EgovMicroServiceStore implements FileStoreService {
 	            new SimpleClientHttpRequestFactory();
 
 	    // Connection + SSL/TLS handshake allowance
-	    requestFactory.setConnectTimeout(CONNECT_TIMEOUT_MS); // 60 sec
-
+	    requestFactory.setConnectTimeout(CONNECT_TIMEOUT_MS);
 	    // FileStore response waiting time
-	    requestFactory.setReadTimeout(READ_TIMEOUT_MS); // 10 min
+	    requestFactory.setReadTimeout(READ_TIMEOUT_MS);
 
 	    // Large file upload ke liye
 	    requestFactory.setBufferRequestBody(false);

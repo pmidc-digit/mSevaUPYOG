@@ -37,7 +37,7 @@ public class BPAConsumer {
 		BPARequest bpaRequest = new BPARequest();
 		try {
 			log.debug("Consuming record: " + rawRecord);
-			bpaRequest = mapper.convertValue(rawRecord, BPARequest.class);
+			bpaRequest = mapper.readValue(rawRecord, BPARequest.class);
 		} catch (final Exception e) {
 			log.error("Error while listening to value: " + rawRecord  + ": " + e);
 		}

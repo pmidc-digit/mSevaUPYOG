@@ -528,21 +528,18 @@ public class DgrIntegration {
                             ? catSubCat.get("Sub_Category_ID").toString()
                             : "0");
 
-            String applicationTitle = safeValue(
-            	    constants.DEFAULT_DESCRIPTION_NAME,
-            	    serviceReqRequest.getServices().get(0).getDescription()
-            	);
+            String serviceRequestId = serviceReqRequest.getServices().get(0).getServiceRequestId();
+            String descriptionText = safeValue(
+                    constants.DEFAULT_DESCRIPTION_NAME,
+                    serviceReqRequest.getServices().get(0).getDescription()
+            );
 
-            	requestBody.put(
-            	    "Application_Title",
-            	    applicationTitle + " - " + serviceReqRequest.getServices().get(0).getServiceRequestId()
-            	);
+            String formattedTitleAndDesc = (serviceRequestId != null && !serviceRequestId.trim().isEmpty())
+                    ? serviceRequestId + " - " + descriptionText
+                    : descriptionText;
 
-            	requestBody.put(
-            	    "Application_Description",
-            	    safeValue(constants.DEFAULT_DESCRIPTION_NAME,
-            	              serviceReqRequest.getServices().get(0).getDescription())
-            	);
+            requestBody.put("Application_Title", formattedTitleAndDesc);
+            requestBody.put("Application_Description", formattedTitleAndDesc);
             	requestBody.put("Application_Department_Name",   Optional.ofNullable(catSubCat.get("Department_Name"))
                         .filter(s -> !s.trim().isEmpty())
                         .orElse("Department of Local Government"));

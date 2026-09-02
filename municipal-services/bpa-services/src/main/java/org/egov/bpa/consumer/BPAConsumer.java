@@ -41,7 +41,7 @@ public class BPAConsumer {
 		} catch (final Exception e) {
 			log.error("Error while listening to value: " + rawRecord + " on topic: " + topic + ": " + e);
 		}
-		log.debug("BPA Received: " + bpaRequest.getBPA().getApplicationNo());
+		log.info("BPA Received: " + bpaRequest.getBPA().getApplicationNo());
 		if(!bpaRequest.getBPA().getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_PAY))
 			notificationService.process(bpaRequest, rawRecord);
 	}

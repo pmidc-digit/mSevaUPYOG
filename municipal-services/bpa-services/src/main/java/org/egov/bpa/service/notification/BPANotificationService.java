@@ -82,7 +82,7 @@ public class BPANotificationService {
 	 *            The NOCRequest listenend on the kafka topic
 	 */
 	public void process(BPARequest bpaRequest, String rawRecord) {
-		
+		log.info("Start BPA Consumer Process for Application No: - " + bpaRequest.getBPA().getApplicationNo());
 		List<SMSRequest> smsRequests = new LinkedList<>();
 		if (null != config.getIsSMSEnabled()) {
 			if (config.getIsSMSEnabled()) {

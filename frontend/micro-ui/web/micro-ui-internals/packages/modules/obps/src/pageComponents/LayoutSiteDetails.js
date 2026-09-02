@@ -1535,6 +1535,12 @@ const LayoutSiteDetails = (_props) => {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
                   },
+                  validate: (value) => {
+                    if (value && /\s/.test(value)) {
+                      return t("NO_SPACES_ALLOWED");
+                    }
+                    return true;
+                  },
                 }}
                 render={(props) => (
                   <TextInput

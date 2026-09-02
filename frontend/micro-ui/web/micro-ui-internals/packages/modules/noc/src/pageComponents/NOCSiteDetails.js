@@ -1012,7 +1012,10 @@ const sortedRoadType = useMemo(
                   //   message: t("MIN_4_CHARACTERS_REQUIRED"),
                   // },
                   validate: (value) => {
-                    const sanitized = value.replace(/\//g, ""); // remove all "/"
+                    if (value && /\s/.test(value)) {
+                      return t("NO_SPACES_ALLOWED");
+                    }
+                    const sanitized = value ? value.replace(/\//g, "") : ""; // remove all "/"
                     return sanitized.length <= 15 || t("MAX_15_CHARACTERS_ALLOWED");
                   },
                 }}

@@ -14,6 +14,7 @@ import org.egov.pgr.consumer.DgrIntegration;
 import org.egov.pgr.contract.ServiceReqSearchCriteria;
 import org.egov.pgr.contract.ServiceRequest;
 import org.egov.pgr.contract.ServiceResponse;
+import org.egov.pgr.model.AuditDetails;
 import org.egov.pgr.model.user.UserResponse;
 import org.egov.pgr.repository.DgrRetryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -175,6 +176,18 @@ public class DgrRetryService {
                         entryResult.put("serviceRequestId", serviceRequestId);
                         entryResult.put("tenantId", tenantId);
 
+                        // Hard-code rule: Never push complaints created before 7th Jan 2026
+                        AuditDetails auditDetails = serviceReqRequest.getServices().get(0).getAuditDetails();
+                        if (auditDetails != null && auditDetails.getCreatedTime() != null
+                                && auditDetails.getCreatedTime() < org.egov.pgr.utils.PGRConstants.DGR_CUTOFF_DATE_EPOCH) {
+                            log.info("Complaint [{}] createdTime [{}] is before 7th Jan 2026 cutoff. Skipping.",
+                                    serviceRequestId, auditDetails.getCreatedTime());
+                            entryResult.put("status", "SKIPPED_BEFORE_CUTOFF_DATE");
+                            results.add(entryResult);
+                            processed++;
+                            continue;
+                        }
+
                         // Use caller's RequestInfo if provided, otherwise the one in the record
                         RequestInfo effectiveReqInfo = requestInfo != null ? requestInfo : serviceReqRequest.getRequestInfo();
                         if (effectiveReqInfo != null) {
@@ -326,6 +339,20 @@ public class DgrRetryService {
                     entryResult.put("dgrGrievanceId", dbDgrId);
                     results.add(entryResult);
                     continue;
+                }
+
+                // Hard-code rule: Never push complaints created before 7th Jan 2026
+                Object createdTimeObj = (dbSummary != null) ? dbSummary.get("createdtime") : null;
+                if (createdTimeObj instanceof Number) {
+                    long createdTime = ((Number) createdTimeObj).longValue();
+                    if (createdTime < org.egov.pgr.utils.PGRConstants.DGR_CUTOFF_DATE_EPOCH) {
+                        log.info("Service request [{}] createdTime [{}] is before 7th Jan 2026 cutoff. Skipping.",
+                                serviceRequestId, createdTime);
+                        entryResult.put("tenantId", dbTenantId);
+                        entryResult.put("status", "SKIPPED_BEFORE_CUTOFF_DATE");
+                        results.add(entryResult);
+                        continue;
+                    }
                 }
 
                 // 2. Fetch the full service request details using plain search with mandatory tenantId
@@ -561,6 +588,20 @@ public class DgrRetryService {
             Map<String, Object> entryResult = new LinkedHashMap<>();
             entryResult.put("serviceRequestId", serviceRequestId);
             entryResult.put("tenantId", recordTenantId);
+
+            // Hard-code rule: Never push complaints created before 7th Jan 2026
+            Object createdTimeObj = row.get("createdtime");
+            if (createdTimeObj instanceof Number) {
+                long createdTime = ((Number) createdTimeObj).longValue();
+                if (createdTime < org.egov.pgr.utils.PGRConstants.DGR_CUTOFF_DATE_EPOCH) {
+                    log.info("Pending record [{}] createdTime [{}] is before 7th Jan 2026 cutoff. Skipping.",
+                            serviceRequestId, createdTime);
+                    entryResult.put("status", "SKIPPED_BEFORE_CUTOFF_DATE");
+                    skippedCount++;
+                    results.add(entryResult);
+                    continue;
+                }
+            }
 
             try {
                 // ============================================================

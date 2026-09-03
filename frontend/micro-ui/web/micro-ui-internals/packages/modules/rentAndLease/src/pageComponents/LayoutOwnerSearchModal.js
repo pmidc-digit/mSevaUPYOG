@@ -54,7 +54,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
   const [showToast, setShowToast] = useState(null);
   const [searchedUsers, setSearchedUsers] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [docLoader, setDocLoader] = useState(false);
 
   // Step state: 1 = Search/Manual form, 2 = Mandatory upload & additional fields form
   const [step, setStep] = useState(1);
@@ -173,9 +172,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       return;
     }
     try {
-      setDocLoader(true);
       const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
-      setDocLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
         setPhotoUploadedFile(fileId);
@@ -184,7 +181,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
         setShowToast({ error: true, label: "FILE_UPLOAD_FAILED" });
       }
     } catch (err) {
-      setDocLoader(false);
       setShowToast({ error: true, label: "FILE_UPLOAD_FAILED" });
     }
   };
@@ -196,9 +192,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       return;
     }
     try {
-      setDocLoader(true);
       const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
-      setDocLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
         setDocumentUploadedFile(fileId);
@@ -207,7 +201,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
         setShowToast({ error: true, label: "FILE_UPLOAD_FAILED" });
       }
     } catch (err) {
-      setDocLoader(false);
       setShowToast({ error: true, label: "FILE_UPLOAD_FAILED" });
     }
   };
@@ -219,9 +212,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       return;
     }
     try {
-      setDocLoader(true);
       const response = await Digit.UploadServices.Filestorage("Layout", file, stateId);
-      setDocLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
         setPanDocumentUploadedFile(fileId);
@@ -230,7 +221,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
         setShowToast({ error: true, label: "FILE_UPLOAD_FAILED" });
       }
     } catch (err) {
-      setDocLoader(false);
       setShowToast({ error: true, label: "FILE_UPLOAD_FAILED" });
     }
   };
@@ -462,7 +452,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
           </h1>
           <CloseBtn onClick={closeModal} />
         </div>
-        {docLoader && <Loader />}
 
         {step === 1 && !showManualForm && (
           <React.Fragment>
@@ -780,6 +769,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 uploadedFile={photoUploadedFile}
                 message={photoUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                 uploadMessage="Invalid File Format"
+                showPageLoaderOnUpload={true}
                 accept=".png, .jpeg, .jpg"
               />
               <p className="upload-file-message">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
@@ -802,6 +792,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 uploadedFile={documentUploadedFile}
                 message={documentUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                 uploadMessage="Invalid File Format"
+                showPageLoaderOnUpload={true}
                 accept=".pdf, .png, .jpeg, .jpg"
               />
               <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
@@ -826,6 +817,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 uploadedFile={panDocumentUploadedFile}
                 message={panDocumentUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                 uploadMessage="Invalid File Format"
+                showPageLoaderOnUpload={true}
                 accept=".pdf, .png, .jpeg, .jpg"
               />
               <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>

@@ -211,7 +211,7 @@ const CustomUploadFile = (props) => {
     return false;
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = async (e) => {
     clearError();
     const file = e?.target?.files?.[0];
     if (!file) {
@@ -239,8 +239,13 @@ const CustomUploadFile = (props) => {
       return;
     }
 
-    // valid file — forward the event to parent
-    props.onUpload && props.onUpload(e);
+    // Await upload callbacks so the page loader covers the full API request.
+    try {
+      if (props.showPageLoaderOnUpload) setLoader(true);
+      await props.onUpload?.(e);
+    } finally {
+      if (props.showPageLoaderOnUpload) setLoader(false);
+    }
     // update local state
     if (inpRef?.current?.files?.[0]) {
       setHasFile(true);

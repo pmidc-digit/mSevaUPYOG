@@ -72,6 +72,10 @@ const NewRegistration = ({ stateCode }) => {
       setError(t("CS_COMMON_CHOOSE_LOCATION"));
       return;
     }
+    if (!getGender || !getGender.code) {
+      setError(t("CS_COMMON_CHOOSE_GENDER"));
+      return;
+    }
 
     try {
       setCanSubmit(false);

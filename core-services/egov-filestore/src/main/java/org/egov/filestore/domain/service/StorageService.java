@@ -42,6 +42,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class StorageService {
 
+	private final CompressionService compressionService;
+
 	@Autowired
 	private CloudFileMgrUtils util;
 	
@@ -80,13 +82,14 @@ public class StorageService {
 
 	@Autowired
 	public StorageService(ArtifactRepository artifactRepository, IdGeneratorService idGeneratorService,
-			FileStoreConfig fileStoreConfig, StorageValidator storageValidator, FileStoreConfig configs, MinioConfig minioConfig) {
+			FileStoreConfig fileStoreConfig, StorageValidator storageValidator, FileStoreConfig configs, MinioConfig minioConfig, CompressionService compressionService) {
 		this.artifactRepository = artifactRepository;
 		this.idGeneratorService = idGeneratorService;
 		this.fileStoreConfig = fileStoreConfig;
 		this.storageValidator = storageValidator;
 		this.minioConfig = minioConfig;
 		this.configs = configs;
+		this.compressionService = compressionService;
 	}
 
 	public List<String> save(List<MultipartFile> filesToStore, String module, String tag, String tenantId, RequestInfo requestInfo) {
@@ -103,9 +106,19 @@ public class StorageService {
 		List<Artifact> artifacts = new ArrayList<>();
 		Artifact artifact = null;
 		for (MultipartFile file : files) {
-			String randomString = RandomStringUtils.random(filenameLength, useLetters, useNumbers);
 			String orignalFileName = file.getOriginalFilename();
 			String imagetype = FilenameUtils.getExtension(orignalFileName);
+			
+			//Compress DXF file to zip file
+			if("dxf".equalsIgnoreCase(imagetype)) {
+				try {
+					file = compressionService.compressToZip(file);
+				} catch (IOException e) {
+					log.error("Error while compressing dxf file to zip: " + e.getMessage());
+				}
+			}
+			
+			String randomString = RandomStringUtils.random(filenameLength, useLetters, useNumbers);
 			String fileName = folderName + System.currentTimeMillis() + randomString + "." +imagetype;
 			String id = this.idGeneratorService.getId();
 			FileLocation fileLocation = new FileLocation(id, module, tag, tenantId, fileName, null);

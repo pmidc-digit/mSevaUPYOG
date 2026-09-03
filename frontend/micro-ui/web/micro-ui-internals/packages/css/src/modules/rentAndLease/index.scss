@@ -589,3 +589,117 @@
 .ral-property-details__non-legacy--hidden {
   display: none;
 }
+
+// Keep all owner-search columns legible and scroll the result area when required.
+.ral-owner-search-results {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+
+  .ndc-new-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .customTable {
+    min-width: 1480px;
+    table-layout: fixed;
+  }
+
+  .customTable th,
+  .customTable td {
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+    text-align: left;
+  }
+
+  .customTable th {
+    line-height: 1.3;
+    white-space: normal;
+  }
+
+  .customTable th:nth-child(1),
+  .customTable td:nth-child(1) {
+    width: 170px;
+  }
+
+  .customTable th:nth-child(2),
+  .customTable td:nth-child(2) {
+    width: 130px;
+    white-space: nowrap;
+  }
+
+  .customTable th:nth-child(3),
+  .customTable td:nth-child(3) {
+    width: 220px;
+  }
+
+  .customTable th:nth-child(4),
+  .customTable td:nth-child(4) {
+    width: 125px;
+    white-space: nowrap;
+  }
+
+  .customTable th:nth-child(5),
+  .customTable td:nth-child(5) {
+    width: 205px;
+  }
+
+  .customTable th:nth-child(6),
+  .customTable td:nth-child(6) {
+    width: 220px;
+  }
+
+  .customTable th:nth-child(7),
+  .customTable td:nth-child(7) {
+    width: 110px;
+    white-space: nowrap;
+  }
+
+  .customTable th:nth-child(8),
+  .customTable td:nth-child(8) {
+    width: 120px;
+    text-align: center;
+    white-space: nowrap;
+  }
+}
+
+// Prevent the wide search table from expanding the stepper or the page.
+.ral-owner-details-step {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden !important;
+
+  #owner-search-form-container {
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+}
+
+// A phone number does not need the full row width on desktop.
+.ral-owner-search-controls {
+  justify-content: flex-start;
+
+  .obps-page-components-layout-owner-search-modal--style-7 {
+    flex: 0 1 380px;
+    width: 380px;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .ral-owner-search-controls {
+    .obps-page-components-layout-owner-search-modal--style-7 {
+      width: 100%;
+    }
+  }
+}

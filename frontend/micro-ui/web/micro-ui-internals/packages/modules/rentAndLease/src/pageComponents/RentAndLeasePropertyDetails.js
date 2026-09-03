@@ -12,17 +12,27 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { Controller, useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../redux/action/RentAndLeaseNewApplicationActions";
 import RentANDLeaseDocuments from "../components/RentANDLeaseDocuments";
 
-const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, validateStep, config }) => {
+const RentAndLeasePropertyDetails = ({
+  onGoBack,
+  goNext,
+  // currentStepData,
+  validateStep,
+  config,
+}) => {
   const dispatch = useDispatch();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const [documentsData, setDocumentsData] = useState([]);
   const [getPropertyFiltered, setPropertyFiltered] = useState([]);
   const [error, setError] = useState(null);
   const { t } = useTranslation();
+
+  const currentStepData = useSelector(function (state) {
+    return state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {};
+  });
 
   // 🔹 Dropdown options
   const propertyTypeOptions = [
@@ -118,10 +128,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     },
   });
 
-  useEffect(() => {
-    console.log("errors", errors);
-  }, [errors]);
-
   const docUploadData = {
     Challan: {
       Documents: [
@@ -151,6 +157,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     if (data?.property) {
       // Start with all properties from MDMS
       let properties = data?.property;
+
       setFilteredProperties(properties);
     }
   }, [data, selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
@@ -246,7 +253,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     // Dispatch to Redux under one key
     dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("propertyDetails", propertyDetails));
     triggerLoader(false);
-    console.log("propertyDetails", propertyDetails);
     // return;
 
     goNext(propertyDetails);
@@ -254,8 +260,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
   useEffect(() => {
     if (currentStepData?.propertyDetails) {
-      console.log("currentStepData", currentStepData);
-
       const rawAdditionalDetails = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails;
       const additionalDetailsRes = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
       const findIncrementPeriodMonthsValues = incrementPeriodMonthsValues?.find((item) => item?.code == additionalDetailsRes?.incrementPeriodMonths);
@@ -366,8 +370,11 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
   const filterProperties = (checkProperty) => {
     const checkAllotment = watch("propertyType");
-    const filteredData = rentANDLeaseProperty?.rentAndLease?.RLProperty?.filter((item) => item.areaCode == checkProperty?.code);
+
+    // const filteredData = rentANDLeaseProperty?.rentAndLease?.RLProperty?.filter((item) => item.areaCode == checkProperty?.code);
+    const filteredData = filteredProperties?.filter((item) => item.areaCode == checkProperty?.code);
     const filterSet = filteredData?.filter((item) => item?.allotmentType == checkAllotment?.code);
+
     setPropertyFiltered(filterSet);
   };
 

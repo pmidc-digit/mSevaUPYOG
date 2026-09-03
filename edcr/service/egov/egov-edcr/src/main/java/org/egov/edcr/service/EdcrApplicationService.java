@@ -309,7 +309,8 @@ public class EdcrApplicationService {
 
         File dxfFile = fileStoreService.fetch(
                 fileStoreMapper.getFileStoreId(),
-                FILESTORE_MODULECODE
+                FILESTORE_MODULECODE,
+                tenantId
         );
 
         planService.buildDocuments(edcrApplication, fileStoreMapper, null, null);
@@ -324,11 +325,8 @@ public class EdcrApplicationService {
     }
     
     private File saveDXF(EdcrApplication edcrApplication) {
-
-        String tenantId = "edcrApplication.getTenantId()";
-
         FileStoreMapper fileStoreMapper =
-                addToFileStore(edcrApplication.getDxfFile(), tenantId);
+                addToFileStore(edcrApplication.getDxfFile());
 
         LOG.info("Returned FileStoreMapper : {}", fileStoreMapper);
 

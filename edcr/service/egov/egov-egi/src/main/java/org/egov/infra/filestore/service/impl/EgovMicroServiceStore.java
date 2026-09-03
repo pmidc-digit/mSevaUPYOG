@@ -108,6 +108,9 @@ public class EgovMicroServiceStore implements FileStoreService {
     private static final int READ_TIMEOUT_MS = 10 * 60 * 1000;
 
     @Autowired
+    private CompressionService compressionService;
+    
+    @Autowired
     public EgovMicroServiceStore(@Value("${ms.url}") String url) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(CONNECT_TIMEOUT_MS);
@@ -495,7 +498,8 @@ public class EgovMicroServiceStore implements FileStoreService {
             RequestCallback requestCallback = request -> request.getHeaders()
                     .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
             ResponseExtractor<Void> responseExtractor = response -> {
-                Files.copy(response.getBody(), path);
+            	InputStream inputStream = compressionService.decompressFromZip(response.getBody());
+                Files.copy(inputStream, path);
                 return null;
             };
             restTemplate.execute(URI.create(urls), HttpMethod.GET, requestCallback, responseExtractor);

@@ -134,7 +134,7 @@ public class StorageService {
 				log.error("IO Exception while mapping files to artifact: " + e.getMessage());
 			}
 			if (!"ticket".equals(tenantId)) {
-				storageValidator.validate(artifact);
+				storageValidator.validate(artifact, imagetype.toLowerCase());
 			}
 			
 			if (fileStoreConfig.getImageFormats().contains(FilenameUtils.getExtension(artifact.getMultipartFile().getOriginalFilename())))

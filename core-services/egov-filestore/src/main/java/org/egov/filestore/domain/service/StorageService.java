@@ -42,7 +42,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class StorageService {
 
-	private final CompressionService compressionService;
+	@Autowired
+	private CompressionService compressionService;
 
 	@Autowired
 	private CloudFileMgrUtils util;
@@ -82,14 +83,14 @@ public class StorageService {
 
 	@Autowired
 	public StorageService(ArtifactRepository artifactRepository, IdGeneratorService idGeneratorService,
-			FileStoreConfig fileStoreConfig, StorageValidator storageValidator, FileStoreConfig configs, MinioConfig minioConfig, CompressionService compressionService) {
+			FileStoreConfig fileStoreConfig, StorageValidator storageValidator, FileStoreConfig configs, MinioConfig minioConfig) {
 		this.artifactRepository = artifactRepository;
 		this.idGeneratorService = idGeneratorService;
 		this.fileStoreConfig = fileStoreConfig;
 		this.storageValidator = storageValidator;
 		this.minioConfig = minioConfig;
 		this.configs = configs;
-		this.compressionService = compressionService;
+		
 	}
 
 	public List<String> save(List<MultipartFile> filesToStore, String module, String tag, String tenantId, RequestInfo requestInfo) {

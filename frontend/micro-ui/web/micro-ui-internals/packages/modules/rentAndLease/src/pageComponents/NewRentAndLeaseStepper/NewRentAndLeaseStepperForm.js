@@ -161,15 +161,17 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
 
             // --- Map Property Details ---
             const rawAdditionalDetails = allotmentDetails?.additionalDetails || {};
-            const apiAdditionalDetails = rawAdditionalDetails?.propertyDetails?.[0] || (Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails);
+            const apiAdditionalDetails =
+              rawAdditionalDetails?.propertyDetails?.[0] || (Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails);
 
             // Mapping for Dropdown Options
             const applicationTypeOptions = [
-                  { name: t("Legacy"), code: "Legacy" },
-                  { name: t("New"), code: "new" },
+              { name: t("Legacy"), code: "Legacy" },
+              { name: t("New"), code: "new" },
             ];
 
-            const appType = rawAdditionalDetails?.applicationType || allotmentDetails?.applicationType || apiAdditionalDetails?.applicationType || "NEW";
+            const appType =
+              rawAdditionalDetails?.applicationType || allotmentDetails?.applicationType || apiAdditionalDetails?.applicationType || "NEW";
             const formattedAppType = appType?.charAt(0)?.toUpperCase() + appType?.slice(1)?.toLowerCase();
 
             // Create a NEW object for the form, merging root fields and additionalDetails

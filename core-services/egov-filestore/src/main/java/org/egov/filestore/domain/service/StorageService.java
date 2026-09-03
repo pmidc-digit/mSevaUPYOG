@@ -107,18 +107,19 @@ public class StorageService {
 		List<Artifact> artifacts = new ArrayList<>();
 		Artifact artifact = null;
 		for (MultipartFile file : files) {
-			String orignalFileName = file.getOriginalFilename();
-			String imagetype = FilenameUtils.getExtension(orignalFileName);
+			
+			String extension = FilenameUtils.getExtension(file.getOriginalFilename()).toLowerCase();
 			
 			//Compress DXF file to zip file
-			if("dxf".equalsIgnoreCase(imagetype)) {
+			if("dxf".equalsIgnoreCase(extension)) {
 				try {
 					file = compressionService.compressToZip(file);
 				} catch (IOException e) {
 					log.error("Error while compressing dxf file to zip: " + e.getMessage());
 				}
 			}
-			
+			String orignalFileName = file.getOriginalFilename();
+			String imagetype = FilenameUtils.getExtension(orignalFileName);
 			String randomString = RandomStringUtils.random(filenameLength, useLetters, useNumbers);
 			String fileName = folderName + System.currentTimeMillis() + randomString + "." +imagetype;
 			String id = this.idGeneratorService.getId();
@@ -134,7 +135,7 @@ public class StorageService {
 				log.error("IO Exception while mapping files to artifact: " + e.getMessage());
 			}
 			if (!"ticket".equals(tenantId)) {
-				storageValidator.validate(artifact, imagetype.toLowerCase());
+				storageValidator.validate(artifact, extension);
 			}
 			
 			if (fileStoreConfig.getImageFormats().contains(FilenameUtils.getExtension(artifact.getMultipartFile().getOriginalFilename())))

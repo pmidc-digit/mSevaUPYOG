@@ -61,6 +61,9 @@ public class RLProperty {// extends PropertyInfo {
 	@JsonProperty("address")
 	private String address;
 
+	@JsonProperty("areaCode")
+	private String areaCode;
+
 	@JsonProperty("geoLocation")
 	private GeoLocation geoLocation;
 	

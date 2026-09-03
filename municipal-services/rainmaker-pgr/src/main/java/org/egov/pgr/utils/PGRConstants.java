@@ -131,6 +131,12 @@ public class PGRConstants {
 	    public static final String DEFAULT_ADDRESS = "No Address Provided By User in PMIDC";
 
 	    // =========================
+	    // DGR Integration Cutoff Date (7th Jan 2026 00:00:00 IST)
+	    // Complaints created before this date are NEVER pushed to DGR.
+	    // =========================
+	    public static final Long DGR_CUTOFF_DATE_EPOCH = 1767724200000L;
+
+	    // =========================
 	    // Application info
 	    // =========================
 	    public static final String DEPARTMENT_ID = "178";

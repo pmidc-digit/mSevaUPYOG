@@ -13,6 +13,10 @@ import org.egov.bpa.web.model.*;
 import org.egov.bpa.web.model.collection.PaymentResponse;
 import org.egov.bpa.web.model.user.UserDetailResponse;
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.mdms.model.MasterDetail;
+import org.egov.mdms.model.MdmsCriteria;
+import org.egov.mdms.model.MdmsCriteriaReq;
+import org.egov.mdms.model.ModuleDetail;
 import org.egov.tracer.model.CustomException;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -23,6 +27,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import static org.egov.bpa.util.BPAConstants.*;
 import static org.springframework.util.StringUtils.capitalize;
@@ -83,38 +89,51 @@ public class NotificationUtil {
 	 * @return customized message based on bpa
 	 */
 	@SuppressWarnings("unchecked")
-	public String getCustomizedMsg(RequestInfo requestInfo, BPA bpa, String localizationMessage) {
-		String message = null, messageTemplate;
-		Map<String, String> edcrResponse = edcrService.getEDCRDetails(requestInfo, bpa, null);
-		
-		String applicationType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);
-		String serviceType = edcrResponse.get(BPAConstants.SERVICETYPE);
-
-		if (bpa.getStatus().toString().toUpperCase().equals(BPAConstants.STATUS_CREATE)) {
-			messageTemplate = getMessageTemplate(
-					applicationType + "_" + serviceType + "_" + BPAConstants.STATUS_CREATE, localizationMessage);
-			message = getInitiatedMsg(bpa, messageTemplate, serviceType);
-		}
-		else if (bpa.getStatus().toString().toUpperCase().equals(BPAConstants.STATUS_REJECTED)) {
-			messageTemplate = getMessageTemplate(
-					applicationType + "_" + serviceType + "_" + BPAConstants.STATUS_REJECTED, localizationMessage);
-			message = getInitiatedMsg(bpa, messageTemplate, serviceType);
-		} else {
-
-			String messageCode = applicationType + "_" + serviceType + "_" + bpa.getWorkflow().getAction() + "_"
-					+ bpa.getStatus();
-
-			messageTemplate = getMessageTemplate(messageCode, localizationMessage);
-			if (!StringUtils.isEmpty(messageTemplate)) {
-				message = getInitiatedMsg(bpa, messageTemplate, serviceType);
-
-				if (message.contains(AMOUNT_TO_BE_PAID)) {
-					BigDecimal amount = getAmountToBePaid(requestInfo, bpa);
-					message = message.replace(AMOUNT_TO_BE_PAID, amount.toString());
+	public String getCustomizedMsg(RequestInfo requestInfo, BPA bpa, String localizationMessage, String rawRecord) {
+		String message = null;
+		String messageCode;
+		if(bpa.getWorkflow() != null) {
+			Object mdmsData = getMDMSData(requestInfo, bpa.getTenantId().split("\\.")[0]);
+			Map<String, Object> notificationConfig = getMDMSNotificationConfig(bpa.getWorkflow().getAction()
+					,bpa.getStatus(), mdmsData);
+			
+			messageCode = notificationConfig.getOrDefault("messageCode", "").toString();
+			message = getMessageTemplate(messageCode, localizationMessage);
+			
+			List<Map<String, Object>> variables = JsonPath.read(notificationConfig, "$.variables");
+			Map<String, String> employeeMap = new HashMap<>();
+			for(Map<String, Object> variable : variables) {
+				if((boolean)variable.get("isFixed"))
+					message = message.replace(variable.get("variable").toString(), variable.get("value").toString());
+				else {
+					String filter = variable.get("filter").toString();
+					String fixedValue = variable.get("value").toString();
+					if(StringUtils.isEmpty(fixedValue)) {
+						String value = JsonPath.read(rawRecord, filter).toString();
+						message = message.replace(variable.get("variable").toString(), value);
+					}else {
+						String filteredValue = JsonPath.read(rawRecord, filter);
+						employeeMap.put(fixedValue, filteredValue);
+						message = message.replace(variable.get("variable").toString(), fixedValue);
+					}
 				}
-				message = getLinksReplaced(message,bpa);
 			}
-		}
+			
+			String uuids = employeeMap.entrySet().stream().map(Entry::getValue).collect(Collectors.joining(","));
+			
+			if(!StringUtils.isEmpty(uuids)) {
+				Map<String, String> designationMap = userService.getEmployeeDesignation(requestInfo, uuids, bpa.getTenantId());
+				employeeMap.entrySet().stream().forEach(entry -> {
+					List<String> designation = JsonPath.read(mdmsData, "$.MdmsRes.common-masters.Designation.[?(@.code == '" + designationMap.get(entry.getValue()) + "')].name");
+					entry.setValue(designation.get(0));
+				});
+				
+				for(Entry<String, String> entry : employeeMap.entrySet()) {
+					message = message.replace(entry.getKey(), entry.getValue());
+				}
+			}
+			
+		}		
 		return message;
 	}
 
@@ -323,6 +342,23 @@ public class NotificationUtil {
 				customizedMsg = customizedMsg.replace(PAYMENT_LINK_PLACEHOLDER, link);
 			}
 			smsRequest.add(new SMSRequest(entryset.getKey(), customizedMsg));
+		}
+		return smsRequest;
+	}
+	
+	/**
+	 * Creates sms request for the each owners
+	 * 
+	 * @param message
+	 *            The message for the specific layout
+	 * @param mobileNumberToOwnerName
+	 *            Map of mobileNumber to OwnerName
+	 * @return List of SMSRequest
+	 */
+	public List<SMSRequest> createSMSRequest(String message, Map<String, String> mobileNumberToOwner) {
+		List<SMSRequest> smsRequest = new LinkedList<>();
+		for (Map.Entry<String, String> entryset : mobileNumberToOwner.entrySet()) {
+			smsRequest.add(new SMSRequest(entryset.getKey(), message));
 		}
 		return smsRequest;
 	}
@@ -586,6 +622,44 @@ public class NotificationUtil {
 		link = getShortnerURL(link);
 		log.info(link);
 		return link;
+	}
+	
+	public Object getMDMSData(RequestInfo requestInfo, String tenantId){
+
+		List<ModuleDetail> moduleDetails = new LinkedList<>();
+		
+		ModuleDetail nocModuleDetails = ModuleDetail.builder()
+				.masterDetails(Collections.singletonList(MasterDetail.builder()
+						.name("NotificationConfig")
+						.build()))
+				.moduleName(BPAConstants.BPA_MODULE).build();
+		
+		ModuleDetail designationModuleDetails = ModuleDetail.builder()
+				.masterDetails(Collections.singletonList(MasterDetail.builder()
+						.name("Designation")
+						.build()))
+				.moduleName("common-masters").build();
+		
+		moduleDetails.add(nocModuleDetails);
+		moduleDetails.add(designationModuleDetails);
+		
+		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(moduleDetails).tenantId(tenantId).build();
+
+		MdmsCriteriaReq mdmsCriteriaReq = MdmsCriteriaReq.builder().mdmsCriteria(mdmsCriteria).requestInfo(requestInfo)
+				.build();
+		
+		return serviceRequestRepository.fetchResult(bpaUtil.getMdmsSearchUrl(), mdmsCriteriaReq);
+	}
+	
+	public Map<String, Object> getMDMSNotificationConfig(String action, String state, Object mdmsdata){
+		final String nocFilterCode = "$.MdmsRes.BPA.NotificationConfig.[?(@.active==true && @.action contains '" + action + "' && @.state contains '" + state + "')]";
+		
+		List<Map<String, Object>> list = JsonPath.read(mdmsdata, nocFilterCode);
+		
+		if(CollectionUtils.isEmpty(list))
+			return new HashMap<>();
+		else
+			return list.get(0);
 	}
 
 }

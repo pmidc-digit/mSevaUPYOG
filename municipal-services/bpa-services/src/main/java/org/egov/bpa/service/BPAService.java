@@ -438,7 +438,7 @@ public class BPAService {
 
 		
 		if (bpa.getStatus().equalsIgnoreCase(BPAConstants.FI_STATUS)
-				&& bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_SENDBACKTOCITIZEN)) {
+				&& bpa.getWorkflow()!= null && bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_SENDBACKTOCITIZEN)) {
 			if (additionalDetails.get(BPAConstants.FI_ADDITIONALDETAILS) != null)
 				additionalDetails.remove(BPAConstants.FI_ADDITIONALDETAILS);
 		}

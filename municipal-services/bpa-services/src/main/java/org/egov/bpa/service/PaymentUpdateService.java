@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
+import org.egov.bpa.service.notification.BPANotificationService;
 import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.util.BPAErrorConstants;
 import org.egov.bpa.web.model.BPA;
@@ -51,11 +52,14 @@ public class PaymentUpdateService {
 	
 	private UserService userService;
 	
+	private BPANotificationService notificationService;
+	
 
 	@Autowired
 	public PaymentUpdateService(BPAConfiguration config, BPARepository repository,
 			WorkflowIntegrator wfIntegrator, EnrichmentService enrichmentService, ObjectMapper mapper,
-			WorkflowService workflowService, UserService userService) {
+			WorkflowService workflowService, UserService userService,
+			BPANotificationService notificationService) {
 		this.config = config;
 		this.repository = repository;
 		this.wfIntegrator = wfIntegrator;
@@ -63,6 +67,7 @@ public class PaymentUpdateService {
 		this.mapper = mapper;
 		this.workflowService = workflowService;
 		this.userService = userService;
+		this.notificationService = notificationService;
 
 	}
 
@@ -78,10 +83,10 @@ public class PaymentUpdateService {
 	 * @param record
 	 *            The incoming message from receipt create consumer
 	 */
-	public void process(HashMap<String, Object> record) {
+	public void process(String record) {
 
 		try {
-			PaymentRequest paymentRequest = mapper.convertValue(record, PaymentRequest.class);
+			PaymentRequest paymentRequest = mapper.readValue(record, PaymentRequest.class);
 			RequestInfo requestInfo = paymentRequest.getRequestInfo();
 			List<PaymentDetail> paymentDetails = paymentRequest.getPayment().getPaymentDetails();
 			String tenantId = paymentRequest.getPayment().getTenantId();
@@ -157,6 +162,7 @@ public class PaymentUpdateService {
 					enrichmentService.postStatusEnrichment(updateRequest);
 					
 					repository.update(updateRequest, true);
+					notificationService.process(updateRequest, record);
 
 				}
 			}

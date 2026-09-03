@@ -1721,9 +1721,8 @@ public class DemandService {
 					"MDMS Billing Period does not available for tenant: " + tenantId);
 		}
 
-		if (waterCalculatorDao.isBatchDemandExecuted(tenantId, taxPeriodFrom, taxPeriodTo)) {
-			log.info("Demand generation already successfully executed for tenant: " + tenantId +" locality: "+ locality + " period: " + taxPeriodFrom + " - " + taxPeriodTo + ". Skipping.");
-			return;
+        if (waterCalculatorDao.isBatchDemandExecuted(tenantId, locality, taxPeriodFrom, taxPeriodTo)) {
+            log.info("Demand generation already successfully executed for tenant: " + tenantId +" locality: "+ locality + " period: " + taxPeriodFrom + " - " + taxPeriodTo + ". Skipping.");			return;
 		}
 
         if(locality!=null && !locality.trim().isEmpty()){
@@ -2094,6 +2093,7 @@ public class DemandService {
 					BatchDemandLog startLog = BatchDemandLog.builder()
 							.id(UUID.randomUUID().toString())
 							.tenantId(tenantId)
+                            .locality(locality)
 							.taxPeriodFrom(taxPeriodFrom)
 							.taxPeriodTo(taxPeriodTo)
 							.insertionTime(System.currentTimeMillis())
@@ -2168,6 +2168,7 @@ public class DemandService {
 					BatchDemandLog endLog = BatchDemandLog.builder()
 							.id(UUID.randomUUID().toString())
 							.tenantId(tenantId)
+                            .locality(locality)
 							.taxPeriodFrom(taxPeriodFrom)
 							.taxPeriodTo(taxPeriodTo)
 							.insertionTime(System.currentTimeMillis())

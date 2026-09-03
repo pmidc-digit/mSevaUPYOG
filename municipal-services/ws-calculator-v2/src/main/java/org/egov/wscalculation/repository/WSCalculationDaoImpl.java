@@ -553,11 +553,18 @@ public List<BillSearchs> getBillss(String tenantId, String demandid) {
 	}
 
 	@Override
-	public Boolean isBatchDemandExecuted(String tenantId, Long taxPeriodFrom, Long taxPeriodTo) {
+	public Boolean isBatchDemandExecuted(String tenantId, String locality, Long taxPeriodFrom, Long taxPeriodTo) {
 		try {
-            String query = "SELECT EXISTS (SELECT 1 FROM eg_ws_batch_demand_log WHERE tenantid = ? AND taxperiodfrom = ? AND taxperiodto = ? AND isdemandexecuted = true)";
-            return jdbcTemplate.queryForObject(query, new Object[]{tenantId, taxPeriodFrom, taxPeriodTo}, Boolean.class);
-        } catch (Exception e) {
+            String query = "SELECT EXISTS (SELECT 1 FROM eg_ws_batch_demand_log WHERE tenantid = ? AND taxperiodfrom = ? AND taxperiodto = ? AND isdemandexecuted = true";
+            StringBuilder sb = new StringBuilder(query);
+            if (locality != null && !locality.trim().isEmpty()) {
+                sb.append(" AND locality = ?)");
+                String query_locality = sb.toString();
+                return jdbcTemplate.queryForObject(query_locality, new Object[]{tenantId, taxPeriodFrom, taxPeriodTo, locality}, Boolean.class);
+            }
+            sb.append(" AND locality IS null)");
+            String query_tenant = sb.toString();
+            return jdbcTemplate.queryForObject(query_tenant, new Object[]{tenantId, taxPeriodFrom, taxPeriodTo}, Boolean.class);		} catch (Exception e) {
 			log.error("Error checking batch demand execution status for tenantId: " + tenantId, e);
 			return false;
 		}

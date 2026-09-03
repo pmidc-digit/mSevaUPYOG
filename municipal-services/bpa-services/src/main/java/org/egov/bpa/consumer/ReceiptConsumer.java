@@ -19,7 +19,7 @@ public class ReceiptConsumer {
 
 	@KafkaListener(topics = { "${kafka.topics.receipt.create}" },
 			concurrency = "${kafka.consumer.config.concurrency.count}")
-	public void listenPayments(final HashMap<String, Object> record) {
+	public void listenPayments(final String record) {
 		paymentUpdateService.process(record);
 	}
 }

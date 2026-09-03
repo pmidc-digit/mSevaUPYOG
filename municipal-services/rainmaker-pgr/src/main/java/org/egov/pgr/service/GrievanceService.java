@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -778,8 +779,18 @@ public class GrievanceService {
 	 * @return
 	 */
 	public ServiceResponse enrichResult(RequestInfo requestInfo, ServiceResponse response) {
-		List<Long> userIds = response.getServices().stream().map(a -> {
-					try {return Long.parseLong(a.getAccountId());}catch(Exception e) {return null;} }).collect(Collectors.toList());
+		List<Long> userIds = response.getServices().stream()
+				.filter(a -> a != null && a.getAccountId() != null && !a.getAccountId().trim().isEmpty())
+				.map(a -> {
+					try {
+						return Long.parseLong(a.getAccountId().trim());
+					} catch (Exception e) {
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.toList());
 		List<Address> addresses = new ArrayList<>();
 		response.getServices().forEach(service -> {
 			if(null != service) {
@@ -839,20 +850,24 @@ public class GrievanceService {
 		/**
 		 * User details enrichment
 		 */
-		String tenantId = response.getServices().get(0).getTenantId().split("[.]")[0]; //citizen is state-level no point in sending ulb level tenant.
-		UserResponse userResponse = getUsers(requestInfo, tenantId, userIds);
-		if(null != userResponse) {
-			Map<Long, Citizen> userResponseMap = userResponse.getUser().stream()
-					.collect(Collectors.toMap(Citizen :: getId, Function.identity()));
-			for(Service service: response.getServices()) {
-				if(null != service) {
-					Long id = null;
-					try {
-						id = Long.parseLong(service.getAccountId());
-					}catch(Exception e) {
-						log.error("Parse Error", e);
+		if (!CollectionUtils.isEmpty(userIds) && !CollectionUtils.isEmpty(response.getServices())) {
+			String tenantId = response.getServices().get(0).getTenantId().split("[.]")[0]; //citizen is state-level no point in sending ulb level tenant.
+			UserResponse userResponse = getUsers(requestInfo, tenantId, userIds);
+			if(null != userResponse && !CollectionUtils.isEmpty(userResponse.getUser())) {
+				Map<Long, Citizen> userResponseMap = userResponse.getUser().stream()
+						.collect(Collectors.toMap(Citizen :: getId, Function.identity(), (existing, replacing) -> existing));
+				for(Service service: response.getServices()) {
+					if(null != service && service.getAccountId() != null && !service.getAccountId().trim().isEmpty()) {
+						Long id = null;
+						try {
+							id = Long.parseLong(service.getAccountId().trim());
+						} catch(Exception e) {
+							log.debug("Could not parse accountId [{}] for serviceRequestId: {}", service.getAccountId(), service.getServiceRequestId());
+						}
+						if (id != null) {
+							service.setCitizen(userResponseMap.get(id));
+						}
 					}
-					service.setCitizen(userResponseMap.get(id));
 				}
 			}
 		}
@@ -868,6 +883,9 @@ public class GrievanceService {
 	 * @return
 	 */
 	public UserResponse getUsers(RequestInfo requestInfo, String tenantId, List<Long> userIds) {
+		if (CollectionUtils.isEmpty(userIds)) {
+			return null;
+		}
 		ObjectMapper mapper = pGRUtils.getObjectMapper();
 		UserSearchRequest searchRequest = UserSearchRequest.builder().id(userIds).tenantId(tenantId)
 				.userType(PGRConstants.ROLE_CITIZEN).requestInfo(requestInfo).build();
@@ -883,7 +901,6 @@ public class GrievanceService {
 		}catch(Exception e) {
 			return null;
 		}
-		
 	}
 	
 	/**

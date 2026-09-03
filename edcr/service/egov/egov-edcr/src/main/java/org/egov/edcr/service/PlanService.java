@@ -739,8 +739,10 @@ public class PlanService {
                 .fingByDcrApplicationId(edcrApplication.getId());
         final String fileName = edcrApplication.getApplicationNumber() + "-v" + edcrApplicationDetails.size() + ".pdf";
 
+//        final FileStoreMapper fileStoreMapper = fileStoreService.store(reportOutputStream, fileName, "application/pdf",
+//                DcrConstants.FILESTORE_MODULECODE);
         final FileStoreMapper fileStoreMapper = fileStoreService.store(reportOutputStream, fileName, "application/pdf",
-                DcrConstants.FILESTORE_MODULECODE);
+                DcrConstants.FILESTORE_MODULECODE,plan.getEdcrRequest().getTenantId());
 
         buildDocuments(edcrApplication, null, fileStoreMapper, plan);
 

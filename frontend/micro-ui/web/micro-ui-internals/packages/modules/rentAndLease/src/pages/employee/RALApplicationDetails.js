@@ -99,7 +99,6 @@ const RALApplicationDetails = () => {
   const allDocuments = [...(applicationData?.Document || []), ...arrearDoc];
 
   let user = Digit.UserService.getUser();
-  console.log("rawAdditionalDetails", rawAdditionalDetails);
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const isCemp = user?.info?.roles.find((role) => role.code === "RL_CEMP")?.code;
@@ -450,7 +449,7 @@ const RALApplicationDetails = () => {
             <Row label={t("Unit Id")} text={tValue(propertyDetails?.propertyId)} />
             <Row label={t("Building/Plot/Shop Name")} text={tValue(propertyDetails?.propertyName)} />
             <Row label={t("RAL_ALLOTMENT_TYPE")} text={tValue(propertyDetails?.allotmentType)} />
-            <Row label={t("Building/Plot/Shop Type")} text={tValue(rawAdditionalDetails?.propertyType)} />
+            <Row label={t("Building/Plot/Shop Type")} text={tValue(propertyDetails?.propertyType)} />
             <Row label={t("Building/Plot/Shop Locality")} text={tValue(propertyDetails?.address)} />
             <Row label={t("RAL_PROPERTY_AMOUNT")} text={tValue(propertyDetails?.baseRent)} />
             <Row label={t("PENALTY_TYPE")} text={tValue(propertyDetails?.penaltyType)} />

@@ -401,10 +401,47 @@ public class EstimationService {
 					}
  
 					BigDecimal minimumCharge = BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
- 
-					if (WSCalculationConstant.LOCKED.equalsIgnoreCase(meterStatus)
-							|| totalAmount.compareTo(minimumCharge) < 0) {
-						totalAmount = minimumCharge;
+
+					Boolean isMinChargeNotApplied = applicableBillSlab.getIsminimumchargenotapplied();
+					List<String> isMeterStatusApplied = applicableBillSlab.getIsmeterstatusapplied();
+
+					if (Boolean.TRUE.equals(isMinChargeNotApplied)) {
+						boolean statusMatched = false;
+						if (isMeterStatusApplied != null && !isMeterStatusApplied.isEmpty()) {
+							for (String status : isMeterStatusApplied) {
+								if (status != null && status.trim().equalsIgnoreCase(meterStatus.trim())) {
+									statusMatched = true;
+									break;
+								}
+							}
+						}
+
+						boolean containsWorkingStatus = isMeterStatusApplied != null && isMeterStatusApplied.stream()
+								.anyMatch(s -> s != null && (s.trim().equalsIgnoreCase("Working") || s.trim().equalsIgnoreCase("Water") || s.trim().isEmpty()));
+
+						boolean containsLockedStatus = isMeterStatusApplied != null && isMeterStatusApplied.stream()
+								.anyMatch(s -> s != null && (WSCalculationConstant.LOCKED.equalsIgnoreCase(s.trim())
+										|| WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(s.trim())
+										|| WSCalculationConstant.NO_METER.equalsIgnoreCase(s.trim())));
+
+						if (containsWorkingStatus) {
+							if (!statusMatched) {
+								totalAmount = minimumCharge;
+							}
+						} else if (containsLockedStatus) {
+							if (!statusMatched) {
+								totalAmount = minimumCharge;
+							}
+						} else {
+							if (!statusMatched) {
+								totalAmount = minimumCharge;
+							}
+						}
+					} else {
+						if (WSCalculationConstant.LOCKED.equalsIgnoreCase(meterStatus)
+								|| totalAmount.compareTo(minimumCharge) < 0) {
+							totalAmount = minimumCharge;
+						}
 					}
  
 					waterCharge = totalAmount.setScale(2, RoundingMode.HALF_UP);

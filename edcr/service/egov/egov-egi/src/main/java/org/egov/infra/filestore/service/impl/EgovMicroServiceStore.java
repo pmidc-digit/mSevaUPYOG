@@ -434,6 +434,7 @@ public class EgovMicroServiceStore implements FileStoreService {
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
             MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
             map.add("file", new FileSystemResource(f.getName()));
+            LOG.info("tenant id received : "+tenantId);
             map.add("tenantId", StringUtils.isEmpty(tenantId) ? ApplicationThreadLocals.getFullTenantID() : tenantId);
             map.add("module", moduleName);
             HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<MultiValueMap<String, Object>>(map,
@@ -444,7 +445,7 @@ public class EgovMicroServiceStore implements FileStoreService {
             if (LOG.isDebugEnabled())
                 LOG.debug(String.format("Upload completed for  %s   with filestoreid   ", f.getName(),
                         fileMapper.getFileStoreId()));
-            fileMapper.setTenantId(ApplicationThreadLocals.getFullTenantID());
+            fileMapper.setTenantId(StringUtils.isEmpty(tenantId) ? ApplicationThreadLocals.getFullTenantID() : tenantId);
             fileMapper.setContentType(mimeType);
             if (closeStream)
                 Files.deleteIfExists(Paths.get(fileName));

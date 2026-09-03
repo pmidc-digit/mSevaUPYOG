@@ -1388,7 +1388,7 @@ public class EdcrApplicationService {
 			validateGeneratedPdf(tempPdf);
 
 			FileStoreMapper fileStoreMapper = fileStoreService.store(tempPdf, newFileName, "application/pdf",
-					FILESTORE_MODULECODE);
+					FILESTORE_MODULECODE,tenantId);
 
 			if (fileStoreMapper == null) {
 				throw new IllegalStateException("Unable to store scrutinized PDF in FileStore.");
@@ -1500,6 +1500,7 @@ public class EdcrApplicationService {
             }
 
             String uuid = pl.getEdcrRequest().getRequestInfo().getUserInfo().getUuid();
+            String tenantId  = pl.getEdcrRequest().getTenantId();
             LOG.info("UUID no : "  + uuid);
             Object data = getUserData(uuid);
             List<String> signatures = JsonPath.read(data, "$.user[*].signature");
@@ -1531,7 +1532,8 @@ public class EdcrApplicationService {
                     tempPdf,
                     newFileName,
                     "application/pdf",
-                    FILESTORE_MODULECODE
+                    FILESTORE_MODULECODE,
+                    tenantId
             );
 
             edcrApplication.getEdcrApplicationDetails()

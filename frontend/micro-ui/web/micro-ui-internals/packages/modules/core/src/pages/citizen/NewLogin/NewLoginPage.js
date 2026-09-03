@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
-import { Toast } from "@mseva/digit-ui-react-components";
+import { Dropdown, Toast } from "@mseva/digit-ui-react-components";
 import LanguageSelect from "./NewLanguageSelect";
 import LocationSelect from "./NewLocationSelect";
 import MobileInput from "./NewSelectMobileNumber";
 import OtpInput from "./NewSelectOtp";
-import { LoginIcon } from "../../../../../../react-components/src/atoms/svgindex";
+import NewRegistration from "../NewRegistration";
 const DEFAULT_REDIRECT_URL = "/digit-ui/citizen";
 const DEFAULT_BPA_REDIRECT_URL = "/digit-ui/citizen/obps/home";
 
@@ -27,12 +27,28 @@ const NewLogin = ({ stateCode }) => {
   const [selectedLanguage, setSelectedLanguage] = useState(() => location.state?.selectedLanguage || Digit.StoreData.getCurrentLanguage());
   // const [selectedCity, setSelectedCity] = useState(() => ({ code: Digit.ULBService.getCitizenCurrentTenant(true) }));
   const [selectedCity, setSelectedCity] = useState(() => location.state?.selectedCity || null);
+  const [portal, setPortal] = useState("citizen");
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [employeeCredentials, setEmployeeCredentials] = useState({ username: "", password: "", city: null });
+  const [isEmployeeLoginLoading, setIsEmployeeLoginLoading] = useState(false);
+  const [employeeView, setEmployeeView] = useState("login");
+  const [resetMobileNumber, setResetMobileNumber] = useState("");
+  const [resetCity, setResetCity] = useState(null);
+  const [employeeUser, setEmployeeUser] = useState(null);
+  const { data: employeeCities, isLoading: isEmployeeCitiesLoading } = Digit.Hooks.useTenants();
 
   useEffect(() => {
     const englishLocale = "en_IN";
     setSelectedLanguage(englishLocale);
     Digit.LocalizationService.changeLanguage(englishLocale, stateCode);
   }, [stateCode]);
+
+  useEffect(() => {
+    if (!isLanguageEntryPage) return undefined;
+
+    document.body.classList.add("mseva-entry-active");
+    return () => document.body.classList.remove("mseva-entry-active");
+  }, [isLanguageEntryPage]);
 
   useEffect(() => {
     let to;
@@ -111,12 +127,7 @@ const NewLogin = ({ stateCode }) => {
           err?.response?.data?.error?.fields?.[0]?.message?.includes("No such username")
         ) {
           // User not registered, redirect to registration page
-          history.push("/digit-ui/citizen/new-registration", {
-            from: getFromLocation(location.state),
-            mobileNumber: mobileNumber,
-            selectedLanguage: selectedLanguage,
-            selectedCity: selectedCity,
-          });
+          setIsRegistering(true);
         } else {
           setError(t("CS_COMMON_ERROR"));
         }
@@ -183,12 +194,74 @@ const NewLogin = ({ stateCode }) => {
   };
 
   const handleRegisterClick = () => {
-    history.push("/digit-ui/citizen/new-registration", {
-      from: getFromLocation(location.state),
-      mobileNumber: mobileNumber,
-      selectedLanguage: selectedLanguage,
-      selectedCity: selectedCity,
-    });
+    setIsRegistering(true);
+  };
+
+  const employeeCityOptions = employeeCities?.filter((city) => city.code !== "pb.punjab") || [];
+
+  const onEmployeeLogin = async () => {
+    const { username, password, city } = employeeCredentials;
+    if (isEmployeeLoginLoading || !username || !password || !city?.code) {
+      if (isEmployeeLoginLoading) return;
+      setError("Please enter your user name, password, and city.");
+      return;
+    }
+    try {
+      setIsEmployeeLoginLoading(true);
+      setCanSubmit(false);
+      const { user: users, ...tokens } = await Digit.UserService.authenticateV1({ username, password, tenantId: city.code, userType: "EMPLOYEE" });
+      const info = users[0];
+      await Digit.UserService.sendOtp(
+        { otp: { mobileNumber: info.mobileNumber, tenantId: info.tenantId, userType: "EMPLOYEE", type: "login" } },
+        info.tenantId
+      );
+      Digit.SessionStorage.set("Employee.tenantId", info.tenantId);
+      setEmployeeUser({ info, ...tokens });
+      setStep("EMPLOYEE_OTP");
+      setIsError(false);
+      setError("OTP has been sent to your registered mobile number.");
+    } catch (err) {
+      setIsError(true);
+      setError(err?.response?.data?.error_description || "Invalid login credentials.");
+    } finally {
+      setCanSubmit(true);
+      setIsEmployeeLoginLoading(false);
+    }
+  };
+
+  const onVerifyEmployeeOtp = async () => {
+    try {
+      setIsOtpValid(true);
+      setCanSubmit(false);
+      const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate({
+        username: employeeUser?.info?.userName,
+        password: otp,
+        tenantId: employeeUser?.info?.tenantId,
+        userType: "EMPLOYEE",
+      });
+      setEmployeeDetail(info, tokens.access_token);
+      Digit.UserService.setUser({ info, ...tokens });
+      window.location.href = "/digit-ui/employee";
+    } catch (err) {
+      setCanSubmit(true);
+      setIsOtpValid(false);
+    }
+  };
+
+  const onEmployeeForgotPassword = async () => {
+    if (!resetMobileNumber || !resetCity?.code) {
+      setError("Please enter your mobile number and city.");
+      return;
+    }
+    try {
+      await Digit.UserService.sendOtp(
+        { otp: { mobileNumber: resetMobileNumber, userType: "EMPLOYEE", type: "passwordreset", tenantId: resetCity.code } },
+        resetCity.code
+      );
+      history.push(`/digit-ui/employee/user/change-password?mobile_number=${resetMobileNumber}&tenantId=${resetCity.code}`);
+    } catch (err) {
+      setError(err?.response?.data?.error?.fields?.[0]?.message || "Unable to send password reset OTP.");
+    }
   };
 
   useEffect(() => {
@@ -208,16 +281,24 @@ const NewLogin = ({ stateCode }) => {
   // setShowToast(true);
 
   return (
-    <div className={`login-page-cover ${isLanguageEntryPage ? "login-page-cover--select-language" : ""}`}>
-      
+    <div className={`login-page-cover ${isLanguageEntryPage ? "login-page-cover--select-language mseva-entry-page" : ""}`}>
+      {isLanguageEntryPage && (
+        <header className="mseva-entry-header">
+          <button type="button" className="mseva-entry-brand" onClick={() => history.push("/digit-ui/citizen")}>
+            <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
+          </button>
+          <div className="mseva-entry-civic-title" aria-label="mSeva">mSeva</div>
+          <nav className="mseva-entry-nav mseva-entry-nav--home" aria-label="Portal navigation">
+            <button type="button" className="is-active" onClick={() => history.push("/digit-ui/citizen")}>Home</button>
+          </nav>
+        </header>
+      )}
       <div className="login-container">
         {/* Left Panel - Hero Section */}
         <div className="login-hero-panel">
           <div className="hero-content">
-            <div className="hero-icon-circle">
-              <LoginIcon />
-            </div>
-            <h1 className="hero-title">Welcome to UPYOG</h1>
+            <p className="mseva-entry-eyebrow">Punjab Local Government</p>
+            <h1 className="hero-title">Welcome to <span>mSeva</span></h1>
             <p className="hero-description">Your digital gateway to urban governance services. Access all municipal services in one place.</p>
             <div className="hero-features">
               <div className="feature-item">
@@ -230,7 +311,8 @@ const NewLogin = ({ stateCode }) => {
                     />
                   </svg>
                 </div>
-                <span className="feature-text">Multi-lingual</span>
+                <span className="feature-text">Secure<br />Infrastructure</span>
+                <p>End-to-end encrypted services for your safety.</p>
               </div>
               <div className="feature-item">
                 <div className="feature-icon">
@@ -241,7 +323,8 @@ const NewLogin = ({ stateCode }) => {
                     />
                   </svg>
                 </div>
-                <span className="feature-text">Location Based</span>
+                <span className="feature-text">Real-time<br />Updates</span>
+                <p>Track each application as it progresses.</p>
               </div>
               <div className="feature-item">
                 <div className="feature-icon">
@@ -252,7 +335,17 @@ const NewLogin = ({ stateCode }) => {
                     />
                   </svg>
                 </div>
-                <span className="feature-text">Secure Login</span>
+                <span className="feature-text">Mobile<br />First</span>
+                <p>Access services easily from any device.</p>
+              </div>
+              <div className="feature-item">
+                <div className="feature-icon" aria-hidden="true">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5Z" fill="currentColor" />
+                  </svg>
+                </div>
+                <span className="feature-text">Citizen<br />Centric</span>
+                <p>Designed around simple, accessible services.</p>
               </div>
             </div>
           </div>
@@ -261,23 +354,46 @@ const NewLogin = ({ stateCode }) => {
         {/* Right Panel - Login Form */}
         <div className="login-form-panel">
           <div className="login-wrapper">
-            <div className="login-form-header">
-              <h2 className="login-title">{t("CORE_COMMON_LOGIN")}</h2>
-              <p className="login-subtitle">Enter your details to access your account</p>
-            </div>
+            {!isRegistering && <div className="login-form-header">
+              {isLanguageEntryPage && (
+                <div className="mseva-portal-switch" role="tablist" aria-label="Choose portal">
+                  <button type="button" className={portal === "citizen" ? "is-selected" : ""} role="tab" aria-selected={portal === "citizen"} onClick={() => { setPortal("citizen"); setStep("MOBILE"); setOtp(""); }}>Citizen Portal</button>
+                  <button type="button" className={portal === "employee" ? "is-selected" : ""} role="tab" aria-selected={portal === "employee"} onClick={() => { setPortal("employee"); setStep("EMPLOYEE"); setOtp(""); }}>Employee</button>
+                </div>
+              )}
+              <h2 className="login-title">{portal === "employee" ? (employeeView === "forgot" ? "RESET PASSWORD" : "EMPLOYEE LOGIN") : t("CORE_COMMON_LOGIN")}</h2>
+              <p className="login-subtitle">{employeeView === "forgot" ? "Enter your registered details to receive a password reset OTP." : "Enter your details to access your account"}</p>
+            </div>}
 
-            {/* <LanguageSelect onLanguageChange={setSelectedLanguage} /> */}
+            {isRegistering ? <NewRegistration stateCode={stateCode} embedded initialCity={selectedCity} initialMobileNumber={mobileNumber} onBackToLogin={() => setIsRegistering(false)} /> : portal === "employee" ? (
+              <div className="mseva-employee-login-fields">
+                {employeeView === "forgot" ? <>
+                  <label className="label">Mobile Number <span>*</span><input type="tel" maxLength="10" value={resetMobileNumber} onChange={(event) => setResetMobileNumber(event.target.value.replace(/\D/g, ""))} /></label>
+                  <div className="location-wrapper"><div className="label">City <span>*</span></div>{!isEmployeeCitiesLoading && <Dropdown option={employeeCityOptions} optionKey="i18nKey" selected={resetCity} select={setResetCity} t={t} />}</div>
+                  <button type="button" className="submit-bar" onClick={onEmployeeForgotPassword}>Send reset OTP</button>
+                  <button type="button" className="mseva-employee-back-link" onClick={() => setEmployeeView("login")}>Back to employee login</button>
+                </> : step !== "EMPLOYEE_OTP" && <>
+                  <label className="label">User Name <span>*</span><input value={employeeCredentials.username} onChange={(event) => setEmployeeCredentials({ ...employeeCredentials, username: event.target.value })} /></label>
+                  <label className="label">Password <span>*</span><input type="password" value={employeeCredentials.password} onChange={(event) => setEmployeeCredentials({ ...employeeCredentials, password: event.target.value })} /></label>
+                  <div className="location-wrapper"><div className="label">City <span>*</span></div>{!isEmployeeCitiesLoading && <Dropdown option={employeeCityOptions} optionKey="i18nKey" selected={employeeCredentials.city} select={(city) => setEmployeeCredentials({ ...employeeCredentials, city })} t={t} />}</div>
+                  <button
+                    type="button"
+                    className="submit-bar"
+                    onClick={onEmployeeLogin}
+                    disabled={isEmployeeLoginLoading || !employeeCredentials.username || !employeeCredentials.password || !employeeCredentials.city?.code}
+                  >
+                    {isEmployeeLoginLoading ? "Signing in..." : "Continue"}
+                  </button>
+                  <button type="button" className="mseva-employee-back-link" onClick={() => setEmployeeView("forgot")}>Forgot Password?</button>
+                </>}
+                {step === "EMPLOYEE_OTP" && <OtpInput otp={otp} onOtpChange={setOtp} onVerifyOtp={onVerifyEmployeeOtp} onResendOtp={onEmployeeLogin} canSubmit={canSubmit} isOtpValid={isOtpValid} />}
+              </div>
+            ) : <>
             <LocationSelect onLocationChange={setSelectedCity} selectedCity={selectedCity} />
+            <MobileInput mobileNumber={mobileNumber} onMobileChange={handleMobileChange} onSendOtp={onSendOtp} canSubmit={canSubmit && (lastSubmittedMobile ? mobileNumber !== lastSubmittedMobile : true)} step={step} />
+            </>}
 
-            <MobileInput
-              mobileNumber={mobileNumber}
-              onMobileChange={handleMobileChange}
-              onSendOtp={onSendOtp}
-              canSubmit={canSubmit && (lastSubmittedMobile ? mobileNumber !== lastSubmittedMobile : true)}
-              step={step}
-            />
-
-            {step === "OTP" && (
+            {portal === "citizen" && step === "OTP" && (
               <OtpInput
                 otp={otp}
                 onOtpChange={setOtp}
@@ -288,7 +404,7 @@ const NewLogin = ({ stateCode }) => {
               />
             )}
 
-            {step !== "OTP" && (
+            {!isRegistering && portal === "citizen" && step !== "OTP" && (
               <div className="account-link">
                 <span>{t("CS_COMMON_DONT_HAVE_ACCOUNT")} </span>
                 <span className="link" onClick={handleRegisterClick}>
@@ -318,6 +434,17 @@ const setCitizenDetail = (userObject, token, tenantId) => {
     localStorage.setItem("user-info", JSON.stringify(userObject));
     localStorage.setItem("Citizen.user-info", JSON.stringify(userObject));
   } catch (e) {}
+};
+
+const setEmployeeDetail = (userObject, token) => {
+  const locale = JSON.parse(sessionStorage.getItem("Digit.locale"))?.value || "en_IN";
+  localStorage.setItem("Employee.tenant-id", userObject?.tenantId);
+  localStorage.setItem("tenant-id", userObject?.tenantId);
+  localStorage.setItem("Employee.locale", locale);
+  localStorage.setItem("Employee.token", token);
+  localStorage.setItem("token", token);
+  localStorage.setItem("Employee.user-info", JSON.stringify(userObject));
+  localStorage.setItem("user-info", JSON.stringify(userObject));
 };
 
 export default NewLogin;

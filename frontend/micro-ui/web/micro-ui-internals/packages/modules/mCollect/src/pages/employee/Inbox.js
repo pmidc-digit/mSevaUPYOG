@@ -1,9 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@mseva/digit-ui-react-components";
+import { Link } from "react-router-dom";
+import { InboxPagination, InboxWrapper } from "../../../../templates/Inbox/components";
 
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
+import MCollectNewInboxFilters from "../../components/inbox/MCollectNewInboxFilters";
+import MCollectNewInboxSearch from "../../components/inbox/MCollectNewInboxSearch";
 
 const Inbox = ({
   parentRoute,
@@ -121,6 +125,86 @@ const Inbox = ({
   }, []);
 
   const handlePageSizeChange = (e) => setPageSize(Number(e.target.value));
+
+  const updateNewInboxSearch = (search) => {
+    setSearchParams((current) => ({ ...current, ...search }));
+  };
+
+  const updateNewInboxStatuses = (status) => {
+    setSearchParams((current) => ({ ...current, status }));
+  };
+
+  if (isInbox) {
+    const totalCount = data?.totalCount || formedData.length;
+    const tableProps = {
+      data: formedData,
+      columns: [
+        {
+          Header: t("UC_CHALLAN_NO"),
+          accessor: "challanNo",
+          disableSortBy: true,
+          Cell: ({ row }) => (
+            <Link to={`${parentRoute}/challansearch/${row.original?.challanNo}`}>
+              <span className="link">{row.original?.challanNo}</span>
+            </Link>
+          ),
+        },
+        { Header: t("UC_COMMON_TABLE_COL_PAYEE_NAME"), accessor: "name", disableSortBy: true },
+        {
+          Header: t("UC_SERVICE_CATEGORY_LABEL"),
+          accessor: "businessService",
+          disableSortBy: true,
+          Cell: ({ row }) => <span className="cell-text">{t(`BILLINGSERVICE_BUSINESSSERVICE_${String(row.original?.businessService || "").replace(/\./g, "_").toUpperCase()}`)}</span>,
+        },
+        { Header: t("UC_RECEPIT_NO_LABEL"), accessor: "receiptNumber", disableSortBy: true },
+        {
+          Header: t("UC_COMMON_TOTAL_AMT"),
+          accessor: "totalAmount",
+          disableSortBy: true,
+          Cell: ({ row }) => <span className="cell-text">{row.original?.totalAmount || 0}</span>,
+        },
+        {
+          Header: t("UC_COMMON_TABLE_COL_STATUS"),
+          accessor: "applicationStatus",
+          disableSortBy: true,
+          Cell: ({ row }) => <span className="cell-text">{t(row.original?.applicationStatus || "CS_NA")}</span>,
+        },
+      ],
+      totalRecords: totalCount,
+      disableSort: true,
+      customTableWrapperClassName: "mcollect-new-inbox-table-wrapper",
+    };
+
+    return (
+      <InboxWrapper
+        title={t("ACTION_TEST_NATIONAL_MCOLLECT")}
+        totalCount={totalCount}
+        isLoading={hookLoading}
+        tableData={formedData}
+        tableProps={tableProps}
+        tableHeader="ACTION_TEST_NATIONAL_MCOLLECT"
+        filterSection={
+          <MCollectNewInboxFilters
+            challans={formedData}
+            selectedStatuses={searchParams?.status || []}
+            isInboxLoading={hookLoading}
+            onStatusChange={updateNewInboxStatuses}
+          />
+        }
+        topBar={<MCollectNewInboxSearch values={searchParams} onSearch={updateNewInboxSearch} />}
+        pagination={
+          <InboxPagination
+            offset={pageOffset}
+            limit={pageSize}
+            totalCount={totalCount}
+            onPageSizeChange={handlePageSizeChange}
+            onNextPage={fetchNextPage}
+            onPrevPage={fetchPrevPage}
+          />
+        }
+      />
+    );
+  }
 
   const getSearchFields = () => [
     { label: t("UC_CHALLAN_NO"), name: "challanNo" },

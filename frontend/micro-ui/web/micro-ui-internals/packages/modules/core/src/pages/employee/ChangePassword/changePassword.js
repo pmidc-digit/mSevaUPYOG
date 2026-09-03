@@ -73,7 +73,7 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
   };
 
   const navigateToLogin = () => {
-    history.replace("/digit-ui/employee/user/login");
+    history.replace("/digit-ui/citizen/select-language");
   };
 
   const [username, password, confirmPassword] = propsConfig.inputs;
@@ -109,7 +109,16 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
   ];
 
   return (
-    <Background>
+    <Background className="mseva-employee-login-background">
+      <header className="mseva-entry-header mseva-change-password-header">
+        <button type="button" className="mseva-entry-brand" onClick={() => history.push("/digit-ui/employee")}>
+          <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
+        </button>
+        <div className="mseva-entry-civic-title" aria-label="mSeva">mSeva</div>
+        <nav className="mseva-entry-nav mseva-entry-nav--home" aria-label="Portal navigation">
+          <button type="button" className="is-active" onClick={() => history.push("/digit-ui/citizen/select-language")}>Home</button>
+        </nav>
+      </header>
       <div className="employeeBackbuttonAlign">
         <BackButton variant="white" style={{ borderBottom: "none" }} />
       </div>
@@ -121,7 +130,7 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
         config={config}
         label={propsConfig.texts.submitButtonLabel}
         cardStyle={{ maxWidth: "408px", margin: "auto" }}
-        className="loginFormStyleEmployeeNew"
+        className="loginFormStyleEmployeeNew mseva-change-password-form"
       >
         {/* <Header /> */}
         <CardSubHeader style={{ textAlign: "center" }}> {propsConfig.texts.header} </CardSubHeader>

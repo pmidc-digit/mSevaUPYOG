@@ -15,7 +15,7 @@ const genders = [
   { name: "Transgender", code: "TRANSGENDER" },
 ];
 
-const NewRegistration = ({ stateCode }) => {
+const NewRegistration = ({ stateCode, embedded = false, onBackToLogin, initialCity, initialMobileNumber }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const history = useHistory();
@@ -27,7 +27,7 @@ const NewRegistration = ({ stateCode }) => {
   const [isOtpValid, setIsOtpValid] = useState(true);
   const [user, setUser] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState(() => location.state?.selectedLanguage || Digit.StoreData.getCurrentLanguage());
-  const [selectedCity, setSelectedCity] = useState(location.state?.selectedCity || null);
+  const [selectedCity, setSelectedCity] = useState(initialCity || location.state?.selectedCity || null);
   const [dob, setDob] = useState("");
   const [getGender, setGender] = useState();
 
@@ -164,6 +164,10 @@ const NewRegistration = ({ stateCode }) => {
   };
 
   const handleLoginClick = () => {
+    if (embedded) {
+      onBackToLogin?.();
+      return;
+    }
     history.push("/digit-ui/citizen/login-page", {
       from: getFromLocation(location.state),
       mobileNumber: registrationData?.mobileNumber || location.state?.mobileNumber,
@@ -171,6 +175,26 @@ const NewRegistration = ({ stateCode }) => {
       selectedCity: selectedCity,
     });
   };
+
+  if (embedded) {
+    return (
+      <div className="mseva-registration-embedded">
+        <div className="login-form-header">
+          <h2 className="login-title">{t("CS_COMMON_REGISTER")}</h2>
+          <p className="login-subtitle">Create your account to get started</p>
+        </div>
+        <LocationSelect onLocationChange={setSelectedCity} selectedCity={selectedCity} />
+        <div className="location-wrapper">
+          <div className="label">{t("CORE_COMMON_GENDER")}<span> *</span></div>
+          <Dropdown option={genders} optionKey="name" selected={getGender} select={setGender} placeholder={t("CORE_COMMON_GENDER")} />
+        </div>
+        {step === "FORM" && <RegistrationForm onRegisterSubmit={onRegisterSubmit} onAgeError={onAgeError} selectedLanguage={selectedLanguage} selectedCity={selectedCity} mobileNumber={initialMobileNumber || location.state?.mobileNumber} />}
+        {step === "OTP" && <OtpInput otp={otp} onOtpChange={setOtp} onVerifyOtp={onVerifyOtp} onResendOtp={resendOtp} canSubmit={canSubmit} isOtpValid={isOtpValid} />}
+        {step !== "OTP" && <div className="account-link"><span>{t("CS_COMMON_ALREADY_HAVE_ACCOUNT")} </span><button type="button" className="link" onClick={handleLoginClick}>{t("CORE_COMMON_LOGIN")}</button></div>}
+        {error && <Toast error={true} label={error} onClose={() => setError(null)} isDleteBtn={true} />}
+      </div>
+    );
+  }
 
   return (
 

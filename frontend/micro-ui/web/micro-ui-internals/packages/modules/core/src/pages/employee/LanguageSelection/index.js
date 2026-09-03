@@ -23,21 +23,51 @@ const LanguageSelection = () => {
   if (isLoading) return null;
 
   return (
-    <Background>
-      <Card className="langSelection">
-        <div className="language-selector" style={{ justifyContent: "space-around", marginBottom: "24px", padding: "0 5%" }}>
-          {languages.map((language, index) => (
-            <div className="language-button-container" key={index}>
-              <CustomButton
-                selected={language.value === selected}
-                text={language.label}
-                onClick={() => handleChangeLanguage(language)}
-              />
+    <Background className="mseva-employee-background">
+      <div className="mseva-employee-entry">
+        <header className="mseva-entry-header">
+          <button type="button" className="mseva-entry-brand" onClick={() => history.push("/digit-ui/employee")}>
+            <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
+          </button>
+          <div className="mseva-entry-civic-title" aria-label="mSeva">mSeva</div>
+          <nav className="mseva-entry-nav mseva-entry-nav--home" aria-label="Portal navigation">
+            <span className="is-active">Home</span>
+          </nav>
+        </header>
+
+        <main className="mseva-employee-entry__content">
+          <section className="mseva-employee-entry__hero">
+            <p className="mseva-entry-eyebrow">Punjab Local Government</p>
+            <h1>Welcome to <span>mSeva</span></h1>
+            <p>Manage municipal services and citizen applications through one secure, accessible platform.</p>
+            <div className="mseva-employee-entry__features">
+              <span>Secure access</span>
+              <span>Real-time updates</span>
+              <span>Citizen centric</span>
             </div>
-          ))}
-        </div>
-        <SubmitBar style={{ width: "100%" }} label={t(`CORE_COMMON_CONTINUE`)} onSubmit={handleSubmit} />
-      </Card>
+          </section>
+
+          <Card className="langSelection mseva-entry-language-card">
+            <div className="mseva-entry-language-card__header">
+              <span>Employee Portal</span>
+              <h1>Select your language</h1>
+              <p>Choose a language before signing in to your employee account.</p>
+            </div>
+            <div className="language-selector">
+              {languages.map((language, index) => (
+                <div className="language-button-container" key={index}>
+                  <CustomButton
+                    selected={language.value === selected}
+                    text={language.label}
+                    onClick={() => handleChangeLanguage(language)}
+                  />
+                </div>
+              ))}
+            </div>
+            <SubmitBar label={t(`CORE_COMMON_CONTINUE`)} onSubmit={handleSubmit} />
+          </Card>
+        </main>
+      </div>
 
       <div style={{ display:"none",width: '100%', position: 'fixed', bottom: 0,backgroundColor:"#152265",textAlign:"center" }}>
       <div style={{backgroundColor:'#F5FBFF', width:'100%',minHeight:'100px'}}></div>

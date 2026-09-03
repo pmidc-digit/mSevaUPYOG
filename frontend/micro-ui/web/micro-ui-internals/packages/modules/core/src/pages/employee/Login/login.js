@@ -284,7 +284,16 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     //   {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true}/>}
 
     // </Background>
-    <Background>
+    <Background className="mseva-employee-login-background">
+      <header className="mseva-entry-header">
+        <button type="button" className="mseva-entry-brand" onClick={() => history.push("/digit-ui/employee")}>
+          <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
+        </button>
+        <div className="mseva-entry-civic-title" aria-label="mSeva">mSeva</div>
+        <nav className="mseva-entry-nav mseva-entry-nav--home" aria-label="Portal navigation">
+          <span className="is-active">Home</span>
+        </nav>
+      </header>
       <div className="language-plugin">
         <div className="bhashini-plugin-container"></div>
       </div>

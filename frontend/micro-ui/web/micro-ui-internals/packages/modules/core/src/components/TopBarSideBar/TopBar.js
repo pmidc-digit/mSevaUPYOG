@@ -144,7 +144,7 @@ const TopBar = ({
           <div className="left-wrapper_navbar" style={{}}>
             {isLoggedIn && <Hamburger handleClick={updateSidebar} />}
             <div className="ulb-info" style={{ display: "flex", gap: "10px", marginLeft: "1rem" }}>
-              <div className="mseva-brand-mark">
+              <div onClick={() => history.push("/digit-ui/citizen")} className="mseva-brand-mark">
                 <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
               </div>
               {/* <img src={ulbLogo} alt="ULB Logo" className="ulb-logo" style={{minWidth : "25px", height : "25px"}} /> */}
@@ -258,7 +258,7 @@ const TopBar = ({
   return (
     <div className="topbar" style={topbarStyle}>
       {mobileView ? <Hamburger handleClick={toggleSidebar} color="#9E9E9E" /> : null}
-      <div className="employee-mseva-brand-mark">
+      <div onClick={() => history.push("/digit-ui/employee")} className="employee-mseva-brand-mark">
         <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
       </div>
       <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>

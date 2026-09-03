@@ -203,42 +203,16 @@ const EmployeeHome = ({ modules }) => {
   const obpsModuleCodes = ["OBPS", "BPAStakeholder", "Layout", "CLU", "NOC"];
   const hasOBPSModule = modules?.some((moduleData) => obpsModuleCodes.includes(moduleData?.code));
 
-  const welcomeCardStyle = {
-    background: "linear-gradient(135deg, #4F65D8 0%, #00157A 100%)",
-    borderRadius: "20px",
-    padding: "60px 40px",
-    margin: "24px 0",
-    textAlign: "center",
-    color: "#FFFFFF",
-    boxShadow: "0 12px 32px rgba(0, 21, 122, 0.2), 0 4px 12px rgba(79, 101, 216, 0.15)",
-    position: "relative",
-    overflow: "hidden",
-  };
-
-  const welcomeTitleStyle = {
-    fontSize: "40px",
-    fontWeight: "700",
-    color: "white",
-    margin: "0 0 12px 0",
-    lineHeight: "1.2",
-    textAlign: "center",
-  };
-
-  const welcomeSubtitleStyle = {
-    fontSize: "16px",
-    color: "rgba(255, 255, 255, 0.95)",
-    margin: "0",
-    fontWeight: "400",
-    lineHeight: "1.5",
-    textAlign: "center",
-  };
-
   return (
     <div className="employee-app-container employee-dashboard-container">
-      <div style={welcomeCardStyle}>
-        <h1 style={welcomeTitleStyle}>Welcome {userName?.info?.name || "User"}</h1>
-        <p style={welcomeSubtitleStyle}>Manage and access employee services with ease and efficiency</p>
-      </div>
+      <section className="employee-dashboard-hero" aria-labelledby="employee-dashboard-welcome">
+        <div className="employee-dashboard-hero__content">
+          <p className="employee-dashboard-hero__eyebrow">mSeva Employee Portal</p>
+          <h1 id="employee-dashboard-welcome">
+            Hi, <span>{userName?.info?.name || "User"}</span>
+          </h1>
+        </div>
+      </section>
 
       <div className="employee-dashboard-table-and-services">
         <div className="employee-dashboard-quick-services-container">

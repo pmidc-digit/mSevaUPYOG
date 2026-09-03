@@ -161,7 +161,7 @@ public class MinioRepository implements CloudFilesManager {
 
 	            String fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
 
-	            if (!fileStoreConfig.getAllowedKeySet().contains(fileExtension)) {
+	            if (!fileStoreConfig.getAllowedKeySet().contains(fileExtension) && !"zip".equalsIgnoreCase(fileExtension)) {
 	                log.warn("Unsupported file format: {}", fileExtension);
 	                continue;
 	            }

@@ -1,6 +1,8 @@
 package org.egov.wscalculation.service;
 
 import java.util.ArrayList;
+
+import org.egov.tracer.model.CustomException;
 import org.egov.wscalculation.validator.MDMSValidator;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -38,6 +40,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
 public class MeterServicesImpl implements MeterService {
+
+    @Autowired
+    private DemandService demandService;
 
 	@Autowired
 	private WSCalculationDao wSCalculationDao;
@@ -191,29 +196,29 @@ public class MeterServicesImpl implements MeterService {
 			wsCalculationValidator.validateMeterReading(meterConnectionRequest, true);
 		}
 		enrichmentService.enrichMeterReadingRequest(meterConnectionRequest);
-		List<Map<String, Object>> demandList = wSCalculationDao.getCollection(
-		        meterConnectionRequest.getMeterReading().getTenantId(),
-		        meterConnectionRequest.getMeterReading().getLastReadingDate(),
-		        meterConnectionRequest.getMeterReading().getCurrentReadingDate(),
-		        meterConnectionRequest.getMeterReading().getConnectionNo()
-		);
 
-		if (demandList != null && !demandList.isEmpty()) {
-		    for (Map<String, Object> row : demandList) {
-		        String status = (String) row.get("status");
-		        if ("ACTIVE".equalsIgnoreCase(status)) {
-		            String demandId = (String) row.get("demandId");
+        String tenantId = meterConnectionRequest.getMeterReading().getTenantId();
+        String connectionNo = meterConnectionRequest.getMeterReading().getConnectionNo();
+        Long lastReadingDate = meterConnectionRequest.getMeterReading().getLastReadingDate();
+        Long currentReadingDate = meterConnectionRequest.getMeterReading().getCurrentReadingDate();
 
-		            CancelDemandReq cancelDemandReq = new CancelDemandReq();
-		            cancelDemandReq.setId(demandId);
-		            cancelDemandReq.setTenantId(meterConnectionRequest.getMeterReading().getTenantId());
-		            cancelDemandReq.setConsumerCode(meterConnectionRequest.getMeterReading().getConnectionNo());
-		            cancelDemandReq.setBusinessService("WS");
+        // Fetch WS demand only once
+        List<Map<String, Object>> demandList = wSCalculationDao.getCollection(tenantId, lastReadingDate, currentReadingDate, connectionNo, "WS");
 
-		            wSCalculationDao.cancelPreviousMeterReading(cancelDemandReq);
-		        }
-		    }
-		}
+       // Get related SW connection
+        String relatedSwConn = wSCalculationDao.getSwConnection(tenantId, connectionNo);
+
+       // Fetch SW demand only once
+        List<Map<String, Object>> demandListSw = null;
+        if (relatedSwConn != null && !relatedSwConn.isEmpty()) {
+            demandListSw = wSCalculationDao.getCollection(tenantId, lastReadingDate, currentReadingDate, relatedSwConn, "SW");
+        }
+       // Validate using the SAME fetched lists
+        demandService.validateNoCollectionBeforeCancel(connectionNo, relatedSwConn, demandList, demandListSw);
+
+       // Cancel using the SAME fetched lists
+        demandService.cancelWaterAndRelatedSwDemand(tenantId, connectionNo, relatedSwConn, demandList, demandListSw);
+
 		meterConnectionRequest.getMeterReading().setId(previousMeterReadingId);;
 		meterReadingsList.add(meterConnectionRequest.getMeterReading());
 		wSCalculationDao.updateMeterReading(meterConnectionRequest);

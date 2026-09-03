@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -89,6 +90,39 @@ public class CompressionService{
                         "application/octet-stream",
                         baos.toByteArray()
                 );
+            }
+        }
+    }
+    
+    public InputStream decompressFromZip(InputStream inputStream) throws IOException {
+        if (inputStream == null) {
+            throw new IllegalArgumentException("ZIP InputStream must not be null");
+        }
+        try (InputStream is = inputStream;
+             BufferedInputStream bis = new BufferedInputStream(is)) {
+            // Validate ZIP header bytes (PK\003\004 -> 0x50 0x4B 0x03 0x04)
+            bis.mark(4);
+            byte[] header = new byte[4];
+            int headerRead = bis.read(header);
+            bis.reset();
+            if (headerRead < 4 || header[0] != 0x50 || header[1] != 0x4B || header[2] != 0x03 || header[3] != 0x04) {
+                throw new IOException("Provided MultipartFile is not a valid ZIP archive (missing PK magic header).");
+            }
+            try (ZipInputStream zis = new ZipInputStream(bis)) {
+                ZipEntry entry = zis.getNextEntry();
+                if (entry == null) {
+                    throw new IOException("ZIP archive contains no entries");
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[BUFFER_SIZE];
+                int bytesRead;
+                while ((bytesRead = zis.read(buffer)) != -1) {
+                    baos.write(buffer, 0, bytesRead);
+                }
+                zis.closeEntry();
+                String extractedFilename = entry.getName();
+                log.debug("Decompressed first entry '{}' from ZIP MultipartFile", extractedFilename);
+                return new ByteArrayInputStream(baos.toByteArray());
             }
         }
     }

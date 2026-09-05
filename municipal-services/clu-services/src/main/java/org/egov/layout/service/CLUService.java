@@ -599,5 +599,16 @@ public class CLUService {
 		return checkListRequest.getCheckList();
 	}
 
+	public List<Clu> plainSearch(LayoutSearchCriteria criteria, RequestInfo requestInfo) {
+		List<Clu> cluList = getCluFromCriteriaForPlainSearch(criteria, requestInfo);
+		return cluList;
+	}
+
+	public List<Clu> getCluFromCriteriaForPlainSearch(LayoutSearchCriteria criteria, RequestInfo requestInfo) {
+		List<Clu> cluList = nocRepository.getCluDataForPlainSearch(criteria);
+		if (CollectionUtils.isEmpty(cluList))
+			return Collections.emptyList();
+		return cluList;
+	}
 
 }

@@ -602,5 +602,17 @@ public class NOCService {
                 criteria.setAccountId(uuids);*/
                 return nocRepository.getNocCount(criteria);
         }
+
+	public List<Noc> plainSearch(NocSearchCriteria criteria, RequestInfo requestInfo) {
+		List<Noc> nocList = getNocFromCriteriaForPlainSearch(criteria, requestInfo);
+		return nocList;
+	}
+
+	public List<Noc> getNocFromCriteriaForPlainSearch(NocSearchCriteria criteria, RequestInfo requestInfo) {
+		List<Noc> nocList = nocRepository.getNocDataForPlainSearch(criteria);
+		if (CollectionUtils.isEmpty(nocList))
+			return Collections.emptyList();
+		return nocList;
+	}
 	
 }

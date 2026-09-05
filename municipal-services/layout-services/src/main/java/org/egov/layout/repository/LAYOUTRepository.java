@@ -113,6 +113,13 @@ public class LAYOUTRepository {
 		List<Layout> nocList = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
 		return nocList;
 	}
+
+	public List<Layout> getLayoutDataForPlainSearch(LayoutSearchCriteria criteria) {
+		List<Object> preparedStmtList = new ArrayList<>();
+		String query = queryBuilder.getLayoutSearchQueryForPlainSearch(criteria, preparedStmtList, false);
+		List<Layout> layoutList = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+		return layoutList;
+	}
 	
 	/**
          * using the queryBulider query the data on applying the search criteria and return the count 

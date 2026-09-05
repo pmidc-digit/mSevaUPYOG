@@ -589,5 +589,17 @@ public class LAYOUTService {
 		nocRepository.updateDocumentCheckList(checkListRequest);
 		return checkListRequest.getCheckList();
 	}
+
+	public List<Layout> plainSearch(LayoutSearchCriteria criteria, RequestInfo requestInfo) {
+		List<Layout> layoutList = getLayoutFromCriteriaForPlainSearch(criteria, requestInfo);
+		return layoutList;
+	}
+
+	public List<Layout> getLayoutFromCriteriaForPlainSearch(LayoutSearchCriteria criteria, RequestInfo requestInfo) {
+		List<Layout> layoutList = nocRepository.getLayoutDataForPlainSearch(criteria);
+		if (CollectionUtils.isEmpty(layoutList))
+			return Collections.emptyList();
+		return layoutList;
+	}
 	
 }

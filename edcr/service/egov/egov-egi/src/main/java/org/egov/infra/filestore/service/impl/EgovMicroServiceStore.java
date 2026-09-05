@@ -499,7 +499,11 @@ public class EgovMicroServiceStore implements FileStoreService {
             RequestCallback requestCallback = request -> request.getHeaders()
                     .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
             ResponseExtractor<Void> responseExtractor = response -> {
-            	InputStream inputStream = compressionService.decompressFromZip(response.getBody());
+            	InputStream inputStream = response.getBody();
+            	String contentType = getFileContentType(inputStream);
+            	// Unzip the file if the content type is Zip
+                if(contentType !=null && contentType.contains("zip"))
+                	inputStream = compressionService.decompressFromZip(inputStream);
                 Files.copy(inputStream, path);
                 return null;
             };

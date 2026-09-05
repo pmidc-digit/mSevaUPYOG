@@ -94,4 +94,11 @@ public interface FileStoreService {
     	inputStream.close();
     	return contentType;
     }
+    
+    public default String getFileContentType(InputStream inputStream) throws IOException{
+    	Tika tika = new Tika();
+    	String contentType = tika.detect(inputStream);
+    	inputStream.close();
+    	return contentType;
+    }
 }

@@ -123,6 +123,7 @@ public class FileStoreUtils {
             if (fileStoreMapper.isPresent()) {
                 Path file = getFileAsPath(fileStoreId, moduleName);
                 byte[] fileBytes = Files.readAllBytes(file);
+                Files.deleteIfExists(file);
                 String contentType = fileStoreService.getFileContentType(fileBytes);
                 InputStream inputStream = new ByteArrayInputStream(fileBytes);
                 

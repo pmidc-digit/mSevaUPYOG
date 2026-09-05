@@ -259,6 +259,11 @@ public class EdcrApplicationService {
         Plan planDetail = new Plan();
         planDetail = planService.process(edcrApplication, applicationType, edcrRequest);         
         updateFilev2(planDetail, edcrApplication);
+        try {
+			Files.deleteIfExists(edcrApplication.getSavedDxfFile().toPath());
+		} catch (IOException e) {
+			LOG.error("Error while deleting saved DXF file: " + e.getMessage());
+		}
         edcrApplicationDetailService.saveAll(edcrApplication.getEdcrApplicationDetails());
         return planDetail;
     }

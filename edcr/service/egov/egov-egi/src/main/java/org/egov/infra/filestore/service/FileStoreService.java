@@ -48,9 +48,12 @@
 
 package org.egov.infra.filestore.service;
 
+import org.apache.tika.Tika;
 import org.egov.infra.filestore.entity.FileStoreMapper;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Set;
@@ -83,4 +86,12 @@ public interface FileStoreService {
     Set<File> fetchAll(Set<FileStoreMapper> fileMappers, String moduleName);
 
     void delete(String fileStoreId, String moduleName);
+    
+    public default String getFileContentType(byte[] fileBytes) throws IOException{
+    	Tika tika = new Tika();
+    	InputStream inputStream = new ByteArrayInputStream(fileBytes);
+    	String contentType = tika.detect(inputStream);
+    	inputStream.close();
+    	return contentType;
+    }
 }

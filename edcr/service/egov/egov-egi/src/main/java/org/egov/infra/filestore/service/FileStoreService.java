@@ -50,6 +50,7 @@ package org.egov.infra.filestore.service;
 
 import org.apache.tika.Tika;
 import org.egov.infra.filestore.entity.FileStoreMapper;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -57,6 +58,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Set;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.RandomUtils;
 
 public interface FileStoreService {
 
@@ -100,4 +103,32 @@ public interface FileStoreService {
     	String contentType = tika.detect(inputStream);
     	return contentType;
     }
+    
+    public static File convertMultipartFileToFile(MultipartFile multipartFile)
+            throws IOException {
+
+        if (multipartFile == null || multipartFile.isEmpty()) {
+            throw new IllegalArgumentException("MultipartFile must not be null or empty");
+        }
+
+        String originalFilename = multipartFile.getOriginalFilename();
+
+        if (StringUtils.isBlank(originalFilename)) {
+            originalFilename = "uploaded-file-" + RandomUtils.nextLong() ;
+        }
+
+        String extension = "";
+
+        int dotIndex = originalFilename.lastIndexOf('.');
+        if (dotIndex > 0) {
+            extension = originalFilename.substring(dotIndex);
+        }
+
+        File file = File.createTempFile(RandomUtils.nextLong()+ "-edcr-", extension);
+
+        multipartFile.transferTo(file);
+
+        return file;
+    }
+    
 }

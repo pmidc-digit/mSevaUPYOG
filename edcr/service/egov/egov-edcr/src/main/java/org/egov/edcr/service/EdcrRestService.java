@@ -50,6 +50,7 @@ package org.egov.edcr.service;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.egov.edcr.utility.DcrConstants.FILESTORE_MODULECODE;
 
 import java.io.File;
 import java.io.IOException;
@@ -95,6 +96,7 @@ import org.egov.edcr.entity.EdcrApplication;
 import org.egov.edcr.entity.EdcrApplicationDetail;
 import org.egov.edcr.entity.EdcrIndexData;
 import org.egov.edcr.entity.EdcrPdfDetail;
+import org.egov.edcr.service.EdcrApplicationService.CustomMultipartFile;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.infra.admin.master.entity.City;
 import org.egov.infra.admin.master.service.CityService;
@@ -102,6 +104,7 @@ import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.config.core.EnvironmentSettings;
 import org.egov.infra.exception.ApplicationRuntimeException;
 import org.egov.infra.filestore.service.FileStoreService;
+import org.egov.infra.filestore.service.impl.CompressionService;
 import org.egov.infra.microservice.contract.RequestInfoWrapper;
 import org.egov.infra.microservice.contract.ResponseInfo;
 import org.egov.infra.microservice.models.RequestInfo;
@@ -195,6 +198,9 @@ public class EdcrRestService {
 
 	@Value("${indexer.host}")
 	private String indexerHost;
+	
+	@Autowired
+    private CompressionService CompressionService;
 	
     public Session getCurrentSession() {
         return entityManager.unwrap(Session.class);
@@ -1854,33 +1860,70 @@ public class EdcrRestService {
         return criteria;
     }
     
-    public ErrorDetail validatePlanFile(final MultipartFile file) {
-        List<String> dcrAllowedExtenstions = new ArrayList<>(
-                Arrays.asList(edcrApplicationSettings.getValue("dcr.dxf.allowed.extenstions").split(",")));
+//    public ErrorDetail validatePlanFile(final MultipartFile file) {
+//        List<String> dcrAllowedExtenstions = new ArrayList<>(
+//                Arrays.asList(edcrApplicationSettings.getValue("dcr.dxf.allowed.extenstions").split(",")));
+//
+//        String fileSize = edcrApplicationSettings.getValue("dcr.dxf.max.size");
+//        final String maxAllowSizeInMB = fileSize;
+//        String extension;
+//        if (file != null && !file.isEmpty()) {
+//            extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.') + 1);
+//            if (extension != null && !extension.isEmpty()) {
+//
+//                if (!dcrAllowedExtenstions.contains(extension.toLowerCase())) {
+//                    return new ErrorDetail("BPA-02", "Please upload " + dcrAllowedExtenstions + " format file only");
+//                } else if (file.getSize() > (Long.valueOf(maxAllowSizeInMB) * 1024 * 1024)) {
+//                    return new ErrorDetail("BPA-04", "File size should not exceed 30 MB");
+//                } /*
+//                   * else if (allowedExtenstions.contains(extension.toLowerCase()) && (!mimeTypes.contains(mimeType) ||
+//                   * StringUtils.countMatches(file.getOriginalFilename(), ".") > 1 || file.getOriginalFilename().contains("%00")))
+//                   * { return new ErrorDetail("BPA-03", "Malicious file upload"); }
+//                   */
+//            }
+//        } else {
+//            return new ErrorDetail(BPA_05, "Please upload plan file, It is mandatory");
+//        }
+//
+//        return null;
+//    }
+    
+	public ErrorDetail validatePlanFile(final MultipartFile file) {
+		String fileSize = edcrApplicationSettings.getValue("dcr.dxf.max.size");
+		final long maxAllowSizeInBytes = Long.valueOf(fileSize) * 1024L * 1024L;
 
-        String fileSize = edcrApplicationSettings.getValue("dcr.dxf.max.size");
-        final String maxAllowSizeInMB = fileSize;
-        String extension;
-        if (file != null && !file.isEmpty()) {
-            extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.') + 1);
-            if (extension != null && !extension.isEmpty()) {
+		if (file == null || file.isEmpty()) {
+			return new ErrorDetail(BPA_05, "Please upload plan file, It is mandatory");
+		}
 
-                if (!dcrAllowedExtenstions.contains(extension.toLowerCase())) {
-                    return new ErrorDetail("BPA-02", "Please upload " + dcrAllowedExtenstions + " format file only");
-                } else if (file.getSize() > (Long.valueOf(maxAllowSizeInMB) * 1024 * 1024)) {
-                    return new ErrorDetail("BPA-04", "File size should not exceed 30 MB");
-                } /*
-                   * else if (allowedExtenstions.contains(extension.toLowerCase()) && (!mimeTypes.contains(mimeType) ||
-                   * StringUtils.countMatches(file.getOriginalFilename(), ".") > 1 || file.getOriginalFilename().contains("%00")))
-                   * { return new ErrorDetail("BPA-03", "Malicious file upload"); }
-                   */
-            }
-        } else {
-            return new ErrorDetail(BPA_05, "Please upload plan file, It is mandatory");
-        }
+		String extension = null;
+		String contentType = null;
 
-        return null;
-    }
+		try {
+			contentType = fileStoreService.getFileContentType(file.getInputStream());
+
+			if (contentType != null) {
+				String mimeType = contentType.split(";")[0].trim();
+				if ("image/vnd.dxf".equalsIgnoreCase(mimeType)) {
+					extension = "dxf";
+				}
+			}
+
+		} catch (IOException e) {
+			return new ErrorDetail("BPA-03", "Unable to validate uploaded file");
+		}
+		
+		if (!"dxf".equalsIgnoreCase(extension)) {
+			return new ErrorDetail("BPA-02", "Please upload DXF format file only");
+		}
+
+		// Validate file size
+		if (file.getSize() > maxAllowSizeInBytes) {
+			return new ErrorDetail("BPA-04", "File size should not exceed " + fileSize + " MB");
+		}
+
+		return null;
+	}
 
     public ErrorDetail validateEdcrRequest(final EdcrRequest edcrRequest, final MultipartFile planFile) {
         if (edcrRequest.getRequestInfo() == null)
@@ -2133,5 +2176,81 @@ public class EdcrRestService {
         cal1.set(Calendar.MILLISECOND, 999);
         return cal1.getTime();
     }
+    
+    public MultipartFile getPlanFileFromFileStore(EdcrRequest edcr) throws IOException {
+	    String dxfFileTenantId = edcr.getTenantId();
+	    String dxfFileStoreId = edcr.getDxfFileStoreId();
+
+	    LOG.info("Fetching DXF file from FileStore. fileId={}, tenantId={}",dxfFileStoreId,dxfFileTenantId);
+
+	    File dxfFile = fileStoreService.fetch(
+	            dxfFileStoreId,
+	            FILESTORE_MODULECODE,
+	            dxfFileTenantId);
+
+	    if (dxfFile == null || !dxfFile.exists() || !dxfFile.isFile()) {
+	        LOG.error("DXF file not found in FileStore. fileId={}, tenantId={}",
+	                dxfFileStoreId,dxfFileTenantId);
+	        throw new IOException("Unable to fetch DXF file from FileStore.");
+	    }
+
+	    MultipartFile multipartFile = edcrApplicationService.new CustomMultipartFile(dxfFile);
+	    String contentType = fileStoreService.getFileContentType(multipartFile.getInputStream());
+	    
+	    LOG.info("File fetched from FileStore. fileId={}, fileName={}, contentType={}, size={}",
+	            dxfFileStoreId,multipartFile.getOriginalFilename(),contentType, multipartFile.getSize());
+//	    if ("application/zip".equalsIgnoreCase(contentType)
+//	            || "application/x-zip-compressed".equalsIgnoreCase(contentType)
+//	            || "image/vnd.dxf; format=ascii".equalsIgnoreCase(contentType)) {
+//
+//	        LOG.info(
+//	                "ZIP file detected. Decompressing FileStore file. fileId={}",
+//	                dxfFileStoreId);
+//
+//	        MultipartFile decompressedFile =
+//	        		CompressionService.decompressFromZip(multipartFile);
+//
+//	        LOG.info(
+//	                "ZIP decompressed successfully. fileId={}, fileName={}, size={}",
+//	                dxfFileStoreId,
+//	                decompressedFile.getOriginalFilename(),
+//	                decompressedFile.getSize());
+//
+//	        return decompressedFile;
+//	    }
+	    if (isDxfFile(multipartFile, contentType)) {
+
+	        LOG.info(
+	                "DXF file detected. Returning file directly. fileId={}, fileName={}",
+	                dxfFileStoreId,
+	                multipartFile.getOriginalFilename());
+
+	        return multipartFile;
+	    }
+
+	    LOG.warn(
+	            "Unsupported file type received from FileStore. fileId={}, fileName={}, contentType={}",
+	            dxfFileStoreId,
+	            multipartFile.getOriginalFilename(),
+	            contentType);
+
+	    throw new IOException(
+	            "Unsupported file type. Expected DXF or ZIP containing DXF.");
+	}
+    
+	private boolean isDxfFile(MultipartFile file, String contentType) {
+
+	    String fileName = file.getOriginalFilename();
+
+	    if (fileName != null && fileName.toLowerCase().endsWith(".dxf")) {
+	        return true;
+	    }
+
+	    return "image/vnd.dxf".equalsIgnoreCase(contentType)
+	            || "application/dxf".equalsIgnoreCase(contentType)
+	            || "application/x-dxf".equalsIgnoreCase(contentType)
+	            || "image/vnd.dxf; format=ascii".equalsIgnoreCase(contentType)
+	            ;
+	}
     
 }

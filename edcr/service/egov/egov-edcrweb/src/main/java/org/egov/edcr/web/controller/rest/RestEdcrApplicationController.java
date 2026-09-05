@@ -47,6 +47,9 @@
 
 package org.egov.edcr.web.controller.rest;
 
+import static org.egov.edcr.utility.DcrConstants.FILESTORE_MODULECODE;
+
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -76,6 +79,7 @@ import org.egov.edcr.contract.EdcrResponse;
 import org.egov.edcr.contract.PlanResponse;
 import org.egov.edcr.entity.ApplicationType;
 import org.egov.edcr.service.EdcrApplicationService;
+import org.egov.edcr.service.EdcrApplicationService.CustomMultipartFile;
 import org.egov.edcr.service.EdcrRestService;
 import org.egov.edcr.service.EdcrValidator;
 import org.egov.edcr.service.FetchEdcrRulesMdms;
@@ -83,6 +87,8 @@ import org.egov.edcr.service.OcComparisonService;
 import org.egov.edcr.service.PlanService;
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.filestore.entity.FileStoreMapper;
+import org.egov.infra.filestore.service.FileStoreService;
+import org.egov.infra.filestore.service.impl.CompressionService;
 import org.egov.infra.microservice.contract.RequestInfoWrapper;
 import org.egov.infra.microservice.contract.ResponseInfo;
 import org.egov.infra.microservice.models.RequestInfo;
@@ -90,11 +96,13 @@ import org.egov.infra.microservice.models.UserInfo;
 import org.egov.infra.utils.FileStoreUtils;
 import org.egov.infra.utils.StringUtils;
 import org.egov.infra.web.rest.error.ErrorResponse;
+import org.hibernate.exception.ConstraintViolationException;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -157,6 +165,12 @@ public class RestEdcrApplicationController {
     
     @Autowired
     private EdcrApplicationService edcrApplicationService;
+    
+    @Autowired
+    private FileStoreService fileStoreService;
+    
+    @Autowired
+    private CompressionService CompressionService;
 
     @PostMapping(value = "/scrutinizeplan", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -228,7 +242,7 @@ public class RestEdcrApplicationController {
     @PostMapping(value = "/scrutinize", consumes = { MediaType.APPLICATION_JSON_UTF8_VALUE,
             MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<?> scrutinize(@RequestPart("planFile") MultipartFile planFile,
+    public ResponseEntity<?> scrutinize(@RequestPart(value = "planFile", required = false) MultipartFile planFile,
             @RequestParam("edcrRequest") String edcrRequest, final HttpServletRequest request) throws Exception {
         String userInfo = request.getHeader(USER_INFO_HEADER_NAME);
         LOGGER.info("###User Info####"+userInfo);
@@ -262,7 +276,16 @@ public class RestEdcrApplicationController {
             List<ErrorDetail> errors = edcrRestService.validateEdcrMandatoryFields(edcr);
             if (!errors.isEmpty())
                 return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-
+            
+            // getting the file form the edcrRequest
+            if (planFile == null || planFile.isEmpty()) {
+                LOGGER.info("planFile is not provided in request. Fetching DXF file from FileStore.");
+                planFile = edcrRestService.getPlanFileFromFileStore(edcr);
+            } else {
+                LOGGER.info("planFile is provided in request. Using uploaded planFile. fileName={}, size={}",
+                        planFile.getOriginalFilename(), planFile.getSize());
+            }
+            
             String applicationType = edcr.getAppliactionType();
             String serviceType = edcr.getApplicationSubType();
             Map<String, List<Object>> masterData = new HashMap<>();
@@ -508,25 +531,136 @@ public class RestEdcrApplicationController {
 
         return new ResponseEntity<>(error, ex.getStatus());
     }
+    
+@ExceptionHandler(DataIntegrityViolationException.class)
+public final ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(
+        DataIntegrityViolationException ex) {
 
-    @ExceptionHandler(Exception.class)
-    public final ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+    String constraintName = getConstraintName(ex);
 
-        String errorDesc;
-        if (ex.getLocalizedMessage() == null) {
-            errorDesc = String.valueOf(ex).length() <= 200
-                    ? String.valueOf(ex)
-                    : String.valueOf(ex).substring(0, 200);
-        } else {
-            errorDesc = ex.getMessage();
-        }
+    if ("uk_filestoremap_filestoreid".equalsIgnoreCase(constraintName)) {
 
         ErrorResponse error = new ErrorResponse(
-                "Internal Server Error",
-                errorDesc,
-                HttpStatus.INTERNAL_SERVER_ERROR);
+                "BPA-409",
+                "The provided DXF FileStore ID already exists. Please provide a valid FileStore ID.",
+                HttpStatus.CONFLICT);
 
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    ErrorResponse error = new ErrorResponse(
+            "BPA-500",
+            "Unable to process the request due to a database constraint violation.",
+            HttpStatus.INTERNAL_SERVER_ERROR);
+
+    return new ResponseEntity<>(
+            error,
+            HttpStatus.INTERNAL_SERVER_ERROR);
+}
+    
+//  @ExceptionHandler(Exception.class)
+//  public final ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+//
+//      String errorDesc;
+//      if (ex.getLocalizedMessage() == null) {
+//          errorDesc = String.valueOf(ex).length() <= 200
+//                  ? String.valueOf(ex)
+//                  : String.valueOf(ex).substring(0, 200);
+//      } else {
+//          errorDesc = ex.getMessage();
+//      }
+//
+//      ErrorResponse error = new ErrorResponse(
+//              "Internal Server Error",
+//              errorDesc,
+//              HttpStatus.INTERNAL_SERVER_ERROR);
+//
+//      return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+//  }
+  
+@ExceptionHandler(Exception.class)
+public final ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+
+    String constraintName = getConstraintName(ex);
+
+    if ("uk_filestoremap_filestoreid".equalsIgnoreCase(constraintName)) {
+
+        ErrorResponse error = new ErrorResponse(
+                "BPA-409",
+                "The provided DXF FileStore ID already exists. Please provide a valid FileStore ID.",
+                HttpStatus.CONFLICT);
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.CONFLICT);
+    }
+
+    String errorDesc = getRootCauseMessage(ex);
+
+    ErrorResponse error = new ErrorResponse(
+            "Internal Server Error",
+            errorDesc,
+            HttpStatus.INTERNAL_SERVER_ERROR);
+
+    return new ResponseEntity<>(
+            error,
+            HttpStatus.INTERNAL_SERVER_ERROR);
+}
+    
+    private String getConstraintName(Throwable ex) {
+
+        Throwable cause = ex;
+
+        while (cause != null) {
+
+            if (cause instanceof ConstraintViolationException) {
+
+                return ((ConstraintViolationException) cause)
+                        .getConstraintName();
+            }
+
+            cause = cause.getCause();
+        }
+
+        return null;
+    }
+    
+    private String getRootCauseMessage(Throwable ex) {
+
+        Throwable current = ex;
+        String lastValidMessage = null;
+
+        while (current != null) {
+
+            String message = current.getMessage();
+
+            if (message != null && !message.trim().isEmpty()) {
+
+                message = message.trim();
+
+                if (isMeaningfulExceptionMessage(message)) {
+                    lastValidMessage = message;
+                }
+            }
+
+            current = current.getCause();
+        }
+
+        if (lastValidMessage == null) {
+            return "Internal Server Error";
+        }
+
+        return lastValidMessage.length() <= 200
+                ? lastValidMessage
+                : lastValidMessage.substring(0, 200);
+    }
+    
+    private boolean isMeaningfulExceptionMessage(String message) {
+
+        return !"could not execute statement".equalsIgnoreCase(message)
+                && !"null".equalsIgnoreCase(message)
+                && !"Internal Server Error".equalsIgnoreCase(message)
+                && !message.trim().isEmpty();
     }
 
     @PostMapping(value = "/occomparison", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -827,5 +961,4 @@ public class RestEdcrApplicationController {
     	        return "";
     	    }
 	}
-    
 }

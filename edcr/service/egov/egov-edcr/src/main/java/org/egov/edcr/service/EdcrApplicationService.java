@@ -272,9 +272,33 @@ public class EdcrApplicationService {
         return planDetail;
     }
 
-    private File saveDXF(EdcrApplication edcrApplication) {
-        FileStoreMapper fileStoreMapper = addToFileStore(edcrApplication.getDxfFile());
+//    private File saveDXF(EdcrApplication edcrApplication) {
+//        FileStoreMapper fileStoreMapper = addToFileStore(edcrApplication.getDxfFile());
+//        LOG.info("Returned FileStoreMapper : {}", fileStoreMapper);
+//        if (fileStoreMapper == null) {
+//            LOG.error("FileStoreMapper is null");
+//            return null;
+//        }
+//
+//        LOG.info("FileStoreId : {}", fileStoreMapper.getFileStoreId());
+//        LOG.info("TenantId    : {}", fileStoreMapper.getTenantId());
+//        
+//        File dxfFile = fileStoreService.fetch(fileStoreMapper.getFileStoreId(), FILESTORE_MODULECODE);
+//        planService.buildDocuments(edcrApplication, fileStoreMapper, null, null);
+//        List<EdcrApplicationDetail> edcrApplicationDetails = edcrApplication.getEdcrApplicationDetails();
+//        edcrApplicationDetails.get(0).setStatus(ABORTED);
+//        edcrApplication.setEdcrApplicationDetails(edcrApplicationDetails);
+//        return dxfFile;
+//
+//    }
+    
+    private File saveDXF(EdcrApplication edcrApplication , String tenantId) {
+
+        FileStoreMapper fileStoreMapper =
+                addToFileStore(edcrApplication.getDxfFile(), tenantId);
+
         LOG.info("Returned FileStoreMapper : {}", fileStoreMapper);
+
         if (fileStoreMapper == null) {
             LOG.error("FileStoreMapper is null");
             return null;
@@ -282,14 +306,52 @@ public class EdcrApplicationService {
 
         LOG.info("FileStoreId : {}", fileStoreMapper.getFileStoreId());
         LOG.info("TenantId    : {}", fileStoreMapper.getTenantId());
-        
-        File dxfFile = fileStoreService.fetch(fileStoreMapper.getFileStoreId(), FILESTORE_MODULECODE);
+
+        File dxfFile = fileStoreService.fetch(
+                fileStoreMapper.getFileStoreId(),
+                FILESTORE_MODULECODE,
+                tenantId
+        );
+
         planService.buildDocuments(edcrApplication, fileStoreMapper, null, null);
-        List<EdcrApplicationDetail> edcrApplicationDetails = edcrApplication.getEdcrApplicationDetails();
+
+        List<EdcrApplicationDetail> edcrApplicationDetails =
+                edcrApplication.getEdcrApplicationDetails();
+
         edcrApplicationDetails.get(0).setStatus(ABORTED);
         edcrApplication.setEdcrApplicationDetails(edcrApplicationDetails);
-        return dxfFile;
 
+        return dxfFile;
+    }
+    
+    private File saveDXF(EdcrApplication edcrApplication) {
+        FileStoreMapper fileStoreMapper =
+                addToFileStore(edcrApplication.getDxfFile());
+
+        LOG.info("Returned FileStoreMapper : {}", fileStoreMapper);
+
+        if (fileStoreMapper == null) {
+            LOG.error("FileStoreMapper is null");
+            return null;
+        }
+
+        LOG.info("FileStoreId : {}", fileStoreMapper.getFileStoreId());
+        LOG.info("TenantId    : {}", fileStoreMapper.getTenantId());
+
+        File dxfFile = fileStoreService.fetch(
+                fileStoreMapper.getFileStoreId(),
+                FILESTORE_MODULECODE
+        );
+
+        planService.buildDocuments(edcrApplication, fileStoreMapper, null, null);
+
+        List<EdcrApplicationDetail> edcrApplicationDetails =
+                edcrApplication.getEdcrApplicationDetails();
+
+        edcrApplicationDetails.get(0).setStatus(ABORTED);
+        edcrApplication.setEdcrApplicationDetails(edcrApplicationDetails);
+
+        return dxfFile;
     }
 
     public File savePlanDXF(final MultipartFile file) {
@@ -305,6 +367,30 @@ public class EdcrApplicationService {
         } catch (final IOException e) {
             LOG.error("Error occurred, while getting input stream!!!!!", e);
         }
+        return fileStoreMapper;
+    }
+    
+    private FileStoreMapper addToFileStore(final MultipartFile file, final String tenantId) {
+
+        FileStoreMapper fileStoreMapper = null;
+
+        try {
+
+            fileStoreMapper = fileStoreService.store(
+                    file.getInputStream(),
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    FILESTORE_MODULECODE,
+                    tenantId,
+                    true
+            );
+
+        } catch (final IOException e) {
+
+            LOG.error("Error occurred, while getting input stream!!!!!", e);
+
+        }
+
         return fileStoreMapper;
     }
 
@@ -1302,7 +1388,7 @@ public class EdcrApplicationService {
 			validateGeneratedPdf(tempPdf);
 
 			FileStoreMapper fileStoreMapper = fileStoreService.store(tempPdf, newFileName, "application/pdf",
-					FILESTORE_MODULECODE);
+					FILESTORE_MODULECODE,tenantId);
 
 			if (fileStoreMapper == null) {
 				throw new IllegalStateException("Unable to store scrutinized PDF in FileStore.");
@@ -1414,6 +1500,7 @@ public class EdcrApplicationService {
             }
 
             String uuid = pl.getEdcrRequest().getRequestInfo().getUserInfo().getUuid();
+            String tenantId  = pl.getEdcrRequest().getTenantId();
             LOG.info("UUID no : "  + uuid);
             Object data = getUserData(uuid);
             List<String> signatures = JsonPath.read(data, "$.user[*].signature");
@@ -1445,7 +1532,8 @@ public class EdcrApplicationService {
                     tempPdf,
                     newFileName,
                     "application/pdf",
-                    FILESTORE_MODULECODE
+                    FILESTORE_MODULECODE,
+                    tenantId
             );
 
             edcrApplication.getEdcrApplicationDetails()
@@ -1648,7 +1736,8 @@ public class EdcrApplicationService {
         if (edcrApplication.getApplicationDate() == null)
             edcrApplication.setApplicationDate(new Date());
         edcrApplication.setApplicationNumber(applicationNumberGenerator.generate());
-        edcrApplication.setSavedDxfFile(saveDXF(edcrApplication));
+//        edcrApplication.setSavedDxfFile(saveDXF(edcrApplication));
+        edcrApplication.setSavedDxfFile(saveDXF(edcrApplication, edcrRequest.getTenantId()));
         edcrApplication.setStatus(ABORTED);
         edcrApplicationRepository.save(edcrApplication);
         edcrApplication.getEdcrApplicationDetails().get(0).setComparisonDcrNumber(comparisonDcrNo);

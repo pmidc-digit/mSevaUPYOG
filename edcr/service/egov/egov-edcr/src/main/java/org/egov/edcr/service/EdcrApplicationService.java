@@ -297,6 +297,35 @@ public class EdcrApplicationService {
 //
 //    }
     
+    private File saveDXF_V2(EdcrApplication edcrApplication , EdcrRequest edcrRequest) {
+
+        FileStoreMapper fileStoreMapper = new FileStoreMapper(edcrRequest.getDxfFileStoreId(),
+        		edcrApplication.getDxfFile().getOriginalFilename());
+        fileStoreMapper.setFileStoreId(edcrRequest.getDxfFileStoreId());
+        fileStoreMapper.setTenantId(edcrRequest.getTenantId());
+        
+        LOG.info("FileStoreId : {}", fileStoreMapper.getFileStoreId());
+        LOG.info("TenantId    : {}", fileStoreMapper.getTenantId());
+
+        File dxfFile = null;
+		try {
+			dxfFile = FileStoreService.convertMultipartFileToFile(edcrApplication.getDxfFile());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+        planService.buildDocuments(edcrApplication, fileStoreMapper, null, null);
+
+        List<EdcrApplicationDetail> edcrApplicationDetails =
+                edcrApplication.getEdcrApplicationDetails();
+
+        edcrApplicationDetails.get(0).setStatus(ABORTED);
+        edcrApplication.setEdcrApplicationDetails(edcrApplicationDetails);
+
+        return dxfFile;
+    }
+    
     private File saveDXF(EdcrApplication edcrApplication , String tenantId) {
 
         FileStoreMapper fileStoreMapper =
@@ -1742,13 +1771,20 @@ public class EdcrApplicationService {
             edcrApplication.setApplicationDate(new Date());
         edcrApplication.setApplicationNumber(applicationNumberGenerator.generate());
 //        edcrApplication.setSavedDxfFile(saveDXF(edcrApplication));
-        edcrApplication.setSavedDxfFile(saveDXF(edcrApplication, edcrRequest.getTenantId()));
+//        edcrApplication.setSavedDxfFile(saveDXF(edcrApplication, edcrRequest.getTenantId()));
+        if(StringUtils.isEmpty(edcrRequest.getDxfFileStoreId())) {        	
+        	edcrApplication.setSavedDxfFile(saveDXF(edcrApplication, edcrRequest.getTenantId()));
+        }else {
+        	edcrApplication.setSavedDxfFile(saveDXF_V2(edcrApplication, edcrRequest));
+        }
+        
         edcrApplication.setStatus(ABORTED);
         edcrApplicationRepository.save(edcrApplication);
         edcrApplication.getEdcrApplicationDetails().get(0).setComparisonDcrNumber(comparisonDcrNo);
 //        callDcrProcess(edcrApplication, NEW_SCRTNY);
         callDcrProcess(edcrApplication, NEW_SCRTNY,edcrRequest);
         edcrIndexService.updateEdcrRestIndexes(edcrApplication, NEW_SCRTNY);
+        
         return edcrApplication;
     }
     
@@ -2170,7 +2206,10 @@ public class CustomMultipartFile implements MultipartFile {
 
     @Override
     public void transferTo(File dest) throws IOException {
-        Files.copy(getInputStream(), dest.toPath());
+        Files.copy(
+                getInputStream(),
+                dest.toPath(),
+                StandardCopyOption.REPLACE_EXISTING);
     }
 }
 

@@ -26,12 +26,11 @@ public class StorageValidator {
 	}
 
 
-	public void validate(Artifact artifact) {
+	public void validate(Artifact artifact, String extension) {
 			
-		String extension = (FilenameUtils.getExtension(artifact.getMultipartFile().getOriginalFilename())).toLowerCase();
 		validateFileExtention(extension);
 		validateContentType(artifact.getFileContentInString(), extension);
-		validateInputContentType(artifact);
+		validateInputContentType(artifact, extension);
 	}
 	
 	private void validateFileExtention(String extension) {
@@ -59,12 +58,10 @@ public class StorageValidator {
 		}
 	}
 
-	private void validateInputContentType(Artifact artifact){
+	private void validateInputContentType(Artifact artifact, String extension){
 
 		MultipartFile file =  artifact.getMultipartFile();
 		String contentType = file.getContentType();
-		String extension = (FilenameUtils.getExtension(artifact.getMultipartFile().getOriginalFilename())).toLowerCase();
-
 
 		if (!fileStoreConfig.getAllowedFormatsMap().get(extension).contains(contentType)) {
 			throw new CustomException("EG_FILESTORE_INVALID_INPUT", "Invalid Content Type");

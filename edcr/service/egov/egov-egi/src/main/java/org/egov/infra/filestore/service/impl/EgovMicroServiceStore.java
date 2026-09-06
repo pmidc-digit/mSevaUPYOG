@@ -53,6 +53,7 @@ import static org.egov.infra.config.core.ApplicationThreadLocals.getCityCode;
 import static org.egov.infra.utils.StringUtils.normalizeString;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,6 +66,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.infra.config.core.ApplicationThreadLocals;
@@ -80,9 +82,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestClientException;
@@ -98,10 +103,25 @@ public class EgovMicroServiceStore implements FileStoreService {
     private String url;
 
     private RestTemplate restTemplate;
+    /** FileStore connection timeout. */
+    private static final int CONNECT_TIMEOUT_MS = 3 * 60 * 1000;
+
+    /** FileStore response/read timeout. */
+    private static final int READ_TIMEOUT_MS = 10 * 60 * 1000;
 
     @Autowired
+    private CompressionService compressionService;
+    
+    @Autowired
     public EgovMicroServiceStore(@Value("${ms.url}") String url) {
-        this.restTemplate = new RestTemplate();
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        requestFactory.setReadTimeout(READ_TIMEOUT_MS);
+
+        // Stream multipart requests instead of buffering the complete request in memory.
+        requestFactory.setBufferRequestBody(false);
+
+        this.restTemplate = new RestTemplate(requestFactory);
         this.url = url + FILESTORE_V1_FILES;
     }
 
@@ -419,6 +439,7 @@ public class EgovMicroServiceStore implements FileStoreService {
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
             MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
             map.add("file", new FileSystemResource(f.getName()));
+            LOG.info("tenant id received : "+tenantId);
             map.add("tenantId", StringUtils.isEmpty(tenantId) ? ApplicationThreadLocals.getFullTenantID() : tenantId);
             map.add("module", moduleName);
             HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<MultiValueMap<String, Object>>(map,
@@ -429,15 +450,26 @@ public class EgovMicroServiceStore implements FileStoreService {
             if (LOG.isDebugEnabled())
                 LOG.debug(String.format("Upload completed for  %s   with filestoreid   ", f.getName(),
                         fileMapper.getFileStoreId()));
-            fileMapper.setTenantId(ApplicationThreadLocals.getFullTenantID());
+            fileMapper.setTenantId(StringUtils.isEmpty(tenantId) ? ApplicationThreadLocals.getFullTenantID() : tenantId);
             fileMapper.setContentType(mimeType);
             if (closeStream)
                 Files.deleteIfExists(Paths.get(fileName));
 
             return fileMapper;
-        } catch (RestClientException | IOException e) {
-            LOG.error("Error while Saving to FileStore", e);
-
+        } catch (HttpStatusCodeException e) {
+            logFileStoreHttpError("STORE_INPUT_STREAM", url, fileName, moduleName, e);
+        } catch (ResourceAccessException e) {
+            LOG.error("FileStore STORE_INPUT_STREAM connection/timeout error. URL={}, file={}, module={}, message={}",
+                    url, fileName, moduleName, e.getMessage(), e);
+        } catch (RestClientException e) {
+            LOG.error("FileStore STORE_INPUT_STREAM REST client error. URL={}, file={}, module={}, message={}",
+                    url, fileName, moduleName, e.getMessage(), e);
+        } catch (IOException e) {
+            LOG.error("FileStore local file/stream I/O error. URL={}, file={}, module={}, message={}",
+                    url, fileName, moduleName, e.getMessage(), e);
+        } catch (Exception e) {
+            LOG.error("Unexpected FileStore STORE_INPUT_STREAM error. URL={}, file={}, module={}, message={}",
+                    url, fileName, moduleName, e.getMessage(), e);
         }
         return null;
 
@@ -469,12 +501,29 @@ public class EgovMicroServiceStore implements FileStoreService {
             RequestCallback requestCallback = request -> request.getHeaders()
                     .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
             ResponseExtractor<Void> responseExtractor = response -> {
-                Files.copy(response.getBody(), path);
+            	byte[] responseBody = IOUtils.toByteArray(response.getBody());
+            	String contentType = getFileContentType(responseBody);
+            	// Unzip the file if the content type is Zip
+            	InputStream inputStream = null;
+                if(contentType !=null && contentType.contains("zip"))
+                	inputStream = compressionService.decompressFromZip(new ByteArrayInputStream(responseBody));
+                else
+                	inputStream = new ByteArrayInputStream(responseBody);
+                Files.copy(inputStream, path);
                 return null;
             };
             restTemplate.execute(URI.create(urls), HttpMethod.GET, requestCallback, responseExtractor);
+        } catch (HttpStatusCodeException e) {
+            logFileStoreHttpError("FETCH", urls, fileStoreId, moduleName, e);
+        } catch (ResourceAccessException e) {
+            LOG.error("FileStore FETCH connection/timeout error. URL={}, fileStoreId={}, module={}, message={}",
+                    urls, fileStoreId, moduleName, e.getMessage(), e);
         } catch (RestClientException e) {
-            LOG.error(String.format("Error occurred while fetching file %s", e.getMessage()));
+            LOG.error("FileStore FETCH REST client error. URL={}, fileStoreId={}, module={}, message={}",
+                    urls, fileStoreId, moduleName, e.getMessage(), e);
+        } catch (Exception e) {
+            LOG.error("Unexpected FileStore FETCH error. URL={}, fileStoreId={}, module={}, message={}",
+                    urls, fileStoreId, moduleName, e.getMessage(), e);
         }
 
         LOG.debug("fetch completed....   ");
@@ -510,6 +559,21 @@ public class EgovMicroServiceStore implements FileStoreService {
         return Paths.get(fileDirPath + separator + fileStoreId);
     }
 
+    /** Logs HTTP failures with status, response body and complete stack trace. */
+    private void logFileStoreHttpError(String operation, String requestUrl, String fileStoreId,
+            String moduleName, HttpStatusCodeException e) {
+        LOG.error("=========== FILESTORE HTTP ERROR START ===========");
+        LOG.error("Operation        : {}", operation);
+        LOG.error("URL              : {}", requestUrl);
+        LOG.error("File/Store ID    : {}", fileStoreId);
+        LOG.error("Module           : {}", moduleName);
+        LOG.error("HTTP Status      : {}", e.getStatusCode());
+        LOG.error("Status Text      : {}", e.getStatusText());
+        LOG.error("Response Body    : {}", e.getResponseBodyAsString());
+        LOG.error("Complete StackTrace:", e);
+        LOG.error("=========== FILESTORE HTTP ERROR END ===========");
+    }
+
     @Override
     public File fetch(String fileStoreId, String moduleName, String tenantId) {
         fileStoreId = normalizeString(fileStoreId);
@@ -522,12 +586,29 @@ public class EgovMicroServiceStore implements FileStoreService {
             RequestCallback requestCallback = request -> request.getHeaders()
                     .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
             ResponseExtractor<Void> responseExtractor = response -> {
-                Files.copy(response.getBody(), path);
+            	byte[] responseBody = IOUtils.toByteArray(response.getBody());
+            	String contentType = getFileContentType(responseBody);
+            	// Unzip the file if the content type is Zip
+            	InputStream inputStream = null;
+                if(contentType !=null && contentType.contains("zip"))
+                	inputStream = compressionService.decompressFromZip(new ByteArrayInputStream(responseBody));
+                else
+                	inputStream = new ByteArrayInputStream(responseBody);
+                Files.copy(inputStream, path);
                 return null;
             };
             restTemplate.execute(URI.create(urls), HttpMethod.GET, requestCallback, responseExtractor);
+        } catch (HttpStatusCodeException e) {
+            logFileStoreHttpError("FETCH", urls, fileStoreId, moduleName, e);
+        } catch (ResourceAccessException e) {
+            LOG.error("FileStore FETCH connection/timeout error. URL={}, fileStoreId={}, module={}, message={}",
+                    urls, fileStoreId, moduleName, e.getMessage(), e);
         } catch (RestClientException e) {
-            LOG.error(String.format("Error occurred while fetching file %s", e.getMessage()));
+            LOG.error("FileStore FETCH REST client error. URL={}, fileStoreId={}, module={}, message={}",
+                    urls, fileStoreId, moduleName, e.getMessage(), e);
+        } catch (Exception e) {
+            LOG.error("Unexpected FileStore FETCH error. URL={}, fileStoreId={}, module={}, message={}",
+                    urls, fileStoreId, moduleName, e.getMessage(), e);
         }
         LOG.debug("fetch completed....   ");
         return path.toFile();

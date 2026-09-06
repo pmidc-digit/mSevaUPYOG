@@ -58,6 +58,7 @@ import static org.egov.infra.utils.StringUtils.normalizeString;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -76,6 +77,7 @@ import org.egov.infra.exception.ApplicationRuntimeException;
 import org.egov.infra.filestore.entity.FileStoreMapper;
 import org.egov.infra.filestore.repository.FileStoreMapperRepository;
 import org.egov.infra.filestore.service.FileStoreService;
+import org.egov.infra.filestore.service.impl.CompressionService;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.owasp.esapi.ESAPI;
 import org.slf4j.Logger;
@@ -101,6 +103,9 @@ public class FileStoreUtils {
 
     @Autowired
     private FileStoreMapperRepository fileStoreMapperRepository;
+    
+    @Autowired
+    private CompressionService compressionService;
 
     public Path getFileAsPath(String fileStoreId, String moduleName) {
         return fileStoreService.fetchAsPath(fileStoreId, moduleName);
@@ -118,14 +123,22 @@ public class FileStoreUtils {
             if (fileStoreMapper.isPresent()) {
                 Path file = getFileAsPath(fileStoreId, moduleName);
                 byte[] fileBytes = Files.readAllBytes(file);
+                Files.deleteIfExists(file);
+                String contentType = fileStoreService.getFileContentType(fileBytes);
+                InputStream inputStream = new ByteArrayInputStream(fileBytes);
+                
+                // Unzip the file if the content type is Zip
+                if(contentType !=null && contentType.contains("zip"))
+                	inputStream = compressionService.decompressFromZip(inputStream);
+                
                 return ResponseEntity
                         .ok()
-                        .contentType(MediaType.parseMediaType(fileStoreMapper.get().getContentType()))
+                        .contentType(MediaType.parseMediaType(fileStoreMapper.get().getContentType()==null?MediaType.APPLICATION_OCTET_STREAM_VALUE:fileStoreMapper.get().getContentType()))
                         .cacheControl(CacheControl.noCache())
                         .contentLength(fileBytes.length)
                         .header(CONTENT_DISPOSITION, format(toSave ? CONTENT_DISPOSITION_ATTACH : CONTENT_DISPOSITION_INLINE,
                                 fileStoreMapper.get().getFileName())).
-                                body(new InputStreamResource(new ByteArrayInputStream(fileBytes)));
+                                body(new InputStreamResource(inputStream));
             }
             return ResponseEntity.notFound().build();
         } catch (IOException e) {

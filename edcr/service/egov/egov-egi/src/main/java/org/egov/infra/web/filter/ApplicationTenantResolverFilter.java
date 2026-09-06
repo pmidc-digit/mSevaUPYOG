@@ -168,160 +168,405 @@ public class ApplicationTenantResolverFilter implements Filter {
         // Nothing to be cleaned up
     }
     
-    private void prepareRestService(MultiReadRequestWrapper customRequest, HttpSession session) {
-    	LOG.info("inside prepareRestService method");
-        if (tenants == null || tenants.isEmpty()) {
-            tenants = tenantUtils.tenantsMap();
-        }
+	private void prepareRestService(MultiReadRequestWrapper customRequest, HttpSession session) {
+		LOG.info("inside prepareRestService method");
 
-        // restricted only the state URL to access the rest API
-        // LOG.info("***********Enter to set tenant id and custom header**************" + req.getRequestURL().toString());
-        String requestURL = new StringBuilder().append(ApplicationThreadLocals.getDomainURL())
-                .append(customRequest.getRequestURI()).toString();
-        LOG.info("Request URL after append domainUrl and requestURI : " + requestURL);
-        if (requestURL.contains(tenants.get("state"))
-                && (requestURL.contains("/edcr/") && (requestURL.contains("/rest/")
-                        || requestURL.contains("/oauth/")))) {
-        	LOG.info("Request URL contains state, edcr and rest or oauth check passed");
-
-        LOG.debug("Tenant map (from config): {}", tenants);
-        LOG.info("State-level tenant domain URL: {}", tenants.get("state"));
-            LOG.info("Inside method to set tenant id and custom header");
-            String tenantFromBody = StringUtils.EMPTY;
-            tenantFromBody = setCustomHeader(requestURL, tenantFromBody, customRequest);
-        LOG.info("Tenant from request body: {}", tenantFromBody);
-            String fullTenant = customRequest.getParameter("tenantId");
-        LOG.info("Tenant from request param: {}", fullTenant);
-            if (StringUtils.isBlank(fullTenant)) {
-                fullTenant = tenantFromBody;
-            }
-	    if(ApplicationThreadLocals.getFilestoreTenantID() == null)
-        	ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
-		if ((isEnvironmentCentralInstance || !isSubTenantSchemaBased) && WebUtils
-				.getDomainName(customRequest.getRequestURL().toString()).contains(EDCR_SERVICE_INTERNAL_URL)) {
-			String domainName = environmentSettings.getDomainNameFromSchema(getStateLevelTenant(fullTenant));
-			ApplicationThreadLocals.setDomainName(domainName);
-			String domainURL = extractRequestDomainURL(customRequest, false, isEnvironmentCentralInstance, domainName);
-			ApplicationThreadLocals.setDomainURL(domainURL);
-			requestURL = new StringBuilder().append(domainURL).append(customRequest.getRequestURI()).toString();
+		if (tenants == null || tenants.isEmpty()) {
+			tenants = tenantUtils.tenantsMap();
 		}
+
+		// restricted only the state URL to access the rest API
+		String requestURL = new StringBuilder().append(ApplicationThreadLocals.getDomainURL())
+				.append(customRequest.getRequestURI()).toString();
+
+		LOG.info("Request URL after append domainUrl and requestURI : {}", requestURL);
+
+		
+		// ===========LOCALHOST REQUEST HANDLING =======================
+		 
+		String host = WebUtils.getDomainName(customRequest.getRequestURL().toString());
+
+		if ("localhost".equalsIgnoreCase(host)) {
+
+			String localFullTenant = customRequest.getParameter("tenantId");
+
+			LOG.info("Localhost request detected.");
+			LOG.info("Tenant from request param: {}", localFullTenant);
+
+			if (StringUtils.isNotBlank(localFullTenant)) {
+
+				// Keep the complete tenant for FileStore and full tenant context.
+				ApplicationThreadLocals.setFullTenantID(localFullTenant);
+				ApplicationThreadLocals.setFilestoreTenantID(localFullTenant);
+
+				String[] tenantArr = localFullTenant.split("\\.");
+
+				/*
+				 * Example: pb.lalru -> tenantID = lalru pb.testing -> tenantID = testing
+				 */
+				if (tenantArr.length >= 2) {
+					ApplicationThreadLocals.setTenantID(tenantArr[1]);
+				}
+
+				LOG.info("Resolved localhost tenant:");
+				LOG.info("Tenant ID           : {}", ApplicationThreadLocals.getTenantID());
+				LOG.info("Full Tenant ID      : {}", ApplicationThreadLocals.getFullTenantID());
+				LOG.info("Filestore Tenant ID : {}", ApplicationThreadLocals.getFilestoreTenantID());
+			} else {
+				LOG.warn("Localhost request does not contain tenantId request parameter.");
+			}
+		}
+
+		/*
+		 * ============================================================ EXISTING
+		 * PRODUCTION FLOW ============================================================
+		 *
+		 * DO NOT CHANGE THIS LOGIC.
+		 */
+		if (requestURL.contains(tenants.get("state")) && requestURL.contains("/edcr/")
+				&& (requestURL.contains("/rest/") || requestURL.contains("/oauth/"))) {
+
+			LOG.info("Request URL contains state, edcr and rest or oauth check passed");
+
+			LOG.debug("Tenant map (from config): {}", tenants);
+			LOG.info("State-level tenant domain URL: {}", tenants.get("state"));
+			LOG.info("Inside method to set tenant id and custom header");
+
+			String tenantFromBody = StringUtils.EMPTY;
+			tenantFromBody = setCustomHeader(requestURL, tenantFromBody, customRequest);
+
+			LOG.info("Tenant from request body: {}", tenantFromBody);
+
+			String fullTenant = customRequest.getParameter("tenantId");
+
+			LOG.info("Tenant from request param: {}", fullTenant);
+
+			if (StringUtils.isBlank(fullTenant)) {
+				fullTenant = tenantFromBody;
+			}
+
+			if (ApplicationThreadLocals.getFilestoreTenantID() == null) {
+				ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
+			}
+
+			if ((isEnvironmentCentralInstance || !isSubTenantSchemaBased) && WebUtils
+					.getDomainName(customRequest.getRequestURL().toString()).contains(EDCR_SERVICE_INTERNAL_URL)) {
+
+				String domainName = environmentSettings.getDomainNameFromSchema(getStateLevelTenant(fullTenant));
+
+				ApplicationThreadLocals.setDomainName(domainName);
+
+				String domainURL = extractRequestDomainURL(customRequest, false, isEnvironmentCentralInstance,
+						domainName);
+
+				ApplicationThreadLocals.setDomainURL(domainURL);
+
+				requestURL = new StringBuilder().append(domainURL).append(customRequest.getRequestURI()).toString();
+			}
+
+			String[] tenantArr = fullTenant.split("\\.");
+			String stateName;
+
+			if (isEnvironmentCentralInstance || !isSubTenantSchemaBased) {
+
+				String stateTenantId = getStateLevelTenant(fullTenant);
+
+				ApplicationThreadLocals.setStateName(stateTenantId);
+				stateName = stateTenantId;
+
+			} else {
+				stateName = "state";
+			}
+
+			LOG.info("Request URL for REST access check: {}", requestURL);
+			LOG.info("Mapped tenant domain URL for stateName '{}': {}", stateName, tenants.get(stateName));
+
+			ApplicationThreadLocals.setFullTenantID(fullTenant);
+
+			// restricted only the state URL to access the rest API
+			if (requestURL.contains(tenants.get(stateName)) && requestURL.contains("/edcr/")
+					&& (requestURL.contains("/rest/") || requestURL.contains("/oauth/"))) {
+
+				if (StringUtils.isBlank(fullTenant)) {
+					throw new ApplicationRestException("incorrect_request",
+							"RestUrl does not contain tenantId: " + fullTenant);
+				}
+
+				String tenant;
+
+				if (isEnvironmentCentralInstance || !isSubTenantSchemaBased) {
+
+					LOG.info("Tenant array length: {}", tenantArr.length);
+
+					tenant = getStateLevelTenant(fullTenant);
+
+					LOG.info("Resolved state-level tenant: {}", tenant);
+
+					if (tenantArr.length == 3) {
+
+						ApplicationThreadLocals.setStateName(stateName);
+						ApplicationThreadLocals.setCityName(tenantArr[2]);
+
+						ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
+
+						/*
+						 * To support backward compatibility of rule processing, some dummy value is
+						 * setting for district name, citycode and ULB grade
+						 */
+						ApplicationThreadLocals.setCityCode(tenantArr[2]);
+						ApplicationThreadLocals.setDistrictName(tenantArr[2]);
+						ApplicationThreadLocals.setGrade(tenantArr[2]);
+
+					} else if (tenantArr.length == 2) {
+
+						ApplicationThreadLocals.setCityName(tenantArr[1]);
+						ApplicationThreadLocals.setCityCode(tenant);
+						ApplicationThreadLocals.setDistrictName(tenantArr[1]);
+						ApplicationThreadLocals.setGrade(tenantArr[1]);
+
+						ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
+
+					} else {
+
+						ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
+					}
+
+				} else {
+
+					if (tenantArr.length == 3) {
+
+						tenant = tenantArr[1];
+
+						ApplicationThreadLocals.setStateName(stateName);
+						ApplicationThreadLocals.setCityName(tenantArr[2]);
+						ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
+
+						/*
+						 * To support backward compatibility of rule processing, some dummy value is
+						 * setting for district name, citycode and ULB grade
+						 */
+						ApplicationThreadLocals.setCityCode(tenantArr[2]);
+						ApplicationThreadLocals.setDistrictName(tenantArr[2]);
+						ApplicationThreadLocals.setGrade(tenantArr[2]);
+
+					} else if (tenantArr.length == 2) {
+
+						tenant = tenantArr[1];
+						ApplicationThreadLocals.setFilestoreTenantID(tenant);
+
+					} else {
+
+						tenant = tenantArr[0];
+						ApplicationThreadLocals.setFilestoreTenantID(tenant);
+					}
+				}
+
+				LOG.info("Final resolved tenant for REST request: {}", tenant);
+				LOG.info("City code from session: {}", session.getAttribute(CITY_CODE_KEY));
+
+				boolean found = false;
+
+				City stateCity = cityService.fetchStateCityDetails();
+
+				if (tenant.equalsIgnoreCase("generic") || tenant.equalsIgnoreCase("state")) {
+
+					ApplicationThreadLocals.setTenantID(tenant);
+					found = true;
+
+				} else if (stateCity != null && tenant.equalsIgnoreCase(stateCity.getCode())) {
+
+					ApplicationThreadLocals.setTenantID("state");
+					found = true;
+
+				} else {
+
+					LOG.info("Starting strict EXACT MATCH tenant resolution for tenant '{}'", tenant);
+
+					found = false;
+
+					for (String city : tenants.keySet()) {
+
+						LOG.info("Checking tenant match: key='{}', requestTenant='{}'", city, tenant);
+
+						// EXACT match only (case-insensitive)
+						if (city.equalsIgnoreCase(tenant)) {
+
+							LOG.info("Exact tenant match found. Mapped '{}' → '{}'", tenant, city);
+
+							ApplicationThreadLocals.setTenantID(city);
+							found = true;
+							break;
+						}
+
+						// No longer allowing partial contains()
+						LOG.debug("Skipping city '{}' because it is not an exact match for '{}'", city, tenant);
+					}
+
+					if (!found) {
+
+						LOG.error("❌ No exact tenant match found for '{}'. Throwing invalid_tenant", tenant);
+
+						throw new ApplicationRestException("invalid_tenant", "Invalid Tenant Id: " + tenant);
+					}
+				}
+			}
+		}
+	}
     
-        String[] tenantArr = fullTenant.split("\\.");
-        String stateName;
-        if(isEnvironmentCentralInstance || !isSubTenantSchemaBased) {
-        	String stateTenantId = getStateLevelTenant(fullTenant);
-        	ApplicationThreadLocals.setStateName(stateTenantId);
-            stateName = stateTenantId;
-        } else {
-            stateName = "state";
-        }
-        LOG.info("Request URL for REST access check: {}", requestURL);
-        LOG.info("Mapped tenant domain URL for stateName '{}': {}", stateName, tenants.get(stateName));
-        ApplicationThreadLocals.setFullTenantID(fullTenant);
-       // restricted only the state URL to access the rest API
-        if (requestURL.contains(tenants.get(stateName))
-                && (requestURL.contains("/edcr/") && (requestURL.contains("/rest/")
-                        || requestURL.contains("/oauth/")))) {
-            if (StringUtils.isBlank(fullTenant)) {
-                throw new ApplicationRestException("incorrect_request", "RestUrl does not contain tenantId: " + fullTenant);
-            }
-            String tenant;
-            if(isEnvironmentCentralInstance || !isSubTenantSchemaBased) {
-            	LOG.info("Tenant array length: {}", tenantArr.length);
-            	tenant = getStateLevelTenant(fullTenant);
-            	LOG.info("Resolved state-level tenant: {}", tenant);
-                if (tenantArr.length == 3) {
-                    ApplicationThreadLocals.setStateName(stateName);
-                    ApplicationThreadLocals.setCityName(tenantArr[2]);
-                    ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
-                    /* To support backward compatibility of rule processing,
-                     * some dummy value is setting for district name, citycode and ULB grade
-                     */
-                    ApplicationThreadLocals.setCityCode(tenantArr[2]);
-                    ApplicationThreadLocals.setDistrictName(tenantArr[2]);
-                    ApplicationThreadLocals.setGrade(tenantArr[2]);
-                } else if (tenantArr.length == 2) {
-                    ApplicationThreadLocals.setCityName(tenantArr[1]);
-                    ApplicationThreadLocals.setCityCode(tenant);
-                    ApplicationThreadLocals.setDistrictName(tenantArr[1]);
-                    ApplicationThreadLocals.setGrade(tenantArr[1]);
-                    ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
-                } else {
-                    ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
-                }
-            } else {
-                if (tenantArr.length == 3) {
-                    tenant = tenantArr[1];
-                    ApplicationThreadLocals.setStateName(stateName);
-                    ApplicationThreadLocals.setCityName(tenantArr[2]);
-                    ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
-                    /* To support backward compatibility of rule processing,
-                     * some dummy value is setting for district name, citycode and ULB grade
-                     */
-                    ApplicationThreadLocals.setCityCode(tenantArr[2]);
-                    ApplicationThreadLocals.setDistrictName(tenantArr[2]);
-                    ApplicationThreadLocals.setGrade(tenantArr[2]);
-                } else if (tenantArr.length == 2) {
-                    tenant = tenantArr[1];
-                    ApplicationThreadLocals.setFilestoreTenantID(tenant);
-                } else {
-                    tenant = tenantArr[0];
-                    ApplicationThreadLocals.setFilestoreTenantID(tenant);
-                }
-            }
-            
-            LOG.info("Final resolved tenant for REST request: {}", tenant);
-            LOG.info("City code from session: {}", session.getAttribute(CITY_CODE_KEY));
-            boolean found = false;
-            City stateCity = cityService.fetchStateCityDetails();
-            if (tenant.equalsIgnoreCase("generic") || tenant.equalsIgnoreCase("state")) {
-                ApplicationThreadLocals.setTenantID(tenant);
-                found = true;
-            } else if (stateCity != null && tenant.equalsIgnoreCase(stateCity.getCode())) {
-                ApplicationThreadLocals.setTenantID("state");
-                found = true;
-            } else {
-//                for (String city : tenants.keySet()) {
-//                	
-//                    LOG.info("Checking tenant: Key={}, Value={}, Request Tenant={}", city, tenants.get(city), tenant);
+//    private void prepareRestService(MultiReadRequestWrapper customRequest, HttpSession session) {
+//    	LOG.info("inside prepareRestService method");
+//        if (tenants == null || tenants.isEmpty()) {
+//            tenants = tenantUtils.tenantsMap();
+//        }
 //
-//                    if (tenants.get(city).contains(tenant) || city.equals(tenant)) {
-//                        ApplicationThreadLocals.setTenantID(city);
-//                        found = true;
-//                        break;
-//                    } else {
-//                    	found = false;
-//                    }
+//        // restricted only the state URL to access the rest API
+//        // LOG.info("***********Enter to set tenant id and custom header**************" + req.getRequestURL().toString());
+//        String requestURL = new StringBuilder().append(ApplicationThreadLocals.getDomainURL())
+//                .append(customRequest.getRequestURI()).toString();
+//        LOG.info("Request URL after append domainUrl and requestURI : " + requestURL);
+//        if (requestURL.contains(tenants.get("state"))
+//                && (requestURL.contains("/edcr/") && (requestURL.contains("/rest/")
+//                        || requestURL.contains("/oauth/")))) {
+//        	LOG.info("Request URL contains state, edcr and rest or oauth check passed");
+//
+//        LOG.debug("Tenant map (from config): {}", tenants);
+//        LOG.info("State-level tenant domain URL: {}", tenants.get("state"));
+//            LOG.info("Inside method to set tenant id and custom header");
+//            String tenantFromBody = StringUtils.EMPTY;
+//            tenantFromBody = setCustomHeader(requestURL, tenantFromBody, customRequest);
+//        LOG.info("Tenant from request body: {}", tenantFromBody);
+//            String fullTenant = customRequest.getParameter("tenantId");
+//        LOG.info("Tenant from request param: {}", fullTenant);
+//            if (StringUtils.isBlank(fullTenant)) {
+//                fullTenant = tenantFromBody;
+//            }
+//	    if(ApplicationThreadLocals.getFilestoreTenantID() == null)
+//        	ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
+//		if ((isEnvironmentCentralInstance || !isSubTenantSchemaBased) && WebUtils
+//				.getDomainName(customRequest.getRequestURL().toString()).contains(EDCR_SERVICE_INTERNAL_URL)) {
+//			String domainName = environmentSettings.getDomainNameFromSchema(getStateLevelTenant(fullTenant));
+//			ApplicationThreadLocals.setDomainName(domainName);
+//			String domainURL = extractRequestDomainURL(customRequest, false, isEnvironmentCentralInstance, domainName);
+//			ApplicationThreadLocals.setDomainURL(domainURL);
+//			requestURL = new StringBuilder().append(domainURL).append(customRequest.getRequestURI()).toString();
+//		}
+//    
+//        String[] tenantArr = fullTenant.split("\\.");
+//        String stateName;
+//        if(isEnvironmentCentralInstance || !isSubTenantSchemaBased) {
+//        	String stateTenantId = getStateLevelTenant(fullTenant);
+//        	ApplicationThreadLocals.setStateName(stateTenantId);
+//            stateName = stateTenantId;
+//        } else {
+//            stateName = "state";
+//        }
+//        LOG.info("Request URL for REST access check: {}", requestURL);
+//        LOG.info("Mapped tenant domain URL for stateName '{}': {}", stateName, tenants.get(stateName));
+//        ApplicationThreadLocals.setFullTenantID(fullTenant);
+//       // restricted only the state URL to access the rest API
+//        if (requestURL.contains(tenants.get(stateName))
+//                && (requestURL.contains("/edcr/") && (requestURL.contains("/rest/")
+//                        || requestURL.contains("/oauth/")))) {
+//            if (StringUtils.isBlank(fullTenant)) {
+//                throw new ApplicationRestException("incorrect_request", "RestUrl does not contain tenantId: " + fullTenant);
+//            }
+//            String tenant;
+//            if(isEnvironmentCentralInstance || !isSubTenantSchemaBased) {
+//            	LOG.info("Tenant array length: {}", tenantArr.length);
+//            	tenant = getStateLevelTenant(fullTenant);
+//            	LOG.info("Resolved state-level tenant: {}", tenant);
+//                if (tenantArr.length == 3) {
+//                    ApplicationThreadLocals.setStateName(stateName);
+//                    ApplicationThreadLocals.setCityName(tenantArr[2]);
+//                    ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
+//                    /* To support backward compatibility of rule processing,
+//                     * some dummy value is setting for district name, citycode and ULB grade
+//                     */
+//                    ApplicationThreadLocals.setCityCode(tenantArr[2]);
+//                    ApplicationThreadLocals.setDistrictName(tenantArr[2]);
+//                    ApplicationThreadLocals.setGrade(tenantArr[2]);
+//                } else if (tenantArr.length == 2) {
+//                    ApplicationThreadLocals.setCityName(tenantArr[1]);
+//                    ApplicationThreadLocals.setCityCode(tenant);
+//                    ApplicationThreadLocals.setDistrictName(tenantArr[1]);
+//                    ApplicationThreadLocals.setGrade(tenantArr[1]);
+//                    ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
+//                } else {
+//                    ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
 //                }
-            	LOG.info("Starting strict EXACT MATCH tenant resolution for tenant '{}'", tenant);
-            	found = false;
-
-            	for (String city : tenants.keySet()) {
-            	    LOG.info("Checking tenant match: key='{}', requestTenant='{}'", city, tenant);
-
-            	    // EXACT match only (case-insensitive)
-            	    if (city.equalsIgnoreCase(tenant)) {
-            	        LOG.info("Exact tenant match found. Mapped '{}' → '{}'", tenant, city);
-            	        ApplicationThreadLocals.setTenantID(city);
-            	        found = true;
-            	        break;
-            	    }
-
-            	    // No longer allowing partial contains()
-            	    LOG.debug("Skipping city '{}' because it is not an exact match for '{}'", city, tenant);
-            	}
-
-            	if (!found) {
-            	    LOG.error("❌ No exact tenant match found for '{}'. Throwing invalid_tenant", tenant);
-            	    throw new ApplicationRestException("invalid_tenant", "Invalid Tenant Id: " + tenant);
-            	}
-            }
-            
-        }
-      }
-        
-        
-    }
+//            } else {
+//                if (tenantArr.length == 3) {
+//                    tenant = tenantArr[1];
+//                    ApplicationThreadLocals.setStateName(stateName);
+//                    ApplicationThreadLocals.setCityName(tenantArr[2]);
+//                    ApplicationThreadLocals.setFilestoreTenantID(fullTenant);
+//                    /* To support backward compatibility of rule processing,
+//                     * some dummy value is setting for district name, citycode and ULB grade
+//                     */
+//                    ApplicationThreadLocals.setCityCode(tenantArr[2]);
+//                    ApplicationThreadLocals.setDistrictName(tenantArr[2]);
+//                    ApplicationThreadLocals.setGrade(tenantArr[2]);
+//                } else if (tenantArr.length == 2) {
+//                    tenant = tenantArr[1];
+//                    ApplicationThreadLocals.setFilestoreTenantID(tenant);
+//                } else {
+//                    tenant = tenantArr[0];
+//                    ApplicationThreadLocals.setFilestoreTenantID(tenant);
+//                }
+//            }
+//            
+//            LOG.info("Final resolved tenant for REST request: {}", tenant);
+//            LOG.info("City code from session: {}", session.getAttribute(CITY_CODE_KEY));
+//            boolean found = false;
+//            City stateCity = cityService.fetchStateCityDetails();
+//            if (tenant.equalsIgnoreCase("generic") || tenant.equalsIgnoreCase("state")) {
+//                ApplicationThreadLocals.setTenantID(tenant);
+//                found = true;
+//            } else if (stateCity != null && tenant.equalsIgnoreCase(stateCity.getCode())) {
+//                ApplicationThreadLocals.setTenantID("state");
+//                found = true;
+//            } else {
+////                for (String city : tenants.keySet()) {
+////                	
+////                    LOG.info("Checking tenant: Key={}, Value={}, Request Tenant={}", city, tenants.get(city), tenant);
+////
+////                    if (tenants.get(city).contains(tenant) || city.equals(tenant)) {
+////                        ApplicationThreadLocals.setTenantID(city);
+////                        found = true;
+////                        break;
+////                    } else {
+////                    	found = false;
+////                    }
+////                }
+//            	LOG.info("Starting strict EXACT MATCH tenant resolution for tenant '{}'", tenant);
+//            	found = false;
+//
+//            	for (String city : tenants.keySet()) {
+//            	    LOG.info("Checking tenant match: key='{}', requestTenant='{}'", city, tenant);
+//
+//            	    // EXACT match only (case-insensitive)
+//            	    if (city.equalsIgnoreCase(tenant)) {
+//            	        LOG.info("Exact tenant match found. Mapped '{}' → '{}'", tenant, city);
+//            	        ApplicationThreadLocals.setTenantID(city);
+//            	        found = true;
+//            	        break;
+//            	    }
+//
+//            	    // No longer allowing partial contains()
+//            	    LOG.debug("Skipping city '{}' because it is not an exact match for '{}'", city, tenant);
+//            	}
+//
+//            	if (!found) {
+//            	    LOG.error("❌ No exact tenant match found for '{}'. Throwing invalid_tenant", tenant);
+//            	    throw new ApplicationRestException("invalid_tenant", "Invalid Tenant Id: " + tenant);
+//            	}
+//            }
+//            
+//        }
+//      }
+//        
+//        
+//    }
 
     /*
      * public Map<String, String> tenantsMap() { URL url; LOG.info("cities" + applicationConfiguration.cities()); try { url = new

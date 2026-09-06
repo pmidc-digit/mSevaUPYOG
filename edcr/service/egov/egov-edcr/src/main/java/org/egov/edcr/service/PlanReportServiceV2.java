@@ -63,6 +63,16 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Base64;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+
+import java.util.logging.Level;
+
+import com.openhtmltopdf.util.XRLog;
+
 
 @Service
 public class PlanReportServiceV2 {
@@ -96,6 +106,12 @@ public class PlanReportServiceV2 {
     public static final String REAR_YARD_DESC    = "Rear Setback";
     public static final String SIDE_YARD_DESC    = "Side Setback";
 
+    
+    static {
+        XRLog.listRegisteredLoggers()
+                .forEach(logger -> XRLog.setLevel(logger, Level.WARNING));
+    }
+    
     PlanReportServiceV2(RoadWidth roadWidth) {
         this.roadWidth = roadWidth;
     }
@@ -561,7 +577,11 @@ public class PlanReportServiceV2 {
             boolean repetitiveFloorRow = rowFloorNo != null && typicalFloor.getRepetitiveFloorNos().contains(rowFloorNo);
             boolean existingTypicalRow = isTypicalFloorLabel(floorValue);
 
-            if ((repetitiveFloorRow || existingTypicalRow) && !typicalRowsAdded && modelFloorRows.isEmpty()) {
+            // Stair processors label every row of the model floor with the
+            // typical-floor label. Convert every such row back to the model
+            // floor; converting only the first row drops Flight 2 and later
+            // flights from the generated report.
+            if (existingTypicalRow) {
                 Map<String, String> modelRow = new HashMap<>(row);
                 modelRow.put("Floor", typicalFloor.getModelFloorNo().toString());
                 String signature = getTypicalRowSignature(modelRow);
@@ -583,7 +603,7 @@ public class PlanReportServiceV2 {
                 continue;
             }
 
-            if (repetitiveFloorRow || existingTypicalRow) {
+            if (repetitiveFloorRow) {
                 continue;
             }
 
@@ -1054,7 +1074,15 @@ public class PlanReportServiceV2 {
         String html = templateEngine.process("report2", context);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PdfRendererBuilder builder = new PdfRendererBuilder();
-        builder.withHtmlContent(html, null);
+        builder.useTransformerFactoryImplementationClass(null);
+        builder.useDocumentBuilderFactoryImplementationClass(null);
+        
+        Document document = PdfOverlayTemplateService.createSecureW3cDocument(html);
+
+        builder.withW3cDocument(document, null);
+        
+        //builder.withHtmlContent(html, null);
+        
         builder.toStream(os);
         builder.run();
         return os.toByteArray();

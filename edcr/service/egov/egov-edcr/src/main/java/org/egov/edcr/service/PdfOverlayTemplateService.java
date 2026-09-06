@@ -1,5 +1,8 @@
 package org.egov.edcr.service;
 
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,6 +14,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Base64;
+
+import javax.imageio.ImageIO;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +34,15 @@ import org.thymeleaf.context.Context;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
 
 @Service
 public class PdfOverlayTemplateService {
@@ -494,12 +509,21 @@ public class PdfOverlayTemplateService {
 	 * panelWidthPt is FIXED_PANEL_WIDTH. Therefore table width remains stable.
 	 */
 	private byte[] renderPanelPdf(JsonNode additionalDetails, float panelWidthPt) throws IOException {
-
+		logXmlFactories();
+		
 		Context context = new Context();
 
 		context.setVariable("sections", buildSections(additionalDetails));
 
 		String html = templateEngine.process("imposePdfInto", context);
+
+		/*
+		 * Defensive cleanup only. This does not change report/business data.
+		 * It protects the renderer from accidental literal PowerShell newline
+		 * sequences and CSS properties unsupported by the current OpenHTMLToPDF
+		 * version.
+		 */
+		html = sanitizeHtmlForPdf(html);
 
 		/*
 		 * OpenHTMLToPDF does not support auto page height.
@@ -514,15 +538,181 @@ public class PdfOverlayTemplateService {
 
 		PdfRendererBuilder builder = new PdfRendererBuilder();
 
-		builder.withHtmlContent(htmlWithSize, null);
+		 builder.useTransformerFactoryImplementationClass(null);
+		 builder.useDocumentBuilderFactoryImplementationClass(null);
+		  		 
+		//builder.withHtmlContent(htmlWithSize, null);
+		 Document document =
+			        createSecureW3cDocument(htmlWithSize);
 
+			builder.withW3cDocument(
+			        document,
+			        null
+			);
 		builder.toStream(os);
 
 		builder.run();
 
 		return os.toByteArray();
 	}
+	
+	public static Document createSecureW3cDocument(String html) throws IOException {
 
+    if (html == null || html.trim().isEmpty()) {
+        throw new IOException("HTML content is empty");
+    }
+
+    try {
+
+        /*
+         * XML parser with disallow-doctype-decl=true will reject:
+         *
+         * <!DOCTYPE html>
+         *
+         * OpenHTMLToPDF does not need this declaration when
+         * a pre-built W3C Document is supplied.
+         *
+         * Remove only the DOCTYPE declaration.
+         */
+        String safeHtml = html.replaceFirst(
+                "(?is)<!DOCTYPE\\s+html\\s*>",
+                ""
+        );
+
+        DocumentBuilderFactory factory =
+                DocumentBuilderFactory.newInstance();
+
+        factory.setNamespaceAware(true);
+        factory.setXIncludeAware(false);
+        factory.setExpandEntityReferences(false);
+
+        /*
+         * Keep DOCTYPE disabled for XXE protection.
+         */
+        factory.setFeature(
+                "http://apache.org/xml/features/disallow-doctype-decl",
+                true
+        );
+
+        /*
+         * Disable external entities.
+         */
+        factory.setFeature(
+                "http://xml.org/sax/features/external-general-entities",
+                false
+        );
+
+        factory.setFeature(
+                "http://xml.org/sax/features/external-parameter-entities",
+                false
+        );
+
+        factory.setFeature(
+                "http://apache.org/xml/features/nonvalidating/load-external-dtd",
+                false
+        );
+
+        try {
+            factory.setFeature(
+                    XMLConstants.FEATURE_SECURE_PROCESSING,
+                    true
+            );
+        } catch (Exception e) {
+            LOG.debug(
+                    "XML secure-processing feature not supported by current parser",
+                    e
+            );
+        }
+
+        DocumentBuilder documentBuilder =
+                factory.newDocumentBuilder();
+
+        /*
+         * Never resolve external entities.
+         */
+        documentBuilder.setEntityResolver(
+                (publicId, systemId) ->
+                        new org.xml.sax.InputSource(
+                                new java.io.StringReader("")
+                        )
+        );
+
+        byte[] htmlBytes =
+                safeHtml.getBytes(StandardCharsets.UTF_8);
+
+        try (ByteArrayInputStream inputStream =
+                     new ByteArrayInputStream(htmlBytes)) {
+
+            return documentBuilder.parse(inputStream);
+        }
+
+    } catch (Exception e) {
+
+        throw new IOException(
+                "Unable to securely parse HTML before PDF rendering",
+                e
+        );
+    }
+}
+	
+
+	private void logXmlFactories() {
+
+	    try {
+
+	        javax.xml.transform.TransformerFactory transformerFactory =
+	                javax.xml.transform.TransformerFactory.newInstance();
+
+	        LOG.info(
+	                "Runtime TransformerFactory = {}",
+	                transformerFactory.getClass().getName()
+	        );
+
+	    } catch (Exception e) {
+
+	        LOG.warn(
+	                "Unable to detect TransformerFactory",
+	                e
+	        );
+	    }
+
+	    try {
+
+	        javax.xml.parsers.DocumentBuilderFactory documentBuilderFactory =
+	                javax.xml.parsers.DocumentBuilderFactory.newInstance();
+
+	        LOG.info(
+	                "Runtime DocumentBuilderFactory = {}",
+	                documentBuilderFactory.getClass().getName()
+	        );
+
+	    } catch (Exception e) {
+
+	        LOG.warn(
+	                "Unable to detect DocumentBuilderFactory",
+	                e
+	        );
+	    }
+
+	    try {
+
+	        javax.xml.parsers.SAXParserFactory saxParserFactory =
+	                javax.xml.parsers.SAXParserFactory.newInstance();
+
+	        LOG.info(
+	                "Runtime SAXParserFactory = {}",
+	                saxParserFactory.getClass().getName()
+	        );
+
+	    } catch (Exception e) {
+
+	        LOG.warn(
+	                "Unable to detect SAXParserFactory",
+	                e
+	        );
+	    }
+	}
+	
 	private List<Map<String, Object>> buildSections(JsonNode root) {
 
 		JsonNode d = root.path("details");
@@ -880,7 +1070,11 @@ public class PdfOverlayTemplateService {
 
 		for (String[] pair : labelsAndKeys) {
 
-			rows.add(Arrays.asList(pair[0], safeText(node, pair[1])));
+			String value = safeText(node, pair[1]);
+
+			value = prepareCellValue(title, pair[1], value);
+
+			rows.add(Arrays.asList(pair[0], value));
 		}
 
 		s.put("rows", rows);
@@ -907,12 +1101,165 @@ public class PdfOverlayTemplateService {
 
 		for (String[] pair : labelsAndKeys) {
 
-			rows.add(Arrays.asList(pair[0], safeText(node, pair[1])));
+			String value = safeText(node, pair[1]);
+
+			value = prepareCellValue(title, pair[1], value);
+
+			rows.add(Arrays.asList(pair[0], value));
 		}
 
 		s.put("rows", rows);
 
 		sections.add(s);
+	}
+
+	/**
+	 * Prepares only renderer-specific values. No report/business value is changed.
+	 */
+	private String prepareCellValue(String title, String key, String value) {
+
+		if ("Professional's Signature".equals(title) && "uploadedSignature".equals(key)) {
+
+			return normalizeSignatureImageForPdf(value);
+		}
+
+		return value;
+	}
+
+	/**
+	 * Converts an embedded Base64 signature image to a clean PNG before it reaches
+	 * OpenHTMLToPDF/PDFBox. Re-encoding strips problematic JPEG metadata which can
+	 * cause warnings such as "Unsupported element precision".
+	 *
+	 * URL/path based images are intentionally left unchanged so the existing image
+	 * resolution/loading flow is preserved.
+	 */
+	private String normalizeSignatureImageForPdf(String imageSource) {
+
+		if (imageSource == null || imageSource.trim().isEmpty()
+				|| "N/A".equalsIgnoreCase(imageSource.trim())) {
+
+			return imageSource;
+		}
+
+		String source = imageSource.trim();
+
+		/*
+		 * Preserve the existing behavior for URL/path based images. Only embedded
+		 * Base64 data URIs are normalized.
+		 */
+		if (!source.startsWith("data:image/")) {
+
+			return source;
+		}
+
+		try {
+
+			int commaIndex = source.indexOf(',');
+
+			if (commaIndex <= 0) {
+
+				LOG.warn("Invalid signature image data URI. Keeping original value.");
+
+				return source;
+			}
+
+			String metadata = source.substring(0, commaIndex).toLowerCase();
+
+			if (!metadata.contains(";base64")) {
+
+				LOG.warn("Signature image data URI is not Base64 encoded. Keeping original value.");
+
+				return source;
+			}
+
+			String base64Data = source.substring(commaIndex + 1);
+
+			byte[] originalImageBytes = Base64.getDecoder().decode(base64Data);
+
+			if (originalImageBytes.length == 0) {
+
+				return source;
+			}
+
+			BufferedImage originalImage;
+
+			try (ByteArrayInputStream inputStream = new ByteArrayInputStream(originalImageBytes)) {
+
+				originalImage = ImageIO.read(inputStream);
+			}
+
+			if (originalImage == null) {
+
+				LOG.warn("Unable to decode signature image for PDF normalization. Keeping original value.");
+
+				return source;
+			}
+
+			BufferedImage normalizedImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(),
+					BufferedImage.TYPE_INT_ARGB);
+
+			Graphics2D graphics = normalizedImage.createGraphics();
+
+			try {
+
+				graphics.drawImage(originalImage, 0, 0, null);
+
+			} finally {
+
+				graphics.dispose();
+			}
+
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+			boolean written = ImageIO.write(normalizedImage, "png", outputStream);
+
+			if (!written) {
+
+				LOG.warn("Unable to encode normalized signature image as PNG. Keeping original value.");
+
+				return source;
+			}
+
+			byte[] normalizedBytes = outputStream.toByteArray();
+
+			String normalizedBase64 = Base64.getEncoder().encodeToString(normalizedBytes);
+
+			LOG.debug("Signature image normalized for PDF. Original={} bytes, PNG={} bytes, Width={}, Height={}",
+					originalImageBytes.length, normalizedBytes.length, originalImage.getWidth(), originalImage.getHeight());
+
+			return "data:image/png;base64," + normalizedBase64;
+
+		} catch (Exception e) {
+
+			/*
+			 * Preserve existing behavior if normalization is not possible. This prevents
+			 * the defensive cleanup from changing application/report logic.
+			 */
+			LOG.warn("Unable to normalize signature image for PDF. Keeping original value. Cause={}", e.getMessage());
+
+			return source;
+		}
+	}
+
+	/**
+	 * Defensive cleanup for generated HTML before it is passed to OpenHTMLToPDF.
+	 *
+	 * This only fixes malformed/unsupported renderer syntax; report data and layout
+	 * calculations are not changed.
+	 */
+	private String sanitizeHtmlForPdf(String html) {
+
+		if (html == null) {
+
+			return "";
+		}
+
+		return html.replace("`r`n", "\r\n")
+				.replace("`n", "\n")
+				.replace("`r", "\r")
+				.replace("object-fit: contain;", "")
+				.replace("object-fit:contain;", "");
 	}
 
 	private String safeText(JsonNode node, String field) {

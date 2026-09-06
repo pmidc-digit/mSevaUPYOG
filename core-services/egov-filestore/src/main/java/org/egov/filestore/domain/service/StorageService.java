@@ -43,6 +43,9 @@ import lombok.extern.slf4j.Slf4j;
 public class StorageService {
 
 	@Autowired
+	private CompressionService compressionService;
+
+	@Autowired
 	private CloudFileMgrUtils util;
 	
 	private FileStoreConfig configs;
@@ -87,6 +90,7 @@ public class StorageService {
 		this.storageValidator = storageValidator;
 		this.minioConfig = minioConfig;
 		this.configs = configs;
+		
 	}
 
 	public List<String> save(List<MultipartFile> filesToStore, String module, String tag, String tenantId, RequestInfo requestInfo) {
@@ -103,9 +107,20 @@ public class StorageService {
 		List<Artifact> artifacts = new ArrayList<>();
 		Artifact artifact = null;
 		for (MultipartFile file : files) {
-			String randomString = RandomStringUtils.random(filenameLength, useLetters, useNumbers);
+			
+			String extension = FilenameUtils.getExtension(file.getOriginalFilename()).toLowerCase();
+			
+			//Compress DXF file to zip file
+			if(configs.getAllowedToMakeZipExtensions().contains(extension)) {
+				try {
+					file = compressionService.compressToZip(file);
+				} catch (IOException e) {
+					log.error("Error while compressing file to zip: " + e.getMessage());
+				}
+			}
 			String orignalFileName = file.getOriginalFilename();
 			String imagetype = FilenameUtils.getExtension(orignalFileName);
+			String randomString = RandomStringUtils.random(filenameLength, useLetters, useNumbers);
 			String fileName = folderName + System.currentTimeMillis() + randomString + "." +imagetype;
 			String id = this.idGeneratorService.getId();
 			FileLocation fileLocation = new FileLocation(id, module, tag, tenantId, fileName, null);
@@ -120,7 +135,7 @@ public class StorageService {
 				log.error("IO Exception while mapping files to artifact: " + e.getMessage());
 			}
 			if (!"ticket".equals(tenantId)) {
-				storageValidator.validate(artifact);
+				storageValidator.validate(artifact, extension);
 			}
 			
 			if (fileStoreConfig.getImageFormats().contains(FilenameUtils.getExtension(artifact.getMultipartFile().getOriginalFilename())))

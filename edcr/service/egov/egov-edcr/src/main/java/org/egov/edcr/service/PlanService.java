@@ -477,8 +477,9 @@ public class PlanService {
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
             mapper.writeValue(f, plan);
+            String tenantId = plan.getEdcrRequest().getTenantId();
             detail.setPlanDetailFileStore(
-                    fileStoreService.store(f, f.getName(), "text/plain", DcrConstants.APPLICATION_MODULE_TYPE));
+                    fileStoreService.store(f, f.getName(), "text/plain", DcrConstants.APPLICATION_MODULE_TYPE,tenantId));
             oos.flush();
         } catch (IOException e) {
             LOG.error("Unable to serialize!!!!!!", e);
@@ -795,8 +796,9 @@ public class PlanService {
 
                     File convertedPdf = edcrPdfDetail.getConvertedPdf();
                     if (convertedPdf != null && convertedPdf.length() > 0) {
+                    	String tenantId = plan.getEdcrRequest().getTenantId();
                         FileStoreMapper fileStoreMapper = fileStoreService.store(convertedPdf, convertedPdf.getName(),
-                                DcrConstants.PDF_EXT, DcrConstants.FILESTORE_MODULECODE);
+                                DcrConstants.PDF_EXT, DcrConstants.FILESTORE_MODULECODE,tenantId);
                         pdfDetail.setConvertedPdf(fileStoreMapper);
                         pdfDetail.setEdcrApplicationDetail(edcrApplicationDetail);
                         edcrPdfDetails.add(pdfDetail);

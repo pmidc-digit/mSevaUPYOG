@@ -53,6 +53,7 @@ import static org.egov.infra.config.core.ApplicationThreadLocals.getCityCode;
 import static org.egov.infra.utils.StringUtils.normalizeString;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,6 +66,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.infra.config.core.ApplicationThreadLocals;
@@ -107,6 +109,9 @@ public class EgovMicroServiceStore implements FileStoreService {
     /** FileStore response/read timeout. */
     private static final int READ_TIMEOUT_MS = 10 * 60 * 1000;
 
+    @Autowired
+    private CompressionService compressionService;
+    
     @Autowired
     public EgovMicroServiceStore(@Value("${ms.url}") String url) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
@@ -496,7 +501,15 @@ public class EgovMicroServiceStore implements FileStoreService {
             RequestCallback requestCallback = request -> request.getHeaders()
                     .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
             ResponseExtractor<Void> responseExtractor = response -> {
-                Files.copy(response.getBody(), path);
+            	byte[] responseBody = IOUtils.toByteArray(response.getBody());
+            	String contentType = getFileContentType(responseBody);
+            	// Unzip the file if the content type is Zip
+            	InputStream inputStream = null;
+                if(contentType !=null && contentType.contains("zip"))
+                	inputStream = compressionService.decompressFromZip(new ByteArrayInputStream(responseBody));
+                else
+                	inputStream = new ByteArrayInputStream(responseBody);
+                Files.copy(inputStream, path);
                 return null;
             };
             restTemplate.execute(URI.create(urls), HttpMethod.GET, requestCallback, responseExtractor);
@@ -573,7 +586,15 @@ public class EgovMicroServiceStore implements FileStoreService {
             RequestCallback requestCallback = request -> request.getHeaders()
                     .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
             ResponseExtractor<Void> responseExtractor = response -> {
-                Files.copy(response.getBody(), path);
+            	byte[] responseBody = IOUtils.toByteArray(response.getBody());
+            	String contentType = getFileContentType(responseBody);
+            	// Unzip the file if the content type is Zip
+            	InputStream inputStream = null;
+                if(contentType !=null && contentType.contains("zip"))
+                	inputStream = compressionService.decompressFromZip(new ByteArrayInputStream(responseBody));
+                else
+                	inputStream = new ByteArrayInputStream(responseBody);
+                Files.copy(inputStream, path);
                 return null;
             };
             restTemplate.execute(URI.create(urls), HttpMethod.GET, requestCallback, responseExtractor);

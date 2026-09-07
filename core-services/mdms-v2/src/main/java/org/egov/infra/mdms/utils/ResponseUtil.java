@@ -49,7 +49,7 @@ public class ResponseUtil {
     }
 
     public static MdmsResponseV2 getMasterDataV2Response(RequestInfo requestInfo, List<Mdms> masterDataList){
-        ResponseInfo responseInfo = ResponseInfoUtil.createResponseInfoFromRequestInfo(requestInfo, Boolean.TRUE);
+        ResponseInfo responseInfo = createResponseInfoFromRequestInfo(requestInfo, Boolean.TRUE);
         MdmsResponseV2 response = MdmsResponseV2.builder().mdms(masterDataList).responseInfo(responseInfo).build();
         return response;
     }

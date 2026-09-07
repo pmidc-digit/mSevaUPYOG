@@ -155,7 +155,7 @@ public class CalculationService {
 			BigDecimal amount = BigDecimal.ZERO;
 			if (taxList.contains(t.getTaxType()) && t.isActive()) {
 				if (t.getType().contains("%")) {
-					amount = baseAmount.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100));
+					amount = baseAmount.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
 				} else {
 					amount = new BigDecimal(t.getAmount());
 				}
@@ -314,14 +314,11 @@ public class CalculationService {
 			return;
 
 		BigDecimal totalTax = BigDecimal.ZERO;
-		BigDecimal previousRoundOff = BigDecimal.ZERO;
 
 		// Sum all taxHeads except RoundOff
 		for (DemandDetail dd : demandDetails) {
 			String code = dd.getTaxHeadMasterCode();
-			if (code != null && RLConstants.ROUND_OFF_RL_APPLICATION.equalsIgnoreCase(code)) {
-				previousRoundOff = previousRoundOff.add(safe(dd.getTaxAmount()));
-			} else {
+			if (code != null && !RLConstants.ROUND_OFF_RL_APPLICATION.equalsIgnoreCase(code)) {
 				totalTax = totalTax.add(safe(dd.getTaxAmount()));
 			}
 		}
@@ -330,17 +327,33 @@ public class CalculationService {
 		BigDecimal rounded = totalTax.setScale(0, RoundingMode.HALF_UP);
 		BigDecimal roundOff = rounded.subtract(totalTax); // +ve to go up, -ve to go down
 
-		// Adjust with any previous round-off already present
-		if (previousRoundOff.compareTo(BigDecimal.ZERO) != 0) {
-			roundOff = roundOff.subtract(previousRoundOff);
+		// Find existing round-off details
+		List<DemandDetail> existingRoundOffs = new ArrayList<>();
+		for (DemandDetail dd : demandDetails) {
+			if (RLConstants.ROUND_OFF_RL_APPLICATION.equalsIgnoreCase(dd.getTaxHeadMasterCode())) {
+				existingRoundOffs.add(dd);
+			}
 		}
 
-		// Add only if non-zero
 		if (roundOff.compareTo(BigDecimal.ZERO) != 0) {
-			DemandDetail roundOffDemandDetail = DemandDetail.builder()
-					.taxHeadMasterCode(RLConstants.ROUND_OFF_RL_APPLICATION).taxAmount(roundOff)
-					.collectionAmount(BigDecimal.ZERO).tenantId(tenantId).build();
-			demandDetails.add(roundOffDemandDetail);
+			if (existingRoundOffs.isEmpty()) {
+				// Add new round-off if none exists
+				DemandDetail roundOffDemandDetail = DemandDetail.builder()
+						.taxHeadMasterCode(RLConstants.ROUND_OFF_RL_APPLICATION).taxAmount(roundOff)
+						.collectionAmount(BigDecimal.ZERO).tenantId(tenantId).build();
+				demandDetails.add(roundOffDemandDetail);
+			} else {
+				// Overwrite the first existing one, nullify duplicates
+				existingRoundOffs.get(0).setTaxAmount(roundOff);
+				for (int i = 1; i < existingRoundOffs.size(); i++) {
+					existingRoundOffs.get(i).setTaxAmount(BigDecimal.ZERO);
+				}
+			}
+		} else {
+			// If roundOff is exactly zero, nullify all existing round-offs
+			for (DemandDetail dd : existingRoundOffs) {
+				dd.setTaxAmount(BigDecimal.ZERO);
+			}
 		}
 	}
 	
@@ -435,7 +448,7 @@ public class CalculationService {
             List<String> taxList = Arrays.asList(RLConstants.SGST_FEE_RL_APPLICATION, RLConstants.CGST_FEE_RL_APPLICATION, RLConstants.COWCESS_FEE_RL_APPLICATION);
             for (TaxRate t : taxRates) {
                 if (taxList.contains(t.getTaxType()) && t.isActive()) {
-                    BigDecimal taxAmt = t.getType().contains("%") ? currentPeriodRent.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100)) : new BigDecimal(t.getAmount());
+                    BigDecimal taxAmt = t.getType().contains("%") ? currentPeriodRent.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP) : new BigDecimal(t.getAmount());
                     if (taxAmt.compareTo(BigDecimal.ZERO) > 0) {
                         details.add(DemandDetail.builder().taxAmount(taxAmt).taxHeadMasterCode(t.getTaxType()).tenantId(tenantId).build());
                     }
@@ -513,7 +526,7 @@ public class CalculationService {
                     List<String> taxList = Arrays.asList(RLConstants.SGST_FEE_RL_APPLICATION, RLConstants.CGST_FEE_RL_APPLICATION, RLConstants.COWCESS_FEE_RL_APPLICATION);
                     for (TaxRate t : taxRates) {
                         if (taxList.contains(t.getTaxType()) && t.isActive()) {
-                            BigDecimal taxAmt = t.getType().contains("%") ? cycleRent.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100)) : new BigDecimal(t.getAmount());
+                            BigDecimal taxAmt = t.getType().contains("%") ? cycleRent.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP) : new BigDecimal(t.getAmount());
                             if (taxAmt.compareTo(BigDecimal.ZERO) > 0) {
                                 periodDetails.add(DemandDetail.builder().taxAmount(taxAmt).taxHeadMasterCode(t.getTaxType()).tenantId(tenantId).build());
                             }
@@ -662,7 +675,7 @@ public class CalculationService {
             List<String> taxList = Arrays.asList(RLConstants.SGST_FEE_RL_APPLICATION, RLConstants.CGST_FEE_RL_APPLICATION, RLConstants.COWCESS_FEE_RL_APPLICATION);
             for (TaxRate t : taxRates) {
                 if (taxList.contains(t.getTaxType()) && t.isActive()) {
-                    BigDecimal taxAmt = t.getType().contains("%") ? monthlyRent.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100)) : new BigDecimal(t.getAmount());
+                    BigDecimal taxAmt = t.getType().contains("%") ? monthlyRent.multiply(new BigDecimal(t.getAmount())).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP) : new BigDecimal(t.getAmount());
                     if (taxAmt.compareTo(BigDecimal.ZERO) > 0) {
                         details.add(DemandDetail.builder().taxAmount(taxAmt).taxHeadMasterCode(t.getTaxType()).tenantId(tenantId).build());
                     }

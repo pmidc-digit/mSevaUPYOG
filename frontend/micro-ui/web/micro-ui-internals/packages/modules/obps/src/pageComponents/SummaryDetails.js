@@ -26,13 +26,23 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import Timeline from "../components/Timeline"
-import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments, getDocsFromFileUrls, scrutinyDetailsData, fetchUrl } from "../utils"
+import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments, getDocsFromFileUrls, scrutinyDetailsData, fetchUrl, formatDate } from "../utils"
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview"
 import Architectconcent from "../pages/citizen/NewBuildingPermit/Architectconcent"
 import { OTPInput, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
 import FeeEstimation from "./FeeEstimation"
 import NocSitePhotographsBPA from "../components/NocSitePhotographsNew";
 import CitizenAndArchitectPhoto from "./CitizenAndArchitectPhoto";
+
+const RenderRow = ({ label, text, ...rest }) => {
+    if (!text || text === "N/A" || text === "" || text === null || text === undefined || text === "0.00") return null;
+    return (
+        <div className="row border-none" {...rest}>
+            <h2>{label}</h2>
+            <div className="value">{text}</div>
+        </div>
+    );
+};
 
 const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const { t } = useTranslation();
@@ -939,6 +949,46 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         />}
                     </div>
                 </div>
+
+                {(currentStepData?.createdResponse?.additionalDetails?.stakeholderName ||
+                    currentStepData?.createdResponse?.additionalDetails?.architectid ||
+                    currentStepData?.createdResponse?.additionalDetails?.architectMobileNumber) && (
+                    <div className="bpa-stepper-form-section">
+                        <CardSubHeader className="bpa-section-header">{t("BPA_PROFESSIONAL_DETAILS") || "Professional Details"}</CardSubHeader>
+                        <div className="data-table">
+                            <RenderRow
+                                label={t("BPA_PROFESSIONAL_NAME_LABEL")}
+                                text={
+                                    currentStepData?.createdResponse?.additionalDetails?.stakeholderName ||
+                                    currentStepData?.createdResponse?.additionalDetails?.architectName
+                                }
+                            />
+                            <RenderRow
+                                label={t("BPA_PROFESSIONAL_EMAIL_LABEL")}
+                                text={currentStepData?.createdResponse?.additionalDetails?.architectEmailId}
+                            />
+                            <RenderRow
+                                label={t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}
+                                text={
+                                    currentStepData?.createdResponse?.additionalDetails?.architectid ||
+                                    currentStepData?.createdResponse?.additionalDetails?.stakeholderRegistrationNumber
+                                }
+                            />
+                            <RenderRow
+                                label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}
+                                text={formatDate(currentStepData?.createdResponse?.additionalDetails?.professionalRegIdValidity)}
+                            />
+                            <RenderRow
+                                label={t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}
+                                text={currentStepData?.createdResponse?.additionalDetails?.architectMobileNumber}
+                            />
+                            <RenderRow
+                                label={t("BPA_PROFESSIONAL_ADDRESS_LABEL")}
+                                text={currentStepData?.createdResponse?.additionalDetails?.stakeholderAddress}
+                            />
+                        </div>
+                    </div>
+                )}
 
                 <div className="bpa-stepper-form-section">
                     <CardSubHeader className="bpa-section-header">

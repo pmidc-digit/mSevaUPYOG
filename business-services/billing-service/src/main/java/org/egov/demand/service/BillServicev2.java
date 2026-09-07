@@ -518,7 +518,7 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 		if (bills != null && !bills.isEmpty()) {
 			BillV2 bill = bills.get(0);
 			if (("WS".equalsIgnoreCase(bill.getBusinessService()) || "SW".equalsIgnoreCase(bill.getBusinessService()))
-					&& bill.getMobileNumber() != null && !bill.getMobileNumber().trim().isEmpty()) {
+					&& bill.getMobileNumber() != null) {
 				String key = bill.getTenantId() + bill.getMobileNumber();
 				kafkaTemplate.send(notifTopicName, key, billRequest);
 			}

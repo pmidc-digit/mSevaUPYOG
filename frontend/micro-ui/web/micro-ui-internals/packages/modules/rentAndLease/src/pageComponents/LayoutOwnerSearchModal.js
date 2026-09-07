@@ -340,21 +340,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       }
     }
 
-    if (!photoUploadedFile) {
-      errs.photo = t("Passport photo is required");
-    }
-
-    if (!documentUploadedFile) {
-      errs.document = t("Document upload is required");
-    }
-
-    if (!panDocumentUploadedFile) {
-      errs.panDocument = t("PAN document is required");
-    }
-
-    if (!panNumber || !panNumber.trim()) {
-      errs.panNumber = t("REQUIRED_FIELD");
-    } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNumber.trim())) {
+    if (panNumber?.trim() && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNumber.trim())) {
       errs.panNumber = t("Invalid PAN Number format. Format should be like AAAAA1234A");
     }
 
@@ -756,7 +742,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             {/* Passport Photo */}
             <CardLabel className="card-label-smaller">
               {t("BPA_APPLICANT_PASSPORT_PHOTO")}
-              <span className="requiredField">*</span>
             </CardLabel>
             <div className="field obps-page-components-layout-owner-search-modal--style-49">
               <CustomUploadFile
@@ -764,7 +749,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 onUpload={selectPhotoFile}
                 onDelete={() => {
                   setPhotoUploadedFile(null);
-                  setErrors((prev) => ({ ...prev, photo: t("Passport photo is required") }));
+                  setErrors((prev) => ({ ...prev, photo: "" }));
                 }}
                 uploadedFile={photoUploadedFile}
                 message={photoUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
@@ -779,7 +764,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             {/* ID Proof */}
             <CardLabel className="card-label-smaller">
               {t("BPA_APPLICANT_ID_PROOF")}
-              <span className="requiredField">*</span>
             </CardLabel>
             <div className="field obps-page-components-layout-owner-search-modal--style-51">
               <CustomUploadFile
@@ -787,7 +771,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 onUpload={selectDocumentFile}
                 onDelete={() => {
                   setDocumentUploadedFile(null);
-                  setErrors((prev) => ({ ...prev, document: t("Document upload is required") }));
+                  setErrors((prev) => ({ ...prev, document: "" }));
                 }}
                 uploadedFile={documentUploadedFile}
                 message={documentUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
@@ -804,7 +788,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             {/* PAN Document */}
             <CardLabel className="card-label-smaller">
               {t("Pan Card")}
-              <span className="requiredField">*</span>
             </CardLabel>
             <div className="field obps-page-components-layout-owner-search-modal--style-53">
               <CustomUploadFile
@@ -812,7 +795,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 onUpload={selectPanDocumentFile}
                 onDelete={() => {
                   setPanDocumentUploadedFile(null);
-                  setErrors((prev) => ({ ...prev, panDocument: t("PAN document is required") }));
+                  setErrors((prev) => ({ ...prev, panDocument: "" }));
                 }}
                 uploadedFile={panDocumentUploadedFile}
                 message={panDocumentUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
@@ -829,7 +812,6 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             {/* PAN Number */}
             <CardLabel className="card-label-smaller">
               {`${t("Pan Number")}`}
-              <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <TextInput

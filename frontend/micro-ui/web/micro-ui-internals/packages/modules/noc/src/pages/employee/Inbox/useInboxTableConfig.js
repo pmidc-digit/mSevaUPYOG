@@ -1,5 +1,5 @@
 import React, { Fragment, useMemo } from "react";
-import { Link, useLocation  } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encodeURIComponentCustom } from "../../../utils";
@@ -8,7 +8,6 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const { t } = useTranslation();
   const location = useLocation();
   const cameFromOBPS = location.state?.fromOBPS;
-
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
   const GetStatusCell = (value) =>
@@ -22,6 +21,12 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
 
   const tableColumnConfig = useMemo(() => {
     return [
+      {
+        Header: t("Sr No."),
+        accessor: "serialNumber",
+        Cell: ({ row }) => GetCell((Number(formState?.tableForm?.offset) || 0) + row.index + 1),
+        disableSortBy: true,
+      },
       {
         Header: t("NOC_APPLICATION_NUMBER"),
         accessor: "applicationNo",
@@ -113,7 +118,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         disableSortBy: true,
       },
       {
-        Header: t("TIME_TAKEN"),
+        Header: t("Time Taken in Days"),
         accessor: (row) => row?.sla,
         disableSortBy: true,
       },

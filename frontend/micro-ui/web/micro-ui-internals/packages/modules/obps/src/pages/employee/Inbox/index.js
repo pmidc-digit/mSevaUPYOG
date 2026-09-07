@@ -41,6 +41,7 @@ const Inbox = ({ parentRoute }) => {
       locality: [],
       assignee: defaultAssignee,
       applicationType: [],
+      isMigrated: false,
     }),
     [defaultAssignee]
   );
@@ -93,6 +94,7 @@ const Inbox = ({ parentRoute }) => {
       setFilterFormValue("locality", []);
       setFilterFormValue("assignee", defaultAssignee);
       setFilterFormValue("applicationType", []);
+      setFilterFormValue("isMigrated", false);
       dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
     },
     [defaultAssignee, filterFormDefaultValues]
@@ -116,6 +118,7 @@ const Inbox = ({ parentRoute }) => {
           ...filterFormDefaultValues,
           ...sessionFilterForm,
           assignee: isEmployee ? sessionFilterForm?.assignee || defaultAssignee : defaultAssignee,
+          isMigrated: sessionFilterForm?.isMigrated ?? false,
         },
         searchForm: inboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
         tableForm: {
@@ -493,6 +496,7 @@ const Inbox = ({ parentRoute }) => {
       setFilterFormValue("businessService", formState.filterForm.businessService || null);
       setFilterFormValue("applicationType", formState.filterForm.applicationType || []);
       setFilterFormValue("locality", formState.filterForm.locality || []);
+      setFilterFormValue("isMigrated", formState.filterForm.isMigrated === true);
     }
   }, [
     formState?.filterForm?.moduleName,
@@ -501,6 +505,7 @@ const Inbox = ({ parentRoute }) => {
     formState?.filterForm?.businessService,
     formState?.filterForm?.applicationType,
     formState?.filterForm?.locality,
+    formState?.filterForm?.isMigrated,
     defaultAssignee,
     setFilterFormValue,
   ]);
@@ -555,6 +560,17 @@ const Inbox = ({ parentRoute }) => {
       });
     },
     [formState.filterForm, formState.tableForm, setFilterFormValue]
+  );
+
+  const onMigrationChange = useCallback(
+    (isMigrated) => {
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({
+        action: "mutateFilterForm",
+        data: { ...formState.filterForm, isMigrated },
+      });
+    },
+    [formState.filterForm, formState.tableForm]
   );
 
   useEffect(() => {
@@ -615,6 +631,9 @@ const Inbox = ({ parentRoute }) => {
               onSearchChange={(e) => setTopBarSearch(e.target.value)}
               searchPlaceholder="Search by application number..."
               totalCount={totalCountData}
+              showMigrationTabs={isEmployee}
+              isMigrated={formState?.filterForm?.isMigrated === true}
+              onMigrationChange={onMigrationChange}
             />
           }
           isLoading={isInboxLoading}

@@ -4,12 +4,13 @@ import useInbox from "../useInbox";
 import { useTranslation } from "react-i18next";
 
 const useBPAInbox = ({ tenantId, filters, config = {} }) => {
-  const { filterForm, searchForm, tableForm } = filters;
+  const { filterForm, searchForm, tableForm, isMigrated: outerIsMigrated } = filters;
   const { t } = useTranslation();
   const user = Digit.UserService.getUser();
   const stateId = Digit.ULBService.getStateId();
   const { data: holidayList, isLoading: isHolidayListLoading } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "Holidays" }]);
-  let { moduleName, businessService, applicationStatus, locality, assignee, applicationType, licenseType } = filterForm;
+  let { moduleName, businessService, applicationStatus, locality, assignee, applicationType, licenseType, isMigrated: filterIsMigrated } = filterForm;
+  const isMigrated = outerIsMigrated ?? filterIsMigrated ?? false;
   const { mobileNumber, applicationNo } = searchForm;
   const { sortBy, limit, offset, sortOrder } = tableForm;
 
@@ -77,6 +78,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
       ...(sortOrder ? { sortOrder } : {}),
       ...(sortBy ? { sortBy } : {}),
       isCitizenView: checkCitizenView,
+      isMigrated,
       // ...(applicationType?.length > 0 ? {applicationType: applicationType.map((item) => item.code).join(",")} : {}),
       ...(applicationType && applicationType?.length > 0 ? { applicationType } : {}),
       ...(locality?.length > 0 ? { locality: locality.map((item) => item.code.split("_").pop()).join(",") } : {}),

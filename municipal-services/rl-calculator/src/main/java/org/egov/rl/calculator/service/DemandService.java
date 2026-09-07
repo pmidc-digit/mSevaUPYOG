@@ -370,7 +370,7 @@ public class DemandService {
 				applyTimeBasedApplicables(demand, requestInfoWrapper, taxPeriods, billingPeriods, penaltySlabs);
 			}
 
-//			calculationService.addRoundOffTaxHead(demand.getTenantId(), demand.getDemandDetails());
+			calculationService.addRoundOffTaxHead(demand.getTenantId(), demand.getDemandDetails());
 			demandsToBeUpdated.add(demand);
 		}
 

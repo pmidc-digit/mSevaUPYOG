@@ -98,4 +98,15 @@ public class LAYOUTController {
 				.build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	@PostMapping(value = "/_plainsearch")
+	public ResponseEntity<LayoutResponse> plainSearch(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+												 @Valid @ModelAttribute LayoutSearchCriteria criteria) {
+
+		List<Layout> nocList = nocService.plainSearch(criteria, requestInfoWrapper.getRequestInfo());
+		LayoutResponse response = LayoutResponse.builder().noc(nocList).responseInfo(
+				responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true))
+				.build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 }

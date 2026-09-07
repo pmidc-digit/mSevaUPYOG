@@ -74,6 +74,13 @@ public class CLURepository {
 		return nocList;
 	}
 
+	public List<Clu> getCluDataForPlainSearch(LayoutSearchCriteria criteria) {
+		List<Object> preparedStmtList = new ArrayList<>();
+		String query = queryBuilder.getCluSearchQueryForPlainSearch(criteria, preparedStmtList, false);
+		List<Clu> cluList = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+		return cluList;
+	}
+
 
 	public List<String> getOwnerUserIdsByCluId(String clu) {
 		List<Object> preparedStmtList = new ArrayList<>();

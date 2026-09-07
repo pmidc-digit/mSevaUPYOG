@@ -8,6 +8,8 @@
 
 @import "tailwindcss/utilities";
 
+@import "./components/newInbox.scss";
+
 @import "react-date-range/dist/styles.css";
 @import "react-date-range/dist/theme/default.css";
 
@@ -143,7 +145,6 @@
 @import "./modules/BPA/index.scss";
 @import "./pages/common/sitePhotoGraphs.scss";
 @import "./modules/TL/index.scss";
-@import "./components/newInbox.scss";
 @import "./components/ptr.scss";
 @import "./components/challanGeneration.scss";
 

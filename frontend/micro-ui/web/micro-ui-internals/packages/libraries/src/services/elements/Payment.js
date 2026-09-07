@@ -50,6 +50,15 @@ export const PaymentService = {
       userService: true,
       params: { tenantId, ...filters },
     }),
+  searchNewBill: (tenantId, filters = {}) =>
+    Request({
+      url: Urls.payment.search_bill,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: true,
+      params: { tenantId, ...filters },
+    }),
   searchAmendment: (tenantId, filters = {}) => {
     return Request({
       url: Urls.payment.billAmendmentSearch,
@@ -75,7 +84,7 @@ export const PaymentService = {
   getReciept: (tenantId, businessservice, filters = {}) =>
     Request({
       url:
-        businessservice && businessservice !== "BPAREG" || businessservice && businessservice !== "TL"
+        (businessservice && businessservice !== "BPAREG") || (businessservice && businessservice !== "TL")
           ? `${Urls.payment.print_reciept}/${businessservice}/_search`
           : `${Urls.payment.print_reciept}/_search`,
       useCache: false,
@@ -155,7 +164,7 @@ export const PaymentService = {
     }).then(transformPayments),
   recieptSearchNew: (tenantId, params) =>
     Request({
-      url:Urls.payment.obps_Reciept_Search,
+      url: Urls.payment.obps_Reciept_Search,
       method: "POST",
       // do not change this directly add a param if needed
       auth: true,

@@ -41,7 +41,7 @@ import CLUDocumentChecklist from "../../../pageComponents/CLUDocumentCheckList";
 import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import { amountToWords, decryptId, formatDuration } from "../../../utils";
-import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
+import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 import { getDrivingDistance } from "../../../utils/getDistance";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -1282,7 +1282,7 @@ const CLUEmployeeApplicationDetails = () => {
         )}
         {hasPayments && (
           <div style={{ marginTop: "16px" }}>
-            <PaymentHistory payments={combinedPayments} />
+            <OBPSPaymentHistory payments={combinedPayments} />
           </div>
         )}
       </Card>

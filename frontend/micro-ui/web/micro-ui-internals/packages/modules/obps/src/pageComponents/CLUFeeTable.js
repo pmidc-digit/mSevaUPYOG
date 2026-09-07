@@ -150,7 +150,11 @@ export const CLUFeeTable = ({
                       <td className="custom-fix-fee-history-table-cell-label">{t("BPA_FEE2_LABEL")}</td>
                       {feeTypes.map((feeType) => (
                         <td key={`${feeType}-fee-${entryIndex}`} className="custom-fix-fee-history-table-cell-value">
-                          {feeHistory[feeType]?.[entryIndex] ? `₹ ${feeHistory[feeType][entryIndex].estimateAmount}` : ""}
+                          {feeHistory[feeType]?.[entryIndex]
+                            ? feeHistory[feeType][entryIndex].estimateAmount != null && feeHistory[feeType][entryIndex].estimateAmount !== ""
+                              ? `₹ ${feeHistory[feeType][entryIndex].estimateAmount}`
+                              : ""
+                            : ""}
                         </td>
                       ))}
                     </tr>
@@ -159,7 +163,7 @@ export const CLUFeeTable = ({
                       <td className="custom-fix-fee-history-table-cell-label">{t("BPA_REMARK_LABEL")}</td>
                       {feeTypes.map((feeType) => (
                         <td key={`${feeType}-remark-${entryIndex}`} className="custom-fix-fee-history-table-cell-value">
-                          {feeHistory[feeType]?.[entryIndex]?.remarks || t("CS_NA")}
+                          {feeHistory[feeType]?.[entryIndex]?.remarks || ""}
                         </td>
                       ))}
                     </tr>
@@ -294,10 +298,11 @@ export const CLUFeeTable = ({
                       {historyRows.map((h, idx) => (
                         <div key={idx} className="custom-fee-history-entry">
                           <div className="custom-fee-history-item">
-                            <span className="custom-fee-history-label-bold">{t("BPA_FEE2_LABEL")}:</span> ₹ {h.estimateAmount}
+                            <span className="custom-fee-history-label-bold">{t("BPA_FEE2_LABEL")}:</span>{" "}
+                            {h.estimateAmount != null && h.estimateAmount !== "" ? `₹ ${h.estimateAmount}` : ""}
                           </div>
                           <div className="custom-fee-history-item">
-                            <span className="custom-fee-history-label-bold">{t("BPA_REMARK_LABEL")}:</span> {h.remarks || t("CS_NA")}
+                            <span className="custom-fee-history-label-bold">{t("BPA_REMARK_LABEL")}:</span> {h.remarks || ""}
                           </div>
                           {h.when && (
                             <div className="custom-fee-history-item">

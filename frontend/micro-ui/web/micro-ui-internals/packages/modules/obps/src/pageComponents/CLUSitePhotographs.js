@@ -17,7 +17,7 @@ const CLUSitePhotographs = ({ documents, coordinates={} }) => {
         documentType: doc?.documentType || "",
         filestoreId: doc?.filestoreId || doc?.fileStoreId || "",
         documentUid: doc?.documentUid || doc?.fileStoreId || "",
-        documentAttachment: doc?.documentAttachment || "",
+        documentAttachment: doc?.documentAttachment || doc?.filestoreId || doc?.fileStoreId || doc?.documentUid || "",
       })),
     },
   };

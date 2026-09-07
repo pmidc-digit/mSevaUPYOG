@@ -74,6 +74,13 @@ public class NOCRepository {
 		return nocList;
 	}
 
+	public List<Noc> getNocDataForPlainSearch(NocSearchCriteria criteria) {
+		List<Object> preparedStmtList = new ArrayList<>();
+		String query = queryBuilder.getNocSearchQueryForPlainSearch(criteria, preparedStmtList, false);
+		List<Noc> nocList = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+		return nocList;
+	}
+
 	public List<DocumentCheckList> getDocumentCheckList(String applicationNo, String tenantId){
 		List<Object> params = new LinkedList<>();
 		String query = queryBuilder.getNOCDocumantsCheckListQuery(applicationNo, tenantId, params);

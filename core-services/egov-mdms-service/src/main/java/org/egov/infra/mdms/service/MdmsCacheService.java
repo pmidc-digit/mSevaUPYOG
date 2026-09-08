@@ -26,11 +26,12 @@ import net.minidev.json.JSONArray;
  *
  * Responsibilities: 1. Load all active MDMS data from the database at
  * application startup and replace the in-memory cache with a DB snapshot. 2.
- * Process Kafka messages (create/update) to keep the cache in sync at runtime.
+ * Provide runtime update APIs to keep the cache in sync when updates are
+ * applied programmatically.
  *
- * Merge strategy (both DB load and Kafka updates): - Records with matching
+ * Merge strategy (both DB load and runtime updates): - Records with matching
  * "code" are updated in place. - New records are added. - Inactive records are
- * removed (Kafka updates only).
+ * removed when updates indicate inactive state.
  */
 @Service
 @Slf4j
@@ -165,7 +166,7 @@ public class MdmsCacheService {
 	}
 
 	/**
-	 * Processes a Kafka message (create or update) and updates the in-memory cache.
+	 * Processes an update message (create or update) and updates the in-memory cache.
 	 */
 	@SuppressWarnings("unchecked")
 	public synchronized void updateCache(Map<String, Object> message) {
@@ -205,111 +206,22 @@ public class MdmsCacheService {
 		String effectiveTenantId = getEffectiveTenantId(tenantId, moduleName, masterName);
 		JSONArray masterData = getOrCreateMasterData(effectiveTenantId, moduleName, masterName);
 
-		// If DB loading is enabled, verify persistence in DB before updating in-memory
-		// cache
-		if (dbLoadEnabled && (uniqueIdentifier != null || id != null)) {
-			Map<String, Object> dbRow = fetchRecordFromDbWithRetry(tenantId, schemaCode, uniqueIdentifier, id, data, isActive);
-			if (dbRow == null) {
-				log.error(
-						"Record for tenantId: {}, schemaCode: {}, uniqueIdentifier: {}, id: {} NOT found or data did not reflect update in DB after retries. Persistence failed or pending. Skipping cache update.",
-						tenantId, schemaCode, uniqueIdentifier, id);
-				return;
-			}
-			if (dbRow.get("data") != null) {
-				data = dbRow.get("data");
-			}
-			if (dbRow.get("isactive") != null) {
-				isActive = Boolean.valueOf(String.valueOf(dbRow.get("isactive")));
-			}
-			log.info("Successfully verified updated record in DB for {}.{} under tenant {}. Updating cache.", moduleName,
-					masterName, effectiveTenantId);
-		}
-
 		if (!isActive) {
-			removeKafkaRecord(masterData, id, uniqueIdentifier, moduleName, masterName);
+			removeRecord(masterData, id, uniqueIdentifier, moduleName, masterName);
 			MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(effectiveTenantId, moduleName, masterName,
 					masterData);
 			return;
 		}
 
 		if (data instanceof List) {
-			for (Object record : (List<?>) data) {
-				upsertKafkaRecord(masterData, record, moduleName, masterName, id, uniqueIdentifier);
-			}
+				for (Object record : (List<?>) data) {
+					upsertRecord(masterData, record, moduleName, masterName, id, uniqueIdentifier);
+				}
 		} else {
-			upsertKafkaRecord(masterData, data, moduleName, masterName, id, uniqueIdentifier);
+			upsertRecord(masterData, data, moduleName, masterName, id, uniqueIdentifier);
 		}
 
 		MDMSApplicationRunnerImpl.refreshMasterTopLevelIdState(effectiveTenantId, moduleName, masterName, masterData);
-	}
-
-	private Map<String, Object> fetchRecordFromDbWithRetry(String tenantId, String schemaCode, String uniqueIdentifier,
-			String id, Object expectedData, Boolean expectedIsActive) {
-		int maxRetries = 5;
-		int retryDelayMs = 250;
-		Map<String, Object> lastFoundDbRow = null;
-
-		for (int attempt = 1; attempt <= maxRetries; attempt++) {
-			try {
-				List<Map<String, Object>> dbRows = mdmsDataRepository.search(tenantId, schemaCode, uniqueIdentifier,
-						id);
-				if (dbRows != null && !dbRows.isEmpty()) {
-					lastFoundDbRow = dbRows.get(0);
-					Object dbData = lastFoundDbRow.get("data");
-					Object dbIsActiveObj = lastFoundDbRow.get("isactive");
-					Boolean dbIsActive = dbIsActiveObj != null ? Boolean.valueOf(String.valueOf(dbIsActiveObj)) : Boolean.TRUE;
-
-					boolean isActiveMatches = (expectedIsActive == null || expectedIsActive.equals(dbIsActive));
-					boolean isDataMatches = isDbDataUpdated(dbData, expectedData);
-
-					if (isActiveMatches && isDataMatches) {
-						log.info("DB record update verified on attempt {}/{} for tenant: {}, schemaCode: {}, uniqueIdentifier: {}",
-								attempt, maxRetries, tenantId, schemaCode, uniqueIdentifier);
-						return lastFoundDbRow;
-					} else {
-						log.info("DB record found for {}.{} (id: {}), but DB data/isActive does not reflect Kafka update yet. Retrying ({}/{})...",
-								schemaCode, uniqueIdentifier, id, attempt, maxRetries);
-					}
-				}
-			} catch (Exception e) {
-				log.error(
-						"Error searching DB for record (tenantId: {}, schemaCode: {}, uniqueIdentifier: {}, id: {}): {}",
-						tenantId, schemaCode, uniqueIdentifier, id, e.getMessage());
-			}
-
-			if (attempt < maxRetries) {
-				try {
-					Thread.sleep(retryDelayMs);
-				} catch (InterruptedException ie) {
-					Thread.currentThread().interrupt();
-					break;
-				}
-			}
-		}
-		return lastFoundDbRow;
-	}
-
-	private boolean isDbDataUpdated(Object dbData, Object kafkaData) {
-		if (dbData == null && kafkaData == null) {
-			return true;
-		}
-		if (dbData == null || kafkaData == null) {
-			return false;
-		}
-		if (kafkaData instanceof Map && dbData instanceof Map) {
-			Map<?, ?> kafkaMap = (Map<?, ?>) kafkaData;
-			Map<?, ?> dbMap = (Map<?, ?>) dbData;
-			for (Map.Entry<?, ?> entry : kafkaMap.entrySet()) {
-				Object key = entry.getKey();
-				Object kafkaVal = entry.getValue();
-				Object dbVal = dbMap.get(key);
-				if (!isDeepEqual(kafkaVal, dbVal)) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return isDeepEqual(dbData, kafkaData);
 	}
 
 	/**
@@ -355,18 +267,18 @@ public class MdmsCacheService {
 	 * new record.
 	 */
 	@SuppressWarnings("unchecked")
-	private void upsertKafkaRecord(JSONArray masterData, Object kafkaRecord, String moduleName, String masterName,
-			String kafkaId, String kafkaUniqueIdentifier) {
-		if (kafkaRecord == null || !(kafkaRecord instanceof Map)) {
+	private void upsertRecord(JSONArray masterData, Object recordObj, String moduleName, String masterName,
+			String recordId, String recordUniqueIdentifier) {
+		if (recordObj == null || !(recordObj instanceof Map)) {
 			return;
 		}
 
 		Map<String, Object> newRecordMap = new LinkedHashMap<>();
-		for (Map.Entry<?, ?> entry : ((Map<?, ?>) kafkaRecord).entrySet()) {
+		for (Map.Entry<?, ?> entry : ((Map<?, ?>) recordObj).entrySet()) {
 			newRecordMap.put(String.valueOf(entry.getKey()), entry.getValue());
 		}
-		if (kafkaId != null && !kafkaId.trim().isEmpty() && !newRecordMap.containsKey("id")) {
-			newRecordMap.put("id", kafkaId);
+		if (recordId != null && !recordId.trim().isEmpty() && !newRecordMap.containsKey("id")) {
+			newRecordMap.put("id", recordId);
 		}
 
 		for (int i = 0; i < masterData.size(); i++) {
@@ -376,15 +288,15 @@ public class MdmsCacheService {
 
 			Map<?, ?> existingMap = (Map<?, ?>) existing;
 
-			if (isRecordMatching(existingMap, newRecordMap, moduleName, masterName, kafkaId, kafkaUniqueIdentifier)) {
+			if (isRecordMatching(existingMap, newRecordMap, moduleName, masterName, recordId, recordUniqueIdentifier)) {
 				Map<String, Object> mergedRecord = deepMergeMaps(existingMap, newRecordMap);
 				masterData.set(i, mergedRecord);
-				log.info("Merged Kafka message update into cache for {}.{}", moduleName, masterName);
+				log.info("Merged update into cache for {}.{}", moduleName, masterName);
 				return;
 			}
 		}
 
-		log.info("Added new Kafka record to cache for {}.{}", moduleName, masterName);
+		log.info("Added new record to cache for {}.{}", moduleName, masterName);
 		masterData.add(newRecordMap);
 	}
 
@@ -469,7 +381,7 @@ public class MdmsCacheService {
 		return UUID_PATTERN.matcher(str).matches();
 	}
 
-	public void removeKafkaRecord(JSONArray masterData, String id, String uniqueIdentifier, String moduleName,
+	public void removeRecord(JSONArray masterData, String id, String uniqueIdentifier, String moduleName,
 			String masterName) {
 		if (id == null && uniqueIdentifier == null) {
 			return;

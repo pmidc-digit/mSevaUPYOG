@@ -24,13 +24,7 @@ import { getAcknowledgementData } from "../../utils/index";
 
 const roundMoney = (value = 0) => Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
 
-const getMonthKey = (period) => {
-  if (!period) return "";
-  const date = new Date(Number(period));
-
-  if (Number.isNaN(date.getTime())) return "";
-  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
-};
+const getBillDetailKey = (billDetail) => billDetail?.demandId || billDetail?.id || "";
 
 const formatMonth = (period) => {
   if (!period) return "-";
@@ -59,7 +53,9 @@ const getPaymentHistory = (billResponse, receiptResponse) => {
     if (ignoredBillStatuses.includes(bill?.status)) return;
 
     (bill?.billDetails || []).forEach((billDetail) => {
-      const key = getMonthKey(billDetail?.fromPeriod);
+      // A regenerated bill can cover the same calendar month as an expired bill.
+      // demandId keeps the current demand separate from its superseded counterpart.
+      const key = getBillDetailKey(billDetail);
       if (!key) return;
 
       const month = months.get(key) || {
@@ -84,18 +80,13 @@ const getPaymentHistory = (billResponse, receiptResponse) => {
       if (!paymentDetail?.receiptNumber) return;
 
       (paymentDetail?.bill?.billDetails || []).forEach((billDetail) => {
-        const key = getMonthKey(billDetail?.fromPeriod);
+        const key = getBillDetailKey(billDetail);
         if (!key) return;
 
-        const month = months.get(key) || {
-          key,
-          fromPeriod: billDetail?.fromPeriod,
-          toPeriod: billDetail?.toPeriod,
-          billNumber: paymentDetail?.bill?.billNumber || "-",
-          billStatus: paymentDetail?.bill?.status,
-          billed: 0,
-          receipts: [],
-        };
+        // A payment response contains a historical bill snapshot. It must not
+        // create timeline rows, otherwise cancelled or regenerated bills leak in.
+        const month = months.get(key);
+        if (!month) return;
 
         month.receipts.push({
           receiptNumber: paymentDetail.receiptNumber,
@@ -623,7 +614,7 @@ const RALApplicationDetails = () => {
 
     try {
       const [billResponse, receiptResponse] = await Promise.all([
-        Digit.PaymentService.searchNewBill(tenantId, { consumerCode, Service: "rl-services" }),
+        Digit.PaymentService.searchBill(tenantId, { consumerCode, service: "rl-services" }),
         Digit.PaymentService.recieptSearch(tenantId, "rl-services", { consumerCodes: consumerCode, limit: 200 }),
       ]);
 

@@ -1,9 +1,9 @@
 package org.egov.infra.mdms.service.enrichment;
 
-import org.egov.common.contract.models.AuditDetails;
+import org.egov.infra.mdms.model.AuditDetails;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.common.utils.AuditDetailsEnrichmentUtil;
-import org.egov.common.utils.UUIDEnrichmentUtil;
+import org.egov.infra.mdms.utils.AuditDetailsEnrichmentUtil;
+import org.egov.infra.mdms.utils.UUIDEnrichmentUtil;
 import org.egov.infra.mdms.model.Mdms;
 import org.egov.infra.mdms.model.MdmsRequest;
 import org.egov.infra.mdms.utils.CompositeUniqueIdentifierGenerationUtil;

@@ -69,6 +69,19 @@ public class SWFuzzySearchQueryBuilder {
                 
                 mustList.add(mapper.convertValue(new HashMap<String, Object>() {{ put("bool", shouldBool); }}, JsonNode.class));
             }
+            
+         // Guardian Name Filter (Checks additionalDetails.guardianName OR connectionHolders.fatherOrHusbandName)
+            if (criteria.getGuardianName() != null) {
+                List<JsonNode> guardianShouldClauses = new LinkedList<>();
+                guardianShouldClauses.add(getInnerNode(criteria.getGuardianName(), "Data.additionalDetails.guardianName", true));
+                guardianShouldClauses.add(getInnerNode(criteria.getGuardianName(), "Data.connectionHolders.fatherOrHusbandName", true));
+
+                Map<String, Object> shouldBool = new HashMap<>();
+                shouldBool.put("should", guardianShouldClauses);
+                shouldBool.put("minimum_should_match", 1);
+
+                mustList.add(mapper.convertValue(new HashMap<String, Object>() {{ put("bool", shouldBool); }}, JsonNode.class));
+            }
 
             // 3. Sewerage Connection Number
             if (!CollectionUtils.isEmpty(criteria.getConnectionNumber())) {

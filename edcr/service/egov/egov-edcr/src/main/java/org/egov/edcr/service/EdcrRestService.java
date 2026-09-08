@@ -50,10 +50,12 @@ package org.egov.edcr.service;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.egov.edcr.utility.DcrConstants.FILESTORE_MODULECODE;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,14 +76,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -107,15 +103,21 @@ import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.config.core.EnvironmentSettings;
 import org.egov.infra.exception.ApplicationRuntimeException;
 import org.egov.infra.filestore.service.FileStoreService;
+import org.egov.infra.filestore.service.impl.CompressionService;
 import org.egov.infra.microservice.contract.RequestInfoWrapper;
 import org.egov.infra.microservice.contract.ResponseInfo;
+import org.egov.infra.microservice.models.CustomMultipartFile;
 import org.egov.infra.microservice.models.RequestInfo;
 import org.egov.infra.microservice.models.Role;
 import org.egov.infra.microservice.models.UserInfo;
 import org.egov.infra.security.utils.SecurityUtils;
 import org.egov.infra.utils.TenantUtils;
-import org.hibernate.query.Query;
+import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -196,6 +198,9 @@ public class EdcrRestService {
 
 	@Value("${indexer.host}")
 	private String indexerHost;
+	
+	@Autowired
+    private CompressionService CompressionService;
 	
     public Session getCurrentSession() {
         return entityManager.unwrap(Session.class);
@@ -502,6 +507,7 @@ public class EdcrRestService {
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 Plan pl1 = mapper.readValue(file, Plan.class);
+                Files.deleteIfExists(file.toPath());
                 pl1.getPlanInformation().setApplicantName(edcrApplnDtl.getApplication().getApplicantName());
                
                 if (LOG.isInfoEnabled())
@@ -739,7 +745,7 @@ public class EdcrRestService {
 //
 //            LOG.info("[fetchEdcr] Generated SQL query :\n{}", queryString);
 //
-//            final Query query = getCurrentSession().createNativeQuery(queryString)
+//            final Query query = getCurrentSession().createSQLQuery(queryString)
 //                    .setFirstResult(offset)
 //                    .setMaxResults(limit);
 //
@@ -916,7 +922,7 @@ public class EdcrRestService {
 
             LOG.info("[fetchEdcr] Generated SQL query              :\n{}", queryString);
 
-            final Query query = getCurrentSession().createNativeQuery(queryString)
+            final Query query = getCurrentSession().createSQLQuery(queryString)
                     .setFirstResult(offset)
                     .setMaxResults(limit);
 
@@ -962,13 +968,13 @@ public class EdcrRestService {
             // -------------------------------------------------------------------
             LOG.info("[fetchEdcr] Taking SINGLE-TENANT path for tenantId: '{}'", edcrRequest.getTenantId());
 
-            final TypedQuery<EdcrApplicationDetail> criteria = getCriteriaofSingleTenant(
+            final Criteria criteria = getCriteriaofSingleTenant(
                     edcrRequest, userInfo, userId, onlyTenantId, isStakeholder);
 
             LOG.info("[fetchEdcr] Criteria query : {}", criteria.toString());
             criteria.setFirstResult(offset);
             criteria.setMaxResults(limit);
-            edcrApplications = criteria.getResultList();
+            edcrApplications = criteria.list();
 
             LOG.info("[fetchEdcr] Records returned from single-tenant query: {}", edcrApplications.size());
         }
@@ -1053,7 +1059,7 @@ public class EdcrRestService {
 
             LOG.info("[fetchCount] Generated SQL query for count   :\n{}", queryString);
 
-            final Query query = getCurrentSession().createNativeQuery(queryString);
+            final Query query = getCurrentSession().createSQLQuery(queryString);
             for (final Map.Entry<String, String> param : params.entrySet()) {
                 LOG.info("[fetchCount] SQL param — key: '{}', value: '{}'", param.getKey(), param.getValue());
                 query.setParameter(param.getKey(), param.getValue());
@@ -1067,10 +1073,10 @@ public class EdcrRestService {
         } else {
             LOG.info("[fetchCount] Taking SINGLE-TENANT path for count, tenantId: '{}'", edcrRequest.getTenantId());
 
-            final TypedQuery<EdcrApplicationDetail> criteria = getCriteriaofSingleTenant(
+            final Criteria criteria = getCriteriaofSingleTenant(
                     edcrRequest, userInfo, userId, onlyTenantId, isStakeholder);
 
-            int count = criteria.getResultList().size();
+            int count = criteria.list().size();
             LOG.info("[fetchCount] Count result (single-tenant)    : {}", count);
             LOG.info("[fetchCount] ========== END fetchCount ==========");
             return count;
@@ -1703,7 +1709,7 @@ public class EdcrRestService {
 //    }
 
     
-    private TypedQuery<EdcrApplicationDetail> getCriteriaofSingleTenant(final EdcrRequest edcrRequest,
+    private Criteria getCriteriaofSingleTenant(final EdcrRequest edcrRequest,
             UserInfo userInfo,
             String userId,
             boolean onlyTenantId,
@@ -1711,17 +1717,18 @@ public class EdcrRestService {
 
     	LOG.info("============== SINGLE TENANT CRITERIA START ==============");
 
-        final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        final CriteriaQuery<EdcrApplicationDetail> criteria = builder.createQuery(EdcrApplicationDetail.class);
-        final Root<EdcrApplicationDetail> detail = criteria.from(EdcrApplicationDetail.class);
-        final Join<EdcrApplicationDetail, EdcrApplication> application = detail.join("application");
-        final List<Predicate> predicates = new ArrayList<>();
+        final Criteria criteria = getCurrentSession()
+                .createCriteria(EdcrApplicationDetail.class, "edcrApplicationDetail");
+
+        criteria.createAlias("edcrApplicationDetail.application", "application");
 
         if (edcrRequest != null && isNotBlank(edcrRequest.getEdcrNumber())) {
 
         	LOG.info("Adding filter -> dcrNumber : {}", edcrRequest.getEdcrNumber());
 
-            predicates.add(builder.equal(detail.get("dcrNumber"), edcrRequest.getEdcrNumber()));
+            criteria.add(Restrictions.eq(
+                    "edcrApplicationDetail.dcrNumber",
+                    edcrRequest.getEdcrNumber()));
         }
 
         if (edcrRequest != null && isNotBlank(edcrRequest.getTransactionNumber())) {
@@ -1729,7 +1736,9 @@ public class EdcrRestService {
         	LOG.info("Adding filter -> transactionNumber : {}",
                     edcrRequest.getTransactionNumber());
 
-            predicates.add(builder.equal(application.get("transactionNumber"), edcrRequest.getTransactionNumber()));
+            criteria.add(Restrictions.eq(
+                    "application.transactionNumber",
+                    edcrRequest.getTransactionNumber()));
         }
 
         if (edcrRequest != null && isNotBlank(edcrRequest.getApplicationNumber())) {
@@ -1737,7 +1746,9 @@ public class EdcrRestService {
         	LOG.info("Adding filter -> applicationNumber : {}",
                     edcrRequest.getApplicationNumber());
 
-            predicates.add(builder.equal(application.get("applicationNumber"), edcrRequest.getApplicationNumber()));
+            criteria.add(Restrictions.eq(
+                    "application.applicationNumber",
+                    edcrRequest.getApplicationNumber()));
         }
 
         String appliactionType = edcrRequest.getAppliactionType();
@@ -1762,7 +1773,9 @@ public class EdcrRestService {
 
             LOG.info("Resolved ApplicationType : {}", applicationType);
 
-            predicates.add(builder.equal(application.get("applicationType"), applicationType));
+            criteria.add(Restrictions.eq(
+                    "application.applicationType",
+                    applicationType));
         }
 
         if (edcrRequest != null
@@ -1771,7 +1784,9 @@ public class EdcrRestService {
         	LOG.info("Adding filter -> serviceType : {}",
                     edcrRequest.getApplicationSubType());
 
-            predicates.add(builder.equal(application.get("serviceType"), edcrRequest.getApplicationSubType()));
+            criteria.add(Restrictions.eq(
+                    "application.serviceType",
+                    edcrRequest.getApplicationSubType()));
         }
 
         LOG.info("onlyTenantId : {}", onlyTenantId);
@@ -1784,9 +1799,12 @@ public class EdcrRestService {
 
         	LOG.info("Adding filter -> thirdPartyUserCode : {}", userId);
 
-		predicates.add(builder.or(
-		        builder.equal(application.get("thirdPartyUserCode"), userId),
-		        builder.equal(application.get("applicantName"), userInfo.getName())));
+        	criteria.add(
+        		    Restrictions.or(
+        		        Restrictions.eq("application.thirdPartyUserCode", userId),
+        		        Restrictions.eq("application.applicantName", userInfo.getName())
+        		    )
+        		);
         }
 
         if (isNotBlank(edcrRequest.getStatus())) {
@@ -1794,7 +1812,9 @@ public class EdcrRestService {
         	LOG.info("Adding filter -> status : {}",
                     edcrRequest.getStatus());
 
-            predicates.add(builder.equal(detail.get("status"), edcrRequest.getStatus()));
+            criteria.add(Restrictions.eq(
+                    "edcrApplicationDetail.status",
+                    edcrRequest.getStatus()));
         }
 
         if (edcrRequest.getFromDate() != null) {
@@ -1802,8 +1822,9 @@ public class EdcrRestService {
         	LOG.info("Adding filter -> fromDate : {}",
                     edcrRequest.getFromDate());
 
-            predicates.add(builder.greaterThanOrEqualTo(
-                    application.get("applicationDate"), edcrRequest.getFromDate()));
+            criteria.add(Restrictions.ge(
+                    "application.applicationDate",
+                    edcrRequest.getFromDate()));
         }
 
         if (edcrRequest.getToDate() != null) {
@@ -1811,8 +1832,9 @@ public class EdcrRestService {
         	LOG.info("Adding filter -> toDate : {}",
                     edcrRequest.getToDate());
 
-            predicates.add(builder.lessThanOrEqualTo(
-                    application.get("applicationDate"), edcrRequest.getToDate()));
+            criteria.add(Restrictions.le(
+                    "application.applicationDate",
+                    edcrRequest.getToDate()));
         }
 
         String orderBy = "desc";
@@ -1824,47 +1846,84 @@ public class EdcrRestService {
         LOG.info("Order By : {}", orderBy);
 
         if (orderBy.equalsIgnoreCase("asc")) {
-            criteria.orderBy(builder.asc(detail.get("createdDate")));
+            criteria.addOrder(Order.asc("edcrApplicationDetail.createdDate"));
         } else {
-            criteria.orderBy(builder.desc(detail.get("createdDate")));
+            criteria.addOrder(Order.desc("edcrApplicationDetail.createdDate"));
         }
 
-        criteria.select(detail).where(predicates.toArray(new Predicate[0])).distinct(true);
+        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 
         LOG.info("Final Hibernate Criteria Query : {}", criteria);
 
         LOG.info("============== SINGLE TENANT CRITERIA END ==============");
 
-        return entityManager.createQuery(criteria);
+        return criteria;
     }
     
-    public ErrorDetail validatePlanFile(final MultipartFile file) {
-        List<String> dcrAllowedExtenstions = new ArrayList<>(
-                Arrays.asList(edcrApplicationSettings.getValue("dcr.dxf.allowed.extenstions").split(",")));
+//    public ErrorDetail validatePlanFile(final MultipartFile file) {
+//        List<String> dcrAllowedExtenstions = new ArrayList<>(
+//                Arrays.asList(edcrApplicationSettings.getValue("dcr.dxf.allowed.extenstions").split(",")));
+//
+//        String fileSize = edcrApplicationSettings.getValue("dcr.dxf.max.size");
+//        final String maxAllowSizeInMB = fileSize;
+//        String extension;
+//        if (file != null && !file.isEmpty()) {
+//            extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.') + 1);
+//            if (extension != null && !extension.isEmpty()) {
+//
+//                if (!dcrAllowedExtenstions.contains(extension.toLowerCase())) {
+//                    return new ErrorDetail("BPA-02", "Please upload " + dcrAllowedExtenstions + " format file only");
+//                } else if (file.getSize() > (Long.valueOf(maxAllowSizeInMB) * 1024 * 1024)) {
+//                    return new ErrorDetail("BPA-04", "File size should not exceed 30 MB");
+//                } /*
+//                   * else if (allowedExtenstions.contains(extension.toLowerCase()) && (!mimeTypes.contains(mimeType) ||
+//                   * StringUtils.countMatches(file.getOriginalFilename(), ".") > 1 || file.getOriginalFilename().contains("%00")))
+//                   * { return new ErrorDetail("BPA-03", "Malicious file upload"); }
+//                   */
+//            }
+//        } else {
+//            return new ErrorDetail(BPA_05, "Please upload plan file, It is mandatory");
+//        }
+//
+//        return null;
+//    }
+    
+	public ErrorDetail validatePlanFile(final MultipartFile file) {
+		String fileSize = edcrApplicationSettings.getValue("dcr.dxf.max.size");
+		final long maxAllowSizeInBytes = Long.valueOf(fileSize) * 1024L * 1024L;
 
-        String fileSize = edcrApplicationSettings.getValue("dcr.dxf.max.size");
-        final String maxAllowSizeInMB = fileSize;
-        String extension;
-        if (file != null && !file.isEmpty()) {
-            extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.') + 1);
-            if (extension != null && !extension.isEmpty()) {
+		if (file == null || file.isEmpty()) {
+			return new ErrorDetail(BPA_05, "Please upload plan file, It is mandatory");
+		}
 
-                if (!dcrAllowedExtenstions.contains(extension.toLowerCase())) {
-                    return new ErrorDetail("BPA-02", "Please upload " + dcrAllowedExtenstions + " format file only");
-                } else if (file.getSize() > (Long.valueOf(maxAllowSizeInMB) * 1024 * 1024)) {
-                    return new ErrorDetail("BPA-04", "File size should not exceed 30 MB");
-                } /*
-                   * else if (allowedExtenstions.contains(extension.toLowerCase()) && (!mimeTypes.contains(mimeType) ||
-                   * StringUtils.countMatches(file.getOriginalFilename(), ".") > 1 || file.getOriginalFilename().contains("%00")))
-                   * { return new ErrorDetail("BPA-03", "Malicious file upload"); }
-                   */
-            }
-        } else {
-            return new ErrorDetail(BPA_05, "Please upload plan file, It is mandatory");
-        }
+		String extension = null;
+		String contentType = null;
 
-        return null;
-    }
+		try {
+			contentType = fileStoreService.getFileContentType(file.getInputStream());
+
+			if (contentType != null) {
+				String mimeType = contentType.split(";")[0].trim();
+				if ("image/vnd.dxf".equalsIgnoreCase(mimeType)) {
+					extension = "dxf";
+				}
+			}
+
+		} catch (IOException e) {
+			return new ErrorDetail("BPA-03", "Unable to validate uploaded file");
+		}
+		
+		if (!"dxf".equalsIgnoreCase(extension)) {
+			return new ErrorDetail("BPA-02", "Please upload DXF format file only");
+		}
+
+		// Validate file size
+		if (file.getSize() > maxAllowSizeInBytes) {
+			return new ErrorDetail("BPA-04", "File size should not exceed " + fileSize + " MB");
+		}
+
+		return null;
+	}
 
     public ErrorDetail validateEdcrRequest(final EdcrRequest edcrRequest, final MultipartFile planFile) {
         if (edcrRequest.getRequestInfo() == null)
@@ -2117,5 +2176,86 @@ public class EdcrRestService {
         cal1.set(Calendar.MILLISECOND, 999);
         return cal1.getTime();
     }
+    
+    public MultipartFile getPlanFileFromFileStore(EdcrRequest edcr) throws IOException {
+	    String dxfFileTenantId = edcr.getTenantId();
+	    String dxfFileStoreId = edcr.getDxfFileStoreId();
+
+	    LOG.info("Fetching DXF file from FileStore. fileId={}, tenantId={}",dxfFileStoreId,dxfFileTenantId);
+
+	    File dxfFile = fileStoreService.fetch(
+	            dxfFileStoreId,
+	            FILESTORE_MODULECODE,
+	            dxfFileTenantId);
+
+	    if (dxfFile == null || !dxfFile.exists() || !dxfFile.isFile()) {
+	        LOG.error("DXF file not found in FileStore. fileId={}, tenantId={}",
+	                dxfFileStoreId,dxfFileTenantId);
+	        throw new IOException("Unable to fetch DXF file from FileStore.");
+	    }
+
+	    byte[] fileContent = Files.readAllBytes(dxfFile.toPath());
+	    Files.deleteIfExists(dxfFile.toPath());
+	    
+	    String contentType = fileStoreService.getFileContentType(fileContent);
+	    
+	    MultipartFile multipartFile = new CustomMultipartFile("Drawing.dxf", "Drawing.dxf", contentType, fileContent);
+	    
+	    
+	    LOG.info("File fetched from FileStore. fileId={}, fileName={}, contentType={}, size={}",
+	            dxfFileStoreId,multipartFile.getOriginalFilename(),contentType, multipartFile.getSize());
+//	    if ("application/zip".equalsIgnoreCase(contentType)
+//	            || "application/x-zip-compressed".equalsIgnoreCase(contentType)
+//	            || "image/vnd.dxf; format=ascii".equalsIgnoreCase(contentType)) {
+//
+//	        LOG.info(
+//	                "ZIP file detected. Decompressing FileStore file. fileId={}",
+//	                dxfFileStoreId);
+//
+//	        MultipartFile decompressedFile =
+//	        		CompressionService.decompressFromZip(multipartFile);
+//
+//	        LOG.info(
+//	                "ZIP decompressed successfully. fileId={}, fileName={}, size={}",
+//	                dxfFileStoreId,
+//	                decompressedFile.getOriginalFilename(),
+//	                decompressedFile.getSize());
+//
+//	        return decompressedFile;
+//	    }
+	    if (isDxfFile(multipartFile, contentType)) {
+
+	        LOG.info(
+	                "DXF file detected. Returning file directly. fileId={}, fileName={}",
+	                dxfFileStoreId,
+	                multipartFile.getOriginalFilename());
+
+	        return multipartFile;
+	    }
+
+	    LOG.warn(
+	            "Unsupported file type received from FileStore. fileId={}, fileName={}, contentType={}",
+	            dxfFileStoreId,
+	            multipartFile.getOriginalFilename(),
+	            contentType);
+
+	    throw new IOException(
+	            "Unsupported file type. Expected DXF or ZIP containing DXF.");
+	}
+    
+	private boolean isDxfFile(MultipartFile file, String contentType) {
+
+	    String fileName = file.getOriginalFilename();
+
+	    if (fileName != null && fileName.toLowerCase().endsWith(".dxf")) {
+	        return true;
+	    }
+
+	    return "image/vnd.dxf".equalsIgnoreCase(contentType)
+	            || "application/dxf".equalsIgnoreCase(contentType)
+	            || "application/x-dxf".equalsIgnoreCase(contentType)
+	            || "image/vnd.dxf; format=ascii".equalsIgnoreCase(contentType)
+	            ;
+	}
     
 }

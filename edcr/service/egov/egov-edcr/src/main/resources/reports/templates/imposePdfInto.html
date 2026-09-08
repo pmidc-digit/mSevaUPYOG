@@ -10,9 +10,11 @@
     table { width: 100%; border-collapse: collapse; table-layout: fixed; }
     th, td { border: 1px solid #555; padding: 6pt 7pt; vertical-align: top; word-wrap: break-word; }
     th { background: #e4edf8; font-weight: 700; }
-    tr:nth-child(even) td { background: #f7fbff; }`r`n    .title { font-size: 12px; }`r`n    table { line-height: 1.25; }
+    tr:nth-child(even) td { background: #f7fbff; }
+    .title { font-size: 12px; }
+    table { line-height: 1.25; }
     .remarks-table td { background: #fff !important; }
-    .signature-image { width: 100px; height: 40px; object-fit: contain; display: block; }
+    .signature-image { max-width: 100px; max-height: 40px; width: auto; height: auto; display: block; }
   </style>
 </head>
 <body>
@@ -27,11 +29,20 @@
       <tbody>
         <tr th:each="row : ${section.rows}">
           <td th:each="cell, cellStat : ${row}">
-            <span th:if="${!(section['renderSignatureImage'] == true and cellStat.index == 1)}" th:text="${cell}">Value</span>
-            <img th:if="${section['renderSignatureImage'] == true and cellStat.index == 1 and cell != null and !#strings.equalsIgnoreCase(cell, 'N/A')}"
-                 th:src="${cell}"
-                 alt="Signature"
-                 class="signature-image" />
+             <span th:if="${!(section['renderSignatureImage'] == true and cellStat.index == 1)}"
+          th:text="${cell}">
+        Value
+    </span>
+    <img th:if="${section['renderSignatureImage'] == true
+                 and cellStat.index == 1
+                 and cell != null
+                 and !#strings.isEmpty(cell)
+                 and !#strings.equalsIgnoreCase(cell, 'N/A')
+                 and !#strings.equalsIgnoreCase(cell, 'null')
+                 and !#strings.equalsIgnoreCase(cell, '-')}"
+         th:src="${cell}"
+         alt="Signature"
+         class="signature-image" />
           </td>
         </tr>
       </tbody>

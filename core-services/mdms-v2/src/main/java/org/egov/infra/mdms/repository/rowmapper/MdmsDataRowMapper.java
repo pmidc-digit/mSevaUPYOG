@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
-import org.egov.common.contract.models.AuditDetails;
+import org.egov.infra.mdms.model.AuditDetails;
 import org.egov.infra.mdms.model.Mdms;
 import org.egov.infra.mdms.model.SchemaDefinition;
 import static org.egov.infra.mdms.errors.ErrorCodes.*;

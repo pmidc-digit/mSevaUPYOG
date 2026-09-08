@@ -3,6 +3,7 @@ package org.egov.search.utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -28,6 +29,15 @@ import org.springframework.util.CollectionUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
+import org.egov.search.model.ExternalService;
+import org.springframework.web.client.RestTemplate;
+import com.google.gson.Gson;
+import java.net.URI;
+import org.json.JSONObject;
+import org.springframework.http.HttpEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -42,6 +52,15 @@ public class SearchUtils {
 	
 	@Autowired
 	private ObjectMapper mapper;
+
+	@Autowired
+	private RestTemplate restTemplate;
+
+	@Value("${state.level.tenant.id:pb}")
+	private String stateLevelTenantId;
+
+	@Value("${egov.mdms.host:}")
+	private String mdmsHost;
 	
 	@Value("${operaters.list}")
 	private List<String> operators;
@@ -56,10 +75,18 @@ public class SearchUtils {
 	 * @return
 	 */
 	public String buildQuery(SearchRequest searchRequest, SearchParams searchParam, Query query, Map<String, Object> preparedStatementValues) {
+		return buildQuery(searchRequest, searchParam, query, null, preparedStatementValues);
+	}
+
+	public String buildQuery(SearchRequest searchRequest, SearchParams searchParam, Query query, Definition definition, Map<String, Object> preparedStatementValues) {
 		StringBuilder queryString = new StringBuilder();
 		StringBuilder where = new StringBuilder();
 		String finalQuery = null;
-		queryString.append(query.getBaseQuery());
+		String baseQuery = query.getBaseQuery();
+		if (definition != null && !CollectionUtils.isEmpty(definition.getExternalService())) {
+			baseQuery = populateExternalServiceValues(definition, baseQuery, searchRequest);
+		}
+		queryString.append(baseQuery);
 		if(!CollectionUtils.isEmpty(searchParam.getParams())) {
 			Object criteriaObj = searchRequest.getSearchCriteria();
 			String whereClause;
@@ -161,7 +188,7 @@ public class SearchUtils {
 
 	            if (paramValue == null) continue;
 
-	            if (i > 0) {
+	            if (whereClause.length() > 0) {
 	                whereClause.append(" " + condition + " ");
 	            }
 
@@ -169,6 +196,7 @@ public class SearchUtils {
 	            String namedParam = param.getName();
 	            if (matcher.find())
 	                namedParam = removeJSONOperatorsForNamedParam(namedParam);
+	            namedParam = namedParam.replaceAll("[^a-zA-Z0-9_]", "_") + "_" + i;
 
 	            String operator = null;
 	            if (paramValue instanceof net.minidev.json.JSONArray) {
@@ -226,12 +254,10 @@ public class SearchUtils {
 			
 			for (int i =0; i < paramsList.size(); i++) {
 				
-				
 				Params param = paramsList.get(i);
 				Object paramValue = null;
 			
 				try {
-
 					if (null != param.getIsConstant()) {
 						if (param.getIsConstant())
 							paramValue = param.getValue();
@@ -244,20 +270,22 @@ public class SearchUtils {
 						continue;
 
 				} catch (Exception e) {
-					log.error("Error while building where clause: " + e.getMessage());
+					log.debug("Optional param not found in request: " + e.getMessage());
 					continue;
 				}
 				
 				/**
 				 * Add and clause if necessary
 				 */
-				if (i > 0) {
+				if (whereClause.length() > 0) {
 					whereClause.append(" " + condition + " ");
 				}
 				Matcher matcher = p.matcher(param.getName());
 				String namedParam = param.getName();
-                                if(matcher.find())
-                                    namedParam = removeJSONOperatorsForNamedParam(namedParam);
+				if(matcher.find())
+					namedParam = removeJSONOperatorsForNamedParam(namedParam);
+				namedParam = namedParam.replaceAll("[^a-zA-Z0-9_]", "_") + "_" + i;
+
 				/**
 				 * Array operators
 				 */  
@@ -288,20 +316,21 @@ public class SearchUtils {
 					} else if (operator.equals("NE")) {
 						operator = "!=";
 					} else if (operator.equals("LIKE") || operator.equals("ILIKE")) {
-
 						paramValue=	 "%" + paramValue + "%";
-						//preparedStatementValues.put(param.getName(), "%" + paramValue + "%");
 					} else if (operator.equals("TOUPPERCASE")) {
-						
 						operator =  "=";
 						paramValue = ((String) paramValue).toUpperCase();
 					} else if (operator.equals("TOLOWERCASE")) {
-
 						operator =  "=";
 						paramValue = ((String) paramValue).toLowerCase();
 					}
 					
-					whereClause.append(param.getName()).append(" " + operator + " ").append(":" + namedParam);
+					if (param.getName().toLowerCase().endsWith("tenantid") && ("pb.punjab".equalsIgnoreCase(paramValue.toString()) || "pb".equalsIgnoreCase(paramValue.toString())) && "=".equals(operator)) {
+						whereClause.append(param.getName()).append(" LIKE :").append(namedParam);
+						paramValue = "%pb%";
+					} else {
+						whereClause.append(param.getName()).append(" " + operator + " ").append(":" + namedParam);
+					}
 				}
 
 				preparedStatementValues.put(namedParam, paramValue);
@@ -425,5 +454,197 @@ public class SearchUtils {
             namedParamRes.append(namedParamTemp, lastIndex, namedParamTemp.length());
         return namedParamRes.toString();
     }
+
+	public String populateExternalServiceValues(Definition definition, String baseQuery, SearchRequest searchRequest) {
+		String replacetableQuery = baseQuery;
+		if (definition.getExternalService() == null || definition.getExternalService().isEmpty()) {
+			return replacetableQuery;
+		}
+
+		String tenantId = extractTenantId(searchRequest);
+		String authToken = (searchRequest.getRequestInfo() != null) ? searchRequest.getRequestInfo().getAuthToken() : null;
+
+		for (ExternalService es : definition.getExternalService()) {
+			String requestInfoJson = "";
+			String finalJson = "";
+
+			if (es.getPostObject() != null) {
+				String jsonObjecttest = es.getPostObject();
+				Map<String, Object> map = new HashMap<>();
+				map.put("RequestInfo", getRInfo(authToken));
+				try {
+					Gson gson = new Gson();
+					requestInfoJson = gson.toJson(map);
+				} catch (Exception e1) {
+					log.error("Exception while converting gson to JSON: " + e1.getMessage());
+				}
+				requestInfoJson = StringUtils.chop(requestInfoJson);
+				finalJson = jsonObjecttest.replaceAll("\\$RequestInfo", Matcher.quoteReplacement(requestInfoJson));
+				finalJson = finalJson.concat("}");
+			}
+
+			String url;
+			try {
+				url = es.getApiURL();
+			} catch (Exception ex) {
+				throw new CustomException("YAML_CONFIG_ERROR", ex.getMessage());
+			}
+
+			if (StringUtils.isNotEmpty(mdmsHost)) {
+				if (url.contains("egov-mdms-service")) {
+					url = url.replaceFirst("https?://[^/]+", mdmsHost);
+				} else if (url.startsWith("/")) {
+					url = mdmsHost + url;
+				}
+			}
+
+			if (es.getStateData() && (!"default".equals(tenantId))) {
+				String stateid = (tenantId != null && tenantId.contains(".")) ? tenantId.split("\\.")[0] : (tenantId != null ? tenantId : stateLevelTenantId);
+				url = url.replaceAll("\\$tenantid", stateid);
+				if (StringUtils.isNotEmpty(finalJson)) {
+					finalJson = finalJson.replaceAll("\\$tenantid", stateid);
+				}
+			} else {
+				String currentTenant = (tenantId != null) ? tenantId : stateLevelTenantId;
+				url = url.replaceAll("\\$tenantId", currentTenant);
+				url = url.replaceAll("\\$tenantid", currentTenant);
+				if (StringUtils.isNotEmpty(finalJson)) {
+					finalJson = finalJson.replaceAll("\\$tenantid", currentTenant);
+				}
+			}
+
+			URI uri = URI.create(url);
+			log.info("MDMS URI: " + uri);
+			MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+			headers.add("Content-Type", "application/json");
+
+			ObjectMapper jsonMapper = (this.mapper != null) ? this.mapper : new ObjectMapper();
+			Object requestPayload = finalJson;
+			if (StringUtils.isNotEmpty(finalJson)) {
+				try {
+					requestPayload = jsonMapper.readTree(finalJson);
+				} catch (Exception e) {
+					log.error("Exception while parsing finalJson to JsonNode: ", e);
+					requestPayload = finalJson;
+				}
+			}
+
+			HttpEntity<?> request = new HttpEntity<>(requestPayload, headers);
+
+			String res = "";
+			try {
+				Object responseObj = null;
+				if (es.getPostObject() != null) {
+					responseObj = restTemplate.postForObject(uri, request, Object.class);
+				} else {
+					responseObj = restTemplate.postForObject(uri, getRInfo(authToken), Object.class);
+				}
+				if (responseObj != null) {
+					res = jsonMapper.writeValueAsString(responseObj);
+				}
+				log.info("MDMS Response received, length: " + (res != null ? res.length() : 0));
+			} catch (Exception e) {
+				log.error("Exception while fetching data from external service/MDMS: ", e);
+			}
+
+			String finalTupleString = null;
+			try {
+				if (StringUtils.isNotEmpty(res)) {
+					Object jsonObject = JsonPath.read(res, es.getEntity());
+					JSONArray mdmsArray = new JSONArray(jsonObject.toString());
+					StringBuilder finalString = new StringBuilder();
+
+					for (int i = 0; i < mdmsArray.length(); i++) {
+						JSONObject obj = mdmsArray.getJSONObject(i);
+						StringBuilder sb = new StringBuilder();
+						sb.append("(");
+						String[] jsonKeys = es.getKeyOrder().split(",");
+
+						for (int k = 0; k < jsonKeys.length; k++) {
+							String key = jsonKeys[k].trim();
+							String value = "";
+							if (obj.has(key)) {
+								value = String.valueOf(obj.get(key));
+							}
+							if (value.contains("'")) {
+								String formatted = value.replace("'", "''");
+								sb.append("'").append(formatted).append("'");
+							} else {
+								sb.append("'").append(value).append("'");
+							}
+							if (k != jsonKeys.length - 1) {
+								sb.append(",");
+							}
+						}
+						sb.append(")");
+						if (i != mdmsArray.length() - 1) {
+							sb.append(",");
+						}
+						finalString.append(sb);
+					}
+
+					if (mdmsArray.length() > 0) {
+						finalTupleString = finalString.toString();
+					}
+				}
+			} catch (Exception e) {
+				log.error("Exception while processing MDMS response for table " + es.getTableName(), e);
+			}
+
+			if (finalTupleString == null) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("(");
+				String[] keys = es.getKeyOrder().split(",");
+				for (int i = 0; i < keys.length; i++) {
+					if (i != keys.length - 1) {
+						sb.append("'',");
+					} else {
+						sb.append("''");
+					}
+				}
+				sb.append(")");
+				finalTupleString = sb.toString();
+			}
+
+			if (es.getTableName() != null) {
+				replacetableQuery = replacetableQuery.replace(es.getTableName(), finalTupleString);
+			}
+		}
+		return replacetableQuery;
+	}
+
+	private String extractTenantId(SearchRequest searchRequest) {
+		if (searchRequest == null) return stateLevelTenantId;
+		if (searchRequest.getSearchCriteria() instanceof Map) {
+			Map<?, ?> criteriaMap = (Map<?, ?>) searchRequest.getSearchCriteria();
+			if (criteriaMap.get("tenantId") != null) {
+				return criteriaMap.get("tenantId").toString();
+			}
+			if (criteriaMap.get("tenantid") != null) {
+				return criteriaMap.get("tenantid").toString();
+			}
+			if (criteriaMap.get("ulb") != null) {
+				return criteriaMap.get("ulb").toString();
+			}
+		}
+		if (searchRequest.getRequestInfo() != null && searchRequest.getRequestInfo().getUserInfo() != null) {
+			if (searchRequest.getRequestInfo().getUserInfo().getTenantId() != null) {
+				return searchRequest.getRequestInfo().getUserInfo().getTenantId();
+			}
+		}
+		return stateLevelTenantId;
+	}
+
+	public org.egov.common.contract.request.RequestInfo getRInfo(String authToken) {
+		org.egov.common.contract.request.RequestInfo ri = new org.egov.common.contract.request.RequestInfo();
+		ri.setAction("action");
+		ri.setAuthToken(authToken);
+		ri.setApiId("apiId");
+		ri.setVer("version");
+		ri.setDid("did");
+		ri.setKey("key");
+		ri.setMsgId("msgId");
+		return ri;
+	}
 
 }

@@ -1,15 +1,15 @@
 package org.egov.infra.mdms.service.enrichment;
 
-import org.egov.common.contract.models.AuditDetails;
+import org.egov.infra.mdms.model.AuditDetails;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.common.utils.AuditDetailsEnrichmentUtil;
-import org.egov.common.utils.UUIDEnrichmentUtil;
+//import org.egov.infra.mdms.utils.AuditDetailsEnrichmentUtil;
+import org.egov.infra.mdms.utils.UUIDEnrichmentUtil;
 import org.egov.infra.mdms.model.SchemaDefinition;
 import org.egov.infra.mdms.model.SchemaDefinitionRequest;
 import org.egov.tracer.model.CustomException;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
+//import java.util.UUID;
 
 @Component
 public class SchemaDefinitionEnricher {

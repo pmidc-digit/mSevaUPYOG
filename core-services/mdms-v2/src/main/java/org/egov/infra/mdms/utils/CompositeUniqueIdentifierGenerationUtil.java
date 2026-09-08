@@ -11,28 +11,59 @@ import static org.egov.infra.mdms.utils.MDMSConstants.*;
 
 public class CompositeUniqueIdentifierGenerationUtil {
 
-    private CompositeUniqueIdentifierGenerationUtil(){}
+    private CompositeUniqueIdentifierGenerationUtil() {
+    }
 
     /**
-     * This method creates composite unique identifier based on the attributes provided
+     * This method creates composite unique identifier based on the attributes
+     * provided
      * in x-unique-key param.
+     * 
      * @param schemaObject
      * @param mdmsRequest
      * @return
      */
     public static String getUniqueIdentifier(JSONObject schemaObject, MdmsRequest mdmsRequest) {
-        org.json.JSONArray uniqueFieldPaths = (org.json.JSONArray) schemaObject.get(X_UNIQUE_KEY);
+        if (schemaObject == null || !schemaObject.has(X_UNIQUE_KEY) || schemaObject.isNull(X_UNIQUE_KEY)) {
+            JsonNode data = mdmsRequest.getMdms().getData();
+            if (data != null && data.has("id") && !data.get("id").isNull()) {
+                return data.get("id").asText();
+            }
+            if (data != null && data.has("code") && !data.get("code").isNull()) {
+                return data.get("code").asText();
+            }
+            return mdmsRequest.getMdms().getId() != null ? mdmsRequest.getMdms().getId()
+                    : java.util.UUID.randomUUID().toString();
+        }
+
+        org.json.JSONArray uniqueFieldPaths = schemaObject.getJSONArray(X_UNIQUE_KEY);
 
         JsonNode data = mdmsRequest.getMdms().getData();
         StringBuilder compositeUniqueIdentifier = new StringBuilder();
 
         // Build composite unique identifier
         IntStream.range(0, uniqueFieldPaths.length()).forEach(i -> {
-            String uniqueIdentifierChunk = data.at(getJsonPointerExpressionFromDotSeparatedPath(uniqueFieldPaths.getString(i))).asText();
+            String fieldPath = uniqueFieldPaths.getString(i);
+            JsonNode chunkNode = data.at(getJsonPointerExpressionFromDotSeparatedPath(fieldPath));
+            String uniqueIdentifierChunk = chunkNode != null && !chunkNode.isMissingNode() && !chunkNode.isNull()
+                    ? chunkNode.asText()
+                    : "";
+
+            // Fallback to mdms.id if the unique field in x-unique is absent on data
+            if (StringUtils.isEmpty(uniqueIdentifierChunk) && mdmsRequest.getMdms() != null) {
+                if (mdmsRequest.getMdms().getId() != null) {
+                    uniqueIdentifierChunk = mdmsRequest.getMdms().getId();
+                } else if ("id".equalsIgnoreCase(fieldPath) || (uniqueFieldPaths.length() == 1 && "id".equalsIgnoreCase(uniqueFieldPaths.getString(0)))) {
+                    String generatedUuid = java.util.UUID.randomUUID().toString();
+                    mdmsRequest.getMdms().setId(generatedUuid);
+                    uniqueIdentifierChunk = generatedUuid;
+                }
+            }
 
             // Throw error in case value against unique identifier is empty
-            if(StringUtils.isEmpty(uniqueIdentifierChunk)) {
-                throw new CustomException("UNIQUE_IDENTIFIER_EMPTY_ERR", "Values defined against unique fields cannot be empty.");
+            if (StringUtils.isEmpty(uniqueIdentifierChunk)) {
+                throw new CustomException("UNIQUE_IDENTIFIER_EMPTY_ERR",
+                        "Values defined against unique fields cannot be empty.");
             }
 
             compositeUniqueIdentifier.append(uniqueIdentifierChunk);
@@ -46,6 +77,7 @@ public class CompositeUniqueIdentifierGenerationUtil {
 
     /**
      * This method creates a JSON pointer expression from dot separated path.
+     * 
      * @param dotSeparatedPath
      * @return
      */
@@ -55,6 +87,7 @@ public class CompositeUniqueIdentifierGenerationUtil {
 
     /**
      * This method creates JSON path expression from dot separated path.
+     * 
      * @param dotSeparatedPath
      * @return
      */

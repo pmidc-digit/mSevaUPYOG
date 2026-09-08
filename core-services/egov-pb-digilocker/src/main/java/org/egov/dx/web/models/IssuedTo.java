@@ -19,10 +19,10 @@ import lombok.NoArgsConstructor;
 @XStreamAlias("IssuedTo")
 
 public class IssuedTo {
-	
-//	@XStreamAlias("Persons")
-//    private List<Person> persons=new ArrayList<Person>();
-	
+
+	@XStreamAlias("Persons")
+    private Persons persons;
+
 	@XStreamAlias("Person")
 	private Person person;
 }

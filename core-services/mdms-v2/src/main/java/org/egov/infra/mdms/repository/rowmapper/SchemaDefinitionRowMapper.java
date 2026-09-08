@@ -2,7 +2,7 @@ package org.egov.infra.mdms.repository.rowmapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.egov.common.contract.models.AuditDetails;
+import org.egov.infra.mdms.model.AuditDetails;
 import org.egov.infra.mdms.model.SchemaDefinition;
 import org.egov.tracer.model.CustomException;
 import org.postgresql.util.PGobject;

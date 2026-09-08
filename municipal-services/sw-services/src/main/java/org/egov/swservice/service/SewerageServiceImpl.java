@@ -82,6 +82,9 @@ public class SewerageServiceImpl implements SewerageService {
 	
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private SWFuzzySearchService swFuzzySearchService;
 
 	//@Autowired
 	//EncryptionDecryptionUtil encryptionDecryptionUtil;
@@ -279,7 +282,12 @@ public class SewerageServiceImpl implements SewerageService {
 	 * @return List of matching sewerage connection
 	 */
 	public List<SewerageConnection> search(SearchCriteria criteria, RequestInfo requestInfo) {
-		List<SewerageConnection> sewerageConnectionList = getSewerageConnectionsList(criteria, requestInfo);
+		List<SewerageConnection> sewerageConnectionList;
+		if (criteria.getOwnerName() != null || criteria.getGuardianName() != null || criteria.getDoorNo() != null || criteria.getLocality() != null) {
+			sewerageConnectionList = swFuzzySearchService.getConnections(requestInfo, criteria);
+		} else {
+			sewerageConnectionList = getSewerageConnectionsList(criteria, requestInfo);
+		}
 		if(!StringUtils.isEmpty(criteria.getSearchType()) &&
 				criteria.getSearchType().equals(SWConstants.SEARCH_TYPE_CONNECTION)){
 			sewerageConnectionList = enrichmentService.filterConnections(sewerageConnectionList);

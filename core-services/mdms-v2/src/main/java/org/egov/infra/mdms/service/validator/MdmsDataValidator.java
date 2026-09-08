@@ -81,7 +81,8 @@ public class MdmsDataValidator {
             if (!e.getCausingExceptions().isEmpty()) {
                 for (ValidationException validationException : e.getCausingExceptions()) {
                     ++count;
-                    errors.put("INVALID_REQUEST_".concat(validationException.getKeyword().toUpperCase()).concat(count.toString()), validationException.getErrorMessage());
+                    String keyword = validationException.getKeyword() != null ? validationException.getKeyword().toUpperCase() : "SCHEMA_ERR";
+                    errors.put("INVALID_REQUEST_".concat(keyword).concat("_").concat(count.toString()), validationException.getErrorMessage());
                 }
             } else {
                 errors.put("INVALID_REQUEST", e.getErrorMessage());

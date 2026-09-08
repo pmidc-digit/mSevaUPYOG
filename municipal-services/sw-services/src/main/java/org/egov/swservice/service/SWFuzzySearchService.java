@@ -92,10 +92,10 @@ public class SWFuzzySearchService {
         List<SewerageConnection> orderedConnections = new LinkedList<>();
 
         if (!CollectionUtils.isEmpty(connections)) {
-            Map<String, SewerageConnection> idToConnectionMap = new LinkedHashMap<>();
+            Map<String, List<SewerageConnection>> idToConnectionMap = new LinkedHashMap<>();
 
-            // Map connections by their business identifier (Connection Number)
-            connections.forEach(conn -> idToConnectionMap.put(conn.getConnectionNo(), conn));
+            // Map connections by their business identifier (Connection Number) to a list of connection objects
+            connections.forEach(conn -> idToConnectionMap.computeIfAbsent(conn.getConnectionNo(), k -> new ArrayList<>()).add(conn));
 
             try {
                 // ES_DATA_PATH should be defined in SWConstants (usually "$.hits.hits.._source.Data")
@@ -105,7 +105,7 @@ public class SWFuzzySearchService {
                     for (Map<String, Object> map : data) {
                         String connNo = JsonPath.read(map, "$.connectionNo");
                         if (idToConnectionMap.containsKey(connNo)) {
-                            orderedConnections.add(idToConnectionMap.get(connNo));
+                            orderedConnections.addAll(idToConnectionMap.get(connNo));
                         }
                     }
                 }
@@ -157,18 +157,19 @@ public class SWFuzzySearchService {
             throw new CustomException("EG_SW_SEARCH_TENANTID_MANDATORY", "TenantId is mandatory for all search operations.");
         }
 
-        if (criteria.getOwnerName() != null && criteria.getLocality() == null) {
-            throw new CustomException("EG_SW_SEARCH_LOCALITY_MANDATORY", "Locality is mandatory when searching by Owner Name.");
+        if ((criteria.getOwnerName() != null || criteria.getGuardianName() != null) && criteria.getLocality() == null) {
+            throw new CustomException("EG_SW_SEARCH_LOCALITY_MANDATORY", "Locality is mandatory when searching by Owner Name or Guardian Name.");
         }
 
         if (CollectionUtils.isEmpty(criteria.getConnectionNumber()) && 
             criteria.getOldConnectionNumber() == null && 
             criteria.getOwnerName() == null && 
+            criteria.getOwnerName() == null && 
             criteria.getDoorNo() == null &&
             criteria.getLocality() == null
             ) {
             
-            throw new CustomException("INVALID_SEARCH_CRITERIA", "Please provide at least one search parameter for Sewerage connection search.");
+            throw new CustomException("INVALID_SEARCH_CRITERIA", "Please provide at least one search parameter (Connection No, Name, Guardian Name, or Door No) for Sewerage connection search.");
         }
     }
 }

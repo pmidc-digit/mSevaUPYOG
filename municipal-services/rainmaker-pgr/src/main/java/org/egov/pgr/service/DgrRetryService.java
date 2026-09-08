@@ -14,6 +14,7 @@ import org.egov.pgr.consumer.DgrIntegration;
 import org.egov.pgr.contract.ServiceReqSearchCriteria;
 import org.egov.pgr.contract.ServiceRequest;
 import org.egov.pgr.contract.ServiceResponse;
+import org.egov.pgr.model.AuditDetails;
 import org.egov.pgr.model.user.UserResponse;
 import org.egov.pgr.repository.DgrRetryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -175,6 +176,18 @@ public class DgrRetryService {
                         entryResult.put("serviceRequestId", serviceRequestId);
                         entryResult.put("tenantId", tenantId);
 
+                        // Hard-code rule: Never push complaints created before 7th Jan 2026
+                        AuditDetails auditDetails = serviceReqRequest.getServices().get(0).getAuditDetails();
+                        if (auditDetails != null && auditDetails.getCreatedTime() != null
+                                && auditDetails.getCreatedTime() < org.egov.pgr.utils.PGRConstants.DGR_CUTOFF_DATE_EPOCH) {
+                            log.info("Complaint [{}] createdTime [{}] is before 7th Jan 2026 cutoff. Skipping.",
+                                    serviceRequestId, auditDetails.getCreatedTime());
+                            entryResult.put("status", "SKIPPED_BEFORE_CUTOFF_DATE");
+                            results.add(entryResult);
+                            processed++;
+                            continue;
+                        }
+
                         // Use caller's RequestInfo if provided, otherwise the one in the record
                         RequestInfo effectiveReqInfo = requestInfo != null ? requestInfo : serviceReqRequest.getRequestInfo();
                         if (effectiveReqInfo != null) {
@@ -310,9 +323,42 @@ public class DgrRetryService {
             try {
                 log.info("Retrying serviceRequestId={}", serviceRequestId);
 
-                // Fetch the service request details using plain search
+                // 1. Lookup DB summary to get tenantId, phone, and check if already has DGR ID
+                Map<String, Object> dbSummary = dgrRetryRepository.findServiceRequestSummary(serviceRequestId);
+                String dbTenantId = (dbSummary != null && dbSummary.get("tenantid") != null)
+                        ? String.valueOf(dbSummary.get("tenantid")).trim() : "pb";
+                String dbPhone = (dbSummary != null && dbSummary.get("phone") != null)
+                        ? String.valueOf(dbSummary.get("phone")).trim() : null;
+                String dbDgrId = (dbSummary != null && dbSummary.get("dgr_grievance_id") != null)
+                        ? String.valueOf(dbSummary.get("dgr_grievance_id")).trim() : null;
+
+                if (dbDgrId != null && !dbDgrId.isEmpty()) {
+                    log.info("Service request [{}] already has dgr_grievance_id={}. Skipping.", serviceRequestId, dbDgrId);
+                    entryResult.put("tenantId", dbTenantId);
+                    entryResult.put("status", "SKIPPED_ALREADY_HAS_DGR_ID");
+                    entryResult.put("dgrGrievanceId", dbDgrId);
+                    results.add(entryResult);
+                    continue;
+                }
+
+                // Hard-code rule: Never push complaints created before 7th Jan 2026
+                Object createdTimeObj = (dbSummary != null) ? dbSummary.get("createdtime") : null;
+                if (createdTimeObj instanceof Number) {
+                    long createdTime = ((Number) createdTimeObj).longValue();
+                    if (createdTime < org.egov.pgr.utils.PGRConstants.DGR_CUTOFF_DATE_EPOCH) {
+                        log.info("Service request [{}] createdTime [{}] is before 7th Jan 2026 cutoff. Skipping.",
+                                serviceRequestId, createdTime);
+                        entryResult.put("tenantId", dbTenantId);
+                        entryResult.put("status", "SKIPPED_BEFORE_CUTOFF_DATE");
+                        results.add(entryResult);
+                        continue;
+                    }
+                }
+
+                // 2. Fetch the full service request details using plain search with mandatory tenantId
                 ServiceReqSearchCriteria criteria = ServiceReqSearchCriteria.builder()
                         .serviceRequestId(Collections.singletonList(serviceRequestId))
+                        .tenantId(dbTenantId)
                         .active(true)
                         .build();
 
@@ -324,7 +370,7 @@ public class DgrRetryService {
                 if (serviceResponse == null
                         || serviceResponse.getServices() == null
                         || serviceResponse.getServices().isEmpty()) {
-                    log.warn("Service request [{}] not found in DB.", serviceRequestId);
+                    log.warn("Service request [{}] not found in DB via search.", serviceRequestId);
                     entryResult.put("status", "FAILED");
                     entryResult.put("error", "Service request not found in DB");
                     failedCount++;
@@ -348,7 +394,7 @@ public class DgrRetryService {
                     serviceReqRequest.setActionInfo(serviceResponse.getActionHistory().get(0).getActions());
                 }
 
-                // Check if already has DGR ID
+                // Check if already has DGR ID in full service object
                 String existingDgrId = serviceResponse.getServices().get(0).getDgrPgrId();
                 if (existingDgrId != null && !existingDgrId.trim().isEmpty()) {
                     log.info("Service request [{}] already has dgr_grievance_id={}. Skipping.", serviceRequestId, existingDgrId);
@@ -372,7 +418,11 @@ public class DgrRetryService {
                 }
 
                 // Check if already exists in DGR before creating
-                String phone = serviceResponse.getServices().get(0).getPhone();
+                String phone = (dbPhone != null && !dbPhone.isEmpty()) ? dbPhone : serviceResponse.getServices().get(0).getPhone();
+                if ((phone == null || phone.trim().isEmpty()) && userResponse != null
+                        && userResponse.getUser() != null && !userResponse.getUser().isEmpty()) {
+                    phone = userResponse.getUser().get(0).getMobileNumber();
+                }
                 if ((phone == null || phone.trim().isEmpty()) && userResponse != null
                         && userResponse.getUser() != null && !userResponse.getUser().isEmpty()) {
                     phone = userResponse.getUser().get(0).getMobileNumber();
@@ -539,6 +589,20 @@ public class DgrRetryService {
             entryResult.put("serviceRequestId", serviceRequestId);
             entryResult.put("tenantId", recordTenantId);
 
+            // Hard-code rule: Never push complaints created before 7th Jan 2026
+            Object createdTimeObj = row.get("createdtime");
+            if (createdTimeObj instanceof Number) {
+                long createdTime = ((Number) createdTimeObj).longValue();
+                if (createdTime < org.egov.pgr.utils.PGRConstants.DGR_CUTOFF_DATE_EPOCH) {
+                    log.info("Pending record [{}] createdTime [{}] is before 7th Jan 2026 cutoff. Skipping.",
+                            serviceRequestId, createdTime);
+                    entryResult.put("status", "SKIPPED_BEFORE_CUTOFF_DATE");
+                    skippedCount++;
+                    results.add(entryResult);
+                    continue;
+                }
+            }
+
             try {
                 // ============================================================
                 // STEP A: Search DGR first using ReferenceId + Mobile
@@ -554,6 +618,7 @@ public class DgrRetryService {
                     // Fetch full service request to build the update payload
                     ServiceReqSearchCriteria criteria = ServiceReqSearchCriteria.builder()
                             .serviceRequestId(Collections.singletonList(serviceRequestId))
+                            .tenantId(recordTenantId != null && !recordTenantId.trim().isEmpty() ? recordTenantId : "pb")
                             .active(true)
                             .build();
 
@@ -589,6 +654,7 @@ public class DgrRetryService {
                 // B1. Fetch full service request from DB via search
                 ServiceReqSearchCriteria criteria = ServiceReqSearchCriteria.builder()
                         .serviceRequestId(Collections.singletonList(serviceRequestId))
+                        .tenantId(recordTenantId != null && !recordTenantId.trim().isEmpty() ? recordTenantId : "pb")
                         .active(true)
                         .build();
 

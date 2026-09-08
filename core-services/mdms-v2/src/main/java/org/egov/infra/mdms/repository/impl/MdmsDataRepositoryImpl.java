@@ -73,6 +73,7 @@ public class MdmsDataRepositoryImpl implements MdmsDataRepository {
         List<Object> preparedStmtList = new ArrayList<>();
         String query = mdmsDataQueryBuilderV2.getMdmsDataSearchQuery(mdmsCriteriaV2, preparedStmtList);
         log.info(query);
+        log.info(preparedStmtList.toString());
         return jdbcTemplate.query(query, preparedStmtList.toArray(), mdmsDataRowMapperV2);
     }
 

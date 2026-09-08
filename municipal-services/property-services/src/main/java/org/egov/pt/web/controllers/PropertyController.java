@@ -33,7 +33,7 @@ import org.egov.pt.web.contracts.PropertyResponse;
 import org.egov.pt.web.contracts.RequestInfoWrapper;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jooq.JooqAutoConfiguration.DslContextConfiguration;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

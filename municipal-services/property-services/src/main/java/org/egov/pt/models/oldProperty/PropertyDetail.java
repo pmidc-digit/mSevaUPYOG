@@ -13,7 +13,7 @@ import jakarta.validation.constraints.Size;
 
 import org.egov.pt.models.Institution;
 import org.egov.pt.models.OwnerInfo;
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

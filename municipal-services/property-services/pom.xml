@@ -40,6 +40,10 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-restclient</artifactId>
+</dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
 		</dependency>
@@ -72,11 +76,21 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
+		<!--<dependency>
 			<groupId>io.swagger</groupId>
 			<artifactId>swagger-core</artifactId>
 			<version>1.5.18</version>
+		</dependency>-->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>3.0.1</version>
 		</dependency>
+		<dependency>
+    <groupId>com.google.guava</groupId>
+    <artifactId>guava</artifactId>
+     <version>33.5.0-jre</version>
+</dependency>
 		<dependency>
 			<groupId>org.egov.services</groupId>
 			<artifactId>tracer</artifactId>

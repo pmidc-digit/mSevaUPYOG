@@ -226,7 +226,10 @@ const NOCSpecificationDetails = (_props) => {
       }
 
       if (fileStoreIds.length > 0) {
-        const fileFetchResponse = await Digit.UploadServices.Filefetch(fileStoreIds, searchTenantId || tenantId);
+        let fileFetchResponse = await Digit.UploadServices.Filefetch(fileStoreIds, searchTenantId || tenantId);
+        if (!fileFetchResponse?.data?.fileStoreIds?.length) {
+          fileFetchResponse = await Digit.UploadServices.Filefetch(fileStoreIds, stateId);
+        }
         const pdfFiles = fileFetchResponse?.data || {};
 
         const mappedDocs = fileStoreIds.map((fid) => {

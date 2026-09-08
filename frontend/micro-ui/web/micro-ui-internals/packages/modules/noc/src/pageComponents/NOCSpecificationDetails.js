@@ -157,7 +157,7 @@ const NOCSpecificationDetails = (_props) => {
       return;
     }
 
-    const nocRegex = /^PB-NOC-SAS-[A-Za-z]+-\d+$/i;
+    const nocRegex = /^(PB-NOC-.*-\d+|PB\/NOC\/.*\/[0-9A-Za-z]+)$/i;
     if (!nocRegex.test(numToSearch)) {
       setRetrievedNocError("");
       setRetrievedNoc(null);
@@ -173,7 +173,7 @@ const NOCSpecificationDetails = (_props) => {
     setRetrievedNocError("");
     try {
       let searchTenantId = tenantId;
-      const parts = numToSearch.split("-");
+      const parts = numToSearch.split(/[-/]/);
       if (parts.length >= 4 && parts[3]) {
         searchTenantId = `pb.${parts[3].toLowerCase()}`;
       }
@@ -591,7 +591,7 @@ const NOCSpecificationDetails = (_props) => {
                         validate: (value) => {
                           if (isFinalNoc && isOnline) {
                             if (!value) return t("REQUIRED_FIELD");
-                            const nocRegex = /^PB-NOC-.*-\d+$/i;
+                            const nocRegex = /^(PB-NOC-.*-\d+|PB\/NOC\/.*\/[0-9A-Za-z]+)$/i;
                             if (!nocRegex.test(value.trim())) {
                               return "Invalid NOC Number format.";
                             }

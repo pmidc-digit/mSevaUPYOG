@@ -204,16 +204,16 @@ const InboxTopBar = ({
             <span className={`new-inbox-tab-count ${activeTab === "ALL" ? "new-inbox-tab-count-active" : ""}`}>{totalCount || 0}</span>
           </button>
         )}
-        {showMigrationTabs && (
-          <>
-            <button type="button" className={`new-inbox-tab ${!isMigrated ? "new-inbox-tab-active" : ""}`} onClick={() => onMigrationChange?.(false)}>
-              {t("OBPAS")}
-            </button>
-            <button type="button" className={`new-inbox-tab ${isMigrated ? "new-inbox-tab-active" : ""}`} onClick={() => onMigrationChange?.(true)}>
-              {t("eNaksha")}
-            </button>
-          </>
-        )}
+        {/* {showMigrationTabs && ( */}
+        <>
+          <button type="button" className={`new-inbox-tab ${!isMigrated ? "new-inbox-tab-active" : ""}`} onClick={() => onMigrationChange?.(false)}>
+            {t("OBPAS")}
+          </button>
+          <button type="button" className={`new-inbox-tab ${isMigrated ? "new-inbox-tab-active" : ""}`} onClick={() => onMigrationChange?.(true)}>
+            {t("eNaksha")}
+          </button>
+        </>
+        {/* )} */}
         {(statuses || []).map((status) => {
           const businessService = status?.businessService || status?.businessservice;
           const businessServiceLabel = status?.businessServiceLabel || businessServiceLabelMap?.[businessService] || businessService;

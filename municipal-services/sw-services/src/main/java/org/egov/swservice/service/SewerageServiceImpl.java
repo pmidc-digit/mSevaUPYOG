@@ -287,7 +287,10 @@ public class SewerageServiceImpl implements SewerageService {
 	 */
 	public List<SewerageConnection> search(SearchCriteria criteria, RequestInfo requestInfo) {
 		List<SewerageConnection> sewerageConnectionList;
-		if (criteria.getOwnerName() != null || criteria.getGuardianName() != null || criteria.getDoorNo() != null || criteria.getLocality() != null) {
+		if ((criteria.getOwnerName() != null && !criteria.getOwnerName().trim().isEmpty()) ||
+                (criteria.getGuardianName() != null && !criteria.getGuardianName().trim().isEmpty()) ||
+                (criteria.getDoorNo() != null && !criteria.getDoorNo().trim().isEmpty()) ||
+                (criteria.getLocality() != null && !criteria.getLocality().trim().isEmpty())) {
 			sewerageConnectionList = swFuzzySearchService.getConnections(requestInfo, criteria);
 		} else {
 			sewerageConnectionList = getSewerageConnectionsList(criteria, requestInfo);

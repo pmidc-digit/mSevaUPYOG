@@ -143,6 +143,7 @@ public class ccAvanueGateway implements Gateway {
         pairList.add(new KeyValuePair("redirect_url",  transaction.getCallbackUrl()));
         pairList.add(new KeyValuePair("cancel_url",  transaction.getCallbackUrl()));
         pairList.add(new KeyValuePair("language", "EN"));
+        pairList.add(new KeyValuePair("integration_type","iframe_normal"));
 
         pairList.add(new KeyValuePair("billing_name", transaction.getUser().getName()));
         pairList.add(new KeyValuePair("billing_address",transaction.getUser().getTenantId()));
@@ -244,7 +245,7 @@ public class ccAvanueGateway implements Gateway {
 	         AesUtil aesUtilenc=new AesUtil(MERCHANT_WORKING_KEY);
 
 	         String txnId = currentStatus.getTxnId(); 
-	         String[] parts = txnId.split("_"); // Split the transaction ID by "_"
+	         String[] parts = txnId.split("-"); // Split the transaction ID by "-"
 	         String datePart = parts[2] + "_" + parts[3] + "_" + parts[4]; 
 
 	         // Convert to DD-MM-YYYY format

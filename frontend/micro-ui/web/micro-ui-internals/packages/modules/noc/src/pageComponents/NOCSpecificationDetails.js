@@ -226,7 +226,8 @@ const NOCSpecificationDetails = (_props) => {
       }
 
       if (fileStoreIds.length > 0) {
-        let fileFetchResponse = await Digit.UploadServices.Filefetch(fileStoreIds, searchTenantId || tenantId);
+        const fileTenant = nocData?.tenantId || nocData?.nocDetails?.tenantId || tenantId;
+        let fileFetchResponse = await Digit.UploadServices.Filefetch(fileStoreIds, fileTenant);
         if (!fileFetchResponse?.data?.fileStoreIds?.length) {
           fileFetchResponse = await Digit.UploadServices.Filefetch(fileStoreIds, stateId);
         }

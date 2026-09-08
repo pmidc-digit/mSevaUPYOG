@@ -23,11 +23,10 @@ import net.minidev.json.JSONArray;
 /**
  * Service for managing the MDMS in-memory cache (tenantMap).
  *
- * Responsibilities: 1. Load all active MDMS data from the database at
- * application startup and merge it into the in-memory cache.
+ * Responsibilities:
+ * 1. Load all active MDMS data from the database at application startup and merge it into the in-memory cache.
  *
- * Cache is loaded once at startup. Real-time Kafka-based cache updates have
- * been intentionally removed. Cache refresh requires a pod restart.
+ * Cache is loaded once at startup via database loading only. Cache refresh requires a Application restart.
  */
 @Service
 @Slf4j

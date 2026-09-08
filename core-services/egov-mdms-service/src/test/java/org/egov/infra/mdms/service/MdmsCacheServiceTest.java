@@ -2,7 +2,6 @@ package org.egov.infra.mdms.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -114,12 +113,12 @@ public class MdmsCacheServiceTest {
         mdmsCacheService.loadAndMergeDbData();
 
         Map<String, Map<String, Map<String, JSONArray>>> tenantMap = MDMSApplicationRunnerImpl.getTenantMap();
-        
+
         // Assert that tenant.tenants from file is STILL INTACT (not present in DB)
         assertEquals(true, tenantMap.get(tenantId).containsKey("tenant"));
         assertEquals(1, tenantMap.get(tenantId).get("tenant").get("tenants").size());
 
-        // Assert that BusinessService master array is replaced by authoritative DB records for BusinessService
+        // Assert that BusinessService master array is replaced by authoritative DB records
         JSONArray updatedBusinessServices = tenantMap.get(tenantId).get("BillingService").get("BusinessService");
         assertEquals(1, updatedBusinessServices.size());
 
@@ -278,8 +277,6 @@ public class MdmsCacheServiceTest {
         assertEquals("pb.itbarnala", only.get("code"));
         assertEquals("Improvement Trust Barnala", only.get("name"));
     }
-
-
 
     private JSONArray getOrCreateMasterArray(String tenantId, String moduleName, String masterName) {
         Map<String, Map<String, Map<String, JSONArray>>> tenantMap = MDMSApplicationRunnerImpl.getTenantMap();

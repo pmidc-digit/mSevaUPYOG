@@ -6,6 +6,12 @@ export const shouldHideBackButton = (config = []) => {
   return config.filter((key) => window.location.href.includes(key.screenPath)).length > 0 ? true : false;
 };
 
+export const getCode = (val) => {
+  if (!val) return "";
+  const str = typeof val === "string" ? val : (val?.code || val?.name || "");
+  return str.toUpperCase().replace(/\s+/g, "_");
+};
+
 /* methid to get date from epoch */
 export const convertEpochToDate = (dateEpoch) => {
   // Returning null in else case because new Date(null) returns initial date from calender

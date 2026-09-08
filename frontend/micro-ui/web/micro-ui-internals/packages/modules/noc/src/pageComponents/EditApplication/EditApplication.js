@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation, useParams } from "react-router-dom";
-import { decodeURIComponentCustom, formatDateForInput } from "../../utils";
+import { decodeURIComponentCustom, formatDateForInput, getCode } from "../../utils";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper"
 import { stepperConfig } from "../../config/Create/stepperConfig";
 import { SET_NOCNewApplication_STEP, RESET_NOC_NEW_APPLICATION_FORM, 
@@ -118,8 +118,12 @@ const EditApplication = () => {
   const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
   const [cities, setcitiesopetions] = useState(Digit.Hooks.noc.useTenants());
   const options = [
-    {code: "YES",i18nKey: "YES",}, {code: "NO",i18nKey: "NO",},
+    { code: "YES", i18nKey: "YES", }, { code: "NO", i18nKey: "NO", },
   ];
+  const existingNocTypeOptions = [
+          { code: "OFFLINE", name: "Offline" },
+          { code: "ONLINE", name: "Online" },
+        ];
   const { data: fetchedLocalities, isLoading: isBoundaryLoading } = Digit.Hooks.useBoundaryLocalities(tenantId, "revenue", {}, t);
 
   const ulbListOptions = ulbList?.map((city) => ({
@@ -227,29 +231,34 @@ const ready =
           vasikaNumber: nocObject?.vasikaNumber,
           vasikaDate: formatDateForInput(nocObject?.vasikaDate),
 
-          zone: zoneOptions?.find((obj) => obj.name === siteDetails?.zone?.name || obj.name === siteDetails?.zone),
-          localityAreaType:
-            fetchedLocalities?.find((loc) => loc.name === siteDetails?.localityAreaType?.name) || siteDetails?.localityAreaType || null,
-          specificationBuildingCategory: buildingCategory?.find(
-            (obj) => obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory
-          ),
-          specificationNocType: nocType?.find(
-            (obj) => obj.name === siteDetails?.specificationNocType?.name || obj.name === siteDetails?.specificationNocType
-          ),
-          specificationRestrictedArea: options?.find(
-            (obj) => obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea
-          ),
-          specificationIsSiteUnderMasterPlan: options?.find(
-            (obj) =>
-              obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan
-          ),
-        };
-      
-        dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", updatedApplicantDetails));
-        dispatch(UPDATE_NOCNewApplication_FORM("siteDetails", updatedSiteDetails));
-        dispatch(UPDATE_NOCNewApplication_FORM("documents", formattedDocuments));
-        dispatch(UPDATE_NOCNewApplication_FORM("apiData", applicationDetails));
-        
+        zone: zoneOptions?.find((obj) => obj.name === siteDetails?.zone?.name || obj.name === siteDetails?.zone),
+        localityAreaType:
+          fetchedLocalities?.find((loc) => loc.name === siteDetails?.localityAreaType?.name) || siteDetails?.localityAreaType || null,
+        specificationBuildingCategory: buildingCategory?.find(
+          (obj) => obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory
+        ),
+        specificationNocType: nocType?.find(
+          (obj) => getCode(obj) === getCode(siteDetails?.specificationNocType)
+        ) || null,
+        specificationRestrictedArea: options?.find(
+          (obj) => obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea
+        ),
+        specificationIsSiteUnderMasterPlan: options?.find(
+          (obj) =>
+            obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan
+        ),
+        existingNocType: existingNocTypeOptions?.find((obj) => getCode(obj) === getCode(siteDetails?.existingNocType)) || null,
+        existingNocNumber: siteDetails?.existingNocNumber || "",
+        existingNocDate: siteDetails?.existingNocDate || "",
+        existingNocDocument: siteDetails?.existingNocDocument || null,
+        isNocValidated: siteDetails?.isNocValidated !== undefined ? siteDetails.isNocValidated : (getCode(siteDetails?.existingNocType) === "ONLINE" && siteDetails?.existingNocNumber ? true : false),
+      };
+
+      dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", updatedApplicantDetails));
+      dispatch(UPDATE_NOCNewApplication_FORM("siteDetails", updatedSiteDetails));
+      dispatch(UPDATE_NOCNewApplication_FORM("documents", formattedDocuments));
+      dispatch(UPDATE_NOCNewApplication_FORM("apiData", applicationDetails));
+
     }
   }, [ready]);
 

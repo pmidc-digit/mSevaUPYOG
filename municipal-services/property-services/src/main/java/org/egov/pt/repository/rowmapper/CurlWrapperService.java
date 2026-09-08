@@ -166,7 +166,7 @@ public class CurlWrapperService {
         } catch (RestClientResponseException e) {
             // Return meaningful error with response body
             throw new IllegalStateException(
-                    String.format("Auth API error: HTTP %d, body=%s", e.getRawStatusCode(), e.getResponseBodyAsString()),
+                    String.format("Auth API error: HTTP %d, body=%s", e.getStatusCode(), e.getResponseBodyAsString()),
                     e
             );
         } catch (Exception e) {

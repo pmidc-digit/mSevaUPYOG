@@ -27,8 +27,8 @@ public class RestClientConfiguration {
 
         return builder
                 .requestFactory(() -> new BufferingClientHttpRequestFactory(factory))
-                .setConnectTimeout(Duration.ofMillis(connectTimeoutMs))
-                .setReadTimeout(Duration.ofMillis(readTimeoutMs))
+                .connectTimeout(Duration.ofMillis(connectTimeoutMs))
+                .readTimeout(Duration.ofMillis(readTimeoutMs))
                 .build();
     }
 }

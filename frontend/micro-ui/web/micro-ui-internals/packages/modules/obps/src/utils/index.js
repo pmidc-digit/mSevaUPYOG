@@ -1354,8 +1354,7 @@ export const businessServiceListLayout = (isCode = false) => {
 //Convert date from YYYY-MM-DD to DD/MM/YYYY
 export const formatDate = (dateString) => {
   if (!dateString) return "";
-  const [year, month, day] = dateString.split("-");
-  return `${day}/${month}/${year}`;
+  return Digit.DateUtils.ConvertEpochToDate(!isNaN(dateString) ? Number(dateString) : dateString);
 };
 
 export const formatDateForInput = (dateString) => {

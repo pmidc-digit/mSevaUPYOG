@@ -207,7 +207,7 @@ public class WSCalculationValidator {
 					criteria.getTenantId(),
 					meterConnectionRequest.getMeterReading().getLastReadingDate(),
 					meterConnectionRequest.getMeterReading().getCurrentReadingDate(),
-					meterConnectionRequest.getMeterReading().getConnectionNo(),null);
+					meterConnectionRequest.getMeterReading().getConnectionNo());
  
 			if (isAnythingPaid != null && !isAnythingPaid.isEmpty()) {
 				for (Map<String, Object> row : isAnythingPaid) {

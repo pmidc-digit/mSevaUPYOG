@@ -56,6 +56,7 @@ import org.egov.collection.service.MigrationService;
 import org.egov.collection.service.PaymentService;
 import org.egov.collection.service.PaymentWorkflowService;
 import org.egov.collection.web.contract.PaymentWorkflowRequest;
+import org.egov.collection.web.contract.factory.RequestInfoUpdateWrapper;
 import org.egov.collection.web.contract.factory.RequestInfoWrapper;
 import org.egov.collection.web.contract.factory.ResponseInfoFactory;
 import org.egov.common.contract.request.RequestInfo;
@@ -204,18 +205,16 @@ public class PaymentController {
     
     @RequestMapping(value = "/_update", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<PaymentResponse> update(@RequestBody @Valid PaymentSearchCriteria paymentSearchCriteria,
-    		  @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper) {
-    	log.info("PaymentSearchCriteria: " + paymentSearchCriteria);
+    public ResponseEntity<String> update(@RequestBody @Valid final RequestInfoUpdateWrapper requestInfoUpdateWrapper) {
     	
-    	List<Payment> payment=paymentService.plainSearch(paymentSearchCriteria);
+    	String tenantId = requestInfoUpdateWrapper.getTenantId();
+    	String consumerNo = requestInfoUpdateWrapper.getConsumerNo();
+    	String recieptNo = requestInfoUpdateWrapper.getRecieptNo();
+    	
+    	String paymentId = paymentService.paymentSearchForUpdate(tenantId, consumerNo, recieptNo);
+        String paymentUpdated = paymentService.updatePaymentForFilestore(paymentId);
 
-        Payment paymentUpdated = paymentService.updatePaymentForFilestore(payment.get(0));
-        final RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
-
-        List<Payment> updatedPayments=new ArrayList<Payment>();
-        updatedPayments.add(paymentUpdated);
-        return getSuccessResponse(updatedPayments, requestInfo);
+        return new ResponseEntity<>("Successfully updated file Store Id to null with payment id "+ paymentUpdated, HttpStatus.OK);
 
     }
     

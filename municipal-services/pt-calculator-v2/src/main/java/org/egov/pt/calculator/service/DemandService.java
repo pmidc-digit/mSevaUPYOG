@@ -474,7 +474,7 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 		log.debug("The old tax amount in string : " + oldTaxAmt.toPlainString());
 		log.debug("The new tax amount in string : " + newTax.toPlainString());
 		
-		if (oldTaxAmt.compareTo(newTax) > 0) {
+		if (oldTaxAmt.compareTo(newTax) > 0 && oldTaxAmt.subtract(newTax).abs().compareTo(BigDecimal.ONE) >= 0) {
 			boolean isDepreciationAllowed = utils.isAssessmentDepreciationAllowed(demand,new RequestInfoWrapper(requestInfo));
 			if (!isDepreciationAllowed)
 				carryForward = BigDecimal.valueOf(-1);

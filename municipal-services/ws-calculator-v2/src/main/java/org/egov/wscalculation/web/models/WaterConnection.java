@@ -2,18 +2,19 @@ package org.egov.wscalculation.web.models;
 
 import java.util.Objects;
 
-import jakarta.validation.constraints.Size;
+import javax.validation.constraints.Size;
 
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * WaterConnection
  */
 @Validated
-@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-12-02T14:30:33.286+05:30[Asia/Kolkata]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-12-02T14:30:33.286+05:30[Asia/Kolkata]")
  public class WaterConnection extends Connection {
 
 	
@@ -50,6 +51,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 	 * 
 	 * @return waterSource
 	 **/
+	@ApiModelProperty(required = true, value = "It is a namespaced master data, defined in MDMS")
 	@Size(min = 2, max = 64)
 	public String getWaterSource() {
 		return waterSource;
@@ -69,6 +71,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 	 * 
 	 * @return meterId
 	 **/
+	@ApiModelProperty(value = "Unique id of the meter.")
+
 	@Size(min = 2, max = 64)
 	public String getMeterId() {
 		return meterId;
@@ -88,6 +92,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 	 * 
 	 * @return meterInstallationDate
 	 **/
+	@ApiModelProperty(value = "The date of meter installation date.")
+
 	public Long getMeterInstallationDate() {
 		return meterInstallationDate;
 	}
@@ -106,6 +112,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 	 * 
 	 * @return noOfTaps
 	 **/
+	@ApiModelProperty(value = "No of taps for non-metered calculation attribute.")
+
 	public Integer getNoOfTaps() {
 		return noOfTaps;
 	}
@@ -119,6 +127,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 	 * 
 	 * @return pipeSize
 	 **/
+	@ApiModelProperty(value = "No of proposed taps no is citizen input")
+
 	public Integer getProposedTaps() {
 		return proposedTaps;
 	}
@@ -137,6 +147,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 	 * 
 	 * @return pipeSize
 	 **/
+	@ApiModelProperty(value = "No of proposed Pipe size is citizen input")
+
 	public Double getProposedPipeSize() {
 		return proposedPipeSize;
 	}
@@ -160,6 +172,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 	 * 
 	 * @return pipeSize
 	 **/
+	@ApiModelProperty(value = "Pipe size for non-metered calulation attribute.")
+
 	public Double getPipeSize() {
 		return pipeSize;
 	}

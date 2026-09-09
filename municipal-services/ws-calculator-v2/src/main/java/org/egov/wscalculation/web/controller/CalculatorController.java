@@ -3,7 +3,7 @@ package org.egov.wscalculation.web.controller;
 
 import java.util.*;
 
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 
 import lombok.extern.slf4j.Slf4j;
 

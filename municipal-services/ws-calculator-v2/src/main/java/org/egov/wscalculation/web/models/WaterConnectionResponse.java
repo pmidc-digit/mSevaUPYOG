@@ -2,7 +2,8 @@ package org.egov.wscalculation.web.models;
 
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,14 +15,14 @@ import java.util.List;
 
 import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.validation.annotation.Validated;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 
 /**
  * Contains the ResponseHeader and the created/updated property
  */
-@Schema(description = "Contains the ResponseHeader and the created/updated property")
+@ApiModel(description = "Contains the ResponseHeader and the created/updated property")
 @Validated
-@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-10-24T10:29:25.253+05:30[Asia/Kolkata]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-10-24T10:29:25.253+05:30[Asia/Kolkata]")
 
 @Getter
 @NoArgsConstructor
@@ -46,6 +47,8 @@ public class WaterConnectionResponse {
 	 * 
 	 * @return responseInfo
 	 **/
+	@ApiModelProperty(value = "")
+
 	@Valid
 	public ResponseInfo getResponseInfo() {
 		return responseInfo;
@@ -73,6 +76,7 @@ public class WaterConnectionResponse {
 	 * 
 	 * @return waterConnection
 	 **/
+	@ApiModelProperty(value = "")
 	@Valid
 	public List<WaterConnection> getWaterConnection() {
 		return waterConnection;

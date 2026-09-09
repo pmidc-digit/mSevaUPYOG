@@ -3,7 +3,7 @@ package org.egov.wscalculation.web.models;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 
 import org.egov.common.contract.response.ResponseInfo;
 
@@ -24,7 +24,8 @@ public class MeterReadingResponses {
     @JsonProperty("ResponseInfo")
     private ResponseInfo responseInfo = null;
     
+
     @JsonProperty("meterReadingslist")
     @Valid
-    private List<MeterReadingList> meterReadingslist = new ArrayList<>(); 
+    private List<Object> meterReadingslist = new ArrayList<>();  // ← changed from List<MeterReadingList> to List<Object>
 }

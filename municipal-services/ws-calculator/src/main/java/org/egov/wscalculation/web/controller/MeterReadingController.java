@@ -2,7 +2,7 @@ package org.egov.wscalculation.web.controller;
 
 import java.util.List;
 
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 
 import org.egov.wscalculation.web.models.BulkMeterReading;
 import org.egov.wscalculation.web.models.BulkMeterReadingResponse;

@@ -1,6 +1,6 @@
 package org.egov.wscalculation.web.models;
 
-import jakarta.validation.constraints.Size;
+import javax.validation.constraints.Size;
 
 import org.springframework.validation.annotation.Validated;
 

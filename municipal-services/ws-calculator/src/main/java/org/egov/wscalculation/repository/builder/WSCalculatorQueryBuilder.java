@@ -786,7 +786,7 @@ StringBuilder query = new StringBuilder(connectionNoListQueryCancel);
 	
 	
 	
-	public String getCollection( String tenantId,   Long taxperiodfrom,Long taxPeriodTo,String consumerCode,
+	public String getCollection( String tenantId,   Long taxperiodfrom,Long taxPeriodTo,String consumerCode,String businessService,
 			List<Object> preparedStatement) {
 StringBuilder query = new StringBuilder(getDemandId);
 		
@@ -806,12 +806,22 @@ StringBuilder query = new StringBuilder(getDemandId);
 		preparedStatement.add(consumerCode);
 		
 		
-		query.append("AND d.businessservice = 'WS' ");
+		addClauseIfRequired(preparedStatement, query);
+        query.append(" d.businessservice = ? ");
+        if (businessService == null || businessService.isEmpty() || "WS".equalsIgnoreCase(businessService)) {
+            preparedStatement.add("WS");
+        } else {
+            preparedStatement.add("SW");
+        }
 		
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" dd.collectionamount = '0' ");
 		
 		addClauseIfRequired(preparedStatement, query);
+        query.append(" d.status = ? ");
+        preparedStatement.add("ACTIVE");
+        
+        addClauseIfRequired(preparedStatement, query);
 		query.append(" d.ispaymentcompleted = 'false' ");
 				
 		//Add taxperiodfrom

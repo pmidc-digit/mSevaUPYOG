@@ -21,11 +21,13 @@ import org.egov.echallan.util.CommonUtils;
 import org.egov.echallan.util.ResponseInfoFactory;
 import org.egov.echallan.validator.ChallanValidator;
 import org.egov.echallan.web.models.user.UserDetailResponse;
+import org.egov.echallan.web.models.workflow.ProcessInstance;
 import org.egov.echallan.workflow.WorkflowIntegrator;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -205,6 +207,7 @@ public class ChallanService {
 						request.getRequestInfo().getUserInfo().getRoles().get(0).getCode());
 					
 					String nextStatus = workflowIntegrator.transition(
+					ProcessInstance processInstance = workflowIntegrator.transitionProcessInstance(
 						request.getRequestInfo(),
 						challan,
 						challan.getWorkflow().getAction()
@@ -214,6 +217,22 @@ public class ChallanService {
 					if (StringUtils.isNotBlank(nextStatus)) {
 						challan.setChallanStatus(nextStatus);
 						log.info("Workflow set status to: {}", nextStatus);
+					if (processInstance != null) {
+						challan.setWorkflow(processInstance);
+						if (processInstance.getState() != null) {
+							String nextStatus = workflowIntegrator.mapToBookingStatus(
+								processInstance.getAction(),
+								processInstance.getState().getApplicationStatus(),
+								processInstance.getState().getState()
+							);
+							if (StringUtils.isNotBlank(nextStatus)) {
+								challan.setChallanStatus(nextStatus);
+								log.info("Workflow set status to: {}", nextStatus);
+							} else {
+								log.warn("Workflow didn't return status. Setting to CHALLAN_GENERATED");
+								challan.setChallanStatus(ChallanStatusEnum.CHALLAN_GENERATED.toString());
+							}
+						}
 					} else {
 						// If workflow didn't return status, set to CHALLAN_GENERATED
 						log.warn("Workflow didn't return status. Setting to CHALLAN_GENERATED");
@@ -297,8 +316,55 @@ public class ChallanService {
 	        if(challans.isEmpty())
 	            return Collections.emptyList();
 	        challans = enrichmentService.enrichChallanSearch(challans,criteria,requestInfo);
+	        enrichWorkflowForChallans(challans, requestInfo);
 	        return challans;
 	    }
+
+	/**
+	 * Enriches workflow ProcessInstance for challans from egov-workflow-v2
+	 */
+	private void enrichWorkflowForChallans(List<Challan> challans, RequestInfo requestInfo) {
+		boolean workflowEnabled = config.getIsExternalWorkFlowEnabled() != null
+				? config.getIsExternalWorkFlowEnabled() : true;
+		if (!workflowEnabled || workflowIntegrator == null || CollectionUtils.isEmpty(challans)) {
+			return;
+		}
+
+		try {
+			Map<String, List<Challan>> tenantToChallanMap = challans.stream()
+					.filter(c -> StringUtils.isNotBlank(c.getTenantId()) && StringUtils.isNotBlank(c.getChallanNo()))
+					.collect(Collectors.groupingBy(Challan::getTenantId));
+
+			for (Map.Entry<String, List<Challan>> entry : tenantToChallanMap.entrySet()) {
+				String tenantId = entry.getKey();
+				List<Challan> tenantChallans = entry.getValue();
+				List<String> businessIds = tenantChallans.stream()
+						.map(Challan::getChallanNo)
+						.collect(Collectors.toList());
+
+				List<ProcessInstance> processInstances = workflowIntegrator.getProcessInstances(
+						requestInfo, tenantId, businessIds);
+
+				if (!CollectionUtils.isEmpty(processInstances)) {
+					Map<String, ProcessInstance> businessIdToPiMap = new HashMap<>();
+					for (ProcessInstance pi : processInstances) {
+						if (StringUtils.isNotBlank(pi.getBusinessId())) {
+							businessIdToPiMap.put(pi.getBusinessId(), pi);
+						}
+					}
+
+					for (Challan challan : tenantChallans) {
+						ProcessInstance pi = businessIdToPiMap.get(challan.getChallanNo());
+						if (pi != null) {
+							challan.setWorkflow(pi);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Failed to enrich workflow for challans in search: {}", e.getMessage(), e);
+		}
+	}
 
 	/**
 	 * gets the total count for a search request
@@ -424,8 +490,23 @@ public class ChallanService {
 
 				 String action = request.getChallan().getWorkflow().getAction();
 				 String nextStatus = workflowIntegrator.transition(request.getRequestInfo(),
+				 ProcessInstance processInstance = workflowIntegrator.transitionProcessInstance(
+						 request.getRequestInfo(),
 						 request.getChallan(),
 						 action);
+
+				 if (processInstance != null) {
+					 request.getChallan().setWorkflow(processInstance);
+					 if (processInstance.getState() != null) {
+						 String nextStatus = workflowIntegrator.mapToBookingStatus(
+								 processInstance.getAction(),
+								 processInstance.getState().getApplicationStatus(),
+								 processInstance.getState().getState());
+						 if (StringUtils.isNotBlank(nextStatus)) {
+							 request.getChallan().setChallanStatus(nextStatus);
+						 }
+					 }
+				 }
 				 
 				 // Handle SUBMIT action - create demand
 				 if(action.equalsIgnoreCase(ChallanConstants.SUBMIT)){

@@ -20,6 +20,7 @@ import org.egov.echallan.web.models.uservevents.EventRequest;
 import org.egov.echallan.web.models.uservevents.Recepient;
 import org.egov.echallan.web.models.uservevents.Source;
 import org.egov.echallan.web.models.workflow.Workflow;
+import org.egov.echallan.web.models.workflow.ProcessInstance;
 import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
@@ -362,6 +363,7 @@ public class NotificationService {
 	     * Determines the email subject based on the Workflow Action.
 	     */
 	    private String getSubjectBasedOnWorkflow(Challan challan, Workflow workflow) {
+	    private String getSubjectBasedOnWorkflow(Challan challan, ProcessInstance workflow) {
 	        String defaultSubject = "Municipal Challan Notice - " + challan.getChallanNo();
 
 	        // Null safety check: If workflow or action is missing, return the default subject

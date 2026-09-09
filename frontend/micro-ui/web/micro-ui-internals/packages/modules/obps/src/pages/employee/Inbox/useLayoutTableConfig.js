@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { encryptId } from "../../../utils";
 
 const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
   const { t } = useTranslation();
@@ -57,6 +58,12 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
   const tableColumnConfig = useMemo(() => {
     return [
       {
+        Header: t("Sr No."),
+        accessor: "serialNumber",
+        Cell: ({ row }) => GetCell((Number(formState?.tableForm?.offset) || 0) + row.index + 1),
+        disableSortBy: true,
+      },
+      {
         Header: t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL"),
         accessor: "applicationId",
         disableSortBy: true,
@@ -67,8 +74,10 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
               to={
                 // /digit-ui/citizen/obps/layout/application-overview/${row.original?.Applications?.applicationNo}
                 window.location.href.includes("/citizen")
-                  ? `${parentRoute}/layout/application-overview/${row.original?.applicationId}`
-                  : `${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`
+                  ? `${parentRoute}/layout/application-overview/${encryptId(row.original?.applicationId)}`
+                  : row.original?.tenantId
+                  ? `${parentRoute}/layout/inbox/application-overview/${encryptId(row.original?.applicationId)}?tenantId=${row.original?.tenantId}`
+                  : `${parentRoute}/layout/inbox/application-overview/${encryptId(row.original?.applicationId)}`
               }
               // to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`}
               className="ndc-new-app-link"
@@ -80,7 +89,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         ),
       },
       {
-        Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
+        Header: t("CS_APPLICATION_DETAILS_CREATION_DATE"),
         accessor: "date",
         Cell: ({ row }) => {
           const dateValue = row.original?.date || row.original?.createdTime;
@@ -123,14 +132,17 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
       },
       {
         Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
-        accessor: "status",
-        Cell: ({ row }) => {
-          const statusValue = t(row.original?.status) || t(row.original?.applicationStatus) || "-";
-          const statusClass = getStatusClass(statusValue);
+        accessor: (row) => {
+          const prefix = `WF_EMPLOYEE_LAYOUT_STATUS_${row?.businessService.toUpperCase()}`;
+          return t(`${prefix}_${row?.status}`) || t(`${prefix}_${row?.applicationStatus}`) || "-";
+        },
+        id: "status",
+        Cell: ({ cell }) => {
+          const statusClass = getStatusClass(cell.value);
           return (
             <span className={`ndc-new-status-pill ${statusClass}`}>
               {renderStatusIcon(statusClass)}
-              <span>{String(statusValue || "-").toLowerCase()}</span>
+              <span>{cell.value}</span>
             </span>
           );
         },
@@ -146,7 +158,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         disableSortBy: true,
       },
       {
-        Header: t("TIME_TAKEN"),
+        Header: t("Time Taken in Days"),
         accessor: (row) => row?.sla,
         disableSortBy: true,
       },

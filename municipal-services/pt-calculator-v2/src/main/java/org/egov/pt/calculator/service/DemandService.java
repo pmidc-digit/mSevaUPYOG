@@ -316,7 +316,7 @@ public class DemandService {
 
 				applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap,taxPeriods);
 
-				JSONArray otsArray = (JSONArray) timeBasedExmeptionMasterMap.get("Ots");
+				JSONArray otsArray = (JSONArray) timeBasedExmeptionMasterMap.get(CalculatorConstants.OTS_MASTER);
 				processOtsForDemand(demand, otsArray);
 
 				roundOffDecimalForDemand(demand, requestInfoWrapper);

@@ -114,6 +114,8 @@ public class CalculatorConstants {
 
 	public static final String INTEREST_MASTER = "Interest";
 
+	public static final String OTS_MASTER = "Ots";
+
 	public static final List<String> PROPERTY_BASED_EXEMPTION_MASTERS = Collections.unmodifiableList(Arrays.asList(
 			USAGE_MAJOR_MASTER, USAGE_MINOR_MASTER, USAGE_SUB_MINOR_MASTER, USAGE_DETAIL_MASTER, OWNER_TYPE_MASTER));
 	

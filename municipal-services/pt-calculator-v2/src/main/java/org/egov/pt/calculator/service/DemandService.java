@@ -865,10 +865,16 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 	/**
 	 * Processes One Time Settlement (OTS) scheme evaluation and waivers for a demand.
 	 *
-	 * <p>If any non-OTS demand detail already has a positive collection amount (i.e. partial
-	 * or full payment has been made), OTS recalculation is skipped entirely. The apportion
-	 * service has already settled the OTS waveoff heads during payment distribution, so the
-	 * demand accounting is consistent and must not be disturbed.</p>
+	 * <p>Three cases are handled:
+	 * <ul>
+	 *   <li><b>No payment:</b> Apply OTS waveoffs normally if applicable, or reset if expired.</li>
+	 *   <li><b>Partial payment:</b> Revoke OTS waveoffs by setting their taxAmount to zero.
+	 *       The apportion service had settled the OTS heads (collectionAmount = -76, -493) during
+	 *       payment distribution. Setting taxAmount=0 creates outstanding on those heads so the
+	 *       citizen owes: remaining tax balance + revoked waveoff amounts (e.g. 87+76+493=656).</li>
+	 *   <li><b>Full payment:</b> All non-OTS heads are settled; skip without touching OTS heads.</li>
+	 * </ul>
+	 * </p>
 	 */
 	private void processOtsForDemand(Demand demand, JSONArray otsArray) {
 		if (CollectionUtils.isEmpty(otsArray)) {
@@ -876,18 +882,39 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 			return;
 		}
 
-		// Skip OTS recalculation if any payment has already been collected on this demand.
-		// The apportion service settles OTS waveoff heads (collectionAmount = taxAmount) as
-		// part of payment distribution. Re-running otsEnabled() after a partial payment would
-		// recompute waveoff amounts on the remaining unpaid balance and corrupt the accounting.
+		// Sum outstanding balance on non-OTS heads (taxAmount - collectionAmount)
+		BigDecimal nonOtsOutstanding = demand.getDemandDetails().stream()
+				.filter(dd -> !CalculatorConstants.OTS_PENALTY_WAVEOFF.equals(dd.getTaxHeadMasterCode())
+						&& !CalculatorConstants.OTS_INTEREST_WAVEOFF.equals(dd.getTaxHeadMasterCode())
+						&& !CalculatorConstants.OTS_PENALTY_WAVEOFF_REMOVAL.equals(dd.getTaxHeadMasterCode())
+						&& !CalculatorConstants.OTS_INTEREST_WAVEOFF_REMOVAL.equals(dd.getTaxHeadMasterCode()))
+				.map(dd -> {
+					BigDecimal tax = dd.getTaxAmount() != null ? dd.getTaxAmount() : BigDecimal.ZERO;
+					BigDecimal col = dd.getCollectionAmount() != null ? dd.getCollectionAmount() : BigDecimal.ZERO;
+					return tax.subtract(col);
+				})
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
 		boolean hasPaymentCollected = demand.getDemandDetails().stream()
 				.filter(dd -> !CalculatorConstants.OTS_PENALTY_WAVEOFF.equals(dd.getTaxHeadMasterCode())
-						&& !CalculatorConstants.OTS_INTEREST_WAVEOFF.equals(dd.getTaxHeadMasterCode()))
+						&& !CalculatorConstants.OTS_INTEREST_WAVEOFF.equals(dd.getTaxHeadMasterCode())
+						&& !CalculatorConstants.OTS_PENALTY_WAVEOFF_REMOVAL.equals(dd.getTaxHeadMasterCode())
+						&& !CalculatorConstants.OTS_INTEREST_WAVEOFF_REMOVAL.equals(dd.getTaxHeadMasterCode()))
 				.anyMatch(dd -> dd.getCollectionAmount() != null
 						&& dd.getCollectionAmount().compareTo(BigDecimal.ZERO) > 0);
 
 		if (hasPaymentCollected) {
-			log.info("Payment already collected on demand: {}. Skipping OTS recalculation to preserve accounting integrity.", demand.getId());
+			if (nonOtsOutstanding.compareTo(BigDecimal.ZERO) > 0) {
+				// PARTIAL payment: non-OTS balance still remains (e.g. PT_TAX has 87 outstanding).
+				// Revoke OTS waveoffs → citizen must pay back the waived amounts too.
+				log.info("Partial payment detected on demand: {}. Non-OTS outstanding: {}. Revoking OTS waveoffs.",
+						demand.getId(), nonOtsOutstanding);
+				revokeOtsWaveoffs(demand);
+			} else {
+				// FULL payment: all non-OTS heads fully settled. OTS heads are correctly
+				// settled by apportion (collectionAmount = taxAmount). No action needed.
+				log.info("Full payment detected on demand: {}. OTS waveoffs already settled by apportion.", demand.getId());
+			}
 			return;
 		}
 
@@ -918,6 +945,76 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 
 		if (!otsApplied) {
 			resetExpiredOtsWaveoffs(demand, demandFY);
+		}
+	}
+
+	/**
+	 * Revokes OTS waveoffs after a partial payment by adding positive REMOVAL demand details.
+	 *
+	 * <p>Instead of mutating the original waveoff entries (which destroys audit trail),
+	 * this method adds new demand details with positive amounts that cancel out the waveoffs:
+	 * <pre>
+	 *   OTS_PENALTY_WAVEOFF:          taxAmt=-76,  col=-76  → untouched
+	 *   OTS_PENALTY_WAVEOFF_REMOVAL:  taxAmt=+76,  col=0    → NEW (outstanding=+76)
+	 * </pre>
+	 * Net effect: waveoff is nullified, citizen owes the original penalty/interest amounts.</p>
+	 *
+	 * <p>This method is idempotent: if REMOVAL heads already exist, their amounts are updated
+	 * rather than adding duplicates.</p>
+	 */
+	private void revokeOtsWaveoffs(Demand demand) {
+		List<DemandDetail> details = demand.getDemandDetails();
+		String demandId = demand.getId();
+		String tenantId = demand.getTenantId();
+
+		BigDecimal penaltyWaveoffAmt = BigDecimal.ZERO;
+		BigDecimal interestWaveoffAmt = BigDecimal.ZERO;
+		DemandDetail existingPenaltyRemoval = null;
+		DemandDetail existingInterestRemoval = null;
+
+		for (DemandDetail detail : details) {
+			String taxHead = detail.getTaxHeadMasterCode();
+			if (CalculatorConstants.OTS_PENALTY_WAVEOFF.equals(taxHead) && detail.getTaxAmount() != null) {
+				penaltyWaveoffAmt = penaltyWaveoffAmt.add(detail.getTaxAmount()); // negative value
+			} else if (CalculatorConstants.OTS_INTEREST_WAVEOFF.equals(taxHead) && detail.getTaxAmount() != null) {
+				interestWaveoffAmt = interestWaveoffAmt.add(detail.getTaxAmount()); // negative value
+			} else if (CalculatorConstants.OTS_PENALTY_WAVEOFF_REMOVAL.equals(taxHead)) {
+				existingPenaltyRemoval = detail;
+			} else if (CalculatorConstants.OTS_INTEREST_WAVEOFF_REMOVAL.equals(taxHead)) {
+				existingInterestRemoval = detail;
+			}
+		}
+
+		// Add/update PENALTY REMOVAL head (positive amount to cancel the negative waveoff)
+		if (penaltyWaveoffAmt.compareTo(BigDecimal.ZERO) < 0) {
+			BigDecimal removalAmt = penaltyWaveoffAmt.abs();
+			if (existingPenaltyRemoval != null) {
+				existingPenaltyRemoval.setTaxAmount(removalAmt);
+			} else {
+				details.add(DemandDetail.builder()
+						.taxAmount(removalAmt)
+						.taxHeadMasterCode(CalculatorConstants.OTS_PENALTY_WAVEOFF_REMOVAL)
+						.demandId(demandId)
+						.tenantId(tenantId)
+						.build());
+			}
+			log.info("Partial payment → Added OTS_PENALTY_WAVEOFF_REMOVAL: +{} for demand: {}", removalAmt, demandId);
+		}
+
+		// Add/update INTEREST REMOVAL head (positive amount to cancel the negative waveoff)
+		if (interestWaveoffAmt.compareTo(BigDecimal.ZERO) < 0) {
+			BigDecimal removalAmt = interestWaveoffAmt.abs();
+			if (existingInterestRemoval != null) {
+				existingInterestRemoval.setTaxAmount(removalAmt);
+			} else {
+				details.add(DemandDetail.builder()
+						.taxAmount(removalAmt)
+						.taxHeadMasterCode(CalculatorConstants.OTS_INTEREST_WAVEOFF_REMOVAL)
+						.demandId(demandId)
+						.tenantId(tenantId)
+						.build());
+			}
+			log.info("Partial payment → Added OTS_INTEREST_WAVEOFF_REMOVAL: +{} for demand: {}", removalAmt, demandId);
 		}
 	}
 

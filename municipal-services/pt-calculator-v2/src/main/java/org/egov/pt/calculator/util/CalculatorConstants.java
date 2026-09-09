@@ -41,6 +41,10 @@ public class CalculatorConstants {
 
 	public static final String OTS_INTEREST_WAVEOFF = "OTS_INTEREST_WAVEOFF";
 
+	public static final String OTS_PENALTY_WAVEOFF_REMOVAL = "OTS_PENALTY_WAVEOFF_REMOVAL";
+
+	public static final String OTS_INTEREST_WAVEOFF_REMOVAL = "OTS_INTEREST_WAVEOFF_REMOVAL";
+
 	public static final String PT_ADVANCE_CARRYFORWARD = "PT_ADVANCE_CARRYFORWARD";
 
 	public static final String PT_FIRE_CESS = "PT_FIRE_CESS";

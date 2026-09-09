@@ -157,6 +157,14 @@ public class BPAInboxFilterService {
         searchCriteria.put(TENANT_ID_PARAM, criteria.getTenantId());
         searchCriteria.put(BUSINESS_SERVICE_PARAM, processCriteria.getBusinessService());
 
+        // Migration filter: default to false (non-migrated) unless isMigrated is true
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("isMigrated")
+                && Boolean.parseBoolean(String.valueOf(moduleSearchCriteria.get("isMigrated")))) {
+            searchCriteria.put("isMigrationTrue", "true");
+        } else {
+            searchCriteria.put("isMigrationTrue", "false");
+        }
+
         // Accommodating module search criteria in searcher request
         if (moduleSearchCriteria != null && (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM) || userRoles.contains(CITIZEN))
                 && !CollectionUtils.isEmpty(userUUIDs)) {

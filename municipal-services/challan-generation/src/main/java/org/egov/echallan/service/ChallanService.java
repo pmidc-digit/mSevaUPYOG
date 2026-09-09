@@ -206,7 +206,6 @@ public class ChallanService {
 						challan.getWorkflow().getAction(),
 						request.getRequestInfo().getUserInfo().getRoles().get(0).getCode());
 					
-					String nextStatus = workflowIntegrator.transition(
 					ProcessInstance processInstance = workflowIntegrator.transitionProcessInstance(
 						request.getRequestInfo(),
 						challan,
@@ -214,9 +213,6 @@ public class ChallanService {
 					);
 					
 					// Update status based on workflow response
-					if (StringUtils.isNotBlank(nextStatus)) {
-						challan.setChallanStatus(nextStatus);
-						log.info("Workflow set status to: {}", nextStatus);
 					if (processInstance != null) {
 						challan.setWorkflow(processInstance);
 						if (processInstance.getState() != null) {
@@ -489,18 +485,16 @@ public class ChallanService {
 					 request.getChallan().getWorkflow().getAction())) {
 
 				 String action = request.getChallan().getWorkflow().getAction();
-				 String nextStatus = workflowIntegrator.transition(request.getRequestInfo(),
-				 ProcessInstance processInstance = workflowIntegrator.transitionProcessInstance(
-						 request.getRequestInfo(),
-						 request.getChallan(),
-						 action);
+			 String nextStatus = null;
+			 ProcessInstance processInstance = workflowIntegrator.transitionProcessInstance(
+					 request.getRequestInfo(),
+					 request.getChallan(),
+					 action);
 
-				 if (processInstance != null) {
-					 request.getChallan().setWorkflow(processInstance);
-					 if (processInstance.getState() != null) {
-						 String nextStatus = workflowIntegrator.mapToBookingStatus(
-								 processInstance.getAction(),
-								 processInstance.getState().getApplicationStatus(),
+			 if (processInstance != null) {
+				 request.getChallan().setWorkflow(processInstance);
+				 if (processInstance.getState() != null) {
+					 nextStatus = workflowIntegrator.mapToBookingStatus(							 processInstance.getAction(),								 processInstance.getState().getApplicationStatus(),
 								 processInstance.getState().getState());
 						 if (StringUtils.isNotBlank(nextStatus)) {
 							 request.getChallan().setChallanStatus(nextStatus);

@@ -102,30 +102,12 @@ public class WorkflowIntegrator {
       ProcessInstanceResponse responseBody = response.getBody();
       if (response.getStatusCode() == HttpStatus.OK && responseBody != null 
           && responseBody.getProcessInstances() != null
-          && !responseBody.getProcessInstances().isEmpty()
-          && responseBody.getProcessInstances().get(0).getState() != null) {
-        // Extract workflow returned statuses
-        String applicationStatus = responseBody.getProcessInstances().get(0).getState().getApplicationStatus();
-        String state = responseBody.getProcessInstances().get(0).getState().getState();
-
-        log.info("Workflow response - Action: {}, ApplicationStatus: {}, State: {}", 
-                 action, applicationStatus, state);
-
-        // Dynamically map workflow response to challan status
-        String mappedStatus = mapToBookingStatus(action, applicationStatus, state);
-        if (mappedStatus != null) {
-          log.info("Mapped workflow status to: {}", mappedStatus);
-          return mappedStatus;
           && !responseBody.getProcessInstances().isEmpty()) {
         ProcessInstance returnedPi = responseBody.getProcessInstances().get(0);
         if (returnedPi.getState() != null) {
           log.info("Workflow response - Action: {}, ApplicationStatus: {}, State: {}", 
                    action, returnedPi.getState().getApplicationStatus(), returnedPi.getState().getState());
         }
-
-        log.warn("No status mapping found for workflow response - Action: {}, ApplicationStatus: {}, State: {}", 
-                 action, applicationStatus, state);
-        return null;
         return returnedPi;
       }
     } catch (Exception ex) {
@@ -165,7 +147,6 @@ public class WorkflowIntegrator {
   }
 
   // Use workflow status directly - no enum validation or mapping needed
-  private String mapToBookingStatus(String action, String wfApplicationStatus, String wfState) {
   public String mapToBookingStatus(String action, String wfApplicationStatus, String wfState) {
     // Priority 1: Use workflow application status directly (if not null/empty)
     if (wfApplicationStatus != null && !wfApplicationStatus.trim().isEmpty()) {

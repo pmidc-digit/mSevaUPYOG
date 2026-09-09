@@ -23,7 +23,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.egov.echallan.web.models.workflow.Workflow;
 import org.egov.echallan.web.models.workflow.ProcessInstance;
 import org.hibernate.validator.constraints.SafeHtml;
 
@@ -107,7 +106,6 @@ public class Challan {
   private String filestoreid = null;
 
   @JsonProperty("workflow")
-  private Workflow workflow;
   private ProcessInstance workflow;
 
   @JsonProperty("auditDetails")

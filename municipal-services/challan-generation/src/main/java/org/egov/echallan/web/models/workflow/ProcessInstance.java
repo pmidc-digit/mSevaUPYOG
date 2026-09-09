@@ -29,7 +29,6 @@ public class ProcessInstance {
   @JsonProperty("action")
   private String action;
 
-  @JsonProperty("moduleN ame")
   @JsonProperty("moduleName")
   private String moduleName;
 

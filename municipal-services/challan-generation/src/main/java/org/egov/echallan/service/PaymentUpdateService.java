@@ -16,7 +16,6 @@ import org.egov.echallan.util.ChallanConstants;
 import org.egov.echallan.util.CommonUtils;
 import org.egov.echallan.web.models.collection.PaymentDetail;
 import org.egov.echallan.web.models.collection.PaymentRequest;
-import org.egov.echallan.web.models.workflow.Workflow;
 import org.egov.echallan.web.models.workflow.ProcessInstance;
 import org.egov.echallan.workflow.WorkflowIntegrator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,19 +71,14 @@ public class PaymentUpdateService {
 				    AuditDetails auditDetails = commUtils.getAuditDetails(uuid, true);
 					for(Challan challan: challans){
 
-						Workflow workflow=new Workflow();
-						workflow.setAction(ChallanConstants.ACTION_PAY);
 						ProcessInstance workflow = ProcessInstance.builder().action(ChallanConstants.ACTION_PAY).build();
 						challan.setWorkflow(workflow);
 
-						String nextStatus = workflowIntegrator.transition(requestInfo,
 						ProcessInstance returnedPi = workflowIntegrator.transitionProcessInstance(requestInfo,
 								challan,
 								challan.getWorkflow().getAction());
 
 						challan.setApplicationStatus(StatusEnum.PAID);
-						String status = String.valueOf(ChallanStatusEnum.CHALLAN_GENERATED);
-						challan.setChallanStatus(nextStatus);
 						if (returnedPi != null) {
 							challan.setWorkflow(returnedPi);
 							if (returnedPi.getState() != null) {

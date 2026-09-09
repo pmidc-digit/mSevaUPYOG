@@ -40,7 +40,7 @@ export const quickServiceModules = {
     },
     {
       moduleCode: "OBPS",
-      moduleName: "Online Building Plan",
+      moduleName: "Building Plan",
       bgColor: "#00cccd",
       labelKey: "",
       icon: "",
@@ -256,7 +256,7 @@ export const quickServiceModules = {
     },
     {
       moduleCode: "NOC",
-      moduleName: "No Objection Certificate",
+      moduleName: "Plot Regularization (NOC)",
       bgColor: "#3e4b5b",
       labelKey: "",
       icon: "",
@@ -268,7 +268,7 @@ export const quickServiceModules = {
     },
     {
       moduleCode: "CLU",
-      moduleName: "Change of Land Use",
+      moduleName: "Change of Land Use (CLU)",
       bgColor: "#3e4b5b",
       labelKey: "",
       icon: "",

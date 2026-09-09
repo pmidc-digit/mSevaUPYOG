@@ -32,6 +32,7 @@ import org.egov.pt.util.PropertyUtil;
 import org.egov.pt.web.contracts.PropertyRequest;
 import org.egov.pt.repository.ServiceRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -41,6 +42,7 @@ public class EnrichmentService {
 
 
     @Autowired
+    @Lazy
     private PropertyUtil propertyutil;
 
     @Autowired

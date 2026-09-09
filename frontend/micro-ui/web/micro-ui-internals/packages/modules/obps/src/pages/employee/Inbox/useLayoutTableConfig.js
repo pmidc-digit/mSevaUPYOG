@@ -58,6 +58,12 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
   const tableColumnConfig = useMemo(() => {
     return [
       {
+        Header: t("Sr No."),
+        accessor: "serialNumber",
+        Cell: ({ row }) => GetCell((Number(formState?.tableForm?.offset) || 0) + row.index + 1),
+        disableSortBy: true,
+      },
+      {
         Header: t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL"),
         accessor: "applicationId",
         disableSortBy: true,
@@ -152,7 +158,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         disableSortBy: true,
       },
       {
-        Header: t("TIME_TAKEN"),
+        Header: t("Time Taken in Days"),
         accessor: (row) => row?.sla,
         disableSortBy: true,
       },

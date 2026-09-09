@@ -12,6 +12,12 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
   const tableColumnConfig = useMemo(() => {
     return [
       {
+        Header: t("Sr No."),
+        accessor: "serialNumber",
+        Cell: ({ row }) => GetCell((Number(formState?.tableForm?.offset) || 0) + row.index + 1),
+        disableSortBy: true,
+      },
+      {
         Header: t("BPA_APPLICATION_NUMBER_LABEL"),
         accessor: "applicationId",
         disableSortBy: true,
@@ -30,8 +36,8 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
                 to={
                   window.location.href.includes("/citizen")
                     ? `${parentRoute}/clu/application-overview/${encryptID}`
-                    : tenantId === "pb.punjab"
-                    ? `${parentRoute}/clu/application-overview/${encryptID}/${row?.original?.tenantId}`
+                    : row?.original?.tenantId
+                    ? `${parentRoute}/clu/application-overview/${encryptID}?tenantId=${row?.original?.tenantId}`
                     : `${parentRoute}/clu/application-overview/${encryptID}`
                 }
               >
@@ -98,7 +104,7 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
         disableSortBy: true,
       },
       {
-        Header: t("TIME_TAKEN"),
+        Header: t("Time Taken in Days"),
         accessor: (row) => row?.sla,
         disableSortBy: true,
       },

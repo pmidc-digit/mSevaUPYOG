@@ -182,10 +182,10 @@ const Inbox = ({ parentRoute }) => {
     ];
   }, []);
 
-  // const effectiveTenantId =
-  //   isEmployee && tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+  const effectiveTenantId =
+    isEmployee && tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
 
-  const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
+  // const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
 
   useEffect(() => {
     if (!(isEmployee && tenantId === "pb.punjab")) return;

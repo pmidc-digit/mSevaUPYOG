@@ -650,6 +650,15 @@ public class EdcrApplicationService {
         if (fileNumber != null && details.path("applicationDetails").isObject()) {
             ((ObjectNode) details.get("applicationDetails")).put("fileNumber", fileNumber);
         }
+        
+        // Proposed Site Address
+        String proposedSiteAddress = meaningfulText(patchRoot, "proposedSiteAddress");
+        if (proposedSiteAddress == null) {
+        	proposedSiteAddress = meaningfulText(patchRoot.path("applicationDetails"), "proposedSiteAddress");
+        }
+        if (proposedSiteAddress != null && details.path("applicationDetails").isObject()) {
+            ((ObjectNode) details.get("applicationDetails")).put("proposedSiteAddress", proposedSiteAddress);
+        }
 
         // Office Use patch
         JsonNode officeUsePatch = patchRoot.path("officeUse");
@@ -683,50 +692,52 @@ public class EdcrApplicationService {
         }
     }
 
-    private JsonNode buildLateFieldPatch(String fileNumber,
-                                         String examinedBy,
-                                         String approvedSanctionedBy,
-                                         String approvalSanctionDate,
-                                         String validTill,
-                                         String signatoryName,
-                                         String designation,
-                                         String zone) {
-        final ObjectMapper mapper = new ObjectMapper();
-        final ObjectNode root = mapper.createObjectNode();
-        final ObjectNode details = mapper.createObjectNode();
-        root.set("details", details);
+	private JsonNode buildLateFieldPatch(String fileNumber, String examinedBy, String approvedSanctionedBy,
+			String approvalSanctionDate, String validTill, String signatoryName, String designation, String zone,
+			String proposedSiteAddress) {
+		final ObjectMapper mapper = new ObjectMapper();
+		final ObjectNode root = mapper.createObjectNode();
+		final ObjectNode details = mapper.createObjectNode();
+		root.set("details", details);
 
-        if (StringUtils.isNotBlank(fileNumber)) {
-            String trimmed = fileNumber.trim();
-            if (isMeaningfulPatchText(trimmed)) {
-                details.put("fileNumber", trimmed);
-            }
-        }
+		if (StringUtils.isNotBlank(fileNumber)) {
+			String trimmed = fileNumber.trim();
+			if (isMeaningfulPatchText(trimmed)) {
+				details.put("fileNumber", trimmed);
+			}
+		}
+		
+		if (StringUtils.isNotBlank(proposedSiteAddress)) {
+			String trimmed = proposedSiteAddress.trim();
+			if (isMeaningfulPatchText(trimmed)) {
+				details.put("proposedSiteAddress", trimmed);
+			}
+		}
 
-        ObjectNode officeUse = mapper.createObjectNode();
-        //putIfNotBlank(officeUse, "examinedBy", examinedBy);
-        putIfNotBlank(officeUse, "approvedSanctionedBy", approvedSanctionedBy);
-        putIfNotBlank(officeUse, "approvalSanctionDate", approvalSanctionDate);
-        putIfNotBlank(officeUse, "validTill", validTill);
-        if (officeUse.size() > 0) {
-            details.set("officeUse", officeUse);
-        }
+		ObjectNode officeUse = mapper.createObjectNode();
+		// putIfNotBlank(officeUse, "examinedBy", examinedBy);
+		putIfNotBlank(officeUse, "approvedSanctionedBy", approvedSanctionedBy);
+		putIfNotBlank(officeUse, "approvalSanctionDate", approvalSanctionDate);
+		putIfNotBlank(officeUse, "validTill", validTill);
+		if (officeUse.size() > 0) {
+			details.set("officeUse", officeUse);
+		}
 
-        if (StringUtils.isNotBlank(signatoryName) || StringUtils.isNotBlank(designation)) {
-            ArrayNode eSign = mapper.createArrayNode();
-            ObjectNode row = mapper.createObjectNode();
-            putIfNotBlank(row, "signatoryName", signatoryName);
-            putIfNotBlank(row, "designation", designation);
-            if (row.size() > 0) {
-                eSign.add(row);
-                details.set("eSign", eSign);
-            }
-        }
-        
-        details.put("zone", zone);
+		if (StringUtils.isNotBlank(signatoryName) || StringUtils.isNotBlank(designation)) {
+			ArrayNode eSign = mapper.createArrayNode();
+			ObjectNode row = mapper.createObjectNode();
+			putIfNotBlank(row, "signatoryName", signatoryName);
+			putIfNotBlank(row, "designation", designation);
+			if (row.size() > 0) {
+				eSign.add(row);
+				details.set("eSign", eSign);
+			}
+		}
 
-        return root;
-    }
+		details.put("zone", zone);
+
+		return root;
+	}
 
     private void putIfNotBlank(ObjectNode node, String key, String value) {
         if (node != null && StringUtils.isNotBlank(value) && isMeaningfulPatchText(value.trim())) {
@@ -785,7 +796,7 @@ public class EdcrApplicationService {
         n.put("nameOfApplicant", txt(frd, "applicantName"));
         n.put("fileNumber", txt(frd, "fileNumber"));
         n.put("edcrNumber", txt(frd, "dcrNo"));
-        n.put("ulbName", txt(frd, "district"));
+        n.put("ulbName", txt(pi, "ulbName"));
         n.put("ulbType", txt(frd, "ulbType"));
         n.put("buildingCategory", txt(pi, "occupancy"));
         n.put("proposedSiteAddress", txt(pi, "city"));
@@ -1308,9 +1319,9 @@ public class EdcrApplicationService {
 
 	private void updateFileNew(Plan pl, EdcrApplication edcrApplication, String fileNumber, String examinedBy,
 			String approvedSanctionedBy, String approvalSanctionDate, String validTill, String signatoryName,
-			String designation, String tenantId, String zone) {
+			String designation, String tenantId, String zone, String proposedSiteAddress) {
 		JsonNode patchFields = buildLateFieldPatch(fileNumber, examinedBy, approvedSanctionedBy, approvalSanctionDate,
-				validTill, signatoryName, designation, zone);
+				validTill, signatoryName, designation, zone, proposedSiteAddress);
 		updateFileV4(pl, edcrApplication, patchFields, tenantId);
 	}
     
@@ -2051,7 +2062,7 @@ public class EdcrApplicationService {
     
 	public FileStoreMapper updateDXFOutput(String fileNo, String examinedBy, String approvedBy, String approvedDate,
 			String validDate, String edcrNo, Boolean isSelfCertification, String eSign, String eSignName,
-			String tenantId, String zone) throws IOException {
+			String tenantId, String zone, String proposedSiteAddress) throws IOException {
 
 		if (StringUtils.isBlank(edcrNo)) {
 			throw new IllegalArgumentException("EDCR Number is mandatory.");
@@ -2112,7 +2123,7 @@ public class EdcrApplicationService {
 		edcrApplication.setSavedDxfFile(dxfFile);
 
 		updateFileNew(pl, edcrApplication, fileNo, examinedBy, approvedBy, approvedDate, validDate, eSignName, eSign,
-				tenantId, zone);
+				tenantId, zone, proposedSiteAddress);
 
 		FileStoreMapper mapper = appDetail.getScrutinizedDxfFileId();
 

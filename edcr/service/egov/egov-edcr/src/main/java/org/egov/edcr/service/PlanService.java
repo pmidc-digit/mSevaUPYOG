@@ -356,7 +356,8 @@ public class PlanService {
 
             plan.getPlanInformation().setUlbType(ulbType);
             plan.getPlanInformation().setDistrict(districtName);
-
+            plan.getPlanInformation().setUlbName(cityName);
+            LOG.info("ULB Name value from edcr Request : {}", plan.getPlanInformation().getUlbName());
             LOG.info("ULB Type value from MDMS : {}", ulbType);
             LOG.info("District value from MDMS : {}", districtName);
             

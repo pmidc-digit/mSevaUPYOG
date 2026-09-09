@@ -164,7 +164,17 @@ public class PlanInformation implements Serializable {
     private transient String nocNeighbour = NA;
     private transient String nocFromNHAI = NA;
     private transient String indemnityBasement = NA;
-    public String getIndemnityBasement() {
+    private String ulbName;
+    
+    public String getUlbName() {
+		return ulbName;
+	}
+
+	public void setUlbName(String ulbName) {
+		this.ulbName = ulbName;
+	}
+
+	public String getIndemnityBasement() {
 		return indemnityBasement;
 	}
 

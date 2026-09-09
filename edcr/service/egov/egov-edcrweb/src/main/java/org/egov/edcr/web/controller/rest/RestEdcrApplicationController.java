@@ -854,84 +854,77 @@ public final ResponseEntity<ErrorResponse> handleGenericException(Exception ex) 
     		    
     
    
-    @PostMapping(value = "/updateBPADetails", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public ResponseEntity<?> updateBPADetails(@RequestBody Object bpaObject) {
-    	Map<String, Object> response = new HashMap<>();
-        try {
-            String applicationNo = getJsonValue(bpaObject, "$.BPA[0].applicationNo");
-            if (applicationNo == null || applicationNo.trim().isEmpty()) {
-                response.put("success", false);
-                response.put("message", "Application number is mandatory.");
-                return ResponseEntity.badRequest().body(response);
-            }
+			@PostMapping(value = "/updateBPADetails", produces = MediaType.APPLICATION_JSON_VALUE)
+			@ResponseBody
+			public ResponseEntity<?> updateBPADetails(@RequestBody Object bpaObject) {
+				Map<String, Object> response = new HashMap<>();
+				try {
+					String applicationNo = getJsonValue(bpaObject, "$.BPA[0].applicationNo");
+					if (applicationNo == null || applicationNo.trim().isEmpty()) {
+						response.put("success", false);
+						response.put("message", "Application number is mandatory.");
+						return ResponseEntity.badRequest().body(response);
+					}
 
-            String examinedBy = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.approvedBy");
-            String approvedBy = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.approvedBy");
-            String approvedDate = getJsonValue(bpaObject, "$.BPA[0].approvalDate");
-            String validDate = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.validityDate");
-            String edcrNo = getJsonValue(bpaObject, "$.BPA[0].edcrNumber");
-            String zone = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.zonenumber");
-            Boolean isSelfCertification = JsonPath.read(
-                    bpaObject,
-                    "$.BPA[0].additionalDetails.isSelfCertification"
-            );
-            String tenantId = getJsonValue(bpaObject, "$.BPA[0].tenantId");
+					String examinedBy = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.approvedBy");
+					String approvedBy = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.approvedBy");
+					String approvedDate = getJsonValue(bpaObject, "$.BPA[0].approvalDate");
+					String validDate = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.validityDate");
+					String edcrNo = getJsonValue(bpaObject, "$.BPA[0].edcrNumber");
+					String zone = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.zonenumber");
+					Boolean isSelfCertification = JsonPath.read(bpaObject,
+							"$.BPA[0].additionalDetails.isSelfCertification");
+					String tenantId = getJsonValue(bpaObject, "$.BPA[0].tenantId");
 
-            String eSign;
-            String eSignName;
+					String eSign;
+					String eSignName;
 
-            if (Boolean.TRUE.equals(isSelfCertification)) {
-                eSign = "Licensed professional";
-                eSignName = getJsonValue(bpaObject,
-                        "$.BPA[0].additionalDetails.stakeholderName");
-            } else {
-                eSign = "Competent Authority";
-                eSignName = getJsonValue(bpaObject,
-                        "$.BPA[0].additionalDetails.approvedBy");
-            }
+					if (Boolean.TRUE.equals(isSelfCertification)) {
+						eSign = "Licensed professional";
+						eSignName = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.stakeholderName");
+					} else {
+						eSign = "Competent Authority";
+						eSignName = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.approvedBy");
+					}
 
-            approvedDate = formatEpochDate(approvedDate);
-            validDate = formatEpochDate(validDate);
+					approvedDate = formatEpochDate(approvedDate);
+					validDate = formatEpochDate(validDate);
 
-            edcrApplicationService.updateDXFOutput(
-                    applicationNo,
-                    examinedBy,
-                    approvedBy,
-                    approvedDate,
-                    validDate,
-                    edcrNo,
-                    isSelfCertification,
-                    eSign,
-                    eSignName,
-                    tenantId,
-                    zone
-            );
+					String proposedSiteAddress = getJsonValue(bpaObject,
+							"$.BPA[0].additionalDetails.registrationDetails");
+					String pinCode = getJsonValue(bpaObject, "$.BPA[0].landInfo.address.pincode");
 
-            response.put("success", true);
-            response.put("message", "BPA details updated successfully.");
-            return ResponseEntity.ok(response);
+					if (StringUtils.isNotBlank(pinCode)) {
+						proposedSiteAddress = proposedSiteAddress + ", Pincode - " + pinCode;
+					}
 
-        } catch (PathNotFoundException ex) {
-            LOGGER.error("Required JSON path not found in BPA request.", ex);
-            response.put("success", false);
-            response.put("message", "Invalid BPA request payload.");
-            return ResponseEntity.badRequest().body(response);
+					edcrApplicationService.updateDXFOutput(applicationNo, examinedBy, approvedBy, approvedDate,
+							validDate, edcrNo, isSelfCertification, eSign, eSignName, tenantId, zone,
+							proposedSiteAddress);
 
-        } catch (IllegalArgumentException ex) {
-            LOGGER.error("Validation failed while processing BPA details.", ex);
-            response.put("success", false);
-            response.put("message", ex.getMessage());
-            return ResponseEntity.badRequest().body(response);
+					response.put("success", true);
+					response.put("message", "BPA details updated successfully.");
+					return ResponseEntity.ok(response);
 
-        } catch (Exception ex) {
-            LOGGER.error("Unexpected error while updating BPA details.", ex);
-            response.put("success", false);
-            response.put("message", "Internal server error occurred while processing BPA details.");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(response);
-        }
-    }
+				} catch (PathNotFoundException ex) {
+					LOGGER.error("Required JSON path not found in BPA request.", ex);
+					response.put("success", false);
+					response.put("message", "Invalid BPA request payload.");
+					return ResponseEntity.badRequest().body(response);
+
+				} catch (IllegalArgumentException ex) {
+					LOGGER.error("Validation failed while processing BPA details.", ex);
+					response.put("success", false);
+					response.put("message", ex.getMessage());
+					return ResponseEntity.badRequest().body(response);
+
+				} catch (Exception ex) {
+					LOGGER.error("Unexpected error while updating BPA details.", ex);
+					response.put("success", false);
+					response.put("message", "Internal server error occurred while processing BPA details.");
+					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+				}
+			}
 
     private String getJsonValue(Object json, String path) {
         try {

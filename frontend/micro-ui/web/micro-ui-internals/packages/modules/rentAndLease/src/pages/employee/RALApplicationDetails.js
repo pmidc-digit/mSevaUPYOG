@@ -94,6 +94,7 @@ const getPaymentHistory = (billResponse, receiptResponse) => {
           mode: payment?.paymentMode || "-",
           amount: roundMoney(billDetail?.amountPaid || 0),
           transactionNumber: payment?.transactionNumber,
+          payment: payment,
         });
         months.set(key, month);
       });
@@ -124,7 +125,7 @@ const getPaymentHistory = (billResponse, receiptResponse) => {
   };
 };
 
-const RALPaymentHistory = ({ consumerCode, history, isLoading, error }) => {
+const RALPaymentHistory = ({ consumerCode, history, isLoading, error, onDownloadReceipt, t }) => {
   const [expandedMonth, setExpandedMonth] = useState(null);
   const rows = history?.rows || [];
   const totals = history?.totals || { billed: 0, paid: 0, due: 0 };
@@ -215,6 +216,13 @@ const RALPaymentHistory = ({ consumerCode, history, isLoading, error }) => {
                                 <span>{receipt.mode}</span>
                                 <span>{formatCurrency(receipt.amount)}</span>
                                 {receipt.transactionNumber && <span>Txn: {receipt.transactionNumber}</span>}
+                                <div style={{ marginLeft: "auto" }}>
+                                  <SubmitBar
+                                    label={t("CS_COMMON_DOWNLOAD")}
+                                    onSubmit={() => onDownloadReceipt?.(receipt)}
+                                  />
+                                </div>
+
                               </div>
                             ))}
                           </div>
@@ -294,6 +302,17 @@ const RALApplicationDetails = () => {
   if (workflowDetails?.data?.actionState && !workflowDetails.isLoading) {
     workflowDetails.data.actionState.nextActions = workflowDetails.data.nextActions;
   }
+
+    const handleDownloadReceipt = (receipt) => {
+
+      printBillReceipt({
+        businessService: "rl-services",
+        receiptNumber: receipt?.receiptNumber,
+        billOrPaymentResponse: receipt?.payment ? { Payments: [receipt.payment] } : null,
+        rootKey: "PAYMENTS",
+      });
+  };
+
 
   const handleNavigation = () => {
     const timer = setTimeout(() => {
@@ -781,6 +800,8 @@ const RALApplicationDetails = () => {
           history={paymentHistory}
           isLoading={isPaymentHistoryLoading}
           error={paymentHistoryError}
+          onDownloadReceipt={handleDownloadReceipt}
+          t={t}
         />
         {/* <ApplicationTimeline workflowDetails={workflowDetails} t={t} /> */}
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />

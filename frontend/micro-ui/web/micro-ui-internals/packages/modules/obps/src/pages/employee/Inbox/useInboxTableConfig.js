@@ -24,6 +24,12 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const tableColumnConfig = useMemo(() => {
     const columns = [
       {
+        Header: t("Sr No."),
+        accessor: "serialNumber",
+        Cell: ({ row }) => GetCell((Number(formState?.tableForm?.offset) || 0) + row.index + 1),
+        disableSortBy: true,
+      },
+      {
         Header: t("BPA_APPLICATION_NUMBER_LABEL"),
         accessor: "applicationNo",
         disableSortBy: true,
@@ -36,8 +42,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             link = `/digit-ui/citizen/obps/stakeholder/${row.original.applicationId}`;
           } else if (currentUrl.includes("/citizen")) {
             link = `${parentRoute}/bpa-app/${encryptedId}`;
-          } else if (tenantId === "pb.punjab") {
-            link = `${parentRoute}/inbox/bpa/${encryptedId}/${row.original["tenantId"]}`;
+          } else if (row.original?.tenantId) {
+            link = `${parentRoute}/inbox/bpa/${encryptedId}?tenantId=${row.original.tenantId}`;
           } else {
             link = `${parentRoute}/inbox/bpa/${encryptedId}`;
           }
@@ -144,13 +150,13 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         disableSortBy: true,
       },
       {
-        Header: t("TIME_TAKEN"),
+        Header: t("Time Taken in Days"),
         accessor: (row) => GetStatusCell(row?.sla, row?.selfCertification),
         disableSortBy: true,
       },
     ];
     return columns.filter(Boolean);
-  }, [t, tenantId, parentRoute]);
+  }, [t, tenantId, parentRoute, formState?.tableForm?.offset]);
 
   return {
     getCellProps: (cellInfo) => {

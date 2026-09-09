@@ -26,12 +26,19 @@ const roundMoney = (value = 0) => Math.round((Number(value || 0) + Number.EPSILO
 
 const getBillDetailKey = (billDetail) => billDetail?.demandId || billDetail?.id || "";
 
+const getAdvanceCarryForward = (billDetail) =>
+  roundMoney(
+    (billDetail?.billAccountDetails || [])
+      .filter((accountDetail) => accountDetail?.taxHeadCode === "RL_ADVANCE_CARRYFORWARD")
+      .reduce((total, accountDetail) => total + Math.abs(Number(accountDetail?.amount || 0)), 0)
+  );
+
 const formatMonth = (period) => {
   if (!period) return "-";
   const date = new Date(Number(period));
 
   if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("en-IN", { month: "short", year: "numeric", timeZone: "UTC" }).format(date);
+  return new Intl.DateTimeFormat("en-IN", { month: "short", year: "numeric", timeZone: "Asia/Kolkata" }).format(date);
 };
 
 const formatDate = (period) => {
@@ -39,7 +46,7 @@ const formatDate = (period) => {
   const date = new Date(Number(period));
 
   if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }).format(date);
+  return new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }).format(date);
 };
 
 const formatCurrency = (amount) =>
@@ -88,11 +95,16 @@ const getPaymentHistory = (billResponse, receiptResponse) => {
         const month = months.get(key);
         if (!month) return;
 
+        const advanceCarryForward = getAdvanceCarryForward(billDetail);
+
         month.receipts.push({
           receiptNumber: paymentDetail.receiptNumber,
           date: payment?.transactionDate || paymentDetail?.receiptDate,
           mode: payment?.paymentMode || "-",
-          amount: roundMoney(billDetail?.amountPaid || 0),
+          // The payment snapshot includes the carry-forward in amountPaid.
+          // Keep it separate so a month's paid amount cannot exceed its billed amount.
+          amount: roundMoney(Math.max(0, Number(billDetail?.amountPaid || 0) - advanceCarryForward)),
+          advanceCarryForward,
           transactionNumber: payment?.transactionNumber,
           payment: payment,
         });
@@ -105,10 +117,11 @@ const getPaymentHistory = (billResponse, receiptResponse) => {
     .map((month) => {
       const billed = roundMoney(month.billed);
       const paid = roundMoney(month.receipts.reduce((total, receipt) => total + receipt.amount, 0));
+      const advance = roundMoney(month.receipts.reduce((total, receipt) => total + receipt.advanceCarryForward, 0));
       const due = Math.max(0, roundMoney(billed - paid));
       const status = billed > 0 && due === 0 ? "PAID" : paid > 0 ? "PARTIALLY_PAID" : "DUE";
 
-      return { ...month, billed, paid, due, status };
+      return { ...month, billed, paid, advance, due, status };
     })
     .sort((first, second) => Number(second.fromPeriod || 0) - Number(first.fromPeriod || 0));
 
@@ -118,9 +131,10 @@ const getPaymentHistory = (billResponse, receiptResponse) => {
       (totals, row) => ({
         billed: roundMoney(totals.billed + row.billed),
         paid: roundMoney(totals.paid + row.paid),
+        advance: roundMoney(totals.advance + row.advance),
         due: roundMoney(totals.due + row.due),
       }),
-      { billed: 0, paid: 0, due: 0 }
+      { billed: 0, paid: 0, advance: 0, due: 0 }
     ),
   };
 };
@@ -128,7 +142,7 @@ const getPaymentHistory = (billResponse, receiptResponse) => {
 const RALPaymentHistory = ({ consumerCode, history, isLoading, error, onDownloadReceipt, t }) => {
   const [expandedMonth, setExpandedMonth] = useState(null);
   const rows = history?.rows || [];
-  const totals = history?.totals || { billed: 0, paid: 0, due: 0 };
+  const totals = history?.totals || { billed: 0, paid: 0, advance: 0, due: 0 };
 
   return (
     <Card className="ral-payment-history">
@@ -144,7 +158,11 @@ const RALPaymentHistory = ({ consumerCode, history, isLoading, error, onDownload
           </div>
           <div>
             <span>Total paid</span>
-            <strong>{formatCurrency(totals.paid)}</strong>
+            <strong>{formatCurrency(totals.paid + totals.advance)}</strong>
+          </div>
+          <div>
+            <span>Advance payment</span>
+            <strong>{formatCurrency(totals.advance)}</strong>
           </div>
           <div>
             <span>Total due</span>
@@ -251,7 +269,7 @@ const RALApplicationDetails = () => {
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
-  const [paymentHistory, setPaymentHistory] = useState({ rows: [], totals: { billed: 0, paid: 0, due: 0 } });
+  const [paymentHistory, setPaymentHistory] = useState({ rows: [], totals: { billed: 0, paid: 0, advance: 0, due: 0 } });
   const [isPaymentHistoryLoading, setIsPaymentHistoryLoading] = useState(false);
   const [paymentHistoryError, setPaymentHistoryError] = useState(null);
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -640,7 +658,7 @@ const RALApplicationDetails = () => {
       setPaymentHistory(getPaymentHistory(billResponse, receiptResponse));
     } catch (error) {
       console.error("Unable to load RL payment history", error);
-      setPaymentHistory({ rows: [], totals: { billed: 0, paid: 0, due: 0 } });
+      setPaymentHistory({ rows: [], totals: { billed: 0, paid: 0, advance: 0, due: 0 } });
       setPaymentHistoryError("Unable to load payment history. Please try again.");
     } finally {
       setIsPaymentHistoryLoading(false);

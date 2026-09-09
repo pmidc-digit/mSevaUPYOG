@@ -1125,6 +1125,9 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 
 	/**
 	 * Calculates and applies OTS (One Time Settlement) penalty and interest wave-offs on demand details.
+	 *
+	 * <p>Handles duplicate OTS entries that may arise from concurrent bill fetch requests
+	 * (race condition). Keeps the first OTS waveoff entry and zeros out any duplicates.</p>
 	 */
 	private boolean otsEnabled(Demand demand, BigDecimal interestRate, BigDecimal penaltyRate) {
 		String demandId = demand.getId();
@@ -1139,6 +1142,8 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 
 		DemandDetail existingPenaltyWaveoff = null;
 		DemandDetail existingInterestWaveoff = null;
+		List<DemandDetail> duplicatePenaltyWaveoffs = new ArrayList<>();
+		List<DemandDetail> duplicateInterestWaveoffs = new ArrayList<>();
 
 		for (DemandDetail detail : details) {
 			String taxHead = detail.getTaxHeadMasterCode();
@@ -1150,10 +1155,28 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 				totalInterest = totalInterest.add(detail.getTaxAmount());
 				collectedInterest = collectedInterest.add(detail.getCollectionAmount());
 			} else if (CalculatorConstants.OTS_PENALTY_WAVEOFF.equals(taxHead)) {
-				existingPenaltyWaveoff = detail;
+				if (existingPenaltyWaveoff == null) {
+					existingPenaltyWaveoff = detail;
+				} else {
+					duplicatePenaltyWaveoffs.add(detail); // mark as duplicate
+				}
 			} else if (CalculatorConstants.OTS_INTEREST_WAVEOFF.equals(taxHead)) {
-				existingInterestWaveoff = detail;
+				if (existingInterestWaveoff == null) {
+					existingInterestWaveoff = detail;
+				} else {
+					duplicateInterestWaveoffs.add(detail); // mark as duplicate
+				}
 			}
+		}
+
+		// Zero out any duplicate OTS entries (caused by concurrent bill fetch race condition)
+		for (DemandDetail dup : duplicatePenaltyWaveoffs) {
+			log.info("Zeroing duplicate OTS_PENALTY_WAVEOFF entry for demand: {}", demandId);
+			dup.setTaxAmount(BigDecimal.ZERO);
+		}
+		for (DemandDetail dup : duplicateInterestWaveoffs) {
+			log.info("Zeroing duplicate OTS_INTEREST_WAVEOFF entry for demand: {}", demandId);
+			dup.setTaxAmount(BigDecimal.ZERO);
 		}
 
 		BigDecimal unpaidPenalty = totalPenalty.subtract(collectedPenalty);

@@ -25,6 +25,7 @@ public class ZuulRoutesConfiguration {
     public RouterFunction<ServerResponse> legacyZuulRoutes() throws IOException {
         Properties props = new Properties();
         try {
+            logger.info(new ClassPathResource("routes.properties").getPath());
             props.load(new ClassPathResource("routes.properties").getInputStream());
         } catch (IOException e) {
             logger.error("Could not load routes.properties", e);

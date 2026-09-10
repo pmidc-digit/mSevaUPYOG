@@ -17,7 +17,36 @@ const TextArea = (props) => {
     adjustHeight();
   }, [props.value, props.className]);
 
+  const sanitizeTextAreaValue = (val) => {
+    if (typeof val !== "string") return val;
+    if (props.allowSpecialChars || props.disallowSpecialChars === false) return val;
+
+    if (props.customDisallowRegex) {
+      return val.replace(props.customDisallowRegex, "");
+    }
+
+    // Default textarea sanitizer: blocks dangerous injection chars (< > \ ^ ~ { } [ ])
+    // Preserves letters, numbers, punctuation like ., -, /, #, (), :, ;, ?, &, ', ", %, newline, spaces
+    return val.replace(/[<>\^~{}\[\]\\]/g, "");
+  };
+
+  const handleChange = (e) => {
+    if (e?.target && typeof e.target.value === "string" && !props.allowSpecialChars && props.disallowSpecialChars !== false) {
+      const sanitized = sanitizeTextAreaValue(e.target.value);
+      if (sanitized !== e.target.value) {
+        e.target.value = sanitized;
+      }
+    }
+    if (props.onChange) props.onChange(e);
+  };
+
   const handleInput = (e) => {
+    if (e?.target && typeof e.target.value === "string" && !props.allowSpecialChars && props.disallowSpecialChars !== false) {
+      const sanitized = sanitizeTextAreaValue(e.target.value);
+      if (sanitized !== e.target.value) {
+        e.target.value = sanitized;
+      }
+    }
     adjustHeight();
     if (props.onInput) props.onInput(e);
   };
@@ -31,7 +60,7 @@ const TextArea = (props) => {
       style={props.style}
       id={props.id}
       value={props.value}
-      onChange={props.onChange}
+      onChange={handleChange}
       onInput={handleInput}
       className={`${user_type !== "citizen" ? "employee-card-textarea" : "card-textarea"} ${props.disable && "disabled"} ${
         props?.className ? props?.className : ""

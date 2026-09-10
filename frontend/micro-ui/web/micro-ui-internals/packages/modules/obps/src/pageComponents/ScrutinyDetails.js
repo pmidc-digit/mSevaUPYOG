@@ -111,9 +111,9 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
     let totalDeduction = 0;
 
     block?.building?.floors?.forEach((ob) => {
-      const builtUp = Number(ob.occupancies?.[0]?.builtUpArea) || 0;
-      const floor = Number(ob.occupancies?.[0]?.floorArea) || 0;
-      const deduction = Number(ob.occupancies?.[0]?.deduction) || 0;
+      const builtUp = Number(Number(ob.occupancies?.[0]?.builtUpArea || 0).toFixed(2));
+      const floor = Number(Number(ob.occupancies?.[0]?.floorArea || 0).toFixed(2));
+      const deduction = Number(Number(ob.occupancies?.[0]?.deduction || 0).toFixed(2));
 
       totalBuiltUpArea += builtUp;
       totalFloorArea += floor;
@@ -124,9 +124,9 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
         Level: ob.number,
         Occupancy: t(`${ob.occupancies?.[0]?.type}`),
 
-        BuildupArea: Number(builtUp).toFixed(2),
-        Deduction: Number(deduction).toFixed(2),
-        FloorArea: Number(floor).toFixed(2),
+        BuildupArea: builtUp.toFixed(2),
+        Deduction: deduction.toFixed(2),
+        FloorArea: floor.toFixed(2),
       });
     });
 

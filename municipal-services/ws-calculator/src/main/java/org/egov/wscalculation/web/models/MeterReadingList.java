@@ -2,8 +2,8 @@ package org.egov.wscalculation.web.models;
 
 import java.util.Objects;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import org.springframework.validation.annotation.Validated;
 
@@ -26,7 +26,7 @@ import lombok.Setter;
 @Builder
 @ApiModel(description = "This is lightweight meter reading object that can be used as reference by definitions needing meterreading linking.")
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-11-12T10:46:14.653+05:30[Asia/Kolkata]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-11-12T10:46:14.653+05:30[Asia/Kolkata]")
 public class MeterReadingList {
 	
 	@JsonProperty("id")

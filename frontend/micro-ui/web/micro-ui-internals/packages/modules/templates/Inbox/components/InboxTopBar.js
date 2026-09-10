@@ -167,6 +167,10 @@ const InboxTopBar = ({
   searchValue = "",
   onSearchChange,
   searchPlaceholder = "Search by application number...",
+  apiMobileValue = "",
+  onApiMobileChange,
+  onApiMobileSearch,
+  onApiMobileClear,
   totalCount = 0,
   showClearTab = true,
   showAll = true,
@@ -244,15 +248,54 @@ const InboxTopBar = ({
         )}
       </div>
 
-      <div className="new-inbox-search">
-        <span aria-hidden="true" className="new-inbox-search-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="11" cy="11" r="7" stroke="#6B7280" strokeWidth="2" />
-            <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        </span>
+      <div className="new-inbox-search-actions">
+        {onApiMobileSearch && (
+          <form
+            className="new-inbox-api-search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              onApiMobileSearch(apiMobileValue);
+            }}
+          >
+            <input
+              type="tel"
+              inputMode="numeric"
+              className="new-inbox-api-search-input"
+              value={apiMobileValue}
+              onChange={onApiMobileChange}
+              placeholder={t("CORE_COMMON_MOBILE_NUMBER")}
+            />
+            <button type="submit" className="new-inbox-api-search-button">
+              {t("ES_COMMON_SEARCH")}
+            </button>
+            {apiMobileValue && (
+              <button type="button" className="new-inbox-api-clear-button" onClick={onApiMobileClear}>
+                {t("ES_COMMON_CLEAR_SEARCH")}
+              </button>
+            )}
+          </form>
+        )}
 
-        <input type="text" className="new-inbox-search-input" value={searchValue} onChange={onSearchChange} placeholder={searchPlaceholder} />
+        <div className="new-inbox-search">
+          <span aria-hidden="true" className="new-inbox-search-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="11" cy="11" r="7" stroke="#6B7280" strokeWidth="2" />
+              <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </span>
+
+          <input
+            type="text"
+            className="new-inbox-search-input"
+            value={searchValue}
+            onChange={onSearchChange}
+            onPaste={(event) => {
+              const input = event.currentTarget;
+              window.setTimeout(() => onSearchChange?.({ target: { value: input.value } }), 0);
+            }}
+            placeholder={searchPlaceholder}
+          />
+        </div>
       </div>
     </div>
   );

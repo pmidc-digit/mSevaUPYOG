@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils/index";
 
-const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
+const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, globalSearch }) => {
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
   const GetStatusCell = (value, isSelfCertification) =>
     value === "CS_NA" ? (
@@ -189,7 +189,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     onSort: onSortingByData,
     // sortParams: [{id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false}],
     totalRecords: totalCount,
-    onSearch: formState?.searchForm?.message,
+    onSearch: globalSearch,
+    searchAllFields: true,
     onLastPage: () =>
       dispatch({
         action: "mutateTableForm",

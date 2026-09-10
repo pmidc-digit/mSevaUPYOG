@@ -29,8 +29,7 @@ const getStatusPillStyle = (statusClass) => {
   return { background: "#e2e8f0", color: "#1e293b" };
 };
 
-const getStatusDisplayText = (value) =>
-  String(value || "")
+const getStatusDisplayText = (value) => String(value || "");
 
 const extractTextValue = (value) => {
   if (value === null || value === undefined) return "";
@@ -44,7 +43,25 @@ const extractTextValue = (value) => {
   return "";
 };
 
-console.log("TABLE_JS_LOADED_FROM_REACT_COMPONENTS_ATOMS");
+const getSearchableRowText = (value, visited = new WeakSet()) => {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value !== "object") return "";
+  if (visited.has(value)) return "";
+
+  visited.add(value);
+  if (Array.isArray(value)) return value.map((item) => getSearchableRowText(item, visited)).join(" ");
+  return Object.values(value)
+    .map((item) => getSearchableRowText(item, visited))
+    .join(" ");
+};
+
+const allFieldsGlobalFilter = (rows, _columnIds, filterValue) => {
+  const query = String(filterValue || "").trim().toLowerCase();
+  if (!query) return rows;
+
+  return rows.filter((row) => getSearchableRowText(row.original).toLowerCase().includes(query));
+};
 
 const Table = ({
   className = "table",
@@ -63,6 +80,7 @@ const Table = ({
   onNextPage,
   onPrevPage,
   globalSearch,
+  searchAllFields = false,
   onSort = noop,
   onPageSizeChange,
   onLastPage,
@@ -100,7 +118,7 @@ const Table = ({
       columns,
       data,
       initialState: { pageIndex: currentPage, pageSize: pageSizeLimit, sortBy: autoSort ? [{ id: initSortId, desc: false }] : sortParams },
-      pageCount: manualPagination && totalRecords > 0 ? Math.ceil(totalRecords / pageSizeLimit) : -1,
+      pageCount: totalRecords > 0 ? Math.ceil(totalRecords / pageSizeLimit) : -1,
       manualPagination: manualPagination,
       disableMultiSort: false,
       disableSortBy: disableSort,
@@ -109,7 +127,8 @@ const Table = ({
       autoResetSortBy: false,
       disableSortRemove: true,
       disableGlobalFilter: onSearch === false ? true : false,
-      globalFilter: globalSearch || "text",
+      globalFilter: searchAllFields ? "allFields" : globalSearch || "text",
+      filterTypes: searchAllFields ? { allFields: allFieldsGlobalFilter } : undefined,
       useControlledState: (state) => {
         return React.useMemo(() => ({
           ...state,
@@ -142,10 +161,6 @@ const Table = ({
     background: "#ffffff",
     ...styles,
   };
-
-  console.log(isMobile, "IS MOBILE RENDER");
-
-  console.log("loovvvvv1233", rows);
 
   if (isMobile) {
     return (
@@ -223,7 +238,7 @@ const Table = ({
                   ? totalRecords
                   : (currentPage + 1) * pageSizeLimit
                 : pageIndex * pageSize + page?.length}{" "}
-              {manualPagination ? (totalRecords ? `of ${totalRecords}` : "") : `of ${rows.length}`}
+              {totalRecords ? `of ${manualPagination ? totalRecords : rows.length}` : ""}
             </span>
             <div className="pagination-controls">
               {!manualPagination && pageIndex !== 0 && <ArrowToFirst onClick={() => gotoPage(0)} />}
@@ -379,7 +394,7 @@ const Table = ({
                                     ...pillStyle,
                                   }}
                                 >
-                                  {t ? getStatusDisplayText(t(cellValue)) : getStatusDisplayText((cellValue))}
+                                  {t ? getStatusDisplayText(t(cellValue)) : getStatusDisplayText(cellValue)}
                                 </span>
                               );
                             })()
@@ -419,7 +434,7 @@ const Table = ({
                   : (currentPage + 1) * pageSizeLimit
                 : pageIndex * pageSize + page?.length}{" "}
               {/* {(pageIndex + 1) * pageSizeLimit > rows.length ? rows.length : (pageIndex + 1) * pageSizeLimit}{" "} */}
-              {manualPagination ? (totalRecords ? `of ${totalRecords}` : "") : `of ${rows.length}`}
+              {totalRecords ? `of ${manualPagination ? totalRecords : rows.length}` : ""}
             </span>{" "}
           </span>
           {/* to go to first and last page we need to do a manual pagination , it can be updated later*/}

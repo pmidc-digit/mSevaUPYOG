@@ -7,7 +7,7 @@ const GetCell = (value) => <span className="cell-text">{value}</span>;
 
 const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchConfig }) => {
   const history = useHistory();
-
+  const isCitizen = window.location.href.includes("citizen");
   const [searchQuery, setSearchQuery] = useState({
     /* ...defaultValues,   to enable pagination */
     ...payload,
@@ -17,13 +17,12 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [ownerInvalidMobileNumberIndex, setOwnerInvalidMobileNumberIndex] = useState(0);
   const pathvar = window.location.href.includes("employee") ? "employee" : "citizen";
-
+  //console.log("Hellopayload",payload)
   const { data, isLoading, error, isSuccess, billData, revalidate } = Digit.Hooks.pt.usePropertySearchWithDue({
     tenantId,
     filters: searchQuery,
     configs: { enabled: Object.keys(payload).length > 0 ? true : false, retry: false, retryOnMount: false, staleTime: Infinity },
   });
-
   const mutation = Digit.Hooks.pt.usePropertyAPI(tenantId, false);
   const isEmployee = window.location.href.includes("employee");
   const UpdatePropertyNumberComponent = Digit?.ComponentRegistryService?.getComponent("EmployeeUpdateOwnerNumber");
@@ -93,8 +92,11 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
     });
   };
 
-  const handleMakePayment = (id) => {
-    history.push(`/digit-ui/citizen/payment/collect/PT/${id}/${tenantId}`);
+  const handleMakePayment = (id, billTenantId) => {
+    isCitizen ?
+    history.push( `/digit-ui/citizen/payment/collect/PT/${id}?tenantId=${billTenantId}`)
+    :
+    history.push( `/digit-ui/employee/payment/collect/PT/${id}?tenantId=${billTenantId}`);
   };
 
   const columns = useMemo(
@@ -174,7 +176,16 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
       {
         Header: "Action",
         Cell: ({ row }) => {
-          return <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(row?.original?.propertyId)} />;
+          
+
+          const propertyBill = billData?.Bill?.find(
+            bill => bill.consumerCode === row.original.propertyId
+          );
+          if (propertyBill && propertyBill.totalAmount > 0) {
+            return <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(row?.original?.propertyId, propertyBill.tenantId)} />;
+          }
+
+          return null;
         },
         disableSortBy: true,
       },
@@ -194,7 +205,7 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
       //   },
       // },
     ],
-    []
+    [billData, t, isEmployee, handleMakePayment]
   );
   let isMobile = window.Digit.Utils.browser.isMobile();
 

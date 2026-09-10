@@ -1535,6 +1535,13 @@ const LayoutSiteDetails = (_props) => {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
                   },
+                  validate: (value) => {
+                    const trimmed = value ? value.trim() : "";
+                    if (trimmed && /\s/.test(trimmed)) {
+                      return t("NO_SPACES_ALLOWED");
+                    }
+                    return true;
+                  },
                 }}
                 render={(props) => (
                   <TextInput
@@ -1543,6 +1550,10 @@ const LayoutSiteDetails = (_props) => {
                       props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
+                      const trimmed = e.target.value ? e.target.value.trim() : "";
+                      if (trimmed !== props.value) {
+                        props.onChange(trimmed);
+                      }
                       props.onBlur(e);
                     }}
                     disabled={isEditMode}

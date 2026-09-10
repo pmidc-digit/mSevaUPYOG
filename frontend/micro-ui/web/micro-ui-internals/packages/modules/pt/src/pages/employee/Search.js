@@ -1,5 +1,5 @@
 import { Header, Localities, Toast } from "@mseva/digit-ui-react-components";
-import PropertyType  from "../../utils/PropertyType";
+import PropertyType from "../../utils/PropertyType";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -13,7 +13,7 @@ const PTSearchFields = {
         required: "PTULBMANDATORY",
       },
     },
-     mobileNumber: {
+    mobileNumber: {
       type: "text",
       label: "PT_HOME_SEARCH_RESULTS_OWN_MOB_LABEL",
       placeHolder: "PT_HOME_SEARCH_RESULTS_OWN_MOB_PLACEHOLDER",
@@ -38,7 +38,8 @@ const PTSearchFields = {
       placeHolder: "PT_PROPERTY_UNIQUE_ID_PLACEHOLDER",
       validation: {
         pattern: {
-          value: "/[A-Za-z]{2}\-[A-Za-z]{2}\-[0-9]{4}\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{6}|[A-Za-z]{2}\-[A-Za-z]{2}\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{6}/,PG-PT-\d\d\d\d-\d\d\d\d-\d\d-\d\d-\d\d\d\d\d\d",
+          value:
+            "/[A-Za-z]{2}-[A-Za-z]{2}-[0-9]{4}-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}|[A-Za-z]{2}-[A-Za-z]{2}-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}/,PG-PT-dddd-dddd-dd-dd-dddddd",
           message: "ERR_INVALID_PROPERTY_ID",
         },
       },
@@ -49,12 +50,13 @@ const PTSearchFields = {
       placeholder: "PT_EXISTING_PROPERTY_ID_PLACEHOLDER",
       validation: {
         pattern: {
-          value: "/[A-Za-z]{2}\-[A-Za-z]{2}\-[0-9]{4}\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{6}|[A-Za-z]{2}\-[A-Za-z]{2}\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{6}/,PG-PT-\d\d\d\d-\d\d\d\d-\d\d-\d\d-\d\d\d\d\d\d",
+          value:
+            "/[A-Za-z]{2}-[A-Za-z]{2}-[0-9]{4}-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}|[A-Za-z]{2}-[A-Za-z]{2}-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}/,PG-PT-dddd-dddd-dd-dd-dddddd",
           message: "ERR_INVALID_PROPERTY_ID",
         },
       },
     },
-     locality: {
+    locality: {
       type: "custom",
       label: "PT_SEARCH_LOCALITY",
       placeHolder: "PT_SEARCH_LOCALITY_PLACEHOLDER",
@@ -76,7 +78,7 @@ const PTSearchFields = {
           message: "PT_MIN_3CHAR",
         },
         pattern: {
-          value:  "^[a-zA-Z ]+$",
+          value: "^[a-zA-Z ]+$",
           message: "PAYMENT_INVALID_NAME",
         },
       },
@@ -91,7 +93,7 @@ const PTSearchFields = {
           message: "PT_MIN_3CHAR",
         },
         pattern: {
-          value:  "^[a-zA-Z ]+$",
+          value: "^[a-zA-Z ]+$",
           message: "PAYMENT_INVALID_NAME",
         },
       },
@@ -136,10 +138,8 @@ const PTSearchFields = {
     //     },
     //   },
     // },
-
   },
-  defaulterNotice:{
-
+  defaulterNotice: {
     // propertyType: {
     //   type: "custom",
     //   label: "PT_SEARCH_PROPERTY_TYPE",
@@ -158,30 +158,25 @@ const PTSearchFields = {
     //   type: "propertyType",
     //   label: "PT_SEARCHPROPERTY_TABEL_PROPERTY_TYPE",
     //   placeHolder: "PT_SEARCH_DOOR_NO_PLACEHOLDER",
-     
     // },
   },
 };
 
-
-
-
-
 const Search = () => {
   const { t } = useTranslation();
-  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId(): localStorage.getItem("CITIZEN.CITY");
-  console.log('tenantId in prop search', tenantId)
-    const defaultValues = {
- tenantId: {
-  code: tenantId,
-},
-  propertyIds: "",
-  mobileNumber: "",
-  oldpropertyids: "",
-  locality: "",
-  name: "",
-  // propertyType:""
-};
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
+  console.log("tenantId in prop search", tenantId);
+  const defaultValues = {
+    tenantId: {
+      code: tenantId,
+    },
+    propertyIds: "",
+    mobileNumber: "",
+    oldpropertyids: "",
+    locality: "",
+    name: "",
+    // propertyType:""
+  };
   const [payload, setPayload] = useState({});
   const [searchTenantId, setSearchTenantId] = useState(tenantId);
   const [formData, setFormData] = useState(defaultValues);
@@ -198,36 +193,34 @@ const Search = () => {
 
   const onReset = useCallback(() => {
     setFormData({
-  ...defaultValues,
-  tenantId: {
-    code: tenantId,
-  },
-});
+      ...defaultValues,
+      tenantId: {
+        code: tenantId,
+      },
+    });
     setPayload({});
     setSearchTenantId(tenantId);
     setShowToast(null);
   });
 
-  useEffect (() =>{
-    if(sessionStorage.getItem("searchDetailValue") == 1 && searchBy === "searchId"){
-      setSearchBy("searchDetail")
+  useEffect(() => {
+    if (sessionStorage.getItem("searchDetailValue") == 1 && searchBy === "searchId") {
+      setSearchBy("searchDetail");
     }
-  },[searchBy])
+  }, [searchBy]);
   const onSubmit = useCallback((_data) => {
-    console.log("_data",_data)
+    console.log("_data", _data);
     const selectedTenantId = _data?.tenantId?.code || tenantId;
 
-    if(Object.keys(_data).includes("propertyType"))
-    {
+    if (Object.keys(_data).includes("propertyType")) {
       setFormData(_data);
-      console.log("_data2",payload)
-      setPayload({locality:_data.locality.code, propertyType:_data.propertyType.code})
+      console.log("_data2", payload);
+      setPayload({ locality: _data.locality.code, propertyType: _data.propertyType.code });
       setSearchTenantId(selectedTenantId);
-      console.log("_data3",payload)
-    }
-    else {
-      setFormData(_data);   
-      console.log("_data5",formData)  
+      console.log("_data3", payload);
+    } else {
+      setFormData(_data);
+      console.log("_data5", formData);
 
       const hasOwnerName = typeof _data?.name === "string" ? !!_data.name.trim() : !!_data?.name;
       const hasPropertyId = typeof _data?.propertyIds === "string" ? !!_data.propertyIds.trim() : !!_data?.propertyIds;
@@ -236,43 +229,30 @@ const Search = () => {
       const hasLocality = !!(_data?.locality?.code || (typeof _data?.locality === "string" && _data.locality.trim()));
       const hasSurveyId = typeof _data?.surveyId === "string" ? !!_data.surveyId.trim() : !!_data?.surveyId;
 
-      const isOnlyNameFilled = 
-        hasOwnerName &&
-        !hasPropertyId &&
-        !hasMobileNumber &&
-        !hasOldPropertyId &&
-        !hasLocality &&
-        !hasSurveyId;
+      const isOnlyNameFilled = hasOwnerName && !hasPropertyId && !hasMobileNumber && !hasOldPropertyId && !hasLocality && !hasSurveyId;
 
-      const hasAnyField =
-        hasOwnerName ||
-        hasPropertyId ||
-        hasMobileNumber ||
-        hasOldPropertyId ||
-        hasLocality ||
-        hasSurveyId;
+      const hasAnyField = hasOwnerName || hasPropertyId || hasMobileNumber || hasOldPropertyId || hasLocality || hasSurveyId;
 
       if (!hasAnyField) {
         setShowToast({ warning: true, label: "ERR_PT_FILL_VALID_FIELDS" });
       } else if (isOnlyNameFilled) {
         setShowToast({
           warning: true,
-          label: t("ERR_PT_PROVIDE_ONE_MORE_FIELD") !== "ERR_PT_PROVIDE_ONE_MORE_FIELD"
-            ? "ERR_PT_PROVIDE_ONE_MORE_FIELD"
-            : "Please provide at least one more additional field (Property ID, Mobile Number, Existing Property ID, Locality, or Survey ID)"
+          label:
+            t("ERR_PT_PROVIDE_ONE_MORE_FIELD") !== "ERR_PT_PROVIDE_ONE_MORE_FIELD"
+              ? "ERR_PT_PROVIDE_ONE_MORE_FIELD"
+              : "Please provide at least one more additional field (Property ID, Mobile Number, Existing Property ID, Locality, or Survey ID)",
         });
       } else {
         const finalPayload = Object.keys(_data)
           .filter((k) => _data[k])
-          .reduce((acc, key) => ({
-            ...acc,
-            [key]:
-              key === "tenantId"
-                ? _data[key]?.code
-                : typeof _data[key] === "object"
-                ? _data[key]?.code
-                : _data[key],
-          }), {});
+          .reduce(
+            (acc, key) => ({
+              ...acc,
+              [key]: key === "tenantId" ? _data[key]?.code : typeof _data[key] === "object" ? _data[key]?.code : _data[key],
+            }),
+            {}
+          );
 
         console.log("FINAL PAYLOAD", finalPayload);
 
@@ -281,27 +261,42 @@ const Search = () => {
         setShowToast(null);
       }
     }
-  
   });
   return (
     <React.Fragment>
       <Header>{t("SEARCH_PROPERTY")}</Header>
-     <SearchComponent
-  t={t}
-  payload={formData}
-  searchBy={searchBy}
-  setSearchBy={setSearchBy}
-  PTSearchFields={PTSearchFields}
-  tenantId={tenantId}
-  onSubmit={onSubmit}
-  onReset={onReset}
-/>
-      
-      {Object.keys(payload).includes("propertyType") ?
-      <SearchPTIDPropComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={searchTenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
-      : Object.keys(payload).length > 0 ? (
-        <SearchResultComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={searchTenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
-      ):""}
+      <SearchComponent
+        t={t}
+        payload={formData}
+        searchBy={searchBy}
+        setSearchBy={setSearchBy}
+        PTSearchFields={PTSearchFields}
+        tenantId={tenantId}
+        onSubmit={onSubmit}
+        onReset={onReset}
+      />
+
+      {Object.keys(payload).includes("propertyType") ? (
+        <SearchPTIDPropComponent
+          t={t}
+          showToast={showToast}
+          setShowToast={setShowToast}
+          tenantId={searchTenantId}
+          payload={payload}
+          ptSearchConfig={{ ...ptSearchConfig }}
+        />
+      ) : Object.keys(payload).length > 0 ? (
+        <SearchResultComponent
+          t={t}
+          showToast={showToast}
+          setShowToast={setShowToast}
+          tenantId={searchTenantId}
+          payload={payload}
+          ptSearchConfig={{ ...ptSearchConfig }}
+        />
+      ) : (
+        ""
+      )}
       {showToast && (
         <Toast
           error={showToast.error}

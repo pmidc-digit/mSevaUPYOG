@@ -1,4 +1,4 @@
-import { DetailsCard, Loader, Table, Modal } from "@mseva/digit-ui-react-components";
+import { DetailsCard, Loader, Table, Modal, SubmitBar } from "@mseva/digit-ui-react-components";
 import React, { memo, useMemo, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import PropertyInvalidMobileNumber from "../../pages/citizen/MyProperties/PropertyInvalidMobileNumber";
@@ -93,6 +93,10 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
     });
   };
 
+  const handleMakePayment = (id) => {
+    history.push(`/digit-ui/citizen/payment/collect/PT/${id}/${tenantId}`);
+  };
+
   const columns = useMemo(
     () => [
       {
@@ -167,6 +171,13 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
         Cell: ({ row }) => GetCell(row?.original?.status),
         disableSortBy: true,
       },
+      {
+        Header: "Action",
+        Cell: ({ row }) => {
+          return <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(row?.original?.propertyId)} />;
+        },
+        disableSortBy: true,
+      },
       // {
       //   Header: t("ES_SEARCH_ACTION"),
       //   disableSortBy: true,
@@ -206,8 +217,6 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
     });
   };
 
-  console.log("data=====", data);
-
   const tableData = Object.values(data?.Properties || {}) || [];
 
   if (ptSearchConfig?.ptSearchCount && payload.locality && tableData && tableData.length > ptSearchConfig.ptSearchCount) {
@@ -215,7 +224,6 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
     return null;
   }
 
-  console.log("tableData=====", tableData);
   return (
     <React.Fragment>
       {data?.Properties?.length === 0 ? (

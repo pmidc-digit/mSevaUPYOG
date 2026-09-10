@@ -29,8 +29,8 @@ const PropertyDetails = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { id:applicationNumber } = useParams(); 
-  
-  console.log("application Number",applicationNumber)
+   const isCitizen = window.location.href.includes("citizen");
+  //console.log("application Number",applicationNumber)
   const [showToast, setShowToast] = useState(null);
   const [appDetailsToShow, setAppDetailsToShow] = useState({});
   const [enableAudit, setEnableAudit] = useState(false);
@@ -50,7 +50,6 @@ const PropertyDetails = () => {
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 780);
 
   let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, 'pb', applicationNumber);
-
   useEffect(() => {
     sessionStorage.removeItem("revalidateddone");
   }, []);
@@ -59,7 +58,7 @@ const PropertyDetails = () => {
     {
       businessService: "PT",
       consumerCode: applicationNumber,
-      tenantId,
+      tenantId : applicationDetails?.tenantId,
     },
     {
       refetchOnMount: "always",
@@ -80,8 +79,7 @@ const PropertyDetails = () => {
   //    console.log(error)
   //   }
   // },[])
-  console.log("fetchBillData",fetchBillData)
-console.log("applicationDetails",applicationDetails)
+ 
   const { isLoading: auditDataLoading, isError: isAuditError, data: auditData } = Digit.Hooks.pt.usePropertySearch(
     {
       tenantId,
@@ -94,7 +92,6 @@ console.log("applicationDetails",applicationDetails)
     }
   );
   const mutation = Digit.Hooks.pt.usePropertyAPI(tenantId, false);
-console.log("mutation",mutation)
   const { data: UpdateNumberConfig } = Digit.Hooks.useCommonMDMS(Digit.ULBService.getStateId(), "PropertyTax", ["UpdateNumber"], {
     select: (data) => {
       return data?.PropertyTax?.UpdateNumber?.[0];
@@ -102,8 +99,7 @@ console.log("mutation",mutation)
     retry: false,
     enable: false,
   });
-console.log("auditData",auditData)
-console.log("updateNumberConfig",UpdateNumberConfig)
+
   React.useEffect(() => {
     const onResize = () => {
       if (window.innerWidth <= 780 && !isMobile) {
@@ -173,7 +169,7 @@ console.log("updateNumberConfig",UpdateNumberConfig)
     moduleCode: "PT.UPDATE",
     role: "PT_CEMP",
   });
-console.log("workflowDetails",workflowDetails)
+
   const closeToast = () => {
     setShowToast(null);
   };
@@ -270,6 +266,11 @@ console.log("workflowDetails",workflowDetails)
   useEffect(() => {
     // if (appDetailsToShow?.applicationDetails?.[0]?.values?.[1].title !== "PT_TOTAL_DUES") {
      if (fetchBillData && fetchBillData?.Bill?.length>0 && fetchBillData?.Bill?.[0]?.totalAmount > 0) {
+      // Check if bill section already exists at the beginning
+      if (appDetailsToShow?.applicationDetails?.[0]?.values?.[0]?.title === "PT_TOTAL_DUES") {
+        return;
+      }
+
       let dateString=fetchBillData?.Bill?.[0]?.billDetails?.map(detail => {
     const fromYear = new Date(detail.fromPeriod).getFullYear();
     const toYear = new Date(detail.toPeriod).getFullYear();
@@ -281,26 +282,39 @@ console.log("workflowDetails",workflowDetails)
         asSectionHeader: true,
        // additionalDetails:{billingInfo:fetchBillData?.Bill},
         belowComponent: () => (
-          <LinkLabel
-            onClick={() => {
-              const element = document.getElementById("payment-history");
-              if (element) {
-                const header = element.querySelector(".accordion-header");
-                const body = element.querySelector(".accordion-body");
-                if (header && !body) {
-                  header.click();
+          <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
+            <LinkLabel
+              onClick={() => {
+               isCitizen ?
+                history.push( `/digit-ui/citizen/payment/collect/PT/${applicationNumber}?tenantId=${applicationDetails?.tenantId}`)
+                :
+                history.push( `/digit-ui/employee/payment/collect/PT/${applicationNumber}?tenantId=${applicationDetails?.tenantId}`)
+              }}
+              style={isMobile ? { marginTop: "15px", marginLeft: "0px", border: '1px solid', padding: '8px', minWidth: '100px', borderRadius: '8px', backgroundColor: '#2947a3', color: 'white', cursor: 'pointer', textDecoration: 'none' } : { marginTop: "15px", border: '1px solid', padding: '8px', minWidth: '100px', borderRadius: '8px', backgroundColor: '#2947a3', color: 'white', cursor: 'pointer', textDecoration: 'none' }}
+            >
+              {t("PT_PAY_DUE")}
+            </LinkLabel>
+            <LinkLabel
+              onClick={() => {
+                const element = document.getElementById("payment-history");
+                if (element) {
+                  const header = element.querySelector(".accordion-header");
+                  const body = element.querySelector(".accordion-body");
+                  if (header && !body) {
+                    header.click();
+                  }
+                  setTimeout(() => {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }, 100);
+                } else {
+                  history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${applicationNumber}`, state: { tenantId: appDetailsToShow?.applicationData?.tenantId } });
                 }
-                setTimeout(() => {
-                  element.scrollIntoView({ behavior: "smooth" });
-                }, 100);
-              } else {
-                history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${applicationNumber}`, state: { tenantId: appDetailsToShow?.applicationData?.tenantId } });
-              }
-            }}
-            style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
-          >
-            {t("PT_VIEW_PAYMENT")}
-          </LinkLabel>
+              }}
+              style={isMobile ? { marginTop: "15px", marginLeft: "0px", border: '1px solid', padding: '8px', minWidth: '150px', borderRadius: '8px' } : { marginTop: "15px", border: '1px solid', padding: '8px', minWidth: '150px', borderRadius: '8px' }}
+            >
+              {t("PT_VIEW_PAYMENT")}
+            </LinkLabel>
+          </div>
         ),
         values: [
           // {

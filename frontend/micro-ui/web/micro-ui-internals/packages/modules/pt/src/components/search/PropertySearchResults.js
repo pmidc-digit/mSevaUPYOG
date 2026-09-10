@@ -1,4 +1,4 @@
-import { DetailsCard, Loader, Table, Modal } from "@mseva/digit-ui-react-components";
+import { DetailsCard, Loader, Table, Modal, SubmitBar } from "@mseva/digit-ui-react-components";
 import React, { memo, useMemo, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import PropertyInvalidMobileNumber from "../../pages/citizen/MyProperties/PropertyInvalidMobileNumber";
@@ -7,7 +7,7 @@ const GetCell = (value) => <span className="cell-text">{value}</span>;
 
 const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchConfig }) => {
   const history = useHistory();
-
+  const isCitizen = window.location.href.includes("citizen");
   const [searchQuery, setSearchQuery] = useState({
     /* ...defaultValues,   to enable pagination */
     ...payload,
@@ -17,13 +17,12 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [ownerInvalidMobileNumberIndex, setOwnerInvalidMobileNumberIndex] = useState(0);
   const pathvar = window.location.href.includes("employee") ? "employee" : "citizen";
-
+  //console.log("Hellopayload",payload)
   const { data, isLoading, error, isSuccess, billData, revalidate } = Digit.Hooks.pt.usePropertySearchWithDue({
     tenantId,
     filters: searchQuery,
     configs: { enabled: Object.keys(payload).length > 0 ? true : false, retry: false, retryOnMount: false, staleTime: Infinity },
   });
-
   const mutation = Digit.Hooks.pt.usePropertyAPI(tenantId, false);
   const isEmployee = window.location.href.includes("employee");
   const UpdatePropertyNumberComponent = Digit?.ComponentRegistryService?.getComponent("EmployeeUpdateOwnerNumber");
@@ -91,6 +90,13 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
       mobileNumber: selectedProperty?.owners[ind]?.mobileNumber,
       index: ind,
     });
+  };
+
+  const handleMakePayment = (id, billTenantId) => {
+    isCitizen ?
+    history.push( `/digit-ui/citizen/payment/collect/PT/${id}?tenantId=${billTenantId}`)
+    :
+    history.push( `/digit-ui/employee/payment/collect/PT/${id}?tenantId=${billTenantId}`);
   };
 
   const columns = useMemo(
@@ -167,6 +173,22 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
         Cell: ({ row }) => GetCell(row?.original?.status),
         disableSortBy: true,
       },
+      {
+        Header: "Action",
+        Cell: ({ row }) => {
+          
+
+          const propertyBill = billData?.Bill?.find(
+            bill => bill.consumerCode === row.original.propertyId
+          );
+          if (propertyBill && propertyBill.totalAmount > 0) {
+            return <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={() => handleMakePayment(row?.original?.propertyId, propertyBill.tenantId)} />;
+          }
+
+          return null;
+        },
+        disableSortBy: true,
+      },
       // {
       //   Header: t("ES_SEARCH_ACTION"),
       //   disableSortBy: true,
@@ -183,7 +205,7 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
       //   },
       // },
     ],
-    []
+    [billData, t, isEmployee, handleMakePayment]
   );
   let isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -206,8 +228,6 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
     });
   };
 
-  console.log("data=====", data);
-
   const tableData = Object.values(data?.Properties || {}) || [];
 
   if (ptSearchConfig?.ptSearchCount && payload.locality && tableData && tableData.length > ptSearchConfig.ptSearchCount) {
@@ -215,7 +235,6 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
     return null;
   }
 
-  console.log("tableData=====", tableData);
   return (
     <React.Fragment>
       {data?.Properties?.length === 0 ? (

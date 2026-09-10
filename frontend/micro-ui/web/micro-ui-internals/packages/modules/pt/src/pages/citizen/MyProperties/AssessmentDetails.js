@@ -3,7 +3,20 @@ import { useTranslation } from "react-i18next";
 import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDetails";
 
 import { useParams, useLocation, useHistory } from "react-router-dom";
-import { ActionBar, Header, Loader, SubmitBar, Card, CardSubHeader, CardSectionHeader, LinkLabel, CardLabel, CardHeader, CardText, CheckBox } from "@mseva/digit-ui-react-components";
+import {
+  ActionBar,
+  Header,
+  Loader,
+  SubmitBar,
+  Card,
+  CardSubHeader,
+  CardSectionHeader,
+  LinkLabel,
+  CardLabel,
+  CardHeader,
+  CardText,
+  CheckBox,
+} from "@mseva/digit-ui-react-components";
 import { useQueryClient } from "react-query";
 import _, { first, update, values } from "lodash";
 import { Modal, Dropdown, Row, StatusTable } from "@mseva/digit-ui-react-components";
@@ -15,16 +28,22 @@ const getBooleanDisplayValue = (value) => (value === true ? "Yes" : "No");
 const AssessmentDetails = () => {
   const { t } = useTranslation();
 
-
-  const [penalty, setPenalty] = useState("")
-  const [rebate, setRebate] = useState("")
+  const [penalty, setPenalty] = useState("");
+  const [rebate, setRebate] = useState("");
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { id: applicationNo } = useParams();
   const stateId = Digit.ULBService.getStateId();
   const location = useLocation();
   const AssessmentData = location?.state?.Assessment;
+  // location.state is cleared when the property URL is refreshed or opened directly.
+  // The route id is the property id, so it is the safe fallback for data fetches.
+  const propertyId = AssessmentData?.propertyId || applicationNo;
+  const financialYear = AssessmentData?.financialYear;
+  const assessmentQueryKey = ["PT_ASSESSMENT", propertyId, financialYear];
   const submitLabel = location?.state?.submitLabel;
-  console.log("location",location?.state)
+
+  console.log("location", location);
+
   const [showToast, setShowToast] = useState(null);
   const queryClient = useQueryClient();
   const history = useHistory();
@@ -34,9 +53,9 @@ const AssessmentDetails = () => {
   const [popup, showPopUp] = useState(false);
   const [selectedPenalityReason, setSelectedPenalityReason] = useState(null);
   const [selectedRebateReason, setSelectedRebateReason] = useState(null);
-  const [showCalc, setShowCalc] = useState(false)
-  const [isCheck,setIsCheck]=useState(false)
-  const [unitsCharge, setUnitsCharge] = useState()
+  const [showCalc, setShowCalc] = useState(false);
+  const [isCheck, setIsCheck] = useState(false);
+  const [unitsCharge, setUnitsCharge] = useState();
   const first_temp = useRef();
   const second_temp = useRef();
   const third_temp = useRef();
@@ -48,7 +67,9 @@ const AssessmentDetails = () => {
 
   const getPropertySubtypeLocale = (value) => `PROPERTYTAX_BILLING_SLAB_${value}`;
 
-  let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, tenantId, AssessmentData?.propertyId);
+  let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, tenantId, propertyId, {
+    enabled: Boolean(propertyId),
+  });
   const { isLoading: assessmentLoading, mutate: assessmentMutate } = Digit.Hooks.pt.usePropertyAssessment(tenantId);
   const {
     isLoading: ptCalculationEstimateLoading,
@@ -60,9 +81,9 @@ const AssessmentDetails = () => {
   let { data: rebateImportantDates } = Digit.Hooks.pt.useMDMS(stateId, "PropertyTax", "Rebate");
   let { data: penalityImportantDates } = Digit.Hooks.pt.useMDMS(stateId, "PropertyTax", "Penality");
   let { data: interestImportantDates } = Digit.Hooks.pt.useMDMS(stateId, "PropertyTax", "Interest");
-  let [rebateObj, setRebateObj] = useState(null)
-  let [penalityObj, setPenalityObj] = useState(null)
-  let [interestObj, setInterestObj] = useState(null)
+  let [rebateObj, setRebateObj] = useState(null);
+  let [penalityObj, setPenalityObj] = useState(null);
+  let [interestObj, setInterestObj] = useState(null);
   const getMonth = (date) => {
     return parseInt(date.split("/")[1]);
   };
@@ -147,73 +168,59 @@ const AssessmentDetails = () => {
     }
     return chosenDateObj;
   };
-  console.log("penality", penalityImportantDates, rebateImportantDates)
   useEffect(() => {
+    if (!financialYear) return;
+
     if (penalityImportantDates?.PropertyTax?.Interest?.length > 0 && penalityObj === null) {
-
       // let rebateDateObj=rebateImportantDates.filter((item)=>item.fromFY===AssessmentData.financialYear)
-      let penalityObjj = findCorrectDateObjPenaltyIntrest(AssessmentData.financialYear, penalityImportantDates?.PropertyTax?.Interest)
-      setPenalityObj(penalityObjj)
-      console.log("penalityObj", penalityObj)
-
+      let penalityObjj = findCorrectDateObjPenaltyIntrest(financialYear, penalityImportantDates?.PropertyTax?.Interest);
+      setPenalityObj(penalityObjj);
     }
     if (rebateImportantDates?.PropertyTax?.Rebate?.length > 0 && rebateObj === null) {
-
-      let rebateObjj = findCorrectDateObj(AssessmentData.financialYear, rebateImportantDates?.PropertyTax?.Rebate)
-      setRebateObj(rebateObjj)
-      console.log("rebateObj", rebateObj)
-
+      let rebateObjj = findCorrectDateObj(financialYear, rebateImportantDates?.PropertyTax?.Rebate);
+      setRebateObj(rebateObjj);
     }
     if (interestImportantDates?.PropertyTax?.Interest?.length > 0 && interestObj === null) {
-
       // let rebateDateObj=rebateImportantDates.filter((item)=>item.fromFY===AssessmentData.financialYear)
-      let interestObjj = findCorrectDateObjPenaltyIntrest(AssessmentData.financialYear, interestImportantDates?.PropertyTax?.Interest)
-      setInterestObj(interestObjj)
-      console.log("interestObj", interestObj)
-
+      let interestObjj = findCorrectDateObjPenaltyIntrest(financialYear, interestImportantDates?.PropertyTax?.Interest);
+      setInterestObj(interestObjj);
     }
-  }, [penalityImportantDates?.PropertyTax?.Interest || rebateImportantDates?.PropertyTax?.Interest || interestImportantDates?.PropertyTax?.Interest])
-  console.log("imp dates", penalityObj, interestObj, rebateObj)
-  const fetchBillParams = { consumerCode: AssessmentData?.propertyId };
-  console.log("ChargeableSlabsMenu", ChargeSlabsMenu, ptCalculationEstimateData)
+  }, [financialYear, penalityImportantDates, rebateImportantDates, interestImportantDates, penalityObj, rebateObj, interestObj]);
+  const fetchBillParams = { consumerCode: propertyId };
 
   useEffect(() => {
     try {
       if (ptCalculationEstimateData?.Calculation?.length > 0) {
-        let id = ptCalculationEstimateData?.Calculation[0]?.billingSlabIds.map(item => item.split('|')[0]).join(',');
+        let id = ptCalculationEstimateData?.Calculation[0]?.billingSlabIds.map((item) => item.split("|")[0]).join(",");
         let filters = {
-          id: id
-        }
-        Digit.PTService.billingSlabSearch(tenantId, filters)
-          .then((response) => {
-            console.log("res", response)
-            setUnitsCharge(response.billingSlab)
-          })
+          id: id,
+        };
+        Digit.PTService.billingSlabSearch(tenantId, filters).then((response) => {
+          setUnitsCharge(response.billingSlab);
+        });
       }
-    }
-    catch {
-
-    }
-  }, [ptCalculationEstimateData])
+    } catch {}
+  }, [ptCalculationEstimateData]);
   let ptCalculationEstimateDataCopy;
-  if (!ptCalculationEstimateDataCopy)
-    ptCalculationEstimateDataCopy = ptCalculationEstimateData?.Calculation[0];
+  if (!ptCalculationEstimateDataCopy) ptCalculationEstimateDataCopy = ptCalculationEstimateData?.Calculation[0];
 
   const paymentDetails = Digit.Hooks.useFetchBillsForBuissnessService(
     { businessService: "PT", ...fetchBillParams, tenantId: tenantId },
     {
-      enabled: AssessmentData?.propertyId ? true : false,
+      enabled: Boolean(propertyId),
     }
   );
 
   useEffect(() => {
     // estimate calculation
-    ptCalculationEstimateMutate({ Assessment: AssessmentData });
-  }, []);
+    if (AssessmentData) {
+      ptCalculationEstimateMutate({ Assessment: AssessmentData });
+    }
+  }, [AssessmentData, ptCalculationEstimateMutate]);
   useEffect(() => {
-    setPenalty(parseInt(ptCalculationEstimateData?.Calculation[0]?.taxHeadEstimates[6]?.estimateAmount))
-    setRebate(parseInt(ptCalculationEstimateData?.Calculation[0]?.taxHeadEstimates[5]?.estimateAmount))
-  }, [ptCalculationEstimateLoading])
+    setPenalty(parseInt(ptCalculationEstimateData?.Calculation[0]?.taxHeadEstimates[6]?.estimateAmount));
+    setRebate(parseInt(ptCalculationEstimateData?.Calculation[0]?.taxHeadEstimates[5]?.estimateAmount));
+  }, [ptCalculationEstimateLoading]);
   useEffect(() => {
     if (applicationDetails) setAppDetailsToShow(_.cloneDeep(applicationDetails));
   }, [applicationDetails]);
@@ -233,125 +240,144 @@ const AssessmentDetails = () => {
     values: [
       {
         title: "PT_PROPERTY_PTUID",
-        value: AssessmentData?.propertyId,
+        value: propertyId,
       },
       {
         title: "ES_PT_TITLE_BILLING_PERIOD",
-        value: location?.state?.Assessment?.financialYear,
+        value: financialYear,
       },
     ],
     additionalDetails: {
       taxHeadEstimatesCalculation: ptCalculationEstimateData?.Calculation[0],
     },
-  }
-  );
+  });
 
   const closeToast = () => {
     setShowToast(null);
   };
-  const handleUpdateAssessment = (assessment) =>{
-    try{
-      
-    Digit.PTService.assessmentUpdate({Assessment:assessment,tenantId:tenantId})
-    .then
-    (response =>
-    {
-      if(response?.Assessments?.length>0){
-          history.push("/digit-ui/citizen/pt/property/pt-acknowledgement",{message:"PT_PROPERTY_RE_ASSESSMENT_SUCCESS_MSG",response:response?.Assessments[0]?.assessmentNumber,isSuccess:true,labelName:"PT_ASSESSMENT_NUMBER",responseData:response?.Assessments[0],previouspath:location,headerName:t("PT_REASSESS_PROPERTY")})
-        console.log("update Assessment success")
-      }
-    })
+  const handleUpdateAssessment = (assessment) => {
+    try {
+      Digit.PTService.assessmentUpdate({ Assessment: assessment, tenantId: tenantId }).then((response) => {
+        if (response?.Assessments?.length > 0) {
+          history.push("/digit-ui/citizen/pt/property/pt-acknowledgement", {
+            message: "Property Assessed Successfully",
+            response: response?.Assessments[0]?.assessmentNumber,
+            isSuccess: true,
+            labelName: "PT_ASSESSMENT_NUMBER",
+            responseData: response?.Assessments[0],
+            previouspath: location,
+            headerName: t("PT_REASSESS_PROPERTY"),
+          });
+        }
+      });
+    } catch (error) {
+      return error;
     }
-    catch(error){
-    console.log(error)
-    }
-  }
-  const handleReAssessment = ()=>{
+  };
+  const handleReAssessment = () => {
     if (AssessmentData && AssessmentData.assessmentNumber) {
       handleUpdateAssessment(AssessmentData);
       return;
     }
-    
-     let filters={assessmentNumbers:applicationNo}
-    
 
-    try{
-    Digit.PTService.assessmentSearch({tenantId:tenantId,filters:filters})
-    .then
-    (response =>
-    {
-    if(response?.Assessments?.length>0){
-      
-       handleUpdateAssessment(response.Assessments[0]) 
-    }
-    })
-    }
-    catch(error){
-console.log(error)
-    }
-  }
-console.log("isCheck",isCheck)
-  const handleAssessment = () => {
-    if(isCheck){
-      if(location?.state?.reAssess===true){
-        handleReAssessment()
- 
-      }
-      else{
-    if (!queryClient.getQueryData(["PT_ASSESSMENT", AssessmentData?.propertyId, location?.state?.Assessment?.financialYear])) {
-      assessmentMutate(
-        { Assessment: AssessmentData },
-        {
-          onError: (error, variables) => {
-            setShowToast({ key: "error", action: error?.response?.data?.Errors[0]?.message || error.message, error: { message: error?.response?.data?.Errors[0]?.code || error.message } });
-            setTimeout(closeToast, 5000);
-          },
-          onSuccess: (data, variables) => {
-            sessionStorage.setItem("IsPTAccessDone", data?.Assessments?.[0]?.auditDetails?.lastModifiedTime);
-            let user = sessionStorage.getItem("Digit.User")
-            let userType = JSON.parse(user)
-            setShowToast({ key: "success", action: { action: "ASSESSMENT" } });
-            setTimeout(closeToast, 5000);
-            console.log("useType.value.info.type", userType, typeof (userType))
-            // queryClient.clear();
-            // queryClient.setQueryData(["PT_ASSESSMENT", propertyId, location?.state?.Assessment?.financialYear], true);
-            if (userType?.value?.info?.type == "CITIZEN") {
-                history.push("/digit-ui/citizen/pt/property/pt-acknowledgement",{message:"PT_PROPERTY_RE_ASSESSMENT_SUCCESS_MSG",response:response?.Assessments[0]?.assessmentNumber,isSuccess:true,labelName:"PT_ASSESSMENT_NUMBER",responseData:response?.Assessments[0],previouspath:location,headerName:t("PT_ASSESS_PROPERTY")})
-            //  history.push(`/digit-ui/citizen/payment/my-bills/PT/${AssessmentData?.propertyId}`);
-            }
-            else {
-                history.push("/digit-ui/citizen/pt/property/pt-acknowledgement",{message:"PT_PROPERTY_RE_ASSESSMENT_SUCCESS_MSG",response:response?.Assessments[0]?.assessmentNumber,isSuccess:true,labelName:"PT_ASSESSMENT_NUMBER",responseData:response?.Assessments[0],previouspath:location,headerName:t("PT_ASSESS_PROPERTY")})
-              //proceeedToPay()
-            }
+    let filters = { assessmentNumbers: applicationNo };
 
-          },
+    try {
+      Digit.PTService.assessmentSearch({ tenantId: tenantId, filters: filters }).then((response) => {
+        if (response?.Assessments?.length > 0) {
+          handleUpdateAssessment(response.Assessments[0]);
         }
-      );
+      });
+    } catch (error) {
+      return error;
     }
-  }
-  }
-  else{
-  alert("Please check the declaration box to proceed futher")
-  }
+  };
+  const handleAssessment = () => {
+    if (!AssessmentData) {
+      setShowToast({ key: "error", action: t("CS_COMMON_ERROR") });
+      return;
+    }
+
+    if (isCheck) {
+      if (location?.state?.reAssess === true) {
+        handleReAssessment();
+      } else {
+        if (!queryClient.getQueryData(assessmentQueryKey)) {
+          assessmentMutate(
+            { Assessment: AssessmentData },
+            {
+              onError: (error, variables) => {
+                setShowToast({
+                  key: "error",
+                  action: error?.response?.data?.Errors[0]?.message || error.message,
+                  error: { message: error?.response?.data?.Errors[0]?.code || error.message },
+                });
+                setTimeout(closeToast, 5000);
+              },
+              onSuccess: (data, variables) => {
+                sessionStorage.setItem("IsPTAccessDone", data?.Assessments?.[0]?.auditDetails?.lastModifiedTime);
+                let user = sessionStorage.getItem("Digit.User");
+                let userType = JSON.parse(user);
+                setShowToast({ key: "success", action: { action: "ASSESSMENT" } });
+                setTimeout(closeToast, 5000);
+                // queryClient.clear();
+                // queryClient.setQueryData(["PT_ASSESSMENT", propertyId, location?.state?.Assessment?.financialYear], true);
+                if (userType?.value?.info?.type == "CITIZEN") {
+                  history.push("/digit-ui/citizen/pt/property/pt-acknowledgement", {
+                    message: "Property Assessed Successfully",
+                    response: data?.Assessments[0]?.assessmentNumber,
+                    isSuccess: true,
+                    labelName: "PT_ASSESSMENT_NUMBER",
+                    responseData: data?.Assessments[0],
+                    previouspath: location,
+                    headerName: t("PT_ASSESS_PROPERTY"),
+                  });
+                  //  history.push(`/digit-ui/citizen/payment/my-bills/PT/${AssessmentData?.propertyId}`);
+                } else {
+                  history.push("/digit-ui/citizen/pt/property/pt-acknowledgement", {
+                    message: "Property Assessed Successfully",
+                    response: data?.Assessments[0]?.assessmentNumber,
+                    isSuccess: true,
+                    labelName: "PT_ASSESSMENT_NUMBER",
+                    responseData: data?.Assessments[0],
+                    previouspath: location,
+                    headerName: t("PT_ASSESS_PROPERTY"),
+                  });
+                  //proceeedToPay()
+                }
+              },
+            }
+          );
+        }
+      }
+    } else {
+      alert("Please check the declaration box to proceed futher");
+    }
   };
 
   const proceeedToPay = () => {
-    history.push(`/digit-ui/employee/payment/collect/PT/${AssessmentData?.propertyId}`);
+    history.push(`/digit-ui/employee/payment/collect/PT/${propertyId}`);
   };
 
-  if (ptCalculationEstimateLoading || assessmentLoading || !applicationDetails?.applicationDetails) {
+  if (isLoading || assessmentLoading || (AssessmentData && ptCalculationEstimateLoading)) {
     return <Loader />;
   }
 
+  if (isError || !applicationDetails?.applicationDetails) {
+    return (
+      <Card>
+        <Header>{t("CS_COMMON_ERROR")}</Header>
+        <CardText>{error?.response?.data?.Errors?.[0]?.message || t("CS_COMMON_ERROR_LOADING_RESULTS")}</CardText>
+      </Card>
+    );
+  }
 
   let address_to_display = applicationDetails?.applicationData?.address;
   if (address_to_display?.doorNo) {
-    address_to_display = address_to_display?.doorNo + ',' + address_to_display?.locality?.area + ',' + address_to_display?.city;
+    address_to_display = address_to_display?.doorNo + "," + address_to_display?.locality?.area + "," + address_to_display?.city;
+  } else {
+    address_to_display = address_to_display?.locality?.area + "," + address_to_display?.city;
   }
-  else {
-    address_to_display = address_to_display?.locality?.area + ',' + address_to_display?.city;
-  }
-
 
   const Heading = (props) => {
     return <h1 className="heading-m">{props.label}</h1>;
@@ -372,24 +398,24 @@ console.log("isCheck",isCheck)
     );
   };
   function change() {
-    let total_amount = ptCalculationEstimateData?.Calculation[0]?.totalAmount
+    let total_amount = ptCalculationEstimateData?.Calculation[0]?.totalAmount;
     const [first, second] = [parseInt(first_temp.current.value), parseInt(second_temp.current.value)];
     let additionalDetails = {
-      "adhocPenalty": 0,
-      "adhocExemptionReason": null,
-      "adhocPenaltyReason": null,
-      "adhocExemption": 0
-    }
+      adhocPenalty: 0,
+      adhocExemptionReason: null,
+      adhocPenaltyReason: null,
+      adhocExemption: 0,
+    };
     AssessmentData.additionalDetails = additionalDetails;
-    if ((selectedPenalityReason && first > 0)/* &&(!selectedRebateReason) */) {
-      if (selectPenalityReason.value !== 'Others') {
+    if (selectedPenalityReason && first > 0 /* &&(!selectedRebateReason) */) {
+      if (selectPenalityReason.value !== "Others") {
         if (first < total_amount) {
           let additionalPenality = first;
           ptCalculationEstimateData.Calculation[0].taxHeadEstimates[6] = {
-            "taxHeadCode": "PT_TIME_PENALTY",
-            "estimateAmount": ptCalculationEstimateData.Calculation[0].taxHeadEstimates[6].estimateAmount = first + penalty,
-            "category": "TAX"
-          }
+            taxHeadCode: "PT_TIME_PENALTY",
+            estimateAmount: (ptCalculationEstimateData.Calculation[0].taxHeadEstimates[6].estimateAmount = first + penalty),
+            category: "TAX",
+          };
           // AssessmentData.additionalDetails={
           //   "adhocPenalty":additionalPenality,
           //   "adhocPenaltyReason":selectedPenalityReason.value,
@@ -397,20 +423,17 @@ console.log("isCheck",isCheck)
           AssessmentData.additionalDetails.adhocPenalty = additionalPenality;
           AssessmentData.additionalDetails.adhocPenaltyReason = selectedPenalityReason.value;
           ptCalculationEstimateData.Calculation[0].totalAmount = ptCalculationEstimateData?.Calculation[0]?.taxAmount + first;
-          console.log("ptCalculationEstimateData", ptCalculationEstimateData,)
-        }
-        else {
+        } else {
           alert("Penality cannot exceed total amount");
         }
-      }
-      else {
+      } else {
         if (first < total_amount) {
           let additionalPenality = first;
           ptCalculationEstimateData.Calculation[0].taxHeadEstimates[6] = {
-            "taxHeadCode": "PT_TIME_PENALTY",
-            "estimateAmount": ptCalculationEstimateData.Calculation[0].taxHeadEstimates[6]?.estimateAmount + first + penalty,
-            "category": "TAX"
-          }
+            taxHeadCode: "PT_TIME_PENALTY",
+            estimateAmount: ptCalculationEstimateData.Calculation[0].taxHeadEstimates[6]?.estimateAmount + first + penalty,
+            category: "TAX",
+          };
           // AssessmentData.additionalDetails={
           //   "adhocPenalty":additionalPenality,
           //   "adhocPenaltyReason":fourth_temp.current.value,
@@ -418,22 +441,21 @@ console.log("isCheck",isCheck)
           AssessmentData.additionalDetails.adhocPenalty = additionalPenality;
           AssessmentData.additionalDetails.adhocPenaltyReason = fourth_temp.current.value;
           ptCalculationEstimateData.Calculation[0].totalAmount = ptCalculationEstimateData?.Calculation[0]?.totalAmount + first;
-        }
-        else {
+        } else {
           alert("Penality cannot exceed total amount");
         }
       }
     }
 
-    if ((selectedRebateReason && second) /* && (!selectedPenalityReason) */) {
+    if (selectedRebateReason && second /* && (!selectedPenalityReason) */) {
       if (selectedRebateReason.value !== "Others") {
         if (second > 0) {
           if (second < total_amount) {
             ptCalculationEstimateData.Calculation[0].taxHeadEstimates[5] = {
-              "taxHeadCode": "PT_TIME_REBATE",
-              "estimateAmount": ptCalculationEstimateData.Calculation[0].taxHeadEstimates[5].estimateAmount = second + rebate,
-              "category": "TAX"
-            }
+              taxHeadCode: "PT_TIME_REBATE",
+              estimateAmount: (ptCalculationEstimateData.Calculation[0].taxHeadEstimates[5].estimateAmount = second + rebate),
+              category: "TAX",
+            };
             // AssessmentData.additionalDetails={
             //   "adhocExemption":second,
             //   "adhocExemptionReason":selectedRebateReason.value,
@@ -441,20 +463,18 @@ console.log("isCheck",isCheck)
             AssessmentData.additionalDetails.adhocExemption = second;
             AssessmentData.additionalDetails.adhocExemptionReason = selectedRebateReason.value;
             ptCalculationEstimateData.Calculation[0].totalAmount = ptCalculationEstimateData?.Calculation[0]?.totalAmount - second;
-          }
-          else {
+          } else {
             alert("Adhoc Exemption cannot be greater than the estimated tax for the given property");
           }
         }
-      }
-      else {
+      } else {
         if (second > 0) {
           if (second < total_amount) {
             ptCalculationEstimateData.Calculation[0].taxHeadEstimates[5] = {
-              "taxHeadCode": "PT_TIME_REBATE",
-              "estimateAmount": ptCalculationEstimateData.Calculation[0].taxHeadEstimates[5]?.estimateAmount - second - rebate,
-              "category": "TAX"
-            }
+              taxHeadCode: "PT_TIME_REBATE",
+              estimateAmount: ptCalculationEstimateData.Calculation[0].taxHeadEstimates[5]?.estimateAmount - second - rebate,
+              category: "TAX",
+            };
             // AssessmentData.additionalDetails={
             //   "adhocExemption":second,
             //   "adhocExemptionReason":third_temp.current.value,
@@ -462,8 +482,7 @@ console.log("isCheck",isCheck)
             AssessmentData.additionalDetails.adhocExemption = second;
             AssessmentData.additionalDetails.adhocExemptionReason = third_temp.current.value;
             ptCalculationEstimateData.Calculation[0].totalAmount = ptCalculationEstimateData?.Calculation[0]?.totalAmount - second;
-          }
-          else {
+          } else {
             alert("Adhoc Exemption cannot be greater than the estimated tax for the given property");
           }
         }
@@ -491,7 +510,7 @@ console.log("isCheck",isCheck)
       title: "PT_OTHERS",
       value: "Others",
     },
-  ]
+  ];
   const Rebate_menu = [
     {
       title: "PT_ADVANCED_PAID_BY_CITIZEN_EARLIER",
@@ -509,13 +528,13 @@ console.log("isCheck",isCheck)
       title: "PT_OTHERS",
       value: "Others",
     },
-  ]
+  ];
   const selectPenalityReason = (reason) => {
     setSelectedPenalityReason(reason);
-  }
+  };
   const selectRebateReason = (reason) => {
     setSelectedRebateReason(reason);
-  }
+  };
   /* const RebatePenalityPoPup=() =>{
     return (
       <Modal
@@ -620,7 +639,6 @@ console.log("isCheck",isCheck)
     }
     return `${key}_${convertedValue}`;
   };
-  console.log("manasa", applicationDetails)
   const getCityLocale = (value = "") => {
     let convertedValue = convertDotValues(value);
     if (convertedValue == "NA" || !checkForNotNull(value)) {
@@ -639,143 +657,176 @@ console.log("isCheck",isCheck)
   };
   return (
     <div>
-       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-      <Header>{`Property Re-Assessment (${AssessmentData?.financialYear})`}</Header>
-       <h1 style={{fontSize:'18px',border:'1px solid grey',padding:'8px',backgroundColor:'grey',color:'white'}}>Property ID: {AssessmentData?.propertyId}</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Header>{`Property Re-Assessment (${AssessmentData?.financialYear})`}</Header>
+        <h1 style={{ fontSize: "18px", border: "1px solid grey", padding: "8px", backgroundColor: "grey", color: "white" }}>
+          Property ID: {propertyId}
+        </h1>
       </div>
       <ApplicationDetailsTemplate
-        applicationDetails={
-          {
-            applicationDetails: [
-
-              {
-                title: "PT_TAX_ESTIMATION_HEADER",
-                additionalDetails: {
-                  taxHeadEstimatesCalculation: ptCalculationEstimateData?.Calculation[0],
-                },
+        applicationDetails={{
+          applicationDetails: [
+            {
+              title: "PT_TAX_ESTIMATION_HEADER",
+              additionalDetails: {
+                taxHeadEstimatesCalculation: ptCalculationEstimateData?.Calculation[0],
               },
-              {
-                // belowComponent:()=><LinkLabel onClick={()=>{showPopUp(true)}} style={isMobile ? {color:"#a82227",marginLeft:"0px"} : {color:"#a82227"}}>{t("PT_ADD_REBATE_PENALITY")}</LinkLabel>
-                belowComponent: () => <>
-                {ptCalculationEstimateData?.Calculation?.length>0 &&  <LinkLabel onClick={() => { setShowCalc(true); }} style={isMobile ? { color: "#a82227", marginLeft: "0px" } : { color: "#a82227" }}>{t("CALCULATION DETAILS")}</LinkLabel>}
+            },
+            {
+              // belowComponent:()=><LinkLabel onClick={()=>{showPopUp(true)}} style={isMobile ? {color:"#a82227",marginLeft:"0px"} : {color:"#a82227"}}>{t("PT_ADD_REBATE_PENALITY")}</LinkLabel>
+              belowComponent: () => (
+                <>
+                  {ptCalculationEstimateData?.Calculation?.length > 0 && (
+                    <LinkLabel
+                      onClick={() => {
+                        setShowCalc(true);
+                      }}
+                      style={isMobile ? { color: "#a82227", marginLeft: "0px" } : { color: "#a82227" }}
+                    >
+                      {t("CALCULATION DETAILS")}
+                    </LinkLabel>
+                  )}
                   <PTImportantDates financialYear={AssessmentData?.financialYear} />
                 </>
-              },
-              {
-                title: t("PT_PROPERTY_ADDRESS_SUB_HEADER"),
-                values: [
-
-                  { title: t("PT_PROPERTY_ADDRESS_CITY"), value: t(getCityLocale(applicationDetails?.tenantId)) || t("CS_NA") },
-                  { title: t("PT_PROPERTY_ADDRESS_HOUSE_NO"), value: applicationDetails?.applicationData?.address?.doorNo || t("CS_NA") },
-                  { title: "Building/Company Name", value: applicationDetails?.applicationData?.address?.buildingName || t("CS_NA") },
-                  { title: t("PT_PROPERTY_ADDRESS_STREET_NAME"), value: applicationDetails?.applicationData?.address?.street || t("CS_NA") },
-                  {
-                    title: t("PT_PROPERTY_ADDRESS_MOHALLA"),
-                    value: t(`${getMohallaLocale(applicationDetails?.applicationData?.address?.locality?.code, applicationDetails?.tenantId)}`) || t("CS_NA"),
-                  },
-                  { title: t("PT_PROPERTY_ADDRESS_PINCODE"), value: applicationDetails?.applicationData?.address?.pincode || t("CS_NA") },
-
-                  { title: "Existing Property ID", value: applicationDetails?.applicationData?.oldPropertyId || t("CS_NA") },
-                  { title: "Survey Id/UID", value: applicationDetails?.applicationData?.surveyId || t("CS_NA") },
-                  { title: "Year of creation of Property", value: applicationDetails?.applicationData?.yearOfCreation || t("CS_NA") },
-                ]
-              },
-              {
-                title: "PT_ASSESMENT_INFO_SUB_HEADER",
-                values: [
-                  { title: "PT_ASSESMENT_INFO_TYPE_OF_BUILDING", value: getPropertyTypeLocale(applicationDetails?.applicationData?.propertyType) },
-                  { title: "PT_ASSESMENT_INFO_USAGE_TYPE", value: getPropertySubtypeLocale(applicationDetails?.applicationData?.usageCategory) },
-                  { title: "PT_ASSESMENT_INFO_PLOT_SIZE", value: applicationDetails?.applicationData?.landArea },
-                  { title: "PT_ASSESMENT_INFO_NO_OF_FLOOR", value: applicationDetails?.applicationData?.noOfFloors },
-                  { title: t("PT_ASSESMENT_INFO_VASIKA_NO"), value: t(applicationDetails?.applicationData?.additionalDetails?.vasikaNo) || t("CS_NA") },
-                  { title: t("PT_ASSESMENT_INFO_VASIKA_DATE"), value: t(applicationDetails?.applicationData?.additionalDetails?.vasikaDate) || t("CS_NA") },
-                  { title: t("PT_ASSESMENT_INFO_ALLOTMENT_NO"), value: t(applicationDetails?.applicationData?.additionalDetails?.allotmentNo) || t("CS_NA") },
-                  { title: t("PT_ASSESMENT_INFO_ALLOTMENT_DATE"), value: t(applicationDetails?.applicationData?.additionalDetails?.allotmentDate) || t("CS_NA") },
-                  { title: t("PT_ASSESMENT_INFO_REMARKS"), value: t(applicationDetails?.applicationData?.additionalDetails?.remarks) || t("CS_NA") },
-                  { title: t("PT_ASSESMENT_INFO_BUSINESS_NAME"), value: t(applicationDetails?.applicationData?.businessName) || t("CS_NA") },
-                  { title: t("Do you have any inflammable material stored in your property?"), value: t(getBooleanDisplayValue(applicationDetails?.additionalDetails?.inflammable)) },
-                  { title: t("Height of property more than 36 feet?"), value: t(getBooleanDisplayValue(applicationDetails?.additionalDetails?.heightAbove36Feet)) },
-                ],
-                additionalDetails: {
-                  floors: applicationDetails?.applicationData?.units
-                    ?.filter((e) => e.active)
-                    ?.sort?.((a, b) => a.floorNo - b.floorNo)
-                    ?.map((unit, index) => {
-                      let floorName = `PROPERTYTAX_FLOOR_${unit.floorNo}`;
-                      console.log('unit in assess page:', unit);
-                      
-                      const values = [
-                        {
-                          title: `${t("ES_APPLICATION_DETAILS_UNIT")} ${index + 1}`,
-                          value: "",
-                        },
-                        {
-                          title: "Floor No",
-                          value: unit?.floorNo,
-                        },
-                        {
-                          title: "PT_ASSESSMENT_UNIT_USAGE_TYPE",
-                          value: `PROPERTYTAX_BILLING_SLAB_${unit?.usageCategory != "RESIDENTIAL" && unit?.usageCategory != "MIXED" ? unit?.usageCategory?.split(".")[1] : unit?.usageCategory
-                            }`,
-                        },
-                        {
-                          title: "PT_ASSESMENT_INFO_OCCUPLANCY",
-                          value: unit?.occupancyType,
-                        },
-                        {
-                          title: "PT_FORM2_BUILT_AREA",
-                          value: Math.round(Number(unit?.constructionDetail?.builtUpArea) * 9).toFixed(2),
-                        },
-                      ];
-
-                      if (unit.occupancyType === "RENTED") values.push({ title: "PT_FORM2_TOTAL_ANNUAL_RENT", value: unit.arv });
-
-                      return {
-                        //title: floorName,
-                        title: "",
-                        values: [
-                          {
-                            title: "",
-                            values,
-                          },
-                        ],
-                      };
-                    }),
+              ),
+            },
+            {
+              title: t("PT_PROPERTY_ADDRESS_SUB_HEADER"),
+              values: [
+                { title: t("PT_PROPERTY_ADDRESS_CITY"), value: t(getCityLocale(applicationDetails?.tenantId)) || t("CS_NA") },
+                { title: t("PT_PROPERTY_ADDRESS_HOUSE_NO"), value: applicationDetails?.applicationData?.address?.doorNo || t("CS_NA") },
+                { title: "Building/Company Name", value: applicationDetails?.applicationData?.address?.buildingName || t("CS_NA") },
+                { title: t("PT_PROPERTY_ADDRESS_STREET_NAME"), value: applicationDetails?.applicationData?.address?.street || t("CS_NA") },
+                {
+                  title: t("PT_PROPERTY_ADDRESS_MOHALLA"),
+                  value:
+                    t(`${getMohallaLocale(applicationDetails?.applicationData?.address?.locality?.code, applicationDetails?.tenantId)}`) ||
+                    t("CS_NA"),
                 },
-              },
-              {
-                title: "Owner Details",
-                values: [
-                  { title: t("NAME"), value: applicationDetails?.applicationData?.owners[0]?.name },
-                  { title: t("GUARDIAN NAME"), value: applicationDetails?.applicationData?.owners[0]?.fatherOrHusbandName || t("CS_NA") },
-                  { title: t("GENDER"), value: applicationDetails?.applicationData?.owners[0]?.gender || t("CS_NA") },
-                  { title: t("OWNERSHIP TYPE"), value: applicationDetails?.applicationData?.ownershipCategory.split('.')[1] || t("CS_NA") },
-                  { title: t("MOBILE NO"), value: applicationDetails?.applicationData?.owners[0]?.mobileNumber || t("CS_NA") },
-                  { title: t("EMAIL ID"), value: applicationDetails?.applicationData?.owners[0]?.emailId || t("CS_NA") },
-                  { title: t("OWNERSHIP PERCENTAGE"), value: applicationDetails?.applicationData?.owners[0]?.ownerShipPercentage || t("CS_NA") },
-                  { title: t("CATEGORY"), value: applicationDetails?.applicationData?.owners[0]?.ownerType === "NONE" ? "Not Applicable" : applicationDetails?.applicationData?.owners[0]?.ownerType || t("CS_NA") },
-                  { title: t("CORRESPONDENCE ADDRESS"), value: applicationDetails?.applicationData?.owners[0]?.permanentAddress || t("CS_NA") },
-                ],
-                additionalDetails: {
-                  owners: applicationDetails?.applicationData?.owners
-                },
-              },
-              {
-                title: "Property Documents",
-                additionalDetails: {
-                  assessmentDocuments: applicationDetails?.applicationData?.documents
-                }
-              },
-              {
-                title: "DECLARATION",
-                additionalDetails: {
-                  declaration: t("PT_FINAL_DECLARATION_MESSAGE")
-                }
-              }
+                { title: t("PT_PROPERTY_ADDRESS_PINCODE"), value: applicationDetails?.applicationData?.address?.pincode || t("CS_NA") },
 
-            ]
-          }
-        }
+                { title: "Existing Property ID", value: applicationDetails?.applicationData?.oldPropertyId || t("CS_NA") },
+                { title: "Survey Id/UID", value: applicationDetails?.applicationData?.surveyId || t("CS_NA") },
+                { title: "Year of creation of Property", value: applicationDetails?.applicationData?.yearOfCreation || t("CS_NA") },
+              ],
+            },
+            {
+              title: "PT_ASSESMENT_INFO_SUB_HEADER",
+              values: [
+                { title: "PT_ASSESMENT_INFO_TYPE_OF_BUILDING", value: getPropertyTypeLocale(applicationDetails?.applicationData?.propertyType) },
+                { title: "PT_ASSESMENT_INFO_USAGE_TYPE", value: getPropertySubtypeLocale(applicationDetails?.applicationData?.usageCategory) },
+                { title: "PT_ASSESMENT_INFO_PLOT_SIZE", value: applicationDetails?.applicationData?.landArea },
+                { title: "PT_ASSESMENT_INFO_NO_OF_FLOOR", value: applicationDetails?.applicationData?.noOfFloors },
+                { title: t("PT_ASSESMENT_INFO_VASIKA_NO"), value: t(applicationDetails?.applicationData?.additionalDetails?.vasikaNo) || t("CS_NA") },
+                {
+                  title: t("PT_ASSESMENT_INFO_VASIKA_DATE"),
+                  value: t(applicationDetails?.applicationData?.additionalDetails?.vasikaDate) || t("CS_NA"),
+                },
+                {
+                  title: t("PT_ASSESMENT_INFO_ALLOTMENT_NO"),
+                  value: t(applicationDetails?.applicationData?.additionalDetails?.allotmentNo) || t("CS_NA"),
+                },
+                {
+                  title: t("PT_ASSESMENT_INFO_ALLOTMENT_DATE"),
+                  value: t(applicationDetails?.applicationData?.additionalDetails?.allotmentDate) || t("CS_NA"),
+                },
+                { title: t("PT_ASSESMENT_INFO_REMARKS"), value: t(applicationDetails?.applicationData?.additionalDetails?.remarks) || t("CS_NA") },
+                { title: t("PT_ASSESMENT_INFO_BUSINESS_NAME"), value: t(applicationDetails?.applicationData?.businessName) || t("CS_NA") },
+                {
+                  title: t("Do you have any inflammable material stored in your property?"),
+                  value: t(getBooleanDisplayValue(applicationDetails?.additionalDetails?.inflammable)),
+                },
+                {
+                  title: t("Height of property more than 36 feet?"),
+                  value: t(getBooleanDisplayValue(applicationDetails?.additionalDetails?.heightAbove36Feet)),
+                },
+              ],
+              additionalDetails: {
+                floors: applicationDetails?.applicationData?.units
+                  ?.filter((e) => e.active)
+                  ?.sort?.((a, b) => a.floorNo - b.floorNo)
+                  ?.map((unit, index) => {
+                    let floorName = `PROPERTYTAX_FLOOR_${unit.floorNo}`;
+
+                    const values = [
+                      {
+                        title: `${t("ES_APPLICATION_DETAILS_UNIT")} ${index + 1}`,
+                        value: "",
+                      },
+                      {
+                        title: "Floor No",
+                        value: unit?.floorNo,
+                      },
+                      {
+                        title: "PT_ASSESSMENT_UNIT_USAGE_TYPE",
+                        value: `PROPERTYTAX_BILLING_SLAB_${
+                          unit?.usageCategory != "RESIDENTIAL" && unit?.usageCategory != "MIXED"
+                            ? unit?.usageCategory?.split(".")[1]
+                            : unit?.usageCategory
+                        }`,
+                      },
+                      {
+                        title: "PT_ASSESMENT_INFO_OCCUPLANCY",
+                        value: unit?.occupancyType,
+                      },
+                      {
+                        title: "PT_FORM2_BUILT_AREA",
+                        value: Math.round(Number(unit?.constructionDetail?.builtUpArea) * 9).toFixed(2),
+                      },
+                    ];
+
+                    if (unit.occupancyType === "RENTED") values.push({ title: "PT_FORM2_TOTAL_ANNUAL_RENT", value: unit.arv });
+
+                    return {
+                      //title: floorName,
+                      title: "",
+                      values: [
+                        {
+                          title: "",
+                          values,
+                        },
+                      ],
+                    };
+                  }),
+              },
+            },
+            {
+              title: "Owner Details",
+              values: [
+                { title: t("NAME"), value: applicationDetails?.applicationData?.owners[0]?.name },
+                { title: t("GUARDIAN NAME"), value: applicationDetails?.applicationData?.owners[0]?.fatherOrHusbandName || t("CS_NA") },
+                { title: t("GENDER"), value: applicationDetails?.applicationData?.owners[0]?.gender || t("CS_NA") },
+                { title: t("OWNERSHIP TYPE"), value: applicationDetails?.applicationData?.ownershipCategory.split(".")[1] || t("CS_NA") },
+                { title: t("MOBILE NO"), value: applicationDetails?.applicationData?.owners[0]?.mobileNumber || t("CS_NA") },
+                { title: t("EMAIL ID"), value: applicationDetails?.applicationData?.owners[0]?.emailId || t("CS_NA") },
+                { title: t("OWNERSHIP PERCENTAGE"), value: applicationDetails?.applicationData?.owners[0]?.ownerShipPercentage || t("CS_NA") },
+                {
+                  title: t("CATEGORY"),
+                  value:
+                    applicationDetails?.applicationData?.owners[0]?.ownerType === "NONE"
+                      ? "Not Applicable"
+                      : applicationDetails?.applicationData?.owners[0]?.ownerType || t("CS_NA"),
+                },
+                { title: t("CORRESPONDENCE ADDRESS"), value: applicationDetails?.applicationData?.owners[0]?.permanentAddress || t("CS_NA") },
+              ],
+              additionalDetails: {
+                owners: applicationDetails?.applicationData?.owners,
+              },
+            },
+            {
+              title: "Property Documents",
+              additionalDetails: {
+                assessmentDocuments: applicationDetails?.applicationData?.documents,
+              },
+            },
+            {
+              title: "DECLARATION",
+              additionalDetails: {
+                declaration: t("PT_FINAL_DECLARATION_MESSAGE"),
+              },
+            },
+          ],
+        }}
         showTimeLine={false}
         showHistory={false}
         isLoading={isLoading}
@@ -783,9 +834,7 @@ console.log("isCheck",isCheck)
         applicationData={appDetailsToShow?.applicationData}
         mutate={null}
         workflowDetails={
-          queryClient.getQueryData(["PT_ASSESSMENT", AssessmentData?.propertyId, location?.state?.Assessment?.financialYear])
-            ? { ...workflowDetails, data: { ...workflowDetails.data, nextActions: [] } }
-            : workflowDetails
+          queryClient.getQueryData(assessmentQueryKey) ? { ...workflowDetails, data: { ...workflowDetails.data, nextActions: [] } } : workflowDetails
         }
         businessService="PT"
         assessmentMutate={assessmentMutate}
@@ -798,95 +847,117 @@ console.log("isCheck",isCheck)
         setIsCheck={setIsCheck}
         isCheck={isCheck}
       />
-      {!queryClient.getQueryData(["PT_ASSESSMENT", AssessmentData?.propertyId, location?.state?.Assessment?.financialYear]) && (
-        <Card style={{ marginTop: '16px' }}>
-          <CardSubHeader style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>
-            {t("DECLARATION")}
-          </CardSubHeader>
+      {!queryClient.getQueryData(assessmentQueryKey) && (
+        <Card style={{ marginTop: "16px" }}>
+          <CardSubHeader style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "16px" }}>{t("DECLARATION")}</CardSubHeader>
           <CheckBox
             checked={isCheck}
             value={isCheck}
             onChange={(e) => setIsCheck(e.target.checked)}
-            label={t("PT_FINAL_DECLARATION_MESSAGE") !== "PT_FINAL_DECLARATION_MESSAGE" ? t("PT_FINAL_DECLARATION_MESSAGE") : "I hereby declare and affirm that the above-furnished information is true and correct and nothing has been concealed therefrom. I am also aware of the fact that in case this information is found false/incorrect, the authorities are at liberty to initiate recovery of amount/interest/penalty/fine as provided in Punjab Municipal Act 1911 or Punjab Municipal Corporation Act 1976."}
+            label={
+              t("PT_FINAL_DECLARATION_MESSAGE") !== "PT_FINAL_DECLARATION_MESSAGE"
+                ? t("PT_FINAL_DECLARATION_MESSAGE")
+                : "I hereby declare and affirm that the above-furnished information is true and correct and nothing has been concealed therefrom. I am also aware of the fact that in case this information is found false/incorrect, the authorities are at liberty to initiate recovery of amount/interest/penalty/fine as provided in Punjab Municipal Act 1911 or Punjab Municipal Corporation Act 1976."
+            }
             styles={{ height: "auto" }}
           />
         </Card>
       )}
-      {showCalc && <Modal
-        headerBarMain={<Heading label={t("PT_CALC_DETAILS")} />}
-        headerBarEnd={<CloseBtn onClick={() => { setShowCalc(false) }} />}
-        // actionCancelLabel={t("PT_CANCEL")}
-        // actionCancelOnSubmit={()=>{ptCalculationEstimateData.Calculation[0] = ptCalculationEstimateDataCopy; setSelectedPenalityReason(null);setSelectedRebateReason(null); showPopUp(false)}}
-        actionSaveLabel={t("OK")}
-        actionSaveOnSubmit={() => (setShowCalc(false))}
-        hideSubmit={false}
-      >
-        <div style={{ padding: '4px' }}>
-          <h2 style={{ color: '#2947a3', fontSize: '18px', fontFamily: 'Noto Sans', marginBottom: '2px' }}>
-            Calculation Logic
-          </h2>
-          <h3 style={{ fontFamily: 'Noto Sans', marginBottom: '3px' }}>
-            Property Tax = Built up area on GF*Rates per unit of GF-built up empty land on GF * Rate per unit of GF-empty land 𝝨(built-up on nth floor*Rate per unit of nth floor-built up)
-          </h3>
-          <h3 style={{ color: 'red', fontFamily: 'Noto Sans', marginBottom: '5px' }}>* 5% increase in Gross Tax is applicable for FY 2022-2023</h3>
-          <h2 style={{ color: '#2947a3', fontSize: '18px', fontFamily: 'Noto Sans', marginBottom: '2px' }}>Applicable Charge Slabs</h2>
-          <StatusTable>
-            {applicationDetails?.applicationData?.units
-              ?.filter((e) => e.active)
-              ?.sort?.((a, b) => a.floorNo - b.floorNo)
-              ?.map((unit, index) => (
-                <Row label={`${t(`PROPERTYTAX_FLOOR_${unit?.floorNo}`)} ${t(`PT_UNIT`)} - ${index + 1}`} text={unitsCharge[index]?.unitRate} />
-              ))}
-          </StatusTable>
-        </div>
-      </Modal>
-      }
-      {popup && <Modal
-        headerBarMain={<Heading label={t("PT_ADD_REBATE_PENALITY")} />}
-        headerBarEnd={<CloseBtn onClick={() => { showPopUp(false), ptCalculationEstimateData.Calculation[0] = ptCalculationEstimateDataCopy; setSelectedPenalityReason(null); setSelectedRebateReason(null); }} />}
-        actionCancelLabel={t("PT_CANCEL")}
-        actionCancelOnSubmit={() => { ptCalculationEstimateData.Calculation[0] = ptCalculationEstimateDataCopy; setSelectedPenalityReason(null); setSelectedRebateReason(null); showPopUp(false) }}
-        actionSaveLabel={t("PT_ADD")}
-        actionSaveOnSubmit={() => (change())}
-        hideSubmit={false}
-      >
-        {
-          <div>
-            <Card>
-              <CardSectionHeader>{t("PT_AD_PENALTY")}</CardSectionHeader>
-              <CardLabel>
-                {t("PT_TX_HEADS")}
-              </CardLabel>
-              <div className="field">
-                <div className="field-container">
-                  <div className="text-input field">
-                    <Dropdown
-                      isMandatory
-                      option={Penality_menu}
-                      optionKey="value"
-                      select={selectPenalityReason}
-                      selected={selectedPenalityReason}
-                      isPropertyAssess={true}
-                      t={t}
-                    />
+      {showCalc && (
+        <Modal
+          headerBarMain={<Heading label={t("PT_CALC_DETAILS")} />}
+          headerBarEnd={
+            <CloseBtn
+              onClick={() => {
+                setShowCalc(false);
+              }}
+            />
+          }
+          // actionCancelLabel={t("PT_CANCEL")}
+          // actionCancelOnSubmit={()=>{ptCalculationEstimateData.Calculation[0] = ptCalculationEstimateDataCopy; setSelectedPenalityReason(null);setSelectedRebateReason(null); showPopUp(false)}}
+          actionSaveLabel={t("OK")}
+          actionSaveOnSubmit={() => setShowCalc(false)}
+          hideSubmit={false}
+        >
+          <div style={{ padding: "4px" }}>
+            <h2 style={{ color: "#2947a3", fontSize: "18px", fontFamily: "Noto Sans", marginBottom: "2px" }}>Calculation Logic</h2>
+            <h3 style={{ fontFamily: "Noto Sans", marginBottom: "3px" }}>
+              Property Tax = Built up area on GF*Rates per unit of GF-built up empty land on GF * Rate per unit of GF-empty land 𝝨(built-up on nth
+              floor*Rate per unit of nth floor-built up)
+            </h3>
+            <h3 style={{ color: "red", fontFamily: "Noto Sans", marginBottom: "5px" }}>* 5% increase in Gross Tax is applicable for FY 2022-2023</h3>
+            <h2 style={{ color: "#2947a3", fontSize: "18px", fontFamily: "Noto Sans", marginBottom: "2px" }}>Applicable Charge Slabs</h2>
+            <StatusTable>
+              {applicationDetails?.applicationData?.units
+                ?.filter((e) => e.active)
+                ?.sort?.((a, b) => a.floorNo - b.floorNo)
+                ?.map((unit, index) => (
+                  <Row label={`${t(`PROPERTYTAX_FLOOR_${unit?.floorNo}`)} ${t(`PT_UNIT`)} - ${index + 1}`} text={unitsCharge[index]?.unitRate} />
+                ))}
+            </StatusTable>
+          </div>
+        </Modal>
+      )}
+      {popup && (
+        <Modal
+          headerBarMain={<Heading label={t("PT_ADD_REBATE_PENALITY")} />}
+          headerBarEnd={
+            <CloseBtn
+              onClick={() => {
+                showPopUp(false), (ptCalculationEstimateData.Calculation[0] = ptCalculationEstimateDataCopy);
+                setSelectedPenalityReason(null);
+                setSelectedRebateReason(null);
+              }}
+            />
+          }
+          actionCancelLabel={t("PT_CANCEL")}
+          actionCancelOnSubmit={() => {
+            ptCalculationEstimateData.Calculation[0] = ptCalculationEstimateDataCopy;
+            setSelectedPenalityReason(null);
+            setSelectedRebateReason(null);
+            showPopUp(false);
+          }}
+          actionSaveLabel={t("PT_ADD")}
+          actionSaveOnSubmit={() => change()}
+          hideSubmit={false}
+        >
+          {
+            <div>
+              <Card>
+                <CardSectionHeader>{t("PT_AD_PENALTY")}</CardSectionHeader>
+                <CardLabel>{t("PT_TX_HEADS")}</CardLabel>
+                <div className="field">
+                  <div className="field-container">
+                    <div className="text-input field">
+                      <Dropdown
+                        isMandatory
+                        option={Penality_menu}
+                        optionKey="value"
+                        select={selectPenalityReason}
+                        selected={selectedPenalityReason}
+                        isPropertyAssess={true}
+                        t={t}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-              {selectedPenalityReason && selectedPenalityReason.value === "Others" && <div className="field">
-                <CardLabel>{t("PT_REASON")}</CardLabel>
-                <div className="field-container">
-                  <div className="text-input field">
-                    <input type="type" className="employee-card-input false focus-visible undefined" ref={fourth_temp} />
+                {selectedPenalityReason && selectedPenalityReason.value === "Others" && (
+                  <div className="field">
+                    <CardLabel>{t("PT_REASON")}</CardLabel>
+                    <div className="field-container">
+                      <div className="text-input field">
+                        <input type="type" className="employee-card-input false focus-visible undefined" ref={fourth_temp} />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>}
-              <CardLabel>{t("PT_HEAD_AMT")}</CardLabel>
-              <div className="field">
-                <div className="field-container">
-                  <div className="text-input field">
-                    <input key="firstTemp" type="number" className="employee-card-input false focus-visible undefined" ref={first_temp} />
-                  </div>
-                  {/* <TextInput
+                )}
+                <CardLabel>{t("PT_HEAD_AMT")}</CardLabel>
+                <div className="field">
+                  <div className="field-container">
+                    <div className="text-input field">
+                      <input key="firstTemp" type="number" className="employee-card-input false focus-visible undefined" ref={first_temp} />
+                    </div>
+                    {/* <TextInput
                 t={t}
                 type={"text"}
                 isMandatory={false}
@@ -895,60 +966,62 @@ console.log("isCheck",isCheck)
                 value={first_temp}
                 onChange={setFirstTemp}
                 />  */}
-                </div>
-              </div>
-            </Card>
-            <Card>
-              <CardSectionHeader>{t("PT_AD_REBATE")}</CardSectionHeader>
-              <CardLabel>{t("PT_TX_HEADS")}</CardLabel>
-              <div className="field">
-                <div className="field-container">
-                  <div className="text-input field">
-                    <Dropdown
-                      isMandatory
-                      option={Rebate_menu}
-                      optionKey="value"
-                      select={selectRebateReason}
-                      selected={selectedRebateReason}
-                      isPropertyAssess={true}
-                      t={t}
-                    />
                   </div>
                 </div>
-              </div>
-              {selectedRebateReason && selectedRebateReason.value === "Others" && <div className="field">
-                <CardLabel>{t("PT_REASON")}</CardLabel>
-                <div className="field-container">
-                  <div className="text-input field">
-                    <input type="type" className="employee-card-input false focus-visible undefined" ref={third_temp} />
+              </Card>
+              <Card>
+                <CardSectionHeader>{t("PT_AD_REBATE")}</CardSectionHeader>
+                <CardLabel>{t("PT_TX_HEADS")}</CardLabel>
+                <div className="field">
+                  <div className="field-container">
+                    <div className="text-input field">
+                      <Dropdown
+                        isMandatory
+                        option={Rebate_menu}
+                        optionKey="value"
+                        select={selectRebateReason}
+                        selected={selectedRebateReason}
+                        isPropertyAssess={true}
+                        t={t}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>}
-              <CardLabel>{t("PT_HEAD_AMT")}</CardLabel>
-              <div className="field">
-                <div className="field-container">
-                  <div className="text-input field">
-                    <input type="number" className="employee-card-input false focus-visible undefined" ref={second_temp} />
+                {selectedRebateReason && selectedRebateReason.value === "Others" && (
+                  <div className="field">
+                    <CardLabel>{t("PT_REASON")}</CardLabel>
+                    <div className="field-container">
+                      <div className="text-input field">
+                        <input type="type" className="employee-card-input false focus-visible undefined" ref={third_temp} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <CardLabel>{t("PT_HEAD_AMT")}</CardLabel>
+                <div className="field">
+                  <div className="field-container">
+                    <div className="text-input field">
+                      <input type="number" className="employee-card-input false focus-visible undefined" ref={second_temp} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-          </div>
-        }
-      </Modal>}
-
-
-
-
-
-
-      {!queryClient.getQueryData(["PT_ASSESSMENT", AssessmentData?.propertyId, location?.state?.Assessment?.financialYear] ) ? (
+              </Card>
+            </div>
+          }
+        </Modal>
+      )}
+      {console.log("submitLabel", submitLabel)}
+      {!queryClient.getQueryData(assessmentQueryKey) ? (
         <ActionBar>
           <SubmitBar label={submitLabel} onSubmit={handleAssessment} />
         </ActionBar>
       ) : (
         <ActionBar>
-          <SubmitBar disabled={paymentDetails?.data?.Bill?.[0]?.totalAmount > 0 ? false : true} label={t("PT_PROCEED_PAYMENT")} onSubmit={proceeedToPay} />
+          <SubmitBar
+            disabled={paymentDetails?.data?.Bill?.[0]?.totalAmount > 0 ? false : true}
+            label={t("PT_PROCEED_PAYMENT")}
+            onSubmit={proceeedToPay}
+          />
         </ActionBar>
       )}
     </div>

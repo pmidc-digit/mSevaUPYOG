@@ -52,14 +52,16 @@ export const SelectPaymentType = (props) => {
   const history = useHistory();
   const { pathname, search } = useLocation();
   // const menu = ["RAZORPAY"];
-  let { consumerCode, businessService } = useParams();
-  const tenantId = state?.tenantId || __tenantId || Digit.ULBService.getCurrentTenantId();
+  const paramsData = new URLSearchParams(search);
+  const urlTenantId = paramsData.get("tenantId");
+  let { consumerCode, businessService} = useParams();
+  const tenantId = urlTenantId || state?.tenantId || __tenantId || Digit.ULBService.getCurrentTenantId();
   const isFireNocPayment = businessService === "FIRENOC";
   const { isFireNOCLoading, data: fireNOC } = Digit.Hooks.firenoc.useFIRENOCApplicationDetails({
     tenantId,
     applicationNumber: consumerCode,
   });
-
+  //console.log("tenantId",tenantId)
   const propertyId = state?.propertyId;
   const stateTenant = Digit.ULBService.getStateId();
   const { control, handleSubmit, setValue } = useForm();
@@ -75,6 +77,7 @@ export const SelectPaymentType = (props) => {
     { tenantId: tenantId, consumerCode: wrkflow === "WNS" ? connectionNo : consumerCode, businessService },
     {}
   );
+
   if (window.location.href.includes("ISWSCON") || wrkflow === "WNS") consumerCode = decodeURIComponent(consumerCode);
   if (wrkflow === "WNS") consumerCode = stringReplaceAll(consumerCode, "+", "/");
   useEffect(() => {

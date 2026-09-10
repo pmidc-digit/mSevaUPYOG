@@ -9,9 +9,9 @@ export const getFloorData = (block, t) => {
   let totalFloorArea = 0
   let totalDeduction = 0
   block?.building?.floors.map((ob) => {
-    const builtUp = Number(ob.occupancies?.[0]?.builtUpArea) || 0
-    const floor = Number(ob.occupancies?.[0]?.floorArea) || 0
-    const deduction = Number(ob.occupancies?.[0]?.deduction) || 0
+    const builtUp = Number(Number(ob.occupancies?.[0]?.builtUpArea || 0).toFixed(2))
+    const floor = Number(Number(ob.occupancies?.[0]?.floorArea || 0).toFixed(2))
+    const deduction = Number(Number(ob.occupancies?.[0]?.deduction || 0).toFixed(2))
 
     totalBuiltUpArea += builtUp
     totalFloorArea += floor
@@ -20,9 +20,9 @@ export const getFloorData = (block, t) => {
       Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
       Level: ob.number,
       Occupancy: t(`${ob.occupancies?.[0]?.type}`),
-      BuildupArea: Number(ob.occupancies?.[0]?.builtUpArea).toFixed(2),
-      Deduction: Number(ob.occupancies?.[0]?.deduction).toFixed(2),
-      FloorArea: Number(ob.occupancies?.[0]?.floorArea).toFixed(2) || 0,
+      BuildupArea: builtUp.toFixed(2),
+      Deduction: deduction.toFixed(2),
+      FloorArea: floor.toFixed(2),
       // CarpetArea: ob.occupancies?.[0]?.CarpetArea || 0,
       key: t(`BPA_FLOOR_NAME_${ob.number}`),
     });

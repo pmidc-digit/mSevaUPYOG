@@ -21,6 +21,8 @@ import org.egov.swservice.web.models.EncryptionCount;
 import org.egov.swservice.web.models.SearchCriteria;
 import org.egov.swservice.web.models.SewerageConnection;
 import org.egov.swservice.web.models.SewerageConnectionRequest;
+import org.egov.swservice.web.models.UpdateBillStatusReq;
+import org.egov.swservice.web.models.UpdateDemandPayerRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -66,6 +68,12 @@ public class SewerageDaoImpl implements SewerageDao {
 
 	@Value("${egov.sewerageservice.update.oldData.topic}")
 	private String updateOldDataEncTopic;
+
+    @Value("${egov.updatebillstatus.topic}")
+    private String updateBillStatusTopic;
+
+    @Value("${egov.updatedemandpayer.topic}")
+    private String updateDemandPayerTopic;
 
 	@Override
 	public void saveSewerageConnection(SewerageConnectionRequest sewerageConnectionRequest) {
@@ -302,4 +310,24 @@ public class SewerageDaoImpl implements SewerageDao {
         return sewerageconnection;
     }
 
+    @Override
+    public void updateOldBillStatus(UpdateBillStatusReq updateBillStatusReq) {
+        String key = updateBillStatusReq.getConsumer();
+        try{
+            sewarageConnectionProducer.push(updateBillStatusTopic, key, updateBillStatusReq);
+        }catch (Exception e){
+            log.info("Exception",e);
+        }
+    }
+
+    @Override
+    public void updatePayerIDForDemand(UpdateDemandPayerRequest updateDemandPayerRequest) {
+        String key = updateDemandPayerRequest.getConsumer();
+        try{
+            sewarageConnectionProducer.push(updateDemandPayerTopic, key, updateDemandPayerRequest);
+        }catch (Exception e){
+            log.info("Exception",e);
+        }
+
+    }
 }

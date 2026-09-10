@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState , useRef } from "react";
 import {
   TextInput,
   CardLabel,
@@ -15,6 +15,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { UPDATE_PTRNewApplication_FORM } from "../redux/action/PTRNewApplicationActions";
 import { convertEpochToDateInput } from "../utils/index";
 import { Loader } from "../components/Loader";
+import CitizenConsent from "../components/CitizenConsent";
+
 
 const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isEdit }) => {
   const stateId = Digit.ULBService.getStateId();
@@ -24,6 +26,13 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   const [loader, setLoader] = useState(false);
   const [minDate, setMinDate] = useState("");
   const [maxDate, setMaxDate] = useState("");
+  const [showTermsPopup, setShowTermsPopup] = useState(false);
+  const [getModalData, setModalData] = useState();
+  const [getUser, setUser] = useState(null);
+  const [getShowOtp, setShowOtp] = useState(false);
+  const isFirstRender = useRef(true);
+  
+
 
   const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
 
@@ -83,14 +92,48 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
     setValue,
     watch,
     formState: { errors },
-    trigger
+    trigger,
+    getValues,
   } = useForm({ defaultValues: { petAge: "", lastVaccineDate: "" } });
 
   const selectedPetType = watch("petType");
 
+  const petName = watch("petName");
+  const breedType = watch("breedType");
+  const petGender = watch("petGender");
+
+
+
   function toEpochMilliseconds(dateStr) {
     return new Date(dateStr).getTime();
   }
+
+  const handleModalData = (event) => {
+  const ownerDetails = currentStepData?.ownerDetails || {};
+  const petFormValues = getValues();
+
+
+  setModalData({
+    address: ownerDetails?.address || "",
+    emailId: ownerDetails?.emailId || "",
+    mobileNumber: ownerDetails?.mobileNumber || "",
+    name: ownerDetails?.name || "",
+    fatherOrHusbandName: ownerDetails?.fatherOrHusbandName || "",
+    ulbName: tenantId,
+    petName: petFormValues?.petName || "",
+    petType: petFormValues?.petType?.name || petFormValues?.petType || "",
+    breed: petFormValues?.breedType?.name || petFormValues?.breedType?.code || petFormValues?.breedType || "",
+    sex: petFormValues?.petGender?.name || petFormValues?.petGender || "",
+    age: petFormValues?.petAge || "",
+    petAge: petFormValues?.petAge || "",
+    ...petFormValues,
+  });
+
+  if (event.target.checked) {
+    setShowTermsPopup(true);
+  }
+};
+
 
   const onSubmit = async (data) => {
     if (validateStep) {
@@ -102,6 +145,17 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       goNext(data);
       return;
     }
+    if (!sessionStorage.getItem("CitizenConsentdocFilestoreidPTR")) {
+      const message =
+        sessionStorage.getItem("PTRConsentNeedsReupload") === "true"
+          ? "Pet details were changed. Please re-upload the Self Certificate."
+          : "Please upload Self Certificate.";
+
+      alert(message);
+      return;
+    }
+    const ptrId = sessionStorage.getItem("CitizenConsentdocFilestoreidPTR");
+
     const { address, name, pincode, ...filteredOwnerDetails } = currentStepData.ownerDetails;
     const formData = {
       tenantId,
@@ -359,6 +413,15 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
     setMinDate(formatDate(min));
     setMaxDate(formatDate(today));
   }, [petAgeVal]);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    sessionStorage.removeItem("CitizenConsentdocFilestoreidPTR");
+    sessionStorage.setItem("PTRConsentNeedsReupload", "true");
+  }, [petName, selectedPetType, breedType, petGender, petAgeVal]);
 
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>
@@ -635,6 +698,31 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
         </div>
       </LabelFieldPair>
 
+      {/* Self Declaration Checkbox */}
+      <div className="chb-citizen-details__terms">
+        <Controller
+          control={control}
+          name="termsAccepted"
+          rules={{ required: t("PLEASE_ACCEPT_TERMS_CONDITIONS") }}
+          render={(props) => (
+            <input
+              id="ptrTermsAccepted"
+              type="checkbox"
+              checked={props.value || false}
+              onChange={(event) => {
+                props.onChange(event.target.checked);
+                handleModalData(event);
+              }}
+              className="chb-citizen-details__terms-input"
+            />
+          )}
+        />
+        <label htmlFor="ptrTermsAccepted" className="chb-citizen-details__terms-label">
+          {t("Self Declaration")}
+        </label>
+      </div>
+      {errors.termsAccepted && <CardLabelError>{errors.termsAccepted.message}</CardLabelError>}
+
       <ActionBar>
         <SubmitBar
           label="Back"
@@ -643,6 +731,19 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
 
         <SubmitBar label={t("Next")} submit="submit" />
       </ActionBar>
+
+      {/* Self Declaration Modal */}
+      {showTermsPopup && (
+        <CitizenConsent
+          showTermsPopupOwner={showTermsPopup}
+          setShowTermsPopupOwner={setShowTermsPopup}
+          getModalData={getModalData}
+          getUser={getUser}
+          getShowOtp={getShowOtp}
+          tenantId={tenantId}
+        />
+      )}
+
       {isLoading && <Loader page={true} />}
     </form>);
 

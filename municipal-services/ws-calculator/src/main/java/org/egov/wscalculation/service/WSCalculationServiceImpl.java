@@ -27,9 +27,12 @@ import org.egov.wscalculation.repository.ServiceRequestRepository;
 import org.egov.wscalculation.repository.WSCalculationDao;
 import org.egov.wscalculation.util.CalculatorUtil;
 import org.egov.wscalculation.util.WSCalculationUtil;
+import org.egov.wscalculation.web.models.BillScheduler.StatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import com.google.common.collect.ImmutableSet;
 import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
@@ -873,7 +876,7 @@ So, both lists are now filtered to include only records with INITIATED status, w
 
 					BillGeneratorReq billGeneraterReq = BillGeneratorReq.builder()
 							.requestInfoWrapper(requestInfoWrapper).tenantId(billSchedular.getTenantId())
-							.consumerCodes(new HashSet<>(conectionNoList)).billSchedular(billSchedular).build();
+							.consumerCodes(ImmutableSet.copyOf(conectionNoList)).billSchedular(billSchedular).build();
 
 					
 					String localityCode;

@@ -2,7 +2,7 @@ package org.egov.waterconnection.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.User;
 import org.egov.waterconnection.config.WSConfiguration;
 import org.egov.waterconnection.constants.WCConstants;
@@ -201,7 +201,7 @@ public class EditNotificationService {
 			//send the notification to the connection holders
 			if(!CollectionUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionHolders())) {
 				waterConnectionRequest.getWaterConnection().getConnectionHolders().forEach(holder -> {
-					if (!org.apache.commons.lang.StringUtils.isEmpty(holder.getUuid())) {
+					if (!org.apache.commons.lang3.StringUtils.isEmpty(holder.getUuid())) {
 						ownersUuids.add(holder.getUuid());
 					}
 				});
@@ -215,7 +215,7 @@ public class EditNotificationService {
 			}
 
 			//Send the notification to applicant
-			if(!org.apache.commons.lang.StringUtils.isEmpty(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber()))
+			if(!org.apache.commons.lang3.StringUtils.isEmpty(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber()))
 			{
 				mobileNumbersAndNames.put(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber(), waterConnectionRequest.getRequestInfo().getUserInfo().getName());
 			}

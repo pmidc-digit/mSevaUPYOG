@@ -30,8 +30,9 @@ const Inbox = ({ parentRoute }) => {
 
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
+  const [apiMobileSearch, setApiMobileSearch] = useState("");
 
-  const searchFormDefaultValues = useMemo(() => ({}), []);
+  const searchFormDefaultValues = useMemo(() => ({ mobileNumber: "" }), []);
 
   const filterFormDefaultValues = useMemo(
     () => ({
@@ -199,6 +200,8 @@ const Inbox = ({ parentRoute }) => {
   }, [cities, formState?.selectedTenantId, isEmployee, tenantId]);
 
   const memoizedFilters = useMemo(() => {
+    const tableForm = formState?.tableForm || tableOrderFormDefaultValues;
+    const isTopBarSearchActive = Boolean(String(topBarSearch || "").trim());
     const normalizedFilterForm = {
       ...(formState?.filterForm || filterFormDefaultValues),
       businessService:
@@ -212,7 +215,11 @@ const Inbox = ({ parentRoute }) => {
     return {
       filterForm: normalizedFilterForm,
       searchForm: formState?.searchForm || searchFormDefaultValues,
-      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
+      tableForm: {
+        ...tableForm,
+        limit: isTopBarSearchActive ? Math.max(Number(totalCountData) || 0, Number(tableForm.limit) || 10) : tableForm.limit,
+        offset: isTopBarSearchActive ? 0 : tableForm.offset,
+      },
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
   }, [
@@ -224,6 +231,8 @@ const Inbox = ({ parentRoute }) => {
     searchFormDefaultValues,
     tableOrderFormDefaultValues,
     selectedTenantIdDefaultValues,
+    topBarSearch,
+    totalCountData,
   ]);
 
   const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.obps.useBPAInbox({
@@ -238,9 +247,10 @@ const Inbox = ({ parentRoute }) => {
 
     return {
       ...memoizedFilters,
+      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
       filterForm: countFilterForm,
     };
-  }, [memoizedFilters]);
+  }, [formState?.tableForm, memoizedFilters, tableOrderFormDefaultValues]);
 
   const assignedToMeFilters = useMemo(
     () => ({
@@ -407,6 +417,19 @@ const Inbox = ({ parentRoute }) => {
     [formState.tableForm, formState.filterForm]
   );
 
+  const onApiMobileSearch = useCallback(
+    (mobileNumber) => {
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({ action: "mutateSearchForm", data: { mobileNumber: mobileNumber?.trim() || "" } });
+    },
+    [formState.searchForm, formState.tableForm]
+  );
+
+  const onApiMobileClear = useCallback(() => {
+    setApiMobileSearch("");
+    onApiMobileSearch("");
+  }, [onApiMobileSearch]);
+
   const propsForInboxTable = useInboxTableConfig({
     parentRoute,
     onPageSizeChange,
@@ -415,6 +438,7 @@ const Inbox = ({ parentRoute }) => {
     table: tableData,
     dispatch,
     onSortingByData,
+    globalSearch: topBarSearch,
   });
 
   const {
@@ -473,7 +497,6 @@ const Inbox = ({ parentRoute }) => {
     });
   }, [formState?.filterForm?.applicationStatus, topBarStatusData]);
 
-  const searchDebounceRef = useRef(null);
   const hasInitializedFilterForm = useRef(false);
 
   const onNextPage = () =>
@@ -509,17 +532,6 @@ const Inbox = ({ parentRoute }) => {
     defaultAssignee,
     setFilterFormValue,
   ]);
-
-  useEffect(() => {
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-    searchDebounceRef.current = setTimeout(() => {
-      const value = String(topBarSearch || "").trim();
-      const nextSearchForm = value ? { applicationNo: value } : {};
-      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
-      dispatch({ action: "mutateSearchForm", data: nextSearchForm });
-    }, 400);
-    return () => clearTimeout(searchDebounceRef.current);
-  }, [topBarSearch]);
 
   useEffect(() => {
     if (hasInitializedFilterForm.current) return;
@@ -629,7 +641,11 @@ const Inbox = ({ parentRoute }) => {
               onTabClick={onStatusTabClick}
               searchValue={topBarSearch}
               onSearchChange={(e) => setTopBarSearch(e.target.value)}
-              searchPlaceholder="Search by application number..."
+              searchPlaceholder="Search applications, names, mobile numbers, or status..."
+              apiMobileValue={apiMobileSearch}
+              onApiMobileChange={(e) => setApiMobileSearch(e.target.value)}
+              onApiMobileSearch={onApiMobileSearch}
+              onApiMobileClear={onApiMobileClear}
               totalCount={totalCountData}
               showMigrationTabs={isEmployee}
               isMigrated={formState?.filterForm?.isMigrated === true}
@@ -640,7 +656,7 @@ const Inbox = ({ parentRoute }) => {
           tableData={tableData}
           tableProps={propsForInboxTable}
           tableHeader="ES_INBOX_INBOX"
-          pagination={
+          pagination={!String(topBarSearch || "").trim() && (
             <InboxPagination
               offset={formState.tableForm?.offset || 0}
               limit={formState.tableForm?.limit || 10}
@@ -649,7 +665,7 @@ const Inbox = ({ parentRoute }) => {
               onNextPage={onNextPage}
               onPrevPage={onPrevPage}
             />
-          }
+          )}
         />
       )}
       {error.error && <Toast error label={error.label} onClose={() => setError({ error: false, label: "" })} />}

@@ -32,6 +32,7 @@ const LayoutInbox = ({ parentRoute }) => {
   const { data: cities } = Digit.Hooks.useTenants();
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
+  const [apiMobileSearch, setApiMobileSearch] = useState("");
   const prefix = "WF_EMPLOYEE_LAYOUT_STATUS";
 
   const searchFormDefaultValues = useMemo(
@@ -192,10 +193,17 @@ const LayoutInbox = ({ parentRoute }) => {
   }, [cities, formState?.selectedTenantId, tenantId]);
 
   const memoizedFilters = useMemo(() => {
+    const tableForm = formState?.tableForm || tableOrderFormDefaultValues;
+    const isTopBarSearchActive = Boolean(String(topBarSearch || "").trim());
+
     return {
       filterForm: formState?.filterForm || filterFormDefaultValues,
       searchForm: formState?.searchForm || searchFormDefaultValues,
-      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
+      tableForm: {
+        ...tableForm,
+        limit: isTopBarSearchActive ? Math.max(Number(totalCountData) || 0, Number(tableForm.limit) || 10) : tableForm.limit,
+        offset: isTopBarSearchActive ? 0 : tableForm.offset,
+      },
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
   }, [
@@ -207,6 +215,8 @@ const LayoutInbox = ({ parentRoute }) => {
     filterFormDefaultValues,
     searchFormDefaultValues,
     tableOrderFormDefaultValues,
+    topBarSearch,
+    totalCountData,
   ]);
 
   const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useLayoutInbox({
@@ -224,9 +234,10 @@ const LayoutInbox = ({ parentRoute }) => {
 
     return {
       ...memoizedFilters,
+      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
       filterForm: countFilterForm,
     };
-  }, [memoizedFilters]);
+  }, [formState?.tableForm, memoizedFilters, tableOrderFormDefaultValues]);
 
   const assignedToMeFilters = useMemo(
     () => ({
@@ -353,6 +364,19 @@ const LayoutInbox = ({ parentRoute }) => {
     dispatch({ action: "mutateFilterForm", data });
   };
 
+  const onApiMobileSearch = useCallback(
+    (mobileNumber) => {
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({ action: "mutateSearchForm", data: { mobileNumber: mobileNumber?.trim() || "", applicationNumber: "" } });
+    },
+    [formState.searchForm, formState.tableForm]
+  );
+
+  const onApiMobileClear = useCallback(() => {
+    setApiMobileSearch("");
+    onApiMobileSearch("");
+  }, [onApiMobileSearch]);
+
   const propsForInboxTable = useLayoutTableConfig({
     parentRoute,
     onPageSizeChange,
@@ -361,6 +385,7 @@ const LayoutInbox = ({ parentRoute }) => {
     table: tableData,
     dispatch,
     onSortingByData,
+    globalSearch: topBarSearch,
   });
 
   // Setup form with react-hook-form
@@ -403,7 +428,6 @@ const LayoutInbox = ({ parentRoute }) => {
     [formState?.filterForm, getResolvedStatusIds, setFilterFormValue, defaultAssignee]
   );
 
-  const searchDebounceRef = useRef(null);
   const hasInitializedFilterForm = useRef(false);
 
   const onNextPage = () =>
@@ -436,19 +460,6 @@ const LayoutInbox = ({ parentRoute }) => {
     setFilterFormValue,
     defaultAssignee,
   ]);
-
-  // Search debounce
-  useEffect(() => {
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-    searchDebounceRef.current = setTimeout(() => {
-      const value = String(topBarSearch || "").trim();
-      const nextSearchForm = value ? { applicationNumber: value } : {};
-      // Only reset offset when searching, preserve the current limit
-      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
-      dispatch({ action: "mutateSearchForm", data: nextSearchForm });
-    }, 400);
-    return () => clearTimeout(searchDebounceRef.current);
-  }, [topBarSearch]);
 
   // Initialize filter form
   useEffect(() => {
@@ -533,7 +544,11 @@ const LayoutInbox = ({ parentRoute }) => {
           onTabClick={onStatusTabClick}
           searchValue={topBarSearch}
           onSearchChange={(e) => setTopBarSearch(e.target.value)}
-          searchPlaceholder="Search by application number..."
+          searchPlaceholder="Search applications, names, mobile numbers, or status..."
+          apiMobileValue={apiMobileSearch}
+          onApiMobileChange={(e) => setApiMobileSearch(e.target.value)}
+          onApiMobileSearch={onApiMobileSearch}
+          onApiMobileClear={onApiMobileClear}
           totalCount={totalCountData}
           showClearTab={false}
           showAll={false}
@@ -546,7 +561,7 @@ const LayoutInbox = ({ parentRoute }) => {
       tableData={tableData}
       tableProps={propsForInboxTable}
       tableHeader="ES_INBOX_INBOX"
-      pagination={
+      pagination={!String(topBarSearch || "").trim() && (
         <InboxPagination
           offset={formState.tableForm?.offset || 0}
           limit={formState.tableForm?.limit || 10}
@@ -555,7 +570,7 @@ const LayoutInbox = ({ parentRoute }) => {
           onNextPage={onNextPage}
           onPrevPage={onPrevPage}
         />
-      }
+      )}
     />
   );
 };

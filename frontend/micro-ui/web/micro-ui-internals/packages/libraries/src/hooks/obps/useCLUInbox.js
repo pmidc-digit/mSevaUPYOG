@@ -60,6 +60,7 @@ const useCLUInbox = ({ tenantId, filters, config = {} }) => {
           const endDate = approvalDate ? Number(approvalDate) : Date.now();
 
           return {
+            _searchData: application,
             applicationId: application?.businessObject?.applicationNo || application?.businessObject?.applicationNumber || "-",
             date: application?.businessObject?.auditDetails?.createdTime ? Number.parseInt(application.businessObject.auditDetails.createdTime) : 0,
             submissionDate: application?.businessObject?.cluDetails?.additionalDetails?.SubmittedOn,

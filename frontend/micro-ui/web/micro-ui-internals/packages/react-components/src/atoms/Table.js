@@ -43,6 +43,26 @@ const extractTextValue = (value) => {
   return "";
 };
 
+const getSearchableRowText = (value, visited = new WeakSet()) => {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value !== "object") return "";
+  if (visited.has(value)) return "";
+
+  visited.add(value);
+  if (Array.isArray(value)) return value.map((item) => getSearchableRowText(item, visited)).join(" ");
+  return Object.values(value)
+    .map((item) => getSearchableRowText(item, visited))
+    .join(" ");
+};
+
+const allFieldsGlobalFilter = (rows, _columnIds, filterValue) => {
+  const query = String(filterValue || "").trim().toLowerCase();
+  if (!query) return rows;
+
+  return rows.filter((row) => getSearchableRowText(row.original).toLowerCase().includes(query));
+};
+
 const Table = ({
   className = "table",
   t,
@@ -60,6 +80,7 @@ const Table = ({
   onNextPage,
   onPrevPage,
   globalSearch,
+  searchAllFields = false,
   onSort = noop,
   onPageSizeChange,
   onLastPage,
@@ -106,7 +127,8 @@ const Table = ({
       autoResetSortBy: false,
       disableSortRemove: true,
       disableGlobalFilter: onSearch === false ? true : false,
-      globalFilter: globalSearch || "text",
+      globalFilter: searchAllFields ? "allFields" : globalSearch || "text",
+      filterTypes: searchAllFields ? { allFields: allFieldsGlobalFilter } : undefined,
       useControlledState: (state) => {
         return React.useMemo(() => ({
           ...state,

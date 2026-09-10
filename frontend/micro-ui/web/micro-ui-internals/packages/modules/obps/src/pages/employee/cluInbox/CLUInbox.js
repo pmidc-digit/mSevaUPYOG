@@ -31,6 +31,7 @@ const CLUInbox = ({ parentRoute }) => {
 
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
+  const [apiMobileSearch, setApiMobileSearch] = useState("");
 
   const searchFormDefaultValues = useMemo(
     () => ({
@@ -158,6 +159,8 @@ const CLUInbox = ({ parentRoute }) => {
   );
 
   const memoizedFilters = useMemo(() => {
+    const tableForm = formState?.tableForm || tableOrderFormDefaultValues;
+    const isTopBarSearchActive = Boolean(String(topBarSearch || "").trim());
     const normalizedFilterForm = {
       ...(formState?.filterForm || filterFormDefaultValues),
     };
@@ -169,7 +172,11 @@ const CLUInbox = ({ parentRoute }) => {
     return {
       filterForm: normalizedFilterForm,
       searchForm: formState?.searchForm || searchFormDefaultValues,
-      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
+      tableForm: {
+        ...tableForm,
+        limit: isTopBarSearchActive ? Math.max(Number(totalCountData) || 0, Number(tableForm.limit) || 10) : tableForm.limit,
+        offset: isTopBarSearchActive ? 0 : tableForm.offset,
+      },
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
   }, [
@@ -181,6 +188,8 @@ const CLUInbox = ({ parentRoute }) => {
     searchFormDefaultValues,
     tableOrderFormDefaultValues,
     selectedTenantIdDefaultValues,
+    topBarSearch,
+    totalCountData,
   ]);
 
   // const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
@@ -211,9 +220,10 @@ const CLUInbox = ({ parentRoute }) => {
 
     return {
       ...memoizedFilters,
+      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
       filterForm: countFilterForm,
     };
-  }, [memoizedFilters]);
+  }, [formState?.tableForm, memoizedFilters, tableOrderFormDefaultValues]);
 
   const assignedToMeFilters = useMemo(
     () => ({
@@ -361,6 +371,19 @@ const CLUInbox = ({ parentRoute }) => {
     [formState.tableForm, formState.filterForm]
   );
 
+  const onApiMobileSearch = useCallback(
+    (mobileNumber) => {
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({ action: "mutateSearchForm", data: { mobileNumber: mobileNumber?.trim() || "", applicationNumber: "" } });
+    },
+    [formState.searchForm, formState.tableForm]
+  );
+
+  const onApiMobileClear = useCallback(() => {
+    setApiMobileSearch("");
+    onApiMobileSearch("");
+  }, [onApiMobileSearch]);
+
   const propsForInboxTable = useCLUTableConfig({
     parentRoute,
     onPageSizeChange,
@@ -370,6 +393,7 @@ const CLUInbox = ({ parentRoute }) => {
     dispatch,
     onSortingByData,
     tenantId,
+    globalSearch: topBarSearch,
   });
 
   const {
@@ -426,7 +450,6 @@ const CLUInbox = ({ parentRoute }) => {
     return topBarStatusData.filter((status) => selectedStatusKeys.includes(status?.applicationstatus));
   }, [formState?.filterForm?.applicationStatus, statusData, topBarStatusData]);
 
-  const searchDebounceRef = useRef(null);
   const hasInitializedFilterForm = useRef(false);
 
   const onNextPage = () =>
@@ -457,17 +480,6 @@ const CLUInbox = ({ parentRoute }) => {
     formState?.filterForm?.isMigrated,
     setFilterFormValue,
   ]);
-
-  useEffect(() => {
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-    searchDebounceRef.current = setTimeout(() => {
-      const value = String(topBarSearch || "").trim();
-      const nextSearchForm = value ? { applicationNumber: value } : {};
-      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
-      dispatch({ action: "mutateSearchForm", data: nextSearchForm });
-    }, 400);
-    return () => clearTimeout(searchDebounceRef.current);
-  }, [topBarSearch]);
 
   useEffect(() => {
     if (hasInitializedFilterForm.current) return;
@@ -561,7 +573,11 @@ const CLUInbox = ({ parentRoute }) => {
               onTabClick={onStatusTabClick}
               searchValue={topBarSearch}
               onSearchChange={(e) => setTopBarSearch(e.target.value)}
-              searchPlaceholder="Search by application number..."
+              searchPlaceholder="Search applications, names, mobile numbers, or status..."
+              apiMobileValue={apiMobileSearch}
+              onApiMobileChange={(e) => setApiMobileSearch(e.target.value)}
+              onApiMobileSearch={onApiMobileSearch}
+              onApiMobileClear={onApiMobileClear}
               totalCount={totalCountData}
               showClearTab={false}
               showAll={false}
@@ -574,7 +590,7 @@ const CLUInbox = ({ parentRoute }) => {
           tableData={tableData}
           tableProps={propsForInboxTable}
           tableHeader="ES_INBOX_INBOX"
-          pagination={
+          pagination={!String(topBarSearch || "").trim() && (
             <InboxPagination
               offset={formState.tableForm?.offset || 0}
               limit={formState.tableForm?.limit || 10}
@@ -583,7 +599,7 @@ const CLUInbox = ({ parentRoute }) => {
               onNextPage={onNextPage}
               onPrevPage={onPrevPage}
             />
-          }
+          )}
         />
       )}
       {error.error && <Toast error label={error.label} onClose={() => setError({ error: false, label: "" })} />}

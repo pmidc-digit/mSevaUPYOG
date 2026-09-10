@@ -8,13 +8,17 @@ import static org.egov.pt.calculator.util.CalculatorConstants.PT_TIME_PENALTY;
 import static org.egov.pt.calculator.util.CalculatorConstants.PT_TIME_REBATE;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -311,6 +315,9 @@ public class DemandService {
 							CalculatorConstants.EG_PT_INVALID_DEMAND_ERROR_MSG);
 
 				applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap,taxPeriods);
+
+				JSONArray otsArray = (JSONArray) timeBasedExmeptionMasterMap.get(CalculatorConstants.OTS_MASTER);
+				processOtsForDemand(demand, otsArray);
 
 				roundOffDecimalForDemand(demand, requestInfoWrapper);
 
@@ -851,6 +858,376 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 		BigDecimal diff = newAmount.subtract(latestDetailInfo.getTaxAmountForTaxHead());
 		BigDecimal newTaxAmountForLatestDemandDetail = latestDetailInfo.getLatestDemandDetail().getTaxAmount().add(diff);
 		latestDetailInfo.getLatestDemandDetail().setTaxAmount(newTaxAmountForLatestDemandDetail);
+	}
+
+	private static final DateTimeFormatter OTS_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+	/**
+	 * Processes One Time Settlement (OTS) scheme evaluation and waivers for a demand.
+	 *
+	 * <p>Three cases are handled:
+	 * <ul>
+	 *   <li><b>No payment:</b> Apply OTS waveoffs normally if applicable, or reset if expired.</li>
+	 *   <li><b>Partial payment:</b> Revoke OTS waveoffs by setting their taxAmount to zero.
+	 *       The apportion service had settled the OTS heads (collectionAmount = -76, -493) during
+	 *       payment distribution. Setting taxAmount=0 creates outstanding on those heads so the
+	 *       citizen owes: remaining tax balance + revoked waveoff amounts (e.g. 87+76+493=656).</li>
+	 *   <li><b>Full payment:</b> All non-OTS heads are settled; skip without touching OTS heads.</li>
+	 * </ul>
+	 * </p>
+	 */
+	private void processOtsForDemand(Demand demand, JSONArray otsArray) {
+		if (CollectionUtils.isEmpty(otsArray)) {
+			log.info("OTS configuration is empty. No wave-offs to apply for demand: {}", demand.getId());
+			return;
+		}
+
+		// Sum outstanding balance on non-OTS heads (taxAmount - collectionAmount)
+		BigDecimal nonOtsOutstanding = demand.getDemandDetails().stream()
+				.filter(dd -> !CalculatorConstants.OTS_PENALTY_WAVEOFF.equals(dd.getTaxHeadMasterCode())
+						&& !CalculatorConstants.OTS_INTEREST_WAVEOFF.equals(dd.getTaxHeadMasterCode())
+						&& !CalculatorConstants.OTS_PENALTY_WAVEOFF_REMOVAL.equals(dd.getTaxHeadMasterCode())
+						&& !CalculatorConstants.OTS_INTEREST_WAVEOFF_REMOVAL.equals(dd.getTaxHeadMasterCode()))
+				.map(dd -> {
+					BigDecimal tax = dd.getTaxAmount() != null ? dd.getTaxAmount() : BigDecimal.ZERO;
+					BigDecimal col = dd.getCollectionAmount() != null ? dd.getCollectionAmount() : BigDecimal.ZERO;
+					return tax.subtract(col);
+				})
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		boolean hasPaymentCollected = demand.getDemandDetails().stream()
+				.filter(dd -> !CalculatorConstants.OTS_PENALTY_WAVEOFF.equals(dd.getTaxHeadMasterCode())
+						&& !CalculatorConstants.OTS_INTEREST_WAVEOFF.equals(dd.getTaxHeadMasterCode())
+						&& !CalculatorConstants.OTS_PENALTY_WAVEOFF_REMOVAL.equals(dd.getTaxHeadMasterCode())
+						&& !CalculatorConstants.OTS_INTEREST_WAVEOFF_REMOVAL.equals(dd.getTaxHeadMasterCode()))
+				.anyMatch(dd -> dd.getCollectionAmount() != null
+						&& dd.getCollectionAmount().compareTo(BigDecimal.ZERO) > 0);
+
+		if (hasPaymentCollected) {
+			if (nonOtsOutstanding.compareTo(BigDecimal.ZERO) > 0) {
+				// PARTIAL payment: non-OTS balance still remains (e.g. PT_TAX has 87 outstanding).
+				// Revoke OTS waveoffs → citizen must pay back the waived amounts too.
+				log.info("Partial payment detected on demand: {}. Non-OTS outstanding: {}. Revoking OTS waveoffs.",
+						demand.getId(), nonOtsOutstanding);
+				revokeOtsWaveoffs(demand);
+			} else {
+				// FULL payment: all non-OTS heads fully settled. OTS heads are correctly
+				// settled by apportion (collectionAmount = taxAmount). No action needed.
+				log.info("Full payment detected on demand: {}. OTS waveoffs already settled by apportion.", demand.getId());
+			}
+			return;
+		}
+
+		int demandFY = getFinancialYearStart(demand.getTaxPeriodFrom());
+		String fyShort = demandFY + "-" + String.valueOf(demandFY + 1).substring(2);
+		String fyLong  = demandFY + "-" + (demandFY + 1);
+		String demandTenantId = demand.getTenantId();
+
+		boolean otsApplied = false;
+
+		for (Object item : otsArray) {
+			if (!(item instanceof Map)) continue;
+			@SuppressWarnings("unchecked")
+			Map<String, Object> otsMap = (Map<String, Object>) item;
+
+			if (isOtsApplicable(otsMap, demandTenantId, fyShort, fyLong)) {
+				BigDecimal interestRate = parseBigDecimal(otsMap.get("interestRatePercent"));
+				BigDecimal penaltyRate  = parseBigDecimal(otsMap.get("penaltyRatePercent"));
+
+				log.info("OTS is Enabled and Applicable for Tenant: {}, FY: {} (Interest Waiver: {}%, Penalty Waiver: {}%)",
+						demandTenantId, fyShort, interestRate, penaltyRate);
+
+				otsEnabled(demand, interestRate, penaltyRate);
+				otsApplied = true;
+				break;
+			}
+		}
+
+		if (!otsApplied) {
+			resetExpiredOtsWaveoffs(demand, demandFY);
+		}
+	}
+
+	/**
+	 * Revokes OTS waveoffs after a partial payment by adding positive REMOVAL demand details.
+	 *
+	 * <p>Instead of mutating the original waveoff entries (which destroys audit trail),
+	 * this method adds new demand details with positive amounts that cancel out the waveoffs:
+	 * <pre>
+	 *   OTS_PENALTY_WAVEOFF:          taxAmt=-76,  col=-76  → untouched
+	 *   OTS_PENALTY_WAVEOFF_REMOVAL:  taxAmt=+76,  col=0    → NEW (outstanding=+76)
+	 * </pre>
+	 * Net effect: waveoff is nullified, citizen owes the original penalty/interest amounts.</p>
+	 *
+	 * <p>This method is idempotent: if REMOVAL heads already exist, their amounts are updated
+	 * rather than adding duplicates.</p>
+	 */
+	private void revokeOtsWaveoffs(Demand demand) {
+		List<DemandDetail> details = demand.getDemandDetails();
+		String demandId = demand.getId();
+		String tenantId = demand.getTenantId();
+
+		BigDecimal penaltyWaveoffAmt = BigDecimal.ZERO;
+		BigDecimal interestWaveoffAmt = BigDecimal.ZERO;
+		DemandDetail existingPenaltyRemoval = null;
+		DemandDetail existingInterestRemoval = null;
+
+		for (DemandDetail detail : details) {
+			String taxHead = detail.getTaxHeadMasterCode();
+			if (CalculatorConstants.OTS_PENALTY_WAVEOFF.equals(taxHead) && detail.getTaxAmount() != null) {
+				penaltyWaveoffAmt = penaltyWaveoffAmt.add(detail.getTaxAmount()); // negative value
+			} else if (CalculatorConstants.OTS_INTEREST_WAVEOFF.equals(taxHead) && detail.getTaxAmount() != null) {
+				interestWaveoffAmt = interestWaveoffAmt.add(detail.getTaxAmount()); // negative value
+			} else if (CalculatorConstants.OTS_PENALTY_WAVEOFF_REMOVAL.equals(taxHead)) {
+				existingPenaltyRemoval = detail;
+			} else if (CalculatorConstants.OTS_INTEREST_WAVEOFF_REMOVAL.equals(taxHead)) {
+				existingInterestRemoval = detail;
+			}
+		}
+
+		// Add/update PENALTY REMOVAL head (positive amount to cancel the negative waveoff)
+		if (penaltyWaveoffAmt.compareTo(BigDecimal.ZERO) < 0) {
+			BigDecimal removalAmt = penaltyWaveoffAmt.abs();
+			if (existingPenaltyRemoval != null) {
+				existingPenaltyRemoval.setTaxAmount(removalAmt);
+			} else {
+				details.add(DemandDetail.builder()
+						.taxAmount(removalAmt)
+						.taxHeadMasterCode(CalculatorConstants.OTS_PENALTY_WAVEOFF_REMOVAL)
+						.demandId(demandId)
+						.tenantId(tenantId)
+						.build());
+			}
+			log.info("Partial payment → Added OTS_PENALTY_WAVEOFF_REMOVAL: +{} for demand: {}", removalAmt, demandId);
+		}
+
+		// Add/update INTEREST REMOVAL head (positive amount to cancel the negative waveoff)
+		if (interestWaveoffAmt.compareTo(BigDecimal.ZERO) < 0) {
+			BigDecimal removalAmt = interestWaveoffAmt.abs();
+			if (existingInterestRemoval != null) {
+				existingInterestRemoval.setTaxAmount(removalAmt);
+			} else {
+				details.add(DemandDetail.builder()
+						.taxAmount(removalAmt)
+						.taxHeadMasterCode(CalculatorConstants.OTS_INTEREST_WAVEOFF_REMOVAL)
+						.demandId(demandId)
+						.tenantId(tenantId)
+						.build());
+			}
+			log.info("Partial payment → Added OTS_INTEREST_WAVEOFF_REMOVAL: +{} for demand: {}", removalAmt, demandId);
+		}
+	}
+
+	/**
+	 * Validates whether an OTS rule is enabled, matches the tenant and demand financial year, and is within active dates.
+	 */
+	private boolean isOtsApplicable(Map<String, Object> otsMap, String demandTenantId, String fyShort, String fyLong) {
+		boolean isEnabled = Boolean.parseBoolean(String.valueOf(otsMap.get("isOTSEnabled")));
+		if (!isEnabled) return false;
+
+		// Tenant-specific array matching ("tenantId": ["pb.ludhiana", "pb.amritsar"] or "tenantsApplicable")
+		Object tenantIdObj = otsMap.get("tenantId");
+		if (tenantIdObj == null) {
+			tenantIdObj = otsMap.get("tenantsApplicable");
+		}
+
+		if (tenantIdObj instanceof List) {
+			List<?> tenantList = (List<?>) tenantIdObj;
+			if (!tenantList.isEmpty()) {
+				boolean tenantMatches = tenantList.stream()
+						.filter(t -> t != null)
+						.map(Object::toString)
+						.anyMatch(t -> t.equalsIgnoreCase(demandTenantId) || demandTenantId.startsWith(t + "."));
+				if (!tenantMatches) {
+					return false;
+				}
+			}
+		} else if (tenantIdObj instanceof String && !((String) tenantIdObj).trim().isEmpty()) {
+			String ruleTenant = ((String) tenantIdObj).trim();
+			if (!ruleTenant.equalsIgnoreCase(demandTenantId) && !demandTenantId.startsWith(ruleTenant + ".")) {
+				return false;
+			}
+		}
+
+		Object fyObj = otsMap.get("financialYearsApplicable");
+		if (fyObj == null) return false;
+
+		String fyApplicable = fyObj.toString();
+		boolean fyMatches = fyApplicable.equals(fyShort) || fyApplicable.equals(fyLong);
+		if (!fyMatches) return false;
+
+		Object endDateObj = otsMap.get("OTSEndDate");
+		if (endDateObj == null) return false;
+
+		try {
+			LocalDate localDate = LocalDate.parse(endDateObj.toString(), OTS_DATE_FORMATTER);
+			long otsEndEpoch = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+			return otsEndEpoch >= System.currentTimeMillis();
+		} catch (Exception e) {
+			log.error("Error parsing OTS end date: {}", endDateObj, e);
+			return false;
+		}
+	}
+
+	/**
+	 * Resets OTS wave-offs to zero when OTS has expired or is not applicable, provided zero collection has occurred.
+	 */
+	private void resetExpiredOtsWaveoffs(Demand demand, int demandFY) {
+		Map<String, BigDecimal> penaltyAndInterestCollected = demand.getDemandDetails().stream()
+				.filter(d -> CalculatorConstants.PT_TIME_PENALTY.equals(d.getTaxHeadMasterCode()) 
+						  || CalculatorConstants.PT_TIME_INTEREST.equals(d.getTaxHeadMasterCode()))
+				.collect(Collectors.groupingBy(
+						DemandDetail::getTaxHeadMasterCode,
+						Collectors.mapping(DemandDetail::getCollectionAmount,
+								Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))
+				));
+
+		BigDecimal penaltyCollected  = penaltyAndInterestCollected.getOrDefault(CalculatorConstants.PT_TIME_PENALTY, BigDecimal.ZERO);
+		BigDecimal interestCollected = penaltyAndInterestCollected.getOrDefault(CalculatorConstants.PT_TIME_INTEREST, BigDecimal.ZERO);
+
+		demand.getDemandDetails().forEach(detail -> {
+			String taxHead = detail.getTaxHeadMasterCode();
+
+			if (CalculatorConstants.OTS_PENALTY_WAVEOFF.equals(taxHead) && penaltyCollected.compareTo(BigDecimal.ZERO) == 0) {
+				detail.setTaxAmount(BigDecimal.ZERO);
+				log.info("OTS expired -> Reset OTS penalty wave-off to 0 for demand FY: {}", demandFY);
+			}
+
+			if (CalculatorConstants.OTS_INTEREST_WAVEOFF.equals(taxHead) && interestCollected.compareTo(BigDecimal.ZERO) == 0) {
+				detail.setTaxAmount(BigDecimal.ZERO);
+				log.info("OTS expired -> Reset OTS interest wave-off to 0 for demand FY: {}", demandFY);
+			}
+		});
+
+		log.info("No valid OTS for demand FY: {}. Cleared OTS wave-offs where collected amount is 0.", demandFY);
+	}
+
+	private BigDecimal parseBigDecimal(Object val) {
+		if (val == null) return BigDecimal.ZERO;
+		try {
+			return new BigDecimal(val.toString());
+		} catch (Exception e) {
+			return BigDecimal.ZERO;
+		}
+	}
+
+	/**
+	 * Resolves the starting financial year (e.g. 2024 for FY 2024-25) from tax period epoch milliseconds.
+	 */
+	private int getFinancialYearStart(Long epochMillis) {
+		if (epochMillis == null) return Calendar.getInstance().get(Calendar.YEAR);
+		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kolkata"));
+		cal.setTimeInMillis(epochMillis);
+		int year = cal.get(Calendar.YEAR);
+		int month = cal.get(Calendar.MONTH); // April = 3 (0-indexed)
+		return (month >= Calendar.APRIL) ? year : year - 1;
+	}
+
+	/**
+	 * Calculates and applies OTS (One Time Settlement) penalty and interest wave-offs on demand details.
+	 *
+	 * <p>Handles duplicate OTS entries that may arise from concurrent bill fetch requests
+	 * (race condition). Keeps the first OTS waveoff entry and zeros out any duplicates.</p>
+	 */
+	private boolean otsEnabled(Demand demand, BigDecimal interestRate, BigDecimal penaltyRate) {
+		String demandId = demand.getId();
+		String tenantId = demand.getTenantId();
+		List<DemandDetail> details = demand.getDemandDetails();
+
+		BigDecimal totalPenalty = BigDecimal.ZERO;
+		BigDecimal collectedPenalty = BigDecimal.ZERO;
+
+		BigDecimal totalInterest = BigDecimal.ZERO;
+		BigDecimal collectedInterest = BigDecimal.ZERO;
+
+		DemandDetail existingPenaltyWaveoff = null;
+		DemandDetail existingInterestWaveoff = null;
+		List<DemandDetail> duplicatePenaltyWaveoffs = new ArrayList<>();
+		List<DemandDetail> duplicateInterestWaveoffs = new ArrayList<>();
+
+		for (DemandDetail detail : details) {
+			String taxHead = detail.getTaxHeadMasterCode();
+
+			if (CalculatorConstants.PT_TIME_PENALTY.equals(taxHead)) {
+				totalPenalty = totalPenalty.add(detail.getTaxAmount());
+				collectedPenalty = collectedPenalty.add(detail.getCollectionAmount());
+			} else if (CalculatorConstants.PT_TIME_INTEREST.equals(taxHead)) {
+				totalInterest = totalInterest.add(detail.getTaxAmount());
+				collectedInterest = collectedInterest.add(detail.getCollectionAmount());
+			} else if (CalculatorConstants.OTS_PENALTY_WAVEOFF.equals(taxHead)) {
+				if (existingPenaltyWaveoff == null) {
+					existingPenaltyWaveoff = detail;
+				} else {
+					duplicatePenaltyWaveoffs.add(detail); // mark as duplicate
+				}
+			} else if (CalculatorConstants.OTS_INTEREST_WAVEOFF.equals(taxHead)) {
+				if (existingInterestWaveoff == null) {
+					existingInterestWaveoff = detail;
+				} else {
+					duplicateInterestWaveoffs.add(detail); // mark as duplicate
+				}
+			}
+		}
+
+		// Zero out any duplicate OTS entries (caused by concurrent bill fetch race condition)
+		for (DemandDetail dup : duplicatePenaltyWaveoffs) {
+			log.info("Zeroing duplicate OTS_PENALTY_WAVEOFF entry for demand: {}", demandId);
+			dup.setTaxAmount(BigDecimal.ZERO);
+		}
+		for (DemandDetail dup : duplicateInterestWaveoffs) {
+			log.info("Zeroing duplicate OTS_INTEREST_WAVEOFF entry for demand: {}", demandId);
+			dup.setTaxAmount(BigDecimal.ZERO);
+		}
+
+		BigDecimal unpaidPenalty = totalPenalty.subtract(collectedPenalty);
+		BigDecimal unpaidInterest = totalInterest.subtract(collectedInterest);
+
+		BigDecimal penaltyWaveoff = BigDecimal.ZERO;
+		BigDecimal interestWaveoff = BigDecimal.ZERO;
+
+		if (penaltyRate != null) {
+			penaltyWaveoff = unpaidPenalty.multiply(penaltyRate)
+					.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+					.setScale(0, RoundingMode.HALF_UP);
+		}
+
+		if (interestRate != null) {
+			interestWaveoff = unpaidInterest.multiply(interestRate)
+					.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+					.setScale(0, RoundingMode.HALF_UP);
+		}
+
+		if (existingPenaltyWaveoff != null) {
+			if (unpaidPenalty.compareTo(BigDecimal.ZERO) > 0 && penaltyWaveoff.compareTo(BigDecimal.ZERO) > 0) {
+				existingPenaltyWaveoff.setTaxAmount(penaltyWaveoff.negate());
+			} else {
+				existingPenaltyWaveoff.setTaxAmount(BigDecimal.ZERO);
+			}
+		} else if (unpaidPenalty.compareTo(BigDecimal.ZERO) > 0 && penaltyWaveoff.compareTo(BigDecimal.ZERO) > 0) {
+			details.add(DemandDetail.builder()
+					.taxAmount(penaltyWaveoff.negate())
+					.taxHeadMasterCode(CalculatorConstants.OTS_PENALTY_WAVEOFF)
+					.demandId(demandId)
+					.tenantId(tenantId)
+					.build());
+		}
+
+		if (existingInterestWaveoff != null) {
+			if (unpaidInterest.compareTo(BigDecimal.ZERO) > 0 && interestWaveoff.compareTo(BigDecimal.ZERO) > 0) {
+				existingInterestWaveoff.setTaxAmount(interestWaveoff.negate());
+			} else {
+				existingInterestWaveoff.setTaxAmount(BigDecimal.ZERO);
+			}
+		} else if (unpaidInterest.compareTo(BigDecimal.ZERO) > 0 && interestWaveoff.compareTo(BigDecimal.ZERO) > 0) {
+			details.add(DemandDetail.builder()
+					.taxAmount(interestWaveoff.negate())
+					.taxHeadMasterCode(CalculatorConstants.OTS_INTEREST_WAVEOFF)
+					.demandId(demandId)
+					.tenantId(tenantId)
+					.build());
+		}
+
+		return true;
 	}
 
 }

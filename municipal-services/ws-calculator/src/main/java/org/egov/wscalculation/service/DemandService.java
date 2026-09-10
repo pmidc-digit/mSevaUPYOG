@@ -57,6 +57,9 @@ import static org.egov.wscalculation.constants.WSCalculationConstant.DISCONNECT_
 @Slf4j
 public class DemandService {
 
+    @Autowired
+    private WSCalculationDao wSCalculationDao;
+
 	@Autowired
 	private ServiceRequestRepository repository;
 	
@@ -1695,8 +1698,23 @@ public class DemandService {
 
 		        List<Canceldemandsearch> demandlists = waterCalculatorDao.getConnectionCancels(tenantId, demandid);
 
-		        if (demandlists.isEmpty()) {
-		            throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
+              // Block cancel operation for metered connections
+              if (!demandlists.isEmpty()) {
+                  String consumerCode = demandlists.get(0).getConsumercode();
+                  String collectionamount=demandlists.get(0).getCollectionamount();
+                  String taxamount=demandlists.get(0).getTaxamount();
+
+                  if (Double.parseDouble(collectionamount) > 0 && Double.parseDouble(taxamount) > 0) {
+                      throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for collectionamount > 0.");
+                  }
+
+                  String connectionType = calculatorUtils.getWaterConnectionType(cancelDemand.getRequestInfo(),tenantId, consumerCode);
+                  if (StringUtils.isNotBlank(connectionType)
+                          && WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(connectionType)) {
+                      throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for metered connections.");
+                  }
+              }else{
+                  throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
 		        }
 
 		        Boolean cancels = waterCalculatorDao.getUpdates(demandlists);
@@ -2481,6 +2499,68 @@ public class DemandService {
 
 	    return url;
 	}
+
+    public void validateNoCollectionBeforeCancel(String connectionNo, String relatedSwConn, List<Map<String, Object>> demandList, List<Map<String, Object>> demandListSw) {
+        double waterCollected = 0.0;
+        double swCollected = 0.0;
+
+        if (demandList != null && !demandList.isEmpty()) {
+            for (Map<String, Object> row : demandList) {
+                Object obj = row.get("amountcollected");
+                waterCollected = obj != null ? Double.parseDouble(obj.toString()) : 0.0;
+            }
+        }
+
+        if (demandListSw != null && !demandListSw.isEmpty()) {
+            for (Map<String, Object> row : demandListSw) {
+                Object obj = row.get("amountcollected");
+                swCollected = obj != null ? Double.parseDouble(obj.toString()) : 0.0;
+            }
+        }
+
+        if (swCollected > 0) {
+            throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for water related sewerage connection " + relatedSwConn + " as collectionamount > 0.");
+        }
+    }
+
+    public void cancelWaterAndRelatedSwDemand(String tenantId, String connectionNo, String relatedSwConn, List<Map<String, Object>> demandList, List<Map<String, Object>> demandListSw) {
+
+        if (demandList != null && !demandList.isEmpty()) {
+            for (Map<String, Object> row : demandList) {
+                String demandId = row.get("demandId") != null ? row.get("demandId").toString() : null;
+                if (demandId == null) {
+                    continue;
+                }
+                CancelDemandReq cancelDemandReq = new CancelDemandReq();
+                cancelDemandReq.setId(demandId);
+                cancelDemandReq.setTenantId(tenantId);
+                cancelDemandReq.setConsumerCode(connectionNo);
+                cancelDemandReq.setBusinessService("WS");
+
+                log.info("Synchronously cancelling existing WS demand {} for consumer {}", demandId, connectionNo);
+
+                wSCalculationDao.cancelPreviousMeterReading(cancelDemandReq);
+            }
+        }
+
+        if (demandListSw != null && !demandListSw.isEmpty()) {
+            for (Map<String, Object> row : demandListSw) {
+                String demandIdSw = row.get("demandId") != null ? row.get("demandId").toString() : null;
+                if (demandIdSw == null) {
+                    continue;
+                }
+                CancelDemandReq cancelSwDemandReq = new CancelDemandReq();
+                cancelSwDemandReq.setId(demandIdSw);
+                cancelSwDemandReq.setTenantId(tenantId);
+                cancelSwDemandReq.setConsumerCode(relatedSwConn);
+                cancelSwDemandReq.setBusinessService("SW");
+
+                log.info("Synchronously cancelling existing SW demand {} for consumer {}", demandIdSw, relatedSwConn);
+
+                wSCalculationDao.cancelPreviousMeterReading(cancelSwDemandReq);
+            }
+        }
+    }
 
 
 }

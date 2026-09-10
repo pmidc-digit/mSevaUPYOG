@@ -3,11 +3,12 @@ package org.egov.egovsurveyservices.validators;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.egovsurveyservices.service.ScorecardSurveyService;
+import org.egov.egovsurveyservices.repository.ScorecardSurveyRepository;
 import org.egov.egovsurveyservices.web.models.*;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,7 +22,7 @@ import static org.egov.egovsurveyservices.utils.SurveyServiceConstants.EMPLOYEE;
 public class ScorecardSurveyValidator {
 
     @Autowired
-    ScorecardSurveyService surveyService;
+    ScorecardSurveyRepository surveyRepository;
 
     /**
      * Validates whether the user trying to create/update/delete a survey is an Employee
@@ -56,7 +57,7 @@ public class ScorecardSurveyValidator {
 
     public void validateAnswers(SurveyResponseNew answerEntity) {
 
-        List<Section> sectionList = surveyService.fetchSectionListBasedOnSurveyId(answerEntity.getSurveyUuid());
+        List<Section> sectionList = fetchSectionListBasedOnSurveyId(answerEntity.getSurveyUuid());
         Map<String, Set<String>> sectionQuestionMap = new HashMap<>();
         HashSet<String> mandatoryQuestionsUuids = new HashSet<>();
         List<String> questionsThatAreAnsweredUuids = new ArrayList<>();
@@ -67,7 +68,7 @@ public class ScorecardSurveyValidator {
 
         // Fetch questions for the survey and sections
         sectionList.forEach(section -> {
-            List<QuestionWeightage> questionWeightageList = surveyService.fetchQuestionsWeightageListBySurveyAndSection(answerEntity.getSurveyUuid(), section.getUuid());
+            List<QuestionWeightage> questionWeightageList = fetchQuestionsWeightageListBySurveyAndSection(answerEntity.getSurveyUuid(), section.getUuid());
             questionWeightageList.forEach(questionWeightage -> {
                 Question question = questionWeightage.getQuestion();
                 sectionQuestionMap.computeIfAbsent(questionWeightage.getSectionUuid(), k -> new HashSet<>()).add(question.getUuid());
@@ -101,5 +102,15 @@ public class ScorecardSurveyValidator {
         if(StringUtils.isBlank(city)){
             throw new CustomException("EG_SS_CITY_MISSING","provide a valid city");
         }
+    }
+
+    private List<Section> fetchSectionListBasedOnSurveyId(String surveyId) {
+        List<Section> sectionList = surveyRepository.fetchSectionListBasedOnSurveyId(surveyId);
+        return CollectionUtils.isEmpty(sectionList) ? new ArrayList<>() : sectionList;
+    }
+
+    private List<QuestionWeightage> fetchQuestionsWeightageListBySurveyAndSection(String surveyId, String sectionId) {
+        List<QuestionWeightage> questionWeightageList = surveyRepository.fetchQuestionsWeightageListBySurveyAndSection(surveyId, sectionId);
+        return CollectionUtils.isEmpty(questionWeightageList) ? new ArrayList<>() : questionWeightageList;
     }
 }

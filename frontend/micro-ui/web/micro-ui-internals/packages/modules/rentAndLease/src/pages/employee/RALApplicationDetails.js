@@ -507,7 +507,13 @@ const RALApplicationDetails = () => {
     if (filtData.action === "FORWARD_FOT_SETLEMENT" && filtData?.amountToBeDeducted !== undefined) {
       updatedApplicant.amountToBeDeducted = filtData.amountToBeDeducted;
     }
-
+    if (filtData.action === "APPROVE") {
+      updatedApplicant.additionalDetails = {
+        ...updatedApplicant?.additionalDetails,
+        approverComment: filtData?.comment,
+      };
+    }
+    
     // if (!filtData?.assignee && filtData.action == "FORWARD") {
     //   // setShowToast(true);
     //   setShowToast({ key: "error", message: "Assignee is mandatory" });

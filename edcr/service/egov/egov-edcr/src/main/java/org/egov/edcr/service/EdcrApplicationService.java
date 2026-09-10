@@ -799,7 +799,7 @@ public class EdcrApplicationService {
         n.put("ulbName", txt(pi, "ulbName"));
         n.put("ulbType", txt(frd, "ulbType"));
         n.put("buildingCategory", txt(pi, "occupancy"));
-        n.put("proposedSiteAddress", txt(pi, "city"));
+        n.put("proposedSiteAddress", txt(pi, "proposedSiteAddress"));
         n.put("khasraNo", txt(pi, "khasraNo"));
         n.put("zone", zone);
         return n;

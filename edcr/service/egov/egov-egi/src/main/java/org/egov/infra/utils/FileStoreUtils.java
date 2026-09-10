@@ -143,6 +143,7 @@ public class FileStoreUtils {
             return ResponseEntity.notFound().build();
         } catch (IOException e) {
             LOGGER.error("Error occurred while creating response entity from file mapper", e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }

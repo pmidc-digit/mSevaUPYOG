@@ -38,7 +38,7 @@ const RALApplicationDetails = () => {
     { enabled: acknowledgementIds ? true : false }
   );
 
-  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rentandlease-receipt" });
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rl-receipt-employee" });
 
   const getAcknowledgement = async () => {
     setLoader(true);

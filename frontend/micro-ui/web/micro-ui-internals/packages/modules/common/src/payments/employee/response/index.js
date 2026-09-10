@@ -168,7 +168,7 @@ export const SuccessfulPayment = (props) => {
       businessService === "GC.ONE_TIME_FEE" || businessService === "GC"
         ? "garbage-receipt"
         : businessService === "rl-services"
-        ? "rentandlease-receipt"
+        ? "rl-receipt-employee"
         : data["common-masters"]?.uiCommonPay?.filter(({ code }) => businessService?.includes(code))[0]?.receiptKey || "consolidatedreceipt",
   });
 

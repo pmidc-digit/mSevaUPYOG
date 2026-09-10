@@ -36,6 +36,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidPTR");
   const DateOnly = new Date();
 
+  console.log(getModalData,"getModalData")
   const formatUlbName = (ulbName = "") => {
     if (!ulbName) return "";
     const parts = ulbName.split(".");
@@ -43,94 +44,86 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   };
   const formattedUlbName = formatUlbName(getModalData?.ulbName);
 
+  const formatPetAge = (ageValue) => {
+    if (ageValue === null || ageValue === undefined || ageValue === "") return "";
+    const ageStr = String(ageValue).trim();
+    if (!/^\d+(\.\d+)?$/.test(ageStr)) return ageStr;
+
+    const [yearsPart, decPart] = ageStr.split(".");
+    let years = Number(yearsPart) || 0;
+    let months = 0;
+
+    if (decPart) {
+      if (decPart.length === 1) {
+        months = parseInt(decPart, 10);
+      } else {
+        months = parseInt(decPart.slice(0, 2), 10);
+      }
+      if (isNaN(months)) months = 0;
+    }
+
+    if (months > 11) months = 11;
+
+    if (years === 0 && months === 0) return "";
+    if (years === 0) return `${months} month${months > 1 ? "s" : ""}`;
+    if (months === 0) return `${years} year${years > 1 ? "s" : ""}`;
+    return `${years} year${years > 1 ? "s" : ""} ${months} month${months > 1 ? "s" : ""}`;
+  };
+
+  const applicantName = getModalData?.name || ownername || "";
+  const fatherOrHusbandName = getModalData?.fatherOrHusbandName || getModalData?.fatherName || "";
+  const residentAddress = getModalData?.address || getModalData?.residentOf || "";
+  const dogName = getModalData?.petName || getModalData?.dogName || "";
+  const petType = getModalData?.petType.name || getModalData?.petType || "";
+  const breed = (typeof getModalData?.breedType === "object" ? getModalData?.breedType?.name : getModalData?.breedType) || getModalData?.breed || "";
+  const sex = (typeof getModalData?.petGender === "object" ? getModalData?.petGender?.name : getModalData?.petGender) || getModalData?.gender || getModalData?.sex || "";
+  const age = getModalData?.petAge ? formatPetAge(getModalData?.petAge) : getModalData?.age || "";
+  const place = formattedUlbName || getModalData?.ulbName || "";
+  const currentDate = new Date().toLocaleDateString("en-IN");
+
   const selfdeclarationform = `
     <div style="font-family:'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.8;">
       
-      <h1 style="text-align:center; font-weight:bold; font-size:22px; margin-bottom:40px; letter-spacing:0.5px; color:#1a1a1a;">
-        SELF-DECLARATION FOR VENUE BOOKING
+      <h1 style="text-align:center; font-weight:bold; font-size:20px; margin-bottom:30px; letter-spacing:0.5px; color:#1a1a1a; text-transform:uppercase;">
+        SELF-DECLARATION FOR REGISTRATION OF PET ${petType}
       </h1>
 
-      <div style="margin-bottom:32px; line-height:1.8;">
-        <p style="margin:0 0 16px 0; text-align:justify;">
-          I, <strong>${getModalData?.name || ownername}</strong>, resident of
-          <strong> ${getModalData?.residentOf || getModalData?.address}</strong>, do hereby self-declare that:
+      <div style="margin-bottom:24px; line-height:2.0; text-align:justify;">
+        <p style="margin:0 0 16px 0;">
+          I <strong><u>${applicantName || "___________________________________"}</u></strong> S/O <strong><u>${fatherOrHusbandName || "_______________________________"}</u></strong> resident of <strong><u>${residentAddress || "___________________________________________"}</u></strong> Hereby declare that I am the owner of the ${petType} mentioned below:-
         </p>
       </div>
 
-      <div style="margin-left:10px; line-height:1.9;">
-        <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
-          <span style="min-width:35px; font-weight:600; color:#333;">1.</span>
-          <span>I want to book the Venue <strong>${getModalData?.communityHallName}</strong> for the purpose of <strong>${
-    getModalData?.purpose?.name
-  }</strong>.</span>
-        </div>
-
-        <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
-          <span style="min-width:35px; font-weight:600; color:#333;">2.</span>
-          <span>I will obey all government directions issued from time to time regarding Coronavirus or any other epidemic.</span>
-        </div>
-
-        <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
-          <span style="min-width:35px; font-weight:600; color:#333;">3.</span>
-          <span>The Municipal Corporation / Council will have the right to deduct charges for cleanliness, electricity, or any maintenance of the Venue.</span>
-        </div>
-
-        <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
-          <span style="min-width:35px; font-weight:600; color:#333;">4.</span>
-          <span>I will not serve alcohol without valid government permission from the concerned department. If I do serve alcohol without permission, I will be liable for punishment as per law.</span>
-        </div>
-
-        <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
-          <span style="min-width:35px; font-weight:600; color:#333;">5.</span>
-          <span>I will not use Single Use Plastic or thermocol as per Solid Waste Management (SWM) guidelines.</span>
-        </div>
-
-        <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
-          <span style="min-width:35px; font-weight:600; color:#333;">6.</span>
-          <span>I will ensure proper cleanliness of the Venue.</span>
-        </div>
-
-        <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
-          <span style="min-width:35px; font-weight:600; color:#333;">7.</span>
-          <span>I will be responsible for any fight or damage to government property and will be liable for any penalty.</span>
-        </div>
-
-        <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
-          <span style="min-width:35px; font-weight:600; color:#333;">8.</span>
-          <span>The Municipal Corporation / Council reserves the right to cancel my booking for any emergency government program.</span>
-        </div>
-
-        <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
-          <span style="min-width:35px; font-weight:600; color:#333;">9.</span>
-          <span>I will play DJ music at low volume only up to 10 PM in the Venue, as per government guidelines.</span>
-        </div>
-
-        <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
-          <span style="min-width:35px; font-weight:600; color:#333;">10.</span>
-          <span>I will be responsible if any illegal electricity connection is used in the Venue.</span>
-        </div>
-
-        <div style="margin-bottom:18px; text-align:justify; display:flex; align-items:flex-start; gap:8px;">
-          <span style="min-width:35px; font-weight:600; color:#333;">11.</span>
-          <span>I have checked the current status of the Venue and I am ready to proceed with the booking.</span>
-        </div>
+      <div style="margin-left:15px; margin-bottom:24px; line-height:2.2;">
+        <p style="margin:4px 0;"><strong>${petType} Name:</strong> <u>${dogName || "____________________________"}</u></p>
+        <p style="margin:4px 0;"><strong>Breed:</strong> <u>${breed || "_________________________________"}</u></p>
+        <p style="margin:4px 0;"><strong>Sex:</strong> <u>${sex || "____________________________________"}</u></p>
+        <p style="margin:4px 0;"><strong>Age:</strong> <u>${age || "___________________________________"}</u></p>
       </div>
 
-      <div style="margin-top:60px;">
-        <table style="width:100%; border-collapse:collapse;">
-          <tr>
-            <td style="vertical-align:top;"></td>
-            <td style="vertical-align:top; padding-left:40px; float:right;">
-              <div style="line-height:2.2;">
-                
-                <p style="margin:0 0 28px 0; font-weight:bold; font-size:17px; color:#000;">${getModalData?.name || ownername}</p>
-                
-               
-               
-              </div>
-            </td>
-          </tr>
-        </table>
+      <div style="margin-bottom:24px; line-height:1.9; text-align:justify;">
+        <p style="margin:0 0 16px 0;">
+          I hereby declare that all documents and information submitted by me for registration of my pet ${petType} are true, correct and genuine. I understand that I shall be personally responsible for any false, forged or incorrect document/information submitted by me.
+        </p>
+        <p style="margin:0 0 16px 0;">
+          I further declare that I shall be responsible for the proper control and care of my ${petType} and for any loss, injury, damage or inconvenience caused by my ${petType} to any citizen or property.
+        </p>
+        <p style="margin:0 0 16px 0;">
+          I undertake to follow all rules and regulations applicable issued by AWBI/local authority or any other authority relating to ${petType} ownership and registration.
+        </p>
+        <p style="margin:0 0 16px 0;">
+          I have read and understood the above declaration and confirm that the information and documents submitted by me are true and genuine.
+        </p>
+      </div>
+
+      <div style="margin-top:40px; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+          <div><strong>Place:</strong> <u>${place || "__________________"}</u></div>
+          <div><strong>Date:</strong> <u>${currentDate || "__________________"}</u></div>
+        </div>
+        <div style="margin-top:20px;">
+          <p style="margin:0;"><strong>Signature of ${petType} Owner:</strong> <u>${applicantName || "_______________________"}</u></p>
+        </div>
       </div>
     </div>
   `;
@@ -307,6 +300,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
       if (result?.filestoreIds[0]?.length > 0) {
         alert("File Uploaded Successfully");
         sessionStorage.setItem("CitizenConsentdocFilestoreidPTR", result?.filestoreIds[0]);
+        sessionStorage.removeItem("PTRConsentNeedsReupload");
         setIsFileUploaded(true);
       } else {
         alert("File Upload Failed");

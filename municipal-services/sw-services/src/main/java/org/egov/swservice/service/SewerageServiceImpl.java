@@ -283,7 +283,10 @@ public class SewerageServiceImpl implements SewerageService {
 	 */
 	public List<SewerageConnection> search(SearchCriteria criteria, RequestInfo requestInfo) {
 		List<SewerageConnection> sewerageConnectionList;
-		if (criteria.getOwnerName() != null || criteria.getGuardianName() != null || criteria.getDoorNo() != null || criteria.getLocality() != null) {
+        if((criteria.getOwnerName() != null && !criteria.getOwnerName().trim().isEmpty()) ||
+                (criteria.getGuardianName() != null && !criteria.getGuardianName().trim().isEmpty()) ||
+                (criteria.getDoorNo() != null && !criteria.getDoorNo().trim().isEmpty()) ||
+                (criteria.getLocality() != null && !criteria.getLocality().trim().isEmpty())){
 			sewerageConnectionList = swFuzzySearchService.getConnections(requestInfo, criteria);
 		} else {
 			sewerageConnectionList = getSewerageConnectionsList(criteria, requestInfo);
@@ -414,7 +417,15 @@ public class SewerageServiceImpl implements SewerageService {
 
 		/* decrypt here */
 		sewerageConnectionRequest.setSewerageConnection(decryptConnectionDetails(sewerageConnectionRequest.getSewerageConnection(), sewerageConnectionRequest.getRequestInfo()));
-	
+
+        UpdateDemandPayerRequest updateDemandPayerRequest= UpdateDemandPayerRequest.builder().consumer(sewerageConnectionRequest.getSewerageConnection().getConnectionNo()).payer(property.getOwners().get(0).getUuid()).business(SEWERAGE_SERVICE_BUSINESS_ID).tenant(sewerageConnectionRequest.getSewerageConnection().getTenantId()).build();
+
+        UpdateBillStatusReq updateBillStatusReq = UpdateBillStatusReq.builder().consumer(sewerageConnectionRequest.getSewerageConnection().getConnectionNo()).business(SEWERAGE_SERVICE_BUSINESS_ID).status(EXPIRED).tenant(sewerageConnectionRequest.getSewerageConnection().getTenantId()).build();
+
+        sewerageDao.updatePayerIDForDemand(updateDemandPayerRequest);
+
+        sewerageDao.updateOldBillStatus(updateBillStatusReq);
+
 		try {
 		    String channel = sewerageConnectionRequest.getSewerageConnection().getChannel();
 		    String thirdPartyCode = null;

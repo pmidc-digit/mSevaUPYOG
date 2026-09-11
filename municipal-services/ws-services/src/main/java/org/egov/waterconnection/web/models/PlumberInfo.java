@@ -2,9 +2,8 @@ package org.egov.waterconnection.web.models;
 
 import java.util.Objects;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 
-import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -17,33 +16,26 @@ import io.swagger.annotations.ApiModelProperty;
  * PlumberInfo
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-01-22T12:39:45.543+05:30[Asia/Kolkata]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-01-22T12:39:45.543+05:30[Asia/Kolkata]")
 public class PlumberInfo {
-	@SafeHtml
 	@JsonProperty("id")
 	private String id = null;
 
-	@SafeHtml
 	@JsonProperty("name")
 	private String name = null;
 
-	@SafeHtml
 	@JsonProperty("licenseNo")
 	private String licenseNo = null;
 
-	@SafeHtml
 	@JsonProperty("mobileNumber")
 	private String mobileNumber = null;
 
-	@SafeHtml
 	@JsonProperty("gender")
 	private String gender = null;
 
-	@SafeHtml
 	@JsonProperty("fatherOrHusbandName")
 	private String fatherOrHusbandName = null;
 
-	@SafeHtml
 	@JsonProperty("correspondenceAddress")
 	private String correspondenceAddress = null;
 
@@ -82,7 +74,6 @@ public class PlumberInfo {
 		}
 	}
 
-	@SafeHtml
 	@JsonProperty("relationship")
 	private String relationship = null;
 

@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * ConnectionCategory
@@ -32,6 +33,7 @@ public class ConnectionCategory {
 	 * 
 	 * @return code
 	 **/
+	@ApiModelProperty(required = true, value = "code of the connection category")
 	@NotNull
 
 	@Size(min = 2, max = 64)
@@ -53,6 +55,8 @@ public class ConnectionCategory {
 	 * 
 	 * @return active
 	 **/
+	@ApiModelProperty(value = "describes Whether propertyType is Active or not.")
+
 	public Boolean isActive() {
 		return active;
 	}

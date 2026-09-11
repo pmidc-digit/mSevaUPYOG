@@ -30,7 +30,7 @@ public class AdhocTaxReq {
 	private RequestInfo requestInfo;
 
 	@JsonProperty("demandId")
-		@NotNull
+	@NotNull
 	private String demandId;
 
 	@JsonProperty("adhocrebate")
@@ -39,10 +39,10 @@ public class AdhocTaxReq {
 	@JsonProperty("adhocpenalty")
 	private BigDecimal adhocpenalty = null;
 
-		@JsonProperty("consumerCode")
+	@JsonProperty("consumerCode")
 	private String consumerCode;
 
-		@JsonProperty("businessService")
+	@JsonProperty("businessService")
 	private String businessService;
 
 }

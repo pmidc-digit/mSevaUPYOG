@@ -11,7 +11,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,15 +28,15 @@ import lombok.Setter;
  * This is lightweight meter reading object that can be used as reference by
  * definitions needing meterreading linking.
  */
-@Schema(description = "This is lightweight meter reading object that can be used as reference by definitions needing meterreading linking.")
+@ApiModel(description = "This is lightweight meter reading object that can be used as reference by definitions needing meterreading linking.")
 @Validated
 @jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-11-12T10:46:14.653+05:30[Asia/Kolkata]")
 public class MeterReading {
 
-		@JsonProperty("id")
+	@JsonProperty("id")
 	private String id = null;
 
-		@JsonProperty("billingPeriod")
+	@JsonProperty("billingPeriod")
 	private String billingPeriod = null;
 
 	/**
@@ -92,7 +93,7 @@ public class MeterReading {
 	@JsonProperty("currentReadingDate")
 	private Long currentReadingDate = null;
 
-		@JsonProperty("connectionNo")
+	@JsonProperty("connectionNo")
 	private String connectionNo = null;
 
 	@JsonProperty("consumption")
@@ -105,7 +106,7 @@ public class MeterReading {
 	@JsonProperty("auditDetails")
 	private AuditDetails auditDetails = null;
 
-		@JsonProperty("tenantId")
+	@JsonProperty("tenantId")
 	private String tenantId = null;
 
 	public MeterReading id(String id) {
@@ -141,6 +142,8 @@ public class MeterReading {
 	 *
 	 * @return id
 	 **/
+	@ApiModelProperty(readOnly = true, value = "Unique Identifier of the meterreading for internal reference.")
+
 	@Size(min = 1, max = 64)
 	public String getId() {
 		return id;
@@ -165,6 +168,7 @@ public class MeterReading {
 	 *
 	 * @return billingPeriod
 	 **/
+	@ApiModelProperty(required = true, readOnly = true, value = "Formatted billingPeriod")
 	@NotNull
 
 	public String getConnectionNo() {
@@ -180,6 +184,7 @@ public class MeterReading {
 	 *
 	 * @return billingPeriod
 	 **/
+	@ApiModelProperty(required = true, readOnly = true, value = "Formatted billingPeriod")
 	@NotNull
 
 	@Size(min = 1, max = 64)
@@ -201,6 +206,7 @@ public class MeterReading {
 	 *
 	 * @return meterStatus
 	 **/
+	@ApiModelProperty(required = true, readOnly = true, value = "")
 	@NotNull
 
 	public MeterStatusEnum getMeterStatus() {
@@ -221,6 +227,7 @@ public class MeterReading {
 	 *
 	 * @return lastReading
 	 **/
+	@ApiModelProperty(required = true, value = "Last Reading")
 	@NotNull
 
 	public Double getLastReading() {
@@ -241,6 +248,7 @@ public class MeterReading {
 	 *
 	 * @return lastReadingDate
 	 **/
+	@ApiModelProperty(required = true, value = "The date of meter last reading date.")
 	@NotNull
 
 	public Long getLastReadingDate() {
@@ -274,6 +282,7 @@ public class MeterReading {
 	 *
 	 * @return currentReading
 	 **/
+	@ApiModelProperty(required = true, value = "Current Reading")
 	@NotNull
 
 	public Double getCurrentReading() {
@@ -294,6 +303,7 @@ public class MeterReading {
 	 *
 	 * @return currentReadingDate
 	 **/
+	@ApiModelProperty(required = true, value = "The date of meter current reading date.")
 	@NotNull
 
 	public Long getCurrentReadingDate() {
@@ -327,6 +337,7 @@ public class MeterReading {
 	 *
 	 * @return auditDetails
 	 **/
+	@ApiModelProperty(value = "")
 	public AuditDetails getAuditDetails() {
 		return auditDetails;
 	}
@@ -340,6 +351,7 @@ public class MeterReading {
 		return this;
 	}
 
+	@ApiModelProperty(value = "")
 	public String getTenantId() {
 		return tenantId;
 	}

@@ -2244,8 +2244,8 @@ public class DemandService {
 		for (Demand demand : demandResponse) {
 			try {
 				Object result = serviceRequestRepository.fetchResult(
-						calculatorUtils.getFetchBillURL(demand.getTenantId(), demand.getConsumerCode()),
-						RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+                        calculatorUtils.getFetchBillURLWithBusinessService(demand.getTenantId(), demand.getConsumerCode(),demand.getBusinessService()),
+                        RequestInfoWrapper.builder().requestInfo(requestInfo).build());
 				HashMap<String, Object> billResponse = new HashMap<>();
 				billResponse.put("requestInfo", requestInfo);
 				billResponse.put("billResponse", result);

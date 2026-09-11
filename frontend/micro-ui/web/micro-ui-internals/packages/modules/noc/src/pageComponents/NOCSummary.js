@@ -245,7 +245,7 @@ function NOCSummary({ currentStepData: formData, t }) {
               <Row label={t("NOC_BUILDING_CATEGORY_LABEL")} text={formData?.siteDetails?.specificationBuildingCategory?.name || formData?.siteDetails?.specificationBuildingCategory || "N/A"} />
               <Row label={t("NOC_NOC_TYPE_LABEL")} text={formData?.siteDetails?.specificationNocType?.name || formData?.siteDetails?.specificationNocType || "N/A"} />
 
-              {(isFinalNoc || isDigitizationOfManual) && (
+              {((isFinalNoc && existNocCode) || isDigitizationOfManual) && (
                 <React.Fragment>
                   {isFinalNoc && (
                     <Row
@@ -253,13 +253,13 @@ function NOCSummary({ currentStepData: formData, t }) {
                       text={
                         formData?.siteDetails?.existingNocType?.name ||
                         formData?.siteDetails?.existingNocType?.code ||
-                        (typeof formData?.siteDetails?.existingNocType === "string" ? formData?.siteDetails?.existingNocType : "N/A")
+                        (typeof formData?.siteDetails?.existingNocType === "string" && formData?.siteDetails?.existingNocType ? formData?.siteDetails?.existingNocType : "N/A")
                       }
                     />
                   )}
                   <Row label={t("NOC_NUMBER_LABEL")} text={formData?.siteDetails?.existingNocNumber || "N/A"} />
                   {(isOffline || isDigitizationOfManual) && (
-                    <Row label={t("NOC_DATE_LABEL")} text={formData?.siteDetails?.existingNocDate || "N/A"} />
+                    <Row label={t("NOC_DATE_LABEL")} text={convertToDDMMYYYY(formData?.siteDetails?.existingNocDate) || "N/A"} />
                   )}
                   {formData?.siteDetails?.existingNocDocument && (
                     <Row

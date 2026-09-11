@@ -2,7 +2,6 @@ import React, {useState} from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import CustomMenu from "../../components/CustomMenu";
-import { CitizenInfoLabel } from "@mseva/digit-ui-react-components";
 
 const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
   // User authentication and role checks
@@ -225,16 +224,7 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
 
   return (
     <div className="chcwe-root" style={styles ? styles : undefined}>
-      <CitizenInfoLabel
-        info={t("Scheduled Maintenance Notice")}
-        text={`Dear Citizens, 
-        The Building Plan Approval (BPA) services on the mSeva Portal will undergo scheduled maintenance from 12 September 2026 to 14 September 2026, 9:00 AM. 
-        During this period, BPA application submission, document upload, and payment services may be temporarily unavailable due to planned data migration activities. 
-        We regret the inconvenience and appreciate your cooperation. 
-        
-        Team mSeva Punjab Municipal Infrastructure Development Company (PMIDC)`}
-        className={"info-banner-wrap-citizen-override"}
-      />      {header && <h2 className="chcwe-header">{header}</h2>}
+      {header && <h2 className="chcwe-header">{header}</h2>}
       
 
       <div className="chcwe-card-container">

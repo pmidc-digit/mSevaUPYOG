@@ -112,27 +112,27 @@ const NOCSpecificationDetails = (_props) => {
 
   // Restore NOC validation status in edit mode on initial load
   useEffect(() => {
-    if (isEditMode && existingNocNumber && !isInitialized.current) {
+    if (isEditMode && isFinalNoc && isOnline && existingNocNumber && !isInitialized.current) {
       updateValidatedNocNumber(existingNocNumber);
       updateNocValidated(true);
       isInitialized.current = true;
     }
-  }, [isEditMode, existingNocNumber]);
+  }, [isEditMode, isFinalNoc, isOnline, existingNocNumber]);
 
   useEffect(() => {
-    if (isNocValidated && validatedNocNumberRef.current && existingNocNumber && existingNocNumber !== validatedNocNumberRef.current) {
+    if (isFinalNoc && isOnline && isNocValidated && validatedNocNumberRef.current && existingNocNumber && existingNocNumber !== validatedNocNumberRef.current) {
       updateNocValidated(false);
       setRetrievedNocDocs([]);
       setRetrievedNoc(null);
       setRetrievedNocError("");
     }
-  }, [existingNocNumber, isNocValidated]);
+  }, [isFinalNoc, isOnline, existingNocNumber, isNocValidated]);
 
   useEffect(() => {
-    if (isNocValidated && existingNocNumber && retrievedNocDocs.length === 0 && !isRetrieving) {
+    if (isFinalNoc && isOnline && isNocValidated && existingNocNumber && retrievedNocDocs.length === 0 && !isRetrieving) {
       handleRetrieveNoc(existingNocNumber);
     }
-  }, [isNocValidated, existingNocNumber, retrievedNocDocs.length]);
+  }, [isFinalNoc, isOnline, isNocValidated, existingNocNumber, retrievedNocDocs.length]);
 
   const { data: buildingCategory, isLoading: isLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
   const { data: nocType, isLoading: isNocTypeLoading,  } = Digit.Hooks.noc.useNocType(stateId);
@@ -162,7 +162,9 @@ const NOCSpecificationDetails = (_props) => {
       setRetrievedNocError("");
       setRetrievedNoc(null);
       setRetrievedNocDocs([]);
-      setValue("existingNocDocument", null);
+      if (isFinalNoc && isOnline) {
+        setValue("existingNocDocument", null);
+      }
       updateNocValidated(false);
       updateValidatedNocNumber("");
       if (trigger) trigger("existingNocNumber");
@@ -290,7 +292,11 @@ const NOCSpecificationDetails = (_props) => {
     if (formattedData) {
       //console.log("coming here", formattedData);
       Object.entries(formattedData).forEach(([key, value]) => {
-        setValue(key, value);
+        if (key === "existingNocDocument" && typeof value === "object" && value !== null) {
+          setValue(key, value.fileStoreId || value.filestoreId || value);
+        } else {
+          setValue(key, value);
+        }
       });
     }
   }, [currentStepData, setValue]);
@@ -318,7 +324,10 @@ const NOCSpecificationDetails = (_props) => {
         setValue("existingNocDate", formatDateForInput(currentStepData.siteDetails.existingNocDate));
       }
       if (currentStepData?.siteDetails?.existingNocDocument) {
-        setValue("existingNocDocument", currentStepData.siteDetails.existingNocDocument);
+        const docVal = typeof currentStepData.siteDetails.existingNocDocument === "object"
+          ? (currentStepData.siteDetails.existingNocDocument.fileStoreId || currentStepData.siteDetails.existingNocDocument.filestoreId)
+          : currentStepData.siteDetails.existingNocDocument;
+        setValue("existingNocDocument", docVal);
       }
     }
     if (isFinalNoc && isOnline) {

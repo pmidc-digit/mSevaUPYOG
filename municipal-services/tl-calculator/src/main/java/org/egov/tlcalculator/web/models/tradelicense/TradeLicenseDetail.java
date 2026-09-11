@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.swagger.annotations.ApiModel;
 
@@ -127,9 +127,9 @@ public class TradeLicenseDetail   {
     @JsonProperty("verificationDocuments")
     @Valid
     private List<Document> verificationDocuments = null;
-
+    
     @JsonProperty("additionalDetail")
-    private JsonNode additionalDetail = null;
+    private ObjectNode additionalDetail = null;
 
     @JsonProperty("institution")
     private Institution institution = null;

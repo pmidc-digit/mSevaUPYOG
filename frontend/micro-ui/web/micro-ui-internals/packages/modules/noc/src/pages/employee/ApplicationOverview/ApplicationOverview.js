@@ -1318,7 +1318,7 @@ const NOCEmployeeApplicationOverview = () => {
 
               <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={detail?.colonyName || "N/A"} />
               <Row label={t("NOC_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
-              <Row label={t("NOC_VASIKA_DATE")} text={detail?.vasikaDate || "N/A"} />
+              <Row label={t("NOC_VASIKA_DATE")} text={convertToDDMMYYYY(detail?.vasikaDate) || detail?.vasikaDate || "N/A"} />
               <Row label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={detail?.khewatAndKhatuniNo || "N/A"} />
             </StatusTable>
           </div>
@@ -1344,7 +1344,7 @@ const NOCEmployeeApplicationOverview = () => {
                 />
 
                 <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || detail?.specificationNocType || "N/A"} />
-                {(isFinalNoc || isDigitizationOfManual) && (
+                {((isFinalNoc && existNocCode) || isDigitizationOfManual) && (
                   <React.Fragment>
                     {isFinalNoc && (
                       <Row
@@ -1352,13 +1352,13 @@ const NOCEmployeeApplicationOverview = () => {
                         text={
                           detail?.existingNocType?.name ||
                           detail?.existingNocType?.code ||
-                          (typeof detail?.existingNocType === "string" ? detail?.existingNocType : "N/A")
+                          (typeof detail?.existingNocType === "string" && detail?.existingNocType ? detail?.existingNocType : "N/A")
                         }
                       />
                     )}
                     <Row label={t("NOC_NUMBER_LABEL")} text={detail?.existingNocNumber || "N/A"} />
                     {(isOffline || isDigitizationOfManual) && (
-                      <Row label={t("NOC_DATE_LABEL")} text={detail?.existingNocDate || "N/A"} />
+                      <Row label={t("NOC_DATE_LABEL")} text={convertToDDMMYYYY(detail?.existingNocDate) || detail?.existingNocDate || "N/A"} />
                     )}
                     {detail?.existingNocDocument && (
                       <Row

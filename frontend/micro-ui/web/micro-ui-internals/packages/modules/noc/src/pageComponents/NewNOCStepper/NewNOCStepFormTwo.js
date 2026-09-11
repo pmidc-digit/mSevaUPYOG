@@ -200,7 +200,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         specificationIsSiteUnderMasterPlan: formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
         existingNocType: formData?.siteDetails?.existingNocType?.name || "",
         existingNocNumber: formData?.siteDetails?.existingNocNumber || "",
-        existingNocDate: formData?.siteDetails?.existingNocDate || "",
+        existingNocDate: formData?.siteDetails?.existingNocDate ? convertToDDMMYYYY(formData?.siteDetails?.existingNocDate) : "",
         existingNocDocument: formData?.siteDetails?.existingNocDocument || null,
         isNocValidated: formData?.siteDetails?.isNocValidated || false,
       },

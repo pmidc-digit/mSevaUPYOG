@@ -990,48 +990,52 @@ function ApplicationDetailsContent({
 
       {window.location.href.includes("/pt/") ? (
         <ActionBar className="clear-search-container">
-          <PTActionButton
-            label="Make Active"
-            color="#00703C"
-            hoverColor="#005a30"
-            icon={
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                <polyline points="22 4 12 14.01 9 11.01" />
-              </svg>
-            }
-            onClick={PropertyActive}
-          />
-          <PTActionButton
-            label="Make Inactive"
-            color="#B5451B"
-            hoverColor="#8f3415"
-            icon={
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-              </svg>
-            }
-            onClick={PropertyInActive}
-          />
+          {window.location.href.includes("employee") && (
+            <>
+              <PTActionButton
+                label="Make Active"
+                color="#00703C"
+                hoverColor="#005a30"
+                icon={
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                }
+                onClick={PropertyActive}
+              />
+              <PTActionButton
+                label="Make Inactive"
+                color="#B5451B"
+                hoverColor="#8f3415"
+                icon={
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                  </svg>
+                }
+                onClick={PropertyInActive}
+              />
+            </>
+          )}
           <PTActionButton
             label="Edit Property"
             color="#1A5CA8"

@@ -188,6 +188,56 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
+/* The fixed control is rendered by InboxWrapper; keep the native table bar hidden. */
+.obps-inbox-table-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+}
+
+.obps-inbox-table-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.obps-inbox-table-scroll .cancel-table {
+  /* Keep practical column widths for the OBPS inbox fields. */
+  min-width: 2200px;
+  margin-bottom: 0;
+}
+
+.obps-inbox-table-scroll .cancel-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.digit-table-floating-horizontal-scrollbar {
+  position: fixed;
+  bottom: 28px;
+  z-index: 1001;
+  box-sizing: border-box;
+  height: 16px;
+  padding: 3px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+  cursor: grab;
+  user-select: none;
+}
+
+.digit-table-floating-horizontal-scrollbar:active {
+  cursor: grabbing;
+}
+
+.digit-table-floating-horizontal-scrollbar-thumb {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: #2563eb;
+  transition: transform 120ms ease-out;
+}
+
 .new-inbox-pagination {
   display: flex;
   align-items: center;
@@ -249,6 +299,18 @@
   .new-inbox-search {
     width: 100%;
     min-width: unset;
+  }
+
+  .obps-inbox-table-scroll {
+    scrollbar-width: auto;
+  }
+
+  .obps-inbox-table-scroll::-webkit-scrollbar {
+    display: block;
+  }
+
+  .digit-table-floating-horizontal-scrollbar {
+    display: none;
   }
 
   .new-inbox-search-actions,

@@ -169,6 +169,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     },
     tableStyle: { overflowX: "auto" },
     className: "table cancel-table",
+    customTableWrapperClassName: "obps-inbox-table-scroll",
+    stickyHorizontalScrollbar: true,
     disableSort: false,
     autoSort: false,
     manualPagination: true,

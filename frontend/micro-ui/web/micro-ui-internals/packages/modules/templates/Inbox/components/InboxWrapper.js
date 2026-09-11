@@ -112,10 +112,116 @@
 
 
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader, Card, Table } from "@mseva/digit-ui-react-components";
 
+const FloatingTableScrollbar = ({ containerRef, enabled, tableData }) => {
+  const dragState = useRef(false);
+  const [scrollbar, setScrollbar] = useState(null);
+
+  useEffect(() => {
+    if (!enabled) return undefined;
+
+    const scrollContainer = containerRef.current?.querySelector(".obps-inbox-table-scroll");
+    if (!scrollContainer) return undefined;
+
+    const updateScrollbar = () => {
+      const rect = scrollContainer.getBoundingClientRect();
+      const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+
+      if (scrollContainer.scrollWidth <= scrollContainer.clientWidth || !isVisible) {
+        setScrollbar(null);
+        return;
+      }
+
+      setScrollbar({
+        left: rect.left,
+        width: rect.width,
+        clientWidth: scrollContainer.clientWidth,
+        contentWidth: scrollContainer.scrollWidth,
+        scrollLeft: scrollContainer.scrollLeft,
+      });
+    };
+
+    const syncFromTable = () => {
+      setScrollbar((currentScrollbar) =>
+        currentScrollbar ? { ...currentScrollbar, scrollLeft: scrollContainer.scrollLeft } : currentScrollbar
+      );
+    };
+
+    updateScrollbar();
+    scrollContainer.addEventListener("scroll", syncFromTable);
+    window.addEventListener("resize", updateScrollbar);
+    window.addEventListener("scroll", updateScrollbar, true);
+    const resizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updateScrollbar);
+    resizeObserver?.observe(scrollContainer);
+
+    return () => {
+      scrollContainer.removeEventListener("scroll", syncFromTable);
+      window.removeEventListener("resize", updateScrollbar);
+      window.removeEventListener("scroll", updateScrollbar, true);
+      resizeObserver?.disconnect();
+    };
+  }, [containerRef, enabled, tableData]);
+
+  const moveTableScroll = (clientX) => {
+    const scrollContainer = containerRef.current?.querySelector(".obps-inbox-table-scroll");
+    if (!scrollContainer || !scrollbar) return;
+
+    const track = document.querySelector(".digit-table-floating-horizontal-scrollbar");
+    if (!track) return;
+
+    const trackRect = track.getBoundingClientRect();
+    const thumbWidth = Math.max(72, (scrollbar.width * scrollbar.clientWidth) / scrollbar.contentWidth);
+    const maxThumbOffset = Math.max(0, scrollbar.width - thumbWidth);
+    const maxScrollOffset = Math.max(0, scrollbar.contentWidth - scrollbar.clientWidth);
+    const thumbOffset = Math.min(Math.max(clientX - trackRect.left - thumbWidth / 2, 0), maxThumbOffset);
+
+    scrollContainer.scrollLeft = maxThumbOffset ? (thumbOffset / maxThumbOffset) * maxScrollOffset : 0;
+  };
+
+  const stopDragging = () => {
+    dragState.current = false;
+    window.removeEventListener("mousemove", onDrag);
+    window.removeEventListener("mouseup", stopDragging);
+  };
+
+  const onDrag = (event) => {
+    if (dragState.current) moveTableScroll(event.clientX);
+  };
+
+  const startDragging = (event) => {
+    event.preventDefault();
+    dragState.current = true;
+    moveTableScroll(event.clientX);
+    window.addEventListener("mousemove", onDrag);
+    window.addEventListener("mouseup", stopDragging);
+  };
+
+  useEffect(() => stopDragging, []);
+
+  if (!scrollbar) return null;
+
+  const thumbWidth = Math.max(72, (scrollbar.width * scrollbar.clientWidth) / scrollbar.contentWidth);
+  const maxThumbOffset = Math.max(0, scrollbar.width - thumbWidth);
+  const maxScrollOffset = Math.max(0, scrollbar.contentWidth - scrollbar.clientWidth);
+  const thumbOffset = maxScrollOffset ? (scrollbar.scrollLeft / maxScrollOffset) * maxThumbOffset : 0;
+
+  return (
+    <div
+      className="digit-table-floating-horizontal-scrollbar"
+      style={{ left: scrollbar.left, width: scrollbar.width }}
+      aria-label="Horizontal table scroll"
+      onMouseDown={startDragging}
+    >
+      <div
+        className="digit-table-floating-horizontal-scrollbar-thumb"
+        style={{ width: thumbWidth, transform: `translateX(${thumbOffset}px)` }}
+      />
+    </div>
+  );
+};
 
 const InboxWrapper = ({
   title,
@@ -132,6 +238,7 @@ const InboxWrapper = ({
   children,
 }) => {
   const { t } = useTranslation();
+  const tableCardRef = useRef(null);
 
   return (
     <div className="new-inbox-wrapper">
@@ -166,7 +273,7 @@ const InboxWrapper = ({
             {emptyMessage || t("CS_MYAPPLICATIONS_NO_APPLICATION")}
           </Card>
         ) : (
-          <div className="new-inbox-table-card">
+          <div className="new-inbox-table-card" ref={tableCardRef}>
             <div className="new-inbox-table-header">
               {t(tableHeader)}
             </div>
@@ -174,6 +281,11 @@ const InboxWrapper = ({
               isPaginationRequired={false}
               t={t}
               {...tableProps}
+            />
+            <FloatingTableScrollbar
+              containerRef={tableCardRef}
+              enabled={tableProps.stickyHorizontalScrollbar === true}
+              tableData={tableData}
             />
           </div>
         )}

@@ -54,7 +54,8 @@ const SubmitResponse = (props) => {
   //   }
 
   const targetAud = isCitizen ? "citizen" : "employee";
-
+  //console.log("props",props)
+  const urlTennatId = props?.location?.state?.responseData?.tenantId;
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -68,13 +69,18 @@ const SubmitResponse = (props) => {
         {/* <BannerPicker t={t} data={mutation.data} mutation={mutation} isSuccess={mutation.isSuccess} isLoading={mutation.isIdle || mutation.isLoading} /> */}
       </Card>
       <ActionBar>
-        <Link to={props.location.state.previouspath}>
+        <Link to={`/digit-ui/citizen/pt/property/my-property/${props?.location?.state?.responseData?.propertyId}`}>
           <SubmitBar label={t("Go Back")} />
         </Link>
         <Link to={"/digit-ui/citizen/pt-home"}>
           <SubmitBar label={t("Go Home")} />
         </Link>
-        <Link to={`/digit-ui/${targetAud}/payment/collect/PT/${props?.location?.state?.responseData?.propertyId}`}>
+        <Link to={{
+          pathname: `/digit-ui/${targetAud}/payment/collect/PT/${props?.location?.state?.responseData?.propertyId}`,
+          state: {
+            tenantId: urlTennatId
+          }
+        }}>
           <SubmitBar label={t("PT_PROCEED_PAYMENT")} />
         </Link>
       </ActionBar>

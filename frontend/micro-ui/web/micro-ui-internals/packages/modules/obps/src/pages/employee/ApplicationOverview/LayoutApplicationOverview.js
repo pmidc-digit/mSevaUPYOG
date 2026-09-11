@@ -371,18 +371,203 @@ const LayoutEmployeeApplicationOverview = () => {
   const { tenants } = storeData || {};
 
   const handleDownloadPdf = async () => {
-    const Property = applicationDetails?.Layout?.[0];
-    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-    const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, t);
-    Digit.Utils.pdf.generate(acknowledgementData);
+    try {
+      setLoader(true);
+      const Property = applicationDetails?.Layout?.[0];
+      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+      const ulbType = tenantInfo?.city?.ulbType;
+      const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t, combinedPayments);
+      await Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoader(false);
+    }
   };
 
-  async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "layout-receipt");
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-    window.open(fileStore[response?.filestoreIds[0]], "_blank");
+  async function getRecieptSearch({ tenantId, payments, pdfkey, filestoreId = null, returnFileStoreId = false, ...params }) {
+    try {
+      setLoader(true);
+      if (!filestoreId) {
+        const site = displayData?.siteDetails?.[0];
+        const owner = displayData?.owners?.[0];
+        const city = site?.district?.city;
+
+        const usage = site?.buildingCategory?.name;
+        const fee = payments?.totalAmountPaid;
+        const amountinwords = amountToWords(fee);
+
+        // --- core fields, single source each, no aliasing ---
+        const ulbType = site?.ulbType || city?.ulbType;
+        const ulbName = site?.ulbName || city?.ulbName;
+        const ulbGrade = city?.ulbGrade; // confirm exact codes: NP / MC / Corp
+        const districtName = city?.districtName;
+        const applicationNo = displayData?.applicationNo || applicationDetails?.Layout?.[0]?.applicationNo;
+        const rawSubmissionDate =
+          applicationDetails?.Layout?.[0]?.submissionDate || applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn;
+        const submissionDate = rawSubmissionDate ? Number(rawSubmissionDate) : undefined;
+        const rawIssueDate = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate;
+        const issueDate = rawIssueDate ? Number(rawIssueDate) : undefined;
+        const colonyTypeName = usage;
+        const proposedSiteAddress = site?.proposedSiteAddress || site?.district?.proposedSiteAddress;
+        const hadbastNo = site?.hadbastNo || site?.district?.hadbastNo;
+        const villageName = site?.villageName || site?.district?.villageName;
+        const areaSqm = site?.netTotalArea || site?.district?.netTotalArea;
+
+        const primaryOwner =
+          applicationDetails?.Layout?.[0]?.owners?.find((o) => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") ||
+          displayData?.owners?.[0] ||
+          owner;
+        const applicantType = (
+          primaryOwner?.additionalDetails?.aplicantType?.code ||
+          primaryOwner?.additionalDetails?.applicantType?.code ||
+          "INDIVIDUAL"
+        ).toUpperCase();
+
+        const isFirm = applicantType !== "INDIVIDUAL";
+
+        // Authorized Person vs Owner Name
+        const rawAuthPerson = primaryOwner?.additionalDetails?.authorisedPerson || primaryOwner?.additionalDetails?.authorisedPersonName;
+        const authorisedPersonName = typeof rawAuthPerson === "object" ? rawAuthPerson?.name : rawAuthPerson;
+
+        const applicantName = isFirm ? authorisedPersonName || primaryOwner?.name || owner?.name || "" : primaryOwner?.name || owner?.name || "";
+
+        // Firm / Company Name vs Individual Promoter
+        const firmName =
+          primaryOwner?.additionalDetails?.firmName ||
+          primaryOwner?.additionalDetails?.companyName ||
+          primaryOwner?.additionalDetails?.promoterFirmName ||
+          primaryOwner?.additionalDetails?.institutionName;
+
+        const promoterFirmName = isFirm ? firmName || primaryOwner?.name || "" : " ";
+
+        const applicantAddress =
+          primaryOwner?.permanentAddress || primaryOwner?.correspondenceAddress || primaryOwner?.address || proposedSiteAddress || "N/A";
+
+        // --- derived once, reused for both officerDesignation and signatoryDesignation ---
+        const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm exact grade codes
+        const officerDesignation = isSmallerUlb ? t("SMALLER_ULB_OFFICER") : t("BIGGER_ULB_OFFICER");
+        const signatoryDesignation = isSmallerUlb ? t("SMALLER_ULB_DESIG") : t("BIGGER_ULB_DESIG");
+
+        // same isSmallerUlb split decides which name goes with the Competent Authority
+        const jurisdictionName = isSmallerUlb ? districtName : ulbName;
+
+        // --- composed projectDescription (fill in Project Name once that field exists) ---
+        const projectDescription = `${proposedSiteAddress || ""} on Land Measuring Area ${areaSqm || ""} sqm, Situated at Hadbast No. ${
+          hadbastNo || ""
+        }, Village - ${villageName || ""}, ${ulbName || ""}, Punjab.`;
+
+        const response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          {
+            Payments: [
+              {
+                ...payments,
+                usage,
+                amountinwords,
+                applicationDetails,
+                ulbType,
+                ulbName,
+                ulbGrade,
+                districtName,
+                jurisdictionName,
+                officerDesignation,
+                signatoryDesignation,
+                applicantName,
+                applicationNo,
+                submissionDate,
+                issueDate,
+                colonyTypeName,
+                projectDescription,
+
+                // still open / not sourced yet:
+                officeName: signatoryDesignation, // ADC/MC basis for the header still to be confirmed
+                officeSubLine: isSmallerUlb ? `Office Wing, ${districtName}` : `${ulbType} - ${ulbName}`,
+                applicantAddress,
+                promoterFirmName,
+                dcrNo: undefined, // placeholder pending scrutiny module
+                dcrApprovalDate: undefined,
+                complianceDays: undefined,
+                extensionDays: undefined,
+              },
+            ],
+          },
+          pdfkey
+        );
+        filestoreId = response?.filestoreIds[0];
+      }
+      if (returnFileStoreId) {
+        return filestoreId;
+      }
+      let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
+
+      if (!fileStore?.[filestoreId]?.length) {
+        fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
+      }
+      window.open(fileStore[filestoreId], "_blank");
+    } catch (error) {
+      console.error("receipt download error:", error);
+    } finally {
+      setLoader(false);
+    }
   }
+
+  async function openLOIPopup() {
+    try {
+      setLoader(true);
+      const fileStoreId = await getRecieptSearch({
+        tenantId: reciept_data2?.Payments?.[0]?.tenantId || tenantId,
+        payments: reciept_data2?.Payments?.[0] || {},
+        pdfkey: "layout-loi",
+        returnFileStoreId: true,
+      });
+      if (!fileStoreId) throw new Error("No filestoreId found for LOI");
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      const receiptUrl = fileStore?.[fileStoreId];
+      if (!receiptUrl) throw new Error("Could not resolve filestore URL");
+      const urlObj = new URL(receiptUrl);
+      const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
+      setPdfUrl(downloadUrl);
+      setShowPdfModal(true);
+    } catch (error) {
+      console.error("LOI popup error:", error);
+    } finally {
+      setLoader(false);
+    }
+  }
+
+  const printCertificateWithESign = async () => {
+    try {
+      const fileStoreId = await getRecieptSearch({
+        tenantId: reciept_data2?.Payments?.[0]?.tenantId || tenantId,
+        payments: reciept_data2?.Payments?.[0] || {},
+        pdfkey: "layout-loi",
+        returnFileStoreId: true,
+      });
+      if (!fileStoreId) throw new Error("No filestoreId found for LOI eSign");
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/layout/esign/complete/${encodeURIComponent(id)}`;
+      const authToken = localStorage.getItem("token");
+      eSignCertificate(
+        { fileStoreId, tenantId, callbackUrl, authToken },
+        {
+          onSuccess: () => console.log("✅ LOI eSign initiated successfully"),
+          onError: (error) => {
+            setShowToast({
+              key: "true",
+              error: true,
+              message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
+            });
+          },
+        }
+      );
+    } catch (error) {
+      setShowToast({
+        key: "true",
+        error: true,
+        message: error.message || "Failed to prepare LOI for eSign, Kindly check if the document is e-signed already",
+      });
+    }
+  };
 
   function routeToImage(filestoreId) {
     getUrlForDocumentView(filestoreId);

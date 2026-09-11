@@ -249,7 +249,7 @@ const ready =
         ),
         existingNocType: existingNocTypeOptions?.find((obj) => getCode(obj) === getCode(siteDetails?.existingNocType)) || null,
         existingNocNumber: siteDetails?.existingNocNumber || "",
-        existingNocDate: siteDetails?.existingNocDate || "",
+        existingNocDate: formatDateForInput(siteDetails?.existingNocDate),
         existingNocDocument: siteDetails?.existingNocDocument || null,
         isNocValidated: siteDetails?.isNocValidated !== undefined ? siteDetails.isNocValidated : (getCode(siteDetails?.existingNocType) === "ONLINE" && siteDetails?.existingNocNumber ? true : false),
       };

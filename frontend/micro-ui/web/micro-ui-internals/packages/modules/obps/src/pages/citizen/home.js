@@ -1,4 +1,4 @@
-import { BPAHomeIcon, BPAIcon, CitizenHomeCard, EDCRIcon, Loader, Toast } from "@mseva/digit-ui-react-components";
+import { BPAHomeIcon, BPAIcon, CitizenHomeCard, EDCRIcon, Loader, Toast, CitizenInfoLabel } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
@@ -100,6 +100,8 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
       Digit.SessionStorage.del("STAKEHOLDER.INBOX")
     }
   },[location.pathname])
+
+  console.log("this is home?")
 
   // useEffect(() => {
   //   if (!bpaLoading) {
@@ -288,6 +290,16 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
 
   const homeScreen = (
     <div className="mainContent">
+      <CitizenInfoLabel
+        info={t("Scheduled Maintenance Notice")}
+        text={`Dear Citizens, 
+        The Building Plan Approval (BPA) services on the mSeva Portal will undergo scheduled maintenance from 12 September 2026 to 14 September 2026, 9:00 AM. 
+        During this period, BPA application submission, document upload, and payment services may be temporarily unavailable due to planned data migration activities. 
+        We regret the inconvenience and appreciate your cooperation. 
+        
+        Team mSeva Punjab Municipal Infrastructure Development Company (PMIDC)`}
+        className={"info-banner-wrap-citizen-override"}
+      />
       {homeDetails.map((data) => {
         return (
           <div>
@@ -296,7 +308,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
             ) : (
               <CitizenHomeCardSecond header={data.title} links={data.links} Icon={() => data.Icon} />
             )}
-              {showModal && <ProfessionalSignUpdate closeModal={closeModal} userDetails={userDetails} refetch={refetch}/>}
+            {showModal && <ProfessionalSignUpdate closeModal={closeModal} userDetails={userDetails} refetch={refetch} />}
           </div>
         );
       })}

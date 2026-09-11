@@ -74,7 +74,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   const fatherOrHusbandName = getModalData?.fatherOrHusbandName || getModalData?.fatherName || "";
   const residentAddress = getModalData?.address || getModalData?.residentOf || "";
   const dogName = getModalData?.petName || getModalData?.dogName || "";
-  const petType = getModalData?.petType.name || getModalData?.petType || "";
+  const petType = getModalData?.petType?.name || getModalData?.petType || "";
   const breed = (typeof getModalData?.breedType === "object" ? getModalData?.breedType?.name : getModalData?.breedType) || getModalData?.breed || "";
   const sex = (typeof getModalData?.petGender === "object" ? getModalData?.petGender?.name : getModalData?.petGender) || getModalData?.gender || getModalData?.sex || "";
   const age = getModalData?.petAge ? formatPetAge(getModalData?.petAge) : getModalData?.age || "";

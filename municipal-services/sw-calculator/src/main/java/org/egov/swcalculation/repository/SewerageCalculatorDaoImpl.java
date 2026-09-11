@@ -275,6 +275,17 @@ public Boolean getexpiryBills(List billSearchsss) {
 		jdbcTemplate.update(query, preparedStatement.toArray());	
 		return true;
 }
+
+    public String getRelatedConnection(String tenantId, String consumerCode) {
+        List<Object> preparedStatement = new ArrayList<>();
+        String query = queryBuilder.getRelatedConn(tenantId, consumerCode, preparedStatement);
+        log.info("preparedStatement: {} Query for water connection: {}", preparedStatement, query);
+        List<String> relatedConnections = jdbcTemplate.query(query, preparedStatement.toArray(), (rs, rowNum) -> rs.getString("connectionno"));
+        if (relatedConnections == null || relatedConnections.isEmpty()) {
+            return null;
+        }
+        return relatedConnections.get(0);
+    }
 	
 	
 }

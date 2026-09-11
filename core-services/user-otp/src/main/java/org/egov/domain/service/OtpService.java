@@ -56,7 +56,8 @@ public class OtpService {
 
 		    otpRequest.setEmailId(matchingUser.getEmail());
 		}
-		if (!otpRequest.getIsThirdParty()) {
+		if (otpRequest.getIsThirdParty() != null 
+		        &&!otpRequest.getIsThirdParty()) {
 			final String otpNumber = otpRepository.fetchOtp(otpRequest);
 			otpSMSSender.send(otpRequest, otpNumber);
 			if (otpRequest.getEmailId() != null && !otpRequest.getEmailId().isEmpty())

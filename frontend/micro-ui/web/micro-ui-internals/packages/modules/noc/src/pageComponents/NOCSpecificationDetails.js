@@ -14,7 +14,7 @@ import {
   UploadFile,
 } from "@mseva/digit-ui-react-components";
 import NOCCustomUploadFile from "./NOCCustomUploadFile";
-import { getCode } from "../utils";
+import { getCode, formatDateForInput } from "../utils";
 
 const NOCSpecificationDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, watch, trigger, clearErrors } = _props;
@@ -315,7 +315,7 @@ const NOCSpecificationDetails = (_props) => {
         setValue("existingNocNumber", currentStepData.siteDetails.existingNocNumber);
       }
       if (currentStepData?.siteDetails?.existingNocDate) {
-        setValue("existingNocDate", currentStepData.siteDetails.existingNocDate);
+        setValue("existingNocDate", formatDateForInput(currentStepData.siteDetails.existingNocDate));
       }
       if (currentStepData?.siteDetails?.existingNocDocument) {
         setValue("existingNocDocument", currentStepData.siteDetails.existingNocDocument);
@@ -420,15 +420,12 @@ const NOCSpecificationDetails = (_props) => {
           <React.Fragment>
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {`${t("NOC_EXISTING_NOC_TYPE_LABEL")}`} <span className="requiredField">*</span>
+                {`${t("NOC_EXISTING_NOC_TYPE_LABEL")}`}
               </CardLabel>
               <div className="field">
                 <Controller
                   control={control}
                   name={"existingNocType"}
-                  rules={{
-                    required: isFinalNoc ? t("REQUIRED_FIELD") : false,
-                  }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"

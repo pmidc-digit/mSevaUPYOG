@@ -101,7 +101,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
     }
   },[location.pathname])
 
-  console.log("this is home?")
+  
 
   // useEffect(() => {
   //   if (!bpaLoading) {

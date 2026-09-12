@@ -3,6 +3,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import XLSX from "xlsx";
 import domtoimage from "dom-to-image";
+import { downloadTablePDF } from "../../utils/pdf";
 
 const changeClasses=(class1,class2)=>{
   var elements = document.getElementsByClassName(class1)
@@ -57,6 +58,87 @@ const Download = {
     wb.SheetNames.push(file);
     wb.Sheets[file] = ws;
     XLSX.writeFile(wb, `${file}.xlsx`);
+  },
+
+  CSV: (titleOrHeaders = "Application Details", headersOrRows = [], rowsOrFilename = [], filenameOpt = "export") => {
+    let title = "Application Details";
+    let headers = [];
+    let rows = [];
+    let filename = "export";
+
+    if (Array.isArray(titleOrHeaders)) {
+      title = "Application Details";
+      headers = titleOrHeaders;
+      rows = headersOrRows || [];
+      filename = rowsOrFilename || "export";
+    } else {
+      title = titleOrHeaders || "Application Details";
+      headers = headersOrRows || [];
+      rows = rowsOrFilename || [];
+      filename = filenameOpt || "export";
+    }
+
+    const file = (filename || "export").substring(0, 50);
+
+    const toBold = (str) => {
+      if (!str) return "";
+      return String(str)
+        .split("")
+        .map((c) => {
+          const code = c.charCodeAt(0);
+          if (code >= 65 && code <= 90) return String.fromCodePoint(0x1d5d4 + code - 65);
+          if (code >= 97 && code <= 122) return String.fromCodePoint(0x1d5ee + code - 97);
+          if (code >= 48 && code <= 57) return String.fromCodePoint(0x1d7ec + code - 48);
+          return c;
+        })
+        .join("");
+    };
+
+    const boldTitle = toBold(title);
+    const boldHeaders = (headers || []).map((h) => toBold(String(h || "")));
+
+    const data = [
+      [boldTitle],
+      [],
+      boldHeaders,
+      ...(rows || []).map((row) =>
+        (Array.isArray(row) ? row : []).map((cell) =>
+          cell !== null && cell !== undefined && cell !== "" && cell !== "null" && cell !== "undefined" ? cell : "-"
+        )
+      ),
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    // Merge title across all header columns
+    if (headers && headers.length > 0) {
+      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }];
+    }
+
+    // Auto-fit column widths with snug spacing so headers and values are not clipped
+    ws["!cols"] = (headers || []).map((h, i) => {
+      let maxLen = String(h || "").length;
+      (rows || []).forEach((r) => {
+        const cellVal = String(r?.[i] ?? "");
+        if (cellVal.length > maxLen) maxLen = cellVal.length;
+      });
+      return { wch: Math.max(maxLen + 2, 6) };
+    });
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Application Details");
+
+    if (window?.mSewaApp?.isMsewaApp?.() && window?.mSewaApp?.downloadBase64File) {
+      const wbout = XLSX.write(wb, { type: "base64", bookType: "xlsx" });
+      window.mSewaApp.downloadBase64File(wbout, `${file}.xlsx`);
+      return;
+    }
+
+    XLSX.writeFile(wb, `${file}.xlsx`);
+  },
+
+  TablePDF: (title, headers, rows, filename) => {
+    return downloadTablePDF(title, headers, rows, filename);
   },
 
   PDF: (node, fileName, share, resolve = null) => {

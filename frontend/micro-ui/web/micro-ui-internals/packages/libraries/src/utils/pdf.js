@@ -249,6 +249,90 @@ const jsPdfGenerator = async ({
   }
 };
 
+export const downloadTablePDF = (title = "Application Details", headers = [], rows = [], filename = "Applications") => {
+  pdfMake.vfs = Fonts;
+  let locale = window?.Digit?.SessionStorage?.get("locale") || "en_IN";
+  let Hind = pdfFonts[locale] || pdfFonts["Hind"] || pdfFonts["en_IN"];
+  pdfMake.fonts = { Hind: { ...Hind } };
+
+  const colCount = headers && headers.length ? headers.length : 1;
+  const colWidth = colCount <= 6 ? "*" : "auto";
+
+  const normalizedTitle =
+    !title ||
+    title.toLowerCase() === "inbox" ||
+    title.toLowerCase() === "es_common_inbox" ||
+    title.toLowerCase() === "assigned applications"
+      ? "Application Details"
+      : title;
+
+  const tableBody = [
+    headers.map((h) => ({
+      text: String(h || ""),
+      bold: true,
+      fillColor: "#f1f5f9",
+      color: "#1e293b",
+      fontSize: 8,
+      margin: [3, 4, 3, 4],
+    })),
+    ...rows.map((row, rIdx) =>
+      row.map((cell) => ({
+        text: String(cell !== null && cell !== undefined && cell !== "" && cell !== "null" && cell !== "undefined" ? cell : "-"),
+        fontSize: 7,
+        color: "#334155",
+        fillColor: rIdx % 2 === 1 ? "#f8fafc" : "#ffffff",
+        margin: [3, 3, 3, 3],
+      }))
+    ),
+  ];
+
+  const dd = {
+    pageOrientation: "landscape",
+    pageSize: "A4",
+    pageMargins: [20, 25, 20, 25],
+    defaultStyle: {
+      font: "Hind",
+      fontSize: 8,
+    },
+    header: function (currentPage, pageCount) {
+      return {
+        columns: [
+          { text: `Page ${currentPage} of ${pageCount}`, alignment: "right", fontSize: 8, color: "#64748b", margin: [0, 10, 20, 0] },
+        ],
+      };
+    },
+    content: [
+      { text: normalizedTitle, fontSize: 13, bold: true, color: "#0f172a", margin: [0, 0, 0, 8] },
+      {
+        table: {
+          headerRows: 1,
+          dontBreakRows: true,
+          keepWithHeaderRows: 1,
+          widths: Array(colCount).fill(colWidth),
+          body: tableBody,
+        },
+        layout: {
+          hLineWidth: function () {
+            return 0.5;
+          },
+          vLineWidth: function () {
+            return 0.5;
+          },
+          hLineColor: function () {
+            return "#cbd5e1";
+          },
+          vLineColor: function () {
+            return "#e2e8f0";
+          },
+        },
+      },
+    ],
+  };
+
+  const generatedPDF = pdfMake.createPdf(dd);
+  downloadPDFFileUsingBase64(generatedPDF, `${filename}.pdf`);
+};
+
 const jsPdfGeneratorFormatted = async ({
   breakPageLimit = null,
   tenantId,

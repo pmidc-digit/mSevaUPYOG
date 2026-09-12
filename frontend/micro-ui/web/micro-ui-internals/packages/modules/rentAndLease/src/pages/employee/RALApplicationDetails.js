@@ -22,6 +22,242 @@ import RALModal from "../../pageComponents/RALModal";
 import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { getAcknowledgementData } from "../../utils/index";
 
+const roundMoney = (value = 0) => Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
+
+const getBillDetailKey = (billDetail) => billDetail?.demandId || billDetail?.id || "";
+
+const getAdvanceCarryForward = (billDetail) =>
+  roundMoney(
+    (billDetail?.billAccountDetails || [])
+      .filter((accountDetail) => accountDetail?.taxHeadCode === "RL_ADVANCE_CARRYFORWARD")
+      .reduce((total, accountDetail) => total + Math.abs(Number(accountDetail?.amount || 0)), 0)
+  );
+
+const formatMonth = (period) => {
+  if (!period) return "-";
+  const date = new Date(Number(period));
+
+  if (Number.isNaN(date.getTime())) return "-";
+  return new Intl.DateTimeFormat("en-IN", { month: "short", year: "numeric", timeZone: "Asia/Kolkata" }).format(date);
+};
+
+const formatDate = (period) => {
+  if (!period) return "-";
+  const date = new Date(Number(period));
+
+  if (Number.isNaN(date.getTime())) return "-";
+  return new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }).format(date);
+};
+
+const formatCurrency = (amount) =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(roundMoney(amount));
+
+const getPaymentHistory = (billResponse, receiptResponse) => {
+  const months = new Map();
+  const ignoredBillStatuses = ["CANCELLED", "PAYMENT_CANCELLED", "EXPIRED"];
+
+  (billResponse?.Bill || []).forEach((bill) => {
+    if (ignoredBillStatuses.includes(bill?.status)) return;
+
+    (bill?.billDetails || []).forEach((billDetail) => {
+      // A regenerated bill can cover the same calendar month as an expired bill.
+      // demandId keeps the current demand separate from its superseded counterpart.
+      const key = getBillDetailKey(billDetail);
+      if (!key) return;
+
+      const month = months.get(key) || {
+        key,
+        fromPeriod: billDetail?.fromPeriod,
+        toPeriod: billDetail?.toPeriod,
+        billNumber: bill?.billNumber || "-",
+        billStatus: bill?.status,
+        billed: 0,
+        receipts: [],
+      };
+
+      month.billed = roundMoney(month.billed + Number(billDetail?.amount || 0));
+      months.set(key, month);
+    });
+  });
+
+  (receiptResponse?.Payments || []).forEach((payment) => {
+    if (payment?.instrumentStatus !== "APPROVED") return;
+
+    (payment?.paymentDetails || []).forEach((paymentDetail) => {
+      if (!paymentDetail?.receiptNumber) return;
+
+      (paymentDetail?.bill?.billDetails || []).forEach((billDetail) => {
+        const key = getBillDetailKey(billDetail);
+        if (!key) return;
+
+        // A payment response contains a historical bill snapshot. It must not
+        // create timeline rows, otherwise cancelled or regenerated bills leak in.
+        const month = months.get(key);
+        if (!month) return;
+
+        const advanceCarryForward = getAdvanceCarryForward(billDetail);
+
+        month.receipts.push({
+          receiptNumber: paymentDetail.receiptNumber,
+          date: payment?.transactionDate || paymentDetail?.receiptDate,
+          mode: payment?.paymentMode || "-",
+          // The payment snapshot includes the carry-forward in amountPaid.
+          // Keep it separate so a month's paid amount cannot exceed its billed amount.
+          amount: roundMoney(Math.max(0, Number(billDetail?.amountPaid || 0) - advanceCarryForward)),
+          advanceCarryForward,
+          transactionNumber: payment?.transactionNumber,
+          payment: payment,
+        });
+        months.set(key, month);
+      });
+    });
+  });
+
+  const rows = [...months.values()]
+    .map((month) => {
+      const billed = roundMoney(month.billed);
+      const paid = roundMoney(month.receipts.reduce((total, receipt) => total + receipt.amount, 0));
+      const advance = roundMoney(month.receipts.reduce((total, receipt) => total + receipt.advanceCarryForward, 0));
+      const due = Math.max(0, roundMoney(billed - paid));
+      const status = billed > 0 && due === 0 ? "PAID" : paid > 0 ? "PARTIALLY_PAID" : "DUE";
+
+      return { ...month, billed, paid, advance, due, status };
+    })
+    .sort((first, second) => Number(second.fromPeriod || 0) - Number(first.fromPeriod || 0));
+
+  return {
+    rows,
+    totals: rows.reduce(
+      (totals, row) => ({
+        billed: roundMoney(totals.billed + row.billed),
+        paid: roundMoney(totals.paid + row.paid),
+        advance: roundMoney(totals.advance + row.advance),
+        due: roundMoney(totals.due + row.due),
+      }),
+      { billed: 0, paid: 0, advance: 0, due: 0 }
+    ),
+  };
+};
+
+const RALPaymentHistory = ({ consumerCode, history, isLoading, error, onDownloadReceipt, t }) => {
+  const [expandedMonth, setExpandedMonth] = useState(null);
+  const rows = history?.rows || [];
+  const totals = history?.totals || { billed: 0, paid: 0, advance: 0, due: 0 };
+
+  return (
+    <Card className="ral-payment-history">
+      <div className="ral-payment-history__header">
+        <div>
+          <CardSubHeader className="ral-card-subheader-24">RL Payment History</CardSubHeader>
+          <p className="ral-payment-history__consumer">Consumer code: {consumerCode || "-"}</p>
+        </div>
+        <div className="ral-payment-history__totals" aria-label="Payment history totals">
+          <div>
+            <span>Total billed</span>
+            <strong>{formatCurrency(totals.billed)}</strong>
+          </div>
+          <div>
+            <span>Total paid</span>
+            <strong>{formatCurrency(totals.paid + totals.advance)}</strong>
+          </div>
+          <div>
+            <span>Advance payment</span>
+            <strong>{formatCurrency(totals.advance)}</strong>
+          </div>
+          <div>
+            <span>Total due</span>
+            <strong>{formatCurrency(totals.due)}</strong>
+          </div>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="ral-payment-history__message" role="status">
+          Loading payment history...
+        </div>
+      ) : error ? (
+        <div className="ral-payment-history__message ral-payment-history__message--error" role="alert">
+          {error}
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="ral-payment-history__message">No billing/payment history found for this RL code.</div>
+      ) : (
+        <div className="ral-payment-history__table-wrap">
+          <table className="ral-payment-history__table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Bill No.</th>
+                <th>Billed</th>
+                <th>Paid</th>
+                <th>Due</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => {
+                const isExpanded = expandedMonth === row.key;
+
+                return (
+                  <React.Fragment key={row.key}>
+                    <tr>
+                      <td>
+                        <button
+                          type="button"
+                          className="ral-payment-history__month-button"
+                          onClick={() => setExpandedMonth(isExpanded ? null : row.key)}
+                          aria-expanded={isExpanded}
+                          disabled={!row.receipts.length}
+                        >
+                          <span aria-hidden="true">{row.receipts.length ? (isExpanded ? "−" : "+") : ""}</span>
+                          {formatMonth(row.fromPeriod)}
+                        </button>
+                      </td>
+                      <td>{row.billNumber}</td>
+                      <td>{formatCurrency(row.billed)}</td>
+                      <td>{formatCurrency(row.paid)}</td>
+                      <td>{formatCurrency(row.due)}</td>
+                      <td>
+                        <span className={`ral-payment-history__status ral-payment-history__status--${row.status.toLowerCase()}`}>
+                          {row.status.replace("_", " ")}
+                        </span>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr className="ral-payment-history__receipts-row">
+                        <td colSpan="6">
+                          <div className="ral-payment-history__receipts">
+                            {row.receipts.map((receipt, index) => (
+                              <div key={`${receipt.receiptNumber}-${index}`} className="ral-payment-history__receipt">
+                                <strong>{receipt.receiptNumber}</strong>
+                                <span>{formatDate(receipt.date)}</span>
+                                <span>{receipt.mode}</span>
+                                <span>{formatCurrency(receipt.amount)}</span>
+                                {receipt.transactionNumber && <span>Txn: {receipt.transactionNumber}</span>}
+                                <div style={{ marginLeft: "auto" }}>
+                                  <SubmitBar
+                                    label={t("CS_COMMON_DOWNLOAD")}
+                                    onSubmit={() => onDownloadReceipt?.(receipt)}
+                                  />
+                                </div>
+
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Card>
+  );
+};
+
 const RALApplicationDetails = () => {
   const { t } = useTranslation();
   const { acknowledgementIds, tenantId } = useParams();
@@ -33,6 +269,9 @@ const RALApplicationDetails = () => {
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [paymentHistory, setPaymentHistory] = useState({ rows: [], totals: { billed: 0, paid: 0, advance: 0, due: 0 } });
+  const [isPaymentHistoryLoading, setIsPaymentHistoryLoading] = useState(false);
+  const [paymentHistoryError, setPaymentHistoryError] = useState(null);
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
 
@@ -81,6 +320,17 @@ const RALApplicationDetails = () => {
   if (workflowDetails?.data?.actionState && !workflowDetails.isLoading) {
     workflowDetails.data.actionState.nextActions = workflowDetails.data.nextActions;
   }
+
+    const handleDownloadReceipt = (receipt) => {
+
+      printBillReceipt({
+        businessService: "rl-services",
+        receiptNumber: receipt?.receiptNumber,
+        billOrPaymentResponse: receipt?.payment ? { Payments: [receipt.payment] } : null,
+        rootKey: "PAYMENTS",
+      });
+  };
+
 
   const handleNavigation = () => {
     const timer = setTimeout(() => {
@@ -393,6 +643,35 @@ const RALApplicationDetails = () => {
     }
   };
 
+  const fetchNewBillData = async (consumerCode) => {
+    if (!consumerCode || !tenantId) return;
+
+    setIsPaymentHistoryLoading(true);
+    setPaymentHistoryError(null);
+
+    try {
+      const [billResponse, receiptResponse] = await Promise.all([
+        Digit.PaymentService.searchBill(tenantId, { consumerCode, service: "rl-services" }),
+        Digit.PaymentService.recieptSearch(tenantId, "rl-services", { consumerCodes: consumerCode, limit: 200 }),
+      ]);
+
+      setPaymentHistory(getPaymentHistory(billResponse, receiptResponse));
+    } catch (error) {
+      console.error("Unable to load RL payment history", error);
+      setPaymentHistory({ rows: [], totals: { billed: 0, paid: 0, advance: 0, due: 0 } });
+      setPaymentHistoryError("Unable to load payment history. Please try again.");
+    } finally {
+      setIsPaymentHistoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!applicationData) return;
+
+    const consumerCode = applicationData?.consumerCode || applicationData?.applicationNumber || acknowledgementIds;
+    fetchNewBillData(consumerCode);
+  }, [acknowledgementIds, applicationData?.applicationNumber, applicationData?.consumerCode, tenantId]);
+
   return (
     <React.Fragment>
       <div>
@@ -534,6 +813,14 @@ const RALApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
+        <RALPaymentHistory
+          consumerCode={applicationData?.consumerCode || applicationData?.applicationNumber || acknowledgementIds}
+          history={paymentHistory}
+          isLoading={isPaymentHistoryLoading}
+          error={paymentHistoryError}
+          onDownloadReceipt={handleDownloadReceipt}
+          t={t}
+        />
         {/* <ApplicationTimeline workflowDetails={workflowDetails} t={t} /> */}
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
         {applicationData?.status != "INITIATED" && actions?.length > 0 && !applicationData?.expireFlag && (

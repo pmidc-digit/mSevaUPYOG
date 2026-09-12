@@ -1,4 +1,17 @@
-import { CardLabel, FormStep, RadioOrSelect, TextInput, OpenLinkContainer, BackButton, CheckBox, Dropdown, Loader, ActionBar, SubmitBar, ArrowLeft } from "@mseva/digit-ui-react-components";
+import {
+  CardLabel,
+  FormStep,
+  RadioOrSelect,
+  TextInput,
+  OpenLinkContainer,
+  BackButton,
+  CheckBox,
+  Dropdown,
+  Loader,
+  ActionBar,
+  SubmitBar,
+  ArrowLeft,
+} from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { stringReplaceAll } from "../utils";
 import Timeline from "../components/Timeline";
@@ -34,63 +47,53 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     return formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || null;
   });
 
+  // const [validTo, setValidTo] = useState(() => {
+  //   const epoch =
+  //     formData?.result?.Licenses?.[0]?.validTo ||
+  //     formData?.formData?.Licenses?.[0]?.validTo ||
+  //     null;
 
+  //   if (!epoch) return "";
 
-// const [validTo, setValidTo] = useState(() => {
-//   const epoch =
-//     formData?.result?.Licenses?.[0]?.validTo ||
-//     formData?.formData?.Licenses?.[0]?.validTo ||
-//     null;
+  //   const date = new Date(epoch);
+  //   const day = String(date.getDate()).padStart(2, "0");
+  //   const month = String(date.getMonth() + 1).padStart(2, "0");
+  //   const year = date.getFullYear();
+  //   return `${day}/${month}/${year}`; // ✅ stays DD/MM/YYYY
+  // });
 
-//   if (!epoch) return "";
+  const [validTo, setValidTo] = useState(() => {
+    // <CHANGE> Check LicneseType path first, then Licenses path
+    const epoch =
+      formData?.LicneseType?.validTo ||
+      formData?.formData?.LicneseType?.validTo ||
+      formData?.result?.Licenses?.[0]?.validTo ||
+      formData?.formData?.Licenses?.[0]?.validTo ||
+      null;
 
-//   const date = new Date(epoch);
-//   const day = String(date.getDate()).padStart(2, "0");
-//   const month = String(date.getMonth() + 1).padStart(2, "0");
-//   const year = date.getFullYear();
-//   return `${day}/${month}/${year}`; // ✅ stays DD/MM/YYYY
-// });
+    if (!epoch) return "";
 
-const [validTo, setValidTo] = useState(() => {
-  // <CHANGE> Check LicneseType path first, then Licenses path
-  const epoch =
-    formData?.LicneseType?.validTo ||
-    formData?.formData?.LicneseType?.validTo ||
-    formData?.result?.Licenses?.[0]?.validTo ||
-    formData?.formData?.Licenses?.[0]?.validTo ||
-    null;
+    // <CHANGE> Handle both epoch (number) and DD/MM/YYYY string formats
+    if (typeof epoch === "string" && epoch.includes("/")) {
+      return epoch; // Already in DD/MM/YYYY format
+    }
 
-  if (!epoch) return "";
-
-  // <CHANGE> Handle both epoch (number) and DD/MM/YYYY string formats
-  if (typeof epoch === "string" && epoch.includes("/")) {
-    return epoch; // Already in DD/MM/YYYY format
-  }
-
-  const date = new Date(epoch);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-});
-
-console.log("validTo",validTo);
-
-
-
+    const date = new Date(epoch);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  });
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   const { data: qualificationTypes, isLoading: isQualificationLoading, error: qualificationError } = Digit.Hooks.obps.useQualificationTypes(stateId);
-  //console.log("qualificationTypes here", qualificationTypes);
   // let qualificationTypes = [],
   //   isQualificationLoading = false,
   //   qualificationError = {};
   const { data, isLoading } = Digit.Hooks.obps.useMDMS(stateId, "StakeholderRegistraition", "TradeTypetoRoleMapping");
 
   const { data: EmployeeStatusData } = Digit.Hooks.useCustomMDMS(tenantId, "StakeholderRegistraition", [{ name: "TradeTypetoRoleMapping" }]);
-
-  // console.log("EmployeeStatusData", EmployeeStatusData);
 
   const formattedData = EmployeeStatusData?.StakeholderRegistraition?.TradeTypetoRoleMapping;
 
@@ -104,8 +107,6 @@ console.log("validTo",validTo);
 
   const validation = {};
 
-  console.log("OBPS_Formdata", formData, qualificationType);
-
   const [errorMessage, setErrorMessage] = useState("");
   if (isopenlink)
     window.onunload = () => {
@@ -117,22 +118,18 @@ console.log("validTo",validTo);
     }
   }, [qualificationType, EmployeeStatusData]);
 
-  console.log("qualificationTypeFinfing", qualificationType);
-
   useEffect(() => {
-    console.log("selectedQualificationType 1", qualificationTypes, formData?.LicneseType?.qualificationType, qualificationTypes);
     if (formData?.LicneseType?.qualificationType && qualificationTypes && !qualificationType) {
       const selectedQualificationType = qualificationTypes.find((val) => {
         return val.name === formData?.LicneseType?.qualificationType;
       });
 
       setQualificationType(selectedQualificationType);
-      console.log("selectedQualificationType", selectedQualificationType, formData?.LicneseType?.qualificationType, qualificationTypes);
     }
   }, []);
 
   useEffect(() => {
-    if(typeof qualificationType === "string" && qualificationTypes?.length > 0){
+    if (typeof qualificationType === "string" && qualificationTypes?.length > 0) {
       const selectedQualificationType = qualificationTypes.find((val) => {
         return val.name === qualificationType;
       });
@@ -141,60 +138,31 @@ console.log("validTo",validTo);
     }
   }, [qualificationTypes, qualificationType]);
 
-    // useEffect(() => {
-    //   const epoch =
-    //     formData?.result?.Licenses?.[0]?.validTo ||
-    //     formData?.formData?.Licenses?.[0]?.validTo ||
-    //     null;
+  useEffect(() => {
+    const epoch =
+      formData?.LicneseType?.validTo ||
+      formData?.formData?.LicneseType?.validTo ||
+      formData?.result?.Licenses?.[0]?.validTo ||
+      formData?.formData?.Licenses?.[0]?.validTo ||
+      null;
 
-    //   console.log(epoch, "EPOCH LOOK");
-    //   console.log(formData, "FORM DATA LOOK");
+    if (epoch) {
+      // <CHANGE> Handle both epoch (number) and DD/MM/YYYY string formats
+      if (typeof epoch === "string" && epoch.includes("/")) {
+        setValidTo(epoch);
+        return;
+      }
 
-    //   if (epoch) {
-    //     const date = new Date(epoch);
-    //     const day = String(date.getDate()).padStart(2, "0");
-    //     const month = String(date.getMonth() + 1).padStart(2, "0");
-    //     const year = date.getFullYear();
+      const date = new Date(epoch);
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
 
-    //     const formattedDate = `${day}/${month}/${year}`;
-    //     console.log(formattedDate, "DATE LOOK");
+      const formattedDate = `${day}/${month}/${year}`;
 
-    //     setValidTo(formattedDate);
-    //   }
-    // }, [formData]);
-
-
-    useEffect(() => {
-  // <CHANGE> Check LicneseType path first, then Licenses path
-  const epoch =
-    formData?.LicneseType?.validTo ||
-    formData?.formData?.LicneseType?.validTo ||
-    formData?.result?.Licenses?.[0]?.validTo ||
-    formData?.formData?.Licenses?.[0]?.validTo ||
-    null;
-
-  console.log(epoch, "EPOCH LOOK");
-  console.log(formData, "FORM DATA LOOK");
-
-  if (epoch) {
-    // <CHANGE> Handle both epoch (number) and DD/MM/YYYY string formats
-    if (typeof epoch === "string" && epoch.includes("/")) {
-      setValidTo(epoch);
-      return;
+      setValidTo(formattedDate);
     }
-
-    const date = new Date(epoch);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-
-    const formattedDate = `${day}/${month}/${year}`;
-    console.log(formattedDate, "DATE LOOK");
-
-    setValidTo(formattedDate);
-  }
-}, [formData]);
-
+  }, [formData]);
 
   useEffect(() => {
     if (qualificationType !== null) {
@@ -226,7 +194,6 @@ console.log("validTo",validTo);
 
     formattedData?.forEach((item) => {
       if (item?.isActive === "true") {
-        console.log("item=====", item);
         const mainType = item?.tradeType?.split(".")[0];
         const i18nKey = `TRADELICENSE_TRADETYPE_${mainType}`;
 
@@ -245,12 +212,8 @@ console.log("validTo",validTo);
       }
     });
 
-    console.log("list", list);
-
     return list;
   }
-
-  console.log("License Type List", getLicenseType());
 
   function mapQualificationToLicense(qualification) {
     let license = getLicenseType().find((type) => type.i18nKey.includes(qualification?.role));
@@ -336,104 +299,96 @@ console.log("validTo",validTo);
     }
   }
 
-    // function selectValidTo(input) {
-    //   const [day, month, year] = input.split("/");
-    //   const inputDate = new Date(`${year}-${month}-${day}`);
-    //   const today = new Date();
+  // function selectValidTo(input) {
+  //   const [day, month, year] = input.split("/");
+  //   const inputDate = new Date(`${year}-${month}-${day}`);
+  //   const today = new Date();
 
-    //   setValidTo(input);
+  //   setValidTo(input);
 
-    //   if (inputDate < today) {
-    //     setErrorMessage(t("BPA_VALID_TO_DATE_ERROR"));
-    //   } else {
-    //     setErrorMessage("");
-    //   }
-    // }
+  //   if (inputDate < today) {
+  //     setErrorMessage(t("BPA_VALID_TO_DATE_ERROR"));
+  //   } else {
+  //     setErrorMessage("");
+  //   }
+  // }
 
+  function selectValidTo(input) {
+    const cleaned = input.replace(/[^\d/]/g, "");
+    setValidTo(cleaned);
 
-   function selectValidTo(input) {
-    const cleaned = input.replace(/[^\d/]/g, "")
-    setValidTo(cleaned)
+    const parts = cleaned.split("/");
+    if (parts.length !== 3) return;
 
-    const parts = cleaned.split("/")
-    if (parts.length !== 3) return
+    const [day, month, year] = parts;
+    const dayNum = Number(day);
+    const monthNum = Number(month);
+    const yearNum = Number(year);
 
-    const [day, month, year] = parts
-    const dayNum = Number(day)
-    const monthNum = Number(month)
-    const yearNum = Number(year)
-
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const currentYear = today.getFullYear()
-    const maxYear = currentYear + 80
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const currentYear = today.getFullYear();
+    const maxYear = currentYear + 80;
 
     if (year && year.length > 4) {
-      setErrorMessage("Year must be 4 digits (YYYY)")
-      return
+      setErrorMessage("Year must be 4 digits (YYYY)");
+      return;
     }
 
     if (year.length === 4) {
       if (yearNum < currentYear) {
-        setErrorMessage("Expiry date cannot be in the past")
-        return
+        setErrorMessage("Expiry date cannot be in the past");
+        return;
       }
       if (yearNum > maxYear) {
-        setErrorMessage(`Year cannot exceed ${maxYear} (80 years from now)`)
-        return
+        setErrorMessage(`Year cannot exceed ${maxYear} (80 years from now)`);
+        return;
       }
     }
 
     if (month && month.length === 2) {
       if (monthNum < 1 || monthNum > 12) {
-        setErrorMessage("Month must be between 01 and 12")
-        return
+        setErrorMessage("Month must be between 01 and 12");
+        return;
       }
     }
 
     if (day && day.length === 2 && month && month.length === 2) {
       if (dayNum < 1 || dayNum > 31) {
-        setErrorMessage("Invalid day")
-        return
+        setErrorMessage("Invalid day");
+        return;
       }
 
-      const daysInMonth = new Date(yearNum || currentYear, monthNum, 0).getDate()
+      const daysInMonth = new Date(yearNum || currentYear, monthNum, 0).getDate();
       if (dayNum > daysInMonth) {
-        setErrorMessage(`Invalid day for the selected month (max ${daysInMonth} days)`)
-        return
+        setErrorMessage(`Invalid day for the selected month (max ${daysInMonth} days)`);
+        return;
       }
     }
 
     if (day && month && year.length === 4) {
-      const inputDate = new Date(`${year}-${month}-${day}`)
-      inputDate.setHours(0, 0, 0, 0)
+      const inputDate = new Date(`${year}-${month}-${day}`);
+      inputDate.setHours(0, 0, 0, 0);
 
-      if (
-        inputDate.getDate() !== dayNum ||
-        inputDate.getMonth() + 1 !== monthNum ||
-        inputDate.getFullYear() !== yearNum
-      ) {
-        setErrorMessage("Invalid date - this day does not exist in the selected month")
-        return
+      if (inputDate.getDate() !== dayNum || inputDate.getMonth() + 1 !== monthNum || inputDate.getFullYear() !== yearNum) {
+        setErrorMessage("Invalid date - this day does not exist in the selected month");
+        return;
       }
 
       if (inputDate < today) {
-        setErrorMessage("Expiry date cannot be in the past")
-        return
+        setErrorMessage("Expiry date cannot be in the past");
+        return;
       }
 
-      const maxDate = new Date(maxYear, 11, 31)
+      const maxDate = new Date(maxYear, 11, 31);
       if (inputDate > maxDate) {
-        setErrorMessage(`Date cannot exceed 80 years from current year`)
-        return
+        setErrorMessage(`Date cannot exceed 80 years from current year`);
+        return;
       }
     }
 
-    setErrorMessage("")
+    setErrorMessage("");
   }
-
-
-
 
   function goNext() {
     if (errorMessage !== "") return;
@@ -459,28 +414,27 @@ console.log("validTo",validTo);
       return;
     }
 
-       if (LicenseType?.i18nKey.includes("ARCHITECT")) {
+    if (LicenseType?.i18nKey.includes("ARCHITECT")) {
       if (!validTo || validTo.split("/").length !== 3) {
-        setErrorMessage("Please enter a valid expiry date")
-        return
+        setErrorMessage("Please enter a valid expiry date");
+        return;
       }
 
-      const [day, month, year] = validTo.split("/")
-      const inputDate = new Date(`${year}-${month}-${day}`)
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const maxYear = today.getFullYear() + 80
+      const [day, month, year] = validTo.split("/");
+      const inputDate = new Date(`${year}-${month}-${day}`);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const maxYear = today.getFullYear() + 80;
 
       if (inputDate < today) {
-        setErrorMessage("Expiry date cannot be in the past")
-        return
+        setErrorMessage("Expiry date cannot be in the past");
+        return;
       }
 
       if (Number(year) > maxYear) {
-        setErrorMessage(`Year cannot exceed ${maxYear}`)
-        return
+        setErrorMessage(`Year cannot exceed ${maxYear}`);
+        return;
       }
-
     }
     // Clear localStorage on successful form submission
     localStorage.removeItem("licenseForm_qualificationType");
@@ -488,40 +442,45 @@ console.log("validTo",validTo);
     localStorage.removeItem("licenseForm_ArchitectNo");
     localStorage.removeItem("licenseForm_selfCertification");
 
-   if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
-      console.log("onSelect going", { LicenseType, ArchitectNo, selfCertification, qualificationType, validTo })
+    if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
       const validToEpoch = (() => {
-        if (!validTo) return null
-        const [day, month, year] = validTo.split("/")
-        return new Date(`${year}-${month}-${day}`).getTime()
-      })()
+        if (!validTo) return null;
+        const [day, month, year] = validTo.split("/");
+        return new Date(`${year}-${month}-${day}`).getTime();
+      })();
       onSelect(config.key, {
         LicenseType,
         ArchitectNo,
         selfCertification,
         validTo: validToEpoch,
         qualificationType: qualificationType,
-      })
+      });
     } else {
-      const data = formData?.formData || formData
-      console.log("onSelect going 2", data, ArchitectNo)
-      data.LicneseType.LicenseType = LicenseType
-      data.LicneseType.ArchitectNo = ArchitectNo
-      data.LicneseType.selfCertification = selfCertification ? selfCertification : false
-      data.LicneseType.qualificationType = qualificationType
-      data.LicneseType.validTo = validTo
-      const newFormData = {...formData}
-      newFormData.formData = data
-      onSelect("", newFormData)
+      const data = formData?.formData || formData;
+      data.LicneseType.LicenseType = LicenseType;
+      data.LicneseType.ArchitectNo = ArchitectNo;
+      data.LicneseType.selfCertification = selfCertification ? selfCertification : false;
+      data.LicneseType.qualificationType = qualificationType;
+      data.LicneseType.validTo = validTo;
+      const newFormData = { ...formData };
+      newFormData.formData = data;
+      onSelect("", newFormData);
     }
   }
-  console.log("formData in LicenseType", formData);
-  if(isQualificationLoading ) return <Loader /> ;
+  if (isQualificationLoading) return <Loader />;
   return (
     <div className="obps-page-components-license-type--style-1">
       <div className="obps-page-components-license-type--style-2">
         <div className={isopenlink ? "OpenlinkContainer" : ""}>
-          {<div className="back-button-container" onClick={() => history.push("/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required")}>{(<React.Fragment><ArrowLeft /> <p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
+          {
+            <div className="back-button-container" onClick={() => history.push("/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required")}>
+              {
+                <React.Fragment>
+                  <ArrowLeft /> <p>{t("CS_COMMON_BACK")}</p>
+                </React.Fragment>
+              }
+            </div>
+          }
           {isMobile && <Timeline currentStep={1} flow="STAKEHOLDER" />}
 
           <FormStep
@@ -584,22 +543,14 @@ console.log("validTo",validTo);
                   }}
                   // disabled={!isEditable}
                 />
-                {errorMessage && (
-                  <div
-
-                  >
-                    {errorMessage}
-                  </div>
-                )}
+                {errorMessage && <div>{errorMessage}</div>}
               </div>
             )}
-
 
             {LicenseType && LicenseType?.i18nKey.includes("ARCHITECT") && (
               <div>
                 <CardLabel>{`${t("BPA_CERTIFICATE_EXPIRY_DATE")}*`}</CardLabel>
                 <div className="field">
-
                   <TextInput
                     t={t}
                     type="date"
@@ -612,43 +563,41 @@ console.log("validTo",validTo);
                           })()
                         : ""
                     }
-                     onChange={(e) => {
-                      const isoValue = e.target.value
+                    onChange={(e) => {
+                      const isoValue = e.target.value;
                       if (!isoValue) {
-                        setValidTo("")
-                        setErrorMessage("")
-                        return
+                        setValidTo("");
+                        setErrorMessage("");
+                        return;
                       }
 
-                      const [year, month, day] = isoValue.split("-")
-                      const inputDate = new Date(isoValue)
+                      const [year, month, day] = isoValue.split("-");
+                      const inputDate = new Date(isoValue);
 
                       if (
                         inputDate.getDate() !== Number(day) ||
                         inputDate.getMonth() + 1 !== Number(month) ||
                         inputDate.getFullYear() !== Number(year)
                       ) {
-                        setErrorMessage("Invalid date - this day does not exist in the selected month")
-                        setValidTo("")
-                        return
+                        setErrorMessage("Invalid date - this day does not exist in the selected month");
+                        setValidTo("");
+                        return;
                       }
 
-                      const formatted = `${day}/${month}/${year}`
-                      selectValidTo(formatted)
+                      const formatted = `${day}/${month}/${year}`;
+                      selectValidTo(formatted);
                     }}
                     min={new Date().toISOString().split("T")[0]}
                     max={(() => {
-                      const maxDate = new Date()
-                      maxDate.setFullYear(maxDate.getFullYear() + 80)
-                      return maxDate.toISOString().split("T")[0]
+                      const maxDate = new Date();
+                      maxDate.setFullYear(maxDate.getFullYear() + 80);
+                      return maxDate.toISOString().split("T")[0];
                     })()}
                     // disabled={!isEditable}
                   />
-
                 </div>
               </div>
             )}
-
 
             {LicenseType && LicenseType?.i18nKey.includes("TOWNPLANNER") && (
               <div>
@@ -668,13 +617,7 @@ console.log("validTo",validTo);
                     }
                   }}
                 />
-                {errorMessage && (
-                  <div
-
-                  >
-                    {errorMessage}
-                  </div>
-                )}
+                {errorMessage && <div>{errorMessage}</div>}
               </div>
             )}
 
@@ -702,17 +645,9 @@ console.log("validTo",validTo);
                 </div>
               )} */}
           </FormStep>
-          <div
-            className="obps-page-components-license-type--style-3"
-          >
-            <h1
-              className="obps-page-components-license-type--style-4"
-            >
-              {t("BPA_COMPETENCIES")}
-            </h1>
-            <ul
-              className="obps-page-components-license-type--style-5"
-            >
+          <div className="obps-page-components-license-type--style-3">
+            <h1 className="obps-page-components-license-type--style-4">{t("BPA_COMPETENCIES")}</h1>
+            <ul className="obps-page-components-license-type--style-5">
               {LicenseType &&
                 CompetencyDescriptions[LicenseType?.i18nKey?.split("_").pop()]?.split("\n")?.map((point, index) => (
                   <li
@@ -724,23 +659,22 @@ console.log("validTo",validTo);
                       fontSize: "14px",
                       color: "#374151",
 
-                      borderBottom: index < (CompetencyDescriptions[LicenseType?.i18nKey?.split("_").pop()]?.split("\n")?.length - 2) ? "1px solid #e5e7eb" : "none",
+                      borderBottom:
+                        index < CompetencyDescriptions[LicenseType?.i18nKey?.split("_").pop()]?.split("\n")?.length - 2
+                          ? "1px solid #e5e7eb"
+                          : "none",
                     }}
                   >
-                    <span
-                      className="obps-page-components-license-type--style-6"
-                    />
+                    <span className="obps-page-components-license-type--style-6" />
                     {point.trim()}
                   </li>
                 ))}
-                <li
-                  className="obps-page-components-license-type--style-7"
-                >
-                  <span
-                    className="obps-page-components-license-type--style-8"
-                  />
-                  {`*NOTE: Registration Fees as per Council norms is ${LicenseType?.applicationFee || 0} INR and Renewal Fees is ${LicenseType?.renewalFee || 0} INR.`}
-                </li>
+              <li className="obps-page-components-license-type--style-7">
+                <span className="obps-page-components-license-type--style-8" />
+                {`*NOTE: Registration Fees as per Council norms is ${LicenseType?.applicationFee || 0} INR and Renewal Fees is ${
+                  LicenseType?.renewalFee || 0
+                } INR.`}
+              </li>
             </ul>
           </div>
         </div>
@@ -750,9 +684,9 @@ console.log("validTo",validTo);
           label={t("CS_COMMON_NEXT")}
           onSubmit={goNext}
           disabled={
-              (LicenseType?.i18nKey.includes("ARCHITECT") && !ArchitectNo) ||
-              (LicenseType?.i18nKey.includes("TOWNPLANNER") && !ArchitectNo) ||
-              !qualificationType
+            (LicenseType?.i18nKey.includes("ARCHITECT") && !ArchitectNo) ||
+            (LicenseType?.i18nKey.includes("TOWNPLANNER") && !ArchitectNo) ||
+            !qualificationType
           }
         />
       </ActionBar>

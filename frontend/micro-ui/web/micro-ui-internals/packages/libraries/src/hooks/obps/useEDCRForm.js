@@ -25,7 +25,8 @@ const useEDCRForm = ({ formData }) => {
   const [uploadMessage, setUploadMessage] = useState("");
   const [layoutMessage, setLayoutMessage] = useState("");
   const [layoutFile, setLayoutFile] = useState(null);
-  const [dxfFile, setDxfFile] = useState(null);
+  const [dxfFileStoreId, setDxfFileStoreId] = useState(formData?.Scrutiny?.[0]?.dxfFileStoreId || null);
+  const [dxfFile, setDxfFile] = useState(formData?.Scrutiny?.[0]?.dxfFileStoreId || null);
   const [roadType, setRoadType] = useState(formData?.Scrutiny?.[0]?.roadType || null);
 
   // Initialize selectedCity with pb.amritsar as default
@@ -63,8 +64,6 @@ const useEDCRForm = ({ formData }) => {
     { code: "NO", value: "No" },
   ];
 
-  console.log("FORM DATA -", JSON.stringify(formData, null, 2));
-
   useEffect(() => {
     if (citymodules?.tenant?.citymodule?.length > 0) {
       const list = citymodules?.tenant?.citymodule?.filter((d) => d.code === "BPAAPPLY");
@@ -76,24 +75,23 @@ const useEDCRForm = ({ formData }) => {
       setCitymoduleList(sorted);
     }
   }, [citymodules]);
-// When cities data is available, preselect based on ulb or fallback
-useEffect(() => {
-  if (cities && cities.length > 0) {
-    let defaultUlb = formData?.Scrutiny?.[0]?.ulbName || "pb.amritsar";
-    const selected = cities.find((city) => city.code === defaultUlb);
+  // When cities data is available, preselect based on ulb or fallback
+  useEffect(() => {
+    if (cities && cities.length > 0) {
+      let defaultUlb = formData?.Scrutiny?.[0]?.ulbName || "pb.amritsar";
+      const selected = cities.find((city) => city.code === defaultUlb);
 
-    if (selected) {
-      const cityWithDisplayName = {
-        ...selected,
-        displayName: t(selected.i18nKey),
-      };
-      setSelectedCity(cityWithDisplayName);
-      setUlb(selected.code);
-      setTenantIdData(selected.code);
+      if (selected) {
+        const cityWithDisplayName = {
+          ...selected,
+          displayName: t(selected.i18nKey),
+        };
+        setSelectedCity(cityWithDisplayName);
+        setUlb(selected.code);
+        setTenantIdData(selected.code);
+      }
     }
-  }
-}, [cities, formData, t]);
-
+  }, [cities, formData, t]);
 
   useEffect(() => {
     if (formData?.Scrutiny?.[0]?.ulbName) {
@@ -140,10 +138,15 @@ useEffect(() => {
     setLayoutFile(e.target.files[0]);
   };
 
-  const handleDXFUpload = (e) => {
-    setUploadedFile(e.target.files[0]);
-    setFile(e.target.files[0]);
-    setDxfFile(e.target.files[0]);
+  const handleDXFUpload = (event) => {
+    const selectedFile = event?.target?.files?.[0];
+    if (!selectedFile) return;
+
+    setError(null);
+    setUploadedFile(selectedFile);
+    setFile(selectedFile);
+    setDxfFile(selectedFile);
+    setDxfFileStoreId(null);
   };
 
   const texts = useMemo(
@@ -156,7 +159,6 @@ useEffect(() => {
 
   function selectCity(city) {
     setSelectedCity(city);
-    console.log("selected city", city);
   }
 
   function selectRoadType(type) {
@@ -181,9 +183,8 @@ useEffect(() => {
   const isFormValid = () => {
     if (!name || !selectedCity?.code || !areaType) return false;
 
-
-    if(roadType === null || roadType === undefined){
-      return false
+    if (roadType === null || roadType === undefined) {
+      return false;
     }
 
     if (areaType?.code === "SCHEME_AREA") {
@@ -203,19 +204,12 @@ useEffect(() => {
       if (cluApprove?.code !== "NO") {
         if (!coreArea) return false;
       }
-      
+
       return !!dxfFile;
     }
 
     return true;
   };
-
-  console.log("Hook state:", {
-    selectedCity,
-    ulb,
-    tenantIdData,
-    computedTenantId: tenantId,
-  });
 
   const getFormData = () => {
     const data = {
@@ -252,6 +246,7 @@ useEffect(() => {
     purchasableFar,
     coreAreaOptions,
     dxfFile,
+    dxfFileStoreId,
     error,
     file,
     getFormData,
@@ -271,6 +266,8 @@ useEffect(() => {
     setCitymoduleList,
     setCluApproved,
     setcoreArea,
+    setDxfFile,
+    setDxfFileStoreId,
     setError,
     setFile,
     setLayoutFile,
@@ -284,7 +281,7 @@ useEffect(() => {
     setUlb,
     setUploadMessage,
     setUploadedFile,
-    setcoreArea,
+    // setcoreArea,
     setSelectLayout,
     setPurchasableFar,
     siteReserved,
@@ -298,7 +295,7 @@ useEffect(() => {
     uploadedFile,
     cities,
     roadType,
-    selectRoadType
+    selectRoadType,
   };
 };
 

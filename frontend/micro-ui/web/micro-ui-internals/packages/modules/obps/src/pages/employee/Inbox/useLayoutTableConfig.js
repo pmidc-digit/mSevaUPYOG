@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils";
 
-const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
+const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, globalSearch }) => {
   const { t } = useTranslation();
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
 
@@ -57,6 +57,12 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
 
   const tableColumnConfig = useMemo(() => {
     return [
+      {
+        Header: t("Sr No."),
+        accessor: "serialNumber",
+        Cell: ({ row }) => GetCell((Number(formState?.tableForm?.offset) || 0) + row.index + 1),
+        disableSortBy: true,
+      },
       {
         Header: t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL"),
         accessor: "applicationId",
@@ -152,7 +158,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         disableSortBy: true,
       },
       {
-        Header: t("TIME_TAKEN"),
+        Header: t("Time Taken in Days"),
         accessor: (row) => row?.sla,
         disableSortBy: true,
       },
@@ -208,7 +214,8 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
     pageSizeLimit: formState.tableForm?.limit,
     onSort: onSortingByData,
     totalRecords: totalCount,
-    onSearch: formState?.searchForm?.message,
+    onSearch: globalSearch,
+    searchAllFields: true,
     onLastPage: () => {
       const limit = parseInt(formState.tableForm?.limit) || 10;
       dispatch({

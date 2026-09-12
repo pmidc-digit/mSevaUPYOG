@@ -60,6 +60,7 @@ const useCLUInbox = ({ tenantId, filters, config = {} }) => {
           const endDate = approvalDate ? Number(approvalDate) : Date.now();
 
           return {
+            _searchData: application,
             applicationId: application?.businessObject?.applicationNo || application?.businessObject?.applicationNumber || "-",
             date: application?.businessObject?.auditDetails?.createdTime ? Number.parseInt(application.businessObject.auditDetails.createdTime) : 0,
             submissionDate: application?.businessObject?.cluDetails?.additionalDetails?.SubmittedOn,
@@ -70,7 +71,7 @@ const useCLUInbox = ({ tenantId, filters, config = {} }) => {
             owner: application?.businessObject?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-",
             professionalName: application?.businessObject?.cluDetails?.additionalDetails?.applicationDetails?.professionalName || "-",
             documents: application?.businessObject?.documents || application?.documents || [],
-            tenantId: application?.businessObject?.tenantId,
+            tenantId: application?.businessObject?.tenantId || application?.ProcessInstance?.tenantId,
             category: application.businessObject?.cluDetails?.additionalDetails?.siteDetails?.appliedCluCategory?.name,
             zone: application.businessObject?.cluDetails?.additionalDetails?.siteDetails?.zone?.name,
             applicationType: application?.businessObject?.applicationType,

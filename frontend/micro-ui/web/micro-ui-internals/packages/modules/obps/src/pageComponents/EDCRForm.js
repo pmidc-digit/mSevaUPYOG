@@ -7,7 +7,19 @@ import useEDCRForm from "../../../../libraries/src/hooks/obps/useEDCRForm";
 import { set } from "lodash";
 import { CustomLoader } from "./CustomLoader";
 
-const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addNewOwner, isShowToast, isSubmitBtnDisable, setIsShowToast, errorStyle }) => {
+const EDCRForm = ({
+  t,
+  config,
+  onSelect,
+  userType,
+  formData,
+  ownerIndex = 0,
+  addNewOwner,
+  isShowToast,
+  isSubmitBtnDisable,
+  setIsShowToast,
+  errorStyle,
+}) => {
   const { pathname: url } = useLocation();
   const [nameError, setNameError] = useState("");
   const history = useHistory();
@@ -29,6 +41,7 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     purchasableFar,
     coreAreaOptions,
     dxfFile,
+    dxfFileStoreId,
     error,
     file,
     getFormData,
@@ -62,6 +75,8 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     setUploadMessage,
     setUploadedFile,
     setcoreArea,
+    setDxfFile,
+    setDxfFileStoreId,
     setPurchasableFar,
     setSelectLayout,
     siteReserved,
@@ -74,14 +89,13 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     uploadMessage,
     uploadedFile,
     roadType,
-    selectRoadType
+    selectRoadType,
   } = useEDCRForm({ formData });
   let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
   const { data: cities } = Digit.Hooks.useTenants();
 
   const stateId = Digit.ULBService.getStateId();
   const { data: roadTypeOptions, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
-  console.log(stateId, tenantId, t, "TEN STATE");
 
   let validation = {};
 
@@ -102,14 +116,13 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
 
   const { isLoading, data: citymodules } = Digit.Hooks.obps.useMDMS(stateId, "tenant", ["citymodule"]);
 
-
   // const tenantId = localStorage.getItem("CITIZEN.CITY");
 
   useEffect(() => {
-    if(cities){
-    const selectedCity = cities.find((city) => city.code === tenantId);
-    setSelectedCity({...selectedCity, displayName: t(selectedCity.i18nKey)});
-    setUlb(tenantId);
+    if (cities) {
+      const selectedCity = cities.find((city) => city.code === tenantId);
+      setSelectedCity({ ...selectedCity, displayName: t(selectedCity.i18nKey) });
+      setUlb(tenantId);
     }
   }, [tenantId, cities]);
 
@@ -142,27 +155,24 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     }
   }, [uploadMessage, isShowToast, isSubmitBtnDisable]);
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
 
-useEffect(() => {
-  const container = containerRef.current;
-  if (!container) return;
+    const hideSkip = () => {
+      const skipBtn = container.querySelector('button.skip, button[data-testid="skip-button"]');
+      if (skipBtn) {
+        skipBtn.style.display = "none";
+      }
+    };
 
-  const hideSkip = () => {
-    const skipBtn = container.querySelector('button.skip, button[data-testid="skip-button"]');
-    if (skipBtn) {
-      skipBtn.style.display = "none";
-    }
-  };
+    hideSkip();
 
-  hideSkip();
+    const mo = new MutationObserver(hideSkip);
+    mo.observe(container, { childList: true, subtree: true });
 
-  const mo = new MutationObserver(hideSkip);
-  mo.observe(container, { childList: true, subtree: true });
-
-  return () => mo.disconnect();
-}, []);
-
-
+    return () => mo.disconnect();
+  }, []);
 
   function onAdd() {
     setUploadMessage("NEED TO DELETE");
@@ -172,7 +182,8 @@ useEffect(() => {
     const data = {};
     data.tenantId = tenantIdData;
     data.applicantName = name;
-    data.file = file;
+    data.file = dxfFile;
+    data.dxfFile = dxfFile;
     data.coreArea = coreArea;
     data.ulb = ulb;
     data.areaType = areaType;
@@ -184,6 +195,7 @@ useEffect(() => {
     data.purchasableFar = purchasableFar;
     data.layoutFile = layoutFile;
     data.roadType = roadType;
+    data.dxfFileStoreId = dxfFileStoreId;
 
     if (areaType?.code === "SCHEME_AREA") {
       data.coreArea = "NO";
@@ -193,6 +205,8 @@ useEffect(() => {
 
     onSelect(config.key, data);
   };
+
+  // dxfFileStoreId
 
   if (isLoading || isRoadTypeLoading) {
     return <Loader />;
@@ -204,165 +218,160 @@ useEffect(() => {
   // }
 
   if (isSubmitBtnDisable) {
-  return (
-    <CustomLoader message={"EDCR_SCRUTINY_LOADING_MESSAGE"} />
-  );
-}
-
+    return <CustomLoader message={"EDCR_SCRUTINY_LOADING_MESSAGE"} />;
+  }
 
   return (
-
-
     <React.Fragment>
-
-
-
       <div
-      onKeyDown={(e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-      }
-    }}
-    ref={containerRef}
-    >
-
-
-      <FormStep  config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={handleSubmit} isDisabled={!isFormValid() || nameError} t={t}>
-         <CardLabelError>{nameError}</CardLabelError>
-        <CardLabel>{t("EDCR_APPLICANT_NAME")}</CardLabel>
-      <TextInput
-        t={t}
-        isMandatory={true}
-        type="text"
-        name="applicantName"
-        value={name}
-        // onChange={(e) => setName(e.target.value)}
-        onChange={(e) => {
-          const value = e.target.value;
-          setName(value);
-          const regex = /^[A-Za-z\s]*$/;
-          if (!regex.test(value)) {
-            setNameError(t("APPLICANT_NAME_INVALID_PATTERN"));
-          } else {
-            setNameError("");
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
           }
         }}
-        />
-        {/* <CardLabelError style={{...errorStyle, color:"black"}}>{"*"+t("EDCR_APPLICANT_NAME_DISCLAIMER")}</CardLabelError> */}
-
-
-
-        <CardLabel>{t("EDCR_ULB_NAME")}</CardLabel>
-        <Dropdown
+        ref={containerRef}
+      >
+        <FormStep
+          config={{ ...config, texts: { ...config.texts, skipText: null } }}
+          onSelect={handleSubmit}
+          isDisabled={!isFormValid() || nameError}
           t={t}
-          isMandatory={true}
-          option={cityOptions}
-          optionKey="displayName"
-          selected={selectedCity}
-          select={(city) => {
-            setSelectedCity(city);
-            setUlb(city?.code);
-          }}
-          placeholder={t("COMMON_TABLE_SEARCH")}
-          disable={true}
-        />
+        >
+          <CardLabelError>{nameError}</CardLabelError>
+          <CardLabel>{t("EDCR_APPLICANT_NAME")}</CardLabel>
+          <TextInput
+            t={t}
+            isMandatory={true}
+            type="text"
+            name="applicantName"
+            value={name}
+            // onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              setName(value);
+              const regex = /^[A-Za-z\s]*$/;
+              if (!regex.test(value)) {
+                setNameError(t("APPLICANT_NAME_INVALID_PATTERN"));
+              } else {
+                setNameError("");
+              }
+            }}
+          />
+          {/* <CardLabelError style={{...errorStyle, color:"black"}}>{"*"+t("EDCR_APPLICANT_NAME_DISCLAIMER")}</CardLabelError> */}
 
-        <CardLabel>{t("EDCR_SCRUTINY_AREA_TYPE")}</CardLabel>
-        <Dropdown t={t} isMandatory={true} option={areaTypeOptions} selected={areaType} optionKey="value" select={handleAreaTypeChange} />
+          <CardLabel>{t("EDCR_ULB_NAME")}</CardLabel>
+          <Dropdown
+            t={t}
+            isMandatory={true}
+            option={cityOptions}
+            optionKey="displayName"
+            selected={selectedCity}
+            select={(city) => {
+              setSelectedCity(city);
+              setUlb(city?.code);
+            }}
+            placeholder={t("COMMON_TABLE_SEARCH")}
+            disable={true}
+          />
 
-        {areaType?.code === "SCHEME_AREA" && (
-          <React.Fragment>
-            <CardLabel>{t("EDCR_SCRUTINY_SCHEME_AREA_TYPES")}</CardLabel>
-            <Dropdown t={t} isMandatory={true} option={schemeAreaOptions} selected={schemeArea} optionKey="value" select={setSchemeArea} />
+          <CardLabel>{t("EDCR_SCRUTINY_AREA_TYPE")}</CardLabel>
+          <Dropdown t={t} isMandatory={true} option={areaTypeOptions} selected={areaType} optionKey="value" select={handleAreaTypeChange} />
 
-            <CardLabel>{t("EDCR_SCHEME_NAME")}</CardLabel>
-            <TextInput t={t} isMandatory={true} type="text" name="schemeName" value={schName} onChange={(e) => setSchName(e.target.value)} />
+          {areaType?.code === "SCHEME_AREA" && (
+            <React.Fragment>
+              <CardLabel>{t("EDCR_SCRUTINY_SCHEME_AREA_TYPES")}</CardLabel>
+              <Dropdown t={t} isMandatory={true} option={schemeAreaOptions} selected={schemeArea} optionKey="value" select={setSchemeArea} />
 
-            <CardLabel>{t("EDCR_IS_SITE_RESERVED")}</CardLabel>
-            <Dropdown t={t} isMandatory={true} option={siteReservedOptions} selected={siteReserved} optionKey="value" select={setSiteReserved} />
+              <CardLabel>{t("EDCR_SCHEME_NAME")}</CardLabel>
+              <TextInput t={t} isMandatory={true} type="text" name="schemeName" value={schName} onChange={(e) => setSchName(e.target.value)} />
 
-            {siteReserved?.code === "YES" && (
-              <React.Fragment>
-                <CardLabel>{t("EDCR_IS_APPROVED_CONTROL_SHEET")}</CardLabel>
-                <Dropdown
-                  t={t}
-                  isMandatory={true}
-                  option={approvedControlSheetOptions}
-                  selected={approvedCS}
-                  optionKey="value"
-                  select={setApprovedCS}
-                />
-              </React.Fragment>
-            )}
+              <CardLabel>{t("EDCR_IS_SITE_RESERVED")}</CardLabel>
+              <Dropdown t={t} isMandatory={true} option={siteReservedOptions} selected={siteReserved} optionKey="value" select={setSiteReserved} />
 
-            {approvedCS?.code === "YES" && (
-              <React.Fragment>
-                <CardLabel>{t("EDCR_SCRUTINY_SCHEME_UPLOAD_LAYOUT")}</CardLabel>
-                <UploadFile
-                  id={"edcr-layout"}
+              {siteReserved?.code === "YES" && (
+                <React.Fragment>
+                  <CardLabel>{t("EDCR_IS_APPROVED_CONTROL_SHEET")}</CardLabel>
+                  <Dropdown
+                    t={t}
+                    isMandatory={true}
+                    option={approvedControlSheetOptions}
+                    selected={approvedCS}
+                    optionKey="value"
+                    select={setApprovedCS}
+                  />
+                </React.Fragment>
+              )}
 
-                  onUpload={handleLayoutUpload}
-                  onDelete={() => {
-                    setLayoutFile(null);
-                    setFile("");
-                  }}
-                  message={layoutFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-                  error={error}
-                  uploadMessage={layoutMessage}
-                />
-              </React.Fragment>
-            )}
-          </React.Fragment>
-        )}
+              {approvedCS?.code === "YES" && (
+                <React.Fragment>
+                  <CardLabel>{t("EDCR_SCRUTINY_SCHEME_UPLOAD_LAYOUT")}</CardLabel>
+                  <UploadFile
+                    id={"edcr-layout"}
+                    onUpload={handleLayoutUpload}
+                    onDelete={() => {
+                      setLayoutFile(null);
+                      setFile("");
+                    }}
+                    message={layoutFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
+                    error={error}
+                    uploadMessage={layoutMessage}
+                  />
+                </React.Fragment>
+              )}
+            </React.Fragment>
+          )}
 
-        {areaType?.code === "NON_SCHEME_AREA" && (
-          <React.Fragment>
-            <CardLabel>{t("EDCR_SCRUTINY_CLU_APPROVED")}</CardLabel>
-            <Dropdown t={t} isMandatory={true} option={cluApproveOptions} selected={cluApprove} optionKey="value" select={setCluApproved} />
-
+          {areaType?.code === "NON_SCHEME_AREA" && (
+            <React.Fragment>
+              <CardLabel>{t("EDCR_SCRUTINY_CLU_APPROVED")}</CardLabel>
+              <Dropdown t={t} isMandatory={true} option={cluApproveOptions} selected={cluApprove} optionKey="value" select={setCluApproved} />
 
               <React.Fragment>
                 <CardLabel>{t("EDCR_IS_CORE_AREA")}</CardLabel>
                 <Dropdown t={t} isMandatory={true} option={coreAreaOptions} selected={coreArea} optionKey="value" select={setcoreArea} />
               </React.Fragment>
+            </React.Fragment>
+          )}
 
+          <React.Fragment>
+            <CardLabel>{t("EDCR_IS_PURCHASABLEFAR")}</CardLabel>
+            <Dropdown
+              t={t}
+              isMandatory={true}
+              option={purchasableFarOptions}
+              selected={purchasableFar}
+              optionKey="value"
+              select={setPurchasableFar}
+            />
           </React.Fragment>
-        )}
-
-
-         <React.Fragment>
-                <CardLabel>{t("EDCR_IS_PURCHASABLEFAR")}</CardLabel>
-                <Dropdown t={t} isMandatory={true} option={purchasableFarOptions} selected={purchasableFar} optionKey="value" select={setPurchasableFar} />
-              </React.Fragment>
-
 
           <React.Fragment>
             <CardLabel>{t("BPA_ROAD_TYPE")}</CardLabel>
             <Dropdown t={t} isMandatory={true} option={roadTypeOptions} selected={roadType} optionKey="name" select={selectRoadType} />
           </React.Fragment>
 
-        {approvedCS?.code !== "YES" && (
-          <React.Fragment>
-            <CardLabel>{t("EDCR_UPLOAD_DXF_FILE")}</CardLabel>
-            <UploadFile
-              id={"edcr-doc"}
-
-              onUpload={handleDXFUpload}
-              accept=".dxf"
-              onDelete={() => {
-                setUploadedFile(null);
-                setFile("");
-              }}
-              message={uploadedFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-              error={error}
-              uploadMessage={uploadMessage}
-            />
-            {/* <p style={{ padding: "10px", fontSize: "14px" }}>{t("EDCR_ONLY_DXF_FILE")}</p> */}
-            <p>{t("EDCR_ONLY_DXF_FILE")}</p>
-          </React.Fragment>
-        )}
-
-      </FormStep>
+          {approvedCS?.code !== "YES" && (
+            <React.Fragment>
+              <CardLabel>{t("EDCR_UPLOAD_DXF_FILE")}</CardLabel>
+              <UploadFile
+                id={"edcr-doc"}
+                onUpload={handleDXFUpload}
+                accept=".dxf"
+                onDelete={() => {
+                  setUploadedFile(null);
+                  setFile("");
+                  setDxfFile(null);
+                  setDxfFileStoreId(null);
+                }}
+                message={dxfFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
+                error={error}
+                uploadMessage={uploadMessage}
+              />
+              {/* <p style={{ padding: "10px", fontSize: "14px" }}>{t("EDCR_ONLY_DXF_FILE")}</p> */}
+              <p>{t("EDCR_ONLY_DXF_FILE")}</p>
+            </React.Fragment>
+          )}
+        </FormStep>
       </div>
     </React.Fragment>
   );

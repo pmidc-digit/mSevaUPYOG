@@ -52,6 +52,7 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
           const endDate = approvalDate ? Number(approvalDate) : Date.now();
 
           return {
+            _searchData: application,
             applicationId: application.businessObject?.applicationNo,
             date: parseInt(application.businessObject?.auditDetails?.createdTime),
             businessService: application?.ProcessInstance?.businessService,

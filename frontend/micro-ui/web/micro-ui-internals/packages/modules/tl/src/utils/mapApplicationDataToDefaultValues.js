@@ -115,13 +115,13 @@ const formatFinancialYear = (year) => ({
         code: acc?.accessoryCategory || "",
         active: true,
         uom: acc?.uom || "",
-        i18nKey: t ? t(accessoryI18nKey) : accessoryI18nKey
+        i18nKey: accessoryI18nKey
       },
       count: acc?.count || "",
       uom: acc?.uom || "",
       uomValue: acc?.uomValue || "",
       key: Date.now() + (idx + 1) * 20,
-      // id: acc?.id,
+      id: acc?.id,
       ownerType: {
         code: "NONE"
       }
@@ -158,8 +158,8 @@ const formatFinancialYear = (year) => ({
             key: Date.now()
           }
         ],
-        tradeUnits: (tradeLicenseDetail?.tradeUnits || []).map((unit, idx) => formatTradeUnit(unit, idx, t)),
-        accessories: (tradeLicenseDetail?.accessories || []).map((acc, idx) => formatAccessory(acc, idx, t)),
+        tradeUnits: (tradeLicenseDetail?.tradeUnits || []).filter((unit) => unit?.active !== false).map((unit, idx) => formatTradeUnit(unit, idx, t)),
+        accessories: (tradeLicenseDetail?.accessories || []).filter((acc) => acc?.active !== false).map((acc, idx) => formatAccessory(acc, idx, t)),
         validityYears: {
           code: tradeLicenseDetail?.additionalDetail?.validityYears || 1,
           i18nKey: tradeLicenseDetail?.additionalDetail?.validityYears || 1

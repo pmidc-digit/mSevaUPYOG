@@ -112,7 +112,7 @@ public class Util {
         LAYER_RULES.add(new LayerRule(".*FIRE[_]?STAIR(_\\d+)?$", 97));
         LAYER_RULES.add(new LayerRule(".*FIRE[_]?STAIR(_\\d+)?_FLIGHT(_\\d+)?$", 98));
         LAYER_RULES.add(new LayerRule(".*FIRE[_]?STAIR(_\\d+)?_LANDING(_\\d+)?$", 99));
-        LAYER_RULES.add(new LayerRule(".*SPIRA[_]?FIRE[_]?STAIR(_\\d+)?$", 102));
+        LAYER_RULES.add(new LayerRule(".*SPIRA[_]?FIRE[_]?STAIR(_\\d+)?$", 101));
 
 
         // --- STAIRS & CIRCULATION ---
@@ -148,7 +148,7 @@ public class Util {
         LAYER_RULES.add(new LayerRule(".*CINEMA_k$", 150));
 
         // --- BASEMENT & PARKING ---
-        LAYER_RULES.add(new LayerRule(".*BASEMENT_FOOT_PRINT$", 110));
+        LAYER_RULES.add(new LayerRule(".*BSMNT_FOOT_PRINT$", 102));
         LAYER_RULES.add(new LayerRule(".*BSMNT_FRONT_SETBACK$", 103));
         LAYER_RULES.add(new LayerRule(".*BSMNT_REAR_SETBACK$", 104));
         LAYER_RULES.add(new LayerRule(".*BSMNT_SIDE_SETBACK1$", 7));

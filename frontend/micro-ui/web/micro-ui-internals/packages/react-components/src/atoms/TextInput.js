@@ -16,6 +16,47 @@ const TextInput = (props) => {
     setDate(getDDMMYYYY(value));
   };
 
+  const sanitizeValue = (val) => {
+    if (typeof val !== "string") return val;
+    if (props.allowSpecialChars || props.disallowSpecialChars === false) return val;
+
+    const inputType = props?.validation && props.ValidationRequired ? props?.validation?.type : props.type || "text";
+    if (inputType === "password") return val;
+
+    if (props.customDisallowRegex) {
+      return val.replace(props.customDisallowRegex, "");
+    }
+
+    // Default text input sanitizer: blocks script/injection characters (< > $ ^ ~ { } [ ] \ % *)
+    // Keeps letters, numbers, spaces, @, (), #, ., ,, -, _, +, /, &, ', :, ;, etc.
+    return val.replace(/[<>$\^~{}\[\]\\%*]/g, "");
+  };
+
+  const handleInputChange = (event) => {
+    const inputType = props?.validation && props.ValidationRequired ? props?.validation?.type : props.type || "text";
+    if (
+      event?.target &&
+      typeof event.target.value === "string" &&
+      inputType !== "password" &&
+      inputType !== "date" &&
+      inputType !== "time" &&
+      inputType !== "number" &&
+      !props.allowSpecialChars &&
+      props.disallowSpecialChars !== false
+    ) {
+      const sanitized = sanitizeValue(event.target.value);
+      if (sanitized !== event.target.value) {
+        event.target.value = sanitized;
+      }
+    }
+    if (props?.onChange) {
+      props?.onChange(event);
+    }
+    if (props.type === "date") {
+      handleDate(event);
+    }
+  };
+
   return (
     <React.Fragment>
       <div
@@ -29,14 +70,7 @@ const TextInput = (props) => {
             id={props.id}
             className={`${user_type ? "employee-card-input-error" : "card-input-error"} ${props.disable && "disabled"}`}
             placeholder={props.placeholder}
-            onChange={(event) => {
-              if (props?.onChange) {
-                props?.onChange(event);
-              }
-              if (props.type === "date") {
-                handleDate(event);
-              }
-            }}
+            onChange={handleInputChange}
             ref={props.inputRef}
             value={props.value}
             style={{ ...props.style }}
@@ -63,14 +97,7 @@ const TextInput = (props) => {
               props.errorStyle && "employee-card-input-error"
             }`}
             placeholder={props.placeholder}
-            onChange={(event) => {
-              if (props?.onChange) {
-                props?.onChange(event);
-              }
-              if (props.type === "date") {
-                handleDate(event);
-              }
-            }}
+            onChange={handleInputChange}
             ref={props.inputRef}
             value={props.value}
             style={{ ...props.style }}

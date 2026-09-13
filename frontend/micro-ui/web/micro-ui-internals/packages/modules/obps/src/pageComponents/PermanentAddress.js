@@ -325,6 +325,20 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   //   }
   // };
 
+  const cleanDocs = (docs) => {
+    if (!Array.isArray(docs)) return docs;
+    const seen = new Set();
+    const cleaned = [];
+    for (let i = docs.length - 1; i >= 0; i--) {
+      const doc = docs[i];
+      if (doc?.documentType && !seen.has(doc.documentType)) {
+        seen.add(doc.documentType);
+        cleaned.unshift(doc);
+      }
+    }
+    return cleaned;
+  };
+
   const goNext = (selectedAction) => {
     console.log("selectedDistrict", selectedDistrict);
     if (pinCode === "" || pinCode.length < 6) {
@@ -527,6 +541,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             validTo,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
               owners: [
                 {
                   ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
@@ -638,6 +653,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             validTo,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
               owners: [
                 {
                   ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
@@ -751,6 +767,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             validTo: validTo,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
               owners: [
                 {
                   // gender: formData?.LicneseDetails?.gender?.code,
@@ -791,7 +808,6 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 ...formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.address,
                 pincode: pinCode,
               },
-              applicationDocuments: formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments || [],
             },
             licenseType: "PERMANENT",
             businessService: "BPAREG",
@@ -864,6 +880,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             validTo: validTo,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
               owners: [
                 {
                   // gender: formData?.LicneseDetails?.gender?.code,
@@ -973,6 +990,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             validTo: validTo,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
               owners: [
                 {
                   // gender: formData?.LicneseDetails?.gender?.code,
@@ -1092,7 +1110,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 isAddressSame: isAddressSame,                
                 Ulb: tenantToSend,
               },
-              applicationDocuments: formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments || []
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
             },         
             action: "SAVE_AS_DRAFT",            
           },

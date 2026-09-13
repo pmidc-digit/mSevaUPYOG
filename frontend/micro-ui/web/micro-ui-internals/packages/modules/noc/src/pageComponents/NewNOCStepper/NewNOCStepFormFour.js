@@ -209,7 +209,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             specificationIsSiteUnderMasterPlan: nocFormData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
             existingNocType: nocFormData?.siteDetails?.existingNocType?.name || "",
             existingNocNumber: nocFormData?.siteDetails?.existingNocNumber || "",
-            existingNocDate: nocFormData?.siteDetails?.existingNocDate || "",
+            existingNocDate: nocFormData?.siteDetails?.existingNocDate ? convertToDDMMYYYY(nocFormData?.siteDetails?.existingNocDate) : "",
             existingNocDocument: nocFormData?.siteDetails?.existingNocDocument || null,
             isNocValidated: nocFormData?.siteDetails?.isNocValidated || false,
           },

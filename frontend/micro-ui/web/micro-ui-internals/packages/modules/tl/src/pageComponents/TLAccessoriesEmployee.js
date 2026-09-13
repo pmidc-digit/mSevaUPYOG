@@ -293,7 +293,7 @@ const AccessoriersForm = (_props) => {
     <React.Fragment>
       <div>
         <div className="clu-doc-required-card no-width">
-          {allAccessoriesList?.length > 1 && !(isRenewal && accessor?.id) ? (
+          {allAccessoriesList?.length > 0 ? (
             
             <div
             style={{
@@ -355,7 +355,7 @@ const AccessoriersForm = (_props) => {
                 <Dropdown
                   className="form-field"
                   selected={
-                    props.value?.i18nKey === "NA" ? undefined : props.value
+                    accessories?.find((item) => item.code === props.value?.code || item.code === props.value?.accessoryCategory) || (props.value?.i18nKey === "NA" ? undefined : props.value)
                   }
                   select={(e) => {
                     setValue("uom", e?.uom ? e?.uom : "");
@@ -370,7 +370,7 @@ const AccessoriersForm = (_props) => {
                   option={sortDropdownNames(accessories, "i18nKey", t) || []}
                   optionKey="i18nKey"
                   t={t}
-                  disable={isRenewal && !!accessor?.id}
+                  // disable={isRenewal && !!accessor?.id}
                   placeholder={t("TL_NEW_TRADE_DETAILS_ACC_PLACEHOLDER")}
                 />
               )}
@@ -445,7 +445,7 @@ const AccessoriersForm = (_props) => {
                       setFocusIndex({ index: accessor.key, type: "uomValue" });
                     }}
                     // disable={/*getValues("uomValue")?!(accessor?.accessoryCategory?.uom) || accessor?.id:*/!(accessor?.accessoryCategory?.uom) }
-                    disable={(isRenewal && !!accessor?.id) || !(accessor?.accessoryCategory?.uom)}
+                    disable={!(accessor?.accessoryCategory?.uom)}
                     onBlur={props.onBlur}
                     placeholder={t("TL_NEW_TRADE_DETAILS_UOM_VALUE_PLACEHOLDER")}
                   />
@@ -483,7 +483,7 @@ const AccessoriersForm = (_props) => {
                       setFocusIndex({ index: accessor.key, type: "count" });
                     }}
                     onBlur={props.onBlur}
-                    disable={isRenewal && !!accessor?.id}
+                    // disable={isRenewal && !!accessor?.id}
                     //disable={accessor?.id}
                     placeholder={t("TL_NEW_TRADE_ACCESSORY_COUNT_PLACEHOLDER")}
                   />

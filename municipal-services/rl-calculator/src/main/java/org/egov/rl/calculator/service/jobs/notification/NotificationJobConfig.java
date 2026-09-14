@@ -20,9 +20,9 @@ public class NotificationJobConfig {
 
     /**
      * Cron expression for notification and demand update job.
-     * Default: 0 30 22 * * ? (every day at 10:30 PM)
+     * Default: 0 0 4 * * ? (every day at 04:00 AM)
      */
-    @Value("${scheduler.notification.cron:0 30 22 * * ?}")
+    @Value("${scheduler.notification.cron:0 0 4 * * ?}")
     private String notificationCronExpression;
 
     @Bean

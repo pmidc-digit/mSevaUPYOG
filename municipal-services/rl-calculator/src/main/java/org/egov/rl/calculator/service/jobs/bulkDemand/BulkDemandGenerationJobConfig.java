@@ -21,7 +21,7 @@ public class BulkDemandGenerationJobConfig {
      * Cron expression for bulk demand generation.
      * Default: 0 30 3 * * ? (every day at 03:30 AM)
      */
-    @Value("${scheduler.bulk.cron:0 30 3 * * ?}")
+    @Value("${scheduler.bulk.cron:0 0 1 * * ?}")
     private String bulkDemandCronExpression;
 
     @Bean
